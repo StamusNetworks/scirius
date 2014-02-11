@@ -180,10 +180,24 @@ class Category(models.Model):
             else:
                 rule = Rule.objects.create(category = self, sid = sid,
                                     rev = rev, content = line, msg = msg)
+                for ref in re.findall("reference:(\w+),(\S+);", msg):
+                    # search if reference exists
+                    refer = Reference.objects.filter(key = ref[0], value = ref[1])
+                    if not refer:
+                        Reference.objects.create(key = ref[0], value = ref[1])
+                    # link rule with reference
+                    rule.references.add(refer)
                 rule.save()
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
         return reverse('category', args=[str(self.id)])
+
+class Reference(models.Model):
+    key = models.CharField(max_length=100)
+    value = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return str(self.key) + ":" + self.value
 
 class Rule(models.Model):
     category = models.ForeignKey(Category)
@@ -192,6 +206,7 @@ class Rule(models.Model):
     sid = models.IntegerField(default=0, unique = True)
     rev = models.IntegerField(default=0)
     content = models.CharField(max_length=10000)
+    references = models.ManyToManyField(Reference, blank = True)
 
     hits = 0
 
