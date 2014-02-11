@@ -1,0 +1,69 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'rules/style.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}"/>
+    <title>{% block title %}Stamus Rule Management{% endblock %}</title>
+    <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+</head>
+
+{% block body %}
+<body>
+{% endblock %}
+  <div id="wrapper">
+	<div id="header">
+		<div id="logo">
+			<h1><a href="#">Stamus Rule Management</a></h1>
+		</div>
+	</div>
+	<!-- end #header -->
+	<div id="menu">
+		<ul>
+			<li><a href="/rules/">Home</a></li>
+			<li><a href="/rules/ruleset/">Ruleset</a></li>
+			<li><a href="/rules/source/">Sources</a></li>
+		</ul>
+	</div>
+	<!-- end #menu -->
+	<div id="page">
+		<div id="page-bgtop">
+			<div id="page-bgbtm">
+				<div id="content">
+                    {% block error %}
+                      {% if error %}
+                       <div class="error">{{ error }}</div>
+                      {% endif %}
+                    {% endblock %}
+                    {% block content %}{% endblock %}
+				</div>
+				<!-- end #content -->
+				<div id="sidebar">
+				        {% block sidebar %}
+       				 <ul>
+            				<li><a href="/rules/">Home</a></li>
+        			</ul>
+        				{% endblock %}
+					{% if object_path %}
+					<h2>Path</h2>
+					   {% for object in object_path %}
+					  	<a href="{{ object.get_absolute_url }}">{{ object.name }}</a>
+						{% if not forloop.last %}
+							&gt;
+						{% endif %}
+					  {% endfor %}
+					{% endif %}
+    				</div>
+				<div style="clear: both;">&nbsp;</div>
+			</div>
+		</div>
+	</div>
+    </div>
+  </div>
+<div id="footer">
+	<p>Copyright (c) 2014 Stamus Networks. All rights reserved. Design by <a href="http://www.freecsstemplates.org/" rel="nofollow">FreeCSSTemplates.org</a>.</p>
+</div>
+</body>
+</html>

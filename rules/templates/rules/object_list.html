@@ -1,0 +1,20 @@
+{% extends "rules/base.html" %}
+
+{% block content %}
+{% if objects %}
+{% load render_table from django_tables2 %}
+{% render_table objects %}
+{% else %}
+No object available.
+{% endif %}
+
+{% endblock %}
+
+{% block sidebar %}
+    <h2>{{ name }}</h2>
+    <ul><li>{{ objects_len }} object(s)</li></ul>
+   {% if action %}
+   <h2>Action</h2>
+        <ul class="action"> <li> <a href="/rules/{{ action }}/add">Add</a></li></ul>
+   {% endif %}
+{% endblock %}

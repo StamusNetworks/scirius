@@ -1,0 +1,16 @@
+{% extends "rules/base.html" %}
+
+{% block sidebar %}
+       <h2>{{ category.name }}</h2>
+<ul>
+       <li><span class="type">Filename:</span> {{ category.filename}}</li>
+       <li><span class="type">Created:</span> {{ category.created_date}}</li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<h2 class="title">Rules</h2>
+{% load render_table from django_tables2 %}
+{% render_table rules %}
+
+{% endblock %}

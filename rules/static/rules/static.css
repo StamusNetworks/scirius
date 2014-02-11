@@ -1,0 +1,44 @@
+ul.action li a {
+    font-weight: bold;
+}
+
+div.rule {
+    border: solid 1px black;
+    padding: 5px;
+    color: black;
+    background-color: #f0f0f0;
+}
+
+ul li span.type {
+    color: #585858;
+}
+
+div.error {
+    font-weight: bold;
+    color: red;
+    margin: 5px;
+}
+
+#sidebar h2 a {
+    color: white;
+}
+
+div.detail {
+    border: solid 1px black;
+    padding: 5px;
+    margin: 5px;
+    background-color: #f0f0f0;
+    display: none;
+}
+
+div.table-container {
+    width: 100%;
+}
+
+table.paleblue {
+    width: 100%;
+}
+
+td.msg {
+    width: 100%;
+}

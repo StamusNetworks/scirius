@@ -1,0 +1,18 @@
+{% extends "rules/base.html" %}
+{% block sidebar %}
+<h2>Add a Source</h2>
+{% endblock %}
+
+{% block content %}
+
+{% if error %}
+<div class="error">{{ error }}</div>
+
+{% endif %}
+
+<form action="/rules/source/add" method="post">{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" value="Submit" />
+</form>
+
+{% endblock %}

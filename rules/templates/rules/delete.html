@@ -1,0 +1,19 @@
+{% extends "rules/base.html" %}
+{% block sidebar %}
+<h2>Delete object</h2>
+{% endblock %}
+
+{% block content %}
+
+{% if error %}
+<div class="error">{{ error }}</div>
+
+{% endif %}
+
+<h2 class="title">Are you sure you want to delete object {{ object.name }}?</h2>
+
+<form action={% url delfn object.id %} method="post">{% csrf_token %}
+<input type="submit" value="Yes, I'm sure" />
+</form>
+
+{% endblock %}

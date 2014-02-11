@@ -1,0 +1,102 @@
+{% extends "rules/base.html" %}
+{% block sidebar %}
+       <h2><a href="/rules/ruleset/{{ ruleset.id }}/">{{ ruleset.name }}</a></h2>
+<ul>
+{% if ruleset.descr %}
+       <li><span class="type">Description:</span> {{ ruleset.descr }}</li>
+{% endif %}
+       <li><span class="type">Created:</span> {{ ruleset.created_date }}</li>
+{% if ruleset.updated_date %}
+       <li><span class="type">Updated:</span> {{ ruleset.updated_date }}</li>
+{% endif %}
+</ul>
+<h2 >Action</h2>
+<ul class="action">
+<li>
+<a href="/rules/ruleset/{{ ruleset.id }}/update">Update</a>
+</li>
+<li>
+<a href="/rules/ruleset/{{ ruleset.id }}/edit">Edit</a>
+</li>
+<li>
+<a href="/rules/ruleset/{{ ruleset.id }}/copy">Copy</a>
+</li>
+<li>
+<a href="/rules/ruleset/{{ ruleset.id }}/delete">Delete</a>
+</li>
+</ul>
+<h2 >Display</h2>
+<ul class="action">
+<li>
+<a href="/rules/ruleset/{{ ruleset.id }}/">Show structure</a>
+</li>
+<li>
+<a href="/rules/ruleset/{{ ruleset.id }}/display">Show rules</a>
+</li>
+<li>
+<a href="/rules/ruleset/{{ ruleset.id }}/export" target="_" >Export rules file</a>
+</ul>
+{% endblock %}
+
+{% block content %}
+
+<script>
+$( 'document' ).ready(function() {
+    $(".msg").click(function( event ) {
+        if ($(this).find(".detail").length) {
+            $(this).find(".detail").slideUp(
+                function() {
+                    $(this).remove();
+                }
+            );
+        } else {
+            sid = $( this ).parent().find("a").html();
+            $.ajax(
+                {
+                        type:"GET",
+                        url:"/rules/rule/"+sid,
+                        success: function(data) {
+                            mylink = $('a').filter(function(index) { return $(this).text() == data.sid; });
+                            mytd = mylink.parent().parent().find(".msg");
+                            mytd.append("<div class='detail'>" + data.content + "</div>");
+                            mytd.find(".detail").slideDown();
+                        },
+                }
+            );
+        }
+    });
+});
+</script>
+
+{% if update %}
+Updated at {{ ruleset.updated_date }} !
+{% endif %}
+
+{% load render_table from django_tables2 %}
+
+{% if mode == 'struct' %}
+
+{% for sourceatversion in sources %}
+<h2 class="title">Source: {{ sourceatversion }}</h2>
+<h4>Categories</h4>
+
+    {% for key, value in categories_list.items  %}
+        {% if key == sourceatversion.source.name %}
+            {% render_table value %}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
+{% endif %}
+
+{% if mode == 'struct' %}
+<h2 class="title">Suppressed rules</h2>
+{% endif %}
+
+{% if mode  == 'display' %}
+<h2 class="title">Rules list</h2>
+{% endif %}
+
+{% render_table rules %}
+
+{% endblock %}

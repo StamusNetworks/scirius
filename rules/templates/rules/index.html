@@ -1,0 +1,26 @@
+{% extends "rules/base.html" %}
+
+{% block content %}
+
+<h2 class="title">Ruleset</h2>
+{% if ruleset_list %}
+    <ul>
+    {% for ruleset in ruleset_list %}
+        <li><a href="/rules/ruleset/{{ ruleset.id }}/">{{ ruleset.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No rulesets are available.</p>
+{% endif %}
+<h2 class="title">Sources</h2>
+{% if source_list %}
+    <ul>
+    {% for source in source_list %}
+        <li><a href="/rules/source/{{ source.id }}/">{{ source.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No sources are available.</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "rules/base.html" %}
+
+{% block sidebar %}
+       <h2>{{ rule.sid }}</h2>
+<ul>
+       <li><span class="type">Msg:</span> {{ rule.msg }}</li>
+       <li><span class="type">Revision:</span> {{ rule.rev }}</li>
+</ul>
+
+{% endblock %}
+
+{% block content %}
+<h2 class="title">Definition</h2>
+<div class="rule">
+	<code>
+      {{ rule.content }}
+      </code>
+</div>
+{% endblock %}

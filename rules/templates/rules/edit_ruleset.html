@@ -1,0 +1,90 @@
+{% extends "rules/base.html" %}
+{% block sidebar %}
+       <h2>{{ ruleset.name }}</h2>
+<ul>
+{% if ruleset.descr %}
+       <li><span class="type">Description:</span> {{ ruleset.descr }}</li>
+{% endif %}
+       <li><span class="type">Created:</span> {{ ruleset.created_date }}</li>
+{% if ruleset.updated_date %}
+       <li><span class="type">Updated:</span> {{ ruleset.updated_date }}</li>
+{% endif %}
+</ul>
+<h2>Action</h2>
+<ul class="action">
+<li>
+<a href="/rules/ruleset/{{ ruleset.id }}/edit?mode=categories">Edit categories</a>
+</li>
+<li>
+<a href="/rules/ruleset/{{ ruleset.id }}/addsupprule">Add rule to suppressed list</a>
+</li>
+<li>
+<a href="/rules/ruleset/{{ ruleset.id }}/edit?mode=rules">Remove rule from suppressed list</a>
+</li>
+</ul>
+{% endblock %}
+
+{% block body %}
+<body onload="tables2_checking();" />
+{% endblock %}
+
+{% block content %}
+
+<script language="JavaScript">
+function tables2_toggle(source, name) {
+    checkboxes = document.getElementsByName(name);
+    for(var i in checkboxes)
+        checkboxes[i].checked = source.checked;
+}
+
+function tables2_checking() {
+    var arr = [{{ cats_selection }}];
+    checkboxes = document.getElementsByName('category_selection');
+    for (var i in checkboxes) {
+        if  (arr.indexOf(parseInt(checkboxes[i].value)) > -1) {
+            checkboxes[i].checked = 1;
+        }
+    }
+}
+</script>
+
+{% if not mode %}
+Choose an operation in Action menu.
+{% endif %}
+
+{% if mode == 'categories' %}
+
+{% load render_table from django_tables2 %}
+{% for sourceatversion in sources %}
+<h2 class="title">Source: {{ sourceatversion }}</h2>
+<h4>Categories</h4>
+
+<form action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
+    {% for key, value in categories_list.items  %}
+        {% if key == sourceatversion.source.name %}
+            {% render_table value %}
+        {% endif %}
+    {% endfor %}
+<p>
+<input type="hidden" name="source" value={{sourceatversion.id}}>
+<input type="submit" value="Update categories for {{sourceatversion}}" />
+</p>
+</form>
+
+{% endfor %}
+
+{% endif %}
+
+{% if mode == 'rules' %}
+
+<h2 class="title">Suppressed rules</h2>
+
+<form action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
+{% render_table rules %}
+<input type="hidden" name="rules" value="rules">
+<input type="submit" value="Remove selected rules from suppressed rules" />
+</form>
+
+{% endif %}
+
+{% endblock %}

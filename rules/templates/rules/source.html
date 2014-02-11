@@ -1,0 +1,32 @@
+{% extends "rules/base.html" %}
+{% block sidebar %}
+       <h2>{{ source.name }}</h2>
+<ul>
+{% if source.descr %}
+       <li><span class="type">Description:</span> {{ source.descr }}</li>
+{% endif %}
+       <li><span class="type">Created:</span> {{ source.created_date }}</li>
+{% if source.updated_date %}
+       <li><span class="type">Updated:</span> {{ source.updated_date }}</li>
+{% endif %}
+</ul>
+<h2 >Action</h2>
+<ul class="action"><li>
+<a href="/rules/source/{{ source.id }}/update">Update</a>
+</li></ul>
+{% endblock %}
+
+{% block content %}
+
+{% if update %}
+Updated at {{ source.updated_date }} !
+{% endif %}
+
+
+<h2 class="title">Categories</h2>
+
+{% load render_table from django_tables2 %}
+{% render_table categories %}
+
+
+{% endblock %}

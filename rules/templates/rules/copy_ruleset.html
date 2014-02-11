@@ -1,0 +1,18 @@
+{% extends "rules/base.html" %}
+{% block sidebar %}
+<h2>Copy ruleset "{{ object.name }}"</h2>
+{% endblock %}
+
+{% block content %}
+
+{% if error %}
+<div class="error">{{ error }}</div>
+
+{% endif %}
+
+<form action="/rules/ruleset/{{ object.id }}/copy" method="post">{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" value="Submit" />
+</form>
+
+{% endblock %}
