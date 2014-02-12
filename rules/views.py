@@ -95,7 +95,11 @@ def rule(request, rule_id, key = 'pk'):
     else:
         rule = get_object_or_404(Rule, sid=rule_id)
     rule_path = [rule.category.source, rule.category]
-    context = {'rule': rule, 'object_path': rule_path}
+    references = rule.references.all()
+    for refer in references:
+        if refer.key == 'url':
+            refer.url = "http://" + refer.value
+    context = {'rule': rule, 'references': references, 'object_path': rule_path}
     return render(request, 'rules/rule.html', context)
 
 def update_source(request, source_id):

@@ -25,8 +25,10 @@ from rules.models import Source
 from rules.models import Ruleset
 from rules.models import Category
 from rules.models import Rule
+from rules.models import Reference
 
 admin.site.register(Source)
 admin.site.register(Ruleset)
 admin.site.register(Category)
 admin.site.register(Rule)
+admin.site.register(Reference)

@@ -173,6 +173,7 @@ class Category(models.Model):
             # FIXME detect if nothing has changed to avoir rules reload
             rule = Rule.objects.filter(category = self, sid = sid)
             if rule:
+                # FIXME update references if needed
                 if rule[0].rev > rev:
                     rule[0].content = line
                     rule[0].rev = rev
@@ -180,11 +181,14 @@ class Category(models.Model):
             else:
                 rule = Rule.objects.create(category = self, sid = sid,
                                     rev = rev, content = line, msg = msg)
-                for ref in re.findall("reference:(\w+),(\S+);", msg):
+                for ref in re.findall("reference:(\w+),(\S+);", line):
                     # search if reference exists
                     refer = Reference.objects.filter(key = ref[0], value = ref[1])
                     if not refer:
-                        Reference.objects.create(key = ref[0], value = ref[1])
+                        refer = Reference.objects.create(key = ref[0], value = ref[1])
+                        refer.save()
+                    else:
+                        refer = refer[0]
                     # link rule with reference
                     rule.references.add(refer)
                 rule.save()
@@ -194,7 +198,9 @@ class Category(models.Model):
 
 class Reference(models.Model):
     key = models.CharField(max_length=100)
-    value = models.CharField(max_length=100)
+    value = models.CharField(max_length=1000)
+
+    url = None
 
     def __unicode__(self):
         return str(self.key) + ":" + self.value

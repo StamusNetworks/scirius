@@ -14,6 +14,18 @@
 <div class="rule">
 	<code>
       {{ rule.content }}
-      </code>
+    </code>
 </div>
+<h2 class="title">References</h2>
+<ul>
+{% for ref in references %}
+<li>
+{% if ref.url %}
+{{ ref.key }}:  <a href={{ ref.url }} target="_blank">{{ ref.value|truncatechars:80}}</a>
+{% else %}
+{{ ref.key }}:  {{ ref.value }}
+{% endif %}
+</li>
+{% endfor %}
+</ul>
 {% endblock %}
