@@ -37,7 +37,7 @@ if settings.USE_ELASTICSEARCH:
 
 def listing(request, objectname, name):
     # FIXME could be improved by generating function name
-    assocfn = { 'Sources': SourceTable, 'Categories': CategoryTable, 'Rulesets': RulesetTable, 'Appliances': ApplianceTable }
+    assocfn = { 'Sources': SourceTable, 'Categories': CategoryTable, 'Rulesets': RulesetTable }
     olist = objectname.objects.all()
     if olist:
         data = assocfn[name](olist)
@@ -235,12 +235,8 @@ def ruleset_add_supprule(request, ruleset_id):
 def delete_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
     if request.method == 'POST': # If the form has been submitted...
-        if len(Appliance.objects.filter(ruleset = ruleset)):
-            # FIXME handle error printing 
-            return redirect(ruleset)
-        else:
-            ruleset.delete()
-            return redirect("/rules/ruleset/")
+        ruleset.delete()
+        return redirect("/rules/ruleset/")
     else:
         context = {'object': ruleset, 'delfn': 'delete_ruleset' }
         return render(request, 'rules/delete.html', context)

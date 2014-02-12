@@ -19,7 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django import forms
-from rules.models import Ruleset, Source, Appliance, Category, SourceAtVersion
+from rules.models import Ruleset, Source, Category, SourceAtVersion
 from datetime import datetime
 
 class SourceForm(forms.Form):
