@@ -99,6 +99,11 @@ def rule(request, rule_id, key = 'pk'):
     for refer in references:
         if refer.key == 'url':
             refer.url = "http://" + refer.value
+        elif refer.key == 'cve':
+            refer.url = "http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-" + refer.value
+            refer.key = refer.key.upper()
+        elif refer.key == 'bugtraq':
+            refer.url = "http://www.securityfocus.com/bid/" + refer.value
     context = {'rule': rule, 'references': references, 'object_path': rule_path}
     return render(request, 'rules/rule.html', context)
 
