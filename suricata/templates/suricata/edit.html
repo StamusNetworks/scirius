@@ -1,0 +1,15 @@
+{% extends "rules/base.html" %}
+
+
+{% block content %}
+{% if creation %}
+<h2 class="title">Suricata creation</h2>
+{% else %}
+<h2 class="title">Suricata edition</h2>
+{% endif %}
+
+<form action="/suricata/edit" method="post">{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" value="Submit" />
+</form>
+{% endblock %}

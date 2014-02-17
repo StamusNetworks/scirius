@@ -18,11 +18,11 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from django.conf.urls import patterns, url
+from django import forms
+from suricata.models import Suricata
+from rules.models import Ruleset
 
-from suricata import views
-
-urlpatterns = patterns('',
-    url(r'^$', views.index, name='index'),
-    url(r'^edit$', views.edit, name='edit'),
-    )
+class SuricataForm(forms.ModelForm):
+    class Meta:
+        model = Suricata
+        exclude = ('created_date', 'updated_date')

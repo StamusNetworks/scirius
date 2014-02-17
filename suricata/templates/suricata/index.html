@@ -1,1 +1,20 @@
 {% extends "rules/base.html" %}
+
+{% block content %}
+<h2 class="title">Suricata {{ suricata.name }}</h2>
+<ul>
+       <li><span class="type">Ruleset:</span> {{ suricata.ruleset }}</li>
+       <li><span class="type">Description:</span> {{ suricata.descr }}</li>
+       <li><span class="type">Last updated:</span> {{ suricata.updated_date }}</li>
+</ul>
+
+{% if rules %}
+<h2 class="title">Rules activity</h2>
+
+{% load render_table from django_tables2 %}
+
+{% render_table rules %}
+{% endif %}
+
+
+{% endblock %}
