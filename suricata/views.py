@@ -23,7 +23,10 @@ from django.shortcuts import render
 # Create your views here.
 from django.http import HttpResponse
 
+from scirius.utils import scirius_render
+
 def index(request):
     # try to get suricata from db
     # if we fail return creation form
-    return HttpResponse("Suricata ruleset")
+    context = {}
+    return scirius_render(request, 'suricata/index.html', context)
