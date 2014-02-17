@@ -25,6 +25,9 @@
 			<li><a href="/rules/">Home</a></li>
 			<li><a href="/rules/ruleset/">Ruleset</a></li>
 			<li><a href="/rules/source/">Sources</a></li>
+            {% if generator %}
+                <li><a href="/{{ generator }}/">{{ generator|capfirst }}</a></li>
+            {% endif %}
 		</ul>
 	</div>
 	<!-- end #menu -->
