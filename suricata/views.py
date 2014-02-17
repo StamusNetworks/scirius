@@ -98,3 +98,20 @@ def edit(request):
         else:
             form = SuricataForm()
     return scirius_render(request, 'suricata/edit.html', { 'form': form })
+
+
+def update(request):
+    suri = get_suri()
+    if suri == None:
+        form = SuricataForm()
+        context = { 'creation': True , 'form': form}
+        return scirius_render(request, 'suricata/edit.html', context)
+    if request.method == 'POST':
+        # FIXME more setps here could be cool
+        suri.ruleset.update()
+        suri.generate()
+        suri.updated_date = datetime.now()
+        message = "Update successfully applied at " + str(suri.updated_date)
+        return scirius_render(request, 'suricata/update.html', { 'message': message, 'suricata': suri })
+    else:
+        return scirius_render(request, 'suricata/update.html', { 'suricata': suri })

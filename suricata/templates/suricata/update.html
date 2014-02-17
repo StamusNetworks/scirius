@@ -1,0 +1,17 @@
+{% extends "rules/base.html" %}
+
+
+{% block content %}
+<h2 class="title">Suricata Ruleset Update</h2>
+{% if message %}
+<p>{{ message }}</p>
+{% else %}
+    {% if suri.updated_date %}
+<p>Suricata last updated at {{ suri.updated_date }}</p>
+    {% endif %}
+<form action="/suricata/update" method="post">{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" value="Update ruleset" />
+</form>
+{% endif %}
+{% endblock %}
