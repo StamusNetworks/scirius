@@ -37,11 +37,17 @@ from django.conf import settings
 if settings.USE_ELASTICSEARCH:
     from rules.elasticsearch import *
 
-def index(request):
-    # try to get suricata from db
+def get_suri():
     suri = Suricata.objects.all()
     if suri:
         suri = suri[0]
+    return suri
+
+def index(request):
+    # try to get suricata from db
+    suri = get_suri()
+
+    if suri:
         context = {'suricata': suri}
 
         if settings.USE_ELASTICSEARCH:
@@ -60,9 +66,7 @@ def index(request):
 
 
 def edit(request):
-    suri = Suricata.objects.all()
-    if suri:
-        suri = suri[0]
+    suri = get_suri()
 
     if request.method == 'POST':
         if suri:
