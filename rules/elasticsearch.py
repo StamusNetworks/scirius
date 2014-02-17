@@ -74,7 +74,12 @@ ALERT_ID_QUERY = """
 }
 """
 
-def es_get_rules_stats(hostname, count=10, from_date=0):
+
+from rules.models import Rule
+from rules.tables import ExtendedRuleTable
+import django_tables2 as tables
+
+def es_get_rules_stats(request, hostname, count=20, from_date=0):
     templ = Template(ALERT_ID_QUERY)
     context = Context({'appliance_hostname': hostname, 'alerts_number': count, 'from_date': from_date})
     data = templ.render(context)
@@ -87,4 +92,19 @@ def es_get_rules_stats(hostname, count=10, from_date=0):
     # returned data is JSON
     data = json.loads(data)
     # total number of results
-    return data['facets']['table']['terms']
+    data = data['facets']['table']['terms']
+    rules = []
+    if data != None:
+        for elt in data:
+            try:
+                rule = Rule.objects.get(sid=elt['term'])
+            except:
+                print "Can not find rule with sid " + str(elt['term'])
+                continue
+            rule.hits = elt['count']
+            rules.append(rule)
+        rules = ExtendedRuleTable(rules)
+        tables.RequestConfig(request).configure(rules)
+    else:
+        return None
+    return rules

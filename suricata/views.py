@@ -19,6 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from datetime import datetime
+from time import time
 
 from django.shortcuts import render, redirect
 from django.db import IntegrityError
@@ -32,12 +33,25 @@ from suricata.models import Suricata
 
 from forms import *
 
+from django.conf import settings
+if settings.USE_ELASTICSEARCH:
+    from rules.elasticsearch import *
+
 def index(request):
     # try to get suricata from db
     suri = Suricata.objects.all()
     if suri:
         suri = suri[0]
         context = {'suricata': suri}
+
+        if settings.USE_ELASTICSEARCH:
+            from_date = int((time() - 86400) * 1000) # last 24 hours
+            rules = es_get_rules_stats(request, suri.name, from_date=from_date)
+            if rules:
+                context['rules'] = rules
+            else:
+                context['error'] = 'Unable to join Elasticsearch server or no alerts'
+
         return scirius_render(request, 'suricata/index.html', context)
     else:
         form = SuricataForm()

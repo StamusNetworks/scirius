@@ -21,7 +21,6 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.db import IntegrityError
-from django.conf import settings
 
 from scirius.utils import scirius_render
 
@@ -34,8 +33,6 @@ from time import time
 import django_tables2 as tables
 from tables import *
 from forms import *
-if settings.USE_ELASTICSEARCH:
-    from elasticsearch import *
 
 def listing(request, objectname, name):
     # FIXME could be improved by generating function name
