@@ -95,6 +95,8 @@ STATIC_URL = '/static/'
 USE_ELASTICSEARCH = True
 ELASTICSEARCH_ADDRESS = "127.0.0.1:9200"
 
+GIT_SOURCES_BASE_DIRECTORY = os.path.join(BASE_DIR, 'git-sources/')
+
 # Ruleset generator framework
 RULESET_MIDDLEWARE = 'suricata'
 

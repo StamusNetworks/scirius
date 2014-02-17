@@ -1,3 +1,4 @@
 *.pyc
 scirius/local_settings.py
 *.swp
+git-sources/*

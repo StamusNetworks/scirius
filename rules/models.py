@@ -19,12 +19,16 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django.db import models
+from django.conf import settings
 import urllib
 import tempfile
 import tarfile
 import re
 from datetime import datetime
 import sys
+import os
+import git
+import shutil
 
 # Create your models here.
 
@@ -86,16 +90,34 @@ class Source(models.Model):
             raise "Currently unsupported method"
         f = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
         urllib.urlretrieve (self.uri, f.name)
+        self.updated_date = datetime.now()
         # FIXME check file type
         # FIXME only dealing with tgz
         # extract file
         if (not tarfile.is_tarfile(f.name)):
             raise "Invalid tar file"
-        # FIXME real work
+        # check if git tree is in place
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
+        if not os.path.isdir(source_git_dir):
+            if os.path.isfile(source_git_dir):
+                raise "git-sources is not a directory"
+            os.mkdir(source_git_dir)
+            repo = git.Repo.init(source_git_dir)
+        else:
+            try:
+                shutil.rmtree(os.path.join(source_git_dir, "rules"))
+            except OSError:
+                print("Can not delete directory")
+                pass
+            repo = git.Repo(source_git_dir)
         tfile = tarfile.open(fileobj=f)
         # FIXME get members
-        tfile.extractall(path="/tmp/et")
-        self.updated_date = datetime.now()
+        tfile.extractall(path=source_git_dir)
+        index = repo.index
+        index.add(["rules"])
+        message =  'source version at %s' % (self.updated_date)
+        index.commit(message)
+
         self.save()
         # Now we must update SourceAtVersion for this source
         # or create it if needed
@@ -111,7 +133,19 @@ class Source(models.Model):
             sversion.save()
         # Get categories
         self.get_categories(tfile)
-        # Build rules list
+
+
+    def export_files(self, directory, version):
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), "rules")
+        repo = git.Repo(source_git_dir)
+        repo.git.checkout(version)
+        # copy file to target
+        src_files = os.listdir(source_git_dir)
+        for file_name in src_files:
+            full_file_name = os.path.join(source_git_dir, file_name)
+            if (os.path.isfile(full_file_name)):
+                shutil.copy(full_file_name, directory)
+        repo.git.checkout('master')
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
@@ -130,6 +164,9 @@ class SourceAtVersion(models.Model):
 
     def _get_name(self):
         return str(self)
+
+    def export_files(self, directory):
+        self.source.export_files(directory, self.version)
 
     name = property(_get_name)
 
@@ -151,9 +188,8 @@ class Category(models.Model):
         getsid = re.compile("sid:(\d+)")
         getrev = re.compile("rev:(\d+)")
         getmsg = re.compile("msg:\"(.*?)\"")
-        # FIXME not a fixed one
-        TMP_DIR = "/tmp/et/"
-        rfile = open(TMP_DIR + "/" + self.filename)
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.source.pk))
+        rfile = open(os.path.join(source_git_dir, self.filename))
         for line in rfile.readlines():
             if line.startswith('#'):
                 continue
@@ -291,3 +327,6 @@ class Ruleset(models.Model):
         self.suppressed_rules = orig_supp_rules
         return self
 
+    def export_files(self, directory):
+        for src in self.sources.all():
+            src.export_files(directory)

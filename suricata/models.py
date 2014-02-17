@@ -48,3 +48,5 @@ class Suricata(models.Model):
         for rule in rules:
             rfile.write( rule.content)
         rfile.close()
+        # export files at version
+        self.ruleset.export_files(self.output_directory)
