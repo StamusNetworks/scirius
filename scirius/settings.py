@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'south',
     'django_tables2',
     'rules',
+    'suricata',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -93,6 +94,9 @@ STATIC_URL = '/static/'
 
 USE_ELASTICSEARCH = True
 ELASTICSEARCH_ADDRESS = "127.0.0.1:9200"
+
+# Ruleset generator framework
+RULESET_MIDDLEWARE = 'suricata'
 
 try:
     from local_settings import *
