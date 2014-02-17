@@ -23,6 +23,8 @@ from django.http import HttpResponse
 from django.db import IntegrityError
 from django.conf import settings
 
+from scirius.utils import scirius_render
+
 from rules.models import Ruleset, Source, Category, Rule
 
 import json
@@ -34,10 +36,6 @@ from tables import *
 from forms import *
 if settings.USE_ELASTICSEARCH:
     from elasticsearch import *
-
-def scirius_render(request, template, context):
-    context['generator'] = settings.RULESET_MIDDLEWARE
-    return render(request, template, context)
 
 def listing(request, objectname, name):
     # FIXME could be improved by generating function name
