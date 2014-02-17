@@ -2,11 +2,6 @@
 
 {% block content %}
 <h2 class="title">Suricata {{ suricata.name }}</h2>
-<ul>
-       <li><span class="type">Ruleset:</span> {{ suricata.ruleset }}</li>
-       <li><span class="type">Description:</span> {{ suricata.descr }}</li>
-       <li><span class="type">Last updated:</span> {{ suricata.updated_date }}</li>
-</ul>
 
 {% if rules %}
 <h2 class="title">Rules activity</h2>
@@ -16,5 +11,26 @@
 {% render_table rules %}
 {% endif %}
 
+
+{% endblock %}
+
+
+{% block sidebar %}
+<h2>Suricata {{ suricata.name }}</h2>
+<ul>
+       <li><span class="type">Ruleset:</span> {{ suricata.ruleset }}</li>
+       <li><span class="type">Description:</span> {{ suricata.descr }}</li>
+       <li><span class="type">Last updated:</span> {{ suricata.updated_date }}</li>
+</ul>
+
+<h2 >Action</h2>
+<ul class="action">
+<li>
+<a href="/suricata/update">Update</a>
+</li>
+<li>
+<a href="/suricata/edit">Edit</a>
+</li>
+</ul>
 
 {% endblock %}
