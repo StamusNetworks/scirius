@@ -210,13 +210,19 @@ class Category(models.Model):
             else:
                 msg = match.groups()[0]
             # FIXME detect if nothing has changed to avoir rules reload
-            rule = Rule.objects.filter(category = self, sid = sid)
+            rule = Rule.objects.filter(sid = sid)
             if rule:
                 # FIXME update references if needed
                 if rule[0].rev > rev:
                     rule[0].content = line
                     rule[0].rev = rev
+                    if rule[0].category != self:
+                        rule[0].category = self
                     rule[0].save()
+                else:
+                    if rule[0].category != self:
+                        rule[0].category = self
+                        rule[0].save
             else:
                 rule = Rule.objects.create(category = self, sid = sid,
                                     rev = rev, content = line, msg = msg)
