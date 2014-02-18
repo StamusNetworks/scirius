@@ -22,7 +22,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.db import IntegrityError
 
-from scirius.utils import scirius_render
+from scirius.utils import scirius_render, scirius_listing
 
 from rules.models import Ruleset, Source, Category, Rule
 
@@ -34,26 +34,6 @@ import django_tables2 as tables
 from tables import *
 from forms import *
 
-def listing(request, objectname, name):
-    # FIXME could be improved by generating function name
-    assocfn = { 'Sources': SourceTable, 'Categories': CategoryTable, 'Rulesets': RulesetTable }
-    olist = objectname.objects.all()
-    if olist:
-        data = assocfn[name](olist)
-        tables.RequestConfig(request).configure(data)
-        data_len = len(olist)
-    else:
-        data = None
-        data_len = 0
-
-    context = {'objects': data, 'name': name, 'objects_len': data_len}
-    try:
-        objectname.editable
-        context['action'] = objectname.__name__.lower()
-    except:
-        pass
-    return scirius_render(request, 'rules/object_list.html', context)
-
 # Create your views here.
 def index(request):
     ruleset_list = Ruleset.objects.all().order_by('-created_date')[:5]
@@ -63,7 +43,7 @@ def index(request):
     return scirius_render(request, 'rules/index.html', context)
 
 def sources(request):
-    return listing(request, Source, 'Sources')
+    return scirius_listing(request, Source, 'Sources')
 
 def source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
@@ -73,7 +53,7 @@ def source(request, source_id):
     return scirius_render(request, 'rules/source.html', context)
 
 def categories(request):
-    return listing(request, Category, 'Categories')
+    return scirius_listing(request, Category, 'Categories')
 
 def category(request, cat_id):
     cat = get_object_or_404(Category, pk=cat_id)
@@ -132,7 +112,7 @@ def add_source(request):
     return scirius_render(request, 'rules/add_source.html', { 'form': form, })
 
 def rulesets(request):
-    return listing(request, Ruleset, 'Rulesets')
+    return scirius_listing(request, Ruleset, 'Rulesets')
 
 def ruleset(request, ruleset_id, mode = 'struct'):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
