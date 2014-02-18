@@ -114,9 +114,10 @@ class Source(models.Model):
         # FIXME get members
         tfile.extractall(path=source_git_dir)
         index = repo.index
-        index.add(["rules"])
-        message =  'source version at %s' % (self.updated_date)
-        index.commit(message)
+        if len(index.diff(None)):
+            index.add(["rules"])
+            message =  'source version at %s' % (self.updated_date)
+            index.commit(message)
 
         self.save()
         # Now we must update SourceAtVersion for this source
