@@ -91,8 +91,6 @@ class Source(models.Model):
         f = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
         urllib.urlretrieve (self.uri, f.name)
         self.updated_date = datetime.now()
-        # FIXME check file type
-        # FIXME only dealing with tgz
         # extract file
         if (not tarfile.is_tarfile(f.name)):
             raise "Invalid tar file"
@@ -111,7 +109,10 @@ class Source(models.Model):
                 pass
             repo = git.Repo(source_git_dir)
         tfile = tarfile.open(fileobj=f)
-        # FIXME get members
+        # FIXME This test is only for rules archive
+        for member in tfile.getmembers():
+            if not member.name.startswith("rules"):
+                raise "Suspect tar file contains a invalid name '%s'" % (member.name)
         tfile.extractall(path=source_git_dir)
         index = repo.index
         if len(index.diff(None)):
