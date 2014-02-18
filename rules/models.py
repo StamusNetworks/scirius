@@ -142,6 +142,9 @@ class Source(models.Model):
         # copy file to target
         src_files = os.listdir(source_git_dir)
         for file_name in src_files:
+            # don't copy original rules file to dest
+            if file_name.endswith('.rules'):
+                continue
             full_file_name = os.path.join(source_git_dir, file_name)
             if (os.path.isfile(full_file_name)):
                 shutil.copy(full_file_name, directory)
