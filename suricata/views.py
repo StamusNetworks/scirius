@@ -114,7 +114,7 @@ def update(request):
         suri.generate()
         suri.updated_date = datetime.now()
         suri.save()
-        message += "Ruleset build successfull at " + str(suri.updated_date)
+        message += "Successful ruleset build at " + str(suri.updated_date)
         context =  { 'message': message, 'suricata': suri }
         return scirius_render(request, 'suricata/update.html', context)
     else:
