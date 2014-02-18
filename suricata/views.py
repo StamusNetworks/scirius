@@ -107,11 +107,13 @@ def update(request):
         context = { 'creation': True , 'form': form}
         return scirius_render(request, 'suricata/edit.html', context)
     if request.method == 'POST':
-        # FIXME more setps here could be cool
-        suri.ruleset.update()
+        message = ""
+        if request.POST['action'] == "update":
+            suri.ruleset.update()
+            message += "Rule downloaded at %s. " % (suri.ruleset.updated_date)
         suri.generate()
         suri.updated_date = datetime.now()
-        message = "Update successfully applied at " + str(suri.updated_date)
+        message += "Ruleset build successfull at " + str(suri.updated_date)
         return scirius_render(request, 'suricata/update.html', { 'message': message, 'suricata': suri })
     else:
         return scirius_render(request, 'suricata/update.html', { 'suricata': suri })

@@ -42,3 +42,8 @@ table.paleblue {
 td.msg {
     width: 100%;
 }
+
+h3 {
+    color: white;
+    margin-top: 15px;
+}

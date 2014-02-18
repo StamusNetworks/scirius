@@ -9,9 +9,19 @@
     {% if suri.updated_date %}
 <p>Suricata last updated at {{ suri.updated_date }}</p>
     {% endif %}
-<form action="/suricata/update" method="post">{% csrf_token %}
+<h3>Full upgrade</h3>
+<p>This will download latest sources and build ruleset.</p>
+<form action="/suricata/update" name="update" method="post">{% csrf_token %}
 {{ form.as_p }}
-<input type="submit" value="Update ruleset" />
+<input type="submit" value="Update ruleset and build Suricata ruleset" />
+<input type="hidden" name="action" value="update" />
+</form>
+<h3>Build ruleset</h3>
+<p>This will only build ruleset.</p>
+<form action="/suricata/update" name="build" method="post">{% csrf_token %}
+{{ form.as_p }}
+<input type="hidden" name="action" value="build" />
+<input type="submit" value="Build Suricata ruleset" />
 </form>
 {% endif %}
 {% endblock %}
