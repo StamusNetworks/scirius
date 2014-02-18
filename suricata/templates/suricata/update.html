@@ -25,3 +25,14 @@
 </form>
 {% endif %}
 {% endblock %}
+
+{% block sidebar %}
+<h2>Suricata {{ suricata.name }}</h2>
+<ul>
+       <li><span class="type">Ruleset:</span> {{ suricata.ruleset }}</li>
+       <li><span class="type">Ruleset Updated:</span> {{ suricata.ruleset.updated_date }}</li>
+       <li><span class="type">Last Build:</span> {{ suricata.updated_date }}</li>
+</ul>
+
+
+{% endblock %}

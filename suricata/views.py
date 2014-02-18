@@ -113,7 +113,9 @@ def update(request):
             message += "Rule downloaded at %s. " % (suri.ruleset.updated_date)
         suri.generate()
         suri.updated_date = datetime.now()
+        suri.save()
         message += "Ruleset build successfull at " + str(suri.updated_date)
-        return scirius_render(request, 'suricata/update.html', { 'message': message, 'suricata': suri })
+        context =  { 'message': message, 'suricata': suri }
+        return scirius_render(request, 'suricata/update.html', context)
     else:
         return scirius_render(request, 'suricata/update.html', { 'suricata': suri })
