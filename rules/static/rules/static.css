@@ -23,6 +23,10 @@ div.error {
     color: white;
 }
 
+#sidebar h2 {
+    background: #AD9C9B;
+}
+
 div.detail {
     border: solid 1px black;
     padding: 5px;
@@ -46,4 +50,58 @@ td.msg {
 h3 {
     color: white;
     margin-top: 15px;
+}
+
+body {
+    background: white;
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+#menu {
+    background: #7A1243;
+}
+
+#menu a:hover {
+    background: #AD9CB9;
+}
+
+.title {
+    color: #7A1243;
+}
+
+#footer {
+    border-top-color: #7A1243;
+}
+
+a {
+    color: black;
+}
+
+#logo a {
+    color: #AD9C9B;
+}
+
+table.paleblue a:link {
+    color: grey;
+}
+
+
+table.paleblue a:visited {
+    color: #7A1243;
+}
+
+table.paleblue tr.odd {
+    background-color: #f0f0f0;
+}
+
+table.paleblue tr.even {
+    background-color: #e0e0e0;
+}
+
+table.paleblue + ul.pagination > li > a {
+    color: grey;
+}
+
+#logo img {
+    padding-top: 10px;
 }
