@@ -13,7 +13,12 @@
 <h2 >Action</h2>
 <ul class="action"><li>
 <a href="/rules/source/{{ source.id }}/update">Update</a>
-</li></ul>
+<!-- </li>
+<li>
+<a href="/rules/source/{{ source.id }}/diff">Diff</a>
+</li>
+-->
+</ul>
 {% endblock %}
 
 {% block content %}
@@ -22,11 +27,20 @@
 Updated at {{ source.updated_date }} !
 {% endif %}
 
+{% if diff %}
 
+{% for file in diff %}
+
+<h4>{{ file.a_blob.path }} </h4>
+{{ file.diff }}
+
+{% endfor %}
+
+{% else %}
 <h2 class="title">Categories</h2>
 
 {% load render_table from django_tables2 %}
 {% render_table categories %}
-
+{% endif %}
 
 {% endblock %}

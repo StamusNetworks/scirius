@@ -98,6 +98,11 @@ def update_source(request, source_id):
     source.update()
     return redirect(source)
 
+def diff_source(request, source_id):
+    source = get_object_or_404(Source, pk=source_id)
+    diff = source.diff()
+    return scirius_render(request, 'rules/source.html', { 'source': source, 'diff': diff })
+
 def add_source(request):
     if request.method == 'POST': # If the form has been submitted...
         form = SourceForm(request.POST) # A form bound to the POST data

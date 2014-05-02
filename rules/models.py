@@ -136,6 +136,15 @@ class Source(models.Model):
         # Get categories
         self.get_categories(tfile)
 
+    def diff(self):
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
+        if not os.path.isdir(source_git_dir):
+            # FIXME exit clean here
+            raise "You have to update source first"
+        repo = git.Repo(source_git_dir)
+        hcommit = repo.head.commit
+        return hcommit.diff('HEAD~1', create_patch = True)
+
 
     def export_files(self, directory, version):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), "rules")
