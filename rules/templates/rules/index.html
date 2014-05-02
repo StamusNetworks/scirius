@@ -24,3 +24,24 @@
 {% endif %}
 
 {% endblock %}
+
+{% block sidebar %}
+{% if suricata %}
+
+<h2>Suricata {{ suricata.name }}</h2>
+<ul>
+       <li><span class="type">Ruleset:</span> {{ suricata.ruleset }}</li>
+       <li><span class="type">Description:</span> {{ suricata.descr }}</li>
+       <li><span class="type">Last updated:</span> {{ suricata.updated_date }}</li>
+</ul>
+
+<h2 >Action</h2>
+<ul class="action">
+<li>
+<a href="/suricata/update">Update</a>
+</li>
+</ul>
+
+{% endif %}
+
+{% endblock %}

@@ -40,6 +40,13 @@ def index(request):
     source_list = Source.objects.all().order_by('-created_date')[:5]
     context = {'ruleset_list': ruleset_list,
                 'source_list': source_list}
+    try:
+        from suricata.models import Suricata
+        suricata = Suricata.objects.all()
+        if suricata != None:
+            context['suricata'] = suricata[0]
+    except:
+        pass
     return scirius_render(request, 'rules/index.html', context)
 
 def sources(request):
