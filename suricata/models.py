@@ -50,3 +50,10 @@ class Suricata(models.Model):
         rfile.close()
         # export files at version
         self.ruleset.export_files(self.output_directory)
+
+    def push(self):
+        # For now we just create a file asking for reload
+        # It will cause an external script to reload suricata rules
+        rfile = open(self.output_directory + "/" + "scirius.reload", 'w')
+        rfile.write(str(datetime.now()))
+        rfile.close()

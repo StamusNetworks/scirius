@@ -1,27 +1,44 @@
 {% extends "rules/base.html" %}
-
+{% load staticfiles %}
 
 {% block content %}
+
+<script language="JavaScript">
+
+function tables_checking(source) {
+    checkboxes = document.getElementsByClassName('action_selection');
+    for (var i in checkboxes) {
+        checkboxes[i].checked = source.checked;
+    }
+}
+
+function table_all_toggle(source) {
+    checkboxes = document.getElementsByName('check_all')[0];
+    if (source.checked == 0)
+        checkboxes.checked = 0;
+}
+
+</script>
+
 <h2 class="title">Suricata Ruleset Update</h2>
 {% if message %}
-<p>{{ message }}</p>
+{% for line in message %}
+<p>{{ line }}</p>
+{% endfor %}
 {% else %}
     {% if suri.updated_date %}
 <p>Suricata last updated at {{ suri.updated_date }}</p>
     {% endif %}
-<h3>Full upgrade</h3>
-<p>This will download latest sources and build ruleset.</p>
-<form action="/suricata/update" name="update" method="post">{% csrf_token %}
-{{ form.as_p }}
-<input type="submit" value="Update ruleset and build Suricata ruleset" />
-<input type="hidden" name="action" value="update" />
-</form>
-<h3>Build ruleset</h3>
-<p>This will only build ruleset.</p>
-<form action="/suricata/update" name="build" method="post">{% csrf_token %}
-{{ form.as_p }}
-<input type="hidden" name="action" value="build" />
-<input type="submit" value="Build Suricata ruleset" />
+<form action="/suricata/update" method="post">{% csrf_token %}
+<div id="update">
+<table class="update">
+<thead class="header"><th class="check"><input type="checkbox" name="check_all" onclick="tables_checking(this);" /></th><th>Action</th><th>Description</th></thead>
+<tr><td class="check"><input type="checkbox" name="reload" id="reload" class="action_selection" onclick="table_all_toggle(this);" /></td><td><img src="{% static "suricata/reload.png" %}"/></td><td>Update</td></tr>
+<tr><td class="check"><input type="checkbox" name="build" id="build" class="action_selection" onclick="table_all_toggle(this);" /></td><td><img src="{% static "suricata/build.png" %}"/></td><td>Build</td></tr>
+<tr><td class="check"><input type="checkbox" name="push" id="push" class="action_selection" onclick="table_all_toggle(this);" /></td><td><img src="{% static "suricata/push.png" %}"/></td><td>Push</td></tr>
+</table>
+<input type="submit" value="Apply" />
+</div>
 </form>
 {% endif %}
 {% endblock %}

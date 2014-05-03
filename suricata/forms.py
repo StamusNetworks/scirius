@@ -26,3 +26,8 @@ class SuricataForm(forms.ModelForm):
     class Meta:
         model = Suricata
         exclude = ('created_date', 'updated_date')
+
+class SuricataUpdateForm(forms.Form):
+    reload = forms.BooleanField(required=False)
+    build = forms.BooleanField(required=False)
+    push = forms.BooleanField(required=False)

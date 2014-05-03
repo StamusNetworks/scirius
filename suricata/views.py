@@ -107,14 +107,23 @@ def update(request):
         context = { 'creation': True , 'form': form}
         return scirius_render(request, 'suricata/edit.html', context)
     if request.method == 'POST':
-        message = ""
-        if request.POST['action'] == "update":
+        form = SuricataUpdateForm(request.POST)
+        if not form.is_valid():
+            return scirius_render(request, 'suricata/update.html', { 'suricata': suri, 'error': "Invalid form"})
+        message = []
+        if form.cleaned_data['reload']:
             suri.ruleset.update()
-            message += "Rule downloaded at %s. " % (suri.ruleset.updated_date)
-        suri.generate()
-        suri.updated_date = datetime.now()
-        suri.save()
-        message += "Successful ruleset build at " + str(suri.updated_date)
+            message.append("Rule downloaded at %s. " % (suri.ruleset.updated_date))
+        if form.cleaned_data['build']:
+            suri.generate()
+            suri.updated_date = datetime.now()
+            suri.save()
+            message.append("Successful ruleset build at " + str(suri.updated_date))
+        if form.cleaned_data['push']:
+            suri.push()
+            suri.updated_date = datetime.now()
+            suri.save()
+            message.append("Successful ruleset push at " + str(suri.updated_date))
         context =  { 'message': message, 'suricata': suri }
         return scirius_render(request, 'suricata/update.html', context)
     else:
