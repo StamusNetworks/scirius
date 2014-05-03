@@ -105,3 +105,45 @@ table.paleblue + ul.pagination > li > a {
 #logo img {
     padding-top: 10px;
 }
+
+table.update {
+    border-collapse: collapse;
+    margin: 20px;
+    width: 20em;
+}
+
+table.update tr {
+    border: solid 1px #AD9C9B;
+}
+
+table.update tr.header {
+    background-color: #7A1243;
+    font-weight: bold;
+    color: white;
+}
+
+table.update tr td, table.update tr th {
+    padding: 5px;
+}
+
+table.update td.action_selection {
+    text-align: center;
+    vertical-align:middle;
+}
+
+table.update tr td.check {
+    border: solid 1px #AD9C9B;
+}
+
+table.update thead th.check {
+    border: solid 1px #AD9C9B;
+}
+
+div#update {
+    width: 30em;
+}
+
+div#update input[type="submit"] {
+    text-align: right;
+    margin-top: 10px;
+}
