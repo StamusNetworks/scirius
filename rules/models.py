@@ -35,13 +35,13 @@ import shutil
 class Source(models.Model):
     FETCH_METHOD = (
         ('http', 'HTTP URL'),
-        ('https', 'HTTPS URL'),
-        ('local', 'Upload'),
+#        ('https', 'HTTPS URL'),
+#        ('local', 'Upload'),
     )
     CONTENT_TYPE = (
         ('sigs', 'Signature files'),
-        ('iprep', 'IP reputation files'),
-        ('other', 'Other content'),
+#        ('iprep', 'IP reputation files'),
+#        ('other', 'Other content'),
     )
     TMP_DIR = "/tmp/"
 
