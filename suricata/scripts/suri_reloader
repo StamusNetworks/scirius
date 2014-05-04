@@ -1,0 +1,79 @@
+#!/usr/bin/python
+"""
+Copyright(C) 2014, Stamus Networks
+Written by Eric Leblond <eleblond@stamus-networks.com>
+
+This file is part of Scirius.
+
+Scirius is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Scirius is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import pyinotify
+import argparse
+import subprocess
+import logging
+import os
+
+RELOAD_FILE = "scirius.reload"
+
+parser = argparse.ArgumentParser(description='Suricata reloader')
+parser.add_argument('-r', '--reload', default=False, action="store_true", help="If set reload Suricata instead of restarting")
+parser.add_argument('-p', '--path', default='/etc/suricata/rules', help='Directory to monitor for scirius.reload file')
+
+args = parser.parse_args()
+
+logging.basicConfig()
+
+def SuriReload(reload = False):
+    if reload:
+        if subprocess.call(['service', 'suricata', 'reload']):
+            logging.error("Unable to reload suricata")
+        else:
+            logging.info("Reloaded suricata")
+    else:
+        if subprocess.call(['service', 'suricata', 'restart']):
+            logging.error("Unable to restart suricata")
+        else:
+            logging.info("Restarted suricata")
+
+class EventHandler(pyinotify.ProcessEvent):
+    def process_IN_CLOSE_WRITE(self, event):
+        if not RELOAD_FILE in event.pathname:
+            return
+        SuriReload(self.reload)
+        os.unlink(event.pathname)
+
+    def set_mode(self, mode):
+        if mode == "reload":
+            self.reload = True
+        else:
+            self.reload = False
+
+reload_file = os.path.join(args.path, RELOAD_FILE)
+if os.path.isfile(reload_file):
+    SuriReload(args.reload)
+    os.unlink(reload_file)
+
+handler = EventHandler()
+if args.reload:
+    handler.set_mode("reload")
+else:
+    handler.set_mode("restart")
+
+wm = pyinotify.WatchManager()  # Watch Manager
+mask = pyinotify.IN_CLOSE_WRITE
+notifier = pyinotify.Notifier(wm, handler)
+wdd = wm.add_watch(args.path, mask, rec=True)
+
+notifier.loop()
