@@ -22,6 +22,7 @@ from django.db import models
 from datetime import datetime
 
 # Create your models here.
+import os
 
 from rules.models import Ruleset
 
@@ -54,6 +55,11 @@ class Suricata(models.Model):
     def push(self):
         # For now we just create a file asking for reload
         # It will cause an external script to reload suricata rules
-        rfile = open(self.output_directory + "/" + "scirius.reload", 'w')
+        reload_file = os.path.join(self.output_directory, "scirius.reload")
+        print reload_file
+        if os.path.isfile(reload_file):
+            return False
+        rfile = open(reload_file, 'w')
         rfile.write(str(datetime.now()))
         rfile.close()
+        return True

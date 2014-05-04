@@ -120,10 +120,13 @@ def update(request):
             suri.save()
             message.append("Successful ruleset build at " + str(suri.updated_date))
         if form.cleaned_data['push']:
-            suri.push()
+            ret = suri.push()
             suri.updated_date = datetime.now()
             suri.save()
-            message.append("Successful ruleset push at " + str(suri.updated_date))
+            if ret:
+                message.append("Successful asked ruleset reload at " + str(suri.updated_date))
+            else:
+                message.append("Suricata restart already asked.")
         context =  { 'message': message, 'suricata': suri }
         return scirius_render(request, 'suricata/update.html', context)
     else:
