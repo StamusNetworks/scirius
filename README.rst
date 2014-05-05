@@ -24,6 +24,22 @@ Installing Scirius
 Scirius is written in an application written in Django. You can install
 it like any other Django application.
 
+Dependencies
+~~~~~~~~~~~~
+
+Scirius is using the following Django modules:
+
+* tables2
+* south
+
+On debian, you can run ::
+
+ aptitude install python-django-tables2 python-django-south python-django
+
+
+Running Scirius
+~~~~~~~~~~~~~~~
+
 One of the easiest way to try Scirius is to run the Django test server ::
 
  python manage.py runserver
