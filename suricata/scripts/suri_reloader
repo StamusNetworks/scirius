@@ -25,15 +25,33 @@ import subprocess
 import logging
 import os
 
+have_daemon = True
+try:
+    import daemon
+except:
+    logging.warning("No daemon support available, install python-daemon if feature is needed")
+    have_daemon = False
+
 RELOAD_FILE = "scirius.reload"
 
 parser = argparse.ArgumentParser(description='Suricata reloader')
 parser.add_argument('-r', '--reload', default=False, action="store_true", help="If set reload Suricata instead of restarting")
 parser.add_argument('-p', '--path', default='/etc/suricata/rules', help='Directory to monitor for scirius.reload file')
+parser.add_argument('-l', '--log', default=None, help='File to log output to (default to stdout)')
+parser.add_argument('-v', '--verbose', default=False, action="count", help="Show verbose output, use multiple times increase verbosity")
+if have_daemon:
+    parser.add_argument('-D', '--daemon', default=False, action="store_true", help="Run as unix daemon")
 
 args = parser.parse_args()
 
-logging.basicConfig()
+if args.verbose >= 3:
+    loglevel=logging.DEBUG
+elif args.verbose >= 2:
+    loglevel=logging.INFO
+elif args.verbose >= 1:
+    loglevel=logging.WARNING
+else:
+    loglevel=logging.ERROR
 
 def SuriReload(reload = False):
     if reload:
@@ -60,20 +78,39 @@ class EventHandler(pyinotify.ProcessEvent):
         else:
             self.reload = False
 
-reload_file = os.path.join(args.path, RELOAD_FILE)
-if os.path.isfile(reload_file):
-    SuriReload(args.reload)
-    os.unlink(reload_file)
+def setup_logging(args):
+    if args.log:
+        logging.basicConfig(filename=args.log,
+                            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                            level=loglevel)
+    else:
+        logging.basicConfig(level=loglevel)
 
-handler = EventHandler()
-if args.reload:
-    handler.set_mode("reload")
+
+def main_task(args):
+    setup_logging(args)
+
+    reload_file = os.path.join(args.path, RELOAD_FILE)
+    if os.path.isfile(reload_file):
+        SuriReload(args.reload)
+        os.unlink(reload_file)
+
+
+    handler = EventHandler()
+    if args.reload:
+        handler.set_mode("reload")
+    else:
+        handler.set_mode("restart")
+
+    wm = pyinotify.WatchManager()  # Watch Manager
+    mask = pyinotify.IN_CLOSE_WRITE
+    notifier = pyinotify.Notifier(wm, handler)
+    wdd = wm.add_watch(args.path, mask, rec=True)
+    logging.info("Starting filesystem monitoring")
+    notifier.loop()
+
+if have_daemon and args.daemon:
+    with daemon.DaemonContext():
+        main_task(args)
 else:
-    handler.set_mode("restart")
-
-wm = pyinotify.WatchManager()  # Watch Manager
-mask = pyinotify.IN_CLOSE_WRITE
-notifier = pyinotify.Notifier(wm, handler)
-wdd = wm.add_watch(args.path, mask, rec=True)
-
-notifier.loop()
+    main_task(args)
