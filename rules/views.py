@@ -27,6 +27,7 @@ from scirius.utils import scirius_render, scirius_listing
 from rules.models import Ruleset, Source, Category, Rule
 
 import json
+import re
 
 from datetime import datetime
 from time import time
@@ -70,6 +71,12 @@ def category(request, cat_id):
     context = {'category': cat, 'rules': rules, 'object_path': category_path}
     return scirius_render(request, 'rules/category.html', context)
 
+class Reference:
+    def __init__(self, key, value):
+        self.value = value
+        self.key = key
+        self.url = None
+
 def rule(request, rule_id, key = 'pk'):
     if request.is_ajax():
         rule = get_object_or_404(Rule, sid=rule_id)
@@ -81,8 +88,10 @@ def rule(request, rule_id, key = 'pk'):
     else:
         rule = get_object_or_404(Rule, sid=rule_id)
     rule_path = [rule.category.source, rule.category]
-    references = rule.references.all()
-    for refer in references:
+
+    references = []
+    for ref in re.findall("reference:(\w+),(\S+);", rule.content):
+        refer = Reference(ref[0], ref[1])
         if refer.key == 'url':
             refer.url = "http://" + refer.value
         elif refer.key == 'cve':
@@ -90,6 +99,7 @@ def rule(request, rule_id, key = 'pk'):
             refer.key = refer.key.upper()
         elif refer.key == 'bugtraq':
             refer.url = "http://www.securityfocus.com/bid/" + refer.value
+        references.append(refer)
     context = {'rule': rule, 'references': references, 'object_path': rule_path}
     return scirius_render(request, 'rules/rule.html', context)
 

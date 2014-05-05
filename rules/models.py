@@ -204,6 +204,11 @@ class Category(models.Model):
         getmsg = re.compile("msg:\"(.*?)\"")
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.source.pk))
         rfile = open(os.path.join(source_git_dir, self.filename))
+
+        existing_rules_hash = {}
+        for rule in Rule.objects.all():
+            existing_rules_hash[rule.sid] = rule
+        rules_list = []
         for line in rfile.readlines():
             if line.startswith('#'):
                 continue
@@ -221,54 +226,40 @@ class Category(models.Model):
             else:
                 msg = match.groups()[0]
             # FIXME detect if nothing has changed to avoir rules reload
-            rule = Rule.objects.filter(sid = sid)
-            if rule:
+            if existing_rules_hash.has_key(int(sid)):
                 # FIXME update references if needed
-                if rule[0].rev > rev:
-                    rule[0].content = line
-                    rule[0].rev = rev
-                    if rule[0].category != self:
-                        rule[0].category = self
-                    rule[0].save()
+                rule = existing_rules_hash[int(sid)]
+                if rule.rev > rev:
+                    rule.content = line
+                    rule.rev = rev
+                    if rule.category != self:
+                        rule.category = self
+                    rule.save()
                 else:
-                    if rule[0].category != self:
-                        rule[0].category = self
-                        rule[0].save
+                    if rule.category != self:
+                        rule.category = self
+                        rule.save
             else:
-                rule = Rule.objects.create(category = self, sid = sid,
+                rule = Rule(category = self, sid = sid,
                                     rev = rev, content = line, msg = msg)
-                for ref in re.findall("reference:(\w+),(\S+);", line):
-                    # search if reference exists
-                    refer = Reference.objects.filter(key = ref[0], value = ref[1])
-                    if not refer:
-                        refer = Reference.objects.create(key = ref[0], value = ref[1])
-                        refer.save()
-                    else:
-                        refer = refer[0]
-                    # link rule with reference
-                    rule.references.add(refer)
-                rule.save()
+                rules_list.append(rule)
+        if len(rules_list):
+            for rule in rules_list:
+                print "%s\n" % (rule)
+                #rule.save()
+            Rule.objects.bulk_create(rules_list)
+
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
         return reverse('category', args=[str(self.id)])
 
-class Reference(models.Model):
-    key = models.CharField(max_length=100)
-    value = models.CharField(max_length=1000)
-
-    url = None
-
-    def __unicode__(self):
-        return str(self.key) + ":" + self.value
-
 class Rule(models.Model):
+    sid = models.IntegerField(primary_key=True)
     category = models.ForeignKey(Category)
     msg = models.CharField(max_length=1000)
     state = models.BooleanField(default=True)
-    sid = models.IntegerField(default=0, unique = True)
     rev = models.IntegerField(default=0)
     content = models.CharField(max_length=10000)
-    references = models.ManyToManyField(Reference, blank = True)
 
     hits = 0
 
