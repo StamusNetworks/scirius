@@ -32,7 +32,7 @@ class Suricata(models.Model):
     output_directory = models.CharField(max_length=400)
     created_date = models.DateTimeField('date created')
     updated_date = models.DateTimeField('date updated', blank = True)
-    ruleset = models.ForeignKey(Ruleset, blank = True)
+    ruleset = models.ForeignKey(Ruleset, blank = True, null = True)
 
     editable = True
 
