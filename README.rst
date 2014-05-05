@@ -12,7 +12,7 @@ It handles the rules file and update associated files.
     :alt: suricata update in scirius
     :align: center
 
-Scirius is developped by Stamus Networks and is available under the
+Scirius is developed by Stamus Networks and is available under the
 GNU GPLv3 license.
 
 Installation and setup
@@ -152,7 +152,7 @@ Add rule to suppressed list
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Use the search field to find the rule(s) you want to remove, you can use the SID or any other element in the signature. Scirius will search the entered text in the definition of signature and return you the list of rules.
-You will then be able to remove them by clicking on the check boxes and cliking on ``Add selected rules to suppressed list``.
+You will then be able to remove them by clicking on the check boxes and clicking on ``Add selected rules to suppressed list``.
 
 Remove rule from suppressed list
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
