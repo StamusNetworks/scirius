@@ -12,7 +12,7 @@ It handles the rules file and update associated files.
     :alt: suricata update in scirius
     :align: center
 
-Scirius is developed by Stamus Networks and is available under the
+Scirius is developed by `Stamus Networks <https://www.stamus-networks.com/>`_ and is available under the
 GNU GPLv3 license.
 
 Installation and setup
@@ -21,7 +21,7 @@ Installation and setup
 Installing Scirius
 ------------------
 
-Scirius is written in an application written in Django. You can install
+Scirius is written in an application written in `Django <https://www.djangoproject.com/>`_. You can install
 it like any other Django application.
 
 Dependencies
@@ -32,13 +32,22 @@ Scirius is using the following Django modules:
 * tables2
 * south
 
-On debian, you can run ::
+The easy way to install the dependencies is to use `pip <https://pypi.python.org/pypi/pip>`_:
 
- aptitude install python-django-tables2 python-django-south python-django
+On Debian, you can run ::
 
+ aptitude install python-pip
+
+You can then install django and the dependencies ::
+
+ pip install django django-tables2 South GitPython pyinotify daemon
 
 Running Scirius
 ~~~~~~~~~~~~~~~
+
+Get the source, then inside the source ::
+
+ python manage.py syncdb
 
 One of the easiest way to try Scirius is to run the Django test server ::
 
@@ -116,6 +125,11 @@ The format of the source has to follow some rules:
 
 * It must be a tar archive
 * All files must be under a ``rules`` directory
+
+For example, if you want to fetch ETOpen Ruleset, you can use:
+
+ - Name: ETOpen Ruleset
+ - URI: http://rules.emergingthreats.net/open/suricata-1.3/emerging.rules.tar.gz
 
 Updating Source
 ---------------
