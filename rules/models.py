@@ -99,7 +99,7 @@ class Source(models.Model):
         if not os.path.isdir(source_git_dir):
             if os.path.isfile(source_git_dir):
                 raise "git-sources is not a directory"
-            os.mkdir(source_git_dir)
+            os.makedirs(source_git_dir)
             repo = git.Repo.init(source_git_dir)
         else:
             try:
