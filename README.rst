@@ -46,6 +46,17 @@ your ``suricata.yaml`` file ::
  rule-files:
   - scirius.rules
 
+To interact with Scirius, you need to detect when ``/path/to/rules/scirius.reload`` file
+are created, initiate a reload or restart of Suricata when it is the case and delete the
+reload file once this is done.
+
+One possible way to do that is to use ``suri_reloader`` available in ``suricata/scripts``
+directory. The syntax of ``suri_reloader`` can be something similar to ::
+
+ suri_reloader -p /path/to/rules  -l /var/log/suri-reload.log  -D
+
+Use ``-h`` option to get the complete list of options.
+
 Link with Elasticsearch
 -----------------------
 
