@@ -79,7 +79,6 @@ class Source(models.Model):
                     category = Category.objects.create(source = self,
                                             name = name, created_date = datetime.now(),
                                             filename = member.name)
-                    category.save()
                     category.get_rules()
                 else:
                     category[0].get_rules()
@@ -132,7 +131,6 @@ class Source(models.Model):
         else:
             sversion = SourceAtVersion.objects.create(source = self, version = 'HEAD',
                                                     updated_date = self.updated_date, git_version = 'HEAD')
-            sversion.save()
         # Get categories
         self.get_categories(tfile)
 

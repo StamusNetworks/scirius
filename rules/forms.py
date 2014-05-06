@@ -41,7 +41,6 @@ class RulesetForm(forms.Form):
                     created_date = datetime.now(),
                     updated_date = datetime.now(),
                     )
-        ruleset.save()
         for source in self.cleaned_data['sources']:
             ruleset.sources.add(source)
         return ruleset

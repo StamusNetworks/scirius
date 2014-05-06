@@ -124,7 +124,6 @@ def add_source(request):
                         created_date = datetime.now(),
                         datatype = form.cleaned_data['datatype'],
                         )
-                source.save()
             except IntegrityError, error:
                 return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
             return redirect(source)
