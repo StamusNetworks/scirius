@@ -90,6 +90,7 @@ class Source(models.Model):
         f = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
         urllib.urlretrieve (self.uri, f.name)
         self.updated_date = datetime.now()
+        first_run = False
         # extract file
         if (not tarfile.is_tarfile(f.name)):
             raise "Invalid tar file"
@@ -100,6 +101,7 @@ class Source(models.Model):
                 raise "git-sources is not a directory"
             os.makedirs(source_git_dir)
             repo = git.Repo.init(source_git_dir)
+            first_run = True
         else:
             try:
                 shutil.rmtree(os.path.join(source_git_dir, "rules"))
@@ -114,7 +116,7 @@ class Source(models.Model):
                 raise "Suspect tar file contains a invalid name '%s'" % (member.name)
         tfile.extractall(path=source_git_dir)
         index = repo.index
-        if len(index.diff(None)):
+        if len(index.diff(None)) or first_run:
             index.add(["rules"])
             message =  'source version at %s' % (self.updated_date)
             index.commit(message)
