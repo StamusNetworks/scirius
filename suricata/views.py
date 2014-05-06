@@ -86,7 +86,6 @@ def edit(request):
                         updated_date = datetime.now(),
                         ruleset = form.cleaned_data['ruleset'],
                         )
-                suricata.save()
             except IntegrityError, error:
                 return scirius_render(request, 'suricata/edit.html', { 'form': form, 'error': error })
             return redirect(index)
