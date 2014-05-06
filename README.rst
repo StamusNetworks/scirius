@@ -24,6 +24,8 @@ Installing Scirius
 Scirius is an application written in `Django <https://www.djangoproject.com/>`_. You can install
 it like any other Django application.
 
+The following procedure has been tested on Debian Wheezy and Sid and Ubuntu LTS 12.04.
+
 Dependencies
 ~~~~~~~~~~~~
 
