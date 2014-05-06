@@ -53,7 +53,12 @@ One of the easiest way to try Scirius is to run the Django test server ::
 
  python manage.py runserver
 
-You can then connect to ``localhost:8000``
+You can then connect to ``localhost:8000``.
+
+If you need the application to listen to a reachable address, you can run
+something like ::
+
+ python manage.py runserver 192.168.1.1:8000
 
 Suricata setup
 --------------
@@ -92,8 +97,9 @@ about signatures displayed in the page showing information about Suricata:
     :alt: elasticsearch info in scirius
     :align: center
 
-To setup Elasticsearch connection, you can edit your settings.py or local_settings.py
-to enable or disable the feature or change elasticsearch address ::
+To setup Elasticsearch connection, you can edit ``settings.py`` or create a
+``local_settings.py`` file under ``scirius`` directory to enable or disable the
+feature or change Elasticsearch address ::
 
  USE_ELASTICSEARCH = True
  ELASTICSEARCH_ADDRESS = "127.0.0.1:9200"
