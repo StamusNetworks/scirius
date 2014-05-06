@@ -21,7 +21,7 @@ Installation and setup
 Installing Scirius
 ------------------
 
-Scirius is written in an application written in `Django <https://www.djangoproject.com/>`_. You can install
+Scirius is an application written in `Django <https://www.djangoproject.com/>`_. You can install
 it like any other Django application.
 
 Dependencies
@@ -85,7 +85,9 @@ directory. The syntax of ``suri_reloader`` can be something similar to ::
 
  suri_reloader -p /path/to/rules  -l /var/log/suri-reload.log  -D
 
-Use ``-h`` option to get the complete list of options.
+Use ``-h`` option to get the complete list of options. Please note that ``suri_reloaded``
+uses the ``service`` command to restart or reload Suricata. This means you need a init
+script to get it working.
 
 Link with Elasticsearch
 -----------------------
