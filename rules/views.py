@@ -132,6 +132,21 @@ def add_source(request):
 
     return scirius_render(request, 'rules/add_source.html', { 'form': form, })
 
+def edit_source(request, source_id):
+    source = get_object_or_404(Source, pk=source_id)
+
+    if request.method == 'POST': # If the form has been submitted...
+        form = SourceForm(request.POST, instance=source)
+        try:
+            form.save()
+            return redirect(source)
+        except ValueError:
+            pass
+    else:
+        form = SourceForm(instance = source)
+
+    return scirius_render(request, 'rules/add_source.html', { 'form': form, 'source': source})
+
 def rulesets(request):
     return scirius_listing(request, Ruleset, 'Rulesets')
 

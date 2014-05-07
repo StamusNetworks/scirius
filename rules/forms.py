@@ -22,11 +22,10 @@ from django import forms
 from rules.models import Ruleset, Source, Category, SourceAtVersion
 from datetime import datetime
 
-class SourceForm(forms.Form):
-    name = forms.CharField(max_length=100)
-    uri = forms.CharField(max_length=400)
-    method = forms.ChoiceField(Source.FETCH_METHOD)
-    datatype = forms.ChoiceField(Source.CONTENT_TYPE)
+class SourceForm(forms.ModelForm):
+    class Meta:
+        model = Source
+        exclude = ['created_date', 'updated_date']
 
 # Display choices of SourceAtVersion
 class RulesetForm(forms.Form):

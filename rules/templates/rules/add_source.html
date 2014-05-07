@@ -1,6 +1,10 @@
 {% extends "rules/base.html" %}
 {% block sidebar %}
+{% if source %}
+<h2>Edit Source '{{ source.name }}'</h2>
+{% else %}
 <h2>Add a Source</h2>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -10,7 +14,11 @@
 
 {% endif %}
 
+{% if source %}
+<form action="/rules/source/{{ source.pk }}/edit" method="post">{% csrf_token %}
+{% else %}
 <form action="/rules/source/add" method="post">{% csrf_token %}
+{% endif %}
 {{ form.as_p }}
 <input type="submit" value="Submit" />
 </form>
