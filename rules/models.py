@@ -85,22 +85,7 @@ class Source(models.Model):
                     category[0].get_rules()
                 # get rules in this category
 
-    def update(self):
-        if (self.method != 'http'):
-            raise FieldError("Currently unsupported method")
-        f = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
-        resp = urllib2.urlopen(self.uri)
-        if resp.code == 404:
-            raise IOError("File not found, please check URL")
-        elif not resp.code == 200:
-            raise IOError("Invalid response code %d for %" % (resp.code) )
-        CHUNK = 256 * 1024
-        while True:
-            chunk = resp.read(CHUNK)
-            if not chunk:
-                break
-            #print "One piece"
-            f.write(chunk)
+    def handle_rules_in_tar(self, f):
         self.updated_date = datetime.now()
         first_run = False
         # extract file
@@ -148,6 +133,27 @@ class Source(models.Model):
                                                     updated_date = self.updated_date, git_version = 'HEAD')
         # Get categories
         self.get_categories(tfile)
+
+    def update_http_ruleset(self, f):
+        resp = urllib2.urlopen(self.uri)
+        if resp.code == 404:
+            raise IOError("File not found, please check URL")
+        elif not resp.code == 200:
+            raise IOError("Invalid response code %d for %" % (resp.code) )
+        CHUNK = 256 * 1024
+        while True:
+            chunk = resp.read(CHUNK)
+            if not chunk:
+                break
+            #print "One piece"
+            f.write(chunk)
+
+    def update(self):
+        if (self.method != 'http'):
+            raise FieldError("Currently unsupported method")
+        f = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
+        self.update_http_ruleset(f)
+        self.handle_rules_in_tar(f)
 
     def diff(self):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
