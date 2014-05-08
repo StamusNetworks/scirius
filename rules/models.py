@@ -20,7 +20,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import models
 from django.conf import settings
-import urllib
+from django.core.exceptions import FieldError, SuspiciousOperation
+import urllib2
 import tempfile
 import tarfile
 import re
@@ -86,19 +87,30 @@ class Source(models.Model):
 
     def update(self):
         if (self.method != 'http'):
-            raise "Currently unsupported method"
+            raise FieldError("Currently unsupported method")
         f = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
-        urllib.urlretrieve (self.uri, f.name)
+        resp = urllib2.urlopen(self.uri)
+        if resp.code == 404:
+            raise IOError("File not found, please check URL")
+        elif not resp.code == 200:
+            raise IOError("Invalid response code %d for %" % (resp.code) )
+        CHUNK = 256 * 1024
+        while True:
+            chunk = resp.read(CHUNK)
+            if not chunk:
+                break
+            #print "One piece"
+            f.write(chunk)
         self.updated_date = datetime.now()
         first_run = False
         # extract file
         if (not tarfile.is_tarfile(f.name)):
-            raise "Invalid tar file"
+            raise OSError("Invalid tar file")
         # check if git tree is in place
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         if not os.path.isdir(source_git_dir):
             if os.path.isfile(source_git_dir):
-                raise "git-sources is not a directory"
+                raise OSError("git-sources is not a directory")
             os.makedirs(source_git_dir)
             repo = git.Repo.init(source_git_dir)
             first_run = True
@@ -109,11 +121,12 @@ class Source(models.Model):
                 print("Can not delete directory")
                 pass
             repo = git.Repo(source_git_dir)
+        f.seek(0)
         tfile = tarfile.open(fileobj=f)
         # FIXME This test is only for rules archive
         for member in tfile.getmembers():
             if not member.name.startswith("rules"):
-                raise "Suspect tar file contains a invalid name '%s'" % (member.name)
+                raise SuspiciousOperation("Suspect tar file contains a invalid name '%s'" % (member.name))
         tfile.extractall(path=source_git_dir)
         index = repo.index
         if len(index.diff(None)) or first_run:
@@ -140,7 +153,7 @@ class Source(models.Model):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         if not os.path.isdir(source_git_dir):
             # FIXME exit clean here
-            raise "You have to update source first"
+            raise IOError("You have to update source first")
         repo = git.Repo(source_git_dir)
         hcommit = repo.head.commit
         return hcommit.diff('HEAD~1', create_patch = True)
