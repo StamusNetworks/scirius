@@ -53,11 +53,13 @@ def index(request):
 def sources(request):
     return scirius_listing(request, Source, 'Sources')
 
-def source(request, source_id):
+def source(request, source_id, error=None):
     source = get_object_or_404(Source, pk=source_id)
     cats = CategoryTable(Category.objects.filter(source = source))
     tables.RequestConfig(request).configure(cats)
     context = {'source': source, 'categories': cats}
+    if error:
+        context['error'] = error
     return scirius_render(request, 'rules/source.html', context)
 
 def categories(request):
@@ -104,9 +106,12 @@ def rule(request, rule_id, key = 'pk'):
     return scirius_render(request, 'rules/rule.html', context)
 
 def update_source(request, source_id):
-    source = get_object_or_404(Source, pk=source_id)
-    source.update()
-    return redirect(source)
+    src = get_object_or_404(Source, pk=source_id)
+    try:
+        src.update()
+    except IOError, errors:
+        return source(request, source_id, error="Can not fetch data: %s" % (errors))
+    return redirect(src)
 
 def diff_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
