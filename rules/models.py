@@ -248,10 +248,6 @@ class Category(models.Model):
                     if rule.category != self:
                         rule.category = self
                     rule.save()
-                else:
-                    if rule.category != self:
-                        rule.category = self
-                        rule.save
             else:
                 rule = Rule(category = self, sid = sid,
                                     rev = rev, content = line, msg = msg)
