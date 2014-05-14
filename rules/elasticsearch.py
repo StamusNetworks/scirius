@@ -92,7 +92,10 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0):
     # returned data is JSON
     data = json.loads(data)
     # total number of results
-    data = data['facets']['table']['terms']
+    try:
+        data = data['facets']['table']['terms']
+    except:
+        return None
     rules = []
     if data != None:
         for elt in data:
