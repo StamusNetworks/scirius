@@ -50,3 +50,7 @@ class RulesetEditForm(forms.Form):
 
 class RulesetCopyForm(forms.Form):
     name = forms.CharField(max_length=100)
+
+class RuleSuppressForm(forms.Form):
+    rulesets = Ruleset.objects.all()
+    ruleset = forms.ModelChoiceField(rulesets, empty_label=None)

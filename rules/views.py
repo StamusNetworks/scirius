@@ -105,6 +105,20 @@ def rule(request, rule_id, key = 'pk'):
     context = {'rule': rule, 'references': references, 'object_path': rule_path}
     return scirius_render(request, 'rules/rule.html', context)
 
+
+def suppress_rule(request, rule_id):
+    rule_object = get_object_or_404(Rule, sid=rule_id)
+    if request.method == 'POST': # If the form has been submitted...
+        form = RuleSuppressForm(request.POST)
+        if form.is_valid(): # All validation rules pass
+            ruleset = form.cleaned_data['ruleset']
+            ruleset.suppressed_rules.add(rule_object)
+            ruleset.save()
+        return redirect(rule_object)
+    form = RuleSuppressForm()
+    context = { 'rule': rule_object, 'form': form }
+    return scirius_render(request, 'rules/suppress_rule.html', context)
+
 def update_source(request, source_id):
     src = get_object_or_404(Source, pk=source_id)
     try:

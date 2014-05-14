@@ -281,6 +281,10 @@ class Rule(models.Model):
     def __unicode__(self):
         return str(self.sid) + ":" + self.msg
 
+    def get_absolute_url(self):
+        from django.core.urlresolvers import reverse
+        return reverse('rule', args=[str(self.sid)])
+
 # we should use django reversion to keep track of this one
 # even if fixing HEAD may be complicated
 class Ruleset(models.Model):
