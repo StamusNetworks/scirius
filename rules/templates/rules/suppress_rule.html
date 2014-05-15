@@ -6,7 +6,7 @@
 <div class="error">{{ error }}</div>
 {% endif %}
 
-<h4>Suppress {{ rule.sid }} from</h4>
+<h4>Suppress rule {{ rule.sid }} from</h4>
 <form action="/rules/rule/{{ rule.sid }}/suppress" method="post">{% csrf_token %}
 {{ form.as_p }}
 <input type="submit" value="Submit" />
