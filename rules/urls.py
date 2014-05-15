@@ -24,6 +24,7 @@ from rules import views
 
 urlpatterns = patterns('',
     url(r'^$', views.index, name='index'),
+    url(r'^about/$', views.about, name='about'),
     url(r'^source/$', views.sources, name='sources'),
     url(r'^source/add$', views.add_source, name='add_source'),
     url(r'^source/(?P<source_id>\d+)/$', views.source, name='source'),

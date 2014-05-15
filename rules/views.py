@@ -50,6 +50,17 @@ def index(request):
         pass
     return scirius_render(request, 'rules/index.html', context)
 
+def about(request):
+    context = {}
+    try:
+        from suricata.models import Suricata
+        suricata = Suricata.objects.all()
+        if suricata != None:
+            context['suricata'] = suricata[0]
+    except:
+        pass
+    return scirius_render(request, 'rules/about.html', context)
+
 def sources(request):
     return scirius_listing(request, Source, 'Sources')
 

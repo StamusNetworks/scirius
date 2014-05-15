@@ -65,6 +65,10 @@ body {
     background: #AD9CB9;
 }
 
+#menu li#li-about {
+    float: right;
+}
+
 .title {
     color: #7A1243;
 }
