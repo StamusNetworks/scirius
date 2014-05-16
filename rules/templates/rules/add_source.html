@@ -7,7 +7,29 @@
 {% endif %}
 {% endblock %}
 
+{% block body %}
+<body onload="hide_fields();" />
+{% endblock %}
+
 {% block content %}
+
+<script language="JavaScript">
+function display_field(method) {
+    if ($( this ).find("option:selected").text() == "HTTP URL") {
+        $("#id_uri").parent().show(duration=200);
+        $("#id_file").parent().hide(duration=200);
+    } else {
+        $("#id_uri").parent().hide(duration=200);
+        $("#id_file").parent().show(duration=200);
+    }
+}
+
+function hide_fields() {
+    $("#id_method").change(display_field);
+    $("#id_uri").parent().hide();
+    $("#id_file").parent().hide();
+}
+</script>
 
 {% if error %}
 <div class="error">{{ error }}</div>
