@@ -8,7 +8,11 @@
 {% endblock %}
 
 {% block body %}
+{% if source %}
+<body onload="select_fields();" />
+{% else %}
 <body onload="hide_fields();" />
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -28,6 +32,15 @@ function hide_fields() {
     $("#id_method").change(display_field);
     $("#id_uri").parent().hide();
     $("#id_file").parent().hide();
+}
+
+function select_fields() {
+    if ($("#id_method").find("option:selected").text() == "HTTP URL") {
+        $("#id_file").parent().hide();
+    } else {
+        $("#id_uri").parent().hide();
+    }
+    $("#id_method").change(display_field);
 }
 </script>
 
