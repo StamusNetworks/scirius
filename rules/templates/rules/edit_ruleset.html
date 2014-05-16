@@ -32,9 +32,7 @@
 
 <script language="JavaScript">
 function tables2_toggle(source, name) {
-    checkboxes = document.getElementsByName(name);
-    for(var i in checkboxes)
-        checkboxes[i].checked = source.checked;
+    $( source ).parents('table').find("input").prop('checked', source.checked)
 }
 
 function tables2_checking() {
@@ -55,23 +53,23 @@ Choose an operation in Action menu.
 {% if mode == 'categories' %}
 
 {% load render_table from django_tables2 %}
+<form action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
 {% for sourceatversion in sources %}
 <h2 class="title">Source: {{ sourceatversion }}</h2>
 <h4>Categories</h4>
 
-<form action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
     {% for key, value in categories_list.items  %}
         {% if key == sourceatversion.source.name %}
             {% render_table value %}
         {% endif %}
     {% endfor %}
-<p>
-<input type="hidden" name="source" value={{sourceatversion.id}}>
-<input type="submit" value="Update categories for {{sourceatversion}}" />
-</p>
-</form>
 
 {% endfor %}
+<p>
+<input type="submit" value="Update categories" />
+</p>
+<input type="hidden" name="source" value="source">
+</form>
 
 {% endif %}
 

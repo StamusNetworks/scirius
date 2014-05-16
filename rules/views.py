@@ -246,7 +246,6 @@ def edit_ruleset(request, ruleset_id):
         # check if this is a categories edit
         # ID is unique so we can just look by indice and add
         if request.POST.has_key('source'):
-            sourceat = get_object_or_404(SourceAtVersion, pk=request.POST['source'])
             # clean ruleset
             ruleset.categories.clear()
             # add updated entries

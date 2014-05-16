@@ -194,7 +194,6 @@ Edit Categories
 ~~~~~~~~~~~~~~~
 
 To select which Categories to use, just select them via the checkbox and click on ``Update categories``.
-Please note you must edit Categories for a single Source and click ``Update categories``.
 
 Add rule to suppressed list
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
