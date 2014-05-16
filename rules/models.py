@@ -49,9 +49,9 @@ class Source(models.Model):
     name = models.CharField(max_length=100, unique = True)
     created_date = models.DateTimeField('date created')
     updated_date = models.DateTimeField('date updated', blank = True, null = True)
-    uri = models.CharField(max_length=400)
     method = models.CharField(max_length=10, choices=FETCH_METHOD)
     datatype = models.CharField(max_length=10, choices=CONTENT_TYPE)
+    uri = models.CharField(max_length=400, blank = True, null = True)
 
     editable = True
     # git repo where we store the physical thing
@@ -65,6 +65,11 @@ class Source(models.Model):
     #    Use method to get new files and commit them
     #    Create a new SourceAtVersion when there is a real update
     #    In case of upload: simply propose user upload form
+
+    def __init__(self, *args, **kwargs):
+        models.Model.__init__(self, *args, **kwargs)
+        if (self.method == 'http'):
+            self.update_ruleset = self.update_ruleset_http
 
     def __unicode__(self):
         return self.name
@@ -134,25 +139,11 @@ class Source(models.Model):
         # Get categories
         self.get_categories(tfile)
 
-    def update_http_ruleset(self, f):
-        resp = urllib2.urlopen(self.uri)
-        if resp.code == 404:
-            raise IOError("File not found, please check URL")
-        elif not resp.code == 200:
-            raise IOError("Invalid response code %d for %" % (resp.code) )
-        CHUNK = 256 * 1024
-        while True:
-            chunk = resp.read(CHUNK)
-            if not chunk:
-                break
-            #print "One piece"
-            f.write(chunk)
-
     def update(self):
         if (self.method != 'http'):
             raise FieldError("Currently unsupported method")
         f = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
-        self.update_http_ruleset(f)
+        self.update_ruleset(f)
         self.handle_rules_in_tar(f)
 
     def diff(self):
@@ -184,6 +175,19 @@ class Source(models.Model):
         from django.core.urlresolvers import reverse
         return reverse('source', args=[str(self.id)])
 
+    def update_ruleset_http(self, f):
+        resp = urllib2.urlopen(self.uri)
+        if resp.code == 404:
+            raise IOError("File not found, please check URL")
+        elif not resp.code == 200:
+            raise IOError("Invalid response code %d for %" % (resp.code) )
+        CHUNK = 256 * 1024
+        while True:
+            chunk = resp.read(CHUNK)
+            if not chunk:
+                break
+            #print "One piece"
+            f.write(chunk)
 
 class SourceAtVersion(models.Model):
     source = models.ForeignKey(Source)
