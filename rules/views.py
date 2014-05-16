@@ -181,6 +181,15 @@ def edit_source(request, source_id):
 
     return scirius_render(request, 'rules/add_source.html', { 'form': form, 'source': source})
 
+def delete_source(request, source_id):
+    source = get_object_or_404(Source, pk=source_id)
+    if request.method == 'POST': # If the form has been submitted...
+        source.delete()
+        return redirect("/rules/source/")
+    else:
+        context = {'object': source, 'delfn': 'delete_source' }
+        return scirius_render(request, 'rules/delete.html', context)
+
 def rulesets(request):
     return scirius_listing(request, Ruleset, 'Rulesets')
 
