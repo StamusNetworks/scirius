@@ -15,9 +15,9 @@
 {% endif %}
 
 {% if source %}
-<form action="/rules/source/{{ source.pk }}/edit" method="post">{% csrf_token %}
+<form enctype="multipart/form-data" action="/rules/source/{{ source.pk }}/edit" method="post">{% csrf_token %}
 {% else %}
-<form action="/rules/source/add" method="post">{% csrf_token %}
+<form enctype="multipart/form-data" action="/rules/source/add" method="post">{% csrf_token %}
 {% endif %}
 {{ form.as_p }}
 <input type="submit" value="Submit" />

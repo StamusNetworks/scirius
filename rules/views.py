@@ -145,7 +145,7 @@ def diff_source(request, source_id):
 
 def add_source(request):
     if request.method == 'POST': # If the form has been submitted...
-        form = SourceForm(request.POST) # A form bound to the POST data
+        form = SourceForm(request.POST, request.FILES) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
             try:
                 source = Source.objects.create(name = form.cleaned_data['name'],
@@ -154,6 +154,8 @@ def add_source(request):
                         created_date = datetime.now(),
                         datatype = form.cleaned_data['datatype'],
                         )
+                if source.method == 'local' and request.FILES.has_key('file'):
+                    source.handle_uploaded_file(request.FILES['file'])
             except IntegrityError, error:
                 return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
             return redirect(source)
@@ -166,8 +168,10 @@ def edit_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
 
     if request.method == 'POST': # If the form has been submitted...
-        form = SourceForm(request.POST, instance=source)
+        form = SourceForm(request.POST, request.FILES, instance=source)
         try:
+            if source.method == 'local' and request.FILES.has_key('file'):
+                source.handle_uploaded_file(request.FILES['file'])
             form.save()
             return redirect(source)
         except ValueError:

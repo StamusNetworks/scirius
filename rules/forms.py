@@ -23,6 +23,7 @@ from rules.models import Ruleset, Source, Category, SourceAtVersion
 from datetime import datetime
 
 class SourceForm(forms.ModelForm):
+    file  = forms.FileField(required = False)
     class Meta:
         model = Source
         exclude = ['created_date', 'updated_date']

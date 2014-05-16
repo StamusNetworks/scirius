@@ -37,7 +37,7 @@ class Source(models.Model):
     FETCH_METHOD = (
         ('http', 'HTTP URL'),
 #        ('https', 'HTTPS URL'),
-#        ('local', 'Upload'),
+        ('local', 'Upload'),
     )
     CONTENT_TYPE = (
         ('sigs', 'Signature files'),
@@ -70,6 +70,8 @@ class Source(models.Model):
         models.Model.__init__(self, *args, **kwargs)
         if (self.method == 'http'):
             self.update_ruleset = self.update_ruleset_http
+        else:
+            self.update_ruleset = None
 
     def __unicode__(self):
         return self.name
@@ -140,11 +142,12 @@ class Source(models.Model):
         self.get_categories(tfile)
 
     def update(self):
-        if (self.method != 'http'):
+        if not self.method in ['http', 'local']:
             raise FieldError("Currently unsupported method")
-        f = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
-        self.update_ruleset(f)
-        self.handle_rules_in_tar(f)
+        if self.update_ruleset:
+            f = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
+            self.update_ruleset(f)
+            self.handle_rules_in_tar(f)
 
     def diff(self):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
@@ -188,6 +191,13 @@ class Source(models.Model):
                 break
             #print "One piece"
             f.write(chunk)
+
+    def handle_uploaded_file(self, f):
+        dest = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
+        for chunk in f.chunks():
+            dest.write(chunk)
+        dest.seek(0)
+        self.handle_rules_in_tar(dest)
 
 class SourceAtVersion(models.Model):
     source = models.ForeignKey(Source)
