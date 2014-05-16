@@ -273,9 +273,6 @@ class Category(models.Model):
                                     rev = rev, content = line, msg = msg)
                 rules_list.append(rule)
         if len(rules_list):
-            for rule in rules_list:
-                print "%s\n" % (rule)
-                #rule.save()
             Rule.objects.bulk_create(rules_list)
 
     def get_absolute_url(self):
