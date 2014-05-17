@@ -1,4 +1,5 @@
 {% extends "rules/base.html" %}
+{% load staticfiles %}
 
 {% block body %}
 <body onload="differentiate_suppressed();" />
@@ -14,11 +15,30 @@ function differentiate_suppressed() {
             $( this ).addClass("suppressed")
     })
 }
+
+function toggle_settings(img) {
+    $("#setting_menu").toggle(duration=200)
+}
 </script>
 
 {% if rules %}
-<h2 class="title">Rules activity (last 24h)</h2>
-
+<div class="title">
+<h2 class="title">Rules activity (last {{ date }})</h2>
+<span class="settings">
+<img onclick="toggle_settings(this)" src="{% static 'rules/settings.png' %}" />
+<span id="setting_menu" onclick="toggle_settings(this)" >
+<ul>
+ <li>Display
+  <ul>
+   <li><a href="?duration=1">Last 1h</a></li>
+   <li><a href="?duration=6">Last 6h</a></li>
+   <li><a href="?duration=24">Last 24h</a></li>
+   <li><a href="?duration=168">Last 7d</a></li>
+ </ul>
+</ul>
+</span>
+</span>
+</div>
 {% load render_table from django_tables2 %}
 
 {% render_table rules %}

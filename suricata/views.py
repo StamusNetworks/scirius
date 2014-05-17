@@ -55,7 +55,15 @@ def index(request):
             context['suppressed'] = suppressed
 
         if settings.USE_ELASTICSEARCH:
-            from_date = int((time() - 86400) * 1000) # last 24 hours
+            duration = int(request.GET.get('duration', '24'))
+            if duration > 24 * 7:
+                duration = 24 * 7
+            from_date = int((time() - (duration * 3600)) * 1000) # last 24 hours
+            if duration <= 24:
+                date = str(duration) + "h"
+            else:
+                date = str(duration / 24) + "d"
+            context['date'] = date
             rules = es_get_rules_stats(request, suri.name, from_date=from_date)
             if rules:
                 context['rules'] = rules

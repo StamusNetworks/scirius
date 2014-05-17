@@ -179,3 +179,41 @@ h2 {
     font-size: 1.5em;
     font-weight: bold;
 }
+
+span.settings {
+    float: right;
+    margin-right: 5px;
+    margin-top: 15px;
+    position: relative;
+    z-index: 10;
+    color: black;
+}
+
+span.settings span#setting_menu {
+    display: none;
+    float: none;
+    position: absolute;
+    border: solid 1px;
+    background-color: #AD9C9B;
+    margin-top: 0px;
+    width: 100px;
+}
+
+span.settings span#setting_menu ul {
+    padding-left: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+    list-style-type: none;
+}
+
+span.settings span#setting_menu ul ul {
+    list-style-type: circle;
+}
+
+.title h2 {
+    float:left;
+}
+
+span.settings a {
+    color: black;
+}
