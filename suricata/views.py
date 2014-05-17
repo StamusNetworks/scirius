@@ -49,6 +49,10 @@ def index(request):
 
     if suri:
         context = {'suricata': suri}
+        supp_rules = list(suri.ruleset.suppressed_rules.all())
+        if len(supp_rules):
+            suppressed = ",".join([ str(x.sid) for x in supp_rules])
+            context['suppressed'] = suppressed
 
         if settings.USE_ELASTICSEARCH:
             from_date = int((time() - 86400) * 1000) # last 24 hours

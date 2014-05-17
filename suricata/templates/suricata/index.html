@@ -1,6 +1,23 @@
 {% extends "rules/base.html" %}
 
+{% block body %}
+<body onload="differentiate_suppressed();" />
+{% endblock %}
+
 {% block content %}
+
+<script language="JavaScript">
+function differentiate_suppressed() {
+    var arr = [{{ suppressed }}];
+    $(".sid").each(function() {
+        if (jQuery.inArray(parseInt($( this ).text(), 10), arr) != -1)
+            $( this ).addClass("suppressed")
+    })
+}
+</script>
+
+
+
 <h2 class="title">Suricata {{ suricata.name }}</h2>
 
 {% if rules %}
@@ -11,9 +28,7 @@
 {% render_table rules %}
 {% endif %}
 
-
 {% endblock %}
-
 
 {% block sidebar %}
 <h2>Suricata {{ suricata.name }}</h2>
