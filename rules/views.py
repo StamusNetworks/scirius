@@ -200,7 +200,7 @@ def ruleset(request, ruleset_id, mode = 'struct'):
         sources = ruleset.sources.all()
         for sourceatversion in sources:
             cats = CategoryTable(ruleset.categories.filter(source = sourceatversion.source))
-            tables.RequestConfig(request).configure(cats)
+            tables.RequestConfig(request,  paginate={"per_page": 15}).configure(cats)
             categories_list[sourceatversion.source.name] = cats
         rules = RuleTable(ruleset.suppressed_rules.all())
         tables.RequestConfig(request).configure(rules)
