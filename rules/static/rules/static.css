@@ -151,3 +151,7 @@ div#update input[type="submit"] {
     text-align: right;
     margin-top: 10px;
 }
+
+td.suppressed {
+    text-decoration: line-through;
+}
