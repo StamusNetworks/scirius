@@ -174,3 +174,8 @@ div#menu {
     height: 34px;
     width: 910px;
 }
+
+h2 {
+    font-size: 1.5em;
+    font-weight: bold;
+}
