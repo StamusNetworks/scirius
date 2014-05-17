@@ -155,3 +155,22 @@ div#update input[type="submit"] {
 td.suppressed {
     text-decoration: line-through;
 }
+
+#logo h1 {
+    font-size: 2em;
+    text-transform: none;
+    padding-left: 10px;
+    padding-top: 5px;
+}
+
+#logo img {
+    margin-left: 0px;
+    padding-top: 0px;
+}
+
+div#menu {
+    margin-left: 40px;
+    margin-top: 3px;
+    height: 34px;
+    width: 910px;
+}
