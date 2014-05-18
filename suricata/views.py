@@ -55,9 +55,13 @@ def index(request):
             context['suppressed'] = suppressed
 
         if settings.USE_ELASTICSEARCH:
-            duration = int(request.GET.get('duration', '24'))
-            if duration > 24 * 7:
-                duration = 24 * 7
+            if request.GET.__contains__('duration'):
+                duration = int(request.GET.get('duration', '24'))
+                if duration > 24 * 7:
+                    duration = 24 * 7
+                request.session['duration'] = duration
+            else:
+                duration = int(request.session.get('duration', '24'))
             from_date = int((time() - (duration * 3600)) * 1000) # last 24 hours
             if duration <= 24:
                 date = str(duration) + "h"
