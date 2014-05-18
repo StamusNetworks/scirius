@@ -233,3 +233,7 @@ span.settings span#setting_menu ul ul li:hover {
 span.settings a {
     color: white;
 }
+
+#sidebar ul {
+    margin-bottom: 10px;
+}
