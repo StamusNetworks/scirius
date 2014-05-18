@@ -25,6 +25,9 @@ div.error {
 
 #sidebar h2 {
     background: #AD9C9B;
+    box-shadow: 5px 5px 5px #bbbbbb;
+    border-radius: 4px;
+    margin-bottom: 10px;
 }
 
 div.detail {
@@ -59,6 +62,9 @@ body {
 
 #menu {
     background: #7A1243;
+
+    box-shadow: 5px 5px 5px #bbbbbb;
+    border-radius: 4px;
 }
 
 #menu a:hover {
@@ -169,10 +175,10 @@ td.suppressed {
 }
 
 div#menu {
-    margin-left: 40px;
+    margin-left: 45px;
     margin-top: 3px;
     height: 34px;
-    width: 910px;
+    width: 905px;
 }
 
 h2 {
