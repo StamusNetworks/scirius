@@ -1,6 +1,6 @@
 {% extends "rules/base.html" %}
 {% block sidebar %}
-       <h2><a href="/rules/ruleset/{{ ruleset.id }}/">{{ ruleset.name }}</a></h2>
+       <h2>{{ ruleset.name }}</h2>
 <ul>
 {% if ruleset.descr %}
        <li><span class="type">Description:</span> {{ ruleset.descr }}</li>
