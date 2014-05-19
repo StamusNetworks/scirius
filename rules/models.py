@@ -130,6 +130,7 @@ class Source(models.Model):
         if len(index.diff(None)) or first_run:
             index.add(["rules"])
             message =  'source version at %s' % (self.updated_date)
+            os.environ.set('USERNAME', 'scirius')
             index.commit(message)
 
         self.save()
