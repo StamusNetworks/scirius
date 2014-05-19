@@ -105,6 +105,10 @@ class Source(models.Model):
                 raise OSError("git-sources is not a directory")
             os.makedirs(source_git_dir)
             repo = git.Repo.init(source_git_dir)
+            config = repo.config_writer()
+            config.set_value("user", "email", "scirius@stamus-networks.com")
+            config.set_value("user", "name", "Scirius")
+            del(config)
             first_run = True
         else:
             try:
