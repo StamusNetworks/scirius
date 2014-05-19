@@ -96,6 +96,7 @@ class Source(models.Model):
         self.updated_date = datetime.now()
         first_run = False
         # extract file
+
         if (not tarfile.is_tarfile(f.name)):
             raise OSError("Invalid tar file")
         # check if git tree is in place
@@ -128,9 +129,9 @@ class Source(models.Model):
         tfile.extractall(path=source_git_dir)
         index = repo.index
         if len(index.diff(None)) or first_run:
+            os.environ['USERNAME'] = 'scirius'
             index.add(["rules"])
             message =  'source version at %s' % (self.updated_date)
-            os.environ.set('USERNAME', 'scirius')
             index.commit(message)
 
         self.save()
