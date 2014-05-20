@@ -147,7 +147,7 @@ The format of the source has to follow some rules:
 For example, if you want to fetch ETOpen Ruleset, you can use:
 
  - Name: ETOpen Ruleset
- - URI: http://rules.emergingthreats.net/open/suricata-1.3/emerging.rules.tar.gz
+ - URI: http://rules.emergingthreats.net/open/suricata/emerging.rules.tar.gz
 
 Updating Source
 ---------------
