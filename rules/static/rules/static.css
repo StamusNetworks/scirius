@@ -237,3 +237,36 @@ span.settings a {
 #sidebar ul {
     margin-bottom: 10px;
 }
+
+div#app_menu {
+    display: none;
+    background-color: #AD9C9B;
+    padding: 10px;
+    border-radius: 4px;
+    position: absolute;
+    margin-top: 5px;
+    z-index: 2;
+    box-shadow: 5px 5px 5px #999999;
+    border-radius: 4px;
+}
+
+div#app_menu ul {
+    padding-left: 0px;
+    list-style-type: none;
+    font-weight: bold;
+}
+
+
+div#app_menu ul ul {
+    padding-left: 20px;
+    list-style-type: circle;
+    font-weight: normal;
+}
+
+div#app_menu li a {
+    color: white;
+}
+
+div#app_menu ul ul li:hover {
+    background-color: #726767;
+}

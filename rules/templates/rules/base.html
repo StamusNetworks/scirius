@@ -8,6 +8,11 @@
     <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
     <title>{% block title %}Scirius Rule Management{% endblock %}</title>
     <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+    <script language="JavaScript">
+    function toggle_scirius_menu(img) {
+        $("#app_menu").toggle(duration=200)
+    }
+    </script>
 </head>
 
 {% block body %}
@@ -17,7 +22,21 @@
 	<!-- end #header -->
 
 		<div id="logo">
-			<a href="https://github.com/StamusNetworks/scirius"><img src="{% static 'rules/stamus.png' %}"/></a>
+			<img onclick="toggle_scirius_menu(this);" src="{% static 'rules/stamus.png' %}"/>
+            <div id="app_menu">
+                <ul>
+		{% if dashboards %}
+                <li><a href="{{kibana_url}}">Dashboards</a>
+                    <ul>
+                    {% for dashboard in dashboards %}
+                        <li><a href="{{kibana_url}}/#/dashboard/elasticsearch/{{dashboard}}">{{dashboard}}</a></li>
+                    {% endfor %}
+                    </ul>
+                </li>
+		{% endif %}
+                <li><a target="_blank" href="https://github.com/StamusNetworks/scirius">Scirius homepage</a></li>
+                </ul>
+            </div>
 		</div>
 	<div id="menu">
 		<ul>

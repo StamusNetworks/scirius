@@ -96,6 +96,9 @@ USE_ELASTICSEARCH = True
 #ELASTICSEARCH_ADDRESS = "127.0.0.1:9200"
 ELASTICSEARCH_ADDRESS = "localhost:9200"
 
+USE_KIBANA = True
+KIBANA_URL = "http://localhost:9292"
+
 GIT_SOURCES_BASE_DIRECTORY = os.path.join(BASE_DIR, 'git-sources/')
 
 # Ruleset generator framework
