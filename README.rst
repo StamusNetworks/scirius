@@ -144,10 +144,10 @@ The format of the source has to follow some rules:
 * It must be a tar archive
 * All files must be under a ``rules`` directory
 
-For example, if you want to fetch ETOpen Ruleset, you can use:
+For example, if you want to fetch ETOpen Ruleset for Suricata 2.0.1, you can use:
 
  - Name: ETOpen Ruleset
- - URI: http://rules.emergingthreats.net/open/suricata/emerging.rules.tar.gz
+ - URI: https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz
 
 Updating Source
 ---------------
