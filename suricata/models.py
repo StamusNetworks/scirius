@@ -56,7 +56,8 @@ class Suricata(models.Model):
         # For now we just create a file asking for reload
         # It will cause an external script to reload suricata rules
         reload_file = os.path.join(self.output_directory, "scirius.reload")
-        print reload_file
+        self.updated_date = datetime.now()
+        self.save()
         if os.path.isfile(reload_file):
             return False
         rfile = open(reload_file, 'w')
