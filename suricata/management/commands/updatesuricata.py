@@ -28,8 +28,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         suricata = Suricata.objects.all()[0]
-        suricata.ruleset.update()
+        try:
+            suricata.ruleset.update()
+        except Exception as detail:
+            self.stderr.write('Unable to update ruleset for suricata "%s": %s' %
+                                (suricata.name, detail))
         suricata.generate()
         suricata.push()
-        self.stdout.write('Successfully updated suricata "%s"' % suricata.name)
+        self.stdout.write('Successfully pushed ruleset to suricata "%s"' % suricata.name)
 
