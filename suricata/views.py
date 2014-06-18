@@ -30,6 +30,7 @@ from django.http import HttpResponse
 from scirius.utils import scirius_render
 
 from suricata.models import Suricata
+from rules.models import dependencies_check
 
 from forms import *
 
@@ -78,6 +79,9 @@ def index(request):
     else:
         form = SuricataForm()
         context = { 'creation': True , 'form': form}
+        missing = dependencies_check(Suricata)
+        if missing:
+            context['missing'] = missing
         return scirius_render(request, 'suricata/edit.html', context)
 
 
@@ -112,7 +116,7 @@ def edit(request):
             form = SuricataForm(instance = suri)
         else:
             form = SuricataForm()
-    return scirius_render(request, 'suricata/edit.html', { 'form': form })
+    return scirius_render(request, 'suricata/edit.html', { 'form': form, 'missing': missing })
 
 
 def update(request):

@@ -8,8 +8,15 @@
 <h2 class="title">Suricata edition</h2>
 {% endif %}
 
+{% if missing %}
+
+{{ missing }}
+
+{% else %}
 <form action="/suricata/edit" method="post">{% csrf_token %}
 {{ form.as_p }}
 <input type="submit" value="Submit" />
 </form>
+{% endif %}
+
 {% endblock %}
