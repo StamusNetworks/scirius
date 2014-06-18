@@ -386,7 +386,9 @@ def dependencies_check(obj):
 
     if obj == Ruleset:
         if len(Source.objects.all()) == 0:
-            return "You need first to create a source."
+            return "You need first to create and update a source."
+        if len(SourceAtVersion.objects.all()) == 0:
+            return "You need first to update existing source."
         return
 
     if len(Source.objects.all()) == 0:
