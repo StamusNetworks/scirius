@@ -379,3 +379,18 @@ class Ruleset(models.Model):
     def export_files(self, directory):
         for src in self.sources.all():
             src.export_files(directory)
+
+def dependencies_check(obj):
+    if obj == Source:
+        return
+
+    if obj == Ruleset:
+        if len(Source.objects.all()) == 0:
+            return "You need first to create a source."
+        return
+
+    if len(Source.objects.all()) == 0:
+            return "You need first to create a source and a ruleset."
+
+    if len(Ruleset.objects.all()) == 0:
+            return "You need first to create a ruleset."
