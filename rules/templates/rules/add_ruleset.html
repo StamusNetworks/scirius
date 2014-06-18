@@ -10,9 +10,15 @@
 
 {% endif %}
 
+{% if missing %}
+
+{{ missing }}
+
+{% else %}
 <form action="/rules/ruleset/add" method="post">{% csrf_token %}
 {{ form.as_p }}
 <input type="submit" value="Submit" />
 </form>
+{% endif %}
 
 {% endblock %}

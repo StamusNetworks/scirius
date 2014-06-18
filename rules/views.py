@@ -24,7 +24,7 @@ from django.db import IntegrityError
 
 from scirius.utils import scirius_render, scirius_listing
 
-from rules.models import Ruleset, Source, Category, Rule
+from rules.models import Ruleset, Source, Category, Rule, dependencies_check
 
 import json
 import re
@@ -220,6 +220,7 @@ def ruleset(request, ruleset_id, mode = 'struct'):
     return scirius_render(request, 'rules/ruleset.html', context)
 
 def add_ruleset(request):
+    context = {}
     if request.method == 'POST': # If the form has been submitted...
         form = RulesetForm(request.POST) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
@@ -232,8 +233,12 @@ def add_ruleset(request):
             return redirect(ruleset)
     else:
         form = RulesetForm() # An unbound form
+        missing = dependencies_check(Ruleset)
+        if missing:
+            context['missing'] = missing
+    context['form'] = form
 
-    return scirius_render(request, 'rules/add_ruleset.html', { 'form': form, })
+    return scirius_render(request, 'rules/add_ruleset.html', context)
 
 def update_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
