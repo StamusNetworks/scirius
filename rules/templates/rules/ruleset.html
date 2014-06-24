@@ -1,4 +1,5 @@
 {% extends "rules/base.html" %}
+
 {% block sidebar %}
        <h2>{{ ruleset.name }}</h2>
 <ul>
@@ -40,7 +41,7 @@
 
 {% block content %}
 
-<script>
+<script language="Javascript">
 $( 'document' ).ready(function() {
     $(".msg").click(function( event ) {
         if ($(this).find(".detail").length) {
