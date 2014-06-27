@@ -25,13 +25,15 @@
 			<img onclick="toggle_scirius_menu(this);" src="{% static 'rules/stamus.png' %}"/>
             <div id="app_menu">
                 <ul>
-		{% if dashboards %}
+		{% if kibana %}
                 <li><a href="{{kibana_url}}">Dashboards</a>
+		    {% if dashboards %}
                     <ul>
                     {% for dashboard in dashboards %}
                         <li><a href="{{kibana_url}}/#/dashboard/elasticsearch/{{dashboard}}">{{dashboard}}</a></li>
                     {% endfor %}
                     </ul>
+		    {% endif %}
                 </li>
 		{% endif %}
                 <li><a target="_blank" href="https://github.com/StamusNetworks/scirius">Scirius homepage</a></li>
