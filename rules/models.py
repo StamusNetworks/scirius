@@ -257,7 +257,10 @@ class Source(models.Model):
         for chunk in f.chunks():
             dest.write(chunk)
         dest.seek(0)
-        self.handle_rules_in_tar(dest)
+        if self.datatype == 'sigs':
+            self.handle_rules_in_tar(dest)
+        elif self.datatype == 'sig':
+            self.handle_rules_file(dest)
 
 class SourceAtVersion(models.Model):
     source = models.ForeignKey(Source)
