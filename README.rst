@@ -199,6 +199,12 @@ There is now different operations available in the ``Action`` menu
 * Add rule to suppressed list: if a rule is in this list then it will not be part of the generated Ruleset
 * Remove rule from suppressed list: this remove a rule from the previously mentioned list thus reenabling it in the Ruleset
 
+Edit Sources
+~~~~~~~~~~~~
+
+To select which Sources to use, just select them via the checkbox and click on ``Update sources``. Please
+note that selecting categories to enable is the next step in the process when you add a new source.
+
 Edit Categories
 ~~~~~~~~~~~~~~~
 
