@@ -116,6 +116,8 @@ def edit(request):
             form = SuricataForm(instance = suri)
         else:
             form = SuricataForm()
+    missing = dependencies_check(Suricata)
+
     return scirius_render(request, 'suricata/edit.html', { 'form': form, 'missing': missing })
 
 
