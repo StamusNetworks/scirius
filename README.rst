@@ -139,15 +139,23 @@ Creating Source
 To create a Source go to ``Sources -> Add`` (``Add`` being in the
 ``Actions`` menu in the sidebar). Then set the different fields and click ``Submit``.
 
-The format of the source has to follow some rules:
+A source of datatype ``Signatures files in tar archive`` has to follow some rules:
 
 * It must be a tar archive
 * All files must be under a ``rules`` directory
 
 For example, if you want to fetch ETOpen Ruleset for Suricata 2.0.1, you can use:
 
- - Name: ETOpen Ruleset
- - URI: https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz
+* Name: ETOpen Ruleset
+* URI: https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz
+
+A source of datatype ``Individual signature files`` has to be a single file containing
+signatures.
+
+For example, if you want to use SSL blacklist from abuse.ch, you can use:
+
+* Name: SSLBL abuse.ch
+* URI: https://sslbl.abuse.ch/blacklist/sslblacklist.rules
 
 Updating Source
 ---------------
@@ -186,6 +194,7 @@ You can then click on ``Edit`` in the ``Action`` menu in the sidebar.
 
 There is now different operations available in the ``Action`` menu
 
+* Edit sources: select which sources of signatures to use in the Ruleset
 * Edit categories: select which categories of signatures to use in the Ruleset
 * Add rule to suppressed list: if a rule is in this list then it will not be part of the generated Ruleset
 * Remove rule from suppressed list: this remove a rule from the previously mentioned list thus reenabling it in the Ruleset
