@@ -292,9 +292,9 @@ class Category(models.Model):
 
     def get_rules(self):
         # parse file
-        getsid = re.compile("sid:(\d+)")
-        getrev = re.compile("rev:(\d+)")
-        getmsg = re.compile("msg:\"(.*?)\"")
+        getsid = re.compile("sid *:(\d+)")
+        getrev = re.compile("rev *:(\d+)")
+        getmsg = re.compile("msg *:\"(.*?)\"")
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.source.pk))
         rfile = open(os.path.join(source_git_dir, self.filename))
 
