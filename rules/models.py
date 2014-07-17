@@ -93,12 +93,12 @@ class Source(models.Model):
                 # get rules in this category
 
     def handle_rules_in_tar(self, f):
-        self.updated_date = datetime.now()
-        first_run = False
-        # extract file
-
         if (not tarfile.is_tarfile(f.name)):
             raise OSError("Invalid tar file")
+
+        self.updated_date = datetime.now()
+        first_run = False
+
         # check if git tree is in place
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         if not os.path.isdir(source_git_dir):
@@ -121,6 +121,7 @@ class Source(models.Model):
                 pass
             repo = git.Repo(source_git_dir)
         f.seek(0)
+        # extract file
         tfile = tarfile.open(fileobj=f)
         # FIXME This test is only for rules archive
         for member in tfile.getmembers():
