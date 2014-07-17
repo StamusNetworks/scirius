@@ -174,6 +174,7 @@ class Source(models.Model):
         if not os.path.isdir(rules_dir):
             os.makedirs(rules_dir)
         # copy file content to target
+        f.seek(0)
         os.fsync(f)
         shutil.copy(f.name, os.path.join(rules_dir, 'sigs.rules'))
 
@@ -249,7 +250,6 @@ class Source(models.Model):
             chunk = resp.read(CHUNK)
             if not chunk:
                 break
-            #print "One piece"
             f.write(chunk)
 
     def handle_uploaded_file(self, f):
