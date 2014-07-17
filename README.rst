@@ -219,7 +219,7 @@ You will then be able to remove them by clicking on the check boxes and clicking
 Remove rule from suppressed list
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TO remove rules from suppressed list, simply check them in the array and click on ``Remove select rules from suppressed list``.
+To remove rules from suppressed list, simply check them in the array and click on ``Remove select rules from suppressed list``.
 
 Updating Suricata ruleset
 -------------------------
