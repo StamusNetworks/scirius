@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from rules.models import Ruleset, Source, Category, Rule
+from rules.models import Ruleset, Source, Category, Rule, SourceAtVersion
 import django_tables2 as tables
 
 class DefaultMeta:
@@ -35,6 +35,16 @@ class ExtendedRuleTable(tables.Table):
     class Meta(DefaultMeta):
         model = Rule
         fields = ("sid", "msg", "category", "hits")
+
+class EditSourceAtVersionTable(tables.Table):
+    source_selection = tables.CheckBoxColumn(accessor="pk", attrs = { "th__input":
+                                        {"onclick": "tables2_toggle(this, 'source_selection')"},
+                                        },
+                                        orderable=False)
+    name = tables.LinkColumn('source', args=[tables.A('pk')])
+    class Meta(DefaultMeta):
+        model = SourceAtVersion
+        fields = ("source_selection", "name", "created_date")
 
 class CategoryTable(tables.Table):
     name = tables.LinkColumn('category', args=[tables.A('pk')])

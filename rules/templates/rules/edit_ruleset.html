@@ -13,6 +13,9 @@
 <h2>Action</h2>
 <ul class="action">
 <li>
+<a href="/rules/ruleset/{{ ruleset.id }}/edit?mode=sources">Edit sources</a>
+</li>
+<li>
 <a href="/rules/ruleset/{{ ruleset.id }}/edit?mode=categories">Edit categories</a>
 </li>
 <li>
@@ -35,6 +38,19 @@ function tables2_toggle(source, name) {
     $( source ).parents('table').find("input").prop('checked', source.checked)
 }
 
+{% if mode == 'sources' %}
+
+function tables2_checking() {
+    var arr = {{ sources_selection }};
+    checkboxes = document.getElementsByName('source_selection');
+    for (var i in checkboxes) {
+        if  (arr.indexOf(parseInt(checkboxes[i].value)) > -1) {
+            checkboxes[i].checked = 1;
+        }
+    }
+}
+{% else %}
+
 function tables2_checking() {
     var arr = [{{ cats_selection }}];
     checkboxes = document.getElementsByName('category_selection');
@@ -44,10 +60,25 @@ function tables2_checking() {
         }
     }
 }
+
+{% endif %}
+
 </script>
 
 {% if not mode %}
 Choose an operation in Action menu.
+{% endif %}
+
+{% if mode == 'sources' %}
+{% load render_table from django_tables2 %}
+<h2 class="title">Suppressed rules</h2>
+
+<form action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
+{% render_table sources_list %}
+<input type="hidden" name="sources" value="sources">
+<input type="submit" value="Update sources" />
+</form>
+
 {% endif %}
 
 {% if mode == 'categories' %}
@@ -68,7 +99,7 @@ Choose an operation in Action menu.
 <p>
 <input type="submit" value="Update categories" />
 </p>
-<input type="hidden" name="source" value="source">
+<input type="hidden" name="category" value="category">
 </form>
 
 {% endif %}

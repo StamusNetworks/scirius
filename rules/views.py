@@ -250,7 +250,7 @@ def edit_ruleset(request, ruleset_id):
     if request.method == 'POST': # If the form has been submitted...
         # check if this is a categories edit
         # ID is unique so we can just look by indice and add
-        if request.POST.has_key('source'):
+        if request.POST.has_key('category'):
             # clean ruleset
             ruleset.categories.clear()
             # add updated entries
@@ -263,7 +263,14 @@ def edit_ruleset(request, ruleset_id):
                 rule_object = get_object_or_404(Rule, pk=rule)
                 ruleset.suppressed_rules.remove(rule_object)
             ruleset.save()
-
+        elif request.POST.has_key('sources'):
+            # clean ruleset
+            ruleset.sources.clear()
+            # add updated entries
+            for src in request.POST.getlist('source_selection'):
+                source = get_object_or_404(SourceAtVersion, pk=src)
+                ruleset.sources.add(source)
+            ruleset.save()
         return redirect(ruleset)
     else:
         cats_selection = []
@@ -280,9 +287,19 @@ def edit_ruleset(request, ruleset_id):
             categories_list[sourceatversion.source.name] = cats
         rules = EditRuleTable(ruleset.suppressed_rules.all())
         tables.RequestConfig(request, paginate = False).configure(rules)
-        context = {'ruleset': ruleset, 'categories_list': categories_list, 'sources': sources, 'rules': rules, 'cats_selection': ", ".join(cats_selection) }
+
+        context = {'ruleset': ruleset,  'categories_list': categories_list, 'sources': sources, 'rules': rules, 'cats_selection': ", ".join(cats_selection) }
         if request.GET.has_key('mode'):
                 context['mode'] = request.GET['mode']
+                if context['mode'] == 'sources':
+                    all_sources = SourceAtVersion.objects.all()
+                    sources_selection = []
+                    for source in sources:
+                        sources_selection.append(source.pk)
+                    sources_list = EditSourceAtVersionTable(all_sources)
+                    tables.RequestConfig(request, paginate = False).configure(sources_list)
+                    context['sources_list'] = sources_list
+                    context['sources_selection'] = sources_selection
         return scirius_render(request, 'rules/edit_ruleset.html', context)
 
 def ruleset_add_supprule(request, ruleset_id):
