@@ -40,7 +40,8 @@ class Source(models.Model):
         ('local', 'Upload'),
     )
     CONTENT_TYPE = (
-        ('sigs', 'Signature files'),
+        ('sigs', 'Signatures files in tar archive'),
+        ('sig', 'Individual Signatures file'),
 #        ('iprep', 'IP reputation files'),
 #        ('other', 'Other content'),
     )
@@ -72,6 +73,7 @@ class Source(models.Model):
             self.update_ruleset = self.update_ruleset_http
         else:
             self.update_ruleset = None
+        self.first_run = False
 
     def __unicode__(self):
         return self.name
@@ -92,13 +94,7 @@ class Source(models.Model):
                     category[0].get_rules()
                 # get rules in this category
 
-    def handle_rules_in_tar(self, f):
-        if (not tarfile.is_tarfile(f.name)):
-            raise OSError("Invalid tar file")
-
-        self.updated_date = datetime.now()
-        first_run = False
-
+    def get_git_repo(self):
         # check if git tree is in place
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         if not os.path.isdir(source_git_dir):
@@ -112,7 +108,7 @@ class Source(models.Model):
             del(config)
             del(repo)
             repo = git.Repo(source_git_dir)
-            first_run = True
+            self.first_run = True
         else:
             try:
                 shutil.rmtree(os.path.join(source_git_dir, "rules"))
@@ -120,6 +116,28 @@ class Source(models.Model):
                 print("Can not delete directory")
                 pass
             repo = git.Repo(source_git_dir)
+        return repo
+
+    def create_sourceatversion(self, version='HEAD'):
+        # look for SourceAtVersion with name and HEAD
+        # Update updated_date
+        sversions  = SourceAtVersion.objects.filter(source = self, version = version)
+        if sversions:
+            sversions[0].updated_date = self.updated_date
+            sversions[0].save()
+        else:
+            sversion = SourceAtVersion.objects.create(source = self, version = version,
+                                                    updated_date = self.updated_date, git_version = version)
+
+    def handle_rules_in_tar(self, f):
+        if (not tarfile.is_tarfile(f.name)):
+            raise OSError("Invalid tar file")
+
+        self.updated_date = datetime.now()
+        self.first_run = False
+
+        repo = self.get_git_repo()
+
         f.seek(0)
         # extract file
         tfile = tarfile.open(fileobj=f)
@@ -127,9 +145,11 @@ class Source(models.Model):
         for member in tfile.getmembers():
             if not member.name.startswith("rules"):
                 raise SuspiciousOperation("Suspect tar file contains a invalid name '%s'" % (member.name))
+
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         tfile.extractall(path=source_git_dir)
         index = repo.index
-        if len(index.diff(None)) or first_run:
+        if len(index.diff(None)) or self.first_run:
             os.environ['USERNAME'] = 'scirius'
             index.add(["rules"])
             message =  'source version at %s' % (self.updated_date)
@@ -138,17 +158,45 @@ class Source(models.Model):
         self.save()
         # Now we must update SourceAtVersion for this source
         # or create it if needed
-        # look for SourceAtVersion with name and HEAD
-        # Update updated_date
-        sversions  = SourceAtVersion.objects.filter(source = self, version = 'HEAD')
-        if sversions:
-            sversions[0].updated_date = self.updated_date
-            sversions[0].save()
-        else:
-            sversion = SourceAtVersion.objects.create(source = self, version = 'HEAD',
-                                                    updated_date = self.updated_date, git_version = 'HEAD')
+        self.create_sourceatversion()
         # Get categories
         self.get_categories(tfile)
+
+    def handle_rules_file(self, f):
+
+        self.updated_date = datetime.now()
+        self.first_run = False
+
+        repo = self.get_git_repo()
+
+        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
+        # create rules dir if needed
+        if not os.path.isdir(rules_dir):
+            os.makedirs(rules_dir)
+        # copy file content to target
+        os.fsync(f)
+        shutil.copy(f.name, os.path.join(rules_dir, 'sigs.rules'))
+
+        index = repo.index
+        if len(index.diff(None)) or self.first_run:
+            os.environ['USERNAME'] = 'scirius'
+            index.add(["rules"])
+            message =  'source version at %s' % (self.updated_date)
+            index.commit(message)
+
+        self.save()
+        # Now we must update SourceAtVersion for this source
+        # or create it if needed
+        self.create_sourceatversion()
+        # category based on filename
+        category = Category.objects.filter(source = self, name = '%s Sigs' % (self.name))
+        if not category:
+            category = Category.objects.create(source = self,
+                                    name = '%s Sigs' % (self.name), created_date = datetime.now(),
+                                    filename = os.path.join('rules', 'sigs.rules'))
+            category.get_rules()
+        else:
+            category[0].get_rules()
 
     def update(self):
         if not self.method in ['http', 'local']:
@@ -156,7 +204,10 @@ class Source(models.Model):
         if self.update_ruleset:
             f = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
             self.update_ruleset(f)
-            self.handle_rules_in_tar(f)
+            if self.datatype == 'sigs':
+                self.handle_rules_in_tar(f)
+            elif self.datatype == 'sig':
+                self.handle_rules_file(f)
 
     def diff(self):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
