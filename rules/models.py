@@ -75,6 +75,17 @@ class Source(models.Model):
             self.update_ruleset = None
         self.first_run = False
 
+    def delete(self):
+        # delete git tree
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
+        try:
+            shutil.rmtree(source_git_dir)
+        # Ignore error if not present
+        except OSError:
+            pass
+        # delete model
+        models.Model.delete(self)
+
     def __unicode__(self):
         return self.name
 
