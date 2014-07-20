@@ -336,7 +336,7 @@ class Category(models.Model):
             if existing_rules_hash.has_key(int(sid)):
                 # FIXME update references if needed
                 rule = existing_rules_hash[int(sid)]
-                if rule.rev > rev:
+                if rule.rev < rev:
                     rule.content = line
                     rule.rev = rev
                     if rule.category != self:
