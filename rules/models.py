@@ -328,7 +328,7 @@ class Category(models.Model):
                 match = getrev.search(line)
                 if not match:
                     continue
-                rev = match.groups()[0]
+                rev = int(match.groups()[0])
                 match = getmsg.search(line)
                 if not match:
                     msg = ""
