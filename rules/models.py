@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import FieldError, SuspiciousOperation
+from django.db import transaction
 import urllib2
 import tempfile
 import tarfile
@@ -316,38 +317,39 @@ class Category(models.Model):
         for rule in Rule.objects.all():
             existing_rules_hash[rule.sid] = rule
         rules_list = []
-        for line in rfile.readlines():
-            if line.startswith('#'):
-                continue
-            match = getsid.search(line)
-            if not match:
-                continue
-            sid = match.groups()[0]
-            match = getrev.search(line)
-            if not match:
-                continue
-            rev = match.groups()[0]
-            match = getmsg.search(line)
-            if not match:
-                msg = ""
-            else:
-                msg = match.groups()[0]
-            # FIXME detect if nothing has changed to avoir rules reload
-            if existing_rules_hash.has_key(int(sid)):
-                # FIXME update references if needed
-                rule = existing_rules_hash[int(sid)]
-                if rule.rev < rev:
-                    rule.content = line
-                    rule.rev = rev
-                    if rule.category != self:
-                        rule.category = self
-                    rule.save()
-            else:
-                rule = Rule(category = self, sid = sid,
-                                    rev = rev, content = line, msg = msg)
-                rules_list.append(rule)
-        if len(rules_list):
-            Rule.objects.bulk_create(rules_list)
+        with transaction.atomic():
+            for line in rfile.readlines():
+                if line.startswith('#'):
+                    continue
+                match = getsid.search(line)
+                if not match:
+                    continue
+                sid = match.groups()[0]
+                match = getrev.search(line)
+                if not match:
+                    continue
+                rev = match.groups()[0]
+                match = getmsg.search(line)
+                if not match:
+                    msg = ""
+                else:
+                    msg = match.groups()[0]
+                # FIXME detect if nothing has changed to avoir rules reload
+                if existing_rules_hash.has_key(int(sid)):
+                    # FIXME update references if needed
+                    rule = existing_rules_hash[int(sid)]
+                    if rule.rev < rev:
+                        rule.content = line
+                        rule.rev = rev
+                        if rule.category != self:
+                            rule.category = self
+                        rule.save()
+                else:
+                    rule = Rule(category = self, sid = sid,
+                                        rev = rev, content = line, msg = msg)
+                    rules_list.append(rule)
+            if len(rules_list):
+                Rule.objects.bulk_create(rules_list)
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
