@@ -30,7 +30,7 @@ class Command(BaseCommand):
         (name, uri, method, datatype) = args
         if method not in ['http']:
             raise CommandError("Method '%s' is not supported" % (method))
-        if datatype not in ['sigs']:
+        if datatype not in ['sigs', 'sig']:
             raise CommandError("Data type '%s' is not supported" % (datatype))
         source = Source.objects.create(
             name = name,
