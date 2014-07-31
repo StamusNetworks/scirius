@@ -31,6 +31,7 @@ import sys
 import os
 import git
 import shutil
+import json
 
 # Create your models here.
 
@@ -75,6 +76,7 @@ class Source(models.Model):
         else:
             self.update_ruleset = None
         self.first_run = False
+        self.updated_rules = {"added": [], "deleted": [], "updated": []}
 
     def delete(self):
         # delete git tree
@@ -90,6 +92,11 @@ class Source(models.Model):
     def __unicode__(self):
         return self.name
 
+    def aggregate_update(self, update):
+        self.updated_rules["added"] = list(set(self.updated_rules["added"]).union(set(update["added"])))
+        self.updated_rules["deleted"] = list(set(self.updated_rules["deleted"]).union(set(update["deleted"])))
+        self.updated_rules["updated"] = list(set(self.updated_rules["updated"]).union(set(update["updated"])))
+
     def get_categories(self, tarfile):
         catname = re.compile("\/(.+)\.rules$")
         for member in tarfile.getmembers():
@@ -101,9 +108,9 @@ class Source(models.Model):
                     category = Category.objects.create(source = self,
                                             name = name, created_date = datetime.now(),
                                             filename = member.name)
-                    category.get_rules()
+                    category.get_rules(self)
                 else:
-                    category[0].get_rules()
+                    category[0].get_rules(self)
                 # get rules in this category
 
     def get_git_repo(self):
@@ -207,11 +214,40 @@ class Source(models.Model):
             category = Category.objects.create(source = self,
                                     name = '%s Sigs' % (self.name), created_date = datetime.now(),
                                     filename = os.path.join('rules', 'sigs.rules'))
-            category.get_rules()
+            category.get_rules(self)
         else:
-            category[0].get_rules()
+            category[0].get_rules(self)
+
+    def json_rules_list(self, rlist):
+        rules = []
+        for rule in rlist:
+            rules.append({"sid":rule.sid, "msg": rule.msg,
+                "content": rule.content, "category": rule.category.name,
+                "pk": rule.pk })
+        # for each rule we create a json object sid + msg + content
+        return rules
+
+    def create_update(self):
+        # for each set
+        update = {}
+        update["deleted"] = self.json_rules_list(self.updated_rules["deleted"])
+        update["added"] = self.json_rules_list(self.updated_rules["added"])
+        update["updated"] = self.json_rules_list(self.updated_rules["updated"])
+        repo = self.get_git_repo()
+        sha = repo.heads.master.log()[-1].newhexsha
+        SourceUpdate.objects.create(
+            source = self,
+            created_date = datetime.now(),
+            data = json.dumps(update),
+            version = sha,
+        )
 
     def update(self):
+        # look for categories list: if none, first import
+        categories = Category.objects.filter(source = self)
+        firstimport = False
+        if not categories:
+            firstimport = True
         if not self.method in ['http', 'local']:
             raise FieldError("Currently unsupported method")
         if self.update_ruleset:
@@ -221,6 +257,8 @@ class Source(models.Model):
                 self.handle_rules_in_tar(f)
             elif self.datatype == 'sig':
                 self.handle_rules_file(f)
+        if not firstimport:
+            self.create_update()
 
     def diff(self):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
@@ -292,6 +330,13 @@ class SourceAtVersion(models.Model):
 
     name = property(_get_name)
 
+class SourceUpdate(models.Model):
+    source = models.ForeignKey(Source)
+    created_date = models.DateTimeField('date of update', blank = True, default = datetime.now())
+    # Store update info as a JSON document
+    data = models.TextField()
+    version = models.CharField(max_length=42)
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
     filename = models.CharField(max_length=200)
@@ -305,18 +350,23 @@ class Category(models.Model):
     def __unicode__(self):
         return self.name
 
-    def get_rules(self):
+    def get_rules(self, source):
         # parse file
+        # return an object with updates
         getsid = re.compile("sid *:(\d+)")
         getrev = re.compile("rev *:(\d+)")
         getmsg = re.compile("msg *:\"(.*?)\"")
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.source.pk))
         rfile = open(os.path.join(source_git_dir, self.filename))
 
+        rules_update = {"added": [], "deleted": [], "updated": []}
+
         existing_rules_hash = {}
         for rule in Rule.objects.all():
             existing_rules_hash[rule.sid] = rule
         rules_list = []
+        for rule in Rule.objects.filter(category = self):
+            rules_list.append(rule)
         with transaction.atomic():
             for line in rfile.readlines():
                 if line.startswith('#'):
@@ -343,13 +393,18 @@ class Category(models.Model):
                         rule.rev = rev
                         if rule.category != self:
                             rule.category = self
+                        rules_update["updated"].append(rule)
                         rule.save()
                 else:
                     rule = Rule(category = self, sid = sid,
                                         rev = rev, content = line, msg = msg)
-                    rules_list.append(rule)
-            if len(rules_list):
-                Rule.objects.bulk_create(rules_list)
+                    rules_update["added"].append(rule)
+            if len(rules_update["added"]):
+                Rule.objects.bulk_create(rules_update["added"])
+            rules_update["deleted"] = list(set(rules_list) - set(rules_update["added"]).union(set(rules_update["updated"])))
+            for rule in rules_update["deleted"]:
+                rule.delete()
+            source.aggregate_update(rules_update)
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
