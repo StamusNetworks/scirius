@@ -11,7 +11,11 @@
 {% endif %}
 </ul>
 <h2 >Action</h2>
-<ul class="action"><li>
+<ul class="action">
+<li>
+<a href="/rules/source/{{ source.id }}/changelog">Changelog</a>
+</li>
+<li>
 <a href="/rules/source/{{ source.id }}/update">Update</a>
 </li>
 <li>
@@ -35,15 +39,22 @@ Updated at {{ source.updated_date }} !
 {% endif %}
 
 {% if diff %}
+<h3 class="title">Stats</h3>
 
-{% for file in diff %}
+Updated: {{ diff.stats.updated }} Deleted: {{ diff.stats.deleted }} Added: {{ diff.stats.added }}
 
-<h4>{{ file.a_blob.path }} </h4>
-{{ file.diff }}
+{% load render_table from django_tables2 %}
 
-{% endfor %}
+<h3 class="title">Added rules</h3>
+{% render_table diff.added %}
 
-{% else %}
+<h3 class="title">Deleted rules</h3>
+{% render_table diff.deleted %}
+
+<h3 class="title">Updated rules</h3>
+{% render_table diff.updated %}
+
+{% elif not error %}
 <h2 class="title">Categories</h2>
 
 {% load render_table from django_tables2 %}

@@ -24,7 +24,8 @@ from django.db import IntegrityError
 
 from scirius.utils import scirius_render, scirius_listing
 
-from rules.models import Ruleset, Source, Category, Rule, dependencies_check
+from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check
+from rules.tables import UpdateRuleTable
 
 import json
 import re
@@ -137,6 +138,22 @@ def update_source(request, source_id):
     except IOError, errors:
         return source(request, source_id, error="Can not fetch data: %s" % (errors))
     return redirect(src)
+
+def changelog_source(request, source_id):
+    source = get_object_or_404(Source, pk=source_id)
+    supdate = SourceUpdate.objects.filter(source = source).order_by('-created_date')
+    # get last for now 
+    if len(supdate) == 0:
+        return scirius_render(request, 'rules/source.html', { 'source': source, 'error': "No changelog" })
+    supdate = supdate[0]
+    data = json.loads(supdate.data)
+    diff = data
+    diff['stats'] = {'updated':len(data['updated']), 'added':len(data['added']), 'deleted':len(data['deleted'])}
+    diff['date'] = supdate.created_date
+    for field in ["added", "deleted", "updated"]:
+        diff[field] = UpdateRuleTable(diff[field])
+        tables.RequestConfig(request).configure(diff[field])
+    return scirius_render(request, 'rules/source.html', { 'source': source, 'diff': diff })
 
 def diff_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
