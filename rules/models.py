@@ -113,7 +113,7 @@ class Source(models.Model):
                     category[0].get_rules(self)
                 # get rules in this category
 
-    def get_git_repo(self):
+    def get_git_repo(self, delete = False):
         # check if git tree is in place
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         if not os.path.isdir(source_git_dir):
@@ -129,11 +129,12 @@ class Source(models.Model):
             repo = git.Repo(source_git_dir)
             self.first_run = True
         else:
-            try:
-                shutil.rmtree(os.path.join(source_git_dir, "rules"))
-            except OSError:
-                print("Can not delete directory")
-                pass
+            if delete:
+                try:
+                    shutil.rmtree(os.path.join(source_git_dir, "rules"))
+                except OSError:
+                    print("Can not delete directory")
+                    pass
             repo = git.Repo(source_git_dir)
         return repo
 
@@ -155,7 +156,7 @@ class Source(models.Model):
         self.updated_date = datetime.now()
         self.first_run = False
 
-        repo = self.get_git_repo()
+        repo = self.get_git_repo(delete = True)
 
         f.seek(0)
         # extract file
@@ -186,7 +187,7 @@ class Source(models.Model):
         self.updated_date = datetime.now()
         self.first_run = False
 
-        repo = self.get_git_repo()
+        repo = self.get_git_repo(delete = True)
 
         rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
         # create rules dir if needed
@@ -233,7 +234,7 @@ class Source(models.Model):
         update["deleted"] = self.json_rules_list(self.updated_rules["deleted"])
         update["added"] = self.json_rules_list(self.updated_rules["added"])
         update["updated"] = self.json_rules_list(self.updated_rules["updated"])
-        repo = self.get_git_repo()
+        repo = self.get_git_repo(delete = False)
         sha = repo.heads.master.log()[-1].newhexsha
         SourceUpdate.objects.create(
             source = self,
