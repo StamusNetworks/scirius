@@ -44,6 +44,10 @@ You can then install django and the dependencies ::
 
  pip install django django-tables2 South GitPython pyinotify daemon
 
+It has been reported that on some Debian system forcing a recent GitPython is required ::
+
+ pip install gitpython==0.3.1-beta2
+
 Running Scirius
 ~~~~~~~~~~~~~~~
 
