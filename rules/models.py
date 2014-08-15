@@ -223,7 +223,7 @@ class Source(models.Model):
         rules = []
         for rule in rlist:
             rules.append({"sid":rule.sid, "msg": rule.msg,
-                "content": rule.content, "category": rule.category.name,
+                "category": rule.category.name,
                 "pk": rule.pk })
         # for each rule we create a json object sid + msg + content
         return rules
