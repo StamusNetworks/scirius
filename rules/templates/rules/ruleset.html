@@ -99,17 +99,24 @@ Updated at {{ ruleset.updated_date }} !
 
 {% for key, cdiff in diff.items %}
 <h4>Category {{ key }}</h4>
+Added: {{ cdiff.stats.added }}
+Deleted: {{ cdiff.stats.deleted }} 
+Updated: {{ cdiff.stats.updated }} 
 
-Updated: {{ cdiff.stats.updated }} Deleted: {{ cdiff.stats.deleted }} Added: {{ cdiff.stats.added }}
-
+{% if cdiff.stats.added > 0 %}
 <h3 class="title">Added rules</h3>
 {% render_table cdiff.added %}
+{% endif %}
 
+{% if cdiff.stats.deleted > 0 %}
 <h3 class="title">Deleted rules</h3>
 {% render_table cdiff.deleted %}
+{% endif %}
 
+{% if cdiff.stats.updated > 0 %}
 <h3 class="title">Updated rules</h3>
 {% render_table cdiff.updated %}
+{% endif %}
 {% endfor %}
 {% endif %}
 

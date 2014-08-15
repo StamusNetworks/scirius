@@ -41,18 +41,26 @@ Updated at {{ source.updated_date }} !
 {% if diff %}
 <h3 class="title">Stats</h3>
 
-Updated: {{ diff.stats.updated }} Deleted: {{ diff.stats.deleted }} Added: {{ diff.stats.added }}
+Added: {{ diff.stats.added }}
+Deleted: {{ diff.stats.deleted }}
+Updated: {{ diff.stats.updated }} 
 
 {% load render_table from django_tables2 %}
 
+{% if diff.stats.added > 0 %} 
 <h3 class="title">Added rules</h3>
 {% render_table diff.added %}
+{% endif %}
 
+{% if diff.stats.deleted > 0 %} 
 <h3 class="title">Deleted rules</h3>
 {% render_table diff.deleted %}
+{% endif %}
 
+{% if diff.stats.updated > 0 %} 
 <h3 class="title">Updated rules</h3>
 {% render_table diff.updated %}
+{% endif %}
 
 {% elif not error %}
 <h2 class="title">Categories</h2>
