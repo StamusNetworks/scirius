@@ -261,7 +261,7 @@ def add_ruleset(request):
 def update_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
     ruleset.update()
-    return redirect(ruleset)
+    return redirect('changelog_ruleset', ruleset_id = ruleset_id)
 
 def changelog_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
