@@ -367,6 +367,7 @@ class Category(models.Model):
         rfile = open(os.path.join(source_git_dir, self.filename))
 
         rules_update = {"added": [], "deleted": [], "updated": []}
+        rules_unchanged = []
 
         existing_rules_hash = {}
         for rule in Rule.objects.all():
@@ -402,13 +403,17 @@ class Category(models.Model):
                             rule.category = self
                         rules_update["updated"].append(rule)
                         rule.save()
+                    else:
+                        rules_unchanged.append(rule)
                 else:
                     rule = Rule(category = self, sid = sid,
                                         rev = rev, content = line, msg = msg)
                     rules_update["added"].append(rule)
             if len(rules_update["added"]):
                 Rule.objects.bulk_create(rules_update["added"])
-            rules_update["deleted"] = list(set(rules_list) - set(rules_update["added"]).union(set(rules_update["updated"])))
+            rules_update["deleted"] = list(set(rules_list) -
+                                      set(rules_update["added"]).union(set(rules_update["updated"])) -
+                                      set(rules_unchanged))
             for rule in rules_update["deleted"]:
                 rule.delete()
             source.aggregate_update(rules_update)
