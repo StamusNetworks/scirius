@@ -137,7 +137,11 @@ def update_source(request, source_id):
         src.update()
     except IOError, errors:
         return source(request, source_id, error="Can not fetch data: %s" % (errors))
-    return redirect(src)
+
+    supdate = SourceUpdate.objects.filter(source = src).order_by('-created_date')
+    if len(supdate) == 0:
+        return redirect(src)
+    return redirect('changelog_source', source_id = source_id)
 
 def changelog_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
