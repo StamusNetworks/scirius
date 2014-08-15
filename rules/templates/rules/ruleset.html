@@ -104,17 +104,17 @@ Deleted: {{ cdiff.stats.deleted }}
 Updated: {{ cdiff.stats.updated }} 
 
 {% if cdiff.stats.added > 0 %}
-<h3 class="title">Added rules</h3>
+<h5 class="title">Added rules</h5>
 {% render_table cdiff.added %}
 {% endif %}
 
 {% if cdiff.stats.deleted > 0 %}
-<h3 class="title">Deleted rules</h3>
+<h5 class="title">Deleted rules</h5>
 {% render_table cdiff.deleted %}
 {% endif %}
 
 {% if cdiff.stats.updated > 0 %}
-<h3 class="title">Updated rules</h3>
+<h5 class="title">Updated rules</h5>
 {% render_table cdiff.updated %}
 {% endif %}
 {% endfor %}

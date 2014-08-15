@@ -48,17 +48,17 @@ Updated: {{ diff.stats.updated }}
 {% load render_table from django_tables2 %}
 
 {% if diff.stats.added > 0 %} 
-<h3 class="title">Added rules</h3>
+<h4 class="title">Added rules</h4>
 {% render_table diff.added %}
 {% endif %}
 
 {% if diff.stats.deleted > 0 %} 
-<h3 class="title">Deleted rules</h3>
+<h4 class="title">Deleted rules</h4>
 {% render_table diff.deleted %}
 {% endif %}
 
 {% if diff.stats.updated > 0 %} 
-<h3 class="title">Updated rules</h3>
+<h4 class="title">Updated rules</h4>
 {% render_table diff.updated %}
 {% endif %}
 
