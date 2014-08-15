@@ -14,6 +14,9 @@
 <h2 >Action</h2>
 <ul class="action">
 <li>
+<a href="/rules/ruleset/{{ ruleset.id }}/changelog">Changelog</a>
+</li>
+<li>
 <a href="/rules/ruleset/{{ ruleset.id }}/update">Update</a>
 </li>
 <li>
@@ -90,14 +93,36 @@ Updated at {{ ruleset.updated_date }} !
 
 {% endif %}
 
+{% if diff %}
+<h3 class="title">Stats</h3>
+{% load render_table from django_tables2 %}
+
+{% for key, cdiff in diff.items %}
+<h4>Category {{ key }}</h4>
+
+Updated: {{ cdiff.stats.updated }} Deleted: {{ cdiff.stats.deleted }} Added: {{ cdiff.stats.added }}
+
+<h3 class="title">Added rules</h3>
+{% render_table cdiff.added %}
+
+<h3 class="title">Deleted rules</h3>
+{% render_table cdiff.deleted %}
+
+<h3 class="title">Updated rules</h3>
+{% render_table cdiff.updated %}
+{% endfor %}
+{% endif %}
+
+
+
 {% if mode == 'struct' %}
 <h2 class="title">Suppressed rules</h2>
+{% render_table rules %}
 {% endif %}
 
 {% if mode  == 'display' %}
 <h2 class="title">Rules list</h2>
-{% endif %}
-
 {% render_table rules %}
+{% endif %}
 
 {% endblock %}

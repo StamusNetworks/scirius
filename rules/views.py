@@ -259,6 +259,18 @@ def update_ruleset(request, ruleset_id):
     ruleset.update()
     return redirect(ruleset)
 
+def changelog_ruleset(request, ruleset_id):
+    ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
+    diff = ruleset.diff()
+    for key in diff:
+        cdiff = diff[key]
+        for field in ["added", "deleted", "updated"]:
+            cdiff[field] = UpdateRuleTable(cdiff[field])
+            tables.RequestConfig(request).configure(cdiff[field])
+        print str(key) + ": " + str(cdiff)
+        diff[key] = cdiff
+    return scirius_render(request, 'rules/ruleset.html', { 'ruleset': ruleset, 'diff': diff })
+
 def edit_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
     if request.method == 'POST': # If the form has been submitted...
