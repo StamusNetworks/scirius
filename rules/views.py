@@ -146,10 +146,7 @@ def changelog_source(request, source_id):
     if len(supdate) == 0:
         return scirius_render(request, 'rules/source.html', { 'source': source, 'error': "No changelog" })
     supdate = supdate[0]
-    data = json.loads(supdate.data)
-    diff = data
-    diff['stats'] = {'updated':len(data['updated']), 'added':len(data['added']), 'deleted':len(data['deleted'])}
-    diff['date'] = supdate.created_date
+    diff = supdate.diff()
     for field in ["added", "deleted", "updated"]:
         diff[field] = UpdateRuleTable(diff[field])
         tables.RequestConfig(request).configure(diff[field])

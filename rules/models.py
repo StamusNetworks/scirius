@@ -270,7 +270,6 @@ class Source(models.Model):
         hcommit = repo.head.commit
         return hcommit.diff('HEAD~1', create_patch = True)
 
-
     def export_files(self, directory, version):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), "rules")
         repo = git.Repo(source_git_dir)
@@ -337,6 +336,13 @@ class SourceUpdate(models.Model):
     # Store update info as a JSON document
     data = models.TextField()
     version = models.CharField(max_length=42)
+
+    def diff(self):
+        data = json.loads(self.data)
+        diff = data
+        diff['stats'] = {'updated':len(data['updated']), 'added':len(data['added']), 'deleted':len(data['deleted'])}
+        diff['date'] = self.created_date
+        return diff
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
