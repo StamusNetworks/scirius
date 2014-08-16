@@ -515,18 +515,20 @@ class Ruleset(models.Model):
         for src in self.sources.all():
             src.export_files(directory)
 
-    def diff(self):
+    def diff(self, mode='long'):
         sourcesatversion = self.sources.all()
         sdiff = {}
         for sourceat in sourcesatversion:
             supdate = SourceUpdate.objects.filter(source = sourceat.source).order_by('-created_date')
             if len(supdate) > 0: 
                 srcdiff = supdate[0].diff()
-                # checking if update is void 
-                num = 0
-                for key in srcdiff['stats']:
-                    num = num + srcdiff['stats'][key]
-                if num > 0:
+                if mode == 'short':
+                    num = 0
+                    for key in srcdiff['stats']:
+                        num = num + srcdiff['stats'][key]
+                    if num > 0:
+                        sdiff[sourceat.name] = srcdiff
+                else:
                     sdiff[sourceat.name] = srcdiff
         return sdiff
 
