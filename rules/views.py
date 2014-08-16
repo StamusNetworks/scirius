@@ -271,7 +271,6 @@ def changelog_ruleset(request, ruleset_id):
         for field in ["added", "deleted", "updated"]:
             cdiff[field] = UpdateRuleTable(cdiff[field])
             tables.RequestConfig(request).configure(cdiff[field])
-        print str(key) + ": " + str(cdiff)
         diff[key] = cdiff
     return scirius_render(request, 'rules/ruleset.html', { 'ruleset': ruleset, 'diff': diff })
 
