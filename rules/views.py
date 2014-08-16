@@ -272,7 +272,7 @@ def changelog_ruleset(request, ruleset_id):
             cdiff[field] = UpdateRuleTable(cdiff[field])
             tables.RequestConfig(request).configure(cdiff[field])
         diff[key] = cdiff
-    return scirius_render(request, 'rules/ruleset.html', { 'ruleset': ruleset, 'diff': diff })
+    return scirius_render(request, 'rules/ruleset.html', { 'ruleset': ruleset, 'diff': diff, 'mode': 'changelog'})
 
 def edit_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)

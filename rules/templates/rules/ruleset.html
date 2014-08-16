@@ -93,8 +93,9 @@ Updated at {{ ruleset.updated_date }} !
 
 {% endif %}
 
-{% if diff %}
+{% if mode == 'changelog' or diff %}
 <h3 class="title">Stats</h3>
+{% if diff %}
 {% load render_table from django_tables2 %}
 
 {% for key, cdiff in diff.items %}
@@ -118,6 +119,9 @@ Updated: {{ cdiff.stats.updated }}
 {% render_table cdiff.updated %}
 {% endif %}
 {% endfor %}
+{% else %}
+<p>No change on last update</p>
+{% endif %}
 {% endif %}
 
 
