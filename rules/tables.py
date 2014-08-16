@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from rules.models import Ruleset, Source, Category, Rule, SourceAtVersion
+from rules.models import Ruleset, Source, Category, Rule, SourceAtVersion, SourceUpdate
 import django_tables2 as tables
 
 class DefaultMeta:
@@ -94,3 +94,9 @@ class SourceTable(tables.Table):
     class Meta(DefaultMeta):
         model = Source
         fields = ("name", "created_date", "updated_date")
+
+class SourceUpdateTable(tables.Table):
+    version = tables.LinkColumn('sourceupdate', args=[tables.A('pk')])
+    class Meta(DefaultMeta):
+        model = SourceUpdate
+        fields = ("version", "created_date")

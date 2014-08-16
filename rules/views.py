@@ -149,12 +149,13 @@ def changelog_source(request, source_id):
     # get last for now 
     if len(supdate) == 0:
         return scirius_render(request, 'rules/source.html', { 'source': source, 'error': "No changelog" })
-    supdate = supdate[0]
-    diff = supdate.diff()
+    changelogs = SourceUpdateTable(supdate)
+    tables.RequestConfig(request).configure(changelogs)
+    diff = supdate[0].diff()
     for field in ["added", "deleted", "updated"]:
         diff[field] = UpdateRuleTable(diff[field])
         tables.RequestConfig(request).configure(diff[field])
-    return scirius_render(request, 'rules/source.html', { 'source': source, 'diff': diff })
+    return scirius_render(request, 'rules/source.html', { 'source': source, 'diff': diff, 'changelogs': changelogs })
 
 def diff_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
@@ -207,6 +208,15 @@ def delete_source(request, source_id):
     else:
         context = {'object': source, 'delfn': 'delete_source' }
         return scirius_render(request, 'rules/delete.html', context)
+
+def sourceupdate(request, update_id):
+    sourceupdate = get_object_or_404(SourceUpdate, pk=update_id)
+    source = sourceupdate.source
+    diff = sourceupdate.diff()
+    for field in ["added", "deleted", "updated"]:
+        diff[field] = UpdateRuleTable(diff[field])
+        tables.RequestConfig(request).configure(diff[field])
+    return scirius_render(request, 'rules/source.html', { 'source': source, 'diff': diff })
 
 def rulesets(request):
     return scirius_listing(request, Ruleset, 'Rulesets')

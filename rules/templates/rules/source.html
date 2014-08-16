@@ -39,7 +39,7 @@ Updated at {{ source.updated_date }} !
 {% endif %}
 
 {% if diff %}
-<h3 class="title">Stats</h3>
+<h3 class="title">Changelog</h3>
 
 Added: {{ diff.stats.added }}
 Deleted: {{ diff.stats.deleted }}
@@ -60,6 +60,11 @@ Updated: {{ diff.stats.updated }}
 {% if diff.stats.updated > 0 %} 
 <h4 class="title">Updated rules</h4>
 {% render_table diff.updated %}
+{% endif %}
+
+{% if changelogs %}
+<h3 class="title">Previous changelog<h3>
+{% render_table changelogs %}
 {% endif %}
 
 {% elif not error %}
