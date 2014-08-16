@@ -241,6 +241,7 @@ class Source(models.Model):
             created_date = datetime.now(),
             data = json.dumps(update),
             version = sha,
+            changed = len(update["deleted"]) + len(update["added"]) + len(update["updated"]),
         )
 
     def update(self):
@@ -336,6 +337,7 @@ class SourceUpdate(models.Model):
     # Store update info as a JSON document
     data = models.TextField()
     version = models.CharField(max_length=42)
+    changed = models.IntegerField(default=0)
 
     def diff(self):
         data = json.loads(self.data)

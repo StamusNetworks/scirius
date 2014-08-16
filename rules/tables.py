@@ -99,4 +99,4 @@ class SourceUpdateTable(tables.Table):
     version = tables.LinkColumn('sourceupdate', args=[tables.A('pk')])
     class Meta(DefaultMeta):
         model = SourceUpdate
-        fields = ("version", "created_date")
+        fields = ("version", "created_date", "changed")
