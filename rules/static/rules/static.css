@@ -270,3 +270,7 @@ div#app_menu li a {
 div#app_menu ul ul li:hover {
     background-color: #726767;
 }
+
+.msg {
+    cursor: row-resize;
+}
