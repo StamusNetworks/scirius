@@ -15,7 +15,7 @@ $( 'document' ).ready(function() {
                         success: function(data) {
                             mylink = $('a').filter(function(index) { return $(this).text() == data.sid; });
                             mytd = mylink.parent().parent().find(".msg");
-                            mytd.append("<div class='detail'>" + data.content + "</div>");
+                            mytd.append("<div class='detail'>" + data.highlight_content + "</div>");
                             mytd.find(".detail").slideDown();
                         },
                 }

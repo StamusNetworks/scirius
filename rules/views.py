@@ -35,6 +35,7 @@ from time import time
 import django_tables2 as tables
 from tables import *
 from forms import *
+from suripyg import SuriHTMLFormat
 
 # Create your views here.
 def index(request):
@@ -94,7 +95,9 @@ class Reference:
 def rule(request, rule_id, key = 'pk'):
     if request.is_ajax():
         rule = get_object_or_404(Rule, sid=rule_id)
-        data = { 'msg': rule.msg, 'sid': rule.sid, 'content': rule.content}
+        rule.highlight_content = SuriHTMLFormat(rule.content)
+        data = { 'msg': rule.msg, 'sid': rule.sid, 'content': rule.content,
+                 'highlight_content': rule.highlight_content}
         return HttpResponse(json.dumps(data),
                             content_type="application/json")
     if key == 'pk':
@@ -103,6 +106,7 @@ def rule(request, rule_id, key = 'pk'):
         rule = get_object_or_404(Rule, sid=rule_id)
     rule_path = [rule.category.source, rule.category]
 
+    rule.highlight_content = SuriHTMLFormat(rule.content)
     references = []
     for ref in re.findall("reference:(\w+),(\S+);", rule.content):
         refer = Reference(ref[0], ref[1])

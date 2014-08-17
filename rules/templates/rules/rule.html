@@ -18,9 +18,7 @@
 {% block content %}
 <h2 class="title">Definition</h2>
 <div class="rule">
-	<code>
-      {{ rule.content }}
-    </code>
+      {{ rule.highlight_content|safe }}
 </div>
 {% if references %}
 <h2 class="title">References</h2>

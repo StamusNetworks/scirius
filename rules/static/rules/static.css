@@ -274,3 +274,31 @@ div#app_menu ul ul li:hover {
 .msg {
     cursor: row-resize;
 }
+
+div.highlight pre{
+    white-space: pre-wrap;
+}
+
+div.highlight span.kt {
+    color: #7A1243;
+    font-weight: bold;
+}
+
+div.highlight span.k {
+    color: #7A1243;
+    font-weight: bold;
+}
+
+div.highlight span.err {
+    color: #7A1243;
+    font-style: italic;
+}
+
+div.highlight span.nv {
+    color: #AD9C9B;
+}
+
+div.highlight span.na {
+    color: #0d7218;
+    font-style: italic;
+}
