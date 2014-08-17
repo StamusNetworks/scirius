@@ -39,7 +39,7 @@ Updated at {{ source.updated_date }} !
 {% endif %}
 
 {% if diff %}
-<h3 class="title">Changelog</h3>
+<h3 class="title">Changelog ({{ src_update.created_date}})</h3>
 
 Added: {{ diff.stats.added }}
 Deleted: {{ diff.stats.deleted }}
