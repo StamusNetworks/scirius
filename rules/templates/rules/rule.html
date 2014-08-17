@@ -22,6 +22,7 @@
       {{ rule.content }}
     </code>
 </div>
+{% if references %}
 <h2 class="title">References</h2>
 <ul>
 {% for ref in references %}
@@ -34,4 +35,5 @@
 </li>
 {% endfor %}
 </ul>
+{% endif %}
 {% endblock %}
