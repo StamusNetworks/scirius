@@ -8,11 +8,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
     <title>{% block title %}Scirius Rule Management{% endblock %}</title>
     <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
-    <script language="JavaScript">
-    function toggle_scirius_menu(img) {
-        $("#app_menu").toggle(duration=200)
-    }
-    </script>
+    <script type="text/javascript" src="{% static 'js/scirius.js' %}"></script>
 </head>
 
 {% block body %}
