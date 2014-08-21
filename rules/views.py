@@ -112,7 +112,17 @@ def category(request, cat_id):
     rules = RuleTable(Rule.objects.filter(category = cat))
     tables.RequestConfig(request).configure(rules)
     category_path = [ cat.source ]
-    context = {'category': cat, 'rules': rules, 'object_path': category_path}
+    # build table of rulesets and display if category is active
+    rulesets = Ruleset.objects.all()
+    rulesets_status = []
+    for ruleset in rulesets:
+        status = 'Inactive'
+        if cat in ruleset.categories.all():
+            status = 'Active'
+        rulesets_status.append({'name': ruleset.name, 'pk':ruleset.pk, 'status':status})
+    rulesets_status = StatusRulesetTable(rulesets_status)
+    tables.RequestConfig(request).configure(rulesets_status)
+    context = {'category': cat, 'rules': rules, 'object_path': category_path, 'rulesets': rulesets_status}
     return scirius_render(request, 'rules/category.html', context)
 
 class Reference:
