@@ -302,3 +302,12 @@ div.highlight span.na {
     color: #0d7218;
     font-style: italic;
 }
+
+input[type="text"]#id_search {
+    width: 10em;
+}
+
+div#id_search {
+    color: white;
+    padding-top: 3px;
+}

@@ -44,7 +44,15 @@
             {% if generator %}
                 <li><a href="/{{ generator }}/">{{ generator|capfirst }}</a></li>
             {% endif %}
-			<li id="li-about"><a href="/rules/about/">About</a></li>
+		<li id="li-about">
+			<a href="/rules/about/">About</a>
+			</li>
+
+		<li id="li-about">
+			<form action="/rules/search" method="post">{% csrf_token %}
+			<div id="id_search">Search: <input type="text" name="search" id="id_search"/></div>
+			</form>
+			</li>
 		</ul>
 	</div>
 	<!-- end #menu -->
