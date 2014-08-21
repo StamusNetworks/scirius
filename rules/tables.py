@@ -100,3 +100,9 @@ class SourceUpdateTable(tables.Table):
     class Meta(DefaultMeta):
         model = SourceUpdate
         fields = ("created_date", "changed")
+
+class StatusRulesetTable(tables.Table):
+    name = tables.LinkColumn('ruleset', args=[tables.A('pk')])
+    status = tables.Column()
+    class Meta(DefaultMeta):
+        fields = ("name", "status")

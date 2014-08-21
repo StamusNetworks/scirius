@@ -147,7 +147,17 @@ def rule(request, rule_id, key = 'pk'):
         elif refer.key == 'bugtraq':
             refer.url = "http://www.securityfocus.com/bid/" + refer.value
         references.append(refer)
-    context = {'rule': rule, 'references': references, 'object_path': rule_path}
+    # build table of rulesets and display if rule is active
+    rulesets = Ruleset.objects.all()
+    rulesets_status = []
+    for ruleset in rulesets:
+        status = 'Inactive'
+        if rule in ruleset.generate():
+            status = 'Active'
+        rulesets_status.append({'name': ruleset.name, 'pk':ruleset.pk, 'status':status})
+    rulesets_status = StatusRulesetTable(rulesets_status)
+    tables.RequestConfig(request).configure(rulesets_status)
+    context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status}
     return scirius_render(request, 'rules/rule.html', context)
 
 

@@ -34,4 +34,11 @@
 {% endfor %}
 </ul>
 {% endif %}
+
+
+<h2 class="title">Status in rulesets</h2>
+
+{% load render_table from django_tables2 %}
+{% render_table rulesets %}
+
 {% endblock %}
