@@ -97,7 +97,8 @@ table.paleblue a:link {
 
 
 table.paleblue a:visited {
-    color: #7A1243;
+    font-weight: normal; 
+    color: grey;
 }
 
 table.paleblue tr.odd {
