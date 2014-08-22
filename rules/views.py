@@ -174,15 +174,28 @@ def rule(request, rule_id, key = 'pk'):
 def suppress_rule(request, rule_id):
     rule_object = get_object_or_404(Rule, sid=rule_id)
     if request.method == 'POST': # If the form has been submitted...
-        form = RuleSuppressForm(request.POST)
+        form = RulesetSuppressForm(request.POST)
         if form.is_valid(): # All validation rules pass
             ruleset = form.cleaned_data['ruleset']
             ruleset.suppressed_rules.add(rule_object)
             ruleset.save()
         return redirect(rule_object)
-    form = RuleSuppressForm()
+    form = RulesetSuppressForm()
     context = { 'rule': rule_object, 'form': form }
     return scirius_render(request, 'rules/suppress_rule.html', context)
+
+def suppress_category(request, cat_id):
+    cat_object = get_object_or_404(Category, id=cat_id)
+    if request.method == 'POST': # If the form has been submitted...
+        form = RulesetSuppressForm(request.POST)
+        if form.is_valid(): # All validation rules pass
+            ruleset = form.cleaned_data['ruleset']
+            ruleset.categories.remove(cat_object)
+            ruleset.save()
+        return redirect(cat_object)
+    form = RulesetSuppressForm()
+    context = { 'category': cat_object, 'form': form }
+    return scirius_render(request, 'rules/suppress_category.html', context)
 
 def update_source(request, source_id):
     src = get_object_or_404(Source, pk=source_id)

@@ -6,6 +6,12 @@
        <li><span class="type">Filename:</span> {{ category.filename}}</li>
        <li><span class="type">Created:</span> {{ category.created_date}}</li>
 </ul>
+
+<h2 >Action</h2>
+<ul class="action"><li>
+<a href="/rules/category/{{ category.pk }}/suppress">Suppress category</a>
+</li>
+</ul>
 {% endblock %}
 
 {% block content %}
