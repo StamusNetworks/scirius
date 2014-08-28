@@ -45,7 +45,7 @@ class Source(models.Model):
         ('sigs', 'Signatures files in tar archive'),
         ('sig', 'Individual Signatures file'),
 #        ('iprep', 'IP reputation files'),
-#        ('other', 'Other content'),
+        ('other', 'Other content'),
     )
     TMP_DIR = "/tmp/"
 
@@ -182,6 +182,34 @@ class Source(models.Model):
         # Get categories
         self.get_categories(tfile)
 
+    # FIXME we need a factorization here with handle_rules_file
+    def handle_other_file(self, f):
+        self.updated_date = datetime.now()
+        self.first_run = False
+
+        repo = self.get_git_repo(delete = True)
+
+        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
+        # create rules dir if needed
+        if not os.path.isdir(rules_dir):
+            os.makedirs(rules_dir)
+        # copy file content to target
+        f.seek(0)
+        os.fsync(f)
+        shutil.copy(f.name, os.path.join(rules_dir, self.name))
+
+        index = repo.index
+        if len(index.diff(None)) or self.first_run:
+            os.environ['USERNAME'] = 'scirius'
+            index.add(["rules"])
+            message =  'source version at %s' % (self.updated_date)
+            index.commit(message)
+
+        self.save()
+        # Now we must update SourceAtVersion for this source
+        # or create it if needed
+        self.create_sourceatversion()
+
     def handle_rules_file(self, f):
 
         self.updated_date = datetime.now()
@@ -259,7 +287,9 @@ class Source(models.Model):
                 self.handle_rules_in_tar(f)
             elif self.datatype == 'sig':
                 self.handle_rules_file(f)
-        if not firstimport:
+            elif self.datatype == 'other':
+                self.handle_other_file(f)
+        if not self.datatype == 'other' and not firstimport:
             self.create_update()
 
     def diff(self):
@@ -279,7 +309,7 @@ class Source(models.Model):
         src_files = os.listdir(source_git_dir)
         for file_name in src_files:
             # don't copy original rules file to dest
-            if file_name.endswith('.rules'):
+            if file_name.endswith('.rules') and not self.datatype == 'other':
                 continue
             full_file_name = os.path.join(source_git_dir, file_name)
             if (os.path.isfile(full_file_name)):
