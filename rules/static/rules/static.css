@@ -19,6 +19,12 @@ div.error {
     margin: 5px;
 }
 
+div.warning {
+    font-weight: italic;
+    color: red;
+    margin: 5px;
+}
+
 #sidebar h2 a {
     color: white;
 }

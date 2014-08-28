@@ -28,10 +28,21 @@ function display_field(method) {
     }
 }
 
+function display_warning(method) {
+    if ($( this ).find("option:selected").text() == "Other content") {
+        $("#name_warning").show(duration=200);
+    } else {
+        $("#name_warning").hide(duration=200);
+    }
+}
+
 function hide_fields() {
     $("#id_method").change(display_field);
     $("#id_uri").parent().hide();
     $("#id_file").parent().hide();
+    $("#name_warning").hide();
+    $("#id_method").change(display_field);
+    $("#id_datatype").change(display_warning);
 }
 
 function select_fields() {
@@ -40,7 +51,14 @@ function select_fields() {
     } else {
         $("#id_uri").parent().hide();
     }
+    if ($("#id_datatype").find("option:selected").text() == "Other content") {
+        $("#name_warning").parent().show();
+    } else {
+        $("#name_warning").parent().hide();
+    }
+
     $("#id_method").change(display_field);
+    $("#id_datatype").change(display_warning);
 }
 </script>
 
@@ -48,6 +66,8 @@ function select_fields() {
 <div class="error">{{ error }}</div>
 
 {% endif %}
+
+<div class="warning" id="name_warning">Warning: the name will be file name in Suricata rules directory</div>
 
 {% if source %}
 <form enctype="multipart/form-data" action="/rules/source/{{ source.pk }}/edit" method="post">{% csrf_token %}
