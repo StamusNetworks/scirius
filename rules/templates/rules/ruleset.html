@@ -54,6 +54,8 @@ Updated at {{ ruleset.updated_date }} !
 
 {% for sourceatversion in sources %}
 <h2 class="title">Source: {{ sourceatversion }}</h2>
+
+{% if not sourceatversion.source.datatype == 'other' %}
 <h4>Categories</h4>
 
     {% for key, value in categories_list.items  %}
@@ -61,6 +63,9 @@ Updated at {{ ruleset.updated_date }} !
             {% render_table value %}
         {% endif %}
     {% endfor %}
+{% else %}
+ Source fetched from {{ sourceatversion.source.uri }}
+{% endif %}
 {% endfor %}
 
 {% endif %}

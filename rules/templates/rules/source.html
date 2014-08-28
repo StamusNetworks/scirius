@@ -68,10 +68,20 @@ Updated: {{ diff.stats.updated }}
 {% endif %}
 
 {% elif not error %}
+
+{% if not source.datatype == 'other' %}
 <h2 class="title">Categories</h2>
 
 {% load render_table from django_tables2 %}
 {% render_table categories %}
+{% else %}
+
+{% if source.method == 'http' %}
+<h2 class="title">Other contents</h2>
+Source fetched from {{ source.uri }}
+{% endif %}
+{% endif %}
+
 {% endif %}
 
 {% endblock %}
