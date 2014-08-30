@@ -272,6 +272,7 @@ class Source(models.Model):
             changed = len(update["deleted"]) + len(update["added"]) + len(update["updated"]),
         )
 
+    @transaction.atomic
     def update(self):
         # look for categories list: if none, first import
         categories = Category.objects.filter(source = self)
