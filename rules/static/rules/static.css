@@ -25,6 +25,10 @@ div.warning {
     margin: 5px;
 }
 
+div.info {
+    margin: 5px;
+}
+
 #sidebar h2 a {
     color: white;
 }
