@@ -1,0 +1,30 @@
+{% extends "rules/base.html" %}
+
+{% block content %}
+{% if not length %}
+No match.
+{% endif %}
+
+
+{% if rulesets %} 
+<h2 class="title">Rulesets</h2>
+    {% load render_table from django_tables2 %}
+    {% render_table rulesets %}
+{% endif %}
+{% if categories %} 
+<h2 class="title">Categories</h2>
+    {% load render_table from django_tables2 %}
+    {% render_table categories %}
+{% endif %}
+
+{% if rules %} 
+<h2 class="title">Rules</h2>
+    {% load render_table from django_tables2 %}
+    {% render_table rules %}
+{% endif %}
+{% endblock %}
+
+{% block sidebar %}
+<h2>Search</h2>
+{{ length }} result(s) for '{{motif}}'.
+{% endblock %}
