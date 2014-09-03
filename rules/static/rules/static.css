@@ -89,6 +89,10 @@ body {
     color: #7A1243;
 }
 
+h2.title {
+    clear: both;
+}
+
 #footer {
     border-top-color: #7A1243;
 }
@@ -292,6 +296,7 @@ div.status_block {
     margin-right: 50px;
     margin: 10px:
     border: solid 1px;
+    position: relative;
 }
 
 div.highlight pre{
