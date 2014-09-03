@@ -69,31 +69,43 @@ def about(request):
 
 def search(request):
     context = {}
+    length = 0
+    search = None
     if request.method == 'POST':
         if request.POST.has_key('search'):
-            length = 0
-            rules = Rule.objects.filter(content__icontains=request.POST['search'])
-            if len(rules) > 0:
-                length += len(rules)
-                rules = RuleTable(rules)
-                tables.RequestConfig(request).configure(rules)
-            else:
-                rules = None
-            categories = Category.objects.filter(name__icontains=request.POST['search'])
-            if len(categories) > 0:
-                length += len(categories)
-                categories = CategoryTable(categories)
-                tables.RequestConfig(request).configure(categories)
-            else:
-                categories = None
-            rulesets = Ruleset.objects.filter(name__icontains=request.POST['search'])
-            if len(rulesets) > 0:
-                length += len(rulesets)
-                rulesets = RulesetTable(rulesets)
-                tables.RequestConfig(request).configure(rulesets)
-            else:
-                rulesets = None
-            context = { 'rules': rules, 'categories': categories, 'rulesets': rulesets, 'motif': request.POST['search'], 'length': length }
+            search = request.POST['search']
+            request.GET = request.GET.copy()
+            request.GET.update({'search': search})
+    elif request.method == 'GET':
+        if request.GET.has_key('search'):
+            search = request.GET['search']
+    if search:
+        rules = Rule.objects.filter(content__icontains=search)
+        if len(rules) > 0:
+            length += len(rules)
+            rules = RuleTable(rules)
+            tables.RequestConfig(request).configure(rules)
+        else:
+            rules = None
+        categories = Category.objects.filter(name__icontains=search)
+        if len(categories) > 0:
+            length += len(categories)
+            categories = CategoryTable(categories)
+            tables.RequestConfig(request).configure(categories)
+        else:
+            categories = None
+        rulesets = Ruleset.objects.filter(name__icontains=search)
+        if len(rulesets) > 0:
+            length += len(rulesets)
+            rulesets = RulesetTable(rulesets)
+            tables.RequestConfig(request).configure(rulesets)
+        else:
+            rulesets = None
+    else:
+        rules = None
+        categories = None
+        rulesets = None
+    context = { 'rules': rules, 'categories': categories, 'rulesets': rulesets, 'motif': search, 'length': length }
     return scirius_render(request, 'rules/search.html', context)
 
 def sources(request):
