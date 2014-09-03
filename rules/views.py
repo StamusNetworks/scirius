@@ -21,11 +21,15 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.db import IntegrityError
+from django.conf import settings
 
 from scirius.utils import scirius_render, scirius_listing
 
 from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check
 from rules.tables import UpdateRuleTable
+
+if settings.USE_ELASTICSEARCH:
+    from rules.elasticsearch import *
 
 import json
 import re
@@ -168,6 +172,26 @@ def rule(request, rule_id, key = 'pk'):
     rulesets_status = StatusRulesetTable(rulesets_status)
     tables.RequestConfig(request).configure(rulesets_status)
     context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status}
+    if settings.USE_ELASTICSEARCH:
+        if request.GET.__contains__('duration'):
+            duration = int(request.GET.get('duration', '24'))
+            if duration > 24 * 7:
+                duration = 24 * 7
+            request.session['duration'] = duration
+        else:
+            duration = int(request.session.get('duration', '24'))
+        from_date = int((time() - (duration * 3600)) * 1000) # last 24 hours
+        if duration <= 24:
+            date = str(duration) + "h"
+        else:
+            date = str(duration / 24) + "d"
+        context['date'] = date
+        stats = es_get_sid_by_hosts(request, rule_id, from_date=from_date)
+        if stats:
+            context['stats'] = stats
+        else:
+            context['error'] = 'Unable to join Elasticsearch server or no alerts'
+
     return scirius_render(request, 'rules/rule.html', context)
 
 

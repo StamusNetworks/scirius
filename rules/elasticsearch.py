@@ -74,10 +74,59 @@ ALERT_ID_QUERY = """
 }
 """
 
+SID_BY_HOST_QUERY = """
+{
+  "facets": {
+    "terms": {
+      "terms": {
+        "field": "host.raw",
+        "size": {{ alerts_number }},
+        "order": "count",
+        "exclude": []
+      },
+      "facet_filter": {
+        "fquery": {
+          "query": {
+            "filtered": {
+              "query": {
+                "bool": {
+                  "should": [
+                    {
+                      "query_string": {
+                        "query": "event_type:alert AND alert.signature_id:{{ rule_sid }}"
+                      }
+                    }
+                  ]
+                }
+              },
+              "filter": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "from": {{ from_date }},
+                          "to": "now"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "size": 0
+}'
+"""
+
 DASHBOARDS_QUERY_URL = "http://%s/kibana-int/dashboard/_search" % settings.ELASTICSEARCH_ADDRESS
 
 from rules.models import Rule
-from rules.tables import ExtendedRuleTable
+from rules.tables import ExtendedRuleTable, RuleStatsTable
 import django_tables2 as tables
 
 def es_get_rules_stats(request, hostname, count=20, from_date=0):
@@ -112,6 +161,34 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0):
     else:
         return None
     return rules
+
+def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
+    templ = Template(SID_BY_HOST_QUERY)
+    context = Context({'rule_sid': sid, 'alerts_number': count, 'from_date': from_date})
+    data = templ.render(context)
+    req = urllib2.Request(URL, data)
+    try:
+        out = urllib2.urlopen(req)
+    except:
+        return None
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    # total number of results
+    try:
+        data = data['facets']['terms']['terms']
+    except:
+        return None
+    stats = []
+    if data != None:
+        for elt in data:
+            hstat = {'host': elt['term'], 'count': elt['count']}
+            stats.append(hstat)
+        stats = RuleStatsTable(stats)
+        tables.RequestConfig(request).configure(stats)
+    else:
+        return None
+    return stats
 
 def es_get_dashboard(count=10):
     req = urllib2.Request(DASHBOARDS_QUERY_URL)

@@ -106,3 +106,9 @@ class StatusRulesetTable(tables.Table):
     status = tables.Column()
     class Meta(DefaultMeta):
         fields = ("name", "status")
+
+class RuleStatsTable(tables.Table):
+    host = tables.Column()
+    count = tables.Column()
+    class Meta(DefaultMeta):
+        fields = ("host", "count")
