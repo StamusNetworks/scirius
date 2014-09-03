@@ -49,7 +49,7 @@ function toggle_settings(img) {
 {% load render_table from django_tables2 %}
 {% render_table rulesets %}
 
-<h2 class="title">Hits by host</h2>
+<h2 class="title">Hits by host (last {{ date }})</h2>
 
 {% if stats %}
 <span class="settings">
