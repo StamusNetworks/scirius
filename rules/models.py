@@ -305,17 +305,19 @@ class Source(models.Model):
     def export_files(self, directory, version):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), "rules")
         repo = git.Repo(source_git_dir)
-        repo.git.checkout(version)
-        # copy file to target
-        src_files = os.listdir(source_git_dir)
-        for file_name in src_files:
-            # don't copy original rules file to dest
-            if file_name.endswith('.rules') and not self.datatype == 'other':
-                continue
-            full_file_name = os.path.join(source_git_dir, file_name)
-            if (os.path.isfile(full_file_name)):
-                shutil.copy(full_file_name, directory)
-        repo.git.checkout('master')
+        with tempfile.TemporaryFile(dir=self.TMP_DIR) as f:
+            repo.archive(f, treeish=version)
+            f.seek(0)
+            # extract file
+            tfile = tarfile.open(fileobj=f)
+            # copy file to target
+            src_files = tfile.getmembers()
+            for member in src_files:
+                # don't copy original rules file to dest
+                if member.name.endswith('.rules') and not self.datatype == 'other':
+                    continue
+                if member.isfile():
+                    tfile.extract(member, path=directory)
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
