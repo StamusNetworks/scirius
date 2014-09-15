@@ -19,10 +19,10 @@
 <a href="/rules/ruleset/{{ ruleset.id }}/edit?mode=categories">Edit categories</a>
 </li>
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/addsupprule">Add rule to suppressed list</a>
+<a href="/rules/ruleset/{{ ruleset.id }}/addsupprule">Add rule to disabled list</a>
 </li>
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/edit?mode=rules">Remove rule from suppressed list</a>
+<a href="/rules/ruleset/{{ ruleset.id }}/edit?mode=rules">Remove rule from disabled list</a>
 </li>
 </ul>
 {% endblock %}
@@ -71,7 +71,7 @@ Choose an operation in Action menu.
 
 {% if mode == 'sources' %}
 {% load render_table from django_tables2 %}
-<h2 class="title">Suppressed rules</h2>
+<h2 class="title">Disabled rules</h2>
 
 <form action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
 {% render_table sources_list %}
@@ -109,12 +109,12 @@ Choose an operation in Action menu.
 
 {% if mode == 'rules' %}
 
-<h2 class="title">Suppressed rules</h2>
+<h2 class="title">Disabled rules</h2>
 
 <form action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
 {% render_table rules %}
 <input type="hidden" name="rules" value="rules">
-<input type="submit" value="Remove selected rules from suppressed rules" />
+<input type="submit" value="Remove selected rules from disabled rules" />
 </form>
 
 {% endif %}

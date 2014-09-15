@@ -6,7 +6,7 @@
 <div class="error">{{ error }}</div>
 {% endif %}
 
-<h4>Suppress category {{ category.name }} from</h4>
+<h4>Disable category {{ category.name }} from</h4>
 <form action="/rules/category/{{ category.pk }}/suppress" method="post">{% csrf_token %}
 {{ form.as_p }}
 <input type="submit" value="Submit" />
