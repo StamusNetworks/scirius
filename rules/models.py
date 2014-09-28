@@ -292,6 +292,8 @@ class Source(models.Model):
                 self.handle_other_file(f)
         if not self.datatype == 'other' and not firstimport:
             self.create_update()
+        for rule in self.updated_rules["deleted"]:
+            rule.delete()
 
     def diff(self):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
@@ -453,8 +455,6 @@ class Category(models.Model):
             rules_update["deleted"] = list(set(rules_list) -
                                       set(rules_update["added"]).union(set(rules_update["updated"])) -
                                       set(rules_unchanged))
-            for rule in rules_update["deleted"]:
-                rule.delete()
             source.aggregate_update(rules_update)
 
     def get_absolute_url(self):
