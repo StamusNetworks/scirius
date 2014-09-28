@@ -42,6 +42,11 @@ class UpdateRuleTable(tables.Table):
         model = Rule
         fields = ("sid", "msg", "category")
 
+class DeletedRuleTable(tables.Table):
+    class Meta(DefaultMeta):
+        model = Rule
+        fields = ("sid", "msg", "category")
+
 class EditSourceAtVersionTable(tables.Table):
     source_selection = tables.CheckBoxColumn(accessor="pk", attrs = { "th__input":
                                         {"onclick": "tables2_toggle(this, 'source_selection')"},
