@@ -9,6 +9,8 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from distutils.version import LooseVersion
+from django import get_version
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -36,11 +38,13 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'south',
     'django_tables2',
     'rules',
     'suricata',
 )
+
+if LooseVersion(get_version()) < LooseVersion('1.7'):
+    INSTALLED_APPS += ('south', )
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
