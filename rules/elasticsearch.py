@@ -190,7 +190,7 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
         return None
     return stats
 
-def es_get_dashboard(count=10):
+def es_get_dashboard(count=20):
     req = urllib2.Request(DASHBOARDS_QUERY_URL)
     try:
         out = urllib2.urlopen(req)
