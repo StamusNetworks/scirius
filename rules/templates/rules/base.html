@@ -3,72 +3,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" type="text/css" href="{% static 'rules/style.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
     <title>{% block title %}Scirius Rule Management{% endblock %}</title>
-    <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/scirius.js' %}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+     <!-- Latest compiled and minified CSS -->
+     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}"/>
+-   <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
 </head>
 
 {% block body %}
 <body>
 {% endblock %}
-  <div id="wrapper">
-	<!-- end #header -->
-
-		<div id="logo">
-			<img onclick="toggle_scirius_menu(this);" src="{% static 'rules/stamus.png' %}"/>
-            <div id="app_menu">
-                <ul>
-		{% if kibana %}
-                <li><a href="{{kibana_url}}">Dashboards</a>
-		    {% if dashboards %}
-                    <ul>
-                    {% for dashboard in dashboards %}
-                        <li><a href="{{kibana_url}}/#/dashboard/elasticsearch/{{dashboard}}">{{dashboard}}</a></li>
-                    {% endfor %}
-                    </ul>
-		    {% endif %}
-                </li>
-		{% endif %}
-                <li><a target="_blank" href="https://github.com/StamusNetworks/scirius">Scirius homepage</a></li>
-                </ul>
-            </div>
+<div class="container">
+	<nav class="navbar navbar-default" role="navigation">
+ <div class="container-fluid">
+		<div class="navbar-header">
+			<a class="navbar-dropdown collapsed" type="button" data-target="sc_menu" data-toggle="dropdown" id="logo">
+			<img src="{% static 'rules/stamus.png' %}"/><span class="caret"/>
+</a>
+			<ul class="dropdown-menu" id="sc_menu" role="menu">
+			{% if kibana %}
+                	<li><a href="{{kibana_url}}">Dashboards</a>
+		    		{% if dashboards %}
+                    		<ul>
+                    		{% for dashboard in dashboards %}
+                        		<li><a href="{{kibana_url}}/#/dashboard/elasticsearch/{{dashboard}}">{{dashboard}}</a></li>
+                    		{% endfor %}
+                    		</ul>
+		    		{% endif %}
+                		</li>
+ 			<li role="presentation" class="divider"></li>
+			{% endif %}
+                	<li><a target="_blank" href="https://github.com/StamusNetworks/scirius">Scirius homepage</a></li>
+			</ul>
 		</div>
-	<div id="menu">
-		<ul>
+                <ul class="nav navbar-nav">
+
 			<li><a href="/rules/">Home</a></li>
 			<li><a href="/rules/ruleset/">Ruleset</a></li>
 			<li><a href="/rules/source/">Sources</a></li>
-            {% if generator %}
-                <li><a href="/{{ generator }}/">{{ generator|capfirst }}</a></li>
-            {% endif %}
-		<li id="li-about">
-			<a href="/rules/about/">About</a>
-			</li>
-
-		<li id="li-about">
-			<form action="/rules/search" method="post">{% csrf_token %}
-			<div id="id_search">Search: <input type="text" name="search" id="id_search"/></div>
-			</form>
+            		{% if generator %}
+                	<li><a href="/{{ generator }}/">{{ generator|capfirst }}</a></li>
+            		{% endif %}
+			<li>
+				<a href="/rules/about/">About</a>
 			</li>
 		</ul>
-	</div>
-	<!-- end #menu -->
-	<div id="page">
-		<div id="page-bgtop">
-			<div id="page-bgbtm">
-				<div id="content">
-                    {% block error %}
-                      {% if error %}
-                       <div class="error">{{ error }}</div>
-                      {% endif %}
-                    {% endblock %}
-                    {% block content %}{% endblock %}
-				</div>
-				<!-- end #content -->
-				<div id="sidebar">
+		<form class="navbar-form navbar-nav navbar-right"  action="/rules/search" method="post" role="search">{% csrf_token %}
+<div class="form-group">
+			<span class="glyphicon glyphicon-search"> <input type="text" name="search" id="id_search"/></span>
+</div>
+		</form>
+</div>
+	</nav>
+	<div class="row">
+		<div class="col-md-3" id="sidebar">
 				        {% block sidebar %}
         				{% endblock %}
 					{% if object_path %}
@@ -80,15 +69,27 @@
 						{% endif %}
 					  {% endfor %}
 					{% endif %}
-    				</div>
-				<div style="clear: both;">&nbsp;</div>
-			</div>
+    		</div>
+		<div class="col-md-9">
+                    {% block error %}
+                      {% if error %}
+                       <div class="error">{{ error }}</div>
+                      {% endif %}
+                    {% endblock %}
+                    {% block content %}{% endblock %}
+		</div> <!-- col -->
+	</div> <!-- row -->
+
+	<div id="footer" class="row">
+		<div class="col-md-12 text-center">
+			<p><a href="https://github.com/StamusNetworks/scirius">Scirius v0.9</a>. Copyright (c) 2014 <a href="https://www.stamus-networks.com">Stamus Networks</a>.</p>
 		</div>
 	</div>
-    </div>
-  </div>
-<div id="footer">
-	<p><a href="https://github.com/StamusNetworks/scirius">Scirius v0.9</a>. Copyright (c) 2014 <a href="https://www.stamus-networks.com">Stamus Networks</a>.</p>
-</div>
+</div> <!-- class container -->
+<!-- Optional: Include the jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<!-- Optional: Incorporate the Bootstrap JavaScript plugins -->
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="{% static 'js/scirius.js' %}"></script>
 </body>
 </html>

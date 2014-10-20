@@ -23,8 +23,3 @@ $( 'document' ).ready(function() {
         }
     });
 });
-
-
-function toggle_scirius_menu(img) {
-    $("#app_menu").toggle(duration=200)
-}

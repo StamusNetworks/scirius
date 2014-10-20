@@ -1,13 +1,11 @@
-ul.action li a {
-    font-weight: bold;
-}
-
+/*
 div.rule {
     border: solid 1px black;
     padding: 5px;
     color: black;
     background-color: #f0f0f0;
 }
+*/
 
 ul li span.type {
     color: #585858;
@@ -35,11 +33,17 @@ div.info {
 
 #sidebar h2 {
     background: #AD9C9B;
-    box-shadow: 5px 5px 5px #bbbbbb;
+    /* box-shadow: 5px 5px 5px #bbbbbb; */
     border-radius: 4px;
     margin-bottom: 10px;
+    color: white;
+    padding: 5px;
+    padding-left: 0.5em;
+    font-size: 1.2em;
+    font-weight: bold;
 }
 
+/*
 div.detail {
     border: solid 1px black;
     padding: 5px;
@@ -47,7 +51,7 @@ div.detail {
     background-color: #f0f0f0;
     display: none;
 }
-
+*/
 div.table-container {
     width: 100%;
 }
@@ -93,7 +97,8 @@ h2.title {
     clear: both;
 }
 
-#footer {
+#footer p {
+    margin-top: 2em;
     border-top-color: #7A1243;
 }
 
@@ -185,8 +190,7 @@ td.suppressed {
 }
 
 #logo img {
-    margin-left: 0px;
-    padding-top: 0px;
+    padding-left: 5px;
 }
 
 div#menu {
@@ -201,56 +205,26 @@ h2 {
     font-weight: bold;
 }
 
-span.settings {
-    float: right;
-    margin-right: 5px;
-    margin-top: 15px;
-    position: relative;
-    color: white;
-}
-
-span.settings span#setting_menu {
-    display: none;
-    float: none;
-    position: absolute;
-    background-color: #AD9C9B;
-    margin-top: 0px;
-    width: 100px;
-    box-shadow: 5px 5px 5px #999999;
-    border-radius: 4px;
-    padding-top: 3px;
-}
-
-span.settings span#setting_menu ul {
-    padding-left: 5px;
-    margin-right: 5px;
-    margin-left: 5px;
-    list-style-type: none;
-    font-weight: bold;
-}
-
-span.settings span#setting_menu ul ul {
-    list-style-type: circle;
-    padding-left: 3px;
-    font-weight: normal;
-    margin-left: 10px;
-}
-
-span.settings span#setting_menu ul ul li:hover {
-    background-color: #726767;
-}
-
-
 .title h2 {
     float:left;
 }
 
-span.settings a {
-    color: white;
-}
-
 #sidebar ul {
     margin-bottom: 10px;
+    padding-left: 1em;
+}
+
+#sidebar ul a {
+    padding-left: 0em;
+}
+
+#sidebar a {
+    padding-left: 1em;
+}
+
+#sidebar ul li {
+    list-style-type: none;
+    padding-left: 0px;
 }
 
 div#app_menu {
@@ -327,11 +301,25 @@ div.highlight span.na {
     font-style: italic;
 }
 
+
 input[type="text"]#id_search {
     width: 10em;
+    margin-right: 1em;
 }
 
 div#id_search {
     color: white;
     padding-top: 3px;
+}
+
+ul.pagination {
+    width: 100%;
+}
+
+a#logo {
+    padding: -5px;
+}
+
+div.dropdown-menu li {
+   padding-right: 5px;
 }
