@@ -62,12 +62,11 @@
         				{% endblock %}
 					{% if object_path %}
 					<h2>Path</h2>
+					<ol class="breadcrumb">
 					   {% for object in object_path %}
-					  	<a href="{{ object.get_absolute_url }}">{{ object.name }}</a>
-						{% if not forloop.last %}
-							&gt;
-						{% endif %}
+					  <li><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></li>
 					  {% endfor %}
+					</ol>
 					{% endif %}
     		</div>
 		<div class="col-md-9">
