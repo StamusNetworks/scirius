@@ -2,7 +2,7 @@
 
 {% block sidebar %}
 <div class="panel-heading">
-       <h2 class="panel-title">{{ category.name }}</h2>
+       <h2 class="panel-title">{{ category.name|capfirst}}</h2>
 </div>
 <ul>
        <li><span class="type">Filename:</span> {{ category.filename}}</li>
