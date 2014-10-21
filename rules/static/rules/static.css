@@ -274,3 +274,7 @@ a#logo {
 div.dropdown-menu li {
    padding-right: 5px;
 }
+
+a#display_menu img {
+   margin-bottom: 5px;
+}
