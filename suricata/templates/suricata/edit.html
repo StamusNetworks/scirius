@@ -16,7 +16,8 @@
 
 {% if missing %}
 
-{{ missing }}
+
+<div class="alert alert-warning"> {{ missing }} </div>
 
 {% else %}
 <form action="/suricata/edit" method="post">{% csrf_token %}
