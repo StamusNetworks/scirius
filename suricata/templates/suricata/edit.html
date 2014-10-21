@@ -1,12 +1,18 @@
 {% extends "rules/base.html" %}
 
 
-{% block content %}
+{% block sidebar %}
+<div class="panel-heading">
 {% if creation %}
-<h2 class="title">Suricata creation</h2>
+<h2 class="panel-title">Suricata creation</h2>
 {% else %}
-<h2 class="title">Suricata edition</h2>
+<h2 class="panel-title">Suricata edition</h2>
 {% endif %}
+</div>
+{% endblock %}
+
+
+{% block content %}
 
 {% if missing %}
 
