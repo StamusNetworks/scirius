@@ -34,11 +34,11 @@ body {
 }
 
 a {
-    color: black;
+    color: #585858;
 }
 
 a:hover {
-    color: #AD9C9B;
+    color: black;
     text-decoration: none;
 }
 
