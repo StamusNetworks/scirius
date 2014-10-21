@@ -6,7 +6,7 @@
     <title>{% block title %}Scirius Rule Management{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
      <!-- Latest compiled and minified CSS -->
-     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+     <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}"/>
 -   <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
 </head>
@@ -86,10 +86,8 @@
 		</div>
 	</div>
 </div> <!-- class container -->
-<!-- Optional: Include the jQuery library -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<!-- Optional: Incorporate the Bootstrap JavaScript plugins -->
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/scirius.js' %}"></script>
 </body>
 </html>
