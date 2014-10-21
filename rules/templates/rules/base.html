@@ -37,16 +37,16 @@
                 	<li><a target="_blank" href="https://github.com/StamusNetworks/scirius">Scirius homepage</a></li>
 			</ul>
 		</div>
-                <ul class="nav navbar-nav">
+                <ul class="nav navbar-nav" id="top_menu">
 
-			<li><a href="/rules/">Home</a></li>
-			<li><a href="/rules/ruleset/">Ruleset</a></li>
-			<li><a href="/rules/source/">Sources</a></li>
+			<li><a id="home" href="/rules/">Home</a></li>
+			<li><a id="ruleset" href="/rules/ruleset/">Rulesets</a></li>
+			<li><a id="source" href="/rules/source/">Sources</a></li>
             		{% if generator %}
-                	<li><a href="/{{ generator }}/">{{ generator|capfirst }}</a></li>
+			<li><a id="{{ generator }}" href="/{{ generator }}/">{{ generator|capfirst }}</a></li>
             		{% endif %}
 			<li>
-				<a href="/rules/about/">About</a>
+				<a id="about" href="/rules/about/">About</a>
 			</li>
 		</ul>
 		<form class="navbar-form navbar-nav navbar-right"  action="/rules/search" method="post" role="search">{% csrf_token %}
