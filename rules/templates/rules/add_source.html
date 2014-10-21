@@ -1,10 +1,15 @@
 {% extends "rules/base.html" %}
 {% block sidebar %}
+<div class="panel-heading">
+<h2 class="panel-title">
 {% if source %}
-<h2>Edit Source '{{ source.name }}'</h2>
+Edit Source '{{ source.name }}'
+</div>
 {% else %}
-<h2>Add a Source</h2>
+Add a Source
 {% endif %}
+</h2>
+</div>
 {% endblock %}
 
 {% block body %}

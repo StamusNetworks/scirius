@@ -11,10 +11,14 @@ No object available.
 {% endblock %}
 
 {% block sidebar %}
-    <h2>{{ name }}</h2>
+<div class="panel-heading">
+    <h2 class="panel-title">{{ name }}</h2>
+</div>
     <ul><li>{{ objects_len }} object(s)</li></ul>
    {% if action %}
-   <h2>Action</h2>
+<div class="panel-heading">
+<h2 class="panel-title">Action</h2>
+</div>
         <ul class="action"> <li> <a href="/rules/{{ action }}/add">Add</a></li></ul>
    {% endif %}
 {% endblock %}

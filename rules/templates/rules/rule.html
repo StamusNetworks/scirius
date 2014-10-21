@@ -2,12 +2,17 @@
 {% load staticfiles %}
 
 {% block sidebar %}
-       <h2>{{ rule.sid }}</h2>
+<div class="panel-heading">
+       <h2 class="panel-title">{{ rule.sid }}</h2>
+</div>
 <ul>
        <li><span class="type">Msg:</span> {{ rule.msg }}</li>
        <li><span class="type">Revision:</span> {{ rule.rev }}</li>
 </ul>
-<h2 >Action</h2>
+
+<div class="panel-heading">
+<h2 class="panel-title">Action</h2>
+</div>
 <ul class="action"><li>
 <a href="/rules/rule/{{ rule.sid }}/suppress">Disable rule</a>
 </li>

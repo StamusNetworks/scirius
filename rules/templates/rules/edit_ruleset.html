@@ -1,6 +1,8 @@
 {% extends "rules/base.html" %}
 {% block sidebar %}
-       <h2>{{ ruleset.name }}</h2>
+<div class="panel-heading">
+       <h2 class="panel-title">{{ ruleset.name }}</h2>
+</div>
 <ul>
 {% if ruleset.descr %}
        <li><span class="type">Description:</span> {{ ruleset.descr }}</li>
@@ -10,7 +12,9 @@
        <li><span class="type">Updated:</span> {{ ruleset.updated_date }}</li>
 {% endif %}
 </ul>
-<h2>Action</h2>
+<div class="panel-heading">
+<h2 class="panel-title">Action</h2>
+</div>
 <ul class="action">
 <li>
 <a href="/rules/ruleset/{{ ruleset.id }}/edit?mode=sources">Edit sources</a>

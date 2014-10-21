@@ -57,22 +57,26 @@
 </div>
 	</nav>
 	<div class="row">
-		<div class="col-md-3" id="sidebar">
+		<div class="col-md-3">
+			<div class="panel panel-default" id="sidebar">
 				        {% block sidebar %}
         				{% endblock %}
 					{% if object_path %}
-					<h2>Path</h2>
+					<div class="panel-heading">
+					<h2 class="panel-title">Path</h2>
+					</div>
 					<ol class="breadcrumb">
 					   {% for object in object_path %}
 					  <li><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></li>
 					  {% endfor %}
 					</ol>
 					{% endif %}
-    		</div>
+			</div> <!-- panel -->
+		</div> <!-- col -->
 		<div class="col-md-9">
                     {% block error %}
                       {% if error %}
-                       <div class="error">{{ error }}</div>
+                       <div class="alert alert-warning">{{ error }}</div>
                       {% endif %}
                     {% endblock %}
                     {% block content %}{% endblock %}

@@ -1,7 +1,9 @@
 {% extends "rules/base.html" %}
 
 {% block sidebar %}
-<h2>Action</h2>
+<div class="panel-heading">
+<h2 class="panel-title">Action</h2>
+</div>
 <form action="/rules/ruleset/{{ruleset.id }}/addsupprule" method="post">{% csrf_token %}
 <ul class="action">
 <li>Search: <input type="text" name="search" /></li>

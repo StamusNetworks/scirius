@@ -28,14 +28,19 @@
 {% block sidebar %}
 {% if suricata %}
 
-<h2>Suricata {{ suricata.name }}</h2>
+<div class="panel-heading">
+<h2 class="panel-title">Suricata {{ suricata.name }}</h2>
+</div>
+<h2></h2>
 <ul>
        <li><span class="type">Ruleset:</span> {{ suricata.ruleset }}</li>
        <li><span class="type">Description:</span> {{ suricata.descr }}</li>
        <li><span class="type">Last updated:</span> {{ suricata.updated_date }}</li>
 </ul>
 
-<h2 >Action</h2>
+<div class="panel-heading">
+<h2 class="panel-title">Action</h2>
+</div>
 <ul class="action">
 <li>
 <a href="/suricata/update">Update</a>
