@@ -24,27 +24,8 @@ body {
     font-family: Helvetica, Arial, sans-serif;
 }
 
-#menu {
-    background: #7A1243;
-
-    box-shadow: 5px 5px 5px #bbbbbb;
-    border-radius: 4px;
-}
-
-#menu a:hover {
-    background: #AD9CB9;
-}
-
-#menu li#li-about {
-    float: right;
-}
-
 .title {
     color: #7A1243;
-}
-
-h2.title {
-    clear: both;
 }
 
 #footer p {
@@ -56,14 +37,15 @@ a {
     color: black;
 }
 
-#logo a {
+a:hover {
     color: #AD9C9B;
+    text-decoration: none;
 }
+
 
 table.paleblue a:link {
     color: grey;
 }
-
 
 table.paleblue a:visited {
     font-weight: normal; 
@@ -83,7 +65,12 @@ table.paleblue + ul.pagination > li > a {
 }
 
 #logo img {
-    padding-top: 10px;
+    padding-top: 7px;
+    margin-left: -8px;
+}
+
+#logo span {
+    margin-top: 10px;
 }
 
 table.update {
@@ -155,11 +142,6 @@ h2 {
     font-weight: bold;
 }
 
-.title h2 {
-    float:left;
-}
-
-
 #sidebar ul {
     margin-bottom: 10px;
     padding-left: 1em;
@@ -176,39 +158,6 @@ h2 {
 #sidebar ul li {
     list-style-type: none;
     padding-left: 0px;
-}
-
-div#app_menu {
-    display: none;
-    background-color: #AD9C9B;
-    padding: 10px;
-    border-radius: 4px;
-    position: absolute;
-    margin-top: 5px;
-    z-index: 2;
-    box-shadow: 5px 5px 5px #999999;
-    border-radius: 4px;
-}
-
-div#app_menu ul {
-    padding-left: 0px;
-    list-style-type: none;
-    font-weight: bold;
-}
-
-
-div#app_menu ul ul {
-    padding-left: 20px;
-    list-style-type: circle;
-    font-weight: normal;
-}
-
-div#app_menu li a {
-    color: white;
-}
-
-div#app_menu ul ul li:hover {
-    background-color: #726767;
 }
 
 .msg {
