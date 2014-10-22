@@ -140,6 +140,11 @@ div#menu {
 h2 {
     font-size: 1.5em;
     font-weight: bold;
+    color: #7A1243;
+}
+
+h2.panel-title {
+    color: #7A1243;
 }
 
 #sidebar ul {
