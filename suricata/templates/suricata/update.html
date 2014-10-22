@@ -48,7 +48,9 @@ function table_all_toggle(source) {
 {% endblock %}
 
 {% block sidebar %}
-<h2>Suricata {{ suricata.name }}</h2>
+<div class="panel-heading">
+<h2 class="panel-title">Suricata {{ suricata.name }}</h2>
+</div>
 <ul>
        <li><span class="type">Ruleset:</span> {{ suricata.ruleset }}</li>
        <li><span class="type">Ruleset Updated:</span> {{ suricata.ruleset.updated_date }}</li>
