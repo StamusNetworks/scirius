@@ -77,10 +77,10 @@ Choose an operation in Action menu.
 {% load render_table from django_tables2 %}
 <h2 class="title">Disabled rules</h2>
 
-<form action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
+<form class="form" action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
 {% render_table sources_list %}
 <input type="hidden" name="sources" value="sources">
-<input type="submit" value="Update sources" />
+<input type="submit" class="btn btn-primary" value="Update sources" />
 </form>
 
 {% endif %}
@@ -88,7 +88,7 @@ Choose an operation in Action menu.
 {% if mode == 'categories' %}
 
 {% load render_table from django_tables2 %}
-<form action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
+<form class="form" action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
 {% for sourceatversion in sources %}
 
 {% if not sourceatversion.source.datatype == 'other' %}
@@ -104,7 +104,7 @@ Choose an operation in Action menu.
 
 {% endfor %}
 <p>
-<input type="submit" value="Update categories" />
+<input type="submit"  class="btn btn-primary" value="Update categories" />
 </p>
 <input type="hidden" name="category" value="category">
 </form>
@@ -115,10 +115,10 @@ Choose an operation in Action menu.
 
 <h2 class="title">Disabled rules</h2>
 
-<form action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
+<form class="form" action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
 {% render_table rules %}
 <input type="hidden" name="rules" value="rules">
-<input type="submit" value="Remove selected rules from disabled rules" />
+<input type="submit"  class="btn btn-primary" value="Remove selected rules from disabled rules" />
 </form>
 
 {% endif %}

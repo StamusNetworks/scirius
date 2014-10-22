@@ -1,4 +1,6 @@
 {% extends "rules/base.html" %}
+{% load bootstrap3  %}
+
 {% block sidebar %}
 <div class="panel-heading">
 <h2 class="panel-title">Add a Ruleset</h2>
@@ -17,10 +19,22 @@
 {{ missing }}
 
 {% else %}
-<form action="/rules/ruleset/add" method="post">{% csrf_token %}
-{{ form.as_p }}
-<input class="btn btn-default" type="submit" value="Submit" />
+
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-6">
+<form action="/rules/ruleset/add" method="post" class="form">{% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "plus" %} Add 
+        </button>
+    {% endbuttons %}
 </form>
+</div>
+</div>
+</div>
+
 {% endif %}
 
 {% endblock %}

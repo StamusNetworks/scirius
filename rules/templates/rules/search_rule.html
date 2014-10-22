@@ -23,9 +23,9 @@ function tables2_toggle(source, name) {
 {% if rules %} 
 <h2 class="title">Rule(s)</h2>
     {% load render_table from django_tables2 %}
-<form action="/rules/ruleset/{{ruleset.id }}/addsupprule" method="post">{% csrf_token %}
+<form class="form" action="/rules/ruleset/{{ruleset.id }}/addsupprule" method="post">{% csrf_token %}
     {% render_table rules %}
-<input type="submit" value="Add selected rules to disabled rules list" />
+<input  class="btn btn-primary" type="submit" value="Add selected rules to disabled rules list" />
 </form>
 {% endif %}
 {% endblock %}
