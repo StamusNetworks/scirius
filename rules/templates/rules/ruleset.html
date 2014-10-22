@@ -59,6 +59,8 @@ Updated at {{ ruleset.updated_date }} !
 
 {% if mode == 'struct' %}
 
+<div class="container-fluid">
+<div class="col-md-6">
 {% for sourceatversion in sources %}
 <h2 class="title">Source: {{ sourceatversion }}</h2>
 
@@ -74,6 +76,7 @@ Updated at {{ ruleset.updated_date }} !
  Source fetched from {{ sourceatversion.source.uri }}
 {% endif %}
 {% endfor %}
+</div>
 
 {% endif %}
 
@@ -113,8 +116,12 @@ Updated: {{ cdiff.stats.updated }}
 
 
 {% if mode == 'struct' %}
+
+<div class="col-md-6">
 <h2 class="title">Disabled rules</h2>
 {% render_table rules %}
+</div>
+</div>
 {% endif %}
 
 {% if mode  == 'display' %}

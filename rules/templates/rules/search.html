@@ -6,27 +6,37 @@ No match.
 {% endif %}
 
 
-{% if rulesets %} 
-<h2 class="title">Rulesets</h2>
-    {% load render_table from django_tables2 %}
-    {% render_table rulesets %}
-{% endif %}
-{% if categories %} 
-<h2 class="title">Categories</h2>
-    {% load render_table from django_tables2 %}
-    {% render_table categories %}
-{% endif %}
-
+<div class="container-fluid">
 {% if rules %} 
+<div class="col-md-4">
 <h2 class="title">Rules</h2>
     {% load render_table from django_tables2 %}
     {% render_table rules %}
+</div>
 {% endif %}
+
+{% if categories %} 
+<div class="col-md-4">
+<h2 class="title">Categories</h2>
+    {% load render_table from django_tables2 %}
+    {% render_table categories %}
+</div>
+{% endif %}
+
+{% if rulesets %} 
+<div class="col-md-4">
+<h2 class="title">Rulesets</h2>
+    {% load render_table from django_tables2 %}
+    {% render_table rulesets %}
+</div>
+{% endif %}
+
+</div>
 {% endblock %}
 
 {% block sidebar %}
 <div class="panel-heading">
 <h2 class="panel-title">Search</h2>
 </div>
-{{ length }} result(s) for '{{motif}}'.
+<p>{{ length }} result(s) for '{{motif}}'.</p>
 {% endblock %}

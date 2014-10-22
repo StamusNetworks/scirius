@@ -2,7 +2,13 @@
 
 {% block content %}
 
-<h2 class="title">Rulesets</h2>
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-4">
+<div class="panel panel-default" >
+<div class="panel-heading" >
+<h2 class="panel-title">Rulesets</h2>
+</div>
 {% if ruleset_list %}
     <ul>
     {% for ruleset in ruleset_list %}
@@ -12,7 +18,14 @@
 {% else %}
     <p>No rulesets are available.</p>
 {% endif %}
-<h2 class="title">Sources</h2>
+</div>
+</div>
+
+<div class="col-md-4">
+<div class="panel panel-default" >
+<div class="panel-heading">
+<h2 class="panel-title">Sources</h2>
+</div>
 {% if source_list %}
     <ul>
     {% for source in source_list %}
@@ -22,6 +35,11 @@
 {% else %}
     <p>No sources are available.</p>
 {% endif %}
+</div>
+</div>
+
+</div> <!-- row -->
+</div> <!-- container -->
 
 {% endblock %}
 

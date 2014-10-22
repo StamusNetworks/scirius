@@ -23,12 +23,21 @@
 
 {% block content %}
 
+<div class="container-fluid">
+<div class="col-md-8">
 <h2 class="title">Definition</h2>
 <div class="rule">
       {{ rule.highlight_content|safe }}
 </div>
+</div>
+
+<div class="col-md-4">
 {% if references %}
-<h2 class="title">References</h2>
+
+<div class="panel panel-default" id="reference">
+<div class="panel-heading">
+<h2 class="panel-title">References</h2>
+</div>
 <ul>
 {% for ref in references %}
 <li>
@@ -40,14 +49,21 @@
 </li>
 {% endfor %}
 </ul>
+</div>
 {% endif %}
+</div>
+</div>
 
-
+<div class="container-fluid">
+<div class="col-md-6">
 <h2 class="title">Status in rulesets</h2>
 
 {% load render_table from django_tables2 %}
 {% render_table rulesets %}
 
+</div>
+
+<div class="col-md-6">
 <h2 class="title">Hits by host (last {{ date }})</h2>
 
 {% if stats %}
@@ -68,5 +84,8 @@
 {% else %}
 No data
 {% endif %}
+
+</div>
+</div>
 
 {% endblock %}
