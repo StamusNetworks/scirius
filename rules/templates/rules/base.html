@@ -14,7 +14,7 @@
 {% block body %}
 <body>
 {% endblock %}
-<div class="container">
+<div class="container-fluid">
 	<nav class="navbar navbar-default" role="navigation">
  <div class="container-fluid">
 		<div class="navbar-header">
@@ -57,7 +57,7 @@
 </div>
 	</nav>
 	<div class="row">
-		<div class="col-md-3">
+		<div class="col-md-2">
 			<div class="panel panel-default" id="sidebar">
 				        {% block sidebar %}
         				{% endblock %}
@@ -73,7 +73,7 @@
 					{% endif %}
 			</div> <!-- panel -->
 		</div> <!-- col -->
-		<div class="col-md-9">
+		<div class="col-md-10">
                     {% block error %}
                       {% if error %}
                        <div class="alert alert-error">{{ error }}</div>
