@@ -33,6 +33,7 @@ Scirius is using the following Django modules:
 
 * tables2
 * south
+* bootstrap3
 
 The easy way to install the dependencies is to use `pip <https://pypi.python.org/pypi/pip>`_:
 
@@ -42,7 +43,7 @@ On Debian, you can run ::
 
 You can then install django and the dependencies ::
 
- pip install django django-tables2 South GitPython pyinotify daemon Pygments
+ pip install django django-tables2 South GitPython pyinotify daemon Pygments django-bootstrap3
 
 It has been reported that on some Debian system forcing a recent GitPython is required ::
 
