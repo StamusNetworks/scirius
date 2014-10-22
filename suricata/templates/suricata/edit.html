@@ -1,4 +1,5 @@
 {% extends "rules/base.html" %}
+{% load bootstrap3  %}
 
 
 {% block sidebar %}
@@ -20,10 +21,20 @@
 <div class="alert alert-warning"> {{ missing }} </div>
 
 {% else %}
-<form action="/suricata/edit" method="post">{% csrf_token %}
-{{ form.as_p }}
-<input class="btn btn-default" type="submit" value="Submit" />
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-6">
+<form action="/suricata/edit" class="form" method="post">{% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "ok" %} Submit
+        </button>
+    {% endbuttons %}
 </form>
+</div>
+</div>
+</div>
 {% endif %}
 
 {% endblock %}
