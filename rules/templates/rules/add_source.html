@@ -1,4 +1,6 @@
 {% extends "rules/base.html" %}
+{% load bootstrap3  %}
+
 {% block sidebar %}
 <div class="panel-heading">
 <h2 class="panel-title">
@@ -74,13 +76,25 @@ function select_fields() {
 
 <div class="warning" id="name_warning">Warning: the name will be file name in Suricata rules directory</div>
 
+
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-6">
 {% if source %}
-<form enctype="multipart/form-data" action="/rules/source/{{ source.pk }}/edit" method="post">{% csrf_token %}
+<form class="form" enctype="multipart/form-data" action="/rules/source/{{ source.pk }}/edit" method="post">{% csrf_token %}
 {% else %}
-<form enctype="multipart/form-data" action="/rules/source/add" method="post">{% csrf_token %}
+<form class="form" enctype="multipart/form-data" action="/rules/source/add" method="post">{% csrf_token %}
 {% endif %}
-{{ form.as_p }}
-<input class="btn btn-default" type="submit" value="Submit" />
+    {% bootstrap_form form %}
+    {% buttons %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "plus" %} Submit
+        </button>
+    {% endbuttons %}
 </form>
+</div>
+</div>
+</div>
+
 
 {% endblock %}

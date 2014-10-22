@@ -1,7 +1,7 @@
 {% extends "rules/base.html" %}
 {% block sidebar %}
 <div class="panel-heading">
-       <h2 class="panel-title">{{ ruleset.name }}</h2>
+       <h2 class="panel-title"><a href="/rules/ruleset/{{ ruleset.pk }}">{{ ruleset.name }}</a></h2>
 </div>
 <ul>
 {% if ruleset.descr %}
@@ -75,11 +75,13 @@ Choose an operation in Action menu.
 
 {% if mode == 'sources' %}
 {% load render_table from django_tables2 %}
-<h2 class="title">Disabled rules</h2>
+<h2 class="title">Choose sources</h2>
+<h4>Check sources to enable/disable them and validate form at bottom.</h4>
 
 <form class="form" action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
 {% render_table sources_list %}
 <input type="hidden" name="sources" value="sources">
+<p></p>
 <input type="submit" class="btn btn-primary" value="Update sources" />
 </form>
 
@@ -103,6 +105,7 @@ Choose an operation in Action menu.
 {% endif %}
 
 {% endfor %}
+<p></p>
 <p>
 <input type="submit"  class="btn btn-primary" value="Update categories" />
 </p>
