@@ -6,7 +6,6 @@
 <h2 class="panel-title">
 {% if source %}
 Edit Source '{{ source.name }}'
-</div>
 {% else %}
 Add a Source
 {% endif %}
@@ -27,11 +26,11 @@ Add a Source
 <script language="JavaScript">
 function display_field(method) {
     if ($( this ).find("option:selected").text() == "HTTP URL") {
-        $("#id_uri").parent().show(duration=200);
-        $("#id_file").parent().hide(duration=200);
+        $("#id_uri").parents(".form-group").show(duration=200);
+        $("#id_file").parents(".form-group").hide(duration=200);
     } else {
-        $("#id_uri").parent().hide(duration=200);
-        $("#id_file").parent().show(duration=200);
+        $("#id_uri").parents(".form-group").hide(duration=200);
+        $("#id_file").parents(".form-group").show(duration=200);
     }
 }
 
@@ -45,8 +44,8 @@ function display_warning(method) {
 
 function hide_fields() {
     $("#id_method").change(display_field);
-    $("#id_uri").parent().hide();
-    $("#id_file").parent().hide();
+    $("#id_uri").parents(".form-group").hide();
+    $("#id_file").parents(".form-group").hide();
     $("#name_warning").hide();
     $("#id_method").change(display_field);
     $("#id_datatype").change(display_warning);
@@ -54,14 +53,14 @@ function hide_fields() {
 
 function select_fields() {
     if ($("#id_method").find("option:selected").text() == "HTTP URL") {
-        $("#id_file").parent().hide();
+        $("#id_file").parents(".form-group").hide();
     } else {
-        $("#id_uri").parent().hide();
+        $("#id_uri").parents(".form-group").hide();
     }
     if ($("#id_datatype").find("option:selected").text() == "Other content") {
-        $("#name_warning").parent().show();
+        $("#name_warning").show();
     } else {
-        $("#name_warning").parent().hide();
+        $("#name_warning").hide();
     }
 
     $("#id_method").change(display_field);
@@ -74,17 +73,18 @@ function select_fields() {
 
 {% endif %}
 
-<div class="warning" id="name_warning">Warning: the name will be file name in Suricata rules directory</div>
 
+<div class="alert alert-warning" id="name_warning">Warning: the name will be file name in Suricata rules directory</div>
 
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-6">
 {% if source %}
-<form class="form" enctype="multipart/form-data" action="/rules/source/{{ source.pk }}/edit" method="post">{% csrf_token %}
+    <form class="form" enctype="multipart/form-data" action="/rules/source/{{ source.pk }}/edit" method="post">
 {% else %}
-<form class="form" enctype="multipart/form-data" action="/rules/source/add" method="post">{% csrf_token %}
+    <form class="form" enctype="multipart/form-data" action="/rules/source/add" method="post">
 {% endif %}
+    {% csrf_token %}
     {% bootstrap_form form %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">
@@ -95,6 +95,7 @@ function select_fields() {
 </div>
 </div>
 </div>
+
 
 
 {% endblock %}
