@@ -8,7 +8,10 @@
      <!-- Latest compiled and minified CSS -->
      <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}"/>
--   <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/scirius.js' %}"></script>
 </head>
 
 {% block body %}
@@ -71,6 +74,7 @@
 					  {% endfor %}
 					</ol>
 					{% endif %}
+                                        {% block status %} {% endblock %}
 			</div> <!-- panel -->
 		</div> <!-- col -->
 		<div class="col-md-10">
@@ -89,8 +93,5 @@
 		</div>
 	</div>
 </div> <!-- class container -->
-<script src="{% static 'js/jquery.min.js' %}"></script>
-<script src="{% static 'js/bootstrap.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/scirius.js' %}"></script>
 </body>
 </html>
