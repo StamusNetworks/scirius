@@ -242,3 +242,11 @@ a#display_menu img {
 div.status p {
    padding-left: 10px;
 }
+
+button a {
+   color: white;
+}
+
+button a:hover {
+   color: white;
+}
