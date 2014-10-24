@@ -64,7 +64,10 @@
 </div>
 
 <div class="col-md-6">
-<h2 class="title">Hits by host (last {{ date }})</h2>
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-12">
+<h2 class="title">Hits by host (last {{ date }})
 
 {% if stats %}
 <span class="pull-right">
@@ -79,9 +82,17 @@
    <li><a href="?duration=168">Last 7d</a></li>
 </ul>
 </span>
+</h2>
 
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
 {% render_table stats %}
+</div>
+</div>
 {% else %}
+</h2>
 No data
 {% endif %}
 
