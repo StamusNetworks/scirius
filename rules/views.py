@@ -147,6 +147,12 @@ class Reference:
         self.key = key
         self.url = None
 
+# FIXME read option and select function
+def elasticsearch(request):
+    data = es_get_dashboard()
+    return HttpResponse(json.dumps(data),
+                        content_type="application/json")
+
 def rule(request, rule_id, key = 'pk'):
     if request.is_ajax():
         rule = get_object_or_404(Rule, sid=rule_id)

@@ -23,13 +23,11 @@ from django.conf import settings
 import django_tables2 as tables
 
 from rules.tables import *
-from rules.elasticsearch import es_get_dashboard
 
 def scirius_render(request, template, context):
     context['generator'] = settings.RULESET_MIDDLEWARE
     if settings.USE_KIBANA:
         context['kibana'] = 1
-        context['dashboards'] = es_get_dashboard()
         context['kibana_url'] = settings.KIBANA_URL
     return render(request, template, context)
 

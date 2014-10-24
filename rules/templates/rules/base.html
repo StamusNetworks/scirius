@@ -27,14 +27,8 @@
 			<ul class="dropdown-menu" id="sc_menu" role="menu">
 			{% if kibana %}
                 	<li><a href="{{kibana_url}}">Dashboards</a>
-		    		{% if dashboards %}
-                    		<ul>
-                    		{% for dashboard in dashboards %}
-                        		<li><a href="{{kibana_url}}/#/dashboard/elasticsearch/{{dashboard}}">{{dashboard}}</a></li>
-                    		{% endfor %}
-                    		</ul>
-		    		{% endif %}
-                		</li>
+				<div id="dashboards"><ul><li>Loading data...</li></ul></div>
+                        </li>
  			<li role="presentation" class="divider"></li>
 			{% endif %}
                 	<li><a target="_blank" href="https://github.com/StamusNetworks/scirius">Scirius homepage</a></li>
@@ -96,5 +90,39 @@
 		</div>
 	</div>
 </div> <!-- class container -->
+
+<script>
+
+function load_dashboards() {
+    $.ajax(
+        {
+                type:"GET",
+                url:"/rules/es?query=dashboards",
+                success: function(data) {
+                if (data.length) {
+                        $("#dashboards").empty();
+                        var dh = "<ul>";
+                        for (i = 0; i < data.length; i++) {
+                                dh += "<li><a href='{{ kibana_url }}/#/dashboard/elasticsearch/" + data[i] + "'>" + data[i] + "</a></li>";
+                        }
+                        $("#dashboards").append(dh);
+                } else {
+                        $("#dashboards").text("Failed to get data");
+		}
+                },
+                error: function(data) {
+                        $("#dashboards").empty();
+                        $("#dashboards").append("<ul><li>Error getting data</li></ul>");
+                },
+                timeout: 15000,
+        }
+    );
+}
+
+
+$( 'document' ).ready(load_dashboards());
+
+</script>
+
 </body>
 </html>
