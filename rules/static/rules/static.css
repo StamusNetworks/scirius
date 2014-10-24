@@ -238,3 +238,7 @@ div.dropdown-menu li {
 a#display_menu img {
    margin-bottom: 5px;
 }
+
+div.status p {
+   padding-left: 10px;
+}

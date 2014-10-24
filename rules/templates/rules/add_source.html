@@ -69,7 +69,7 @@ function select_fields() {
 </script>
 
 {% if error %}
-<div class="error">{{ error }}</div>
+<div class="alert alert-error">{{ error }}</div>
 
 {% endif %}
 
@@ -88,7 +88,7 @@ function select_fields() {
     {% bootstrap_form form %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "plus" %} Submit
+            {% bootstrap_icon "ok" %} Submit
         </button>
     {% endbuttons %}
 </form>
