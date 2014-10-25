@@ -53,6 +53,7 @@ function load_rules() {
           success: function(data) {
              $('#rules_table').empty();
              $('#rules_table').append(data);
+             prepare_rule_details();
           },
 	  error: function(data) {
              $('#rules_table').text("Unable to get data.");
