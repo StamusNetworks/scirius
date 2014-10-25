@@ -41,14 +41,31 @@ function differentiate_suppressed() {
 
 <div class="row">
 <div class="col-md-6">
-
-{% load render_table from django_tables2 %}
-
-{% render_table rules %}
+<div id="rules_table">Fetching data...</div>
 </div>
 </div>
 </div>
 {% endif %}
+
+<script>
+function load_rules() {
+    $.ajax({
+       url: '/rules/es?query=rules&host={{ suricata.name }}&from_date={{ from_date }}',
+          success: function(data) {
+             $('#rules_table').empty();
+             $('#rules_table').append(data);
+          },
+	  error: function(data) {
+             $('#rules_table').text("Unable to get data.");
+             $("#error").text("Unable to get data from Elasticsearch");
+             $("#error").parent().toggle();
+	  }
+    });
+
+}
+
+$( 'document' ).ready(load_rules());
+</script>
 
 {% endblock %}
 

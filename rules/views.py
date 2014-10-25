@@ -148,10 +148,18 @@ class Reference:
         self.url = None
 
 def elasticsearch(request):
+    data = None
     if request.GET.__contains__('query'):
         query = request.GET.get('query', 'dashboards')
         if query == 'dashboards':
             data = es_get_dashboard()
+        elif query == 'rules':
+            host = request.GET.get('host', None)
+            from_date = request.GET.get('from_date', None)
+            if host != None and from_date != None:
+                rules = es_get_rules_stats(request, host, from_date = from_date)
+                context = {'table': rules}
+                return scirius_render(request, 'rules/table.html', context)
         else:
             data = None
     else:

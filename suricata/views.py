@@ -69,11 +69,8 @@ def index(request):
             else:
                 date = str(duration / 24) + "d"
             context['date'] = date
-            rules = es_get_rules_stats(request, suri.name, from_date=from_date)
-            if rules:
-                context['rules'] = rules
-            else:
-                context['error'] = 'Unable to join Elasticsearch server or no alerts'
+            context['rules'] = True
+            context['from_date'] = from_date
 
         return scirius_render(request, 'suricata/index.html', context)
     else:
