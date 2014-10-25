@@ -99,6 +99,7 @@
 	</div>
 </div> <!-- class container -->
 
+{% if kibana %}
 <script>
 
 function load_dashboards() {
@@ -133,6 +134,7 @@ function load_dashboards() {
 $( 'document' ).ready(load_dashboards());
 
 </script>
+{% endif %}
 
 </body>
 </html>
