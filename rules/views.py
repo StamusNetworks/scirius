@@ -160,6 +160,13 @@ def elasticsearch(request):
                 rules = es_get_rules_stats(request, host, from_date = from_date)
                 context = {'table': rules}
                 return scirius_render(request, 'rules/table.html', context)
+        elif query == 'rule':
+            sid = request.GET.get('sid', None)
+            from_date = request.GET.get('from_date', None)
+            if from_date != None and sid != None:
+                hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
+                context = {'table': hosts}
+                return scirius_render(request, 'rules/table.html', context)
         else:
             data = None
     else:
@@ -218,11 +225,8 @@ def rule(request, rule_id, key = 'pk'):
         else:
             date = str(duration / 24) + "d"
         context['date'] = date
-        stats = es_get_sid_by_hosts(request, rule_id, from_date=from_date)
-        if stats:
-            context['stats'] = stats
-        else:
-            context['error'] = 'Unable to join Elasticsearch server or no alerts'
+        context['from_date'] = from_date
+        context['stats'] = True
 
     return scirius_render(request, 'rules/rule.html', context)
 

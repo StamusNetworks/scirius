@@ -88,7 +88,8 @@
 </div>
 <div class="row">
 <div class="col-md-12">
-{% render_table stats %}
+
+<div id="stats_table">Fetching data...</div>
 </div>
 </div>
 {% else %}
@@ -98,5 +99,27 @@ No data
 
 </div>
 </div>
+
+{% if stats %}
+<script>
+function load_stats() {
+    $.ajax({
+       url: '/rules/es?query=rule&sid={{ rule.pk }}&from_date={{ from_date }}',
+          success: function(data) {
+             $('#stats_table').empty();
+             $('#stats_table').append(data);
+          },
+	  error: function(data) {
+             $('#stats_table').text("Unable to get data.");
+             $("#error").text("Unable to get data from Elasticsearch");
+             $("#error").parent().toggle();
+	  }
+    });
+
+}
+
+$( 'document' ).ready(load_stats());
+</script>
+{% endif %}
 
 {% endblock %}
