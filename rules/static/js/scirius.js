@@ -1,4 +1,4 @@
-$( 'document' ).ready(function() {
+function prepare_rule_details() {
     $(".msg").click(function( event ) {
         if ($(this).find(".detail").length) {
             $(this).find(".detail").slideUp(
@@ -22,4 +22,8 @@ $( 'document' ).ready(function() {
             );
         }
     });
+}
+
+$( 'document' ).ready(function() {
+        prepare_rule_details();
 });
