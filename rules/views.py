@@ -147,9 +147,15 @@ class Reference:
         self.key = key
         self.url = None
 
-# FIXME read option and select function
 def elasticsearch(request):
-    data = es_get_dashboard()
+    if request.GET.__contains__('query'):
+        query = request.GET.get('query', 'dashboards')
+        if query == 'dashboards':
+            data = es_get_dashboard()
+        else:
+            data = None
+    else:
+        data = es_get_dashboard()
     return HttpResponse(json.dumps(data),
                         content_type="application/json")
 

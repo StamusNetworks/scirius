@@ -77,9 +77,17 @@
 		<div class="col-md-10">
                     {% block error %}
                       {% if error %}
-                       <div class="alert alert-danger">{{ error }}</div>
+                       <div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+ <span id="error">{{ error }}</span></div>
+
+                      {% else %}
+                       <div class="alert alert-danger alert-dismissible" style="display:none;">
+                       <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+
+                       <span id="error"> No error</span></div>
                       {% endif %}
                     {% endblock %}
+
                     {% block content %}{% endblock %}
 		</div> <!-- col -->
 	</div> <!-- row -->
@@ -113,6 +121,8 @@ function load_dashboards() {
                 error: function(data) {
                         $("#dashboards").empty();
                         $("#dashboards").append("<ul><li>Error getting data</li></ul>");
+                        $("#error").text("Unable to get data from Elasticsearch");
+                        $("#error").parent().toggle();
                 },
                 timeout: 15000,
         }
