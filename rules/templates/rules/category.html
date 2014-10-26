@@ -20,13 +20,19 @@
 
 {% block content %}
 
+<div class="container-fluid">
+ <div class="row">
+  <div class="col-md-6">
 <h2 class="title">Rules</h2>
 {% load render_table from django_tables2 %}
 {% render_table rules %}
-
+  </div>
+  <div class="col-md-6">
 <h2 class="title">Status in rulesets</h2>
 
 {% load render_table from django_tables2 %}
 {% render_table rulesets %}
-
+  </div>
+ </div>
+</div>
 {% endblock %}
