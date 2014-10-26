@@ -118,6 +118,11 @@ function load_dashboards() {
                 type:"GET",
                 url:"/rules/es?query=dashboards",
                 success: function(data) {
+                if (!data) {
+                        $("#dashboards").text("Failed to get data");
+                        $("#error").text("Unable to get data from Elasticsearch");
+                        $("#error").parent().toggle();
+                }
                 if (data.length) {
                         $("#dashboards").empty();
                         var dh = "<ul>";
