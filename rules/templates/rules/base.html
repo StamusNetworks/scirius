@@ -33,10 +33,19 @@
 			{% endif %}
                 	<li><a target="_blank" href="https://github.com/StamusNetworks/scirius">Scirius homepage</a></li>
 			</ul>
-		</div>
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#top-menu-collapse">
+        <span class="sr-only">Toggle navigation</span>
+         <span class="icon-bar"></span>
+         <span class="icon-bar"></span>
+         <span class="icon-bar"></span>
+          </button>
+        </div>
+
+
+        <div class="navbar-collapse collapse" id="top-menu-collapse">
                 <ul class="nav navbar-nav" id="top_menu">
 
-			<li><a id="home" href="/rules/">Home</a></li>
+            <li><a id="home" href="/rules/">Home</a></li>
 			<li><a id="ruleset" href="/rules/ruleset/">Rulesets</a></li>
 			<li><a id="source" href="/rules/source/">Sources</a></li>
             		{% if generator %}
@@ -51,6 +60,7 @@
 			<span class="glyphicon glyphicon-search"> <input type="text" name="search" id="id_search"/></span>
 </div>
 		</form>
+</div>
 </div>
 	</nav>
 	<div class="row">
