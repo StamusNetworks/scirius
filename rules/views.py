@@ -41,6 +41,23 @@ from tables import *
 from forms import *
 from suripyg import SuriHTMLFormat
 
+def complete_context(request, context):
+    if settings.USE_ELASTICSEARCH:
+        if request.GET.__contains__('duration'):
+            duration = int(request.GET.get('duration', '24'))
+            if duration > 24 * 7:
+                duration = 24 * 7
+            request.session['duration'] = duration
+        else:
+            duration = int(request.session.get('duration', '24'))
+        from_date = int((time() - (duration * 3600)) * 1000) # last 24 hours
+        if duration <= 24:
+            date = str(duration) + "h"
+        else:
+            date = str(duration / 24) + "d"
+        context['date'] = date
+        context['from_date'] = from_date
+
 # Create your views here.
 def index(request):
     ruleset_list = Ruleset.objects.all().order_by('-created_date')[:5]
@@ -54,6 +71,7 @@ def index(request):
             context['suricata'] = suricata[0]
     except:
         pass
+    complete_context(request, context)
     return scirius_render(request, 'rules/index.html', context)
 
 def about(request):
@@ -167,6 +185,9 @@ def elasticsearch(request):
                 hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
                 context = {'table': hosts}
                 return scirius_render(request, 'rules/table.html', context)
+        elif query == 'timeline':
+            from_date = request.GET.get('from_date', None)
+            data = es_get_timeline(from_date = from_date)
         else:
             data = None
     else:
@@ -211,21 +232,8 @@ def rule(request, rule_id, key = 'pk'):
     rulesets_status = StatusRulesetTable(rulesets_status)
     tables.RequestConfig(request).configure(rulesets_status)
     context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status}
+    complete_context(request, context)
     if settings.USE_ELASTICSEARCH:
-        if request.GET.__contains__('duration'):
-            duration = int(request.GET.get('duration', '24'))
-            if duration > 24 * 7:
-                duration = 24 * 7
-            request.session['duration'] = duration
-        else:
-            duration = int(request.session.get('duration', '24'))
-        from_date = int((time() - (duration * 3600)) * 1000) # last 24 hours
-        if duration <= 24:
-            date = str(duration) + "h"
-        else:
-            date = str(duration / 24) + "d"
-        context['date'] = date
-        context['from_date'] = from_date
         context['stats'] = True
 
     return scirius_render(request, 'rules/rule.html', context)

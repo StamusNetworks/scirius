@@ -39,7 +39,98 @@
 </div>
 
 </div> <!-- row -->
+
+{% if elasticsearch %}
+<div class="row">
+<div class="col-md-12">
+<h2 class="title">Alerts activity (last {{ date }})
+<span class="pull-right">
+<a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+<span class="glyphicon glyphicon-cog"> </span>
+</a>
+<ul class="dropdown-menu" id="display_menu">
+   <li><a href="?duration=1">Last 1h</a></li>
+   <li><a href="?duration=6">Last 6h</a></li>
+   <li><a href="?duration=24">Last 24h</a></li>
+   <li><a href="?duration=48">Last 2d</a></li>
+   <li><a href="?duration=168">Last 7d</a></li>
+</ul>
+</span>
+</h2>
+
+</div> <!-- col -->
+</div> <!-- row -->
+<div class="row">
+<div class="col-md-12">
+<div id="timeline">
+<svg style="width:100%;height:300px">
+</svg>
+</div>
+
+</div> <!-- col -->
+</div> <!-- row -->
+
+<script>
+function draw_timeline() {
+        $.ajax(
+                        {
+                        type:"GET",
+                        url:"/rules/es?query=timeline&from_date={{ from_date }}",
+                        success: function(data) {
+                            nv.addGraph(function() {
+                                /*
+                              var chart = nv.models.lineChart()
+                                            .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+                                            .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+                                            .transitionDuration(350)  //how fast do you want the lines to transition?
+                                            .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                                            .showYAxis(true)        //Show the y-axis
+                                            .showXAxis(true)        //Show the x-axis
+                              ;
+    */            
+                                var chart = nv.models.multiBarChart()
+                                .transitionDuration(350)
+                                .reduceXTicks(true)   //If 'false', every single x-axis tick label will be rendered.
+                                .rotateLabels(0)      //Angle to rotate x-axis labels.
+                                .showControls(false)   //Allow user to switch between 'Grouped' and 'Stacked' mode.
+                                .groupSpacing(0.1)    //Distance between each group of bars.
+                                ;
+                                chart.xAxis.tickFormat(function(d) {
+                                    return d3.time.format('%m/%d %H:%M')(new Date(d))
+                                });
+                
+                                chart.yAxis
+                                .tickFormat(d3.format(',.1f'));
+                
+                                gdata = []
+                                for (i = 0; i < data.length; i++) {
+                                    gdata.push({x: data[i]["time"], y: data[i]["count"]});
+                                }
+                                sdata = [
+                                        {
+                                            values: gdata,
+                                            key: '{{ suricata.name }}',
+                                            color: '#AD9C9B',  //color - optional: choose your own line color.
+                                            area: false
+                                        },
+                                    ];
+                                d3.select('#timeline svg')
+                                        .datum(sdata)
+                                        .call(chart);
+
+                                nv.utils.windowResize(function() { chart.update() });
+                                return chart;
+                        });
+                },
+        });
+}
+
+$( 'document' ).ready(draw_timeline());
+</script>
+{% endif %}
+
 </div> <!-- container -->
+
 
 {% endblock %}
 

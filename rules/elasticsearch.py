@@ -123,6 +123,49 @@ SID_BY_HOST_QUERY = """
 }'
 """
 
+# TODO loop on host and set interval based on duration
+TIMELINE_QUERY = """
+{
+  "facets": {
+    "1": {
+      "date_histogram": {
+        "field": "@timestamp",
+        "interval": "{{ interval }}"
+      },
+      "global": true,
+      "facet_filter": {
+        "fquery": {
+          "query": {
+            "filtered": {
+              "query": {
+                "query_string": {
+                  "query": "event_type:alert"
+                }
+              },
+              "filter": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "from": {{ from_date }},
+                          "to": "now"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "size": 0
+}
+"""
+
 DASHBOARDS_QUERY_URL = "http://%s/kibana-int/dashboard/_search" % settings.ELASTICSEARCH_ADDRESS
 
 from rules.models import Rule
@@ -210,3 +253,22 @@ def es_get_dashboard(count=20):
             dashboards.append(elt["_id"])
         return dashboards
     return None
+
+def es_get_timeline(from_date=0, interval='5m'):
+    templ = Template(TIMELINE_QUERY)
+    context = Context({'from_date': from_date, 'interval': interval})
+    data = templ.render(context)
+    req = urllib2.Request(URL, data)
+    try:
+        out = urllib2.urlopen(req)
+    except:
+        return None
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    # total number of results
+    try:
+        data = data['facets']['1']['entries']
+    except:
+        return None
+    return data
