@@ -63,6 +63,7 @@
 <div class="row">
 <div class="col-md-12">
 <div id="timeline">
+<span>Fetching data...</span>
 <svg style="width:100%;height:300px">
 </svg>
 </div>
@@ -71,62 +72,8 @@
 </div> <!-- row -->
 
 <script>
-function draw_timeline() {
-        $.ajax(
-                        {
-                        type:"GET",
-                        url:"/rules/es?query=timeline&from_date={{ from_date }}",
-                        success: function(data) {
-                            nv.addGraph(function() {
-                                /*
-                              var chart = nv.models.lineChart()
-                                            .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
-                                            .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
-                                            .transitionDuration(350)  //how fast do you want the lines to transition?
-                                            .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
-                                            .showYAxis(true)        //Show the y-axis
-                                            .showXAxis(true)        //Show the x-axis
-                              ;
-    */            
-                                var chart = nv.models.multiBarChart()
-                                .transitionDuration(350)
-                                .reduceXTicks(true)   //If 'false', every single x-axis tick label will be rendered.
-                                .rotateLabels(0)      //Angle to rotate x-axis labels.
-                                .showControls(false)   //Allow user to switch between 'Grouped' and 'Stacked' mode.
-                                .groupSpacing(0.1)    //Distance between each group of bars.
-                                ;
-                                chart.xAxis.tickFormat(function(d) {
-                                    return d3.time.format('%m/%d %H:%M')(new Date(d))
-                                });
-                
-                                chart.yAxis
-                                .tickFormat(d3.format(',.1f'));
-                
-                                gdata = []
-                                for (i = 0; i < data.length; i++) {
-                                    gdata.push({x: data[i]["time"], y: data[i]["count"]});
-                                }
-                                sdata = [
-                                        {
-                                            values: gdata,
-                                            key: '{{ suricata.name }}',
-                                            color: '#AD9C9B',  //color - optional: choose your own line color.
-                                            area: false
-                                        },
-                                    ];
-                                d3.select('#timeline svg')
-                                        .datum(sdata)
-                                        .call(chart);
-
-                                nv.utils.windowResize(function() { chart.update() });
-                                return chart;
-                        });
-                },
-        });
-}
-
-$( 'document' ).ready(draw_timeline());
-</script>
+$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [ '{{ suricata.name }}' ]); });
+</script
 {% endif %}
 
 </div> <!-- container -->

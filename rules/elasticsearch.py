@@ -23,6 +23,7 @@ from django.conf import settings
 
 import urllib2
 import json
+from time import time
 
 URL = "http://%s/_all/_search?pretty" % settings.ELASTICSEARCH_ADDRESS
 
@@ -123,11 +124,11 @@ SID_BY_HOST_QUERY = """
 }'
 """
 
-# TODO loop on host and set interval based on duration
 TIMELINE_QUERY = """
 {
   "facets": {
-    "1": {
+{% for host in hosts %}
+    "{{ host }}": {
       "date_histogram": {
         "field": "@timestamp",
         "interval": "{{ interval }}"
@@ -139,7 +140,7 @@ TIMELINE_QUERY = """
             "filtered": {
               "query": {
                 "query_string": {
-                  "query": "event_type:alert"
+                  "query": "event_type:alert AND host:{{ host }}"
                 }
               },
               "filter": {
@@ -160,7 +161,7 @@ TIMELINE_QUERY = """
           }
         }
       }
-    }
+    }{% if not forloop.last %},{% endif %}{% endfor %}
   },
   "size": 0
 }
@@ -254,9 +255,12 @@ def es_get_dashboard(count=20):
         return dashboards
     return None
 
-def es_get_timeline(from_date=0, interval='5m'):
+def es_get_timeline(from_date=0, interval=None, hosts = None):
     templ = Template(TIMELINE_QUERY)
-    context = Context({'from_date': from_date, 'interval': interval})
+    # 200 points on graph per default
+    if interval == None:
+        interval = str(int((time() - (int(from_date) / 1000)) / 200)/60) + "m"
+    context = Context({'from_date': from_date, 'interval': interval, 'hosts': hosts})
     data = templ.render(context)
     req = urllib2.Request(URL, data)
     try:
@@ -268,7 +272,7 @@ def es_get_timeline(from_date=0, interval='5m'):
     data = json.loads(data)
     # total number of results
     try:
-        data = data['facets']['1']['entries']
+        data = data['facets']
     except:
         return None
     return data

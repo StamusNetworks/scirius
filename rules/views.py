@@ -187,7 +187,9 @@ def elasticsearch(request):
                 return scirius_render(request, 'rules/table.html', context)
         elif query == 'timeline':
             from_date = request.GET.get('from_date', None)
-            data = es_get_timeline(from_date = from_date)
+            cshosts = request.GET.get('hosts', None)
+            hosts = cshosts.split(',')
+            data = es_get_timeline(from_date = from_date, hosts = hosts)
         else:
             data = None
     else:
