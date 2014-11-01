@@ -55,6 +55,7 @@
 </div>
 
 <div class="container-fluid">
+<div class="row">
 <div class="col-md-6">
 <h2 class="title">Status in rulesets</h2>
 
@@ -64,12 +65,12 @@
 </div>
 
 <div class="col-md-6">
+{% if elasticsearch %}
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-12">
 <h2 class="title">Hits by host (last {{ date }})
 
-{% if stats %}
 <span class="pull-right">
 <a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown" />
 <span class="glyphicon glyphicon-cog"> </span>
@@ -92,14 +93,12 @@
 <div id="stats_table">Fetching data...</div>
 </div>
 </div>
-{% else %}
-</h2>
-No data
-{% endif %}
 
-</div>
+</div> <!-- container -->
+</div> <!-- col -->
+</div> <!-- row -->
+</div> <!-- container -->
 
-{% if stats %}
 <script>
 function load_stats() {
     $.ajax({

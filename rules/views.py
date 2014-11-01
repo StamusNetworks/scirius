@@ -235,8 +235,6 @@ def rule(request, rule_id, key = 'pk'):
     tables.RequestConfig(request).configure(rulesets_status)
     context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status}
     complete_context(request, context)
-    if settings.USE_ELASTICSEARCH:
-        context['stats'] = True
 
     return scirius_render(request, 'rules/rule.html', context)
 
