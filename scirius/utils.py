@@ -26,6 +26,8 @@ from rules.tables import *
 
 def scirius_render(request, template, context):
     context['generator'] = settings.RULESET_MIDDLEWARE
+    if settings.USE_ELASTICSEARCH:
+        context['elasticsearch'] = 1
     if settings.USE_KIBANA:
         context['kibana'] = 1
         context['kibana_url'] = settings.KIBANA_URL
