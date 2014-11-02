@@ -97,9 +97,42 @@
 </div> <!-- container -->
 </div> <!-- col -->
 </div> <!-- row -->
+{% if hosts %}
+<div class="row">
+<div class="col-md-12">
+<h2 class="title">Activity (last {{ date }})
+<span class="pull-right">
+<a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+<span class="glyphicon glyphicon-cog"> </span>
+</a>
+<ul class="dropdown-menu" id="display_menu">
+   <li><a href="?duration=1">Last 1h</a></li>
+   <li><a href="?duration=6">Last 6h</a></li>
+   <li><a href="?duration=24">Last 24h</a></li>
+   <li><a href="?duration=48">Last 2d</a></li>
+   <li><a href="?duration=168">Last 7d</a></li>
+</ul>
+</span>
+</h2>
+</div> <!-- col -->
+</div> <!-- row -->
+<div class="row">
+<div class="col-md-12">
+<div id="timeline">
+<span>Fetching data...</span>
+<svg style="width:100%;height:300px">
+</svg>
+</div> <!-- col -->
+</div> <!-- row -->
+{% endif %}
 </div> <!-- container -->
 
 <script>
+
+{% if hosts %}
+$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [ 'ice-age2' ], "alert.signature_id:{{ rule.sid }}" ); });
+{% endif %}
+
 function load_stats() {
     $.ajax({
        url: '/rules/es?query=rule&sid={{ rule.pk }}&from_date={{ from_date }}',

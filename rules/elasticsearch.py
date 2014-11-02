@@ -140,7 +140,7 @@ TIMELINE_QUERY = """
             "filtered": {
               "query": {
                 "query_string": {
-                  "query": "event_type:alert AND host:{{ host }}"
+                  "query": "event_type:alert AND host:{{ host }} {{ query_filter }}"
                 }
               },
               "filter": {
@@ -255,12 +255,15 @@ def es_get_dashboard(count=20):
         return dashboards
     return None
 
-def es_get_timeline(from_date=0, interval=None, hosts = None):
+def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     templ = Template(TIMELINE_QUERY)
     # 200 points on graph per default
     if interval == None:
         interval = str(int((time() - (int(from_date) / 1000)) / 200)/60) + "m"
     context = Context({'from_date': from_date, 'interval': interval, 'hosts': hosts})
+    if qfilter != None:
+        query_filter = " AND " + qfilter
+        context['query_filter'] = query_filter
     data = templ.render(context)
     req = urllib2.Request(URL, data)
     try:

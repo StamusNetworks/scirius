@@ -189,7 +189,8 @@ def elasticsearch(request):
             from_date = request.GET.get('from_date', None)
             cshosts = request.GET.get('hosts', None)
             hosts = cshosts.split(',')
-            data = es_get_timeline(from_date = from_date, hosts = hosts)
+            qfilter = request.GET.get('filter', None)
+            data = es_get_timeline(from_date = from_date, hosts = hosts, qfilter = qfilter)
         else:
             data = None
     else:
@@ -234,6 +235,24 @@ def rule(request, rule_id, key = 'pk'):
     rulesets_status = StatusRulesetTable(rulesets_status)
     tables.RequestConfig(request).configure(rulesets_status)
     context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status}
+    if settings.RULESET_MIDDLEWARE == 'suricata':
+        try:
+            from suricata.models import Suricata
+            hosts = []
+            for suri in Suricata.objects.all():
+                hosts.append(suri.name)
+        except:
+            pass
+    elif settings.RULESET_MIDDLEWARE == 'appliances':
+        try:
+            from appliances.models import Appliance
+            hosts = []
+            for app in Appliance.objects.all():
+                hosts.append(app.name)
+        except:
+            pass
+    if len(hosts):
+        context['hosts'] = json.dumps(hosts)
     complete_context(request, context)
 
     return scirius_render(request, 'rules/rule.html', context)

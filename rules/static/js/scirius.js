@@ -28,11 +28,16 @@ $( 'document' ).ready(function() {
         prepare_rule_details();
 });
 
-function draw_timeline(from_date, hosts) {
+function draw_timeline(from_date, hosts, filter) {
+
+        esurl = "/rules/es?query=timeline&from_date=" + from_date + "&hosts=" + hosts.join()
+        if (filter) {
+            esurl = esurl + "&filter=" + filter;
+        }
         $.ajax(
                         {
                         type:"GET",
-                        url:"/rules/es?query=timeline&from_date=" + from_date + "&hosts=" + hosts.join(),
+                        url:esurl,
                         success: function(data) {
 			    $("#timeline span").hide();
                             nv.addGraph(function() {
