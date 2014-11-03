@@ -24,16 +24,16 @@
 {% block content %}
 
 <div class="container-fluid">
+<div class="row">
 <div class="col-md-8">
 <h2 class="title">Definition</h2>
 <div class="rule">
       {{ rule.highlight_content|safe }}
 </div>
-</div>
+</div> <!-- col -->
 
-<div class="col-md-4">
 {% if references %}
-
+<div class="col-md-4">
 <div class="panel panel-default" id="reference">
 <div class="panel-heading">
 <h2 class="panel-title">References</h2>
@@ -49,12 +49,11 @@
 </li>
 {% endfor %}
 </ul>
-</div>
+</div> <!-- panel -->
 {% endif %}
-</div>
-</div>
+</div> <!-- col -->
+</div> <!-- row -->
 
-<div class="container-fluid">
 <div class="row">
 <div class="col-md-6">
 <h2 class="title">Status in rulesets</h2>
@@ -62,7 +61,7 @@
 {% load render_table from django_tables2 %}
 {% render_table rulesets %}
 
-</div>
+</div> <!-- col -->
 
 <div class="col-md-6">
 {% if elasticsearch %}
@@ -92,7 +91,7 @@
 
 <div id="stats_table">Fetching data...</div>
 </div>
-</div>
+</div> <!-- row -->
 
 </div> <!-- container -->
 </div> <!-- col -->
@@ -122,6 +121,7 @@
 <span>Fetching data...</span>
 <svg style="width:100%;height:300px">
 </svg>
+</div> <!-- timeline -->
 </div> <!-- col -->
 </div> <!-- row -->
 {% endif %}
