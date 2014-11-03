@@ -106,6 +106,12 @@ about signatures displayed in the page showing information about Suricata:
     :alt: elasticsearch info in scirius
     :align: center
 
+You can also get graph and details about a specific rule:
+
+.. image:: https://github.com/StamusNetworks/scirius/raw/master/doc/images/rule-detail.png
+    :alt: rule info in scirius
+    :align: center
+
 To setup Elasticsearch connection, you can edit ``settings.py`` or create a
 ``local_settings.py`` file under ``scirius`` directory to setup the feature.
 Elasticsearch is activated if a variable names ``USE_ELASTICSEARCH`` is set
@@ -120,6 +126,21 @@ to ``local_settings.py`` ::
 
 Please note, that the name of the Suricata (set during edition of the object) must
 be equal to the ``host`` key present in Elasticsearch events.
+
+Link with Kibana
+----------------
+
+If you are using Kibana, it is possible to get links to your dashboards by clicking the
+top left icon:
+
+.. image:: https://github.com/StamusNetworks/scirius/raw/master/doc/images/kibana-link.png
+    :alt: kibana dropdown menu
+    :align: center
+
+To activate the feature, you need to edit your `local_settings.py` file: ::
+
+ KIBANA_URL = "http://localhost/"
+ USE_KIBANA = True
 
 Usage
 =====
