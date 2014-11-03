@@ -257,10 +257,10 @@ def es_get_dashboard(count=20):
 
 def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     templ = Template(TIMELINE_QUERY)
-    # 200 points on graph per default
+    # 100 points on graph per default
     if interval == None:
-        interval = str(int((time() - (int(from_date) / 1000)) / 200)/60) + "m"
-    context = Context({'from_date': from_date, 'interval': interval, 'hosts': hosts})
+        interval = int((time() - (int(from_date) / 1000)) / 100)
+    context = Context({'from_date': from_date, 'interval': str(interval) + "s", 'hosts': hosts})
     if qfilter != None:
         query_filter = " AND " + qfilter
         context['query_filter'] = query_filter
@@ -278,4 +278,6 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
         data = data['facets']
     except:
         return None
+    data['from_date'] = from_date
+    data['interval'] = int(interval) * 1000
     return data

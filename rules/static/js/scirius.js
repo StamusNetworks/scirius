@@ -41,6 +41,7 @@ function draw_timeline(from_date, hosts, filter) {
                         success: function(data) {
 			    $("#timeline span").hide();
                             nv.addGraph(function() {
+                            if (false) {
                               var chart = nv.models.lineChart()
                                             .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
                                             .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
@@ -49,7 +50,7 @@ function draw_timeline(from_date, hosts, filter) {
                                             .showYAxis(true)        //Show the y-axis
                                             .showXAxis(true)        //Show the x-axis
                               ;
-                              /*
+                              } else {
                             multigraph = false;
                             if (hosts.length > 1) {
                                     multigraph = true;
@@ -61,7 +62,7 @@ function draw_timeline(from_date, hosts, filter) {
                                 .showControls(multigraph)   //Allow user to switch between 'Grouped' and 'Stacked' mode.
                                 .groupSpacing(0.1)    //Distance between each group of bars.
                                 ;
-                                */
+                               }
                                 chart.xAxis.tickFormat(function(d) {
                                     return d3.time.format('%m/%d %H:%M')(new Date(d))
                                 });
@@ -69,12 +70,27 @@ function draw_timeline(from_date, hosts, filter) {
                                 chart.yAxis
                                 .tickFormat(d3.format(',.1f'));
 
-                                sdata = []
+                                var end_interval = new Date().getTime();
+                                var sdata = []
                                 for (hi = 0; hi < hosts.length; hi++) {
                                         gdata = []
+                                        var starti = 0;
+                                        var iter = 0;
                                         entries = data[hosts[hi]]['entries']
-                                        for (i = 0; i < entries.length; i++) {
-                                                gdata.push({x: entries[i]["time"], y: entries[i]["count"]});
+                                        var interval = parseInt(data['interval']);
+                                        for (inter = parseInt(data['from_date']); inter < end_interval; inter = inter + interval) {
+                                            found = false;
+                                            for (i = starti; i < entries.length; i++) {
+                                                if (Math.abs(entries[i]["time"] - inter) <= interval/2) {
+                                                    gdata.push({x: entries[i]["time"], y: entries[i]["count"]});
+                                                    found = true;
+                                                    starti = i + 1;
+                                                    break;
+                                                }
+                                            }
+                                            if (found == false) {
+                                                    gdata.push({x: inter, y: 0});
+                                            }
                                         }
                                         sdata.push(
                                         {
