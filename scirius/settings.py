@@ -28,7 +28,6 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = (
@@ -54,6 +53,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'scirius.loginrequired.LoginRequiredMiddleware',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -118,6 +118,8 @@ GIT_SOURCES_BASE_DIRECTORY = os.path.join(BASE_DIR, 'git-sources/')
 
 # Ruleset generator framework
 RULESET_MIDDLEWARE = 'suricata'
+
+LOGIN_URL = '/login/'
 
 try:
     from local_settings import *

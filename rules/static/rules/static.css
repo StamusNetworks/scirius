@@ -250,3 +250,11 @@ button a {
 button a:hover {
    color: white;
 }
+
+div#login {
+    margin-top: 50px;
+}
+
+#login form {
+   margin: 10px;
+}

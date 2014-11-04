@@ -3,7 +3,7 @@ from django.conf import settings
 
 from django.contrib import admin
 
-from views import homepage
+from views import homepage, scirius_login
 
 admin.autodiscover()
 
@@ -12,4 +12,5 @@ urlpatterns = patterns('',
     url(r'^rules/', include('rules.urls')),
     url(r'^'+ settings.RULESET_MIDDLEWARE + '/', include('' + settings.RULESET_MIDDLEWARE + '.urls')),
     url('^$', homepage),
+    url('^login/$', scirius_login),
 )

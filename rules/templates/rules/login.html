@@ -1,0 +1,57 @@
+{% load staticfiles %}
+{% load bootstrap3  %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{% block title %}Scirius Rule Management{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
+
+</head>
+<body>
+
+
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-12">
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+</div>
+</div>
+<div class="row">
+<div class="col-md-5">
+</div>
+<div class="col-md-2">
+
+<div class="panel panel-default" id="login">
+<div class="panel-heading">
+<h2 class="panel-title">Login to Scirius</h2>
+</div>
+<div>
+<form action="/login/" method="post" class="form">{% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "ok" %} Login
+        </button>
+    {% endbuttons %}
+</form>
+</div>
+</div>
+
+</div>
+
+<div class="col-md-5">
+</div>
+</div>
+	<div id="footer" class="row">
+		<div class="col-md-12 text-center">
+			<p><a href="https://github.com/StamusNetworks/scirius">Scirius</a>. Copyright (c) 2014 <a href="https://www.stamus-networks.com">Stamus Networks</a>.</p>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

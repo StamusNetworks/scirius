@@ -19,6 +19,34 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django.shortcuts import redirect
+from django.contrib.auth import authenticate, login
+
+from utils import scirius_render
+from forms import LoginForm
 
 def homepage(request):
     return redirect("rules/")
+
+
+def scirius_login(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                # FIXME Redirect to wanted page
+                return redirect("/rules/")
+            else:
+                form = LoginForm()
+                context = { 'form': form, 'error': 'Disabled account' }
+                return scirius_render(request, 'rules/login.html', context)
+        else:
+            form = LoginForm()
+            context = { 'form': form, 'error': 'Invalid login' }
+            return scirius_render(request, 'rules/login.html', context)
+    else:
+        form = LoginForm()
+        context = { 'form': form }
+        return scirius_render(request, 'rules/login.html', context);
