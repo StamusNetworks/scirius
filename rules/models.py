@@ -327,7 +327,8 @@ class Source(models.Model):
 
     def update_ruleset_http(self, f):
         if settings.USE_PROXY:
-            proxy_handler = urllib2.ProxyHandler({'http':settings.PROXY_PARAMS['http']})
+            proxy_handler = urllib2.ProxyHandler({'http':settings.PROXY_PARAMS['http'],
+                                                  'https':settings.PROXY_PARAMS['https'] })
             if settings.PROXY_PARAMS['user']:
                 password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
                 password_mgr.add_password(None,
