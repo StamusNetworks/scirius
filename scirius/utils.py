@@ -30,7 +30,10 @@ def scirius_render(request, template, context):
         context['elasticsearch'] = 1
     if settings.USE_KIBANA:
         context['kibana'] = 1
-        context['kibana_url'] = settings.KIBANA_URL
+        if settings.KIBANA_PROXY:
+            context['kibana_url'] = "/kibana"
+        else:
+            context['kibana_url'] = settings.KIBANA_URL
     return render(request, template, context)
 
 def scirius_listing(request, objectname, name, template = 'rules/object_list.html', table = None):

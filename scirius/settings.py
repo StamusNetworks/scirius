@@ -101,7 +101,13 @@ USE_ELASTICSEARCH = True
 #ELASTICSEARCH_ADDRESS = "127.0.0.1:9200"
 ELASTICSEARCH_ADDRESS = "localhost:9200"
 
+# Kibana
 USE_KIBANA = False
+# Use django as a reverse proxy for kibana request
+# This will allow you to use scirius authentication to control
+# access to Kibana
+KIBANA_PROXY = False
+# Kibana URL
 KIBANA_URL = "http://localhost:9292"
 
 # Proxy parameters
@@ -125,3 +131,6 @@ try:
     from local_settings import *
 except:
     pass
+
+if KIBANA_PROXY:
+    INSTALLED_APPS += ( 'revproxy',)

@@ -20,9 +20,12 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
+from django.conf import settings
 
 from utils import scirius_render
 from forms import LoginForm
+
+from revproxy.views import ProxyView
 
 def homepage(request):
     return redirect("rules/")
@@ -55,3 +58,12 @@ def scirius_login(request):
 def scirius_logout(request):
     logout(request)
     return redirect("/login/")
+
+# Proxy
+class KibanaProxyView(ProxyView):
+    upstream = settings.KIBANA_URL
+    add_remote_user = False
+
+class ElasticsearchProxyView(ProxyView):
+    upstream = "http://" + settings.ELASTICSEARCH_ADDRESS
+    add_remote_user = False
