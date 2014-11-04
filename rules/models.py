@@ -326,6 +326,19 @@ class Source(models.Model):
         return reverse('source', args=[str(self.id)])
 
     def update_ruleset_http(self, f):
+        if settings.USE_PROXY:
+            proxy_handler = urllib2.ProxyHandler({'http':settings.PROXY_PARAMS['http']})
+            if settings.PROXY_PARAMS['user']:
+                password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+                password_mgr.add_password(None,
+                                    settings.PROXY_PARAMS['http'],
+                                    settings.PROXY_PARAMS['user'],
+                                    settings.PROXY_PARAMS['pass'])
+                proxy_auth_handler = urllib2.ProxyBasicAuthHandler(password_mgr)
+                opener = urllib2.build_opener(proxy_handler, proxy_auth_handler)
+            else:
+                opener = urllib2.build_opener(proxy_handler)
+            urllib2.install_opener(opener)
         resp = urllib2.urlopen(self.uri)
         if resp.code == 404:
             raise IOError("File not found, please check URL")

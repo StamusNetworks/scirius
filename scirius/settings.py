@@ -104,6 +104,14 @@ ELASTICSEARCH_ADDRESS = "localhost:9200"
 USE_KIBANA = False
 KIBANA_URL = "http://localhost:9292"
 
+# Proxy parameters
+# Set USE_PROXY to True to use a proxy to fetch ruleset update.
+# PROXY_PARAMS contains the proxy parameters.
+# If user is set in PROXY_PARAMS then basic authentication will
+# be used.
+USE_PROXY = False
+PROXY_PARAMS = { 'http': "http://proxy:3128", 'user': None, 'pass': None }
+
 GIT_SOURCES_BASE_DIRECTORY = os.path.join(BASE_DIR, 'git-sources/')
 
 # Ruleset generator framework
