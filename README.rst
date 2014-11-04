@@ -43,7 +43,7 @@ On Debian, you can run ::
 
 You can then install django and the dependencies ::
 
- pip install django django-tables2 South GitPython pyinotify daemon Pygments django-bootstrap3
+ pip install django django-tables2 South GitPython pyinotify daemon Pygments django-bootstrap3 requests
 
 It has been reported that on some Debian system forcing a recent GitPython is required ::
 

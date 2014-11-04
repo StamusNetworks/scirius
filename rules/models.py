@@ -22,7 +22,7 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import FieldError, SuspiciousOperation
 from django.db import transaction
-import urllib2
+import requests
 import tempfile
 import tarfile
 import re
@@ -326,31 +326,20 @@ class Source(models.Model):
         return reverse('source', args=[str(self.id)])
 
     def update_ruleset_http(self, f):
-        if settings.USE_PROXY:
-            proxy_handler = urllib2.ProxyHandler({'http':settings.PROXY_PARAMS['http'],
-                                                  'https':settings.PROXY_PARAMS['https'] })
-            if settings.PROXY_PARAMS['user']:
-                password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-                password_mgr.add_password(None,
-                                    settings.PROXY_PARAMS['http'],
-                                    settings.PROXY_PARAMS['user'],
-                                    settings.PROXY_PARAMS['pass'])
-                proxy_auth_handler = urllib2.ProxyBasicAuthHandler(password_mgr)
-                opener = urllib2.build_opener(proxy_handler, proxy_auth_handler)
+        try:
+            if settings.USE_PROXY:
+                resp = requests.get(self.uri, proxies = settings.PROXY_PARAMS)
             else:
-                opener = urllib2.build_opener(proxy_handler)
-            urllib2.install_opener(opener)
-        resp = urllib2.urlopen(self.uri)
-        if resp.code == 404:
-            raise IOError("File not found, please check URL")
-        elif not resp.code == 200:
-            raise IOError("Invalid response code %d for %" % (resp.code) )
-        CHUNK = 256 * 1024
-        while True:
-            chunk = resp.read(CHUNK)
-            if not chunk:
-                break
-            f.write(chunk)
+                resp = requests.get(self.uri)
+        except requests.exceptions.ConnectionError:
+            raise IOError("Connection error, please check URL")
+        except requests.exceptions.HTTPError:
+            raise IOError("HTTP error, please check URL")
+        except requests.exceptions.Timeout:
+            raise IOError("Request timeout, server may be down")
+        except requests.exceptions.TooManyRedirects:
+            raise IOError("Too many redirects, server may be broken")
+        f.write(resp.content)
 
     def handle_uploaded_file(self, f):
         dest = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)

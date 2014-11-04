@@ -110,7 +110,9 @@ KIBANA_URL = "http://localhost:9292"
 # If user is set in PROXY_PARAMS then basic authentication will
 # be used.
 USE_PROXY = False
-PROXY_PARAMS = { 'http': "http://proxy:3128", 'https': "http://proxy:3128", 'user': None, 'pass': None }
+PROXY_PARAMS = { 'http': "http://proxy:3128", 'https': "http://proxy:3128" }
+# For basic authentication you can use
+# PROXY_PARAMS = { 'http': "http://user:pass@proxy:3128", 'https': "http://user:pass@proxy:3128" }
 
 GIT_SOURCES_BASE_DIRECTORY = os.path.join(BASE_DIR, 'git-sources/')
 
