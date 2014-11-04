@@ -19,7 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django.shortcuts import redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 
 from utils import scirius_render
 from forms import LoginForm
@@ -50,3 +50,8 @@ def scirius_login(request):
         form = LoginForm()
         context = { 'form': form }
         return scirius_render(request, 'rules/login.html', context);
+
+
+def scirius_logout(request):
+    logout(request)
+    return redirect("/login/")
