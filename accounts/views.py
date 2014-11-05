@@ -25,7 +25,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from scirius.utils import scirius_render, scirius_listing
-from forms import LoginForm, UserSettingsForm
+from forms import LoginForm, UserSettingsForm, NormalUserSettingsForm
 
 def loginview(request, target):
     if request.method == 'POST':
@@ -75,7 +75,10 @@ def editview(request, action):
                 form = PasswordChangeForm(request.user)
                 context = { 'form': form, 'action': 'Change password' }
             elif (action == 'settings'):
-                form = UserSettingsForm(instance = request.user)
+                if request.user.is_superuser:
+                    form = UserSettingsForm(instance = request.user)
+                else:
+                    form = NormalUserSettingsForm(instance = request.user)
                 context = { 'form': form, 'action': 'Edit settings for ' + request.user.username }
             else:
                 context = { 'action': 'User settings' }
