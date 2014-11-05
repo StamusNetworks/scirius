@@ -19,7 +19,13 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django import forms
+from django.contrib.auth.models import User
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=20)
     password = forms.CharField(widget=forms.PasswordInput)
+
+class UserSettingsForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email', 'is_active']

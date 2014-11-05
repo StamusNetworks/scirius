@@ -23,6 +23,7 @@ from django.conf.urls import patterns, url
 from accounts import views
 
 urlpatterns = patterns('',
-    url(r'^logout/$', views.logoutview, name='logout'),
-    url(r'^login/(?P<target>.*)$', views.loginview, name='login'),
+    url(r'^logout/$', views.logoutview, name='accounts_logout'),
+    url(r'^login/(?P<target>.*)$', views.loginview, name='accounts_login'),
+    url(r'^edit/(?P<action>.*)$', views.editview, name='accounts_edit'),
     )

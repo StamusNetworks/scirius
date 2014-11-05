@@ -20,10 +20,11 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import PasswordChangeForm
 from django.conf import settings
 
 from scirius.utils import scirius_render
-from forms import LoginForm
+from forms import LoginForm, UserSettingsForm
 
 def loginview(request, target):
     if request.method == 'POST':
@@ -45,14 +46,32 @@ def loginview(request, target):
     else:
         form = LoginForm()
         context = { 'form': form }
-        return scirius_render(request, 'accounts/login.html', context);
+        return scirius_render(request, 'accounts/login.html', context)
 
 
-def useredit(request):
+def editview(request, action):
     if request.user.is_authenticated():
-        form = SetPasswordForm(instance = request.user)
-        context = { 'form': form }
-        return scirius_render(request, 'accounts/login.html', context);
+        if request.method == 'POST':
+            context = { 'action': 'User settings' }
+            if (action == 'password'):
+                form = PasswordChangeForm(data=request.POST, user=request.user)
+            elif (action == 'settings'):
+                form = UserSettingsForm(request.POST, instance = request.user)
+            if form.is_valid():
+                form.save()
+            else:
+                context['error'] = 'Invalid form'
+            return scirius_render(request, 'accounts/edit.html', context)
+        else:
+            if (action == 'password'):
+                form = PasswordChangeForm(request.user)
+                context = { 'form': form, 'action': 'Change password' }
+            elif (action == 'settings'):
+                form = UserSettingsForm(instance = request.user)
+                context = { 'form': form, 'action': 'Edit settings for ' + request.user.username }
+            else:
+                context = { 'action': 'User settings' }
+            return scirius_render(request, 'accounts/edit.html', context)
 
 
 def logoutview(request):
