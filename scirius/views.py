@@ -31,7 +31,7 @@ def homepage(request):
     return redirect("rules/")
 
 
-def scirius_login(request):
+def scirius_login(request, target):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -39,8 +39,7 @@ def scirius_login(request):
         if user is not None:
             if user.is_active:
                 login(request, user)
-                # FIXME Redirect to wanted page
-                return redirect("/rules/")
+                return redirect("/" + target)
             else:
                 form = LoginForm()
                 context = { 'form': form, 'error': 'Disabled account' }

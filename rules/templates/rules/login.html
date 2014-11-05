@@ -30,7 +30,7 @@
 <h2 class="panel-title">Login to Scirius</h2>
 </div>
 <div>
-<form action="/login/" method="post" class="form">{% csrf_token %}
+<form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
     {% bootstrap_form form %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">
