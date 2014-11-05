@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'bootstrap3',
     'rules',
     'suricata',
+    'accounts',
 )
 
 if LooseVersion(get_version()) < LooseVersion('1.7'):
@@ -125,7 +126,7 @@ GIT_SOURCES_BASE_DIRECTORY = os.path.join(BASE_DIR, 'git-sources/')
 # Ruleset generator framework
 RULESET_MIDDLEWARE = 'suricata'
 
-LOGIN_URL = '/login/'
+LOGIN_URL = '/accounts/login/'
 
 try:
     from local_settings import *

@@ -18,19 +18,11 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from django.shortcuts import redirect
-from django.conf import settings
+from django.conf.urls import patterns, url
 
-from revproxy.views import ProxyView
+from accounts import views
 
-def homepage(request):
-    return redirect("rules/")
-
-# Proxy
-class KibanaProxyView(ProxyView):
-    upstream = settings.KIBANA_URL
-    add_remote_user = False
-
-class ElasticsearchProxyView(ProxyView):
-    upstream = "http://" + settings.ELASTICSEARCH_ADDRESS
-    add_remote_user = False
+urlpatterns = patterns('',
+    url(r'^logout/$', views.logoutview, name='logout'),
+    url(r'^login/(?P<target>.*)$', views.loginview, name='login'),
+    )

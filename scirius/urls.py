@@ -3,17 +3,16 @@ from django.conf import settings
 
 from django.contrib import admin
 
-from views import homepage, scirius_login, scirius_logout, KibanaProxyView, ElasticsearchProxyView
+from views import homepage, KibanaProxyView, ElasticsearchProxyView
 
 admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^rules/', include('rules.urls')),
+    url(r'^accounts/', include('accounts.urls')),
     url(r'^'+ settings.RULESET_MIDDLEWARE + '/', include('' + settings.RULESET_MIDDLEWARE + '.urls')),
     url('^$', homepage),
-    url('^login/(?P<target>.*)$', scirius_login),
-    url('^logout/$', scirius_logout),
     url(r'^kibana/(?P<path>.*)$', KibanaProxyView.as_view()),
     url(r'^elasticsearch/(?P<path>.*)$', ElasticsearchProxyView.as_view()),
 )
