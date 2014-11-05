@@ -28,4 +28,4 @@ class UserTable(tables.Table):
     username = tables.LinkColumn('user', args=[tables.A('pk')])
     class Meta(DefaultMeta):
         model = User
-        fields = ("username", "first_name", "last_name", "email", "is_active")
+        fields = ("username", "first_name", "last_name", "email", "is_superuser", "is_active")
