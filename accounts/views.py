@@ -54,12 +54,19 @@ def editview(request, action):
     if request.user.is_authenticated():
         if request.method == 'POST':
             context = { 'action': 'User settings' }
+            orig_superuser = request.user.is_superuser
+            orig_staff = request.user.is_staff
             if (action == 'password'):
                 form = PasswordChangeForm(data=request.POST, user = request.user)
             elif (action == 'settings'):
                 form = UserSettingsForm(request.POST, instance = request.user)
             if form.is_valid():
-                form.save()
+                ruser = form.save(commit = False)
+                if not orig_superuser:
+                    ruser.is_superuser = False
+                    ruser.is_staff = orig_staff
+                ruser.save()
+                form.save_m2m()
             else:
                 context['error'] = 'Invalid form'
             return scirius_render(request, 'accounts/edit.html', context)
