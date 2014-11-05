@@ -1,0 +1,42 @@
+{% extends "rules/base.html" %}
+{% load bootstrap3  %}
+
+{% block sidebar %}
+<div class="panel-heading">
+<h2 class="panel-title">{{ action }}</h2>
+</div>
+<ul>
+<li><a href="{% url 'accounts_edit' 'password' %}">Change password</a></li>
+<li><a href="{% url 'accounts_edit' 'settings' %}">Edit settings</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-6">
+{% if form %}
+<form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "ok" %} Valid
+        </button>
+    {% endbuttons %}
+</form>
+{% else %}
+<h2>Logged in as {{user.username}}</h2>
+<ul class="list-group">
+<li class="list-group-item"><strong>First name:</strong> <span class="pull-right">{{ user.first_name }}</span></li>
+<li class="list-group-item"><strong>Last name:</strong> <span class="pull-right">{{ user.last_name }}</span></li>
+<li class="list-group-item"><strong>Email:</strong> <span class="pull-right">{{ user.email }}</span></li>
+<li class="list-group-item"><strong>Active:</strong> <span class="pull-right">{{ user.is_active }}</span></li>
+</ul>
+<p>Choose action in the left menu to edit settings.</p>
+{% endif %}
+</div>
+</div>
+</div>
+
+{% endblock %}

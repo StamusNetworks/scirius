@@ -18,12 +18,13 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
 from django.conf import settings
+from django.contrib.auth.models import User
 
-from scirius.utils import scirius_render
+from scirius.utils import scirius_render, scirius_listing
 from forms import LoginForm, UserSettingsForm
 
 def loginview(request, target):
@@ -54,7 +55,7 @@ def editview(request, action):
         if request.method == 'POST':
             context = { 'action': 'User settings' }
             if (action == 'password'):
-                form = PasswordChangeForm(data=request.POST, user=request.user)
+                form = PasswordChangeForm(data=request.POST, user = request.user)
             elif (action == 'settings'):
                 form = UserSettingsForm(request.POST, instance = request.user)
             if form.is_valid():
@@ -73,6 +74,48 @@ def editview(request, action):
                 context = { 'action': 'User settings' }
             return scirius_render(request, 'accounts/edit.html', context)
 
+def manageview(request, action):
+    if request.method == 'POST':
+        form = UserSettingsForm(request.POST)
+        if form.is_valid():
+            form.save()
+        else:
+            context['error'] = 'Invalid form'
+    else:
+        if (action == 'add'):
+            form = UserCreationForm()
+            context = { 'form': form, 'current_action': 'Add user'}
+            return scirius_render(request, 'accounts/user.html', context)
+    return scirius_listing(request, User, 'Users', adduri="/accounts/manage/add")
+
+def manageuser(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    context = { 'action': 'User actions', 'user': user }
+    return scirius_render(request, 'accounts/user.html', context)
+
+def manageuseraction(request, user_id, action):
+    user = get_object_or_404(User, pk=user_id)
+    if request.method == 'POST':
+        context = { 'action': 'User actions', 'user': user }
+        if action == "edit":
+            form = UserSettingsForm(request.POST, instance = user)
+            if form.is_valid():
+                form.save()
+            else:
+                context['error'] = 'Invalid form'
+        return scirius_render(request, 'accounts/user.html', context)
+    if action == "activate":
+        user.is_active = True
+        user.save()
+    elif action == "deactivate":
+        user.is_active = False
+        user.save()
+    elif action == "edit":
+        form = UserSettingsForm(instance = user)
+        context = {'form': form }
+        return scirius_render(request, 'accounts/user.html', context)
+    context = { 'action': 'User actions', 'user': user }
+    return scirius_render(request, 'accounts/user.html', context)
 
 def logoutview(request):
     logout(request)

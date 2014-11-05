@@ -23,6 +23,7 @@ from django.conf import settings
 import django_tables2 as tables
 
 from rules.tables import *
+from accounts.tables import UserTable
 
 def scirius_render(request, template, context):
     context['generator'] = settings.RULESET_MIDDLEWARE
@@ -36,9 +37,9 @@ def scirius_render(request, template, context):
             context['kibana_url'] = settings.KIBANA_URL
     return render(request, template, context)
 
-def scirius_listing(request, objectname, name, template = 'rules/object_list.html', table = None):
+def scirius_listing(request, objectname, name, template = 'rules/object_list.html', table = None, adduri = None):
     # FIXME could be improved by generating function name
-    assocfn = { 'Sources': SourceTable, 'Categories': CategoryTable, 'Rulesets': RulesetTable }
+    assocfn = { 'Sources': SourceTable, 'Categories': CategoryTable, 'Rulesets': RulesetTable, 'Users': UserTable }
     olist = objectname.objects.all()
     if olist:
         if table == None:
@@ -57,4 +58,7 @@ def scirius_listing(request, objectname, name, template = 'rules/object_list.htm
         context['action'] = objectname.__name__.lower()
     except:
         pass
+    if adduri:
+        context['action'] = True
+        context['adduri'] = adduri
     return scirius_render(request, template, context)

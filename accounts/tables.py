@@ -18,15 +18,14 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from django.conf.urls import patterns, url
+from django.contrib.auth.models import User
+import django_tables2 as tables
 
-from accounts import views
+class DefaultMeta:
+    attrs = {"class": "paleblue"}
 
-urlpatterns = patterns('',
-    url(r'^logout/$', views.logoutview, name='accounts_logout'),
-    url(r'^login/(?P<target>.*)$', views.loginview, name='accounts_login'),
-    url(r'^edit/(?P<action>.*)$', views.editview, name='accounts_edit'),
-    url(r'^manage/user/(?P<user_id>.*)/$', views.manageuser, name='user'),
-    url(r'^manage/user/(?P<user_id>.*)/(?P<action>.*)$', views.manageuseraction, name='accounts_useraction'),
-    url(r'^manage/(?P<action>.*)$', views.manageview, name='accounts_manage'),
-    )
+class UserTable(tables.Table):
+    username = tables.LinkColumn('user', args=[tables.A('pk')])
+    class Meta(DefaultMeta):
+        model = User
+        fields = ("username", "first_name", "last_name", "email", "is_active")
