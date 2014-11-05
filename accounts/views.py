@@ -78,7 +78,10 @@ def manageview(request, action):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
+            if request.user.is_superuser:
+                form.save()
+            else:
+                context['error'] = 'Not enough permission to create users'
         else:
             context['error'] = 'Invalid form'
     else:
@@ -95,8 +98,11 @@ def manageuser(request, user_id):
 
 def manageuseraction(request, user_id, action):
     user = get_object_or_404(User, pk=user_id)
+    context = { 'action': 'User actions', 'user': user }
     if request.method == 'POST':
-        context = { 'action': 'User actions', 'user': user }
+        if not request.user.is_superuser:
+            context['error'] = 'Unsufficient permissions'
+            return scirius_render(request, 'accounts/user.html', context)
         if action == "edit":
             form = UserSettingsForm(request.POST, instance = user)
             if form.is_valid():
@@ -105,12 +111,21 @@ def manageuseraction(request, user_id, action):
                 context['error'] = 'Invalid form'
         return scirius_render(request, 'accounts/user.html', context)
     if action == "activate":
+        if not request.user.is_superuser:
+            context['error'] = 'Unsufficient permissions'
+            return scirius_render(request, 'accounts/user.html', context)
         user.is_active = True
         user.save()
     elif action == "deactivate":
+        if not request.user.is_superuser:
+            context['error'] = 'Unsufficient permissions'
+            return scirius_render(request, 'accounts/user.html', context)
         user.is_active = False
         user.save()
     elif action == "edit":
+        if not request.user.is_superuser:
+            context['error'] = 'Unsufficient permissions'
+            return scirius_render(request, 'accounts/user.html', context)
         form = UserSettingsForm(instance = user)
         context = {'form': form }
         return scirius_render(request, 'accounts/user.html', context)
