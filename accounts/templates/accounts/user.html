@@ -15,8 +15,6 @@
 </div>
 <ul>
 <li><a href="{% url 'accounts_useraction' user.pk 'edit' %}">Edit user</a></li>
-<li><a href="{% url 'accounts_useraction' user.pk 'deactivate' %}">Deactivate user</a></li>
-<li><a href="{% url 'accounts_useraction' user.pk 'activate' %}">Activate user</a></li>
 </ul>
 {% endif %}
 {% endblock %}
@@ -48,6 +46,7 @@
 <li class="list-group-item"><strong>Last name:</strong> <span class="pull-right">{{ user.last_name }}</span></li>
 <li class="list-group-item"><strong>Email:</strong> <span class="pull-right">{{ user.email }}</span></li>
 <li class="list-group-item"><strong>Active:</strong> <span class="pull-right">{{ user.is_active }}</span></li>
+<li class="list-group-item"><strong>Super user:</strong> <span class="pull-right">{{ user.is_superuser }}</span></li>
 </ul>
 </div>
 </div>
