@@ -129,6 +129,16 @@ def manageuseraction(request, user_id, action):
         form = UserSettingsForm(instance = user)
         context = {'form': form }
         return scirius_render(request, 'accounts/user.html', context)
+    elif action == "delete":
+        if not request.user.is_superuser:
+            context['error'] = 'Unsufficient permissions'
+            return scirius_render(request, 'accounts/user.html', context)
+        if request.GET.__contains__('confirm'):
+            user.delete()
+            return redirect('/accounts/manage/')
+        else:
+            context = { 'confirm_action': 'Delete user', 'user': user, 'action': 'delete'}
+            return scirius_render(request, 'accounts/user.html', context)
     context = { 'action': 'User actions', 'user': user }
     return scirius_render(request, 'accounts/user.html', context)
 

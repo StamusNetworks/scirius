@@ -9,12 +9,13 @@
 <li><a href="{% url 'accounts_manage' '' %}">Users list</a></li>
 </ul>
 
-{% if not current_action %}
+{% if not current_action and not confirm_action %}
 <div class="panel-heading">
 <h2 class="panel-title">{{ action }}</h2>
 </div>
 <ul>
 <li><a href="{% url 'accounts_useraction' user.pk 'edit' %}">Edit user</a></li>
+<li><a href="{% url 'accounts_useraction' user.pk 'delete' %}">Delete user</a></li>
 </ul>
 {% endif %}
 {% endblock %}
@@ -36,8 +37,11 @@
     {% endbuttons %}
 </form>
 {% else %}
-
+{% if action == 'delete' %}
+<h2>Delete user {{user.username}}</h2>
+{% else %}
 <h2>User {{user.username}}</h2>
+{% endif %}
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-4">
@@ -48,6 +52,12 @@
 <li class="list-group-item"><strong>Active:</strong> <span class="pull-right">{{ user.is_active }}</span></li>
 <li class="list-group-item"><strong>Super user:</strong> <span class="pull-right">{{ user.is_superuser }}</span></li>
 </ul>
+
+{% if action == 'delete' %}
+<button type="submit" class="btn btn-primary">
+<a href="{% url 'accounts_useraction' user.pk 'delete' %}?confirm=1">Confirm user deletion</a></li>
+</button>
+{% endif %}
 </div>
 </div>
 </div>
