@@ -57,6 +57,9 @@ Get the source, then inside the source ::
 
  python manage.py syncdb
 
+Authentication is by default in scirius so you will need to create a superuser
+account when proposed.
+
 One of the easiest way to try Scirius is to run the Django test server ::
 
  python manage.py runserver
