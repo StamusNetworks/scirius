@@ -76,7 +76,7 @@ def editview(request, action):
 
 def manageview(request, action):
     if request.method == 'POST':
-        form = UserSettingsForm(request.POST)
+        form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
         else:
