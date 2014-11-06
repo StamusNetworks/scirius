@@ -149,6 +149,22 @@ To activate the feature, you need to edit your `local_settings.py` file: ::
 Usage
 =====
 
+Authentication and permissions
+------------------------------
+
+Scirius is using authentication by default. You will need a superuser to be able to
+use scirius. ``syncdb`` should have created one for you. If it is not the case, you
+can run ::
+
+ python manage.py createsuperuser
+
+You will then be able to connect using the provided credentials.
+
+Permissions system is basic:
+
+* Superuser can edit and create users
+* Staff members can do change on rulesets and suricata
+
 Ruleset management
 ------------------
 
