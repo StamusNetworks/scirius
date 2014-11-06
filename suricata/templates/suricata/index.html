@@ -126,6 +126,7 @@ $( 'document' ).ready(load_rules());
        <li><span class="type">Last updated:</span> {{ suricata.updated_date }}</li>
 </ul>
 
+{% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
@@ -137,5 +138,6 @@ $( 'document' ).ready(load_rules());
 <a href="/suricata/edit">Edit</a>
 </li>
 </ul>
+{% endif %}
 
 {% endblock %}

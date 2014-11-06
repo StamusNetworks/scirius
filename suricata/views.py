@@ -85,6 +85,9 @@ def index(request):
 def edit(request):
     suri = get_suri()
 
+    if not request.user.is_staff:
+        return redirect('/')
+
     if request.method == 'POST':
         if suri:
             suri.updated_date = datetime.now()
@@ -120,6 +123,10 @@ def edit(request):
 
 def update(request):
     suri = get_suri()
+
+    if not request.user.is_staff:
+        return redirect('/')
+
     if suri == None:
         form = SuricataForm()
         context = { 'creation': True , 'form': form}
