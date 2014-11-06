@@ -2,15 +2,23 @@
 
 {% block content %}
 
-{% if error %}
-<div class="error">{{ error }}</div>
-{% endif %}
+{% if form %}
 
 <h4>Disable category {{ category.name }} from</h4>
+
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-4">
+
 <form action="/rules/category/{{ category.pk }}/suppress" method="post">{% csrf_token %}
 {{ form.as_p }}
 <input class="btn btn-default" type="submit" value="Submit" />
 </form>
+
+</div>
+</div>
+</div>
+{% endif %}
 
 {% endblock %}
 

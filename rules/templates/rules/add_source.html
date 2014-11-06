@@ -68,14 +68,9 @@ function select_fields() {
 }
 </script>
 
-{% if error %}
-<div class="alert alert-danger">{{ error }}</div>
-
-{% endif %}
-
-
 <div class="alert alert-warning" id="name_warning">Warning: the name will be file name in Suricata rules directory</div>
 
+{% if form %}
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-6">
@@ -95,7 +90,7 @@ function select_fields() {
 </div>
 </div>
 </div>
-
+{% endif %}
 
 
 {% endblock %}

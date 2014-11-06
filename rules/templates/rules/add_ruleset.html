@@ -9,16 +9,12 @@
 
 {% block content %}
 
-{% if error %}
-<div class="error">{{ error }}</div>
-
-{% endif %}
-
 {% if missing %}
 
 {{ missing }}
 
 {% else %}
+ {% if form %}
 
 <div class="container-fluid">
 <div class="row">
@@ -35,6 +31,7 @@
 </div>
 </div>
 
+ {% endif %}
 {% endif %}
 
 {% endblock %}

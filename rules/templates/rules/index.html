@@ -94,6 +94,7 @@ $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [ '{{ suricat
        <li><span class="type">Last updated:</span> {{ suricata.updated_date }}</li>
 </ul>
 
+{% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
@@ -102,6 +103,8 @@ $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [ '{{ suricat
 <a href="/suricata/update">Update</a>
 </li>
 </ul>
+{% endif %}
+
 {% else %}
 	<div class="panel-heading">
 	<h2 class="panel-title">Scirius</h2>

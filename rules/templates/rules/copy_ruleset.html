@@ -6,15 +6,10 @@
 {% endblock %}
 
 {% block content %}
-
-{% if error %}
-<div class="error">{{ error }}</div>
-
-{% endif %}
-
-<form action="/rules/ruleset/{{ object.id }}/copy" method="post">{% csrf_token %}
+{% if form %}
+<form class=form action="/rules/ruleset/{{ object.id }}/copy" method="post">{% csrf_token %}
 {{ form.as_p }}
 <input class="btn btn-default" type="submit" value="Submit" />
 </form>
-
+{% endif %}
 {% endblock %}

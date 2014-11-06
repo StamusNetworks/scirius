@@ -260,6 +260,11 @@ def rule(request, rule_id, key = 'pk'):
 
 def suppress_rule(request, rule_id):
     rule_object = get_object_or_404(Rule, sid=rule_id)
+
+    if not request.user.is_staff:
+        context = { 'rule': rule_object, 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/suppress_rule.html', context)
+        
     if request.method == 'POST': # If the form has been submitted...
         form = RulesetSuppressForm(request.POST)
         if form.is_valid(): # All validation rules pass
@@ -273,6 +278,11 @@ def suppress_rule(request, rule_id):
 
 def suppress_category(request, cat_id):
     cat_object = get_object_or_404(Category, id=cat_id)
+
+    if not request.user.is_staff:
+        context = { 'category': cat_object, 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/suppress_category.html', context)
+
     if request.method == 'POST': # If the form has been submitted...
         form = RulesetSuppressForm(request.POST)
         if form.is_valid(): # All validation rules pass
@@ -286,6 +296,10 @@ def suppress_category(request, cat_id):
 
 def update_source(request, source_id):
     src = get_object_or_404(Source, pk=source_id)
+
+    if not request.user.is_staff:
+        return redirect(src)
+
     try:
         src.update()
     except IOError, errors:
@@ -322,6 +336,10 @@ def diff_source(request, source_id):
     return scirius_render(request, 'rules/source.html', { 'source': source, 'diff': diff })
 
 def add_source(request):
+
+    if not request.user.is_staff:
+        return scirius_render(request, 'rules/add_source.html', { 'error': 'Unsufficient permissions' })
+
     if request.method == 'POST': # If the form has been submitted...
         form = SourceForm(request.POST, request.FILES) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
@@ -345,6 +363,9 @@ def add_source(request):
 def edit_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
 
+    if not request.user.is_staff:
+        return scirius_render(request, 'rules/add_source.html', { 'error': 'Unsufficient permissions' })
+
     if request.method == 'POST': # If the form has been submitted...
         form = SourceForm(request.POST, request.FILES, instance=source)
         try:
@@ -361,6 +382,10 @@ def edit_source(request, source_id):
 
 def delete_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
+
+    if not request.user.is_staff:
+        return scirius_render(request, 'rules/delete.html', { 'error': 'Unsufficient permissions' })
+
     if request.method == 'POST': # If the form has been submitted...
         source.delete()
         return redirect("/rules/source/")
@@ -405,6 +430,9 @@ def ruleset(request, ruleset_id, mode = 'struct'):
     return scirius_render(request, 'rules/ruleset.html', context)
 
 def add_ruleset(request):
+    if not request.user.is_staff:
+        return scirius_render(request, 'rules/add_ruleset.html', { 'error': 'Unsufficient permissions' })
+
     context = {}
     if request.method == 'POST': # If the form has been submitted...
         form = RulesetForm(request.POST) # A form bound to the POST data
@@ -427,6 +455,10 @@ def add_ruleset(request):
 
 def update_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
+
+    if not request.user.is_staff:
+        return redirect(ruleset)
+
     ruleset.update()
     return redirect('changelog_ruleset', ruleset_id = ruleset_id)
 
@@ -441,6 +473,10 @@ def changelog_ruleset(request, ruleset_id):
 
 def edit_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
+
+    if not request.user.is_staff:
+        return scirius_render(request, 'rules/edit_ruleset.html', {'ruleset': ruleset, 'error': 'Unsufficient permissions'})
+
     if request.method == 'POST': # If the form has been submitted...
         # check if this is a categories edit
         # ID is unique so we can just look by indice and add
@@ -498,6 +534,11 @@ def edit_ruleset(request, ruleset_id):
 
 def ruleset_add_supprule(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
+
+    if not request.user.is_staff:
+        context = { 'ruleset': ruleset, 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/search_rule.html', context)
+
     if request.method == 'POST': # If the form has been submitted...
         if request.POST.has_key('search'):
             #FIXME Protection on SQL injection ?
@@ -516,6 +557,11 @@ def ruleset_add_supprule(request, ruleset_id):
 
 def delete_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
+
+    if not request.user.is_staff:
+        context = { 'object': ruleset, 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/delete.html', context)
+
     if request.method == 'POST': # If the form has been submitted...
         ruleset.delete()
         return redirect("/rules/ruleset/")
@@ -525,6 +571,11 @@ def delete_ruleset(request, ruleset_id):
 
 def copy_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
+
+    if not request.user.is_staff:
+        context = { 'object': ruleset, 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/copy_ruleset.html', context)
+
     if request.method == 'POST': # If the form has been submitted...
         form = RulesetCopyForm(request.POST) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass

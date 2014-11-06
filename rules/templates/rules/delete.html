@@ -7,10 +7,7 @@
 
 {% block content %}
 
-{% if error %}
-<div class="error">{{ error }}</div>
-
-{% endif %}
+{% if form %}
 
 <h2 class="title">Are you sure you want to delete object {{ object.name }}?</h2>
 
@@ -19,5 +16,7 @@
 <span class="glyphicon glyphicon-trash"> Delete object</span>
 </button>
 </form>
+
+{% endif %}
 
 {% endblock %}

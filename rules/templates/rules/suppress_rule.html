@@ -3,10 +3,7 @@
 
 {% block content %}
 
-{% if error %}
-<div class="error">{{ error }}</div>
-{% endif %}
-
+{% if form %}
 <h4>Disable rule {{ rule.sid }} from</h4>
 <div class="container-fluid">
 <div class="row">
@@ -24,6 +21,7 @@
 </div>
 </div>
 </div>
+{% endif %}
 
 {% endblock %}
 
