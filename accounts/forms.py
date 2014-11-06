@@ -33,4 +33,4 @@ class UserSettingsForm(forms.ModelForm):
 class NormalUserSettingsForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'is_active']
+        fields = ['first_name', 'last_name', 'email', 'is_active']
