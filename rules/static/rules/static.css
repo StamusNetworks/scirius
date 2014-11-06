@@ -258,3 +258,8 @@ div#login {
 #login form {
    margin: 10px;
 }
+
+#sidebar .breadcrumb {
+   margin-bottom: 0px;
+   background-color: white;
+}
