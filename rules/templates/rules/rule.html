@@ -10,6 +10,7 @@
        <li><span class="type">Revision:</span> {{ rule.rev }}</li>
 </ul>
 
+{% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
@@ -17,8 +18,7 @@
 <a href="/rules/rule/{{ rule.sid }}/suppress">Disable rule</a>
 </li>
 </ul>
-
-
+{% endif %}
 {% endblock %}
 
 {% block content %}

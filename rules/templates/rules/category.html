@@ -8,7 +8,7 @@
        <li><span class="type">Filename:</span> {{ category.filename}}</li>
        <li><span class="type">Created:</span> {{ category.created_date}}</li>
 </ul>
-
+{% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
@@ -16,6 +16,7 @@
 <a href="/rules/category/{{ category.pk }}/suppress">Disable category</a>
 </li>
 </ul>
+{% endif %}
 {% endblock %}
 
 {% block content %}

@@ -14,6 +14,7 @@
        <li><span class="type">Updated:</span> {{ ruleset.updated_date }}</li>
 {% endif %}
 </ul>
+{% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
@@ -34,6 +35,7 @@
 <a href="/rules/ruleset/{{ ruleset.id }}/delete">Delete</a>
 </li>
 </ul>
+{% endif %}
 <div class="panel-heading">
 <h2 class="panel-title">Display</h2>
 </div>

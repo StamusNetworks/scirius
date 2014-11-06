@@ -12,6 +12,8 @@
        <li><span class="type">Updated:</span> {{ source.updated_date }}</li>
 {% endif %}
 </ul>
+
+{% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
@@ -34,6 +36,7 @@
 </li>
 -->
 </ul>
+{% endif %}
 {% endblock %}
 
 {% block content %}
