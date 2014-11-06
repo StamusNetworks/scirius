@@ -36,8 +36,10 @@
  			<li role="presentation" class="divider"></li>
             <li><a href="{% url 'accounts_edit' '' %}" >Account settings</a></li>
             <li><a href="/accounts/logout/" >Logout</a></li>
+            {% if request.user.is_superuser %}
  			<li role="presentation" class="divider"></li>
             <li><a href="{% url 'accounts_manage' '' %}" >Manage accounts</a></li>
+            {% endif %}
             <li role="presentation" class="divider"></li>
            	<li><a target="_blank" href="https://github.com/StamusNetworks/scirius">Scirius homepage</a></li>
 			</ul>
