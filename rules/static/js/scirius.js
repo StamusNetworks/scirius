@@ -41,7 +41,8 @@ function draw_timeline(from_date, hosts, filter) {
                         success: function(data) {
 			    $("#timeline span").hide();
                             nv.addGraph(function() {
-                            if (hosts.length > 1) {
+		            /* starting from 4 hosts multibar is unreadable */
+                            if (hosts.length > 3) {
                               var chart = nv.models.lineChart()
                                             .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
                                             .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
@@ -82,7 +83,7 @@ function draw_timeline(from_date, hosts, filter) {
                                             found = false;
                                             for (i = starti; i < entries.length; i++) {
                                                 if (Math.abs(entries[i]["time"] - inter) <= interval/2) {
-                                                    gdata.push({x: entries[i]["time"], y: entries[i]["count"]});
+                                                    gdata.push({x: inter, y: entries[i]["count"]});
                                                     found = true;
                                                     starti = i + 1;
                                                     break;
