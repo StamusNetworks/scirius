@@ -64,3 +64,9 @@ class Suricata(models.Model):
         rfile.write(str(datetime.now()))
         rfile.close()
         return True
+
+def get_probe_hostnames(limit = 10):
+    suricata = Suricata.objects.all()
+    if suricata != None:
+        return [ suricata[0].name ]
+    return None
