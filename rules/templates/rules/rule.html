@@ -96,7 +96,7 @@
 </div> <!-- container -->
 </div> <!-- col -->
 </div> <!-- row -->
-{% if hosts %}
+{% if probes %}
 <div class="row">
 <div class="col-md-12">
 <h2 class="title">Activity (last {{ date }})
@@ -129,8 +129,8 @@
 
 <script>
 
-{% if hosts %}
-$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [ '{{ suricata.name }}' ], "alert.signature_id:{{ rule.sid }}" ); });
+{% if probes %}
+$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "alert.signature_id:{{ rule.sid }}" ); });
 {% endif %}
 
 function load_stats() {

@@ -41,6 +41,8 @@ from tables import *
 from forms import *
 from suripyg import SuriHTMLFormat
 
+Probe = __import__(settings.RULESET_MIDDLEWARE)
+
 def complete_context(request, context):
     if settings.USE_ELASTICSEARCH:
         if request.GET.__contains__('duration'):
@@ -65,10 +67,7 @@ def index(request):
     context = {'ruleset_list': ruleset_list,
                 'source_list': source_list}
     try:
-        from suricata.models import Suricata
-        suricata = Suricata.objects.all()
-        if suricata != None:
-            context['suricata'] = suricata[0]
+        context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
     except:
         pass
     complete_context(request, context)
@@ -235,24 +234,10 @@ def rule(request, rule_id, key = 'pk'):
     rulesets_status = StatusRulesetTable(rulesets_status)
     tables.RequestConfig(request).configure(rulesets_status)
     context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status}
-    if settings.RULESET_MIDDLEWARE == 'suricata':
-        try:
-            from suricata.models import Suricata
-            hosts = []
-            for suri in Suricata.objects.all():
-                hosts.append(suri.name)
-        except:
-            pass
-    elif settings.RULESET_MIDDLEWARE == 'appliances':
-        try:
-            from appliances.models import Appliance
-            hosts = []
-            for app in Appliance.objects.all():
-                hosts.append(app.name)
-        except:
-            pass
-    if len(hosts):
-        context['hosts'] = json.dumps(hosts)
+    try:
+        context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
+    except:
+        pass
     complete_context(request, context)
 
     return scirius_render(request, 'rules/rule.html', context)
