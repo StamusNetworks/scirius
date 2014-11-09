@@ -35,6 +35,7 @@ Scirius is using the following Django modules:
 * south
 * bootstrap3
 * requests
+* revproxy
 
 The easy way to install the dependencies is to use `pip <https://pypi.python.org/pypi/pip>`_:
 
