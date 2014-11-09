@@ -41,7 +41,7 @@ function draw_timeline(from_date, hosts, filter) {
                         success: function(data) {
 			    $("#timeline span").hide();
                             nv.addGraph(function() {
-                            if (false) {
+                            if (hosts.length > 1) {
                               var chart = nv.models.lineChart()
                                             .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
                                             .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
@@ -97,7 +97,7 @@ function draw_timeline(from_date, hosts, filter) {
                                             values: gdata,
                                             key: hosts[hi],
                                             //color: '#AD9C9B',  //color - optional: choose your own line color.
-                                            area: true
+                                            //area: true
                                         }
                                         );
                                 }
