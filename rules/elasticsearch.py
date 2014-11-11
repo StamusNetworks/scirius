@@ -45,7 +45,7 @@ ALERT_ID_QUERY = """
                   "should": [
                     {
                       "query_string": {
-                        "query": "event_type:alert AND host:{{ appliance_hostname }}"
+                        "query": "event_type:alert AND host.raw:{{ appliance_hostname }}"
                       }
                     }
                   ]
@@ -140,7 +140,7 @@ TIMELINE_QUERY = """
             "filtered": {
               "query": {
                 "query_string": {
-                  "query": "event_type:alert AND host:{{ host }} {{ query_filter }}"
+                  "query": "event_type:alert AND host.raw:{{ host }} {{ query_filter }}"
                 }
               },
               "filter": {
