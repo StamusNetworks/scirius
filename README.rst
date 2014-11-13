@@ -166,6 +166,12 @@ Permissions system is basic:
 * Superuser can edit and create users
 * Staff members can do change on rulesets and suricata
 
+This allows to have three useful levels for users:
+
+* Read-only: no flag set
+* Staff member: with staff flag set, they can update rulesets and suricata
+* Super user: flags staff and superuser set, they can do anything
+
 Ruleset management
 ------------------
 
