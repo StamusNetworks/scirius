@@ -154,8 +154,8 @@ Authentication and permissions
 ------------------------------
 
 Scirius is using authentication by default. You will need a superuser to be able to
-use scirius. ``syncdb`` should have created one for you. If it is not the case, you
-can run from the Scirius base directory ::
+create and edit users for scirius. ``syncdb`` should have created one for you. If it is not the case, you
+can run from the Scirius base directory(/opt/selks/scirius/) ::
 
  python manage.py createsuperuser
 
