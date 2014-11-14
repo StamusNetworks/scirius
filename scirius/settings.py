@@ -110,6 +110,8 @@ USE_KIBANA = False
 KIBANA_PROXY = False
 # Kibana URL
 KIBANA_URL = "http://localhost:9292"
+# Number of dashboards to display
+KIBANA_DASHBOARDS_COUNT = 20
 
 # Proxy parameters
 # Set USE_PROXY to True to use a proxy to fetch ruleset update.

@@ -167,7 +167,7 @@ TIMELINE_QUERY = """
 }
 """
 
-DASHBOARDS_QUERY_URL = "http://%s/kibana-int/dashboard/_search" % settings.ELASTICSEARCH_ADDRESS
+DASHBOARDS_QUERY_URL = "http://%s/kibana-int/dashboard/_search?size=" % settings.ELASTICSEARCH_ADDRESS
 
 from rules.models import Rule
 from rules.tables import ExtendedRuleTable, RuleStatsTable
@@ -235,7 +235,7 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
     return stats
 
 def es_get_dashboard(count=20):
-    req = urllib2.Request(DASHBOARDS_QUERY_URL)
+    req = urllib2.Request(DASHBOARDS_QUERY_URL + str(count))
     try:
         out = urllib2.urlopen(req)
     except:

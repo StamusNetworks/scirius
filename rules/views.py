@@ -169,7 +169,7 @@ def elasticsearch(request):
     if request.GET.__contains__('query'):
         query = request.GET.get('query', 'dashboards')
         if query == 'dashboards':
-            data = es_get_dashboard()
+            data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
         elif query == 'rules':
             host = request.GET.get('host', None)
             from_date = request.GET.get('from_date', None)
@@ -193,7 +193,7 @@ def elasticsearch(request):
         else:
             data = None
     else:
-        data = es_get_dashboard()
+        data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
     return HttpResponse(json.dumps(data),
                         content_type="application/json")
 
