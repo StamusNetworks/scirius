@@ -130,11 +130,11 @@ function load_dashboards() {
                         $("#error").text("Unable to get data from Elasticsearch");
                         $("#error").parent().toggle();
                 }
-                if (data.length) {
+                if (data) {
                         $("#dashboards").empty();
                         var dh = "<ul>";
-                        for (i = 0; i < data.length; i++) {
-                                dh += "<li><a href='{{ kibana_url }}/#/dashboard/elasticsearch/" + data[i] + "'>" + data[i] + "</a></li>";
+                        for (var key in data) {
+                                dh += "<li><a href='{{ kibana_url }}/#/dashboard/elasticsearch/" + key + "'>" + data[key] + "</a></li>";
                         }
                         $("#dashboards").append(dh);
                 } else {

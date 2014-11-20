@@ -249,9 +249,9 @@ def es_get_dashboard(count=20):
     except:
         return None
     if data != None:
-        dashboards = []
+        dashboards = {}
         for elt in data:
-            dashboards.append(elt["_id"])
+            dashboards[elt["_id"]] = elt["_source"]["title"]
         return dashboards
     return None
 
