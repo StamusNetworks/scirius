@@ -44,12 +44,14 @@ def get_suri():
         suri = suri[0]
     return suri
 
-def index(request):
+def index(request, error = None):
     # try to get suricata from db
     suri = get_suri()
 
     if suri:
         context = {'suricata': suri}
+        if error:
+            context['error'] = error
         supp_rules = list(suri.ruleset.suppressed_rules.all())
         if len(supp_rules):
             suppressed = ",".join([ str(x.sid) for x in supp_rules])
@@ -137,7 +139,10 @@ def update(request):
             return scirius_render(request, 'suricata/update.html', { 'suricata': suri, 'error': "Invalid form"})
         message = []
         if form.cleaned_data['reload']:
-            suri.ruleset.update()
+            try:
+                suri.ruleset.update()
+            except IOError, errors:
+                return index(request, error="Can not fetch data: %s" % (errors))
             message.append("Rule downloaded at %s. " % (suri.ruleset.updated_date))
         if form.cleaned_data['build']:
             suri.generate()
