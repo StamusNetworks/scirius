@@ -32,8 +32,8 @@
                 	<li><a href="{{kibana_url}}">Dashboards</a>
 				<div id="dashboards"><ul><li>Loading data...</li></ul></div>
                         </li>
-			{% endif %}
  			<li role="presentation" class="divider"></li>
+			{% endif %}
             <li><a href="{% url 'accounts_edit' '' %}" >Account settings</a></li>
             <li><a href="/accounts/logout/" >Logout</a></li>
             {% if request.user.is_superuser %}
