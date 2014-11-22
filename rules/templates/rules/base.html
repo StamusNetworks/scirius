@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load bootstrap3 %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -29,19 +30,19 @@
 </a>
 			<ul class="dropdown-menu" id="sc_menu" role="menu">
 			{% if kibana %}
-                	<li><a href="{{kibana_url}}">Dashboards</a>
+                        <li><a href="{{kibana_url}}">{% bootstrap_icon "stats"%} Dashboards</a>
 				<div id="dashboards"><ul><li>Loading data...</li></ul></div>
                         </li>
  			<li role="presentation" class="divider"></li>
 			{% endif %}
-            <li><a href="{% url 'accounts_edit' '' %}" >Account settings</a></li>
-            <li><a href="/accounts/logout/" >Logout</a></li>
+            <li><a href="{% url 'accounts_edit' '' %}" >{% bootstrap_icon "cog"%} Account settings</a></li>
+            <li><a href="/accounts/logout/" >{% bootstrap_icon "log-out"%} Logout</a></li>
             {% if request.user.is_superuser %}
  			<li role="presentation" class="divider"></li>
-            <li><a href="{% url 'accounts_manage' '' %}" >Manage accounts</a></li>
+                        <li><a href="{% url 'accounts_manage' '' %}" >{% bootstrap_icon "user"%} Manage accounts</a></li>
             {% endif %}
             <li role="presentation" class="divider"></li>
-           	<li><a target="_blank" href="https://github.com/StamusNetworks/scirius">Scirius homepage</a></li>
+            <li><a target="_blank" href="https://github.com/StamusNetworks/scirius">{% bootstrap_icon "new-window"%} Scirius homepage</a></li>
 			</ul>
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#top-menu-collapse">
         <span class="sr-only">Toggle navigation</span>
