@@ -19,6 +19,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django.db import models
+from django.core.exceptions import ValidationError
+
 from datetime import datetime
 
 # Create your models here.
@@ -26,8 +28,13 @@ import os
 
 from rules.models import Ruleset
 
+
+def validate_hostname(value):
+    if ' ' in value:
+        raise ValidationError('"%s" contains space' % value)
+
 class Suricata(models.Model):
-    name = models.CharField(max_length=100, unique = True)
+    name = models.CharField(max_length=100, unique = True, validators = [validate_hostname])
     descr = models.CharField(max_length=400)
     output_directory = models.CharField(max_length=400)
     created_date = models.DateTimeField('date created')
