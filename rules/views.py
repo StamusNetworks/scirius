@@ -355,7 +355,13 @@ def edit_source(request, source_id):
         form = SourceForm(request.POST, request.FILES, instance=source)
         try:
             if source.method == 'local' and request.FILES.has_key('file'):
+                categories = Category.objects.filter(source = source)
+                firstimport = False
+                if not categories:
+                    firstimport = True
                 source.handle_uploaded_file(request.FILES['file'])
+                if not source.datatype == 'other' and not firstimport:
+                    source.create_update()
             form.save()
             return redirect(source)
         except ValueError:
