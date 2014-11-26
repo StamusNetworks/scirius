@@ -428,9 +428,10 @@ class Category(models.Model):
                     continue
                 sid = match.groups()[0]
                 match = getrev.search(line)
-                if not match:
-                    continue
-                rev = int(match.groups()[0])
+                if match:
+                    rev = int(match.groups()[0])
+                else:
+                    rev = None
                 match = getmsg.search(line)
                 if not match:
                     msg = ""
@@ -440,9 +441,12 @@ class Category(models.Model):
                 if existing_rules_hash.has_key(int(sid)):
                     # FIXME update references if needed
                     rule = existing_rules_hash[int(sid)]
-                    if rule.rev < rev:
+                    if rev == None or rule.rev < rev:
                         rule.content = line
-                        rule.rev = rev
+                        if rev == None:
+                            rule.rev = 0
+                        else:
+                            rule.rev = rev
                         if rule.category != self:
                             rule.category = self
                         rules_update["updated"].append(rule)
@@ -450,6 +454,8 @@ class Category(models.Model):
                     else:
                         rules_unchanged.append(rule)
                 else:
+                    if rev == None:
+                        rev = 0
                     rule = Rule(category = self, sid = sid,
                                         rev = rev, content = line, msg = msg)
                     rules_update["added"].append(rule)
