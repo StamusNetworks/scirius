@@ -251,7 +251,11 @@ def es_get_dashboard(count=20):
     if data != None:
         dashboards = {}
         for elt in data:
-            dashboards[elt["_id"]] = elt["_source"]["title"]
+            try:
+                dashboards[elt["_id"]] = elt["_source"]["title"]
+            except:
+                dashboards[elt["_id"]] = elt["_id"]
+                pass
         return dashboards
     return None
 
