@@ -254,11 +254,17 @@ def suppress_rule(request, rule_id):
         form = RulesetSuppressForm(request.POST)
         if form.is_valid(): # All validation rules pass
             ruleset = form.cleaned_data['ruleset']
-            ruleset.suppressed_rules.add(rule_object)
+            disable_rules = rule_object.get_flowbits_group()
+            ruleset.suppressed_rules.add(*list(disable_rules))
             ruleset.save()
         return redirect(rule_object)
     form = RulesetSuppressForm()
+    rules = rule_object.get_flowbits_group()
     context = { 'rule': rule_object, 'form': form }
+    if len(rules):
+        rules = RuleTable(rules)
+        tables.RequestConfig(request).configure(rules)
+        context['rules'] = rules
     return scirius_render(request, 'rules/suppress_rule.html', context)
 
 def suppress_category(request, cat_id):

@@ -11,6 +11,13 @@
 
 <form class="form" action="/rules/rule/{{ rule.sid }}/suppress" method="post">{% csrf_token %}
     {% bootstrap_form form %}
+
+{% if rules %}
+This will also disable the following rules due to flowbits dependencies:
+{% load render_table from django_tables2 %}
+{% render_table rules %}
+{% endif %}
+
     {% buttons %}
         <button type="submit" class="btn btn-primary">
             {% bootstrap_icon "ok" %} Disable

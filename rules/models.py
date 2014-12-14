@@ -540,6 +540,13 @@ class Rule(models.Model):
         from django.core.urlresolvers import reverse
         return reverse('rule', args=[str(self.sid)])
 
+    def get_flowbits_group(self):
+        rules = set()
+        for flowbit in self.flowbits.all():
+            rules_dep = Rule.objects.filter(category = self.category, flowbits = flowbit)
+            rules |= set(rules_dep)
+        return rules
+
 # we should use django reversion to keep track of this one
 # even if fixing HEAD may be complicated
 class Ruleset(models.Model):
