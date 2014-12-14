@@ -77,6 +77,10 @@ class Source(models.Model):
             self.update_ruleset = None
         self.first_run = False
         self.updated_rules = {"added": [], "deleted": [], "updated": []}
+        if len(Flowbit.objects.filter(source = self)) == 0:
+            self.init_flowbits = True
+        else:
+            self.init_flowbits = False
 
     def delete(self):
         # delete git tree
@@ -395,11 +399,39 @@ class Category(models.Model):
     created_date = models.DateTimeField('date created', default = datetime.now())
     source = models.ForeignKey(Source)
 
+    getflowbits = re.compile("flowbits *: *(isset|set),(.*?) *;")
+
     class Meta:
         verbose_name_plural = "categories"
 
     def __unicode__(self):
         return self.name
+
+    def parse_rule_flowbit(self, source, line):
+        flowbits = []
+        match = self.getflowbits.findall(line)
+        if match:
+            for flowinst in match:
+               elt = Flowbit.objects.filter(source = source, name = flowinst[1])
+               if elt:
+                   elt = elt[0]
+                   if flowinst[0] == "isset" and not elt.isset:
+                       elt.isset = True
+                       elt.save()
+                   if flowinst[0] == "set" and not elt.set:
+                       elt.set = True
+                       elt.save()
+               else:
+                   if flowinst[0] == "isset":
+                       fisset = True
+                       fset = False
+                   else:
+                       fisset = False
+                       fset = True
+                   elt = Flowbit(name = flowinst[1], source = source, isset = fisset, set = fset)
+                   elt.save()
+               flowbits.append(elt)
+        return flowbits
 
     def get_rules(self, source):
         # parse file
@@ -419,6 +451,10 @@ class Category(models.Model):
         rules_list = []
         for rule in Rule.objects.filter(category = self):
             rules_list.append(rule)
+
+        # If no flowbits are knowned in the source we try
+        # to parse them all. There should be no database query for ruleset
+        # that are not using them. If there is some, then do it only in update.
         with transaction.atomic():
             for line in rfile.readlines():
                 if line.startswith('#'):
@@ -437,11 +473,14 @@ class Category(models.Model):
                     msg = ""
                 else:
                     msg = match.groups()[0]
+                flowbits = []
+                if source.init_flowbits:
+                    flowbits = self.parse_rule_flowbit(source, line)
                 # FIXME detect if nothing has changed to avoir rules reload
                 if existing_rules_hash.has_key(int(sid)):
                     # FIXME update references if needed
                     rule = existing_rules_hash[int(sid)]
-                    if rev == None or rule.rev < rev:
+                    if rev == None or rule.rev < rev or source.init_flowbits:
                         rule.content = line
                         if rev == None:
                             rule.rev = 0
@@ -449,6 +488,9 @@ class Category(models.Model):
                             rule.rev = rev
                         if rule.category != self:
                             rule.category = self
+                        if not source.init_flowbits:
+                            flowbits = self.parse_rule_flowbit(source, line)
+                        rule.flowbits = flowbits
                         rules_update["updated"].append(rule)
                         rule.save()
                     else:
@@ -458,6 +500,9 @@ class Category(models.Model):
                         rev = 0
                     rule = Rule(category = self, sid = sid,
                                         rev = rev, content = line, msg = msg)
+                    if not source.init_flowbit:
+                        flowbits = self.parse_rule_flowbit(source, line)
+                    rule.flowbits = flowbits
                     rules_update["added"].append(rule)
             if len(rules_update["added"]):
                 Rule.objects.bulk_create(rules_update["added"])
@@ -470,6 +515,13 @@ class Category(models.Model):
         from django.core.urlresolvers import reverse
         return reverse('category', args=[str(self.id)])
 
+class Flowbit(models.Model):
+    name = models.CharField(max_length=100)
+    set = models.BooleanField(default=False)
+    isset = models.BooleanField(default=False)
+    enable = models.BooleanField(default=True)
+    source = models.ForeignKey(Source)
+
 class Rule(models.Model):
     sid = models.IntegerField(primary_key=True)
     category = models.ForeignKey(Category)
@@ -477,6 +529,7 @@ class Rule(models.Model):
     state = models.BooleanField(default=True)
     rev = models.IntegerField(default=0)
     content = models.CharField(max_length=10000)
+    flowbits = models.ManyToManyField(Flowbit)
 
     hits = 0
 
