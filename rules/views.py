@@ -495,7 +495,8 @@ def edit_ruleset(request, ruleset_id):
         elif request.POST.has_key('rules'):
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
-                ruleset.suppressed_rules.remove(rule_object)
+                disable_rules = rule_object.get_flowbits_group()
+                ruleset.suppressed_rules.remove(*disable_rules)
             ruleset.save()
         elif request.POST.has_key('sources'):
             # clean ruleset
