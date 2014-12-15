@@ -500,7 +500,7 @@ class Category(models.Model):
                         rev = 0
                     rule = Rule(category = self, sid = sid,
                                         rev = rev, content = line, msg = msg)
-                    if not source.init_flowbit:
+                    if not source.init_flowbits:
                         flowbits = self.parse_rule_flowbit(source, line)
                     rule.flowbits = flowbits
                     rules_update["added"].append(rule)
