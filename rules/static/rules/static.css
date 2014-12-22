@@ -263,3 +263,8 @@ div#login {
    margin-bottom: 0px;
    background-color: white;
 }
+
+div.tab-content {
+   margin-top: 10px;
+   margin-left: 5px;
+}
