@@ -26,4 +26,5 @@ urlpatterns = patterns('',
     url(r'^$', views.index, name='index'),
     url(r'^edit$', views.edit, name='edit'),
     url(r'^update$', views.update, name='update'),
+    url(r'^info$', views.info, name='info'),
     )
