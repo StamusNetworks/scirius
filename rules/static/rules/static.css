@@ -268,3 +268,7 @@ div.tab-content {
    margin-top: 10px;
    margin-left: 5px;
 }
+
+div#status div.panel-body {
+    padding: 5px;
+}

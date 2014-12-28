@@ -94,6 +94,17 @@
 					{% endif %}
                                         {% block status %} {% endblock %}
 			</div> <!-- panel -->
+            {% if elasticsearch %}
+			<div class="panel panel-default" id="status">
+					<div class="panel-heading">
+					<h2 class="panel-title">System status</h2>
+					</div>
+                    <div class="panel-body">
+                    <div id="suri-status" class="label label-default">Suricata</div>
+                    <div id="health" class="label label-default">Elasticsearch</div>
+                    </div>
+            </div>
+            {% endif %}
 		</div> <!-- col -->
 		{% if three_columns %}
 		<div class="col-md-8">
@@ -168,5 +179,72 @@ $( 'document' ).ready(load_dashboards());
 </script>
 {% endif %}
 
+
+{% if elasticsearch %}
+
+<script>
+function get_es_health() {
+    $.ajax(
+        {
+                type:"GET",
+                url:"/rules/es?query=health",
+                success: function(data) {
+                if (!data) {
+                        $("#health").removeClass("label-default");
+                        $("#health").addClass("label-danger");
+                } else {
+                        $("#health").removeClass("label-default");
+                        if (data['status'] == 'green') {
+                            $("#health").addClass("label-success");
+                        } else if (data['status'] == 'yellow') {
+                            $("#health").addClass("label-warning");
+                        } else if (data['status'] == 'red') {
+                            $("#health").addClass("label-danger");
+                        }
+                }
+                },
+                error: function(data) {
+                        $("#health").removeClass("label-default");
+                        $("#health").addClass("label-danger");
+                },
+                timeout: 15000,
+        }
+    );
+}
+
+$( 'document' ).ready(get_es_health());
+</script>
+{% endif %}
+
+<script>
+function get_suricata_health() {
+    $.ajax(
+        {
+                type:"GET",
+                url:"/{{ generator }}/info?query=status",
+                success: function(data) {
+                if (!data) {
+                        $("#suri-status").addClass("label-danger");
+                        $("#suri-status").removeClass("label-default");
+                } else {
+                        if (data['running']) {
+                            $("#suri-status").addClass("label-success");
+                        } else {
+                            $("#suri-status").addClass("label-danger");
+                        }
+                        $("#suri-status").removeClass("label-default");
+                }
+                },
+                error: function(data) {
+                        $("#suri-status").addClass("label-danger");
+                        $("#suri-status").removeClass("label-default");
+                },
+                timeout: 15000,
+        }
+    );
+}
+
+$( 'document' ).ready(get_suricata_health());
+</script>
 </body>
 </html>

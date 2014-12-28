@@ -190,6 +190,8 @@ def elasticsearch(request):
             hosts = cshosts.split(',')
             qfilter = request.GET.get('filter', None)
             data = es_get_timeline(from_date = from_date, hosts = hosts, qfilter = qfilter)
+        elif query == 'health':
+            data = es_get_health()
         else:
             data = None
     else:
