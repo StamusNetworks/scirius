@@ -169,6 +169,8 @@ TIMELINE_QUERY = """
 
 DASHBOARDS_QUERY_URL = "http://%s/kibana-int/dashboard/_search?size=" % settings.ELASTICSEARCH_ADDRESS
 
+HEALTH_URL = "http://%s/_cluster/health" % settings.ELASTICSEARCH_ADDRESS
+
 from rules.models import Rule
 from rules.tables import ExtendedRuleTable, RuleStatsTable
 import django_tables2 as tables
@@ -284,4 +286,15 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
         return None
     data['from_date'] = from_date
     data['interval'] = int(interval) * 1000
+    return data
+
+def es_get_health():
+    req = urllib2.Request(HEALTH_URL)
+    try:
+        out = urllib2.urlopen(req)
+    except:
+        return None
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
     return data
