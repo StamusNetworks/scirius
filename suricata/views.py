@@ -182,5 +182,7 @@ def info(request):
             data = { 'running': suri_running }
         elif query == 'disk':
             data = psutil.disk_usage('/')
+        elif query == 'memory':
+            data = psutil.swap_memory()
     return HttpResponse(json.dumps(data),
                         content_type="application/json")
