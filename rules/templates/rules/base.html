@@ -102,6 +102,7 @@
                     <div class="panel-body">
                     <div id="suri-status" class="label label-default">Suricata</div>
                     <div id="health" class="label label-default">Elasticsearch</div>
+                    <div id="disk-status" class="label label-default">Disk</div>
                     </div>
             </div>
             {% endif %}
@@ -244,7 +245,35 @@ function get_suricata_health() {
     );
 }
 
+function get_disk_health() {
+    $.ajax(
+        {
+                type:"GET",
+                url:"/{{ generator }}/info?query=disk",
+                success: function(data) {
+                if (!data) {
+                        $("#disk-status").addClass("label-danger");
+                        $("#disk-status").removeClass("label-default");
+                } else {
+                        if (data[3] < 90) {
+                            $("#disk-status").addClass("label-success");
+                        } else {
+                            $("#disk-status").addClass("label-danger");
+                        }
+                        $("#disk-status").removeClass("label-default");
+                }
+                },
+                error: function(data) {
+                        $("#disk-status").addClass("label-danger");
+                        $("#disk-status").removeClass("label-default");
+                },
+                timeout: 15000,
+        }
+    );
+}
+
 $( 'document' ).ready(get_suricata_health());
+$( 'document' ).ready(get_disk_health());
 </script>
 </body>
 </html>
