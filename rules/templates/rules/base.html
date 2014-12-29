@@ -105,6 +105,7 @@
                     <div id="health" class="label label-default">Elasticsearch</div>
 {% endif %}
                     <div id="disk-status" class="label label-default">Disk</div>
+                    <div id="memory-status" class="label label-default">Memory</div>
                     </div>
             </div>
             {% endif %}
@@ -274,8 +275,36 @@ function get_disk_health() {
     );
 }
 
+function get_memory_health() {
+    $.ajax(
+        {
+                type:"GET",
+                url:"/{{ generator }}/info?query=memory",
+                success: function(data) {
+                if (!data) {
+                        $("#memory-status").addClass("label-danger");
+                        $("#memory-status").removeClass("label-default");
+                } else {
+                        if (data[3] < 10) {
+                            $("#memory-status").addClass("label-success");
+                        } else {
+                            $("#memory-status").addClass("label-danger");
+                        }
+                        $("#memory-status").removeClass("label-default");
+                }
+                },
+                error: function(data) {
+                        $("#memory-status").addClass("label-danger");
+                        $("#memory-status").removeClass("label-default");
+                },
+                timeout: 15000,
+        }
+    );
+}
+
 $( 'document' ).ready(get_suricata_health());
 $( 'document' ).ready(get_disk_health());
+$( 'document' ).ready(get_memory_health());
 </script>
 </body>
 </html>
