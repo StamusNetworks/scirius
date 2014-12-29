@@ -180,5 +180,7 @@ def info(request):
                         suri_running = True
                         break
             data = { 'running': suri_running }
+        elif query == 'disk':
+            data = psutil.disk_usage('/')
     return HttpResponse(json.dumps(data),
                         content_type="application/json")
