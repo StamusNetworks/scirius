@@ -160,7 +160,9 @@ h2.panel-title {
     padding-left: 0px;
 }
 
-
+#sidebar div.sidebar-text {
+    padding-left: 10px;
+}
 
 #sidebar ul li {
     list-style-type: none;
