@@ -274,3 +274,12 @@ div.tab-content {
 div#status div.panel-body {
     padding: 5px;
 }
+
+div.label a {
+    color: white;
+    padding-left: 0em;
+}
+
+#sidebar div.label a {
+    padding-left: 0em;
+}
