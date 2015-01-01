@@ -10,12 +10,13 @@
      <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
      <link rel="stylesheet" href="{% static 'rules/nv.d3.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
     <script src="{% static 'js/d3.v3.min.js' %}" charset="utf-8"></script>
     <script src="{% static 'js/nv.d3.min.js' %}" charset="utf-8"></script>
     <script type="text/javascript" src="{% static 'js/scirius.js' %}"></script>
+    {% block head %} {% endblock %}
+    <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
 </head>
 
 {% block body %}
