@@ -49,6 +49,9 @@
 <li class="list-group-item"><strong>First name:</strong> <span class="pull-right">{{ user.first_name }}</span></li>
 <li class="list-group-item"><strong>Last name:</strong> <span class="pull-right">{{ user.last_name }}</span></li>
 <li class="list-group-item"><strong>Email:</strong> <span class="pull-right">{{ user.email }}</span></li>
+{% if user.sciriususer %}
+<li class="list-group-item"><strong>Timezone:</strong> <span class="pull-right">{{ user.sciriususer.timezone }}</span></li>
+{% endif %}
 <li class="list-group-item"><strong>Active:</strong> <span class="pull-right">{{ user.is_active }}</span></li>
 <li class="list-group-item"><strong>Staff user:</strong> <span class="pull-right">{{ user.is_staff }}</span></li>
 <li class="list-group-item"><strong>Super user:</strong> <span class="pull-right">{{ user.is_superuser }}</span></li>

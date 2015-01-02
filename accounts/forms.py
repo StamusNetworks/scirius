@@ -20,17 +20,22 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import forms
 from django.contrib.auth.models import User
+import pytz
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=20)
     password = forms.CharField(widget=forms.PasswordInput)
 
+TIMEZONES = ((x, x) for x in pytz.all_timezones)
+
 class UserSettingsForm(forms.ModelForm):
+    timezone = forms.ChoiceField(choices = TIMEZONES)
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'is_active', 'is_superuser', 'is_staff']
+        fields = ['username', 'first_name', 'last_name', 'email', 'timezone', 'is_active', 'is_superuser', 'is_staff']
 
 class NormalUserSettingsForm(forms.ModelForm):
+    timezone = forms.ChoiceField(choices = TIMEZONES)
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'is_active']

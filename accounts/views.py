@@ -26,6 +26,7 @@ from django.contrib.auth.models import User
 
 from scirius.utils import scirius_render, scirius_listing
 from forms import LoginForm, UserSettingsForm, NormalUserSettingsForm
+from models import SciriusUser
 
 def loginview(request, target):
     if request.method == 'POST':
@@ -67,6 +68,13 @@ def editview(request, action):
                     ruser.is_staff = orig_staff
                 ruser.save()
                 form.save_m2m()
+                if action == 'settings':
+                    try:
+                        sciriususer = ruser.sciriususer
+                        sciriususer.timezone = form.cleaned_data['timezone']
+                    except:
+                        sciriususer = SciriusUser.objects.create(user = ruser, timezone = form.cleaned_data['timezone'])
+                    sciriususer.save()
             else:
                 context['error'] = 'Invalid form'
             return scirius_render(request, 'accounts/edit.html', context)
@@ -76,9 +84,13 @@ def editview(request, action):
                 context = { 'form': form, 'action': 'Change password' }
             elif (action == 'settings'):
                 if request.user.is_superuser:
-                    form = UserSettingsForm(instance = request.user)
+                    form = UserSettingsForm(instance = request.user, )
                 else:
                     form = NormalUserSettingsForm(instance = request.user)
+                try:
+                    form.initial['timezone'] = request.user.sciriususer.timezone
+                except:
+                    pass
                 context = { 'form': form, 'action': 'Edit settings for ' + request.user.username }
             else:
                 context = { 'action': 'User settings' }
