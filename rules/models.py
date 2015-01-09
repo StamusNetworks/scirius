@@ -22,6 +22,7 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import FieldError, SuspiciousOperation
 from django.db import transaction
+from django.utils import timezone
 import requests
 import tempfile
 import tarfile
@@ -110,7 +111,7 @@ class Source(models.Model):
                 category = Category.objects.filter(source = self, name = name)
                 if not category:
                     category = Category.objects.create(source = self,
-                                            name = name, created_date = datetime.now(),
+                                            name = name, created_date = timezone.now(),
                                             filename = member.name)
                     category.get_rules(self)
                 else:
@@ -157,7 +158,7 @@ class Source(models.Model):
         if (not tarfile.is_tarfile(f.name)):
             raise OSError("Invalid tar file")
 
-        self.updated_date = datetime.now()
+        self.updated_date = timezone.now()
         self.first_run = False
 
         repo = self.get_git_repo(delete = True)
@@ -188,7 +189,7 @@ class Source(models.Model):
 
     # FIXME we need a factorization here with handle_rules_file
     def handle_other_file(self, f):
-        self.updated_date = datetime.now()
+        self.updated_date = timezone.now()
         self.first_run = False
 
         repo = self.get_git_repo(delete = True)
@@ -216,7 +217,7 @@ class Source(models.Model):
 
     def handle_rules_file(self, f):
 
-        self.updated_date = datetime.now()
+        self.updated_date = timezone.now()
         self.first_run = False
 
         repo = self.get_git_repo(delete = True)
