@@ -67,7 +67,6 @@ def editview(request, action):
                     ruser.is_superuser = False
                     ruser.is_staff = orig_staff
                 ruser.save()
-                form.save_m2m()
                 if action == 'settings':
                     try:
                         sciriususer = ruser.sciriususer
