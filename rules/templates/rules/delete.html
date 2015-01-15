@@ -10,7 +10,7 @@
 <h2 class="title">Are you sure you want to delete object {{ object.name }}?</h2>
 
 <form class="form" action={% url delfn object.id %} method="post">{% csrf_token %}
-<button class="btn btn-default" type="submit">
+<button class="btn btn-primary" type="submit">
 <span class="glyphicon glyphicon-trash"> Delete object</span>
 </button>
 </form>
