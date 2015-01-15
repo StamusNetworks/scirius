@@ -1,4 +1,5 @@
 {% extends "rules/base.html" %}
+{% load bootstrap3  %}
 
 {% block content %}
 
@@ -11,8 +12,8 @@
 <div class="col-md-4">
 
 <form action="/rules/category/{{ category.pk }}/suppress" method="post">{% csrf_token %}
-{{ form.as_p }}
-<input class="btn btn-default" type="submit" value="Submit" />
+{% bootstrap_form form %}
+<input class="btn btn-primary" type="submit" value="Submit" />
 </form>
 
 </div>
