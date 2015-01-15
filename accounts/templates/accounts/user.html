@@ -58,9 +58,14 @@
 </ul>
 
 {% if action == 'delete' %}
+<form action="{% url 'accounts_useraction' user.pk 'delete' %}" method="get" class="form">
+<input type="hidden" name="confirm" value="1">
+    {% buttons %}
 <button type="submit" class="btn btn-primary">
-<a href="{% url 'accounts_useraction' user.pk 'delete' %}?confirm=1">Confirm user deletion</a></li>
+Confirm user deletion
 </button>
+    {% endbuttons %}
+</form>
 {% endif %}
 </div>
 </div>
