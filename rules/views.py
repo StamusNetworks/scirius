@@ -87,6 +87,7 @@ def about(request):
 def search(request):
     context = {}
     length = 0
+    rules_width = 4
     search = None
     if request.method == 'POST':
         if request.POST.has_key('search'):
@@ -110,6 +111,7 @@ def search(request):
             categories = CategoryTable(categories)
             tables.RequestConfig(request).configure(categories)
         else:
+            rules_width += 4
             categories = None
         rulesets = Ruleset.objects.filter(name__icontains=search)
         if len(rulesets) > 0:
@@ -117,12 +119,13 @@ def search(request):
             rulesets = RulesetTable(rulesets)
             tables.RequestConfig(request).configure(rulesets)
         else:
+            rules_width += 4
             rulesets = None
     else:
         rules = None
         categories = None
         rulesets = None
-    context = { 'rules': rules, 'categories': categories, 'rulesets': rulesets, 'motif': search, 'length': length }
+    context = { 'rules': rules, 'rules_width': rules_width, 'categories': categories, 'rulesets': rulesets, 'motif': search, 'length': length }
     return scirius_render(request, 'rules/search.html', context)
 
 def sources(request):

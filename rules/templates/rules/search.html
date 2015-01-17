@@ -9,7 +9,7 @@ No match.
 <div class="container-fluid">
 <div class="row">
 {% if rules %} 
-<div class="col-md-4">
+<div class="col-md-{{ rules_width }}">
 <h2 class="title">Rules</h2>
     {% load render_table from django_tables2 %}
     {% render_table rules %}
