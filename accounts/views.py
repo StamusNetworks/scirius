@@ -30,12 +30,19 @@ from models import SciriusUser
 
 def loginview(request, target):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+        form = LoginForm(request.POST)
+        if not form.is_valid(): # All validation rules pass
+            form = LoginForm()
+            context = { 'form': form, 'error': 'Invalid form' }
+            return scirius_render(request, 'accounts/login.html', context)
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
         user = authenticate(username=username, password=password)
         if user is not None:
             if user.is_active:
                 login(request, user)
+                if not form.cleaned_data['persistent']:
+                    request.session.set_expiry(0)
                 return redirect("/" + target)
             else:
                 form = LoginForm()
