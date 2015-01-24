@@ -310,7 +310,7 @@ class Source(models.Model):
         return hcommit.diff('HEAD~1', create_patch = True)
 
     def export_files(self, directory, version):
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), "rules")
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         repo = git.Repo(source_git_dir)
         with tempfile.TemporaryFile(dir=self.TMP_DIR) as f:
             repo.archive(f, treeish=version)
