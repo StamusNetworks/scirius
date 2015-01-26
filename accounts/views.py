@@ -135,6 +135,12 @@ def manageuseraction(request, user_id, action):
             form = UserSettingsForm(request.POST, instance = user)
             if form.is_valid():
                 form.save()
+                try:
+                    sciriususer = user.sciriususer
+                    sciriususer.timezone = form.cleaned_data['timezone']
+                except:
+                    sciriususer = SciriusUser.objects.create(user = user, timezone = form.cleaned_data['timezone'])
+                sciriususer.save()
             else:
                 context['error'] = 'Invalid form'
         return scirius_render(request, 'accounts/user.html', context)
@@ -155,7 +161,11 @@ def manageuseraction(request, user_id, action):
             context['error'] = 'Unsufficient permissions'
             return scirius_render(request, 'accounts/user.html', context)
         form = UserSettingsForm(instance = user)
-        context = {'form': form }
+        try:
+            form.initial['timezone'] = user.sciriususer.timezone
+        except:
+            pass
+        context['form'] = form
         return scirius_render(request, 'accounts/user.html', context)
     elif action == "delete":
         if not request.user.is_superuser:
