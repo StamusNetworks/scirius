@@ -15,6 +15,7 @@
 </div>
 <ul>
 <li><a href="{% url 'accounts_useraction' user.pk 'edit' %}">Edit user</a></li>
+<li><a href="{% url 'accounts_useraction' user.pk 'password' %}">Change user password</a></li>
 <li><a href="{% url 'accounts_useraction' user.pk 'delete' %}">Delete user</a></li>
 </ul>
 {% endif %}

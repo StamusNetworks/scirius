@@ -25,7 +25,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from scirius.utils import scirius_render, scirius_listing
-from forms import LoginForm, UserSettingsForm, NormalUserSettingsForm
+from forms import LoginForm, UserSettingsForm, NormalUserSettingsForm, PasswordForm
 from models import SciriusUser
 
 def loginview(request, target):
@@ -143,6 +143,13 @@ def manageuseraction(request, user_id, action):
                 sciriususer.save()
             else:
                 context['error'] = 'Invalid form'
+        elif action == 'password':
+            form = PasswordForm(request.POST)
+            if form.is_valid():
+                user.set_password(form.cleaned_data['password'])
+                user.save()
+            else:
+                context['error'] = 'Invalid form'
         return scirius_render(request, 'accounts/user.html', context)
     if action == "activate":
         if not request.user.is_superuser:
@@ -165,6 +172,13 @@ def manageuseraction(request, user_id, action):
             form.initial['timezone'] = user.sciriususer.timezone
         except:
             pass
+        context['form'] = form
+        return scirius_render(request, 'accounts/user.html', context)
+    elif action == "password":
+        if not request.user.is_superuser:
+            context['error'] = 'Unsufficient permissions'
+            return scirius_render(request, 'accounts/user.html', context)
+        form = PasswordForm()
         context['form'] = form
         return scirius_render(request, 'accounts/user.html', context)
     elif action == "delete":

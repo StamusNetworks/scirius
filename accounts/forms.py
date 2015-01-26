@@ -40,3 +40,6 @@ class NormalUserSettingsForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'is_active']
+
+class PasswordForm(forms.Form):
+    password = forms.CharField(label="New user password", widget=forms.PasswordInput)
