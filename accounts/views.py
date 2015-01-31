@@ -103,6 +103,7 @@ def editview(request, action):
             return scirius_render(request, 'accounts/edit.html', context)
 
 def manageview(request, action):
+    context = { 'action': 'User management' }
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
