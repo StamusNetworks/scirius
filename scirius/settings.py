@@ -102,6 +102,10 @@ STATIC_URL = '/static/'
 USE_ELASTICSEARCH = True
 #ELASTICSEARCH_ADDRESS = "127.0.0.1:9200"
 ELASTICSEARCH_ADDRESS = "localhost:9200"
+# You can use a star to avoid timestamping expansion for example 'logstash-*'
+ELASTICSEARCH_LOGSTASH_INDEX = "logstash-"
+# use hourly, daily to indicate the logstash index building recurrence
+ELASTICSEARCH_LOGSTASH_TIMESTAMPING = "daily"
 
 # Kibana
 USE_KIBANA = False

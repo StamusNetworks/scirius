@@ -20,12 +20,13 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.template import Context, Template
 from django.conf import settings
+from datetime import datetime, timedelta
 
 import urllib2
 import json
 from time import time
 
-URL = "http://%s/_all/_search?pretty" % settings.ELASTICSEARCH_ADDRESS
+URL = "http://%s/%s/_search"
 
 ALERT_ID_QUERY = """
 {
@@ -175,11 +176,40 @@ from rules.models import Rule
 from rules.tables import ExtendedRuleTable, RuleStatsTable
 import django_tables2 as tables
 
+def build_es_timestamping(date):
+    format_table = { 'daily': '%Y.%m.%d', 'hourly': '%Y.%m.%d.%H' }
+    now = datetime.now()
+    try:
+        indexes = []
+        while date < now:
+            indexes.append("%s%s" % (settings.ELASTICSEARCH_LOGSTASH_INDEX, date.strftime(format_table[settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING])))
+            if settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'daily':
+                date += timedelta(days=1)
+            elif settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'hourly':
+                date += timedelta(hours=1)
+        print indexes
+        return ','.join(indexes)
+    except:
+        return settings.ELASTICSEARCH_LOGSTASH_INDEX + '*'
+
+def get_es_url(from_date):
+    if '*' in settings.ELASTICSEARCH_LOGSTASH_INDEX:
+        indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX
+    else:
+        if from_date == 0:
+            indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX + "*"
+        else:
+            start = datetime.fromtimestamp(int(from_date)/1000)
+            indexes = build_es_timestamping(start)
+    return URL % (settings.ELASTICSEARCH_ADDRESS, indexes)
+
 def es_get_rules_stats(request, hostname, count=20, from_date=0):
     templ = Template(ALERT_ID_QUERY)
     context = Context({'appliance_hostname': hostname, 'alerts_number': count, 'from_date': from_date})
     data = templ.render(context)
-    req = urllib2.Request(URL, data)
+
+    es_url = get_es_url(from_date)
+    req = urllib2.Request(es_url, data)
     try:
         out = urllib2.urlopen(req)
     except:
@@ -212,7 +242,8 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
     templ = Template(SID_BY_HOST_QUERY)
     context = Context({'rule_sid': sid, 'alerts_number': count, 'from_date': from_date})
     data = templ.render(context)
-    req = urllib2.Request(URL, data)
+    es_url = get_es_url(from_date)
+    req = urllib2.Request(es_url, data)
     try:
         out = urllib2.urlopen(req)
     except:
@@ -271,7 +302,8 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
         query_filter = " AND " + qfilter
         context['query_filter'] = query_filter
     data = templ.render(context)
-    req = urllib2.Request(URL, data)
+    es_url = get_es_url(from_date)
+    req = urllib2.Request(es_url, data)
     try:
         out = urllib2.urlopen(req)
     except:
