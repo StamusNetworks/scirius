@@ -113,6 +113,8 @@ def manageview(request, action):
                 context['error'] = 'Not enough permission to create users'
         else:
             context['error'] = 'Invalid form'
+            context['form'] = form
+            return scirius_render(request, 'accounts/user.html', context)
     else:
         if (action == 'add'):
             form = UserCreationForm()
