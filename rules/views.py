@@ -260,7 +260,10 @@ def suppress_rule(request, rule_id):
         if form.is_valid(): # All validation rules pass
             ruleset = form.cleaned_data['ruleset']
             disable_rules = rule_object.get_flowbits_group()
-            ruleset.suppressed_rules.add(*list(disable_rules))
+            if disable_rules:
+                ruleset.suppressed_rules.add(*list(disable_rules))
+            else:
+                ruleset.suppressed_rules.add(rule_object)
             ruleset.save()
         return redirect(rule_object)
     form = RulesetSuppressForm()
