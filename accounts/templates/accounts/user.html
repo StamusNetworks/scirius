@@ -29,6 +29,7 @@
 <h2>{{ current_action }}</h2>
 {% endif %}
 {% if form %}
+<h2>Editing user {{ user.username }}</h2>
 <form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
     {% bootstrap_form form %}
     {% buttons %}
