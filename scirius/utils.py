@@ -1,5 +1,5 @@
 """
-Copyright(C) 2014, Stamus Networks
+Copyright(C) 2014,2015,  Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
 
 This file is part of Scirius.
@@ -24,17 +24,19 @@ import django_tables2 as tables
 
 from rules.tables import *
 from accounts.tables import UserTable
+from rules.models import get_system_settings
 
 def scirius_render(request, template, context):
     context['generator'] = settings.RULESET_MIDDLEWARE
-    if settings.USE_ELASTICSEARCH:
+    gsettings = get_system_settings()
+    if gsettings.use_elasticsearch:
         context['elasticsearch'] = 1
-    if settings.USE_KIBANA:
-        context['kibana'] = 1
-        if settings.KIBANA_PROXY:
-            context['kibana_url'] = "/kibana"
-        else:
-            context['kibana_url'] = settings.KIBANA_URL
+        if settings.USE_KIBANA:
+            context['kibana'] = 1
+            if settings.KIBANA_PROXY:
+                context['kibana_url'] = "/kibana"
+            else:
+                context['kibana_url'] = settings.KIBANA_URL
     return render(request, template, context)
 
 def scirius_listing(request, objectname, name, template = 'rules/object_list.html', table = None, adduri = None):
