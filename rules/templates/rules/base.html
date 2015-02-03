@@ -37,6 +37,7 @@
  			<li role="presentation" class="divider"></li>
 			{% endif %}
 
+            <li><a href="{% url 'system_settings' %}" >{% bootstrap_icon "list-alt"%} System settings</a></li>
             <li><a href="{% url 'accounts_edit' '' %}" >{% bootstrap_icon "cog"%} Account settings</a></li>
             <li><a href="/accounts/logout/" >{% bootstrap_icon "log-out"%} Logout</a></li>
                         {% block menusettings %} {% endblock %}

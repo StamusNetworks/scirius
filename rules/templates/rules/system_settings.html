@@ -1,0 +1,63 @@
+{% extends "rules/base.html" %}
+{% load bootstrap3  %}
+
+
+{% block sidebar %}
+  <div class="panel-heading">
+    <h2 class="panel-title">System settings</h2>
+ </div>
+  <div class="panel-content">
+  Submit form to update Scirius system settings.
+</div>
+{% endblock %}
+
+
+{% block content %}
+{% if form %}
+<h2>System settings edition</h2>
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-6">
+<form class="form" action="{% url 'system_settings' %}" method="post">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "ok" %} Submit
+        </button>
+    {% endbuttons %}
+</form>
+</div>
+</div>
+</div>
+
+<script type="text/javascript">
+
+function toggle_proxy() {
+    var use_proxy = $("input#id_use_http_proxy")[0];
+    if (use_proxy.checked) {
+        $("input#id_http_proxy").prop('disabled', false);
+        $("input#id_https_proxy").prop('disabled', false);
+    } else {
+        $("input#id_http_proxy").prop('disabled', true);
+        $("input#id_https_proxy").prop('disabled', true);
+    }
+}
+
+$("input#id_use_http_proxy").change(function () {
+    toggle_proxy();
+}
+);
+
+$(document).ready( function() {
+    toggle_proxy();
+});
+
+</script>
+
+
+{% endif %}
+
+
+
+{% endblock %}

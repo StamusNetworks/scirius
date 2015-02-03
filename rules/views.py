@@ -25,7 +25,7 @@ from django.conf import settings
 
 from scirius.utils import scirius_render, scirius_listing
 
-from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check
+from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings
 from rules.tables import UpdateRuleTable, DeletedRuleTable
 
 if settings.USE_ELASTICSEARCH:
@@ -598,3 +598,20 @@ def copy_ruleset(request, ruleset_id):
         form = RulesetCopyForm()
     context = {'object': ruleset , 'form': form}
     return scirius_render(request, 'rules/copy_ruleset.html', context)
+
+def system_settings(request):
+    if not request.user.is_staff:
+        context = { 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/system_settings.html', context)
+    if request.method == 'POST':
+        form = SystemSettingsForm(request.POST, instance = get_system_settings())
+        context = { 'form': form }
+        if not form.is_valid():
+            context['error'] = "Invalid form."
+            return scirius_render(request, 'rules/system_settings.html', context)
+        form.save()
+        context['success'] = "All changes saved."
+        return scirius_render(request, 'rules/system_settings.html', context)
+    form = SystemSettingsForm(instance = get_system_settings())
+    context = { 'form': form }
+    return scirius_render(request, 'rules/system_settings.html', context)

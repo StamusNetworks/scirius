@@ -19,8 +19,12 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django import forms
-from rules.models import Ruleset, Source, Category, SourceAtVersion
+from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings
 from datetime import datetime
+
+class SystemSettingsForm(forms.ModelForm):
+    class Meta:
+        model = SystemSettings
 
 class SourceForm(forms.ModelForm):
     file  = forms.FileField(required = False)

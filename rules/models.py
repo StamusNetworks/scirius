@@ -1,5 +1,5 @@
 """
-Copyright(C) 2014, Stamus Networks
+Copyright(C) 2014, 2015 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
 
 This file is part of Scirius.
@@ -35,6 +35,37 @@ import shutil
 import json
 
 # Create your models here.
+
+class SystemSettings(models.Model):
+    use_http_proxy = models.BooleanField(default=False)
+    http_proxy = models.CharField(max_length=200, default="", blank=True)
+    https_proxy = models.CharField(max_length=200, default="", blank=True)
+    use_elasticsearch = models.BooleanField(default=True)
+
+    def get_proxy_params(self):
+        if self.use_http_proxy:
+            return { 'http': self.http_proxy, 'https': self.https_proxy }
+        else:
+            return None
+
+def get_system_settings():
+    gsettings = SystemSettings.objects.all()
+    if len(gsettings):
+        return gsettings[0]
+    else:
+        gsettings = SystemSettings.objects.create()
+        if settings.USE_ELASTICSEARCH:
+            gsettings.use_elasticsearch = True
+        else:
+            gsettings.use_elasticsearch = False
+        if settings.USE_PROXY:
+            gsettings.use_http_proxy = True
+            gsettings.http_proxy = settings.PROXY_PARAMS['http']
+            gsettings.https_proxy = settings.PROXY_PARAMS['https']
+        else:
+            gsettings.use_http_proxy = False
+        gsettings.save()
+        return gsettings
 
 class Source(models.Model):
     FETCH_METHOD = (
@@ -331,9 +362,10 @@ class Source(models.Model):
         return reverse('source', args=[str(self.id)])
 
     def update_ruleset_http(self, f):
+        proxy_params = get_system_settings().get_proxy_params()
         try:
-            if settings.USE_PROXY:
-                resp = requests.get(self.uri, proxies = settings.PROXY_PARAMS)
+            if proxy_params:
+                resp = requests.get(self.uri, proxies = proxy_params)
             else:
                 resp = requests.get(self.uri)
         except requests.exceptions.ConnectionError:
