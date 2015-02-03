@@ -28,8 +28,7 @@ from scirius.utils import scirius_render, scirius_listing
 from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings
 from rules.tables import UpdateRuleTable, DeletedRuleTable
 
-if settings.USE_ELASTICSEARCH:
-    from rules.elasticsearch import *
+from rules.elasticsearch import *
 
 import json
 import re
@@ -44,7 +43,7 @@ from suripyg import SuriHTMLFormat
 Probe = __import__(settings.RULESET_MIDDLEWARE)
 
 def complete_context(request, context):
-    if settings.USE_ELASTICSEARCH:
+    if get_system_settings().use_elasticsearch:
         if request.GET.__contains__('duration'):
             duration = int(request.GET.get('duration', '24'))
             if duration > 24 * 7:
