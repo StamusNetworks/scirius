@@ -295,7 +295,7 @@ function get_memory_health() {
                         $("#memory-status").addClass("label-danger");
                         $("#memory-status").removeClass("label-default");
                 } else {
-                        if (data[3] < 10) {
+                        if (data[2] < 90) {
                             $("#memory-status").addClass("label-success");
                         } else {
                             $("#memory-status").addClass("label-danger");
