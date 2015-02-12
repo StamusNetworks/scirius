@@ -26,7 +26,7 @@ import urllib2
 import json
 from time import time
 
-URL = "http://%s/%s/_search"
+URL = "http://%s/%s/_search?ignore_unavailable=true"
 
 ALERT_ID_QUERY = """
 {
