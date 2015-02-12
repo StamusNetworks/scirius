@@ -268,10 +268,12 @@ function get_disk_health() {
                         $("#disk-status").addClass("label-danger");
                         $("#disk-status").removeClass("label-default");
                 } else {
-                        if (data[3] < 90) {
-                            $("#disk-status").addClass("label-success");
-                        } else {
+                        if (data[3] > 90) {
                             $("#disk-status").addClass("label-danger");
+                        } else if (data[3] > 80) {
+                            $("#disk-status").addClass("label-warning");
+                        } else {
+                            $("#disk-status").addClass("label-success");
                         }
                         $("#disk-status").removeClass("label-default");
                 }
@@ -295,10 +297,12 @@ function get_memory_health() {
                         $("#memory-status").addClass("label-danger");
                         $("#memory-status").removeClass("label-default");
                 } else {
-                        if (data[2] < 90) {
-                            $("#memory-status").addClass("label-success");
-                        } else {
+                        if (data[2] > 90) {
                             $("#memory-status").addClass("label-danger");
+                        } else if (data[2] > 70) {
+                            $("#memory-status").addClass("label-warning");
+                        } else {
+                            $("#memory-status").addClass("label-success");
                         }
                         $("#memory-status").removeClass("label-default");
                 }
