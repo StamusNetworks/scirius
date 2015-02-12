@@ -183,6 +183,6 @@ def info(request):
         elif query == 'disk':
             data = psutil.disk_usage('/')
         elif query == 'memory':
-            data = psutil.swap_memory()
+            data = psutil.virtual_memory()
     return HttpResponse(json.dumps(data),
                         content_type="application/json")
