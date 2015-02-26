@@ -41,15 +41,19 @@ The easy way to install the dependencies is to use `pip <https://pypi.python.org
 
 On Debian, you can run ::
 
- aptitude install python-pip
+ aptitude install python-pip python-dev
 
 You can then install django and the dependencies ::
 
- pip install django django-tables2 South GitPython pyinotify daemon Pygments django-bootstrap3 requests django-revproxy psutil
+ pip install django django-tables2 South GitPython pyinotify daemon Pygments django-bootstrap3 requests django-revproxy psutil pytz
 
 It has been reported that on some Debian system forcing a recent GitPython is required ::
 
  pip install gitpython==0.3.1-beta2
+
+You will also potentially needs the gitdb module ::
+
+ pip install gitdb
 
 Running Scirius
 ~~~~~~~~~~~~~~~
