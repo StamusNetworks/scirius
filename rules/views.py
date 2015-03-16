@@ -188,8 +188,9 @@ def elasticsearch(request):
         elif query == 'rules':
             host = request.GET.get('host', None)
             from_date = request.GET.get('from_date', None)
+            qfilter = request.GET.get('filter', None)
             if host != None and from_date != None:
-                rules = es_get_rules_stats(request, host, from_date = from_date)
+                rules = es_get_rules_stats(request, host, from_date = from_date, qfilter = qfilter)
                 context = {'table': rules}
                 return scirius_render(request, 'rules/table.html', context)
         elif query == 'rule':

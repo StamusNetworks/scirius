@@ -28,6 +28,28 @@ $( 'document' ).ready(function() {
         prepare_rule_details();
 });
 
+
+function load_rules(from_date, hosts, filter) {
+    var tgturl = "/rules/es?query=rules&host=" + hosts.join() + "&from_date=" + from_date;
+    if (filter != null) {
+       tgturl = tgturl + "&filter=" + filter;
+    }
+    $.ajax({
+       url: tgturl,
+          success: function(data) {
+             $('#rules_table').empty();
+             $('#rules_table').append(data);
+             prepare_rule_details();
+          },
+	  error: function(data) {
+             $('#rules_table').text("Unable to get data.");
+             $("#error").text("Unable to get data from Elasticsearch");
+             $("#error").parent().toggle();
+	  }
+    });
+}
+
+
 function draw_timeline(from_date, hosts, filter) {
 
         esurl = "/rules/es?query=timeline&from_date=" + from_date + "&hosts=" + hosts.join()
@@ -167,15 +189,23 @@ var node;
       .on("click", click)
       .each(stash);
 
-  $('path').mouseover(function(){
-      var d = this.__data__;
-      tooltip = d.msg ? d.msg : d.key ? d.key : "Unknown";
+  function build_path(d) {
+    tooltip = d.msg ? d.msg : d.key ? d.key : "Unknown";
+    if (tooltip == "categories") {
+        return "";
+    }
       tooltip = "<div class='label label-default'>" + tooltip + "</div>";
       if (d.parent && d.parent.key != "categories") {
         tip = d.parent.key ? d.parent.key : "Unknown";
         tooltip = "<div class='label label-default'>"+ tip + "</div>\n" + tooltip;
       }
-      $( "#circles").append("<div id='circles_tooltip'>" + tooltip + "</div>") 
+    return tooltip;
+  }
+
+  $('path').mouseover(function(){
+      var d = this.__data__;
+      tooltip = build_path(d);
+      $( "#circles").append("<div id='circles_tooltip'>" + tooltip + "</div>");
   });
   $('path').mouseout(function(){
       var d = this.__data__;
@@ -198,6 +228,18 @@ var node;
     node = d;
     if (d.children == undefined) {
          window.open("/rules/rule/pk/" + d.key,"_self");
+    }
+    $("#filter").empty();
+    if (tooltip.length) {
+        $("#filter").append("Filter: " + tooltip);
+    }
+    console.log(hosts)
+    if (d.key == "categories") {
+        draw_timeline(from_date, hosts, null);
+        load_rules(from_date, hosts, null);
+    } else {
+        draw_timeline(from_date, hosts, 'alert.category.raw:"'+d.key+'"');
+        load_rules(from_date, hosts, 'alert.category.raw:"'+d.key+'"');
     }
     path.transition()
       .duration(1000)
