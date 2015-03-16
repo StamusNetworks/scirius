@@ -1,5 +1,5 @@
 """
-Copyright(C) 2014, Stamus Networks
+Copyright(C) 2014, 2015 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
 
 This file is part of Scirius.
@@ -191,7 +191,7 @@ RULES_PER_CATEGORY = """
             }
           }, 
           "aggs": {
-            "rule": {
+            "rule_info": {
               "terms": {
                 "field": "alert.signature.raw",
                 "size": 1,
@@ -395,6 +395,17 @@ def es_get_health():
     data = json.loads(data)
     return data
 
+def compact_tree(tree):
+    cdata = []
+    for category in tree:
+        rules = []
+        for rule in category['rule']['buckets']:
+            nnode = { 'key': rule['key'], 'doc_count': rule['doc_count'], 'msg': rule['rule_info']['buckets'][0]['key'] }
+            rules.append(nnode)
+        data = { 'key': category['key'], 'doc_count': category['doc_count'], 'children': rules }
+        cdata.append(data)
+    return cdata
+
 def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
     templ = Template(RULES_PER_CATEGORY)
     hosts="ice-age2"
@@ -412,9 +423,9 @@ def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
-    #return data
+    # clean the data: we need to compact the leaf and previous data
+    cdata = compact_tree(data["aggregations"]["category"]["buckets"])
     rdata = {}
     rdata["key"] = "categories"
-    rdata["rule"] = {}
-    rdata["rule"]["buckets"] = data["aggregations"]["category"]["buckets"]
+    rdata["children"] = cdata
     return rdata

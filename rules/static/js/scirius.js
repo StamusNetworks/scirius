@@ -113,6 +113,145 @@ function draw_timeline(from_date, hosts, filter) {
         });
 }
 
+
+function draw_sunburst(from_date, hosts, filter, callback) {
+        esurl = "/rules/es?query=rules_per_category&from_date=" + from_date + "&hosts=" + hosts.join()
+        if (filter) {
+            esurl = esurl + "&filter=" + filter;
+        }
+        $.ajax(
+         {
+         type:"GET",
+         url:esurl,
+         success: function(data) {
+
+var width = 500,
+    height = 500,
+    radius = Math.min(width, height) / 2;
+
+var x = d3.scale.linear()
+    .range([0, 2 * Math.PI]);
+
+var y = d3.scale.sqrt()
+    .range([0, radius]);
+
+var color = d3.scale.category20b();
+
+var svg = d3.select("#circles").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+  .append("g")
+    .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")");
+
+var partition = d3.layout.partition()
+    .sort(null)
+    .value(function(d) { return d.doc_count; })
+    .children(function(d) { return d.children; })
+
+var arc = d3.svg.arc()
+    .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
+    .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
+    .innerRadius(function(d) { return Math.max(0, y(d.y)); })
+    .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
+
+// Keep track of the node that is currently being displayed as the root.
+var node;
+  root = data;
+  node = root;
+  var path = svg.datum(root).selectAll("path")
+      .data(partition.nodes)
+    .enter().append("path")
+      .attr("d", arc)
+      //.style("fill", function(d) { return color(d.value); })
+      .style("fill", function(d) { return color(d.key); })
+      .on("click", click)
+      .each(stash);
+
+  $('path').mouseover(function(){
+      var d = this.__data__;
+      tooltip = d.msg ? d.msg : d.key ? d.key : "Unknown";
+      tooltip = "<div class='label label-default'>" + tooltip + "</div>";
+      if (d.parent && d.parent.key != "categories") {
+        tip = d.parent.key ? d.parent.key : "Unknown";
+        tooltip = "<div class='label label-default'>"+ tip + "</div>\n" + tooltip;
+      }
+      console.log(tooltip)
+      $( "#circles").append("<div id='circles_tooltip'>" + tooltip + "</div>") 
+  });
+  $('path').mouseout(function(){
+      var d = this.__data__;
+      $( "#circles_tooltip").remove();
+  });
+
+  d3.selectAll("input").on("change", function change() {
+    var value = this.value === "count"
+        ? function() { return 1; }
+        : function(d) { return d.size; };
+
+    path
+        .data(partition.value(value).nodes)
+      .transition()
+        .duration(1000)
+        .attrTween("d", arcTweenData);
+  });
+
+  function click(d) {
+    node = d;
+    if (d.children == undefined) {
+         window.open("/rules/rule/pk/" + d.key,"_self");
+    }
+    path.transition()
+      .duration(1000)
+      .attrTween("d", arcTweenZoom(d));
+  }
+
+d3.select(self.frameElement).style("height", height + "px");
+
+// Setup for switching data: stash the old values for transition.
+function stash(d) {
+  d.x0 = d.x;
+  d.dx0 = d.dx;
+}
+
+// When switching data: interpolate the arcs in data space.
+function arcTweenData(a, i) {
+  var oi = d3.interpolate({x: a.x0, dx: a.dx0}, a);
+  function tween(t) {
+    var b = oi(t);
+    a.x0 = b.x;
+    a.dx0 = b.dx;
+    return arc(b);
+  }
+  if (i == 0) {
+   // If we are on the first arc, adjust the x domain to match the root node
+   // at the current zoom level. (We only need to do this once.)
+    var xd = d3.interpolate(x.domain(), [node.x, node.x + node.dx]);
+    return function(t) {
+      x.domain(xd(t));
+      return tween(t);
+    };
+  } else {
+    return tween;
+  }
+}
+
+// When zooming: interpolate the scales.
+function arcTweenZoom(d) {
+  var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+      yd = d3.interpolate(y.domain(), [d.y, 1]),
+      yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
+  return function(d, i) {
+    return i
+        ? function(t) { return arc(d); }
+        : function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
+  };
+}
+
+     callback();
+        },
+        });
+}
+
 function draw_circle(from_date, hosts, filter, callback) {
         esurl = "/rules/es?query=rules_per_category&from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
@@ -135,7 +274,7 @@ function draw_circle(from_date, hosts, filter, callback) {
                  .padding(2)
                  .size([diameter - margin, diameter - margin])
                  .value(function(d) { return d.doc_count; })
-		 .children(function(d) { return d.rule ? d.rule.buckets : undefined; })
+                 .children(function(d) { return d.children; })
              
              var svg = d3.select("#circles").append("svg")
                  .attr("width", diameter)
@@ -143,7 +282,7 @@ function draw_circle(from_date, hosts, filter, callback) {
                .append("g")
                  .attr("transform", "translate(" + diameter / 2 + "," + diameter / 2 + ")");
             
-	       root = data
+             root = data
                var focus = root,
                    nodes = pack.nodes(root),
                    view;
@@ -158,22 +297,16 @@ function draw_circle(from_date, hosts, filter, callback) {
                $('circle').tipsy({ 
                  gravity: 'w', 
                  html: true, 
+                 fade: 'true',
                  title: function() {
                    var d = this.__data__;
+               if (d.msg) {
+                       return d.msg;
+               }
                    return d.key ? d.key : "Unknown"; 
                  }
                });
 
-/*
-               var text = svg.selectAll("text")
-                   .data(nodes)
-                 .enter().append("text")
-                   .attr("class", "d3-label")
-                   .style("fill-opacity", function(d) { return d.parent === root ? 1 : 0; })
-                   .style("display", function(d) { return d.parent === root ? null : "none"; }) 
-                   .text(function(d) { return d.key ? d.key : "Unknown"; });
-		   */
-             
                var node = svg.selectAll("circle,text");
              
                d3.select("circle")
@@ -185,22 +318,15 @@ function draw_circle(from_date, hosts, filter, callback) {
                function zoom(d) {
                  var focus0 = focus; focus = d;
              
-	         if (d.children == undefined) {
-                     window.open("/rules/rule/pk/" + d.parent.key,"_self");
-		 }
+                 if (d.children == undefined) {
+                     window.open("/rules/rule/pk/" + d.key,"_self");
+                 }
                  var transition = d3.transition()
                      .duration(d3.event.altKey ? 7500 : 750)
                      .tween("zoom", function(d) {
                        var i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r * 2 + margin]);
                        return function(t) { zoomTo(i(t)); };
                      });
-            /* 
-                 transition.selectAll("text")
-                   .filter(function(d) { return d.parent === focus || this.style.display === "inline"; })
-                     .style("fill-opacity", function(d) { return d.parent === focus ? 1 : 0; })
-                     .each("start", function(d) { if (d.parent === focus) this.style.display = "inline"; })
-                     .each("end", function(d) { if (d.parent !== focus) this.style.display = "none"; });
-		     */
                }
              
                function zoomTo(v) {
@@ -211,7 +337,7 @@ function draw_circle(from_date, hosts, filter, callback) {
              
              d3.select(self.frameElement).style("height", diameter + "px");
 
-	     callback();
- 	},
+             callback();
+          },
         });
 }
