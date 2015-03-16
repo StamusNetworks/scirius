@@ -25,6 +25,7 @@ from datetime import datetime, timedelta
 import urllib2
 import json
 from time import time
+import re
 
 URL = "http://%s/%s/_search?ignore_unavailable=true"
 
@@ -46,7 +47,7 @@ ALERT_ID_QUERY = """
                   "should": [
                     {
                       "query_string": {
-                        "query": "event_type:alert AND host.raw:{{ appliance_hostname }}"
+                        "query": "event_type:alert AND host.raw:{{ appliance_hostname }} {{ query_filter|safe }}"
                       }
                     }
                   ]
@@ -141,7 +142,7 @@ TIMELINE_QUERY = """
             "filtered": {
               "query": {
                 "query_string": {
-                  "query": "event_type:alert AND host.raw:{{ host }} {{ query_filter }}"
+                  "query": "event_type:alert AND host.raw:{{ host }} {{ query_filter|safe }}"
                 }
               },
               "filter": {
@@ -209,7 +210,7 @@ RULES_PER_CATEGORY = """
     "filtered": {
       "query": {
         "query_string": {
-          "query": "event_type:alert AND host.raw:{{ hosts }} {{ query_filter }}",
+          "query": "event_type:alert AND host.raw:{{ hosts }} {{ query_filter|safe }}",
           "analyze_wildcard": true
         }
       },
@@ -266,11 +267,13 @@ def get_es_url(from_date):
             indexes = build_es_timestamping(start)
     return URL % (settings.ELASTICSEARCH_ADDRESS, indexes)
 
-def es_get_rules_stats(request, hostname, count=20, from_date=0):
+def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None):
     templ = Template(ALERT_ID_QUERY)
     context = Context({'appliance_hostname': hostname, 'alerts_number': count, 'from_date': from_date})
+    if qfilter != None:
+        query_filter = " AND " + qfilter
+        context['query_filter'] = re.sub('"','\\"', query_filter)
     data = templ.render(context)
-
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
@@ -363,7 +366,7 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     context = Context({'from_date': from_date, 'interval': str(interval) + "s", 'hosts': hosts})
     if qfilter != None:
         query_filter = " AND " + qfilter
-        context['query_filter'] = query_filter
+        context['query_filter'] = re.sub('"','\\"', query_filter)
     data = templ.render(context)
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
