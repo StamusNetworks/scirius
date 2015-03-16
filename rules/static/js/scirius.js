@@ -127,8 +127,8 @@ function draw_circle(from_date, hosts, filter) {
                  diameter = 600;
              
              var color = d3.scale.linear()
-                 .domain([-1, 4])
-                 .range(["rgb(173,156,155)", "rgb(243,219,218)"])
+                 .domain([-1, 2])
+                 .range(["rgb(179,191,202)", "rgb(74,143,202)"])
                  .interpolate(d3.interpolateHcl);
 
              var pack = d3.layout.pack()
