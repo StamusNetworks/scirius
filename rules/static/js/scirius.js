@@ -186,7 +186,7 @@ function draw_circle(from_date, hosts, filter) {
                  var focus0 = focus; focus = d;
              
 	         if (d.children == undefined) {
-                     window.open("/rules/rule/pk/" + d.key,"_self");
+                     window.open("/rules/rule/pk/" + d.parent.key,"_self");
 		 }
                  var transition = d3.transition()
                      .duration(d3.event.altKey ? 7500 : 750)

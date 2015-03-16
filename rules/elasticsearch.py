@@ -189,6 +189,17 @@ RULES_PER_CATEGORY = """
             "order": {
               "_count": "desc"
             }
+          }, 
+          "aggs": {
+            "rule": {
+              "terms": {
+                "field": "alert.signature.raw",
+                "size": 1,
+                "order": {
+                  "_count": "desc"
+                }
+              }
+            }
           }
         }
       }
@@ -401,6 +412,7 @@ def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
+    #return data
     rdata = {}
     rdata["key"] = "categories"
     rdata["rule"] = {}
