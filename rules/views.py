@@ -194,6 +194,15 @@ def elasticsearch(request):
             data = es_get_timeline(from_date = from_date, hosts = hosts, qfilter = qfilter)
         elif query == 'health':
             data = es_get_health()
+        elif query == 'rules_per_category':
+            from_date = request.GET.get('from_date', None)
+            cshosts = request.GET.get('hosts', None)
+            if cshosts:
+                hosts = cshosts.split(',')
+            else:
+                hosts = None
+            qfilter = request.GET.get('filter', None)
+            data = es_get_rules_per_category(from_date = from_date, hosts = hosts, qfilter = qfilter)
         else:
             data = None
     else:

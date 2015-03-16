@@ -168,6 +168,59 @@ TIMELINE_QUERY = """
 }
 """
 
+
+RULES_PER_CATEGORY = """
+{
+  "size": 0,
+  "aggs": {
+    "category": {
+      "terms": {
+        "field": "alert.category.raw",
+        "size": 50,
+        "order": {
+          "_count": "desc"
+        }
+      },
+      "aggs": {
+        "rule": {
+          "terms": {
+            "field": "alert.signature_id",
+            "size": 50,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    }
+  },
+  "query": {
+    "filtered": {
+      "query": {
+        "query_string": {
+          "query": "event_type:alert AND host.raw:{{ hosts }} {{ query_filter }}",
+          "analyze_wildcard": true
+        }
+      },
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": {{ from_date }}
+                }
+              }
+            }
+          ],
+          "must_not": []
+        }
+      }
+    }
+  }
+}
+"""
+
 DASHBOARDS_QUERY_URL = "http://%s/kibana-int/dashboard/_search?size=" % settings.ELASTICSEARCH_ADDRESS
 
 HEALTH_URL = "http://%s/_cluster/health" % settings.ELASTICSEARCH_ADDRESS
@@ -330,3 +383,26 @@ def es_get_health():
     # returned data is JSON
     data = json.loads(data)
     return data
+
+def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
+    templ = Template(RULES_PER_CATEGORY)
+    hosts="ice-age2"
+    context = Context({'from_date': from_date, 'hosts': hosts})
+    if qfilter != None:
+        query_filter = " AND " + qfilter
+        context['query_filter'] = query_filter
+    data = templ.render(context)
+    es_url = get_es_url(from_date)
+    req = urllib2.Request(es_url, data)
+    try:
+        out = urllib2.urlopen(req)
+    except:
+        return None
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    rdata = {}
+    rdata["key"] = "categories"
+    rdata["rule"] = {}
+    rdata["rule"]["buckets"] = data["aggregations"]["category"]["buckets"]
+    return rdata
