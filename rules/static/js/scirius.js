@@ -135,6 +135,18 @@ function draw_timeline(from_date, hosts, filter) {
         });
 }
 
+function build_path(d) {
+  tooltip = d.msg ? d.msg : d.key ? d.key : "Unknown";
+  if (tooltip == "categories") {
+      return "";
+  }
+    tooltip = "<div class='label label-default'>" + tooltip + "</div>";
+    if (d.parent && d.parent.key != "categories") {
+      tip = d.parent.key ? d.parent.key : "Unknown";
+      tooltip = "<div class='label label-default'>"+ tip + "</div>\n" + tooltip;
+    }
+  return tooltip;
+}
 
 function draw_sunburst(from_date, hosts, filter, callback) {
         esurl = "/rules/es?query=rules_per_category&from_date=" + from_date + "&hosts=" + hosts.join()
@@ -189,18 +201,7 @@ var node;
       .on("click", click)
       .each(stash);
 
-  function build_path(d) {
-    tooltip = d.msg ? d.msg : d.key ? d.key : "Unknown";
-    if (tooltip == "categories") {
-        return "";
-    }
-      tooltip = "<div class='label label-default'>" + tooltip + "</div>";
-      if (d.parent && d.parent.key != "categories") {
-        tip = d.parent.key ? d.parent.key : "Unknown";
-        tooltip = "<div class='label label-default'>"+ tip + "</div>\n" + tooltip;
-      }
-    return tooltip;
-  }
+
 
   $('path').mouseover(function(){
       var d = this.__data__;
@@ -360,6 +361,18 @@ function draw_circle(from_date, hosts, filter, callback) {
              
                  if (d.children == undefined) {
                      window.open("/rules/rule/pk/" + d.key,"_self");
+                 }
+                 $("#filter").empty();
+                 tooltip = build_path(d);
+                 if (tooltip.length) {
+                     $("#filter").append("Filter: " + tooltip);
+                 }
+                 if (d.key == "categories") {
+                     draw_timeline(from_date, hosts, null);
+                     load_rules(from_date, hosts, null);
+                 } else {
+                     draw_timeline(from_date, hosts, 'alert.category.raw:"'+d.key+'"');
+                     load_rules(from_date, hosts, 'alert.category.raw:"'+d.key+'"');
                  }
                  var transition = d3.transition()
                      .duration(d3.event.altKey ? 7500 : 750)
