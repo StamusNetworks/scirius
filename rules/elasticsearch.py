@@ -251,7 +251,6 @@ def build_es_timestamping(date):
                 date += timedelta(days=1)
             elif settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'hourly':
                 date += timedelta(hours=1)
-        print indexes
         return ','.join(indexes)
     except:
         return settings.ELASTICSEARCH_LOGSTASH_INDEX + '*'
