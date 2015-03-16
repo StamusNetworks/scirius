@@ -63,11 +63,15 @@ function differentiate_suppressed() {
 <span class="glyphicon glyphicon-cog"> </span>
 </a>
 <ul class="dropdown-menu" id="display_menu">
+   <li role="presentation" class="dropdown-header">Time Filter</li>
    <li><a href="?duration=1">Last 1h</a></li>
    <li><a href="?duration=6">Last 6h</a></li>
    <li><a href="?duration=24">Last 24h</a></li>
    <li><a href="?duration=48">Last 2d</a></li>
    <li><a href="?duration=168">Last 7d</a></li>
+   <li role="presentation" class="dropdown-header">Graph type</li>
+   <li><a href="?graph=sunburst">Sunburst</a></li>
+   <li><a href="?graph=circles">Circles</a></li>
 </ul>
 </span>
 </h2>
@@ -84,6 +88,11 @@ function differentiate_suppressed() {
 
 </div> <!-- col -->
 </div> <!-- row -->
+<div class="row">
+<div class="col-md-12">
+<div id="circles"></div>
+</div>
+</div>
 </div> <!-- container -->
 
 </div>
@@ -111,6 +120,26 @@ function load_rules() {
 }
 
 $( 'document' ).ready(load_rules());
+
+$( 'document' ).ready(function () {
+        {{ draw_func }}({{ from_date }}, [{% autoescape off %} "{{ appliance.name }}" {% endautoescape %}], null,
+          function() {
+            $('{{ draw_elt }}').mouseover(function(){
+                var d = this.__data__;
+                if (d.children == undefined) {
+                    $( "#rules_table a:contains('" +d.key +"')" ).parent().parent().addClass('overed');
+                }
+            });
+            $('{{ draw_elt }}').mouseout(function(){
+                var d = this.__data__;
+                if (d.children == undefined) {
+                    $( "#rules_table a:contains('" +d.key +"')" ).parent().parent().removeClass('overed');
+                }
+            });
+          }
+        );
+});
+
 </script>
 {% endif %}
 

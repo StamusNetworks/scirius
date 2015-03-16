@@ -36,6 +36,8 @@ from rules.models import dependencies_check
 
 from forms import *
 
+from rules.views import complete_context
+
 from django.conf import settings
 if settings.USE_ELASTICSEARCH:
     from rules.elasticsearch import *
@@ -60,21 +62,8 @@ def index(request, error = None):
             context['suppressed'] = suppressed
 
         if settings.USE_ELASTICSEARCH:
-            if request.GET.__contains__('duration'):
-                duration = int(request.GET.get('duration', '24'))
-                if duration > 24 * 7:
-                    duration = 24 * 7
-                request.session['duration'] = duration
-            else:
-                duration = int(request.session.get('duration', '24'))
-            from_date = int((time() - (duration * 3600)) * 1000) # last 24 hours
-            if duration <= 24:
-                date = str(duration) + "h"
-            else:
-                date = str(duration / 24) + "d"
-            context['date'] = date
             context['rules'] = True
-            context['from_date'] = from_date
+            complete_context(request, context)
 
         return scirius_render(request, 'suricata/index.html', context)
     else:
