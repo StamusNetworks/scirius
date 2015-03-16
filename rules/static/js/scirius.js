@@ -233,7 +233,6 @@ var node;
     if (tooltip.length) {
         $("#filter").append("Filter: " + tooltip);
     }
-    console.log(hosts)
     if (d.key == "categories") {
         draw_timeline(from_date, hosts, null);
         load_rules(from_date, hosts, null);
