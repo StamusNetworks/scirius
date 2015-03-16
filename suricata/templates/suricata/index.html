@@ -22,6 +22,9 @@ function differentiate_suppressed() {
 
 <div class="container-fluid">
 <div class="row">
+<div id="filter"> </div>
+</div>
+<div class="row">
 <div class="col-md-6">
 
 <div class="container-fluid">
@@ -102,27 +105,10 @@ function differentiate_suppressed() {
 <script>
 $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null); });
 
-function load_rules() {
-    $.ajax({
-       url: '/rules/es?query=rules&host={{ suricata.name }}&from_date={{ from_date }}',
-          success: function(data) {
-             $('#rules_table').empty();
-             $('#rules_table').append(data);
-             prepare_rule_details();
-          },
-	  error: function(data) {
-             $('#rules_table').text("Unable to get data.");
-             $("#error").text("Unable to get data from Elasticsearch");
-             $("#error").parent().toggle();
-	  }
-    });
-
-}
-
-$( 'document' ).ready(load_rules());
+$( 'document' ).ready(load_rules({{ from_date }},  [ '{{ suricata.name }}'], null));
 
 $( 'document' ).ready(function () {
-        {{ draw_func }}({{ from_date }}, [{% autoescape off %} "{{ appliance.name }}" {% endautoescape %}], null,
+        {{ draw_func }}({{ from_date }}, [{% autoescape off %} "{{ suricata.name }}" {% endautoescape %}], null,
           function() {
             $('{{ draw_elt }}').mouseover(function(){
                 var d = this.__data__;
