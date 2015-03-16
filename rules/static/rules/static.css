@@ -284,6 +284,11 @@ div.label a {
     padding-left: 0em;
 }
 
+tr.overed {
+   background-color: rgb(113, 159, 202) !important;
+   font-color: black !important;
+}
+
 /* Added for d3js */
 .node {
   cursor: pointer;

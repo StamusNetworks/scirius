@@ -113,7 +113,7 @@ function draw_timeline(from_date, hosts, filter) {
         });
 }
 
-function draw_circle(from_date, hosts, filter) {
+function draw_circle(from_date, hosts, filter, callback) {
         esurl = "/rules/es?query=rules_per_category&from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
             esurl = esurl + "&filter=" + filter;
@@ -210,6 +210,8 @@ function draw_circle(from_date, hosts, filter) {
                }
              
              d3.select(self.frameElement).style("height", diameter + "px");
+
+	     callback();
  	},
         });
 }
