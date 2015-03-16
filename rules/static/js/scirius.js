@@ -125,8 +125,8 @@ function draw_sunburst(from_date, hosts, filter, callback) {
          url:esurl,
          success: function(data) {
 
-var width = 500,
-    height = 500,
+var width = 300,
+    height = 300,
     radius = Math.min(width, height) / 2;
 
 var x = d3.scale.linear()
@@ -175,7 +175,6 @@ var node;
         tip = d.parent.key ? d.parent.key : "Unknown";
         tooltip = "<div class='label label-default'>"+ tip + "</div>\n" + tooltip;
       }
-      console.log(tooltip)
       $( "#circles").append("<div id='circles_tooltip'>" + tooltip + "</div>") 
   });
   $('path').mouseout(function(){
@@ -263,7 +262,7 @@ function draw_circle(from_date, hosts, filter, callback) {
          url:esurl,
          success: function(data) {
              var margin = 20,
-                 diameter = 600;
+                 diameter = 300;
              
              var color = d3.scale.linear()
                  .domain([-1, 2])
