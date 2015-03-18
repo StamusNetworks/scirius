@@ -410,8 +410,7 @@ def compact_tree(tree):
 
 def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
     templ = Template(RULES_PER_CATEGORY)
-    hosts="ice-age2"
-    context = Context({'from_date': from_date, 'hosts': hosts})
+    context = Context({'from_date': from_date, 'hosts': hosts[0]})
     if qfilter != None:
         query_filter = " AND " + qfilter
         context['query_filter'] = query_filter
@@ -426,7 +425,10 @@ def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
     # returned data is JSON
     data = json.loads(data)
     # clean the data: we need to compact the leaf and previous data
-    cdata = compact_tree(data["aggregations"]["category"]["buckets"])
+    if data["hits"]["total"] > 0:
+        cdata = compact_tree(data["aggregations"]["category"]["buckets"])
+    else:
+        return None
     rdata = {}
     rdata["key"] = "categories"
     rdata["children"] = cdata

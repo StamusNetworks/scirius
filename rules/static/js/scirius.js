@@ -158,7 +158,10 @@ function draw_sunburst(from_date, hosts, filter, callback) {
          type:"GET",
          url:esurl,
          success: function(data) {
-
+         if (data == null) {
+              $("#circles").append("No data to build the graph");
+              return;
+         }
 var width = 300,
     height = 300,
     radius = Math.min(width, height) / 2;
