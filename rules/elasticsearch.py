@@ -388,6 +388,7 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
         return None
     data['from_date'] = from_date
     data['interval'] = int(interval) * 1000
+    print data
     return data
 
 def es_get_json(uri):

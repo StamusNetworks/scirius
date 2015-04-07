@@ -397,3 +397,54 @@ function draw_circle(from_date, hosts, filter, callback) {
           },
         });
 }
+
+/* function draw_influxdb_timeline(from_date, hosts, filter) { */
+function draw_influxdb_timeline() {
+        esurl = "/rules/influxdb"
+        $.ajax(
+                        {
+                        type:"GET",
+                        url:esurl,
+                        success: function(data) {
+			                $("#timeline span").hide();
+                            nv.addGraph(function() {
+                              var chart = nv.models.stackedAreaChart()
+                                            .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+                                            .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+                                            .transitionDuration(350)  //how fast do you want the lines to transition?
+                                            .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                                            .showYAxis(true)        //Show the y-axis
+                                            .showXAxis(true)        //Show the x-axis
+                              ;
+                                chart.xAxis.tickFormat(function(d) {
+                                    return d3.time.format('%m/%d %H:%M')(new Date(d * 1000))
+                                });
+
+                                chart.yAxis
+                                .tickFormat(d3.format(',.2f'));
+
+                                var sdata = []
+                                for (hi = 0; hi < data.length; hi++) {
+                                        entries = data[hi]['points'];
+                                        gdata = [];
+                                        for (he = 0; he < entries.length; he++) {
+                                            gdata.push({x: entries[he][0], y: entries[he][1]});
+                                        }
+                                        sdata.push(
+                                        {
+                                            values: gdata,
+                                            key: data[hi]["name"].split(".")[1].toUpperCase(),
+                                        }
+                                        );
+                                }
+                                d3.select('#timeline svg')
+                                        .datum(sdata)
+                                        .call(chart);
+
+                                nv.utils.windowResize(function() { chart.update() });
+                                return chart;
+                        });
+                },
+        });
+}
+

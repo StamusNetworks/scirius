@@ -29,6 +29,7 @@ from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependen
 from rules.tables import UpdateRuleTable, DeletedRuleTable
 
 from rules.elasticsearch import *
+from rules.influx import *
 
 import json
 import re
@@ -230,6 +231,10 @@ def elasticsearch(request):
             context = {}
             complete_context(request, context)
             return scirius_render(request, 'rules/elasticsearch.html', context)
+
+def influxdb(request):
+    data = influx_get_timeline()
+    return HttpResponse(json.dumps(data), content_type="application/json")
 
 def rule(request, rule_id, key = 'pk'):
     if request.is_ajax():
