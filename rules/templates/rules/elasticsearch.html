@@ -7,8 +7,61 @@
 <div class="container-fluid">
 <div class="row">
 
+
+
 <div class="col-md-3">
 <div class="panel panel-default" id="shards">
+<div class="panel-heading">
+<h2 class="panel-title">Data shards</h2>
+</div>
+<div class="panel-content">
+<ul>
+<li><span class="type">Active primary shards:</span><span class="label label-default pull-right" id="active_primary_shards">N/A</span></li>
+<li><span class="type">Active shards:</span><span class="label label-default pull-right" id="active_shards">N/A</span></li>
+<li><span class="type">Relocating shards:</span><span class="label label-default pull-right" id="relocating_shards">N/A</span></li>
+<li><span class="type">Initializing shards:</span><span class="label label-default pull-right" id="initializing_shards">N/A</span></li>
+<li><span class="type">Unassigned shards:</span><span class="label label-default pull-right" id="unassigned_shards">N/A</span></li>
+</ul>
+</div> <!-- panel-content -->
+</div> <!-- panel -->
+</div> <!-- col -->
+
+<div class="col-md-3">
+<div class="panel panel-default" id="fs">
+<div class="panel-heading">
+<h2 class="panel-title">Storage info</h2>
+</div>
+<div class="panel-content">
+<ul>
+
+       <li><span class="type">Size of data store:</span> <span class="pull-right label label-default" id="store_size">N/A</span></li>
+       <li><span class="type">Filesystems total:</span> <span class="pull-right label label-default" id="fs_total">N/A</span></li>
+       <li><span class="type">Filesystems free:</span> <span class="pull-right label label-default" id="fs_free">N/A</span></li>
+
+</div> <!-- panel-content -->
+</div> <!-- panel -->
+</div> <!-- col -->
+
+<div class="col-md-3">
+<div class="panel panel-default" id="docs">
+<div class="panel-heading">
+<h2 class="panel-title">Documents info</h2>
+</div>
+<div class="panel-content">
+<ul>
+
+       <li><span class="type">Number of documents:</span> <span class="pull-right label label-default" id="docs_count">N/A</span></li>
+       <li><span class="type">Number of deletions:</span> <span class="pull-right label label-default" id="docs_deleted">N/A</span></li>
+
+</div> <!-- panel-content -->
+</div> <!-- panel -->
+</div> <!-- col -->
+
+</div> <!-- row -->
+
+<div class="row">
+<div class="col-md-3">
+<div class="panel panel-default" id="nodes">
 <div class="panel-heading">
 <h2 class="panel-title">Nodes info</h2>
 </div>
@@ -21,40 +74,100 @@
 </div> <!-- panel-content -->
 </div> <!-- panel -->
 </div> <!-- col -->
-
-<div class="col-md-3">
-<div class="panel panel-default" id="shards">
-<div class="panel-heading">
-<h2 class="panel-title">Data shards</h2>
-</div>
-<div class="panel-content">
-<ul>
-<li><span class="type">Active primary shards:</span><span class="label label-default pull-right">{{ es_status.active_primary_shards }}</span></li>
-<li><span class="type">Active shards:</span><span class="label label-default pull-right">{{ es_status.active_shards }}</span></li>
-{% if es_status.relocating_shards > 0 %}
-<li><span class="type">Relocating shards:</span><span class="label label-warning pull-right">{{ es_status.relocating_shards }}</span></li>
-{% else %}
-<li><span class="type">Relocating shards:</span><span class="label label-success pull-right">{{ es_status.relocating_shards }}</span></li>
-{% endif %}
-{% if es_status.initializing_shards > 0 %}
-<li><span class="type">Initializing shards:</span><span class="label label-warning pull-right">{{ es_status.initializing_shards }}</span></li>
-{% else %}
-<li><span class="type">Initializing shards:</span><span class="label label-success pull-right">{{ es_status.initializing_shards }}</span></li>
-{% endif %}
-{% if es_status.initializing_shards > 0 %}
-<li><span class="type">Unassigned shards:</span><span class="label label-warning pull-right">{{ es_status.unassigned_shards }}</span></li>
-{% else %}
-<li><span class="type">Unassigned shards:</span><span class="label label-success pull-right">{{ es_status.unassigned_shards }}</span></li>
-{% endif %}
-</ul>
-</div>
-</div> <!-- panel-content -->
-</div> <!-- panel -->
-</div> <!-- col -->
-</div> <!-- row -->
 </div> <!-- container -->
+</div> <!-- row -->
+
+<script>
+
+function bytesToSize(bytes) {
+   var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+   if (bytes == 0) return '0 Byte';
+   var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+   return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+};
+
+function get_es_stats() {
+    $.ajax(
+        {
+                type:"GET",
+                url:"/rules/es?query=stats",
+                success: function(data) {
+                if (!data) {
+                        $("#es_status").removeClass("label-default");
+                        $("#es_status").addClass("label-danger");
+                } else {
+                        $("#docs_count").text(data['indices']['docs']['count']);
+                        $("#docs_deleted").text(data['indices']['docs']['deleted']);
+                        $("#store_size").text(bytesToSize(data['indices']['store']['size_in_bytes']));
+                        $("#fs_total").text(bytesToSize(data['nodes']['fs']['total_in_bytes']));
+                        $("#fs_free").text(bytesToSize(data['nodes']['fs']['free_in_bytes']));
+                        $("#es_version").text(data['nodes']['versions']);
+                        $("#es_status").text(data['status']);
+                        $("#es_status").removeClass("label-default");
+                        if (data['status'] == 'green') {
+                            $("#es_status").addClass("label-success");
+                        } else if (data['status'] == 'yellow') {
+                            $("#es_status").addClass("label-warning");
+                        } else if (data['status'] == 'red') {
+                            $("#es_status").addClass("label-danger");
+                        }
+                }
+                },
+                error: function(data) {
+                        $("#es_status").removeClass("label-default");
+                        $("#es_status").addClass("label-danger");
+                },
+                complete: function() {
+                    setTimeout(get_es_stats, 30000);
+                },
+                timeout: 15000,
+        }
+    );
+}
+$( 'document' ).ready(get_es_stats());
 
 
+function set_critical_value(data, selector) {
+    $("#".concat(selector)).text(data[selector]);
+    $("#".concat(selector)).removeClass("label-default");
+    if (data[selector] > 0) {
+        $("#".concat(selector)).addClass("label-warning");
+    } else {
+        $("#".concat(selector)).addClass("label-success");
+    }
+}
+
+function get_es_detailed_health() {
+    $.ajax(
+        {
+                type:"GET",
+                url:"/rules/es?query=health",
+                success: function(data) {
+                if (!data) {
+                        $("#es_status").removeClass("label-default");
+                        $("#es_status").addClass("label-danger");
+                } else {
+                        $("#active_primary_shards").text(data['active_primary_shards']);
+                        $("#active_shards").text(data['active_shards']);
+                        set_critical_value(data, "relocating_shards");
+                        set_critical_value(data, "initializing_shards");
+                        set_critical_value(data, "unassigned_shards");
+                }
+                },
+                error: function(data) {
+                        $("#es_status").removeClass("label-default");
+                        $("#es_status").addClass("label-danger");
+                },
+                complete: function() {
+                    setTimeout(get_es_detailed_health, 30000);
+                },
+                timeout: 15000,
+        }
+    );
+}
+
+$( 'document' ).ready(get_es_detailed_health());
+</script>
 {% else %}
 
 <div class="alert alert-warning">Nothing to see here if you don't enable elasticsearch.</div>
@@ -72,14 +185,9 @@
 </div>
 <div class="panel-content">
 <ul>
+       <li><span class="type">Status:</span> <span class="pull-right label label-default" id="es_status" >checking</span></li>
        <li><span class="type">Cluster name:</span><span class="pull-right"> {{ es_status.cluster_name }}</span></li>
-       {% if es_status.status == "green" %}
-       <li><span class="type">Status:</span> <span class="pull-right label label-success" >{{ es_status.status }}</span></li>
-       {% elif es_status.status == "yellow" %}
-       <li><span class="type">Status:</span> <span class="pull-right label label-warning" >{{ es_status.status }}</span></li>
-       {% else %}
-       <li><span class="type">Status:</span> <span class="pull-right label label-danger" >{{ es_status.status }}</span></li>
-       {% endif %}
+       <li><span class="type">Elasticsearch version:</span> <span class="pull-right text-info" id="es_version">N/A</span></li>
 </ul>
 </div>
 
