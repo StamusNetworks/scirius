@@ -222,6 +222,9 @@ function get_es_health() {
                         $("#health").removeClass("label-default");
                         $("#health").addClass("label-danger");
                 },
+                complete: function() {
+                    setTimeout(get_es_health, 30000);
+                },
                 timeout: 15000,
         }
     );
@@ -254,6 +257,9 @@ function get_suricata_health() {
                         $("#suri-status").addClass("label-danger");
                         $("#suri-status").removeClass("label-default");
                 },
+                complete: function() {
+                    setTimeout(get_suricata_health, 30000);
+                },
                 timeout: 15000,
         }
     );
@@ -283,6 +289,9 @@ function get_disk_health() {
                         $("#disk-status").addClass("label-danger");
                         $("#disk-status").removeClass("label-default");
                 },
+                complete: function() {
+                    setTimeout(get_disk_health, 30000);
+                },
                 timeout: 15000,
         }
     );
@@ -311,6 +320,9 @@ function get_memory_health() {
                 error: function(data) {
                         $("#memory-status").addClass("label-danger");
                         $("#memory-status").removeClass("label-default");
+                },
+                complete: function() {
+                    setTimeout(get_memory_health, 30000);
                 },
                 timeout: 15000,
         }
