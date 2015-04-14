@@ -219,10 +219,15 @@ def elasticsearch(request):
             data = es_get_rules_per_category(from_date = from_date, hosts = hosts, qfilter = qfilter)
         else:
             data = None
+        return HttpResponse(json.dumps(data), content_type="application/json")
     else:
-        data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
-    return HttpResponse(json.dumps(data),
-                        content_type="application/json")
+        if request.is_ajax():
+            data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
+            return HttpResponse(json.dumps(data), content_type="application/json")
+        else:
+            context = {'es_status': es_get_health() }
+            complete_context(request, context)
+            return scirius_render(request, 'rules/elasticsearch.html', context)
 
 def rule(request, rule_id, key = 'pk'):
     if request.is_ajax():

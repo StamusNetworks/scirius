@@ -1,0 +1,86 @@
+{% extends "rules/base.html" %}
+
+{% block content %}
+
+{% if elasticsearch %}
+
+<div class="container-fluid">
+<div class="row">
+
+<div class="col-md-3">
+<div class="panel panel-default" id="shards">
+<div class="panel-heading">
+<h2 class="panel-title">Nodes info</h2>
+</div>
+<div class="panel-content">
+<ul>
+
+       <li><span class="type">Number of nodes:</span> <span class="pull-right label label-default">{{ es_status.number_of_nodes }}</span></li>
+       <li><span class="type">Number of data nodes:</span> <span class="pull-right label label-default">{{ es_status.number_of_data_nodes }}</span></li>
+
+</div> <!-- panel-content -->
+</div> <!-- panel -->
+</div> <!-- col -->
+
+<div class="col-md-3">
+<div class="panel panel-default" id="shards">
+<div class="panel-heading">
+<h2 class="panel-title">Data shards</h2>
+</div>
+<div class="panel-content">
+<ul>
+<li><span class="type">Active primary shards:</span><span class="label label-default pull-right">{{ es_status.active_primary_shards }}</span></li>
+<li><span class="type">Active shards:</span><span class="label label-default pull-right">{{ es_status.active_shards }}</span></li>
+{% if es_status.relocating_shards > 0 %}
+<li><span class="type">Relocating shards:</span><span class="label label-warning pull-right">{{ es_status.relocating_shards }}</span></li>
+{% else %}
+<li><span class="type">Relocating shards:</span><span class="label label-success pull-right">{{ es_status.relocating_shards }}</span></li>
+{% endif %}
+{% if es_status.initializing_shards > 0 %}
+<li><span class="type">Initializing shards:</span><span class="label label-warning pull-right">{{ es_status.initializing_shards }}</span></li>
+{% else %}
+<li><span class="type">Initializing shards:</span><span class="label label-success pull-right">{{ es_status.initializing_shards }}</span></li>
+{% endif %}
+{% if es_status.initializing_shards > 0 %}
+<li><span class="type">Unassigned shards:</span><span class="label label-warning pull-right">{{ es_status.unassigned_shards }}</span></li>
+{% else %}
+<li><span class="type">Unassigned shards:</span><span class="label label-success pull-right">{{ es_status.unassigned_shards }}</span></li>
+{% endif %}
+</ul>
+</div>
+</div> <!-- panel-content -->
+</div> <!-- panel -->
+</div> <!-- col -->
+</div> <!-- row -->
+</div> <!-- container -->
+
+
+{% else %}
+
+<div class="alert alert-warning">Nothing to see here if you don't enable elasticsearch.</div>
+
+{% endif %}
+</div> <!-- container -->
+
+
+{% endblock %}
+
+{% block sidebar %}
+
+<div class="panel-heading">
+<h2 class="panel-title">Elasticsearch</h2>
+</div>
+<div class="panel-content">
+<ul>
+       <li><span class="type">Cluster name:</span><span class="pull-right"> {{ es_status.cluster_name }}</span></li>
+       {% if es_status.status == "green" %}
+       <li><span class="type">Status:</span> <span class="pull-right label label-success" >{{ es_status.status }}</span></li>
+       {% elif es_status.status == "yellow" %}
+       <li><span class="type">Status:</span> <span class="pull-right label label-warning" >{{ es_status.status }}</span></li>
+       {% else %}
+       <li><span class="type">Status:</span> <span class="pull-right label label-danger" >{{ es_status.status }}</span></li>
+       {% endif %}
+</ul>
+</div>
+
+{% endblock %}
