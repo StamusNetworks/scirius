@@ -236,6 +236,7 @@ RULES_PER_CATEGORY = """
 DASHBOARDS_QUERY_URL = "http://%s/kibana-int/dashboard/_search?size=" % settings.ELASTICSEARCH_ADDRESS
 
 HEALTH_URL = "http://%s/_cluster/health" % settings.ELASTICSEARCH_ADDRESS
+STATS_URL = "http://%s/_cluster/stats" % settings.ELASTICSEARCH_ADDRESS
 
 from rules.models import Rule
 from rules.tables import ExtendedRuleTable, RuleStatsTable
@@ -386,8 +387,8 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     data['interval'] = int(interval) * 1000
     return data
 
-def es_get_health():
-    req = urllib2.Request(HEALTH_URL)
+def es_get_json(uri):
+    req = urllib2.Request(uri)
     try:
         out = urllib2.urlopen(req)
     except:
@@ -396,6 +397,12 @@ def es_get_health():
     # returned data is JSON
     data = json.loads(data)
     return data
+
+def es_get_health():
+    return es_get_json(HEALTH_URL)
+
+def es_get_stats():
+    return es_get_json(STATS_URL)
 
 def compact_tree(tree):
     cdata = []
