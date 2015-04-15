@@ -34,9 +34,9 @@
 <div class="panel-content">
 <ul>
 
-       <li><span class="type">Size of data store:</span> <span class="pull-right label label-default" id="store_size">N/A</span></li>
-       <li><span class="type">Filesystems total:</span> <span class="pull-right label label-default" id="fs_total">N/A</span></li>
-       <li><span class="type">Filesystems free:</span> <span class="pull-right label label-default" id="fs_free">N/A</span></li>
+       <li><span class="type">Size of stored data:</span> <span class="pull-right label label-default" id="store_size">N/A</span></li>
+       <li><span class="type">Total size of filesystems:</span> <span class="pull-right label label-default" id="fs_total">N/A</span></li>
+       <li><span class="type">Free space on filesystems:</span> <span class="pull-right label label-default" id="fs_free">N/A</span></li>
 
 </div> <!-- panel-content -->
 </div> <!-- panel -->
@@ -45,7 +45,7 @@
 <div class="col-md-3">
 <div class="panel panel-default" id="docs">
 <div class="panel-heading">
-<h2 class="panel-title">Documents info</h2>
+<h2 class="panel-title">Documents/entries info</h2>
 </div>
 <div class="panel-content">
 <ul>
@@ -94,7 +94,10 @@ function get_es_stats() {
                 success: function(data) {
                 if (!data) {
                         $("#es_status").removeClass("label-default");
+                        $("#es_status").removeClass("label-warning");
+                        $("#es_status").removeClass("label-success");
                         $("#es_status").addClass("label-danger");
+                        $("#es_status").text("red");
                 } else {
                         $("#docs_count").text(data['indices']['docs']['count']);
                         $("#docs_deleted").text(data['indices']['docs']['deleted']);
@@ -103,6 +106,8 @@ function get_es_stats() {
                         $("#fs_free").text(bytesToSize(data['nodes']['fs']['free_in_bytes']));
                         $("#es_version").text(data['nodes']['versions']);
                         $("#es_status").text(data['status']);
+                        $("#es_status").removeClass("label-warning");
+                        $("#es_status").removeClass("label-success");
                         $("#es_status").removeClass("label-default");
                         if (data['status'] == 'green') {
                             $("#es_status").addClass("label-success");
@@ -115,7 +120,10 @@ function get_es_stats() {
                 },
                 error: function(data) {
                         $("#es_status").removeClass("label-default");
+                        $("#es_status").removeClass("label-warning");
+                        $("#es_status").removeClass("label-success");
                         $("#es_status").addClass("label-danger");
+                        $("#es_status").text("red");
                 },
                 complete: function() {
                     setTimeout(get_es_stats, 30000);
@@ -130,6 +138,8 @@ $( 'document' ).ready(get_es_stats());
 function set_critical_value(data, selector) {
     $("#".concat(selector)).text(data[selector]);
     $("#".concat(selector)).removeClass("label-default");
+    $("#".concat(selector)).removeClass("label-warning");
+    $("#".concat(selector)).removeClass("label-success");
     if (data[selector] > 0) {
         $("#".concat(selector)).addClass("label-warning");
     } else {
