@@ -206,9 +206,15 @@ function get_es_health() {
                 success: function(data) {
                 if (!data) {
                         $("#health").removeClass("label-default");
+                        $("#health").removeClass("label-success");
+                        $("#health").removeClass("label-warning");
+                        $("#health").removeClass("label-danger");
                         $("#health").addClass("label-danger");
                 } else {
                         $("#health").removeClass("label-default");
+                        $("#health").removeClass("label-success");
+                        $("#health").removeClass("label-warning");
+                        $("#health").removeClass("label-danger");
                         if (data['status'] == 'green') {
                             $("#health").addClass("label-success");
                         } else if (data['status'] == 'yellow') {
@@ -220,6 +226,9 @@ function get_es_health() {
                 },
                 error: function(data) {
                         $("#health").removeClass("label-default");
+                        $("#health").removeClass("label-success");
+                        $("#health").removeClass("label-warning");
+                        $("#health").removeClass("label-danger");
                         $("#health").addClass("label-danger");
                 },
                 complete: function() {
