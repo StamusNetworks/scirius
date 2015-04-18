@@ -68,8 +68,8 @@
 <div class="panel-content">
 <ul>
 
-       <li><span class="type">Number of nodes:</span> <span class="pull-right label label-default">{{ es_status.number_of_nodes }}</span></li>
-       <li><span class="type">Number of data nodes:</span> <span class="pull-right label label-default">{{ es_status.number_of_data_nodes }}</span></li>
+       <li><span class="type">Number of nodes:</span> <span class="pull-right label label-default" id="nb_nodes">N/A</span></li>
+       <li><span class="type">Number of data nodes:</span> <span class="pull-right label label-default" id="nb_data_nodes">N/A</span></li>
 
 </div> <!-- panel-content -->
 </div> <!-- panel -->
@@ -108,6 +108,7 @@ function get_es_stats() {
                         $("#es_status").text(data['status']);
                         $("#es_status").removeClass("label-warning");
                         $("#es_status").removeClass("label-success");
+                        $("#es_status").removeClass("label-danger");
                         $("#es_status").removeClass("label-default");
                         if (data['status'] == 'green') {
                             $("#es_status").addClass("label-success");
@@ -140,6 +141,7 @@ function set_critical_value(data, selector) {
     $("#".concat(selector)).removeClass("label-default");
     $("#".concat(selector)).removeClass("label-warning");
     $("#".concat(selector)).removeClass("label-success");
+    $("#".concat(selector)).removeClass("label-danger");
     if (data[selector] > 0) {
         $("#".concat(selector)).addClass("label-warning");
     } else {
@@ -162,6 +164,9 @@ function get_es_detailed_health() {
                         set_critical_value(data, "relocating_shards");
                         set_critical_value(data, "initializing_shards");
                         set_critical_value(data, "unassigned_shards");
+                        $("#nb_nodes").text(data['number_of_nodes']);
+                        $("#nb_data_nodes").text(data['number_of_data_nodes']);
+                        $("#es_cluster_name").text(data['cluster_name']);
                 }
                 },
                 error: function(data) {
@@ -195,8 +200,8 @@ $( 'document' ).ready(get_es_detailed_health());
 </div>
 <div class="panel-content">
 <ul>
-       <li><span class="type">Status:</span> <span class="pull-right label label-default" id="es_status" >checking</span></li>
-       <li><span class="type">Cluster name:</span><span class="pull-right"> {{ es_status.cluster_name }}</span></li>
+       <li><span class="type">Status:</span> <span class="pull-right label label-default" id="es_status" >Checking</span></li>
+       <li><span class="type">Cluster name:</span><span class="pull-right" id="es_cluster_name">N/A</span></li>
        <li><span class="type">Elasticsearch version:</span> <span class="pull-right text-info" id="es_version">N/A</span></li>
 </ul>
 </div>

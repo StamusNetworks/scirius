@@ -227,7 +227,7 @@ def elasticsearch(request):
             data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
             return HttpResponse(json.dumps(data), content_type="application/json")
         else:
-            context = {'es_status': es_get_health() }
+            context = {}
             complete_context(request, context)
             return scirius_render(request, 'rules/elasticsearch.html', context)
 
