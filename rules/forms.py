@@ -25,6 +25,7 @@ from datetime import datetime
 class SystemSettingsForm(forms.ModelForm):
     class Meta:
         model = SystemSettings
+        exclude = []
 
 class SourceForm(forms.ModelForm):
     file  = forms.FileField(required = False)
