@@ -45,7 +45,7 @@ On Debian, you can run ::
 
 You can then install django and the dependencies ::
 
- pip install django django-tables2 South GitPython pyinotify daemon Pygments django-bootstrap3 requests django-revproxy psutil pytz
+ pip install -r requirements.txt
 
 It has been reported that on some Debian system forcing a recent GitPython is required ::
 
