@@ -47,6 +47,11 @@ You can then install django and the dependencies ::
 
  pip install -r requirements.txt
 
+To use the suri_reloader script which is handling suricata restart, you will also need
+pyinotify ::
+
+ pip install pyinotify
+
 It has been reported that on some Debian system forcing a recent GitPython is required ::
 
  pip install gitpython==0.3.1-beta2
