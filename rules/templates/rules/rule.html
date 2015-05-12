@@ -21,6 +21,11 @@
 <li>
 <a href="/rules/rule/{{ rule.sid }}/enable">Enable rule</a>
 </li>
+{% if elasticsearch %}
+<li>
+<a href="/rules/rule/{{ rule.sid }}/delete">Delete generated alerts</a>
+</li>
+{% endif %}
 </ul>
 {% endif %}
 {% endblock %}

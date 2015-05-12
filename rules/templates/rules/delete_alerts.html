@@ -1,0 +1,63 @@
+{% extends "rules/base.html" %}
+{% block sidebar %}
+<div class="panel-heading">
+<h2 class="panel-title">Delete alerts for {{object.pk}}</h2>
+</div>
+<div class="panel-content">
+<ul>
+       <li><span class="type">Msg:</span> {{ object.msg }}</li>
+       <li><span class="type">Revision:</span> {{ object.rev }}</li>
+</ul>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-12">
+<h2 class="title">Activity (last {{ date }})
+<span class="pull-right">
+<a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+<span class="glyphicon glyphicon-cog"> </span>
+</a>
+<ul class="dropdown-menu" id="display_menu">
+   <li><a href="?duration=1">Last 1h</a></li>
+   <li><a href="?duration=6">Last 6h</a></li>
+   <li><a href="?duration=24">Last 24h</a></li>
+   <li><a href="?duration=48">Last 2d</a></li>
+   <li><a href="?duration=168">Last 7d</a></li>
+</ul>
+</span>
+</h2>
+</div> <!-- col -->
+</div> <!-- row -->
+<div class="row">
+<div class="col-md-12">
+<div id="timeline">
+<span>Fetching data...</span>
+<svg style="width:100%;height:300px">
+</svg>
+</div> <!-- timeline -->
+</div> <!-- col -->
+</div> <!-- row -->
+
+<div class="row">
+<h2 class="title">Are you sure you want to delete all stored alerts for {{ object.pk }}?</h2>
+
+<form class="form" action=/rules/rule/{{ object.pk }}/delete method="post">{% csrf_token %}
+<button class="btn btn-primary" type="submit">
+<span class="glyphicon glyphicon-trash"> Delete alerts</span>
+</button>
+</form>
+</div> <!-- row -->
+
+</div>
+
+<script>
+{% if probes %}
+$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "alert.signature_id:{{ object.sid }}" ); });
+{% endif %}
+</script>
+
+{% endblock %}

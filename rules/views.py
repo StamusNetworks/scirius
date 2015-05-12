@@ -317,6 +317,25 @@ def suppress_rule(request, rule_id):
 def enable_rule(request, rule_id):
     return switch_rule(request, rule_id, operation='enable')
 
+def delete_alerts(request, rule_id):
+    rule_object = get_object_or_404(Rule, sid=rule_id)
+
+    if not request.user.is_staff:
+        context = { 'object': rule, 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/delete_alerts.html', context)
+
+    if request.method == 'POST': # If the form has been submitted...
+        es_delete_alerts_by_sid(rule_id)
+        return redirect(rule_object)
+    else:
+        context = {'object': rule_object }
+        try:
+            context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
+        except:
+            pass
+        complete_context(request, context)
+        return scirius_render(request, 'rules/delete_alerts.html', context)
+
 def suppress_category(request, cat_id, operation = 'suppress'):
     cat_object = get_object_or_404(Category, id=cat_id)
 
