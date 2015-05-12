@@ -5,13 +5,22 @@
 
 {% if form %}
 
+{% if operation == 'enable' %}
+<h4>Enable category {{ category.name }} in</h4>
+{% else %}
 <h4>Disable category {{ category.name }} from</h4>
+{% endif %}
 
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-4">
 
-<form action="/rules/category/{{ category.pk }}/suppress" method="post">{% csrf_token %}
+{% if operation == 'enable' %}
+<form action="/rules/category/{{ category.pk }}/enable" method="post">
+{% else %}
+<form action="/rules/category/{{ category.pk }}/suppress" method="post">
+{% endif %}
+{% csrf_token %}
 {% bootstrap_form form %}
 <input class="btn btn-primary" type="submit" value="Submit" />
 </form>
