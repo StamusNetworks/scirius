@@ -23,6 +23,7 @@ from django.conf import settings
 from datetime import datetime, timedelta
 
 import urllib2
+import requests
 import json
 from time import time
 import re
@@ -238,6 +239,8 @@ DASHBOARDS_QUERY_URL = "http://%s/kibana-int/dashboard/_search?size=" % settings
 HEALTH_URL = "http://%s/_cluster/health" % settings.ELASTICSEARCH_ADDRESS
 STATS_URL = "http://%s/_cluster/stats" % settings.ELASTICSEARCH_ADDRESS
 
+DELETE_ALERTS_URL = "http://%s/%s/_query?q=alert.signature_id:%d"
+
 from rules.models import Rule
 from rules.tables import ExtendedRuleTable, RuleStatsTable
 import django_tables2 as tables
@@ -440,3 +443,9 @@ def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
     rdata["key"] = "categories"
     rdata["children"] = cdata
     return rdata
+
+def es_delete_alerts_by_sid(sid):
+    delete_url = DELETE_ALERTS_URL % (settings.ELASTICSEARCH_ADDRESS, settings.ELASTICSEARCH_LOGSTASH_INDEX + "*", int(sid))
+    r = requests.delete(delete_url)
+    data = json.loads(r.text)
+    return data
