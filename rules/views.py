@@ -277,11 +277,11 @@ def rule(request, rule_id, key = 'pk'):
     return scirius_render(request, 'rules/rule.html', context)
 
 
-def suppress_rule(request, rule_id):
+def switch_rule(request, rule_id, operation = 'suppress'):
     rule_object = get_object_or_404(Rule, sid=rule_id)
 
     if not request.user.is_staff:
-        context = { 'rule': rule_object, 'error': 'Unsufficient permissions' }
+        context = { 'rule': rule_object, 'operation': operation, 'error': 'Unsufficient permissions' }
         return scirius_render(request, 'rules/suppress_rule.html', context)
         
     if request.method == 'POST': # If the form has been submitted...
@@ -289,10 +289,16 @@ def suppress_rule(request, rule_id):
         if form.is_valid(): # All validation rules pass
             ruleset = form.cleaned_data['ruleset']
             disable_rules = rule_object.get_flowbits_group()
-            if disable_rules:
-                ruleset.suppressed_rules.add(*list(disable_rules))
-            else:
-                ruleset.suppressed_rules.add(rule_object)
+            if operation == 'suppress':
+                if disable_rules:
+                    ruleset.suppressed_rules.add(*list(disable_rules))
+                else:
+                    ruleset.suppressed_rules.add(rule_object)
+            elif operation == 'enable':
+                if disable_rules:
+                    ruleset.suppressed_rules.remove(*list(disable_rules))
+                else:
+                    ruleset.suppressed_rules.remove(rule_object)
             ruleset.save()
         return redirect(rule_object)
     form = RulesetSuppressForm()
@@ -302,7 +308,14 @@ def suppress_rule(request, rule_id):
         rules = RuleTable(rules)
         tables.RequestConfig(request).configure(rules)
         context['rules'] = rules
+    context['operation'] = operation
     return scirius_render(request, 'rules/suppress_rule.html', context)
+
+def suppress_rule(request, rule_id):
+    return switch_rule(request, rule_id)
+
+def enable_rule(request, rule_id):
+    return switch_rule(request, rule_id, operation='enable')
 
 def suppress_category(request, cat_id):
     cat_object = get_object_or_404(Category, id=cat_id)

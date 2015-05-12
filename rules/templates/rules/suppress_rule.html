@@ -4,23 +4,37 @@
 {% block content %}
 
 {% if form %}
+{% if operation == 'suppress' %}
 <h4>Disable rule {{ rule.sid }} from</h4>
+{% else %}
+<h4>Enable rule {{ rule.sid }} in</h4>
+{% endif %}
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-4">
 
-<form class="form" action="/rules/rule/{{ rule.sid }}/suppress" method="post">{% csrf_token %}
+{% if operation == 'suppress' %}
+<form class="form" action="/rules/rule/{{ rule.sid }}/suppress" method="post">
+{% else %}
+<form class="form" action="/rules/rule/{{ rule.sid }}/enable" method="post">
+{% endif %}
+
+{% csrf_token %}
     {% bootstrap_form form %}
 
 {% if rules %}
-This will also disable the following rules due to flowbits dependencies:
+This will also {% if operation == 'suppress' %}disable{% else %}enable{% endif %} the following rules due to flowbits dependencies:
 {% load render_table from django_tables2 %}
 {% render_table rules %}
 {% endif %}
 
     {% buttons %}
         <button type="submit" class="btn btn-primary">
+{% if operation == 'suppress' %}
             {% bootstrap_icon "ok" %} Disable
+{% else %}
+            {% bootstrap_icon "ok" %} Enable
+{% endif %}
         </button>
     {% endbuttons %}
 </form>
