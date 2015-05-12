@@ -317,41 +317,29 @@ def suppress_rule(request, rule_id):
 def enable_rule(request, rule_id):
     return switch_rule(request, rule_id, operation='enable')
 
-def suppress_category(request, cat_id):
+def suppress_category(request, cat_id, operation = 'suppress'):
     cat_object = get_object_or_404(Category, id=cat_id)
 
     if not request.user.is_staff:
-        context = { 'category': cat_object, 'error': 'Unsufficient permissions' }
+        context = { 'category': cat_object, 'error': 'Unsufficient permissions', 'operation': operation }
         return scirius_render(request, 'rules/suppress_category.html', context)
 
     if request.method == 'POST': # If the form has been submitted...
         form = RulesetSuppressForm(request.POST)
         if form.is_valid(): # All validation rules pass
             ruleset = form.cleaned_data['ruleset']
-            ruleset.categories.remove(cat_object)
+            if operation == 'suppress':
+                ruleset.categories.remove(cat_object)
+            elif operation == 'enable':
+                ruleset.categories.add(cat_object)
             ruleset.save()
         return redirect(cat_object)
     form = RulesetSuppressForm()
-    context = { 'category': cat_object, 'form': form }
+    context = { 'category': cat_object, 'form': form, 'operation': operation }
     return scirius_render(request, 'rules/suppress_category.html', context)
 
 def enable_category(request, cat_id):
-    cat_object = get_object_or_404(Category, id=cat_id)
-
-    if not request.user.is_staff:
-        context = { 'category': cat_object, 'operation': 'enable', 'error': 'Unsufficient permissions' }
-        return scirius_render(request, 'rules/suppress_category.html', context)
-
-    if request.method == 'POST': # If the form has been submitted...
-        form = RulesetSuppressForm(request.POST)
-        if form.is_valid(): # All validation rules pass
-            ruleset = form.cleaned_data['ruleset']
-            ruleset.categories.add(cat_object)
-            ruleset.save()
-        return redirect(cat_object)
-    form = RulesetSuppressForm()
-    context = { 'category': cat_object, 'form': form , 'operation': 'enable'}
-    return scirius_render(request, 'rules/suppress_category.html', context)
+    return suppress_category(request, cat_id, operation='enable')
 
 def update_source(request, source_id):
     src = get_object_or_404(Source, pk=source_id)
