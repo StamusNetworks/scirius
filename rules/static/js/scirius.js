@@ -399,8 +399,8 @@ function draw_circle(from_date, hosts, filter, callback) {
 }
 
 /* function draw_influxdb_timeline(from_date, hosts, filter) { */
-function draw_influxdb_timeline() {
-        esurl = "/rules/influxdb"
+function draw_influxdb_timeline(time_range) {
+        esurl = "/rules/influxdb?time_range=" + time_range
         $.ajax(
                         {
                         type:"GET",

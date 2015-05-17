@@ -72,6 +72,7 @@ def complete_context(request, context):
             context['draw_elt'] = 'circle'
         context['date'] = date
         context['from_date'] = from_date
+        context['time_range'] = duration * 3600
 
 # Create your views here.
 def index(request):
@@ -233,7 +234,8 @@ def elasticsearch(request):
             return scirius_render(request, 'rules/elasticsearch.html', context)
 
 def influxdb(request):
-    data = influx_get_timeline()
+    time_range = int(request.GET.get('time_range', 3600))
+    data = influx_get_timeline(time_range)
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 def rule(request, rule_id, key = 'pk'):

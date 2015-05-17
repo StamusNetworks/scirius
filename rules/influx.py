@@ -22,7 +22,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django.conf import settings
 from influxdb import InfluxDBClient
 
-def influx_get_timeline(from_date=0):
+def influx_get_timeline(time_range):
     client = InfluxDBClient('192.168.0.10', 8086, 'grafana', 'grafana',  'scirius')
-    result = client.query("select mean(value) from /eve.*.rate_1m/ where time > now()-1h group by time(1s) order asc")
+    result = client.query("select mean(value) from /eve.*.rate_1m/ where time > now()-%ds group by time(%ds) fill(0) order asc"  % (time_range, time_range / 120))
     return result
