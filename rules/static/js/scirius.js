@@ -398,15 +398,17 @@ function draw_circle(from_date, hosts, filter, callback) {
         });
 }
 
-/* function draw_influxdb_timeline(from_date, hosts, filter) { */
-function draw_influxdb_timeline(time_range) {
-        esurl = "/rules/influxdb?time_range=" + time_range
+function draw_influxdb_timeline(time_range, request, cssid) {
+        if (cssid == undefined) {
+                cssid = '#influxdb';
+        }
+        esurl = "/rules/influxdb?time_range=" + time_range + "&request=" + request
         $.ajax(
                         {
                         type:"GET",
                         url:esurl,
                         success: function(data) {
-			                $("#timeline span").hide();
+			                $(cssid + " span").hide();
                             nv.addGraph(function() {
                               var chart = nv.models.stackedAreaChart()
                                             .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
@@ -437,7 +439,7 @@ function draw_influxdb_timeline(time_range) {
                                         }
                                         );
                                 }
-                                d3.select('#timeline svg')
+                                d3.select(cssid + ' svg')
                                         .datum(sdata)
                                         .call(chart);
 

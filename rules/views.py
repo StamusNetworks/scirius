@@ -235,7 +235,8 @@ def elasticsearch(request):
 
 def influxdb(request):
     time_range = int(request.GET.get('time_range', 3600))
-    data = influx_get_timeline(time_range)
+    request = request.GET.get('request', 'eve_rate')
+    data = influx_get_timeline(time_range, request = request)
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 def rule(request, rule_id, key = 'pk'):
