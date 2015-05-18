@@ -20,10 +20,23 @@ function differentiate_suppressed() {
 
 {% if elasticsearch %}
 
+<div role="tabpanel">
+
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#rules" aria-controls="rules" role="tab" data-toggle="tab">Rules activity</a></li>
+    <li role="presentation"><a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Capture stats</a></li>
+  </ul>
+
+  <div class="tab-content">
+  <div role="tabpanel" class="tab-pane fade in active" id="rules">
+
+
 <div class="container-fluid">
 <div class="row">
 <div id="filter"> </div>
 </div>
+
 <div class="row">
 <div class="col-md-6">
 
@@ -102,6 +115,76 @@ function differentiate_suppressed() {
 </div>
 </div>
 
+</div>
+
+<div role="tabpanel" class="tab-pane fade" id="stats">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+         <h2>kernel captured packets (last {{ date }})
+         <span class="pull-right">
+         <a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+         <span class="glyphicon glyphicon-cog"> </span>
+         </a>
+         <ul class="dropdown-menu" id="display_menu">
+            <li><a href="?duration=1">Last 1h</a></li>
+            <li><a href="?duration=6">Last 6h</a></li>
+            <li><a href="?duration=24">Last 24h</a></li>
+            <li><a href="?duration=48">Last 2d</a></li>
+            <li><a href="?duration=168">Last 7d</a></li>
+         </ul>
+         </span>
+         </h2>
+      </div>
+    </div> <!-- row -->
+
+<div class="row">
+<div class="col-md-12">
+<div id="suri_packet">
+<span>Fetching data...</span>
+<svg style="width:100%;height:300px">
+</svg>
+</div>
+</div> <!-- col -->
+</div> <!-- row -->
+
+    <div class="row">
+      <div class="col-md-12">
+         <h2>kernel dropped packets (last {{ date }})
+         <span class="pull-right">
+         <a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+         <span class="glyphicon glyphicon-cog"> </span>
+         </a>
+         <ul class="dropdown-menu" id="display_menu">
+            <li><a href="?duration=1">Last 1h</a></li>
+            <li><a href="?duration=6">Last 6h</a></li>
+            <li><a href="?duration=24">Last 24h</a></li>
+            <li><a href="?duration=48">Last 2d</a></li>
+            <li><a href="?duration=168">Last 7d</a></li>
+         </ul>
+         </span>
+         </h2>
+      </div>
+    </div> <!-- row -->
+
+<div class="row">
+<div class="col-md-12">
+<div id="suri_drop">
+<span>Fetching data...</span>
+<svg style="width:100%;height:300px">
+</svg>
+</div>
+</div> <!-- col -->
+</div> <!-- row -->
+
+</div> <!-- container -->
+
+</div> <!-- tabpanel -->
+</div>
+
+</div>
+
+
 <script>
 $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null); });
 
@@ -124,6 +207,16 @@ $( 'document' ).ready(function () {
             });
           }
         );
+});
+
+
+$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    if (String(e.target).match('#stats')) {
+        draw_influxdb_timeline({{ time_range }}, 'suri_packet', '#suri_packet');
+        draw_influxdb_timeline({{ time_range }}, 'suri_drop', '#suri_drop');
+    } else {
+        draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null);
+    }
 });
 
 </script>
