@@ -31,4 +31,7 @@ def influx_get_timeline(time_range, request="eve_rate"):
         result = client.query("select derivative(value) from /suricata.*.capture.kernel_packets/ where time > now()-%ds group by time(%ds) fill(0) order asc" % (time_range, time_range / 120))
     elif request == "suri_drop":
         result = client.query("select derivative(value) from /suricata.*.capture.kernel_drops/ where time > now()-%ds group by time(%ds) fill(0) order asc" % (time_range, time_range / 120))
+    # speed is always positive so set to 0 if negative (which is mostly due to restart of stats)
+    for line in result:
+        line['points'] = [[pt[0], max(pt[1], 0)] for pt in line['points']]
     return result
