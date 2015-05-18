@@ -435,7 +435,7 @@ function draw_influxdb_timeline(time_range, request, cssid) {
                                         sdata.push(
                                         {
                                             values: gdata,
-                                            key: data[hi]["name"].split(".")[1].toUpperCase(),
+                                            key: data[hi]["name"].split(".")[1],
                                         }
                                         );
                                 }
