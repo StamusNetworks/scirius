@@ -20,6 +20,7 @@ function differentiate_suppressed() {
 
 {% if elasticsearch %}
 
+{% if influxdb %}
 <div role="tabpanel">
 
   <!-- Nav tabs -->
@@ -31,6 +32,7 @@ function differentiate_suppressed() {
   <div class="tab-content">
   <div role="tabpanel" class="tab-pane fade in active" id="rules">
 
+{% endif %}
 
 <div class="container-fluid">
 <div class="row">
@@ -117,6 +119,7 @@ function differentiate_suppressed() {
 
 </div>
 
+{% if influxdb %}
 <div role="tabpanel" class="tab-pane fade" id="stats">
   <div class="container-fluid">
     <div class="row">
@@ -181,6 +184,7 @@ function differentiate_suppressed() {
 
 </div> <!-- tabpanel -->
 </div>
+{% endif %}
 
 </div>
 
