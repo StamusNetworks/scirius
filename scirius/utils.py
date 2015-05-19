@@ -29,6 +29,8 @@ from rules.models import get_system_settings
 def scirius_render(request, template, context):
     context['generator'] = settings.RULESET_MIDDLEWARE
     gsettings = get_system_settings()
+    if settings.USE_INFLUXDB:
+        context['influxdb'] = 1
     if gsettings.use_elasticsearch:
         context['elasticsearch'] = 1
         if settings.USE_KIBANA:

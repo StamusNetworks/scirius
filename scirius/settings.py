@@ -125,6 +125,14 @@ KIBANA_URL = "http://localhost:9292"
 # Number of dashboards to display
 KIBANA_DASHBOARDS_COUNT = 20
 
+# Influxdb
+USE_INFLUXDB = False
+INFLUXDB_HOST = "localhost"
+INFLUXDB_PORT = 8086
+INFLUXDB_USER = "grafana"
+INFLUXDB_PASSWORD = "grafana"
+INFLUXDB_DATABASE = "scirius"
+
 # Proxy parameters
 # Set USE_PROXY to True to use a proxy to fetch ruleset update.
 # PROXY_PARAMS contains the proxy parameters.

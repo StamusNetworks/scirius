@@ -79,6 +79,7 @@
 </div> <!-- col -->
 </div> <!-- row -->
 
+{% if influxdb %}
 <div class="row">
 <div class="col-md-12">
 <h2>Logstash event insertion speed (last {{ date }})
@@ -107,7 +108,7 @@
 </div>
 </div> <!-- col -->
 </div> <!-- row -->
-
+{% endif %}
 
 <script>
 
@@ -214,7 +215,10 @@ function get_es_detailed_health() {
 }
 
 $( 'document' ).ready(get_es_detailed_health());
+
+{% if influxdb %}
 $( 'document' ).ready(draw_influxdb_timeline({{ time_range }}, 'eve_rate'));
+{% endif %}
 </script>
 {% else %}
 

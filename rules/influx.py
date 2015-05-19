@@ -24,7 +24,9 @@ from influxdb import InfluxDBClient
 
 def influx_get_timeline(time_range, request="eve_rate"):
     result = None
-    client = InfluxDBClient('192.168.0.10', 8086, 'grafana', 'grafana',  'scirius')
+    client = InfluxDBClient(settings.INFLUXDB_HOST, settings.INFLUXDB_PORT,
+                            settings.INFLUXDB_USER, settings.INFLUXDB_PASSWORD,
+                            settings.INFLUXDB_DATABASE)
     if request == "eve_rate":
         result = client.query("select mean(value) from /eve.*.rate_1m/ where time > now()-%ds group by time(%ds) fill(0) order asc"  % (time_range, time_range / 120))
     elif request == "suri_packet":
