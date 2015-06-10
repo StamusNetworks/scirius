@@ -239,6 +239,8 @@ DASHBOARDS_QUERY_URL = "http://%s/kibana-int/dashboard/_search?size=" % settings
 HEALTH_URL = "http://%s/_cluster/health" % settings.ELASTICSEARCH_ADDRESS
 STATS_URL = "http://%s/_cluster/stats" % settings.ELASTICSEARCH_ADDRESS
 
+INDICES_STATS_URL = "http://%s/_stats/docs" % settings.ELASTICSEARCH_ADDRESS
+
 DELETE_ALERTS_URL = "http://%s/%s/_query?q=alert.signature_id:%d"
 
 from rules.models import Rule
@@ -406,6 +408,9 @@ def es_get_health():
 
 def es_get_stats():
     return es_get_json(STATS_URL)
+
+def es_get_indices_stats():
+    return es_get_json(INDICES_STATS_URL)
 
 def compact_tree(tree):
     cdata = []

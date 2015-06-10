@@ -212,6 +212,8 @@ def elasticsearch(request):
             data = es_get_health()
         elif query == 'stats':
             data = es_get_stats()
+        elif query == 'indices':
+            data = es_get_indices_stats()
         elif query == 'rules_per_category':
             from_date = request.GET.get('from_date', None)
             cshosts = request.GET.get('hosts', None)
