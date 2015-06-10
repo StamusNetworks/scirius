@@ -366,3 +366,7 @@ div.panel-content ul {
 div.panel-content ul li span.pull-right {
     margin-right: 20px;
 }
+
+div.status ul li span.pull-right {
+    margin-right: 20px;
+}
