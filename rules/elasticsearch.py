@@ -293,7 +293,9 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
     try:
         data = data['facets']['table']['terms']
     except:
-        return None
+        rules = ExtendedRuleTable([])
+        tables.RequestConfig(request).configure(rules)
+        return rules
     rules = []
     if data != None:
         for elt in data:
@@ -307,7 +309,8 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
         rules = ExtendedRuleTable(rules)
         tables.RequestConfig(request).configure(rules)
     else:
-        return None
+        rules = ExtendedRuleTable([])
+        tables.RequestConfig(request).configure(rules)
     return rules
 
 def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
