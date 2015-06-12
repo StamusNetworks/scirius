@@ -20,10 +20,16 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 #from django.template import Context, Template
 from django.conf import settings
-from influxdb import InfluxDBClient
+HAVE_INFLUXDB = True
+try:
+    from influxdb import InfluxDBClient
+except:
+    HAVE_INFLUXDB = False
 
 def influx_get_timeline(time_range, request="eve_rate", probe_prefix="suricata"):
     result = None
+    if HAVE_INFLUXDB == False:
+        return None
     client = InfluxDBClient(settings.INFLUXDB_HOST, settings.INFLUXDB_PORT,
                             settings.INFLUXDB_USER, settings.INFLUXDB_PASSWORD,
                             settings.INFLUXDB_DATABASE)
