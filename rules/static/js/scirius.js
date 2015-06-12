@@ -37,6 +37,10 @@ function load_rules(from_date, hosts, filter) {
     $.ajax({
        url: tgturl,
           success: function(data) {
+             if (data == null) {
+                $('#rules_table').text("No data for period.");
+                return;
+             }
              $('#rules_table').empty();
              $('#rules_table').append(data);
              prepare_rule_details();
@@ -61,7 +65,11 @@ function draw_timeline(from_date, hosts, filter) {
                         type:"GET",
                         url:esurl,
                         success: function(data) {
-			    $("#timeline span").hide();
+                        if (data == null) {
+			                $("#timeline span").text("No data for period");
+                            return null;
+                        }
+			            $("#timeline span").hide();
                             nv.addGraph(function() {
 		            /* starting from 4 hosts multibar is unreadable */
                             if (hosts.length > 3) {
