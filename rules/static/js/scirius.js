@@ -38,7 +38,9 @@ function load_rules(from_date, hosts, filter) {
        url: tgturl,
           success: function(data) {
              if (data == null) {
-                $('#rules_table').text("No data for period.");
+                $('#rules_table').text("Unable to get data.");
+                $("#error").text("Unable to get data from Elasticsearch");
+                $("#error").parent().toggle();
                 return;
              }
              $('#rules_table').empty();
@@ -66,7 +68,13 @@ function draw_timeline(from_date, hosts, filter) {
                         url:esurl,
                         success: function(data) {
                         if (data == null) {
-			                $("#timeline span").text("No data for period");
+                            $("#timeline span").text("Unable to get data.");
+                            $("#error").text("Unable to get data from Elasticsearch");
+                            $("#error").parent().toggle();
+                            return null;
+                        }
+                        if (!data.hasOwnProperty("from_date")) {
+                            $("#timeline span").text("No data for period.");
                             return null;
                         }
 			            $("#timeline span").hide();
@@ -140,6 +148,11 @@ function draw_timeline(from_date, hosts, filter) {
                                 return chart;
                         });
                 },
+	    error: function(data) {
+             $('#timeline').text("Unable to get data.");
+             $("#error").text("Unable to get data from Elasticsearch");
+             $("#error").parent().toggle();
+	    }
         });
 }
 

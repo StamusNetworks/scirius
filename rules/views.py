@@ -193,6 +193,8 @@ def elasticsearch(request):
             qfilter = request.GET.get('filter', None)
             if host != None and from_date != None:
                 rules = es_get_rules_stats(request, host, from_date = from_date, qfilter = qfilter)
+                if rules == None:
+                    return HttpResponse(json.dumps(rules), content_type="application/json")
                 context = {'table': rules}
                 return scirius_render(request, 'rules/table.html', context)
         elif query == 'rule':

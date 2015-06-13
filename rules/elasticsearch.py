@@ -390,7 +390,7 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     try:
         data = data['facets']
     except:
-        return None
+        return {}
     data['from_date'] = from_date
     data['interval'] = int(interval) * 1000
     return data
