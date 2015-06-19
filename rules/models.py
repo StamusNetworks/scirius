@@ -387,6 +387,8 @@ class Source(models.Model):
             self.handle_rules_in_tar(dest)
         elif self.datatype == 'sig':
             self.handle_rules_file(dest)
+        elif self.datatype == 'other':
+            self.handle_other_file(dest)
 
 class SourceAtVersion(models.Model):
     source = models.ForeignKey(Source)
