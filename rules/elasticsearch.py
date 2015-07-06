@@ -234,7 +234,7 @@ RULES_PER_CATEGORY = """
 }
 """
 
-DASHBOARDS_QUERY_URL = "http://%s/kibana-int/dashboard/_search?size=" % settings.ELASTICSEARCH_ADDRESS
+DASHBOARDS_QUERY_URL = "http://%s/%s/dashboard/_search?size=" % (settings.ELASTICSEARCH_ADDRESS, settings.KIBANA_INDEX)
 
 HEALTH_URL = "http://%s/_cluster/health" % settings.ELASTICSEARCH_ADDRESS
 STATS_URL = "http://%s/_cluster/stats" % settings.ELASTICSEARCH_ADDRESS
