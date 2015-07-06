@@ -170,7 +170,11 @@ function load_dashboards() {
                         $("#dashboards").empty();
                         var dh = "<ul>";
                         for (var key in data) {
+                                {% if kibana_version == 3 %}
                                 dh += "<li><a href='{{ kibana_url }}/#/dashboard/elasticsearch/" + key + "'>" + data[key] + "</a></li>";
+                                {% else %}
+                                dh += "<li><a href='{{ kibana_url }}/#/dashboard/" + key + "'>" + data[key] + "</a></li>";
+                                {% endif %}
                         }
                         $("#dashboards").append(dh);
                 } else {

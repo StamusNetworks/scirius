@@ -39,6 +39,7 @@ def scirius_render(request, template, context):
                 context['kibana_url'] = "/kibana"
             else:
                 context['kibana_url'] = settings.KIBANA_URL
+            context['kibana_version'] = settings.KIBANA_VERSION
     return render(request, template, context)
 
 def scirius_listing(request, objectname, name, template = 'rules/object_list.html', table = None, adduri = None):

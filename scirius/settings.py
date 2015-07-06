@@ -124,6 +124,8 @@ KIBANA_PROXY = False
 KIBANA_URL = "http://localhost:9292"
 # Kibana index name
 KIBANA_INDEX = "kibana-int"
+# Kibana version
+KIBANA_VERSION=3
 # Number of dashboards to display
 KIBANA_DASHBOARDS_COUNT = 20
 
