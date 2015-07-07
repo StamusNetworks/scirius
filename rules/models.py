@@ -277,7 +277,7 @@ class Source(models.Model):
         category = Category.objects.filter(source = self, name = '%s Sigs' % (self.name))
         if not category:
             category = Category.objects.create(source = self,
-                                    name = '%s Sigs' % (self.name), created_date = datetime.now(),
+                                    name = '%s Sigs' % (self.name), created_date = timezone.now(),
                                     filename = os.path.join('rules', 'sigs.rules'))
             category.get_rules(self)
         else:
@@ -302,7 +302,7 @@ class Source(models.Model):
         sha = repo.heads.master.log()[-1].newhexsha
         SourceUpdate.objects.create(
             source = self,
-            created_date = datetime.now(),
+            created_date = timezone.now(),
             data = json.dumps(update),
             version = sha,
             changed = len(update["deleted"]) + len(update["added"]) + len(update["updated"]),
@@ -395,7 +395,7 @@ class SourceAtVersion(models.Model):
     # Sha1 or HEAD or tag
     version = models.CharField(max_length=42)
     git_version = models.CharField(max_length=42, default = 'HEAD')
-    updated_date = models.DateTimeField('date updated', blank = True, default = datetime.now())
+    updated_date = models.DateTimeField('date updated', blank = True, default = timezone.now())
 
     def __unicode__(self):
         return str(self.source) + "@" + self.version
@@ -410,7 +410,7 @@ class SourceAtVersion(models.Model):
 
 class SourceUpdate(models.Model):
     source = models.ForeignKey(Source)
-    created_date = models.DateTimeField('date of update', blank = True, default = datetime.now())
+    created_date = models.DateTimeField('date of update', blank = True, default = timezone.now())
     # Store update info as a JSON document
     data = models.TextField()
     version = models.CharField(max_length=42)
@@ -431,7 +431,7 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     filename = models.CharField(max_length=200)
     descr = models.CharField(max_length=400, blank = True)
-    created_date = models.DateTimeField('date created', default = datetime.now())
+    created_date = models.DateTimeField('date created', default = timezone.now())
     source = models.ForeignKey(Source)
 
     getflowbits = re.compile("flowbits *: *(isset|set),(.*?) *;")
@@ -632,7 +632,7 @@ class Ruleset(models.Model):
         sourcesatversion = self.sources.all()
         for sourcesat in sourcesatversion:
             sourcesat.source.update()
-        self.updated_date = datetime.now()
+        self.updated_date = timezone.now()
         self.save()
 
     def generate(self):
