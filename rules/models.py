@@ -199,7 +199,7 @@ class Source(models.Model):
         tfile = tarfile.open(fileobj=f)
         # FIXME This test is only for rules archive
         for member in tfile.getmembers():
-            if not member.name.startswith("rules"):
+            if not member.name.startswith('rules'):
                 raise SuspiciousOperation("Suspect tar file contains a invalid name '%s'" % (member.name))
 
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
@@ -207,7 +207,7 @@ class Source(models.Model):
         index = repo.index
         if len(index.diff(None)) or self.first_run:
             os.environ['USERNAME'] = 'scirius'
-            index.add(["rules"])
+            index.add(['rules'])
             message =  'source version at %s' % (self.updated_date)
             index.commit(message)
 
@@ -237,7 +237,7 @@ class Source(models.Model):
         index = repo.index
         if len(index.diff(None)) or self.first_run:
             os.environ['USERNAME'] = 'scirius'
-            index.add(["rules"])
+            index.add(['rules'])
             message =  'source version at %s' % (self.updated_date)
             index.commit(message)
 
