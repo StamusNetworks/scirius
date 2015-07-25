@@ -86,7 +86,6 @@ def setup_logging(args):
     else:
         logging.basicConfig(level=loglevel)
 
-
 def main_task(args):
     setup_logging(args)
 
@@ -94,7 +93,6 @@ def main_task(args):
     if os.path.isfile(reload_file):
         SuriReload(args.reload)
         os.unlink(reload_file)
-
 
     handler = EventHandler()
     if args.reload:
