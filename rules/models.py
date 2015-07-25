@@ -582,6 +582,20 @@ class Rule(models.Model):
             rules |= set(rules_dep)
         return rules
 
+    def enable(self, ruleset):
+        enable_rules = self.get_flowbits_group()
+        if not enable_rules:
+            enable_rules |= {self}
+        ruleset.suppressed_rules.remove(*enable_rules)
+        return
+
+    def disable(self, ruleset):
+        disable_rules = self.get_flowbits_group()
+        if not disable_rules:
+            disable_rules |= {self}
+        ruleset.suppressed_rules.add(*disable_rules)
+        return
+
 # we should use django reversion to keep track of this one
 # even if fixing HEAD may be complicated
 class Ruleset(models.Model):

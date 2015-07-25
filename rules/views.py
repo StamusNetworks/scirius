@@ -300,17 +300,10 @@ def switch_rule(request, rule_id, operation = 'suppress'):
         form = RulesetSuppressForm(request.POST)
         if form.is_valid(): # All validation rules pass
             ruleset = form.cleaned_data['ruleset']
-            disable_rules = rule_object.get_flowbits_group()
             if operation == 'suppress':
-                if disable_rules:
-                    ruleset.suppressed_rules.add(*list(disable_rules))
-                else:
-                    ruleset.suppressed_rules.add(rule_object)
+                rule_object.disable(ruleset)
             elif operation == 'enable':
-                if disable_rules:
-                    ruleset.suppressed_rules.remove(*list(disable_rules))
-                else:
-                    ruleset.suppressed_rules.remove(rule_object)
+                rule_object.enable(ruleset)
             ruleset.save()
         return redirect(rule_object)
     form = RulesetSuppressForm()
@@ -582,8 +575,7 @@ def edit_ruleset(request, ruleset_id):
         elif request.POST.has_key('rules'):
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
-                disable_rules = rule_object.get_flowbits_group()
-                ruleset.suppressed_rules.remove(*disable_rules)
+                rule_object.enable(ruleset)
             ruleset.save()
         elif request.POST.has_key('sources'):
             # clean ruleset
@@ -641,7 +633,7 @@ def ruleset_add_supprule(request, ruleset_id):
         elif request.POST.has_key('rule_selection'):
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
-                ruleset.suppressed_rules.add(rule_object)
+                rule_object.disable(ruleset)
             ruleset.save()
         return redirect(ruleset)
     context = { 'ruleset': ruleset }
