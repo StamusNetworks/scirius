@@ -399,21 +399,21 @@ $( 'document' ).ready(function () {
 
 $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     if (String(e.target).match('#stats')) {
-        draw_stats_timeline({{ from_date }}, 'stats.capture.kernel_packets', '#suri_packet', 1);
-        draw_stats_timeline({{ from_date }}, 'stats.capture.kernel_drops', '#suri_drop', 1);
+        draw_stats_timeline({{ from_date }}, 'stats.capture.kernel_packets', '#suri_packet', 1, [ '{{ suricata.name }}']);
+        draw_stats_timeline({{ from_date }}, 'stats.capture.kernel_drops', '#suri_drop', 1, [ '{{ suricata.name }}']);
     }
     if (String(e.target).match('#rules')) {
         draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null);
     }
     if (String(e.target).match('#indicators')) {
-        draw_stats_timeline({{ from_date }}, 'stats.flow.emerg_mode_entered', '#flow_emergency', 0);
-        draw_stats_timeline({{ from_date }}, 'stats.tcp.reassembly_gap', '#tcp_gaps', 0);
-        draw_stats_timeline({{ from_date }}, 'stats.decoder.invalid', '#decoder_invalid', 0);
+        draw_stats_timeline({{ from_date }}, 'stats.flow.emerg_mode_entered', '#flow_emergency', 0, [ '{{ suricata.name }}']);
+        draw_stats_timeline({{ from_date }}, 'stats.tcp.reassembly_gap', '#tcp_gaps', 0, [ '{{ suricata.name }}']);
+        draw_stats_timeline({{ from_date }}, 'stats.decoder.invalid', '#decoder_invalid', 0, [ '{{ suricata.name }}']);
     }
     if (String(e.target).match('#memory')) {
-        draw_stats_timeline({{ from_date }}, 'stats.flow.memuse', '#flow_memuse', 0);
-        draw_stats_timeline({{ from_date }}, 'stats.tcp.memuse', '#tcp_memuse', 0);
-        draw_stats_timeline({{ from_date }}, 'stats.http.memuse', '#http_memuse', 0);
+        draw_stats_timeline({{ from_date }}, 'stats.flow.memuse', '#flow_memuse', 0, [ '{{ suricata.name }}']);
+        draw_stats_timeline({{ from_date }}, 'stats.tcp.memuse', '#tcp_memuse', 0, [ '{{ suricata.name }}'] );
+        draw_stats_timeline({{ from_date }}, 'stats.http.memuse', '#http_memuse', 0, [ '{{ suricata.name }}']);
     }
 });
 
