@@ -212,7 +212,8 @@ def elasticsearch(request):
             data = es_get_timeline(from_date = from_date, hosts = hosts, qfilter = qfilter)
         elif query == 'logstash_eve':
             from_date = request.GET.get('from_date', None)
-            data = es_get_logstash_eve(from_date = from_date, event = "total")
+            value = request.GET.get('value', None)
+            data = es_get_metrics_timeline(from_date = from_date, value = value)
         elif query == 'health':
             data = es_get_health()
         elif query == 'stats':

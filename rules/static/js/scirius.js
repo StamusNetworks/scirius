@@ -156,9 +156,9 @@ function draw_timeline(from_date, hosts, filter) {
         });
 }
 
-function draw_logstash_timeline(from_date, event_type) {
+function draw_logstash_timeline(from_date, value, tdiv, speed) {
 
-        esurl = "/rules/es?query=logstash_eve&from_date=" + from_date + "&event=" + event_type
+        esurl = "/rules/es?query=logstash_eve&from_date=" + from_date + "&value=" + value
         $.ajax(
                         {
                         type:"GET",
@@ -174,7 +174,7 @@ function draw_logstash_timeline(from_date, event_type) {
                             $("#logstash span").text("No data for period.");
                             return null;
                         }
-			            $("#logstash span").hide();
+			            $(tdiv +" span").hide();
                             nv.addGraph(function() {
                               var chart = nv.models.lineChart()
                                             .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
@@ -197,18 +197,32 @@ function draw_logstash_timeline(from_date, event_type) {
                                 var starti = 0;
                                 var iter = 0;
                                 entries = data['logstash']['entries']
-                                for (i = starti; i < entries.length; i++) {
-                                        gdata.push({x: entries[i]["time"], y: entries[i]["mean"]});
+                                console.log(data["interval"])
+                                if (speed) {
+                                    for (i = 1; i < entries.length; i++) {
+                                            gdata.push({x: entries[i]["time"], y: (entries[i]["mean"] - entries[i-1]["mean"])/(data['interval']/1000) });
+                                    }
+                                    sdata.push(
+                                    {
+                                        values: gdata,
+                                        key: "Speed",
+                                        color: '#AD9C9B',  //color - optional: choose your own line color.
+                                        area: true
+                                    }
+                                    );
+                                } else {
+                                    for (i = starti; i < entries.length; i++) {
+                                            gdata.push({x: entries[i]["time"], y: entries[i]["mean"]});
+                                    }
+                                    sdata.push(
+                                    {
+                                        values: gdata,
+                                        key: value,
+                                        color: '#AD9C9B',  //color - optional: choose your own line color.
+                                        area: true
+                                    });
                                 }
-                                sdata.push(
-                                {
-                                    values: gdata,
-                                    key: 'Logstash insertion rate',
-                                    color: '#AD9C9B',  //color - optional: choose your own line color.
-                                    area: true
-                                }
-                                );
-                                d3.select('#logstash svg')
+                                d3.select(tdiv + ' svg')
                                         .datum(sdata)
                                         .call(chart);
 
@@ -217,7 +231,7 @@ function draw_logstash_timeline(from_date, event_type) {
                         });
                 },
 	    error: function(data) {
-             $('#logstash').text("Unable to get data.");
+             $(tdiv).text("Unable to get data.");
              $("#error").text("Unable to get data from Elasticsearch");
              $("#error").parent().toggle();
 	    }

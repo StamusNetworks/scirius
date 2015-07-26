@@ -170,13 +170,13 @@ TIMELINE_QUERY = """
 }
 """
 
-LOGSTASH_EVE_QUERY = """
+STATS_QUERY = """
 {
   "facets": {
     "logstash": {
       "date_histogram": {
         "key_field": "@timestamp",
-        "value_field": "eve.{{ event }}.rate_1m",
+        "value_field": "{{ value }}",
         "interval": "{{ interval }}"
       },
       "global": true,
@@ -437,12 +437,12 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     data['interval'] = int(interval) * 1000
     return data
 
-def es_get_logstash_eve(from_date=0, interval=None, event = "total"):
-    templ = Template(LOGSTASH_EVE_QUERY)
+def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_1m"):
+    templ = Template(STATS_QUERY)
     # 100 points on graph per default
     if interval == None:
         interval = int((time() - (int(from_date)/ 1000)) / 100)
-    context = Context({'from_date': from_date, 'interval': str(interval) + "s", 'event': event})
+    context = Context({'from_date': from_date, 'interval': str(interval) + "s", 'value': value})
     data = templ.render(context)
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
