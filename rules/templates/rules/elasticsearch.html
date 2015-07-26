@@ -216,7 +216,7 @@ function get_es_detailed_health() {
 
 $( 'document' ).ready(get_es_detailed_health());
 
-$( 'document' ).ready(draw_logstash_timeline({{ from_date }}, 'eve.total.rate_1m', '#logstash', 0));
+$( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve.total.rate_1m', '#logstash', 0));
 </script>
 {% else %}
 

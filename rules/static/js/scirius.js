@@ -156,7 +156,7 @@ function draw_timeline(from_date, hosts, filter) {
         });
 }
 
-function draw_logstash_timeline(from_date, value, tdiv, speed) {
+function draw_stats_timeline(from_date, value, tdiv, speed) {
 
         esurl = "/rules/es?query=logstash_eve&from_date=" + from_date + "&value=" + value
         $.ajax(
