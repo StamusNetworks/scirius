@@ -213,7 +213,12 @@ def elasticsearch(request):
         elif query == 'logstash_eve':
             from_date = request.GET.get('from_date', None)
             value = request.GET.get('value', None)
-            data = es_get_metrics_timeline(from_date = from_date, value = value)
+            cshosts = request.GET.get('hosts', None)
+            if cshosts:
+                hosts = cshosts.split(',')
+            else:
+                hosts = None
+            data = es_get_metrics_timeline(from_date = from_date, value = value, hosts = hosts)
         elif query == 'health':
             data = es_get_health()
         elif query == 'stats':

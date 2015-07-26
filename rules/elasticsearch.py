@@ -173,7 +173,45 @@ TIMELINE_QUERY = """
 STATS_QUERY = """
 {
   "facets": {
-    "logstash": {
+{% if hosts %}
+{% for host in hosts %}
+    "{{ host }}": {
+      "date_histogram": {
+        "key_field": "@timestamp",
+        "value_field": "{{ value }}",
+        "interval": "{{ interval }}"
+      },
+      "global": true,
+      "facet_filter": {
+        "fquery": {
+          "query": {
+            "filtered": {
+              "query": {
+                "query_string": {
+                  "query": "host.raw:{{ host }}"
+                }
+              },
+              "filter": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "from": {{ from_date }},
+                          "to": "now"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }{% if not forloop.last %},{% endif %}{% endfor %}
+  {% else %}
+    "global": {
       "date_histogram": {
         "key_field": "@timestamp",
         "value_field": "{{ value }}",
@@ -208,6 +246,7 @@ STATS_QUERY = """
         }
       }
     }
+  {% endif %}
   },
   "size": 0
 }
@@ -437,12 +476,12 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     data['interval'] = int(interval) * 1000
     return data
 
-def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_1m"):
+def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_1m", hosts = None):
     templ = Template(STATS_QUERY)
     # 100 points on graph per default
     if interval == None:
         interval = int((time() - (int(from_date)/ 1000)) / 100)
-    context = Context({'from_date': from_date, 'interval': str(interval) + "s", 'value': value})
+    context = Context({'from_date': from_date, 'interval': str(interval) + "s", 'value': value, 'hosts': hosts})
     data = templ.render(context)
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)

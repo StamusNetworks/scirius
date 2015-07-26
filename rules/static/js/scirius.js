@@ -156,9 +156,16 @@ function draw_timeline(from_date, hosts, filter) {
         });
 }
 
-function draw_stats_timeline(from_date, value, tdiv, speed) {
+function draw_stats_timeline(from_date, value, tdiv, speed, hosts) {
 
-        esurl = "/rules/es?query=logstash_eve&from_date=" + from_date + "&value=" + value
+        if (hosts) {
+            hosts_list  = "&hosts=" + hosts.join();
+        } else {
+            hosts_list = "";
+            hosts = ['global'];
+        }
+        esurl = "/rules/es?query=logstash_eve&from_date=" + from_date + "&value=" + value + hosts_list
+
         $.ajax(
                         {
                         type:"GET",
@@ -196,31 +203,33 @@ function draw_stats_timeline(from_date, value, tdiv, speed) {
                                 gdata = []
                                 var starti = 0;
                                 var iter = 0;
-                                entries = data['logstash']['entries']
-                                console.log(data["interval"])
-                                if (speed) {
-                                    for (i = 1; i < entries.length; i++) {
-                                            gdata.push({x: entries[i]["time"], y: (entries[i]["mean"] - entries[i-1]["mean"])/(data['interval']/1000) });
+                                for (hi = 0; hi < hosts.length; hi++) {
+                                    entries = data[hosts[hi]]['entries']
+                                    if (speed) {
+                                        for (i = 1; i < entries.length; i++) {
+                                                gdata.push({x: entries[i]["time"], y: Math.max((entries[i]["mean"] - entries[i-1]["mean"])/(data['interval']/1000), 0) });
+                                        }
+                                        sdata.push(
+                                        {
+                                            values: gdata,
+                                            key: hosts[hi] + " speed",
+                                            //color: '#AD9C9B',  //color - optional: choose your own line color.
+
+                                            area: true
+                                        }
+                                        );
+                                    } else {
+                                        for (i = starti; i < entries.length; i++) {
+                                                gdata.push({x: entries[i]["time"], y: entries[i]["mean"]});
+                                        }
+                                        sdata.push(
+                                        {
+                                            values: gdata,
+                                            key: hosts[hi],
+                                            //color: '#AD9C9B',  //color - optional: choose your own line color.
+                                            area: true
+                                        });
                                     }
-                                    sdata.push(
-                                    {
-                                        values: gdata,
-                                        key: "Speed",
-                                        color: '#AD9C9B',  //color - optional: choose your own line color.
-                                        area: true
-                                    }
-                                    );
-                                } else {
-                                    for (i = starti; i < entries.length; i++) {
-                                            gdata.push({x: entries[i]["time"], y: entries[i]["mean"]});
-                                    }
-                                    sdata.push(
-                                    {
-                                        values: gdata,
-                                        key: value,
-                                        color: '#AD9C9B',  //color - optional: choose your own line color.
-                                        area: true
-                                    });
                                 }
                                 d3.select(tdiv + ' svg')
                                         .datum(sdata)
