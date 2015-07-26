@@ -156,6 +156,74 @@ function draw_timeline(from_date, hosts, filter) {
         });
 }
 
+function draw_logstash_timeline(from_date, event_type) {
+
+        esurl = "/rules/es?query=logstash_eve&from_date=" + from_date + "&event=" + event_type
+        $.ajax(
+                        {
+                        type:"GET",
+                        url:esurl,
+                        success: function(data) {
+                        if (data == null) {
+                            $("#logstash span").text("Unable to get data.");
+                            $("#error").text("Unable to get data from Elasticsearch");
+                            $("#error").parent().toggle();
+                            return null;
+                        }
+                        if (!data.hasOwnProperty("from_date")) {
+                            $("#logstash span").text("No data for period.");
+                            return null;
+                        }
+			            $("#logstash span").hide();
+                            nv.addGraph(function() {
+                              var chart = nv.models.lineChart()
+                                            .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+                                            .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+                                            .transitionDuration(350)  //how fast do you want the lines to transition?
+                                            .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                                            .showYAxis(true)        //Show the y-axis
+                                            .showXAxis(true)        //Show the x-axis
+                              ;
+                                chart.xAxis.tickFormat(function(d) {
+                                    return d3.time.format('%m/%d %H:%M')(new Date(d))
+                                });
+
+                                chart.yAxis
+                                .tickFormat(d3.format(',.1f'));
+
+                                var end_interval = new Date().getTime();
+                                var sdata = []
+                                gdata = []
+                                var starti = 0;
+                                var iter = 0;
+                                entries = data['logstash']['entries']
+                                for (i = starti; i < entries.length; i++) {
+                                        gdata.push({x: entries[i]["time"], y: entries[i]["mean"]});
+                                }
+                                sdata.push(
+                                {
+                                    values: gdata,
+                                    key: 'Logstash insertion rate',
+                                    color: '#AD9C9B',  //color - optional: choose your own line color.
+                                    area: true
+                                }
+                                );
+                                d3.select('#logstash svg')
+                                        .datum(sdata)
+                                        .call(chart);
+
+                                nv.utils.windowResize(function() { chart.update() });
+                                return chart;
+                        });
+                },
+	    error: function(data) {
+             $('#logstash').text("Unable to get data.");
+             $("#error").text("Unable to get data from Elasticsearch");
+             $("#error").parent().toggle();
+	    }
+        });
+}
+
 function build_path(d) {
   tooltip = d.msg ? d.msg : d.key ? d.key : "Unknown";
   if (tooltip == "categories") {

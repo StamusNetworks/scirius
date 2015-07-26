@@ -170,6 +170,48 @@ TIMELINE_QUERY = """
 }
 """
 
+LOGSTASH_EVE_QUERY = """
+{
+  "facets": {
+    "logstash": {
+      "date_histogram": {
+        "key_field": "@timestamp",
+        "value_field": "eve.{{ event }}.rate_1m",
+        "interval": "{{ interval }}"
+      },
+      "global": true,
+      "facet_filter": {
+        "fquery": {
+          "query": {
+            "filtered": {
+              "query": {
+                "query_string": {
+                  "query": "*"
+                }
+              },
+              "filter": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "from": {{ from_date }},
+                          "to": "now"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "size": 0
+}
+"""
 
 RULES_PER_CATEGORY = """
 {
@@ -376,6 +418,31 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     if qfilter != None:
         query_filter = " AND " + qfilter
         context['query_filter'] = re.sub('"','\\"', query_filter)
+    data = templ.render(context)
+    es_url = get_es_url(from_date)
+    req = urllib2.Request(es_url, data)
+    try:
+        out = urllib2.urlopen(req)
+    except:
+        return None
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    # total number of results
+    try:
+        data = data['facets']
+    except:
+        return {}
+    data['from_date'] = from_date
+    data['interval'] = int(interval) * 1000
+    return data
+
+def es_get_logstash_eve(from_date=0, interval=None, event = "total"):
+    templ = Template(LOGSTASH_EVE_QUERY)
+    # 100 points on graph per default
+    if interval == None:
+        interval = int((time() - (int(from_date)/ 1000)) / 100)
+    context = Context({'from_date': from_date, 'interval': str(interval) + "s", 'event': event})
     data = templ.render(context)
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
