@@ -395,7 +395,7 @@ class SourceAtVersion(models.Model):
     # Sha1 or HEAD or tag
     version = models.CharField(max_length=42)
     git_version = models.CharField(max_length=42, default = 'HEAD')
-    updated_date = models.DateTimeField('date updated', blank = True, default = timezone.now())
+    updated_date = models.DateTimeField('date updated', blank = True, default = timezone.now)
 
     def __unicode__(self):
         return str(self.source) + "@" + self.version
@@ -410,7 +410,7 @@ class SourceAtVersion(models.Model):
 
 class SourceUpdate(models.Model):
     source = models.ForeignKey(Source)
-    created_date = models.DateTimeField('date of update', blank = True, default = timezone.now())
+    created_date = models.DateTimeField('date of update', blank = True, default = timezone.now)
     # Store update info as a JSON document
     data = models.TextField()
     version = models.CharField(max_length=42)
@@ -431,7 +431,7 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     filename = models.CharField(max_length=200)
     descr = models.CharField(max_length=400, blank = True)
-    created_date = models.DateTimeField('date created', default = timezone.now())
+    created_date = models.DateTimeField('date created', default = timezone.now)
     source = models.ForeignKey(Source)
 
     getflowbits = re.compile("flowbits *: *(isset|set),(.*?) *;")
