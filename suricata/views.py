@@ -56,10 +56,11 @@ def index(request, error = None):
         context = {'suricata': suri}
         if error:
             context['error'] = error
-        supp_rules = list(suri.ruleset.suppressed_rules.all())
-        if len(supp_rules):
-            suppressed = ",".join([ str(x.sid) for x in supp_rules])
-            context['suppressed'] = suppressed
+        if suri.ruleset:
+            supp_rules = list(suri.ruleset.suppressed_rules.all())
+            if len(supp_rules):
+                suppressed = ",".join([ str(x.sid) for x in supp_rules])
+                context['suppressed'] = suppressed
 
         if settings.USE_ELASTICSEARCH:
             context['rules'] = True
