@@ -19,6 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django import forms
+from django.utils import timezone
 from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings
 from datetime import datetime
 
@@ -43,8 +44,8 @@ class RulesetForm(forms.Form):
 
     def create_ruleset(self):
         ruleset = Ruleset.objects.create(name = self.cleaned_data['name'],
-                    created_date = datetime.now(),
-                    updated_date = datetime.now(),
+                    created_date = timezone.now(),
+                    updated_date = timezone.now(),
                     )
         for source in self.cleaned_data['sources']:
             ruleset.sources.add(source)
