@@ -34,6 +34,19 @@ class SourceForm(forms.ModelForm):
         model = Source
         exclude = ['created_date', 'updated_date']
 
+class AddSourceForm(forms.ModelForm):
+    file  = forms.FileField(required = False)
+    ruleset_list =  Ruleset.objects.all()
+    if len(ruleset_list):
+        rulesets = forms.ModelMultipleChoiceField(
+                    ruleset_list,
+                    widget=forms.CheckboxSelectMultiple(),
+                    label = "Add source to the following ruleset(s)",
+                    required = False)
+    class Meta:
+        model = Source
+        exclude = ['created_date', 'updated_date']
+
 # Display choices of SourceAtVersion
 class RulesetForm(forms.Form):
     name = forms.CharField(max_length=100)

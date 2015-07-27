@@ -146,11 +146,12 @@ def search(request):
 def sources(request):
     return scirius_listing(request, Source, 'Sources')
 
-def source(request, source_id, error=None):
+def source(request, source_id, error=None, update = False, activate = False, rulesets = None):
     source = get_object_or_404(Source, pk=source_id)
     cats = CategoryTable(Category.objects.filter(source = source))
     tables.RequestConfig(request).configure(cats)
-    context = {'source': source, 'categories': cats}
+    context = {'source': source, 'categories': cats,
+               'update': update, 'activate': activate, 'rulesets': rulesets}
     if error:
         context['error'] = error
     return scirius_render(request, 'rules/source.html', context)
@@ -384,12 +385,36 @@ def update_source(request, source_id):
     try:
         src.update()
     except IOError, errors:
+        if request.is_ajax():
+            return HttpResponse(json.dumps(False), content_type="application/json")
         return source(request, source_id, error="Can not fetch data: %s" % (errors))
+
+    if request.is_ajax():
+        return HttpResponse(json.dumps(True), content_type="application/json")
 
     supdate = SourceUpdate.objects.filter(source = src).order_by('-created_date')
     if len(supdate) == 0:
         return redirect(src)
     return redirect('changelog_source', source_id = source_id)
+
+def activate_source(request, source_id, ruleset_id):
+
+    if not request.user.is_staff:
+        return HttpResponse(json.dumps(False), content_type="application/json")
+
+    src = get_object_or_404(Source, pk=source_id)
+    ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
+
+    sversions  = SourceAtVersion.objects.filter(source = src, version = 'HEAD')
+    if not sversions:
+        return HttpResponse(json.dumps(False), content_type="application/json")
+
+    ruleset.sources.add(sversions[0])
+    for cat in Category.objects.filter(source = src):
+        ruleset.categories.add(cat)
+
+    ruleset.save()
+    return HttpResponse(json.dumps(True), content_type="application/json")
 
 def build_source_diff(request, diff):
     for field in ["added", "deleted", "updated"]:
@@ -422,22 +447,28 @@ def add_source(request):
         return scirius_render(request, 'rules/add_source.html', { 'error': 'Unsufficient permissions' })
 
     if request.method == 'POST': # If the form has been submitted...
-        form = SourceForm(request.POST, request.FILES) # A form bound to the POST data
+        form = AddSourceForm(request.POST, request.FILES) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
             try:
-                source = Source.objects.create(name = form.cleaned_data['name'],
+                src = Source.objects.create(name = form.cleaned_data['name'],
                         uri = form.cleaned_data['uri'],
                         method = form.cleaned_data['method'],
                         created_date = timezone.now(),
                         datatype = form.cleaned_data['datatype'],
                         )
-                if source.method == 'local' and request.FILES.has_key('file'):
-                    source.handle_uploaded_file(request.FILES['file'])
+                if src.method == 'local' and request.FILES.has_key('file'):
+                    src.handle_uploaded_file(request.FILES['file'])
             except IntegrityError, error:
                 return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
-            return redirect(source)
+            ruleset_list = form.cleaned_data['rulesets']
+            rulesets = [ ruleset.pk for ruleset in ruleset_list ]
+            ruleset_list = [ '"' + ruleset.name + '"' for ruleset in ruleset_list ]
+            if not src.method == 'local' or len(rulesets):
+                return scirius_render(request, 'rules/add_source.html', { 'source': src,  'update': True, 'rulesets': rulesets, 'ruleset_list': ruleset_list})
+            else:
+                return redirect(src)
     else:
-        form = SourceForm() # An unbound form
+        form = AddSourceForm() # An unbound form
 
     return scirius_render(request, 'rules/add_source.html', { 'form': form, })
 

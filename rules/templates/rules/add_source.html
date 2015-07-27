@@ -5,7 +5,11 @@
 <div class="panel-heading">
 <h2 class="panel-title">
 {% if source %}
+{% if update %}
+Source '{{ source.name }}'
+{% else %}
 Edit Source '{{ source.name }}'
+{% endif %}
 {% else %}
 Add a Source
 {% endif %}
@@ -15,14 +19,112 @@ Add a Source
 
 {% block body %}
 {% if source %}
+{% if update %}
+<body>
+{% else %}
 <body onload="select_fields();" >
+{% endif %}
 {% else %}
 <body onload="hide_fields();" >
 {% endif %}
 {% endblock %}
 
 {% block content %}
+{% if update %}
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-6">
+<h2 id="source_action">'{{ source.name }}' source initialisation</h2>
 
+<div class="progress">
+  <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;" id="source_progress">
+    Source handling.
+  </div>
+</div>
+
+
+<div id="init_details">
+<ul>
+</ul>
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+
+function activate_ruleset_from(src_pk, rulesets, ruleset_list, r_length)
+{
+   if (rulesets.length == 0) {
+        $('#source_progress').width("100%");
+        $('#source_progress').text("Source fully activated.");
+        return;
+   }
+   ri = rulesets.pop()
+   ruleset = ruleset_list.pop()
+   var tgturl = "/rules/source/" + src_pk + "/activate/" + ri;
+   $.ajax({
+       url: tgturl,
+          success: function(data) {
+             if (data == true) {
+                 var progress = 80 + (r_length - rulesets.length) * 20 / rulesets.length;
+                 $('#source_progress').width(progress + "%");
+                 $('#source_progress').text("Source activated in " + ruleset + ".");
+                 $("#init_details ul").append('<li>Source activated in "' + ruleset + '"</li>');
+                 activate_ruleset_from(src_pk, rulesets, ruleset_list, r_length);
+             } else {
+                 $('#source_progress').addclass(".progress-bar-danger");
+                 $('#source_progress').text("Could not activate source for '" + ruleset + "'.");
+             }
+          },
+      error: function(data) {
+             $('#source_progress').addclass(".progress-bar-danger");
+             $('#source_progress').text("Unable activate source in '" + ruleset + "'.");
+      }
+    });
+}
+
+function update_activate_source(src_pk, rulesets, ruleset_list)
+{
+    var tgturl = "/rules/source/" + src_pk + "/update";
+
+    $('#source_progress').text("Updating source.");
+    $.ajax({
+       url: tgturl,
+          success: function(data) {
+            if (data == true) { 
+                $("#init_details ul").append('<li>Source updated</li>');
+                $('#source_progress').width("80%");
+                if (rulesets) {
+                    activate_ruleset_from(src_pk, rulesets, ruleset_list, rulesets.length)
+                }
+            } else {
+                $('#source_progress').addclass(".progress-bar-danger");
+                $('#source_progress').text("Could not update source.");
+            }
+          },
+	  error: function(data) {
+             $('#source_progress').addclass(".progress-bar-danger");
+             $('#source_progress').text("Unable to update source.");
+	  },
+      timeout: 120 * 1000
+    });
+}
+
+$( 'document' ).ready(function() {
+        {% if update %}
+            {% if not rulesets %}
+            update_activate_source({{ source.pk }}, null);
+            {% else %}
+            update_activate_source({{ source.pk }}, [ {{ rulesets|join:"," }} ], [ {{ ruleset_list|safeseq|join:"," }} ])
+            {% endif %}
+        {% endif %}
+});
+
+</script>
+
+{% else %}
 <script language="JavaScript">
 function display_field(method) {
     if ($( this ).find("option:selected").text() == "HTTP URL") {
@@ -90,6 +192,7 @@ function select_fields() {
 </div>
 </div>
 </div>
+{% endif %}
 {% endif %}
 
 
