@@ -79,7 +79,7 @@
 </div> <!-- col -->
 </div> <!-- row -->
 
-{% if influxdb %}
+{% if logstash_stats %}
 <div class="row">
 <div class="col-md-12">
 <h2>Logstash event insertion speed (last {{ date }})
@@ -113,110 +113,111 @@
 <script>
 
 function bytesToSize(bytes) {
-   var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-   if (bytes == 0) return '0 Byte';
-   var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-   return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+if (bytes == 0) return '0 Byte';
+var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
 };
 
 function get_es_stats() {
-    $.ajax(
-        {
-                type:"GET",
-                url:"/rules/es?query=stats",
-                success: function(data) {
-                if (!data) {
-                        $("#es_status").removeClass("label-default");
-                        $("#es_status").removeClass("label-warning");
-                        $("#es_status").removeClass("label-success");
-                        $("#es_status").addClass("label-danger");
-                        $("#es_status").text("red");
-                } else {
-                        $("#docs_count").text(data['indices']['docs']['count']);
-                        $("#docs_deleted").text(data['indices']['docs']['deleted']);
-                        $("#store_size").text(bytesToSize(data['indices']['store']['size_in_bytes']));
-                        $("#fs_total").text(bytesToSize(data['nodes']['fs']['total_in_bytes']));
-                        $("#fs_free").text(bytesToSize(data['nodes']['fs']['free_in_bytes']));
-                        $("#es_version").text(data['nodes']['versions']);
-                        $("#es_status").text(data['status']);
-                        $("#es_status").removeClass("label-warning");
-                        $("#es_status").removeClass("label-success");
-                        $("#es_status").removeClass("label-danger");
-                        $("#es_status").removeClass("label-default");
-                        if (data['status'] == 'green') {
-                            $("#es_status").addClass("label-success");
-                        } else if (data['status'] == 'yellow') {
-                            $("#es_status").addClass("label-warning");
-                        } else if (data['status'] == 'red') {
-                            $("#es_status").addClass("label-danger");
-                        }
+$.ajax(
+{
+        type:"GET",
+        url:"/rules/es?query=stats",
+        success: function(data) {
+        if (!data) {
+                $("#es_status").removeClass("label-default");
+                $("#es_status").removeClass("label-warning");
+                $("#es_status").removeClass("label-success");
+                $("#es_status").addClass("label-danger");
+                $("#es_status").text("red");
+        } else {
+                $("#docs_count").text(data['indices']['docs']['count']);
+                $("#docs_deleted").text(data['indices']['docs']['deleted']);
+                $("#store_size").text(bytesToSize(data['indices']['store']['size_in_bytes']));
+                $("#fs_total").text(bytesToSize(data['nodes']['fs']['total_in_bytes']));
+                $("#fs_free").text(bytesToSize(data['nodes']['fs']['free_in_bytes']));
+                $("#es_version").text(data['nodes']['versions']);
+                $("#es_status").text(data['status']);
+                $("#es_status").removeClass("label-warning");
+                $("#es_status").removeClass("label-success");
+                $("#es_status").removeClass("label-danger");
+                $("#es_status").removeClass("label-default");
+                if (data['status'] == 'green') {
+                    $("#es_status").addClass("label-success");
+                } else if (data['status'] == 'yellow') {
+                    $("#es_status").addClass("label-warning");
+                } else if (data['status'] == 'red') {
+                    $("#es_status").addClass("label-danger");
                 }
-                },
-                error: function(data) {
-                        $("#es_status").removeClass("label-default");
-                        $("#es_status").removeClass("label-warning");
-                        $("#es_status").removeClass("label-success");
-                        $("#es_status").addClass("label-danger");
-                        $("#es_status").text("red");
-                },
-                complete: function() {
-                    setTimeout(get_es_stats, 30000);
-                },
-                timeout: 15000,
         }
-    );
+        },
+        error: function(data) {
+                $("#es_status").removeClass("label-default");
+                $("#es_status").removeClass("label-warning");
+                $("#es_status").removeClass("label-success");
+                $("#es_status").addClass("label-danger");
+                $("#es_status").text("red");
+        },
+        complete: function() {
+            setTimeout(get_es_stats, 30000);
+        },
+        timeout: 15000,
+}
+);
 }
 $( 'document' ).ready(get_es_stats());
 
 
 function set_critical_value(data, selector) {
-    $("#".concat(selector)).text(data[selector]);
-    $("#".concat(selector)).removeClass("label-default");
-    $("#".concat(selector)).removeClass("label-warning");
-    $("#".concat(selector)).removeClass("label-success");
-    $("#".concat(selector)).removeClass("label-danger");
-    if (data[selector] > 0) {
-        $("#".concat(selector)).addClass("label-warning");
-    } else {
-        $("#".concat(selector)).addClass("label-success");
-    }
+$("#".concat(selector)).text(data[selector]);
+$("#".concat(selector)).removeClass("label-default");
+$("#".concat(selector)).removeClass("label-warning");
+$("#".concat(selector)).removeClass("label-success");
+$("#".concat(selector)).removeClass("label-danger");
+if (data[selector] > 0) {
+$("#".concat(selector)).addClass("label-warning");
+} else {
+$("#".concat(selector)).addClass("label-success");
+}
 }
 
 function get_es_detailed_health() {
-    $.ajax(
-        {
-                type:"GET",
-                url:"/rules/es?query=health",
-                success: function(data) {
-                if (!data) {
-                        $("#es_status").removeClass("label-default");
-                        $("#es_status").addClass("label-danger");
-                } else {
-                        $("#active_primary_shards").text(data['active_primary_shards']);
-                        $("#active_shards").text(data['active_shards']);
-                        set_critical_value(data, "relocating_shards");
-                        set_critical_value(data, "initializing_shards");
-                        set_critical_value(data, "unassigned_shards");
-                        $("#nb_nodes").text(data['number_of_nodes']);
-                        $("#nb_data_nodes").text(data['number_of_data_nodes']);
-                        $("#es_cluster_name").text(data['cluster_name']);
-                }
-                },
-                error: function(data) {
-                        $("#es_status").removeClass("label-default");
-                        $("#es_status").addClass("label-danger");
-                },
-                complete: function() {
-                    setTimeout(get_es_detailed_health, 30000);
-                },
-                timeout: 15000,
+$.ajax(
+{
+        type:"GET",
+        url:"/rules/es?query=health",
+        success: function(data) {
+        if (!data) {
+                $("#es_status").removeClass("label-default");
+                $("#es_status").addClass("label-danger");
+        } else {
+                $("#active_primary_shards").text(data['active_primary_shards']);
+                $("#active_shards").text(data['active_shards']);
+                set_critical_value(data, "relocating_shards");
+                set_critical_value(data, "initializing_shards");
+                set_critical_value(data, "unassigned_shards");
+                $("#nb_nodes").text(data['number_of_nodes']);
+                $("#nb_data_nodes").text(data['number_of_data_nodes']);
+                $("#es_cluster_name").text(data['cluster_name']);
         }
-    );
+        },
+        error: function(data) {
+                $("#es_status").removeClass("label-default");
+                $("#es_status").addClass("label-danger");
+        },
+        complete: function() {
+            setTimeout(get_es_detailed_health, 30000);
+        },
+        timeout: 15000,
+}
+);
 }
 
 $( 'document' ).ready(get_es_detailed_health());
-
+{% if logstash_stats %}
 $( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve.total.rate_1m', '#logstash', 0, null));
+{% endif %}
 </script>
 {% else %}
 
