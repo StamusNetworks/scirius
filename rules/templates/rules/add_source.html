@@ -71,7 +71,7 @@ function activate_ruleset_from(src_pk, rulesets, ruleset_list, r_length)
                  var progress = 80 + (r_length - rulesets.length) * 20 / rulesets.length;
                  $('#source_progress').width(progress + "%");
                  $('#source_progress').text("Source activated in " + ruleset + ".");
-                 $("#init_details ul").append('<li>Source activated in "' + ruleset + '"</li>');
+                 $("#init_details ul").append('<li>Source activated in "' + ruleset + '"<span class="pull-right success"><span class="glyphicon glyphicon-ok"></span></span></li>');
                  activate_ruleset_from(src_pk, rulesets, ruleset_list, r_length);
              } else {
                  $('#source_progress').addclass(".progress-bar-danger");
@@ -94,7 +94,7 @@ function update_activate_source(src_pk, rulesets, ruleset_list)
        url: tgturl,
           success: function(data) {
             if (data == true) { 
-                $("#init_details ul").append('<li>Source updated</li>');
+                $("#init_details ul").append('<li>Source updated<span class="pull-right success"><span class="glyphicon glyphicon-ok"></span></span></li>');
                 $('#source_progress').width("80%");
                 if (rulesets) {
                     activate_ruleset_from(src_pk, rulesets, ruleset_list, rulesets.length)
