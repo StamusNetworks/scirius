@@ -358,6 +358,9 @@ class Source(models.Model):
             # copy file to target
             src_files = tfile.getmembers()
             for member in src_files:
+                # only consider extra files in rules directory
+                if not member.name.startswith('rules/'):
+                    continue
                 # don't copy original rules file to dest
                 if member.name.endswith('.rules') and not self.datatype == 'other':
                     continue
