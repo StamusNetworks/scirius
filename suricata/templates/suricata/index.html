@@ -25,9 +25,11 @@ function differentiate_suppressed() {
   <!-- Nav tabs -->
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="active"><a href="#rules" aria-controls="rules" role="tab" data-toggle="tab">Rules activity</a></li>
+    {% if suricata_stats %}
     <li role="presentation"><a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Capture stats</a></li>
     <li role="presentation"><a href="#memory" aria-controls="memory" role="tab" data-toggle="tab">Memory usage</a></li>
     <li role="presentation"><a href="#indicators" aria-controls="indicators" role="tab" data-toggle="tab">Problem indicators</a></li>
+    {% endif %}
   </ul>
 
   <div class="tab-content">
@@ -119,6 +121,7 @@ function differentiate_suppressed() {
 
 </div>
 
+{% if suricata_stats %}
 <div role="tabpanel" class="tab-pane fade" id="stats">
   <div class="container-fluid">
     <div class="row">
@@ -384,6 +387,7 @@ function differentiate_suppressed() {
 </div> <!-- container -->
 
 </div> <!-- tabpanel -->
+{% endif %}
 
 </div>
 
