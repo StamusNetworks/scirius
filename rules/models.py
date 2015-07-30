@@ -365,7 +365,8 @@ class Source(models.Model):
                 if member.name.endswith('.rules') and not self.datatype == 'other':
                     continue
                 if member.isfile():
-                    tfile.extract(member, path=directory)
+                    member.name = os.path.join(*member.name.split("/", 2)[1:])
+                    mfile = tfile.extract(member, path=directory)
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
