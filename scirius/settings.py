@@ -131,6 +131,8 @@ KIBANA_DASHBOARDS_COUNT = 20
 
 # Suricata is configured to write stats to EVE
 USE_SURICATA_STATS = False
+# Logstash is generating metrics on eve events
+USE_LOGSTASH_STATS = False
 
 # Influxdb
 USE_INFLUXDB = False

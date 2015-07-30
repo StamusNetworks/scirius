@@ -33,6 +33,8 @@ def scirius_render(request, template, context):
         context['influxdb'] = 1
     if settings.USE_SURICATA_STATS:
         context['suricata_stats'] = 1
+    if settings.USE_LOGSTASH_STATS:
+        context['logstash_stats'] = 1
     if gsettings.use_elasticsearch:
         context['elasticsearch'] = 1
         if settings.USE_KIBANA:
