@@ -198,16 +198,23 @@ class Source(models.Model):
         # extract file
         tfile = tarfile.open(fileobj=f)
         # FIXME This test is only for rules archive
+        dir_list = []
         for member in tfile.getmembers():
-            if not member.name.startswith('rules'):
-                raise SuspiciousOperation("Suspect tar file contains a invalid name '%s'" % (member.name))
+            # only file and dir are allowed
+            if not (member.isfile() or member.isdir()):
+                raise SuspiciousOperation("Suspect tar file contains non regular file '%s'" % (member.name))
+            # don't allow tar file with file in root dir
+            if member.isfile() and not '/' in member.name:
+                raise SuspiciousOperation("Suspect tar file contains file in root directory '%s'" % (member.name))
+            if member.isdir() and not '/' in member.name:
+                dir_list.append(member.name)
 
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         tfile.extractall(path=source_git_dir)
         index = repo.index
         if len(index.diff(None)) or self.first_run:
             os.environ['USERNAME'] = 'scirius'
-            index.add(['rules'])
+            index.add(dir_list)
             message =  'source version at %s' % (self.updated_date)
             index.commit(message)
 
