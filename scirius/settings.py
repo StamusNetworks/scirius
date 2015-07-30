@@ -129,6 +129,9 @@ KIBANA_VERSION=3
 # Number of dashboards to display
 KIBANA_DASHBOARDS_COUNT = 20
 
+# Suricata is configured to write stats to EVE
+USE_SURICATA_STATS = False
+
 # Influxdb
 USE_INFLUXDB = False
 INFLUXDB_HOST = "localhost"
