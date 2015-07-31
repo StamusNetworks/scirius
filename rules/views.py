@@ -462,7 +462,11 @@ def add_source(request):
                         datatype = form.cleaned_data['datatype'],
                         )
                 if src.method == 'local' and request.FILES.has_key('file'):
-                    src.handle_uploaded_file(request.FILES['file'])
+                    try:
+                        src.handle_uploaded_file(request.FILES['file'])
+                    except OSError, error:
+                        src.delete()
+                        return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
             except IntegrityError, error:
                 return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
             ruleset_list = form.cleaned_data['rulesets']

@@ -17,18 +17,6 @@ Add a Source
 </div>
 {% endblock %}
 
-{% block body %}
-{% if source %}
-{% if update %}
-<body>
-{% else %}
-<body onload="select_fields();" >
-{% endif %}
-{% else %}
-<body onload="hide_fields();" >
-{% endif %}
-{% endblock %}
-
 {% block content %}
 {% if update %}
 <div class="container-fluid">
@@ -160,8 +148,10 @@ function hide_fields() {
 function select_fields() {
     if ($("#id_method").find("option:selected").text() == "HTTP URL") {
         $("#id_file").parents(".form-group").hide();
+        $("#id_uri").parents(".form-group").show();
     } else {
         $("#id_uri").parents(".form-group").hide();
+        $("#id_file").parents(".form-group").show();
     }
     if ($("#id_datatype").find("option:selected").text() == "Other content") {
         $("#name_warning").show();
@@ -172,6 +162,10 @@ function select_fields() {
     $("#id_method").change(display_field);
     $("#id_datatype").change(display_warning);
 }
+
+$('document').ready(function() {hide_fields();});
+$('document').ready(function() { select_fields();});
+
 </script>
 
 <div class="alert alert-warning" id="name_warning">Warning: the name will be file name in Suricata rules directory</div>
