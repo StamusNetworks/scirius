@@ -379,10 +379,13 @@ class Source(models.Model):
                 resp = requests.get(self.uri, proxies = proxy_params)
             else:
                 resp = requests.get(self.uri)
+            resp.raise_for_status()
         except requests.exceptions.ConnectionError:
             raise IOError("Connection error, please check URL")
         except requests.exceptions.HTTPError:
-            raise IOError("HTTP error, please check URL")
+            if resp.status_code == 404:
+                raise IOError("URL not found on server (error 404), please check URL")
+            raise IOError("HTTP error %d sent by server, please check URL or server" % (resp.status_code))
         except requests.exceptions.Timeout:
             raise IOError("Request timeout, server may be down")
         except requests.exceptions.TooManyRedirects:

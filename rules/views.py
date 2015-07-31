@@ -386,11 +386,16 @@ def update_source(request, source_id):
         src.update()
     except IOError, errors:
         if request.is_ajax():
-            return HttpResponse(json.dumps(False), content_type="application/json")
+            data = {}
+            data['status'] = False
+            data['errors'] = str(errors)
+            return HttpResponse(json.dumps(data), content_type="application/json")
         return source(request, source_id, error="Can not fetch data: %s" % (errors))
 
     if request.is_ajax():
-        return HttpResponse(json.dumps(True), content_type="application/json")
+        data = {}
+        data['status'] = True
+        return HttpResponse(json.dumps(data), content_type="application/json")
 
     supdate = SourceUpdate.objects.filter(source = src).order_by('-created_date')
     if len(supdate) == 0:
