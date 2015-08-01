@@ -146,11 +146,15 @@ function test_ruleset(ruleset_pk)
                 $("#ruleset_status_menu").text("OK");
             } else {
                 $("#ruleset_status_menu").text("Has errors");
-                $("#ruleset_status").append('<ul>');
+                error_content = ""
                 for (i = 0; i < data['errors'].length; i++) {
-                    $("#ruleset_status").append('<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>');
+                    if (data['errors'][i]['sid']) {
+                        error_content += "#ruleset_status").append('<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <a href="/rules/rule/' + parseInt(data['errors'][i]['sid']) + '"><span>' + data['errors'][i]['message'] + '</span></a></li>';
+                    } else {
+                        error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
+                    }
                 }
-                $("#ruleset_status").append('</ul>');
+                $("#ruleset_status").append('<ul>' + error_content + '</ul>');
                 $("#ruleset_status_row").show();
             }
           },
