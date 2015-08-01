@@ -252,7 +252,7 @@ function get_suricata_health() {
     $.ajax(
         {
                 type:"GET",
-                url:"/{{ generator }}/info?query=status",
+                url:"/rules/info?query=status",
                 success: function(data) {
                 if (!data) {
                         $("#suri-status").addClass("label-danger");
@@ -282,7 +282,7 @@ function get_disk_health() {
     $.ajax(
         {
                 type:"GET",
-                url:"/{{ generator }}/info?query=disk",
+                url:"/rules/info?query=disk",
                 success: function(data) {
                 if (!data) {
                         $("#disk-status").addClass("label-danger");
@@ -314,7 +314,7 @@ function get_memory_health() {
     $.ajax(
         {
                 type:"GET",
-                url:"/{{ generator }}/info?query=memory",
+                url:"/rules/info?query=memory",
                 success: function(data) {
                 if (!data) {
                         $("#memory-status").addClass("label-danger");

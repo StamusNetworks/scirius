@@ -736,3 +736,17 @@ def system_settings(request):
     form = SystemSettingsForm(instance = get_system_settings())
     context = { 'form': form }
     return scirius_render(request, 'rules/system_settings.html', context)
+
+def info(request):
+    data = None
+    info = Probe.common.Info()
+    if request.GET.__contains__('query'):
+        query = request.GET.get('query', 'status')
+        if query == 'status':
+            data = { 'running': info.status() }
+        elif query == 'disk':
+            data = info.disk()
+        elif query == 'memory':
+            data = info.memory()
+    return HttpResponse(json.dumps(data),
+                        content_type="application/json")
