@@ -13,6 +13,7 @@
 {% if ruleset.updated_date %}
        <li><span class="type">Updated:</span> {{ ruleset.updated_date }}</li>
 {% endif %}
+       <li><span class="type">Validity:</span> <span id="ruleset_status_menu">Checking</span></li>
 </ul>
 {% if request.user.is_staff %}
 <div class="panel-heading">
@@ -62,6 +63,7 @@ Updated at {{ ruleset.updated_date }} !
 {% if mode == 'struct' %}
 
 <div class="container-fluid">
+<div class="row">
 <div class="col-md-6">
 {% for sourceatversion in sources %}
 <h2 class="title">Source: {{ sourceatversion }}</h2>
@@ -124,6 +126,47 @@ Updated: {{ cdiff.stats.updated }}
 {% render_table rules %}
 </div>
 </div>
+<div class="row" id="ruleset_status_row" style="display:none">
+<div class="col-md-12">
+<h2 class="title">Ruleset has errors</h2>
+<div id="ruleset_status"></div>
+</div>
+</div>
+</div> <!-- container -->
+
+<script>
+function test_ruleset(ruleset_pk)
+{
+    var tgturl = "/rules/ruleset/" + ruleset_pk + "/test";
+
+    $.ajax({
+       url: tgturl,
+          success: function(data) {
+            if (data['status'] == true) { 
+                $("#ruleset_status_menu").text("OK");
+            } else {
+                $("#ruleset_status_menu").text("Has errors");
+                $("#ruleset_status").append('<ul>');
+                for (i = 0; i < data['errors'].length; i++) {
+                    $("#ruleset_status").append('<li>' + data['errors'][i]['message'] + '</li>');
+                }
+                $("#ruleset_status").append('</ul>');
+                $("#ruleset_status_row").show();
+            }
+          },
+	  error: function(data) {
+             $("#ruleset_status").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Unable to check ruleset validity</p>');
+             $("#ruleset_status_row").show();
+             $("#ruleset_status_menu").text("Unknown");
+	  },
+      timeout: 20 * 1000
+    });
+}
+
+$( 'document' ).ready(function() {
+    test_ruleset({{ ruleset.pk }})
+});
+</script>
 {% endif %}
 
 {% if mode  == 'display' %}

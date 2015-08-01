@@ -98,7 +98,7 @@ function update_activate_source(src_pk, rulesets, ruleset_list)
 	  error: function(data) {
              $('#source_progress').addClass("progress-bar-danger");
              $('#source_progress').text("Unable to update source.");
-             $("#init_details ul").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Error during source update</p>');
+             $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Error during source update</p>');
 	  },
       timeout: 120 * 1000
     });
