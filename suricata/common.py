@@ -168,7 +168,7 @@ config classification: default-login-attempt,Attempt to login by a default usern
                         getsid = re.compile("sid *:(\d+)")
                         match = getsid.search(line)
                         if match:
-                            s_err['engine']['sid'] = match.groups()[0]
+                            s_err['engine']['sid'] = int(match.groups()[0])
                     error_list.append(s_err['engine'])
         return error_list
 
