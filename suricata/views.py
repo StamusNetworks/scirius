@@ -27,8 +27,6 @@ from django.db import IntegrityError
 # Create your views here.
 from django.http import HttpResponse
 
-import psutil
-
 from scirius.utils import scirius_render
 
 from suricata.models import Suricata
@@ -153,26 +151,3 @@ def update(request):
         return scirius_render(request, 'suricata/update.html', context)
     else:
         return scirius_render(request, 'suricata/update.html', { 'suricata': suri })
-
-def info(request):
-    data = None
-    if request.GET.__contains__('query'):
-        query = request.GET.get('query', 'status')
-        if query == 'status':
-            suri_running = False
-            for proc in psutil.process_iter():
-                try:
-                    pinfo = proc.as_dict(attrs=['name'])
-                except psutil.NoSuchProcess:
-                    pass
-                else:
-                    if pinfo['name'] == 'Suricata-Main':
-                        suri_running = True
-                        break
-            data = { 'running': suri_running }
-        elif query == 'disk':
-            data = psutil.disk_usage('/')
-        elif query == 'memory':
-            data = psutil.virtual_memory()
-    return HttpResponse(json.dumps(data),
-                        content_type="application/json")

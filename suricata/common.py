@@ -1,5 +1,5 @@
 """
-Copyright(C) 2014, Stamus Networks
+Copyright(C) 2015, Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
 
 This file is part of Scirius.
@@ -18,12 +18,22 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from django.conf.urls import patterns, url
+import psutil
 
-from suricata import views
-
-urlpatterns = patterns('',
-    url(r'^$', views.index, name='index'),
-    url(r'^edit$', views.edit, name='edit'),
-    url(r'^update$', views.update, name='update'),
-    )
+class Info():
+    def status(self):
+        suri_running = False
+        for proc in psutil.process_iter():
+            try:
+                pinfo = proc.as_dict(attrs=['name'])
+            except psutil.NoSuchProcess:
+                pass
+            else:
+                if pinfo['name'] == 'Suricata-Main':
+                    suri_running = True
+                    break
+        return suri_running
+    def disk(self):
+        return psutil.disk_usage('/')
+    def memory(self):
+        return psutil.virtual_memory()
