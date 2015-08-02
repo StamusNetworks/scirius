@@ -109,8 +109,10 @@ class SourceUpdateTable(tables.Table):
 class StatusRulesetTable(tables.Table):
     name = tables.LinkColumn('ruleset', args=[tables.A('pk')])
     status = tables.Column()
+    validity = tables.Column()
     class Meta(DefaultMeta):
-        fields = ("name", "status")
+        fields = ("name", "status", "validity")
+        attrs = { 'id': 'rulesets', 'class': 'paleblue' }
 
 class RuleStatsTable(tables.Table):
     host = tables.Column()

@@ -612,6 +612,9 @@ class Rule(models.Model):
         ruleset.suppressed_rules.add(*disable_rules)
         return
 
+    def test(self, ruleset):
+        return ruleset.test_rule_buffer(self.content, single = True)
+
 # we should use django reversion to keep track of this one
 # even if fixing HEAD may be complicated
 class Ruleset(models.Model):
@@ -712,7 +715,7 @@ class Ruleset(models.Model):
             file_content += rule.content
         return file_content
 
-    def test(self):
+    def test_rule_buffer(self, rule_buffer, single = False):
         testor = Probe.common.Test()
         tmpdir = tempfile.mkdtemp()
         self.export_files(tmpdir)
@@ -724,8 +727,14 @@ class Ruleset(models.Model):
                     with open(fullpath, 'r') as cf:
                         related_files[f] = cf.read()
         shutil.rmtree(tmpdir)
+        if single:
+            return testor.rule(rule_buffer, related_files = related_files)
+        else:
+            return testor.rules(rule_buffer, related_files = related_files)
+
+    def test(self):
         rule_buffer = self.to_buffer()
-        return testor.rules(rule_buffer, related_files = related_files)
+        return self.test_rule_buffer(rule_buffer)
 
 def dependencies_check(obj):
     if obj == Source:

@@ -60,5 +60,6 @@ urlpatterns = patterns('',
     url(r'^rule/(?P<rule_id>\d+)/delete$', views.delete_alerts, name='delete_alerts'),
     url(r'^rule/pk/(?P<rule_id>\d+)/$', views.rule, {'key': 'pk'}, name='rule'),
     url(r'^rule/(?P<rule_id>\d+)/$', views.rule, {'key': 'sid'}, name='rule_sid'),
+    url(r'^rule/pk/(?P<rule_id>\d+)/test/(?P<ruleset_id>\d+)$', views.test_rule, {'key': 'pk'}, name='test_rule'),
     url(r'^info$', views.info, name='info'),
 )

@@ -287,7 +287,7 @@ def rule(request, rule_id, key = 'pk'):
         status = 'Inactive'
         if rule in ruleset.generate():
             status = 'Active'
-        rulesets_status.append({'name': ruleset.name, 'pk':ruleset.pk, 'status':status})
+        rulesets_status.append({'name': ruleset.name, 'pk':ruleset.pk, 'status':status, 'validity': 'Unknown'})
     rulesets_status = StatusRulesetTable(rulesets_status)
     tables.RequestConfig(request).configure(rulesets_status)
     context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status}
@@ -332,6 +332,12 @@ def suppress_rule(request, rule_id):
 
 def enable_rule(request, rule_id):
     return switch_rule(request, rule_id, operation='enable')
+
+def test_rule(request, rule_id, ruleset_id, key = 'pk'):
+    rule_object = get_object_or_404(Rule, pk=rule_id)
+    ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
+    ret = rule_object.test(ruleset)
+    return HttpResponse(json.dumps(ret), content_type="application/json")
 
 def delete_alerts(request, rule_id):
     rule_object = get_object_or_404(Rule, sid=rule_id)

@@ -162,4 +162,46 @@ $( 'document' ).ready(load_stats());
 </script>
 {% endif %}
 
+<script>
+function rule_validity_check() {
+    $("tr", "table#rulesets").each(
+        function() {
+            rulesetlink = $(this).find("a").attr('href')
+            if (!rulesetlink || rulesetlink.indexOf('ruleset/') == -1) {
+                return;
+            }
+            // FIXME build id
+            var id_regex = /(\d+)\/$/;
+            var res_regex = id_regex.exec(rulesetlink);
+            var ruleset_id = res_regex[1];
+            var test_url = "{{ rule.get_absolute_url }}test/" + ruleset_id;
+            $.ajax(
+                {
+                type:"GET",
+                url: test_url,
+                context: $(this),
+                success: function(data) {
+                        if (data['status']) {
+                            $(this).find("td.validity").text('Valid');
+                        } else {
+                            $(this).find("td.validity").empty()
+                            //$(this).find("td.validity").append('<div>Invalid</div>');
+                            error_content = ""
+                            for (i = 0; i < data['errors'].length; i++) {
+                                    error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
+                            }
+                            $(this).find("td.validity").append('<div id="errors"><ul>' + error_content + '</ul></div>');
+                            /* $(this).find("td.validity").click(function( event ) {
+                               $(this).find("#errors").toggle(); 
+                            }); */
+                        }
+                }
+                }
+            );
+        }
+      );
+}
+
+$( 'document' ).ready(rule_validity_check());
+</script>
 {% endblock %}
