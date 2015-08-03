@@ -723,9 +723,8 @@ class Ruleset(models.Model):
         for root, _, files in os.walk(tmpdir):
             for f in files:
                 fullpath = os.path.join(root, f)
-                if os.path.getsize(fullpath) < 50 * 1024:
-                    with open(fullpath, 'r') as cf:
-                        related_files[f] = cf.read()
+                with open(fullpath, 'r') as cf:
+                    related_files[f] = cf.read( 50 * 1024)
         shutil.rmtree(tmpdir)
         if single:
             return testor.rule(rule_buffer, related_files = related_files)
