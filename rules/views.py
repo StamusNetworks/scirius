@@ -427,6 +427,11 @@ def activate_source(request, source_id, ruleset_id):
     ruleset.save()
     return HttpResponse(json.dumps(True), content_type="application/json")
 
+def test_source(request, source_id):
+    source = get_object_or_404(Source, pk=source_id)
+    sourceatversion = get_object_or_404(SourceAtVersion, source=source, version = 'HEAD')
+    return HttpResponse(json.dumps(sourceatversion.test()), content_type="application/json")
+
 def build_source_diff(request, diff):
     for field in ["added", "deleted", "updated"]:
         if field == "deleted":
