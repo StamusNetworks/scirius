@@ -170,7 +170,6 @@ function rule_validity_check() {
             if (!rulesetlink || rulesetlink.indexOf('ruleset/') == -1) {
                 return;
             }
-            // FIXME build id
             var id_regex = /(\d+)\/$/;
             var res_regex = id_regex.exec(rulesetlink);
             var ruleset_id = res_regex[1];
