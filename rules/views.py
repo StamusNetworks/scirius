@@ -480,7 +480,10 @@ def add_source(request):
                         return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
             except IntegrityError, error:
                 return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
-            ruleset_list = form.cleaned_data['rulesets']
+            try:
+                ruleset_list = form.cleaned_data['rulesets']
+            except:
+                ruleset_list = []
             rulesets = [ ruleset.pk for ruleset in ruleset_list ]
             ruleset_list = [ '"' + ruleset.name + '"' for ruleset in ruleset_list ]
             if not src.method == 'local' or len(rulesets):
