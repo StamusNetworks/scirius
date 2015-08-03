@@ -486,10 +486,7 @@ def add_source(request):
                 ruleset_list = []
             rulesets = [ ruleset.pk for ruleset in ruleset_list ]
             ruleset_list = [ '"' + ruleset.name + '"' for ruleset in ruleset_list ]
-            if not src.method == 'local' or len(rulesets):
-                return scirius_render(request, 'rules/add_source.html', { 'source': src,  'update': True, 'rulesets': rulesets, 'ruleset_list': ruleset_list})
-            else:
-                return redirect(src)
+            return scirius_render(request, 'rules/add_source.html', { 'source': src,  'update': True, 'rulesets': rulesets, 'ruleset_list': ruleset_list})
     else:
         form = AddSourceForm() # An unbound form
 

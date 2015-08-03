@@ -44,6 +44,8 @@ function activate_ruleset_from(src_pk, rulesets, ruleset_list, r_length)
 {
    if (rulesets.length == 0) {
         $('#source_progress').width("100%");
+        $('#source_progress').addClass("progress-bar-success");
+        $('#source_progress').removeClass("progress-bar-danger");
         $('#source_progress').text("Source fully activated.");
 
         $('#init_details').append("<p><a href='{{ source.get_absolute_url }}'>See details of {{ source.name }} source.</a></p>");
@@ -97,16 +99,15 @@ function test_source(src_pk, rulesets, ruleset_list)
                 }
                 $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Source test failure: <ul>' + error_content + '</ul></p>');
 		var error_actions = '<button class="btn btn-primary" type="submit"><a href="{{ source.get_absolute_url }}delete"> <span class="glyphicon glyphicon-trash"> Delete source</span></a></button>'
-                if (rulesets) {
-			error_actions += ' <button class="btn btn-warning" id="continue" type="submit"> <span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></a></button>';
-		}
+		error_actions += ' <button class="btn btn-warning" id="continue" type="submit"> <span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></a></button>';
 		$("#init_details").append('<div id="error_actions">' + error_actions + '<div>');
-                if (rulesets) {
-		    $("#continue").click( function(event) {
-			    $("#error_actions").slideUp();
-	                    activate_ruleset_from(src_pk, rulesets, ruleset_list, rulesets.length)
-			});
-                }
+		$("#continue").click( function(event) {
+                        $("#error_actions").slideUp();
+                        if (! rulesets) {
+                                rulesets = []
+                        }
+                        activate_ruleset_from(src_pk, rulesets, ruleset_list, rulesets.length)
+		});
             }
           },
 	  error: function(data) {
