@@ -74,6 +74,40 @@ function activate_ruleset_from(src_pk, rulesets, ruleset_list, r_length)
     });
 }
 
+function test_source(src_pk, rulesets, ruleset_list)
+{
+    var tgturl = "/rules/source/" + src_pk + "/test";
+
+    $('#source_progress').text("Testing source.");
+    $.ajax({
+       url: tgturl,
+          success: function(data) {
+            if (data['status'] == true) { 
+                $("#init_details").append('<p class="text-success"> <span class="glyphicon glyphicon-ok"></span></span> Source is valid</p>');
+                $('#source_progress').width("80%");
+                if (rulesets) {
+                    activate_ruleset_from(src_pk, rulesets, ruleset_list, rulesets.length)
+                }
+            } else {
+                $('#source_progress').addClass("progress-bar-danger");
+                $('#source_progress').text("Source has errors.");
+		var error_content = "";
+                for (i = 0; i < data['errors'].length; i++) {
+                        error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
+                }
+                $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Source test failure: <ul>' + error_content + '</ul></p>');
+            }
+          },
+	  error: function(data) {
+             $('#source_progress').addClass("progress-bar-danger");
+             $('#source_progress').text("Unable to update source.");
+             $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Error during source update</p>');
+	  },
+      timeout: 120 * 1000
+    });
+
+}
+
 function update_activate_source(src_pk, rulesets, ruleset_list)
 {
     var tgturl = "/rules/source/" + src_pk + "/update";
@@ -84,10 +118,8 @@ function update_activate_source(src_pk, rulesets, ruleset_list)
           success: function(data) {
             if (data['status'] == true) { 
                 $("#init_details").append('<p class="text-success"> <span class="glyphicon glyphicon-ok"></span></span> Source updated</p>');
-                $('#source_progress').width("80%");
-                if (rulesets) {
-                    activate_ruleset_from(src_pk, rulesets, ruleset_list, rulesets.length)
-                }
+                $('#source_progress').width("70%");
+		test_source(src_pk, rulesets, ruleset_list);
             } else {
                 $('#source_progress').addClass("progress-bar-danger");
                 $('#source_progress').text("Could not update source.");
