@@ -149,7 +149,7 @@ function test_ruleset(ruleset_pk)
                 error_content = ""
                 for (i = 0; i < data['errors'].length; i++) {
                     if (data['errors'][i]['sid']) {
-                        error_content += "#ruleset_status").append('<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <a href="/rules/rule/' + parseInt(data['errors'][i]['sid']) + '"><span>' + data['errors'][i]['message'] + '</span></a></li>';
+                        error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <a href="/rules/rule/' + parseInt(data['errors'][i]['sid']) + '"><span>' + data['errors'][i]['message'] + '</span></a></li>';
                     } else {
                         error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
                     }
