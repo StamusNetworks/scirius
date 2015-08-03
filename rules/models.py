@@ -631,14 +631,14 @@ class Rule(models.Model):
         enable_rules = self.get_flowbits_group()
         if not enable_rules:
             enable_rules |= {self}
-        ruleset.suppressed_rules.remove(*enable_rules)
+        ruleset.enable_rules(*enable_rules)
         return
 
     def disable(self, ruleset):
         disable_rules = self.get_flowbits_group()
         if not disable_rules:
             disable_rules |= {self}
-        ruleset.suppressed_rules.add(*disable_rules)
+        ruleset.disable_rules(*disable_rules)
         return
 
     def test(self, ruleset):
@@ -651,6 +651,9 @@ class Ruleset(models.Model):
     descr = models.CharField(max_length=400, blank = True)
     created_date = models.DateTimeField('date created')
     updated_date = models.DateTimeField('date updated', blank = True)
+    need_test = models.BooleanField(default=True)
+    validity = models.BooleanField(default=True)
+    errors = models.TextField(blank = True)
 
     editable = True
 
@@ -686,6 +689,11 @@ class Ruleset(models.Model):
     def __unicode__(self):
         return self.name
 
+    def _json_errors(self):
+        return json.loads(self.errors)
+
+    json_errors = property(_json_errors)
+
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
         return reverse('ruleset', args=[str(self.id)])
@@ -695,6 +703,7 @@ class Ruleset(models.Model):
         for sourcesat in sourcesatversion:
             sourcesat.source.update()
         self.updated_date = timezone.now()
+        self.need_test = True
         self.save()
 
     def generate(self):
@@ -761,8 +770,27 @@ class Ruleset(models.Model):
             return testor.rules(rule_buffer, related_files = related_files)
 
     def test(self):
+        self.need_test = False
         rule_buffer = self.to_buffer()
-        return self.test_rule_buffer(rule_buffer)
+        result = self.test_rule_buffer(rule_buffer)
+        self.validity = result['status']
+        if result.has_key('errors'):
+            self.errors = json.dumps(result['errors'])
+        else:
+            self.errors = json.dumps([])
+        self.save()
+        return result
+
+    def disable_rules(self, rules):
+        self.suppressed_rules.add(rules)
+        self.need_test = True
+        self.save()
+
+    def enable_rules(self, rules):
+        self.suppressed_rules.remove(rules)
+        self.need_test = True
+        self.save()
+        
 
 def dependencies_check(obj):
     if obj == Source:

@@ -13,7 +13,13 @@
 {% if ruleset.updated_date %}
        <li><span class="type">Updated:</span> {{ ruleset.updated_date }}</li>
 {% endif %}
-       <li><span class="type">Validity:</span> <span id="ruleset_status_menu">Checking</span></li>
+       <li><span class="type">Validity:</span> <span id="ruleset_status_menu">
+      {% if ruleset.need_test %}
+       Checking
+       {% else %}
+        {{ ruleset.validity }}
+       {% endif %}
+       </span></li>
 </ul>
 {% if request.user.is_staff %}
 <div class="panel-heading">
@@ -130,6 +136,17 @@ Updated: {{ cdiff.stats.updated }}
 <div class="col-md-12">
 <h2 class="title">Ruleset has errors</h2>
 <div id="ruleset_status"></div>
+{% if not ruleset.need_test and ruleset.errors %}
+    <ul>
+    {% for error in ruleset.json_errors %}
+        {% if error.sid %}
+            <li><span class="text-danger"><strong>{{ error.error }}</strong></span>: <a href="/rules/rule/{{ error.sid }}"><span>{{ error.message }}</span></a></li>
+        {% else %}
+            <li><span class="text-danger"><strong>{{ error.error }}</strong></span>: <span>{{ error.message }}</span></li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+{% endif %}
 </div>
 </div>
 </div> <!-- container -->
@@ -167,9 +184,15 @@ function test_ruleset(ruleset_pk)
     });
 }
 
+{% if ruleset.need_test %}
 $( 'document' ).ready(function() {
     test_ruleset({{ ruleset.pk }})
 });
+{% else %}
+{% if ruleset.errors.length %}
+    $("#ruleset_status_row").show();
+{% endif %}
+{% endif %}
 </script>
 {% endif %}
 
