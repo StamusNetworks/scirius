@@ -199,7 +199,6 @@ class Source(models.Model):
         f.seek(0)
         # extract file
         tfile = tarfile.open(fileobj=f)
-        # FIXME This test is only for rules archive
         dir_list = []
         for member in tfile.getmembers():
             # only file and dir are allowed
@@ -227,7 +226,6 @@ class Source(models.Model):
         # Get categories
         self.get_categories(tfile)
 
-    # FIXME we need a factorization here with handle_rules_file
     def handle_other_file(self, f):
         self.updated_date = timezone.now()
         self.first_run = False
@@ -343,7 +341,6 @@ class Source(models.Model):
     def diff(self):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         if not os.path.isdir(source_git_dir):
-            # FIXME exit clean here
             raise IOError("You have to update source first")
         repo = git.Repo(source_git_dir)
         hcommit = repo.head.commit
