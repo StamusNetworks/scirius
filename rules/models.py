@@ -337,6 +337,7 @@ class Source(models.Model):
             self.create_update()
         for rule in self.updated_rules["deleted"]:
             rule.delete()
+        self.needs_test()
 
     def diff(self):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
@@ -402,6 +403,13 @@ class Source(models.Model):
             self.handle_rules_file(dest)
         elif self.datatype == 'other':
             self.handle_other_file(dest)
+
+    def needs_test(self):
+        sourceatversion = SourceAtVersion.objects.get(source = self, version = 'HEAD')
+        rulesets = Ruleset.objects.all()
+        for ruleset in rulesets:
+            if sourceatversion in ruleset.sources.all():
+                ruleset.needs_test()
 
 class SourceAtVersion(models.Model):
     source = models.ForeignKey(Source)
@@ -781,14 +789,15 @@ class Ruleset(models.Model):
 
     def disable_rules(self, rules):
         self.suppressed_rules.add(rules)
-        self.need_test = True
-        self.save()
+        self.needs_test()
 
     def enable_rules(self, rules):
         self.suppressed_rules.remove(rules)
+        self.needs_test()
+    
+    def needs_test(self):
         self.need_test = True
         self.save()
-        
 
 def dependencies_check(obj):
     if obj == Source:
