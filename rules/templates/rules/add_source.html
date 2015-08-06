@@ -135,7 +135,7 @@ function update_activate_source(src_pk, rulesets, ruleset_list)
 		test_source(src_pk, rulesets, ruleset_list);
             } else {
                 $('#source_progress').addClass("progress-bar-danger");
-                $('#source_progress').text("Could not update source.");
+                $('#source_progress').text("Could not test source.");
                 $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Error during source update: ' + data['errors'] + '</p>');
 
             }
