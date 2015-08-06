@@ -87,9 +87,10 @@ function test_source(src_pk, rulesets, ruleset_list)
             if (data['status'] == true) { 
                 $("#init_details").append('<p class="text-success"> <span class="glyphicon glyphicon-ok"></span></span> Source is valid</p>');
                 $('#source_progress').width("80%");
-                if (rulesets) {
-                    activate_ruleset_from(src_pk, rulesets, ruleset_list, rulesets.length)
+                if (! rulesets) {
+                    rulesets = []
                 }
+                activate_ruleset_from(src_pk, rulesets, ruleset_list, rulesets.length)
             } else {
                 $('#source_progress').addClass("progress-bar-danger");
                 $('#source_progress').text("Source has errors.");
