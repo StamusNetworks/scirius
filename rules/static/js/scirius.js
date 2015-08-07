@@ -201,7 +201,7 @@ function draw_stats_timeline(from_date, value, tdiv, speed, hosts) {
                                 chart.forceY([0, 1])
 
                                 var end_interval = new Date().getTime();
-                                chart.forceX([from_date, from_date + 1]);
+                                chart.forceX([from_date, end_interval]);
                                 var sdata = []
                                 gdata = []
                                 var starti = 0;
