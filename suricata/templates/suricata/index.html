@@ -326,7 +326,7 @@ function differentiate_suppressed() {
   <div class="col-md-6">
 <div class="row">
   <div class="col-md-12">
-     <h2>Flow memory usage (last {{ date }})
+     <h2>TCP reassembly memory usage (last {{ date }})
      <span class="pull-right">
      <a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
      <span class="glyphicon glyphicon-cog"> </span>
@@ -344,15 +344,15 @@ function differentiate_suppressed() {
 </div> <!-- row -->
 <div class="row">
 <div class="col-md-12">
-<div id="flow_memuse">
+<div id="tcp_reassembly_memuse">
 <span>Fetching data...</span>
 <svg style="width:100%;height:300px">
 </svg>
 </div>
 </div> <!-- col -->
 </div> <!-- row -->
-
 </div>
+
 </div>
 
 <div class="row">
@@ -421,6 +421,40 @@ function differentiate_suppressed() {
 </div>
 </div>
 
+<div class="row">
+
+  <div class="col-md-6">
+<div class="row">
+  <div class="col-md-12">
+     <h2>Flow memory usage (last {{ date }})
+     <span class="pull-right">
+     <a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+     <span class="glyphicon glyphicon-cog"> </span>
+     </a>
+     <ul class="dropdown-menu" id="display_menu">
+        <li><a href="?duration=1">Last 1h</a></li>
+        <li><a href="?duration=6">Last 6h</a></li>
+        <li><a href="?duration=24">Last 24h</a></li>
+        <li><a href="?duration=48">Last 2d</a></li>
+        <li><a href="?duration=168">Last 7d</a></li>
+     </ul>
+     </span>
+     </h2>
+  </div>
+</div> <!-- row -->
+<div class="row">
+<div class="col-md-12">
+<div id="flow_memuse">
+<span>Fetching data...</span>
+<svg style="width:100%;height:300px">
+</svg>
+</div>
+</div> <!-- col -->
+</div> <!-- row -->
+
+</div>
+</div>
+
 </div> <!-- container -->
 
 </div> <!-- tabpanel -->
@@ -472,6 +506,7 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     if (String(e.target).match('#memory')) {
         draw_stats_timeline({{ from_date }}, 'stats.flow.memuse', '#flow_memuse', 0, [ '{{ suricata.name }}']);
         draw_stats_timeline({{ from_date }}, 'stats.tcp.memuse', '#tcp_memuse', 0, [ '{{ suricata.name }}'] );
+        draw_stats_timeline({{ from_date }}, 'stats.tcp.reassembly_memuse', '#tcp_reassembly_memuse', 0, [ '{{ suricata.name }}'] );
         draw_stats_timeline({{ from_date }}, 'stats.http.memuse', '#http_memuse', 0, [ '{{ suricata.name }}']);
         draw_stats_timeline({{ from_date }}, 'stats.dns.memuse', '#dns_memuse', 0, [ '{{ suricata.name }}']);
     }
