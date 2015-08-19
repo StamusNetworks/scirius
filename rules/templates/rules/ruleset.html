@@ -197,7 +197,7 @@ $( 'document' ).ready(function() {
     test_ruleset({{ ruleset.pk }})
 });
 {% else %}
-{% if ruleset.errors|length %}
+{% if ruleset.errors|length > 2 %}
     $("#ruleset_status_row").show();
 {% endif %}
 {% endif %}
