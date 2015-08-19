@@ -565,3 +565,7 @@ function draw_influxdb_timeline(time_range, request, cssid) {
         });
 }
 
+function fadeChange(elt, text)
+{
+   elt.fadeOut("fast", function() { elt.text(text); elt.fadeIn(); });
+}

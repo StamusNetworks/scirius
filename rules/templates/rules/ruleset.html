@@ -166,11 +166,13 @@ function test_ruleset(ruleset_pk)
     $.ajax({
        url: tgturl,
           success: function(data) {
-            $("#ruleset_rules_count").text(data['rules_count']);
+            if (data['rules_count'] != {{ ruleset.rules_count }}) {
+                fadeChange($("#ruleset_rules_count"), data['rules_count']);
+            }
             if (data['status'] == true) { 
-                $("#ruleset_status_menu").text("OK");
+                fadeChange($("#ruleset_status_menu"), "True");
             } else {
-                $("#ruleset_status_menu").text("Has errors");
+                fadeChange($("#ruleset_status_menu"), "False");
                 error_content = ""
                 for (i = 0; i < data['errors'].length; i++) {
                     if (data['errors'][i]['sid']) {
@@ -180,13 +182,13 @@ function test_ruleset(ruleset_pk)
                     }
                 }
                 $("#ruleset_status").append('<ul>' + error_content + '</ul>');
-                $("#ruleset_status_row").show();
+                $("#ruleset_status_row").fadeIn();
             }
           },
 	  error: function(data) {
              $("#ruleset_status").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Unable to check ruleset validity</p>');
-             $("#ruleset_status_row").show();
-             $("#ruleset_status_menu").text("Unknown");
+             $("#ruleset_status_row").fadeIn();
+             fadeChange($("#ruleset_status_menu"), "Unknown");
 	  },
       timeout: 120 * 1000
     });
