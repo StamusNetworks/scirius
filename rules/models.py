@@ -637,14 +637,14 @@ class Rule(models.Model):
         enable_rules = self.get_flowbits_group()
         if not enable_rules:
             enable_rules |= {self}
-        ruleset.enable_rules(*enable_rules)
+        ruleset.enable_rules(enable_rules)
         return
 
     def disable(self, ruleset):
         disable_rules = self.get_flowbits_group()
         if not disable_rules:
             disable_rules |= {self}
-        ruleset.disable_rules(*disable_rules)
+        ruleset.disable_rules(disable_rules)
         return
 
     def test(self, ruleset):
@@ -791,11 +791,11 @@ class Ruleset(models.Model):
         return result
 
     def disable_rules(self, rules):
-        self.suppressed_rules.add(rules)
+        self.suppressed_rules.add(*rules)
         self.needs_test()
 
     def enable_rules(self, rules):
-        self.suppressed_rules.remove(rules)
+        self.suppressed_rules.remove(*rules)
         self.needs_test()
     
     def needs_test(self):
