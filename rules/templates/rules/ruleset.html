@@ -20,6 +20,13 @@
         {{ ruleset.validity }}
        {% endif %}
        </span></li>
+       <li><span class="type">Rules count:</span> <span id="ruleset_rules_count">
+       {% if ruleset.need_test %}
+       Counting
+       {% else %}
+        {{ ruleset.rules_count }}
+       {% endif %}
+       </span></li>
 </ul>
 {% if request.user.is_staff %}
 <div class="panel-heading">
@@ -159,6 +166,7 @@ function test_ruleset(ruleset_pk)
     $.ajax({
        url: tgturl,
           success: function(data) {
+            $("#ruleset_rules_count").text(data['rules_count']);
             if (data['status'] == true) { 
                 $("#ruleset_status_menu").text("OK");
             } else {
