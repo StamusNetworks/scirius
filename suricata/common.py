@@ -178,8 +178,10 @@ config classification: default-login-attempt,Attempt to login by a default usern
         # write the rule file in temp dir
         rule_file = os.path.join(tmpdir, "file.rules")
         rf = open(rule_file, 'w')
-        # write the config file in temp dir
-        rf.write(rule_buffer)
+        try:
+            rf.write(rule_buffer)
+        except UnicodeEncodeError:
+            rf.write(rule_buffer.encode('utf-8'))
         rf.close()
 
         if not reference_config:
