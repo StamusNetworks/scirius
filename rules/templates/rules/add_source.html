@@ -166,9 +166,11 @@ $( 'document' ).ready(function() {
 function display_field(method) {
     if ($( this ).find("option:selected").text() == "HTTP URL") {
         $("#id_uri").parents(".form-group").show(duration=200);
+        $("#id_authkey").parents(".form-group").show(duration=200);
         $("#id_file").parents(".form-group").hide(duration=200);
     } else {
         $("#id_uri").parents(".form-group").hide(duration=200);
+        $("#id_authkey").parents(".form-group").hide(duration=200);
         $("#id_file").parents(".form-group").show(duration=200);
     }
 }
@@ -184,6 +186,7 @@ function display_warning(method) {
 function hide_fields() {
     $("#id_method").change(display_field);
     $("#id_uri").parents(".form-group").hide();
+    $("#id_authkey").parents(".form-group").hide();
     $("#id_file").parents(".form-group").hide();
     $("#name_warning").hide();
     $("#id_method").change(display_field);
@@ -194,8 +197,10 @@ function select_fields() {
     if ($("#id_method").find("option:selected").text() == "HTTP URL") {
         $("#id_file").parents(".form-group").hide();
         $("#id_uri").parents(".form-group").show();
+        $("#id_authkey").parents(".form-group").show();
     } else {
         $("#id_uri").parents(".form-group").hide();
+        $("#id_authkey").parents(".form-group").hide();
         $("#id_file").parents(".form-group").show();
     }
     if ($("#id_datatype").find("option:selected").text() == "Other content") {

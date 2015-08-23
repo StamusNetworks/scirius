@@ -89,6 +89,7 @@ class Source(models.Model):
     method = models.CharField(max_length=10, choices=FETCH_METHOD)
     datatype = models.CharField(max_length=10, choices=CONTENT_TYPE)
     uri = models.CharField(max_length=400, blank = True, null = True)
+    authkey = models.CharField(max_length=400, blank = True, null = True)
 
     editable = True
     # git repo where we store the physical thing
@@ -374,11 +375,15 @@ class Source(models.Model):
 
     def update_ruleset_http(self, f):
         proxy_params = get_system_settings().get_proxy_params()
+        if self.authkey:
+            hdrs = { 'Authorization': self.authkey }
+        else:
+            hdrs = None
         try:
             if proxy_params:
-                resp = requests.get(self.uri, proxies = proxy_params)
+                resp = requests.get(self.uri, proxies = proxy_params, headers = hdrs)
             else:
-                resp = requests.get(self.uri)
+                resp = requests.get(self.uri, headers = hdrs)
             resp.raise_for_status()
         except requests.exceptions.ConnectionError:
             raise IOError("Connection error, please check URL")

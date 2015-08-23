@@ -468,6 +468,7 @@ def add_source(request):
             try:
                 src = Source.objects.create(name = form.cleaned_data['name'],
                         uri = form.cleaned_data['uri'],
+                        authkey = form.cleaned_data['authkey'],
                         method = form.cleaned_data['method'],
                         created_date = timezone.now(),
                         datatype = form.cleaned_data['datatype'],

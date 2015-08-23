@@ -29,7 +29,10 @@ class SystemSettingsForm(forms.ModelForm):
         exclude = []
 
 class SourceForm(forms.ModelForm):
-    file  = forms.FileField(required = False)
+    file = forms.FileField(required = False)
+    authkey = forms.CharField(max_length=100,
+                              label = "Optional authorization key",
+                              required = False)
     class Meta:
         model = Source
         exclude = ['created_date', 'updated_date']
