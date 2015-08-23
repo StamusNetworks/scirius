@@ -273,7 +273,10 @@ def rule(request, rule_id, key = 'pk'):
     for ref in re.findall("reference:(\w+),(\S+);", rule.content):
         refer = Reference(ref[0], ref[1])
         if refer.key == 'url':
-            refer.url = "http://" + refer.value
+            if not refer.value.startswith("http"):
+                refer.url = "http://" + refer.value
+            else:
+                refer.url = refer.value
         elif refer.key == 'cve':
             refer.url = "http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-" + refer.value
             refer.key = refer.key.upper()
