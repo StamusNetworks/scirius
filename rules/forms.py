@@ -39,6 +39,9 @@ class SourceForm(forms.ModelForm):
 
 class AddSourceForm(forms.ModelForm):
     file  = forms.FileField(required = False)
+    authkey = forms.CharField(max_length=100,
+                              label = "Optional authorization key",
+                              required = False)
     ruleset_list =  Ruleset.objects.all()
     if len(ruleset_list):
         rulesets = forms.ModelMultipleChoiceField(
