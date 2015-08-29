@@ -637,12 +637,12 @@ def edit_ruleset(request, ruleset_id):
             for cat in request.POST.getlist('category_selection'):
                 category = get_object_or_404(Category, pk=cat)
                 ruleset.categories.add(category)
-            ruleset.save()
+            ruleset.needs_test()
         elif request.POST.has_key('rules'):
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
                 rule_object.enable(ruleset)
-            ruleset.save()
+            ruleset.needs_test()
         elif request.POST.has_key('sources'):
             # clean ruleset
             ruleset.sources.clear()
@@ -650,7 +650,7 @@ def edit_ruleset(request, ruleset_id):
             for src in request.POST.getlist('source_selection'):
                 source = get_object_or_404(SourceAtVersion, pk=src)
                 ruleset.sources.add(source)
-            ruleset.save()
+            ruleset.needs_test()
         return redirect(ruleset)
     else:
         cats_selection = []
