@@ -27,6 +27,8 @@ import json
 import StringIO
 import re
 
+from django.conf import settings
+
 class Info():
     def status(self):
         suri_running = False
@@ -215,7 +217,7 @@ config classification: default-login-attempt,Attempt to login by a default usern
             rf.write(related_files[rfile])
             rf.close()
             
-        suri_cmd = ['suricata', '-T', '-l', tmpdir, '-S', rule_file, '-c', config_file]
+        suri_cmd = [settings.SURICATA_BINARY, '-T', '-l', tmpdir, '-S', rule_file, '-c', config_file]
         # start suricata in test mode
         suriprocess = subprocess.Popen(suri_cmd , stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (outdata, errdata) = suriprocess.communicate()

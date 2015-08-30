@@ -104,6 +104,9 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
 STATIC_URL = '/static/'
 
+# Suricata binary
+SURICATA_BINARY = "suricata"
+
 # Elastic search
 
 USE_ELASTICSEARCH = True
