@@ -664,6 +664,15 @@ class Rule(models.Model):
     def test(self, ruleset):
         return ruleset.test_rule_buffer(self.content, single = True)
 
+    def toggle_availability(self):
+        toggle_rules = self.get_flowbits_group()
+        self.category.source.needs_test()
+        if not toggle_rules:
+            toggle_rules |= {self}
+        for rule in toggle_rules:
+            rule.state = not rule.state
+            rule.save()
+
 # we should use django reversion to keep track of this one
 # even if fixing HEAD may be complicated
 class Ruleset(models.Model):
