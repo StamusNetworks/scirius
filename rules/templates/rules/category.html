@@ -30,10 +30,18 @@
 {% render_table rules %}
   </div>
   <div class="col-md-6">
+    <div class="container-fluid">
+        <div class="row">
 <h2 class="title">Status in rulesets</h2>
 
 {% load render_table from django_tables2 %}
 {% render_table rulesets %}
+        </div>
+<h2 class="title">Commented rules</h2>
+        <div class="row">
+{% render_table commented_rules %}
+        </div>
+    </div>
   </div>
  </div>
 </div>
