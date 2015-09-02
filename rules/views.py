@@ -363,6 +363,17 @@ def delete_alerts(request, rule_id):
         complete_context(request, context)
         return scirius_render(request, 'rules/delete_alerts.html', context)
 
+def toggle_availability(request, rule_id):
+    rule_object = get_object_or_404(Rule, sid=rule_id)
+
+    if not request.user.is_staff:
+        context = { 'object': rule, 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/rule.html', context)
+
+    rule_object.toggle_availability()
+
+    return redirect(rule_object)
+
 def suppress_category(request, cat_id, operation = 'suppress'):
     cat_object = get_object_or_404(Category, id=cat_id)
 

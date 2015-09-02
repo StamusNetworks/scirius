@@ -8,6 +8,10 @@
 <ul>
        <li><span class="type">Msg:</span> {{ rule.msg }}</li>
        <li><span class="type">Revision:</span> {{ rule.rev }}</li>
+ {% if not rule.state_in_source %}
+       <li><span class="type">State in source:</span> commented</li>
+ {% endif %}
+       <li><span class="type">Available:</span> {{ rule.state }}</li>
 </ul>
 
 {% if request.user.is_staff %}
@@ -15,12 +19,19 @@
 <h2 class="panel-title">Action</h2>
 </div>
 <ul class="action">
+{% if rule.state %}
 <li>
 <a href="/rules/rule/{{ rule.sid }}/suppress">Disable rule</a>
 </li>
 <li>
 <a href="/rules/rule/{{ rule.sid }}/enable">Enable rule</a>
 </li>
+{% endif %}
+{% if not rule.state_in_source %}
+<li>
+<a href="/rules/rule/{{ rule.sid }}/availability">Toggle availability</a>
+</li>
+{% endif %}
 {% if elasticsearch %}
 <li>
 <a href="/rules/rule/{{ rule.sid }}/delete">Delete generated alerts</a>
