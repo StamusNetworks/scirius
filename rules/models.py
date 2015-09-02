@@ -548,9 +548,15 @@ class Category(models.Model):
         # to parse them all. There should be no database query for ruleset
         # that are not using them. If there is some, then do it only in update.
         with transaction.atomic():
+            state = True
             for line in rfile.readlines():
                 if line.startswith('#'):
-                    continue
+                    # chteck if it is a commented signature
+                    if "->" in line and "sid" in line and ")" in line:
+                        line = line.lstrip("# ")
+                        state = False
+                    else:
+                        continue
                 match = getsid.search(line)
                 if not match:
                     continue
@@ -591,7 +597,8 @@ class Category(models.Model):
                     if rev == None:
                         rev = 0
                     rule = Rule(category = self, sid = sid,
-                                        rev = rev, content = line, msg = msg)
+                                        rev = rev, content = line, msg = msg,
+                                        state_in_source = state, state = state)
                     if not source.init_flowbits:
                         flowbits = self.parse_rule_flowbit(source, line)
                     rule.flowbits = flowbits
@@ -619,6 +626,7 @@ class Rule(models.Model):
     category = models.ForeignKey(Category)
     msg = models.CharField(max_length=1000)
     state = models.BooleanField(default=True)
+    state_in_source = models.BooleanField(default=True)
     rev = models.IntegerField(default=0)
     content = models.CharField(max_length=10000)
     flowbits = models.ManyToManyField(Flowbit)
