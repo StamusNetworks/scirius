@@ -228,7 +228,15 @@ def elasticsearch(request):
         elif query == 'stats':
             data = es_get_stats()
         elif query == 'indices':
-            data = es_get_indices_stats()
+            if request.is_ajax():
+                indices = ESIndexessTable(es_get_indices())
+                tables.RequestConfig(request).configure(indices)
+                context = { 'table': indices }
+                return scirius_render(request, 'rules/table.html', context)
+            else:
+                context = {}
+                complete_context(request, context)
+                return scirius_render(request, 'rules/elasticsearch.html', context)
         elif query == 'rules_per_category':
             from_date = request.GET.get('from_date', None)
             cshosts = request.GET.get('hosts', None)

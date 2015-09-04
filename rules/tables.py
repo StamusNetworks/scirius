@@ -119,3 +119,10 @@ class RuleStatsTable(tables.Table):
     count = tables.Column()
     class Meta(DefaultMeta):
         fields = ("host", "count")
+
+class ESIndexessTable(tables.Table):
+    name = tables.Column()
+    count = tables.Column()
+    deleted = tables.Column()
+    class Meta(DefaultMeta):
+        fields = ("name", "count", "deleted")

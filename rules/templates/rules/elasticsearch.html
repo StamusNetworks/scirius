@@ -79,6 +79,12 @@
 </div> <!-- col -->
 </div> <!-- row -->
 
+<div class="row">
+<div class="col-md-12">
+<div id="indices_stats">Fetching data</div>
+</div>
+</div>
+
 {% if logstash_stats %}
 <div class="row">
 <div class="col-md-12">
@@ -215,6 +221,28 @@ $.ajax(
 }
 
 $( 'document' ).ready(get_es_detailed_health());
+
+function get_es_indices_stats() {
+    $.ajax(
+    {
+            type:"GET",
+            url:window.location.href,
+            success: function(data) {
+                    $("#indices_stats").empty();
+                    $("#indices_stats").append(data);
+            },
+            error: function(data) {
+                    $("#indices_stats").text("Could not fetch data");
+            },
+            complete: function() {
+                setTimeout(get_es_indices_stats, 30000);
+            },
+            timeout: 15000,
+    }
+    );
+}
+
+$( 'document' ).ready(get_es_indices_stats());
 {% if logstash_stats %}
 $( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve.total.rate_1m', '#logstash', 0, null));
 {% endif %}
