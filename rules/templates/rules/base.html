@@ -162,11 +162,10 @@ function load_dashboards() {
                 url:"/rules/es?query=dashboards",
                 success: function(data) {
                 if (!data) {
-                        $("#dashboards").text("Failed to get data");
-                        $("#error").text("Unable to get data from Elasticsearch");
-                        $("#error").parent().toggle();
-                }
-                if (data) {
+                        $("#dashboards").empty();
+                        $("#dashboards").append("<ul><li>No dashboards</li><ul>");
+                        return;
+                } else {
                         $("#dashboards").empty();
                         var dh = "<ul>";
                         for (var key in data) {
@@ -177,9 +176,7 @@ function load_dashboards() {
                                 {% endif %}
                         }
                         $("#dashboards").append(dh);
-                } else {
-                        $("#dashboards").text("Failed to get data");
-		}
+                }
                 },
                 error: function(data) {
                         $("#dashboards").empty();
