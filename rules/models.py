@@ -761,6 +761,7 @@ class Ruleset(models.Model):
         self.sources = orig_sources
         self.categories = orig_categories
         self.suppressed_rules = orig_supp_rules
+        self.save()
         return self
 
     def export_files(self, directory):
