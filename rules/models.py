@@ -410,6 +410,14 @@ class Source(models.Model):
         elif self.datatype == 'other':
             self.handle_other_file(dest)
 
+    def new_uploaded_file(self, f, firstimport):
+        self.handle_uploaded_file(f)
+        if not self.datatype == 'other' and not firstimport:
+            self.create_update()
+        for rule in self.updated_rules["deleted"]:
+            rule.delete()
+        self.needs_test()
+
     def needs_test(self):
         sourceatversion = SourceAtVersion.objects.get(source = self, version = 'HEAD')
         rulesets = Ruleset.objects.all()

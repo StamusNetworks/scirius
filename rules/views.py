@@ -531,9 +531,7 @@ def edit_source(request, source_id):
                 firstimport = False
                 if not categories:
                     firstimport = True
-                source.handle_uploaded_file(request.FILES['file'])
-                if not source.datatype == 'other' and not firstimport:
-                    source.create_update()
+                source.new_uploaded_file(request.FILES['file'], firstimport)
             form.save()
             return redirect(source)
         except ValueError:
