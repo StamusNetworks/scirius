@@ -521,6 +521,15 @@ def es_get_stats():
 def es_get_indices_stats():
     return es_get_json(INDICES_STATS_URL)
 
+def es_get_indices():
+    indices = es_get_json(INDICES_STATS_URL)
+    indexes_array = []
+    for index in indices['indices']:
+        docs = indices['indices'][index]['total']['docs']
+        docs['name'] = index
+        indexes_array.append(docs)
+    return indexes_array
+
 def compact_tree(tree):
     cdata = []
     for category in tree:
