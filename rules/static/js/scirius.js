@@ -68,16 +68,17 @@ function draw_timeline(from_date, hosts, filter) {
                         url:esurl,
                         success: function(data) {
                         if (data == null) {
-                            $("#timeline span").text("Unable to get data.");
+                            $("#timeline p").text("Unable to get data.");
                             $("#error").text("Unable to get data from Elasticsearch");
                             $("#error").parent().toggle();
                             return null;
                         }
                         if (!data.hasOwnProperty("from_date")) {
-                            $("#timeline span").text("No data for period.");
+                            $("#timeline p").text("No data for period.");
+                            $("#timeline p").addClass("text-center");
                             return null;
                         }
-			            $("#timeline span").hide();
+			            $("#timeline p").hide();
                             nv.addGraph(function() {
 		            /* starting from 4 hosts multibar is unreadable */
                             if (hosts.length > 3) {

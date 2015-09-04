@@ -2,5 +2,5 @@
     {% load render_table from django_tables2 %}
     {% render_table table %}
 {% else %}
-    No data found.
+    <p class="text-center">No data for period.</p>
 {% endif %}
