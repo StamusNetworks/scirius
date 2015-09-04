@@ -118,7 +118,7 @@ class Source(models.Model):
             self.init_flowbits = False
 
     def delete(self):
-        seld.needs_test()
+        self.needs_test()
         # delete git tree
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         try:
