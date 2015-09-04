@@ -5,11 +5,16 @@
 <div class="container-fluid">
 {% if elasticsearch %}
 
-<div class="row">
-<div class="col-md-12">
-<h2>Elasticsearch cluster info</h2>
-</div>
-</div>
+<div role="tabpanel">
+
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" {% if not request.GET.query %} class="active" {% endif %}><a href="#cluster" aria-controls="cluster" role="tab" data-toggle="tab">Elasticsearch cluster info</a></li>
+    <li role="presentation" {% if request.GET.query %} class="active" {% endif %}><a href="#indices" aria-controls="indices" role="tab" data-toggle="tab">Elasticsearch indices stats</a></li>
+  </ul>
+
+  <div class="tab-content">
+  <div role="tabpanel" class="tab-pane fade in {% if not request.GET.query %} active {% endif %}" id="cluster">
 
 <div class="row">
 <div class="col-md-4">
@@ -79,12 +84,6 @@
 </div> <!-- col -->
 </div> <!-- row -->
 
-<div class="row">
-<div class="col-md-12">
-<div id="indices_stats">Fetching data</div>
-</div>
-</div>
-
 {% if logstash_stats %}
 <div class="row">
 <div class="col-md-12">
@@ -115,6 +114,18 @@
 </div> <!-- col -->
 </div> <!-- row -->
 {% endif %}
+
+</div>
+  <div role="tabpanel" class="tab-pane fade in {% if request.GET.query %} active {% endif %}" id="indices">
+<div class="row">
+<div class="col-md-12">
+<div id="indices_stats">Fetching data</div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
 
 <script>
 
@@ -223,10 +234,16 @@ $.ajax(
 $( 'document' ).ready(get_es_detailed_health());
 
 function get_es_indices_stats() {
+
+    if (window.location.href.indexOf("query=indices") >= 0) {
+        indices_url = window.location.href;
+    } else {
+        indices_url = window.location.href + "?query=indices";
+    }
     $.ajax(
     {
             type:"GET",
-            url:window.location.href,
+            url:indices_url,
             success: function(data) {
                     $("#indices_stats").empty();
                     $("#indices_stats").append(data);
