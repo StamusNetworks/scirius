@@ -95,8 +95,16 @@ function test_source(src_pk, rulesets, ruleset_list)
                 $('#source_progress').addClass("progress-bar-danger");
                 $('#source_progress').text("Source has errors.");
 		var error_content = "";
-                for (i = 0; i < data['errors'].length; i++) {
-                        error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
+                if (data['errors'][0] != undefined) {
+                    for (i = 0; i < data['errors'].length; i++) {
+                            error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
+                    }
+                } else {
+                    if (data['errors']['message'] != undefined) {
+                        error_content = data['errors']['message'];
+                    } else {
+                        error_content = "Unknown error";
+                    }
                 }
                 $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Source test failure: <ul>' + error_content + '</ul></p>');
 		var error_actions = '<button class="btn btn-primary" type="submit"><a href="{{ source.get_absolute_url }}delete"> <span class="glyphicon glyphicon-trash"> Delete source</span></a></button>'

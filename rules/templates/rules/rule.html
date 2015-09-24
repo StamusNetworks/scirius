@@ -196,9 +196,17 @@ function rule_validity_check() {
                         } else {
                             $(this).find("td.validity").empty()
                             //$(this).find("td.validity").append('<div>Invalid</div>');
-                            error_content = ""
-                            for (i = 0; i < data['errors'].length; i++) {
+                            error_content = "";
+                            if (data['errors'][0] != undefined) {
+                                for (i = 0; i < data['errors'].length; i++) {
                                     error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
+                                }
+                            } else {
+                                if (data['errors']['message'] != undefined) {
+                                    error_content = data['errors']['message'];
+                                } else {
+                                    error_content = "Unknown error";
+                                }
                             }
                             $(this).find("td.validity").append('<div id="errors"><ul>' + error_content + '</ul></div>');
                             /* $(this).find("td.validity").click(function( event ) {
