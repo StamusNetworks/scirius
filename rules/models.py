@@ -34,8 +34,6 @@ import git
 import shutil
 import json
 
-Probe = __import__(settings.RULESET_MIDDLEWARE)
-
 # Create your models here.
 
 class SystemSettings(models.Model):
@@ -453,6 +451,7 @@ class SourceAtVersion(models.Model):
 
 
     def test_rule_buffer(self, rule_buffer, single = False):
+        Probe = __import__(settings.RULESET_MIDDLEWARE)
         testor = Probe.common.Test()
         tmpdir = tempfile.mkdtemp()
         self.export_files(tmpdir)
@@ -794,6 +793,7 @@ class Ruleset(models.Model):
         return file_content
 
     def test_rule_buffer(self, rule_buffer, single = False):
+        Probe = __import__(settings.RULESET_MIDDLEWARE)
         testor = Probe.common.Test()
         tmpdir = tempfile.mkdtemp()
         self.export_files(tmpdir)
