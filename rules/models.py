@@ -555,10 +555,10 @@ class Category(models.Model):
         # to parse them all. There should be no database query for ruleset
         # that are not using them. If there is some, then do it only in update.
         with transaction.atomic():
-            state = True
             for line in rfile.readlines():
+                state = True
                 if line.startswith('#'):
-                    # chteck if it is a commented signature
+                    # check if it is a commented signature
                     if "->" in line and "sid" in line and ")" in line:
                         line = line.lstrip("# ")
                         state = False
