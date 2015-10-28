@@ -166,7 +166,7 @@ function test_ruleset(ruleset_pk)
     $.ajax({
        url: tgturl,
           success: function(data) {
-            if (data['rules_count'] != {{ ruleset.rules_count }}) {
+            if ((data['rules_count'] != {{ ruleset.rules_count }}) || {{ ruleset.rules_count }} == 0) {
                 fadeChange($("#ruleset_rules_count"), data['rules_count']);
             }
             if (data['status'] == true) { 
