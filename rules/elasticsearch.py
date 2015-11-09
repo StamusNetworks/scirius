@@ -78,6 +78,48 @@ ALERT_ID_QUERY = """
 }
 """
 
+if settings.ELASTICSEARCH_2X:
+    ALERT_ID_QUERY = """
+{
+  "size": 0,
+  "aggs": {
+    "alert": {
+      "terms": {
+        "field": "alert.signature_id",
+        "size": {{ alerts_number }},
+        "order": {
+          "_count": "desc"
+        }
+      }
+    }
+  },
+  "query": {
+    "filtered": {
+      "query": {
+        "query_string": {
+          "query": "event_type:alert AND host.raw:{{ appliance_hostname }} {{ query_filter|safe }}",
+          "analyze_wildcard": false
+        }
+      },
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                 "@timestamp": {
+                    "from": {{ from_date }},
+                    "to": "now"
+                 }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+    """
+
 SID_BY_HOST_QUERY = """
 {
   "facets": {
@@ -468,7 +510,10 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
     data = json.loads(data)
     # total number of results
     try:
-        data = data['facets']['table']['terms']
+        if settings.ELASTICSEARCH_2X:
+            data = data['aggregations']['alert']['buckets']
+        else:
+            data = data['facets']['table']['terms']
     except:
         rules = ExtendedRuleTable([])
         tables.RequestConfig(request).configure(rules)
@@ -477,11 +522,18 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
     if data != None:
         for elt in data:
             try:
-                rule = Rule.objects.get(sid=elt['term'])
+                if settings.ELASTICSEARCH_2X:
+                    sid=elt['key']
+                else:
+                    sid=elt['term']
+                rule = Rule.objects.get(sid=sid)
             except:
-                print "Can not find rule with sid " + str(elt['term'])
+                print "Can not find rule with sid " + str(sid)
                 continue
-            rule.hits = elt['count']
+            if settings.ELASTICSEARCH_2X:
+                rule.hits = elt['doc_count']
+            else:
+                rule.hits = elt['count']
             rules.append(rule)
         rules = ExtendedRuleTable(rules)
         tables.RequestConfig(request).configure(rules)
