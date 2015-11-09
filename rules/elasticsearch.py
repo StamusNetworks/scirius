@@ -127,6 +127,48 @@ SID_BY_HOST_QUERY = """
 }'
 """
 
+if settings.ELASTICSEARCH_2X:
+    SID_BY_HOST_QUERY = """
+{
+  "size": 0,
+  "aggs": {
+    "host": {
+      "terms": {
+        "field": "host.raw",
+        "size": {{ alerts_number }},
+        "order": {
+          "_count": "desc"
+        }
+      }
+    }
+  },
+  "query": {
+    "filtered": {
+      "query": {
+        "query_string": {
+          "query": "event_type:alert AND alert.signature_id:{{ rule_sid }}",
+          "analyze_wildcard": false
+        }
+      },
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                 "@timestamp": {
+                    "from": {{ from_date }},
+                    "to": "now"
+                 }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+    """
+
 TIMELINE_QUERY = """
 {
   "facets": {
@@ -199,7 +241,7 @@ if settings.ELASTICSEARCH_2X:
     "filtered": {
       "query": {
         "query_string": {
-          "query": "event_type:alert",
+          "query": "event_type:alert {{ query_filter|safe }}",
           "analyze_wildcard": false
         }
       },
@@ -463,13 +505,19 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
     data = json.loads(data)
     # total number of results
     try:
-        data = data['facets']['terms']['terms']
+        if settings.ELASTICSEARCH_2X:
+            data = data['aggregations']['host']['buckets']
+        else:
+            data = data['facets']['terms']['terms']
     except:
         return None
     stats = []
     if data != None:
         for elt in data:
-            hstat = {'host': elt['term'], 'count': elt['count']}
+            if settings.ELASTICSEARCH_2X:
+                hstat = {'host': elt['key'], 'count': elt['doc_count']}
+            else:
+                hstat = {'host': elt['term'], 'count': elt['count']}
             stats.append(hstat)
         stats = RuleStatsTable(stats)
         tables.RequestConfig(request).configure(stats)
