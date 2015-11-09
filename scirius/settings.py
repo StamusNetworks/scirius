@@ -116,6 +116,8 @@ ELASTICSEARCH_ADDRESS = "localhost:9200"
 ELASTICSEARCH_LOGSTASH_INDEX = "logstash-"
 # use hourly, daily to indicate the logstash index building recurrence
 ELASTICSEARCH_LOGSTASH_TIMESTAMPING = "daily"
+# use Elasticsearch 2.x
+ELASTICSEARCH_2X = False
 
 # Kibana
 USE_KIBANA = False

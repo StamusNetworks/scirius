@@ -170,6 +170,60 @@ TIMELINE_QUERY = """
 }
 """
 
+if settings.ELASTICSEARCH_2X:
+    TIMELINE_QUERY = """
+{
+  "size": 0,
+  "aggs": {
+    "date": {
+      "date_histogram": {
+        "field": "timestamp",
+        "interval": "{{ interval }}",
+        "time_zone": "Europe/Berlin",
+        "min_doc_count": 1
+      },
+      "aggs": {
+        "host": {
+          "terms": {
+            "field": "host.raw",
+            "size": 5,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    }
+  },
+  "query": {
+    "filtered": {
+      "query": {
+        "query_string": {
+          "query": "event_type:alert",
+          "analyze_wildcard": false
+        }
+      },
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "timestamp": {
+                  "gte": {{ from_date }},
+                  "lte": "now",
+                  "format": "epoch_millis"
+                }
+              }
+            }
+          ],
+          "must_not": []
+        }
+      }
+    }
+  }
+}
+    """
+
 STATS_QUERY = """
 {
   "facets": {
@@ -469,7 +523,19 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     data = json.loads(data)
     # total number of results
     try:
-        data = data['facets']
+        if settings.ELASTICSEARCH_2X:
+            data = data['aggregations']["date"]['buckets']
+            rdata = {}
+            for elt in data:
+                date = elt['key']
+                for host in elt["host"]['buckets']:
+                    if not rdata.has_key(host["key"]):
+                        rdata[host["key"]] = { 'entries': [ { "time": date, "count": host["doc_count"] } ] }
+                    else:
+                        rdata[host["key"]]['entries'].append({ "time": date, "count": host["doc_count"] })
+            data = rdata
+        else:
+            data = data['facets']
     except:
         return {}
     data['from_date'] = from_date
