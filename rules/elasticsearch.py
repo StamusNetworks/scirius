@@ -390,6 +390,56 @@ STATS_QUERY = """
 }
 """
 
+if settings.ELASTICSEARCH_2X:
+    STATS_QUERY = """
+{
+  "size": 0,
+  "aggs": {
+    "date": {
+      "date_histogram": {
+        "field": "timestamp",
+        "interval": "{{ interval }}",
+        "time_zone": "Europe/Berlin",
+        "min_doc_count": 1
+      },
+      "aggs": {
+        "stat": {
+          "avg": {
+            "field": "{{ value }}"
+          }
+        }
+      }
+    }
+  },
+  "query": {
+    "filtered": {
+      "query": {
+        "query_string": {
+          {% for host in hosts %}
+          "query": "event_type:stats AND host.raw:{{ host }}",
+          {% endfor %}
+          "analyze_wildcard": false
+        }
+      },
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                  "@timestamp": {
+                    "from": {{ from_date }},
+                    "to": "now"
+                  }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+    """
+
 RULES_PER_CATEGORY = """
 {
   "size": 0,
@@ -660,7 +710,18 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
     data = json.loads(data)
     # total number of results
     try:
-        data = data['facets']
+        if settings.ELASTICSEARCH_2X:
+            data = data['aggregations']["date"]['buckets']
+            rdata = {}
+            for elt in data:
+                date = elt['key']
+                if not rdata.has_key(hosts[0]):
+                    rdata[hosts[0]] = { 'entries': [ { "time": date, "mean": elt["stat"]["value"] } ] }
+                else:
+                    rdata[hosts[0]]['entries'].append({ "time": date, "mean": elt["stat"]["value"] })
+            data = rdata
+        else:
+            data = data['facets']
     except:
         return {}
     data['from_date'] = from_date
