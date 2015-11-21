@@ -107,7 +107,7 @@ function test_source(src_pk, rulesets, ruleset_list)
                     }
                 }
                 $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Source test failure: <ul>' + error_content + '</ul></p>');
-		var error_actions = '<button class="btn btn-primary" type="submit"><a href="{{ source.get_absolute_url }}delete"> <span class="glyphicon glyphicon-trash"> Delete source</span></a></button>'
+		var error_actions = '<a href="{{ source.get_absolute_url }}delete"><button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-trash"> Delete source</span></button></a>'
 		error_actions += ' <button class="btn btn-warning" id="continue" type="submit"> <span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></button>';
 		$("#init_details").append('<div id="error_actions">' + error_actions + '<div>');
 		$("#continue").click( function(event) {
@@ -145,8 +145,8 @@ function update_activate_source(src_pk, rulesets, ruleset_list)
                 $('#source_progress').addClass("progress-bar-danger");
                 $('#source_progress').text("Could not test source.");
                 $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Error during source update: ' + data['errors'] + '</p>');
-                var error_actions = '<button class="btn btn-primary" type="submit"><a href="{{ source.get_absolute_url }}delete"> <span class="glyphicon glyphicon-trash"> Delete source</span></a></button>'
-		        error_actions += ' <button class="btn btn-warning" id="continue" type="submit"><a href="{{ source.get_absolute_url }}"><span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></a></button>';
+                var error_actions = '<a href="{{ source.get_absolute_url }}delete"><button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-trash"> Delete source</span></button></a>'
+		        error_actions += ' <a href="{{ source.get_absolute_url }}"><button class="btn btn-warning" id="continue" type="submit"><span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></button></a>';
 		        $("#init_details").append('<div id="error_actions">' + error_actions + '<div>');
             }
           },
