@@ -414,7 +414,7 @@ def update_source(request, source_id):
 
     try:
         src.update()
-    except IOError, errors:
+    except (IOError, OSError), errors:
         if request.is_ajax():
             data = {}
             data['status'] = False
