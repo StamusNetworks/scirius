@@ -56,6 +56,8 @@ class AddSourceForm(forms.ModelForm):
 # Display choices of SourceAtVersion
 class RulesetForm(forms.Form):
     name = forms.CharField(max_length=100)
+    activate_categories = forms.BooleanField(label = "Activate all categories in sources",
+                                             initial = True, required = False)
     sourceatversion = SourceAtVersion.objects.all()
     sources = forms.ModelMultipleChoiceField(
                     sourceatversion,
@@ -66,8 +68,11 @@ class RulesetForm(forms.Form):
                     created_date = timezone.now(),
                     updated_date = timezone.now(),
                     )
-        for source in self.cleaned_data['sources']:
-            ruleset.sources.add(source)
+        for src in self.cleaned_data['sources']:
+            ruleset.sources.add(src)
+            if self.cleaned_data['activate_categories']:
+                for cat in Category.objects.filter(source = src.source):
+                    ruleset.categories.add(cat)
         return ruleset
 
 class RulesetEditForm(forms.Form):
