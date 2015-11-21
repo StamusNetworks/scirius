@@ -417,7 +417,10 @@ class Source(models.Model):
         self.needs_test()
 
     def needs_test(self):
-        sourceatversion = SourceAtVersion.objects.get(source = self, version = 'HEAD')
+        try:
+            sourceatversion = SourceAtVersion.objects.get(source = self, version = 'HEAD')
+        except:
+            return
         rulesets = Ruleset.objects.all()
         for ruleset in rulesets:
             if sourceatversion in ruleset.sources.all():
