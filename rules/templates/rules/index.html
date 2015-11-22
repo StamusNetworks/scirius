@@ -86,30 +86,6 @@ $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescap
 {% endblock %}
 
 {% block sidebar %}
-{% if suricata %}
-
-<div class="panel-heading">
-<h2 class="panel-title">Suricata {{ suricata.name }}</h2>
-</div>
-<h2></h2>
-<ul>
-       <li><span class="type">Ruleset:</span> {{ suricata.ruleset }}</li>
-       <li><span class="type">Description:</span> {{ suricata.descr }}</li>
-       <li><span class="type">Last updated:</span> {{ suricata.updated_date }}</li>
-</ul>
-
-{% if request.user.is_staff %}
-<div class="panel-heading">
-<h2 class="panel-title">Action</h2>
-</div>
-<ul class="action">
-<li>
-<a href="/suricata/update">Update</a>
-</li>
-</ul>
-{% endif %}
-
-{% else %}
 	<div class="panel-heading">
 	<h2 class="panel-title">Scirius</h2>
 	</div>
@@ -118,6 +94,4 @@ $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescap
 	  <li><span class="type">Logged in as</span> {{ request.user }}</li>
         </ul>
         </div>
-{% endif %}
-
 {% endblock %}
