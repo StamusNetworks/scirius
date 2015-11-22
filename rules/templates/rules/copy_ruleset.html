@@ -9,7 +9,7 @@
 
 {% block content %}
 {% if form %}
-<form class="form" action="/rules/ruleset/{{ object.id }}/copy" method="post">{% csrf_token %}
+<form class="form" action="{% url 'copy_ruleset' object.id %}" method="post">{% csrf_token %}
 {% bootstrap_form form %}
 <input class="btn btn-primary" type="submit" value="Submit" />
 </form>

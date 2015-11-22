@@ -61,17 +61,17 @@
         <div class="navbar-collapse collapse" id="top-menu-collapse">
                 <ul class="nav navbar-nav" id="top_menu">
 
-            <li><a id="home" href="/rules/">Home</a></li>
-			<li><a id="ruleset" href="/rules/ruleset/">Rulesets</a></li>
-			<li><a id="source" href="/rules/source/">Sources</a></li>
+            <li><a id="home" href="{% url 'rules_index' %}">Home</a></li>
+			<li><a id="ruleset" href="{% url 'rulesets' %}">Rulesets</a></li>
+			<li><a id="source" href="{% url 'sources' %}">Sources</a></li>
             		{% if generator %}
 			<li><a id="{{ generator }}" href="/{{ generator }}/">{{ generator|capfirst }}</a></li>
             		{% endif %}
 			<li>
-				<a id="about" href="/rules/about/">About</a>
+				<a id="about" href="{% url 'scirius_about' %}">About</a>
 			</li>
 		</ul>
-		<form class="navbar-form navbar-nav navbar-right"  action="/rules/search" method="post" role="search">{% csrf_token %}
+		<form class="navbar-form navbar-nav navbar-right"  action="{% url 'scirius_search' %}" method="post" role="search">{% csrf_token %}
 <div class="form-group">
 			<span class="glyphicon glyphicon-search"> <input type="text" name="search" id="id_search"/></span>
 </div>
@@ -109,7 +109,7 @@
                     <div class="panel-body">
                     <div id="suri-status" class="label label-default"><a href="/{{ generator }}/">Suricata</a></div>
 {% if elasticsearch %}
-                    <div id="health" class="label label-default"><a href="/rules/es">Elasticsearch</a></div>
+                    <div id="health" class="label label-default"><a href="{% url 'elasticsearch' %}">Elasticsearch</a></div>
 {% endif %}
                     <div id="disk-status" class="label label-default">Disk</div>
                     <div id="memory-status" class="label label-default">Memory</div>
@@ -159,7 +159,7 @@ function load_dashboards() {
     $.ajax(
         {
                 type:"GET",
-                url:"/rules/es?query=dashboards",
+                url:"{% url 'elasticsearch' %}?query=dashboards",
                 success: function(data) {
                 if (!data) {
                         $("#dashboards").empty();
@@ -203,7 +203,7 @@ function get_es_health() {
     $.ajax(
         {
                 type:"GET",
-                url:"/rules/es?query=health",
+                url:"{% url 'elasticsearch' %}?query=health",
                 success: function(data) {
                 if (!data) {
                         $("#health").removeClass("label-default");
@@ -249,7 +249,7 @@ function get_suricata_health() {
     $.ajax(
         {
                 type:"GET",
-                url:"/rules/info?query=status",
+                url:"{% url 'info' %}?query=status",
                 success: function(data) {
                 if (!data) {
                         $("#suri-status").addClass("label-danger");
@@ -279,7 +279,7 @@ function get_disk_health() {
     $.ajax(
         {
                 type:"GET",
-                url:"/rules/info?query=disk",
+                url:"{% url 'info' %}?query=disk",
                 success: function(data) {
                 if (!data) {
                         $("#disk-status").addClass("label-danger");
@@ -311,7 +311,7 @@ function get_memory_health() {
     $.ajax(
         {
                 type:"GET",
-                url:"/rules/info?query=memory",
+                url:"{% url 'info' %}?query=memory",
                 success: function(data) {
                 if (!data) {
                         $("#memory-status").addClass("label-danger");

@@ -4,7 +4,7 @@
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
-<form action="/rules/ruleset/{{ruleset.id }}/addsupprule" method="post">{% csrf_token %}
+<form action="{% url 'addsupprule' ruleset.id %}" method="post">{% csrf_token %}
 <ul class="action">
 <li>Search: <input type="text" name="search" /></li>
 </ul>
@@ -23,7 +23,7 @@ function tables2_toggle(source, name) {
 {% if rules %} 
 <h2 class="title">Rule(s)</h2>
     {% load render_table from django_tables2 %}
-<form class="form" action="/rules/ruleset/{{ruleset.id }}/addsupprule" method="post">{% csrf_token %}
+<form class="form" action="{% url 'addsupprule' ruleset.id %}" method="post">{% csrf_token %}
     {% render_table rules %}
 <input  class="btn btn-primary" type="submit" value="Add selected rules to disabled rules list" />
 </form>

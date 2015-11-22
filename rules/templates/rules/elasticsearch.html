@@ -140,7 +140,7 @@ function get_es_stats() {
 $.ajax(
 {
         type:"GET",
-        url:"/rules/es?query=stats",
+        url:"{% rules 'elasticsearch' }?query=stats",
         success: function(data) {
         if (!data) {
                 $("#es_status").removeClass("label-default");
@@ -203,7 +203,7 @@ function get_es_detailed_health() {
 $.ajax(
 {
         type:"GET",
-        url:"/rules/es?query=health",
+        url:"{% url 'elasticsearch' %}?query=health",
         success: function(data) {
         if (!data) {
                 $("#es_status").removeClass("label-default");

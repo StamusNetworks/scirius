@@ -45,7 +45,7 @@
 <div class="row">
 <h2 class="title">Are you sure you want to delete all stored alerts for {{ object.pk }}?</h2>
 
-<form class="form" action=/rules/rule/{{ object.pk }}/delete method="post">{% csrf_token %}
+<form class="form" action="{% url 'delete_alerts' object.pk %}" method="post">{% csrf_token %}
 <button class="btn btn-primary" type="submit">
 <span class="glyphicon glyphicon-trash"> Delete alerts</span>
 </button>

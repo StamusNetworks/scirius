@@ -34,19 +34,19 @@
 </div>
 <ul class="action">
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/changelog">Changelog</a>
+<a href="{% url 'changelog_ruleset' ruleset.id %}">Changelog</a>
 </li>
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/update">Update</a>
+<a href="{% url 'update_ruleset' ruleset.id %}">Update</a>
 </li>
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/edit">Edit</a>
+<a href="{% url 'edit_ruleset' ruleset.id %}">Edit</a>
 </li>
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/copy">Copy</a>
+<a href="{% url 'copy_ruleset' ruleset.id %}">Copy</a>
 </li>
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/delete">Delete</a>
+<a href="{% url 'delete_ruleset' ruleset.id %}">Delete</a>
 </li>
 </ul>
 {% endif %}
@@ -55,13 +55,13 @@
 </div>
 <ul class="action">
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/">Show structure</a>
+<a href="{% url 'ruleset' ruleset.id %}/">Show structure</a>
 </li>
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/display">Show rules</a>
+<a href="{% url 'display_ruleset' ruleset.id %}">Show rules</a>
 </li>
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/export" target="_" >Export rules file</a>
+<a href="{% url 'export_ruleset' ruleset.id %}" target="_" >Export rules file</a>
 </ul>
 {% endblock %}
 
@@ -147,7 +147,7 @@ Updated: {{ cdiff.stats.updated }}
     <ul>
     {% for error in ruleset.json_errors %}
         {% if error.sid %}
-            <li><span class="text-danger"><strong>{{ error.error }}</strong></span>: <a href="/rules/rule/{{ error.sid }}"><span>{{ error.message }}</span></a></li>
+            <li><span class="text-danger"><strong>{{ error.error }}</strong></span>: <a href="{% url 'rule_sid'  error.sid %}"><span>{{ error.message }}</span></a></li>
         {% else %}
             <li><span class="text-danger"><strong>{{ error.error }}</strong></span>: <span>{{ error.message }}</span></li>
         {% endif %}
@@ -176,7 +176,7 @@ function test_ruleset(ruleset_pk)
                 error_content = ""
                 for (i = 0; i < data['errors'].length; i++) {
                     if (data['errors'][i]['sid']) {
-                        error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <a href="/rules/rule/' + parseInt(data['errors'][i]['sid']) + '"><span>' + data['errors'][i]['message'] + '</span></a></li>';
+                        error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <a href="{% url 'rules_index' %}rule/' + parseInt(data['errors'][i]['sid']) + '"><span>' + data['errors'][i]['message'] + '</span></a></li>';
                     } else {
                         error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
                     }

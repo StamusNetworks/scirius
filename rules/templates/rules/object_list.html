@@ -13,7 +13,7 @@
 {% if adduri %}
         <ul class="action"> <li> <a href="{{ adduri }}">Add</a></li></ul>
 {% else %}
-        <ul class="action"> <li> <a href="/rules/{{ action }}/add">Add</a></li></ul>
+        <ul class="action"> <li> <a href="{% url 'rules_index' %}{{ action }}/add">Add</a></li></ul>
 {% endif %}
 
 {% endif %}

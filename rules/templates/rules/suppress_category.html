@@ -16,9 +16,9 @@
 <div class="col-md-4">
 
 {% if operation == 'enable' %}
-<form action="/rules/category/{{ category.pk }}/enable" method="post">
+<form action="{% 'enable_category' category.pk %}" method="post">
 {% else %}
-<form action="/rules/category/{{ category.pk }}/suppress" method="post">
+<form action="{% 'suppress_category' category.pk %}" method="post">
 {% endif %}
 {% csrf_token %}
 {% bootstrap_form form %}

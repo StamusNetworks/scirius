@@ -14,9 +14,9 @@
 <div class="col-md-4">
 
 {% if operation == 'suppress' %}
-<form class="form" action="/rules/rule/{{ rule.sid }}/suppress" method="post">
+<form class="form" action="{% url 'suppress_rule' rule.sid %}" method="post">
 {% else %}
-<form class="form" action="/rules/rule/{{ rule.sid }}/enable" method="post">
+<form class="form" action="{% url 'enable_rule' rule.sid %}" method="post">
 {% endif %}
 
 {% csrf_token %}

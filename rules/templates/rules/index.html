@@ -13,7 +13,7 @@
 {% if ruleset_list %}
     <ul>
     {% for ruleset in ruleset_list %}
-        <li><a href="/rules/ruleset/{{ ruleset.id }}/">{{ ruleset.name }}</a></li>
+        <li><a href="{% url 'ruleset' ruleset.id %}/">{{ ruleset.name }}</a></li>
     {% endfor %}
     </ul>
 {% else %}
@@ -32,7 +32,7 @@
 {% if source_list %}
     <ul>
     {% for source in source_list %}
-        <li><a href="/rules/source/{{ source.id }}/">{{ source.name }}</a></li>
+        <li><a href="{% url 'source' source.id %}/">{{ source.name }}</a></li>
     {% endfor %}
     </ul>
 {% else %}

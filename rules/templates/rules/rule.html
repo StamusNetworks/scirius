@@ -21,20 +21,20 @@
 <ul class="action">
 {% if rule.state %}
 <li>
-<a href="/rules/rule/{{ rule.sid }}/suppress">Disable rule</a>
+<a href="{% url 'suppress_rule' rule.sid %}">Disable rule</a>
 </li>
 <li>
-<a href="/rules/rule/{{ rule.sid }}/enable">Enable rule</a>
+<a href="{% url 'enable_rule' rule.sid %}">Enable rule</a>
 </li>
 {% endif %}
 {% if not rule.state_in_source %}
 <li>
-<a href="/rules/rule/{{ rule.sid }}/availability">Toggle availability</a>
+<a href="{% url 'toggle_availability' rule.sid %}">Toggle availability</a>
 </li>
 {% endif %}
 {% if elasticsearch %}
 <li>
-<a href="/rules/rule/{{ rule.sid }}/delete">Delete generated alerts</a>
+<a href="{% url 'delete_alerts' rule.sid %}">Delete generated alerts</a>
 </li>
 {% endif %}
 </ul>
@@ -155,7 +155,7 @@ $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescap
 
 function load_stats() {
     $.ajax({
-       url: '/rules/es?query=rule&sid={{ rule.pk }}&from_date={{ from_date }}',
+       url: '{% url 'elasticsearch' %}?query=rule&sid={{ rule.pk }}&from_date={{ from_date }}',
           success: function(data) {
              $('#stats_table').empty();
              $('#stats_table').append(data);

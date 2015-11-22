@@ -19,7 +19,7 @@
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-6">
-<form action="/rules/ruleset/add" method="post" class="form">{% csrf_token %}
+<form action="{% url 'add_ruleset' %}" method="post" class="form">{% csrf_token %}
     {% bootstrap_form form %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">

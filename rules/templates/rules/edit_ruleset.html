@@ -1,7 +1,7 @@
 {% extends "rules/base.html" %}
 {% block sidebar %}
 <div class="panel-heading">
-       <h2 class="panel-title"><a href="/rules/ruleset/{{ ruleset.pk }}">{{ ruleset.name }}</a></h2>
+       <h2 class="panel-title"><a href="{% url 'ruleset' ruleset.pk %}">{{ ruleset.name }}</a></h2>
 </div>
 <ul>
 {% if ruleset.descr %}
@@ -17,16 +17,16 @@
 </div>
 <ul class="action">
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/edit?mode=sources">Edit sources</a>
+<a href="{% url 'edit_ruleset' ruleset.id %}?mode=sources">Edit sources</a>
 </li>
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/edit?mode=categories">Edit categories</a>
+<a href="{% url 'edit_ruleset' ruleset.id %}?mode=categories">Edit categories</a>
 </li>
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/addsupprule">Add rule to disabled list</a>
+<a href="{% url 'addsupprule' ruleset.id %}">Add rules to disabled list</a>
 </li>
 <li>
-<a href="/rules/ruleset/{{ ruleset.id }}/edit?mode=rules">Remove rule from disabled list</a>
+<a href="{% url 'edit_ruleset' ruleset.id %}?mode=rules">Remove rules from disabled list</a>
 </li>
 </ul>
 {% endblock %}
@@ -78,7 +78,7 @@ Choose an operation in Action menu.
 <h2 class="title">Choose sources</h2>
 <h4>Check sources to enable/disable them and validate form at bottom.</h4>
 
-<form class="form" action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
+<form class="form" action="{% url 'edit_ruleset' ruleset.id %}" method="post">{% csrf_token %}
 {% render_table sources_list %}
 <input type="hidden" name="sources" value="sources">
 <p></p>
@@ -90,7 +90,7 @@ Choose an operation in Action menu.
 {% if mode == 'categories' %}
 
 {% load render_table from django_tables2 %}
-<form class="form" action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
+<form class="form" action="{% url 'edit_ruleset' ruleset.id %}" method="post">{% csrf_token %}
 {% for sourceatversion in sources %}
 
 {% if not sourceatversion.source.datatype == 'other' %}
@@ -118,7 +118,7 @@ Choose an operation in Action menu.
 
 <h2 class="title">Disabled rules</h2>
 
-<form class="form" action="/rules/ruleset/{{ ruleset.id }}/edit" method="post">{% csrf_token %}
+<form class="form" action="{% url 'edit_ruleset' ruleset.id %}" method="post">{% csrf_token %}
 {% render_table rules %}
 <input type="hidden" name="rules" value="rules">
 <input type="submit"  class="btn btn-primary" value="Remove selected rules from disabled rules" />

@@ -235,9 +235,9 @@ $('document').ready(function() { select_fields();});
 <div class="row">
 <div class="col-md-6">
 {% if source %}
-    <form class="form" enctype="multipart/form-data" action="/rules/source/{{ source.pk }}/edit" method="post">
+    <form class="form" enctype="multipart/form-data" action="{% url 'edit_source'  source.pk %}" method="post">
 {% else %}
-    <form class="form" enctype="multipart/form-data" action="/rules/source/add" method="post">
+    <form class="form" enctype="multipart/form-data" action="{% url 'add_source' %}" method="post">
 {% endif %}
     {% csrf_token %}
     {% bootstrap_form form %}

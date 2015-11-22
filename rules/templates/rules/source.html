@@ -19,20 +19,20 @@
 </div>
 <ul class="action">
 <li>
-<a href="/rules/source/{{ source.id }}/changelog">Changelog</a>
+<a href="{% url 'changelog_source' source.id %}">Changelog</a>
 </li>
 <li>
-<a href="/rules/source/{{ source.id }}/update">Update</a>
+<a href="{% url 'update_source' source.id %}">Update</a>
 </li>
 <li>
-<a href="/rules/source/{{ source.id }}/edit">Edit</a>
+<a href="{% url 'edit_source' source.id %}">Edit</a>
 </li>
 <li>
-<a href="/rules/source/{{ source.id }}/delete">Delete</a>
+<a href="{% url 'delete_source' source.id %}">Delete</a>
 </li>
 <!-- </li>
 <li>
-<a href="/rules/source/{{ source.id }}/diff">Diff</a>
+<a href="{% url 'diff_source' source.id %}">Diff</a>
 </li>
 -->
 </ul>
