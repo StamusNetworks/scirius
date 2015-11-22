@@ -23,7 +23,7 @@ from django.conf.urls import patterns, url
 from suricata import views
 
 urlpatterns = patterns('',
-    url(r'^$', views.index, name='index'),
-    url(r'^edit$', views.edit, name='edit'),
-    url(r'^update$', views.update, name='update'),
+    url(r'^$', views.index, name='suricata_index'),
+    url(r'^edit$', views.edit, name='suricata_edit'),
+    url(r'^update$', views.update, name='suricata_update'),
     )

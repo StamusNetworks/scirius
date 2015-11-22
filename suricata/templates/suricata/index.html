@@ -533,10 +533,10 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 </div>
 <ul class="action">
 <li>
-<a href="/suricata/update">Ruleset actions</a>
+<a href="{% url 'suricata_update' %}">Ruleset actions</a>
 </li>
 <li>
-<a href="/suricata/edit">Edit</a>
+<a href="{% url 'suricata_edit' %}">Edit</a>
 </li>
 </ul>
 {% endif %}

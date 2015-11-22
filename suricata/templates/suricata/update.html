@@ -31,7 +31,7 @@ function table_all_toggle(source) {
     {% if suri.updated_date %}
 <p>Suricata last updated at {{ suri.updated_date }}</p>
     {% endif %}
-<form action="/suricata/update" method="post">{% csrf_token %}
+<form action="{% url 'suricata_update' %}" method="post">{% csrf_token %}
 <div id="update">
 <table class="update">
 <thead class="header"><th class="check"><input type="checkbox" name="check_all" onclick="tables_checking(this);" /></th><th>Action</th></thead>
