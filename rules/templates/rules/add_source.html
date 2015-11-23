@@ -109,7 +109,7 @@ function test_source(src_pk, rulesets, ruleset_list)
                 $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Source test failure: <ul>' + error_content + '</ul></p>');
 		var error_actions = '<a href="{{ source.get_absolute_url }}delete"><button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-trash"> Delete source</span></button></a>'
 		error_actions += ' <button class="btn btn-warning" id="continue" type="submit"> <span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></button>';
-		$("#init_details").append('<div id="error_actions">' + error_actions + '<div>');
+		$("#init_details").append('<div id="error_actions">' + error_actions + '</div>');
 		$("#continue").click( function(event) {
                         $("#error_actions").slideUp();
                         if (! rulesets) {
@@ -153,7 +153,11 @@ function update_activate_source(src_pk, rulesets, ruleset_list)
 	  error: function(data) {
              $('#source_progress').addClass("progress-bar-danger");
              $('#source_progress').text("Unable to update source.");
-             $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Error during source update</p>');
+             var err_str = 'Error during source update';
+             if (data.statusText && data.statusText != 'error') {
+                 err_str += ' (' + data.statusText + ')';
+             }
+             $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"> ' + err_str + '</span> </p>');
 	  },
       timeout: 120 * 1000
     });
