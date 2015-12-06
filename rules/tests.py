@@ -20,4 +20,28 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.test import TestCase
 
-# Create your tests here.
+from django.utils import timezone
+
+from models import Source, SourceAtVersion, Category
+
+import tempfile
+from shutil import rmtree
+
+class SourceCreationTestCase(TestCase):
+    def setUp(self):
+        self.tmpdirname = tempfile.mkdtemp()
+        with self.settings(GIT_SOURCES_BASE_DIRECTORY=self.tmpdirname):
+            self.source = Source.objects.create(name="ET Open",
+                                       method = "http",
+                                       datatype = "sigs",
+                                       uri="https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz",
+                                       created_date=timezone.now())
+
+    def tearDown(self):
+        rmtree(self.tmpdirname)
+
+    def test_source_update(self):
+        """Test source update"""
+        self.source.update()
+        self.assertEqual(len(SourceAtVersion.objects.filter(source = self.source)), 1)
+        self.assertNotEqual(len(Category.objects.filter(source = self.source)), 0)
