@@ -42,26 +42,26 @@ class AddSourceForm(forms.ModelForm):
     authkey = forms.CharField(max_length=100,
                               label = "Optional authorization key",
                               required = False)
-    ruleset_list =  Ruleset.objects.all()
-    if len(ruleset_list):
-        rulesets = forms.ModelMultipleChoiceField(
-                    ruleset_list,
-                    widget=forms.CheckboxSelectMultiple(),
-                    label = "Add source to the following ruleset(s)",
-                    required = False)
+
     class Meta:
         model = Source
         exclude = ['created_date', 'updated_date']
+
+    def __init__(self, *args, **kwargs):
+        super(AddSourceForm, self).__init__(*args, **kwargs)
+        ruleset_list =  Ruleset.objects.all()
+        if len(ruleset_list):
+            self.fields['rulesets'] = forms.ModelMultipleChoiceField(
+                        ruleset_list,
+                        widget=forms.CheckboxSelectMultiple(),
+                        label = "Add source to the following ruleset(s)",
+                        required = False)
 
 # Display choices of SourceAtVersion
 class RulesetForm(forms.Form):
     name = forms.CharField(max_length=100)
     activate_categories = forms.BooleanField(label = "Activate all categories in sources",
                                              initial = True, required = False)
-    sourceatversion = SourceAtVersion.objects.all()
-    sources = forms.ModelMultipleChoiceField(
-                    sourceatversion,
-                    widget=forms.CheckboxSelectMultiple())
 
     def create_ruleset(self):
         ruleset = Ruleset.objects.create(name = self.cleaned_data['name'],
@@ -75,13 +75,27 @@ class RulesetForm(forms.Form):
                     ruleset.categories.add(cat)
         return ruleset
 
+    def __init__(self, *args, **kwargs):
+        super(RulesetForm, self).__init__(*args, **kwargs)
+        sourceatversion = SourceAtVersion.objects.all()
+        self.fields['sources'] = forms.ModelMultipleChoiceField(
+                        sourceatversion,
+                        widget=forms.CheckboxSelectMultiple())
+
+
+
 class RulesetEditForm(forms.Form):
     name = forms.CharField(max_length=100)
-    categories = forms.MultipleChoiceField(Category.objects.all())
+
+    def __init__(self, *args, **kwargs):
+        super(RulesetEditForm, self).__init__(*args, **kwargs)
+        self.fields['categories'] = forms.MultipleChoiceField(Category.objects.all())
 
 class RulesetCopyForm(forms.Form):
     name = forms.CharField(max_length=100)
 
 class RulesetSuppressForm(forms.Form):
-    rulesets = Ruleset.objects.all()
-    ruleset = forms.ModelChoiceField(rulesets, empty_label=None)
+    def __init__(self, *args, **kwargs):
+        super(RulesetSuppressForm, self).__init__(*args, **kwargs)
+        rulesets = Ruleset.objects.all()
+        self.fields['ruleset'] = forms.ModelChoiceField(rulesets, empty_label=None)
