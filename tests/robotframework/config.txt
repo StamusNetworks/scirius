@@ -1,0 +1,15 @@
+| *Variable*              | *Value*                                                                     |
+| ${BASE_URL}             | http://127.0.0.1:8000/                                                      |
+| ${DEFAULT_USER}         | scirius                                                                     |
+| ${DEFAULT_PASS}         | scirius                                                                     |
+| ${CACHE_DIR}            | /tmp/scirius-roboframework/                                                 |
+| ${RULES_FILE}           | ${CACHE_DIR}emerging.rules.tar.gz                                           |
+| ${RULES_URL}            | https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz |
+| ${RULES_SINGLE_FILE}    | ${CACHE_DIR}rules/emerging-telnet.rules                                     |
+| ${RULES_DATATYPE}       | Individual Signatures file                                                  |
+| ${RULES_METHOD}         | file                                                                        |
+| ${ENALE_PROXY}          | 0                                                                           |
+| ${HTTP_PROXY}           | 1.2.3.4:3128                                                                |
+| ${DEFAULT_SOURCE}       | TestSource                                                                  |
+| ${DEFAULT_RULESET}      | TestRuleset                                                                 |
+| ${DEBUG}                | 0                                                                           |
