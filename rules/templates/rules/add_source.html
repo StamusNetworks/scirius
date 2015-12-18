@@ -72,6 +72,9 @@ function activate_ruleset_from(src_pk, rulesets, ruleset_list, r_length)
       error: function(data) {
              $('#source_progress').addClass("progress-bar-danger");
              $('#source_progress').text("Unable activate source in '" + ruleset + "'.");
+             var error_actions = '<a href="{{ source.get_absolute_url }}delete"><button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-trash"> Delete source</span></button></a>'
+		        error_actions += ' <a href="{{ source.get_absolute_url }}"><button class="btn btn-warning" id="continue" type="submit"><span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></button></a>';
+		        $("#init_details").append('<div id="error_actions">' + error_actions + '<div>');
       }
     });
 }
@@ -121,8 +124,11 @@ function test_source(src_pk, rulesets, ruleset_list)
           },
 	  error: function(data) {
              $('#source_progress').addClass("progress-bar-danger");
-             $('#source_progress').text("Unable to update source.");
+             $('#source_progress').text("Unable to test source.");
              $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Error during source testing</p>');
+             var error_actions = '<a href="{{ source.get_absolute_url }}delete"><button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-trash"> Delete source</span></button></a>'
+		        error_actions += ' <a href="{{ source.get_absolute_url }}"><button class="btn btn-warning" id="continue" type="submit"><span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></button></a>';
+		        $("#init_details").append('<div id="error_actions">' + error_actions + '<div>');
 	  },
       timeout: 120 * 1000
     });
@@ -158,6 +164,9 @@ function update_activate_source(src_pk, rulesets, ruleset_list)
                  err_str += ' (' + data.statusText + ')';
              }
              $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"> ' + err_str + '</span> </p>');
+             var error_actions = '<a href="{{ source.get_absolute_url }}delete"><button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-trash"> Delete source</span></button></a>'
+		        error_actions += ' <a href="{{ source.get_absolute_url }}"><button class="btn btn-warning" id="continue" type="submit"><span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></button></a>';
+		        $("#init_details").append('<div id="error_actions">' + error_actions + '<div>');
 	  },
       timeout: 240 * 1000
     });
