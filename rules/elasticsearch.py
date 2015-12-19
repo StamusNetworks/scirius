@@ -292,7 +292,7 @@ if settings.ELASTICSEARCH_2X:
           "must": [
             {
               "range": {
-                "timestamp": {
+                "@timestamp": {
                   "gte": {{ from_date }},
                   "lte": "now",
                   "format": "epoch_millis"
@@ -397,7 +397,7 @@ if settings.ELASTICSEARCH_2X:
   "aggs": {
     "date": {
       "date_histogram": {
-        "field": "timestamp",
+        "field": "@timestamp",
         "interval": "{{ interval }}",
         "time_zone": "Europe/Berlin",
         "min_doc_count": 1
