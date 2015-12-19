@@ -415,9 +415,13 @@ if settings.ELASTICSEARCH_2X:
     "filtered": {
       "query": {
         "query_string": {
+      {% if hosts %}
           {% for host in hosts %}
           "query": "event_type:stats AND host.raw:{{ host }}",
           {% endfor %}
+      {% else %}
+          "query": "tags:metric",
+      {% endif %}
           "analyze_wildcard": false
         }
       },
@@ -709,6 +713,8 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
     # returned data is JSON
     data = json.loads(data)
     # total number of results
+    if hosts == None:
+        hosts = ["global"]
     try:
         if settings.ELASTICSEARCH_2X:
             data = data['aggregations']["date"]['buckets']
