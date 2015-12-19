@@ -44,6 +44,10 @@ def scirius_render(request, template, context):
             else:
                 context['kibana_url'] = settings.KIBANA_URL
             context['kibana_version'] = settings.KIBANA_VERSION
+    if settings.ELASTICSEARCH_2X:
+        context['es2x'] = 1
+    else:
+        context['es2x'] = 0
     return render(request, template, context)
 
 def scirius_listing(request, objectname, name, template = 'rules/object_list.html', table = None, adduri = None):
