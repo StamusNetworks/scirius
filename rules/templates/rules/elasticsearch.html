@@ -140,7 +140,7 @@ function get_es_stats() {
 $.ajax(
 {
         type:"GET",
-        url:"{% rules 'elasticsearch' }?query=stats",
+        url:"{% url 'elasticsearch' %}?query=stats",
         success: function(data) {
         if (!data) {
                 $("#es_status").removeClass("label-default");
