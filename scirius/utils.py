@@ -26,8 +26,19 @@ from rules.tables import *
 from accounts.tables import UserTable
 from rules.models import get_system_settings
 
+def build_path_info(request):
+    splval = request.path_info.strip('/').split('/')
+    if splval[0] == 'rules':
+        try:
+            splval.remove('pk')
+        except ValueError:
+            pass
+        return " - ".join(splval[1:])
+    return " - ".join(splval)
+
 def scirius_render(request, template, context):
     context['generator'] = settings.RULESET_MIDDLEWARE
+    context['path_info'] = build_path_info(request)
     gsettings = get_system_settings()
     if settings.USE_INFLUXDB:
         context['influxdb'] = 1
