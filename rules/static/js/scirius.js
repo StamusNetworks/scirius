@@ -74,8 +74,13 @@ function draw_timeline(from_date, hosts, filter) {
                             return null;
                         }
                         if (!data.hasOwnProperty("from_date")) {
+                            $("#timeline").height(300);
+                            $("#timeline svg").hide();
+                            $("#timeline").addClass("panel panel-default");
                             $("#timeline p").text("No data for period.");
                             $("#timeline p").addClass("text-center");
+                            $("#timeline p").addClass("text-muted");
+                            $("#timeline p").addClass("svgcenter");
                             return null;
                         }
 			            $("#timeline p").hide();

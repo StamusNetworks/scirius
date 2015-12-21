@@ -370,3 +370,10 @@ div.panel-content ul li span.pull-right {
 div.status ul li span.pull-right {
     margin-right: 20px;
 }
+
+.svgcenter {
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
+    font-size: 120%;
+}
