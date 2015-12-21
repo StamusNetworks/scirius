@@ -692,8 +692,9 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
             data = data['facets']
     except:
         return {}
-    data['from_date'] = from_date
-    data['interval'] = int(interval) * 1000
+    if data != {}:
+        data['from_date'] = from_date
+        data['interval'] = int(interval) * 1000
     return data
 
 def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_1m", hosts = None):
