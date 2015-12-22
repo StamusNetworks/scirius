@@ -520,30 +520,40 @@ from rules.models import Rule
 from rules.tables import ExtendedRuleTable, RuleStatsTable
 import django_tables2 as tables
 
-def build_es_timestamping(date):
+def build_es_timestamping(date, data = 'alert'):
     format_table = { 'daily': '%Y.%m.%d', 'hourly': '%Y.%m.%d.%H' }
     now = datetime.now()
+    if data == 'alert':
+        base_index = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
+    else:
+        base_index = settings.ELASTICSEARCH_LOGSTASH_INDEX
     try:
         indexes = []
         while date < now:
-            indexes.append("%s%s" % (settings.ELASTICSEARCH_LOGSTASH_INDEX, date.strftime(format_table[settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING])))
+            indexes.append("%s%s" % (base_index, date.strftime(format_table[settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING])))
             if settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'daily':
                 date += timedelta(days=1)
             elif settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'hourly':
                 date += timedelta(hours=1)
         return ','.join(indexes)
     except:
-        return settings.ELASTICSEARCH_LOGSTASH_INDEX + '*'
+        return base_index + '*'
 
-def get_es_url(from_date):
-    if '*' in settings.ELASTICSEARCH_LOGSTASH_INDEX:
-        indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX
+def get_es_url(from_date, data = 'alert'):
+    if (data == 'alert' and '*' in settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX) or (data != 'alert' and '*' in settings.ELASTICSEARCH_LOGSTASH_INDEX):
+            if data == 'alert':
+                indexes = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
+            else:
+                indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX
     else:
         if from_date == 0:
-            indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX + "*"
+            if data == 'alert':
+                indexes = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + "*"
+            else:
+                indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX + "*"
         else:
             start = datetime.fromtimestamp(int(from_date)/1000)
-            indexes = build_es_timestamping(start)
+            indexes = build_es_timestamping(start, data = data)
     return URL % (settings.ELASTICSEARCH_ADDRESS, indexes)
 
 def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None):
@@ -704,7 +714,7 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
         interval = int((time() - (int(from_date)/ 1000)) / 100)
     context = Context({'from_date': from_date, 'interval': str(interval) + "s", 'value': value, 'hosts': hosts})
     data = templ.render(context)
-    es_url = get_es_url(from_date)
+    es_url = get_es_url(from_date, data = 'stats')
     req = urllib2.Request(es_url, data)
     try:
         out = urllib2.urlopen(req)
@@ -802,7 +812,7 @@ def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
     return rdata
 
 def es_delete_alerts_by_sid(sid):
-    delete_url = DELETE_ALERTS_URL % (settings.ELASTICSEARCH_ADDRESS, settings.ELASTICSEARCH_LOGSTASH_INDEX + "*", int(sid))
+    delete_url = DELETE_ALERTS_URL % (settings.ELASTICSEARCH_ADDRESS, settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + "*", int(sid))
     r = requests.delete(delete_url)
     data = json.loads(r.text)
     return data

@@ -114,6 +114,8 @@ USE_ELASTICSEARCH = True
 ELASTICSEARCH_ADDRESS = "localhost:9200"
 # You can use a star to avoid timestamping expansion for example 'logstash-*'
 ELASTICSEARCH_LOGSTASH_INDEX = "logstash-"
+# You can change following value if you have different indexes for stats and alerts
+ELASTICSEARCH_LOGSTASH_ALERT_INDEX = ELASTICSEARCH_LOGSTASH_INDEX
 # use hourly, daily to indicate the logstash index building recurrence
 ELASTICSEARCH_LOGSTASH_TIMESTAMPING = "daily"
 # use Elasticsearch 2.x
