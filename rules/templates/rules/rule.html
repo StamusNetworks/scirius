@@ -5,6 +5,7 @@
 <div class="panel-heading">
        <h2 class="panel-title">{{ rule.sid }}</h2>
 </div>
+<div class="panel-body">
 <ul>
        <li><span class="type">Msg:</span> {{ rule.msg }}</li>
        <li><span class="type">Revision:</span> {{ rule.rev }}</li>
@@ -13,11 +14,22 @@
  {% endif %}
        <li><span class="type">Available:</span> {{ rule.state }}</li>
 </ul>
+</div>
 
+{% if kibana and kibana_version >= 4 %}
+<div class="panel-heading">
+       <h2 class="panel-title">Kibana</h2>
+</div>
+<div class="panel-body">
+<ul>
+	<li><a href="{{ kibana_url }}/app/kibana?#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-{{ date }},mode:quick,to:now))&_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:'alert.signature_id:{{ rule.sid }}')),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:_source,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=logstash-*&type=histogram">Events list</a></li>
+</div>
+{% endif %}
 {% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
+<div class="panel-body">
 <ul class="action">
 {% if rule.state %}
 <li>
@@ -38,6 +50,7 @@
 </li>
 {% endif %}
 </ul>
+</div>
 {% endif %}
 {% endblock %}
 
