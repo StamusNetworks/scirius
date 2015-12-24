@@ -24,6 +24,7 @@ import argparse
 import subprocess
 import logging
 import os
+import time
 
 have_daemon = True
 try:
@@ -31,6 +32,13 @@ try:
 except:
     logging.warning("No daemon support available, install python-daemon if feature is needed")
     have_daemon = False
+
+have_docker = True
+try:
+    from docker import Client
+except:
+    logging.warning("No docker support available, install docker-py if feature is needed")
+    have_docker = False
 
 RELOAD_FILE = "scirius.reload"
 
@@ -41,6 +49,9 @@ parser.add_argument('-l', '--log', default=None, help='File to log output to (de
 parser.add_argument('-v', '--verbose', default=False, action="count", help="Show verbose output, use multiple times increase verbosity")
 if have_daemon:
     parser.add_argument('-D', '--daemon', default=False, action="store_true", help="Run as unix daemon")
+if have_docker:
+    parser.add_argument('-d', '--docker', default=None, help="Container to restart, containing suricata and scirius")
+    parser.add_argument('-s', '--socket', default=None, help="Define the scirius django socket to listen")
 
 args = parser.parse_args()
 
@@ -65,12 +76,19 @@ def SuriReload(reload = False):
         else:
             logging.info("Restarted suricata")
 
+def DockerReload(docker, socket):
+    cli = Client(base_url='unix://var/run/docker.sock')
+    cli.restart(docker)
+    time.sleep(5) # adapt if your container and services are longer, todo args.sleeper ?
+    cli.exec_start( cli.exec_create(docker, '/usr/bin/python /etc/scirius/manage.py runserver '+ socket), True) #restart scirius
+ 
 class EventHandler(pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, event):
         if not RELOAD_FILE in event.pathname:
             return
         SuriReload(self.reload)
         os.unlink(event.pathname)
+        DockerReload(args.docker, args.socket)
 
     def set_mode(self, mode):
         if mode == "reload":
@@ -93,6 +111,7 @@ def main_task(args):
     if os.path.isfile(reload_file):
         SuriReload(args.reload)
         os.unlink(reload_file)
+        DockerReload(args.docker, args.socket)
 
     handler = EventHandler()
     if args.reload:
