@@ -115,7 +115,7 @@ Use ``-h`` option to get the complete list of options. Please note that ``suri_r
 uses the ``service`` command to restart or reload Suricata. This means you need a init
 script to get it working.
 
-If you have suricata in a docker containers, you have to set scirius into a suricata
+If you have suricata in a docker container, you have to set scirius into a suricata
 container and place the reloader on the host. As the following schema :
 - reloader@localhost -[ docker -- container : suricata + scirius ]
 Don't forget to add a shared volume for the rules path.
