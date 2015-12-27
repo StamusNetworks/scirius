@@ -35,7 +35,6 @@ from rules.influx import *
 import json
 import re
 
-from datetime import datetime
 from time import time
 import django_tables2 as tables
 from tables import *

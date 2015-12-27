@@ -27,7 +27,6 @@ import requests
 import tempfile
 import tarfile
 import re
-from datetime import datetime
 import sys
 import os
 import git

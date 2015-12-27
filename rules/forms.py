@@ -21,7 +21,6 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django import forms
 from django.utils import timezone
 from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings
-from datetime import datetime
 
 class SystemSettingsForm(forms.ModelForm):
     class Meta:
