@@ -27,14 +27,17 @@ from accounts.tables import UserTable
 from rules.models import get_system_settings
 
 def build_path_info(request):
-    splval = request.path_info.strip('/').split('/')
+    splval = request.path_info.strip('/ ').split('/')
     if splval[0] == 'rules':
         try:
             splval.remove('pk')
         except ValueError:
             pass
-        return " - ".join(splval[1:])
-    return " - ".join(splval)
+        splval = splval[1:]
+    if len(splval):
+        return " - ".join(splval)
+    else:
+        return "home"
 
 def scirius_render(request, template, context):
     context['generator'] = settings.RULESET_MIDDLEWARE
