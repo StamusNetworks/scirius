@@ -28,19 +28,30 @@ import StringIO
 import re
 
 from django.conf import settings
+if settings.SURICATA_UNIX_SOCKET:
+    import suricatasc
+
 
 class Info():
     def status(self):
         suri_running = False
-        for proc in psutil.process_iter():
-            try:
-                pinfo = proc.as_dict(attrs=['name'])
-            except psutil.NoSuchProcess:
-                pass
-            else:
-                if pinfo['name'] == 'Suricata-Main':
-                    suri_running = True
-                    break
+        if settings.SURICATA_UNIX_SOCKET:
+            sc = suricatasc.SuricataSC(settings.SURICATA_UNIX_SOCKET)
+            sc.connect()
+            res = sc.send_command('uptime', None)
+            if res['return'] == 'OK':
+                suri_running = True
+            sc.close()
+        else:
+            for proc in psutil.process_iter():
+                try:
+                    pinfo = proc.as_dict(attrs=['name'])
+                except psutil.NoSuchProcess:
+                    pass
+                else:
+                    if pinfo['name'] == 'Suricata-Main':
+                        suri_running = True
+                        break
         return suri_running
     def disk(self):
         return psutil.disk_usage('/')

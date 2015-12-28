@@ -141,6 +141,11 @@ USE_SURICATA_STATS = False
 # Logstash is generating metrics on eve events
 USE_LOGSTASH_STATS = False
 
+# Set value to path to suricata unix socket to use suricatasc
+# based info
+SURICATA_UNIX_SOCKET = None
+#SURICATA_UNIX_SOCKET = "/var/run/suricata/suricata-command.socket"
+
 # Influxdb
 USE_INFLUXDB = False
 INFLUXDB_HOST = "localhost"
