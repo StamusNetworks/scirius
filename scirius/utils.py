@@ -43,11 +43,10 @@ def build_path_info(request):
 
 class TimezoneMiddleware(object):
     def process_request(self, request):
-        user = SciriusUser.objects.get(user = request.user)
-        if user:
-            timezone.activate(user.timezone)
-        else:
-            timezone.deactivate()
+        if request.user.is_authenticated():
+            user = SciriusUser.objects.get(user = request.user)
+            if user:
+                timezone.activate(user.timezone)
 
 def scirius_render(request, template, context):
     context['generator'] = settings.RULESET_MIDDLEWARE
