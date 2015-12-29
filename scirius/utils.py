@@ -44,7 +44,10 @@ def build_path_info(request):
 class TimezoneMiddleware(object):
     def process_request(self, request):
         if request.user.is_authenticated():
-            user = SciriusUser.objects.get(user = request.user)
+            try:
+                user = SciriusUser.objects.get(user = request.user)
+            except:
+                return
             if user:
                 timezone.activate(user.timezone)
 
