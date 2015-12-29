@@ -55,11 +55,13 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'scirius.loginrequired.LoginRequiredMiddleware',
+    'scirius.utils.TimezoneMiddleware',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
-    'django.contrib.auth.context_processors.auth'
+    'django.contrib.auth.context_processors.auth',
+    'django.template.context_processors.tz',
 )
 
 ROOT_URLCONF = 'scirius.urls'

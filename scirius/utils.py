@@ -20,10 +20,12 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.shortcuts import render
 from django.conf import settings
+from django.utils import timezone
 import django_tables2 as tables
 
 from rules.tables import *
 from accounts.tables import UserTable
+from accounts.models import SciriusUser
 from rules.models import get_system_settings
 
 def build_path_info(request):
@@ -38,6 +40,14 @@ def build_path_info(request):
         return " - ".join(splval)
     else:
         return "home"
+
+class TimezoneMiddleware(object):
+    def process_request(self, request):
+        user = SciriusUser.objects.get(user = request.user)
+        if user:
+            timezone.activate(user.timezone)
+        else:
+            timezone.deactivate()
 
 def scirius_render(request, template, context):
     context['generator'] = settings.RULESET_MIDDLEWARE
