@@ -1,5 +1,6 @@
 | *Variable*              | *Value*                                                                     |
-| ${BASE_URL}             | http://127.0.0.1:8000/                                                      |
+| ${MANAGER_IP}           | 127.0.0.1                                                                   |
+| ${BASE_URL}             | http://${MANAGER_IP}:8000/                                                  |
 | ${DEFAULT_USER}         | scirius                                                                     |
 | ${DEFAULT_PASS}         | scirius                                                                     |
 | ${CACHE_DIR}            | /tmp/scirius-roboframework/                                                 |
