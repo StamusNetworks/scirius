@@ -261,7 +261,7 @@ if settings.ELASTICSEARCH_2X:
   "aggs": {
     "date": {
       "date_histogram": {
-        "field": "timestamp",
+        "field": "@timestamp",
         "interval": "{{ interval }}",
         "time_zone": "Europe/Berlin",
         "min_doc_count": 1
