@@ -417,7 +417,7 @@ if settings.ELASTICSEARCH_2X:
         "query_string": {
       {% if hosts %}
           {% for host in hosts %}
-          "query": "event_type:stats AND host.raw:{{ host }}",
+          "query": "host.raw:{{ host }}",
           {% endfor %}
       {% else %}
           "query": "tags:metric",
