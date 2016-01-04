@@ -121,6 +121,9 @@ function draw_timeline(from_date, hosts, filter) {
                                         gdata = []
                                         var starti = 0;
                                         var iter = 0;
+                                        if (!data[hosts[hi]]) {
+                                            continue;
+                                        }
                                         entries = data[hosts[hi]]['entries']
                                         var interval = parseInt(data['interval']);
                                         for (inter = parseInt(data['from_date']); inter < end_interval; inter = inter + interval) {
@@ -213,6 +216,9 @@ function draw_stats_timeline(from_date, value, tdiv, speed, hosts) {
                                 var starti = 0;
                                 var iter = 0;
                                 for (hi = 0; hi < hosts.length; hi++) {
+                                    if (!data[hosts[hi]]) {
+                                        continue;
+                                    }
                                     entries = data[hosts[hi]]['entries']
                                     if (speed) {
                                         for (i = 1; i < entries.length; i++) {
