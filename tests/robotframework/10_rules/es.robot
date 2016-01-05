@@ -8,8 +8,8 @@
 |                | Go To               | ${BASE_URL}rules/es              |                                  |                                  |              |   |               |   |             |
 |                | Click Element       | xpath=//a[@href='#indices']      |                                  |                                  |              |   |               |   |             |
 |                | Debug Screenshot    |                                  |                                  |                                  |              |   |               |   |             |
-|                | ${date}=            | Get Current Date                 | result_format=datetime           |                                  |              |   |               |   |             |
-|                | ${idx}=             | Catenate                         | SEPARATOR=                       | ${logstash_prefix}               | ${date.year} | . | ${date.month} | . | ${date.day} |
+|                | @{date}=            | Get Time                 | year month day         |                                  |              |   |               |   |             |
+|                | ${idx}=             | Catenate                         | SEPARATOR=                       | ${logstash_prefix}               | ${date[0]} | . | ${date[1]} | . | ${date[2]} |
 |                | :FOR                | ${i}                             | IN RANGE                         | 64                               |              |   |               |   |             |
 |                | \                   | ${cell}=                         | Get Table Cell                   | xpath=//table[@class='paleblue'] | ${i}         | 1 |               |   |             |
 |                | \                   | Exit for loop if                 | '${cell}' == '${idx}'            |                                  |              |   |               |   |             |
