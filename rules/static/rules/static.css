@@ -156,6 +156,11 @@ h2.panel-title {
     padding-left: 1em;
 }
 
+#sidebar div.panel-text {
+    padding-left: 1em;
+}
+
+
 #sidebar h2 a {
     padding-left: 0px;
 }
