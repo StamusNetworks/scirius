@@ -5981,7 +5981,9 @@ nv.models.line = function() {
                     .defined(defined)
                     .x(function(d,i) { return nv.utils.NaNtoZero(x0(getX(d,i))) })
                     .y(function(d,i) { return nv.utils.NaNtoZero(y0(getY(d,i))) })
-            );
+                );
+
+            linePaths.style('stroke', function(d,i,j){ return color(d, j)});
 
             linePaths.watchTransition(renderWatch, 'line: linePaths')
                 .attr('d',
