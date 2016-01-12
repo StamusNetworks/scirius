@@ -187,6 +187,7 @@ class Source(models.Model):
                                                     updated_date = self.updated_date, git_version = version)
 
     def handle_rules_in_tar(self, f):
+        f.seek(0)
         if (not tarfile.is_tarfile(f.name)):
             raise OSError("Invalid tar file")
 
