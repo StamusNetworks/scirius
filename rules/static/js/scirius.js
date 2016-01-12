@@ -90,7 +90,7 @@ function draw_timeline(from_date, hosts, filter) {
                               var chart = nv.models.lineChart()
                                             .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
                                             .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
-                                            .transitionDuration(350)  //how fast do you want the lines to transition?
+                                            .duration(350)  //how fast do you want the lines to transition?
                                             .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
                                             .showYAxis(true)        //Show the y-axis
                                             .showXAxis(true)        //Show the x-axis
@@ -101,7 +101,7 @@ function draw_timeline(from_date, hosts, filter) {
                                     multigraph = true;
                             }
                             var chart = nv.models.multiBarChart()
-                                .transitionDuration(350)
+                                .duration(350)
                                 .reduceXTicks(true)   //If 'false', every single x-axis tick label will be rendered.
                                 .rotateLabels(0)      //Angle to rotate x-axis labels.
                                 .showControls(multigraph)   //Allow user to switch between 'Grouped' and 'Stacked' mode.
@@ -195,7 +195,7 @@ function draw_stats_timeline(from_date, value, tdiv, speed, hosts) {
                               var chart = nv.models.lineChart()
                                             .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
                                             .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
-                                            .transitionDuration(350)  //how fast do you want the lines to transition?
+                                            .duration(350)  //how fast do you want the lines to transition?
                                             .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
                                             .showYAxis(true)        //Show the y-axis
                                             .showXAxis(true)        //Show the x-axis
@@ -540,7 +540,7 @@ function draw_influxdb_timeline(time_range, request, cssid) {
                               var chart = nv.models.stackedAreaChart()
                                             .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
                                             .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
-                                            .transitionDuration(350)  //how fast do you want the lines to transition?
+                                            .duration(350)  //how fast do you want the lines to transition?
                                             .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
                                             .showYAxis(true)        //Show the y-axis
                                             .showXAxis(true)        //Show the x-axis
