@@ -74,6 +74,9 @@ def scirius_render(request, template, context):
         context['es2x'] = 1
     else:
         context['es2x'] = 0
+    if settings.USE_EVEBOX:
+        context['evebox'] = 1
+        context['evebox_url'] = "/evebox"
     return render(request, template, context)
 
 def scirius_listing(request, objectname, name, template = 'rules/object_list.html', table = None, adduri = None):
