@@ -3,7 +3,7 @@ from django.conf import settings
 
 from django.contrib import admin
 
-from views import homepage, KibanaProxyView, ElasticsearchProxyView
+from views import homepage, KibanaProxyView, ElasticsearchProxyView, EveboxProxyView
 
 admin.autodiscover()
 
@@ -19,4 +19,5 @@ urlpatterns = patterns('',
     url(r'^(?P<path>timelion/.*)$', KibanaProxyView.as_view()),
     url(r'^kibana/(?P<path>.*)$', KibanaProxyView.as_view()),
     url(r'^elasticsearch/(?P<path>.*)$', ElasticsearchProxyView.as_view()),
+    url(r'^evebox/(?P<path>.*)$', EveboxProxyView.as_view()),
 )

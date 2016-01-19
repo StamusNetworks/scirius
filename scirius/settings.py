@@ -138,6 +138,9 @@ KIBANA_VERSION=3
 # Number of dashboards to display
 KIBANA_DASHBOARDS_COUNT = 20
 
+USE_EVEBOX = False
+EVEBOX_ADDRESS = "evebox:5636"
+
 # Suricata is configured to write stats to EVE
 USE_SURICATA_STATS = False
 # Logstash is generating metrics on eve events

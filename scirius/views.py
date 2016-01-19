@@ -34,3 +34,7 @@ class KibanaProxyView(ProxyView):
 class ElasticsearchProxyView(ProxyView):
     upstream = "http://" + settings.ELASTICSEARCH_ADDRESS
     add_remote_user = False
+    
+class EveboxProxyView(ProxyView):
+    upstream = "http://" + settings.EVEBOX_ADDRESS
+    add_remote_user = True
