@@ -112,6 +112,7 @@
 					<h2 class="panel-title">System status</h2>
 					</div>
                     <div class="panel-body">
+                    <div id="status_labels">
                     <div id="suri-status" class="label label-default"><a href="/{{ generator }}/">Suricata</a></div>
 {% if elasticsearch %}
                     <div id="health" class="label label-default"><a href="{% url 'elasticsearch' %}">Elasticsearch</a></div>
@@ -119,6 +120,10 @@
                     <div id="disk-status" class="label label-default">Disk</div>
                     <div id="memory-status" class="label label-default">Memory</div>
                     </div>
+                    <div id="scirius_down_label" style="display:none;" >
+                        <div class="label label-danger">Scirius is down.</div>
+                    </div>
+                 </div>
             </div>
 		</div> <!-- col -->
 		{% if three_columns %}
@@ -177,6 +182,7 @@
 <script>
 
 var scirius_status = 'green';
+var scirius_modal = false;
 
 function get_scirius_status() {
     $.ajax(
@@ -186,17 +192,25 @@ function get_scirius_status() {
                 success: function(data) {
                     if (!data) {
                         scirius_status = 'red';
-                        $("#scirius_down").modal('show');
+                        if (!scirius_modal) {
+                            $("#scirius_down").modal('show');
+                        }
                     } else {
                             if (data['status'] == 'green') {
                                 scirius_status = 'green';
                                 $("#scirius_down").modal('hide');
+                                $("#status_labels").show();
+                                $("#scirius_down_label").hide();
+                                scirius_modal = false;
                                 call_health_functions();
                                 return;
                             } else {
                                 $("#scirius_down_text").text("Scirius does not feel comfortable");
-                                $("#scirus_down").modal('show');
                                 scirius_status = 'red';
+                                if (!scirius_modal) {
+                                    $("#scirus_down").modal('show');
+                                    scirius_modal = true;
+                                }
                                 setTimeout(get_scirius_status, 10000);
                             }
                     }
@@ -204,7 +218,12 @@ function get_scirius_status() {
                 error: function(data) {
                         scirius_status = 'red';
                         $("#scirius_down_text").text("No connection with scirius. This pop-up will disappear if connection is restored.");
-                        $("#scirius_down").modal('show');
+                        $("#status_labels").hide();
+                        $("#scirius_down_label").show();
+                        if (scirius_modal == false) {
+                            $("#scirius_down").modal('show');
+                            scirius_modal = true;
+                        }
                         setTimeout(get_scirius_status, 10000);
                 },
                 timeout: 15000,
