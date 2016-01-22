@@ -772,9 +772,9 @@ def system_settings(request):
     return scirius_render(request, 'rules/system_settings.html', context)
 
 def info(request):
-    data = None
-    info = Probe.common.Info()
+    data = {'status': 'green'}
     if request.GET.__contains__('query'):
+        info = Probe.common.Info()
         query = request.GET.get('query', 'status')
         if query == 'status':
             data = { 'running': info.status() }
