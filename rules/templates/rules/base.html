@@ -126,6 +126,23 @@
 		{% else %}
 		<div class="col-md-10">
 		{% endif %}
+<!-- Modal -->
+<div class="modal fade" id="scirius_down" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Scirius is down.</h4>
+      </div>
+      <div class="modal-body" id="scirius_down_text">
+        Scirius is not currently available.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Ignore</button>
+      </div>
+    </div>
+  </div>
+</div>
                     {% block error %}
                       {% if error %}
                        <div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
@@ -157,10 +174,55 @@
 {% include "rules/footer.html" %}
 </div> <!-- class container -->
 
+<script>
+
+var scirius_status = 'green';
+
+function get_scirius_status() {
+    $.ajax(
+        {
+                type:"GET",
+                url:"{% url 'info' %}",
+                success: function(data) {
+                    if (!data) {
+                        scirius_status = 'red';
+                        $("#scirius_down").modal('show');
+                    } else {
+                            if (data['status'] == 'green') {
+                                scirius_status = 'green';
+                                $("#scirius_down").modal('hide');
+                                call_health_functions();
+                                return;
+                            } else {
+                                $("#scirius_down_text").text("Scirius does not feel comfortable");
+                                $("#scirus_down").modal('show');
+                                scirius_status = 'red';
+                                setTimeout(get_scirius_status, 10000);
+                            }
+                    }
+                },
+                error: function(data) {
+                        scirius_status = 'red';
+                        $("#scirius_down_text").text("No connection with scirius. This pop-up will disappear if connection is restored.");
+                        $("#scirius_down").modal('show');
+                        setTimeout(get_scirius_status, 10000);
+                },
+                timeout: 15000,
+        }
+    );
+}
+
+</script>
+
 {% if kibana %}
 <script>
 
 function load_dashboards() {
+    if (scirius_status == "red") {
+        $("#dashboards").empty();
+        $("#dashboards").append("<ul><li>Error getting data (Retrying)</li></ul>");
+        return;
+    }
     $.ajax(
         {
                 type:"GET",
@@ -184,10 +246,10 @@ function load_dashboards() {
                 }
                 },
                 error: function(data) {
+                        scirius_status = 'red';
                         $("#dashboards").empty();
                         $("#dashboards").append("<ul><li>Error getting data</li></ul>");
-                        $("#error").text("Unable to get data from Elasticsearch");
-                        $("#error").parent().toggle();
+                        get_scirius_status();
                 },
                 timeout: 15000,
         }
@@ -205,6 +267,10 @@ $( 'document' ).ready(load_dashboards());
 
 <script>
 function get_es_health() {
+
+    if (scirius_status == "red") {
+        return;
+    }
     $.ajax(
         {
                 type:"GET",
@@ -231,11 +297,8 @@ function get_es_health() {
                 }
                 },
                 error: function(data) {
-                        $("#health").removeClass("label-default");
-                        $("#health").removeClass("label-success");
-                        $("#health").removeClass("label-warning");
-                        $("#health").removeClass("label-danger");
-                        $("#health").addClass("label-danger");
+                        scirius_status = 'red';
+                        get_scirius_status();
                 },
                 complete: function() {
                     setTimeout(get_es_health, 30000);
@@ -251,6 +314,10 @@ $( 'document' ).ready(get_es_health());
 
 <script>
 function get_suricata_health() {
+    if (scirius_status == "red") {
+        return;
+    }
+
     $.ajax(
         {
                 type:"GET",
@@ -269,8 +336,8 @@ function get_suricata_health() {
                 }
                 },
                 error: function(data) {
-                        $("#suri-status").addClass("label-danger");
-                        $("#suri-status").removeClass("label-default");
+                        scirius_status = 'red';
+                        get_scirius_status();
                 },
                 complete: function() {
                     setTimeout(get_suricata_health, 30000);
@@ -281,6 +348,9 @@ function get_suricata_health() {
 }
 
 function get_disk_health() {
+    if (scirius_status == "red") {
+        return;
+    }
     $.ajax(
         {
                 type:"GET",
@@ -301,8 +371,8 @@ function get_disk_health() {
                 }
                 },
                 error: function(data) {
-                        $("#disk-status").addClass("label-danger");
-                        $("#disk-status").removeClass("label-default");
+                        scirius_status = 'red';
+                        get_scirius_status();
                 },
                 complete: function() {
                     setTimeout(get_disk_health, 30000);
@@ -313,6 +383,9 @@ function get_disk_health() {
 }
 
 function get_memory_health() {
+    if (scirius_status == "red") {
+        return;
+    }
     $.ajax(
         {
                 type:"GET",
@@ -333,8 +406,8 @@ function get_memory_health() {
                 }
                 },
                 error: function(data) {
-                        $("#memory-status").addClass("label-danger");
-                        $("#memory-status").removeClass("label-default");
+                        scirius_status = 'red';
+                        get_scirius_status();
                 },
                 complete: function() {
                     setTimeout(get_memory_health, 30000);
@@ -347,6 +420,16 @@ function get_memory_health() {
 $( 'document' ).ready(get_suricata_health());
 $( 'document' ).ready(get_disk_health());
 $( 'document' ).ready(get_memory_health());
+
+function call_health_functions() {
+    get_suricata_health();
+    get_disk_health();
+    get_memory_health();
+{% if elasticsearch %}
+    get_es_health();
+{% endif %}
+}
+
 </script>
 </body>
 </html>
