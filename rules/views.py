@@ -623,7 +623,12 @@ def update_ruleset(request, ruleset_id):
     try:
         rset.update()
     except IOError, errors:
-        return ruleset(request, ruleset_id, error="Can not fetch data: %s" % (errors))
+        error="Can not fetch data: %s" % (errors)
+        if request.is_ajax():
+            return HttpResponse(json.dumps({'status': False, 'errors': error}), content_type="application/json")
+        return ruleset(request, ruleset_id, error)
+    if request.is_ajax():
+        return HttpResponse(json.dumps({'status': True}), content_type="application/json")
     return redirect('changelog_ruleset', ruleset_id = ruleset_id)
 
 def changelog_ruleset(request, ruleset_id):

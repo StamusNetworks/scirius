@@ -22,7 +22,7 @@
 <a href="{% url 'changelog_source' source.id %}">Changelog</a>
 </li>
 <li>
-<a href="{% url 'update_source' source.id %}">Update</a>
+<a href="{% url 'update_source' source.id %}"  id="update_source" >Update</a>
 </li>
 <li>
 <a href="{% url 'edit_source' source.id %}">Edit</a>
@@ -36,6 +36,48 @@
 </li>
 -->
 </ul>
+
+<script>
+$("a#update_source").click(function() {
+	$("#update_modal").modal('show');
+	$.ajax( {
+                type:"GET",
+                url:"{% url 'update_source' source.id %}",
+                success: function(data) {
+			if (data['status'] == True) {
+				$("#update_source").modal('hide');
+				window.location = "{% url 'changelog_ruleset' source.id %}";
+			} else {
+				$("#update_text").text("Error during update: " + data['errors']);
+			}
+		},
+                error: function(data) {
+			$("#update_text").text("Error during update");
+                },
+                timeout: 120000,
+	}
+  );
+});
+
+</script>
+
+<!-- Modal -->
+<div class="modal fade bs-example-modal-sm" id="update_modal" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="UpdateModalLabel">Please wait...</h4>
+      </div>
+      <div class="modal-body" id="update_text">
+        Scirius is updating source. This window will close when update is over.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endif %}
 {% endblock %}
 
