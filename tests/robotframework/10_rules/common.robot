@@ -16,11 +16,11 @@
 |                     | File Should Exist      | ${CACHE_DIR}rules/emerging-telnet.rules                           |                       |
 
 | Common Setup     | Open Browser        | ${BASE_URL}                             |                         |
-|                  | Login               |                                         |                         |
+|                  | Scirius Login       |                                         |                         |
 |                  | Set Proxy           |                                         |                         |
 | Common Teardown  | Clean sources       |                                         |                         |
 |                  | Close Browser       |                                         |                         |
-| Login            | [Documentation]     | Login as user                           |                         |
+| Scirius Login    | [Documentation]     | Login as user                           |                         |
 |                  | [Arguments]         | ${user}=${DEFAULT_USER}                 | ${pass}=${DEFAULT_PASS} |
 |                  | Go To               | ${BASE_URL}                             |                         |
 |                  | Debug Screenshot    |                                         |                         |
