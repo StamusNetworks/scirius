@@ -500,8 +500,8 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     }
     if (String(e.target).match('#indicators')) {
         draw_stats_timeline({{ from_date }}, 'stats.flow.emerg_mode_entered', '#flow_emergency', 0, [ '{{ suricata.name }}']);
-        draw_stats_timeline({{ from_date }}, 'stats.tcp.reassembly_gap', '#tcp_gaps', 0, [ '{{ suricata.name }}']);
-        draw_stats_timeline({{ from_date }}, 'stats.decoder.invalid', '#decoder_invalid', 0, [ '{{ suricata.name }}']);
+        draw_stats_timeline({{ from_date }}, 'stats.tcp.reassembly_gap_delta', '#tcp_gaps', 0, [ '{{ suricata.name }}']);
+        draw_stats_timeline({{ from_date }}, 'stats.decoder.invalid_delta', '#decoder_invalid', 0, [ '{{ suricata.name }}']);
     }
     if (String(e.target).match('#memory')) {
         draw_stats_timeline({{ from_date }}, 'stats.flow.memuse', '#flow_memuse', 0, [ '{{ suricata.name }}']);
