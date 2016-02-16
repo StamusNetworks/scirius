@@ -17,6 +17,7 @@ urlpatterns = patterns('',
     url(r'^(?P<path>app/kibana.*)$', KibanaProxyView.as_view()),
     # Forward timelion plugin
     url(r'^(?P<path>timelion/.*)$', KibanaProxyView.as_view()),
+    url(r'^(?P<path>bundles/.*)$', KibanaProxyView.as_view()),
     url(r'^kibana/(?P<path>.*)$', KibanaProxyView.as_view()),
     url(r'^elasticsearch/(?P<path>.*)$', ElasticsearchProxyView.as_view()),
     url(r'^evebox/(?P<path>.*)$', EveboxProxyView.as_view()),
