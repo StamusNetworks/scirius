@@ -73,12 +73,6 @@ class EditCategoryTable(tables.Table):
         model = Category
         fields = ("category_selection", "name", "descr", "created_date")
 
-class RuleTable(tables.Table):
-    sid = tables.LinkColumn('rule', args=[tables.A('pk')])
-    class Meta(DefaultMeta):
-        model = Rule
-        fields = ("sid", "msg")
-
 class EditRuleTable(tables.Table):
     rule_selection = tables.CheckBoxColumn(accessor="pk", attrs = { "th__input":
                                         {"onclick": "tables2_toggle(this, 'rule_selection')"}},
