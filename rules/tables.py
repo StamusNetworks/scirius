@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from rules.models import Ruleset, Source, Category, Rule, SourceAtVersion, SourceUpdate
+from rules.models import Ruleset, Source, Category, Rule, SourceAtVersion, SourceUpdate, Threshold
 import django_tables2 as tables
 
 class DefaultMeta:
@@ -103,9 +103,10 @@ class SourceUpdateTable(tables.Table):
 class StatusRulesetTable(tables.Table):
     name = tables.LinkColumn('ruleset', args=[tables.A('pk')])
     status = tables.Column(verbose_name='Status in ruleset')
+    threshold = tables.Column(verbose_name='Threshold')
     validity = tables.Column(verbose_name='Operational status')
     class Meta(DefaultMeta):
-        fields = ("name", "status", "validity")
+        fields = ("name", "status", "threshold", "validity")
         attrs = { 'id': 'rulesets', 'class': 'paleblue' }
 
 class RuleStatsTable(tables.Table):
@@ -114,9 +115,26 @@ class RuleStatsTable(tables.Table):
     class Meta(DefaultMeta):
         fields = ("host", "count")
 
+class RuleHostTable(tables.Table):
+    host = tables.Column()
+    count = tables.Column()
+    actions = tables.Column()
+    class Meta(DefaultMeta):
+        fields = ("host", "count", "actions")
+        attrs = { 'id': 'hosts', 'class': 'paleblue' }
+
 class ESIndexessTable(tables.Table):
     name = tables.Column()
     count = tables.Column()
     deleted = tables.Column()
     class Meta(DefaultMeta):
         fields = ("name", "count", "deleted")
+
+class ThresholdTable(tables.Table):
+    pk = tables.LinkColumn('threshold', args=[tables.A('pk')] )
+    threshold_type = tables.Column("Type")
+    net = tables.Column("Network")
+    rule = tables.Column("Rule")
+    class Meta(DefaultMeta):
+        model = Threshold
+        fields = ("pk", "threshold_type", "rule", "net")

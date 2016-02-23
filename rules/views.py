@@ -26,8 +26,8 @@ from django.conf import settings
 
 from scirius.utils import scirius_render, scirius_listing
 
-from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings
-from rules.tables import UpdateRuleTable, DeletedRuleTable
+from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold
+from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable
 
 from rules.elasticsearch import *
 from rules.influx import *
@@ -172,6 +172,7 @@ def category(request, cat_id):
         status = 'Inactive'
         if cat in ruleset.categories.all():
             status = 'Active'
+
         rulesets_status.append({'name': ruleset.name, 'pk':ruleset.pk, 'status':status})
     rulesets_status = StatusRulesetTable(rulesets_status)
     tables.RequestConfig(request).configure(rulesets_status)
@@ -205,6 +206,22 @@ def elasticsearch(request):
             from_date = request.GET.get('from_date', None)
             if from_date != None and sid != None:
                 hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
+                context = {'table': hosts}
+                return scirius_render(request, 'rules/table.html', context)
+        elif query == 'rule_src':
+            sid = int(request.GET.get('sid', None))
+            from_date = request.GET.get('from_date', None)
+            if from_date != None and sid != None:
+                hosts = es_get_field_stats(request, 'src_ip.raw', RuleHostTable, '*', from_date = from_date,
+                    qfilter = 'alert.signature_id=%d' % sid)
+                context = {'table': hosts}
+                return scirius_render(request, 'rules/table.html', context)
+        elif query == 'rule_dest':
+            sid = int(request.GET.get('sid', None))
+            from_date = request.GET.get('from_date', None)
+            if from_date != None and sid != None:
+                hosts = es_get_field_stats(request, 'dest_ip.raw', RuleHostTable, '*', from_date = from_date,
+                    qfilter = 'alert.signature_id=%d' % sid)
                 context = {'table': hosts}
                 return scirius_render(request, 'rules/table.html', context)
         elif query == 'timeline':
@@ -299,7 +316,10 @@ def rule(request, rule_id, key = 'pk'):
         status = 'Inactive'
         if rule in ruleset.generate():
             status = 'Active'
-        rulesets_status.append({'name': ruleset.name, 'pk':ruleset.pk, 'status':status, 'validity': 'Unknown'})
+        threshold = 'No'
+        if Threshold.objects.filter(rule = rule, ruleset = ruleset):
+            threshold = 'Yes'
+        rulesets_status.append({'name': ruleset.name, 'pk':ruleset.pk, 'status':status, 'validity': 'Unknown', 'threshold': threshold})
     rulesets_status = StatusRulesetTable(rulesets_status)
     tables.RequestConfig(request).configure(rulesets_status)
     context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status}
@@ -380,6 +400,61 @@ def toggle_availability(request, rule_id):
     rule_object.toggle_availability()
 
     return redirect(rule_object)
+
+def threshold_rule(request, rule_id):
+    rule_object = get_object_or_404(Rule, sid=rule_id)
+
+    if not request.user.is_staff:
+        context = { 'object': rule, 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/rule.html', context)
+
+    if request.method == 'POST': # If the form has been submitted...
+        if request.POST.has_key('threshold_type'):
+            if request.POST['threshold_type'] == 'threshold':
+                form = AddRuleThresholdForm(request.POST)
+            else:
+                form = AddRuleSuppressForm(request.POST)
+        else:
+            context = {'rule': rule_object, 'form': form, 'error': 'Invalid form, threshold type is missing'}
+            if request.POST['threshold_type'] == 'suppress':
+                context['type'] = 'suppress'
+            else:
+                context['type'] = 'threshold'
+            return scirius_render(request, 'rules/add_threshold.html', context)
+        if form.is_valid():
+            threshold = form.save(commit=False)
+            threshold.rule = rule_object
+            threshold.save()
+            return redirect(rule_object)
+        else:
+            context = {'rule': rule_object, 'form': form, 'error': 'Could not create threshold'}
+            if request.POST['threshold_type'] == 'suppress':
+                context['type'] = 'suppress'
+            else:
+                context['type'] = 'threshold'
+            return scirius_render(request, 'rules/add_threshold.html', context)
+    # FIXME Display list of matching threshold if exists
+    data = { 'gid': 1, 'count': 1, 'seconds': 60, 'type': 'limit', 'rule': rule_object, 'ruleset': 1 }
+    if request.GET.__contains__('action'):
+        data['threshold_type'] = request.GET.get('action', 'suppress')
+    if request.GET.__contains__('net'):
+        data['net'] = request.GET.get('net', None)
+    if request.GET.__contains__('dir'):
+        direction = request.GET.get('dir', 'both')
+        if direction == 'src':
+            direction = 'by_src'
+        elif direction == 'dest':
+            direction = 'by_dst'
+        data['track_by'] = direction
+
+    context = {'rule': rule_object}
+    if data['threshold_type'] == 'suppress':
+        context['form'] = AddRuleSuppressForm(data)
+        context['type'] = 'suppress'
+    else:
+        context['form'] = AddRuleThresholdForm(data)
+        context['type'] = 'threshold'
+    return scirius_render(request, 'rules/add_threshold.html', context)
 
 def suppress_category(request, cat_id, operation = 'suppress'):
     cat_object = get_object_or_404(Category, id=cat_id)
@@ -576,7 +651,9 @@ def ruleset(request, ruleset_id, mode = 'struct', error = None):
             categories_list[sourceatversion.source.name] = cats
         rules = RuleTable(ruleset.suppressed_rules.all())
         tables.RequestConfig(request).configure(rules)
-        context = {'ruleset': ruleset, 'categories_list': categories_list, 'sources': sources, 'rules': rules, 'mode': mode}
+        thresholds = ThresholdTable(Threshold.objects.filter(ruleset = ruleset))
+        tables.RequestConfig(request).configure(thresholds)
+        context = {'ruleset': ruleset, 'categories_list': categories_list, 'sources': sources, 'rules': rules, 'thresholds': thresholds, 'mode': mode}
         if error:
             context['error'] = error
     elif mode == 'display':
@@ -791,3 +868,29 @@ def info(request):
             data = info.memory()
     return HttpResponse(json.dumps(data),
                         content_type="application/json")
+
+def threshold(request, threshold_id):
+    threshold = get_object_or_404(Threshold, pk=threshold_id)
+    threshold.rule.highlight_content = SuriHTMLFormat(threshold.rule.content)
+    threshold.highlight_content = SuriHTMLFormat(str(threshold))
+    context = { 'threshold': threshold }
+    return scirius_render(request, 'rules/threshold.html', context)
+
+def edit_threshold(request, threshold_id):
+    threshold = get_object_or_404(Threshold, pk=threshold_id)
+    context = { 'threshold': threshold }
+    return scirius_render(request, 'rules/threshold.html', context)
+
+def delete_threshold(request, threshold_id):
+    threshold = get_object_or_404(Threshold, pk=threshold_id)
+    ruleset = threshold.ruleset
+    if not request.user.is_staff:
+        context = { 'object': threshold, 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/delete.html', context)
+
+    if request.method == 'POST': # If the form has been submitted...
+        threshold.delete()
+        return redirect(ruleset)
+    else:
+        context = {'object': threshold, 'delfn': 'delete_threshold' }
+        return scirius_render(request, 'rules/delete.html', context)

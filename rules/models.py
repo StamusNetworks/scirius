@@ -752,6 +752,12 @@ class Ruleset(models.Model):
         rules = list(set(rules.all()) - set(self.suppressed_rules.all()))
         return rules
 
+    def generate_threshold(self, directory):
+        thresholdfile = os.path.join(directory, 'threshold.config')
+        with open(thresholdfile, 'w') as f:
+            for threshold in Threshold.objects.filter(ruleset = self):
+                f.write("%s\n" % (threshold))
+
     def copy(self, name):
         orig_sources = self.sources.all()
         orig_categories = self.categories.all()
@@ -769,6 +775,8 @@ class Ruleset(models.Model):
     def export_files(self, directory):
         for src in self.sources.all():
             src.export_files(directory)
+        # generate threshold.config
+        self.generate_threshold(directory)
 
     def diff(self, mode='long'):
         sourcesatversion = self.sources.all()
@@ -836,6 +844,31 @@ class Ruleset(models.Model):
     def needs_test(self):
         self.need_test = True
         self.save()
+
+class Threshold(models.Model):
+    THRESHOLD_TYPES = (('threshold', 'threshold'), ('event_filter', 'event_filter'), ('suppress', 'suppress'))
+    THRESHOLD_TYPE_TYPES = (('limit', 'limit'), ('threshold', 'threshold'), ('both', 'both'))
+    TRACK_BY_CHOICES= (('by_src', 'by_src'),('by_dst', 'by_dst'))
+    descr = models.CharField(max_length=400, blank = True)
+    threshold_type = models.CharField(max_length=20, choices=THRESHOLD_TYPES, default='suppress')
+    type = models.CharField(max_length=20, choices=THRESHOLD_TYPE_TYPES, default='limit')
+    gid = models.IntegerField(default=1)
+    rule = models.ForeignKey(Rule, default = None)
+    ruleset = models.ForeignKey(Ruleset, default = None)
+    track_by = models.CharField(max_length= 10, choices = TRACK_BY_CHOICES, default='by_src')
+    net = models.CharField(max_length=100, blank = True)
+    count = models.IntegerField(default=1)
+    seconds = models.IntegerField(default=60)
+
+    def __unicode__(self):
+        rep = ""
+        if self.threshold_type == "suppress":
+            rep = "suppress gen_id %d, sig_id %d" % (self.gid, self.rule.sid)
+            if self.net:
+                rep += ", track_by %s, ip %s" % (self.track_by, self.net)
+        else:
+            rep = "%s gen_id %d, sig_id %d, type %s, track %s, count %d, seconds %d" % (self.threshold_type, self.gid, self.rule.sid, self.type, self.track_by, self.count, self.seconds)
+        return rep
 
 def dependencies_check(obj):
     if obj == Source:

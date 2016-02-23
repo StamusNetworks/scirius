@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import forms
 from django.utils import timezone
-from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings
+from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold
 
 class SystemSettingsForm(forms.ModelForm):
     class Meta:
@@ -98,3 +98,15 @@ class RulesetSuppressForm(forms.Form):
         super(RulesetSuppressForm, self).__init__(*args, **kwargs)
         rulesets = Ruleset.objects.all()
         self.fields['ruleset'] = forms.ModelChoiceField(rulesets, empty_label=None)
+
+class AddRuleThresholdForm(forms.ModelForm):
+    threshold_type = forms.HiddenInput()
+    class Meta:
+        model = Threshold
+        exclude = ['rule', 'gid', 'descr', 'net']
+
+class AddRuleSuppressForm(forms.ModelForm):
+    threshold_type = forms.HiddenInput()
+    class Meta:
+        model = Threshold
+        exclude = ['rule', 'gid', 'descr', 'type', 'count', 'seconds']

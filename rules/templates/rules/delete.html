@@ -7,7 +7,7 @@
 
 {% block content %}
 
-<h2 class="title">Are you sure you want to delete object {{ object.name }}?</h2>
+<h2 class="title">Are you sure you want to delete object {{ object.name|default:object.pk }}?</h2>
 
 <form class="form" action={% url delfn object.id %} method="post">{% csrf_token %}
 <button class="btn btn-primary" type="submit">

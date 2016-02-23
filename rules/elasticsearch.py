@@ -606,6 +606,47 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
         tables.RequestConfig(request).configure(rules)
     return rules
 
+def es_get_field_stats(request, field, FieldTable, hostname, key='host', count=20, from_date=0 , qfilter = None):
+    templ = Template(TOP_QUERY)
+    context = Context({'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': field})
+    if qfilter != None:
+        query_filter = " AND " + qfilter
+        context['query_filter'] = re.sub('"','\\"', query_filter)
+    data = templ.render(context)
+    es_url = get_es_url(from_date)
+    req = urllib2.Request(es_url, data)
+    try:
+        out = urllib2.urlopen(req)
+    except:
+        return None
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    # total number of results
+    try:
+        if settings.ELASTICSEARCH_2X:
+            data = data['aggregations']['table']['buckets']
+        else:
+            data = data['facets']['table']['terms']
+    except:
+        objects = FieldTable([])
+        tables.RequestConfig(request).configure(objects)
+        return objects
+    objects = []
+    if data != None:
+        for elt in data:
+            if settings.ELASTICSEARCH_2X:
+                fstat = {key: elt['key'], 'count': elt['doc_count'] }
+            else:
+                fstat = {key: elt['term'], 'count': elt['count'] }
+            objects.append(fstat)
+        objects = FieldTable(objects)
+        tables.RequestConfig(request).configure(objects)
+    else:
+        objects = FieldTable([])
+        tables.RequestConfig(request).configure(objects)
+    return objects
+
 def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
     templ = Template(SID_BY_HOST_QUERY)
     context = Context({'rule_sid': sid, 'alerts_number': count, 'from_date': from_date})

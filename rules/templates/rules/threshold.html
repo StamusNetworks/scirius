@@ -1,0 +1,60 @@
+{% extends "rules/base.html" %}
+
+
+{% block sidebar %}
+<div class="panel-heading">
+    <h2 class="panel-title">threshold {{ threshold.pk }}</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>Ruleset: <a href="{% url 'ruleset' threshold.ruleset.pk %}">{{ threshold.ruleset.name }}</a></li>
+<li>Signature: <a href="{% url 'rule' threshold.rule.sid %}">{{ threshold.rule.msg }}</a></li>
+</ul>
+</div>
+<div class="panel-heading">
+<h2 class="panel-title">Action</h2>
+</div>
+<div class="panel-body">
+        <ul class="action"> 
+        <li> <a href="{% url 'delete_threshold' threshold.pk %}">Delete</a></li>
+        <li> <a href="{% url 'edit_threshold' threshold.pk %}">Edit</a></li>
+        </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<h2>Threshold for {{ threshold.rule.sid }}</h2>
+
+{% if threshold.threshold_type == "suppress" %}
+Alert is suppressed for:
+<ul>
+  {% if threshold.track_by == 'by_src' %}
+<li>Source: {{ threshold.net }}</li>
+  {% elif threshold.track_by == 'by_dst' %}
+<li>Destination: {{ threshold.net }}</li>
+  {% else %}
+<li>Address: {{ threshold.net }}</li>
+  {% endif %}
+</ul>
+{% else %}
+Alert is limited to:
+<ul>
+<li> {{ threshold.count }} per {{ threshold.seconds }} sec</li>
+  {% if threshold.track_by == 'by_src' %}
+  <li>By source</li>
+  {% elif threshold.track_by == 'by_dst' %}
+  <li>By destination<li>
+  {% else %}
+  <li>By source or destination</li>
+  {% endif %}
+</ul>
+{% endif %}
+<h2>Threshold expression</h2>
+<div class="rule">
+      {{ threshold.highlight_content|safe }}
+</div>
+<h2>Signature</h2>
+<div class="rule">
+      {{ threshold.rule.highlight_content|safe }}
+</div>
+{% endblock %}
