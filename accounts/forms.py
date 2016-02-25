@@ -30,16 +30,18 @@ class LoginForm(forms.Form):
 TIMEZONES = ((x, x) for x in pytz.all_timezones)
 
 class UserSettingsForm(forms.ModelForm):
+    TIMEZONES = ((x, x) for x in pytz.all_timezones)
     timezone = forms.ChoiceField(choices = TIMEZONES)
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'timezone', 'is_active', 'is_superuser', 'is_staff']
 
 class NormalUserSettingsForm(forms.ModelForm):
+    TIMEZONES = ((x, x) for x in pytz.all_timezones)
     timezone = forms.ChoiceField(choices = TIMEZONES)
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'is_active']
+        fields = ['first_name', 'last_name', 'email', 'timezone']
 
 class PasswordForm(forms.Form):
     password = forms.CharField(label="New user password", widget=forms.PasswordInput)
