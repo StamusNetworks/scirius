@@ -67,7 +67,10 @@ def editview(request, action):
             if (action == 'password'):
                 form = PasswordChangeForm(data=request.POST, user = request.user)
             elif (action == 'settings'):
-                form = UserSettingsForm(request.POST, instance = request.user)
+                if request.user.is_superuser:
+                    form = UserSettingsForm(request.POST, instance = request.user)
+                else:
+                    form = NormalUserSettingsForm(request.POST, instance = request.user)
             if form.is_valid():
                 ruser = form.save(commit = False)
                 if not orig_superuser:
