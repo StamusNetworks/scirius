@@ -235,11 +235,7 @@ $( 'document' ).ready(get_es_detailed_health());
 
 function get_es_indices_stats() {
 
-    if (window.location.href.indexOf("query=indices") >= 0) {
-        indices_url = window.location.href;
-    } else {
-        indices_url = window.location.href + "?query=indices";
-    }
+    var indices_url = "{% url 'elasticsearch' %}?query=indices"
     $.ajax(
     {
             type:"GET",
