@@ -5,8 +5,8 @@
 | *Keyword*      |                               |                                  |                                  |                                  |           |   |
 | Check ES stats | [Documentation]               | Check data was logged in ES      |                                  |                                  |           |   |
 |                | [Arguments]                   | ${logstash_prefix}=logstash-ssh- | ${add_date}=1                    |                                  |           |   |
-|                | Go To                         | ${BASE_URL}rules/es              |                                  |                                  |           |   |
-|                | Click Element                 | xpath=//a[@href='#indices']      |                                  |                                  |           |   |
+|                | SN Go To                      | ${BASE_URL}rules/es              |                                  |                                  |           |   |
+|                | SN Click Element              | xpath=//a[@href='#indices']      |                                  |                                  |           |   |
 |                | Wait until Element is visible | xpath=//table[@class='paleblue'] |                                  |                                  |           |   |
 |                | Debug Screenshot              |                                  |                                  |                                  |           |   |
 |                | ${prefix}=                    | _ES add date                     | prefix=${logstash_prefix}        |                                  |           |   |

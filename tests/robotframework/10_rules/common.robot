@@ -1,6 +1,7 @@
-| * Settings * |                |
-| Resource     | ../config.txt  |
-| Resource     | settings.robot |
+| * Settings * |                      |
+| Resource     | ../config.txt        |
+| Resource     | settings.robot       |
+| Resource     | selenium_debug.robot |
 
 | *Keyword*           |                        |                                                                   |                       |
 | Suite Setup         | [Documentation]        | Set basic configuration                                           |                       |
@@ -22,16 +23,16 @@
 |                  | Close Browser       |                                         |                         |
 | Scirius Login    | [Documentation]     | Login as user                           |                         |
 |                  | [Arguments]         | ${user}=${DEFAULT_USER}                 | ${pass}=${DEFAULT_PASS} |
-|                  | Go To               | ${BASE_URL}                             |                         |
+|                  | SN Go To            | ${BASE_URL}                             |                         |
 |                  | Debug Screenshot    |                                         |                         |
 |                  | Input Text          | id_username                             | ${user}                 |
 |                  | Input Text          | id_password                             | ${pass}                 |
 |                  | Submit Form         |                                         |                         |
 |                  | Page Should Contain | Logged in as ${user}                    |                         |
 | Logout           | [Documentation]     | Logout                                  |                         |
-|                  | Go To               | ${BASE_URL}                             |                         |
-|                  | Click Element       | id=logo                                 |                         |
-|                  | Click Element       | link=Logout                             |                         |
+|                  | SN Go To            | ${BASE_URL}                             |                         |
+|                  | SN Click Element    | id=logo                                 |                         |
+|                  | SN Click Element    | link=Logout                             |                         |
 |                  | Page Should Contain | Login to Scirius                        |                         |
 | Debug Screenshot | [Documentation]     | Take a screenshot when debug is enabled |                         |
 |                  | Run Keyword If      | ${DEBUG} == 1                           | Capture Page Screenshot |
