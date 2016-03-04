@@ -14,3 +14,4 @@
 | ${DEFAULT_SOURCE}       | TestSource                                                                  |
 | ${DEFAULT_RULESET}      | TestRuleset                                                                 |
 | ${DEBUG}                | 0                                                                           |
+| ${DJANGO_LOGFILE}       | /home/admin/django-debug.log                                                |
