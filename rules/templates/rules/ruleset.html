@@ -204,7 +204,7 @@ Updated: {{ cdiff.stats.updated }}
 <script>
 function test_ruleset(ruleset_pk)
 {
-    var tgturl = "/rules/ruleset/" + ruleset_pk + "/test";
+    var tgturl = "{% url 'test_ruleset' ruleset.id %}?ajax=1";
 
     $.ajax({
        url: tgturl,
