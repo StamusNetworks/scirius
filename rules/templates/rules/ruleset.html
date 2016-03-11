@@ -17,7 +17,11 @@
       {% if ruleset.need_test %}
        Checking
        {% else %}
+       {% if ruleset.validity %}
         {{ ruleset.validity }}
+       {% else %}
+        <a href="#ruleset_status">{{ ruleset.validity }}</a>
+       {% endif %}
        {% endif %}
        </span></li>
        <li><span class="type">Rules count:</span> <span id="ruleset_rules_count">
@@ -215,7 +219,8 @@ function test_ruleset(ruleset_pk)
             if (data['status'] == true) { 
                 fadeChange($("#ruleset_status_menu"), "True");
             } else {
-                fadeChange($("#ruleset_status_menu"), "False");
+		$("#ruleset_status_menu").empty();
+		$("#ruleset_status_menu").append("<a href='#ruleset_status'>False</a>");
                 error_content = ""
                 for (i = 0; i < data['errors'].length; i++) {
                     if (data['errors'][i]['sid']) {
