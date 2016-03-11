@@ -221,6 +221,10 @@ function test_ruleset(ruleset_pk)
             } else {
 		$("#ruleset_status_menu").empty();
 		$("#ruleset_status_menu").append("<a href='#ruleset_status'>False</a>");
+		$("#error").empty();
+		$("#error").append("Ruleset has errors. See <a href='#ruleset_status'>list at bottom of page</a>.");
+		$("#error").parent("div").toggle();
+
                 error_content = ""
                 for (i = 0; i < data['errors'].length; i++) {
                     if (data['errors'][i]['sid']) {
