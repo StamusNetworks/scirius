@@ -18,11 +18,12 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from datetime import datetime
 from time import time
 
 from django.shortcuts import render, redirect
 from django.db import IntegrityError
+
+from django.utils import timezone
 
 # Create your views here.
 from django.http import HttpResponse
@@ -82,7 +83,7 @@ def edit(request):
 
     if request.method == 'POST':
         if suri:
-            suri.updated_date = datetime.now()
+            suri.updated_date = timezone.now()
             form = SuricataForm(request.POST, instance = suri)
         else:
             form = SuricataForm(request.POST)
@@ -94,8 +95,8 @@ def edit(request):
                 suricata = Suricata.objects.create(name = form.cleaned_data['name'],
                         descr = form.cleaned_data['descr'],
                         output_directory = form.cleaned_data['output_directory'],
-                        created_date = datetime.now(),
-                        updated_date = datetime.now(),
+                        created_date = timezone.now(),
+                        updated_date = timezone.now(),
                         ruleset = form.cleaned_data['ruleset'],
                         )
             except IntegrityError, error:
@@ -136,12 +137,12 @@ def update(request):
             message.append("Rule downloaded at %s. " % (suri.ruleset.updated_date))
         if form.cleaned_data['build']:
             suri.generate()
-            suri.updated_date = datetime.now()
+            suri.updated_date = timezone.now()
             suri.save()
             message.append("Successful ruleset build at " + str(suri.updated_date))
         if form.cleaned_data['push']:
             ret = suri.push()
-            suri.updated_date = datetime.now()
+            suri.updated_date = timezone.now()
             suri.save()
             if ret:
                 message.append("Successful asked ruleset reload at " + str(suri.updated_date))
