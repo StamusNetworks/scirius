@@ -73,6 +73,8 @@ class Suricata(models.Model):
         rfile = open(reload_file, 'w')
         rfile.write(str(timezone.now()))
         rfile.close()
+        # In case user has changed configuration file before reloading
+        self.ruleset.needs_test()
         return True
 
 def get_probe_hostnames(limit = 10):
