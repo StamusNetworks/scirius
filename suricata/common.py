@@ -244,7 +244,31 @@ config classification: default-login-attempt,Attempt to login by a default usern
         # if not return error
         return {'status': False, 'errors': errdata}
 
+    def get_system_config_buffer(self):
+        from suricata.models import Suricata
+        suricata = Suricata.objects.all()
+        if suricata == None:
+            return None
+        config_buffer = None
+        (conf_dir, rules_dir) = os.path.split(suricata[0].output_directory.rstrip('/'))
+        suri_yaml = os.path.join(conf_dir, 'suricata.yaml')
+        print suri_yaml
+        if os.path.isfile(suri_yaml):
+            with open(suri_yaml, 'r') as cf:
+                config_buffer = cf.read()
+                config_buffer += """
+logging:
+  default-log-level: error
+  outputs:
+  - console:
+      enabled: yes
+      type: json
+"""
+        return config_buffer
+
     def rule(self, rule_buffer, config_buffer = None, related_files = {}):
+        if config_buffer == None:
+            config_buffer = self.get_system_config_buffer()
         prov_result = self.rule_buffer(rule_buffer, config_buffer = config_buffer, related_files = related_files)
         if prov_result['status']:
             return prov_result
@@ -252,6 +276,8 @@ config classification: default-login-attempt,Attempt to login by a default usern
         return prov_result
 
     def rules(self, rule_buffer, config_buffer = None, related_files = {}):
+        if config_buffer == None:
+            config_buffer = self.get_system_config_buffer()
         prov_result = self.rule_buffer(rule_buffer, config_buffer = config_buffer, related_files = related_files)
         if prov_result['status']:
             return prov_result
