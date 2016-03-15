@@ -447,6 +447,7 @@ def activate_source(request, source_id, ruleset_id):
     for cat in Category.objects.filter(source = src):
         ruleset.categories.add(cat)
 
+    ruleset.needs_test()
     ruleset.save()
     return HttpResponse(json.dumps(True), content_type="application/json")
 
