@@ -22,6 +22,7 @@ from django.core.management.base import BaseCommand, CommandError
 from rules.models import Ruleset
 from suricata.models import Suricata
 from datetime import datetime
+import os
 
 class Command(BaseCommand):
     args = 'name description output_dir ruleset'
@@ -33,10 +34,12 @@ class Command(BaseCommand):
             ruleset = Ruleset.objects.filter(name = nruleset)[0]
         except:
             raise CommandError('No Ruleset with name "%s" found' % (nruleset))
+        yaml_file = os.path.join(os.path.split(output.rstrip("/"))[0], 'suricata.yaml')
         suricata = Suricata.objects.create(
             name = name,
             descr = descr,
             output_directory = output,
+            yaml_file = yaml_file,
             ruleset = ruleset,
             created_date = datetime.now(),
             updated_date = datetime.now()
