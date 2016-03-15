@@ -191,6 +191,9 @@ Updated: {{ cdiff.stats.updated }}
 <h2 class="title">Ruleset has errors</h2>
 <div id="ruleset_status"></div>
 {% if not ruleset.need_test and ruleset.errors %}
+    {% if ruleset.json_errors.format == 'raw' %}
+       <pre>{{ ruleset.json_errors.message }}</pre>
+    {% else %}
     <ul>
     {% for error in ruleset.json_errors %}
         {% if error.sid %}
@@ -200,6 +203,7 @@ Updated: {{ cdiff.stats.updated }}
         {% endif %}
     {% endfor %}
     </ul>
+    {% endif %}
 {% endif %}
 </div>
 </div>
@@ -226,14 +230,19 @@ function test_ruleset(ruleset_pk)
 		$("#error").parent("div").toggle();
 
                 error_content = ""
-                for (i = 0; i < data['errors'].length; i++) {
+                if (data['errors']['format'] == 'raw') {
+                    error_content = data['errors']['message'];
+                    $("#ruleset_status").append('<pre>' + error_content + '</pre>');
+                } else {
+                  for (i = 0; i < data['errors'].length; i++) {
                     if (data['errors'][i]['sid']) {
                         error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <a href="{% url 'rules_index' %}rule/' + parseInt(data['errors'][i]['sid']) + '"><span>' + data['errors'][i]['message'] + '</span></a></li>';
                     } else {
                         error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
                     }
+                  }
+                  $("#ruleset_status").append('<ul>' + error_content + '</ul>');
                 }
-                $("#ruleset_status").append('<ul>' + error_content + '</ul>');
                 $("#ruleset_status_row").fadeIn();
             }
           },
