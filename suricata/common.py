@@ -176,7 +176,7 @@ config classification: default-login-attempt,Attempt to login by a default usern
             try:
                 s_err = json.loads(line)
             except:
-                return {'message': error}
+                return {'message': error, 'format': 'raw'}
             errno = s_err['engine']['error_code']
             if not single or errno not in self.RULEFILE_ERRNO:
                 if not errno in self.USELESS_ERRNO:
