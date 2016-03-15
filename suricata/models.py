@@ -35,7 +35,8 @@ def validate_hostname(value):
 class Suricata(models.Model):
     name = models.CharField(max_length=100, unique = True, validators = [validate_hostname])
     descr = models.CharField(max_length=400)
-    output_directory = models.CharField(max_length=400)
+    output_directory = models.CharField('Rules directory', max_length=400)
+    yaml_file = models.CharField('Suricata configuration file', max_length=400)
     created_date = models.DateTimeField('date created')
     updated_date = models.DateTimeField('date updated', blank = True)
     ruleset = models.ForeignKey(Ruleset, blank = True, null = True, on_delete=models.SET_NULL)

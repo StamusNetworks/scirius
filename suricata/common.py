@@ -250,11 +250,8 @@ config classification: default-login-attempt,Attempt to login by a default usern
         if suricata == None:
             return None
         config_buffer = None
-        (conf_dir, rules_dir) = os.path.split(suricata[0].output_directory.rstrip('/'))
-        suri_yaml = os.path.join(conf_dir, 'suricata.yaml')
-        print suri_yaml
-        if os.path.isfile(suri_yaml):
-            with open(suri_yaml, 'r') as cf:
+        if os.path.isfile(self.yaml_file):
+            with open(self.yaml_file, 'r') as cf:
                 config_buffer = cf.read()
                 config_buffer += """
 logging:
