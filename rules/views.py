@@ -396,6 +396,7 @@ def suppress_category(request, cat_id, operation = 'suppress'):
                 ruleset.categories.remove(cat_object)
             elif operation == 'enable':
                 ruleset.categories.add(cat_object)
+            ruleset.needs_test()
             ruleset.save()
         return redirect(cat_object)
     form = RulesetSuppressForm()
