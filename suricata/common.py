@@ -252,7 +252,7 @@ config classification: default-login-attempt,Attempt to login by a default usern
         suricata = suricata[0]
         config_buffer = None
         if os.path.isfile(suricata.yaml_file) and os.access(suricata.yaml_file, os.R_OK):
-            with open(self.yaml_file, 'r') as cf:
+            with open(suricata.yaml_file, 'r') as cf:
                 config_buffer = cf.read()
                 config_buffer += """
 logging:
