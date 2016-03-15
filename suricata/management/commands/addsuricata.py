@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django.core.management.base import BaseCommand, CommandError
 from rules.models import Ruleset
 from suricata.models import Suricata
-from datetime import datetime
+from django.utils import timezone
 import os
 
 class Command(BaseCommand):
@@ -41,8 +41,8 @@ class Command(BaseCommand):
             output_directory = output,
             yaml_file = yaml_file,
             ruleset = ruleset,
-            created_date = datetime.now(),
-            updated_date = datetime.now()
+            created_date = timezone.now(),
+            updated_date = timezone.now()
             )
         self.stdout.write('Successfully created suricata "%s"' % suricata.name)
 
