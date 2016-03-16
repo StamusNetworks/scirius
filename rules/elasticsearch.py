@@ -30,13 +30,13 @@ import re
 
 URL = "http://%s/%s/_search?ignore_unavailable=true"
 
-ALERT_ID_QUERY = """
+TOP_QUERY = """
 {
   "facets": {
     "table": {
       "terms": {
-        "field": "alert.signature_id",
-        "size": {{ alerts_number }},
+        "field": "{{ field }}",
+        "size": {{ count }},
         "exclude": []
       },
       "facet_filter": {
@@ -79,14 +79,14 @@ ALERT_ID_QUERY = """
 """
 
 if settings.ELASTICSEARCH_2X:
-    ALERT_ID_QUERY = """
+    TOP_QUERY = """
 {
   "size": 0,
   "aggs": {
-    "alert": {
+    "table": {
       "terms": {
-        "field": "alert.signature_id",
-        "size": {{ alerts_number }},
+        "field": "{{ field }}",
+        "size": {{ count }},
         "order": {
           "_count": "desc"
         }
@@ -557,8 +557,8 @@ def get_es_url(from_date, data = 'alert'):
     return URL % (settings.ELASTICSEARCH_ADDRESS, indexes)
 
 def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None):
-    templ = Template(ALERT_ID_QUERY)
-    context = Context({'appliance_hostname': hostname, 'alerts_number': count, 'from_date': from_date})
+    templ = Template(TOP_QUERY)
+    context = Context({'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': 'alert.signature_id'})
     if qfilter != None:
         query_filter = " AND " + qfilter
         context['query_filter'] = re.sub('"','\\"', query_filter)
@@ -575,7 +575,7 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
     # total number of results
     try:
         if settings.ELASTICSEARCH_2X:
-            data = data['aggregations']['alert']['buckets']
+            data = data['aggregations']['table']['buckets']
         else:
             data = data['facets']['table']['terms']
     except:
