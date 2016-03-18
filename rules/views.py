@@ -322,9 +322,18 @@ def rule(request, rule_id, key = 'pk'):
         rulesets_status.append({'name': ruleset.name, 'pk':ruleset.pk, 'status':status, 'validity': 'Unknown', 'threshold': threshold})
     rulesets_status = StatusRulesetTable(rulesets_status)
     tables.RequestConfig(request).configure(rulesets_status)
-    thresholds = RuleThresholdTable(Threshold.objects.filter(rule = rule))
-    tables.RequestConfig(request).configure(thresholds)
-    context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status, 'thresholds': thresholds}
+
+    context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status }
+    thresholds = Threshold.objects.filter(rule = rule, threshold_type = 'threshold')
+    if thresholds:
+        thresholds = RuleThresholdTable(thresholds)
+        tables.RequestConfig(request).configure(thresholds)
+        context['thresholds'] = thresholds
+    suppress = Threshold.objects.filter(rule = rule, threshold_type = 'suppress')
+    if suppress:
+        suppress = RuleSuppressTable(suppress)
+        tables.RequestConfig(request).configure(suppress)
+        context['suppress'] = suppress
     try:
         context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
     except:

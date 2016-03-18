@@ -96,16 +96,29 @@
 
 </div> <!-- col -->
 
+{% if thresholds %}
 <div class="col-md-6">
 <h2 class="title">Thresholds</h2>
 
 {% render_table thresholds %}
 
 </div> <!-- col -->
+{% endif %}
+
+{% if suppress %}
+<div class="col-md-6">
+<h2 class="title">Suppressions</h2>
+
+{% render_table suppress %}
+
+</div> <!-- col -->
+{% endif %}
+
+
 
 
 {% if elasticsearch %}
-<div class="col-md-6">
+<div class="col-md-4">
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-12">
@@ -138,7 +151,7 @@
 </div> <!-- col -->
 
 
-<div class="col-md-6">
+<div class="col-md-4">
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-12">
@@ -171,7 +184,7 @@
 </div> <!-- col -->
 
 
-<div class="col-md-6">
+<div class="col-md-4">
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-12">
