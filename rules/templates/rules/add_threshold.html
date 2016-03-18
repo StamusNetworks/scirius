@@ -14,7 +14,18 @@
 {{ missing }}
 
 {% else %}
- {% if form %}
+ {% if container %}
+<div class="alert alert-danger">Threshold is included in <a href="{% url 'threshold' container.pk %}">{{ container }}</a>.</div>
+ {% endif %}
+
+{% if thresholds %}
+<h2>Existing thresholds</h2>
+{% load render_table from django_tables2 %}
+{% render_table thresholds %}
+{% endif %}
+
+{% if form %}
+<h2>Add threshold</h2>
 
 <div class="container-fluid">
 <div class="row">

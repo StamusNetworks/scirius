@@ -447,10 +447,18 @@ def threshold_rule(request, rule_id):
             direction = 'by_dst'
         data['track_by'] = direction
 
+    container = None
+    pth = Threshold(rule = rule_object, track_by = data['track_by'], threshold_type = data['threshold_type'] )
     thresholds = Threshold.objects.filter(rule = rule_object)
     for threshold in thresholds:
+        if threshold.contain(pth):
+            container = threshold
+            break
+    if thresholds:
+        thresholds = ThresholdTable(thresholds)
+        tables.RequestConfig(request).configure(thresholds)
         
-    context = {'rule': rule_object, 'thresholds': thresholds}
+    context = {'rule': rule_object, 'thresholds': thresholds, 'container': container }
     if data['threshold_type'] == 'suppress':
         context['form'] = AddRuleSuppressForm(data)
         context['type'] = 'suppress'
