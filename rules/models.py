@@ -32,6 +32,7 @@ import os
 import git
 import shutil
 import json
+import IPy
 
 # Create your models here.
 
@@ -869,6 +870,16 @@ class Threshold(models.Model):
         else:
             rep = "%s gen_id %d, sig_id %d, type %s, track %s, count %d, seconds %d" % (self.threshold_type, self.gid, self.rule.sid, self.type, self.track_by, self.count, self.seconds)
         return rep
+
+    def contain(self, elt):
+        if elt.threshold_type != self.threshold_type:
+            return False
+        if elt.track_by != self.track_by:
+            return False
+        if elt.threshold_type == 'suppress':
+            if not IPy.IP(self.net).overlaps(IPy.IP(elt.net)):
+                return False
+        return True
 
 def dependencies_check(obj):
     if obj == Source:

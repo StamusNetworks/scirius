@@ -12,4 +12,5 @@ requests
 six
 smmap
 urllib3
+ipy
 # pyinotify
