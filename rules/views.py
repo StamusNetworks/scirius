@@ -459,7 +459,9 @@ def threshold_rule(request, rule_id):
         data['track_by'] = direction
 
     container = None
-    pth = Threshold(rule = rule_object, track_by = data['track_by'], threshold_type = data['threshold_type'] )
+    pth = Threshold(rule = rule_object, track_by = data['track_by'], threshold_type = data['threshold_type'])
+    if data.has_key('net'):
+        pth.net = data['net']
     thresholds = Threshold.objects.filter(rule = rule_object)
     for threshold in thresholds:
         if threshold.contain(pth):

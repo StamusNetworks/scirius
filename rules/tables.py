@@ -137,7 +137,7 @@ class ThresholdTable(tables.Table):
     rule = tables.Column("Rule")
     class Meta(DefaultMeta):
         model = Threshold
-        fields = ("pk", "threshold_type", "rule", "net")
+        fields = ("pk", "threshold_type", "ruleset", "rule", "net")
 
 class RuleSuppressTable(tables.Table):
     pk = tables.LinkColumn('threshold', args=[tables.A('pk')], verbose_name='ID')

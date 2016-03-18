@@ -15,7 +15,7 @@
 
 {% else %}
  {% if container %}
-<div class="alert alert-danger">Threshold is included in <a href="{% url 'threshold' container.pk %}">{{ container }}</a>.</div>
+<div class="alert alert-danger">For "{{ container.ruleset }}", threshold would be included in <a href="{% url 'threshold' container.pk %}">{{ container }}</a>.</div>
  {% endif %}
 
 {% if thresholds %}
