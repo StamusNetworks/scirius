@@ -110,3 +110,8 @@ class AddRuleSuppressForm(forms.ModelForm):
     class Meta:
         model = Threshold
         exclude = ['rule', 'gid', 'descr', 'type', 'count', 'seconds']
+
+class EditThresholdForm(forms.ModelForm):
+    class Meta:
+        model = Threshold
+        exclude = ['pk', 'rule']

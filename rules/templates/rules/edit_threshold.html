@@ -1,0 +1,44 @@
+{% extends "rules/base.html" %}
+{% load bootstrap3  %}
+
+{% block sidebar %}
+<div class="panel-heading">
+    <h2 class="panel-title">threshold {{ threshold.pk }}</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>Ruleset: <a href="{% url 'ruleset' threshold.ruleset.pk %}">{{ threshold.ruleset.name }}</a></li>
+<li>Signature: <a href="{% url 'rule' threshold.rule.sid %}">{{ threshold.rule.msg }}</a></li>
+</ul>
+</div>
+<div class="panel-heading">
+<h2 class="panel-title">Action</h2>
+</div>
+<div class="panel-body">
+        <ul class="action"> 
+        <li> <a href="{% url 'delete_threshold' threshold.pk %}">Delete</a></li>
+        <li> <a href="{% url 'edit_threshold' threshold.pk %}">Edit</a></li>
+        </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<h2>Edit threshold</h2>
+
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-6">
+<form action="{% url 'edit_threshold' threshold.pk %}" method="post" class="form">{% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "ok" %} Submit
+        </button>
+    {% endbuttons %}
+</form>
+</div>
+</div>
+</div>
+
+
+{% endblock %}

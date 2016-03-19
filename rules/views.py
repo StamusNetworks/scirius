@@ -902,8 +902,23 @@ def threshold(request, threshold_id):
 
 def edit_threshold(request, threshold_id):
     threshold = get_object_or_404(Threshold, pk=threshold_id)
-    context = { 'threshold': threshold }
-    return scirius_render(request, 'rules/threshold.html', context)
+    rule = threshold.rule
+
+    if not request.user.is_staff:
+        return redirect(threshold)
+
+    if request.method == 'POST': # If the form has been submitted...
+        form = EditThresholdForm(request.POST, instance=threshold) # A form bound to the POST data
+        if form.is_valid(): # All validation rules pass
+            form.save()
+            return redirect(threshold)
+        else:
+            context = {'threshold': threshold, 'form': form, 'error': 'Invalid form'}            
+            return scirius_render(request, 'rules/edit_threshold.html', context)
+    else:
+        form = EditThresholdForm(instance=threshold)
+        context = { 'threshold': threshold, 'form': form }
+        return scirius_render(request, 'rules/edit_threshold.html', context)
 
 def delete_threshold(request, threshold_id):
     threshold = get_object_or_404(Threshold, pk=threshold_id)

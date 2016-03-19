@@ -871,6 +871,10 @@ class Threshold(models.Model):
             rep = "%s gen_id %d, sig_id %d, type %s, track %s, count %d, seconds %d" % (self.threshold_type, self.gid, self.rule.sid, self.type, self.track_by, self.count, self.seconds)
         return rep
 
+    def get_absolute_url(self):
+        from django.core.urlresolvers import reverse
+        return reverse('threshold', args=[str(self.id)])
+
     def contain(self, elt):
         if elt.threshold_type != self.threshold_type:
             return False
