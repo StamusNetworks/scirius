@@ -26,28 +26,29 @@
 <h2>Threshold for {{ threshold.rule.sid }}</h2>
 
 {% if threshold.threshold_type == "suppress" %}
-Alert is suppressed for:
-<ul>
+<p>Alert is suppressed for
+
   {% if threshold.track_by == 'by_src' %}
-<li>Source: {{ threshold.net }}</li>
+source {{ threshold.net }}
   {% elif threshold.track_by == 'by_dst' %}
-<li>Destination: {{ threshold.net }}</li>
+destination {{ threshold.net }}
   {% else %}
-<li>Address: {{ threshold.net }}</li>
+address {{ threshold.net }}
   {% endif %}
-</ul>
+</p>
 {% else %}
-Alert is limited to:
-<ul>
-<li> {{ threshold.count }} per {{ threshold.seconds }} sec</li>
-  {% if threshold.track_by == 'by_src' %}
-  <li>By source</li>
+<p>
+Alert is limited  {% if threshold.track_by == 'by_src' %}
+  by source
   {% elif threshold.track_by == 'by_dst' %}
-  <li>By destination<li>
+  by destination
   {% else %}
-  <li>By source or destination</li>
+  by source or destination
   {% endif %}
-</ul>
+to
+{{ threshold.count }} per {{ threshold.seconds }} seconds.
+</p>
+
 {% endif %}
 <h2>Threshold expression</h2>
 <div class="rule">
