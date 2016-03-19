@@ -675,9 +675,11 @@ def ruleset(request, ruleset_id, mode = 'struct', error = None):
             categories_list[sourceatversion.source.name] = cats
         rules = RuleTable(ruleset.suppressed_rules.all())
         tables.RequestConfig(request).configure(rules)
-        thresholds = ThresholdTable(Threshold.objects.filter(ruleset = ruleset))
+        thresholds = RulesetThresholdTable(Threshold.objects.filter(ruleset = ruleset, threshold_type = 'threshold'))
         tables.RequestConfig(request).configure(thresholds)
-        context = {'ruleset': ruleset, 'categories_list': categories_list, 'sources': sources, 'rules': rules, 'thresholds': thresholds, 'mode': mode}
+        suppress = RulesetSuppressTable(Threshold.objects.filter(ruleset = ruleset, threshold_type = 'suppress'))
+        tables.RequestConfig(request).configure(suppress)
+        context = {'ruleset': ruleset, 'categories_list': categories_list, 'sources': sources, 'rules': rules, 'thresholds': thresholds, 'suppress': suppress, 'mode': mode}
         if error:
             context['error'] = error
     elif mode == 'display':

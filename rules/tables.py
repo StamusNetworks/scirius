@@ -135,13 +135,13 @@ class ThresholdTable(tables.Table):
     threshold_type = tables.Column("Type")
     net = tables.Column("Network")
     rule = tables.Column("Rule")
+    ruleset = tables.Column("Ruleset")
     class Meta(DefaultMeta):
         model = Threshold
-        fields = ("pk", "threshold_type", "ruleset", "rule", "net")
+        exclude = ()
 
 class RuleSuppressTable(tables.Table):
     pk = tables.LinkColumn('threshold', args=[tables.A('pk')], verbose_name='ID')
-    threshold_type = tables.Column("Type")
     net = tables.Column("Network")
     ruleset = tables.Column("Ruleset")
     class Meta(DefaultMeta):
@@ -154,3 +154,16 @@ class RuleThresholdTable(tables.Table):
     class Meta(DefaultMeta):
         model = Threshold
         fields = ("pk", "track_by", "type", "count", "seconds", "ruleset")
+
+class RulesetSuppressTable(tables.Table):
+    pk = tables.LinkColumn('threshold', args=[tables.A('pk')], verbose_name='ID')
+    net = tables.Column("Network")
+    class Meta(DefaultMeta):
+        model = Threshold
+        fields = ("pk", "rule", "track_by", "net")
+
+class RulesetThresholdTable(tables.Table):
+    pk = tables.LinkColumn('threshold', args=[tables.A('pk')], verbose_name='ID')
+    class Meta(DefaultMeta):
+        model = Threshold
+        fields = ("pk", "rule", "track_by", "type", "count", "seconds")
