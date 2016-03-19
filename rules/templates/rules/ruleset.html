@@ -181,18 +181,24 @@ Updated: {{ cdiff.stats.updated }}
 
 {% if mode == 'struct' %}
 
+{% if disabled_rules  %}
 <div class="col-md-6">
 <h2 class="title">Disabled rules</h2>
-{% render_table rules %}
+{% render_table disabled_rules %}
 </div>
+{% endif %}
+{% if thresholds %}
 <div class="col-md-6">
 <h2 class="title">Thresholds</h2>
 {% render_table thresholds %}
 </div>
+{% endif %}
+{% if suppress %}
 <div class="col-md-6">
 <h2 class="title">Suppressions</h2>
 {% render_table suppress %}
 </div>
+{% endif %}
 
 </div>
 <div class="row" id="ruleset_status_row" style="display:none">

@@ -673,13 +673,23 @@ def ruleset(request, ruleset_id, mode = 'struct', error = None):
             cats = CategoryTable(ruleset.categories.filter(source = sourceatversion.source))
             tables.RequestConfig(request,  paginate={"per_page": 15}).configure(cats)
             categories_list[sourceatversion.source.name] = cats
-        rules = RuleTable(ruleset.suppressed_rules.all())
-        tables.RequestConfig(request).configure(rules)
-        thresholds = RulesetThresholdTable(Threshold.objects.filter(ruleset = ruleset, threshold_type = 'threshold'))
-        tables.RequestConfig(request).configure(thresholds)
-        suppress = RulesetSuppressTable(Threshold.objects.filter(ruleset = ruleset, threshold_type = 'suppress'))
-        tables.RequestConfig(request).configure(suppress)
-        context = {'ruleset': ruleset, 'categories_list': categories_list, 'sources': sources, 'rules': rules, 'thresholds': thresholds, 'suppress': suppress, 'mode': mode}
+        context = {'ruleset': ruleset, 'categories_list': categories_list, 'sources': sources, 'mode': mode}
+        disabled_rules = ruleset.suppressed_rules.all()
+        if disabled_rules:
+            disabled_rules = RuleTable(disabled_rules)
+            tables.RequestConfig(request).configure(disabled_rules)
+            context['disabled_rules'] = disabled_rules
+
+        thresholds = Threshold.objects.filter(ruleset = ruleset, threshold_type = 'threshold')
+        if thresholds:
+            thresholds = RulesetThresholdTable(thresholds)
+            tables.RequestConfig(request).configure(thresholds)
+            context['thresholds'] = thresholds
+        suppress = Threshold.objects.filter(ruleset = ruleset, threshold_type = 'suppress')
+        if suppress:
+            suppress = RulesetSuppressTable(suppress)
+            tables.RequestConfig(request).configure(suppress)
+            context['suppress'] = suppress
         if error:
             context['error'] = error
     elif mode == 'display':
