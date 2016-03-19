@@ -87,37 +87,21 @@
 </div> <!-- col -->
 </div> <!-- row -->
 
-<div class="row">
-<div class="col-md-6">
-<h2 class="title">Status in rulesets</h2>
-
-{% load render_table from django_tables2 %}
-{% render_table rulesets %}
-
-</div> <!-- col -->
-
-{% if thresholds %}
-<div class="col-md-6">
-<h2 class="title">Thresholds</h2>
-
-{% render_table thresholds %}
-
-</div> <!-- col -->
-{% endif %}
-
-{% if suppress %}
-<div class="col-md-6">
-<h2 class="title">Suppressions</h2>
-
-{% render_table suppress %}
-
-</div> <!-- col -->
-{% endif %}
-
-
-
 
 {% if elasticsearch %}
+
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    {% if suricata_stats %}
+    <li role="presentation" class="active"><a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Rule stats</a></li>
+    {% endif %}
+    <li role="presentation"><a href="#status" aria-controls="status" role="tab" data-toggle="tab">Rules info</a></li>
+  </ul>
+
+ <div class="tab-content">
+  
+<div role="tabpanel" class="tab-pane fade in active" id="stats">
+<div class="container-fluid" >
 <div class="col-md-4">
 <div class="container-fluid">
 <div class="row">
@@ -246,10 +230,48 @@
 </div> <!-- timeline -->
 </div> <!-- col -->
 </div> <!-- row -->
+
 {% endif %}
 </div> <!-- container -->
 
-<script>
+<div role="tabpanel" class="tab-pane fade in" id="status">
+<div class="container-fluid">
+
+{% endif %}
+<div class="row">
+<div class="col-md-6">
+<h2 class="title">Status in rulesets</h2>
+
+{% load render_table from django_tables2 %}
+{% render_table rulesets %}
+
+</div> <!-- col -->
+
+{% if thresholds %}
+<div class="col-md-6">
+<h2 class="title">Thresholds</h2>
+
+{% render_table thresholds %}
+
+</div> <!-- col -->
+{% endif %}
+
+{% if suppress %}
+<div class="col-md-6">
+<h2 class="title">Suppressions</h2>
+
+{% render_table suppress %}
+
+</div> <!-- col -->
+</div> <!-- row -->
+{% endif %}
+
+{% if elasticsearch %}
+</div>
+</div>
+</div>
+
+ <script>
 
 {% if probes %}
 $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "alert.signature_id:{{ rule.sid }}" ); });
