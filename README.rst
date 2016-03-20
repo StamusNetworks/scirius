@@ -286,6 +286,24 @@ Remove rule from suppressed list
 
 To remove rules from suppressed list, simply check them in the array and click on ``Remove select rules from suppressed list``.
 
+Thresholding
+~~~~~~~~~~~~
+
+Suricata features one thresholding system. It allows to change the behavior of a given alert. There is
+currently two different operations supported by Scirius:
+
+* Suppress: suppress alert for a signature when IP source or IP destination is in a defined range
+* Threshold: limit the number of alert for a signature by specifying a number of alert for a time range or a minimum of alerts in a time range before alerting
+
+Both operations can be accessed via a rule page. Clicking on a arrow down in the Source or Destination IP table will open a page where it is possible to add
+a Threshold. By clicking on the cross, a Suppress operation can be added.
+
+The list of Threshold and Suppress for a rule can be seen from the ``Rules info`` tab.
+
+Threshold and Suppress are bound to a Ruleset. You can see all the defined ones from the Ruleset page.
+
+To suppress or edit a Threshold or a Suppress, simply click on the displayed ID. Then select ``Edit`` or `̀ Delete``  in the left menu.
+
 Updating Suricata ruleset
 -------------------------
 
