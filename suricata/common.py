@@ -29,8 +29,10 @@ import re
 
 from django.conf import settings
 if settings.SURICATA_UNIX_SOCKET:
-    import suricatasc
-
+    try:
+        import suricatasc
+    except:
+        settings.SURICATA_UNIX_SOCKET = None
 
 class Info():
     def status(self):
