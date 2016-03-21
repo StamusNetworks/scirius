@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_tables2',
     'bootstrap3',
+    'dbbackup',
     'rules',
     'suricata',
     'accounts',
@@ -170,6 +171,10 @@ PROXY_PARAMS = { 'http': "http://proxy:3128", 'https': "http://proxy:3128" }
 # PROXY_PARAMS = { 'http': "http://user:pass@proxy:3128", 'https': "http://user:pass@proxy:3128" }
 
 GIT_SOURCES_BASE_DIRECTORY = os.path.join(BASE_DIR, 'git-sources/')
+
+DBBACKUP_STORAGE = 'dbbackup.storage.filesystem_storage'
+DBBACKUP_STORAGE_OPTIONS = {'location': '/var/backups'}
+DBBACKUP_MEDIA_PATH = GIT_SOURCES_BASE_DIRECTORY
 
 # Ruleset generator framework
 RULESET_MIDDLEWARE = 'suricata'
