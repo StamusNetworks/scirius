@@ -317,3 +317,29 @@ To update Suricata ruleset, you can go to ``Suricata -> Update`` (``Update`` bei
 You can also update the ruleset and trigger a Suricata reload by running ::
 
  python manage.py updatesuricata
+
+Backup
+======
+
+To start a backup, run ::
+
+ python manage.py scbackup
+
+To restore a backup and erase all your data, you can run ::
+
+ python manage.py screstore
+ python manage.py migrate
+
+This will restore the latest backup. To choose another backup, indicate the backup filename as first argument.
+
+With default configuration file, the backup is done on disk in `/var/backups` but other methods are available.
+As Scirius is using django-dbbackup application for backup and restore procedures, it benefits from all available
+methods in this application. This includes at least:
+
+* FTP
+* Amazon AWS
+* Dropbox
+
+Please see `django-dbbackup configuration <http://django-dbbackup.readthedocs.org/en/latest/storage.html>`_
+for more informmation on available methods and on their configuration.
+
