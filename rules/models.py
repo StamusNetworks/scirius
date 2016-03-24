@@ -865,8 +865,7 @@ class Threshold(models.Model):
         rep = ""
         if self.threshold_type == "suppress":
             rep = "suppress gen_id %d, sig_id %d" % (self.gid, self.rule.sid)
-            if self.net:
-                rep += ", track_by %s, ip %s" % (self.track_by, self.net)
+            rep += ", track %s, ip %s" % (self.track_by, self.net)
         else:
             rep = "%s gen_id %d, sig_id %d, type %s, track %s, count %d, seconds %d" % (self.threshold_type, self.gid, self.rule.sid, self.type, self.track_by, self.count, self.seconds)
         return rep
