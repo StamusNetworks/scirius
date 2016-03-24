@@ -50,18 +50,27 @@ class SCBackup(object):
         with open(os.path.join(self.directory, 'dbbackup'), 'w') as outputfile:
             self.dbcommands.run_backup_commands(outputfile)
 
+    def backup_ruleset_middleware(self):
+        try:
+            middleware_backup = __import__("%s.%s" % (settings.RULESET_MIDDLEWARE, 'backup'))
+        except ImportError:
+            return
+        Probe = __import__(settings.RULESET_MIDDLEWARE)
+        Probe.backup.backup(self.directory)
+
     def run(self):
         self.directory = tempfile.mkdtemp() 
         self.backup_db()
         self.backup_git_sources()
+        self.backup_ruleset_middleware()
         # create tar archive of dir
         call_dir = os.getcwd()
         os.chdir(self.directory)
         filename = filename_generate('tar.bz2', self.dbcommands.settings.database['NAME'], self.servername)
         outputfile = tempfile.SpooledTemporaryFile()
         ts = tarfile.open(filename, 'w:bz2', fileobj=outputfile)
-        ts.add('sources.tar')
-        ts.add('dbbackup')
+        for dfile in os.listdir('.'):
+            ts.add(dfile)
         ts.close()
         self.storage.write_file(outputfile, filename)
         os.chdir(call_dir)
@@ -91,6 +100,14 @@ class SCRestore(object):
         with open(filepath, 'r') as inputfile:
             self.dbcommands.run_restore_commands(inputfile)
 
+    def restore_ruleset_middleware(self):
+        try:
+            middleware_backup = __import__("%s.%s" % (settings.RULESET_MIDDLEWARE, 'backup'))
+        except ImportError:
+            return
+        Probe = __import__(settings.RULESET_MIDDLEWARE)
+        Probe.backup.restore(self.directory)
+
     def run(self):
         # extract archive in tmp directory
         inputfile = self.storage.read_file(self.filepath)
@@ -103,6 +120,7 @@ class SCRestore(object):
         self.directory = tmpdir
         self.restore_git_sources()
         self.restore_db()
+        self.restore_ruleset_middleware()
         shutil.rmtree(tmpdir)
         os.chdir(call_dir)
 
