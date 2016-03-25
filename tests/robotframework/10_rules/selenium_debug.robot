@@ -1,3 +1,10 @@
+| * Settings * |                      |
+| Library      | Selenium2Library     |
+| Resource     | ../config.txt        |
+| Resource     | selenium_debug.robot |
+| Resource     | source.robot         |
+| Resource     | ruleset.robot        |
+
 | *Keyword* |                 |                              |
 | SN Go To  | [Documentation] | Go to url and perform checks |
 |           | [Arguments]     | ${url}                       |
