@@ -21,7 +21,9 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
-from rules.backup import SCRestore
+import sys
+
+from rules.backup import SCRestore, SCBackupException
 
 class Command(BaseCommand):
     args = 'filepath'
@@ -35,4 +37,8 @@ class Command(BaseCommand):
         else:
             filepath = None
         restore = SCRestore(filepath = filepath)
-        restore.run()
+        try:
+            restore.run()
+        except SCBackupException as err:
+            sys.stderr.write("%s\n" % (str(err)))
+            sys.exit(-1)

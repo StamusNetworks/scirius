@@ -24,12 +24,57 @@ import tempfile
 import shutil
 import os
 import sys
+import json
 
 from dbbackup.dbcommands import DBCommands
 from dbbackup.storage.base import BaseStorage, StorageError
 from dbbackup.utils import filename_generate
 
-class SCBackup(object):
+from django.db import DEFAULT_DB_ALIAS, connections
+from django.db.migrations.loader import MigrationLoader
+
+class SCBackupException(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
+class SCOperation(object):
+    def get_migration_levels(self):
+        connection = connections[DEFAULT_DB_ALIAS]
+        loader = MigrationLoader(connection, ignore_no_migrations=True)
+        graph = loader.graph
+        app_names = sorted(loader.migrated_apps)
+        last_migrations = {}
+        for app_name in app_names:
+            shown = set()
+            for node in graph.leaf_nodes(app_name):
+                for plan_node in graph.forwards_plan(node):
+                    if plan_node not in shown and plan_node[0] == app_name:
+                        # Give it a nice title if it's a squashed one
+                        title = plan_node[1]
+                        if graph.nodes[plan_node].replaces:
+                            title += " (%s squashed migrations)" % len(graph.nodes[plan_node].replaces)
+                        # Mark it as applied/unapplied
+                        if plan_node in loader.applied_migrations:
+                            shown.add(plan_node)
+                            last_migrations[app_name] = int(plan_node[1].split('_')[0])
+                        else:
+                            continue
+        return last_migrations
+
+    def is_migration_level_lower(self, miglevel):
+        llevel = self.get_migration_levels()
+        for key in llevel:
+            # removing application is unlikely so if miglebel don't have a key
+            # then it is are older
+            if not miglevel.has_key(key):
+                return True
+            if llevel[key] < miglevel[key]:
+                return False
+        return True
+
+class SCBackup(SCOperation):
     def __init__(self):
         self.storage = BaseStorage.storage_factory()
         self.servername = 'db'
@@ -58,8 +103,15 @@ class SCBackup(object):
         Probe = __import__(settings.RULESET_MIDDLEWARE)
         Probe.backup.backup(self.directory)
 
+    def write_migration_level(self):
+        last_migrations = self.get_migration_levels()
+        migfile = os.path.join(self.directory, 'miglevel')
+        with open(migfile, 'w') as miglevel: 
+            miglevel.write(json.dumps(last_migrations))
+
     def run(self):
         self.directory = tempfile.mkdtemp() 
+        self.write_migration_level()
         self.backup_db()
         self.backup_git_sources()
         self.backup_ruleset_middleware()
@@ -75,7 +127,7 @@ class SCBackup(object):
         self.storage.write_file(outputfile, filename)
         os.chdir(call_dir)
         
-class SCRestore(object):
+class SCRestore(SCOperation):
     def __init__(self, filepath = None):
         self.storage = BaseStorage.storage_factory()
         if filepath:
@@ -108,6 +160,12 @@ class SCRestore(object):
         Probe = __import__(settings.RULESET_MIDDLEWARE)
         Probe.backup.restore(self.directory)
 
+    def test_migration_level(self):
+        miglevel = None
+        with open(os.path.join(self.directory, 'miglevel'), 'r') as migfile:
+            miglevel = json.load(migfile)
+        return self.is_migration_level_lower(miglevel)
+
     def run(self):
         # extract archive in tmp directory
         inputfile = self.storage.read_file(self.filepath)
@@ -118,6 +176,8 @@ class SCRestore(object):
         ts.extractall()
         ts.close()
         self.directory = tmpdir
+        if self.test_migration_level() == False:
+            raise SCBackupException("Backup is newer than local Scirius version, please update local instance and apply migrations.")
         self.restore_git_sources()
         self.restore_db()
         self.restore_ruleset_middleware()
