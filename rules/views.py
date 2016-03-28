@@ -444,7 +444,6 @@ def threshold_rule(request, rule_id):
             else:
                 context['type'] = 'threshold'
             return scirius_render(request, 'rules/add_threshold.html', context)
-    # FIXME Display list of matching threshold if exists
     data = { 'gid': 1, 'count': 1, 'seconds': 60, 'type': 'limit', 'rule': rule_object, 'ruleset': 1 }
     if request.GET.__contains__('action'):
         data['threshold_type'] = request.GET.get('action', 'suppress')
@@ -458,20 +457,32 @@ def threshold_rule(request, rule_id):
             direction = 'by_dst'
         data['track_by'] = direction
 
-    container = None
-    pth = Threshold(rule = rule_object, track_by = data['track_by'], threshold_type = data['threshold_type'])
-    if data.has_key('net'):
-        pth.net = data['net']
-    thresholds = Threshold.objects.filter(rule = rule_object)
-    for threshold in thresholds:
-        if threshold.contain(pth):
-            container = threshold
-            break
-    if thresholds:
-        thresholds = ThresholdTable(thresholds)
-        tables.RequestConfig(request).configure(thresholds)
+    if data.has_key('track_by'):
+        containers = []
+        pth = Threshold(rule = rule_object, track_by = data['track_by'], threshold_type = data['threshold_type'])
+        if data.has_key('net'):
+            pth.net = data['net']
+        thresholds = Threshold.objects.filter(rule = rule_object)
+        for threshold in thresholds:
+            if threshold.contain(pth):
+                containers.append(threshold)
+                break
+        if len(containers) == 0:
+            containers = None
+        else:
+            if data['threshold_type'] == 'threshold':
+                containers = RuleThresholdTable(containers)
+            else:
+                containers = RuleSuppressTable(containers)
+            tables.RequestConfig(request).configure(containers)
+        if thresholds:
+            thresholds = ThresholdTable(thresholds)
+            tables.RequestConfig(request).configure(thresholds)
+    else:
+        containers = None
+        thresholds = None
         
-    context = {'rule': rule_object, 'thresholds': thresholds, 'container': container }
+    context = {'rule': rule_object, 'thresholds': thresholds, 'containers': containers }
     if data['threshold_type'] == 'suppress':
         context['form'] = AddRuleSuppressForm(data)
         context['type'] = 'suppress'

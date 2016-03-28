@@ -14,8 +14,12 @@
 {{ missing }}
 
 {% else %}
- {% if container %}
-<div class="alert alert-danger">For "{{ container.ruleset }}", threshold would be included in <a href="{% url 'threshold' container.pk %}">{{ container }}</a>.</div>
+ {% if containers %}
+<div class="alert alert-danger">Depending on the chosen ruleset, the threshold could be included in the following thresholds.
+<h3>Containing thresholds</h3>
+{% load render_table from django_tables2 %}
+{% render_table containers %}
+</div>
  {% endif %}
 
 {% if thresholds %}

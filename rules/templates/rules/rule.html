@@ -38,6 +38,12 @@
 <li>
 <a href="{% url 'enable_rule' rule.sid %}">Enable rule</a>
 </li>
+<li>
+<a href="{% url 'threshold_rule' rule.sid %}?action=threshold">Threshold rule</a>
+</li>
+<li>
+<a href="{% url 'threshold_rule' rule.sid %}?action=suppress">Suppress rule</a>
+</li>
 {% endif %}
 {% if not rule.state_in_source %}
 <li>
