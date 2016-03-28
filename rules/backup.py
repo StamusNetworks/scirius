@@ -33,6 +33,8 @@ from dbbackup.utils import filename_generate
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.migrations.loader import MigrationLoader
 
+DB_SERVERNAME = "scirius"
+
 class SCBackupException(Exception):
     def __init__(self, value):
         self.value = value
@@ -77,7 +79,7 @@ class SCOperation(object):
 class SCBackup(SCOperation):
     def __init__(self):
         self.storage = BaseStorage.storage_factory()
-        self.servername = 'db'
+        self.servername = DB_SERVERNAME
 
     def backup_git_sources(self):
         # Create a tar of the git sources in the target directory
@@ -134,7 +136,7 @@ class SCRestore(SCOperation):
             self.filepath = filepath
         else:
             self.filepath = self.storage.get_latest_backup()
-        self.servername = 'db'
+        self.servername = DB_SERVERNAME
 
     def restore_git_sources(self):
         sys.stdout.write("Restoring to %s from %s\n" % (settings.GIT_SOURCES_BASE_DIRECTORY, self.directory))
