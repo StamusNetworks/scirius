@@ -264,7 +264,7 @@ if settings.ELASTICSEARCH_2X:
         "field": "@timestamp",
         "interval": "{{ interval }}",
         "time_zone": "Europe/Berlin",
-        "min_doc_count": 1
+        "min_doc_count": 0
       },
       "aggs": {
         "host": {
@@ -317,7 +317,8 @@ STATS_QUERY = """
       "date_histogram": {
         "key_field": "@timestamp",
         "value_field": "{{ value }}",
-        "interval": "{{ interval }}"
+        "interval": "{{ interval }}",
+        "min_doc_count": 0
       },
       "global": true,
       "facet_filter": {
@@ -400,7 +401,7 @@ if settings.ELASTICSEARCH_2X:
         "field": "@timestamp",
         "interval": "{{ interval }}",
         "time_zone": "Europe/Berlin",
-        "min_doc_count": 1
+        "min_doc_count": 0
       },
       "aggs": {
         "stat": {
