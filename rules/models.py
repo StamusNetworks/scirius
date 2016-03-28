@@ -502,7 +502,10 @@ class Category(models.Model):
     created_date = models.DateTimeField('date created', default = timezone.now)
     source = models.ForeignKey(Source)
 
-    getflowbits = re.compile("flowbits *: *(isset|set),(.*?) *;")
+    bitsregexp = {'flowbits': re.compile("flowbits *: *(isset|set),(.*?) *;"),
+                  'hostbits': re.compile("hostbits *: *(isset|set),(.*?) *;"),
+                  'xbits': re.compile("xbits *: *(isset|set),(.*?) *;"),
+                 }
 
     class Meta:
         verbose_name_plural = "categories"
@@ -512,28 +515,29 @@ class Category(models.Model):
 
     def parse_rule_flowbit(self, source, line):
         flowbits = []
-        match = self.getflowbits.findall(line)
-        if match:
-            for flowinst in match:
-               elt = Flowbit.objects.filter(source = source, name = flowinst[1])
-               if elt:
-                   elt = elt[0]
-                   if flowinst[0] == "isset" and not elt.isset:
-                       elt.isset = True
-                       elt.save()
-                   if flowinst[0] == "set" and not elt.set:
-                       elt.set = True
-                       elt.save()
-               else:
-                   if flowinst[0] == "isset":
-                       fisset = True
-                       fset = False
+        for ftype in self.bitsregexp:
+            match = self.bitsregexp[ftype].findall(line)
+            if match:
+                for flowinst in match:
+                   elt = Flowbit.objects.filter(source = source, name = flowinst[1], type=ftype)
+                   if elt:
+                       elt = elt[0]
+                       if flowinst[0] == "isset" and not elt.isset:
+                           elt.isset = True
+                           elt.save()
+                       if flowinst[0] == "set" and not elt.set:
+                           elt.set = True
+                           elt.save()
                    else:
-                       fisset = False
-                       fset = True
-                   elt = Flowbit(name = flowinst[1], source = source, isset = fisset, set = fset)
-                   elt.save()
-               flowbits.append(elt)
+                       if flowinst[0] == "isset":
+                           fisset = True
+                           fset = False
+                       else:
+                           fisset = False
+                           fset = True
+                       elt = Flowbit(type = ftype, name = flowinst[1], source = source, isset = fisset, set = fset)
+                       elt.save()
+                   flowbits.append(elt)
         return flowbits
 
     def get_rules(self, source):
@@ -626,6 +630,8 @@ class Category(models.Model):
         return reverse('category', args=[str(self.id)])
 
 class Flowbit(models.Model):
+    FLOWBIT_TYPE = (('flowbits', 'Flowbits'), ('hostbits', 'Hostbits'), ('xbits', 'Xbits'))
+    type = models.CharField(max_length=12, choices=FLOWBIT_TYPE)
     name = models.CharField(max_length=100)
     set = models.BooleanField(default=False)
     isset = models.BooleanField(default=False)
