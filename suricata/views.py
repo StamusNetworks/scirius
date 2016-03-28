@@ -98,6 +98,7 @@ def edit(request):
                         created_date = timezone.now(),
                         updated_date = timezone.now(),
                         ruleset = form.cleaned_data['ruleset'],
+                        yaml_file = form.cleaned_data['yaml_file'],
                         )
             except IntegrityError, error:
                 return scirius_render(request, 'suricata/edit.html', { 'form': form, 'error': error })
