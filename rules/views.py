@@ -353,12 +353,14 @@ def switch_rule(request, rule_id, operation = 'suppress'):
     if request.method == 'POST': # If the form has been submitted...
         form = RulesetSuppressForm(request.POST)
         if form.is_valid(): # All validation rules pass
-            ruleset = form.cleaned_data['ruleset']
-            if operation == 'suppress':
-                rule_object.disable(ruleset)
-            elif operation == 'enable':
-                rule_object.enable(ruleset)
-            ruleset.save()
+            rulesets = form.cleaned_data['rulesets']
+            for ruleset_pk in rulesets:
+                ruleset = get_object_or_404(Ruleset, pk=ruleset_pk)
+                if operation == 'suppress':
+                    rule_object.disable(ruleset)
+                elif operation == 'enable':
+                    rule_object.enable(ruleset)
+                ruleset.save()
         return redirect(rule_object)
     form = RulesetSuppressForm()
     rules = rule_object.get_flowbits_group()
@@ -501,13 +503,15 @@ def suppress_category(request, cat_id, operation = 'suppress'):
     if request.method == 'POST': # If the form has been submitted...
         form = RulesetSuppressForm(request.POST)
         if form.is_valid(): # All validation rules pass
-            ruleset = form.cleaned_data['ruleset']
-            if operation == 'suppress':
-                ruleset.categories.remove(cat_object)
-            elif operation == 'enable':
-                ruleset.categories.add(cat_object)
-            ruleset.needs_test()
-            ruleset.save()
+            rulesets = form.cleaned_data['rulesets']
+            for ruleset_pk in rulesets:
+                ruleset = get_object_or_404(Ruleset, pk=ruleset_pk)
+                if operation == 'suppress':
+                    ruleset.categories.remove(cat_object)
+                elif operation == 'enable':
+                    ruleset.categories.add(cat_object)
+                ruleset.needs_test()
+                ruleset.save()
         return redirect(cat_object)
     form = RulesetSuppressForm()
     context = { 'category': cat_object, 'form': form, 'operation': operation }

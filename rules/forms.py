@@ -96,8 +96,8 @@ class RulesetCopyForm(forms.Form):
 class RulesetSuppressForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(RulesetSuppressForm, self).__init__(*args, **kwargs)
-        rulesets = Ruleset.objects.all()
-        self.fields['ruleset'] = forms.ModelChoiceField(rulesets, empty_label=None)
+        rulesets = Ruleset.objects.all().values_list('pk', 'name')
+        self.fields['rulesets'] = forms.MultipleChoiceField(rulesets, widget = forms.CheckboxSelectMultiple())
 
 class AddRuleThresholdForm(forms.ModelForm):
     threshold_type = forms.HiddenInput()
