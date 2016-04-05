@@ -100,13 +100,13 @@ class RulesetSuppressForm(forms.Form):
         self.fields['rulesets'] = forms.MultipleChoiceField(rulesets, widget = forms.CheckboxSelectMultiple())
 
 class AddRuleThresholdForm(forms.ModelForm):
-    threshold_type = forms.HiddenInput()
+    threshold_type = forms.CharField(widget = forms.HiddenInput())
     class Meta:
         model = Threshold
         exclude = ['rule', 'gid', 'descr', 'net']
 
 class AddRuleSuppressForm(forms.ModelForm):
-    threshold_type = forms.HiddenInput()
+    threshold_type = forms.CharField(widget = forms.HiddenInput())
     class Meta:
         model = Threshold
         exclude = ['rule', 'gid', 'descr', 'type', 'count', 'seconds']
