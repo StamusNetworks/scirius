@@ -853,7 +853,7 @@ class Ruleset(models.Model):
         self.save()
 
 class Threshold(models.Model):
-    THRESHOLD_TYPES = (('threshold', 'threshold'), ('event_filter', 'event_filter'), ('suppress', 'suppress'))
+    THRESHOLD_TYPES = (('threshold', 'threshold'), ('suppress', 'suppress'))
     THRESHOLD_TYPE_TYPES = (('limit', 'limit'), ('threshold', 'threshold'), ('both', 'both'))
     TRACK_BY_CHOICES= (('by_src', 'by_src'),('by_dst', 'by_dst'))
     descr = models.CharField(max_length=400, blank = True)
