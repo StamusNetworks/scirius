@@ -63,6 +63,7 @@ class SCOperation(object):
                             last_migrations[app_name] = int(plan_node[1].split('_')[0])
                         else:
                             continue
+        connection.close()
         return last_migrations
 
     def is_migration_level_lower(self, miglevel):
