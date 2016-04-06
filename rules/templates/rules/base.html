@@ -314,13 +314,12 @@ function get_es_health() {
                             $("#health").addClass("label-danger");
                         }
                 }
+
+                    setTimeout(get_es_health, 30000);
                 },
                 error: function(data) {
                         scirius_status = 'red';
                         get_scirius_status();
-                },
-                complete: function() {
-                    setTimeout(get_es_health, 30000);
                 },
                 timeout: 15000,
         }
@@ -353,13 +352,11 @@ function get_suricata_health() {
                         }
                         $("#suri-status").removeClass("label-default");
                 }
+                setTimeout(get_suricata_health, 30000);
                 },
                 error: function(data) {
                         scirius_status = 'red';
                         get_scirius_status();
-                },
-                complete: function() {
-                    setTimeout(get_suricata_health, 30000);
                 },
                 timeout: 15000,
         }
@@ -388,13 +385,11 @@ function get_disk_health() {
                         }
                         $("#disk-status").removeClass("label-default");
                 }
+                setTimeout(get_disk_health, 30000);
                 },
                 error: function(data) {
                         scirius_status = 'red';
                         get_scirius_status();
-                },
-                complete: function() {
-                    setTimeout(get_disk_health, 30000);
                 },
                 timeout: 15000,
         }
@@ -423,13 +418,11 @@ function get_memory_health() {
                         }
                         $("#memory-status").removeClass("label-default");
                 }
+                setTimeout(get_memory_health, 30000);
                 },
                 error: function(data) {
                         scirius_status = 'red';
                         get_scirius_status();
-                },
-                complete: function() {
-                    setTimeout(get_memory_health, 30000);
                 },
                 timeout: 15000,
         }
