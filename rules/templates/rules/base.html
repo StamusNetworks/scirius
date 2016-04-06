@@ -341,16 +341,19 @@ function get_suricata_health() {
                 type:"GET",
                 url:"{% url 'info' %}?query=status",
                 success: function(data) {
+                $("#suri-status").removeClass("label-danger");
+                $("#suri-status").removeClass("label-default");
+                $("#suri-status").removeClass("label-success");
+                $("#suri-status").removeClass("label-warning");
                 if (!data) {
                         $("#suri-status").addClass("label-danger");
-                        $("#suri-status").removeClass("label-default");
                 } else {
+
                         if (data['running']) {
                             $("#suri-status").addClass("label-success");
                         } else {
                             $("#suri-status").addClass("label-danger");
                         }
-                        $("#suri-status").removeClass("label-default");
                 }
                 setTimeout(get_suricata_health, 30000);
                 },
@@ -372,9 +375,12 @@ function get_disk_health() {
                 type:"GET",
                 url:"{% url 'info' %}?query=disk",
                 success: function(data) {
+                $("#disk-status").removeClass("label-danger");
+                $("#disk-status").removeClass("label-default");
+                $("#disk-status").removeClass("label-success");
+                $("#disk-status").removeClass("label-warning");
                 if (!data) {
                         $("#disk-status").addClass("label-danger");
-                        $("#disk-status").removeClass("label-default");
                 } else {
                         if (data[3] > 90) {
                             $("#disk-status").addClass("label-danger");
@@ -383,7 +389,6 @@ function get_disk_health() {
                         } else {
                             $("#disk-status").addClass("label-success");
                         }
-                        $("#disk-status").removeClass("label-default");
                 }
                 setTimeout(get_disk_health, 30000);
                 },
@@ -405,9 +410,12 @@ function get_memory_health() {
                 type:"GET",
                 url:"{% url 'info' %}?query=memory",
                 success: function(data) {
+                $("#memory-status").removeClass("label-danger");
+                $("#memory-status").removeClass("label-default");
+                $("#memory-status").removeClass("label-success");
+                $("#memory-status").removeClass("label-warning");
                 if (!data) {
                         $("#memory-status").addClass("label-danger");
-                        $("#memory-status").removeClass("label-default");
                 } else {
                         if (data[2] > 90) {
                             $("#memory-status").addClass("label-danger");
@@ -416,7 +424,6 @@ function get_memory_health() {
                         } else {
                             $("#memory-status").addClass("label-success");
                         }
-                        $("#memory-status").removeClass("label-default");
                 }
                 setTimeout(get_memory_health, 30000);
                 },
