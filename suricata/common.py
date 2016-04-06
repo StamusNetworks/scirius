@@ -39,7 +39,10 @@ class Info():
         suri_running = False
         if settings.SURICATA_UNIX_SOCKET:
             sc = suricatasc.SuricataSC(settings.SURICATA_UNIX_SOCKET)
-            sc.connect()
+            try:
+                sc.connect()
+            except:
+                return False
             res = sc.send_command('uptime', None)
             if res['return'] == 'OK':
                 suri_running = True
