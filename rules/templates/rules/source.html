@@ -22,7 +22,7 @@
 <a href="{% url 'changelog_source' source.id %}">Changelog</a>
 </li>
 <li>
-<a href="{% url 'update_source' source.id %}"  id="update_source" >Update</a>
+<span id="update_source" ><a>Update</a></span>
 </li>
 <li>
 <a href="{% url 'edit_source' source.id %}">Edit</a>
@@ -38,7 +38,7 @@
 </ul>
 
 <script>
-$("a#update_source").click(function() {
+    $("#update_source").click(function() {
 	$("#update_modal").modal('show');
 	$.ajax( {
                 type:"GET",

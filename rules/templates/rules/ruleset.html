@@ -41,7 +41,7 @@
 <a href="{% url 'changelog_ruleset' ruleset.id %}">Changelog</a>
 </li>
 <li>
-<a href="{% url 'update_ruleset' ruleset.id %}" id="update_ruleset" >Update</a>
+<span  id="update_ruleset"><a>Update</a></span>
 </li>
 <li>
 <a href="{% url 'edit_ruleset' ruleset.id %}">Edit</a>
@@ -55,7 +55,7 @@
 </ul>
 
 <script>
-$("a#update_ruleset").click(function() {
+$("#update_ruleset").click(function() {
 	$("#update_modal").modal('show');
 	$.ajax( {
                 type:"GET",
