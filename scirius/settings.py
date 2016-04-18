@@ -138,6 +138,8 @@ KIBANA_INDEX = "kibana-int"
 KIBANA_VERSION=3
 # Number of dashboards to display
 KIBANA_DASHBOARDS_COUNT = 20
+# Path to Kibana's dashboards installation
+KIBANA_DASHBOARDS_PATH = '/opt/kibana-dashboards/'
 
 USE_EVEBOX = False
 EVEBOX_ADDRESS = "evebox:5636"
