@@ -29,7 +29,7 @@ from scirius.utils import scirius_render, scirius_listing
 from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable
 
-from rules.elasticsearch import *
+from rules.es_graphs import *
 from rules.influx import *
 
 import json
