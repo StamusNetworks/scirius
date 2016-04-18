@@ -15,6 +15,10 @@ urlpatterns = patterns('',
     url('^$', homepage),
     # Forward "app/kibana.*" to kibana (work around to https://github.com/elastic/kibana/issues/5230)
     url(r'^(?P<path>app/kibana.*)$', KibanaProxyView.as_view()),
+    url(r'^(?P<path>app/timelion.*)$', KibanaProxyView.as_view()),
+    url(r'^(?P<path>status.*)$', KibanaProxyView.as_view()),
+    url(r'^(?P<path>api.*)$', KibanaProxyView.as_view()),
+    url(r'^(?P<path>plugins.*)$', KibanaProxyView.as_view()),
     # Forward timelion plugin
     url(r'^(?P<path>timelion/.*)$', KibanaProxyView.as_view()),
     url(r'^(?P<path>bundles/.*)$', KibanaProxyView.as_view()),
