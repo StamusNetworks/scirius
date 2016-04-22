@@ -61,7 +61,7 @@ $("#update_ruleset").click(function() {
                 type:"GET",
                 url:"{% url 'update_ruleset' ruleset.id %}",
                 success: function(data) {
-			if (data['status'] == True) {
+			if (data['status'] == true) {
 				$("#update_modal").modal('hide');
 				window.location = "{% url 'changelog_ruleset' ruleset.id %}";
 			} else {

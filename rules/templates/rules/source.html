@@ -44,7 +44,7 @@
                 type:"GET",
                 url:"{% url 'update_source' source.id %}",
                 success: function(data) {
-			if (data['status'] == True) {
+			if (data['status'] == true) {
 				$("#update_source").modal('hide');
 				window.location = "{% url 'changelog_ruleset' source.id %}";
 			} else {
