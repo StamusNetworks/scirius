@@ -38,16 +38,5 @@ class Command(BaseCommand, ESData):
         ESData.__init__(self)
 
     def handle(self, *args, **options):
-        body = {
-            'query': {
-                'query_string': {
-                    'query': 'NOT title: SN *'
-                }
-            }
-        }
-
-        _types = ('search', 'visualization', 'dashboard')
-        for _type in _types:
-            self._kibana_remove(_type, body)
-
+        self.kibana_clear()
         self.stdout.write('Kibana dashboards removed successfully')

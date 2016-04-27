@@ -26,6 +26,7 @@ from django.conf import settings
 
 from scirius.utils import scirius_render, scirius_listing
 
+from rules.es_data import ESData
 from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable
 
@@ -34,6 +35,7 @@ from rules.influx import *
 
 import json
 import re
+import os
 
 from time import time
 import django_tables2 as tables
@@ -894,17 +896,67 @@ def system_settings(request):
     if not request.user.is_staff:
         context = { 'error': 'Unsufficient permissions' }
         return scirius_render(request, 'rules/system_settings.html', context)
+
+    main_form = SystemSettingsForm(instance = get_system_settings())
+    kibana_form = KibanaDataForm()
+    context = {
+        'form_id': 'main',
+        'main_form': main_form,
+        'kibana_form': kibana_form,
+    }
+
     if request.method == 'POST':
-        form = SystemSettingsForm(request.POST, instance = get_system_settings())
-        context = { 'form': form }
-        if not form.is_valid():
-            context['error'] = "Invalid form."
-            return scirius_render(request, 'rules/system_settings.html', context)
-        form.save()
-        context['success'] = "All changes saved."
-        return scirius_render(request, 'rules/system_settings.html', context)
-    form = SystemSettingsForm(instance = get_system_settings())
-    context = { 'form': form }
+        form_id = request.POST.get('form_id', None)
+
+        if form_id == 'main':
+            main_form = SystemSettingsForm(request.POST, instance = get_system_settings())
+            context['main_form'] = main_form
+            if main_form.is_valid():
+                main_form.save()
+                context['success'] = "All changes saved."
+            else:
+                context['error'] = "Invalid form."
+        elif form_id == 'kibana':
+            es_data = ESData()
+            if 'export' in request.POST:
+                tar_name, tar_file = es_data.kibana_export()
+
+                with open(tar_file, 'rb') as f:
+                    content = f.read()
+
+                os.unlink(tar_file)
+                response = HttpResponse(content, content_type='application/x-bzip2')
+                response['Content-Disposition'] = 'attachment; filename="%s"' % tar_name
+                return response
+            elif 'import' in request.POST:
+                form = KibanaDataForm(request.POST, request.FILES)
+                if form.is_valid() and 'file' in request.FILES:
+                    try:
+                        count = es_data.kibana_import_fileobj(request.FILES['file'])
+                        context['success'] = 'Successfully imported %i dashboards' % count
+                    except Exception, e:
+                        context['error'] = 'Import failed: %s' % e
+                else:
+                    context['error'] = 'Please provide a dashboard archive'
+            elif 'clear' in request.POST:
+                try:
+                    es_data.kibana_clear()
+                    context['success'] = 'Done'
+                except Exception, e:
+                    context['error'] = 'Clearing failed: %s' % e
+            elif 'reset' in request.POST:
+                try:
+                    es_data.kibana_reset()
+                    context['success'] = 'Done'
+                except Exception, e:
+                    context['error'] = 'Reset failed: %s' % e
+            else:
+                context['error'] = 'Invalid operation'
+        else:
+            context['error'] = "Invalid form id."
+
+        if form_id is not None:
+            context['form_id'] = form_id
     return scirius_render(request, 'rules/system_settings.html', context)
 
 def info(request):

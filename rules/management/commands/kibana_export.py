@@ -19,10 +19,6 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import os
-import tarfile
-import tempfile
-from shutil import rmtree
-from time import strftime
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -45,27 +41,6 @@ class Command(BaseCommand, ESData):
             help='Save everything (SN dashboards and index)')
 
     def handle(self, *args, **options):
-        dest = tempfile.mkdtemp()
-        _types = ('search', 'visualization', 'dashboard')
-
-        if options['full']:
-            _types = _types + ('index-pattern',)
-            body = {'query': {'match_all': {}}}
-        else:
-            body = {
-                'query': {
-                    'query_string': {
-                        'query': 'NOT title: SN *'
-                    }
-                }
-            }
-
-        for _type in _types:
-            self._kibana_export(dest, _type, body)
-
-        tar_name = 'scirius-dashboards-%s' % strftime('%Y%m%d%H%M')
-        tar = tarfile.open(tar_name + '.tar.bz2', 'w:bz2')
-        tar.add(dest, tar_name)
-        tar.close()
-        rmtree(dest)
-        self.stdout.write('Kibana dashboards saved to %s.tar.bz2' % tar_name)
+        tar_name, tar_file = self.kibana_export(options['full'])
+        os.rename(tar_file, tar_name)
+        self.stdout.write('Kibana dashboards saved to %s' % tar_name)

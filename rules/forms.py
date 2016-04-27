@@ -27,6 +27,9 @@ class SystemSettingsForm(forms.ModelForm):
         model = SystemSettings
         exclude = []
 
+class KibanaDataForm(forms.Form):
+    file = forms.FileField(required = False)
+
 class SourceForm(forms.ModelForm):
     file = forms.FileField(required = False)
     authkey = forms.CharField(max_length=100,

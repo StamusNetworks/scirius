@@ -13,14 +13,23 @@
 
 
 {% block content %}
-{% if form %}
+{% if main_form %}
 <h2>System settings edition</h2>
+<ul class="nav nav-tabs" role="tablist">
+    <li role="main" {% if form_id == 'main' %}class="active"{% endif %}><a href="#main" aria-controls="main" role="tab" data-toggle="tab">Main</a></li>
+    <li role="kibana" {% if form_id == 'kibana' %}class="active"{% endif %}><a href="#kibana" aria-controls="kibana" role="tab" data-toggle="tab">Kibana</a></li>
+</ul>
+
+<div class="tab-content">
+
+<div role="tabpanel" class="tab-pane fade{% if form_id == 'main' %} in active{% endif %}" id="main">
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-6">
 <form class="form" action="{% url 'system_settings' %}" method="post">
     {% csrf_token %}
-    {% bootstrap_form form %}
+    <input type='hidden' name='form_id' value='main'>
+    {% bootstrap_form main_form %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">
             {% bootstrap_icon "ok" %} Submit
@@ -29,7 +38,52 @@
 </form>
 </div>
 </div>
+</div> <!-- container-fluid -->
+</div> <!-- tabpanel -->
+
+<div role="tabpanel" class="tab-pane fade{% if form_id == 'kibana' %} in active{% endif %}" id="kibana">
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-2">
+{% if main_form.use_elasticsearch.value %}
+<form class="form" enctype="multipart/form-data" action="{% url 'system_settings' %}" method="post">
+    {% csrf_token %}
+    <input type='hidden' name='form_id' value='kibana'>
+    {% bootstrap_label "Export user dashboards" %}
+    {% buttons %}
+        <button type="submit" name="export" class="btn btn-secondary">
+            {% bootstrap_icon "download" %} Export
+        </button>
+    {% endbuttons %}
+    {% bootstrap_label "Import user dashboards" %}
+    {% bootstrap_field kibana_form.file show_label=False %}
+    {% buttons %}
+        <button type="submit" name="import" class="btn btn-secondary">
+            {% bootstrap_icon "upload" %} Import
+        </button>
+    {% endbuttons %}
+    {% bootstrap_label "Clear user dashboards" %}
+    {% buttons %}
+        <button type="submit" name="clear" class="btn btn-secondary">
+            {% bootstrap_icon "trash" %} Clear
+        </button>
+    {% endbuttons %}
+    {% bootstrap_label "Reset SN dashboards" %}
+    {% buttons %}
+        <button type="submit" name="reset" class="btn btn-secondary">
+            {% bootstrap_icon "refresh" %} Reset
+        </button>
+    {% endbuttons %}
+</form>
+{% else %}
+Please enable Elasticsearch first.
+{% endif %}
 </div>
+</div>
+</div> <!-- container-fluid -->
+</div> <!-- tabpanel -->
+
+</div> <!-- tab-content -->
 
 <script type="text/javascript">
 

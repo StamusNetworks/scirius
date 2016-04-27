@@ -33,33 +33,6 @@ class Command(BaseCommand, ESData):
         BaseCommand.__init__(self, *args, **kw)
         ESData.__init__(self)
 
-    def _get_kibana_files(self, _type):
-        files = []
-        for _dir in os.listdir(settings.KIBANA_DASHBOARDS_PATH):
-            idx_path = os.path.join(settings.KIBANA_DASHBOARDS_PATH, _dir, _type)
-            if os.path.isdir(idx_path):
-                for _file in os.listdir(idx_path):
-                    if not _file.endswith('.json'):
-                        continue
-                    _file = os.path.join(idx_path, _file)
-                    files.append(_file)
-        return files       
-
     def handle(self, *args, **options):
-        if not os.path.isdir(settings.KIBANA_DASHBOARDS_PATH):
-            raise CommandError('Please make sure Kibana dashboards are installed at %s' % settings.KIBANA_DASHBOARDS_PATH)
-
-        if self._get_kibana_files('index-pattern') == []:
-            raise CommandError('Please make sure Kibana dashboards are installed at %s: no index-pattern found' % settings.KIBANA_DASHBOARDS_PATH)
-
-        self._kibana_remove('dashboard', {'query': {'match': {'title': 'SN *'}}})
-        self._kibana_remove('visualization', {'query': {'match': {'title': 'SN *'}}})
-        self._kibana_remove('search', {'query': {'match': {'title': 'SN *'}}})
-        self._kibana_remove('index-pattern', {'query': {'match_all': {}}})
-
-        for _type in ('index-pattern', 'search', 'visualization', 'dashboard'):
-            for _file in self._get_kibana_files(_type):
-                self._kibana_inject(_type, _file)
-
-        self._kibana_set_default_index(u'logstash-*')
+        self.kibana_reset()
         self.stdout.write('Kibana dashboards reloaded successfully')

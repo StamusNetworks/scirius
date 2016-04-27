@@ -37,16 +37,6 @@ class Command(BaseCommand, ESData):
         parser.add_argument('source',
             help='Path to kibana dashboards directory')
 
-    def _get_kibana_files(self, source, _type):
-        files = []
-        path = os.path.join(source, _type)
-        for _file in os.listdir(path):
-            if not _file.endswith('.json'):
-                continue
-            _file = os.path.join(path, _file)
-            files.append(_file)
-        return files       
-
     def handle(self, *args, **options):
         source = options['source']
         if not os.path.isdir(source):
