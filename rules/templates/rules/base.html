@@ -202,7 +202,7 @@ function get_scirius_status() {
                                 $("#sys-status").show(300);
                                 $("#scirius_down_label").hide();
                                 scirius_modal = false;
-                                call_health_functions();
+                                start_interval_check();
                                 return;
                             } else {
                                 $("#scirius_down_text").text("Scirius does not feel comfortable");
@@ -211,20 +211,20 @@ function get_scirius_status() {
                                     $("#scirius_down").modal('show');
                                     scirius_modal = true;
                                 }
-                                setTimeout(get_scirius_status, 10000);
                             }
                     }
                 },
                 error: function(data) {
-                        scirius_status = 'red';
-                        $("#scirius_down_text").text("No connection with scirius. This pop-up will disappear if connection is restored.");
-                        $("#sys-status").hide(1000);
-                        $("#scirius_down_label").show();
-                        if (scirius_modal == false) {
-                            $("#scirius_down").modal('show');
-                            scirius_modal = true;
+                        if (scirius_status != 'red') {
+                                scirius_status = 'red';
+                                $("#scirius_down_text").text("No connection with scirius. This pop-up will disappear if connection is restored.");
+                                $("#sys-status").hide(1000);
+                                $("#scirius_down_label").show();
+                                if (scirius_modal == false) {
+                                    $("#scirius_down").modal('show');
+                                    scirius_modal = true;
+                                }
                         }
-                        setTimeout(get_scirius_status, 10000);
                 },
                 timeout: 15000,
         }
@@ -265,10 +265,9 @@ function load_dashboards() {
                 }
                 },
                 error: function(data) {
-                        scirius_status = 'red';
+                        start_down_check();
                         $("#dashboards").empty();
                         $("#dashboards").append("<ul><li>Error getting data</li></ul>");
-                        get_scirius_status();
                 },
                 timeout: 15000,
         }
@@ -314,19 +313,15 @@ function get_es_health() {
                             $("#health").addClass("label-danger");
                         }
                 }
-
-                    setTimeout(get_es_health, 30000);
                 },
                 error: function(data) {
-                        scirius_status = 'red';
-                        get_scirius_status();
+                        start_down_check();
                 },
                 timeout: 15000,
         }
     );
 }
 
-$( 'document' ).ready(get_es_health());
 </script>
 {% endif %}
 
@@ -355,11 +350,9 @@ function get_suricata_health() {
                             $("#suri-status").addClass("label-danger");
                         }
                 }
-                setTimeout(get_suricata_health, 30000);
                 },
                 error: function(data) {
-                        scirius_status = 'red';
-                        get_scirius_status();
+                        start_down_check();
                 },
                 timeout: 15000,
         }
@@ -390,11 +383,9 @@ function get_disk_health() {
                             $("#disk-status").addClass("label-success");
                         }
                 }
-                setTimeout(get_disk_health, 30000);
                 },
                 error: function(data) {
-                        scirius_status = 'red';
-                        get_scirius_status();
+                        start_down_check();
                 },
                 timeout: 15000,
         }
@@ -425,20 +416,14 @@ function get_memory_health() {
                             $("#memory-status").addClass("label-success");
                         }
                 }
-                setTimeout(get_memory_health, 30000);
                 },
                 error: function(data) {
-                        scirius_status = 'red';
-                        get_scirius_status();
+                        start_down_check();
                 },
                 timeout: 15000,
         }
     );
 }
-
-$( 'document' ).ready(get_suricata_health());
-$( 'document' ).ready(get_disk_health());
-$( 'document' ).ready(get_memory_health());
 
 function call_health_functions() {
     get_suricata_health();
@@ -448,6 +433,27 @@ function call_health_functions() {
     get_es_health();
 {% endif %}
 }
+
+var status_interval;
+
+function start_interval_check() {
+   call_health_functions();
+   clear_interval_check();
+   status_interval = setInterval(call_health_functions, 30000);
+}
+
+function clear_interval_check() {
+   clearInterval(status_interval);
+}
+
+function start_down_check() {
+   clear_interval_check();
+   get_scirius_status();
+   status_interval = setInterval(get_scirius_status, 10000);
+}
+
+$( 'document' ).ready(start_interval_check());
+
 
 </script>
 </body>
