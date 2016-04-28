@@ -107,6 +107,7 @@ function draw_timeline(from_date, hosts, filter) {
                                 .showControls(multigraph)   //Allow user to switch between 'Grouped' and 'Stacked' mode.
                                 .groupSpacing(0.1)    //Distance between each group of bars.
                                 ;
+                                chart.stacked(true);
                                }
                                 chart.xAxis.tickFormat(function(d) {
                                     return d3.time.format('%m/%d %H:%M')(new Date(d))
