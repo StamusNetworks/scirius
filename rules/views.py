@@ -314,7 +314,7 @@ def rule(request, rule_id, key = 'pk'):
     rulesets_status = []
     for ruleset in rulesets:
         status = 'Inactive'
-        if rule.category in ruleset.categories.all() and rule not in ruleset.suppressed_rules.all():
+        if rule.state and rule.category in ruleset.categories.all() and rule not in ruleset.suppressed_rules.all():
             status = 'Active'
         threshold = 'No'
         if Threshold.objects.filter(rule = rule, ruleset = ruleset):
