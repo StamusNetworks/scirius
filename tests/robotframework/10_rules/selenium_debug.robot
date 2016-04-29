@@ -20,11 +20,11 @@
 |                  | Check Page      |                                  |
 |                  | Check Log File  |                                  |
 
-| Check page | [Documentation]         | Perform simple checks |        |
-|            | Run keyword If          | ${DEBUG} == 0         | Return |
-|            | Page Should Not Contain | Page not found        |        |
-|            | Page Should Not Contain | Not found             |        |
-|            | Page Should Not Contain | nginx                 |        |
+| Check page | [Documentation]         | Perform simple checks |
+|            | Return From Keyword If  | ${DEBUG} == 0         |
+|            | Page Should Not Contain | Page not found        |
+|            | Page Should Not Contain | Not found             |
+|            | Page Should Not Contain | nginx                 |
 #|            | Page Should Not Contain | Traceback             |        |
 
 | Check log file | [Documentation]            | Perform simple checks    |                   |                     |             |
