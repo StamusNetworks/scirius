@@ -87,6 +87,7 @@ class Source(models.Model):
     method = models.CharField(max_length=10, choices=FETCH_METHOD)
     datatype = models.CharField(max_length=10, choices=CONTENT_TYPE)
     uri = models.CharField(max_length=400, blank = True, null = True)
+    cert_verif = models.BooleanField('Check certificates', default=True)
     authkey = models.CharField(max_length=400, blank = True, null = True)
 
     editable = True
@@ -381,9 +382,9 @@ class Source(models.Model):
             hdrs = None
         try:
             if proxy_params:
-                resp = requests.get(self.uri, proxies = proxy_params, headers = hdrs)
+                resp = requests.get(self.uri, proxies = proxy_params, headers = hdrs, verify = self.cert_verif)
             else:
-                resp = requests.get(self.uri, headers = hdrs)
+                resp = requests.get(self.uri, headers = hdrs, verify = self.cert_verif)
             resp.raise_for_status()
         except requests.exceptions.ConnectionError:
             raise IOError("Connection error, please check URL")
