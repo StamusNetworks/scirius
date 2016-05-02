@@ -190,10 +190,12 @@ function display_field(method) {
     if ($( this ).find("option:selected").text() == "HTTP URL") {
         $("#id_uri").parents(".form-group").show(duration=200);
         $("#id_authkey").parents(".form-group").show(duration=200);
+        $("#id_cert_verif").parents(".form-group").show(duration=200);
         $("#id_file").parents(".form-group").hide(duration=200);
-    } else {
+    } else if ($( this ).find("option:selected").text() == "Upload") {
         $("#id_uri").parents(".form-group").hide(duration=200);
         $("#id_authkey").parents(".form-group").hide(duration=200);
+        $("#id_cert_verif").parents(".form-group").hide(duration=200);
         $("#id_file").parents(".form-group").show(duration=200);
     }
 }
@@ -211,6 +213,7 @@ function hide_fields() {
     $("#id_uri").parents(".form-group").hide();
     $("#id_authkey").parents(".form-group").hide();
     $("#id_file").parents(".form-group").hide();
+    $("#id_cert_verif").parents(".form-group").hide();
     $("#name_warning").hide();
     $("#id_method").change(display_field);
     $("#id_datatype").change(display_warning);
@@ -221,7 +224,7 @@ function select_fields() {
         $("#id_file").parents(".form-group").hide();
         $("#id_uri").parents(".form-group").show();
         $("#id_authkey").parents(".form-group").show();
-    } else {
+    } else if ($( this ).find("option:selected").text() == "Upload") {
         $("#id_uri").parents(".form-group").hide();
         $("#id_authkey").parents(".form-group").hide();
         $("#id_file").parents(".form-group").show();
