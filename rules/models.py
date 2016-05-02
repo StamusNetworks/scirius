@@ -386,8 +386,8 @@ class Source(models.Model):
             else:
                 resp = requests.get(self.uri, headers = hdrs, verify = self.cert_verif)
             resp.raise_for_status()
-        except requests.exceptions.ConnectionError:
-            raise IOError("Connection error, please check URL")
+        except requests.exceptions.ConnectionError, e:
+            raise IOError("Connection error '%s'" % (e))
         except requests.exceptions.HTTPError:
             if resp.status_code == 404:
                 raise IOError("URL not found on server (error 404), please check URL")
