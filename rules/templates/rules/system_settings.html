@@ -64,25 +64,80 @@ Select a file to import dashboards from.
 </p>
     {% bootstrap_field kibana_form.file show_label=False %}
     {% buttons %}
-        <button type="submit" name="import" class="btn btn-primary">
+        <button type="submit" name="import" class="btn btn-warning">
             {% bootstrap_icon "upload" %} Import
         </button>
     {% endbuttons %}
     {% bootstrap_label "Clear user dashboards" %}
     <p class="help-block">This will clear all user-defined dashboards.</p>
     {% buttons %}
-        <button type="submit" name="clear" class="btn btn-danger">
+        <span id="clear_dashboards">
+	<button type="button" name="clear" class="btn btn-danger">
             {% bootstrap_icon "trash" %} Clear
         </button>
+	</span>
     {% endbuttons %}
     {% bootstrap_label "Reset SN dashboards" %}
     <p class="help-block">Reset Stamus Networks dashboards to default.</p>
     {% buttons %}
-        <button type="submit" name="reset" class="btn btn-danger">
+        <span id="reset_dashboards">
+        <button type="button" class="btn btn-danger">
             {% bootstrap_icon "refresh" %} Reset
         </button>
+	</span>
     {% endbuttons %}
 </form>
+<!-- Modal -->
+<div class="modal fade bs-example-modal-sm" id="clear_modal" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="UpdateModalLabel">Delete all user dashboards</h4>
+      </div>
+      <div class="modal-body" id="update_text">
+        Clicking on <code>Clear</code> will delete all saved user dashboards. Click on <code>Cancel</code> to abort.
+      </div>
+      <div class="modal-footer">
+
+<form class="form" enctype="multipart/form-data" action="{% url 'system_settings' %}" method="post">
+    {% csrf_token %}
+    <input type='hidden' name='form_id' value='kibana'>
+        <button type="submit" name="clear" class="btn btn-danger">
+            {% bootstrap_icon "trash" %} Clear
+	</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+</form>	
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade bs-example-modal-sm" id="reset_modal" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="UpdateModalLabel">Reset Stamus Networks' dashboards</h4>
+      </div>
+      <div class="modal-body" id="update_text">
+        Clicking on <code>Reset</code> will result in a reset to factory default of all Stamus Networks's dashboards.
+ Click on <code>Cancel</code> to abort.
+      </div>
+      <div class="modal-footer">
+
+<form class="form" enctype="multipart/form-data" action="{% url 'system_settings' %}" method="post">
+    {% csrf_token %}
+    <input type='hidden' name='form_id' value='kibana'>
+        <button type="submit" name="reset" class="btn btn-danger">
+            {% bootstrap_icon "refresh" %} Reset
+	</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+</form>	
+      </div>
+    </div>
+  </div>
+</div>
+
 {% else %}
 Please enable Elasticsearch first.
 {% endif %}
@@ -94,6 +149,14 @@ Please enable Elasticsearch first.
 </div> <!-- tab-content -->
 
 <script type="text/javascript">
+
+$("#clear_dashboards").click(function() {
+	$("#clear_modal").modal('show');
+});
+
+$("#reset_dashboards").click(function() {
+	$("#reset_modal").modal('show');
+});
 
 function toggle_proxy() {
     var use_proxy = $("input#id_use_http_proxy")[0];
