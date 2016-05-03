@@ -14,4 +14,4 @@ six
 smmap
 urllib3
 ipy
-# pyinotify
+elasticsearch
