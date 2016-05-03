@@ -60,9 +60,13 @@ Clicking on the button will download the user-defined dashboards.
     {% endbuttons %}
     {% bootstrap_label "Import user dashboards" %}
     <p class="help-block">
+ <strong>Note:</strong> existing dashboards with same name will be overwritten.
+ </p>
+    {% bootstrap_field kibana_form.file show_label=False %}
+    <p class="help-block">
 Select a file to import dashboards from.
 </p>
-    {% bootstrap_field kibana_form.file show_label=False %}
+
     {% buttons %}
         <button type="submit" name="import" class="btn btn-warning">
             {% bootstrap_icon "upload" %} Import
