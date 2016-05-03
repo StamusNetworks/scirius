@@ -39,7 +39,7 @@ from rules.views import complete_context
 
 from django.conf import settings
 if settings.USE_ELASTICSEARCH:
-    from rules.elasticsearch import *
+    from rules.es_graphs import *
 
 def get_suri():
     suri = Suricata.objects.all()
