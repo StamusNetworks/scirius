@@ -7,7 +7,7 @@
     <h2 class="panel-title">System settings</h2>
  </div>
   <div class="panel-content">
-  Submit form to update Scirius system settings.
+  <p>Submit form to update Scirius system settings.</p>
 </div>
 {% endblock %}
 
@@ -44,33 +44,41 @@
 <div role="tabpanel" class="tab-pane fade{% if form_id == 'kibana' %} in active{% endif %}" id="kibana">
 <div class="container-fluid">
 <div class="row">
-<div class="col-md-2">
+<div class="col-md-6">
 {% if main_form.use_elasticsearch.value %}
 <form class="form" enctype="multipart/form-data" action="{% url 'system_settings' %}" method="post">
     {% csrf_token %}
     <input type='hidden' name='form_id' value='kibana'>
     {% bootstrap_label "Export user dashboards" %}
+    <p class="help-block">
+Clicking on the button will download the user-defined dashboards.
+</p>
     {% buttons %}
-        <button type="submit" name="export" class="btn btn-secondary">
+        <button type="submit" name="export" class="btn btn-primary">
             {% bootstrap_icon "download" %} Export
         </button>
     {% endbuttons %}
     {% bootstrap_label "Import user dashboards" %}
+    <p class="help-block">
+Select a file to import dashboards from.
+</p>
     {% bootstrap_field kibana_form.file show_label=False %}
     {% buttons %}
-        <button type="submit" name="import" class="btn btn-secondary">
+        <button type="submit" name="import" class="btn btn-primary">
             {% bootstrap_icon "upload" %} Import
         </button>
     {% endbuttons %}
     {% bootstrap_label "Clear user dashboards" %}
+    <p class="help-block">This will clear all user-defined dashboards.</p>
     {% buttons %}
-        <button type="submit" name="clear" class="btn btn-secondary">
+        <button type="submit" name="clear" class="btn btn-danger">
             {% bootstrap_icon "trash" %} Clear
         </button>
     {% endbuttons %}
     {% bootstrap_label "Reset SN dashboards" %}
+    <p class="help-block">Reset Stamus Networks dashboards to default.</p>
     {% buttons %}
-        <button type="submit" name="reset" class="btn btn-secondary">
+        <button type="submit" name="reset" class="btn btn-danger">
             {% bootstrap_icon "refresh" %} Reset
         </button>
     {% endbuttons %}
