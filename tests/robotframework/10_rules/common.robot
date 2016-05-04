@@ -18,7 +18,7 @@
 |                     | OperatingSystem.Directory Should Exist | ${CACHE_DIR}rules/                                                |                       |
 |                     | OperatingSystem.File Should Exist      | ${CACHE_DIR}rules/emerging-telnet.rules                           |                       |
 
-| Common Setup     | Open Browser        | ${BASE_URL}                             |                         |
+| Common Setup     | Open Browser        | ${BASE_URL}                             | ${BROWSER}              |
 |                  | Scirius Login       |                                         |                         |
 |                  | Set Proxy           |                                         |                         |
 | Common Teardown  | Clean sources       |                                         |                         |
