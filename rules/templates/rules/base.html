@@ -32,12 +32,12 @@
 </a>
 			<ul class="dropdown-menu" id="sc_menu" role="menu">
 			{% if kibana %}
-                        <li><a href="{{kibana_url}}">{% bootstrap_icon "stats"%} Dashboards</a>
+                        <li><a href="{{kibana_url}}" target="_">{% bootstrap_icon "stats"%} Dashboards</a>
 				<div id="dashboards"><ul><li>Loading data...</li></ul></div>
                         </li>
 			{% endif %}
 			{% if evebox %}
-                        <li><a href="{{evebox_url}}">{% bootstrap_icon "th-list"%} Events viewer</a></li>
+                        <li><a href="{{evebox_url}}" target="_">{% bootstrap_icon "th-list"%} Events viewer</a></li>
 			{% endif %}
 			{% if kibana or evebox %}
  			<li role="presentation" class="divider"></li>
@@ -256,9 +256,9 @@ function load_dashboards() {
                         var dh = "<ul>";
                         for (var key in data) {
                                 {% if kibana_version == 3 %}
-                                dh += "<li><a href='{{ kibana_url }}/#/dashboard/elasticsearch/" + key + "'>" + data[key] + "</a></li>";
+                                dh += "<li><a target='_' href='{{ kibana_url }}/#/dashboard/elasticsearch/" + key + "'>" + data[key] + "</a></li>";
                                 {% else %}
-                                dh += "<li><a href='{{ kibana_url }}/#/dashboard/" + key + "'>" + data[key] + "</a></li>";
+                                dh += "<li><a target='_' href='{{ kibana_url }}/#/dashboard/" + key + "'>" + data[key] + "</a></li>";
                                 {% endif %}
                         }
                         $("#dashboards").append(dh);
