@@ -302,7 +302,7 @@ The list of Threshold and Suppress for a rule can be seen from the ``Rules info`
 
 Threshold and Suppress are bound to a Ruleset. You can see all the defined ones from the Ruleset page.
 
-To suppress or edit a Threshold or a Suppress, simply click on the displayed ID. Then select ``Edit`` or `̀ Delete``  in the left menu.
+To suppress or edit a Threshold or a Suppress, simply click on the displayed ID. Then select ``Edit`` or ``Delete``  in the left menu.
 
 Updating Suricata ruleset
 -------------------------
