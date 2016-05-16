@@ -437,9 +437,13 @@ def threshold_rule(request, rule_id):
                 context['type'] = 'threshold'
             return scirius_render(request, 'rules/add_threshold.html', context)
         if form.is_valid():
-            threshold = form.save(commit=False)
-            threshold.rule = rule_object
-            threshold.save()
+            rulesets = form.cleaned_data['rulesets']
+            for ruleset in rulesets:
+                threshold = form.save(commit=False)
+                threshold.rule = rule_object
+                threshold.ruleset = ruleset
+                threshold.pk = None
+                threshold.save()
             return redirect(rule_object)
         else:
             context = {'rule': rule_object, 'form': form, 'error': 'Could not create threshold'}
