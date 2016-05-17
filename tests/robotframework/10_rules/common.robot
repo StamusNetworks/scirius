@@ -20,7 +20,6 @@
 
 | Common Setup     | Open Browser        | ${BASE_URL}                             | ${BROWSER}              |
 |                  | Scirius Login       |                                         |                         |
-|                  | Set Proxy           |                                         |                         |
 | Common Teardown  | Clean sources       |                                         |                         |
 |                  | Close Browser       |                                         |                         |
 | Scirius Login    | [Documentation]     | Login as user                           |                         |
