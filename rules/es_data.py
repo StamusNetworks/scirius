@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+import logging
 import json
 import os
 import tarfile
@@ -29,6 +30,9 @@ from time import strftime
 from django.conf import settings
 from elasticsearch import Elasticsearch
 
+# Avoid logging every request
+es_logger = logging.getLogger('elasticsearch')
+es_logger.setLevel(logging.INFO)
 
 class ESData(object):
     def __init__(self):
@@ -185,3 +189,17 @@ class ESData(object):
                 self._kibana_inject(_type, _file)
 
         self._kibana_set_default_index(u'logstash-*')
+
+    def _get_indexes(self):
+        res = self.client.search(index='_stats')
+        indexes = res['indices'].keys()
+        try:
+            indexes.remove('.kibana')
+        except ValueError:
+            pass
+        return indexes
+
+    def es_clear(self):
+        indexes = self._get_indexes()
+        self.client.indices.delete(index=indexes)
+        return len(indexes)
