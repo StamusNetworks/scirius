@@ -920,6 +920,15 @@ def system_settings(request):
                 context['success'] = "All changes saved."
             else:
                 context['error'] = "Invalid form."
+
+        elif form_id == 'es':
+            es_data = ESData()
+            try:
+                es_data.es_clear()
+                context['success'] = 'Done'
+            except Exception, e:
+                context['error'] = 'Clearing failed: %s' % e
+
         elif form_id == 'kibana':
             es_data = ESData()
             if 'export' in request.POST:
