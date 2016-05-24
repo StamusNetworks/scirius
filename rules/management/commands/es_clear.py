@@ -18,7 +18,8 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+from elasticsearch.exceptions import ConnectionError
 
 from rules.es_data import ESData
 
@@ -31,7 +32,11 @@ class Command(BaseCommand, ESData):
         ESData.__init__(self)
 
     def handle(self, *args, **options):
-        count = self.es_clear()
+        try:
+            count = self.es_clear()
+        except ConnectionError as e:
+            self.stderr.write('Could not connect to Elasticsearch, please retry later.')
+            raise CommandError(repr(e))
         if count:
             self.stdout.write('Data erased successfully (%i index%s deleted)' % (count, 'es' if count > 1 else ''))
         else:

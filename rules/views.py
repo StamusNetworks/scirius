@@ -23,6 +23,7 @@ from django.utils import timezone
 from django.http import HttpResponse
 from django.db import IntegrityError
 from django.conf import settings
+from elasticsearch.exceptions import ConnectionError
 
 from scirius.utils import scirius_render, scirius_listing
 
@@ -926,7 +927,9 @@ def system_settings(request):
             try:
                 es_data.es_clear()
                 context['success'] = 'Done'
-            except Exception, e:
+            except ConnectionError as e:
+                context['error'] = 'Could not connect to Elasticsearch'
+            except Exception as e:
                 context['error'] = 'Clearing failed: %s' % e
 
         elif form_id == 'kibana':
