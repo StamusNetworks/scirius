@@ -34,6 +34,41 @@ from elasticsearch import Elasticsearch
 es_logger = logging.getLogger('elasticsearch')
 es_logger.setLevel(logging.INFO)
 
+# Mapping
+KIBANA_MAPPINGS = { "dashboard": 
+    { "properties":
+        {
+          "title": { "type": "string" },
+          "hits": { "type": "integer" },
+          "description": { "type": "string" },
+          "panelsJSON": { "type": "string" },
+          "optionsJSON": { "type": "string" },
+          "uiStateJSON": { "type": "string" },
+          "version": { "type": "integer" },
+          "timeRestore": { "type": "boolean" },
+          "timeTo": { "type": "string" },
+          "timeFrom": { "type": "string" },
+        }
+    } , "search" : { "properties" :
+        {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "hits": { "type": "integer" },
+            "columns": { "type": "string" },
+            "sort": { "type": "string" },
+            "version": { "type": "integer" }
+        }
+    }, "visualization": { "properties":
+        {
+            "title": { "type": "string" },
+            "uiStateJSON": { "type": "string" },
+            "description": { "type": "string" },
+            "savedSearchId": { "type": "string" },
+            "version": { "type": "integer" }
+        }
+    }
+}
+
 class ESData(object):
     def __init__(self):
         es_addr = 'http://%s/' % settings.ELASTICSEARCH_ADDRESS
@@ -105,6 +140,15 @@ class ESData(object):
         tar_name += '.tar.bz2'
         return tar_name, f.name
 
+    def _create_kibana_mappings(self):
+        if not self.client.indices.exists('.kibana'):
+            self.client.indices.create(index='.kibana',body={ "mappings": KIBANA_MAPPINGS })
+            self.client.indices.refresh(index='.kibana')
+        elif not "visualization" in str(self.client.indices.get_mapping(index='.kibana')):
+            self.client.indices.delete(index='.kibana')
+            self.client.indices.create(index='.kibana',body={ "mappings": KIBANA_MAPPINGS })
+            self.client.indices.refresh(index='.kibana')
+
     def _kibana_inject(self, _type, _file):
         with open(_file) as f:
             content = f.read()
@@ -152,6 +196,8 @@ class ESData(object):
         if self._get_kibana_files(source, 'dashboard') == []:
             raise Exception('Archive does not appear to contain dashboards')
 
+        self._create_kibana_mappings()
+
         for _type in ('search', 'visualization', 'dashboard'):
             for _file in self._get_kibana_files(source, _type):
                 self._kibana_inject(_type, _file)
@@ -173,6 +219,9 @@ class ESData(object):
             self._kibana_remove(_type, body)
 
     def kibana_reset(self):
+
+        self._create_kibana_mappings()
+
         if not os.path.isdir(settings.KIBANA_DASHBOARDS_PATH):
             raise Exception('Please make sure Kibana dashboards are installed at %s' % settings.KIBANA_DASHBOARDS_PATH)
 
