@@ -4,11 +4,13 @@
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
+<div class="panel-content">
 <form action="{% url 'addsupprule' ruleset.id %}" method="post">{% csrf_token %}
 <ul class="action">
 <li>Search: <input type="text" name="search" /></li>
 </ul>
 </form>
+</div>
 {% endblock %}
 
 {% block content %}
