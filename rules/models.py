@@ -20,7 +20,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import models
 from django.conf import settings
-from django.core.exceptions import FieldError, SuspiciousOperation
+from django.core.exceptions import FieldError, SuspiciousOperation, ValidationError
+from django.core.validators import validate_ipv4_address
 from django.db import transaction
 from django.utils import timezone
 import requests
@@ -34,12 +35,29 @@ import shutil
 import json
 import IPy
 
-# Create your models here.
+def validate_proxy(val):
+    if val.count(':') != 1:
+        raise ValidationError('Invalid address')
+
+    host, port = val.split(':')
+    try:
+        validate_ipv4_address(host)
+    except ValidationError:
+        # ip may in fact be a hostname
+        # http://www.regextester.com/23
+        HOSTNAME_RX = r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
+        if not re.match(HOSTNAME_RX, host):
+            raise ValidationError('Invalid hostname or IP')
+    try:
+        port = int(port)
+    except ValueError:
+        raise ValidationError('Invalid port')
 
 class SystemSettings(models.Model):
     use_http_proxy = models.BooleanField(default=False)
-    http_proxy = models.CharField(max_length=200, default="", blank=True)
-    https_proxy = models.CharField(max_length=200, default="", blank=True)
+    http_proxy = models.CharField(max_length=200, validators=[validate_proxy], default="", blank=True,
+                                    help_text='Proxy address of the form "host:port".')
+    https_proxy = models.CharField(max_length=200, validators=[validate_proxy], default="", blank=True)
     use_elasticsearch = models.BooleanField(default=True)
 
     def get_proxy_params(self):
