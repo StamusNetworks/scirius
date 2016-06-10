@@ -18,10 +18,16 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
+
 from django.shortcuts import redirect
 from django.conf import settings
 
 from revproxy.views import ProxyView
+
+# Avoid logging every request
+revproxy_logger = logging.getLogger('revproxy')
+revproxy_logger.setLevel(logging.WARNING)
 
 def homepage(request):
     return redirect("rules/")
