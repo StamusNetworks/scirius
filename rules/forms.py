@@ -86,12 +86,12 @@ class RulesetForm(forms.Form):
 
 
 
-class RulesetEditForm(forms.Form):
+class RulesetEditForm(forms.ModelForm):
     name = forms.CharField(max_length=100)
 
-    def __init__(self, *args, **kwargs):
-        super(RulesetEditForm, self).__init__(*args, **kwargs)
-        self.fields['categories'] = forms.MultipleChoiceField(Category.objects.all())
+    class Meta:
+        model = Ruleset
+        fields = ('name',)
 
 class RulesetCopyForm(forms.Form):
     name = forms.CharField(max_length=100)

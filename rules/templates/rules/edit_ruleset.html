@@ -1,4 +1,6 @@
 {% extends "rules/base.html" %}
+{% load bootstrap3  %}
+
 {% block sidebar %}
 <div class="panel-heading">
        <h2 class="panel-title"><a href="{% url 'ruleset' ruleset.pk %}">{{ ruleset.name }}</a></h2>
@@ -70,7 +72,21 @@ function tables2_checking() {
 </script>
 
 {% if not mode %}
-Choose an operation in Action menu.
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-6">
+Edit the ruleset or choose an operation in Action menu.
+<form class="form" action="{% url 'edit_ruleset' ruleset.id %}" method="post">{% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "ok" %} Submit
+        </button>
+    {% endbuttons %}
+</form>
+</div>
+</div>
+</div>
 {% endif %}
 
 {% if mode == 'sources' %}

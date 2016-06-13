@@ -812,6 +812,10 @@ def edit_ruleset(request, ruleset_id):
                 source = get_object_or_404(SourceAtVersion, pk=src)
                 ruleset.sources.add(source)
             ruleset.needs_test()
+        else:
+            form = RulesetEditForm(request.POST, instance=ruleset)
+            if form.is_valid():
+                form.save()
         return redirect(ruleset)
     else:
         cats_selection = []
@@ -831,16 +835,18 @@ def edit_ruleset(request, ruleset_id):
 
         context = {'ruleset': ruleset,  'categories_list': categories_list, 'sources': sources, 'rules': rules, 'cats_selection': ", ".join(cats_selection) }
         if request.GET.has_key('mode'):
-                context['mode'] = request.GET['mode']
-                if context['mode'] == 'sources':
-                    all_sources = SourceAtVersion.objects.all()
-                    sources_selection = []
-                    for source in sources:
-                        sources_selection.append(source.pk)
-                    sources_list = EditSourceAtVersionTable(all_sources)
-                    tables.RequestConfig(request, paginate = False).configure(sources_list)
-                    context['sources_list'] = sources_list
-                    context['sources_selection'] = sources_selection
+            context['mode'] = request.GET['mode']
+            if context['mode'] == 'sources':
+                all_sources = SourceAtVersion.objects.all()
+                sources_selection = []
+                for source in sources:
+                    sources_selection.append(source.pk)
+                sources_list = EditSourceAtVersionTable(all_sources)
+                tables.RequestConfig(request, paginate = False).configure(sources_list)
+                context['sources_list'] = sources_list
+                context['sources_selection'] = sources_selection
+        else:
+            context['form'] = RulesetEditForm(instance=ruleset)
         return scirius_render(request, 'rules/edit_ruleset.html', context)
 
 def ruleset_add_supprule(request, ruleset_id):
