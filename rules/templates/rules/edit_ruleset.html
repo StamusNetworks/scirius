@@ -75,7 +75,15 @@ function tables2_checking() {
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-6">
-Edit the ruleset or choose an operation in Action menu.
+<h2>Edit ruleset</h2>
+Choose an operation in the actions below:
+<div>
+<div class="label label-default"><a href="{% url 'edit_ruleset' ruleset.id %}?mode=sources">Edit sources</a></div> 
+<div class="label label-default"><a href="{% url 'edit_ruleset' ruleset.id %}?mode=categories">Edit categories</a></div> 
+<div class="label label-default"><a href="{% url 'addsupprule' ruleset.id %}">Add rules to disabled list</a></div> 
+<div class="label label-default"><a href="{% url 'edit_ruleset' ruleset.id %}?mode=rules">Remove rules from disabled list</a></div>
+</div>
+<h2>Rename ruleset</h2>
 <form class="form" action="{% url 'edit_ruleset' ruleset.id %}" method="post">{% csrf_token %}
     {% bootstrap_form form %}
     {% buttons %}
