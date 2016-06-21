@@ -25,10 +25,10 @@ import tarfile
 import tempfile
 from cStringIO import StringIO
 from shutil import rmtree
-from time import strftime
+from time import strftime, sleep
 
 from django.conf import settings
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, ConnectionError
 
 # Avoid logging every request
 es_logger = logging.getLogger('elasticsearch')
@@ -252,3 +252,13 @@ class ESData(object):
         indexes = self._get_indexes()
         self.client.indices.delete(index=indexes)
         return len(indexes)
+
+    def wait_until_up(self):
+        for i in xrange(1024):
+            try:
+                ret = self.client.cluster.health(wait_for_status='green', request_timeout=15 * 60)
+                if ret.get('status') == 'green':
+                    break
+                sleep(10)
+            except ConnectionError:
+                pass
