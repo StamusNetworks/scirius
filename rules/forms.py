@@ -121,7 +121,7 @@ class AddRuleSuppressForm(forms.ModelForm):
     threshold_type = forms.CharField(widget = forms.HiddenInput())
     class Meta:
         model = Threshold
-        exclude = ['rulesets', 'rule', 'gid', 'descr', 'type', 'count', 'seconds']
+        exclude = ['ruleset', 'rule', 'gid', 'descr', 'type', 'count', 'seconds']
     def __init__(self, *args, **kwargs):
         super(AddRuleSuppressForm, self).__init__(*args, **kwargs)
         ruleset_list =  Ruleset.objects.all()
