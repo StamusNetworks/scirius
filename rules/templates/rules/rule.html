@@ -7,7 +7,6 @@
 </div>
 <div class="panel-body">
 <ul>
-       <li><span class="type">Msg:</span> {{ rule.msg }}</li>
        <li><span class="type">Revision:</span> {{ rule.rev }}</li>
  {% if not rule.state_in_source %}
        <li><span class="type">State in source:</span> commented</li>
@@ -65,11 +64,10 @@
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-8">
-<h2 class="title">Definition</h2>
-<div class="rule">
-      {{ rule.highlight_content|safe }}
-</div>
-</div> <!-- col -->
+
+<h2>{{ rule.msg }}</h2>
+
+
 
 {% if references %}
 <div class="col-md-4">
@@ -204,8 +202,7 @@
 </div> <!-- row -->
 
 </div> <!-- container -->
-</div> <!-- col -->
-
+</div>
 
 </div> <!-- row -->
 {% if probes %}
@@ -242,6 +239,11 @@
 
 <div role="tabpanel" class="tab-pane fade in" id="status">
 <div class="container-fluid">
+
+<h2 class="title">Definition</h2>
+<div class="rule">
+      {{ rule.highlight_content|safe }}
+</div>
 
 {% endif %}
 <div class="row">
