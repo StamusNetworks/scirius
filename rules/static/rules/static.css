@@ -382,3 +382,7 @@ div.status ul li span.pull-right {
 	transform: translateY(-50%);
     font-size: 120%;
 }
+
+.category {
+    min-width: 12em;
+}
