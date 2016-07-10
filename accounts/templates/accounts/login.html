@@ -21,10 +21,31 @@
 </div>
 </div>
 <div class="row">
-<div class="col-md-5">
+<div class="col-md-12">
+<img class="img-circle center-block" id="sciriuslogo" src="{% static 'rules/scirius.jpg' %}"/>
+</div>
+</div>
+<div class="row">
+<div class="col-md-3">
+</div>
+<div class="col-md-4">
+<div id="logininfo">
+<h2>Scirius Community Edition</h2>
+<div>
+<p>
+Scirius CE is a web interface dedicated to Suricata ruleset management.
+Scirius CE is developed by Stamus Networks and is available under the GNU GPLv3 license.
+</p>
+<p>
+Manage multiple rulesets and rules sources. Upload and manage custom rules and any data files. Handle thresholding and suppression to limit verbosity of noisy alerts. Get suricata performance statistics and information about rules activity.
+</p>
+<p>
+Interact with Elasticsearch, Kibana and other interfaces such as EveBox.
+</p>
+</div>
+</div>
 </div>
 <div class="col-md-2">
-
 <div class="panel panel-default" id="login">
 <div class="panel-heading">
 <h2 class="panel-title">Login to Scirius</h2>
@@ -42,12 +63,23 @@
 </div>
 
 </div>
+</div>
 
-<div class="col-md-5">
+<hr>
+<ul class="list-inline text-center">
+ <li><a href="https://www.stamus-networks.com"><img src="{% static 'rules/stamus.png' %}"/></a><li> 
+<!-- <li><a href="/">Stamus Networks</a><li> -->
+<li><a href="https://www.stamus-networks.com/scirius-ce">Scirius Community Edition</a><li>
+<li><a href="https://www.stamus-networks.com/scirius-ee-vs-ce">Scirius Enterprise Edition</a><li>
+<li><li>
+</ul>
+
+<!-- <div class="col-md-5">
 </div>
 </div>
 {% include "rules/footer.html" %}
 </div>
+-->
 
 </body>
 </html>
