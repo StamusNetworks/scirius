@@ -290,9 +290,9 @@ function draw_sunburst(from_date, hosts, filter, callback) {
               $("#circles").append("No data to build the graph");
               return;
          }
-var width = 300,
-    height = 300,
-    radius = Math.min(width, height) / 2;
+var height = 300;
+var width = $("#circles").parent().width();
+var radius = Math.min(width, height) / 2;
 
 var x = d3.scale.linear()
     .range([0, 2 * Math.PI]);
