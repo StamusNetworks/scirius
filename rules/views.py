@@ -265,6 +265,24 @@ def elasticsearch(request):
                 hosts = None
             qfilter = request.GET.get('filter', None)
             data = es_get_rules_per_category(from_date = from_date, hosts = hosts, qfilter = qfilter)
+        elif query == 'alerts_count':
+            from_date = request.GET.get('from_date', None)
+            cshosts = request.GET.get('hosts', None)
+            if cshosts:
+                hosts = cshosts.split(',')
+            else:
+                hosts = None
+            qfilter = request.GET.get('filter', None)
+            data = es_get_alerts_count(from_date = from_date, hosts = hosts, qfilter = qfilter)
+        elif query == 'latest_stats':
+            from_date = request.GET.get('from_date', None)
+            cshosts = request.GET.get('hosts', None)
+            if cshosts:
+                hosts = cshosts.split(',')
+            else:
+                hosts = None
+            qfilter = request.GET.get('filter', None)
+            data = es_get_latest_stats(from_date = from_date, hosts = hosts, qfilter = qfilter)
         else:
             data = None
         return HttpResponse(json.dumps(data), content_type="application/json")

@@ -508,6 +508,84 @@ RULES_PER_CATEGORY = """
 }
 """
 
+ALERTS_COUNT_PER_HOST = """
+{
+  "size": 0,
+  "query": {
+    "filtered": {
+      "query": {
+        "query_string": {
+          "query": "event_type:alert AND host.raw:{{ hosts }} {{ query_filter|safe }}",
+          "analyze_wildcard": true
+        }
+      },
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": {{ from_date }}
+                }
+              }
+            }
+          ],
+          "must_not": []
+        }
+      }
+    }
+  },
+  "aggs": {}
+}
+"""
+
+LATEST_STATS_ENTRY = """
+{
+  "size": 1,
+  "sort": [
+    {
+      "@timestamp": {
+        "order": "desc",
+        "unmapped_type": "boolean"
+      }
+    }
+  ],
+  "query": {
+    "filtered": {
+      "query": {
+        "query_string": {
+          "query": "event_type:stats AND host.raw:{{ hosts }} {{ query_filter|safe }}",
+          "analyze_wildcard": true
+        }
+      },
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": {{ from_date }}
+                }
+              }
+            }
+          ],
+          "must_not": []
+        }
+      }
+    }
+  },
+  "fields": [
+    "_source"
+  ],
+    "fielddata_fields": [
+    "@timestamp",
+    "flow.start",
+    "timestamp",
+    "flow.end"
+  ]
+}
+"""
+
 DASHBOARDS_QUERY_URL = "http://%s/%s/dashboard/_search?size=" % (settings.ELASTICSEARCH_ADDRESS, settings.KIBANA_INDEX)
 
 HEALTH_URL = "http://%s/_cluster/health" % settings.ELASTICSEARCH_ADDRESS
@@ -860,3 +938,42 @@ def es_delete_alerts_by_sid(sid):
     r = requests.delete(delete_url)
     data = json.loads(r.text)
     return data
+
+def es_get_alerts_count(from_date=0, hosts = None, qfilter = None):
+    templ = Template(ALERTS_COUNT_PER_HOST)
+    context = Context({'from_date': from_date, 'hosts': hosts[0]})
+    if qfilter != None:
+        query_filter = " AND " + qfilter
+        context['query_filter'] = query_filter
+    data = templ.render(context)
+    es_url = get_es_url(from_date)
+    req = urllib2.Request(es_url, data)
+    try:
+        out = urllib2.urlopen(req)
+    except Exception, e:
+        return "BAM: " + str(e)
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    return {"doc_count": data["hits"]["total"] };
+
+def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
+    templ = Template(LATEST_STATS_ENTRY)
+    context = Context({'from_date': from_date, 'hosts': hosts[0]})
+    if qfilter != None:
+        query_filter = " AND " + qfilter
+        context['query_filter'] = query_filter
+    data = templ.render(context)
+    es_url = get_es_url(from_date, data = 'stats')
+    req = urllib2.Request(es_url, data)
+    try:
+        out = urllib2.urlopen(req)
+    except Exception, e:
+        return "BAM: " + str(e)
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    try:
+        return data['hits']['hits'][0]['_source']
+    except:
+        return None
