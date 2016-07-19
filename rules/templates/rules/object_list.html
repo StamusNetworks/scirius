@@ -5,7 +5,7 @@
 <div class="panel-heading">
     <h2 class="panel-title">{{ name }}</h2>
 </div>
-    <ul><li>{{ objects_len }} object(s)</li></ul>
+<ul><li>{{ objects_len }} object{{ objects_len|pluralize }}</li></ul>
    {% if action %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>

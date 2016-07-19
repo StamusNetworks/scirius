@@ -41,15 +41,15 @@ No match.
 <h2 class="panel-title">Search</h2>
 </div>
 <ul>
-  <li>{{ length }} result(s) for '{{motif}}'.</li>
+	<li>{{ length }} result{{ length|pluralize }} for '{{motif}}'.</li>
   {% if rulesets %}
-  <li>{{rulesets.page.paginator.count}} ruleset(s)</li>
+  <li>{{rulesets.page.paginator.count}} ruleset{{ rulesets.page.paginator.count|pluralize }}</li>
   {% endif %}
   {% if categories %}
-  <li>{{categories.page.paginator.count}} categories</li>
+  <li>{{categories.page.paginator.count}} categorie{{ categories.page.paginator.count|pluralize }}</li>
   {% endif %}
   {% if rules %}
-  <li>{{rules.page.paginator.count}} rule(s)</li>
+  <li>{{rules.page.paginator.count}} rule{{ rules.page.paginator.count|pluralize }}</li>
   {% endif %}
 </ul>
 {% endblock %}
