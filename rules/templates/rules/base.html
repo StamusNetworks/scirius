@@ -46,7 +46,14 @@
             <li><a href="{% url 'system_settings' %}" >{% bootstrap_icon "list-alt"%} System settings</a></li>
             <li><a href="{% url 'accounts_edit' '' %}" >{% bootstrap_icon "cog"%} Account settings</a></li>
             <li><a href="/accounts/logout/" >{% bootstrap_icon "log-out"%} Logout</a></li>
-                        {% block menusettings %} {% endblock %}
+                        {% block menusettings %}
+			        {% if links %}
+				<li role="presentation" class="divider"></li>
+				{% for link in links %}
+					<li><a href="{% url link.url %}">{% bootstrap_icon link.icon %} {{ link.name }}</a></li>
+				{% endfor %}
+				{% endif %}
+			{% endblock %}
             {% if request.user.is_superuser %}
  			<li role="presentation" class="divider"></li>
                         <li><a href="{% url 'accounts_manage' '' %}" >{% bootstrap_icon "user"%} Manage accounts</a></li>

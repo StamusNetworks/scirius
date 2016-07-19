@@ -77,6 +77,11 @@ def scirius_render(request, template, context):
     if settings.USE_EVEBOX:
         context['evebox'] = 1
         context['evebox_url'] = "/evebox"
+    try:
+        middleware = __import__("%s.%s" % (settings.RULESET_MIDDLEWARE, 'links'))
+        context['links'] = middleware.links.links(request)
+    except:
+        pass
     return render(request, template, context)
 
 def scirius_listing(request, objectname, name, template = 'rules/object_list.html', table = None, adduri = None):
