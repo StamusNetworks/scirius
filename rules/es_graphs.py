@@ -536,6 +536,8 @@ def build_es_timestamping(date, data = 'alert'):
                 date += timedelta(days=1)
             elif settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'hourly':
                 date += timedelta(hours=1)
+        if len(indexes) > 20:
+            return base_index + '*'
         return ','.join(indexes)
     except:
         return base_index + '*'
