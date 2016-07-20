@@ -25,7 +25,7 @@ from datetime import datetime, timedelta
 import urllib2
 import requests
 import json
-from time import time
+from time import time, mktime
 import re
 
 URL = "http://%s/%s/_search?ignore_unavailable=true"
@@ -539,6 +539,54 @@ ALERTS_COUNT_PER_HOST = """
 }
 """
 
+ALERTS_TREND_PER_HOST = """
+{
+  "size": 0,
+  "aggs": {
+    "trend": {
+      "date_range": {
+        "field": "@timestamp",
+        "ranges": [
+          {
+            "from": {{ start_date }},
+            "to": {{ from_date }}
+          },
+          {
+            "from": {{ from_date }},
+            "to": "now"
+          }
+        ]
+      }
+    }
+  },
+  "query": {
+    "filtered": {
+      "query": {
+        "query_string": {
+          "query": "event_type:alert AND host.raw:{{ hosts }} {{ query_filter|safe }}",
+          "analyze_wildcard": true
+        }
+      },
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": {{ start_date }},
+                  "format": "epoch_millis"
+                }
+              }
+            }
+          ],
+          "must_not": []
+        }
+      }
+    }
+  }
+}
+"""
+
 LATEST_STATS_ENTRY = """
 {
   "size": 1,
@@ -939,14 +987,25 @@ def es_delete_alerts_by_sid(sid):
     data = json.loads(r.text)
     return data
 
-def es_get_alerts_count(from_date=0, hosts = None, qfilter = None):
-    templ = Template(ALERTS_COUNT_PER_HOST)
+def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
+    if prev:
+        templ = Template(ALERTS_TREND_PER_HOST)
+    else:
+        templ = Template(ALERTS_COUNT_PER_HOST)
     context = Context({'from_date': from_date, 'hosts': hosts[0]})
     if qfilter != None:
         query_filter = " AND " + qfilter
         context['query_filter'] = query_filter
+    if prev:
+        # compute delta with now and from_date
+        from_datetime = datetime.fromtimestamp(int(from_date)/1000)
+        start_datetime = from_datetime - (datetime.now() - from_datetime)
+        start_date = int(mktime(start_datetime.timetuple()) * 1000)
+        context['start_date'] = start_date
+        es_url = get_es_url(start_date)
+    else:
+        es_url = get_es_url(from_date)
     data = templ.render(context)
-    es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
         out = urllib2.urlopen(req)
@@ -955,7 +1014,11 @@ def es_get_alerts_count(from_date=0, hosts = None, qfilter = None):
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
-    return {"doc_count": data["hits"]["total"] };
+    if prev:
+        countsdata = data["aggregations"]["trend"]["buckets"]
+        return {"prev_doc_count": countsdata[0]["doc_count"], "doc_count": countsdata[1]["doc_count"]}
+    else:
+        return {"doc_count": data["hits"]["total"] };
 
 def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
     templ = Template(LATEST_STATS_ENTRY)

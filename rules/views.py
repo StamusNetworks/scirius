@@ -273,7 +273,8 @@ def elasticsearch(request):
             else:
                 hosts = None
             qfilter = request.GET.get('filter', None)
-            data = es_get_alerts_count(from_date = from_date, hosts = hosts, qfilter = qfilter)
+            prev = request.GET.get('prev', 0)
+            data = es_get_alerts_count(from_date = from_date, hosts = hosts, qfilter = qfilter, prev=prev)
         elif query == 'latest_stats':
             from_date = request.GET.get('from_date', None)
             cshosts = request.GET.get('hosts', None)
