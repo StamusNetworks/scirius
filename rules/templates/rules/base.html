@@ -77,10 +77,10 @@
 			<li><a id="source" href="{% url 'sources' %}">{% bootstrap_icon "cloud-download" %} Sources</a></li>
 			<li><a id="ruleset" href="{% url 'rulesets' %}">{% bootstrap_icon "th" %} Rulesets</a></li>
             		{% if generator %}
-			<li><a id="{{ generator }}" href="/{{ generator }}/">{% bootstrap_icon "hdd" %} {{ generator|capfirst }}</a></li>
+			<li><a id="{{ generator }}" href="/{{ generator }}/">{% bootstrap_icon "eye-open" %} {{ generator|capfirst }}</a></li>
             		{% endif %}
 			<li>
-				<a id="about" href="{% url 'scirius_about' %}">{% bootstrap_icon "comment" %} About</a>
+				<a id="about" href="{% url 'scirius_about' %}">{% bootstrap_icon "info-sign" %} About</a>
 			</li>
 		</ul>
 		<form class="navbar-form navbar-nav navbar-right"  action="{% url 'scirius_search' %}" method="post" role="search">{% csrf_token %}
