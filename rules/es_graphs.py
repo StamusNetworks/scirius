@@ -552,8 +552,7 @@ ALERTS_TREND_PER_HOST = """
             "to": {{ from_date }}
           },
           {
-            "from": {{ from_date }},
-            "to": "now"
+            "from": {{ from_date }}
           }
         ]
       }
@@ -573,8 +572,7 @@ ALERTS_TREND_PER_HOST = """
             {
               "range": {
                 "@timestamp": {
-                  "gte": {{ start_date }},
-                  "format": "epoch_millis"
+                  "gte": {{ start_date }}
                 }
               }
             }
