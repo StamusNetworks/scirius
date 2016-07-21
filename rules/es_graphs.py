@@ -648,13 +648,17 @@ import django_tables2 as tables
 def build_es_timestamping(date, data = 'alert'):
     format_table = { 'daily': '%Y.%m.%d', 'hourly': '%Y.%m.%d.%H' }
     now = datetime.now()
+    if settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'daily':
+        end = now + timedelta(days=1)
+    elif settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'hourly':
+        end = now + timedelta(hours=1)
     if data == 'alert':
         base_index = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
     else:
         base_index = settings.ELASTICSEARCH_LOGSTASH_INDEX
     try:
         indexes = []
-        while date < now:
+        while date < end:
             indexes.append("%s%s" % (base_index, date.strftime(format_table[settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING])))
             if settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'daily':
                 date += timedelta(days=1)
