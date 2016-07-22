@@ -135,12 +135,12 @@ def update(request):
                 suri.ruleset.update()
             except IOError, errors:
                 return index(request, error="Can not fetch data: %s" % (errors))
-            message.append("Rule downloaded at %s. " % (suri.ruleset.updated_date))
+            message.append("Rule downloaded at %s. " % (suri.ruleset.updated_date) + ".")
         if form.cleaned_data['build']:
             suri.generate()
             suri.updated_date = timezone.now()
             suri.save()
-            message.append("Successful ruleset build at " + str(suri.updated_date))
+            message.append("Successful ruleset build at " + str(suri.updated_date) + ".")
         if form.cleaned_data['push']:
             ret = suri.push()
             suri.updated_date = timezone.now()

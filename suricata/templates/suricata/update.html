@@ -25,7 +25,11 @@ function table_all_toggle(source) {
 <h2 class="title">Suricata Ruleset Actions</h2>
 {% if message %}
 {% for line in message %}
-<p>{{ line }}</p>
+{% if "Successful" in line %}
+<div class="alert alert-success" role="alert">{{ line }}</div>
+{% else %}
+<div class="alert alert-warning" role="alert">{{ line }}</div>
+{% endif %}
 {% endfor %}
 {% else %}
     {% if suri.updated_date %}
