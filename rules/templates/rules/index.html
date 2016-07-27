@@ -48,36 +48,6 @@
 {% if elasticsearch and probes %}
 
 <div class="row">
-
-<div class="col-md-12">
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-12">
-<h2 class="title">Rules activity (last {{ date }})
-<span class="pull-right">
-<a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
-<span class="glyphicon glyphicon-cog"> </span>
-</a>
-<ul class="dropdown-menu" id="display_menu">
-   <li><a href="?duration=1">Last 1h</a></li>
-   <li><a href="?duration=6">Last 6h</a></li>
-   <li><a href="?duration=24">Last 24h</a></li>
-   <li><a href="?duration=48">Last 2d</a></li>
-   <li><a href="?duration=168">Last 7d</a></li>
-</ul>
-</span>
-</h2>
-</div>
-</div>
-
-<div class="row">
-<div class="col-md-12">
-<div id="rules_table">Fetching data...</div>
-</div>
-</div>
-</div>
-</div>
-
 <div class="col-md-12">
 <div class="container-fluid">
 
@@ -113,6 +83,37 @@
 
 </div>
 </div> <!-- col side display -->
+
+<div class="col-md-12">
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-12">
+<h2 class="title">Rules activity (last {{ date }})
+<span class="pull-right">
+<a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+<span class="glyphicon glyphicon-cog"> </span>
+</a>
+<ul class="dropdown-menu" id="display_menu">
+   <li><a href="?duration=1">Last 1h</a></li>
+   <li><a href="?duration=6">Last 6h</a></li>
+   <li><a href="?duration=24">Last 24h</a></li>
+   <li><a href="?duration=48">Last 2d</a></li>
+   <li><a href="?duration=168">Last 7d</a></li>
+</ul>
+</span>
+</h2>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-12">
+<div id="rules_table">Fetching data...</div>
+</div>
+</div>
+</div>
+</div>
+
+
 </div> <!-- row -->
 
 <script>
