@@ -43,6 +43,80 @@
 </div> <!-- panel -->
 </div> <!-- col -->
 
+{% if elasticsearch %}
+<div class="col-md-4">
+<div class="panel panel-default" >
+<div class="panel-heading" >
+<h2 class="panel-title">Alert stats for last {{ date }}</h2>
+</div>
+<div class="panel-body">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="thumbnail" style="margin-bottom: 0px">
+                <h5 class="alert-trends-title">Previous</h5>
+                <div class="alert-trends-box">
+                    <span id="prevgalertcnt">-</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="thumbnail" style="margin-bottom: 0px">
+                <h5 class="alert-trends-title">Current</h5>
+                <div class="alert-trends-box">
+                    <span id="galertcnt">-</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="thumbnail" style="margin-bottom: 0px">
+                <h5 class="alert-trends-title">Trend</h5>
+                <div id="alerttrendbox" class="alert-trends-box">
+                    <span id="alerttrend">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function get_alert_count() {
+    $.ajax({
+            type:"GET",
+            url: "{% url 'elasticsearch' %}?query=alerts_count&from_date={{ from_date }}&prev=1&hosts=*",
+            context: $(this),
+            success: function(data) {
+                    if (data) {
+                            $("#galertcnt").text(data['doc_count']);
+                            $("#prevgalertcnt").text(data['prev_doc_count']);
+                            var trend = (data['doc_count'] - data['prev_doc_count']) * 100.0/ data['prev_doc_count'];
+                            var sign = "";
+                            if (trend > 0) {
+                                    sign = "+";
+                            }
+                            $("#alerttrend").text(sign + trend.toFixed(0) + "%");
+                            if (trend > 80) {
+                                if (! $("#alerttrendbox").hasClass("red")) {
+                                    $("#alerttrendbox").addClass("red");
+                                }
+                            } else {
+                                if ($("#alerttrendbox").hasClass("red")) {
+                                    $("#alerttrendbox").removeClass("red");
+                                }
+                            }
+                    }
+            }
+        });
+    }
+    $( 'document' ).ready(
+        function() {
+            get_alert_count();
+            setInterval(get_alert_count, 15000);
+        }
+    )
+</script>
+</div> <!-- panel -->
+</div> <!-- col -->
+{% endif %}
+
 </div> <!-- row -->
 
 {% if elasticsearch and probes %}
