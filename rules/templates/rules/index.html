@@ -54,7 +54,7 @@
         <div class="col-md-4">
             <div class="thumbnail" style="margin-bottom: 0px">
                 <h5 class="alert-trends-title">Previous</h5>
-                <div class="alert-trends-box">
+                <div class="alert-trends-box bg-info">
                     <span id="prevgalertcnt">-</span>
                 </div>
             </div>
@@ -62,7 +62,7 @@
         <div class="col-md-4">
             <div class="thumbnail" style="margin-bottom: 0px">
                 <h5 class="alert-trends-title">Current</h5>
-                <div class="alert-trends-box">
+                <div class="alert-trends-box bg-info">
                     <span id="galertcnt">-</span>
                 </div>
             </div>
@@ -70,7 +70,7 @@
         <div class="col-md-4">
             <div class="thumbnail" style="margin-bottom: 0px">
                 <h5 class="alert-trends-title">Trend</h5>
-                <div id="alerttrendbox" class="alert-trends-box">
+                <div id="alerttrendbox" class="alert-trends-box bg-info">
                     <span id="alerttrend">-</span>
                 </div>
             </div>
@@ -93,13 +93,16 @@
                                     sign = "+";
                             }
                             $("#alerttrend").text(sign + trend.toFixed(0) + "%");
+                            $("#alerttrendbox").removeClass("bg-info");
                             if (trend > 80) {
-                                if (! $("#alerttrendbox").hasClass("red")) {
-                                    $("#alerttrendbox").addClass("red");
+                                if (! $("#alerttrendbox").hasClass("bg-danger")) {
+                                    $("#alerttrendbox").removeClass("bg-success");
+                                    $("#alerttrendbox").addClass("bg-danger");
                                 }
                             } else {
-                                if ($("#alerttrendbox").hasClass("red")) {
-                                    $("#alerttrendbox").removeClass("red");
+                                if (! $("#alerttrendbox").hasClass("bg-success")) {
+                                    $("#alerttrendbox").removeClass("bg-danger");
+                                    $("#alerttrendbox").addClass("bg-success");
                                 }
                             }
                     }

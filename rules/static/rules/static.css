@@ -419,18 +419,12 @@ div.status ul li span.pull-right {
 }
 
 .alert-trends-box {
-  background-color: #777;
   text-align: center;
   vertical-align: middle;
-  color: #fff;
   font-weight: bold;
   border-radius: 3px;
   line-height: 60px;
   height: 60px;
-}
-
-.alert-trends-box.red {
-  background-color: #d9534f !important;
 }
 
 .alert-trends-box span {
