@@ -235,7 +235,11 @@ $( 'document' ).ready(get_es_detailed_health());
 
 function get_es_indices_stats() {
 
-    var indices_url = "{% url 'elasticsearch' %}?query=indices"
+    var indices_url = "{% url 'elasticsearch' %}?query=indices";
+    var page_no = new RegExp('[\?&]page=([^&#]*)').exec(window.location.href);
+    if (page_no != null) {
+        indices_url += '&page=' + page_no[1];
+    }
     $.ajax(
     {
             type:"GET",
