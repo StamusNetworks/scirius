@@ -275,6 +275,11 @@ class Source(models.Model):
 
     def handle_rules_file(self, f):
 
+        f.seek(0)
+        if (tarfile.is_tarfile(f.name)):
+            raise OSError("This is a tar file and not a individual signature file, please select another category")
+        f.seek(0)
+
         self.updated_date = timezone.now()
         self.first_run = False
 
