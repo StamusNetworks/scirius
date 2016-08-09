@@ -24,6 +24,7 @@ from django.http import HttpResponse
 from django.db import IntegrityError
 from django.conf import settings
 from elasticsearch.exceptions import ConnectionError
+from django.core.exceptions import SuspiciousOperation
 
 from scirius.utils import scirius_render, scirius_listing
 
@@ -642,7 +643,7 @@ def add_source(request):
                 if src.method == 'local' and request.FILES.has_key('file'):
                     try:
                         src.handle_uploaded_file(request.FILES['file'])
-                    except OSError, error:
+                    except Exception, error:
                         src.delete()
                         return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
             except IntegrityError, error:
