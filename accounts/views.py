@@ -25,7 +25,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from scirius.utils import scirius_render, scirius_listing
-from forms import LoginForm, UserSettingsForm, NormalUserSettingsForm, PasswordForm
+from forms import LoginForm, UserSettingsForm, NormalUserSettingsForm, PasswordForm, DeleteForm
 from models import SciriusUser
 
 def loginview(request, target):
@@ -156,6 +156,15 @@ def manageuseraction(request, user_id, action):
                 user.save()
             else:
                 context['error'] = 'Invalid form'
+        elif action == "delete":
+            form = DeleteForm(request.POST)
+            if form.is_valid():
+                if request.POST.__contains__('confirm'):
+                    user.delete()
+                    return redirect('/accounts/manage/')
+            else:
+                context['error'] = 'Invalid form'
+
         return scirius_render(request, 'accounts/user.html', context)
     if action == "activate":
         if not request.user.is_superuser:
@@ -191,12 +200,8 @@ def manageuseraction(request, user_id, action):
         if not request.user.is_superuser:
             context['error'] = 'Unsufficient permissions'
             return scirius_render(request, 'accounts/user.html', context)
-        if request.GET.__contains__('confirm'):
-            user.delete()
-            return redirect('/accounts/manage/')
-        else:
-            context = { 'confirm_action': 'Delete user', 'user': user, 'action': 'delete'}
-            return scirius_render(request, 'accounts/user.html', context)
+        context = { 'confirm_action': 'Delete user', 'user': user, 'action': 'delete'}
+        return scirius_render(request, 'accounts/user.html', context)
     context = { 'action': 'User actions', 'user': user }
     return scirius_render(request, 'accounts/user.html', context)
 

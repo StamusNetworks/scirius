@@ -60,7 +60,8 @@
 </ul>
 
 {% if action == 'delete' %}
-<form action="{% url 'accounts_useraction' user.pk 'delete' %}" method="get" class="form">
+<form action="{% url 'accounts_useraction' user.pk 'delete' %}" method="post" class="form">
+{% csrf_token %}
 <input type="hidden" name="confirm" value="1">
     {% buttons %}
 <button type="submit" class="btn btn-primary">

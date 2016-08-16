@@ -45,3 +45,6 @@ class NormalUserSettingsForm(forms.ModelForm):
 
 class PasswordForm(forms.Form):
     password = forms.CharField(label="New user password", widget=forms.PasswordInput)
+
+class DeleteForm(forms.Form):
+    confirm = forms.IntegerField()
