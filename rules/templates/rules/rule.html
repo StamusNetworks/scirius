@@ -21,7 +21,7 @@
 </div>
 <div class="panel-body">
 <ul>
-	<li><a href="{{ kibana_url }}/app/kibana?#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-{{ date }},mode:quick,to:now))&_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:'alert.signature_id:{{ rule.sid }}')),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:_source,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=logstash-*&type=histogram" target="_">Events list</a></li>
+	<li><a href="{{ kibana_url }}/app/kibana?#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-{{ date }},mode:quick,to:now))&_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:'alert.signature_id:{{ rule.sid }}')),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:_source,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=logstash-*&type=histogram" target="_blank">Events list</a></li>
 </div>
 {% endif %}
 {% if request.user.is_staff %}
