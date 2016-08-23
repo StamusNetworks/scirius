@@ -45,7 +45,7 @@
                 url:"{% url 'update_source' source.id %}",
                 success: function(data) {
 			if (data['status'] == true) {
-				$("#update_source").modal('hide');
+				$("#update_modal").modal('hide');
                 if (data['redirect'] == true) {
 				    window.location = "{% url 'changelog_ruleset' source.id %}";
                 }
