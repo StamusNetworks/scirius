@@ -415,7 +415,10 @@ def delete_alerts(request, rule_id):
         return scirius_render(request, 'rules/delete_alerts.html', context)
 
     if request.method == 'POST': # If the form has been submitted...
-        es_delete_alerts_by_sid(rule_id)
+        if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
+            Probe.common.es_delete_alerts_by_sid(rule_id)
+        else:
+            es_delete_alerts_by_sid(rule_id)
         return redirect(rule_object)
     else:
         context = {'object': rule_object }
@@ -553,6 +556,8 @@ def update_source(request, source_id):
     if not request.user.is_staff:
         return redirect(src)
 
+    if hasattr(Probe.common, 'update_source'):
+        return Probe.common.update_source(request, src)
     try:
         src.update()
     except (IOError, OSError), errors:
@@ -778,6 +783,8 @@ def update_ruleset(request, ruleset_id):
     if not request.user.is_staff:
         return redirect(rset)
 
+    if hasattr(Probe.common, 'update_ruleset'):
+        return Probe.common.update_ruleset(request, rset)
     try:
         rset.update()
     except IOError, errors:
