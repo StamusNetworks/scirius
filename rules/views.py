@@ -571,6 +571,7 @@ def update_source(request, source_id):
     if request.is_ajax():
         data = {}
         data['status'] = True
+        data['redirect'] = True
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     supdate = SourceUpdate.objects.filter(source = src).order_by('-created_date')

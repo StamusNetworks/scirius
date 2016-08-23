@@ -22,7 +22,7 @@
 <a href="{% url 'changelog_source' source.id %}">Changelog</a>
 </li>
 <li>
-<span id="update_source" ><a>Update</a></span>
+<span id="update_source" ><a style="cursor: pointer;">Update</a></span>
 </li>
 <li>
 <a href="{% url 'edit_source' source.id %}">Edit</a>
@@ -46,7 +46,9 @@
                 success: function(data) {
 			if (data['status'] == true) {
 				$("#update_source").modal('hide');
-				window.location = "{% url 'changelog_ruleset' source.id %}";
+                if (data['redirect'] == true) {
+				    window.location = "{% url 'changelog_ruleset' source.id %}";
+                }
 			} else {
 				$("#update_text").text("Error during update: " + data['errors']);
 			}
