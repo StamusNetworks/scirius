@@ -82,6 +82,12 @@ def scirius_render(request, template, context):
         context['links'] = middleware.links.links(request)
     except:
         pass
+    try:
+        middleware = __import__("%s.%s" % (settings.RULESET_MIDDLEWARE, 'common'))
+        context['middleware_status'] = middleware.common.block_status(request)
+    except:
+        pass
+
     return render(request, template, context)
 
 def scirius_listing(request, objectname, name, template = 'rules/object_list.html', table = None, adduri = None):

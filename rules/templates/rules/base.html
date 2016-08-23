@@ -113,7 +113,7 @@
 					  {% endfor %}
 					</ol>
 					{% endif %}
-                                        {% block status %} {% endblock %}
+                                        {% block status %}{% if middleware_status %}{% include middleware_status %}{% endif %} {% endblock %}
 			</div> <!-- panel -->
 			<div class="panel panel-default" id="sys-status">
 					<div class="panel-heading">
