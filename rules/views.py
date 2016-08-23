@@ -793,7 +793,7 @@ def update_ruleset(request, ruleset_id):
             return HttpResponse(json.dumps({'status': False, 'errors': error}), content_type="application/json")
         return ruleset(request, ruleset_id, error)
     if request.is_ajax():
-        return HttpResponse(json.dumps({'status': True}), content_type="application/json")
+        return HttpResponse(json.dumps({'status': True, 'redirect': True}), content_type="application/json")
     return redirect('changelog_ruleset', ruleset_id = ruleset_id)
 
 def changelog_ruleset(request, ruleset_id):

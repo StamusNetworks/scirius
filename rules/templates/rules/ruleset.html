@@ -41,7 +41,7 @@
 <a href="{% url 'changelog_ruleset' ruleset.id %}">Changelog</a>
 </li>
 <li>
-<span  id="update_ruleset"><a>Update</a></span>
+<span  id="update_ruleset"><a style="cursor: pointer;">Update</a></span>
 </li>
 <li>
 <a href="{% url 'edit_ruleset' ruleset.id %}">Edit</a>
@@ -63,7 +63,9 @@ $("#update_ruleset").click(function() {
                 success: function(data) {
 			if (data['status'] == true) {
 				$("#update_modal").modal('hide');
-				window.location = "{% url 'changelog_ruleset' ruleset.id %}";
+                if (data['redirect'] == true) {
+				    window.location = "{% url 'changelog_ruleset' ruleset.id %}";
+                }
 			} else {
 				$("#update_text").text("Error during update: " + data['errors']);
 			}
