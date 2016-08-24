@@ -15,14 +15,22 @@
 </ul>
 </div>
 
-{% if kibana and kibana_version >= 4 %}
+{% if kibana and kibana_version >= 4 or evebox %}
 <div class="panel-heading">
-       <h2 class="panel-title">Kibana</h2>
+       <h2 class="panel-title">Events list</h2>
 </div>
 <div class="panel-body">
 <ul>
-	<li><a href="{{ kibana_url }}/app/kibana?#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-{{ date }},mode:quick,to:now))&_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:'alert.signature_id:{{ rule.sid }}')),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:_source,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=logstash-*&type=histogram" target="_blank">Events list</a></li>
+{% if kibana and kibana_version >= 4 %}
+	<li><a href="{{ kibana_url }}/app/kibana?#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-{{ date }},mode:quick,to:now))&_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:'alert.signature_id:{{ rule.sid }}')),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:_source,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=logstash-*&type=histogram" target="_blank">Kibana</a></li>
+{% endif %}
+
+{% if evebox %}
+<li><a href="{{ evebox_url }}/#/events?q=alert.signature_id:{{ rule.sid }}" target="_blank">Evebox</a></li>
+{% endif %}
+</ul>
 </div>
+
 {% endif %}
 {% if request.user.is_staff %}
 <div class="panel-heading">
