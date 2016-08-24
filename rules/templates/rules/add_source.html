@@ -141,6 +141,7 @@ function update_activate_source(src_pk, rulesets, ruleset_list)
 
     $('#source_progress').text("Updating source.");
     $.ajax({
+       type:"POST",
        url: tgturl,
           success: function(data) {
             if (data['status'] == true) { 
