@@ -321,6 +321,14 @@ function populate_topip_actions(pdiv, direction) {
             content = content + ' <a href="{% url 'threshold_rule' rule.pk %}?action=suppress&dir=' + direction + '&net=' + ip + '"><span class="glyphicon glyphicon-remove"> </span></a>';
             $(this).empty();
             $(this).append(content);
+	    {% if evebox %}
+                $(this).parent("tr").children(".host").css('cursor', 'pointer');
+                $(this).parent("tr").children(".host").click( function() {
+			ip = $(this).text()
+			window.open("{{ evebox_url }}/#/events?q=" + direction +"_ip:\"" + ip + "\"");
+		});
+	    {% endif %}
+
 
         }
     );
