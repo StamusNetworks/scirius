@@ -157,6 +157,8 @@ def source(request, source_id, error=None, update = False, activate = False, rul
                'update': update, 'activate': activate, 'rulesets': rulesets}
     if error:
         context['error'] = error
+    if hasattr(Probe.common, 'update_source'):
+        context['middleware_has_update'] = True
     return scirius_render(request, 'rules/source.html', context)
 
 def categories(request):
@@ -760,6 +762,9 @@ def ruleset(request, ruleset_id, mode = 'struct', error = None):
         response = HttpResponse(file_content, content_type="text/plain")
         response['Content-Disposition'] = 'attachment; filename=scirius.rules'
         return response
+
+    if hasattr(Probe.common, 'update_ruleset'):
+        context['middleware_has_update'] = True
     return scirius_render(request, 'rules/ruleset.html', context)
 
 def add_ruleset(request):

@@ -88,7 +88,11 @@ $("#update_ruleset").click(function() {
         <h4 class="modal-title" id="UpdateModalLabel">Please wait...</h4>
       </div>
       <div class="modal-body" id="update_text">
+{% if middleware_has_udpate %}
+        Triggering ruleset update. This window will close when operation is registered.
+{% else %}
         Scirius is updating ruleset. This window will close when update is over.
+{% endif %}
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
