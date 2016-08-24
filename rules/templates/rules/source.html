@@ -41,7 +41,7 @@
     $("#update_source").click(function() {
 	$("#update_modal").modal('show');
 	$.ajax( {
-                type:"GET",
+                type:"POST",
                 url:"{% url 'update_source' source.id %}",
                 success: function(data) {
 			if (data['status'] == true) {

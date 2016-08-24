@@ -556,6 +556,14 @@ def update_source(request, source_id):
     if not request.user.is_staff:
         return redirect(src)
 
+    if request.method != 'POST': # If the form has been submitted...
+        if request.is_ajax():
+            data = {}
+            data['status'] = False
+            data['errors'] = "Invalid method for page"
+            return HttpResponse(json.dumps(data), content_type="application/json")
+        return source(request, source_id, error="Invalid method for page")
+
     if hasattr(Probe.common, 'update_source'):
         return Probe.common.update_source(request, src)
     try:
