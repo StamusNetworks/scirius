@@ -47,7 +47,7 @@
 			if (data['status'] == true) {
 				$("#update_modal").modal('hide');
                 if (data['redirect'] == true) {
-				    window.location = "{% url 'changelog_ruleset' source.id %}";
+				    window.location = "{% url 'changelog_source' source.id %}";
                 }
 			} else {
 				$("#update_text").text("Error during update: " + data['errors']);
