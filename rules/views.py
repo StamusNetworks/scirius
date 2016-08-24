@@ -792,6 +792,14 @@ def update_ruleset(request, ruleset_id):
     if not request.user.is_staff:
         return redirect(rset)
 
+    if request.method != 'POST': # If the form has been submitted...
+        if request.is_ajax():
+            data = {}
+            data['status'] = False
+            data['errors'] = "Invalid method for page"
+            return HttpResponse(json.dumps(data), content_type="application/json")
+        return ruleset(rset, ruleset_id, error="Invalid method for page")
+
     if hasattr(Probe.common, 'update_ruleset'):
         return Probe.common.update_ruleset(request, rset)
     try:
