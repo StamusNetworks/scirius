@@ -23,6 +23,9 @@ from django.utils import timezone
 from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold
 
 class SystemSettingsForm(forms.ModelForm):
+    use_http_proxy = forms.BooleanField(label='Use a proxy', required=False)
+    custom_elasticsearch = forms.BooleanField(label='Use a custom Elasticsearch server', required=False)
+
     class Meta:
         model = SystemSettings
         exclude = []

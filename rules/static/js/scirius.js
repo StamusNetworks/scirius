@@ -619,3 +619,16 @@ function fadeChange(elt, text)
 {
    elt.fadeOut("fast", function() { elt.text(text); elt.fadeIn(); });
 }
+
+function checkbox_toggle_div(checkbox_loc, div_loc) {
+    $(checkbox_loc).on("change", function() {
+        if ($(checkbox_loc + ":checked").val()) {
+            $(div_loc).show();
+        } else {
+            $(div_loc).hide();
+        }
+    });
+    if (! $(checkbox_loc + ":checked").val()) {
+        $(div_loc).hide();
+    }
+}

@@ -30,7 +30,18 @@
 <form class="form" action="{% url 'system_settings' %}" method="post">
     {% csrf_token %}
     <input type='hidden' name='form_id' value='main'>
-    {% bootstrap_form main_form %}
+    {% bootstrap_field main_form.use_http_proxy show_label=False %}
+    <div id="proxy_fields">
+      {% bootstrap_field main_form.http_proxy %}
+      {% bootstrap_field main_form.https_proxy %}
+    </div>
+    {% bootstrap_field main_form.use_elasticsearch %}
+    <div id="es_fields">
+      {% bootstrap_field main_form.custom_elasticsearch %}
+      <div id="es_custom_fields">
+        {% bootstrap_field main_form.elasticsearch_address %}
+      </div>
+    </div>
     {% buttons %}
         <button type="submit" class="btn btn-primary">
             {% bootstrap_icon "ok" %} Submit
@@ -220,26 +231,9 @@ $("#reset_dashboards").click(function() {
 	$("#reset_modal").modal('show');
 });
 
-function toggle_proxy() {
-    var use_proxy = $("input#id_use_http_proxy")[0];
-    if (use_proxy.checked) {
-        $("input#id_http_proxy").prop('disabled', false);
-        $("input#id_https_proxy").prop('disabled', false);
-    } else {
-        $("input#id_http_proxy").prop('disabled', true);
-        $("input#id_https_proxy").prop('disabled', true);
-    }
-}
-
-$("input#id_use_http_proxy").change(function () {
-    toggle_proxy();
-}
-);
-
-$(document).ready( function() {
-    toggle_proxy();
-});
-
+checkbox_toggle_div('#id_use_http_proxy', '#proxy_fields');
+checkbox_toggle_div('#id_use_elasticsearch', '#es_fields');
+checkbox_toggle_div('#id_custom_elasticsearch', '#es_custom_fields');
 </script>
 
 
