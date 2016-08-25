@@ -28,6 +28,8 @@ import json
 from time import time, mktime
 import re
 
+from rules.models import get_es_address, get_es_path
+
 URL = "http://%s/%s/_search?ignore_unavailable=true"
 
 TOP_QUERY = """
@@ -633,14 +635,11 @@ LATEST_STATS_ENTRY = """
 }
 """
 
-DASHBOARDS_QUERY_URL = "http://%s/%s/dashboard/_search?size=" % (settings.ELASTICSEARCH_ADDRESS, settings.KIBANA_INDEX)
-
-HEALTH_URL = "http://%s/_cluster/health" % settings.ELASTICSEARCH_ADDRESS
-STATS_URL = "http://%s/_cluster/stats" % settings.ELASTICSEARCH_ADDRESS
-
-INDICES_STATS_URL = "http://%s/_stats/docs" % settings.ELASTICSEARCH_ADDRESS
-
-DELETE_ALERTS_URL = "http://%s/%s/_query?q=alert.signature_id:%d"
+DASHBOARDS_QUERY_URL = "/%s/dashboard/_search?size=" % settings.KIBANA_INDEX
+HEALTH_URL = "/_cluster/health"
+STATS_URL = "/_cluster/stats"
+INDICES_STATS_URL = "/_stats/docs"
+DELETE_ALERTS_URL = "/%s*/_query?q=alert.signature_id:%%d" % settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
 
 from rules.models import Rule
 from rules.tables import ExtendedRuleTable, RuleStatsTable
@@ -686,7 +685,7 @@ def get_es_url(from_date, data = 'alert'):
         else:
             start = datetime.fromtimestamp(int(from_date)/1000)
             indexes = build_es_timestamping(start, data = data)
-    return URL % (settings.ELASTICSEARCH_ADDRESS, indexes)
+    return URL % (get_es_address(), indexes)
 
 def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None):
     templ = Template(TOP_QUERY)
@@ -815,7 +814,7 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
     return stats
 
 def es_get_dashboard(count=20):
-    req = urllib2.Request(DASHBOARDS_QUERY_URL + str(count))
+    req = urllib2.Request(get_es_path(DASHBOARDS_QUERY_URL) + str(count))
     try:
         out = urllib2.urlopen(req)
     except:
@@ -919,7 +918,7 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
     return data
 
 def es_get_json(uri):
-    req = urllib2.Request(uri)
+    req = urllib2.Request(get_es_path(uri))
     try:
         out = urllib2.urlopen(req)
     except:
@@ -985,7 +984,7 @@ def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
     return rdata
 
 def es_delete_alerts_by_sid(sid):
-    delete_url = DELETE_ALERTS_URL % (settings.ELASTICSEARCH_ADDRESS, settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + "*", int(sid))
+    delete_url = get_es_path(DELETE_ALERTS_URL) % int(sid)
     r = requests.delete(delete_url)
     data = json.loads(r.text)
     return data

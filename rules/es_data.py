@@ -30,6 +30,8 @@ from time import strftime, sleep
 from django.conf import settings
 from elasticsearch import Elasticsearch, ConnectionError
 
+from rules.models import get_es_address
+
 # Avoid logging every request
 es_logger = logging.getLogger('elasticsearch')
 es_logger.setLevel(logging.INFO)
@@ -71,7 +73,7 @@ KIBANA_MAPPINGS = { "dashboard":
 
 class ESData(object):
     def __init__(self):
-        es_addr = 'http://%s/' % settings.ELASTICSEARCH_ADDRESS
+        es_addr = 'http://%s/' % get_es_address()
         self.client = Elasticsearch([es_addr])
 
     def _kibana_remove(self, _type, body):

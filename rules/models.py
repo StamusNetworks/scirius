@@ -89,6 +89,15 @@ def get_system_settings():
         gsettings.save()
         return gsettings
 
+def get_es_address():
+    gsettings = get_system_settings()
+    if gsettings.custom_elasticsearch:
+        return gsettings.elasticsearch_address
+    return settings.ELASTICSEARCH_ADDRESS
+
+def get_es_path(path):
+    return 'http://' + get_es_address() + path
+
 class Source(models.Model):
     FETCH_METHOD = (
         ('http', 'HTTP URL'),
