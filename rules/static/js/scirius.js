@@ -196,7 +196,7 @@ function draw_timeline(from_date, hosts, filter) {
         });
 }
 
-function draw_stats_timeline(from_date, value, tdiv, speed, hosts) {
+function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, autorange) {
 
         if (hosts) {
             hosts_list  = "&hosts=" + hosts.join();
@@ -238,7 +238,9 @@ function draw_stats_timeline(from_date, value, tdiv, speed, hosts) {
                                 chart.yAxis
                                 .tickFormat(d3.format(',.1f'));
 
-                                chart.forceY([0, 1])
+                                if (!autorange) {
+                                    chart.forceY([0, 1]);
+                                }
 
                                 var end_interval = new Date().getTime();
                                 chart.forceX([from_date, end_interval]);
@@ -291,6 +293,11 @@ function draw_stats_timeline(from_date, value, tdiv, speed, hosts) {
              $("#error").parent().toggle();
 	    }
         });
+}
+
+
+function draw_stats_timeline(from_date, value, tdiv, speed, hosts) {
+     draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, false);
 }
 
 function build_path(d) {
