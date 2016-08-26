@@ -94,6 +94,19 @@
 	{% block subnavigation %} {% endblock %}
 	<div class="row">
 		<div class="col-md-2 col-sm-3">
+			<div class="panel panel-default" id="sys-status">
+					<div class="panel-heading">
+					<h2 class="panel-title">System status</h2>
+					</div>
+                    <div class="panel-body">
+                    <div id="suri-status" class="label label-default"><a href="/{{ generator }}/">Suricata</a></div>
+{% if elasticsearch %}
+                    <div id="health" class="label label-default"><a href="{% url 'elasticsearch' %}">Elasticsearch</a></div>
+{% endif %}
+                    <div id="disk-status" class="label label-default">Disk</div>
+                    <div id="memory-status" class="label label-default">Memory</div>
+                    </div>
+            </div>
 			<div class="panel panel-default" id="sidebar">
 				        {% block sidebar %}
 					<div class="panel-heading">
@@ -115,19 +128,7 @@
 					{% endif %}
                                         {% block status %}{% if middleware_status %}{% include middleware_status %}{% endif %} {% endblock %}
 			</div> <!-- panel -->
-			<div class="panel panel-default" id="sys-status">
-					<div class="panel-heading">
-					<h2 class="panel-title">System status</h2>
-					</div>
-                    <div class="panel-body">
-                    <div id="suri-status" class="label label-default"><a href="/{{ generator }}/">Suricata</a></div>
-{% if elasticsearch %}
-                    <div id="health" class="label label-default"><a href="{% url 'elasticsearch' %}">Elasticsearch</a></div>
-{% endif %}
-                    <div id="disk-status" class="label label-default">Disk</div>
-                    <div id="memory-status" class="label label-default">Memory</div>
-                    </div>
-            </div>
+
 		</div> <!-- col -->
 		{% if three_columns %}
 		<div class="col-md-8 col-sm-9">
