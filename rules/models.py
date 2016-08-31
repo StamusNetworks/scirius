@@ -790,6 +790,7 @@ class Ruleset(models.Model):
                 f.write("%s\n" % (threshold))
 
     def copy(self, name):
+        orig_ruleset_pk = self.pk
         orig_sources = self.sources.all()
         orig_categories = self.categories.all()
         orig_supp_rules = self.suppressed_rules.all()
@@ -801,6 +802,11 @@ class Ruleset(models.Model):
         self.categories = orig_categories
         self.suppressed_rules = orig_supp_rules
         self.save()
+        for threshold in Threshold.objects.filter(ruleset_id = orig_ruleset_pk):
+            threshold.ruleset = self
+            threshold.pk = None
+            threshold.id = None
+            threshold.save()
         return self
 
     def export_files(self, directory):
