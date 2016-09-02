@@ -3,7 +3,7 @@ Django<1.9
 django-bootstrap3
 django-revproxy
 django-tables2
-django-dbbackup
+django-dbbackup<3.0
 gitdb
 GitPython
 psutil
