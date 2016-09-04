@@ -26,7 +26,7 @@
 {% endif %}
 
 {% if evebox %}
-<li><a href="{{ evebox_url }}/#/events?q=alert.signature_id:{{ rule.sid }}" target="_blank">Evebox</a></li>
+<li><a href="{{ evebox_url }}/#/events;q=alert.signature_id:{{ rule.sid }}" target="_blank">Evebox</a></li>
 {% endif %}
 </ul>
 </div>
@@ -325,7 +325,7 @@ function populate_topip_actions(pdiv, direction) {
                 $(this).parent("tr").children(".host").css('cursor', 'pointer');
                 $(this).parent("tr").children(".host").click( function() {
 			ip = $(this).text()
-			window.open("{{ evebox_url }}/#/events?q=" + direction +"_ip:\"" + ip + "\"");
+			window.open("{{ evebox_url }}/#/events;q=" + direction +"_ip:\"" + ip + "\"");
 		});
 	    {% endif %}
 
