@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import rules.models
 
 
 class Migration(migrations.Migration):
@@ -19,7 +18,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='systemsettings',
-            name='elasticsearch_address',
-            field=models.CharField(default=b'elasticsearch:9200', help_text=b'Elasticsearch address of the form "host:port".', max_length=200, blank=True, validators=[rules.models.validate_proxy]),
+            name='elasticsearch_url',
+            field=models.URLField(default=b'http://elasticsearch:9200/', blank=True),
         ),
     ]

@@ -60,9 +60,8 @@ class SystemSettings(models.Model):
     https_proxy = models.CharField(max_length=200, validators=[validate_proxy], default="", blank=True)
     use_elasticsearch = models.BooleanField(default=True)
     custom_elasticsearch = models.BooleanField(default=False)
-    elasticsearch_address = models.CharField(max_length=200, validators=[validate_proxy], blank=True,
-                                    default='elasticsearch:9200',
-                                    help_text='Elasticsearch address of the form "host:port".')
+    elasticsearch_url = models.URLField(max_length=200, blank=True,
+                                    default='http://elasticsearch:9200/')
 
     def get_proxy_params(self):
         if self.use_http_proxy:
@@ -92,11 +91,14 @@ def get_system_settings():
 def get_es_address():
     gsettings = get_system_settings()
     if gsettings.custom_elasticsearch:
-        return gsettings.elasticsearch_address
-    return settings.ELASTICSEARCH_ADDRESS
+        addr = gsettings.elasticsearch_url
+        if not addr.endswith('/'):
+            addr += '/'
+        return addr
+    return 'http://%s/' % settings.ELASTICSEARCH_ADDRESS
 
 def get_es_path(path):
-    return 'http://' + get_es_address() + path
+    return get_es_address() + path
 
 class Source(models.Model):
     FETCH_METHOD = (

@@ -30,7 +30,7 @@ import re
 
 from rules.models import get_es_address, get_es_path
 
-URL = "http://%s/%s/_search?ignore_unavailable=true"
+URL = "%s%s/_search?ignore_unavailable=true"
 
 TOP_QUERY = """
 {

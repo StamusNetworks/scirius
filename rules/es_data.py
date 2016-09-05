@@ -73,7 +73,7 @@ KIBANA_MAPPINGS = { "dashboard":
 
 class ESData(object):
     def __init__(self):
-        es_addr = 'http://%s/' % get_es_address()
+        es_addr = get_es_address()
         self.client = Elasticsearch([es_addr])
 
     def _kibana_remove(self, _type, body):
