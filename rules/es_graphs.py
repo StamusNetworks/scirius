@@ -32,6 +32,9 @@ from rules.models import get_es_address, get_es_path
 
 URL = "%s%s/_search?ignore_unavailable=true"
 
+# ES requests timeout (keep this below Scirius's ajax requests timeout)
+TIMEOUT = 13
+
 TOP_QUERY = """
 {
   "facets": {
@@ -697,7 +700,7 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
-        out = urllib2.urlopen(req)
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
         return None
     data = out.read()
@@ -747,7 +750,7 @@ def es_get_field_stats(request, field, FieldTable, hostname, key='host', count=2
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
-        out = urllib2.urlopen(req)
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
         return None
     data = out.read()
@@ -785,7 +788,7 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
-        out = urllib2.urlopen(req)
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
         return None
     data = out.read()
@@ -816,7 +819,7 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
 def es_get_dashboard(count=20):
     req = urllib2.Request(get_es_path(DASHBOARDS_QUERY_URL) + str(count))
     try:
-        out = urllib2.urlopen(req)
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
         return None
     data = out.read()
@@ -851,7 +854,7 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
-        out = urllib2.urlopen(req)
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
         return None
     data = out.read()
@@ -889,7 +892,7 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
     es_url = get_es_url(from_date, data = 'stats')
     req = urllib2.Request(es_url, data)
     try:
-        out = urllib2.urlopen(req)
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
         return None
     data = out.read()
@@ -920,7 +923,7 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
 def es_get_json(uri):
     req = urllib2.Request(get_es_path(uri))
     try:
-        out = urllib2.urlopen(req)
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
         return None
     data = out.read()
@@ -967,7 +970,7 @@ def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
-        out = urllib2.urlopen(req)
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
         return None
     data = out.read()
@@ -1010,7 +1013,7 @@ def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
     data = templ.render(context)
     req = urllib2.Request(es_url, data)
     try:
-        out = urllib2.urlopen(req)
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
     except Exception, e:
         return "BAM: " + str(e)
     data = out.read()
@@ -1035,7 +1038,7 @@ def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
     es_url = get_es_url(from_date, data = 'stats')
     req = urllib2.Request(es_url, data)
     try:
-        out = urllib2.urlopen(req)
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
     except Exception, e:
         return "BAM: " + str(e)
     data = out.read()
