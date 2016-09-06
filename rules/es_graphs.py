@@ -546,6 +546,7 @@ ALERTS_TREND_PER_HOST = """
     "trend": {
       "date_range": {
         "field": "@timestamp",
+        "min_doc_count": 0,
         "ranges": [
           {
             "from": {{ start_date }},
@@ -1017,7 +1018,10 @@ def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
     # returned data is JSON
     data = json.loads(data)
     if prev:
-        countsdata = data["aggregations"]["trend"]["buckets"]
+        try:
+            countsdata = data["aggregations"]["trend"]["buckets"]
+        except KeyError:
+            return {"prev_doc_count": 0, "doc_count": 0}
         return {"prev_doc_count": countsdata[0]["doc_count"], "doc_count": countsdata[1]["doc_count"]}
     else:
         return {"doc_count": data["hits"]["total"] };
