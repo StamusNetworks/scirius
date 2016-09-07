@@ -35,23 +35,44 @@ import shutil
 import json
 import IPy
 
+def validate_hostname(val):
+    try:
+        validate_ipv4_address(val)
+    except ValidationError:
+        # ip may in fact be a hostname
+        # http://www.regextester.com/23
+        HOSTNAME_RX = r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
+        if not re.match(HOSTNAME_RX, val):
+            raise ValidationError('Invalid hostname or IP')
+
+def validate_port(val):
+    try:
+        val = int(val)
+    except ValueError:
+        raise ValidationError('Invalid port')
+
 def validate_proxy(val):
     if val.count(':') != 1:
         raise ValidationError('Invalid address')
 
     host, port = val.split(':')
-    try:
-        validate_ipv4_address(host)
-    except ValidationError:
-        # ip may in fact be a hostname
-        # http://www.regextester.com/23
-        HOSTNAME_RX = r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
-        if not re.match(HOSTNAME_RX, host):
-            raise ValidationError('Invalid hostname or IP')
-    try:
-        port = int(port)
-    except ValueError:
-        raise ValidationError('Invalid port')
+    validate_hostname(host)
+    validate_port(port)
+
+def validate_url(val):
+    # URL validator that does not require a FQDN
+    if not (val.startswith('http://') or val.startswith('https://')):
+        raise ValidationError('Invalid scheme')
+
+    netloc = val.split('://', 1)[1]
+    if '/' in netloc:
+        netloc = netloc.split('/', 1)[0]
+
+    if ':' in netloc:
+        netloc, port = netloc.split(':', 1)
+        validate_port(port)
+
+    validate_hostname(netloc)
 
 class SystemSettings(models.Model):
     use_http_proxy = models.BooleanField(default=False)
@@ -60,7 +81,7 @@ class SystemSettings(models.Model):
     https_proxy = models.CharField(max_length=200, validators=[validate_proxy], default="", blank=True)
     use_elasticsearch = models.BooleanField(default=True)
     custom_elasticsearch = models.BooleanField(default=False)
-    elasticsearch_url = models.URLField(max_length=200, blank=True,
+    elasticsearch_url = models.CharField(max_length=200, validators=[validate_url], blank=True,
                                     default='http://elasticsearch:9200/')
 
     def get_proxy_params(self):
