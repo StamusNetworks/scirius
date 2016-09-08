@@ -77,8 +77,16 @@ def scirius_render(request, template, context):
     if settings.USE_EVEBOX:
         context['evebox'] = 1
         context['evebox_url'] = "/evebox"
+
+    context['toplinks'] = [{
+        'id': 'suricata',
+        'url': '/suricata/',
+        'icon': 'eye-open',
+        'label': 'Suricata'
+    }]
     try:
         middleware = __import__("%s.%s" % (settings.RULESET_MIDDLEWARE, 'links'))
+        context['toplinks'] = middleware.links.TOPLINKS
         context['links'] = middleware.links.links(request)
     except:
         pass
