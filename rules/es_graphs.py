@@ -551,7 +551,6 @@ ALERTS_TREND_PER_HOST = """
     "trend": {
       "date_range": {
         "field": "@timestamp",
-        "min_doc_count": 0,
         "ranges": [
           {
             "from": {{ start_date }},
