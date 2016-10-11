@@ -139,7 +139,7 @@ to ``local_settings.py`` ::
  ELASTICSEARCH_ADDRESS = "127.0.0.1:9200"
 
 Please note, that the name of the Suricata (set during edition of the object) must
-be equal to the ``host`` key present in Elasticsearch events.
+be equal to the ``host`` key present in Elasticsearch events. It can also be edited here: scirius -> suricata -> edit.
 
 Link with Kibana
 ----------------
