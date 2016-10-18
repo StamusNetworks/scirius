@@ -420,7 +420,17 @@ def delete_alerts(request, rule_id):
         if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
             Probe.common.es_delete_alerts_by_sid(rule_id)
         else:
-            es_delete_alerts_by_sid(rule_id)
+            result = es_delete_alerts_by_sid(rule_id)
+            if result.has_key('status') and result['status'] != 200:
+                context = { 'object': rule_object, 'error': result['msg'] }
+                try:
+                    context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
+                except:
+                    pass
+                complete_context(request, context)
+                return scirius_render(request, 'rules/delete_alerts.html', context)
+        return scirius_render(request, 'rules/delete_alerts.html', context)
+
         return redirect(rule_object)
     else:
         context = {'object': rule_object }

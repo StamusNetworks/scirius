@@ -987,9 +987,17 @@ def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
 
 def es_delete_alerts_by_sid(sid):
     delete_url = get_es_path(DELETE_ALERTS_URL) % int(sid)
-    r = requests.delete(delete_url)
-    data = json.loads(r.text)
-    return data
+    try:
+        r = requests.delete(delete_url)
+    except Exception, err:
+        return {'msg': 'Elasticsearch error: %s' % str(err), 'status': 500 }
+    if r.status_code == 200:
+        data = json.loads(r.text)
+        return data
+    elif r.status_code == 400:
+        return {'msg': 'Elasticsearch needs to have delete-by-plugin installed to delete alerts for a rule.', 'status': r.status_code }
+    else:
+        return {'msg': 'Unknown error', 'status': r.status_code }
 
 def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
     if prev:
