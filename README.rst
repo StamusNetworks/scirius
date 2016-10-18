@@ -141,6 +141,12 @@ to ``local_settings.py`` ::
 Please note, that the name of the Suricata (set during edition of the object) must
 be equal to the ``host`` key present in Elasticsearch events. It can also be edited here: scirius -> suricata -> edit.
 
+To be able to delete generated alerts from scirius in elasticsearch the delete-by-query plugin is needed
+
+This plugin can be installed using the plugin manager:
+
+sudo bin/plugin install delete-by-query
+
 Link with Kibana
 ----------------
 
