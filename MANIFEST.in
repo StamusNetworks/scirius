@@ -1,0 +1,14 @@
+include LICENSE
+include README.rst
+recursive-include rules/static *
+recursive-include rules/templates *
+recursive-include suricata/static *
+recursive-include suricata/templates *
+recursive-include accounts/templates *
+recursive-include accounts/migrations *
+recursive-include rules/migrations *
+recursive-include appliances/migrations *
+recursive-include suricata/migrations *
+recursive-include rules/management *.py
+recursive-include suricata/management *.py
+
