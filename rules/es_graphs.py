@@ -99,16 +99,13 @@ if settings.ELASTICSEARCH_2X:
     }
   },
   "query": {
-    "filtered": {
-      "query": {
+    "bool": {
+      "must": [ {
         "query_string": {
           "query": "event_type:alert AND host.raw:{{ appliance_hostname }} {{ query_filter|safe }}",
           "analyze_wildcard": false
         }
-      },
-      "filter": {
-        "bool": {
-          "must": [
+      }, 
             {
               "range": {
                  "@timestamp": {
@@ -120,8 +117,6 @@ if settings.ELASTICSEARCH_2X:
           ]
         }
       }
-    }
-  }
 }
     """
 
