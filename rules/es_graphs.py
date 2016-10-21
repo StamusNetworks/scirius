@@ -407,8 +407,17 @@ if settings.ELASTICSEARCH_2X:
     }
   },
   "query": {
-    "filtered": {
-      "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                  "@timestamp": {
+                    "from": {{ from_date }},
+                    "to": "now"
+                  }
+              }
+            },
+        {
         "query_string": {
       {% if hosts %}
           {% for host in hosts %}
@@ -419,23 +428,10 @@ if settings.ELASTICSEARCH_2X:
       {% endif %}
           "analyze_wildcard": false
         }
-      },
-      "filter": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                  "@timestamp": {
-                    "from": {{ from_date }},
-                    "to": "now"
-                  }
-              }
-            }
+      }
           ]
         }
       }
-    }
-  }
 }
     """
 
@@ -500,14 +496,6 @@ ALERTS_COUNT_PER_HOST = """
 {
   "size": 0,
   "query": {
-    "filtered": {
-      "query": {
-        "query_string": {
-          "query": "event_type:alert AND host.raw:{{ hosts }} {{ query_filter|safe }}",
-          "analyze_wildcard": true
-        }
-      },
-      "filter": {
         "bool": {
           "must": [
             {
@@ -517,11 +505,15 @@ ALERTS_COUNT_PER_HOST = """
                 }
               }
             }
+            ,{
+        "query_string": {
+          "query": "event_type:alert AND host.raw:{{ hosts }} {{ query_filter|safe }}",
+          "analyze_wildcard": true
+        }
+      }
           ],
           "must_not": []
         }
-      }
-    }
   },
   "aggs": {}
 }
@@ -547,14 +539,6 @@ ALERTS_TREND_PER_HOST = """
     }
   },
   "query": {
-    "filtered": {
-      "query": {
-        "query_string": {
-          "query": "event_type:alert AND host.raw:{{ hosts }} {{ query_filter|safe }}",
-          "analyze_wildcard": true
-        }
-      },
-      "filter": {
         "bool": {
           "must": [
             {
@@ -564,11 +548,14 @@ ALERTS_TREND_PER_HOST = """
                 }
               }
             }
-          ],
-          "must_not": []
+            ,{
+        "query_string": {
+          "query": "event_type:alert AND host.raw:{{ hosts }} {{ query_filter|safe }}",
+          "analyze_wildcard": true
         }
       }
-    }
+          ]
+        }
   }
 }
 """
@@ -585,14 +572,6 @@ LATEST_STATS_ENTRY = """
     }
   ],
   "query": {
-    "filtered": {
-      "query": {
-        "query_string": {
-          "query": "event_type:stats AND host.raw:{{ hosts }} {{ query_filter|safe }}",
-          "analyze_wildcard": true
-        }
-      },
-      "filter": {
         "bool": {
           "must": [
             {
@@ -602,10 +581,13 @@ LATEST_STATS_ENTRY = """
                 }
               }
             }
-          ],
-          "must_not": []
+        ,{
+            "query_string": {
+              "query": "event_type:stats AND host.raw:{{ hosts }} {{ query_filter|safe }}",
+              "analyze_wildcard": true
+            }
         }
-      }
+          ]
     }
   },
   "fields": [
