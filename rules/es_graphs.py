@@ -476,14 +476,6 @@ RULES_PER_CATEGORY = """
     }
   },
   "query": {
-    "filtered": {
-      "query": {
-        "query_string": {
-          "query": "event_type:alert AND host.raw:{{ hosts }} {{ query_filter|safe }}",
-          "analyze_wildcard": true
-        }
-      },
-      "filter": {
         "bool": {
           "must": [
             {
@@ -492,12 +484,14 @@ RULES_PER_CATEGORY = """
                   "gte": {{ from_date }}
                 }
               }
+            },
+            { "query_string": {
+              "query": "event_type:alert AND host.raw:{{ hosts }} {{ query_filter|safe }}",
+              "analyze_wildcard": true
+              }
             }
-          ],
-          "must_not": []
-        }
-      }
-    }
+          ]
+       }
   }
 }
 """
