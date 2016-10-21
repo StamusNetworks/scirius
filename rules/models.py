@@ -119,7 +119,7 @@ def get_es_address():
     return 'http://%s/' % settings.ELASTICSEARCH_ADDRESS
 
 def get_es_path(path):
-    return get_es_address() + path
+    return get_es_address() + path.lstrip('/')
 
 class Source(models.Model):
     FETCH_METHOD = (
