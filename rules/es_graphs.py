@@ -263,6 +263,26 @@ if settings.ELASTICSEARCH_2X:
     TIMELINE_QUERY = """
 {
   "size": 0,
+  "query": {
+    "bool": {
+      "must": [ {
+        "query_string": {
+          "query": "event_type:alert {{ query_filter|safe }}",
+          "analyze_wildcard": false
+        }
+      },
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": {{ from_date }},
+                  "lte": "now",
+                  "format": "epoch_millis"
+                }
+              }
+            }
+          ]
+        }
+  },
   "aggs": {
     "date": {
       "date_histogram": {
@@ -280,32 +300,6 @@ if settings.ELASTICSEARCH_2X:
               "_count": "desc"
             }
           }
-        }
-      }
-    }
-  },
-  "query": {
-    "filtered": {
-      "query": {
-        "query_string": {
-          "query": "event_type:alert {{ query_filter|safe }}",
-          "analyze_wildcard": false
-        }
-      },
-      "filter": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ from_date }},
-                  "lte": "now",
-                  "format": "epoch_millis"
-                }
-              }
-            }
-          ],
-          "must_not": []
         }
       }
     }
