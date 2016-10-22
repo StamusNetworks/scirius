@@ -185,14 +185,6 @@ if settings.ELASTICSEARCH_2X:
     }
   },
   "query": {
-    "filtered": {
-      "query": {
-        "query_string": {
-          "query": "event_type:alert AND alert.signature_id:{{ rule_sid }}",
-          "analyze_wildcard": false
-        }
-      },
-      "filter": {
         "bool": {
           "must": [
             {
@@ -203,11 +195,15 @@ if settings.ELASTICSEARCH_2X:
                  }
               }
             }
+            ,{
+            "query_string": {
+               "query": "event_type:alert AND alert.signature_id:{{ rule_sid }}",
+               "analyze_wildcard": false
+             }
+            }
           ]
         }
       }
-    }
-  }
 }
     """
 
