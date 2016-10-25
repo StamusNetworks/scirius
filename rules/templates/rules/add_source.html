@@ -225,9 +225,11 @@ function select_fields() {
         $("#id_file").parents(".form-group").hide();
         $("#id_uri").parents(".form-group").show();
         $("#id_authkey").parents(".form-group").show();
+        $("#id_cert_verif").parents(".form-group").show();
     } else if ($("#id_method").find("option:selected").text() == "Upload") {
         $("#id_uri").parents(".form-group").hide();
         $("#id_authkey").parents(".form-group").hide();
+        $("#id_cert_verif").parents(".form-group").hide();
         $("#id_file").parents(".form-group").show();
     }
     if ($("#id_datatype").find("option:selected").text() == "Other content") {
