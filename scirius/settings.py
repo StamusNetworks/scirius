@@ -123,6 +123,8 @@ ELASTICSEARCH_LOGSTASH_ALERT_INDEX = ELASTICSEARCH_LOGSTASH_INDEX
 ELASTICSEARCH_LOGSTASH_TIMESTAMPING = "daily"
 # use Elasticsearch 2.x
 ELASTICSEARCH_2X = False
+# Extension used for complete field (usually "raw" or "keyword")
+ELASTICSEARCH_KEYWORD = "raw"
 
 # Kibana
 USE_KIBANA = False
