@@ -650,13 +650,16 @@ def get_es_url(from_date, data = 'alert'):
             indexes = build_es_timestamping(start, data = data)
     return URL % (get_es_address(), indexes)
 
-def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None):
-    templ = Template(TOP_QUERY)
-    context = Context({'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': 'alert.signature_id'})
+def render_template(tmpl, dictionary, qfilter = None):
+    templ = Template(tmpl)
+    context = Context(dictionary)
     if qfilter != None:
         query_filter = " AND " + qfilter
         context['query_filter'] = re.sub('"','\\"', query_filter)
-    data = templ.render(context)
+    return templ.render(context)
+
+def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None):
+    data = render_template(TOP_QUERY, {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': 'alert.signature_id'}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
@@ -701,12 +704,7 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
     return rules
 
 def es_get_field_stats(request, field, FieldTable, hostname, key='host', count=20, from_date=0 , qfilter = None):
-    templ = Template(TOP_QUERY)
-    context = Context({'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': field})
-    if qfilter != None:
-        query_filter = " AND " + qfilter
-        context['query_filter'] = re.sub('"','\\"', query_filter)
-    data = templ.render(context)
+    data = render_template(TOP_QUERY, {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': field}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
@@ -742,9 +740,7 @@ def es_get_field_stats(request, field, FieldTable, hostname, key='host', count=2
     return objects
 
 def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
-    templ = Template(SID_BY_HOST_QUERY)
-    context = Context({'rule_sid': sid, 'alerts_number': count, 'from_date': from_date})
-    data = templ.render(context)
+    data = render_template(SID_BY_HOST_QUERY, {'rule_sid': sid, 'alerts_number': count, 'from_date': from_date})
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
@@ -802,15 +798,10 @@ def es_get_dashboard(count=20):
     return None
 
 def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
-    templ = Template(TIMELINE_QUERY)
     # 100 points on graph per default
     if interval == None:
         interval = int((time() - (int(from_date) / 1000)) / 100)
-    context = Context({'from_date': from_date, 'interval': str(interval) + "s", 'hosts': hosts})
-    if qfilter != None:
-        query_filter = " AND " + qfilter
-        context['query_filter'] = re.sub('"','\\"', query_filter)
-    data = templ.render(context)
+    data = render_template(TIMELINE_QUERY, {'from_date': from_date, 'interval': str(interval) + "s", 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
@@ -843,12 +834,10 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     return data
 
 def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_1m", hosts = None):
-    templ = Template(STATS_QUERY)
     # 100 points on graph per default
     if interval == None:
         interval = int((time() - (int(from_date)/ 1000)) / 100)
-    context = Context({'from_date': from_date, 'interval': str(interval) + "s", 'value': value, 'hosts': hosts})
-    data = templ.render(context)
+    data = render_template(STATS_QUERY, {'from_date': from_date, 'interval': str(interval) + "s", 'value': value, 'hosts': hosts})
     es_url = get_es_url(from_date, data = 'stats')
     req = urllib2.Request(es_url, data)
     try:
@@ -921,12 +910,7 @@ def compact_tree(tree):
     return cdata
 
 def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
-    templ = Template(RULES_PER_CATEGORY)
-    context = Context({'from_date': from_date, 'hosts': hosts[0]})
-    if qfilter != None:
-        query_filter = " AND " + qfilter
-        context['query_filter'] = query_filter
-    data = templ.render(context)
+    data = render_template(RULES_PER_CATEGORY, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
@@ -962,13 +946,10 @@ def es_delete_alerts_by_sid(sid):
 
 def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
     if prev:
-        templ = Template(ALERTS_TREND_PER_HOST)
+        templ = ALERTS_TREND_PER_HOST
     else:
-        templ = Template(ALERTS_COUNT_PER_HOST)
-    context = Context({'from_date': from_date, 'hosts': hosts[0]})
-    if qfilter != None:
-        query_filter = " AND " + qfilter
-        context['query_filter'] = query_filter
+        templ = ALERTS_COUNT_PER_HOST
+    context = {'from_date': from_date, 'hosts': hosts[0]}
     if prev:
         # compute delta with now and from_date
         from_datetime = datetime.fromtimestamp(int(from_date)/1000)
@@ -978,7 +959,7 @@ def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
         es_url = get_es_url(start_date)
     else:
         es_url = get_es_url(from_date)
-    data = templ.render(context)
+    data = render_template(templ, context, qfilter = qfilter)
     req = urllib2.Request(es_url, data)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
@@ -997,12 +978,7 @@ def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
         return {"doc_count": data["hits"]["total"] };
 
 def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
-    templ = Template(LATEST_STATS_ENTRY)
-    context = Context({'from_date': from_date, 'hosts': hosts[0]})
-    if qfilter != None:
-        query_filter = " AND " + qfilter
-        context['query_filter'] = query_filter
-    data = templ.render(context)
+    data = render_template(LATEST_STATS_ENTRY, {'from_date': from_date, 'hosts': hosts[0]})
     es_url = get_es_url(from_date, data = 'stats')
     req = urllib2.Request(es_url, data)
     try:
