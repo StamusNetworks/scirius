@@ -28,6 +28,7 @@ import os
 have_daemon = True
 try:
     import daemon
+    import daemon.pidfile as pidlockfile
 except:
     logging.warning("No daemon support available, install python-daemon if feature is needed")
     have_daemon = False
@@ -41,6 +42,7 @@ parser.add_argument('-l', '--log', default=None, help='File to log output to (de
 parser.add_argument('-v', '--verbose', default=False, action="count", help="Show verbose output, use multiple times increase verbosity")
 if have_daemon:
     parser.add_argument('-D', '--daemon', default=False, action="store_true", help="Run as unix daemon")
+    parser.add_argument('-P', '--pidfile', default='/var/run/suri-reloader.pid', help='PID file for suri-reloader')
 
 args = parser.parse_args()
 
@@ -108,7 +110,8 @@ def main_task(args):
     notifier.loop()
 
 if have_daemon and args.daemon:
-    with daemon.DaemonContext():
+    pidfile = pidlockfile.TimeoutPIDLockFile(args.pidfile)
+    with daemon.DaemonContext(pidfile=pidfile):
         main_task(args)
 else:
     main_task(args)
