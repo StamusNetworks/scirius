@@ -1,5 +1,5 @@
 """
-Copyright(C) 2014, 2015 Stamus Networks
+Copyright(C) 2014-2016 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
 
 This file is part of Scirius.
