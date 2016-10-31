@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='scirius',
-    version='1.1.12',
+    version='1.1.13',
     packages=['scirius','rules','suricata', 'accounts'],
     scripts=['manage.py'],
     include_package_data=True,
