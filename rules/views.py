@@ -218,7 +218,7 @@ def elasticsearch(request):
             sid = int(request.GET.get('sid', None))
             from_date = request.GET.get('from_date', None)
             if from_date != None and sid != None:
-                hosts = es_get_field_stats(request, 'src_ip.raw', RuleHostTable, '*', from_date = from_date,
+                hosts = es_get_field_stats(request, 'src_ip.' + settings.ELASTICSEARCH_KEYWORD, RuleHostTable, '*', from_date = from_date,
                     qfilter = 'alert.signature_id:%d' % sid)
                 context = {'table': hosts}
                 return scirius_render(request, 'rules/table.html', context)
@@ -226,7 +226,7 @@ def elasticsearch(request):
             sid = int(request.GET.get('sid', None))
             from_date = request.GET.get('from_date', None)
             if from_date != None and sid != None:
-                hosts = es_get_field_stats(request, 'dest_ip.raw', RuleHostTable, '*', from_date = from_date,
+                hosts = es_get_field_stats(request, 'dest_ip.' + settings.ELASTICSEARCH_KEYWORD, RuleHostTable, '*', from_date = from_date,
                     qfilter = 'alert.signature_id:%d' % sid)
                 context = {'table': hosts}
                 return scirius_render(request, 'rules/table.html', context)
