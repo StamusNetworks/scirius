@@ -21,6 +21,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django.shortcuts import render
 from django.conf import settings
 from django.utils import timezone
+from django.contrib import messages
+
 import django_tables2 as tables
 
 from rules.tables import *
@@ -95,6 +97,8 @@ def scirius_render(request, template, context):
         context['middleware_status'] = middleware.common.block_status(request)
     except:
         pass
+
+    context['messages'] = messages.get_messages(request)
 
     return render(request, template, context)
 

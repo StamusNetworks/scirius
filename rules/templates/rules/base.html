@@ -161,6 +161,16 @@
             </div>
 
                     {% block error %}
+
+			{% if messages %}
+			    {% for message in messages %}
+			    <div class="alert alert-dismissible alert-{% if message.tags %}{{ message.tags|lower }}{% endif %}">
+			        <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<span id="message">{{ message }}</span>
+			    </div>
+			    {% endfor %}
+			{% endif %}
+
                       {% if error %}
                        <div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
  <span id="error">{{ error }}</span></div>
