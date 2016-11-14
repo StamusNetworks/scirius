@@ -25,6 +25,7 @@ from django.db import IntegrityError
 from django.conf import settings
 from elasticsearch.exceptions import ConnectionError
 from django.core.exceptions import SuspiciousOperation
+from django.contrib import messages
 
 from scirius.utils import scirius_render, scirius_listing
 
@@ -428,6 +429,7 @@ def delete_alerts(request, rule_id):
                 except:
                     pass
                 return scirius_render(request, 'rules/delete_alerts.html', context)
+        messages.add_message(request, messages.INFO, "Events deletion may be in progress, graphics and stats could be not in sync.");
         return redirect(rule_object)
     else:
         context = {'object': rule_object }
