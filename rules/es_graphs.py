@@ -83,7 +83,7 @@ TOP_QUERY = """
 }
 """
 
-if settings.ELASTICSEARCH_2X:
+if settings.ELASTICSEARCH_VERSION >= 2:
     TOP_QUERY = """
 {
   "size": 0,
@@ -169,7 +169,7 @@ SID_BY_HOST_QUERY = """
 }'
 """
 
-if settings.ELASTICSEARCH_2X:
+if settings.ELASTICSEARCH_VERSION >= 2:
     SID_BY_HOST_QUERY = """
 {
   "size": 0,
@@ -250,7 +250,7 @@ TIMELINE_QUERY = """
 }
 """
 
-if settings.ELASTICSEARCH_2X:
+if settings.ELASTICSEARCH_VERSION >= 2:
     TIMELINE_QUERY = """
 {
   "size": 0,
@@ -381,7 +381,7 @@ STATS_QUERY = """
 }
 """
 
-if settings.ELASTICSEARCH_2X:
+if settings.ELASTICSEARCH_VERSION >= 2:
     STATS_QUERY = """
 {
   "size": 0,
@@ -672,7 +672,7 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
     data = json.loads(data)
     # total number of results
     try:
-        if settings.ELASTICSEARCH_2X:
+        if settings.ELASTICSEARCH_VERSION >= 2:
             data = data['aggregations']['table']['buckets']
         else:
             data = data['facets']['table']['terms']
@@ -684,7 +684,7 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
     if data != None:
         for elt in data:
             try:
-                if settings.ELASTICSEARCH_2X:
+                if settings.ELASTICSEARCH_VERSION >= 2:
                     sid=elt['key']
                 else:
                     sid=elt['term']
@@ -692,7 +692,7 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
             except:
                 print "Can not find rule with sid " + str(sid)
                 continue
-            if settings.ELASTICSEARCH_2X:
+            if settings.ELASTICSEARCH_VERSION >= 2:
                 rule.hits = elt['doc_count']
             else:
                 rule.hits = elt['count']
@@ -717,7 +717,7 @@ def es_get_field_stats(request, field, FieldTable, hostname, key='host', count=2
     data = json.loads(data)
     # total number of results
     try:
-        if settings.ELASTICSEARCH_2X:
+        if settings.ELASTICSEARCH_VERSION >= 2:
             data = data['aggregations']['table']['buckets']
         else:
             data = data['facets']['table']['terms']
@@ -728,7 +728,7 @@ def es_get_field_stats(request, field, FieldTable, hostname, key='host', count=2
     objects = []
     if data != None:
         for elt in data:
-            if settings.ELASTICSEARCH_2X:
+            if settings.ELASTICSEARCH_VERSION >= 2:
                 fstat = {key: elt['key'], 'count': elt['doc_count'] }
             else:
                 fstat = {key: elt['term'], 'count': elt['count'] }
@@ -753,7 +753,7 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
     data = json.loads(data)
     # total number of results
     try:
-        if settings.ELASTICSEARCH_2X:
+        if settings.ELASTICSEARCH_VERSION >= 2:
             data = data['aggregations']['host']['buckets']
         else:
             data = data['facets']['terms']['terms']
@@ -762,7 +762,7 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
     stats = []
     if data != None:
         for elt in data:
-            if settings.ELASTICSEARCH_2X:
+            if settings.ELASTICSEARCH_VERSION >= 2:
                 hstat = {'host': elt['key'], 'count': elt['doc_count']}
             else:
                 hstat = {'host': elt['term'], 'count': elt['count']}
@@ -814,7 +814,7 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     data = json.loads(data)
     # total number of results
     try:
-        if settings.ELASTICSEARCH_2X:
+        if settings.ELASTICSEARCH_VERSION >= 2:
             data = data['aggregations']["date"]['buckets']
             rdata = {}
             for elt in data:
@@ -852,7 +852,7 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
     if hosts == None:
         hosts = ["global"]
     try:
-        if settings.ELASTICSEARCH_2X:
+        if settings.ELASTICSEARCH_VERSION >= 2:
             data = data['aggregations']["date"]['buckets']
             rdata = {}
             for elt in data:
