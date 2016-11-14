@@ -603,6 +603,7 @@ HEALTH_URL = "/_cluster/health"
 STATS_URL = "/_cluster/stats"
 INDICES_STATS_URL = "/_stats/docs"
 DELETE_ALERTS_URL = "/%s*/_query?q=alert.signature_id:%%d" % settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
+DELETE_ALERTS_URL_V5 = "%s*/_delete_by_query" % settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
 
 from rules.models import Rule
 from rules.tables import ExtendedRuleTable, RuleStatsTable
@@ -931,7 +932,7 @@ def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
     rdata["children"] = cdata
     return rdata
 
-def es_delete_alerts_by_sid(sid):
+def es_delete_alerts_by_sid_v2(sid):
     delete_url = get_es_path(DELETE_ALERTS_URL) % int(sid)
     try:
         r = requests.delete(delete_url)
@@ -944,6 +945,30 @@ def es_delete_alerts_by_sid(sid):
         return {'msg': 'Elasticsearch needs to have delete-by-plugin installed to delete alerts for a rule.', 'status': r.status_code }
     else:
         return {'msg': 'Unknown error', 'status': r.status_code }
+
+def es_delete_alerts_by_sid_v5(sid):
+    delete_url = get_es_path(DELETE_ALERTS_URL_V5)
+    data = { "query": { "term": { "alert.signature_id": str(sid) } } }
+    try:
+        r = requests.post(delete_url, data = json.dumps(data))
+    except Exception, err:
+        return {'msg': 'Elasticsearch error: %s' % str(err), 'status': 500 }
+    if r.status_code == 200:
+        data = json.loads(r.text)
+        data[u'status'] = 200
+        return data
+    elif r.status_code == 400:
+        if settings.ELASTICSEARCH_VERSION > 2:
+            return {'msg': r.text, 'status': r.status_code }
+        return {'msg': 'Elasticsearch needs to have delete-by-plugin installed to delete alerts for a rule.', 'status': r.status_code }
+    else:
+        return {'msg': 'Unknown error %s', 'status': r.status_code }
+
+def es_delete_alerts_by_sid(sid):
+    if settings.ELASTICSEARCH_VERSION <= 2:
+        return es_delete_alerts_by_sid_v2(sid)
+    else:
+        return es_delete_alerts_by_sid_v5(sid)
 
 def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
     if prev:

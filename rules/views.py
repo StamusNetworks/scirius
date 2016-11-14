@@ -427,10 +427,7 @@ def delete_alerts(request, rule_id):
                     context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
                 except:
                     pass
-                complete_context(request, context)
                 return scirius_render(request, 'rules/delete_alerts.html', context)
-        return scirius_render(request, 'rules/delete_alerts.html', context)
-
         return redirect(rule_object)
     else:
         context = {'object': rule_object }
