@@ -322,7 +322,7 @@ def rule(request, rule_id, key = 'pk'):
 
     rule.highlight_content = SuriHTMLFormat(rule.content)
     references = []
-    for ref in re.findall("reference:(\w+),(\S+);", rule.content):
+    for ref in re.findall("reference: *(\w+), *(\S+);", rule.content):
         refer = Reference(ref[0], ref[1])
         if refer.key == 'url':
             if not refer.value.startswith("http"):
