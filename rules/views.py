@@ -342,12 +342,10 @@ def rule(request, rule_id, key = 'pk'):
         status = 'Inactive'
         if rule.state and rule.category in ruleset.categories.all() and rule not in ruleset.suppressed_rules.all():
             status = 'Active'
-        threshold = 'No'
+        threshold = False
         if Threshold.objects.filter(rule = rule, ruleset = ruleset):
-            threshold = 'Yes'
-        rulesets_status.append({'name': ruleset.name, 'pk':ruleset.pk, 'status':status, 'validity': 'Unknown', 'threshold': threshold})
-    rulesets_status = StatusRulesetTable(rulesets_status)
-    tables.RequestConfig(request).configure(rulesets_status)
+            threshold = True
+        rulesets_status.append({'name': ruleset.name, 'pk':ruleset.pk, 'status':status, 'threshold': threshold})
 
     context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status }
     thresholds = Threshold.objects.filter(rule = rule, threshold_type = 'threshold')

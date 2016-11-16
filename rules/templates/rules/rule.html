@@ -260,8 +260,26 @@
 <div class="col-md-6">
 <h2 class="title">Status in rulesets</h2>
 
-{% load render_table from django_tables2 %}
-{% render_table rulesets %}
+<div class="container-fluid">
+        <div class="row">
+{% for ruleset in rulesets %}
+<div class="col-md-6">
+<div class="panel panel-default">
+<div class="panel-heading">
+        <h2 class="panel-title"><a href="{% url 'ruleset' ruleset.pk %}">{{ ruleset.name }}</a></h2>
+</div>
+<div class="panel-body ruleset-status" id="{{ ruleset.pk }}">
+        <div class="label {% if ruleset.status == "Active" %}label-success{% else %}label-default{% endif %}">{{ ruleset.status}}</div>
+        <div class="label label-default" id="validity">Validity</div>
+        {% if ruleset.threshold %}
+        <div class="label label-info">Threshold</div>
+        {% endif %}
+</div>
+</div>
+</div>
+{% endfor %}
+        </div>
+</div>
 
 </div> <!-- col -->
 
@@ -269,6 +287,7 @@
 <div class="col-md-6">
 <h2 class="title">Thresholds</h2>
 
+{% load render_table from django_tables2 %}
 {% render_table thresholds %}
 
 </div> <!-- col -->
@@ -373,15 +392,9 @@ $( 'document' ).ready(load_ip_stats());
 
 <script>
 function rule_validity_check() {
-    $("tr", "table#rulesets").each(
+    $("div.ruleset-status").each(
         function() {
-            rulesetlink = $(this).find("a").attr('href')
-            if (!rulesetlink || rulesetlink.indexOf('ruleset/') == -1) {
-                return;
-            }
-            var id_regex = /(\d+)\/$/;
-            var res_regex = id_regex.exec(rulesetlink);
-            var ruleset_id = res_regex[1];
+            var ruleset_id = $(this).attr('id');
             var test_url = "{{ rule.get_absolute_url }}test/" + ruleset_id;
             $.ajax(
                 {
@@ -390,10 +403,15 @@ function rule_validity_check() {
                 context: $(this),
                 success: function(data) {
                         if (data['status']) {
-                            $(this).find("td.validity").text('Valid');
+                            vlabel = $(this).find("#validity");
+                            vlabel.text('Valid');
+                            vlabel.addClass('label-success');
+                            vlabel.removeClass('label-default');
                         } else {
-                            $(this).find("td.validity").empty()
-                            //$(this).find("td.validity").append('<div>Invalid</div>');
+                            vlabel = $(this).find("#validity")
+                            vlabel.empty()
+                            vlabel.addClass('label-warning');
+                            vlabel.removeClass('label-default');
                             error_content = "";
                             if (data['errors'][0] != undefined) {
                                 for (i = 0; i < data['errors'].length; i++) {
@@ -406,10 +424,7 @@ function rule_validity_check() {
                                     error_content = "Unknown error";
                                 }
                             }
-                            $(this).find("td.validity").append('<div id="errors"><ul>' + error_content + '</ul></div>');
-                            /* $(this).find("td.validity").click(function( event ) {
-                               $(this).find("#errors").toggle(); 
-                            }); */
+                            $(this).find("#validity").append('<div id="errors"><ul>' + error_content + '</ul></div>');
                         }
                 }
                 }
