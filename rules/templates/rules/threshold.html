@@ -23,7 +23,7 @@
 {% endblock %}
 
 {% block content %}
-<h2>Threshold for {{ threshold.rule.sid }}</h2>
+<h2>Threshold for <a href="{% url 'rule' threshold.rule.sid %}">{{ threshold.rule.sid }}</a></h2>
 
 {% if threshold.threshold_type == "suppress" %}
 <p>Alert is suppressed for
