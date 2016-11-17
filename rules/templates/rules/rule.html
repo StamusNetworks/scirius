@@ -274,6 +274,12 @@
         {% if ruleset.threshold %}
         <div class="label label-info">Threshold</div>
         {% endif %}
+        {% if ruleset.drop %}
+        <div class="label label-warning">Drop</div>
+        {% endif %}
+        {% if ruleset.filestore %}
+        <div class="label label-info">Filestore</div>
+        {% endif %}
 </div>
 </div>
 </div>

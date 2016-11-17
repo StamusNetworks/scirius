@@ -345,7 +345,13 @@ def rule(request, rule_id, key = 'pk'):
         threshold = False
         if Threshold.objects.filter(rule = rule, ruleset = ruleset):
             threshold = True
-        rulesets_status.append({'name': ruleset.name, 'pk':ruleset.pk, 'status':status, 'threshold': threshold})
+        ruleset_info = {'name': ruleset.name, 'pk':ruleset.pk, 'status':status, 'threshold': threshold, 'drop': False, 'filestore': False}
+        for trans in rule.transformations.filter(ruleset = ruleset):
+            if trans.type == "drop":
+                ruleset_info['drop'] = True
+            elif trans.type == "filestore":
+                ruleset_info['filestore'] = True
+        rulesets_status.append(ruleset_info)
 
     context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status }
     thresholds = Threshold.objects.filter(rule = rule, threshold_type = 'threshold')
@@ -446,6 +452,30 @@ def toggle_availability(request, rule_id):
         return scirius_render(request, 'rules/rule.html', context)
 
     rule_object.toggle_availability()
+
+    return redirect(rule_object)
+
+def toggle_drop(request, rule_id, ruleset_id):
+    rule_object = get_object_or_404(Rule, sid=rule_id)
+    ruleset_object = get_object_or_404(Ruleset, pk=ruleset_id)
+
+    if not request.user.is_staff:
+        context = { 'object': rule, 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/rule.html', context)
+
+    rule_object.toggle_drop(ruleset_object)
+
+    return redirect(rule_object)
+
+def toggle_filestore(request, rule_id, ruleset_id):
+    rule_object = get_object_or_404(Rule, sid=rule_id)
+    ruleset_object = get_object_or_404(Ruleset, pk=ruleset_id)
+
+    if not request.user.is_staff:
+        context = { 'object': rule, 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/rule.html', context)
+
+    rule_object.toggle_filestore(ruleset_object)
 
     return redirect(rule_object)
 
