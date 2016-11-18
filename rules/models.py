@@ -750,7 +750,7 @@ class Rule(models.Model):
         return
 
     def test(self, ruleset):
-        return ruleset.test_rule_buffer(self.content, single = True)
+        return ruleset.test_rule_buffer(self.generate_content(ruleset), single = True)
 
     def toggle_availability(self):
         toggle_rules = self.get_flowbits_group()
