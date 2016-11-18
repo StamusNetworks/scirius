@@ -792,8 +792,18 @@ class Rule(models.Model):
     def toggle_drop(self, ruleset):
         return self.toggle_transformation(ruleset, type = "drop")
 
+    def is_drop(self, ruleset):
+        if len(self.transformations.filter(ruleset = ruleset, type = "drop")):
+            return True
+        return False
+
     def toggle_filestore(self, ruleset):
         return self.toggle_transformation(ruleset, type = "filestore")
+
+    def is_filestore(self, ruleset):
+        if len(self.transformations.filter(ruleset = ruleset, type = "filestore")):
+            return True
+        return False
 
 # we should use django reversion to keep track of this one
 # even if fixing HEAD may be complicated

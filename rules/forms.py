@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import forms
 from django.utils import timezone
-from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold
+from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold, Transformation
 
 class SystemSettingsForm(forms.ModelForm):
     use_http_proxy = forms.BooleanField(label='Use a proxy', required=False)
@@ -139,3 +139,18 @@ class EditThresholdForm(forms.ModelForm):
     class Meta:
         model = Threshold
         exclude = ['pk', 'rule']
+
+class RuleTransformForm(forms.ModelForm):
+    class Meta:
+        model = Transformation
+        exclude = ['ruleset']
+
+    def __init__(self, *args, **kwargs):
+        super(RuleTransformForm, self).__init__(*args, **kwargs)
+        ruleset_list =  Ruleset.objects.all()
+        if len(ruleset_list):
+            self.fields['rulesets'] = forms.ModelMultipleChoiceField(
+                        ruleset_list,
+                        widget=forms.CheckboxSelectMultiple(),
+                        label = "Apply transformation(s) to the following ruleset(s)",
+                        required = False)

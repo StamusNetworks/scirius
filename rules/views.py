@@ -30,7 +30,7 @@ from django.contrib import messages
 from scirius.utils import scirius_render, scirius_listing
 
 from rules.es_data import ESData
-from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold
+from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable
 
 from rules.es_graphs import *
@@ -372,6 +372,40 @@ def rule(request, rule_id, key = 'pk'):
 
     return scirius_render(request, 'rules/rule.html', context)
 
+def transform_rule(request, rule_id):
+    rule_object = get_object_or_404(Rule, sid=rule_id)
+
+    if not request.user.is_staff:
+        context = { 'rule': rule_object, 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/rule.html', context)
+        
+    if request.method == 'POST': # If the form has been submitted...
+        form = RuleTransformForm(request.POST)
+        if form.is_valid(): # All validation rules pass
+            rulesets = form.cleaned_data['rulesets']
+            for ruleset in Ruleset.objects.all():
+                if ruleset in rulesets:
+                    if form.cleaned_data["type"] == "drop" and not rule_object.is_drop(ruleset):
+                        rule_object.toggle_drop(ruleset)
+                    if form.cleaned_data["type"] == "filestore" and not rule_object.is_filestore(ruleset):
+                        rule_object.toggle_filestore(ruleset)
+                else:
+                    if form.cleaned_data["type"] == "drop" and rule_object.is_drop(ruleset):
+                        rule_object.toggle_drop(ruleset)
+                    if form.cleaned_data["type"] == "filestore" and rule_object.is_filestore(ruleset):
+                        rule_object.toggle_filestore(ruleset)
+        return redirect(rule_object)
+
+    form = RuleTransformForm(initial = { 'type' : 'drop'})
+    drop_rulesets = []
+    filestore_rulesets = []
+    for trans in rule_object.transformations.all():
+        if trans.type == "drop":
+            drop_rulesets.append(trans.ruleset.pk)
+        elif trans.type == "filestore":
+            filestore_rulesets.append(trans.ruleset.pk)
+    context = { 'rule': rule_object, 'form': form, 'drop_rulesets': drop_rulesets, 'filestore_rulesets': filestore_rulesets }
+    return scirius_render(request, 'rules/transform_rule.html', context)
 
 def switch_rule(request, rule_id, operation = 'suppress'):
     rule_object = get_object_or_404(Rule, sid=rule_id)

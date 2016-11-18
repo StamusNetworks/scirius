@@ -1,0 +1,51 @@
+{% extends "rules/base.html" %}
+{% load bootstrap3  %}
+
+{% block sidebar %}
+<div class="panel-heading">
+<h2 class="panel-title">Transform rule {{ rule.pk }} </h2>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<h2>Transform rule</h2>
+
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-6">
+<form action="{% url 'transform_rule' rule.pk %}" method="post" class="form">{% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "check" %} Valid
+        </button>
+    {% endbuttons %}
+</form>
+</div>
+</div>
+</div>
+
+<script>
+function select_rulesets() {
+        drop_rulesets = {{ drop_rulesets }};
+        filestore_rulesets = {{ filestore_rulesets }};
+        // clean check boxes
+        $(".checkbox").find("input").prop("checked", false);
+        if ($( "#id_type" ).find("option:selected").text() == "Drop") {
+                for (var i = 0; i < drop_rulesets.length; i++) {
+                        $("input[name=rulesets][value=" + drop_rulesets[i] + "]").prop("checked", true);
+                }
+        }
+        if ($( "#id_type" ).find("option:selected").text() == "Filestore") {
+                for (var i = 0; i <filestore_rulesets.length; i++) {
+                        $("input[name=rulesets][value=" + filestore_rulesets[i] + "]").prop("checked", true);
+                }
+        }
+}
+
+$("#id_type").change(select_rulesets);
+$(document).ready(select_rulesets());
+
+</script>
+{% endblock %}
