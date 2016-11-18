@@ -274,7 +274,7 @@
         <h2 class="panel-title"><a href="{% url 'ruleset' ruleset.pk %}">{{ ruleset.name }}</a></h2>
 </div>
 <div class="panel-body ruleset-status" id="{{ ruleset.pk }}">
-        <div class="label {% if ruleset.status == "Active" %}label-success{% else %}label-default{% endif %}">{{ ruleset.status}}</div>
+        <div class="label {% if ruleset.status == "Active" %}label-info{% else %}label-default{% endif %}">{{ ruleset.status}}</div>
         <div class="label label-default" id="validity">Validity</div>
         {% if ruleset.threshold %}
         <div class="label label-info">Threshold</div>
@@ -422,6 +422,7 @@ function rule_validity_check() {
                         } else {
                             vlabel = $(this).find("#validity")
                             vlabel.addClass('label-danger');
+                            vlabel.text('Invalid');
                             vlabel.removeClass('label-default');
                             error_content = "";
                             if (data['errors'][0] != undefined) {
