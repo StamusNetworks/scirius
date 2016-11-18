@@ -193,18 +193,22 @@ class ESData(object):
 
         subdirs = os.listdir(tmpdir)
         if len(subdirs) != 1:
-            raise Exception('Archive does not appear to contain dashboards')
+            raise Exception('Archive does not appear to contain dashboards, visualizations or searches')
         source = os.path.join(tmpdir, subdirs[0])
-        if self._get_kibana_files(source, 'dashboard') == []:
-            raise Exception('Archive does not appear to contain dashboards')
 
         self._create_kibana_mappings()
 
+        count = 0
         for _type in ('search', 'visualization', 'dashboard'):
-            for _file in self._get_kibana_files(source, _type):
+            source_files = self._get_kibana_files(source, _type)
+            count += len(source_files)
+            for _file in source_files:
                 self._kibana_inject(_type, _file)
-        count = len(self._get_kibana_files(source, 'dashboard'))
         rmtree(tmpdir)
+
+        if count == 0:
+            raise Exception('No data loaded')
+
         return count
 
     def kibana_clear(self):

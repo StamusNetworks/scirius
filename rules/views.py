@@ -1013,7 +1013,7 @@ def system_settings(request):
                 if form.is_valid() and 'file' in request.FILES:
                     try:
                         count = es_data.kibana_import_fileobj(request.FILES['file'])
-                        context['success'] = 'Successfully imported %i dashboards' % count
+                        context['success'] = 'Successfully imported %i objects' % count
                     except Exception, e:
                         context['error'] = 'Import failed: %s' % e
                 else:
