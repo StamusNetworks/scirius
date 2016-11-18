@@ -257,6 +257,11 @@
 
 {% endif %}
 <div class="row">
+        <div id="validity_error" class="col-md-12" style="display:none;">
+                <h2 class="title">Rulesets error</h2>
+        </div>
+</div>
+<div class="row">
 <div class="col-md-6">
 <h2 class="title">Status in rulesets</h2>
 
@@ -401,6 +406,7 @@ function rule_validity_check() {
     $("div.ruleset-status").each(
         function() {
             var ruleset_id = $(this).attr('id');
+            var ruleset_name = $(this).parent().find("h2").text();
             var test_url = "{{ rule.get_absolute_url }}test/" + ruleset_id;
             $.ajax(
                 {
@@ -415,8 +421,7 @@ function rule_validity_check() {
                             vlabel.removeClass('label-default');
                         } else {
                             vlabel = $(this).find("#validity")
-                            vlabel.empty()
-                            vlabel.addClass('label-warning');
+                            vlabel.addClass('label-danger');
                             vlabel.removeClass('label-default');
                             error_content = "";
                             if (data['errors'][0] != undefined) {
@@ -430,7 +435,8 @@ function rule_validity_check() {
                                     error_content = "Unknown error";
                                 }
                             }
-                            $(this).find("#validity").append('<div id="errors"><ul>' + error_content + '</ul></div>');
+                            $("#validity_error").append('<h4 class="title">' + ruleset_name + '</h4><div id="errors"><ul>' + error_content + '</ul></div>');
+                            $("#validity_error").show();
                         }
                 }
                 }
