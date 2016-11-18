@@ -822,6 +822,18 @@ def ruleset(request, ruleset_id, mode = 'struct', error = None):
             context['suppress'] = suppress
         if error:
             context['error'] = error
+        transformation = Transformation.objects.filter(ruleset = ruleset, type = "drop")
+        if transformation:
+            drop_rules = transformation[0].rule_set.all()
+            drop_rules = RuleTable(drop_rules)
+            tables.RequestConfig(request).configure(drop_rules)
+            context['drop_rules'] = drop_rules
+        transformation = Transformation.objects.filter(ruleset = ruleset, type = "filestore")
+        if transformation:
+            filestore_rules = transformation[0].rule_set.all()
+            filestore_rules = RuleTable(filestore_rules)
+            tables.RequestConfig(request).configure(filestore_rules)
+            context['filestore_rules'] = filestore_rules
     elif mode == 'display':
         rules = RuleTable(ruleset.generate())
         tables.RequestConfig(request).configure(rules)
