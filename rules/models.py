@@ -566,6 +566,7 @@ class Category(models.Model):
     descr = models.CharField(max_length=400, blank = True)
     created_date = models.DateTimeField('date created', default = timezone.now)
     source = models.ForeignKey(Source)
+    transformations = models.ManyToManyField('Transformation')
 
     bitsregexp = {'flowbits': re.compile("flowbits *: *(isset|set),(.*?) *;"),
                   'hostbits': re.compile("hostbits *: *(isset|set),(.*?) *;"),
@@ -695,7 +696,7 @@ class Category(models.Model):
         return reverse('category', args=[str(self.id)])
 
 class Transformation(models.Model):
-    TRANSFORMATION_TYPE = (('drop', 'Drop'), ('filestore', 'Filestore'))
+    TRANSFORMATION_TYPE = (('drop', 'Drop'), ('nodrop', 'Alert'), ('filestore', 'Filestore'), ('nofilestore', 'No store'))
     type = models.CharField(max_length=12, choices=TRANSFORMATION_TYPE)
     ruleset = models.ForeignKey('Ruleset')
 
@@ -770,11 +771,14 @@ class Rule(models.Model):
 
     def generate_content(self, ruleset):
         content = self.content
+        for trans in self.category.transformations.filter(ruleset = ruleset):
+            content = self.apply_transformation(content, trans)
         for trans in self.transformations.filter(ruleset = ruleset):
             content = self.apply_transformation(content, trans)
         return content
 
     def toggle_transformation(self, ruleset, type = "drop"):
+        ctrans = self.category.transformations.filter(ruleset = ruleset, type = type)
         trans = self.transformations.filter(ruleset = ruleset, type = type)
         if len(trans):
             self.transformations.remove(trans[0])
@@ -795,6 +799,10 @@ class Rule(models.Model):
     def is_drop(self, ruleset):
         if len(self.transformations.filter(ruleset = ruleset, type = "drop")):
             return True
+        if len(self.category.transformations.filter(ruleset = ruleset, type = "drop")):
+            if len(self.transformations.filter(ruleset = ruleset, type = "nodrop")):
+                return False
+            return True
         return False
 
     def toggle_filestore(self, ruleset):
@@ -802,6 +810,10 @@ class Rule(models.Model):
 
     def is_filestore(self, ruleset):
         if len(self.transformations.filter(ruleset = ruleset, type = "filestore")):
+            return True
+        if len(self.category.transformations.filter(ruleset = ruleset, type = "filestore")):
+            if len(self.transformations.filter(ruleset = ruleset, type = "nofilestore")):
+                return False
             return True
         return False
 
