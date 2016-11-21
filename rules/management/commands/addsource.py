@@ -19,8 +19,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
 from rules.models import Source
-from datetime import datetime
 
 class Command(BaseCommand):
     args = 'name uri method datatype'
@@ -36,7 +36,7 @@ class Command(BaseCommand):
             name = name,
             uri = uri,
             method = method,
-            created_date = datetime.now(),
+            created_date = timezone.now(),
             datatype = datatype)
         self.stdout.write('Successfully created source "%s"' % name)
         source.update()

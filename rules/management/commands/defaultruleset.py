@@ -19,8 +19,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
 from rules.models import Ruleset, SourceAtVersion, Category
-from datetime import datetime
 
 class Command(BaseCommand):
     args = 'name'
@@ -38,8 +38,8 @@ class Command(BaseCommand):
             raise CommandError("No Category is defined")
         ruleset = Ruleset.objects.create(
             name = name,
-            created_date = datetime.now(),
-            updated_date = datetime.now()
+            created_date = timezone.now(),
+            updated_date = timezone.now()
             )
         for source in sourceat:
             ruleset.sources.add(source)
