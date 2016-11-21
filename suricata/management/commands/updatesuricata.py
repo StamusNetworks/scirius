@@ -20,7 +20,6 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.core.management.base import BaseCommand, CommandError
 from suricata.models import Suricata
-from datetime import datetime
 
 class Command(BaseCommand):
     args = 'None'
