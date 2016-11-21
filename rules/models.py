@@ -446,7 +446,12 @@ class Source(models.Model):
                 resp = requests.get(self.uri, headers = hdrs, verify = self.cert_verif)
             resp.raise_for_status()
         except requests.exceptions.ConnectionError, e:
-            raise IOError("Connection error '%s'" % (e))
+            if "Name or service not known" in str(e):
+                raise IOError("Connection error 'Name or service not known'")
+            elif "Connection timed out" in str(e):
+                raise IOError("Connection error 'Connection timed out'")
+            else:
+                raise IOError("Connection error '%s'" % (e))
         except requests.exceptions.HTTPError:
             if resp.status_code == 404:
                 raise IOError("URL not found on server (error 404), please check URL")
