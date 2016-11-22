@@ -206,6 +206,13 @@ Updated: {{ cdiff.stats.updated }}
 </div>
 {% endif %}
 
+{% if reject_rules %}
+<div class="col-md-6">
+<h2 class="title">Reject rules</h2>
+{% render_table reject_rules %}
+</div>
+{% endif %}
+
 {% if drop_rules %}
 <div class="col-md-6">
 <h2 class="title">Drop rules</h2>

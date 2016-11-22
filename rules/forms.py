@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import forms
 from django.utils import timezone
-from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold, Transformation
+from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold
 
 class SystemSettingsForm(forms.ModelForm):
     use_http_proxy = forms.BooleanField(label='Use a proxy', required=False)
@@ -140,10 +140,8 @@ class EditThresholdForm(forms.ModelForm):
         model = Threshold
         exclude = ['pk', 'rule']
 
-class RuleTransformForm(forms.ModelForm):
-    class Meta:
-        model = Transformation
-        exclude = ['ruleset']
+class RuleTransformForm(forms.Form):
+    type = forms.ChoiceField((('reject', 'Reject'), ('drop', 'Drop'), ('filestore', 'Filestore')))
 
     def __init__(self, *args, **kwargs):
         super(RuleTransformForm, self).__init__(*args, **kwargs)

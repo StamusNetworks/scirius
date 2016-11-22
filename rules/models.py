@@ -566,7 +566,6 @@ class Category(models.Model):
     descr = models.CharField(max_length=400, blank = True)
     created_date = models.DateTimeField('date created', default = timezone.now)
     source = models.ForeignKey(Source)
-    transformations = models.ManyToManyField('Transformation')
 
     bitsregexp = {'flowbits': re.compile("flowbits *: *(isset|set),(.*?) *;"),
                   'hostbits': re.compile("hostbits *: *(isset|set),(.*?) *;"),
@@ -695,11 +694,6 @@ class Category(models.Model):
         from django.core.urlresolvers import reverse
         return reverse('category', args=[str(self.id)])
 
-class Transformation(models.Model):
-    TRANSFORMATION_TYPE = (('drop', 'Drop'), ('nodrop', 'Alert'), ('filestore', 'Filestore'), ('nofilestore', 'No store'))
-    type = models.CharField(max_length=12, choices=TRANSFORMATION_TYPE)
-    ruleset = models.ForeignKey('Ruleset')
-
 class Flowbit(models.Model):
     FLOWBIT_TYPE = (('flowbits', 'Flowbits'), ('hostbits', 'Hostbits'), ('xbits', 'Xbits'))
     type = models.CharField(max_length=12, choices=FLOWBIT_TYPE)
@@ -718,7 +712,6 @@ class Rule(models.Model):
     rev = models.IntegerField(default=0)
     content = models.CharField(max_length=10000)
     flowbits = models.ManyToManyField(Flowbit)
-    transformations = models.ManyToManyField(Transformation)
 
     hits = 0
 
@@ -763,59 +756,94 @@ class Rule(models.Model):
             rule.save()
 
     def apply_transformation(self, content, trans):
-        if trans.type == "drop":
+        if trans == "reject":
+            content = re.sub("^ *\S+", "reject", content)
+        elif trans == "drop":
             content = re.sub("^ *\S+", "drop", content)
-        elif trans.type == "filestore":
+        elif trans == "filestore":
             content = re.sub("; *\)", "; filestore;)", content)
         return content
 
     def generate_content(self, ruleset):
         content = self.content
-        for trans in self.category.transformations.filter(ruleset = ruleset):
-            content = self.apply_transformation(content, trans)
-        for trans in self.transformations.filter(ruleset = ruleset):
-            content = self.apply_transformation(content, trans)
+        # explicitely set prio on transformation here
+        if self.is_reject(ruleset):
+            content = self.apply_transformation(content, "reject")
+        elif self.is_drop(ruleset):
+            content = self.apply_transformation(content, "drop")
+        elif self.is_filestore(ruleset):
+            content = self.apply_transformation(content, "filestore")
         return content
 
+    def get_transformation_sets(self, ruleset):
+        return {'drop': {
+            'type_set': ruleset.drop_rules,
+            'notype_set': ruleset.nodrop_rules,
+            'category_set': ruleset.drop_categories,
+            'test_func': self.is_drop },
+            'reject': {
+            'type_set': ruleset.reject_rules,
+            'notype_set': ruleset.noreject_rules,
+            'category_set': ruleset.reject_categories,
+            'test_func': self.is_reject },
+            'filestore': {
+            'type_set': ruleset.filestore_rules,
+            'notype_set': ruleset.nofilestore_rules,
+            'category_set': ruleset.filestore_categories,
+            'test_func': self.is_filestore }
+        }
+
     def toggle_transformation(self, ruleset, type = "drop"):
-        ctrans = self.category.transformations.filter(ruleset = ruleset, type = type)
-        trans = self.transformations.filter(ruleset = ruleset, type = type)
-        if len(trans):
-            self.transformations.remove(trans[0])
-            self.save()
-            return
-        trans = Transformation.objects.filter(type = type, ruleset=ruleset)
-        # create one if needed
-        if len(trans) == 0:
-            trans = Transformation.objects.create(ruleset = ruleset, type = type)
+        transformation_sets = self.get_transformation_sets(ruleset)
+        tsets = transformation_sets.pop(type, None)
+        if tsets['test_func'](ruleset):
+            if self in tsets['type_set'].all():
+                tsets['type_set'].remove(self)
+            if self.category in tsets['category_set'].all():
+                tsets['notype_set'].add(self)
         else:
-            trans = trans[0]
-        self.transformations.add(trans)
-        self.save()
+            if self in tsets['notype_set'].all():
+                tsets['notype_set'].remove(self)
+            if not self.category in tsets['category_set'].all():
+                tsets['type_set'].add(self)
+        ruleset.save()
+
+    def is_transformed(self, ruleset, type = 'drop'):
+        tsets = self.get_transformation_sets(ruleset)[type]
+        if self in tsets['type_set'].all():
+            return True
+        if self.category in tsets['category_set'].all():
+            if self in tsets['notype_set'].all():
+                return False
+            return True
+        return False
 
     def toggle_drop(self, ruleset):
         return self.toggle_transformation(ruleset, type = "drop")
 
     def is_drop(self, ruleset):
-        if len(self.transformations.filter(ruleset = ruleset, type = "drop")):
-            return True
-        if len(self.category.transformations.filter(ruleset = ruleset, type = "drop")):
-            if len(self.transformations.filter(ruleset = ruleset, type = "nodrop")):
-                return False
-            return True
-        return False
+        return self.is_transformed(ruleset, type = 'drop')
+
+    def toggle_reject(self, ruleset):
+        return self.toggle_transformation(ruleset, type = "reject")
+
+    def is_reject(self, ruleset):
+        return self.is_transformed(ruleset, type = 'reject')
 
     def toggle_filestore(self, ruleset):
         return self.toggle_transformation(ruleset, type = "filestore")
 
     def is_filestore(self, ruleset):
-        if len(self.transformations.filter(ruleset = ruleset, type = "filestore")):
-            return True
-        if len(self.category.transformations.filter(ruleset = ruleset, type = "filestore")):
-            if len(self.transformations.filter(ruleset = ruleset, type = "nofilestore")):
-                return False
-            return True
-        return False
+        return self.is_transformed(ruleset, type = 'filestore')
+
+    def get_transformation(self, ruleset):
+        if self.is_reject(ruleset):
+            return 'reject'
+        elif self.is_drop(ruleset):
+            return 'drop'
+        elif self.is_filestore(ruleset):
+            return 'filestore'
+        return None
 
 # we should use django reversion to keep track of this one
 # even if fixing HEAD may be complicated
@@ -837,9 +865,20 @@ class Ruleset(models.Model):
     sources = models.ManyToManyField(SourceAtVersion)
     # List of Category selected in the ruleset
     categories = models.ManyToManyField(Category, blank = True)
+    drop_categories = models.ManyToManyField(Category, blank = True, related_name="categories_drop")
+    filestore_categories = models.ManyToManyField(Category, blank = True, related_name="categories_filestore")
+    reject_categories = models.ManyToManyField(Category, blank = True, related_name="categories_reject")
+
     # List or Rules to suppressed from the Ruleset
     # Exported as suppression list in oinkmaster
     suppressed_rules = models.ManyToManyField(Rule, blank = True)
+    drop_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_drop")
+    nodrop_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_nodrop")
+    filestore_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_filestore")
+    nofilestore_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_nofilestore")
+    reject_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_reject")
+    noreject_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_noreject")
+
     # Operations
     # Creation:
     #  - define sources

@@ -28,10 +28,16 @@
 
 <script>
 function select_rulesets() {
+        reject_rulesets = {{ reject_rulesets }};
         drop_rulesets = {{ drop_rulesets }};
         filestore_rulesets = {{ filestore_rulesets }};
         // clean check boxes
         $(".checkbox").find("input").prop("checked", false);
+        if ($( "#id_type" ).find("option:selected").text() == "Reject") {
+                for (var i = 0; i < reject_rulesets.length; i++) {
+                        $("input[name=rulesets][value=" + reject_rulesets[i] + "]").prop("checked", true);
+                }
+        }
         if ($( "#id_type" ).find("option:selected").text() == "Drop") {
                 for (var i = 0; i < drop_rulesets.length; i++) {
                         $("input[name=rulesets][value=" + drop_rulesets[i] + "]").prop("checked", true);

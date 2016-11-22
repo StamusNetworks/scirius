@@ -30,7 +30,7 @@ from django.contrib import messages
 from scirius.utils import scirius_render, scirius_listing
 
 from rules.es_data import ESData
-from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation
+from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable
 
 from rules.es_graphs import *
@@ -346,11 +346,9 @@ def rule(request, rule_id, key = 'pk'):
         if Threshold.objects.filter(rule = rule, ruleset = ruleset):
             threshold = True
         ruleset_info = {'name': ruleset.name, 'pk':ruleset.pk, 'status':status, 'threshold': threshold, 'drop': False, 'filestore': False}
-        for trans in rule.transformations.filter(ruleset = ruleset):
-            if trans.type == "drop":
-                ruleset_info['drop'] = True
-            elif trans.type == "filestore":
-                ruleset_info['filestore'] = True
+        trans = rule.get_transformation(ruleset)
+        if trans:
+            ruleset_info[trans] = True
         rulesets_status.append(ruleset_info)
 
     context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status }
@@ -385,11 +383,15 @@ def transform_rule(request, rule_id):
             rulesets = form.cleaned_data['rulesets']
             for ruleset in Ruleset.objects.all():
                 if ruleset in rulesets:
+                    if form.cleaned_data["type"] == "reject" and not rule_object.is_reject(ruleset):
+                        rule_object.toggle_reject(ruleset)
                     if form.cleaned_data["type"] == "drop" and not rule_object.is_drop(ruleset):
                         rule_object.toggle_drop(ruleset)
                     if form.cleaned_data["type"] == "filestore" and not rule_object.is_filestore(ruleset):
                         rule_object.toggle_filestore(ruleset)
                 else:
+                    if form.cleaned_data["type"] == "reject" and rule_object.is_reject(ruleset):
+                        rule_object.toggle_reject(ruleset)
                     if form.cleaned_data["type"] == "drop" and rule_object.is_drop(ruleset):
                         rule_object.toggle_drop(ruleset)
                     if form.cleaned_data["type"] == "filestore" and rule_object.is_filestore(ruleset):
@@ -397,14 +399,20 @@ def transform_rule(request, rule_id):
         return redirect(rule_object)
 
     form = RuleTransformForm(initial = { 'type' : 'drop'})
+    reject_rulesets = []
     drop_rulesets = []
     filestore_rulesets = []
-    for trans in rule_object.transformations.all():
-        if trans.type == "drop":
-            drop_rulesets.append(trans.ruleset.pk)
-        elif trans.type == "filestore":
-            filestore_rulesets.append(trans.ruleset.pk)
-    context = { 'rule': rule_object, 'form': form, 'drop_rulesets': drop_rulesets, 'filestore_rulesets': filestore_rulesets }
+    rulesets = Ruleset.objects.all()
+    for ruleset in rulesets:
+        trans = rule_object.get_transformation(ruleset)
+        if trans:
+            if trans == "reject":
+                reject_rulesets.append(ruleset.pk)
+            if trans == "drop":
+                drop_rulesets.append(ruleset.pk)
+            if trans == "filestore":
+                filestore_rulesets.append(ruleset.pk)
+    context = { 'rule': rule_object, 'form': form, 'reject_rulesets': reject_rulesets, 'drop_rulesets': drop_rulesets, 'filestore_rulesets': filestore_rulesets }
     return scirius_render(request, 'rules/transform_rule.html', context)
 
 def switch_rule(request, rule_id, operation = 'suppress'):
@@ -486,30 +494,6 @@ def toggle_availability(request, rule_id):
         return scirius_render(request, 'rules/rule.html', context)
 
     rule_object.toggle_availability()
-
-    return redirect(rule_object)
-
-def toggle_drop(request, rule_id, ruleset_id):
-    rule_object = get_object_or_404(Rule, sid=rule_id)
-    ruleset_object = get_object_or_404(Ruleset, pk=ruleset_id)
-
-    if not request.user.is_staff:
-        context = { 'object': rule, 'error': 'Unsufficient permissions' }
-        return scirius_render(request, 'rules/rule.html', context)
-
-    rule_object.toggle_drop(ruleset_object)
-
-    return redirect(rule_object)
-
-def toggle_filestore(request, rule_id, ruleset_id):
-    rule_object = get_object_or_404(Rule, sid=rule_id)
-    ruleset_object = get_object_or_404(Ruleset, pk=ruleset_id)
-
-    if not request.user.is_staff:
-        context = { 'object': rule, 'error': 'Unsufficient permissions' }
-        return scirius_render(request, 'rules/rule.html', context)
-
-    rule_object.toggle_filestore(ruleset_object)
 
     return redirect(rule_object)
 
@@ -822,15 +806,16 @@ def ruleset(request, ruleset_id, mode = 'struct', error = None):
             context['suppress'] = suppress
         if error:
             context['error'] = error
-        transformation = Transformation.objects.filter(ruleset = ruleset, type = "drop")
-        if transformation:
-            drop_rules = transformation[0].rule_set.all()
-            drop_rules = RuleTable(drop_rules)
+        if len(ruleset.reject_rules.all()):
+            reject_rules = RuleTable(ruleset.reject_rules.all())
+            tables.RequestConfig(request).configure(reject_rules)
+            context['reject_rules'] = reject_rules
+        if len(ruleset.drop_rules.all().exclude(pk__in = ruleset.reject_rules.all())):
+            drop_rules = RuleTable(ruleset.drop_rules.all().exclude(pk__in = ruleset.reject_rules.all()))
             tables.RequestConfig(request).configure(drop_rules)
             context['drop_rules'] = drop_rules
-        transformation = Transformation.objects.filter(ruleset = ruleset, type = "filestore")
-        if transformation:
-            filestore_rules = transformation[0].rule_set.all()
+        filestore_rules = ruleset.filestore_rules.all().exclude(pk__in = ruleset.reject_rules.all()).exclude(pk__in = ruleset.drop_rules.all())
+        if len(filestore_rules):
             filestore_rules = RuleTable(filestore_rules)
             tables.RequestConfig(request).configure(filestore_rules)
             context['filestore_rules'] = filestore_rules
