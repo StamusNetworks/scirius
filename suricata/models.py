@@ -56,9 +56,9 @@ class Suricata(models.Model):
         rfile.write(header.encode('utf-8'))
         for rule in rules:
             try:
-                rfile.write(rule.content)
+                rfile.write(rule.generate_content(self.ruleset))
             except:
-                rfile.write(rule.content.encode('utf-8'))
+                rfile.write(rule.generate_content(self.ruleset).encode('utf-8'))
         rfile.close()
         # export files at version
         self.ruleset.export_files(self.output_directory)
