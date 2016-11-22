@@ -140,11 +140,11 @@ class EditThresholdForm(forms.ModelForm):
         model = Threshold
         exclude = ['pk', 'rule']
 
-class RuleTransformForm(forms.Form):
+class TransformForm(forms.Form):
     type = forms.ChoiceField((('reject', 'Reject'), ('drop', 'Drop'), ('filestore', 'Filestore')))
 
     def __init__(self, *args, **kwargs):
-        super(RuleTransformForm, self).__init__(*args, **kwargs)
+        super(TransformForm, self).__init__(*args, **kwargs)
         ruleset_list =  Ruleset.objects.all()
         if len(ruleset_list):
             self.fields['rulesets'] = forms.ModelMultipleChoiceField(
