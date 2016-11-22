@@ -561,8 +561,23 @@ class SourceUpdate(models.Model):
         return reverse('sourceupdate', args=[str(self.id)])
 
 class Transformable(object):
-    def get_transformation_sets(self, ruleset):
-        return {'drop': {
+    def get_transformation_sets(self, ruleset, python = False):
+        if python:
+            tsets = {'drop': {
+            'type_set': set(ruleset.drop_rules.all().values_list('pk', flat=True)),
+            'notype_set': set(ruleset.nodrop_rules.all().values_list('pk', flat=True)),
+            'category_set': set(ruleset.drop_categories.all().values_list('pk', flat=True)) },
+            'reject': {
+            'type_set': set(ruleset.reject_rules.all().values_list('pk', flat=True)),
+            'notype_set': set(ruleset.noreject_rules.all().values_list('pk', flat=True)),
+            'category_set': set(ruleset.reject_categories.all().values_list('pk', flat=True)) },
+            'filestore': {
+            'type_set': set(ruleset.filestore_rules.all().values_list('pk', flat=True)),
+            'notype_set': set(ruleset.nofilestore_rules.all().values_list('pk', flat=True)),
+            'category_set': set(ruleset.filestore_categories.all().values_list('pk', flat=True)) }
+            }
+        else:
+            tsets = {'drop': {
             'type_set': ruleset.drop_rules,
             'notype_set': ruleset.nodrop_rules,
             'category_set': ruleset.drop_categories },
@@ -574,9 +589,10 @@ class Transformable(object):
             'type_set': ruleset.filestore_rules,
             'notype_set': ruleset.nofilestore_rules,
             'category_set': ruleset.filestore_categories }
-        }
+            }
+        return tsets
 
-    def is_transformed(self, ruleset, type = 'drop'):
+    def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
         return False
 
     def toggle_transformation(self, ruleset, type = "drop"):
@@ -585,20 +601,20 @@ class Transformable(object):
     def toggle_drop(self, ruleset):
         return self.toggle_transformation(ruleset, type = "drop")
 
-    def is_drop(self, ruleset):
-        return self.is_transformed(ruleset, type = 'drop')
+    def is_drop(self, ruleset, transformation_sets = None):
+        return self.is_transformed(ruleset, type = 'drop', transformation_sets = transformation_sets)
 
     def toggle_reject(self, ruleset):
         return self.toggle_transformation(ruleset, type = "reject")
 
-    def is_reject(self, ruleset):
-        return self.is_transformed(ruleset, type = 'reject')
+    def is_reject(self, ruleset, transformation_sets = None):
+        return self.is_transformed(ruleset, type = 'reject', transformation_sets = transformation_sets)
 
     def toggle_filestore(self, ruleset):
         return self.toggle_transformation(ruleset, type = "filestore")
 
-    def is_filestore(self, ruleset):
-        return self.is_transformed(ruleset, type = 'filestore')
+    def is_filestore(self, ruleset, transformation_sets = None):
+        return self.is_transformed(ruleset, type = 'filestore', transformation_sets = transformation_sets)
 
     def get_transformation(self, ruleset):
         if self.is_reject(ruleset):
@@ -743,7 +759,7 @@ class Category(models.Model, Transformable):
         from django.core.urlresolvers import reverse
         return reverse('category', args=[str(self.id)])
 
-    def is_transformed(self, ruleset, type = 'drop'):
+    def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
         tsets = self.get_transformation_sets(ruleset)[type]
         if self in tsets['category_set'].all():
             return True
@@ -826,14 +842,14 @@ class Rule(models.Model, Transformable):
             content = re.sub("; *\)", "; filestore;)", content)
         return content
 
-    def generate_content(self, ruleset):
+    def generate_content(self, ruleset, transformation_sets = None):
         content = self.content
         # explicitely set prio on transformation here
-        if self.is_reject(ruleset):
+        if self.is_reject(ruleset, transformation_sets = transformation_sets):
             content = self.apply_transformation(content, "reject")
-        elif self.is_drop(ruleset):
+        elif self.is_drop(ruleset, transformation_sets = transformation_sets):
             content = self.apply_transformation(content, "drop")
-        elif self.is_filestore(ruleset):
+        elif self.is_filestore(ruleset, transformation_sets = transformation_sets):
             content = self.apply_transformation(content, "filestore")
         return content
 
@@ -852,15 +868,25 @@ class Rule(models.Model, Transformable):
                 tsets['type_set'].add(self)
         ruleset.save()
 
-    def is_transformed(self, ruleset, type = 'drop'):
-        tsets = self.get_transformation_sets(ruleset)[type]
-        if self in tsets['type_set'].all():
-            return True
-        if self.category in tsets['category_set'].all():
-            if self in tsets['notype_set'].all():
-                return False
-            return True
-        return False
+    def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
+        if transformation_sets:
+            tsets = transformation_sets[type]
+            if self.pk in tsets['type_set']:
+                return True
+            if self.category.pk in tsets['category_set']:
+                if self.pk in tsets['notype_set']:
+                    return False
+                return True
+            return False
+        else:
+            tsets = self.get_transformation_sets(ruleset)[type]
+            if len(tsets['type_set'].filter(pk=self.pk)):
+                return True
+            if len(tsets['category_set'].filter(pk = self.category.pk)):
+                if len(tsets['notype_set'].filter(pk = self.pk)):
+                    return False
+                return True
+            return False
 
 # we should use django reversion to keep track of this one
 # even if fixing HEAD may be complicated
