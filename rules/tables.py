@@ -109,6 +109,15 @@ class StatusRulesetTable(tables.Table):
         fields = ("name", "status", "threshold", "validity")
         attrs = { 'id': 'rulesets', 'class': 'paleblue' }
 
+class CategoryRulesetTable(tables.Table):
+    name = tables.LinkColumn('ruleset', args=[tables.A('pk')])
+    status = tables.Column(verbose_name='Status in ruleset')
+    transformation = tables.Column(verbose_name='Transformation')
+    threshold = tables.Column(verbose_name='Threshold')
+    class Meta(DefaultMeta):
+        fields = ("name", "status", "transformation", "threshold")
+        attrs = { 'id': 'rulesets', 'class': 'paleblue' }
+
 class RuleStatsTable(tables.Table):
     host = tables.Column()
     count = tables.Column()

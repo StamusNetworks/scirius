@@ -179,9 +179,11 @@ def category(request, cat_id):
         status = 'Inactive'
         if cat in ruleset.categories.all():
             status = 'Active'
-
-        rulesets_status.append({'name': ruleset.name, 'pk':ruleset.pk, 'status':status})
-    rulesets_status = StatusRulesetTable(rulesets_status)
+        trans = cat.get_transformation(ruleset)
+        if trans:
+            trans = trans.capitalize()
+        rulesets_status.append({'name': ruleset.name, 'pk':ruleset.pk, 'status':status, 'transformation': trans})
+    rulesets_status = CategoryRulesetTable(rulesets_status)
     tables.RequestConfig(request).configure(rulesets_status)
     context = {'category': cat, 'rules': rules, 'commented_rules': commented_rules, 'object_path': category_path, 'rulesets': rulesets_status}
     return scirius_render(request, 'rules/category.html', context)
