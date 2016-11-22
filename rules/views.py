@@ -864,6 +864,20 @@ def ruleset(request, ruleset_id, mode = 'struct', error = None):
             filestore_rules = RuleTable(filestore_rules)
             tables.RequestConfig(request).configure(filestore_rules)
             context['filestore_rules'] = filestore_rules
+        if len(ruleset.reject_categories.all()):
+            reject_categories = CategoryTable(ruleset.reject_categories.all())
+            tables.RequestConfig(request).configure(reject_categories)
+            context['reject_categories'] = reject_categories
+        drop_categories = ruleset.drop_categories.all().exclude(pk__in = ruleset.reject_categories.all())
+        if len(drop_categories):
+            drop_categories = CategoryTable(drop_categories)
+            tables.RequestConfig(request).configure(drop_categories)
+            context['drop_categories'] = drop_categories
+        filestore_categories = ruleset.filestore_categories.all().exclude(pk__in = ruleset.reject_categories.all()).exclude(pk__in = ruleset.drop_categories.all())
+        if len(filestore_categories):
+            filestore_categories = CategoryTable(filestore_categories)
+            tables.RequestConfig(request).configure(filestore_categories)
+            context['filestore_categories'] = filestore_categories
     elif mode == 'display':
         rules = RuleTable(ruleset.generate())
         tables.RequestConfig(request).configure(rules)
