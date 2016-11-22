@@ -3,18 +3,33 @@
 
 {% block sidebar %}
 <div class="panel-heading">
+{% if rule %}
 <h2 class="panel-title">Transform rule {{ rule.pk }} </h2>
+{% else %}
+<h2 class="panel-title">Transform category '{{ category.name }}' </h2>
+{% endif %}
 </div>
 {% endblock %}
 
 {% block content %}
 
+{% if rule %}
 <h2>Transform rule</h2>
+{% else %}
+<h2>Transform rule</h2>
+{% endif %}
 
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-6">
-<form action="{% url 'transform_rule' rule.pk %}" method="post" class="form">{% csrf_token %}
+
+{% if rule %}
+<form action="{% url 'transform_rule' rule.pk %}" method="post" class="form">
+{% else %}
+<form action="{% url 'transform_category' category.pk %}" method="post" class="form">
+{% endif %}
+
+{% csrf_token %}
     {% bootstrap_form form %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">

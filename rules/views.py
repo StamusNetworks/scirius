@@ -413,7 +413,52 @@ def transform_rule(request, rule_id):
             if trans == "filestore":
                 filestore_rulesets.append(ruleset.pk)
     context = { 'rule': rule_object, 'form': form, 'reject_rulesets': reject_rulesets, 'drop_rulesets': drop_rulesets, 'filestore_rulesets': filestore_rulesets }
-    return scirius_render(request, 'rules/transform_rule.html', context)
+    return scirius_render(request, 'rules/transform.html', context)
+
+def transform_category(request, cat_id):
+    cat_object = get_object_or_404(Category, pk=cat_id)
+
+    if not request.user.is_staff:
+        context = { 'category': cat_object, 'error': 'Unsufficient permissions' }
+        return scirius_render(request, 'rules/category.html', context)
+        
+    if request.method == 'POST': # If the form has been submitted...
+        form = RuleTransformForm(request.POST)
+        if form.is_valid(): # All validation rules pass
+            rulesets = form.cleaned_data['rulesets']
+            for ruleset in Ruleset.objects.all():
+                if ruleset in rulesets:
+                    if form.cleaned_data["type"] == "reject" and not cat_object.is_reject(ruleset):
+                        cat_object.toggle_reject(ruleset)
+                    if form.cleaned_data["type"] == "drop" and not cat_object.is_drop(ruleset):
+                        cat_object.toggle_drop(ruleset)
+                    if form.cleaned_data["type"] == "filestore" and not cat_object.is_filestore(ruleset):
+                        cat_object.toggle_filestore(ruleset)
+                else:
+                    if form.cleaned_data["type"] == "reject" and cat_object.is_reject(ruleset):
+                        cat_object.toggle_reject(ruleset)
+                    if form.cleaned_data["type"] == "drop" and cat_object.is_drop(ruleset):
+                        catt_object.toggle_drop(ruleset)
+                    if form.cleaned_data["type"] == "filestore" and cat_object.is_filestore(ruleset):
+                        cat_object.toggle_filestore(ruleset)
+        return redirect(cat_object)
+
+    form = RuleTransformForm(initial = { 'type' : 'drop'})
+    reject_rulesets = []
+    drop_rulesets = []
+    filestore_rulesets = []
+    rulesets = Ruleset.objects.all()
+    for ruleset in rulesets:
+        trans = cat_object.get_transformation(ruleset)
+        if trans:
+            if trans == "reject":
+                reject_rulesets.append(ruleset.pk)
+            if trans == "drop":
+                drop_rulesets.append(ruleset.pk)
+            if trans == "filestore":
+                filestore_rulesets.append(ruleset.pk)
+    context = { 'category': cat_object, 'form': form, 'reject_rulesets': reject_rulesets, 'drop_rulesets': drop_rulesets, 'filestore_rulesets': filestore_rulesets }
+    return scirius_render(request, 'rules/transform.html', context)
 
 def switch_rule(request, rule_id, operation = 'suppress'):
     rule_object = get_object_or_404(Rule, sid=rule_id)
