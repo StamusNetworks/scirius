@@ -873,9 +873,9 @@ class Rule(models.Model, Transformable):
             tsets = transformation_sets[type]
             if self.pk in tsets['type_set']:
                 return True
+            if self.pk in tsets['notype_set']:
+                return False
             if self.category.pk in tsets['category_set']:
-                if self.pk in tsets['notype_set']:
-                    return False
                 return True
             return False
         else:
