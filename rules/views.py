@@ -440,7 +440,7 @@ def transform_category(request, cat_id):
                     if form.cleaned_data["type"] == "reject" and cat_object.is_reject(ruleset):
                         cat_object.toggle_reject(ruleset)
                     if form.cleaned_data["type"] == "drop" and cat_object.is_drop(ruleset):
-                        catt_object.toggle_drop(ruleset)
+                        cat_object.toggle_drop(ruleset)
                     if form.cleaned_data["type"] == "filestore" and cat_object.is_filestore(ruleset):
                         cat_object.toggle_filestore(ruleset)
         return redirect(cat_object)
