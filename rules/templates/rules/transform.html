@@ -15,6 +15,22 @@
 
 {% if rule %}
 <h2>Transform rule</h2>
+{% if category_transforms %}
+<div class="panel panel-info">
+<div class="panel-heading">Inheritance</div>
+<div class="panel-body">
+This rule is part of category <a href="{% url 'category' rule.category.pk %}">'{{ rule.category.name }}'</a> so inherit from:
+<ul>
+{% for transform in category_transforms %}
+<li>
+	<a href="{% url 'ruleset' transform.ruleset.pk %}">{{ transform.ruleset }}</a>: <div class="label label-info">{{ transform.trans }}</div>
+</li>
+{% endfor %}
+</ul>
+Changing transformation for the rule will add an exception.
+</div>
+</div>
+{% endif %}
 {% else %}
 <h2>Transform category</h2>
 {% endif %}

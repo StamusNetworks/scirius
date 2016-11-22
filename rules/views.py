@@ -404,6 +404,7 @@ def transform_rule(request, rule_id):
     reject_rulesets = []
     drop_rulesets = []
     filestore_rulesets = []
+    category_transforms = []
     rulesets = Ruleset.objects.all()
     for ruleset in rulesets:
         trans = rule_object.get_transformation(ruleset)
@@ -414,7 +415,10 @@ def transform_rule(request, rule_id):
                 drop_rulesets.append(ruleset.pk)
             if trans == "filestore":
                 filestore_rulesets.append(ruleset.pk)
-    context = { 'rule': rule_object, 'form': form, 'reject_rulesets': reject_rulesets, 'drop_rulesets': drop_rulesets, 'filestore_rulesets': filestore_rulesets }
+        ctrans = rule_object.category.get_transformation(ruleset)
+        if ctrans:
+            category_transforms.append({'ruleset': ruleset, 'trans': ctrans})
+    context = { 'rule': rule_object, 'form': form, 'reject_rulesets': reject_rulesets, 'drop_rulesets': drop_rulesets, 'filestore_rulesets': filestore_rulesets, 'category_transforms': category_transforms }
     return scirius_render(request, 'rules/transform.html', context)
 
 def transform_category(request, cat_id):
