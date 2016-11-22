@@ -963,7 +963,7 @@ class Ruleset(models.Model):
         self.save()
 
     def generate(self):
-        rules = Rule.objects.filter(category__in = self.categories.all(), state = True)
+        rules = Rule.objects.select_related('category').filter(category__in = self.categories.all(), state = True)
         # remove suppressed list
         rules = list(set(rules.all()) - set(self.suppressed_rules.all()))
         return rules
