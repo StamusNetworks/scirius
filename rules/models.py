@@ -771,6 +771,7 @@ class Category(models.Model, Transformable):
             tsets['category_set'].remove(self)
         else:
             tsets['category_set'].add(self)
+        ruleset.needs_test()
 
 class Flowbit(models.Model):
     FLOWBIT_TYPE = (('flowbits', 'Flowbits'), ('hostbits', 'Hostbits'), ('xbits', 'Xbits'))
@@ -866,6 +867,7 @@ class Rule(models.Model, Transformable):
                 tsets['notype_set'].remove(self)
             if not self.category in tsets['category_set'].all():
                 tsets['type_set'].add(self)
+        ruleset.needs_test()
         ruleset.save()
 
     def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
