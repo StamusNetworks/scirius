@@ -20,6 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import forms
 from django.utils import timezone
+from django.conf import settings
 from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold
 
 class SystemSettingsForm(forms.ModelForm):
@@ -141,7 +142,7 @@ class EditThresholdForm(forms.ModelForm):
         exclude = ['pk', 'rule']
 
 class TransformForm(forms.Form):
-    type = forms.ChoiceField((('reject', 'Reject'), ('drop', 'Drop'), ('filestore', 'Filestore')))
+    type = forms.ChoiceField(settings.RULESET_TRANSFORMATIONS)
 
     def __init__(self, *args, **kwargs):
         super(TransformForm, self).__init__(*args, **kwargs)

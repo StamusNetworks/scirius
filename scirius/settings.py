@@ -181,6 +181,13 @@ DBBACKUP_STORAGE = 'dbbackup.storage.filesystem_storage'
 
 # Ruleset generator framework
 RULESET_MIDDLEWARE = 'suricata'
+# Select transformation by copying the correct value to your loca_settings.py
+# For IPS
+RULESET_TRANSFORMATIONS = (('reject', 'Reject'), ('drop', 'Drop'), ('filestore', 'Filestore'))
+# For an IDS with reject configured
+#RULESET_TRANSFORMATIONS = (('reject', 'Reject'), ('filestore', 'Filestore'))
+# For an IDS without reject
+#RULESET_TRANSFORMATIONS = (('filestore', 'Filestore'),)
 
 LOGIN_URL = '/accounts/login/'
 
