@@ -340,6 +340,7 @@ def rule(request, rule_id, key = 'pk'):
     # build table of rulesets and display if rule is active
     rulesets = Ruleset.objects.all()
     rulesets_status = []
+    rule_transformations = False
     for ruleset in rulesets:
         status = 'Inactive'
         if rule.state and rule.category in ruleset.categories.all() and rule not in ruleset.suppressed_rules.all():
@@ -347,13 +348,15 @@ def rule(request, rule_id, key = 'pk'):
         threshold = False
         if Threshold.objects.filter(rule = rule, ruleset = ruleset):
             threshold = True
-        ruleset_info = {'name': ruleset.name, 'pk':ruleset.pk, 'status':status, 'threshold': threshold, 'drop': False, 'filestore': False}
+        content = SuriHTMLFormat(rule.generate_content(ruleset))
+        ruleset_info = {'name': ruleset.name, 'pk':ruleset.pk, 'status':status, 'threshold': threshold, 'drop': False, 'filestore': False, 'content': content}
         trans = rule.get_transformation(ruleset)
         if trans:
             ruleset_info[trans] = True
+            rule_transformations = True
         rulesets_status.append(ruleset_info)
 
-    context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status }
+    context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status, 'rule_transformations': rule_transformations }
     thresholds = Threshold.objects.filter(rule = rule, threshold_type = 'threshold')
     if thresholds:
         thresholds = RuleThresholdTable(thresholds)

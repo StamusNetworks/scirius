@@ -258,6 +258,18 @@
       {{ rule.highlight_content|safe }}
 </div>
 
+{% if rule_transformations %}
+<h2 class="title">Rule transformation(s)</h2>
+{% for ruleset in rulesets %}
+{% if ruleset.drop or ruleset.reject or ruleset.filestore %}
+<h3 class="title">{{ ruleset.name }}</h3>
+<div class="rule">
+      {{ ruleset.content|safe }}
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+
 {% endif %}
 <div class="row">
         <div id="validity_error" class="col-md-12" style="display:none;">
