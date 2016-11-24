@@ -333,6 +333,43 @@ You can also update the ruleset and trigger a Suricata reload by running ::
 
  python manage.py updatesuricata
 
+Rules transformation
+--------------------
+
+Concept
+~~~~~~~
+
+Suricata can be used in IDS and IPS mode. Traditional sources don't come with ready
+to use rules for IPS and the user has to setup his IPS ruleset by transforming the
+rules that he wants to be blocking before loading them info Suricata. The basic transformation is to change the `alert`
+keyword to `drop`. But it is also possible to use the `reject` method.
+
+Scirius allows you to do these modifications for a complete category or for a single rule. The
+rule modification has priority so it is possible to remove the transformation from a rule
+belonging to a category with transformation enable.
+
+As Suricata allows you to store file transferred on alert, it is also possible to add
+the `filestore` option to a rule thus enabling you to store on disk file triggering
+a specific alert.
+
+Once transformations are created, the ruleset will be generated with transformed rules.
+
+Transform a category
+~~~~~~~~~~~~~~~~~~~~
+
+To transform a category, you can go to the category page, then in the left
+sidebar, click on ``Transform category`` and choose one transformation and the rulesets
+to apply it.
+
+These transformations are exclusive: for example it is not possible to `drop` and `filestore` at the same time so you need to choose from the list of transformations.
+
+Transform a rule
+~~~~~~~~~~~~~~~~
+
+To transform a rule, you can go to the rule page, then in the left
+sidebar, click on ``Transform rule`` and choose one transformation and the rulesets
+to apply it.
+
 Backup
 ======
 
