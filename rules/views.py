@@ -648,11 +648,9 @@ def suppress_category(request, cat_id, operation = 'suppress'):
             for ruleset_pk in rulesets:
                 ruleset = get_object_or_404(Ruleset, pk=ruleset_pk)
                 if operation == 'suppress':
-                    ruleset.categories.remove(cat_object, user = request.user)
+                    cat_object.disable(ruleset, user = request.user)
                 elif operation == 'enable':
-                    ruleset.categories.add(cat_object, user = request.user)
-                ruleset.needs_test()
-                ruleset.save()
+                    cat_object.enable(ruleset, user = request.user)
         return redirect(cat_object)
     form = RulesetSuppressForm()
     context = { 'category': cat_object, 'form': form, 'operation': operation }

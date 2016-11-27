@@ -773,6 +773,22 @@ class Category(models.Model, Transformable):
         from django.core.urlresolvers import reverse
         return reverse('category', args=[str(self.id)])
 
+    def enable(self, ruleset, user = None):
+        ruleset.categories.add(self)
+        ruleset.needs_test()
+        ruleset.save()
+        if user:
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', username = user.username, date = timezone.now())
+            ua.save()
+
+    def disable(self, ruleset, user = None):
+        ruleset.categories.remove(self)
+        ruleset.needs_test()
+        ruleset.save()
+        if user:
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', username = user.username, date = timezone.now())
+            ua.save()
+
     def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
         tsets = self.get_transformation_sets(ruleset)[type]
         if self in tsets['category_set'].all():
