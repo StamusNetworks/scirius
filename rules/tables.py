@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from rules.models import Ruleset, Source, Category, Rule, SourceAtVersion, SourceUpdate, Threshold
+from rules.models import Ruleset, Source, Category, Rule, SourceAtVersion, SourceUpdate, Threshold, UserAction
 import django_tables2 as tables
 
 class DefaultMeta:
@@ -176,3 +176,8 @@ class RulesetThresholdTable(tables.Table):
     class Meta(DefaultMeta):
         model = Threshold
         fields = ("pk", "rule", "track_by", "type", "count", "seconds")
+
+class HistoryTable(tables.Table):
+    class Meta(DefaultMeta):
+        model = UserAction
+        fields = ("username", "date", "action", "userobject", "ruleset", "description")

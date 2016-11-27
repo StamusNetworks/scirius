@@ -30,8 +30,8 @@ from django.contrib import messages
 from scirius.utils import scirius_render, scirius_listing
 
 from rules.es_data import ESData
-from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold
-from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable
+from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, UserAction
+from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, HistoryTable
 
 from rules.es_graphs import *
 from rules.influx import *
@@ -483,9 +483,9 @@ def switch_rule(request, rule_id, operation = 'suppress'):
             for ruleset_pk in rulesets:
                 ruleset = get_object_or_404(Ruleset, pk=ruleset_pk)
                 if operation == 'suppress':
-                    rule_object.disable(ruleset)
+                    rule_object.disable(ruleset, user = request.user)
                 elif operation == 'enable':
-                    rule_object.enable(ruleset)
+                    rule_object.enable(ruleset, user = request.user)
                 ruleset.save()
         return redirect(rule_object)
     form = RulesetSuppressForm()
@@ -648,9 +648,9 @@ def suppress_category(request, cat_id, operation = 'suppress'):
             for ruleset_pk in rulesets:
                 ruleset = get_object_or_404(Ruleset, pk=ruleset_pk)
                 if operation == 'suppress':
-                    ruleset.categories.remove(cat_object)
+                    ruleset.categories.remove(cat_object, user = request.user)
                 elif operation == 'enable':
-                    ruleset.categories.add(cat_object)
+                    ruleset.categories.add(cat_object, user = request.user)
                 ruleset.needs_test()
                 ruleset.save()
         return redirect(cat_object)
@@ -987,7 +987,7 @@ def edit_ruleset(request, ruleset_id):
         elif request.POST.has_key('rules'):
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
-                rule_object.enable(ruleset)
+                rule_object.enable(ruleset, user = request.user)
             ruleset.needs_test()
         elif request.POST.has_key('sources'):
             # clean ruleset
@@ -1051,7 +1051,7 @@ def ruleset_add_supprule(request, ruleset_id):
         elif request.POST.has_key('rule_selection'):
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
-                rule_object.disable(ruleset)
+                rule_object.disable(ruleset, user = request.user)
             ruleset.save()
         return redirect(ruleset)
     context = { 'ruleset': ruleset }
@@ -1220,3 +1220,9 @@ def delete_threshold(request, threshold_id):
     else:
         context = {'object': threshold, 'delfn': 'delete_threshold' }
         return scirius_render(request, 'rules/delete.html', context)
+
+def history(request):
+    useractions = HistoryTable(UserAction.objects.all())
+    tables.RequestConfig(request).configure(useractions)
+    context = {'table': useractions}
+    return scirius_render(request, 'rules/history.html', context)

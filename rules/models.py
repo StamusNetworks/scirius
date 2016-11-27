@@ -19,6 +19,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.conf import settings
 from django.core.exceptions import FieldError, SuspiciousOperation, ValidationError
 from django.core.validators import validate_ipv4_address
@@ -73,6 +75,18 @@ def validate_url(val):
         validate_port(port)
 
     validate_hostname(netloc)
+
+class UserAction(models.Model):
+    ACTION_TYPE = (('disable', 'Disable'), ('enable', 'Enable'), ('comment', 'Comment'), ('activate', 'Activate'), ('deactivate', 'Deactivate'), ('drop', 'Drop'), ('reject', 'Reject'), ('filestore', 'Filestore'), ('create', 'Create'), ('delete', 'Delete'), ('modify', 'Modify'))
+    ruleset = models.ForeignKey('Ruleset', default = None, on_delete = models.SET_NULL, null = True, blank = True)
+    username = models.CharField(max_length=100)
+    action = models.CharField(max_length=12, choices = ACTION_TYPE)
+    description = models.CharField(max_length=500)
+    comment = models.CharField(max_length=1000)
+    date = models.DateTimeField('event date')
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null = True)
+    object_id = models.PositiveIntegerField()
+    userobject = GenericForeignKey('content_type', 'object_id')
 
 class SystemSettings(models.Model):
     use_http_proxy = models.BooleanField(default=False)
@@ -808,18 +822,24 @@ class Rule(models.Model, Transformable):
             rules |= set(rules_dep)
         return rules
 
-    def enable(self, ruleset):
+    def enable(self, ruleset, user = None):
         enable_rules = self.get_flowbits_group()
         if not enable_rules:
             enable_rules |= {self}
         ruleset.enable_rules(enable_rules)
+        if user:
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', username = user.username, date = timezone.now())
+            ua.save()
         return
 
-    def disable(self, ruleset):
+    def disable(self, ruleset, user = None):
         disable_rules = self.get_flowbits_group()
         if not disable_rules:
             disable_rules |= {self}
         ruleset.disable_rules(disable_rules)
+        if user:
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', username = user.username, date = timezone.now())
+            ua.save()
         return
 
     def test(self, ruleset):
