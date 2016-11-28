@@ -767,6 +767,7 @@ class Category(models.Model, Transformable):
                             flowbits = self.parse_rule_flowbit(source, line)
                         rule.flowbits = flowbits
                         rules_update["updated"].append(rule)
+                        rule.updated_date = timezone.now()
                         rule.save()
                     else:
                         rules_unchanged.append(rule)
@@ -775,7 +776,7 @@ class Category(models.Model, Transformable):
                         rev = 0
                     rule = Rule(category = self, sid = sid,
                                         rev = rev, content = line, msg = msg,
-                                        state_in_source = state, state = state)
+                                        state_in_source = state, state = state, imported_date = timezone.now())
                     if not source.init_flowbits:
                         flowbits = self.parse_rule_flowbit(source, line)
                     rule.flowbits = flowbits
@@ -840,6 +841,8 @@ class Rule(models.Model, Transformable):
     content = models.CharField(max_length=10000)
     flowbits = models.ManyToManyField(Flowbit)
     actions = GenericRelation(UserAction)
+    imported_date = models.DateTimeField(default = timezone.now)
+    updated_date = models.DateTimeField(default = timezone.now)
 
     hits = 0
 
