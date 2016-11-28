@@ -1,4 +1,6 @@
 {% extends "rules/base.html" %}
+{% load bootstrap3  %}
+
 {% block sidebar %}
 <div class="panel-heading">
 <h2 class="panel-title">Delete alerts for {{object.pk}}</h2>
@@ -46,6 +48,8 @@
 <h2 class="title">Are you sure you want to delete all stored alerts for {{ object.pk }}?</h2>
 
 <form class="form" action="{% url 'delete_alerts' object.pk %}" method="post">{% csrf_token %}
+
+    {% bootstrap_form comment_form %}
 <button class="btn btn-primary" type="submit">
 <span class="glyphicon glyphicon-trash"> Delete alerts</span>
 </button>

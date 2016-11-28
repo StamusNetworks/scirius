@@ -518,21 +518,27 @@ def delete_alerts(request, rule_id):
         return scirius_render(request, 'rules/delete_alerts.html', context)
 
     if request.method == 'POST': # If the form has been submitted...
-        if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
-            Probe.common.es_delete_alerts_by_sid(rule_id)
-        else:
-            result = es_delete_alerts_by_sid(rule_id)
-            if result.has_key('status') and result['status'] != 200:
-                context = { 'object': rule_object, 'error': result['msg'] }
-                try:
-                    context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
-                except:
-                    pass
-                return scirius_render(request, 'rules/delete_alerts.html', context)
-        messages.add_message(request, messages.INFO, "Events deletion may be in progress, graphics and stats could be not in sync.");
+        form = RuleCommentForm(request.POST)
+        if form.is_valid():
+            if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
+                Probe.common.es_delete_alerts_by_sid(rule_id)
+            else:
+                result = es_delete_alerts_by_sid(rule_id)
+                if result.has_key('status') and result['status'] != 200:
+                    context = { 'object': rule_object, 'error': result['msg'] }
+                    try:
+                        context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
+                    except:
+                        pass
+                    return scirius_render(request, 'rules/delete_alerts.html', context)
+            messages.add_message(request, messages.INFO, "Events deletion may be in progress, graphics and stats could be not in sync.");
+            ua = UserAction(action='delete_alerts', username = request.user.username, userobject = rule_object)
+            ua.comment = form.cleaned_data['comment']
+            ua.save()
         return redirect(rule_object)
     else:
         context = {'object': rule_object }
+        context['comment_form'] = RuleCommentForm()
         try:
             context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
         except:

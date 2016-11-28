@@ -77,7 +77,7 @@ def validate_url(val):
     validate_hostname(netloc)
 
 class UserAction(models.Model):
-    ACTION_TYPE = (('disable', 'Disable'), ('enable', 'Enable'), ('comment', 'Comment'), ('activate', 'Activate'), ('deactivate', 'Deactivate'), ('drop', 'Drop'), ('reject', 'Reject'), ('filestore', 'Filestore'), ('create', 'Create'), ('delete', 'Delete'), ('modify', 'Modify'))
+    ACTION_TYPE = (('disable', 'Disable'), ('enable', 'Enable'), ('comment', 'Comment'), ('activate', 'Activate'), ('deactivate', 'Deactivate'), ('drop', 'Drop'), ('reject', 'Reject'), ('filestore', 'Filestore'), ('create', 'Create'), ('delete', 'Delete'), ('modify', 'Modify'), ('del_alerts', 'Delete alerts'))
     ruleset = models.ForeignKey('Ruleset', default = None, on_delete = models.SET_NULL, null = True, blank = True)
     username = models.CharField(max_length=100)
     action = models.CharField(max_length=12, choices = ACTION_TYPE)
