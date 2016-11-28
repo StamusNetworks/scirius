@@ -112,35 +112,19 @@ class RulesetCopyForm(forms.Form):
 class RulesetSuppressForm(RulesetChoiceForm):
     rulesets_label = "Modify object in the following ruleset(s)"
 
-class AddRuleThresholdForm(forms.ModelForm):
+class AddRuleThresholdForm(forms.ModelForm, RulesetChoiceForm):
+    rulesets_label = "Add threshold to the following ruleset(s)"
     threshold_type = forms.CharField(widget = forms.HiddenInput())
     class Meta:
         model = Threshold
         exclude = ['ruleset', 'rule', 'gid', 'descr', 'net']
-    def __init__(self, *args, **kwargs):
-        super(AddRuleThresholdForm, self).__init__(*args, **kwargs)
-        ruleset_list =  Ruleset.objects.all()
-        if len(ruleset_list):
-            self.fields['rulesets'] = forms.ModelMultipleChoiceField(
-                        ruleset_list,
-                        widget=forms.CheckboxSelectMultiple(),
-                        label = "Add threshold to the following ruleset(s)",
-                        required = True)
 
-class AddRuleSuppressForm(forms.ModelForm):
+class AddRuleSuppressForm(forms.ModelForm, RulesetChoiceForm):
+    rulesets_label = "Add suppression to the following ruleset(s)"
     threshold_type = forms.CharField(widget = forms.HiddenInput())
     class Meta:
         model = Threshold
         exclude = ['ruleset', 'rule', 'gid', 'descr', 'type', 'count', 'seconds']
-    def __init__(self, *args, **kwargs):
-        super(AddRuleSuppressForm, self).__init__(*args, **kwargs)
-        ruleset_list =  Ruleset.objects.all()
-        if len(ruleset_list):
-            self.fields['rulesets'] = forms.ModelMultipleChoiceField(
-                        ruleset_list,
-                        widget=forms.CheckboxSelectMultiple(),
-                        label = "Add suppression to the following ruleset(s)",
-                        required = True)
 
 class EditThresholdForm(forms.ModelForm):
     class Meta:

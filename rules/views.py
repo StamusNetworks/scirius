@@ -590,6 +590,10 @@ def threshold_rule(request, rule_id):
                 threshold.ruleset = ruleset
                 threshold.pk = None
                 threshold.save()
+                ua = UserAction(action='create', username = request.user.username, userobject = threshold)
+                ua.ruleset = ruleset
+                ua.comment = form.cleaned_data['comment']
+                ua.save()
             return redirect(rule_object)
         else:
             context = {'rule': rule_object, 'form': form, 'error': 'Could not create threshold'}
