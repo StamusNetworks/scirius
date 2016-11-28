@@ -782,20 +782,20 @@ class Category(models.Model, Transformable):
         from django.core.urlresolvers import reverse
         return reverse('category', args=[str(self.id)])
 
-    def enable(self, ruleset, user = None):
+    def enable(self, ruleset, user = None, comment = None):
         ruleset.categories.add(self)
         ruleset.needs_test()
         ruleset.save()
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', username = user.username, date = timezone.now())
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', username = user.username, date = timezone.now(), comment = comment)
             ua.save()
 
-    def disable(self, ruleset, user = None):
+    def disable(self, ruleset, user = None, comment = None):
         ruleset.categories.remove(self)
         ruleset.needs_test()
         ruleset.save()
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', username = user.username, date = timezone.now())
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', username = user.username, date = timezone.now(), comment = comment)
             ua.save()
 
     def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
@@ -847,23 +847,23 @@ class Rule(models.Model, Transformable):
             rules |= set(rules_dep)
         return rules
 
-    def enable(self, ruleset, user = None):
+    def enable(self, ruleset, user = None, comment = None):
         enable_rules = self.get_flowbits_group()
         if not enable_rules:
             enable_rules |= {self}
         ruleset.enable_rules(enable_rules)
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', username = user.username, date = timezone.now())
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', username = user.username, date = timezone.now(), comment = comment)
             ua.save()
         return
 
-    def disable(self, ruleset, user = None):
+    def disable(self, ruleset, user = None, comment = None):
         disable_rules = self.get_flowbits_group()
         if not disable_rules:
             disable_rules |= {self}
         ruleset.disable_rules(disable_rules)
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', username = user.username, date = timezone.now())
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', username = user.username, date = timezone.now(), comment = comment)
             ua.save()
         return
 

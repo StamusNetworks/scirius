@@ -480,12 +480,11 @@ def switch_rule(request, rule_id, operation = 'suppress'):
         form = RulesetSuppressForm(request.POST)
         if form.is_valid(): # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
-            for ruleset_pk in rulesets:
-                ruleset = get_object_or_404(Ruleset, pk=ruleset_pk)
+            for ruleset in rulesets:
                 if operation == 'suppress':
-                    rule_object.disable(ruleset, user = request.user)
+                    rule_object.disable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
                 elif operation == 'enable':
-                    rule_object.enable(ruleset, user = request.user)
+                    rule_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
                 ruleset.save()
         return redirect(rule_object)
     form = RulesetSuppressForm()
@@ -645,12 +644,11 @@ def suppress_category(request, cat_id, operation = 'suppress'):
         form = RulesetSuppressForm(request.POST)
         if form.is_valid(): # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
-            for ruleset_pk in rulesets:
-                ruleset = get_object_or_404(Ruleset, pk=ruleset_pk)
+            for ruleset in rulesets:
                 if operation == 'suppress':
-                    cat_object.disable(ruleset, user = request.user)
+                    cat_object.disable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
                 elif operation == 'enable':
-                    cat_object.enable(ruleset, user = request.user)
+                    cat_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
         return redirect(cat_object)
     form = RulesetSuppressForm()
     context = { 'category': cat_object, 'form': form, 'operation': operation }
@@ -985,7 +983,7 @@ def edit_ruleset(request, ruleset_id):
         elif request.POST.has_key('rules'):
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
-                rule_object.enable(ruleset, user = request.user)
+                rule_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
             ruleset.needs_test()
         elif request.POST.has_key('sources'):
             # clean ruleset

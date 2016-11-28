@@ -23,6 +23,24 @@ from django.utils import timezone
 from django.conf import settings
 from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold
 
+class RulesetChoiceForm(forms.Form):
+    rulesets_label = "Add object to the following ruleset(s)"
+    comment = forms.CharField(widget=forms.Textarea,
+                              label = "Optional comment",
+                              required = False)
+
+    def __init__(self, *args, **kwargs):
+        super(RulesetChoiceForm, self).__init__(*args, **kwargs)
+        ruleset_list =  Ruleset.objects.all()
+        if len(ruleset_list):
+            self.fields['rulesets'] = forms.ModelMultipleChoiceField(
+                        ruleset_list,
+                        widget=forms.CheckboxSelectMultiple(),
+                        label = self.rulesets_label,
+                        required = False)
+        comment = self.fields.pop('comment')
+        self.fields['comment'] = comment
+
 class SystemSettingsForm(forms.ModelForm):
     use_http_proxy = forms.BooleanField(label='Use a proxy', required=False)
     custom_elasticsearch = forms.BooleanField(label='Use a custom Elasticsearch server', required=False)
@@ -43,25 +61,16 @@ class SourceForm(forms.ModelForm):
         model = Source
         exclude = ['created_date', 'updated_date']
 
-class AddSourceForm(forms.ModelForm):
+class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
     file  = forms.FileField(required = False)
     authkey = forms.CharField(max_length=100,
                               label = "Optional authorization key",
                               required = False)
+    rulesets_label = "Add source to the following ruleset(s)"
 
     class Meta:
         model = Source
         exclude = ['created_date', 'updated_date']
-
-    def __init__(self, *args, **kwargs):
-        super(AddSourceForm, self).__init__(*args, **kwargs)
-        ruleset_list =  Ruleset.objects.all()
-        if len(ruleset_list):
-            self.fields['rulesets'] = forms.ModelMultipleChoiceField(
-                        ruleset_list,
-                        widget=forms.CheckboxSelectMultiple(),
-                        label = "Add source to the following ruleset(s)",
-                        required = False)
 
 # Display choices of SourceAtVersion
 class RulesetForm(forms.Form):
@@ -100,11 +109,8 @@ class RulesetEditForm(forms.ModelForm):
 class RulesetCopyForm(forms.Form):
     name = forms.CharField(max_length=100)
 
-class RulesetSuppressForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        super(RulesetSuppressForm, self).__init__(*args, **kwargs)
-        rulesets = Ruleset.objects.all().values_list('pk', 'name')
-        self.fields['rulesets'] = forms.MultipleChoiceField(rulesets, widget = forms.CheckboxSelectMultiple())
+class RulesetSuppressForm(RulesetChoiceForm):
+    rulesets_label = "Modify object in the following ruleset(s)"
 
 class AddRuleThresholdForm(forms.ModelForm):
     threshold_type = forms.CharField(widget = forms.HiddenInput())
