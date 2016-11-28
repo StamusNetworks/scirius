@@ -81,12 +81,21 @@ class UserAction(models.Model):
     ruleset = models.ForeignKey('Ruleset', default = None, on_delete = models.SET_NULL, null = True, blank = True)
     username = models.CharField(max_length=100)
     action = models.CharField(max_length=12, choices = ACTION_TYPE)
-    description = models.CharField(max_length=500)
+    description = models.CharField(max_length=500, null = True)
     comment = models.CharField(max_length=1000)
     date = models.DateTimeField('event date')
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null = True)
     object_id = models.PositiveIntegerField()
     userobject = GenericForeignKey('content_type', 'object_id')
+
+    def __init__(self, *args, **kwargs):
+        super(UserAction, self).__init__(*args, **kwargs)
+        if not self.description:
+            self.description = self.generate_description()
+
+    def generate_description(self):
+        object_model = self.content_type.model_class()
+        return "%s on %s '%s' by user '%s'" % (self.action, object_model, self.userobject, self.username) 
 
 class SystemSettings(models.Model):
     use_http_proxy = models.BooleanField(default=False)
