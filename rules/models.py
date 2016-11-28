@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.conf import settings
 from django.core.exceptions import FieldError, SuspiciousOperation, ValidationError
 from django.core.validators import validate_ipv4_address
@@ -82,8 +82,8 @@ class UserAction(models.Model):
     username = models.CharField(max_length=100)
     action = models.CharField(max_length=12, choices = ACTION_TYPE)
     description = models.CharField(max_length=500, null = True)
-    comment = models.CharField(max_length=1000)
-    date = models.DateTimeField('event date')
+    comment = models.TextField(null = True, blank = True)
+    date = models.DateTimeField('event date', default = timezone.now)
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null = True)
     object_id = models.PositiveIntegerField()
     userobject = GenericForeignKey('content_type', 'object_id')
@@ -94,7 +94,11 @@ class UserAction(models.Model):
             self.description = self.generate_description()
 
     def generate_description(self):
-        object_model = self.content_type.model_class().__name__
+        ctype = self.content_type.model_class()
+        if ctype:
+            object_model = ctype.__name__
+        else:
+            object_model = None
         if self.ruleset:
             if self.action in ["disable", "enable"]:
                 return "%s on ruleset '%s' for %s '%s' by user '%s'" % (self.action, self.ruleset, object_model, self.userobject, self.username) 
@@ -835,6 +839,7 @@ class Rule(models.Model, Transformable):
     rev = models.IntegerField(default=0)
     content = models.CharField(max_length=10000)
     flowbits = models.ManyToManyField(Flowbit)
+    actions = GenericRelation(UserAction)
 
     hits = 0
 
@@ -851,6 +856,10 @@ class Rule(models.Model, Transformable):
             rules_dep = Rule.objects.filter(category = self.category, flowbits = flowbit)
             rules |= set(rules_dep)
         return rules
+
+    def get_comments(self):
+        return self.actions.filter(action = "comment")
+        #return UserAction.objects.filter(action = "comment", userobject = self)
 
     def enable(self, ruleset, user = None, comment = None):
         enable_rules = self.get_flowbits_group()

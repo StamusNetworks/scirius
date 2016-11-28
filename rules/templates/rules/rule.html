@@ -1,5 +1,6 @@
 {% extends "rules/base.html" %}
 {% load staticfiles %}
+{% load bootstrap3  %}
 
 {% block sidebar %}
 <div class="panel-heading">
@@ -112,7 +113,8 @@
     {% if suricata_stats %}
     <li role="presentation" class="active"><a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Rule stats</a></li>
     {% endif %}
-    <li role="presentation"><a href="#rule_status" aria-controls="rule_status" role="tab" data-toggle="tab">Rules info</a></li>
+     <li role="presentation"><a href="#rule_status" aria-controls="rule_status" role="tab" data-toggle="tab">Rules info</a></li>
+   <li role="presentation"><a href="#rule_comments" aria-controls="rule_comments" role="tab" data-toggle="tab">Rules comment(s)</a></li>
   </ul>
 
  <div class="tab-content">
@@ -332,10 +334,44 @@
 </div> <!-- row -->
 {% endif %}
 
+
 {% if elasticsearch %}
 </div>
 </div>
+
 </div>
+
+<div role="tabpanel" class="tab-pane fade in" id="rule_comments">
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-6">
+<h3 class="title">Comment(s)</h3> 
+<div id="comments">
+<dl>
+{% for comment in rule.get_comments %}
+       <dt>By {{ comment.username }} at {{ comment.date }}:</dt>
+                <dd>
+                {{ comment.comment }} 
+                </dd>
+       </li>
+{% endfor %}
+</dl>
+</div>
+
+<h3 class="title">Add comment</h3>
+<form class="form" action="{% url 'comment_rule' rule.pk %}" method="post">
+    {% csrf_token %}
+    {% bootstrap_form comment_form %}
+    {% buttons %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "ok" %} Submit
+        </button>
+    {% endbuttons %}
+</form>
+</div>
+</div>
+</div>
+</div> <!-- tabpanel -->
 
  <script>
 

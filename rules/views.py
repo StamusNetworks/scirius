@@ -356,7 +356,8 @@ def rule(request, rule_id, key = 'pk'):
             rule_transformations = True
         rulesets_status.append(ruleset_info)
 
-    context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status, 'rule_transformations': rule_transformations }
+    comment_form = RuleCommentForm()
+    context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status, 'rule_transformations': rule_transformations, 'comment_form': comment_form}
     thresholds = Threshold.objects.filter(rule = rule, threshold_type = 'threshold')
     if thresholds:
         thresholds = RuleThresholdTable(thresholds)
@@ -538,6 +539,17 @@ def delete_alerts(request, rule_id):
             pass
         complete_context(request, context)
         return scirius_render(request, 'rules/delete_alerts.html', context)
+
+def comment_rule(request, rule_id):
+    rule_object = get_object_or_404(Rule, sid=rule_id)
+
+    if request.method == 'POST': # If the form has been submitted...
+        form = RuleCommentForm(request.POST)
+        if form.is_valid():
+            ua = UserAction(action='comment',username = request.user.username, userobject = rule_object)
+            ua.comment = form.cleaned_data['comment']
+            ua.save()
+    return redirect(rule_object)
 
 def toggle_availability(request, rule_id):
     rule_object = get_object_or_404(Rule, sid=rule_id)

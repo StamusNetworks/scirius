@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django import forms
 from django.utils import timezone
 from django.conf import settings
-from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold
+from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold, UserAction
 
 class RulesetChoiceForm(forms.Form):
     rulesets_label = "Add object to the following ruleset(s)"
@@ -159,3 +159,6 @@ class TransformForm(forms.Form):
                         widget=forms.CheckboxSelectMultiple(),
                         label = "Apply transformation(s) to the following ruleset(s)",
                         required = False)
+
+class RuleCommentForm(forms.Form):
+    comment = forms.CharField(widget = forms.Textarea)
