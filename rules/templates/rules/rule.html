@@ -351,7 +351,7 @@
 <div id="comments">
 <dl>
 {% for comment in rule.get_comments %}
-       <dt>By {{ comment.username }} at {{ comment.date }}:</dt>
+       <dt>{{ comment.username }} commented at {{ comment.date }}</dt>
                 <dd>
                 {{ comment.comment }} 
                 </dd>
