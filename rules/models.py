@@ -94,8 +94,13 @@ class UserAction(models.Model):
             self.description = self.generate_description()
 
     def generate_description(self):
-        object_model = self.content_type.model_class()
-        return "%s on %s '%s' by user '%s'" % (self.action, object_model, self.userobject, self.username) 
+        object_model = self.content_type.model_class().__name__
+        if self.ruleset:
+            if self.action in ["disable", "enable"]:
+                return "%s on ruleset '%s' for %s '%s' by user '%s'" % (self.action, self.ruleset, object_model, self.userobject, self.username) 
+            return "%s on %s '%s' by user '%s'" % (self.action, object_model, self.userobject, self.username) 
+        else:
+            return "%s on %s '%s' by user '%s'" % (self.action, object_model, self.userobject, self.username) 
 
 class SystemSettings(models.Model):
     use_http_proxy = models.BooleanField(default=False)
