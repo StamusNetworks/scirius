@@ -180,4 +180,4 @@ class RulesetThresholdTable(tables.Table):
 class HistoryTable(tables.Table):
     class Meta(DefaultMeta):
         model = UserAction
-        fields = ("username", "date", "action", "userobject", "ruleset", "description", "comment")
+        fields = ("username", "date", "action", "options", "userobject", "ruleset", "description", "comment")

@@ -388,20 +388,29 @@ def transform_rule(request, rule_id):
         if form.is_valid(): # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
             for ruleset in Ruleset.objects.all():
+                ua = None
                 if ruleset in rulesets:
                     if form.cleaned_data["type"] == "reject" and not rule_object.is_reject(ruleset):
                         rule_object.toggle_reject(ruleset)
+                        ua = UserAction(action='enable', options='reject', username = request.user.username, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "drop" and not rule_object.is_drop(ruleset):
                         rule_object.toggle_drop(ruleset)
+                        ua = UserAction(action='enable', options='drop', username = request.user.username, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "filestore" and not rule_object.is_filestore(ruleset):
                         rule_object.toggle_filestore(ruleset)
+                        ua = UserAction(action='enable', options='filestore', username = request.user.username, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                 else:
                     if form.cleaned_data["type"] == "reject" and rule_object.is_reject(ruleset):
                         rule_object.toggle_reject(ruleset)
+                        ua = UserAction(action='disable', options='reject', username = request.user.username, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "drop" and rule_object.is_drop(ruleset):
                         rule_object.toggle_drop(ruleset)
+                        ua = UserAction(action='disable', options='drop', username = request.user.username, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "filestore" and rule_object.is_filestore(ruleset):
                         rule_object.toggle_filestore(ruleset)
+                        ua = UserAction(action='disable', options='filestore', username = request.user.username, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                if ua:
+                    ua.save()
         return redirect(rule_object)
 
     form = TransformForm(initial = { 'type' : 'drop'})
@@ -437,20 +446,29 @@ def transform_category(request, cat_id):
         if form.is_valid(): # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
             for ruleset in Ruleset.objects.all():
+                ua = None
                 if ruleset in rulesets:
                     if form.cleaned_data["type"] == "reject" and not cat_object.is_reject(ruleset):
                         cat_object.toggle_reject(ruleset)
+                        ua = UserAction(action='enable', options='reject', username = request.user.username, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "drop" and not cat_object.is_drop(ruleset):
                         cat_object.toggle_drop(ruleset)
+                        ua = UserAction(action='enable', options='drop', username = request.user.username, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "filestore" and not cat_object.is_filestore(ruleset):
+                        ua = UserAction(action='enable', options='filestore', username = request.user.username, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                         cat_object.toggle_filestore(ruleset)
                 else:
                     if form.cleaned_data["type"] == "reject" and cat_object.is_reject(ruleset):
                         cat_object.toggle_reject(ruleset)
+                        ua = UserAction(action='disable', options='reject', username = request.user.username, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "drop" and cat_object.is_drop(ruleset):
                         cat_object.toggle_drop(ruleset)
+                        ua = UserAction(action='disable', options='drop', username = request.user.username, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "filestore" and cat_object.is_filestore(ruleset):
                         cat_object.toggle_filestore(ruleset)
+                        ua = UserAction(action='disable', options='filestore', username = request.user.username, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                if ua:
+                    ua.save()
         return redirect(cat_object)
 
     form = TransformForm(initial = { 'type' : 'drop'})
@@ -532,7 +550,7 @@ def delete_alerts(request, rule_id):
                         pass
                     return scirius_render(request, 'rules/delete_alerts.html', context)
             messages.add_message(request, messages.INFO, "Events deletion may be in progress, graphics and stats could be not in sync.");
-            ua = UserAction(action='delete_alerts', username = request.user.username, userobject = rule_object)
+            ua = UserAction(action='delete', options='alerts', username = request.user.username, userobject = rule_object)
             ua.comment = form.cleaned_data['comment']
             ua.save()
         return redirect(rule_object)

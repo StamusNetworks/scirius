@@ -131,18 +131,9 @@ class EditThresholdForm(forms.ModelForm):
         model = Threshold
         exclude = ['pk', 'rule']
 
-class TransformForm(forms.Form):
+class TransformForm(RulesetChoiceForm):
+    rulesets_label = "Apply transformation(s) to the following ruleset(s)"
     type = forms.ChoiceField(settings.RULESET_TRANSFORMATIONS)
-
-    def __init__(self, *args, **kwargs):
-        super(TransformForm, self).__init__(*args, **kwargs)
-        ruleset_list =  Ruleset.objects.all()
-        if len(ruleset_list):
-            self.fields['rulesets'] = forms.ModelMultipleChoiceField(
-                        ruleset_list,
-                        widget=forms.CheckboxSelectMultiple(),
-                        label = "Apply transformation(s) to the following ruleset(s)",
-                        required = False)
 
 class RuleCommentForm(forms.Form):
     comment = forms.CharField(widget = forms.Textarea)
