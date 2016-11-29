@@ -849,13 +849,19 @@ def delete_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
 
     if not request.user.is_staff:
-        return scirius_render(request, 'rules/delete.html', { 'error': 'Unsufficient permissions' })
+        return scirius_render(request, 'rules/delete.html', { 'error': 'Unsufficient permissions' }, 'form': RuleCommentForm() )
 
     if request.method == 'POST': # If the form has been submitted...
-        source.delete()
+        form = RuleCommentForm(request.POST)
+        if form.is_valid():
+            ua = UserAction(action='delete', username = request.user.username, userobject = source)
+            ua.comment = form.cleaned_data['comment']
+            ua.options = 'source'
+            ua.save()
+            source.delete()
         return redirect("/rules/source/")
     else:
-        context = {'object': source, 'delfn': 'delete_source' }
+        context = {'object': source, 'delfn': 'delete_source', 'form': RuleCommentForm()}
         return scirius_render(request, 'rules/delete.html', context)
 
 def sourceupdate(request, update_id):
@@ -1097,14 +1103,19 @@ def delete_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
 
     if not request.user.is_staff:
-        context = { 'object': ruleset, 'error': 'Unsufficient permissions' }
+        context = { 'object': ruleset, 'error': 'Unsufficient permissions', 'form': RuleCommentForm()  }
         return scirius_render(request, 'rules/delete.html', context)
 
     if request.method == 'POST': # If the form has been submitted...
-        ruleset.delete()
+        if form.is_valid():
+            ua = UserAction(action='delete', username = request.user.username, userobject = ruleset)
+            ua.comment = form.cleaned_data['comment']
+            ua.options = 'ruleset'
+            ua.save()
+            ruleset.delete()
         return redirect("/rules/ruleset/")
     else:
-        context = {'object': ruleset, 'delfn': 'delete_ruleset' }
+        context = {'object': ruleset, 'delfn': 'delete_ruleset', 'form': RuleCommentForm()}
         return scirius_render(request, 'rules/delete.html', context)
 
 def copy_ruleset(request, ruleset_id):
@@ -1247,14 +1258,21 @@ def delete_threshold(request, threshold_id):
     threshold = get_object_or_404(Threshold, pk=threshold_id)
     ruleset = threshold.ruleset
     if not request.user.is_staff:
-        context = { 'object': threshold, 'error': 'Unsufficient permissions' }
+        context = { 'object': threshold, 'error': 'Unsufficient permissions', 'form': RuleCommentForm() }
         return scirius_render(request, 'rules/delete.html', context)
 
     if request.method == 'POST': # If the form has been submitted...
-        threshold.delete()
+        form = RuleCommentForm(request.POST)
+        if form.is_valid():
+            ua = UserAction(action='delete', username = request.user.username, userobject = threshold)
+            ua.ruleset = ruleset
+            ua.options = 'threshold'
+            ua.comment = form.cleaned_data['comment']
+            ua.save()
+            threshold.delete()
         return redirect(ruleset)
     else:
-        context = {'object': threshold, 'delfn': 'delete_threshold' }
+        context = {'object': threshold, 'delfn': 'delete_threshold', 'form': RuleCommentForm() }
         return scirius_render(request, 'rules/delete.html', context)
 
 def history(request):

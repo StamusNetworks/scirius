@@ -81,7 +81,7 @@ class UserAction(models.Model):
     ruleset = models.ForeignKey('Ruleset', default = None, on_delete = models.SET_NULL, null = True, blank = True)
     username = models.CharField(max_length=100)
     action = models.CharField(max_length=12, choices = ACTION_TYPE)
-    options = models.CharField(max_length=1000, blank = True, default = None)
+    options = models.CharField(max_length=1000, blank = True, default = None, null = True)
     description = models.CharField(max_length=500, null = True)
     comment = models.TextField(null = True, blank = True)
     date = models.DateTimeField('event date', default = timezone.now)
