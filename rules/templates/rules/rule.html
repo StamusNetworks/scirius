@@ -91,6 +91,7 @@
 <div class="panel-heading">
 <h2 class="panel-title">References</h2>
 </div>
+<div class="panel-body">
 <ul>
 {% for ref in references %}
 <li>
@@ -102,6 +103,17 @@
 </li>
 {% endfor %}
 </ul>
+</div>
+{% if rule.get_comments %}
+<div class="panel-heading">
+<h2 class="panel-title">Information</h2>
+</div>
+<div class="panel-body">
+{% if rule.get_comments %}
+Comment <span class="badge">{{ rule.get_comments|length }}</span>
+{% endif %}
+</div>
+{% endif %}
 </div> <!-- panel -->
 {% endif %}
 </div> <!-- col -->
@@ -349,6 +361,7 @@
 <div class="col-md-6">
 <h3 class="title">Comment(s)</h3> 
 <div id="comments">
+{% if rule.get_comments %}
 <dl>
 {% for comment in rule.get_comments %}
        <dt>{{ comment.username }} commented at {{ comment.date }}</dt>
@@ -358,6 +371,11 @@
        </li>
 {% endfor %}
 </dl>
+{% else %}
+
+No comment.
+
+{% endif %}
 </div>
 
 <h3 class="title">Add comment</h3>
