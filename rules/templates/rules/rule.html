@@ -362,15 +362,10 @@ Comment <span class="badge">{{ rule.get_comments|length }}</span>
 <h3 class="title">Comment(s)</h3> 
 <div id="comments">
 {% if rule.get_comments %}
-<dl>
 {% for comment in rule.get_comments %}
-       <dt>{{ comment.username }} commented at {{ comment.date }}</dt>
-                <dd>
-                {{ comment.comment }} 
-                </dd>
-       </li>
+<p><strong>{{ comment.username }} commented at {{ comment.date }}</strong></p>
+<p>{{ comment.comment }}</p>
 {% endfor %}
-</dl>
 {% else %}
 
 No comment.
