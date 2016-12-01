@@ -849,7 +849,7 @@ def delete_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
 
     if not request.user.is_staff:
-        return scirius_render(request, 'rules/delete.html', { 'error': 'Unsufficient permissions' }, 'form': RuleCommentForm() )
+        return scirius_render(request, 'rules/delete.html', { 'error': 'Unsufficient permissions'})
 
     if request.method == 'POST': # If the form has been submitted...
         form = RuleCommentForm(request.POST)
