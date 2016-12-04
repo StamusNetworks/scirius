@@ -55,8 +55,9 @@
 				{% endfor %}
 				{% endif %}
 			{% endblock %}
-            {% if request.user.is_superuser %}
  			<li role="presentation" class="divider"></li>
+                        <li><a href="{% url 'history' %}" >{% bootstrap_icon "time"%} Actions history</a></li>
+            {% if request.user.is_superuser %}
                         <li><a href="{% url 'accounts_manage' '' %}" >{% bootstrap_icon "user"%} Manage accounts</a></li>
             {% endif %}
             <li role="presentation" class="divider"></li>
