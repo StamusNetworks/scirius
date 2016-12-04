@@ -1276,7 +1276,7 @@ def delete_threshold(request, threshold_id):
         return scirius_render(request, 'rules/delete.html', context)
 
 def history(request):
-    useractions = HistoryTable(UserAction.objects.all())
+    useractions = HistoryTable(UserAction.objects.all().order_by('-date'))
     tables.RequestConfig(request).configure(useractions)
     context = {'table': useractions}
     return scirius_render(request, 'rules/history.html', context)
