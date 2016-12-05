@@ -817,6 +817,7 @@ class Category(models.Model, Transformable):
         ruleset.save()
         if user:
             ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', username = user.username, date = timezone.now(), comment = comment)
+            ua.options = "category"
             ua.save()
 
     def disable(self, ruleset, user = None, comment = None):
@@ -825,6 +826,7 @@ class Category(models.Model, Transformable):
         ruleset.save()
         if user:
             ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', username = user.username, date = timezone.now(), comment = comment)
+            ua.options = "category"
             ua.save()
 
     def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
@@ -890,6 +892,7 @@ class Rule(models.Model, Transformable):
         ruleset.enable_rules(enable_rules)
         if user:
             ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', username = user.username, date = timezone.now(), comment = comment)
+            ua.options = "rule"
             ua.save()
         return
 
@@ -900,6 +903,7 @@ class Rule(models.Model, Transformable):
         ruleset.disable_rules(disable_rules)
         if user:
             ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', username = user.username, date = timezone.now(), comment = comment)
+            ua.options = "rule"
             ua.save()
         return
 
