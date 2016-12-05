@@ -814,6 +814,18 @@ def add_source(request):
             except:
                 ruleset_list = []
             rulesets = [ ruleset.pk for ruleset in ruleset_list ]
+            if len(ruleset_list):
+                for ruleset in ruleset_list:
+                    ua = UserAction(action='create', username = request.user.username, userobject = source)
+                    ua.comment = form.cleaned_data['comment']
+                    ua.ruleset = ruleset
+                    ua.options = 'source'
+                    ua.save()
+            else:
+                ua = UserAction(action='create', username = request.user.username, userobject = source)
+                ua.comment = form.cleaned_data['comment']
+                ua.options = 'source'
+                ua.save()
             ruleset_list = [ '"' + ruleset.name + '"' for ruleset in ruleset_list ]
             return scirius_render(request, 'rules/add_source.html', { 'source': src,  'update': True, 'rulesets': rulesets, 'ruleset_list': ruleset_list})
     else:
