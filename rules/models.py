@@ -540,6 +540,24 @@ class SourceAtVersion(models.Model):
 
     name = property(_get_name)
 
+    def enable(self, ruleset, user = None, comment = None):
+        ruleset.sources.add(self)
+        ruleset.needs_test()
+        ruleset.save()
+        if user:
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', username = user.username, date = timezone.now(), comment = comment)
+            ua.options = "source"
+            ua.save()
+
+    def disable(self, ruleset, user = None, comment = None):
+        ruleset.sources.remove(self)
+        ruleset.needs_test()
+        ruleset.save()
+        if user:
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', username = user.username, date = timezone.now(), comment = comment)
+            ua.options = "source"
+            ua.save()
+
     def export_files(self, directory):
         self.source.export_files(directory, self.version)
 

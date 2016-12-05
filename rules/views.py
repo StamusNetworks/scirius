@@ -1052,12 +1052,14 @@ def edit_ruleset(request, ruleset_id):
                     rule_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
         elif request.POST.has_key('sources'):
             # clean ruleset
-            ruleset.sources.clear()
-            # add updated entries
+            for source in ruleset.sources.all():
+                if source.pk not in request.POST.getlist('source_selection'):
+                    source.disable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
+            # add new entries
             for src in request.POST.getlist('source_selection'):
                 source = get_object_or_404(SourceAtVersion, pk=src)
-                ruleset.sources.add(source)
-            ruleset.needs_test()
+                if source not in ruleset.sources.all():
+                    source.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
         else:
             form = RulesetEditForm(request.POST, instance=ruleset)
             if form.is_valid():
