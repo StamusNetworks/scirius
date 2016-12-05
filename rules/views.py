@@ -583,6 +583,10 @@ def toggle_availability(request, rule_id):
         return scirius_render(request, 'rules/rule.html', context)
 
     rule_object.toggle_availability()
+    ua = UserAction(action='modify', username = request.user.username, userobject = rule_object)
+    ua.options = 'rule availability'
+    ua.comment = form.cleaned_data['comment']
+    ua.save()
 
     return redirect(rule_object)
 
@@ -849,6 +853,10 @@ def edit_source(request, source_id):
                     firstimport = True
                 source.new_uploaded_file(request.FILES['file'], firstimport)
             form.save()
+            ua = UserAction(action='modify', username = request.user.username, userobject = source)
+            ua.comment = form.cleaned_data['comment']
+            ua.options = 'source'
+            ua.save()
             return redirect(source)
         except ValueError:
             pass
@@ -1275,6 +1283,11 @@ def edit_threshold(request, threshold_id):
         form = EditThresholdForm(request.POST, instance=threshold) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
             form.save()
+            ua = UserAction(action='modify', username = request.user.username, userobject = threshold)
+            ua.comment = form.cleaned_data['comment']
+            ua.options = 'threshold'
+            ua.ruleset = threshold.ruleset
+            ua.save()
             return redirect(threshold)
         else:
             context = {'threshold': threshold, 'form': form, 'error': 'Invalid form'}            
