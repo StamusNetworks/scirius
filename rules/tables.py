@@ -28,7 +28,7 @@ class RuleTable(tables.Table):
     sid = tables.LinkColumn('rule', args=[tables.A('pk')])
     class Meta(DefaultMeta):
         model = Rule
-        fields = ("sid", "msg")
+        fields = ("sid", "msg", "updated_date")
 
 class ExtendedRuleTable(tables.Table):
     sid = tables.LinkColumn('rule', args=[tables.A('pk')])

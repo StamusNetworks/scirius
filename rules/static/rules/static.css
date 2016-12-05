@@ -10,9 +10,11 @@ table.paleblue {
     width: 100%;
 }
 
+/*
 td.msg {
     width: 100%;
 }
+*/
 
 body {
     background: white;
@@ -440,4 +442,8 @@ div.status ul li span.pull-right {
   padding: 5px;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.updated_date {
+  width: 12em;
 }
