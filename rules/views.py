@@ -969,6 +969,11 @@ def add_ruleset(request):
             # ...
             try:
                 ruleset = form.create_ruleset()
+                ua = UserAction(action='create', username = request.user.username, userobject = copy)
+                ua.comment = form.cleaned_data['comment']
+                ua.options = 'ruleset'
+                ua.ruleset = ruleset
+                ua.save()
             except IntegrityError, error:
                 return scirius_render(request, 'rules/add_ruleset.html', { 'form': form, 'error': error })
             return redirect(ruleset)
@@ -1106,6 +1111,10 @@ def ruleset_add_supprule(request, ruleset_id):
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
                 rule_object.disable(ruleset, user = request.user)
+                ua = UserAction(action='disable', username = request.user.username, userobject = rule_object)
+                ua.comment = form.cleaned_data['comment']
+                ua.ruleset = ruleset
+                ua.save()
             ruleset.save()
         return redirect(ruleset)
     context = { 'ruleset': ruleset }
@@ -1141,6 +1150,11 @@ def copy_ruleset(request, ruleset_id):
         form = RulesetCopyForm(request.POST) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
             copy = ruleset.copy(form.cleaned_data['name'])
+            ua = UserAction(action='create', username = request.user.username, userobject = copy)
+            ua.comment = form.cleaned_data['comment']
+            ua.options = 'ruleset'
+            ua.ruleset = copy
+            ua.save()
             return redirect(copy)
     else:
         form = RulesetCopyForm()
