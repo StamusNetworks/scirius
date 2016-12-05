@@ -365,8 +365,10 @@ Comment <span class="badge">{{ rule.get_comments|length }}</span>
 <div id="comments">
 {% if rule.get_comments %}
 {% for comment in rule.get_comments %}
-<p><strong>{{ comment.username }} commented at {{ comment.date }}</strong></p>
+<div class="comment">
+<p><strong>{{ comment.username }}</strong> commented at {{ comment.date }}</p>
 <p>{{ comment.comment }}</p>
+</div>
 {% endfor %}
 {% else %}
 

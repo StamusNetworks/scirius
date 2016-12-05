@@ -434,3 +434,10 @@ div.status ul li span.pull-right {
 .alert-trends-box span {
   font-size: 125%;
 }
+
+.comment {
+  margin-top: 5px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
