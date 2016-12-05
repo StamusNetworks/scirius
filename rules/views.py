@@ -1037,17 +1037,19 @@ def edit_ruleset(request, ruleset_id):
         # ID is unique so we can just look by indice and add
         if request.POST.has_key('category'):
             # clean ruleset
-            ruleset.categories.clear()
+            for cat in ruleset.categories.all():
+                if cat.pk not in request.POST.getlist('category_selection'):
+                    cat.disable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
             # add updated entries
             for cat in request.POST.getlist('category_selection'):
                 category = get_object_or_404(Category, pk=cat)
-                ruleset.categories.add(category)
-            ruleset.needs_test()
+                if category not in ruleset.categories.all():
+                    category.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
         elif request.POST.has_key('rules'):
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
-                rule_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
-            ruleset.needs_test()
+                if rule_object in ruleset.disabled_rules:
+                    rule_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
         elif request.POST.has_key('sources'):
             # clean ruleset
             ruleset.sources.clear()
