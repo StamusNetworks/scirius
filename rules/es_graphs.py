@@ -53,7 +53,7 @@ TOP_QUERY = """
                   "should": [
                     {
                       "query_string": {
-                        "query": "event_type:alert AND host.{{ keyword }}:{{ appliance_hostname }} {{ query_filter|safe }}"
+                        "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ appliance_hostname }} {{ query_filter|safe }}"
                       }
                     }
                   ]
@@ -102,7 +102,7 @@ if settings.ELASTICSEARCH_VERSION >= 2:
     "bool": {
       "must": [ {
         "query_string": {
-          "query": "event_type:alert AND host.{{ keyword }}:{{ appliance_hostname }} {{ query_filter|safe }}",
+          "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ appliance_hostname }} {{ query_filter|safe }}",
           "analyze_wildcard": false
         }
       }, 
@@ -125,7 +125,7 @@ SID_BY_HOST_QUERY = """
   "facets": {
     "terms": {
       "terms": {
-        "field": "host.{{ keyword }}",
+        "field": "{{ hostname }}.{{ keyword }}",
         "size": {{ alerts_number }},
         "order": "count",
         "exclude": []
@@ -176,7 +176,7 @@ if settings.ELASTICSEARCH_VERSION >= 2:
   "aggs": {
     "host": {
       "terms": {
-        "field": "host.{{ keyword }}",
+        "field": "{{ hostname }}.{{ keyword }}",
         "size": {{ alerts_number }},
         "order": {
           "_count": "desc"
@@ -223,7 +223,7 @@ TIMELINE_QUERY = """
             "filtered": {
               "query": {
                 "query_string": {
-                  "query": "event_type:alert AND host.{{ keyword }}:{{ host }} {{ query_filter|safe }}"
+                  "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ host }} {{ query_filter|safe }}"
                 }
               },
               "filter": {
@@ -285,7 +285,7 @@ if settings.ELASTICSEARCH_VERSION >= 2:
       "aggs": {
         "host": {
           "terms": {
-            "field": "host.{{ keyword }}",
+            "field": "{{ hostname }}.{{ keyword }}",
             "size": 5,
             "order": {
               "_count": "desc"
@@ -317,7 +317,7 @@ STATS_QUERY = """
             "filtered": {
               "query": {
                 "query_string": {
-                  "query": "host.{{ keyword }}:{{ host }}"
+                  "query": "{{ hostname }}.{{ keyword }}:{{ host }}"
                 }
               },
               "filter": {
@@ -417,7 +417,7 @@ if settings.ELASTICSEARCH_VERSION >= 2:
         "query_string": {
       {% if hosts %}
           {% for host in hosts %}
-          "query": "host.{{ keyword }}:{{ host }}",
+          "query": "{{ hostname }}.{{ keyword }}:{{ host }}",
           {% endfor %}
       {% else %}
           "query": "tags:metric",
@@ -478,7 +478,7 @@ RULES_PER_CATEGORY = """
               }
             },
             { "query_string": {
-              "query": "event_type:alert AND host.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+              "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
               "analyze_wildcard": true
               }
             }
@@ -503,7 +503,7 @@ ALERTS_COUNT_PER_HOST = """
             }
             ,{
         "query_string": {
-          "query": "event_type:alert AND host.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+          "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
           "analyze_wildcard": true
         }
       }
@@ -546,7 +546,7 @@ ALERTS_TREND_PER_HOST = """
             }
             ,{
         "query_string": {
-          "query": "event_type:alert AND host.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+          "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
           "analyze_wildcard": true
         }
       }
@@ -579,7 +579,7 @@ LATEST_STATS_ENTRY = """
             }
         ,{
             "query_string": {
-              "query": "event_type:stats AND host.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+              "query": "event_type:stats AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
               "analyze_wildcard": true
             }
         }
@@ -658,6 +658,7 @@ def render_template(tmpl, dictionary, qfilter = None):
         query_filter = " AND " + qfilter
         context['query_filter'] = re.sub('"','\\"', query_filter)
     context['keyword'] = settings.ELASTICSEARCH_KEYWORD
+    context['hostname'] = settings.ELASTICSEARCH_HOSTNAME
     return templ.render(context)
 
 def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None):

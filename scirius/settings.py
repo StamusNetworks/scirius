@@ -125,6 +125,8 @@ ELASTICSEARCH_LOGSTASH_TIMESTAMPING = "daily"
 ELASTICSEARCH_VERSION = 2
 # Extension used for complete field (usually "raw" or "keyword")
 ELASTICSEARCH_KEYWORD = "raw"
+# Hostname field (usually "hostname" or "host")
+ELASTICSEARCH_HOSTNAME = "host"
 
 # Kibana
 USE_KIBANA = False
