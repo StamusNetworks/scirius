@@ -1,22 +1,7 @@
 {% extends "rules/base.html" %}
 {% load staticfiles %}
 
-{% block body %}
-<body onload="differentiate_suppressed();" />
-{% endblock %}
-
 {% block content %}
-
-<script language="JavaScript">
-function differentiate_suppressed() {
-    var arr = [{{ suppressed }}];
-    $(".sid").each(function() {
-        if (jQuery.inArray(parseInt($( this ).text(), 10), arr) != -1)
-            $( this ).addClass("suppressed")
-    })
-}
-
-</script>
 
 {% if elasticsearch %}
 
@@ -466,27 +451,36 @@ function differentiate_suppressed() {
 
 
 <script>
-$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null); });
-
-$( 'document' ).ready(load_rules({{ from_date }},  [ '{{ suricata.name }}'], null));
+function differentiate_suppressed() {
+    var suppressed_rules = [{{ suppressed }}];
+    $("td.sid").each(
+        function() {
+            if (jQuery.inArray(parseInt($( this ).text(), 10), suppressed_rules) != -1) {
+                $( this ).addClass("suppressed");
+            }
+        }
+    );
+}
 
 $( 'document' ).ready(function () {
-        {{ draw_func }}({{ from_date }}, [{% autoescape off %} "{{ suricata.name }}" {% endautoescape %}], null,
-          function() {
-            $('{{ draw_elt }}').mouseover(function(){
-                var d = this.__data__;
-                if (d.children == undefined) {
-                    $( "#rules_table a:contains('" +d.key +"')" ).parent().parent().addClass('overed');
-                }
-            });
-            $('{{ draw_elt }}').mouseout(function(){
-                var d = this.__data__;
-                if (d.children == undefined) {
-                    $( "#rules_table a:contains('" +d.key +"')" ).parent().parent().removeClass('overed');
-                }
-            });
-          }
-        );
+    draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null);
+    load_rules({{ from_date }},  [ '{{ suricata.name }}'], null, differentiate_suppressed);
+    {{ draw_func }}({{ from_date }}, [{% autoescape off %} "{{ suricata.name }}" {% endautoescape %}], null,
+      function() {
+        $('{{ draw_elt }}').mouseover(function(){
+            var d = this.__data__;
+            if (d.children == undefined) {
+                $( "#rules_table a:contains('" +d.key +"')" ).parent().parent().addClass('overed');
+            }
+        });
+        $('{{ draw_elt }}').mouseout(function(){
+            var d = this.__data__;
+            if (d.children == undefined) {
+                $( "#rules_table a:contains('" +d.key +"')" ).parent().parent().removeClass('overed');
+            }
+        });
+      }
+    );
 });
 
 
