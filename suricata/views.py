@@ -36,6 +36,7 @@ from rules.models import dependencies_check
 from forms import *
 
 from rules.views import complete_context
+from rules.es_graphs import es_get_ippair_alerts
 
 from django.conf import settings
 if settings.USE_ELASTICSEARCH:
@@ -153,3 +154,8 @@ def update(request):
         return scirius_render(request, 'suricata/update.html', context)
     else:
         return scirius_render(request, 'suricata/update.html', { 'suricata': suri })
+
+
+def dashboard(request):
+    context = {'data': es_get_ippair_alerts(from_date = 0, hosts = ["*"]) }
+    return scirius_render(request, 'suricata/dashboard.html', context)
