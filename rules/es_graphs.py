@@ -27,6 +27,7 @@ import requests
 import json
 from time import time, mktime
 import re
+import math
 
 from rules.models import get_es_address, get_es_path
 
@@ -598,6 +599,67 @@ LATEST_STATS_ENTRY = """
 }
 """
 
+IPPPAIR_ALERTS_COUNT = """
+{
+  "size": 0,
+  "query": {
+    "filtered": {
+      "query": {
+        "query_string": {
+          "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+          "analyze_wildcard": true
+        }
+      },
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "timestamp": {
+                  "gte": {{ from_date }}
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "aggs": {
+        "src_ip": {
+          "terms": {
+            "field": "src_ip.raw",
+            "size": 20,
+            "order": {
+              "_count": "desc"
+            }
+          },
+          "aggs": {
+            "dest_ip": {
+              "terms": {
+                "field": "dest_ip.raw",
+                "size": 20,
+                "order": {
+                  "_count": "desc"
+                }
+            }, "aggs": {
+                "alerts": {
+                    "terms": {
+                        "field": "alert.signature.raw",
+                        "size": 20,
+                        "order": {
+                            "_count": "desc"
+                        }
+                    }
+                }
+             }
+           }
+        }
+    }
+  }
+}
+"""
+
 DASHBOARDS_QUERY_URL = "/%s/dashboard/_search?size=" % settings.KIBANA_INDEX
 HEALTH_URL = "/_cluster/health"
 STATS_URL = "/_cluster/stats"
@@ -1015,6 +1077,41 @@ def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
+    try:
+        return data['hits']['hits'][0]['_source']
+    except:
+        return None
+
+def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
+    data = render_template(IPPPAIR_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts[0]})
+    es_url = get_es_url(from_date)
+    req = urllib2.Request(es_url, data)
+    try:
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
+    except Exception, e:
+        return "BAM: " + str(e)
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    raw_data = data['aggregations']['src_ip']['buckets']
+    nodes = []
+    ip_list = []
+    links = []
+    for src_ip in raw_data:
+        if ':' in src_ip['key']:
+            group = 6
+        else:
+            group = 4
+        if not src_ip['key'] in ip_list:
+            nodes.append({'id': src_ip['key'], 'group': group})
+            ip_list.append(src_ip['key'])
+        for dest_ip in src_ip['dest_ip']['buckets']:
+            if not dest_ip['key'] in ip_list:
+                nodes.append({'id': dest_ip['key'], 'group': group})
+                ip_list.append(dest_ip['key'])
+            links.append({'source': src_ip['key'], 'target': dest_ip['key'], 'value': math.ceil(dest_ip['doc_count']/100), 'alerts': dest_ip['alerts']['buckets']})
+    #nodes = set(nodes)
+    return json.dumps({'nodes': nodes, 'links': links})
     try:
         return data['hits']['hits'][0]['_source']
     except:
