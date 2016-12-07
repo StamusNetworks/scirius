@@ -40,12 +40,28 @@
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-12">
+<div class="pull-left">
 <form class="form" method="post">
 {% csrf_token %}
 			<span class="glyphicon glyphicon-search"> Filter: <input type="text" name="filter" id="id_filter" {% if filter %}value="{{ filter }}" {% endif %} width="20" /></span>
 </form>
+</div>
+<div class="pull-right">
+<div class="btn-group">
+Reload {{ reload }} 
+<a  class="dropdown-toggle" type="button" id="display_reload" data-toggle="dropdown">
+<span class="glyphicon glyphicon-refresh"> </span>
+</a>
+<ul class="dropdown-menu" id="display_reload">
+   <li><a href="?reload=30">30s</a></li>
+   <li><a href="?reload=60">1m</a></li>
+   <li><a href="?reload=120">2m</a></li>
+   <li><a href="?reload=300">5m</a></li>
+   <li><a href="?reload=600">10m</a></li>
+</ul>
+</div>
 
-<span class="pull-right">
+<div class="btn-group">
 Last {{ date }} 
 <a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
 <span class="glyphicon glyphicon-cog"> </span>
@@ -57,7 +73,8 @@ Last {{ date }}
    <li><a href="?duration=48">Last 2d</a></li>
    <li><a href="?duration=168">Last 7d</a></li>
 </ul>
-</span>
+</div>
+</div>
 
 </div>
 </div>
@@ -129,8 +146,8 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
         var color = d3.scale.category20b();
         
         var force = d3.layout.force()
-            .gravity(0.03)
-            .distance(50)
+            .gravity(0.06)
+            .distance(70)
             .charge(-50)
             .size([width, height]);
         
@@ -204,6 +221,9 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
 
 
 $( 'document' ).ready(function () { draw_ippair_alerts({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "{{ filter }}"); });
+
+setTimeout(function () { location.reload(); }, {{ reload }} * 1000);
+
 </script>
 
 </body>

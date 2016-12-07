@@ -163,4 +163,13 @@ def dashboard(request):
     context['probes'] = ("'"+ suri.name + "'",)
     if request.method == 'POST' and request.POST.has_key('filter'):
         context['filter'] = request.POST['filter']
+        request.session['filter'] =  request.POST['filter']
+    else:
+        context['filter'] = request.session.get('filter', '*')
+    if request.GET.__contains__('reload'):
+        reload = int(request.GET.get('reload', '300'))
+        request.session['reload'] = reload
+    else:
+        reload = int(request.session.get('reload', '300'))
+    context['reload'] = reload
     return scirius_render(request, 'suricata/dashboard.html', context)
