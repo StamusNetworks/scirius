@@ -127,7 +127,7 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
         var color = d3.scale.category20b();
         
         var force = d3.layout.force()
-            .gravity(0.05)
+            .gravity(0.02)
             .distance(100)
             .charge(-50)
             .size([width, height]);
