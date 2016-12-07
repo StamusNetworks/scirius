@@ -157,10 +157,14 @@ def update(request):
 
 
 def dashboard(request):
+    suri = get_suri()
+    context = {}
+    complete_context(request, context)
     if request.method == 'POST' and request.POST.has_key('filter'):
-        data = es_get_ippair_alerts(from_date = 0, hosts = ["*"], qfilter=request.POST['filter'])
-        context = {'data': data, 'filter': request.POST['filter']}
+        data = es_get_ippair_alerts(from_date = context['from_date'], hosts = ["*"], qfilter=request.POST['filter'])
+        context['filter'] = request.POST['filter']
     else:
-        data = es_get_ippair_alerts(from_date = 0, hosts = ["*"])
-        context = {'data': data}
+        data = es_get_ippair_alerts(from_date = context['from_date'], hosts = ["*"])
+    context['data'] = data
+    context['probes'] = ("'"+ suri.name + "'",)
     return scirius_render(request, 'suricata/dashboard.html', context)

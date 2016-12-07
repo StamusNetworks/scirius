@@ -1,8 +1,28 @@
-{% extends "rules/base.html" %}
 {% load  staticfiles %}
 {% load bootstrap3  %}
- 
-{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{% block title %}Scirius - {{ path_info|title }}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+     <!-- Latest compiled and minified CSS -->
+     <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
+     <link rel="stylesheet" href="{% static 'rules/nv.d3.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}"/>
+    <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/d3.v3.min.js' %}" charset="utf-8"></script>
+    <script src="{% static 'js/nv.d3.js' %}" charset="utf-8"></script>
+    <script type="text/javascript" src="{% static 'js/scirius.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/tipsy.js' %}"></script>
+    {% block head %} {% endblock %}
+    <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
+</head>
+
+
+<body> 
 <meta charset="utf-8">
 <style>
 
@@ -25,21 +45,61 @@
 {% csrf_token %}
 			<span class="glyphicon glyphicon-search"> Filter: <input type="text" name="filter" id="id_filter" {% if filter %}value="{{ filter }}" {% endif %} width="20" /></span>
 </form>
+
+<span class="pull-right">
+Last {{ date }} 
+<a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+<span class="glyphicon glyphicon-cog"> </span>
+</a>
+<ul class="dropdown-menu" id="display_menu">
+   <li><a href="?duration=1">Last 1h</a></li>
+   <li><a href="?duration=6">Last 6h</a></li>
+   <li><a href="?duration=24">Last 24h</a></li>
+   <li><a href="?duration=48">Last 2d</a></li>
+   <li><a href="?duration=168">Last 7d</a></li>
+</ul>
+</span>
+
 </div>
 </div>
 
 <div class="row">
 <div class="col-md-6">
 <h2 class="title">IP addresses linked by alerts</h3>
-<svg width="750" style="border:solid 1px #ccc;" height="700" id="alerts"></svg>
+<svg width="750" style="border:solid 1px #ccc; border-radius: 4px;" height="750" id="alerts"></svg>
 </div>
 <div class="col-md-6">
-<h2 class="title">Flows</h3>
-<svg width="750" style="border:solid 1px #ccc;" height="700" id="alerts"></svg>
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-12">
+<h2 class="title">Alert infos</h3>
+
+<div id="timeline">
+<p>Fetching data...</p>
+<svg style="width:100%;height:300px">
+</svg>
+</div>
+
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-12">
+<h2 class="title">Rules activity</h2>
+
+
+<div id="rules_table">Fetching data...</div>
+
+</div>
+
 </div>
 </div>
 </div>
+
 <script>
+
+$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null); });
+$( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], null));
 
 var svg = d3.select("svg#alerts"),
     width = +svg.attr("width"),
@@ -82,7 +142,7 @@ force
       .attr("class", "node")
 .append("circle")
   .attr("r", 5)
-  .attr("fill", function(d) { return color(d.group); })
+  .attr("fill", function(d) { return color(d.group * 10); })
       .call(force.drag);
 
   node.append("title")
@@ -101,4 +161,6 @@ force
 alert_draw(alert_data);
 
 </script>
-{% endblock %}
+
+</body>
+</html>
