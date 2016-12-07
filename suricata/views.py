@@ -157,5 +157,10 @@ def update(request):
 
 
 def dashboard(request):
-    context = {'data': es_get_ippair_alerts(from_date = 0, hosts = ["*"]) }
+    if request.method == 'POST' and request.POST.has_key('filter'):
+        data = es_get_ippair_alerts(from_date = 0, hosts = ["*"], qfilter=request.POST['filter'])
+        context = {'data': data, 'filter': request.POST['filter']}
+    else:
+        data = es_get_ippair_alerts(from_date = 0, hosts = ["*"])
+        context = {'data': data}
     return scirius_render(request, 'suricata/dashboard.html', context)

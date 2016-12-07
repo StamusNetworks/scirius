@@ -2,47 +2,71 @@
 {% load  staticfiles %}
 {% load bootstrap3  %}
  
-
 {% block content %}
 <meta charset="utf-8">
 <style>
 
-.links line {
+.link {
   stroke: #999;
   stroke-opacity: 0.6;
 }
 
-.nodes circle {
+.node circle {
   stroke: #fff;
   stroke-width: 1.5px;
 }
 
 </style>
 
-<svg width="900" height="900"></svg>
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-12">
+<form class="form" method="post">
+{% csrf_token %}
+			<span class="glyphicon glyphicon-search"> Filter: <input type="text" name="filter" id="id_filter" {% if filter %}value="{{ filter }}" {% endif %} width="20" /></span>
+</form>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-6">
+<h2 class="title">IP addresses linked by alerts</h3>
+<svg width="750" style="border:solid 1px #ccc;" height="700" id="alerts"></svg>
+</div>
+<div class="col-md-6">
+<h2 class="title">Flows</h3>
+<svg width="750" style="border:solid 1px #ccc;" height="700" id="alerts"></svg>
+</div>
+</div>
+</div>
 <script>
 
-var svg = d3.select("svg"),
+var svg = d3.select("svg#alerts"),
     width = +svg.attr("width"),
     height = +svg.attr("height");
 
-var color = d3.scaleOrdinal(d3.schemeCategory20);
+var color = d3.scale.category20b();
 
-var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) { return d.id; }))
-    .force("charge", d3.forceManyBody().strength(-10))
-    .force("center", d3.forceCenter(width / 2, height / 2));
-
+var force = d3.layout.force()
+    .gravity(0.05)
+    .distance(100)
+    .charge(-50)
+    .size([width, height]);
 
 var alert_data={{ data|safe }};
 
-function alert_draw(graph) {
-  var link = svg.append("g")
-      .attr("class", "links")
-    .selectAll("line")
-    .data(graph.links)
+function alert_draw(json) {
+
+force
+      .nodes(json.nodes)
+      .links(json.links)
+      .start();
+
+  var link = svg.selectAll(".link")
+      .data(json.links)
     .enter().append("line")
-      .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+      .attr("class", "link")
+      .attr("stroke-width", function(d) { return d.value; });
 
   link.append("title").text(function(d) {
   var title="";
@@ -52,59 +76,29 @@ function alert_draw(graph) {
   return title;
  });
 
-  var node = svg.append("g")
-      .attr("class", "nodes")
-    .selectAll("circle")
-    .data(graph.nodes)
-    .enter().append("circle")
-      .attr("r", 5)
-      .attr("fill", function(d) { return color(d.group); })
-      .call(d3.drag()
-          .on("start", dragstarted)
-          .on("drag", dragged)
-          .on("end", dragended));
+  var node = svg.selectAll(".node")
+      .data(json.nodes)
+    .enter().append("g")
+      .attr("class", "node")
+.append("circle")
+  .attr("r", 5)
+  .attr("fill", function(d) { return color(d.group); })
+      .call(force.drag);
 
   node.append("title")
       .text(function(d) { return d.id; });
 
-  simulation
-      .nodes(graph.nodes)
-      .on("tick", ticked);
-
-  simulation.force("link")
-      .links(graph.links);
-
-  function ticked() {
-    link
-        .attr("x1", function(d) { return d.source.x; })
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
 
-    node
-        .attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
-  }
+    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+  });
 }
 
 alert_draw(alert_data);
-
-function dragstarted(d) {
-  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-  d.fx = d.x;
-  d.fy = d.y;
-}
-
-function dragged(d) {
-  d.fx = d3.event.x;
-  d.fy = d3.event.y;
-}
-
-function dragended(d) {
-  if (!d3.event.active) simulation.alphaTarget(0);
-  d.fx = null;
-  d.fy = null;
-}
 
 </script>
 {% endblock %}
