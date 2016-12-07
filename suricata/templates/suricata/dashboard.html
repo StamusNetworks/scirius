@@ -48,7 +48,7 @@
 </div>
 <div class="pull-right">
 <div class="btn-group">
-Reload {{ reload }} 
+Time: {% now "H:i:s" %} | Reload every {{ reload }}s
 <a  class="dropdown-toggle" type="button" id="display_reload" data-toggle="dropdown">
 <span class="glyphicon glyphicon-refresh"> </span>
 </a>
@@ -62,7 +62,7 @@ Reload {{ reload }}
 </div>
 
 <div class="btn-group">
-Last {{ date }} 
+| Last {{ date }}
 <a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
 <span class="glyphicon glyphicon-cog"> </span>
 </a>
@@ -82,9 +82,9 @@ Last {{ date }}
 <div class="row">
 <div class="col-md-6">
 <h2 class="title">IP addresses linked by alerts</h3>
-<div  style="border:solid 1px #ccc; border-radius: 4px;" >
-<svg width="750" height="750" id="alerts"></svg>
-<div id="highlight_info">
+<div  >
+<svg width="750" height="700" id="alerts"></svg>
+<div style="height: 200px; border:solid 1px #ccc; border-radius: 4px;" id="highlight_info">
 </div>
 </div>
 </div>
@@ -147,7 +147,7 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
         
         var force = d3.layout.force()
             .gravity(0.06)
-            .distance(70)
+            .distance(90)
             .charge(-50)
             .size([width, height]);
         
