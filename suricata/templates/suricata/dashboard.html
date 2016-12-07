@@ -27,7 +27,6 @@
 <style>
 
 .link {
-  stroke: #999;
   stroke-opacity: 0.6;
 }
 
@@ -66,7 +65,11 @@ Last {{ date }}
 <div class="row">
 <div class="col-md-6">
 <h2 class="title">IP addresses linked by alerts</h3>
-<svg width="750" style="border:solid 1px #ccc; border-radius: 4px;" height="750" id="alerts"></svg>
+<div  style="border:solid 1px #ccc; border-radius: 4px;" >
+<svg width="750" height="750" id="alerts"></svg>
+<div id="highlight_info">
+</div>
+</div>
 </div>
 <div class="col-md-6">
 <div class="container-fluid">
@@ -79,7 +82,6 @@ Last {{ date }}
 <svg style="width:100%;height:300px">
 </svg>
 </div>
-
 </div>
 </div>
 
@@ -127,8 +129,8 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
         var color = d3.scale.category20b();
         
         var force = d3.layout.force()
-            .gravity(0.02)
-            .distance(100)
+            .gravity(0.03)
+            .distance(50)
             .charge(-50)
             .size([width, height]);
         
@@ -142,7 +144,8 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
             .data(json.links)
           .enter().append("line")
             .attr("class", "link")
-            .attr("stroke-width", function(d) { return d.value; });
+            .attr("stroke-width", function(d) { return d.value; })
+            .attr("stroke", "#999");
 
         link.append("title").text(function(d) {
         var title="";
@@ -172,6 +175,29 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
       
           node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
         });
+
+        var i = 0;
+        setInterval(function() {
+            link = json.links[i];
+            /* d3.selectAll("circle").data(json.nodes).transition().duration(750).attr("r", function(d) { if (d.id == json.links[i].source.id || d.id == json.links[i].target.id) return 14; return 7; }); */
+            text = "<ul><li>Source: "  + json.links[i].source.id + "</li><li>Target: " + json.links[i].target.id + "</li>"
+            text = text + "<li>Alerts: <ul>";
+            d = json.links[i];
+            for (var j = 0; j < d.alerts.length; j++) {
+                text = text + "<li>" + d.alerts[j]['key'] + ": " + d.alerts[j]['doc_count'] + "</li>";
+            }
+            text = text + "</ul></li>";
+            $("#highlight_info").empty();
+            $("#highlight_info").append(text);
+            d3.selectAll("circle").data(json.nodes).attr("r", function(d) { if (d.id == json.links[i].source.id || d.id == json.links[i].target.id) return 14; return 7; });	
+            d3.selectAll("line").data(json.links).attr("stroke", function(d) { if (d == json.links[i]) return "red"; return "#999"; });	
+            i++;
+            if (i >= json.links.length) {
+                i = 0;
+            }
+        }
+        , 3000);
+
       }
       });
 }
