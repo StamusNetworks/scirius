@@ -98,68 +98,86 @@ Last {{ date }}
 
 <script>
 
-$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null); });
+$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "{{ filter }}"); });
+{% if filter and not filter == "*" %}
+$( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], "{{ filter }}"));
+{% else %}
 $( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], null));
+{% endif %}
 
-var svg = d3.select("svg#alerts"),
-    width = +svg.attr("width"),
-    height = +svg.attr("height");
+function draw_ippair_alerts(from_date, hosts, filter, callback) {
+    esurl = "/rules/es?query=ippair_alerts&from_date=" + from_date + "&hosts=" + hosts.join()
+    if (filter) {
+        esurl = esurl + "&filter=" + filter;
+    }
+    $.ajax(
+     {
+     type:"GET",
+     url:esurl,
+     success: function(json) {
+        if (json == null) {
+            $("#alerts").append("No data to build the graph");
+            return;
+        }
 
-var color = d3.scale.category20b();
+        var svg = d3.select("svg#alerts"),
+            width = +svg.attr("width"),
+            height = +svg.attr("height");
+        
+        var color = d3.scale.category20b();
+        
+        var force = d3.layout.force()
+            .gravity(0.05)
+            .distance(100)
+            .charge(-50)
+            .size([width, height]);
+        
+        json = JSON.parse(json);
+        force
+          .nodes(json.nodes)
+          .links(json.links)
+          .start();
 
-var force = d3.layout.force()
-    .gravity(0.05)
-    .distance(100)
-    .charge(-50)
-    .size([width, height]);
+        var link = svg.selectAll(".link")
+            .data(json.links)
+          .enter().append("line")
+            .attr("class", "link")
+            .attr("stroke-width", function(d) { return d.value; });
 
-var alert_data={{ data|safe }};
+        link.append("title").text(function(d) {
+        var title="";
+        for (var i = 0; i < d.alerts.length; i++) {
+          title = title + d.alerts[i]['key'] + ": " + d.alerts[i]['doc_count'] + "\n";
+        }
+        return title;
+        });
 
-function alert_draw(json) {
-
-force
-      .nodes(json.nodes)
-      .links(json.links)
-      .start();
-
-  var link = svg.selectAll(".link")
-      .data(json.links)
-    .enter().append("line")
-      .attr("class", "link")
-      .attr("stroke-width", function(d) { return d.value; });
-
-  link.append("title").text(function(d) {
-  var title="";
-  for (var i = 0; i < d.alerts.length; i++) {
-    title = title + d.alerts[i]['key'] + ": " + d.alerts[i]['doc_count'] + "\n";
-  }
-  return title;
- });
-
-  var node = svg.selectAll(".node")
-      .data(json.nodes)
-    .enter().append("g")
-      .attr("class", "node")
-.append("circle")
-  .attr("r", 5)
-  .attr("fill", function(d) { return color(d.group * 10); })
-      .call(force.drag);
-
-  node.append("title")
-      .text(function(d) { return d.id; });
-
-  force.on("tick", function() {
-    link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
-
-    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-  });
+        var node = svg.selectAll(".node")
+            .data(json.nodes)
+          .enter().append("g")
+            .attr("class", "node")
+          .append("circle")
+          .attr("r", 7)
+          .attr("fill", function(d) { return color(d.group * 10); })
+          .call(force.drag);
+      
+        node.append("title")
+            .text(function(d) { return d.id; });
+      
+        force.on("tick", function() {
+          link.attr("x1", function(d) { return d.source.x; })
+              .attr("y1", function(d) { return d.source.y; })
+              .attr("x2", function(d) { return d.target.x; })
+              .attr("y2", function(d) { return d.target.y; });
+      
+          node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        });
+      }
+      });
 }
 
-alert_draw(alert_data);
 
+$( 'document' ).ready(function () { draw_ippair_alerts({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "{{ filter }}"); });
 </script>
 
 </body>
