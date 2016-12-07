@@ -527,6 +527,13 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
        <li><span class="type">Last updated:</span> {{ suricata.updated_date }}</li>
 </ul>
 
+
+<div class="panel-heading">
+<h2 class="panel-title">More pages</h2>
+</div>
+<div class="panel-body">
+<a href="{% url 'suricata_dashboard'%}" target="_blank">Dashboard</a>
+</div>
 {% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
