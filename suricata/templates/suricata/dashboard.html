@@ -19,7 +19,7 @@
 
 </style>
 
-<svg width="1300" height="900"></svg>
+<svg width="900" height="900"></svg>
 <script>
 
 var svg = d3.select("svg"),
@@ -44,7 +44,13 @@ function alert_draw(graph) {
     .enter().append("line")
       .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
 
-  link.append("title").text(function(d) { return d.alerts[0]['key']; });
+  link.append("title").text(function(d) {
+  var title="";
+  for (var i = 0; i < d.alerts.length; i++) {
+    title = title + d.alerts[i]['key'] + ": " + d.alerts[i]['doc_count'] + "\n";
+  }
+  return title;
+ });
 
   var node = svg.append("g")
       .attr("class", "nodes")
