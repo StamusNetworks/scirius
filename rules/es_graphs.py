@@ -1083,7 +1083,7 @@ def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
         return None
 
 def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
-    data = render_template(IPPPAIR_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts[0]})
+    data = render_template(IPPPAIR_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
@@ -1109,7 +1109,7 @@ def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
             if not dest_ip['key'] in ip_list:
                 nodes.append({'id': dest_ip['key'], 'group': group})
                 ip_list.append(dest_ip['key'])
-            links.append({'source': src_ip['key'], 'target': dest_ip['key'], 'value': math.ceil(dest_ip['doc_count']/100), 'alerts': dest_ip['alerts']['buckets']})
+            links.append({'source': ip_list.index(src_ip['key']), 'target': ip_list.index(dest_ip['key']), 'value': math.log(dest_ip['doc_count']) * 2, 'alerts': dest_ip['alerts']['buckets']})
     #nodes = set(nodes)
     return json.dumps({'nodes': nodes, 'links': links})
     try:
