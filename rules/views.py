@@ -1070,7 +1070,7 @@ def edit_ruleset(request, ruleset_id):
         elif request.POST.has_key('rules'):
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
-                if rule_object in ruleset.disabled_rules:
+                if rule_object in ruleset.suppressed_rules.all():
                     rule_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
         elif request.POST.has_key('sources'):
             source_selection = [ int(x) for x in request.POST.getlist('source_selection')]
@@ -1133,16 +1133,15 @@ def ruleset_add_supprule(request, ruleset_id):
             #FIXME Protection on SQL injection ?
             rules = EditRuleTable(Rule.objects.filter(content__icontains=request.POST['search']))
             tables.RequestConfig(request).configure(rules)
-            context = { 'ruleset': ruleset, 'rules': rules }
+            context = { 'ruleset': ruleset, 'rules': rules, 'form': CommentForm() }
             return scirius_render(request, 'rules/search_rule.html', context)
         elif request.POST.has_key('rule_selection'):
+            form = CommentForm(request.POST)
+            if not form.is_valid():
+                return redirect(ruleset)
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
-                rule_object.disable(ruleset, user = request.user)
-                ua = UserAction(action='disable', username = request.user.username, userobject = rule_object)
-                ua.comment = form.cleaned_data['comment']
-                ua.ruleset = ruleset
-                ua.save()
+                rule_object.disable(ruleset, user = request.user, comment = form.cleaned_data['comment'])
             ruleset.save()
         return redirect(ruleset)
     context = { 'ruleset': ruleset }

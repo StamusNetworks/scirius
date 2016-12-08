@@ -1,4 +1,5 @@
 {% extends "rules/base.html" %}
+{% load bootstrap3  %}
 
 {% block sidebar %}
 <div class="panel-heading">
@@ -27,6 +28,7 @@ function tables2_toggle(source, name) {
     {% load render_table from django_tables2 %}
 <form class="form" action="{% url 'addsupprule' ruleset.id %}" method="post">{% csrf_token %}
     {% render_table rules %}
+    {% bootstrap_form form %}
 <input  class="btn btn-primary" type="submit" value="Add selected rules to disabled rules list" />
 </form>
 {% endif %}
