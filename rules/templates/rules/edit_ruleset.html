@@ -105,6 +105,7 @@ Choose an operation in the actions below:
 <form class="form" action="{% url 'edit_ruleset' ruleset.id %}" method="post">{% csrf_token %}
 {% render_table sources_list %}
 <input type="hidden" name="sources" value="sources">
+    {% bootstrap_form form %}
 <p></p>
 <input type="submit" class="btn btn-primary" value="Update sources" />
 </form>
@@ -129,6 +130,7 @@ Choose an operation in the actions below:
 {% endif %}
 
 {% endfor %}
+    {% bootstrap_form form %}
 <p></p>
 <p>
 <input type="submit"  class="btn btn-primary" value="Update categories" />
@@ -145,6 +147,7 @@ Choose an operation in the actions below:
 <form class="form" action="{% url 'edit_ruleset' ruleset.id %}" method="post">{% csrf_token %}
 {% render_table rules %}
 <input type="hidden" name="rules" value="rules">
+    {% bootstrap_form form %}
 <input type="submit"  class="btn btn-primary" value="Remove selected rules from disabled rules" />
 </form>
 

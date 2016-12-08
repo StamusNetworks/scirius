@@ -1053,6 +1053,9 @@ def edit_ruleset(request, ruleset_id):
     if request.method == 'POST': # If the form has been submitted...
         # check if this is a categories edit
         # ID is unique so we can just look by indice and add
+        form = CommentForm(request.POST)
+        if not form.is_valid():
+            return redirect(ruleset)
         if request.POST.has_key('category'):
             # clean ruleset
             for cat in ruleset.categories.all():
@@ -1102,6 +1105,7 @@ def edit_ruleset(request, ruleset_id):
         context = {'ruleset': ruleset,  'categories_list': categories_list, 'sources': sources, 'rules': rules, 'cats_selection': ", ".join(cats_selection) }
         if request.GET.has_key('mode'):
             context['mode'] = request.GET['mode']
+            context['form'] = CommentForm()
             if context['mode'] == 'sources':
                 all_sources = SourceAtVersion.objects.all()
                 sources_selection = []
@@ -1150,7 +1154,7 @@ def delete_ruleset(request, ruleset_id):
         return scirius_render(request, 'rules/delete.html', context)
 
     if request.method == 'POST': # If the form has been submitted...
-        form = RuleCommentForm(request.POST)
+        form = CommentForm(request.POST)
         if form.is_valid():
             ua = UserAction(action='delete', username = request.user.username, userobject = ruleset)
             ua.comment = form.cleaned_data['comment']
