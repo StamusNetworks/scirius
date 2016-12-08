@@ -1057,12 +1057,13 @@ def edit_ruleset(request, ruleset_id):
         if not form.is_valid():
             return redirect(ruleset)
         if request.POST.has_key('category'):
+            category_selection = [ int(x) for x in request.POST.getlist('category_selection') ]
             # clean ruleset
             for cat in ruleset.categories.all():
-                if cat.pk not in request.POST.getlist('category_selection'):
+                if cat.pk not in category_selection:
                     cat.disable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
             # add updated entries
-            for cat in request.POST.getlist('category_selection'):
+            for cat in category_selection:
                 category = get_object_or_404(Category, pk=cat)
                 if category not in ruleset.categories.all():
                     category.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
@@ -1072,12 +1073,13 @@ def edit_ruleset(request, ruleset_id):
                 if rule_object in ruleset.disabled_rules:
                     rule_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
         elif request.POST.has_key('sources'):
+            source_selection = [ int(x) for x in request.POST.getlist('source_selection')]
             # clean ruleset
             for source in ruleset.sources.all():
-                if source.pk not in request.POST.getlist('source_selection'):
+                if source.pk not in source_selection:
                     source.disable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
             # add new entries
-            for src in request.POST.getlist('source_selection'):
+            for src in source_selection:
                 source = get_object_or_404(SourceAtVersion, pk=src)
                 if source not in ruleset.sources.all():
                     source.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
