@@ -447,3 +447,8 @@ div.status ul li span.pull-right {
 .updated_date {
   width: 12em;
 }
+
+div#highlight_info {
+  height: 200px;
+  padding: 5px;
+}

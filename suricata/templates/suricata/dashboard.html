@@ -84,7 +84,7 @@ Time: {% now "H:i:s" %} | Reload every {{ reload }}s
 <h2 class="title">IP addresses linked by alerts</h3>
 <div  >
 <svg width="750" height="700" id="alerts"></svg>
-<div style="height: 200px; border:solid 1px #ccc; border-radius: 4px;" id="highlight_info">
+<div id="highlight_info">
 </div>
 </div>
 </div>
@@ -92,7 +92,7 @@ Time: {% now "H:i:s" %} | Reload every {{ reload }}s
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-12">
-<h2 class="title">Alert infos</h3>
+<h2 class="title">Alert timeline</h3>
 
 <div id="timeline">
 <p>Fetching data...</p>
@@ -196,14 +196,14 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
         var i = 0;
         setInterval(function() {
             link = json.links[i];
-            /* d3.selectAll("circle").data(json.nodes).transition().duration(750).attr("r", function(d) { if (d.id == json.links[i].source.id || d.id == json.links[i].target.id) return 14; return 7; }); */
-            text = "<ul><li>Source: "  + json.links[i].source.id + "</li><li>Target: " + json.links[i].target.id + "</li>"
-            text = text + "<li>Alerts: <ul>";
+            text = "<div class='text-center'><h3 class='title'>"  + json.links[i].source.id + " <span class='glyphicon glyphicon-transfer'> </span> " + json.links[i].target.id + "</h3></div>"
+            //text = text + "<h3 class='title text-center'>Alerts</h3> <ul class='list-group'>";
+            text = text + "<ul class='list-group'>";
             d = json.links[i];
             for (var j = 0; j < d.alerts.length; j++) {
-                text = text + "<li>" + d.alerts[j]['key'] + ": " + d.alerts[j]['doc_count'] + "</li>";
+                text = text + "<li class='list-group-item'>" + d.alerts[j]['key'] + "<span class='badge'>" + d.alerts[j]['doc_count'] + "</span></li>";
             }
-            text = text + "</ul></li>";
+            text = text + "</ul>";
             $("#highlight_info").empty();
             $("#highlight_info").append(text);
             d3.selectAll("circle").data(json.nodes).attr("r", function(d) { if (d.id == json.links[i].source.id || d.id == json.links[i].target.id) return 14; return 7; });	
