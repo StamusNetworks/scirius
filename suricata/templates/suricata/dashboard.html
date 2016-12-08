@@ -118,10 +118,22 @@ Time: {% now "H:i:s" %} | Reload every {{ reload }}s
 <script>
 
 $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "{{ filter }}"); });
+
+function differentiate_suppressed() {
+    var suppressed_rules = [{{ suppressed }}];
+    $("td.sid").each(
+        function() {
+            if (jQuery.inArray(parseInt($( this ).text(), 10), suppressed_rules) != -1) {
+                $( this ).addClass("suppressed");
+            }
+        }
+    );
+}
+
 {% if filter and not filter == "*" %}
-$( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], "{{ filter }}"));
+$( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], "{{ filter }}", differentiate_suppressed));
 {% else %}
-$( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], null));
+$( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], null, differentiate_suppressed));
 {% endif %}
 
 function draw_ippair_alerts(from_date, hosts, filter, callback) {

@@ -172,4 +172,9 @@ def dashboard(request):
     else:
         reload = int(request.session.get('reload', '300'))
     context['reload'] = reload
+    if suri.ruleset:
+        supp_rules = list(suri.ruleset.suppressed_rules.all())
+        if len(supp_rules):
+            suppressed = ",".join([ str(x.sid) for x in supp_rules])
+            context['suppressed'] = suppressed
     return scirius_render(request, 'suricata/dashboard.html', context)
