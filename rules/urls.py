@@ -72,4 +72,6 @@ urlpatterns = patterns('',
     url(r'^threshold/(?P<threshold_id>\d+)/delete$', views.delete_threshold, name='delete_threshold'),
     url(r'^threshold/(?P<threshold_id>\d+)/edit$', views.edit_threshold, name='edit_threshold'),
     url(r'^history$', views.history, name='history'),
+    url(r'^comment$', views.history, name='comment'),
+    url(r'^comment/(?P<comment_id>\d+)/delete$', views.delete_comment, name='delete_comment'),
 )

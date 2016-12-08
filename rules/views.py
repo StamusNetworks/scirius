@@ -1339,3 +1339,9 @@ def history(request):
     tables.RequestConfig(request).configure(useractions)
     context = {'table': useractions}
     return scirius_render(request, 'rules/history.html', context)
+
+def delete_comment(request, comment_id):
+    ua = get_object_or_404(UserAction, pk=comment_id, action="comment", user = request.user)
+    ua.delete()
+    data = {'status': 'OK'}
+    return HttpResponse(json.dumps(data), content_type="application/json")
