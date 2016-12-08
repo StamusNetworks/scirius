@@ -93,7 +93,7 @@ def edit(request):
         if form.is_valid():
             if suri:
                 form.save()
-                ua = UserAction(action='modify', options='suricata', username = request.user.username, userobject = suri, comment = form.cleaned_data['comment'])
+                ua = UserAction(action='modify', options='suricata', user = request.user, userobject = suri, comment = form.cleaned_data['comment'])
                 ua.save()
                 return redirect(index)
             try:
@@ -107,7 +107,7 @@ def edit(request):
                         )
             except IntegrityError, error:
                 return scirius_render(request, 'suricata/edit.html', { 'form': form, 'error': error })
-            ua = UserAction(action='create', options='suricata', username = request.user.username, userobject = suricata, comment = form.cleaned_data['comment'])
+            ua = UserAction(action='create', options='suricata', user = request.user, userobject = suricata, comment = form.cleaned_data['comment'])
             ua.save()
             return redirect(index)
         else:
@@ -157,7 +157,7 @@ def update(request):
             else:
                 message.append("Suricata restart already asked.")
 
-        ua = UserAction(action='modify', options='ruleset', username = request.user.username, userobject = suri, comment = form.cleaned_data['comment'])
+        ua = UserAction(action='modify', options='ruleset', user = request.user, userobject = suri, comment = form.cleaned_data['comment'])
         ua.save()
         context =  { 'message': message, 'suricata': suri }
         return scirius_render(request, 'suricata/update.html', context)

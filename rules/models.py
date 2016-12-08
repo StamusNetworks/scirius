@@ -37,6 +37,8 @@ import shutil
 import json
 import IPy
 
+from django.contrib.auth.models import User
+
 def validate_hostname(val):
     try:
         validate_ipv4_address(val)
@@ -80,6 +82,7 @@ class UserAction(models.Model):
     ACTION_TYPE = (('disable', 'Disable'), ('enable', 'Enable'), ('comment', 'Comment'), ('activate', 'Activate'), ('deactivate', 'Deactivate'), ('create', 'Create'), ('delete', 'Delete'), ('modify', 'Modify'))
     ruleset = models.ForeignKey('Ruleset', default = None, on_delete = models.SET_NULL, null = True, blank = True)
     username = models.CharField(max_length=100)
+    user = models.ForeignKey(User, default = None, on_delete = models.SET_NULL, null = True, blank = True)
     action = models.CharField(max_length=12, choices = ACTION_TYPE)
     options = models.CharField(max_length=1000, blank = True, default = None, null = True)
     description = models.CharField(max_length=500, null = True)
@@ -93,6 +96,8 @@ class UserAction(models.Model):
         super(UserAction, self).__init__(*args, **kwargs)
         if not self.description:
             self.description = self.generate_description()
+        if not self.username and self.user:
+            self.username = self.user.username
 
     def generate_description(self):
         ctype = self.content_type.model_class()
@@ -545,7 +550,7 @@ class SourceAtVersion(models.Model):
         ruleset.needs_test()
         ruleset.save()
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', username = user.username, date = timezone.now(), comment = comment)
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', user = user, date = timezone.now(), comment = comment)
             ua.options = "source"
             ua.save()
 
@@ -554,7 +559,7 @@ class SourceAtVersion(models.Model):
         ruleset.needs_test()
         ruleset.save()
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', username = user.username, date = timezone.now(), comment = comment)
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', user = user, date = timezone.now(), comment = comment)
             ua.options = "source"
             ua.save()
 
@@ -816,7 +821,7 @@ class Category(models.Model, Transformable):
         ruleset.needs_test()
         ruleset.save()
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', username = user.username, date = timezone.now(), comment = comment)
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', user = user, date = timezone.now(), comment = comment)
             ua.options = "category"
             ua.save()
 
@@ -825,7 +830,7 @@ class Category(models.Model, Transformable):
         ruleset.needs_test()
         ruleset.save()
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', username = user.username, date = timezone.now(), comment = comment)
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', user = user, date = timezone.now(), comment = comment)
             ua.options = "category"
             ua.save()
 
@@ -891,7 +896,7 @@ class Rule(models.Model, Transformable):
             enable_rules |= {self}
         ruleset.enable_rules(enable_rules)
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', username = user.username, date = timezone.now(), comment = comment)
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', user = user, date = timezone.now(), comment = comment)
             ua.options = "rule"
             ua.save()
         return
@@ -902,7 +907,7 @@ class Rule(models.Model, Transformable):
             disable_rules |= {self}
         ruleset.disable_rules(disable_rules)
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', username = user.username, date = timezone.now(), comment = comment)
+            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', user = user, date = timezone.now(), comment = comment)
             ua.options = "rule"
             ua.save()
         return

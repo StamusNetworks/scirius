@@ -401,23 +401,23 @@ def transform_rule(request, rule_id):
                 if ruleset in rulesets:
                     if form.cleaned_data["type"] == "reject" and not rule_object.is_reject(ruleset):
                         rule_object.toggle_reject(ruleset)
-                        ua = UserAction(action='enable', options='reject', username = request.user.username, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        ua = UserAction(action='enable', options='reject', user = request.user, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "drop" and not rule_object.is_drop(ruleset):
                         rule_object.toggle_drop(ruleset)
-                        ua = UserAction(action='enable', options='drop', username = request.user.username, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        ua = UserAction(action='enable', options='drop', user = request.user, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "filestore" and not rule_object.is_filestore(ruleset):
                         rule_object.toggle_filestore(ruleset)
-                        ua = UserAction(action='enable', options='filestore', username = request.user.username, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        ua = UserAction(action='enable', options='filestore', user = request.user, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                 else:
                     if form.cleaned_data["type"] == "reject" and rule_object.is_reject(ruleset):
                         rule_object.toggle_reject(ruleset)
-                        ua = UserAction(action='disable', options='reject', username = request.user.username, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        ua = UserAction(action='disable', options='reject', user = request.user, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "drop" and rule_object.is_drop(ruleset):
                         rule_object.toggle_drop(ruleset)
-                        ua = UserAction(action='disable', options='drop', username = request.user.username, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        ua = UserAction(action='disable', options='drop', user = request.user, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "filestore" and rule_object.is_filestore(ruleset):
                         rule_object.toggle_filestore(ruleset)
-                        ua = UserAction(action='disable', options='filestore', username = request.user.username, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        ua = UserAction(action='disable', options='filestore', user = request.user, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                 if ua:
                     ua.save()
         return redirect(rule_object)
@@ -459,23 +459,23 @@ def transform_category(request, cat_id):
                 if ruleset in rulesets:
                     if form.cleaned_data["type"] == "reject" and not cat_object.is_reject(ruleset):
                         cat_object.toggle_reject(ruleset)
-                        ua = UserAction(action='enable', options='reject', username = request.user.username, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        ua = UserAction(action='enable', options='reject', user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "drop" and not cat_object.is_drop(ruleset):
                         cat_object.toggle_drop(ruleset)
-                        ua = UserAction(action='enable', options='drop', username = request.user.username, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        ua = UserAction(action='enable', options='drop', user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "filestore" and not cat_object.is_filestore(ruleset):
-                        ua = UserAction(action='enable', options='filestore', username = request.user.username, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        ua = UserAction(action='enable', options='filestore', user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                         cat_object.toggle_filestore(ruleset)
                 else:
                     if form.cleaned_data["type"] == "reject" and cat_object.is_reject(ruleset):
                         cat_object.toggle_reject(ruleset)
-                        ua = UserAction(action='disable', options='reject', username = request.user.username, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        ua = UserAction(action='disable', options='reject', user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "drop" and cat_object.is_drop(ruleset):
                         cat_object.toggle_drop(ruleset)
-                        ua = UserAction(action='disable', options='drop', username = request.user.username, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        ua = UserAction(action='disable', options='drop', user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                     if form.cleaned_data["type"] == "filestore" and cat_object.is_filestore(ruleset):
                         cat_object.toggle_filestore(ruleset)
-                        ua = UserAction(action='disable', options='filestore', username = request.user.username, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        ua = UserAction(action='disable', options='filestore', user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                 if ua:
                     ua.save()
         return redirect(cat_object)
@@ -559,7 +559,7 @@ def delete_alerts(request, rule_id):
                         pass
                     return scirius_render(request, 'rules/delete_alerts.html', context)
             messages.add_message(request, messages.INFO, "Events deletion may be in progress, graphics and stats could be not in sync.");
-            ua = UserAction(action='delete', options='alerts', username = request.user.username, userobject = rule_object)
+            ua = UserAction(action='delete', options='alerts', user = request.user, userobject = rule_object)
             ua.comment = form.cleaned_data['comment']
             ua.save()
         return redirect(rule_object)
@@ -579,7 +579,7 @@ def comment_rule(request, rule_id):
     if request.method == 'POST': # If the form has been submitted...
         form = RuleCommentForm(request.POST)
         if form.is_valid():
-            ua = UserAction(action='comment',username = request.user.username, userobject = rule_object)
+            ua = UserAction(action='comment',user = request.user, userobject = rule_object)
             ua.comment = form.cleaned_data['comment']
             ua.save()
     return redirect(rule_object)
@@ -592,7 +592,7 @@ def toggle_availability(request, rule_id):
         return scirius_render(request, 'rules/rule.html', context)
 
     rule_object.toggle_availability()
-    ua = UserAction(action='modify', username = request.user.username, userobject = rule_object)
+    ua = UserAction(action='modify', user = request.user, userobject = rule_object)
     ua.options = 'rule availability'
     ua.comment = form.cleaned_data['comment']
     ua.save()
@@ -627,7 +627,7 @@ def threshold_rule(request, rule_id):
                 threshold.ruleset = ruleset
                 threshold.pk = None
                 threshold.save()
-                ua = UserAction(action='create', username = request.user.username, userobject = threshold)
+                ua = UserAction(action='create', user = request.user, userobject = threshold)
                 ua.ruleset = ruleset
                 ua.comment = form.cleaned_data['comment']
                 ua.options = 'threshold'
@@ -830,13 +830,13 @@ def add_source(request):
             rulesets = [ ruleset.pk for ruleset in ruleset_list ]
             if len(ruleset_list):
                 for ruleset in ruleset_list:
-                    ua = UserAction(action='create', username = request.user.username, userobject = source)
+                    ua = UserAction(action='create', user = request.user, userobject = source)
                     ua.comment = form.cleaned_data['comment']
                     ua.ruleset = ruleset
                     ua.options = 'source'
                     ua.save()
             else:
-                ua = UserAction(action='create', username = request.user.username, userobject = source)
+                ua = UserAction(action='create', user = request.user, userobject = source)
                 ua.comment = form.cleaned_data['comment']
                 ua.options = 'source'
                 ua.save()
@@ -863,7 +863,7 @@ def edit_source(request, source_id):
                     firstimport = True
                 source.new_uploaded_file(request.FILES['file'], firstimport)
             form.save()
-            ua = UserAction(action='modify', username = request.user.username, userobject = source)
+            ua = UserAction(action='modify', user = request.user, userobject = source)
             ua.comment = form.cleaned_data['comment']
             ua.options = 'source'
             ua.save()
@@ -884,7 +884,7 @@ def delete_source(request, source_id):
     if request.method == 'POST': # If the form has been submitted...
         form = RuleCommentForm(request.POST)
         if form.is_valid():
-            ua = UserAction(action='delete', username = request.user.username, userobject = source)
+            ua = UserAction(action='delete', user = request.user, userobject = source)
             ua.comment = form.cleaned_data['comment']
             ua.options = 'source'
             ua.save()
@@ -987,7 +987,7 @@ def add_ruleset(request):
             # ...
             try:
                 ruleset = form.create_ruleset()
-                ua = UserAction(action='create', username = request.user.username, userobject = ruleset)
+                ua = UserAction(action='create', user = request.user, userobject = ruleset)
                 ua.comment = form.cleaned_data['comment']
                 ua.options = 'ruleset'
                 ua.ruleset = ruleset
@@ -1157,7 +1157,7 @@ def delete_ruleset(request, ruleset_id):
     if request.method == 'POST': # If the form has been submitted...
         form = CommentForm(request.POST)
         if form.is_valid():
-            ua = UserAction(action='delete', username = request.user.username, userobject = ruleset)
+            ua = UserAction(action='delete', user = request.user, userobject = ruleset)
             ua.comment = form.cleaned_data['comment']
             ua.options = 'ruleset'
             ua.save()
@@ -1178,7 +1178,7 @@ def copy_ruleset(request, ruleset_id):
         form = RulesetCopyForm(request.POST) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
             copy = ruleset.copy(form.cleaned_data['name'])
-            ua = UserAction(action='create', username = request.user.username, userobject = copy)
+            ua = UserAction(action='create', user = request.user, userobject = copy)
             ua.comment = form.cleaned_data['comment']
             ua.options = 'ruleset'
             ua.ruleset = copy
@@ -1299,7 +1299,7 @@ def edit_threshold(request, threshold_id):
         form = EditThresholdForm(request.POST, instance=threshold) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
             form.save()
-            ua = UserAction(action='modify', username = request.user.username, userobject = threshold)
+            ua = UserAction(action='modify', user = request.user, userobject = threshold)
             ua.comment = form.cleaned_data['comment']
             ua.options = 'threshold'
             ua.ruleset = threshold.ruleset
@@ -1323,7 +1323,7 @@ def delete_threshold(request, threshold_id):
     if request.method == 'POST': # If the form has been submitted...
         form = RuleCommentForm(request.POST)
         if form.is_valid():
-            ua = UserAction(action='delete', username = request.user.username, userobject = threshold)
+            ua = UserAction(action='delete', user = request.user, userobject = threshold)
             ua.ruleset = ruleset
             ua.options = 'threshold'
             ua.comment = form.cleaned_data['comment']
