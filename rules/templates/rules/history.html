@@ -1,6 +1,7 @@
 
 {% extends "rules/base.html" %}
 {% block content %}
+<h2 class="title">User action history</h2>
 {% if table %}
     {% load render_table from django_tables2 %}
     {% render_table table %}
