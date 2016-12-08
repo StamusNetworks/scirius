@@ -987,7 +987,7 @@ def add_ruleset(request):
             # ...
             try:
                 ruleset = form.create_ruleset()
-                ua = UserAction(action='create', username = request.user.username, userobject = copy)
+                ua = UserAction(action='create', username = request.user.username, userobject = ruleset)
                 ua.comment = form.cleaned_data['comment']
                 ua.options = 'ruleset'
                 ua.ruleset = ruleset
@@ -1150,6 +1150,7 @@ def delete_ruleset(request, ruleset_id):
         return scirius_render(request, 'rules/delete.html', context)
 
     if request.method == 'POST': # If the form has been submitted...
+        form = RuleCommentForm(request.POST)
         if form.is_valid():
             ua = UserAction(action='delete', username = request.user.username, userobject = ruleset)
             ua.comment = form.cleaned_data['comment']
