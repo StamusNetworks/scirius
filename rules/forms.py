@@ -23,11 +23,14 @@ from django.utils import timezone
 from django.conf import settings
 from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold, UserAction
 
-class RulesetChoiceForm(forms.Form):
-    rulesets_label = "Add object to the following ruleset(s)"
+
+class CommentForm(forms.Form):
     comment = forms.CharField(widget=forms.Textarea,
                               label = "Optional comment",
                               required = False)
+
+class RulesetChoiceForm(CommentForm):
+    rulesets_label = "Add object to the following ruleset(s)"
 
     def __init__(self, *args, **kwargs):
         super(RulesetChoiceForm, self).__init__(*args, **kwargs)
@@ -52,7 +55,7 @@ class SystemSettingsForm(forms.ModelForm):
 class KibanaDataForm(forms.Form):
     file = forms.FileField(required = False)
 
-class SourceForm(forms.ModelForm):
+class SourceForm(forms.ModelForm, CommentForm):
     file = forms.FileField(required = False)
     authkey = forms.CharField(max_length=100,
                               label = "Optional authorization key",
@@ -73,7 +76,7 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
         exclude = ['created_date', 'updated_date']
 
 # Display choices of SourceAtVersion
-class RulesetForm(forms.Form):
+class RulesetForm(CommentForm):
     name = forms.CharField(max_length=100)
     activate_categories = forms.BooleanField(label = "Activate all categories in sources",
                                              initial = True, required = False)
@@ -96,17 +99,17 @@ class RulesetForm(forms.Form):
         self.fields['sources'] = forms.ModelMultipleChoiceField(
                         sourceatversion,
                         widget=forms.CheckboxSelectMultiple())
+        comment = self.fields.pop('comment')
+        self.fields['comment'] = comment
 
-
-
-class RulesetEditForm(forms.ModelForm):
+class RulesetEditForm(forms.ModelForm, CommentForm):
     name = forms.CharField(max_length=100)
 
     class Meta:
         model = Ruleset
         fields = ('name',)
 
-class RulesetCopyForm(forms.Form):
+class RulesetCopyForm(CommentForm):
     name = forms.CharField(max_length=100)
 
 class RulesetSuppressForm(RulesetChoiceForm):
@@ -126,7 +129,7 @@ class AddRuleSuppressForm(forms.ModelForm, RulesetChoiceForm):
         model = Threshold
         exclude = ['ruleset', 'rule', 'gid', 'descr', 'type', 'count', 'seconds']
 
-class EditThresholdForm(forms.ModelForm):
+class EditThresholdForm(forms.ModelForm, CommentForm):
     class Meta:
         model = Threshold
         exclude = ['pk', 'rule']
