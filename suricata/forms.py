@@ -21,13 +21,14 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django import forms
 from suricata.models import Suricata
 from rules.models import Ruleset
+from rules.forms import CommentForm
 
-class SuricataForm(forms.ModelForm):
+class SuricataForm(forms.ModelForm, CommentForm):
     class Meta:
         model = Suricata
         exclude = ('created_date', 'updated_date')
 
-class SuricataUpdateForm(forms.Form):
+class SuricataUpdateForm(CommentForm):
     reload = forms.BooleanField(required=False)
     build = forms.BooleanField(required=False)
     push = forms.BooleanField(required=False)

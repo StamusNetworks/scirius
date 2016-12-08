@@ -32,8 +32,10 @@ from scirius.utils import scirius_render
 
 from suricata.models import Suricata
 from rules.models import dependencies_check
+from rules.models import UserAction
 
 from forms import *
+from rules.forms import CommentForm
 
 from rules.views import complete_context
 from rules.es_graphs import es_get_ippair_alerts
@@ -91,6 +93,8 @@ def edit(request):
         if form.is_valid():
             if suri:
                 form.save()
+                ua = UserAction(action='modify', options='suricata', username = request.user.username, userobject = suri, comment = form.cleaned_data['comment'])
+                ua.save()
                 return redirect(index)
             try:
                 suricata = Suricata.objects.create(name = form.cleaned_data['name'],
@@ -103,6 +107,8 @@ def edit(request):
                         )
             except IntegrityError, error:
                 return scirius_render(request, 'suricata/edit.html', { 'form': form, 'error': error })
+            ua = UserAction(action='create', options='suricata', username = request.user.username, userobject = suricata, comment = form.cleaned_data['comment'])
+            ua.save()
             return redirect(index)
         else:
             return scirius_render(request, 'suricata/edit.html', { 'form': form, 'error': 'Invalid form' })
@@ -150,10 +156,13 @@ def update(request):
                 message.append("Successful asked ruleset reload at " + str(suri.updated_date))
             else:
                 message.append("Suricata restart already asked.")
+
+        ua = UserAction(action='modify', options='ruleset', username = request.user.username, userobject = suri, comment = form.cleaned_data['comment'])
+        ua.save()
         context =  { 'message': message, 'suricata': suri }
         return scirius_render(request, 'suricata/update.html', context)
     else:
-        return scirius_render(request, 'suricata/update.html', { 'suricata': suri })
+        return scirius_render(request, 'suricata/update.html', { 'suricata': suri, 'form': CommentForm() })
 
 
 def dashboard(request):

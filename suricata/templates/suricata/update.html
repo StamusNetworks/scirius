@@ -43,6 +43,7 @@ function table_all_toggle(source) {
 <tr><td class="check"><input type="checkbox" name="build" id="build" class="action_selection" onclick="table_all_toggle(this);" /></td><td><span class="glyphicon glyphicon-cog"> Build</span></td></tr>
 <tr><td class="check"><input type="checkbox" name="push" id="push" class="action_selection" onclick="table_all_toggle(this);" /></td><td><span class="glyphicon glyphicon-share-alt"> Push</span></td></tr>
 </table>
+{% bootstrap_form form %}
 <button type="submit" class="btn btn-primary">
       {% bootstrap_icon "ok" %} Apply
 </button>
