@@ -630,6 +630,7 @@ def threshold_rule(request, rule_id):
                 ua = UserAction(action='create', username = request.user.username, userobject = threshold)
                 ua.ruleset = ruleset
                 ua.comment = form.cleaned_data['comment']
+                ua.options = 'threshold'
                 ua.save()
             return redirect(rule_object)
         else:
