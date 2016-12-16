@@ -887,10 +887,10 @@ class Rule(models.Model, Transformable):
         return rules
 
     def get_actions(self):
-        return self.actions.all()
+        return self.actions.all().order_by('-date')
 
     def get_comments(self):
-        return self.actions.filter(action = "comment")
+        return self.actions.filter(action = "comment").order_by('-date')
 
     def enable(self, ruleset, user = None, comment = None):
         enable_rules = self.get_flowbits_group()
