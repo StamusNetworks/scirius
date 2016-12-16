@@ -2,10 +2,7 @@
 {% extends "rules/base.html" %}
 {% block content %}
 <h2 class="title">User action history</h2>
-{% if table %}
-    {% load render_table from django_tables2 %}
-    {% render_table table %}
-{% else %}
-    <p class="text-center">No data for period.</p>
-{% endif %}
+{% for comment in history %}
+{% include "rules/useraction.html" %}
+{% endfor %}
 {% endblock %}

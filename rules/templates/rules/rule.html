@@ -365,23 +365,7 @@ Comment <span class="badge">{{ rule.get_comments|length }}</span>
 <div id="comments">
 {% if rule.get_actions %}
 {% for comment in rule.get_actions %}
-
-<div class="{% if not comment.action == "comment" %}bg-info{%endif %} comment" id="{{comment.pk }}">
-{% if comment.action == "comment" %}
-<p><strong>{{ comment.username }}</strong> commented at {{ comment.date }}
-{% else %}
-<p><strong>{{ comment.username }}</strong> did {{ comment.action }} {{ comment.options }} on {{ comment.ruleset }} at {{ comment.date }}
-{% endif %}
-{% if comment.user == request.user and comment.action == "comment" %}
- <button type="button" class="close comment_button" id="{{ comment.pk }}" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-{% endif %}
-</p>
-{% if comment.comment %}
-<p>{{ comment.comment }}</p>
-{%else %}
-<p class="text-muted">No comment</p>
-{% endif %}
-</div>
+{% include "rules/useraction.html" %}
 {% endfor %}
 
 <script>
