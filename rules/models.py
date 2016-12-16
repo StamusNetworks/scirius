@@ -94,10 +94,10 @@ class UserAction(models.Model):
 
     def __init__(self, *args, **kwargs):
         super(UserAction, self).__init__(*args, **kwargs)
-        if not self.description:
-            self.description = self.generate_description()
         if not self.username and self.user:
             self.username = self.user.username
+        if not self.description:
+            self.description = self.generate_description()
 
     def generate_description(self):
         ctype = self.content_type.model_class()
