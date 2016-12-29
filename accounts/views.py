@@ -28,6 +28,9 @@ from scirius.utils import scirius_render, scirius_listing
 from forms import LoginForm, UserSettingsForm, NormalUserSettingsForm, PasswordForm, DeleteForm
 from models import SciriusUser
 
+from ipware.ip import get_real_ip
+import logging
+
 def loginview(request, target):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -43,14 +46,20 @@ def loginview(request, target):
                 login(request, user)
                 if not form.cleaned_data['persistent']:
                     request.session.set_expiry(0)
+                logger = logging.getLogger('authentication')
+                logger.info("Successful login for '%s' from '%s'", username, get_real_ip(request))
                 return redirect("/" + target)
             else:
                 form = LoginForm()
                 context = { 'form': form, 'error': 'Disabled account' }
+                logger = logging.getLogger('authentication')
+                logger.error("Invalid login attempt for disabled account '%s' from '%s'", username, get_real_ip(request))
                 return scirius_render(request, 'accounts/login.html', context)
         else:
             form = LoginForm()
             context = { 'form': form, 'error': 'Invalid login' }
+            logger = logging.getLogger('authentication')
+            logger.error("Invalid login attempt for '%s' from '%s'", username, get_real_ip(request))
             return scirius_render(request, 'accounts/login.html', context)
     else:
         form = LoginForm()

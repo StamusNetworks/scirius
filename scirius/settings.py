@@ -193,6 +193,8 @@ RULESET_TRANSFORMATIONS = (('reject', 'Reject'), ('drop', 'Drop'), ('filestore',
 
 LOGIN_URL = '/accounts/login/'
 
+IPWARE_PRIVATE_IP_PREFIX = ()
+
 try:
     from local_settings import *
 except:
