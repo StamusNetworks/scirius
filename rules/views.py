@@ -594,7 +594,6 @@ def toggle_availability(request, rule_id):
     rule_object.toggle_availability()
     ua = UserAction(action='modify', user = request.user, userobject = rule_object)
     ua.options = 'rule availability'
-    ua.comment = form.cleaned_data['comment']
     ua.save()
 
     return redirect(rule_object)
