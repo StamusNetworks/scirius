@@ -779,7 +779,7 @@ class Category(models.Model, Transformable):
                 if existing_rules_hash.has_key(int(sid)):
                     # FIXME update references if needed
                     rule = existing_rules_hash[int(sid)]
-                    if rev == None or rule.rev < rev or source.init_flowbits:
+                    if rev == None or rule.rev < rev or (source.init_flowbits and flowbits):
                         rule.content = line
                         if rev == None:
                             rule.rev = 0
