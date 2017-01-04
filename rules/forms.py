@@ -140,3 +140,6 @@ class TransformForm(RulesetChoiceForm):
 
 class RuleCommentForm(forms.Form):
     comment = forms.CharField(widget = forms.Textarea)
+
+class OptionalCommentForm(forms.Form):
+    comment = forms.CharField(label = "Optional comment", widget = forms.Textarea, required = False)
