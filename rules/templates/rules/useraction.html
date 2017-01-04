@@ -1,13 +1,21 @@
 <div class="{% if not comment.action == "comment" %}bg-info{%endif %} comment" id="{{comment.pk }}">
 {% if comment.action == "comment" %}
 {% if history %}
+{% if comment.userobject %}
 <p><strong>{{ comment.username }}</strong> commented on <a href="{% url 'rule' comment.object_id %}">"{{ comment.userobject }}"</a> at {{ comment.date }}
+{% else %}
+<p>{{ comment.description }} at {{ comment.date }}
+{% endif %}
 {% else %}
 <p><strong>{{ comment.username }}</strong> commented at {{ comment.date }}
 {% endif %}
 {% else %}
 
+{% if comment.userobject %}
 <p><strong>{{ comment.username }}</strong> did {{ comment.action }} {{ comment.options }} {% if comment.action  == "modify" and comment.options ==  "ruleset" %}for {% endif %}<a href="{{ comment.userobject.get_absolute_url }}">"{{ comment.userobject }}"</a> {% if comment.ruleset %}on {{ comment.ruleset }} {% endif %}at {{ comment.date }}
+{% else %}
+<p>{{ comment.description }} at {{ comment.date }}
+{% endif %}
 {% endif %}
 {% if comment.user == request.user and comment.action == "comment" %}
  <button type="button" class="close comment_button" id="{{ comment.pk }}" aria-label="Close"><span aria-hidden="true">&times;</span></button>
