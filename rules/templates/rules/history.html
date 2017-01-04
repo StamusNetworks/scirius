@@ -5,4 +5,19 @@
 {% for comment in history %}
 {% include "rules/useraction.html" %}
 {% endfor %}
+<script>
+$('button.comment_button').click(function() {
+    var comment_pk = $(this).attr("id");
+    if (confirm("Do you want to delete this comment ?")) {
+        $.ajax({
+            url: "{% url 'comment' %}/" + comment_pk + "/delete",
+            success: function(data) {
+                $(".comment#" + comment_pk).toggle();
+                $(".comment#" + comment_pk).remove();
+            }
+            }
+        );
+    }
+ });
+</script>
 {% endblock %}
