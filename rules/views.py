@@ -761,7 +761,7 @@ def activate_source(request, source_id, ruleset_id):
 
     ruleset.sources.add(sversions[0])
     for cat in Category.objects.filter(source = src):
-        cat.enable(ruleset, user = request.user.username)
+        cat.enable(ruleset, user = request.user)
 
     ruleset.needs_test()
     ruleset.save()
