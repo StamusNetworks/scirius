@@ -1,7 +1,7 @@
 
 {% extends "rules/base.html" %}
 {% block content %}
-<h2 class="title">User action history</h2>
+<h2 class="title">User actions history</h2>
 {% for comment in history %}
 {% include "rules/useraction.html" %}
 {% endfor %}
@@ -20,4 +20,13 @@ $('button.comment_button').click(function() {
     }
  });
 </script>
+{% endblock %}
+
+{% block sidebar %}
+<div class="panel-heading">
+<h2 class="panel-title">History</h2>
+</div>
+<div class="panel-body">
+Chronological list of user actions and comments.
+</div>
 {% endblock %}
