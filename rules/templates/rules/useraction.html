@@ -1,8 +1,13 @@
 <div class="{% if not comment.action == "comment" %}bg-info{%endif %} comment" id="{{comment.pk }}">
 {% if comment.action == "comment" %}
-<p><strong>{{ comment.username }}</strong> commented at {{ comment.date }}
+{% if history %}
+<p><strong>{{ comment.username }}</strong> commented on <a href="{% url 'rule' comment.object_id %}">"{{ comment.userobject }}"</a> at {{ comment.date }}
 {% else %}
-<p><strong>{{ comment.username }}</strong> did {{ comment.action }} {{ comment.options }} on {{ comment.ruleset }} at {{ comment.date }}
+<p><strong>{{ comment.username }}</strong> commented at {{ comment.date }}
+{% endif %}
+{% else %}
+
+<p><strong>{{ comment.username }}</strong> did {{ comment.action }} {{ comment.options }} "{{ comment.userobject }}" {% if comment.ruleset %}on {{ comment.ruleset }} {% endif %}at {{ comment.date }}
 {% endif %}
 {% if comment.user == request.user and comment.action == "comment" %}
  <button type="button" class="close comment_button" id="{{ comment.pk }}" aria-label="Close"><span aria-hidden="true">&times;</span></button>
