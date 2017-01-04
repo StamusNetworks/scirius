@@ -7,7 +7,7 @@
 {% endif %}
 {% else %}
 
-<p><strong>{{ comment.username }}</strong> did {{ comment.action }} {{ comment.options }} "{{ comment.userobject }}" {% if comment.ruleset %}on {{ comment.ruleset }} {% endif %}at {{ comment.date }}
+<p><strong>{{ comment.username }}</strong> did {{ comment.action }} {{ comment.options }} <a href="{{ comment.userobject.get_absolute_url }}">"{{ comment.userobject }}"</a> {% if comment.ruleset %}on {{ comment.ruleset }} {% endif %}at {{ comment.date }}
 {% endif %}
 {% if comment.user == request.user and comment.action == "comment" %}
  <button type="button" class="close comment_button" id="{{ comment.pk }}" aria-label="Close"><span aria-hidden="true">&times;</span></button>
