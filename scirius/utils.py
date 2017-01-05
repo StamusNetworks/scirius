@@ -56,6 +56,7 @@ class TimezoneMiddleware(object):
 def scirius_render(request, template, context):
     context['generator'] = settings.RULESET_MIDDLEWARE
     context['path_info'] = build_path_info(request)
+    context['scirius_release'] = settings.SCIRIUS_FLAVOR + " v" + settings.SCIRIUS_VERSION
     gsettings = get_system_settings()
     if settings.USE_INFLUXDB:
         context['influxdb'] = 1
