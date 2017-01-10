@@ -76,7 +76,9 @@ function load_rules(from_date, hosts, filter, callback) {
              $('#rules_table').empty();
              $('#rules_table').append(data);
              prepare_rule_details();
-             callback();
+             if (callback) {
+                 callback();
+             }
           },
 	  error: function(data) {
              $('#rules_table').text("Unable to get data.");
