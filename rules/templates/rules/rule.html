@@ -55,7 +55,11 @@
 <a href="{% url 'threshold_rule' rule.sid %}?action=suppress">Suppress rule</a>
 </li>
 <li>
+{% if rule.get_transform|length %}
 <a href="{% url 'transform_rule' rule.sid %}">Transform rule</a>
+{% else %}
+<span class="text-muted">Transform rule</span>
+{% endif %}
 </li>
 {% endif %}
 {% if not rule.state_in_source %}

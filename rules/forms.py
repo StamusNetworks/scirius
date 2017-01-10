@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django import forms
 from django.utils import timezone
 from django.conf import settings
-from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold, UserAction
+from rules.models import Ruleset, Rule, Source, Category, SourceAtVersion, SystemSettings, Threshold, UserAction
 
 
 class CommentForm(forms.Form):
@@ -134,9 +134,23 @@ class EditThresholdForm(forms.ModelForm, CommentForm):
         model = Threshold
         exclude = ['pk', 'rule']
 
-class TransformForm(RulesetChoiceForm):
+class RuleTransformForm(forms.ModelForm, RulesetChoiceForm):
     rulesets_label = "Apply transformation(s) to the following ruleset(s)"
-    type = forms.ChoiceField(settings.RULESET_TRANSFORMATIONS)
+
+    class Meta:
+        model = Rule
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        super(RuleTransformForm, self).__init__(*args, **kwargs)
+        trans = self.instance.get_transform()
+        self.fields['type'] = forms.ChoiceField(trans)
+        comment = self.fields.pop('comment')
+        self.fields['comment'] = comment
+
+class TransformForm(RulesetChoiceForm):
+     rulesets_label = "Apply transformation(s) to the following ruleset(s)"
+     type = forms.ChoiceField(settings.RULESET_TRANSFORMATIONS)
 
 class RuleCommentForm(forms.Form):
     comment = forms.CharField(widget = forms.Textarea)

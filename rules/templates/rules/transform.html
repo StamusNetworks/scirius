@@ -35,6 +35,8 @@ Changing transformation for the rule will add an exception.
 <h2>Transform category</h2>
 {% endif %}
 
+
+{% if category or rule.get_transform|length %}
 <p>
 Please choose a transformation to apply on current object. As transformation are exclusive, you need to pick one to apply.
 </p>
@@ -88,4 +90,7 @@ $("#id_type").change(select_rulesets);
 $(document).ready(select_rulesets());
 
 </script>
+{% else %}
+The rule can not be transformed because of its definition.
+{% endif %}
 {% endblock %}

@@ -982,6 +982,27 @@ class Rule(models.Model, Transformable):
                 return True
             return False
 
+    def can_drop(self):
+        return not "noalert" in self.content
+
+    def can_filestore(self):
+        if " http " in self.content or " smtp " in self.content:
+            return True
+        return False
+
+    def get_transform(self):
+        trans = ()
+        if self.can_drop():
+            if ('drop', 'Drop') in settings.RULESET_TRANSFORMATIONS:
+                trans = trans + (('drop', 'Drop'),)
+            if ('reject', 'Reject') in settings.RULESET_TRANSFORMATIONS:
+                trans = trans + (('reject', 'Reject'),)
+        if self.can_filestore():
+            if ('filestore', 'Filestore') in settings.RULESET_TRANSFORMATIONS:
+                trans = trans + (('filestore', 'Filestore'),)
+        return trans
+
+
 # we should use django reversion to keep track of this one
 # even if fixing HEAD may be complicated
 class Ruleset(models.Model):

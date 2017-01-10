@@ -393,7 +393,7 @@ def transform_rule(request, rule_id):
         return scirius_render(request, 'rules/rule.html', context)
         
     if request.method == 'POST': # If the form has been submitted...
-        form = TransformForm(request.POST)
+        form = RuleTransformForm(request.POST, instance = rule_object)
         if form.is_valid(): # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
             for ruleset in Ruleset.objects.all():
@@ -422,7 +422,7 @@ def transform_rule(request, rule_id):
                     ua.save()
         return redirect(rule_object)
 
-    form = TransformForm(initial = { 'type' : 'drop'})
+    form = RuleTransformForm(initial = { 'type' : 'drop'}, instance = rule_object)
     reject_rulesets = []
     drop_rulesets = []
     filestore_rulesets = []
@@ -451,7 +451,7 @@ def transform_category(request, cat_id):
         return scirius_render(request, 'rules/category.html', context)
         
     if request.method == 'POST': # If the form has been submitted...
-        form = TransformForm(request.POST)
+        form = CategoryTransformForm(request.POST)
         if form.is_valid(): # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
             for ruleset in Ruleset.objects.all():
@@ -480,7 +480,7 @@ def transform_category(request, cat_id):
                     ua.save()
         return redirect(cat_object)
 
-    form = TransformForm(initial = { 'type' : 'drop'})
+    form = CategoryTransformForm(initial = { 'type' : 'drop'})
     reject_rulesets = []
     drop_rulesets = []
     filestore_rulesets = []
