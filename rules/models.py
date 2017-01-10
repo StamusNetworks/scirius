@@ -946,7 +946,8 @@ class Rule(models.Model, Transformable):
             elif self.is_filestore(ruleset, transformation_sets = transformation_sets):
                 content = self.apply_transformation(content, "filestore")
         elif self.is_filestore(ruleset, transformation_sets = transformation_sets):
-            content = self.apply_transformation(content, "filestore")
+            if self.can_filestore():
+                content = self.apply_transformation(content, "filestore")
         return content
 
     def toggle_transformation(self, ruleset, type = "drop"):
