@@ -938,10 +938,13 @@ class Rule(models.Model, Transformable):
     def generate_content(self, ruleset, transformation_sets = None):
         content = self.content
         # explicitely set prio on transformation here
-        if self.is_reject(ruleset, transformation_sets = transformation_sets):
-            content = self.apply_transformation(content, "reject")
-        elif self.is_drop(ruleset, transformation_sets = transformation_sets):
-            content = self.apply_transformation(content, "drop")
+        if self.can_drop():
+            if self.is_reject(ruleset, transformation_sets = transformation_sets):
+                content = self.apply_transformation(content, "reject")
+            elif self.is_drop(ruleset, transformation_sets = transformation_sets):
+                content = self.apply_transformation(content, "drop")
+            elif self.is_filestore(ruleset, transformation_sets = transformation_sets):
+                content = self.apply_transformation(content, "filestore")
         elif self.is_filestore(ruleset, transformation_sets = transformation_sets):
             content = self.apply_transformation(content, "filestore")
         return content
