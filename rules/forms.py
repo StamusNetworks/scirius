@@ -148,7 +148,7 @@ class RuleTransformForm(forms.ModelForm, RulesetChoiceForm):
         comment = self.fields.pop('comment')
         self.fields['comment'] = comment
 
-class TransformForm(RulesetChoiceForm):
+class CategoryTransformForm(RulesetChoiceForm):
      rulesets_label = "Apply transformation(s) to the following ruleset(s)"
      type = forms.ChoiceField(settings.RULESET_TRANSFORMATIONS)
 
