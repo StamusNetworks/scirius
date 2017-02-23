@@ -1085,6 +1085,9 @@ def edit_ruleset(request, ruleset_id):
         else:
             form = RulesetEditForm(request.POST, instance=ruleset)
             if form.is_valid():
+                ua = UserAction(userobject = ruleset, ruleset = ruleset, action = 'modify', user = request.user, date = timezone.now(), comment = form.cleaned_data['comment'])
+                ua.options = "rename"
+                ua.save()
                 form.save()
         return redirect(ruleset)
     else:
