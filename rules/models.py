@@ -108,6 +108,8 @@ class UserAction(models.Model):
         if self.ruleset:
             if self.action in ["disable", "enable"]:
                 return "%s on ruleset '%s' for %s '%s' by user '%s'" % (self.action, self.ruleset, object_model, self.userobject, self.username) 
+            if self.action == "modify" and self.ruleset == self.userobject:
+               return "Ruleset '%s' has been modified by user '%s'" % (self.ruleset, self.username)
             return "%s on %s '%s' by user '%s'" % (self.action, object_model, self.userobject, self.username) 
         else:
             return "%s on %s '%s' by user '%s'" % (self.action, object_model, self.userobject, self.username) 
