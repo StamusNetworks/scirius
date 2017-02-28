@@ -199,6 +199,15 @@ This allows to have three useful levels for users:
 * Staff member: with staff flag set, they can update rulesets and suricata
 * Super user: flags staff and superuser set, they can do anything
 
+User actions logging
+--------------------
+
+All actions done in ruleset management are logged. It is possible to access
+their history by using `Actions history`_ in the Stamus icon menu.
+
+Optional comment are available for each action to allow users to interact
+with each other.
+
 Ruleset management
 ------------------
 
@@ -318,6 +327,41 @@ The list of Threshold and Suppress for a rule can be seen from the ``Rules info`
 Threshold and Suppress are bound to a Ruleset. You can see all the defined ones from the Ruleset page.
 
 To suppress or edit a Threshold or a Suppress, simply click on the displayed ID. Then select ``Edit`` or ``Delete``  in the left menu.
+
+Rule transformation
+-------------------
+
+Rule transformation allows the action of a particular rule to be changed - to drop, reject or filestore.
+Please note these actions requires advanced knowledge about rules and the rule keywords language.
+
+Once you have a particular rule that you would like to transform  - in the rule's details page on the left hand side panel under ``Actions`` click
+``Transform rule``. You will be presented with a few choices:
+
+- Type of transformation to choose form:
+
+  ``drop`` - (IPS mode) will convert the rule from alert to drop - aka IPS mode needs to be explicitly set up and configured before hand.
+
+  ``reject`` - (IDPS/hybrid) will convert the rule from alert to reject meaning that when triggered a RST/or dst unreachable  packets will be send to both the src and dst IP.
+
+  ``filestore`` - will convert those rules only that have protocols allowing for file extraction - for example ``alert http...`` or ``alert smtp``
+
+- Choose a ruleset you wish the newly transformed rule to be added/registered in.
+
+**NOTE:** A particular rule can be transformed only once.
+
+**NOTE:** For using the ``drop`` functionality you need to have a valid IPS setup.
+
+After you make the desired selection you can add in a comment for the purpose of accountability and click on ``Valid``.
+You will have the details about the transformed rule in the ``Information`` tab. You can review and confirm the transformation and the ruleset it is add in alongside any comments.
+
+Only rules that are active can be transformed. If a rule is not active in a particular ruleset it will not have the transformation or
+suppress/threshold options available on the left hand side panel. To make it active you can toggle the availability of that rule by clicking
+on the ``Toggle availability`` option on the left hand side panel menu.
+
+The history tab of the rule details page will have any comments and changes to the transformed rule for traceability.
+
+After the transformation is done the ruleset(s) that contain the new transformed rule need to be pushed to the remote devices in order for the rule to
+be deployed. That can be accomplished either through a manual or scheduled ruleset push as explained in `Updating Suricata ruleset`_.
 
 Updating Suricata ruleset
 -------------------------
