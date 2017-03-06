@@ -19,4 +19,7 @@ urlpatterns = patterns('',
     url(r'^(?P<path>elasticsearch/.*)$', KibanaProxyView.as_view()),
     url(r'^kibana/(?P<path>.*)$', KibanaProxyView.as_view()),
     url(r'^evebox/(?P<path>.*)$', EveboxProxyView.as_view()),
+    # Kibana 5.2 specific
+    url(r'^(?P<path>ui/fonts.*)$', KibanaProxyView.as_view()),
+    url(r'^(?P<path>es_admin.*)$', KibanaProxyView.as_view()),
 )
