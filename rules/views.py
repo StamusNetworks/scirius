@@ -558,6 +558,7 @@ def delete_alerts(request, rule_id):
                         context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
                     except:
                         pass
+                    context['comment_form'] = OptionalCommentForm()
                     return scirius_render(request, 'rules/delete_alerts.html', context)
             messages.add_message(request, messages.INFO, "Events deletion may be in progress, graphics and stats could be not in sync.");
             ua = UserAction(action='delete', options='alerts', user = request.user, userobject = rule_object)
