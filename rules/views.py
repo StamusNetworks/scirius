@@ -542,6 +542,7 @@ def delete_alerts(request, rule_id):
 
     if not request.user.is_staff:
         context = { 'object': rule, 'error': 'Unsufficient permissions' }
+        context['comment_form'] = OptionalCommentForm()
         return scirius_render(request, 'rules/delete_alerts.html', context)
 
     if request.method == 'POST': # If the form has been submitted...
