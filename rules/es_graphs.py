@@ -1005,7 +1005,7 @@ def es_delete_alerts_by_sid_v2(sid):
         data = json.loads(r.text)
         return data
     elif r.status_code == 400:
-        return {'msg': 'Elasticsearch needs to have delete-by-plugin installed to delete alerts for a rule.', 'status': r.status_code }
+        return {'msg': 'Elasticsearch 2.x needs to have delete-by-plugin installed to delete alerts for a rule.', 'status': r.status_code }
     else:
         return {'msg': 'Unknown error', 'status': r.status_code }
 
@@ -1021,9 +1021,7 @@ def es_delete_alerts_by_sid_v5(sid):
         data[u'status'] = 200
         return data
     elif r.status_code == 400:
-        if settings.ELASTICSEARCH_VERSION > 2:
-            return {'msg': r.text, 'status': r.status_code }
-        return {'msg': 'Elasticsearch needs to have delete-by-plugin installed to delete alerts for a rule.', 'status': r.status_code }
+        return {'msg': r.text, 'status': r.status_code }
     else:
         return {'msg': 'Unknown error %s', 'status': r.status_code }
 
