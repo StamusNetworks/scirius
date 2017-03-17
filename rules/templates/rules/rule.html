@@ -128,8 +128,20 @@ Comment <span class="badge">{{ rule.get_comments|length }}</span>
 
 {% if elasticsearch %}
 
+<script>
+$(document).ready(function(){
+    $('a[data-toggle="tab"]').on('show.bs.tab', function(e) {
+        localStorage.setItem('ruleactiveTab', $(e.target).attr('href'));
+    });
+    var activeTab = localStorage.getItem('ruleactiveTab');
+    if(activeTab){
+        $('#ruleinfo a[href="' + activeTab + '"]').tab('show');
+    }
+});
+</script>
+
   <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist">
+  <ul class="nav nav-tabs" role="tablist" id="ruleinfo">
     {% if suricata_stats %}
     <li role="presentation" class="active"><a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Statistics</a></li>
     {% endif %}
