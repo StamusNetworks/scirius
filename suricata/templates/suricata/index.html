@@ -5,10 +5,23 @@
 
 {% if elasticsearch %}
 
+
+<script>
+$(document).ready(function(){
+    $('a[data-toggle="tab"]').on('show.bs.tab', function(e) {
+        localStorage.setItem('suristatsactiveTab', $(e.target).attr('href'));
+    });
+    var activeTab = localStorage.getItem('suristatsactiveTab');
+    if(activeTab){
+        $('#suristats a[href="' + activeTab + '"]').tab('show');
+    }
+});
+</script>
+
 <div role="tabpanel">
 
   <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist">
+  <ul class="nav nav-tabs" role="tablist" id="suristats">
     <li role="presentation" class="active"><a href="#rules" aria-controls="rules" role="tab" data-toggle="tab">Rules activity</a></li>
     {% if suricata_stats %}
     <li role="presentation"><a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Capture stats</a></li>
