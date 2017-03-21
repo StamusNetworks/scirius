@@ -5,10 +5,22 @@
 <div class="container-fluid">
 {% if elasticsearch %}
 
+<script>
+$(document).ready(function(){
+    $('a[data-toggle="tab"]').on('show.bs.tab', function(e) {
+        localStorage.setItem('esstatsactiveTab', $(e.target).attr('href'));
+    });
+    var activeTab = localStorage.getItem('esstatsactiveTab');
+    if(activeTab){
+        $('#estats a[href="' + activeTab + '"]').tab('show');
+    }
+});
+</script>
+
 <div role="tabpanel">
 
   <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist">
+  <ul class="nav nav-tabs" id="estats" role="tablist">
     <li role="presentation" {% if not request.GET.query %} class="active" {% endif %}><a href="#cluster" aria-controls="cluster" role="tab" data-toggle="tab">Elasticsearch cluster info</a></li>
     <li role="presentation" {% if request.GET.query %} class="active" {% endif %}><a href="#indices" aria-controls="indices" role="tab" data-toggle="tab">Elasticsearch indices stats</a></li>
   </ul>
