@@ -246,6 +246,9 @@ class Source(models.Model):
                 else:
                     category[0].get_rules(self)
                 # get rules in this category
+        for category in Category.objects.filter(source = self):
+            if not os.path.isfile(os.path.join(source_git_dir, category.filename)):
+                category.delete()
 
     def get_git_repo(self, delete = False):
         # check if git tree is in place
