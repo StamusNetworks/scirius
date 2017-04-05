@@ -59,7 +59,8 @@ class SourceForm(forms.ModelForm, CommentForm):
     file = forms.FileField(required = False)
     authkey = forms.CharField(max_length=100,
                               label = "Optional authorization key",
-                              required = False)
+                              required = False,
+                              widget = forms.PasswordInput(render_value = True))
     class Meta:
         model = Source
         exclude = ['created_date', 'updated_date']
