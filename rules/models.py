@@ -300,6 +300,8 @@ class Source(models.Model):
             # only file and dir are allowed
             if not (member.isfile() or member.isdir()):
                 raise SuspiciousOperation("Suspect tar file contains non regular file '%s'" % (member.name))
+            if member.name.startswith('/') or '..' in member.name:
+                raise SuspiciousOperation("Suspect tar file contains invalid path '%s'" % (member.name))
             # don't allow tar file with file in root dir
             if member.isfile() and not '/' in member.name:
                 raise SuspiciousOperation("Suspect tar file contains file in root directory '%s' instead of under 'rules' directory" % (member.name))
