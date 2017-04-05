@@ -230,17 +230,18 @@ class Source(models.Model):
         self.updated_rules["deleted"] = list(set(self.updated_rules["deleted"]).union(set(update["deleted"])))
         self.updated_rules["updated"] = list(set(self.updated_rules["updated"]).union(set(update["updated"])))
 
-    def get_categories(self, tarfile):
-        catname = re.compile("\/(.+)\.rules$")
-        for member in tarfile.getmembers():
-            if member.name.endswith('.rules'):
-                match = catname.search(member.name)
+    def get_categories(self):
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
+        catname = re.compile("(.+)\.rules$")
+        for f in os.listdir(os.path.join(source_git_dir, 'rules')):
+            if f.endswith('.rules'):
+                match = catname.search(f)
                 name = match.groups()[0]
                 category = Category.objects.filter(source = self, name = name)
                 if not category:
                     category = Category.objects.create(source = self,
                                             name = name, created_date = timezone.now(),
-                                            filename = member.name)
+                                            filename = os.path.join('rules', f))
                     category.get_rules(self)
                 else:
                     category[0].get_rules(self)
@@ -296,6 +297,7 @@ class Source(models.Model):
         # extract file
         tfile = tarfile.open(fileobj=f)
         dir_list = []
+        rules_dir = None
         for member in tfile.getmembers():
             # only file and dir are allowed
             if not (member.isfile() or member.isdir()):
@@ -305,15 +307,26 @@ class Source(models.Model):
             # don't allow tar file with file in root dir
             if member.isfile() and not '/' in member.name:
                 raise SuspiciousOperation("Suspect tar file contains file in root directory '%s' instead of under 'rules' directory" % (member.name))
-            if member.isdir() and not '/' in member.name:
-                dir_list.append(member.name)
+            if member.isdir() and member.name.endswith('rules'):
+                if rules_dir:
+                    raise SuspiciousOperation("Tar file contains two 'rules' directory instead of one")
+                dir_list.append(member)
+                rules_dir = member.name
+            if member.isfile() and member.name.split('/')[-2] == 'rules':
+                dir_list.append(member)
+        if rules_dir == None:
+            raise SuspiciousOperation("Tar file does not contain a 'rules' directory")
 
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
-        tfile.extractall(path=source_git_dir)
+        tfile.extractall(path=source_git_dir, members = dir_list)
+        if "/" in rules_dir:
+            shutil.move(os.path.join(source_git_dir, rules_dir), os.path.join(source_git_dir, 'rules'))
+            shutil.rmtree(os.path.join(source_git_dir, rules_dir.split('/')[0]))
+
         index = repo.index
         if len(index.diff(None)) or self.first_run:
             os.environ['USERNAME'] = 'scirius'
-            index.add(dir_list)
+            index.add(['rules'])
             message =  'source version at %s' % (self.updated_date)
             index.commit(message)
 
@@ -322,7 +335,7 @@ class Source(models.Model):
         # or create it if needed
         self.create_sourceatversion()
         # Get categories
-        self.get_categories(tfile)
+        self.get_categories()
 
     def handle_other_file(self, f):
         self.updated_date = timezone.now()
