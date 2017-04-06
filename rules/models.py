@@ -807,6 +807,7 @@ class Category(models.Model, Transformable):
                             rule.rev = rev
                         if rule.category != self:
                             rule.category = self
+                        rule.msg = msg
                         if not source.init_flowbits:
                             flowbits = self.parse_rule_flowbit(source, line)
                         rule.flowbits = flowbits
