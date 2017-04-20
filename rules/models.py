@@ -26,6 +26,7 @@ from django.core.exceptions import FieldError, SuspiciousOperation, ValidationEr
 from django.core.validators import validate_ipv4_address
 from django.db import transaction
 from django.utils import timezone
+from django.db.models import Q
 import requests
 import tempfile
 import tarfile
@@ -908,7 +909,8 @@ class Rule(models.Model, Transformable):
         return rules
 
     def get_actions(self):
-        return self.actions.all().order_by('-date')
+        qset = UserAction.objects.filter(Q(description__contains = "sig_id %d" % (self.pk)) | Q(description__contains = "'%d:" % (self.pk))).order_by('-date')
+        return qset
 
     def get_comments(self):
         return self.actions.filter(action = "comment").order_by('-date')
