@@ -331,7 +331,7 @@ function draw_sunburst(from_date, hosts, filter, callback) {
               return;
          }
 var height = 300;
-var width = $("#circles").parent().width();
+var width = 300;
 var radius = Math.min(width, height) / 2;
 
 var x = d3.scale.linear()
