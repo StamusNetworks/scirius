@@ -12,7 +12,7 @@ pytz
 requests
 six
 smmap
-urllib3
+urllib3<1.17
 ipy
 elasticsearch
 django-ipware
