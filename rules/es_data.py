@@ -234,9 +234,9 @@ class ESData(object):
         if self._get_kibana_subdirfiles('index-pattern') == []:
             raise Exception('Please make sure Kibana dashboards are installed at %s: no index-pattern found' % settings.KIBANA_DASHBOARDS_PATH)
 
-        self._kibana_remove('dashboard', {'query': {'match': {'title': 'SN *'}}})
-        self._kibana_remove('visualization', {'query': {'match': {'title': 'SN *'}}})
-        self._kibana_remove('search', {'query': {'match': {'title': 'SN *'}}})
+        self._kibana_remove('dashboard', {'query': {'match': {'title': 'SN*'}}})
+        self._kibana_remove('visualization', {'query': {'match': {'title': 'SN*'}}})
+        self._kibana_remove('search', {'query': {'match': {'title': 'SN*'}}})
         self._kibana_remove('index-pattern', {'query': {'match_all': {}}})
 
         for _type in ('index-pattern', 'search', 'visualization', 'dashboard'):
