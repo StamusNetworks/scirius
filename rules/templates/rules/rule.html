@@ -34,7 +34,7 @@
 </ul>
 </div>
 
-{% endif %}
+{% endif %} {# kibana or evebox #}
 {% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
@@ -61,7 +61,7 @@
 <span class="text-muted">Transform rule</span>
 {% endif %}
 </li>
-{% endif %}
+{% endif %} {# rule.state #}
 {% if not rule.state_in_source %}
 <li>
 <a href="{% url 'toggle_availability' rule.sid %}">Toggle availability</a>
@@ -74,7 +74,7 @@
 {% endif %}
 </ul>
 </div>
-{% endif %}
+{% endif %} {# user.is_staff #}
 {% endblock %}
 
 {% block content %}
@@ -121,12 +121,11 @@ Comment <span class="badge">{{ rule.get_comments|length }}</span>
 </div>
 {% endif %}
 </div> <!-- panel -->
-{% endif %}
 </div> <!-- col -->
+{% endif %}
 </div> <!-- row -->
 
 
-{% if elasticsearch %}
 
 <script>
 $(document).ready(function(){
@@ -142,7 +141,7 @@ $(document).ready(function(){
 
   <!-- Nav tabs -->
   <ul class="nav nav-tabs" role="tablist" id="ruleinfo">
-    {% if suricata_stats %}
+    {% if suricata_stats and elasticsearch %}
     <li role="presentation" class="active"><a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Statistics</a></li>
     {% endif %}
      <li role="presentation"><a href="#rule_status" aria-controls="rule_status" role="tab" data-toggle="tab">Information</a></li>
@@ -150,7 +149,8 @@ $(document).ready(function(){
   </ul>
 
  <div class="tab-content">
-  
+
+{% if suricata_stats and elasticsearch %}
 <div role="tabpanel" class="tab-pane fade in active" id="stats">
 <div class="container-fluid" >
 <div class="col-md-4">
@@ -251,7 +251,7 @@ $(document).ready(function(){
 </div> <!-- container -->
 </div>
 
-</div> <!-- row -->
+</div> <!-- container-fluid -->
 {% if probes %}
 <div class="row">
 <div class="col-md-12">
@@ -281,10 +281,11 @@ $(document).ready(function(){
 </div> <!-- col -->
 </div> <!-- row -->
 
-{% endif %}
-</div> <!-- container -->
+{% endif %} {# if probes #}
+</div> <!-- tabpanel -->
+{% endif %} {# suricata_stats and elasticsearch #}
 
-<div role="tabpanel" class="tab-pane fade in" id="rule_status">
+<div role="tabpanel" class="tab-pane fade in{% if not suricata_stats and not elasticsearch %} active{% endif %}" id="rule_status">
 <div class="container-fluid">
 
 <h2 class="title">Definition</h2>
@@ -302,9 +303,8 @@ $(document).ready(function(){
 </div>
 {% endif %}
 {% endfor %}
-{% endif %}
+{% endif %} {# rule_transformation #}
 
-{% endif %}
 <div class="row">
         <div id="validity_error" class="col-md-12" style="display:none;">
                 <h2 class="title">Rulesets error</h2>
@@ -342,7 +342,7 @@ $(document).ready(function(){
 </div>
 {% endfor %}
         </div>
-</div>
+</div> <!-- container-fluid -->
 
 </div> <!-- col -->
 
@@ -365,8 +365,6 @@ $(document).ready(function(){
 </div> <!-- col -->
 {% endif %}
 
-
-{% if elasticsearch %}
 </div>
 </div>
 
@@ -422,10 +420,11 @@ No comment.
 </div> <!-- tabpanel -->
 
  <script>
-
+{% if suricata_stats and elasticsearch %}
 {% if probes %}
 $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "alert.signature_id:{{ rule.sid }}" ); });
 {% endif %}
+
 
 function load_stats() {
     $.ajax({
@@ -497,12 +496,12 @@ function load_ip_stats() {
 }
 
 $( 'document' ).ready(load_ip_stats());
-
+{% endif %} {# suricata_stats and elasticsearch #}
 </script>
-{% endif %}
+
 
 </div>
-
+</div> <!-- container-fluid -->
 <script>
 function rule_validity_check() {
     $("div.ruleset-status").each(
