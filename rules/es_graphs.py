@@ -603,32 +603,27 @@ IPPPAIR_ALERTS_COUNT = """
 {
   "size": 0,
   "query": {
-    "filtered": {
-      "query": {
-        "query_string": {
-          "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
-          "analyze_wildcard": true
-        }
-      },
-      "filter": {
         "bool": {
           "must": [
             {
               "range": {
-                "timestamp": {
+                "@timestamp": {
                   "gte": {{ from_date }}
                 }
+              }
+            }, {
+              "query_string": {
+                "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+                "analyze_wildcard": true
               }
             }
           ]
         }
-      }
-    }
-  },
+      },
   "aggs": {
         "src_ip": {
           "terms": {
-            "field": "src_ip.raw",
+            "field": "src_ip.{{ keyword }}",
             "size": 20,
             "order": {
               "_count": "desc"
@@ -637,7 +632,7 @@ IPPPAIR_ALERTS_COUNT = """
           "aggs": {
             "dest_ip": {
               "terms": {
-                "field": "dest_ip.raw",
+                "field": "dest_ip.{{ keyword }}",
                 "size": 20,
                 "order": {
                   "_count": "desc"
@@ -645,7 +640,7 @@ IPPPAIR_ALERTS_COUNT = """
             }, "aggs": {
                 "alerts": {
                     "terms": {
-                        "field": "alert.signature.raw",
+                        "field": "alert.signature.{{ keyword }}",
                         "size": 20,
                         "order": {
                             "_count": "desc"
