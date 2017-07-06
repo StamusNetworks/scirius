@@ -207,7 +207,6 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
 
         var i = 0;
         setInterval(function() {
-            link = json.links[i];
             text = "<div class='text-center'><h3 class='title'>"  + json.links[i].source.id + " <span class='glyphicon glyphicon-transfer'> </span> " + json.links[i].target.id + "</h3></div>"
             //text = text + "<h3 class='title text-center'>Alerts</h3> <ul class='list-group'>";
             text = text + "<ul class='list-group'>";
