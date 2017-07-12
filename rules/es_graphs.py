@@ -586,16 +586,7 @@ LATEST_STATS_ENTRY = """
         }
           ]
     }
-  },
-  "fields": [
-    "_source"
-  ],
-    "fielddata_fields": [
-    "@timestamp",
-    "flow.start",
-    "timestamp",
-    "flow.end"
-  ]
+  }
 }
 """
 
