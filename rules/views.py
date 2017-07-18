@@ -309,7 +309,8 @@ def elasticsearch(request):
         else:
             context = {}
             complete_context(request, context)
-            return scirius_render(request, 'rules/elasticsearch.html', context)
+            template = Probe.common.get_es_template()
+            return scirius_render(request, template, context)
 
 def influxdb(request):
     time_range = int(request.GET.get('time_range', 3600))

@@ -63,6 +63,9 @@ class Info():
     def memory(self):
         return psutil.virtual_memory()
 
+def get_es_template():
+    return 'rules/elasticsearch.html'
+
 class Test():
     RULEFILE_ERRNO = [ 39, 42 ]
     USELESS_ERRNO = [ 40, 43, 44 ]
