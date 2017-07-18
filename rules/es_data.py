@@ -246,7 +246,7 @@ class ESData(object):
         self._kibana_set_default_index(u'logstash-*')
 
     def _get_indexes(self):
-        res = self.client.search(index='_stats')
+        res = self.client.indices.stats()
         indexes = res['indices'].keys()
         try:
             indexes.remove('.kibana')
