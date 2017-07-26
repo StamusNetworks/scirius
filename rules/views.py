@@ -479,9 +479,9 @@ def transform_category(request, cat_id):
                         ua = UserAction(action='disable', options='filestore', user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                 if ua:
                     ua.save()
-        return redirect(cat_object)
-
-    form = CategoryTransformForm(initial = { 'type' : 'drop'})
+            return redirect(cat_object)
+    else:
+        form = CategoryTransformForm(initial = { 'type' : 'drop'})
     reject_rulesets = []
     drop_rulesets = []
     filestore_rulesets = []
@@ -515,8 +515,9 @@ def switch_rule(request, rule_id, operation = 'suppress'):
                 elif operation == 'enable':
                     rule_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
                 ruleset.save()
-        return redirect(rule_object)
-    form = RulesetSuppressForm()
+            return redirect(rule_object)
+    else:
+        form = RulesetSuppressForm()
     rules = rule_object.get_flowbits_group()
     context = { 'rule': rule_object, 'form': form }
     if len(rules):
@@ -705,8 +706,9 @@ def suppress_category(request, cat_id, operation = 'suppress'):
                     cat_object.disable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
                 elif operation == 'enable':
                     cat_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
-        return redirect(cat_object)
-    form = RulesetSuppressForm()
+            return redirect(cat_object)
+    else:
+        form = RulesetSuppressForm()
     context = { 'category': cat_object, 'form': form, 'operation': operation }
     return scirius_render(request, 'rules/suppress_category.html', context)
 

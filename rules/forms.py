@@ -40,7 +40,7 @@ class RulesetChoiceForm(CommentForm):
                         ruleset_list,
                         widget=forms.CheckboxSelectMultiple(),
                         label = self.rulesets_label,
-                        required = False)
+                        required=True)
         comment = self.fields.pop('comment')
         self.fields['comment'] = comment
 
