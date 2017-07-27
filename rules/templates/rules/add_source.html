@@ -56,6 +56,7 @@ function activate_ruleset_from(src_pk, rulesets, ruleset_list, r_length)
    var tgturl = "/rules/source/" + src_pk + "/activate/" + ri;
    $.ajax({
        url: tgturl,
+       type: 'POST',
           success: function(data) {
              if (data == true) {
                  var progress = 80 + (r_length - rulesets.length) * 20 / rulesets.length;

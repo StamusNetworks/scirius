@@ -595,6 +595,9 @@ def toggle_availability(request, rule_id):
         context = { 'object': rule, 'error': 'Unsufficient permissions' }
         return scirius_render(request, 'rules/rule.html', context)
 
+    if not request.method == 'POST':
+        return
+
     rule_object.toggle_availability()
     ua = UserAction(action='modify', user = request.user, userobject = rule_object)
     ua.options = 'rule availability'
@@ -756,6 +759,14 @@ def activate_source(request, source_id, ruleset_id):
 
     if not request.user.is_staff:
         return HttpResponse(json.dumps(False), content_type="application/json")
+
+    if request.method != 'POST': # If the form has been submitted...
+        if request.is_ajax():
+            data = {}
+            data['status'] = False
+            data['errors'] = "Invalid method for page"
+            return HttpResponse(json.dumps(data), content_type="application/json")
+        return source(request, source_id, error="Invalid method for page")
 
     src = get_object_or_404(Source, pk=source_id)
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)

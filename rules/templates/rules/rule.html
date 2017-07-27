@@ -64,7 +64,10 @@
 {% endif %} {# rule.state #}
 {% if not rule.state_in_source %}
 <li>
-<a href="{% url 'toggle_availability' rule.sid %}">Toggle availability</a>
+<form id="toggle_availability_form" class="form" action="{% url 'toggle_availability' rule.sid %}" method="post">
+    {% csrf_token %}
+    <a id="toggle_availability" href="">Toggle availability</a>
+</form>
 </li>
 {% endif %}
 {% if elasticsearch %}
@@ -136,6 +139,10 @@ $(document).ready(function(){
     if(activeTab){
         $('#ruleinfo a[href="' + activeTab + '"]').tab('show');
     }
+
+    $('#toggle_availability').click(function () {
+        $('#toggle_availability_form').submit();
+    });
 });
 </script>
 
