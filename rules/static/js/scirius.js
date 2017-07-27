@@ -187,7 +187,12 @@ function draw_timeline(from_date, hosts, filter) {
                                         .datum(sdata)
                                         .call(chart);
 
-                                nv.utils.windowResize(function() { chart.update() });
+                                nv.utils.windowResize(function() { chart.update(); });
+                                $("[role='tab']").on('shown.bs.tab', function() {
+                                    chart.duration(0);
+                                    chart.update();
+                                    chart.duration(350);
+                                });
                                 return chart;
                         });
                 },
@@ -286,7 +291,12 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
                                         .datum(sdata)
                                         .call(chart);
 
-                                nv.utils.windowResize(function() { chart.update() });
+                                nv.utils.windowResize(function() { chart.update(); });
+                                $("[role='tab']").on('shown.bs.tab', function() {
+                                    chart.duration(0);
+                                    chart.update();
+                                    chart.duration(350);
+                                });
                                 return chart;
                         });
                 },
@@ -611,7 +621,12 @@ function draw_influxdb_timeline(time_range, request, cssid) {
                                         .datum(sdata)
                                         .call(chart);
 
-                                nv.utils.windowResize(function() { chart.update() });
+                                nv.utils.windowResize(function() { chart.update(); });
+                                $("[role='tab']").on('shown.bs.tab', function() {
+                                    chart.duration(0);
+                                    chart.update();
+                                    chart.duration(350);
+                                });
                                 return chart;
                         });
                 },
