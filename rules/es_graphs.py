@@ -671,7 +671,7 @@ def build_es_timestamping(date, data = 'alert'):
     try:
         indexes = []
         while date < end:
-            indexes.append("%s%s" % (base_index, date.strftime(format_table[settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING])))
+            indexes.append("%s%s*" % (base_index, date.strftime(format_table[settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING])))
             if settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'daily':
                 date += timedelta(days=1)
             elif settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'hourly':
