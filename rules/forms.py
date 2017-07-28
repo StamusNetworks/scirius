@@ -78,7 +78,8 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
 
     def __init__(self, *args, **kwargs):
         super(AddSourceForm, self).__init__(*args, **kwargs)
-        self.fields['rulesets'].required =  False
+        if 'rulesets' in self.fields:
+            self.fields['rulesets'].required =  False
 
 # Display choices of SourceAtVersion
 class RulesetForm(CommentForm):
