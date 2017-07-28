@@ -76,6 +76,10 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
         model = Source
         exclude = ['created_date', 'updated_date']
 
+    def __init__(self, *args, **kwargs):
+        super(AddSourceForm, self).__init__(*args, **kwargs)
+        self.fields['rulesets'].required =  False
+
 # Display choices of SourceAtVersion
 class RulesetForm(CommentForm):
     name = forms.CharField(max_length=100)
