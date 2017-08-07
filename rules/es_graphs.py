@@ -943,6 +943,8 @@ def es_get_indices_stats():
 def es_get_indices():
     indices = es_get_json(INDICES_STATS_URL)
     indexes_array = []
+    if indices == None:
+        return indexes_array
     for index in indices['indices']:
         docs = indices['indices'][index]['total']['docs']
         docs['name'] = index
