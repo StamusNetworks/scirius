@@ -999,7 +999,7 @@ def es_delete_alerts_by_sid_v2(sid):
 
 def es_delete_alerts_by_sid_v5(sid):
     delete_url = get_es_path(DELETE_ALERTS_URL_V5)
-    data = { "query": { "term": { "alert.signature_id": str(sid) } } }
+    data = { "query": { "match": { "alert.signature_id": sid } } }
     try:
         r = requests.post(delete_url, data = json.dumps(data))
     except Exception, err:
