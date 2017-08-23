@@ -21,9 +21,11 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.conf import settings
 
 # Create your models here.
 import os
+import socket
 
 from rules.models import Ruleset
 
@@ -87,6 +89,8 @@ class Suricata(models.Model):
         return reverse('suricata_index')
 
 def get_probe_hostnames(limit = 10):
+    if settings.SURICATA_NAME_IS_HOSTNAME:
+        return [ socket.gethostname() ]
     suricata = Suricata.objects.all()
     if suricata != None:
         return [ suricata[0].name ]

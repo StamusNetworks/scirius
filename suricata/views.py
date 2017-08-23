@@ -19,6 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from time import time
+import socket
 
 from django.shortcuts import render, redirect
 from django.db import IntegrityError
@@ -53,6 +54,8 @@ def get_suri():
 def index(request, error = None):
     # try to get suricata from db
     suri = get_suri()
+    if settings.SURICATA_NAME_IS_HOSTNAME:
+        suri.name = socket.gethostname()
 
     if suri:
         context = {'suricata': suri}

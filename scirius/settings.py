@@ -112,6 +112,8 @@ STATIC_URL = '/static/'
 # Suricata binary
 SURICATA_BINARY = "suricata"
 
+SURICATA_NAME_IS_HOSTNAME = False
+
 # Elastic search
 
 USE_ELASTICSEARCH = True

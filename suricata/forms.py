@@ -19,6 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django import forms
+from django.conf import settings
 from suricata.models import Suricata
 from rules.models import Ruleset
 from rules.forms import CommentForm
@@ -27,6 +28,8 @@ class SuricataForm(forms.ModelForm, CommentForm):
     class Meta:
         model = Suricata
         exclude = ('created_date', 'updated_date')
+        if settings.SURICATA_NAME_IS_HOSTNAME:
+            exclude = exclude + ('name', )
 
 class SuricataUpdateForm(CommentForm):
     reload = forms.BooleanField(required=False)
