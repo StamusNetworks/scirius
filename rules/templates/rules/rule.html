@@ -66,7 +66,7 @@
 <li>
 <form id="toggle_availability_form" class="form" action="{% url 'toggle_availability' rule.sid %}" method="post">
     {% csrf_token %}
-    <a id="toggle_availability" href="">Toggle availability</a>
+    <a href="javascript:{}" onclick="document.getElementById('toggle_availability_form').submit(); return false;">Toggle availability</a>
 </form>
 </li>
 {% endif %}
