@@ -24,7 +24,7 @@ from django.http import HttpResponse
 from django.db import IntegrityError
 from django.conf import settings
 from elasticsearch.exceptions import ConnectionError
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.contrib import messages
 
 from scirius.utils import scirius_render, scirius_listing
@@ -744,6 +744,27 @@ def update_source(request, source_id):
             data['errors'] = str(errors)
             return HttpResponse(json.dumps(data), content_type="application/json")
         return source(request, source_id, error="Can not fetch data: %s" % (errors))
+    except ValidationError, errors:
+        if request.is_ajax():
+            data = {}
+            data['status'] = False
+            data['errors'] = str(errors)
+            return HttpResponse(json.dumps(data), content_type="application/json")
+        return source(request, source_id, error="Source is invalid: %s" % (errors))
+    except SuspiciousOperation, errors:
+        if request.is_ajax():
+            data = {}
+            data['status'] = False
+            data['errors'] = str(errors)
+            return HttpResponse(json.dumps(data), content_type="application/json")
+        return source(request, source_id, error="Source is not correct: %s" % (errors))
+    except Exception, errors:
+        if request.is_ajax():
+            data = {}
+            data['status'] = False
+            data['errors'] = str(errors)
+            return HttpResponse(json.dumps(data), content_type="application/json")
+        return source(request, source_id, error="Error updating source: %s" % (errors))
 
     if request.is_ajax():
         data = {}

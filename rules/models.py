@@ -243,9 +243,9 @@ class Source(models.Model):
                     category = Category.objects.create(source = self,
                                             name = name, created_date = timezone.now(),
                                             filename = os.path.join('rules', f))
-                    category.get_rules(self)
                 else:
-                    category[0].get_rules(self)
+                    category = category[0]
+                category.get_rules(self)
                 # get rules in this category
         for category in Category.objects.filter(source = self):
             if not os.path.isfile(os.path.join(source_git_dir, category.filename)):
@@ -800,6 +800,8 @@ class Category(models.Model, Transformable):
                 if existing_rules_hash.has_key(int(sid)):
                     # FIXME update references if needed
                     rule = existing_rules_hash[int(sid)]
+                    if rule.category.source != source:
+                        raise ValidationError('Duplicate SID: %d' % (int(sid)))
                     if rev == None or rule.rev < rev or (source.init_flowbits and flowbits):
                         rule.content = line
                         if rev == None:
