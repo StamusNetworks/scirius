@@ -57,7 +57,7 @@ def complete_context(request, context):
             request.session['duration'] = duration
         else:
             duration = int(request.session.get('duration', '24'))
-        from_date = int((time() - (duration * 3600)) * 1000) # last 24 hours
+        from_date = int((time() - (duration * 3600)) * 1000)
         if duration <= 24:
             date = str(duration) + "h"
         else:
