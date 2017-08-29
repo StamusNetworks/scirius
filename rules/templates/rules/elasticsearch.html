@@ -21,8 +21,8 @@ $(document).ready(function(){
 
   <!-- Nav tabs -->
   <ul class="nav nav-tabs" id="estats" role="tablist">
-    <li role="presentation" {% if not request.GET.query %} class="active" {% endif %}><a href="#cluster" aria-controls="cluster" role="tab" data-toggle="tab">Elasticsearch cluster info</a></li>
-    <li role="presentation" {% if request.GET.query %} class="active" {% endif %}><a href="#indices" aria-controls="indices" role="tab" data-toggle="tab">Elasticsearch indices stats</a></li>
+    <li role="presentation" {% if not request.GET.query %} class="active" {% endif %}><a href="#cluster" aria-controls="cluster" role="tab" data-toggle="tab">Cluster info</a></li>
+    <li role="presentation" {% if request.GET.query %} class="active" {% endif %}><a href="#indices" aria-controls="indices" role="tab" data-toggle="tab">Indices stats</a></li>
   </ul>
 
   <div class="tab-content">
@@ -299,7 +299,7 @@ $( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve.total.rate_1m', 
 <ul>
        <li><span class="type">Status:</span> <span class="pull-right label label-default" id="es_status" >Checking</span></li>
        <li><span class="type">Cluster name:</span><span class="pull-right" id="es_cluster_name">N/A</span></li>
-       <li><span class="type">Elasticsearch version:</span> <span class="pull-right text-info" id="es_version">N/A</span></li>
+       <li><span class="type">Version:</span> <span class="pull-right text-info" id="es_version">N/A</span></li>
 </ul>
 </div>
 
