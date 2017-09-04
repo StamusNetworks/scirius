@@ -21,12 +21,15 @@ $(document).ready(function(){
 
   <!-- Nav tabs -->
   <ul class="nav nav-tabs" id="estats" role="tablist">
-    <li role="presentation" {% if not request.GET.query %} class="active" {% endif %}><a href="#cluster" aria-controls="cluster" role="tab" data-toggle="tab">Cluster info</a></li>
-    <li role="presentation" {% if request.GET.query %} class="active" {% endif %}><a href="#indices" aria-controls="indices" role="tab" data-toggle="tab">Indices stats</a></li>
+    <li role="presentation" class="active"><a href="#cluster" aria-controls="cluster" role="tab" data-toggle="tab">Cluster info</a></li>
+    <li role="presentation"><a href="#indices" aria-controls="indices" role="tab" data-toggle="tab">Indices stats</a></li>
+{% if logstash_stats %}
+    <li role="presentation"><a href="#logstash-panel" aria-controls="logstash-panel" role="tab" data-toggle="tab">Logstash insertion speed</a></li>
+{% endif %}
   </ul>
 
   <div class="tab-content">
-  <div role="tabpanel" class="tab-pane fade in {% if not request.GET.query %} active {% endif %}" id="cluster">
+<div role="tabpanel" class="tab-pane fade in active" id="cluster">
 
 <div class="row">
 <div class="col-md-4">
@@ -95,8 +98,19 @@ $(document).ready(function(){
 </div> <!-- panel -->
 </div> <!-- col -->
 </div> <!-- row -->
+</div>
+
+  <div role="tabpanel" class="tab-pane fade in" id="indices">
+<div class="row">
+<div class="col-md-12">
+<div id="indices_stats">Fetching data</div>
+</div>
+</div>
+
+</div>
 
 {% if logstash_stats %}
+  <div role="tabpanel" class="tab-pane fade in" id="logstash-panel">
 <div class="row">
 <div class="col-md-12">
 <h2>Logstash event insertion speed (last {{ date }})
@@ -125,17 +139,9 @@ $(document).ready(function(){
 </div>
 </div> <!-- col -->
 </div> <!-- row -->
+</div>
 {% endif %}
 
-</div>
-  <div role="tabpanel" class="tab-pane fade in {% if request.GET.query %} active {% endif %}" id="indices">
-<div class="row">
-<div class="col-md-12">
-<div id="indices_stats">Fetching data</div>
-</div>
-</div>
-
-</div>
 </div>
 </div>
 
