@@ -1234,7 +1234,8 @@ def system_settings(request):
         context = { 'error': 'Unsufficient permissions' }
         return scirius_render(request, 'rules/system_settings.html', context)
 
-    main_form = SystemSettingsForm(instance = get_system_settings())
+    gsettings = get_system_settings()
+    main_form = SystemSettingsForm(instance = gsettings)
     kibana_form = KibanaDataForm()
     context = {
         'form_id': 'main',
@@ -1246,7 +1247,7 @@ def system_settings(request):
         form_id = request.POST.get('form_id', None)
 
         if form_id == 'main':
-            main_form = SystemSettingsForm(request.POST, instance = get_system_settings())
+            main_form = SystemSettingsForm(request.POST, instance = gsettings)
             context['main_form'] = main_form
             if main_form.is_valid():
                 main_form.save()
@@ -1305,6 +1306,7 @@ def system_settings(request):
 
         if form_id is not None:
             context['form_id'] = form_id
+    context['global_settings'] = get_system_settings()
     return scirius_render(request, 'rules/system_settings.html', context)
 
 def info(request):

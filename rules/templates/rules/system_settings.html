@@ -81,6 +81,9 @@ Clicking on the button will erase all Elasticsearch data except Kibana dashboard
         <h4 class="modal-title" id="UpdateModalLabel">Delete all data</h4>
       </div>
       <div class="modal-body" id="update_text">
+        {% if global_settings.custom_elasticsearch %}
+		<div class="alert alert-danger">This will delete all the indexes including data not related to Scirius. Are you sure you want to proceed ?</div>
+        {% endif %}
         Clicking on <code>Clear</code> will delete all saved data. Click on <code>Cancel</code> to abort.
       </div>
       <div class="modal-footer">
