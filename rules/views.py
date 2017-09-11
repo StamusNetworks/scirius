@@ -409,6 +409,10 @@ def transform_rule(request, rule_id):
                     if form.cleaned_data["type"] == "filestore" and not rule_object.is_filestore(ruleset):
                         rule_object.toggle_filestore(ruleset)
                         ua = UserAction(action='enable', options='filestore', user = request.user, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                    if form.cleaned_data["type"] == "none":
+                        trans = rule_object.get_transformation(ruleset)
+                        if trans:
+                            rule_object.toggle_transformation(ruleset, type = trans)
                 else:
                     if form.cleaned_data["type"] == "reject" and rule_object.is_reject(ruleset):
                         rule_object.toggle_reject(ruleset)

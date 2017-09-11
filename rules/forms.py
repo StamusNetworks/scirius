@@ -150,6 +150,7 @@ class RuleTransformForm(forms.ModelForm, RulesetChoiceForm):
     def __init__(self, *args, **kwargs):
         super(RuleTransformForm, self).__init__(*args, **kwargs)
         trans = self.instance.get_transform()
+        trans = trans + (('none', 'None'),)
         self.fields['type'] = forms.ChoiceField(trans)
         comment = self.fields.pop('comment')
         self.fields['comment'] = comment
