@@ -691,10 +691,10 @@ def threshold_rule(request, rule_id):
         
     context = {'rule': rule_object, 'thresholds': thresholds, 'containers': containers }
     if data['threshold_type'] == 'suppress':
-        context['form'] = AddRuleSuppressForm(data)
+        context['form'] = AddRuleSuppressForm(initial=data)
         context['type'] = 'suppress'
     else:
-        context['form'] = AddRuleThresholdForm(data)
+        context['form'] = AddRuleThresholdForm(initial=data)
         context['type'] = 'threshold'
     return scirius_render(request, 'rules/add_threshold.html', context)
 
