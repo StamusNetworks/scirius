@@ -455,8 +455,11 @@ function populate_topip_actions(pdiv, direction) {
     pdiv.find("td.actions").each(
         function() {
             ip = $(this).parent("tr").children(".host").html();
+	    content = ' '
+	    {% if request.user.is_staff %}
             content = '<a href="{% url 'threshold_rule' rule.pk %}?action=threshold&dir=' + direction + '&net=' + ip + '"><span class="glyphicon glyphicon-arrow-down"> </span></a>';
             content = content + ' <a href="{% url 'threshold_rule' rule.pk %}?action=suppress&dir=' + direction + '&net=' + ip + '"><span class="glyphicon glyphicon-remove"> </span></a>';
+	    {% endif %}
             $(this).empty();
             $(this).append(content);
 	    {% if evebox %}
