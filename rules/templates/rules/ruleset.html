@@ -309,8 +309,13 @@ function test_ruleset(ruleset_pk)
                 $("#ruleset_status_row").fadeIn();
             }
           },
-	  error: function(data) {
-             $("#ruleset_status").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Unable to check ruleset validity</p>');
+	  error: function(jqXHR, textStatus, errorThrown) {
+             if (jqXHR.readyState != 4) {
+                 // Handling of the request is not finished,
+                 // triggered while exiting the page during the query
+                 return;
+             }
+             $("#ruleset_status").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Unable to check ruleset validity' + errorThrown + '</p>');
              $("#ruleset_status_row").fadeIn();
              fadeChange($("#ruleset_status_menu"), "Unknown");
 	  },
