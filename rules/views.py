@@ -737,9 +737,9 @@ def update_source(request, source_id):
             return HttpResponse(json.dumps(data), content_type="application/json")
         return source(request, source_id, error="Invalid method for page")
 
-    if hasattr(Probe.common, 'update_source'):
-        return Probe.common.update_source(request, src)
     try:
+        if hasattr(Probe.common, 'update_source'):
+            return Probe.common.update_source(request, src)
         src.update()
     except (IOError, OSError), errors:
         if request.is_ajax():
