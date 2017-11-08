@@ -741,34 +741,22 @@ def update_source(request, source_id):
         if hasattr(Probe.common, 'update_source'):
             return Probe.common.update_source(request, src)
         src.update()
-    except (IOError, OSError), errors:
-        if request.is_ajax():
-            data = {}
-            data['status'] = False
-            data['errors'] = str(errors)
-            return HttpResponse(json.dumps(data), content_type="application/json")
-        return source(request, source_id, error="Can not fetch data: %s" % (errors))
-    except ValidationError, errors:
-        if request.is_ajax():
-            data = {}
-            data['status'] = False
-            data['errors'] = str(errors)
-            return HttpResponse(json.dumps(data), content_type="application/json")
-        return source(request, source_id, error="Source is invalid: %s" % (errors))
-    except SuspiciousOperation, errors:
-        if request.is_ajax():
-            data = {}
-            data['status'] = False
-            data['errors'] = str(errors)
-            return HttpResponse(json.dumps(data), content_type="application/json")
-        return source(request, source_id, error="Source is not correct: %s" % (errors))
     except Exception, errors:
         if request.is_ajax():
             data = {}
             data['status'] = False
             data['errors'] = str(errors)
             return HttpResponse(json.dumps(data), content_type="application/json")
-        return source(request, source_id, error="Error updating source: %s" % (errors))
+        if isinstance(errors, (IOError, OSError)):
+            _msg = 'Can not fetch data'
+        elif isinstance(errors, ValidationError):
+            _msg = 'Source is invalid'
+        elif isinstance(errors, SuspiciousOperation):
+            _msg = 'Source is not correct'
+        else:
+            _msg = 'Error updating source'
+        msg = '%s: %s' % (_msg, errors)
+        return source(request, source_id, error=msg)
 
     if request.is_ajax():
         data = {}
