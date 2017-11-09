@@ -39,6 +39,7 @@ Add a Source
 </div>
 
 <script>
+var warn_on_exit = true;
 
 function activate_ruleset_from(src_pk, rulesets, ruleset_list, r_length)
 {
@@ -49,10 +50,12 @@ function activate_ruleset_from(src_pk, rulesets, ruleset_list, r_length)
         $('#source_progress').text("Source fully activated.");
 
         $('#init_details').append("<p><a href='{{ source.get_absolute_url }}'>See details of {{ source.name }} source.</a></p>");
+        warn_on_exit = false;
         return;
    }
    ri = rulesets.pop()
    ruleset = ruleset_list.pop()
+   warn_on_exit = true;
    var tgturl = "/rules/source/" + src_pk + "/activate/" + ri;
    $.ajax({
        url: tgturl,
@@ -68,6 +71,7 @@ function activate_ruleset_from(src_pk, rulesets, ruleset_list, r_length)
                  $('#source_progress').addClass("progress-bar-danger");
                  $('#source_progress').text("Could not activate source for '" + ruleset + "'.");
                  $('#init_details').append("<p class='text-danger'> <span class='glyphicon glyphicon-remove'></span> Could not activate source for '" + ruleset + "'.</p>");
+                 warn_on_exit = false;
              }
           },
       error: function(data) {
@@ -76,6 +80,7 @@ function activate_ruleset_from(src_pk, rulesets, ruleset_list, r_length)
              var error_actions = '<a href="{{ source.get_absolute_url }}delete"><button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-trash"> Delete source</span></button></a>'
 		        error_actions += ' <a href="{{ source.get_absolute_url }}"><button class="btn btn-warning" id="continue" type="submit"><span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></button></a>';
 		        $("#init_details").append('<div id="error_actions">' + error_actions + '<div>');
+             warn_on_exit = false;
       }
     });
 }
@@ -114,6 +119,7 @@ function test_source(src_pk, rulesets, ruleset_list)
 		var error_actions = '<a href="{{ source.get_absolute_url }}delete"><button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-trash"> Delete source</span></button></a>'
 		error_actions += ' <button class="btn btn-warning" id="continue" type="submit"> <span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></button>';
 		$("#init_details").append('<div id="error_actions">' + error_actions + '</div>');
+                warn_on_exit = false;
 		$("#continue").click( function(event) {
                         $("#error_actions").slideUp();
                         if (! rulesets) {
@@ -130,6 +136,7 @@ function test_source(src_pk, rulesets, ruleset_list)
              var error_actions = '<a href="{{ source.get_absolute_url }}delete"><button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-trash"> Delete source</span></button></a>'
 		        error_actions += ' <a href="{{ source.get_absolute_url }}"><button class="btn btn-warning" id="continue" type="submit"><span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></button></a>';
 		        $("#init_details").append('<div id="error_actions">' + error_actions + '<div>');
+             warn_on_exit = false;
 	  },
       timeout: 120 * 1000
     });
@@ -156,6 +163,7 @@ function update_activate_source(src_pk, rulesets, ruleset_list)
                 var error_actions = '<a href="{{ source.get_absolute_url }}delete"><button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-trash"> Delete source</span></button></a>'
 		        error_actions += ' <a href="{{ source.get_absolute_url }}"><button class="btn btn-warning" id="continue" type="submit"><span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></button></a>';
 		        $("#init_details").append('<div id="error_actions">' + error_actions + '<div>');
+                warn_on_exit = false;
             }
           },
 	  error: function(data) {
@@ -169,6 +177,7 @@ function update_activate_source(src_pk, rulesets, ruleset_list)
              var error_actions = '<a href="{{ source.get_absolute_url }}delete"><button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-trash"> Delete source</span></button></a>'
 		        error_actions += ' <a href="{{ source.get_absolute_url }}"><button class="btn btn-warning" id="continue" type="submit"><span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></button></a>';
 		        $("#init_details").append('<div id="error_actions">' + error_actions + '<div>');
+             warn_on_exit = false;
 	  },
       timeout: 240 * 1000
     });
@@ -181,6 +190,16 @@ $( 'document' ).ready(function() {
             {% else %}
             update_activate_source({{ source.pk }}, [ {{ rulesets|join:"," }} ], [ {{ ruleset_list|safeseq|join:"," }} ])
             {% endif %}
+
+            window.addEventListener("beforeunload", function (e) {
+              if (!warn_on_exit) {
+                  return;
+              }
+              var confirmationMessage = "Warning, leaving page will interrupt source addition mechanism.";
+
+              e.returnValue = confirmationMessage;     // Gecko, Trident, Chrome 34+
+              return confirmationMessage;              // Gecko, WebKit, Chrome <34
+            });
         {% endif %}
 });
 
