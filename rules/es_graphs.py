@@ -898,6 +898,7 @@ IPPPAIR_ALERTS_COUNT = """
 }
 """
 
+
 if settings.ELASTICSEARCH_VERSION >= 6:
     IPPPAIR_ALERTS_COUNT = """
 {
@@ -955,7 +956,117 @@ if settings.ELASTICSEARCH_VERSION >= 6:
 }
 """
 
+IPPPAIR_NETINFO_ALERTS_COUNT = """
+{
+  "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": {{ from_date }}
+                }
+              }
+            }, {
+              "query_string": {
+                "query": "event_type:alert AND alert.source.net_info:* AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+                "analyze_wildcard": true
+              }
+            }
+          ]
+        }
+      },
+        "aggs": {
+        "src_ip": {
+          "terms": {
+            "field": "alert.source.ip.{{ keyword }}",
+            "size": 40,
+            "order": {
+              "_count": "desc"
+            }
+          },
+          "aggs": {
+            "net_src": {
+              "terms": {
+                "field": "alert.source.net_info.{{ keyword }}",
+                "size": 1,
+                "order": {
+                  "_count": "desc"
+                }
+           },
+            "aggs": {
+              "dest_ip": {
+                "terms": {
+                  "field": "alert.target.ip.{{ keyword }}",
+                  "size": 40,
+                  "order": {
+                    "_count": "desc"
+                  }
+                },
+              "aggs": {
+                "net_dest": {
+                  "terms": {
+                    "field": "alert.target.net_info.{{ keyword }}",
+                    "size": 1,
+                    "order": {
+                      "_count": "desc"
+                    }
+                  },
+                  "aggs": {
+                    "alerts": {
+                        "terms": {
+                        "field": "alert.signature.{{ keyword }}",
+                        "size": 20,
+                        "order": {
+                            "_count": "desc"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+"""
 
+ALERTS_TAIL = """
+{
+  "size": 100,
+  "sort": [
+    {
+      "@timestamp": {
+        "order": "asc",
+        "unmapped_type": "boolean"
+      }
+    }
+  ],
+  "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": {{ from_date }}
+                }
+              }
+            }
+        ,{
+            "query_string": {
+              "query": "event_type:alert AND alert.target.ip:* {{ query_filter|safe }}",
+              "analyze_wildcard": true
+            }
+        }
+          ]
+    }
+  }
+}
+"""
+ 
 
 if settings.ELASTICSEARCH_VERSION >= 6:
     DASHBOARDS_QUERY_URL = "/%s/_search?size=" % settings.KIBANA_INDEX
@@ -1408,21 +1519,43 @@ def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
     ip_list = []
     links = []
     for src_ip in raw_data:
-        if ':' in src_ip['key']:
-            group = 6
-        else:
-            group = 4
+        try:
+            dest_obj = src_ip['net_src']['buckets'][0]
+        except:
+            continue
         if not src_ip['key'] in ip_list:
-            nodes.append({'id': src_ip['key'], 'group': group})
+            group = dest_obj['key']
+            nodes.append({'id': src_ip['key'], 'group': group, 'type': 'source'})
             ip_list.append(src_ip['key'])
-        for dest_ip in src_ip['dest_ip']['buckets']:
+        else:
+            for node in nodes:
+                if node['id'] == src_ip['key']:
+                    node['type'] = 'source'
+        for dest_ip in dest_obj['dest_ip']['buckets']:
             if not dest_ip['key'] in ip_list:
-                nodes.append({'id': dest_ip['key'], 'group': group})
+                try:
+                    group = dest_ip['net_dest']['buckets'][0]['key']
+                except:
+                    continue
+                nodes.append({'id': dest_ip['key'], 'group': group, 'type': 'target'})
                 ip_list.append(dest_ip['key'])
-            links.append({'source': ip_list.index(src_ip['key']), 'target': ip_list.index(dest_ip['key']), 'value': (math.log(dest_ip['doc_count']) + 1) * 2, 'alerts': dest_ip['alerts']['buckets']})
+            links.append({'source': ip_list.index(src_ip['key']), 'target': ip_list.index(dest_ip['key']), 'value': (math.log(dest_ip['doc_count']) + 1) * 2, 'alerts': dest_ip['net_dest']['buckets'][0]['alerts']['buckets']})
     #nodes = set(nodes)
     return json.dumps({'nodes': nodes, 'links': links})
     try:
         return data['hits']['hits'][0]['_source']
     except:
         return None
+
+def es_get_alerts_tail(from_date=0, qfilter = None):
+    data = render_template(ALERTS_TAIL, {'from_date': from_date}, qfilter = qfilter)
+    es_url = get_es_url(from_date)
+    req = urllib2.Request(es_url, data)
+    try:
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
+    except Exception, e:
+        return "BAM: " + str(e)
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    return data['hits']['hits']

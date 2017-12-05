@@ -15,6 +15,7 @@
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
     <script src="{% static 'js/d3.v3.min.js' %}" charset="utf-8"></script>
     <script src="{% static 'js/nv.d3.min.js' %}" charset="utf-8"></script>
+    <script src="{% static 'js/cola.min.js' %}" charset="utf-8"></script>
     <script type="text/javascript" src="{% static 'js/scirius.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/tipsy.js' %}"></script>
     {% block head %} {% endblock %}
@@ -83,7 +84,7 @@ Time: {% now "H:i:s" %} | Reload every {{ reload }}s
 <div class="col-md-6">
 <h2 class="title">IP addresses linked by alerts</h3>
 <div  >
-<svg width="750" height="700" id="alerts"></svg>
+<svg width="700" height="750" id="alerts"></svg>
 <div id="highlight_info">
 </div>
 </div>
@@ -156,19 +157,51 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
             height = +svg.attr("height");
         
         var color = d3.scale.category20b();
-        
-        var force = d3.layout.force()
-            .gravity(0.06)
-            .distance(90)
-            .charge(-50)
-            .size([width, height]);
-        
-        json = JSON.parse(json);
-        force
-          .nodes(json.nodes)
-          .links(json.links)
-          .start();
 
+        var force = cola.d3adaptor(d3).linkDistance(100).size([width, height]);
+
+        json = JSON.parse(json);
+
+        var groupMap = {};
+        json.nodes.forEach(function (v, i) {
+            var g = v.group;
+            if (typeof groupMap[g] == 'undefined') {
+                groupMap[g] = [];
+            }
+            groupMap[g].push(i);
+            v.width = v.height = 40;
+        });
+
+        var groups = [];
+        for (var g in groupMap) {
+            groups.push({ id: g, leaves: groupMap[g] });
+        }
+
+        force.nodes(json.nodes)
+          .links(json.links)
+          .groups(groups)
+          .symmetricDiffLinkLengths(30)
+          .avoidOverlaps(true)
+          .start(10,15,20);
+/*
+        var group = svg.selectAll('.group')
+            .data(groups).enter().append('g');
+*/
+
+        var group = svg.selectAll('.group')
+            .data(groups).enter().append('rect').classed('group', true)
+            .attr('rx',5)
+            .attr('ry',5)
+            .style("fill", function (d) { if (d.id == "Internet") { return '#e8e0dc';} else if (d.id == "Red Team") { return '#e73535'; } else { return color(d.id + 1) ;} })
+            .call(force.drag);
+/*
+        var tgroup = svg.selectAll('g.group')
+            .data(groups).enter().append('text')
+	    .attr("x", function(d) { return 100 - 3; })
+	    .attr("y", 30)
+	    .attr("dy", ".35em")
+	    .text(function (d) { console.log("got friend: " + d.id); return d.id; });
+*/
         var link = svg.selectAll(".link")
             .data(json.links)
           .enter().append("line")
@@ -190,7 +223,7 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
             .attr("class", "node")
           .append("circle")
           .attr("r", 7)
-          .attr("fill", function(d) { return color(d.group * 10); })
+          .attr("fill", function(d) { return ((d.type == "source") ? 'red' : 'blue'); })
           .call(force.drag);
       
         node.append("title")
@@ -202,7 +235,15 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
               .attr("x2", function(d) { return d.target.x; })
               .attr("y2", function(d) { return d.target.y; });
       
-          node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+          //node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+          node.attr("cx", function (d) { return d.x; }).attr("cy", function (d) { return d.y; });
+
+          group.attr('x', function (d) { return d.bounds.x })
+               .attr('y', function (d) { return d.bounds.y })
+               .attr('width', function (d) { return d.bounds.width() })
+               .attr('height', function(d) { return d.bounds.height() });
+              
         });
 
         var i = 0;

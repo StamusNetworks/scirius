@@ -268,6 +268,10 @@ def elasticsearch(request):
                 hosts = None
             qfilter = request.GET.get('filter', None)
             data = es_get_ippair_alerts(from_date = from_date, hosts = hosts, qfilter = qfilter)
+        elif query == 'alerts_tail':
+            from_date = request.GET.get('from_date', None)
+            qfilter = request.GET.get('filter', None)
+            data = es_get_alerts_tail(from_date = from_date, qfilter = qfilter)
         else:
             data = None
         return HttpResponse(json.dumps(data), content_type="application/json")

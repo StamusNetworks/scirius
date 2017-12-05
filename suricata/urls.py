@@ -28,4 +28,5 @@ urlpatterns = [
     url(r'^edit$', views.edit, name='suricata_edit'),
     url(r'^update$', views.update, name='suricata_update'),
     url(r'^dashboard$', views.dashboard, name='suricata_dashboard'),
+    url(r'^pktcity$', views.pktcity, name='suricata_pktcity'),
     ]
