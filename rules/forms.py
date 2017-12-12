@@ -156,8 +156,14 @@ class RuleTransformForm(forms.ModelForm, RulesetChoiceForm):
         self.fields['comment'] = comment
 
 class CategoryTransformForm(RulesetChoiceForm):
-     rulesets_label = "Apply transformation(s) to the following ruleset(s)"
-     type = forms.ChoiceField(settings.RULESET_TRANSFORMATIONS)
+    rulesets_label = "Apply transformation(s) to the following ruleset(s)"
+
+    def __init__(self, *args, **kwargs):
+        super(CategoryTransformForm, self).__init__(*args, **kwargs)
+        trans = settings.RULESET_TRANSFORMATIONS + (('none', 'None'),)
+        self.fields['type'] = forms.ChoiceField(trans)
+        comment = self.fields.pop('comment')
+        self.fields['comment'] = comment
 
 class RuleCommentForm(forms.Form):
     comment = forms.CharField(widget = forms.Textarea)

@@ -438,42 +438,28 @@ def transform_category(request, cat_id):
         form = CategoryTransformForm(request.POST)
         if form.is_valid(): # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
-            for ruleset in Ruleset.objects.all():
-                ua = None
-                if ruleset in rulesets:
-                    if form.cleaned_data["type"] == "reject" and not cat_object.is_reject(ruleset):
-                        cat_object.toggle_reject(ruleset)
-                        ua = UserAction(action='enable', options='reject', user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
-                    if form.cleaned_data["type"] == "drop" and not cat_object.is_drop(ruleset):
-                        cat_object.toggle_drop(ruleset)
-                        ua = UserAction(action='enable', options='drop', user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
-                    if form.cleaned_data["type"] == "filestore" and not cat_object.is_filestore(ruleset):
-                        ua = UserAction(action='enable', options='filestore', user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
-                        cat_object.toggle_filestore(ruleset)
-                    if form.cleaned_data["type"] == "none":
-                        trans = cat_object.get_transformation(ruleset)
-                        if trans:
-                            rule_object.toggle_transformation(ruleset, type = trans)
-                            ua = UserAction(action='disable', options=trans, user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
-                if ua:
-                    ua.save()
+            for ruleset in rulesets:
+                trans = cat_object.get_transformation(ruleset)
+                form_trans = form.cleaned_data["type"]
+
+                # Remove all transformations
+                for _trans in ('drop', 'reject', 'filestore'):
+                    if _trans == form_trans:
+                        continue
+                    if cat_object.is_transformed(ruleset, _trans):
+                        cat_object.toggle_transformation(ruleset, _trans)
+
+                # Enable new transformation
+                if form_trans != "none" and form_trans != trans:
+                    cat_object.toggle_transformation(ruleset, form_trans)
+                    UserAction.objects.create(action='enable', options=form_trans, user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                elif form_trans == "none" and trans:
+                    UserAction.objects.create(action='disable', options=trans, user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+
             return redirect(cat_object)
     else:
         form = CategoryTransformForm(initial = { 'type' : 'drop'})
-    reject_rulesets = []
-    drop_rulesets = []
-    filestore_rulesets = []
-    rulesets = Ruleset.objects.all()
-    for ruleset in rulesets:
-        trans = cat_object.get_transformation(ruleset)
-        if trans:
-            if trans == "reject":
-                reject_rulesets.append(ruleset.pk)
-            if trans == "drop":
-                drop_rulesets.append(ruleset.pk)
-            if trans == "filestore":
-                filestore_rulesets.append(ruleset.pk)
-    context = { 'category': cat_object, 'form': form, 'reject_rulesets': reject_rulesets, 'drop_rulesets': drop_rulesets, 'filestore_rulesets': filestore_rulesets }
+    context = {'category': cat_object, 'form': form}
     return scirius_render(request, 'rules/transform.html', context)
 
 def switch_rule(request, rule_id, operation = 'suppress'):
