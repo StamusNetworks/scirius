@@ -989,6 +989,16 @@ class Rule(models.Model, Transformable):
         ruleset.needs_test()
         ruleset.save()
 
+    def remove_transformations(self, ruleset):
+        tsets = self.get_transformation_sets(ruleset)
+        for tset in tsets.values():
+            if self in tset['type_set'].all():
+                tset['type_set'].remove(self)
+            if self in tset['notype_set'].all():
+                tset['notype_set'].remove(self)
+        ruleset.needs_test()
+        ruleset.save()
+
     def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
         if not transformation_sets:
             transformation_sets = self.get_transformation_sets(ruleset, python=True)

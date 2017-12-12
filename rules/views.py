@@ -401,6 +401,15 @@ def transform_rule(request, rule_id):
                 trans = rule_object.get_transformation(ruleset)
                 form_trans = form.cleaned_data["type"]
 
+                if form_trans == 'category':
+                    cat_trans = rule_object.category.get_transformation(ruleset)
+                    if not cat_trans:
+                        cat_trans = 'none'
+                    if trans != cat_trans:
+                        UserAction.objects.create(action='enable', options=cat_trans, user = request.user, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                    rule_object.remove_transformations(ruleset)
+                    continue
+
                 # Remove all transformations
                 for _trans in ('drop', 'reject', 'filestore'):
                     if _trans == form_trans:
