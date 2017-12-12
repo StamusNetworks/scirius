@@ -981,35 +981,26 @@ class Rule(models.Model, Transformable):
         if self.is_transformed(ruleset, type = type):
             if self in tsets['type_set'].all():
                 tsets['type_set'].remove(self)
-            if self.category in tsets['category_set'].all():
-                tsets['notype_set'].add(self)
+            tsets['notype_set'].add(self)
         else:
             if self in tsets['notype_set'].all():
                 tsets['notype_set'].remove(self)
-            if not self.category in tsets['category_set'].all():
-                tsets['type_set'].add(self)
+            tsets['type_set'].add(self)
         ruleset.needs_test()
         ruleset.save()
 
     def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
-        if transformation_sets:
-            tsets = transformation_sets[type]
-            if self.pk in tsets['type_set']:
-                return True
-            if self.pk in tsets['notype_set']:
-                return False
-            if self.category.pk in tsets['category_set']:
-                return True
+        if not transformation_sets:
+            transformation_sets = self.get_transformation_sets(ruleset, python=True)
+
+        tsets = transformation_sets[type]
+        if self.pk in tsets['type_set']:
+            return True
+        if self.pk in tsets['notype_set']:
             return False
-        else:
-            tsets = self.get_transformation_sets(ruleset)[type]
-            if len(tsets['type_set'].filter(pk=self.pk)):
-                return True
-            if len(tsets['category_set'].filter(pk = self.category.pk)):
-                if len(tsets['notype_set'].filter(pk = self.pk)):
-                    return False
-                return True
-            return False
+        if self.category.pk in tsets['category_set']:
+            return True
+        return False
 
     def can_drop(self):
         return not "noalert" in self.content
