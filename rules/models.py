@@ -640,40 +640,39 @@ class SourceUpdate(models.Model):
 class Transformable(object):
     def get_transformation_sets(self, ruleset, python = False):
         if python:
+            # Evaluate all queries for caching
             tsets = {'drop': {
-            'type_set': set(ruleset.drop_rules.all().values_list('pk', flat=True)),
-            'notype_set': set(ruleset.nodrop_rules.all().values_list('pk', flat=True)),
-            'category_set': set(ruleset.drop_categories.all().values_list('pk', flat=True)) },
+                'type_set': set(ruleset.drop_rules.all().values_list('pk', flat=True)),
+                'category_set': set(ruleset.drop_categories.all().values_list('pk', flat=True)) },
             'reject': {
-            'type_set': set(ruleset.reject_rules.all().values_list('pk', flat=True)),
-            'notype_set': set(ruleset.noreject_rules.all().values_list('pk', flat=True)),
-            'category_set': set(ruleset.reject_categories.all().values_list('pk', flat=True)) },
+                'type_set': set(ruleset.reject_rules.all().values_list('pk', flat=True)),
+                'category_set': set(ruleset.reject_categories.all().values_list('pk', flat=True)) },
             'filestore': {
-            'type_set': set(ruleset.filestore_rules.all().values_list('pk', flat=True)),
-            'notype_set': set(ruleset.nofilestore_rules.all().values_list('pk', flat=True)),
-            'category_set': set(ruleset.filestore_categories.all().values_list('pk', flat=True)) }
+                'type_set': set(ruleset.filestore_rules.all().values_list('pk', flat=True)),
+                'category_set': set(ruleset.filestore_categories.all().values_list('pk', flat=True)) },
+            'none': {
+                'notype_set': set(ruleset.none_rules.all().values_list('pk', flat=True)) },
             }
         else:
             tsets = {'drop': {
-            'type_set': ruleset.drop_rules,
-            'notype_set': ruleset.nodrop_rules,
-            'category_set': ruleset.drop_categories },
+                'type_set': ruleset.drop_rules,
+                'category_set': ruleset.drop_categories },
             'reject': {
-            'type_set': ruleset.reject_rules,
-            'notype_set': ruleset.noreject_rules,
-            'category_set': ruleset.reject_categories },
+                'type_set': ruleset.reject_rules,
+                'category_set': ruleset.reject_categories },
             'filestore': {
-            'type_set': ruleset.filestore_rules,
-            'notype_set': ruleset.nofilestore_rules,
-            'category_set': ruleset.filestore_categories }
+                'type_set': ruleset.filestore_rules,
+                'category_set': ruleset.filestore_categories },
+            'none': {
+                'notype_set': ruleset.none_rules },
             }
         return tsets
 
     def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
-        return False
+        raise NotImplementedError()
 
     def toggle_transformation(self, ruleset, type = "drop"):
-        return
+        raise NotImplementedError()
 
     def toggle_drop(self, ruleset):
         return self.toggle_transformation(ruleset, type = "drop")
@@ -693,12 +692,12 @@ class Transformable(object):
     def is_filestore(self, ruleset, transformation_sets = None):
         return self.is_transformed(ruleset, type = 'filestore', transformation_sets = transformation_sets)
 
-    def get_transformation(self, ruleset):
-        if self.is_reject(ruleset):
+    def get_transformation(self, ruleset, transformation_sets = None):
+        if self.is_reject(ruleset, transformation_sets):
             return 'reject'
-        elif self.is_drop(ruleset):
+        elif self.is_drop(ruleset, transformation_sets):
             return 'drop'
-        elif self.is_filestore(ruleset):
+        elif self.is_filestore(ruleset, transformation_sets):
             return 'filestore'
         return None
 
@@ -963,54 +962,57 @@ class Rule(models.Model, Transformable):
     def generate_content(self, ruleset, transformation_sets = None):
         content = self.content
         # explicitely set prio on transformation here
-        if self.can_drop():
-            if self.is_reject(ruleset, transformation_sets = transformation_sets):
-                content = self.apply_transformation(content, "reject")
-            elif self.is_drop(ruleset, transformation_sets = transformation_sets):
-                content = self.apply_transformation(content, "drop")
-            elif self.is_filestore(ruleset, transformation_sets = transformation_sets):
-                content = self.apply_transformation(content, "filestore")
-        elif self.is_filestore(ruleset, transformation_sets = transformation_sets):
-            if self.can_filestore():
-                content = self.apply_transformation(content, "filestore")
+        trans = self.get_transformation(ruleset, transformation_sets)
+
+        if (trans in ('drop', 'reject') and self.can_drop()) or \
+                (trans == 'filestore' and self.can_filestore()):
+            content = self.apply_transformation(content, trans)
+
         return content
 
-    def toggle_transformation(self, ruleset, type = "drop"):
+    def set_transformation(self, ruleset, type = "drop"):
+        self.remove_transformations(ruleset)
         transformation_sets = self.get_transformation_sets(ruleset)
         tsets = transformation_sets.pop(type, None)
-        if self.is_transformed(ruleset, type = type):
-            if self in tsets['type_set'].all():
-                tsets['type_set'].remove(self)
-            tsets['notype_set'].add(self)
+
+        if type == 'none':
+            if self not in tsets['notype_set'].all():
+                ruleset.none_rules.add(self)
         else:
-            if self in tsets['notype_set'].all():
-                tsets['notype_set'].remove(self)
-            tsets['type_set'].add(self)
+            if self not in tsets['type_set'].all():
+                tsets['type_set'].add(self)
         ruleset.needs_test()
         ruleset.save()
 
+    def get_transformation(self, ruleset, transformation_sets=None):
+        if not transformation_sets:
+            transformation_sets = self.get_transformation_sets(ruleset, python=True)
+
+        if self.pk in transformation_sets['none']['notype_set']:
+            return None
+        for trans, tsets in transformation_sets.items():
+            if trans != 'none' and self.pk in tsets['type_set']:
+                return trans
+        for trans, tsets in transformation_sets.items():
+            if trans != 'none' and self.category.pk in tsets['category_set']:
+                return trans
+        return None
+
     def remove_transformations(self, ruleset):
         tsets = self.get_transformation_sets(ruleset)
-        for tset in tsets.values():
-            if self in tset['type_set'].all():
+        for trans, tset in tsets.items():
+            if trans != 'none' and self in tset['type_set'].all():
                 tset['type_set'].remove(self)
-            if self in tset['notype_set'].all():
-                tset['notype_set'].remove(self)
+        if self in ruleset.none_rules.all():
+            ruleset.none_rules.remove(self)
         ruleset.needs_test()
         ruleset.save()
 
     def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
-        if not transformation_sets:
-            transformation_sets = self.get_transformation_sets(ruleset, python=True)
-
-        tsets = transformation_sets[type]
-        if self.pk in tsets['type_set']:
-            return True
-        if self.pk in tsets['notype_set']:
+        trans = self.get_transformation(ruleset, transformation_sets)
+        if trans is None:
             return False
-        if self.category.pk in tsets['category_set']:
-            return True
-        return False
+        return (type == trans)
 
     def can_drop(self):
         return not "noalert" in self.content
@@ -1061,11 +1063,9 @@ class Ruleset(models.Model):
     # Exported as suppression list in oinkmaster
     suppressed_rules = models.ManyToManyField(Rule, blank = True)
     drop_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_drop")
-    nodrop_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_nodrop")
     filestore_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_filestore")
-    nofilestore_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_nofilestore")
     reject_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_reject")
-    noreject_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_noreject")
+    none_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_none")
 
     # Operations
     # Creation:

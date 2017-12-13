@@ -410,16 +410,9 @@ def transform_rule(request, rule_id):
                     rule_object.remove_transformations(ruleset)
                     continue
 
-                # Remove all transformations
-                for _trans in ('drop', 'reject', 'filestore'):
-                    if _trans == form_trans:
-                        continue
-                    if rule_object.is_transformed(ruleset, _trans):
-                        rule_object.toggle_transformation(ruleset, _trans)
+                rule_object.set_transformation(ruleset, form_trans)
 
-                # Enable new transformation
                 if form_trans != "none" and form_trans != trans:
-                    rule_object.toggle_transformation(ruleset, form_trans)
                     UserAction.objects.create(action='enable', options=form_trans, user = request.user, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
                 elif form_trans == "none" and trans:
                     UserAction.objects.create(action='disable', options=trans, user = request.user, userobject = rule_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
