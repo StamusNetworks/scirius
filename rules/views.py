@@ -152,7 +152,7 @@ def sources(request):
 
 def source(request, source_id, error=None, update = False, activate = False, rulesets = None):
     source = get_object_or_404(Source, pk=source_id)
-    cats = CategoryTable(Category.objects.filter(source = source))
+    cats = CategoryTable(Category.objects.filter(source = source).order_by('name'))
     tables.RequestConfig(request).configure(cats)
     context = {'source': source, 'categories': cats,
                'update': update, 'activate': activate, 'rulesets': rulesets}
@@ -167,7 +167,7 @@ def categories(request):
 
 def category(request, cat_id):
     cat = get_object_or_404(Category, pk=cat_id)
-    rules = RuleTable(Rule.objects.filter(category = cat, state = True))
+    rules = RuleTable(Rule.objects.filter(category = cat, state = True).order_by('sid'))
     tables.RequestConfig(request).configure(rules)
     commented_rules = RuleTable(Rule.objects.filter(category = cat, state = False))
     tables.RequestConfig(request).configure(commented_rules)
@@ -908,11 +908,11 @@ def ruleset(request, ruleset_id, mode = 'struct', error = None):
         categories_list = {}
         sources = ruleset.sources.all()
         for sourceatversion in sources:
-            cats = CategoryTable(ruleset.categories.filter(source = sourceatversion.source))
+            cats = CategoryTable(ruleset.categories.filter(source = sourceatversion.source).order_by('name'))
             tables.RequestConfig(request,  paginate={"per_page": 15}).configure(cats)
             categories_list[sourceatversion.source.name] = cats
         context = {'ruleset': ruleset, 'categories_list': categories_list, 'sources': sources, 'mode': mode}
-        disabled_rules = ruleset.suppressed_rules.all()
+        disabled_rules = ruleset.suppressed_rules.all().order_by('sid')
         if disabled_rules:
             disabled_rules = RuleTable(disabled_rules)
             tables.RequestConfig(request).configure(disabled_rules)
@@ -931,28 +931,28 @@ def ruleset(request, ruleset_id, mode = 'struct', error = None):
         if error:
             context['error'] = error
         if len(ruleset.reject_rules.all()):
-            reject_rules = RuleTable(ruleset.reject_rules.all())
+            reject_rules = RuleTable(ruleset.reject_rules.all().order_by('sid'))
             tables.RequestConfig(request).configure(reject_rules)
             context['reject_rules'] = reject_rules
         if len(ruleset.drop_rules.all().exclude(pk__in = ruleset.reject_rules.all())):
-            drop_rules = RuleTable(ruleset.drop_rules.all().exclude(pk__in = ruleset.reject_rules.all()))
+            drop_rules = RuleTable(ruleset.drop_rules.all().exclude(pk__in = ruleset.reject_rules.all()).order_by('sid'))
             tables.RequestConfig(request).configure(drop_rules)
             context['drop_rules'] = drop_rules
-        filestore_rules = ruleset.filestore_rules.all().exclude(pk__in = ruleset.reject_rules.all()).exclude(pk__in = ruleset.drop_rules.all())
+        filestore_rules = ruleset.filestore_rules.all().exclude(pk__in = ruleset.reject_rules.all()).exclude(pk__in = ruleset.drop_rules.all()).order_by('sid')
         if len(filestore_rules):
             filestore_rules = RuleTable(filestore_rules)
             tables.RequestConfig(request).configure(filestore_rules)
             context['filestore_rules'] = filestore_rules
         if len(ruleset.reject_categories.all()):
-            reject_categories = CategoryTable(ruleset.reject_categories.all())
+            reject_categories = CategoryTable(ruleset.reject_categories.all().order_by('name'))
             tables.RequestConfig(request).configure(reject_categories)
             context['reject_categories'] = reject_categories
-        drop_categories = ruleset.drop_categories.all().exclude(pk__in = ruleset.reject_categories.all())
+        drop_categories = ruleset.drop_categories.all().exclude(pk__in = ruleset.reject_categories.all()).order_by('name')
         if len(drop_categories):
             drop_categories = CategoryTable(drop_categories)
             tables.RequestConfig(request).configure(drop_categories)
             context['drop_categories'] = drop_categories
-        filestore_categories = ruleset.filestore_categories.all().exclude(pk__in = ruleset.reject_categories.all()).exclude(pk__in = ruleset.drop_categories.all())
+        filestore_categories = ruleset.filestore_categories.all().exclude(pk__in = ruleset.reject_categories.all()).exclude(pk__in = ruleset.drop_categories.all()).order_by('name')
         if len(filestore_categories):
             filestore_categories = CategoryTable(filestore_categories)
             tables.RequestConfig(request).configure(filestore_categories)
