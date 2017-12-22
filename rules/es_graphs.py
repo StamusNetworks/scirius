@@ -712,7 +712,8 @@ def render_template(tmpl, dictionary, qfilter = None):
 def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None):
     data = render_template(TOP_QUERY, {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': 'alert.signature_id'}, qfilter = qfilter)
     es_url = get_es_url(from_date)
-    req = urllib2.Request(es_url, data)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
@@ -757,7 +758,8 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
 def es_get_field_stats(request, field, FieldTable, hostname, key='host', count=20, from_date=0 , qfilter = None):
     data = render_template(TOP_QUERY, {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': field}, qfilter = qfilter)
     es_url = get_es_url(from_date)
-    req = urllib2.Request(es_url, data)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
@@ -793,7 +795,8 @@ def es_get_field_stats(request, field, FieldTable, hostname, key='host', count=2
 def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
     data = render_template(SID_BY_HOST_QUERY, {'rule_sid': sid, 'alerts_number': count, 'from_date': from_date})
     es_url = get_es_url(from_date)
-    req = urllib2.Request(es_url, data)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
@@ -854,7 +857,8 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
         interval = int((time() - (int(from_date) / 1000)) / 100)
     data = render_template(TIMELINE_QUERY, {'from_date': from_date, 'interval': str(interval) + "s", 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date)
-    req = urllib2.Request(es_url, data)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
@@ -890,7 +894,8 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
         interval = int((time() - (int(from_date)/ 1000)) / 100)
     data = render_template(STATS_QUERY, {'from_date': from_date, 'interval': str(interval) + "s", 'value': value, 'hosts': hosts})
     es_url = get_es_url(from_date, data = 'stats')
-    req = urllib2.Request(es_url, data)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
@@ -965,7 +970,8 @@ def compact_tree(tree):
 def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
     data = render_template(RULES_PER_CATEGORY, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
     es_url = get_es_url(from_date)
-    req = urllib2.Request(es_url, data)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
@@ -1035,7 +1041,8 @@ def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
     else:
         es_url = get_es_url(from_date)
     data = render_template(templ, context, qfilter = qfilter)
-    req = urllib2.Request(es_url, data)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except Exception, e:
@@ -1055,7 +1062,8 @@ def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
 def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
     data = render_template(LATEST_STATS_ENTRY, {'from_date': from_date, 'hosts': hosts[0]})
     es_url = get_es_url(from_date, data = 'stats')
-    req = urllib2.Request(es_url, data)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except Exception, e:
@@ -1071,7 +1079,8 @@ def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
 def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
     data = render_template(IPPPAIR_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
     es_url = get_es_url(from_date)
-    req = urllib2.Request(es_url, data)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except Exception, e:
