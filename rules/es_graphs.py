@@ -121,6 +121,44 @@ if settings.ELASTICSEARCH_VERSION >= 2:
 }
     """
 
+if settings.ELASTICSEARCH_VERSION >= 6:
+    TOP_QUERY = """
+{
+  "size": 0,
+  "aggs": {
+    "table": {
+      "terms": {
+        "field": "{{ field }}",
+        "size": {{ count }},
+        "order": {
+          "_count": "desc"
+        }
+      }
+    }
+  },
+  "query": {
+    "bool": {
+      "must": [ {
+        "query_string": {
+          "query": "event_type:alert AND {{ hostname }}:{{ appliance_hostname }} {{ query_filter|safe }}",
+          "analyze_wildcard": false
+        }
+      }, 
+            {
+              "range": {
+                 "@timestamp": {
+                    "from": {{ from_date }},
+                    "to": "now"
+                 }
+              }
+            }
+          ]
+        }
+      }
+}
+    """
+
+
 SID_BY_HOST_QUERY = """
 {
   "facets": {
@@ -207,6 +245,7 @@ if settings.ELASTICSEARCH_VERSION >= 2:
       }
 }
     """
+
 
 TIMELINE_QUERY = """
 {
@@ -432,6 +471,56 @@ if settings.ELASTICSEARCH_VERSION >= 2:
 }
     """
 
+if settings.ELASTICSEARCH_VERSION >= 6:
+    STATS_QUERY = """
+{
+  "size": 0,
+  "aggs": {
+    "date": {
+      "date_histogram": {
+        "field": "@timestamp",
+        "interval": "{{ interval }}",
+        "time_zone": "Europe/Berlin",
+        "min_doc_count": 0
+      },
+      "aggs": {
+        "stat": {
+          "avg": {
+            "field": "{{ value }}"
+          }
+        }
+      }
+    }
+  },
+  "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                  "@timestamp": {
+                    "from": {{ from_date }},
+                    "to": "now"
+                  }
+              }
+            },
+        {
+        "query_string": {
+      {% if hosts %}
+          {% for host in hosts %}
+          "query": "{{ hostname }}:{{ host }}",
+          {% endfor %}
+      {% else %}
+          "query": "tags:metric",
+      {% endif %}
+          "analyze_wildcard": false
+        }
+      }
+          ]
+        }
+      }
+}
+    """
+
 RULES_PER_CATEGORY = """
 {
   "size": 0,
@@ -489,6 +578,64 @@ RULES_PER_CATEGORY = """
 }
 """
 
+if settings.ELASTICSEARCH_VERSION >= 6:
+    RULES_PER_CATEGORY = """
+{
+  "size": 0,
+  "aggs": {
+    "category": {
+      "terms": {
+        "field": "alert.category.{{ keyword }}",
+        "size": 50,
+        "order": {
+          "_count": "desc"
+        }
+      },
+      "aggs": {
+        "rule": {
+          "terms": {
+            "field": "alert.signature_id",
+            "size": 50,
+            "order": {
+              "_count": "desc"
+            }
+          }, 
+          "aggs": {
+            "rule_info": {
+              "terms": {
+                "field": "alert.signature.{{ keyword }}",
+                "size": 1,
+                "order": {
+                  "_count": "desc"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": {{ from_date }}
+                }
+              }
+            },
+            { "query_string": {
+              "query": "event_type:alert AND {{ hostname }}:{{ hosts }} {{ query_filter|safe }}",
+              "analyze_wildcard": true
+              }
+            }
+          ]
+       }
+  }
+}
+"""
+
 ALERTS_COUNT_PER_HOST = """
 {
   "size": 0,
@@ -505,6 +652,34 @@ ALERTS_COUNT_PER_HOST = """
             ,{
         "query_string": {
           "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+          "analyze_wildcard": true
+        }
+      }
+          ],
+          "must_not": []
+        }
+  },
+  "aggs": {}
+}
+"""
+
+if settings.ELASTICSEARCH_VERSION >= 6:
+    ALERTS_COUNT_PER_HOST = """
+{
+  "size": 0,
+  "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": {{ from_date }}
+                }
+              }
+            }
+            ,{
+        "query_string": {
+          "query": "event_type:alert AND {{ hostname }}:{{ hosts }} {{ query_filter|safe }}",
           "analyze_wildcard": true
         }
       }
@@ -557,6 +732,48 @@ ALERTS_TREND_PER_HOST = """
 }
 """
 
+if settings.ELASTICSEARCH_VERSION >= 6:
+    ALERTS_TREND_PER_HOST = """
+{
+  "size": 0,
+  "aggs": {
+    "trend": {
+      "date_range": {
+        "field": "@timestamp",
+        "ranges": [
+          {
+            "from": {{ start_date }},
+            "to": {{ from_date }}
+          },
+          {
+            "from": {{ from_date }}
+          }
+        ]
+      }
+    }
+  },
+  "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": {{ start_date }}
+                }
+              }
+            }
+            ,{
+        "query_string": {
+          "query": "event_type:alert AND {{ hostname }}:{{ hosts }} {{ query_filter|safe }}",
+          "analyze_wildcard": true
+        }
+      }
+          ]
+        }
+  }
+}
+"""
+
 LATEST_STATS_ENTRY = """
 {
   "size": 1,
@@ -589,6 +806,41 @@ LATEST_STATS_ENTRY = """
   }
 }
 """
+
+if settings.ELASTICSEARCH_VERSION >= 6:
+    LATEST_STATS_ENTRY = """
+{
+  "size": 1,
+  "sort": [
+    {
+      "@timestamp": {
+        "order": "desc",
+        "unmapped_type": "boolean"
+      }
+    }
+  ],
+  "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": {{ from_date }}
+                }
+              }
+            }
+        ,{
+            "query_string": {
+              "query": "event_type:stats AND {{ hostname }}:{{ hosts }} {{ query_filter|safe }}",
+              "analyze_wildcard": true
+            }
+        }
+          ]
+    }
+  }
+}
+"""
+
 
 IPPPAIR_ALERTS_COUNT = """
 {
@@ -646,7 +898,70 @@ IPPPAIR_ALERTS_COUNT = """
 }
 """
 
-DASHBOARDS_QUERY_URL = "/%s/dashboard/_search?size=" % settings.KIBANA_INDEX
+if settings.ELASTICSEARCH_VERSION >= 6:
+    IPPPAIR_ALERTS_COUNT = """
+{
+  "size": 0,
+  "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": {{ from_date }}
+                }
+              }
+            }, {
+              "query_string": {
+                "query": "event_type:alert AND {{ hostname }}:{{ hosts }} {{ query_filter|safe }}",
+                "analyze_wildcard": true
+              }
+            }
+          ]
+        }
+      },
+  "aggs": {
+        "src_ip": {
+          "terms": {
+            "field": "src_ip",
+            "size": 20,
+            "order": {
+              "_count": "desc"
+            }
+          },
+          "aggs": {
+            "dest_ip": {
+              "terms": {
+                "field": "dest_ip",
+                "size": 20,
+                "order": {
+                  "_count": "desc"
+                }
+            }, "aggs": {
+                "alerts": {
+                    "terms": {
+                        "field": "alert.signature.{{ keyword }}",
+                        "size": 20,
+                        "order": {
+                            "_count": "desc"
+                        }
+                    }
+                }
+             }
+           }
+        }
+    }
+  }
+}
+"""
+
+
+
+if settings.ELASTICSEARCH_VERSION >= 6:
+    DASHBOARDS_QUERY_URL = "/%s/_search?size=" % settings.KIBANA_INDEX
+else:
+    DASHBOARDS_QUERY_URL = "/%s/dashboard/_search?size=" % settings.KIBANA_INDEX
+
 HEALTH_URL = "/_cluster/health"
 STATS_URL = "/_cluster/stats"
 INDICES_STATS_URL = "/_stats/docs"
