@@ -15,7 +15,7 @@
 {% if comment.userobject == comment.ruleset %}
 <p>{{ comment.description }} at {{ comment.date }}
 {% else %}
-<p><strong>{{ comment.username }}</strong> did {{ comment.action }} {{ comment.options }} {% if comment.action  == "modify" and comment.options ==  "ruleset" %}for {% endif %}<a href="{{ comment.userobject.get_absolute_url }}">"{{ comment.userobject }}"</a> {% if comment.ruleset %}on {{ comment.ruleset }} {% endif %}at {{ comment.date }}
+<p><strong>{{ comment.username }}</strong> did {{ comment.action }} {{ comment.options }} {% if comment.action  == "modify" and comment.options ==  "ruleset" %}for {% endif %}{% if comment.userobject %}<a href="{{ comment.userobject.get_absolute_url }}">"{{ comment.userobject }}"</a> <{% endif %}{% if comment.ruleset %}on {{ comment.ruleset }} {% endif %}at {{ comment.date }}
 {% endif %}
 {% else %}
 <p>{{ comment.description }} at {{ comment.date }}

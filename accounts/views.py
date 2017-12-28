@@ -48,6 +48,8 @@ def loginview(request, target):
                     request.session.set_expiry(0)
                 logger = logging.getLogger('authentication')
                 logger.info("Successful login for '%s' from '%s'", username, get_real_ip(request))
+                from rules.models import UserAction
+                UserAction.objects.create(action='login', user=user)
                 return redirect("/" + target)
             else:
                 form = LoginForm()
@@ -215,6 +217,8 @@ def manageuseraction(request, user_id, action):
     return scirius_render(request, 'accounts/user.html', context)
 
 def logoutview(request):
+    from rules.models import UserAction
+    UserAction.objects.create(action='logout', user=request.user)
     logout(request)
     return redirect(settings.LOGIN_URL)
 

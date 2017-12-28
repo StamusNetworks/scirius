@@ -80,7 +80,7 @@ def validate_url(val):
     validate_hostname(netloc)
 
 class UserAction(models.Model):
-    ACTION_TYPE = (('disable', 'Disable'), ('enable', 'Enable'), ('comment', 'Comment'), ('activate', 'Activate'), ('deactivate', 'Deactivate'), ('create', 'Create'), ('delete', 'Delete'), ('modify', 'Modify'))
+    ACTION_TYPE = (('disable', 'Disable'), ('enable', 'Enable'), ('comment', 'Comment'), ('activate', 'Activate'), ('deactivate', 'Deactivate'), ('create', 'Create'), ('delete', 'Delete'), ('modify', 'Modify'), ('login', 'Login'), ('logout', 'Logout'))
     ruleset = models.ForeignKey('Ruleset', default = None, on_delete = models.SET_NULL, null = True, blank = True)
     username = models.CharField(max_length=100)
     user = models.ForeignKey(User, default = None, on_delete = models.SET_NULL, null = True, blank = True)
@@ -90,7 +90,7 @@ class UserAction(models.Model):
     comment = models.TextField(null = True, blank = True)
     date = models.DateTimeField('event date', default = timezone.now)
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null = True)
-    object_id = models.PositiveIntegerField()
+    object_id = models.PositiveIntegerField(null = True)
     userobject = GenericForeignKey('content_type', 'object_id')
 
     def __init__(self, *args, **kwargs):
@@ -101,12 +101,13 @@ class UserAction(models.Model):
             self.description = self.generate_description()
 
     def generate_description(self):
-        ctype = self.content_type.model_class()
-        if ctype:
-            object_model = ctype.__name__
+        if self.userobject and self.content_type.model_class():
+            object_model = self.content_type.model_class().__name__
         else:
             object_model = None
-        if self.ruleset:
+        if self.action in ('login', 'logout'):
+            return "User '%s' did %s" % (self.username, self.action)
+        elif self.ruleset:
             if self.action in ["disable", "enable"]:
                 return "%s on ruleset '%s' for %s '%s' by user '%s'" % (self.action, self.ruleset, object_model, self.userobject, self.username) 
             if self.action == "modify" and self.ruleset == self.userobject:
