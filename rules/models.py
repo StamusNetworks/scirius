@@ -246,7 +246,10 @@ class Source(models.Model):
                                             filename = os.path.join('rules', f))
                 else:
                     category = category[0]
-                category.get_rules(self)
+                existing_rules_hash = {}
+                for rule in Rule.objects.all().prefetch_related('category'):
+                    existing_rules_hash[rule.sid] = rule
+                category.get_rules(self, existing_rules_hash = existing_rules_hash)
                 # get rules in this category
         for category in Category.objects.filter(source = self):
             if not os.path.isfile(os.path.join(source_git_dir, category.filename)):
@@ -747,7 +750,7 @@ class Category(models.Model, Transformable):
                    flowbits.append(elt)
         return flowbits
 
-    def get_rules(self, source):
+    def get_rules(self, source, existing_rules_hash = {}):
         # parse file
         # return an object with updates
         getsid = re.compile("sid *: *(\d+)")
@@ -759,9 +762,9 @@ class Category(models.Model, Transformable):
         rules_update = {"added": [], "deleted": [], "updated": []}
         rules_unchanged = []
 
-        existing_rules_hash = {}
-        for rule in Rule.objects.all():
-            existing_rules_hash[rule.sid] = rule
+        if not existing_rules_hash:
+            for rule in Rule.objects.all().prefetch_related('category'):
+                existing_rules_hash[rule.sid] = rule
         rules_list = []
         for rule in Rule.objects.filter(category = self):
             rules_list.append(rule)
