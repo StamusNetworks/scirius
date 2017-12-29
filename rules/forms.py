@@ -29,20 +29,26 @@ class CommentForm(forms.Form):
                               label = "Optional comment",
                               required = False)
 
+    def __init__(self, *args, **kwargs):
+        super(CommentForm, self).__init__(*args, **kwargs)
+
+        # Put the comment field at the end of the self.fields ordered dict
+        comment = self.fields.pop('comment')
+        self.fields['comment'] = comment
+
 class RulesetChoiceForm(CommentForm):
     rulesets_label = "Add object to the following ruleset(s)"
+    rulesets = forms.ModelMultipleChoiceField(None,
+                        widget=forms.CheckboxSelectMultiple(),
+                        label = rulesets_label,
+                        required=True)
 
     def __init__(self, *args, **kwargs):
         super(RulesetChoiceForm, self).__init__(*args, **kwargs)
         ruleset_list =  Ruleset.objects.all()
-        if len(ruleset_list):
-            self.fields['rulesets'] = forms.ModelMultipleChoiceField(
-                        ruleset_list,
-                        widget=forms.CheckboxSelectMultiple(),
-                        label = self.rulesets_label,
-                        required=True)
-        comment = self.fields.pop('comment')
-        self.fields['comment'] = comment
+        self.fields['rulesets'].queryset = ruleset_list
+        if not len(ruleset_list):
+            self.fields.pop('rulesets')
 
 class SystemSettingsForm(forms.ModelForm):
     use_http_proxy = forms.BooleanField(label='Use a proxy', required=False)
@@ -86,6 +92,7 @@ class RulesetForm(CommentForm):
     name = forms.CharField(max_length=100)
     activate_categories = forms.BooleanField(label = "Activate all categories in sources",
                                              initial = True, required = False)
+    sources = forms.ModelMultipleChoiceField(None, widget=forms.CheckboxSelectMultiple())
 
     def create_ruleset(self):
         ruleset = Ruleset.objects.create(name = self.cleaned_data['name'],
@@ -102,11 +109,7 @@ class RulesetForm(CommentForm):
     def __init__(self, *args, **kwargs):
         super(RulesetForm, self).__init__(*args, **kwargs)
         sourceatversion = SourceAtVersion.objects.all()
-        self.fields['sources'] = forms.ModelMultipleChoiceField(
-                        sourceatversion,
-                        widget=forms.CheckboxSelectMultiple())
-        comment = self.fields.pop('comment')
-        self.fields['comment'] = comment
+        self.fields['sources'].queryset = sourceatversion
 
 class RulesetEditForm(forms.ModelForm, CommentForm):
     name = forms.CharField(max_length=100)
@@ -142,6 +145,7 @@ class EditThresholdForm(forms.ModelForm, CommentForm):
 
 class RuleTransformForm(forms.ModelForm, RulesetChoiceForm):
     rulesets_label = "Apply transformation(s) to the following ruleset(s)"
+    type = forms.ChoiceField()
 
     class Meta:
         model = Rule
@@ -151,22 +155,16 @@ class RuleTransformForm(forms.ModelForm, RulesetChoiceForm):
         super(RuleTransformForm, self).__init__(*args, **kwargs)
         trans = self.instance.get_transform()
         trans += (('none', 'None'), ('category', 'Category default'))
-        self.fields['type'] = forms.ChoiceField(trans)
-        comment = self.fields.pop('comment')
-        self.fields['comment'] = comment
+        self.fields['type'].choices = trans
 
 class CategoryTransformForm(RulesetChoiceForm):
     rulesets_label = "Apply transformation(s) to the following ruleset(s)"
+    type = forms.ChoiceField()
 
     def __init__(self, *args, **kwargs):
         super(CategoryTransformForm, self).__init__(*args, **kwargs)
         trans = settings.RULESET_TRANSFORMATIONS + (('none', 'None'),)
-        self.fields['type'] = forms.ChoiceField(trans)
-        comment = self.fields.pop('comment')
-        self.fields['comment'] = comment
+        self.fields['type'].choices = trans
 
 class RuleCommentForm(forms.Form):
     comment = forms.CharField(widget = forms.Textarea)
-
-class OptionalCommentForm(forms.Form):
-    comment = forms.CharField(label = "Optional comment", widget = forms.Textarea, required = False)
