@@ -99,6 +99,13 @@ function test_source(src_pk, rulesets, ruleset_list)
                 if (! rulesets) {
                     rulesets = []
                 }
+                if (data['warnings'][0] != undefined) {
+                    var warning_content = "";
+                    for (i = 0; i < data['warnings'].length; i++) {
+                            warning_content += '<li><span class="text-warning">' + data['warnings'][i]['message'] + '</span></li>';
+                    }
+                    $("#init_details").append('<p class="text-warning"> <span class="glyphicon glyphicon-ok"></span> Source test warnings: <ul>' + warning_content + '</ul></p>');
+                }
                 activate_ruleset_from(src_pk, rulesets, ruleset_list, rulesets.length)
             } else {
                 $('#source_progress').addClass("progress-bar-danger");
@@ -116,6 +123,13 @@ function test_source(src_pk, rulesets, ruleset_list)
                     }
                 }
                 $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Source test failure: <ul>' + error_content + '</ul></p>');
+                if (data['warnings'][0] != undefined) {
+                    var warning_content = "";
+                    for (i = 0; i < data['warnings'].length; i++) {
+                            warning_content += '<li><span class="text-warning">' + data['warnings'][i]['message'] + '</span></li>';
+                    }
+                    $("#init_details").append('<p class="text-warning"> <span class="glyphicon glyphicon-ok"></span> Source test warnings: <ul>' + warning_content + '</ul></p>');
+                }
 		var error_actions = '<a href="{{ source.get_absolute_url }}delete"><button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-trash"> Delete source</span></button></a>'
 		error_actions += ' <button class="btn btn-warning" id="continue" type="submit"> <span class="glyphicon glyphicon-ok"> Ignore errors and continue</span></button>';
 		$("#init_details").append('<div id="error_actions">' + error_actions + '</div>');
