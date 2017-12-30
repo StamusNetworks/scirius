@@ -235,6 +235,9 @@ class Source(models.Model):
     def get_categories(self):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         catname = re.compile("(.+)\.rules$")
+        existing_rules_hash = {}
+        for rule in Rule.objects.all().prefetch_related('category'):
+            existing_rules_hash[rule.sid] = rule
         for f in os.listdir(os.path.join(source_git_dir, 'rules')):
             if f.endswith('.rules'):
                 match = catname.search(f)
@@ -246,9 +249,6 @@ class Source(models.Model):
                                             filename = os.path.join('rules', f))
                 else:
                     category = category[0]
-                existing_rules_hash = {}
-                for rule in Rule.objects.all().prefetch_related('category'):
-                    existing_rules_hash[rule.sid] = rule
                 category.get_rules(self, existing_rules_hash = existing_rules_hash)
                 # get rules in this category
         for category in Category.objects.filter(source = self):
