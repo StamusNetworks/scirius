@@ -255,7 +255,8 @@ config classification: default-login-attempt,Attempt to login by a default usern
     def get_system_config_buffer(self):
         from suricata.models import Suricata
         suricata = Suricata.objects.all()
-        if suricata == None:
+        #suricata list is empty
+        if len(suricata) == 0:
             return None
         suricata = suricata[0]
         config_buffer = None
