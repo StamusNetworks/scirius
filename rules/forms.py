@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from django import forms
 from django.utils import timezone
 from django.conf import settings
+from django.core.exceptions import NON_FIELD_ERRORS
 from rules.models import Ruleset, Rule, Source, Category, SourceAtVersion, SystemSettings, Threshold, UserAction
 
 
@@ -48,6 +49,8 @@ class RulesetChoiceForm(CommentForm):
         ruleset_list =  Ruleset.objects.all()
         self.fields['rulesets'].queryset = ruleset_list
         if not len(ruleset_list):
+            if not isinstance(self, AddSourceForm):
+                self.errors[NON_FIELD_ERRORS] = ['Please create a ruleset first']
             self.fields.pop('rulesets')
 
 class SystemSettingsForm(forms.ModelForm):
