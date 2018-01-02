@@ -46,7 +46,7 @@ No match.
   <li>{{rulesets.page.paginator.count}} ruleset{{ rulesets.page.paginator.count|pluralize }}</li>
   {% endif %}
   {% if categories %}
-  <li>{{categories.page.paginator.count}} categorie{{ categories.page.paginator.count|pluralize }}</li>
+  <li>{{categories.page.paginator.count}} categor{{ categories.page.paginator.count|pluralize:"y,ies" }}</li>
   {% endif %}
   {% if rules %}
   <li>{{rules.page.paginator.count}} rule{{ rules.page.paginator.count|pluralize }}</li>
