@@ -99,7 +99,7 @@ function test_source(src_pk, rulesets, ruleset_list)
                 if (! rulesets) {
                     rulesets = []
                 }
-                if (data['warnings'][0] != undefined) {
+                if ('warnings' in data && data['warnings'][0] != undefined) {
                     var warning_content = "";
                     for (i = 0; i < data['warnings'].length; i++) {
                             warning_content += '<li><span class="text-warning">' + data['warnings'][i]['message'] + '</span></li>';
@@ -123,7 +123,7 @@ function test_source(src_pk, rulesets, ruleset_list)
                     }
                 }
                 $("#init_details").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Source test failure: <ul>' + error_content + '</ul></p>');
-                if (data['warnings'][0] != undefined) {
+                if ('warnings' in data && data['warnings'][0] != undefined) {
                     var warning_content = "";
                     for (i = 0; i < data['warnings'].length; i++) {
                             warning_content += '<li><span class="text-warning">' + data['warnings'][i]['message'] + '</span></li>';
