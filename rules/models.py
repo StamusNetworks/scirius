@@ -750,7 +750,7 @@ class Category(models.Model, Transformable):
                    flowbits.append(elt)
         return flowbits
 
-    def get_rules(self, source, existing_rules_hash = {}):
+    def get_rules(self, source, existing_rules_hash=None):
         # parse file
         # return an object with updates
         getsid = re.compile("sid *: *(\d+)")
@@ -763,6 +763,7 @@ class Category(models.Model, Transformable):
         rules_unchanged = []
 
         if not existing_rules_hash:
+            existing_rules_hash = {}
             for rule in Rule.objects.all().prefetch_related('category'):
                 existing_rules_hash[rule.sid] = rule
         rules_list = []
