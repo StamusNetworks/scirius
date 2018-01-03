@@ -198,7 +198,7 @@ config classification: default-login-attempt,Attempt to login by a default usern
                     error_list.append(s_err['engine'])
         return error_list
 
-    def rule_buffer(self, rule_buffer, config_buffer = None, related_files = {}, reference_config = None, classification_config = None):
+    def rule_buffer(self, rule_buffer, config_buffer = None, related_files = None, reference_config = None, classification_config = None):
         # create temp directory
         tmpdir = tempfile.mkdtemp()
         # write the rule file in temp dir
@@ -235,6 +235,7 @@ config classification: default-login-attempt,Attempt to login by a default usern
         cf.write("reference-config-file: " + tmpdir + "/reference.config\n")
         cf.write("classification-file: " + tmpdir + "/classification.config\n")
         cf.close()
+        related_files = related_files or {}
         for rfile in related_files:
             related_file = os.path.join(tmpdir, rfile)
             rf = open(related_file, 'w')
@@ -273,18 +274,20 @@ logging:
 """
         return config_buffer
 
-    def rule(self, rule_buffer, config_buffer = None, related_files = {}):
+    def rule(self, rule_buffer, config_buffer = None, related_files = None):
         if config_buffer == None:
             config_buffer = self.get_system_config_buffer()
+        related_files = related_files or {}
         prov_result = self.rule_buffer(rule_buffer, config_buffer = config_buffer, related_files = related_files)
         if prov_result['status']:
             return prov_result
         prov_result['errors'] = self.parse_suricata_error(prov_result['errors'], single = True)
         return prov_result
 
-    def rules(self, rule_buffer, config_buffer = None, related_files = {}):
+    def rules(self, rule_buffer, config_buffer = None, related_files = None):
         if config_buffer == None:
             config_buffer = self.get_system_config_buffer()
+        related_files = related_files or {}
         prov_result = self.rule_buffer(rule_buffer, config_buffer = config_buffer, related_files = related_files)
         if prov_result['status']:
             return prov_result
