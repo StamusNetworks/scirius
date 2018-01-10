@@ -985,6 +985,8 @@ def add_ruleset(request):
                 ua.save()
             except IntegrityError, error:
                 return scirius_render(request, 'rules/add_ruleset.html', { 'form': form, 'error': error })
+
+            messages.success(request, "All changes are saved. Don't forget to apply them to update Ruleset.")
             return redirect(ruleset)
     else:
         form = RulesetForm() # An unbound form
@@ -1047,6 +1049,8 @@ def edit_ruleset(request, ruleset_id):
         form = CommentForm(request.POST)
         if not form.is_valid():
             return redirect(ruleset)
+
+        messages.success(request, "All changes are saved. Don't forget to apply them to update Ruleset.")
         if request.POST.has_key('category'):
             category_selection = [ int(x) for x in request.POST.getlist('category_selection') ]
             # clean ruleset
