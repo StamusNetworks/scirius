@@ -30,6 +30,7 @@ from dbbackup.dbcommands import DBCommands
 from dbbackup.storage.base import BaseStorage, StorageError
 from dbbackup.utils import filename_generate
 
+from django.core.management import call_command
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.migrations.loader import MigrationLoader
 
@@ -183,6 +184,10 @@ class SCRestore(SCOperation):
             raise SCBackupException("Backup is newer than local Scirius version, please update local instance and apply migrations.")
         self.restore_git_sources()
         self.restore_db()
+
+        # Apply upgrades
+        call_command('migrate', '--noinput')
+
         self.restore_ruleset_middleware()
         shutil.rmtree(tmpdir)
         os.chdir(call_dir)
