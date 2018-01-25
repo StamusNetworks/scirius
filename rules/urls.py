@@ -18,11 +18,11 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from rules import views
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^$', views.index, name='rules_index'),
     url(r'^about/$', views.about, name='scirius_about'),
     url(r'^search$', views.search, name='scirius_search'),
@@ -74,4 +74,4 @@ urlpatterns = patterns('',
     url(r'^history$', views.history, name='history'),
     url(r'^comment$', views.history, name='comment'),
     url(r'^comment/(?P<comment_id>\d+)/delete$', views.delete_comment, name='delete_comment'),
-)
+]

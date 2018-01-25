@@ -1,9 +1,9 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url, include
 from django.conf import settings
 
 from views import homepage, KibanaProxyView, EveboxProxyView
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^rules/', include('rules.urls')),
     url(r'^accounts/', include('accounts.urls')),
     url(r'^'+ settings.RULESET_MIDDLEWARE + '/', include('' + settings.RULESET_MIDDLEWARE + '.urls')),
@@ -22,4 +22,4 @@ urlpatterns = patterns('',
     # Kibana 5.2 specific
     url(r'^(?P<path>ui/fonts.*)$', KibanaProxyView.as_view()),
     url(r'^(?P<path>es_admin.*)$', KibanaProxyView.as_view()),
-)
+]
