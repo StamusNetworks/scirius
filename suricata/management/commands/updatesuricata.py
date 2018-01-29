@@ -22,7 +22,6 @@ from django.core.management.base import BaseCommand, CommandError
 from suricata.models import Suricata
 
 class Command(BaseCommand):
-    args = 'None'
     help = 'Update Suricata ruleset and apply it'
 
     def handle(self, *args, **options):

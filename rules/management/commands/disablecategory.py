@@ -22,12 +22,15 @@ from django.core.management.base import BaseCommand, CommandError
 from rules.models import Ruleset, SourceAtVersion, Category
 
 class Command(BaseCommand):
-    args = 'ruleset category'
     help = 'Remove a category from a ruleset'
 
+    def add_arguments(self, parser):
+        parser.add_argument('ruleset', help='Ruleset name')
+        parser.add_argument('category', help='Category name')
+
     def handle(self, *args, **options):
-        name = args[0]
-        catname = args[1]
+        ruleset = options['ruleset']
+        catname = options['category']
         
         try:
             ruleset = Ruleset.objects.filter(name = name)

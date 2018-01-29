@@ -23,11 +23,13 @@ from django.utils import timezone
 from rules.models import Ruleset, SourceAtVersion, Category
 
 class Command(BaseCommand):
-    args = 'name'
     help = 'Create a ruleset and populate it with rules from existing sources'
 
+    def add_arguments(self, parser):
+        parser.add_argument('name', help='Source name')
+
     def handle(self, *args, **options):
-        name = args[0]
+        name = options['name']
         try:
             sourceat = SourceAtVersion.objects.all()
         except:

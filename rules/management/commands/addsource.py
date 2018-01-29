@@ -23,11 +23,20 @@ from django.utils import timezone
 from rules.models import Source
 
 class Command(BaseCommand):
-    args = 'name uri method datatype'
     help = 'Create and update a source'
 
+    def add_arguments(self, parser):
+        parser.add_argument('name', help='Source name')
+        parser.add_argument('uri', help='Uri of the source')
+        parser.add_argument('method', help='Method to import the source (http)')
+        parser.add_argument('datatype', help='Type of file to import (sig or sigs)')
+
     def handle(self, *args, **options):
-        (name, uri, method, datatype) = args
+        name = options['name']
+        uri = options['uri']
+        method = options['method']
+        datatype = options['datatype']
+
         if method not in ['http']:
             raise CommandError("Method '%s' is not supported" % (method))
         if datatype not in ['sigs', 'sig']:

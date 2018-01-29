@@ -25,11 +25,19 @@ from django.utils import timezone
 import os
 
 class Command(BaseCommand):
-    args = 'name description output_dir ruleset'
     help = 'Create a ruleset and populate it with rules from existing sources'
 
+    def add_arguments(self, parser):
+        parser.add_argument('name', help='Suricata name')
+        parser.add_argument('description', help='Suricata description')
+        parser.add_argument('output_dir', help='Output directory')
+        parser.add_argument('ruleset', help='Ruleset name')
+
     def handle(self, *args, **options):
-        (name, descr, output, nruleset) = args
+        name = options['name']
+        descr = options['description']
+        output = options['output_dir']
+        nruleset = options['ruleset']
         try:
             ruleset = Ruleset.objects.filter(name = nruleset)[0]
         except:

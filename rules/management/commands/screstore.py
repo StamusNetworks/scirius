@@ -26,16 +26,14 @@ import sys
 from rules.backup import SCRestore, SCBackupException
 
 class Command(BaseCommand):
-    args = 'filepath'
     help = 'Restore a backup directory. This will erase all data.'
 
+    def add_arguments(self, parser):
+        parser.add_argument('backup',
+            help='Path to a scirius backup file')
+
     def handle(self, *args, **options):
-        if len(args):
-            [filepath] = args
-            if len(filepath[0]) == 0:
-                filepath = None
-        else:
-            filepath = None
+        filepath = options['backup']
         restore = SCRestore(filepath = filepath)
         try:
             restore.run()
