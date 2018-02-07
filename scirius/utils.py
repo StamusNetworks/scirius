@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from importlib import import_module
+
 from django.shortcuts import render
 from django.conf import settings
 from django.utils import timezone
@@ -92,14 +94,13 @@ def scirius_render(request, template, context):
         'label': 'Suricata'
     }]
     try:
-        middleware = __import__("%s.%s" % (settings.RULESET_MIDDLEWARE, 'links'))
-        context['toplinks'] = middleware.links.TOPLINKS
-        context['links'] = middleware.links.links(request)
+        links = get_middleware_module('links')
+        context['toplinks'] = links.TOPLINKS
+        context['links'] = links.links(request)
     except:
         pass
     try:
-        middleware = __import__("%s.%s" % (settings.RULESET_MIDDLEWARE, 'common'))
-        context['middleware_status'] = middleware.common.block_status(request)
+        context['middleware_status'] = get_middleware_module('common').block_status(request)
     except:
         pass
 
@@ -132,3 +133,6 @@ def scirius_listing(request, objectname, name, template = 'rules/object_list.htm
         context['action'] = True
         context['adduri'] = adduri
     return scirius_render(request, template, context)
+
+def get_middleware_module(module):
+    return import_module('%s.%s' % (settings.RULESET_MIDDLEWARE, module))
