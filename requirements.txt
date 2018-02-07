@@ -1,5 +1,5 @@
 daemon
-Django<1.9
+Django<2
 django-bootstrap3
 django-revproxy
 django-tables2<1.17
@@ -16,6 +16,7 @@ urllib3<1.17
 ipy
 elasticsearch
 django-ipware
+gunicorn
 djangorestframework                                                                                                                                                                                               
 markdown                                                                                                                                                                                                          
 django-filter
