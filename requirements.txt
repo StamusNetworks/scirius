@@ -16,3 +16,6 @@ urllib3<1.17
 ipy
 elasticsearch
 django-ipware
+djangorestframework                                                                                                                                                                                               
+markdown                                                                                                                                                                                                          
+django-filter

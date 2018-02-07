@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'rules',
     'suricata',
     'accounts',
+    'rest_framework',
 )
 
 if LooseVersion(get_version()) < LooseVersion('1.7'):
@@ -130,6 +131,12 @@ USE_L10N = True
 USE_TZ = True
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rules.rest_permissions.IsStaffOrReadOnly',
+    )
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
