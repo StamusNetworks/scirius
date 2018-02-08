@@ -18,13 +18,14 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url, include
 
 from suricata import views
+from rest_api import router
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^$', views.index, name='suricata_index'),
     url(r'^edit$', views.edit, name='suricata_edit'),
     url(r'^update$', views.update, name='suricata_update'),
     url(r'^dashboard$', views.dashboard, name='suricata_dashboard'),
-    )
+    ]
