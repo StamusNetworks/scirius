@@ -48,3 +48,10 @@ class PasswordForm(forms.Form):
 
 class DeleteForm(forms.Form):
     confirm = forms.IntegerField()
+
+class TokenForm(forms.Form):
+    token = forms.CharField(label="Token")
+
+    def __init__(self, *args, **kwargs):
+        super(forms.Form, self).__init__(*args, **kwargs)
+        self.fields['token'].widget.attrs['readonly'] = True

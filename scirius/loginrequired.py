@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect
 from django.conf import settings
 from re import compile
 
-EXEMPT_URLS = [compile(settings.LOGIN_URL.lstrip('/'))]
+EXEMPT_URLS = [compile(settings.LOGIN_URL.lstrip('/')), compile('rest/.*')]
 if hasattr(settings, 'LOGIN_EXEMPT_URLS'):
     EXEMPT_URLS += [compile(expr) for expr in settings.LOGIN_EXEMPT_URLS]
 

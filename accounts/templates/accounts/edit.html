@@ -8,6 +8,7 @@
 <ul>
 <li><a href="{% url 'accounts_edit' 'password' %}">Change password</a></li>
 <li><a href="{% url 'accounts_edit' 'settings' %}">Edit settings</a></li>
+<li><a href="{% url 'accounts_edit' 'token' %}">Edit token</a></li>
 </ul>
 {% endblock %}
 
@@ -21,7 +22,11 @@
     {% bootstrap_form form %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "ok" %} Valid
+            {% if action == 'User token' %}
+                {% bootstrap_icon "refresh" %} Regenerate
+            {% else %}
+                {% bootstrap_icon "ok" %} Valid
+            {% endif %}
         </button>
     {% endbuttons %}
 </form>

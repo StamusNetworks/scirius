@@ -112,9 +112,9 @@ class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
     def test_003_rule_permission(self):
         self.client.logout()
 
-        # Non logged request are redirected to login page
+        # Non logged request are rejected
         self.http_post(reverse('rule-disable', args=(self.rule.pk,)), {'ruleset': self.ruleset.pk},
-                status=status.HTTP_302_FOUND)
+                status=status.HTTP_403_FORBIDDEN)
 
         # Post not authorized non-staff
         self.user.is_superuser = False

@@ -23,9 +23,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
 from django.conf import settings
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 
 from scirius.utils import scirius_render, scirius_listing
-from forms import LoginForm, UserSettingsForm, NormalUserSettingsForm, PasswordForm, DeleteForm
+from forms import LoginForm, UserSettingsForm, NormalUserSettingsForm, PasswordForm, DeleteForm, TokenForm
 from models import SciriusUser
 
 from ipware.ip import get_real_ip
@@ -82,6 +83,12 @@ def editview(request, action):
                     form = UserSettingsForm(request.POST, instance = request.user)
                 else:
                     form = NormalUserSettingsForm(request.POST, instance = request.user)
+            elif action == 'token':
+                current_tokens = Token.objects.filter(user=request.user)
+                for token in current_tokens:
+                    token.delete()
+                Token.objects.create(user=request.user)
+                return redirect('accounts_edit', action='token')
             if form.is_valid():
                 ruser = form.save(commit = False)
                 if not orig_superuser:
@@ -112,8 +119,16 @@ def editview(request, action):
                 except:
                     pass
                 context = { 'form': form, 'action': 'Edit settings for ' + request.user.username }
+            elif (action == 'token'):
+                initial = {}
+                token = Token.objects.filter(user=request.user)
+                if len(token):
+                    initial['token'] = token[0]
+                form = TokenForm(initial=initial)
+                context = { 'form': form, 'action': 'User token'}
             else:
                 context = { 'action': 'User settings' }
+
             return scirius_render(request, 'accounts/edit.html', context)
 
 def manageview(request, action):
@@ -222,5 +237,6 @@ def logoutview(request):
     logout(request)
     return redirect(settings.LOGIN_URL)
 
-
+def token(request):
+    return scirius_render(request, 'accounts/edit.html', context)
 
