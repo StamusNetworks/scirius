@@ -35,6 +35,9 @@ class RulesetSerializer(serializers.ModelSerializer):
 class RulesetViewSet(viewsets.ModelViewSet):
     queryset = Ruleset.objects.all()
     serializer_class = RulesetSerializer
+    ordering = ('name',)
+    ordering_fields = ('name', 'created_date', 'updated_date', 'rules_count')
+    filter_fields = ('name', 'descr')
 
 
 class RuleChangeSerializer(serializers.Serializer):
@@ -52,6 +55,9 @@ class RuleSerializer(serializers.ModelSerializer):
 class RuleViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Rule.objects.all()
     serializer_class = RuleSerializer
+    ordering = ('sid',)
+    ordering_fields = ('sid', 'category', 'msg', 'imported_date', 'updated_date')
+    filter_fields = ('sid', 'category', 'msg')
 
     @detail_route(methods=['post'])
     def enable(self, request, pk):

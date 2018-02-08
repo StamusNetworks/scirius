@@ -44,6 +44,7 @@ INSTALLED_APPS = (
     'suricata',
     'accounts',
     'rest_framework',
+    'django_filters',
 )
 
 if LooseVersion(get_version()) < LooseVersion('1.7'):
@@ -138,7 +139,13 @@ USE_X_FORWARDED_HOST = True
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rules.rest_permissions.IsStaffOrReadOnly',
-    )
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.OrderingFilter',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 30
 }
 
 # Static files (CSS, JavaScript, Images)
