@@ -3,7 +3,7 @@ from django.conf import settings
 from rest_framework import serializers, viewsets
 from rest_framework.routers import DefaultRouter
 
-from scirius.utils import get_middleware_module
+from utils import get_middleware_module
 from rules.rest_api import router as rules_router
 
 
