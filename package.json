@@ -1,0 +1,41 @@
+{
+  "name": "scirius",
+  "version": "1.0.0",
+  "description": "======= Scirius =======",
+  "main": "index.js",
+  "directories": {
+    "webpack": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/StamusNetworks/scirius.git"
+  },
+  "scripts": {
+    "start": "npm run remove-build && webpack && npm run sync",
+    "remove-build": "rm -rf ./rules/static/dist"
+  },
+  "keywords": [],
+  "author": "Stamus Networks",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.0.0-beta.37",
+    "@babel/preset-env": "^7.0.0-beta.37",
+    "autoprefixer": "^7.2.4",
+    "babel-loader": "^8.0.0-beta.0",
+    "css-loader": "^0.28.8",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "file-loader": "^1.1.6",
+    "node-sass": "^4.7.2",
+    "postcss-loader": "^2.0.10",
+    "sass-loader": "^6.0.6",
+    "style-loader": "^0.19.1",
+    "sugarss": "^1.0.1",
+    "svg-inline-loader": "^0.8.0",
+    "url-loader": "^0.6.2",
+    "webpack": "^3.10.0"
+  },
+  "dependencies": {
+    "axios": "0.17.1",
+    "patternfly": "^3.35.1"
+  }
+}

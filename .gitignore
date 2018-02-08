@@ -2,3 +2,5 @@
 scirius/local_settings.py
 *.swp
 git-sources/*
+node_modules
+rules/static/dist
