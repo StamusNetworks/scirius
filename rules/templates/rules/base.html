@@ -388,6 +388,18 @@ function get_suricata_health() {
     );
 }
 
+function set_info_card(key, data) {
+	$(key + " .progress-bar").width("" + data + "%");
+	$(key + " .progress-bar").prop("aria-valuenow", data);
+	$(key + " .progress-bar").prop("title", "" + data + "% Used");
+	$(key + " .progress-bar span").text("" + data + "% Used");
+	$(key + " .progress-bar-remaining").width("" + (100 - data) + "%");
+	$(key + " .progress-bar-remaining").prop("aria-valuenow", data);
+	$(key + " .progress-bar-remaining").prop("title", "" + (100 - data) + "% Available");
+	$(key + " .progress-bar-remaining span").text("" + data + "% Available");
+	jQuery('[data-toggle="tooltip"]').tooltip();
+}
+
 function get_disk_health() {
     if (scirius_status == "red") {
         return;
@@ -404,6 +416,7 @@ function get_disk_health() {
                 if (!data) {
                         $("#disk-status").addClass("label-danger");
                 } else {
+			set_info_card("#disk-status-card-bar", data[3]);
                         if (data[3] > 90) {
                             $("#disk-status").addClass("label-danger");
                         } else if (data[3] > 80) {
@@ -437,6 +450,7 @@ function get_memory_health() {
                 if (!data) {
                         $("#memory-status").addClass("label-danger");
                 } else {
+			set_info_card("#mem-status-card-bar", data[2]);
                         if (data[2] > 90) {
                             $("#memory-status").addClass("label-danger");
                         } else if (data[2] > 70) {
@@ -454,10 +468,35 @@ function get_memory_health() {
     );
 }
 
+function get_cpu_health() {
+    if (scirius_status == "red") {
+        return;
+    }
+    if (document.URL.indexOf("suricata") == -1) {
+	return;
+    }
+    $.ajax(
+        {
+                type:"GET",
+                url:"{% url 'info' %}?query=cpu",
+                success: function(data) {
+                if (data) {
+			set_info_card("#cpu-status-card-bar", data);
+		}
+                },
+                error: function(data) {
+                        start_down_check();
+                },
+                timeout: 15000,
+        }
+    );
+}
+
 function call_health_functions() {
     get_suricata_health();
     get_disk_health();
     get_memory_health();
+    get_cpu_health();
 {% if elasticsearch %}
     get_es_health();
 {% endif %}
