@@ -49,21 +49,7 @@ $(document).ready(function(){
 </div> <!-- panel -->
 </div> <!-- col -->
 
-<div class="col-md-4">
-<div class="panel panel-default" id="fs">
-<div class="panel-heading">
-<h2 class="panel-title">Filesystems info</h2>
-</div>
-<div class="panel-body">
-<ul>
 
-       <li><span class="type">Size of stored data:</span> <span class="pull-right label label-default" id="store_size">N/A</span></li>
-       <li><span class="type">FS total size:</span> <span class="pull-right label label-default" id="fs_total">N/A</span></li>
-       <li><span class="type">FS free space:</span> <span class="pull-right label label-default" id="fs_free">N/A</span></li>
-
-</div> <!-- panel-body -->
-</div> <!-- panel -->
-</div> <!-- col -->
 
 <div class="col-md-4">
 <div class="panel panel-default" id="docs">
@@ -97,6 +83,34 @@ $(document).ready(function(){
 </div> <!-- panel-body -->
 </div> <!-- panel -->
 </div> <!-- col -->
+
+<div class="col-md-4">
+    <div class="container-fluid container-cards-pf">
+        <div class="row row-cards-pf">
+          <div class="col-xs-12 col-sm-12 col-md-12">
+            <div class="card-pf card-pf-utilization">
+  <h2 class="card-pf-title">
+    Filesystem
+  </h2>
+  <div class="card-pf-body" id="fs">
+    <p class="card-pf-utilization-details">
+      <span class="card-pf-utilization-card-details-count" id="fs_free"></span>
+        <span class="card-pf-utilization-card-details-description">
+          <span class="card-pf-utilization-card-details-line-1">Available</span>
+          <span class="card-pf-utilization-card-details-line-2">of <span id="fs_total"></span></span>
+        </span>
+    </p>
+    <div id="chart-pf-donut-fs"></div>
+    <script>
+    </script>
+  </div>
+</div>
+
+          </div>
+        </div><!-- /row -->
+      </div><!-- /container -->
+</div> <!-- col -->
+
 </div> <!-- row -->
 </div>
 
@@ -169,9 +183,11 @@ $.ajax(
         } else {
                 $("#docs_count").text(data['indices']['docs']['count']);
                 $("#docs_deleted").text(data['indices']['docs']['deleted']);
-                $("#store_size").text(bytesToSize(data['indices']['store']['size_in_bytes']));
-                $("#fs_total").text(bytesToSize(data['nodes']['fs']['total_in_bytes']));
-                $("#fs_free").text(bytesToSize(data['nodes']['fs']['free_in_bytes']));
+                var data_size = data['indices']['store']['size_in_bytes'];
+                var fs_total = data['nodes']['fs']['total_in_bytes'];
+                $("#fs_total").text(bytesToSize(fs_total));
+                var fs_free = data['nodes']['fs']['free_in_bytes'];
+                $("#fs_free").text(bytesToSize(fs_free));
                 $("#es_version").text(data['nodes']['versions']);
                 $("#es_status").text(data['status']);
                 $("#es_status").removeClass("label-warning");
@@ -185,6 +201,43 @@ $.ajax(
                 } else if (data['status'] == 'red') {
                     $("#es_status").addClass("label-danger");
                 }
+                var c3ChartDefaults = $().c3ChartDefaults();
+
+                var donutConfig = c3ChartDefaults.getDefaultDonutConfig('A');
+                donutConfig.bindto = '#chart-pf-donut-fs';
+                var data_size_percent = 1.0 * data_size / fs_total * 100;
+                var fs_free_percent = 1.0 * fs_free / fs_total * 100 - data_size_percent;
+                var fs_used_percent = 100.0 * ( 1 - 1.0 * fs_free / fs_total);
+                donutConfig.color =  {
+                      pattern: ["red", "#EC7A08","#D1D1D1"]
+                                      };
+                                      donutConfig.data = {
+                      type: "donut",
+                            columns: [
+                                    ["ES Data", data_size_percent],
+                                    ["Used", fs_used_percent],
+                                    ["Available", fs_free_percent]
+                            ],
+                            groups: [
+                                    ["data", "used", "available"]
+                            ],
+                            order: null
+                                      };
+                                      donutConfig.tooltip = {
+                      contents: function (d) {
+                                        return '<span class="donut-tooltip-pf" style="white-space: nowrap;">' +
+                                                Math.round(d[0].ratio * 100) + '% ' + d[0].name +
+                                                '</span>';
+                      }
+                };
+
+                var chart1 = c3.generate(donutConfig);
+                var donutChartTitle = d3.select("#chart-pf-donut-fs").select('text.c3-chart-arcs-title');
+                donutChartTitle.text("");
+                datasize = bytesToSize(data['indices']['store']['size_in_bytes']);
+                donutChartTitle.insert('tspan').text(datasize).classed('donut-title-big-pf', true).attr('dy', 0).attr('x', 0);
+                donutChartTitle.insert('tspan').text("of ES data").classed('donut-title-small-pf', true).attr('dy', 20).attr('x', 0);
+
         }
         },
         error: function(data) {
