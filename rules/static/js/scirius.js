@@ -87,6 +87,7 @@ function load_rules(from_date, hosts, filter, callback) {
 	  }
     });
 }
+window.load_rules = load_rules;
 
 
 function draw_timeline(from_date, hosts, filter) {
@@ -203,6 +204,7 @@ function draw_timeline(from_date, hosts, filter) {
 	    }
         });
 }
+window.draw_timeline = draw_timeline;
 
 function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, autorange) {
 
@@ -312,6 +314,7 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
 function draw_stats_timeline(from_date, value, tdiv, speed, hosts) {
      draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, false);
 }
+window.draw_stats_timeline = draw_stats_timeline;
 
 function build_path(d) {
   tooltip = d.msg ? d.msg : d.key ? d.key : "Unknown";
@@ -325,6 +328,7 @@ function build_path(d) {
     }
   return tooltip;
 }
+window.build_path = build_path;
 
 function draw_sunburst(from_date, hosts, filter, callback) {
         esurl = "/rules/es?query=rules_per_category&from_date=" + from_date + "&hosts=" + hosts.join()
@@ -473,6 +477,7 @@ function arcTweenZoom(d) {
         },
         });
 }
+window.draw_sunburst = draw_sunburst;
 
 function draw_circle(from_date, hosts, filter, callback) {
         esurl = "/rules/es?query=rules_per_category&from_date=" + from_date + "&hosts=" + hosts.join()
@@ -575,68 +580,13 @@ function draw_circle(from_date, hosts, filter, callback) {
           },
         });
 }
-
-function draw_influxdb_timeline(time_range, request, cssid) {
-        if (cssid == undefined) {
-                cssid = '#influxdb';
-        }
-        esurl = "/rules/influxdb?time_range=" + time_range + "&request=" + request
-        $.ajax(
-                        {
-                        type:"GET",
-                        url:esurl,
-                        success: function(data) {
-			                $(cssid + " span").hide();
-                            nv.addGraph(function() {
-                              var chart = nv.models.stackedAreaChart()
-                                            .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
-                                            .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
-                                            .duration(350)  //how fast do you want the lines to transition?
-                                            .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
-                                            .showYAxis(true)        //Show the y-axis
-                                            .showXAxis(true)        //Show the x-axis
-                              ;
-                                chart.xAxis.tickFormat(function(d) {
-                                    return d3.time.format('%m/%d %H:%M')(new Date(d * 1000))
-                                });
-
-                                chart.yAxis
-                                .tickFormat(d3.format(',.2f'));
-
-                                var sdata = []
-                                for (hi = 0; hi < data.length; hi++) {
-                                        entries = data[hi]['points'];
-                                        gdata = [];
-                                        for (he = 0; he < entries.length; he++) {
-                                            gdata.push({x: entries[he][0], y: entries[he][1]});
-                                        }
-                                        sdata.push(
-                                        {
-                                            values: gdata,
-                                            key: data[hi]["name"].split(".")[1],
-                                        }
-                                        );
-                                }
-                                d3.select(cssid + ' svg')
-                                        .datum(sdata)
-                                        .call(chart);
-
-                                nv.utils.windowResize(function() { chart.update(); });
-                                $("[role='tab']").on('shown.bs.tab', function() {
-                                    chart.duration(0);
-                                    chart.update();
-                                    chart.duration(350);
-                                });
-                                return chart;
-                        });
-                },
-        });
-}
+window.draw_circle = draw_circle;
 
 function fadeChange(elt, text)
 {
    elt.fadeOut("fast", function() { elt.text(text); elt.fadeIn(); });
 }
+window.fadeChange = fadeChange;
 
 function checkbox_toggle_div(checkbox_loc, div_loc) {
     $(checkbox_loc).on("change", function() {
@@ -650,3 +600,4 @@ function checkbox_toggle_div(checkbox_loc, div_loc) {
         $(div_loc).hide();
     }
 }
+window.checkbox_toggle_div = checkbox_toggle_div;
