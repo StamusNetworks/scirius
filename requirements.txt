@@ -1,5 +1,5 @@
 daemon
-Django<2
+Django>=1.11.10,<2
 django-bootstrap3
 django-revproxy
 django-tables2<1.17
