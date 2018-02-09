@@ -62,6 +62,8 @@ class Info():
         return psutil.disk_usage('/')
     def memory(self):
         return psutil.virtual_memory()
+    def cpu(self):
+        return psutil.cpu_percent(interval=0.2)
 
 def get_es_template():
     return 'rules/elasticsearch.html'

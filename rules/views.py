@@ -1278,6 +1278,8 @@ def info(request):
             data = info.disk()
         elif query == 'memory':
             data = info.memory()
+        elif query == 'cpu':
+            data = info.cpu()
     return HttpResponse(json.dumps(data),
                         content_type="application/json")
 
