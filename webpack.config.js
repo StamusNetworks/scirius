@@ -7,7 +7,7 @@ const extractSass = new ExtractTextPlugin({
 });
 
 module.exports = {
-  entry: "./rules/static/js/scirius-bundle.js",
+  entry: "./npm/scirius-bundle.js",
   module: {
     loaders: [
       {
