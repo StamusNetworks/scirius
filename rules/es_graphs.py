@@ -357,7 +357,7 @@ STATS_QUERY = """
             "filtered": {
               "query": {
                 "query_string": {
-                  "query": "{{ hostname }}.{{ keyword }}:{{ host }}"
+                  "query": "{{ hostname }}.{{ keyword }}:{{ host }} {{ query_filter|safe }}"
                 }
               },
               "filter": {
@@ -457,7 +457,7 @@ if settings.ELASTICSEARCH_VERSION >= 2:
         "query_string": {
       {% if hosts %}
           {% for host in hosts %}
-          "query": "{{ hostname }}.{{ keyword }}:{{ host }}",
+          "query": "{{ hostname }}.{{ keyword }}:{{ host }} {{ query_filter|safe }}",
           {% endfor %}
       {% else %}
           "query": "tags:metric",
@@ -507,7 +507,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
         "query_string": {
       {% if hosts %}
           {% for host in hosts %}
-          "query": "{{ hostname }}:{{ host }}",
+          "query": "{{ hostname }}:{{ host }} {{ query_filter|safe }}",
           {% endfor %}
       {% else %}
           "query": "tags:metric",
@@ -1203,11 +1203,11 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
         data['interval'] = int(interval) * 1000
     return data
 
-def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_1m", hosts = None):
+def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_1m", hosts = None, qfilter = None):
     # 100 points on graph per default
     if interval == None:
         interval = int((time() - (int(from_date)/ 1000)) / 100)
-    data = render_template(STATS_QUERY, {'from_date': from_date, 'interval': str(interval) + "s", 'value': value, 'hosts': hosts})
+    data = render_template(STATS_QUERY, {'from_date': from_date, 'interval': str(interval) + "s", 'value': value, 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date, data = 'stats')
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
