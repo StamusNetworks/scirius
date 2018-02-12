@@ -41,8 +41,6 @@
 			{% endif %}
 
             <li><a href="{% url 'system_settings' %}" >{% bootstrap_icon "list-alt"%} System settings</a></li>
-            <li><a href="{% url 'accounts_edit' '' %}" >{% bootstrap_icon "cog"%} Account settings</a></li>
-            <li><a href="/accounts/logout/" >{% bootstrap_icon "log-out"%} Logout</a></li>
                         {% block menusettings %}
 			        {% if links %}
 				<li role="presentation" class="divider"></li>
@@ -83,11 +81,38 @@
 				<a id="about" href="{% url 'scirius_about' %}">{% bootstrap_icon "info-sign" %} About</a>
 			</li>
 		</ul>
-		<form class="navbar-form navbar-nav navbar-right"  action="{% url 'scirius_search' %}" method="post" role="search">{% csrf_token %}
-<div class="form-group">
+<div class="navbar-right">
+		<form class="navbar-form navbar-nav"  action="{% url 'scirius_search' %}" method="post" role="search">{% csrf_token %}
+<span class="form-group">
 			<span class="glyphicon glyphicon-search"> <input type="text" name="search" id="id_search"/></span>
-</div>
+</span>
 		</form>
+
+<ul class="nav navbar-nav">
+<li>
+<a class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+{% bootstrap_icon "time" %} last {{ date }} <span class="caret"/>
+</a>
+<ul class="dropdown-menu" id="display_menu">
+   <li><a href="?duration=1">Last 1h</a></li>
+   <li><a href="?duration=6">Last 6h</a></li>
+   <li><a href="?duration=24">Last 24h</a></li>
+   <li><a href="?duration=48">Last 2d</a></li>
+   <li><a href="?duration=168">Last 7d</a></li>
+</ul>
+<li>
+<li>
+			<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="user">
+			{% bootstrap_icon "user" %} {{ request.user }} <span class="caret"/>
+</a>
+			<ul class="dropdown-menu" id="user_menu" role="menu">
+            <li><a href="{% url 'accounts_edit' '' %}" >{% bootstrap_icon "cog"%} Account settings</a></li>
+            <li><a href="/accounts/logout/" >{% bootstrap_icon "log-out"%} Logout</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
 </div>
 </div>
 	</nav>
