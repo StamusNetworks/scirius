@@ -455,7 +455,8 @@ function populate_topip_actions(pdiv, direction) {
     pdiv.find("td.actions").each(
         function() {
             ip = $(this).parent("tr").children(".host").html();
-            content = '<a href="{% url 'threshold_rule' rule.pk %}?action=threshold&dir=' + direction + '&net=' + ip + '"><span class="glyphicon glyphicon-arrow-down"> </span></a>';
+            content = '<a href="https://www.onyphe.io/search/?query=' + ip + '" target="_blank"><span class="glyphicon glyphicon-question-sign"> </span></a>';
+            content = content + '<a href="{% url 'threshold_rule' rule.pk %}?action=threshold&dir=' + direction + '&net=' + ip + '"><span class="glyphicon glyphicon-arrow-down"> </span></a>';
             content = content + ' <a href="{% url 'threshold_rule' rule.pk %}?action=suppress&dir=' + direction + '&net=' + ip + '"><span class="glyphicon glyphicon-remove"> </span></a>';
             $(this).empty();
             $(this).append(content);
