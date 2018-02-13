@@ -38,7 +38,6 @@ from rules.models import UserAction
 from forms import *
 from rules.forms import CommentForm
 
-from rules.views import complete_context
 from rules.es_graphs import es_get_ippair_alerts
 
 from django.conf import settings
@@ -69,7 +68,6 @@ def index(request, error = None):
 
         if settings.USE_ELASTICSEARCH:
             context['rules'] = True
-            complete_context(request, context)
 
         return scirius_render(request, 'suricata/index.html', context)
     else:
@@ -170,7 +168,6 @@ def update(request):
 
 def dashboard(request):
     context = {}
-    complete_context(request, context)
     suri = get_suri()
     context['probes'] = ("'"+ suri.name + "'",)
     if request.method == 'POST' and request.POST.has_key('filter'):

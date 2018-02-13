@@ -48,37 +48,6 @@ from suripyg import SuriHTMLFormat
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
 
-def complete_context(request, context):
-    if get_system_settings().use_elasticsearch:
-        if request.GET.__contains__('duration'):
-            duration = int(request.GET.get('duration', '24'))
-            if duration > 24 * 7:
-                duration = 24 * 7
-            request.session['duration'] = duration
-        else:
-            duration = int(request.session.get('duration', '24'))
-        from_date = int((time() - (duration * 3600)) * 1000)
-        if duration <= 24:
-            date = str(duration) + "h"
-        else:
-            date = str(duration / 24) + "d"
-        if request.GET.__contains__('graph'):
-            graph = request.GET.get('graph', 'sunburst')
-            if not graph in ['sunburst', 'circles']:
-                graph = 'sunburst'
-            request.session['graph'] = graph
-        else:
-            graph = 'sunburst'
-        if graph == 'sunburst':
-            context['draw_func'] = 'draw_sunburst'
-            context['draw_elt'] = 'path'
-        else:
-            context['draw_func'] = 'draw_circle'
-            context['draw_elt'] = 'circle'
-        context['date'] = date
-        context['from_date'] = from_date
-        context['time_range'] = duration * 3600
-
 # Create your views here.
 def index(request):
     ruleset_list = Ruleset.objects.all().order_by('-created_date')[:5]
@@ -89,7 +58,6 @@ def index(request):
         context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
     except:
         pass
-    complete_context(request, context)
     return scirius_render(request, 'rules/index.html', context)
 
 def about(request):
@@ -261,7 +229,6 @@ def elasticsearch(request):
                 return scirius_render(request, 'rules/table.html', context)
             else:
                 context = {}
-                complete_context(request, context)
                 return scirius_render(request, 'rules/elasticsearch.html', context)
         elif query == 'rules_per_category':
             from_date = request.GET.get('from_date', None)
@@ -309,7 +276,6 @@ def elasticsearch(request):
             return HttpResponse(json.dumps(data), content_type="application/json")
         else:
             context = {}
-            complete_context(request, context)
             template = Probe.common.get_es_template()
             return scirius_render(request, template, context)
 
@@ -383,7 +349,6 @@ def rule(request, rule_id, key = 'pk'):
         context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
     except:
         pass
-    complete_context(request, context)
 
     return scirius_render(request, 'rules/rule.html', context)
 
@@ -541,7 +506,6 @@ def delete_alerts(request, rule_id):
             context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
         except:
             pass
-        complete_context(request, context)
         return scirius_render(request, 'rules/delete_alerts.html', context)
 
 def comment_rule(request, rule_id):

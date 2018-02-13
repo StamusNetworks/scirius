@@ -19,6 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from importlib import import_module
+from time import time
 
 from django.shortcuts import render
 from django.conf import settings
@@ -58,6 +59,37 @@ class TimezoneMiddleware(object):
             if user:
                 timezone.activate(user.timezone)
         return self.get_response(request)
+
+def complete_context(request, context):
+    if get_system_settings().use_elasticsearch:
+        if request.GET.__contains__('duration'):
+            duration = int(request.GET.get('duration', '24'))
+            if duration > 24 * 7:
+                duration = 24 * 7
+            request.session['duration'] = duration
+        else:
+            duration = int(request.session.get('duration', '24'))
+        from_date = int((time() - (duration * 3600)) * 1000)
+        if duration <= 24:
+            date = str(duration) + "h"
+        else:
+            date = str(duration / 24) + "d"
+        if request.GET.__contains__('graph'):
+            graph = request.GET.get('graph', 'sunburst')
+            if not graph in ['sunburst', 'circles']:
+                graph = 'sunburst'
+            request.session['graph'] = graph
+        else:
+            graph = 'sunburst'
+        if graph == 'sunburst':
+            context['draw_func'] = 'draw_sunburst'
+            context['draw_elt'] = 'path'
+        else:
+            context['draw_func'] = 'draw_circle'
+            context['draw_elt'] = 'circle'
+        context['date'] = date
+        context['from_date'] = from_date
+        context['time_range'] = duration * 3600
 
 def scirius_render(request, template, context):
     context['generator'] = settings.RULESET_MIDDLEWARE
@@ -105,7 +137,7 @@ def scirius_render(request, template, context):
         pass
 
     context['messages'] = messages.get_messages(request)
-
+    complete_context(request, context)
     return render(request, template, context)
 
 def scirius_listing(request, objectname, name, template = 'rules/object_list.html', table = None, adduri = None):
