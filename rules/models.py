@@ -185,6 +185,8 @@ class Source(models.Model):
     uri = models.CharField(max_length=400, blank = True, null = True)
     cert_verif = models.BooleanField('Check certificates', default=True)
     authkey = models.CharField(max_length=400, blank = True, null = True)
+    cats_count = models.IntegerField(default = 0)
+    rules_count = models.IntegerField(default = 0)
 
     editable = True
     # git repo where we store the physical thing
@@ -438,6 +440,13 @@ class Source(models.Model):
             version = sha,
             changed = len(update["deleted"]) + len(update["added"]) + len(update["updated"]),
         )
+
+
+    def build_counters(self):
+        cats = Category.objects.filter(source = self)
+        self.cats_count = len(cats)
+        self.rules_count = len(Rule.objects.filter(category__in = cats))
+        self.save()
 
     @transaction.atomic
     def update(self):

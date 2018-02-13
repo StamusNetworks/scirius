@@ -116,7 +116,12 @@ def search(request):
     return scirius_render(request, 'rules/search.html', context)
 
 def sources(request):
-    return scirius_listing(request, Source, 'Sources')
+    sources = Source.objects.all().order_by('name')
+    for source in sources:
+        if source.cats_count == 0:
+            source.build_counters()
+    context = { 'sources': sources }
+    return scirius_render(request, 'rules/sources.html', context)
 
 def source(request, source_id, error=None, update = False, activate = False, rulesets = None):
     source = get_object_or_404(Source, pk=source_id)
