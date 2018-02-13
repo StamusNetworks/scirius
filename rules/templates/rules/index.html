@@ -3,47 +3,33 @@
 {% block content %}
 
 <div class="container-fluid">
+
+{% if elasticsearch and probes %}
+
 <div class="row">
+<div class="col-md-8">
+<div class="container-fluid">
 
-<div class="col-md-4">
-<div class="panel panel-default" >
-<div class="panel-heading">
-<h2 class="panel-title">Sources</h2>
-</div>
-<div class="panel-body">
-{% if source_list %}
-    <ul>
-    {% for source in source_list %}
-        <li><a href="{% url 'source' source.id %}">{{ source.name }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No sources are available.</p>
-{% endif %}
-</div> <!-- panel-body -->
-</div> <!-- panel -->
+<div class="row">
+<div class="col-md-12">
+<h2 class="title">Alerts activity</h2>
+
 </div> <!-- col -->
+</div> <!-- row -->
+<div class="row">
+<div class="col-md-12">
+<div id="timeline">
+<p>Fetching data...</p>
+<svg style="width:100%;height:300px">
+</svg>
+</div>
 
-<div class="col-md-4">
-<div class="panel panel-default" >
-<div class="panel-heading" >
-<h2 class="panel-title">Rulesets</h2>
-</div>
-<div class="panel-body">
-{% if ruleset_list %}
-    <ul>
-    {% for ruleset in ruleset_list %}
-        <li><a href="{% url 'ruleset' ruleset.id %}">{{ ruleset.name }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No rulesets are available.</p>
-{% endif %}
-</div>
-</div> <!-- panel -->
 </div> <!-- col -->
+</div> <!-- row -->
 
-{% if elasticsearch %}
+</div>
+</div> <!-- col side display -->
+
 <div class="col-md-4">
 <div class="panel panel-default" >
 <div class="panel-heading" >
@@ -118,35 +104,6 @@
 </script>
 </div> <!-- panel -->
 </div> <!-- col -->
-{% endif %}
-
-</div> <!-- row -->
-
-{% if elasticsearch and probes %}
-
-<div class="row">
-<div class="col-md-12">
-<div class="container-fluid">
-
-<div class="row">
-<div class="col-md-12">
-<h2 class="title">Alerts activity</h2>
-
-</div> <!-- col -->
-</div> <!-- row -->
-<div class="row">
-<div class="col-md-12">
-<div id="timeline">
-<p>Fetching data...</p>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-
-</div> <!-- col -->
-</div> <!-- row -->
-
-</div>
-</div> <!-- col side display -->
 
 <div class="col-md-12">
 <div class="container-fluid">
