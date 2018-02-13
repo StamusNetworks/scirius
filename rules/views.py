@@ -863,7 +863,9 @@ def sourceupdate(request, update_id):
     return scirius_render(request, 'rules/source.html', { 'source': source, 'diff': diff, 'src_update': sourceupdate })
 
 def rulesets(request):
-    return scirius_listing(request, Ruleset, 'Rulesets')
+    rulesets = Ruleset.objects.all().order_by('name')
+    context = { 'rulesets': rulesets }
+    return scirius_render(request, 'rules/rulesets.html', context)
 
 def ruleset(request, ruleset_id, mode = 'struct', error = None):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
