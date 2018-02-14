@@ -309,7 +309,7 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
 	    }
         });
 }
-
+window.draw_stats_timeline_with_range = draw_stats_timeline_with_range;
 
 function draw_stats_timeline(from_date, value, tdiv, speed, hosts) {
      draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, false);
