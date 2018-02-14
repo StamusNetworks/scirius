@@ -31,38 +31,63 @@
 </div> <!-- col side display -->
 
 <div class="col-md-4">
-<div class="panel panel-default" >
-<div class="panel-heading" >
-<h2 class="panel-title">Alert stats for last {{ date }}</h2>
+      <div class="container-fluid container-cards-pf">
+        <div class="row row-cards-pf">
+          <div class="col-md-12">
+            <div class="card-pf card-pf-utilization" id="alert-trend">
+  <h2 class="card-pf-title">
+    Alerts trend
+  </h2>
+  <div class="card-pf-body">
+    <p class="card-pf-utilization-details">
+      <span class="card-pf-utilization-card-details-count">--</span>
+        <span class="card-pf-utilization-card-details-description">
+          <span class="card-pf-utilization-card-details-line-1">alerts</span>
+          <span class="card-pf-utilization-card-details-line-2">vs <span id="alert-prev">--</span> on prev period</span>
+        </span>
+    </p>
+    <div id="chart-pf-donut-5"></div>
+    <div class="chart-pf-sparkline" id=""></div>
+    <script>
+      var c3ChartDefaults = $().c3ChartDefaults();
+
+      var donutConfig = c3ChartDefaults.getDefaultDonutConfig('A');
+      donutConfig.bindto = '#chart-pf-donut-5';
+      donutConfig.color =  {
+        pattern: ["#D1D1D1", "#EC7A08"]
+      };
+      donutConfig.data = {
+        type: "donut",
+        columns: [
+          ["previous", 100],
+          ["current", 0]
+        ],
+        groups: [
+          ["previous", "current"]
+        ],
+        order: null
+      };
+      donutConfig.tooltip = {
+        contents: function (d) {
+          return '<span class="donut-tooltip-pf" style="white-space: nowrap;">' +
+                  d[0].value + ' alerts ' + d[0].name +
+                  '</span>';
+        }
+      };
+
+      var chart1 = c3.generate(donutConfig);
+      var donutChartTitle = d3.select("#chart-pf-donut-5").select('text.c3-chart-arcs-title');
+      donutChartTitle.text("");
+      donutChartTitle.insert('tspan').text("--%").classed('donut-title-big-pf', true).attr('dy', 0).attr('x', 0);
+      donutChartTitle.insert('tspan').text("trend").classed('donut-title-small-pf', true).attr('dy', 20).attr('x', 0);
+    </script>
+  </div>
 </div>
-<div class="panel-body">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="thumbnail" style="margin-bottom: 0px">
-                <h5 class="alert-trends-title">Previous</h5>
-                <div class="alert-trends-box bg-info">
-                    <span id="prevgalertcnt">-</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="thumbnail" style="margin-bottom: 0px">
-                <h5 class="alert-trends-title">Current</h5>
-                <div class="alert-trends-box bg-info">
-                    <span id="galertcnt">-</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="thumbnail" style="margin-bottom: 0px">
-                <h5 class="alert-trends-title">Trend</h5>
-                <div id="alerttrendbox" class="alert-trends-box bg-info">
-                    <span id="alerttrend">-</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+
+          </div>
+        </div><!-- /row -->
+      </div><!-- /container -->
+</div> <!-- col -->
 <script>
     function get_alert_count() {
     $.ajax({
@@ -71,26 +96,26 @@
             context: $(this),
             success: function(data) {
                     if (data) {
-                            $("#galertcnt").text(data['doc_count']);
-                            $("#prevgalertcnt").text(data['prev_doc_count']);
+                            $("#alert-trend .card-pf-utilization-card-details-count").text(data['doc_count']);
+                            $("#alert-prev").text(data['prev_doc_count']);
+
+                            chart1.load(
+                                { columns: [
+                                          ["previous", data['prev_doc_count']],
+                                          ["current", data['doc_count']]
+                                        ]
+                                      }
+                                );
                             var trend = (data['doc_count'] - data['prev_doc_count']) * 100.0/ data['prev_doc_count'];
                             var sign = "";
                             if (trend > 0) {
                                     sign = "+";
                             }
-                            $("#alerttrend").text(sign + trend.toFixed(0) + "%");
-                            $("#alerttrendbox").removeClass("bg-info");
-                            if (trend > 80) {
-                                if (! $("#alerttrendbox").hasClass("bg-danger")) {
-                                    $("#alerttrendbox").removeClass("bg-success");
-                                    $("#alerttrendbox").addClass("bg-danger");
-                                }
-                            } else {
-                                if (! $("#alerttrendbox").hasClass("bg-success")) {
-                                    $("#alerttrendbox").removeClass("bg-danger");
-                                    $("#alerttrendbox").addClass("bg-success");
-                                }
-                            }
+                            var donutChartTitle = d3.select("#chart-pf-donut-5").select('text.c3-chart-arcs-title');
+                            donutChartTitle.text("");
+                            donutChartTitle.insert('tspan').text(sign + trend.toFixed(0) + "%").classed('donut-title-big-pf', true).attr('dy', 0).attr('x', 0);
+                            donutChartTitle.insert('tspan').text("trend").classed('donut-title-small-pf', true).attr('dy', 20).attr('x', 0);
+
                     }
             }
         });
@@ -102,8 +127,6 @@
         }
     )
 </script>
-</div> <!-- panel -->
-</div> <!-- col -->
 
 <div class="col-md-12">
 <div class="container-fluid">
