@@ -1141,6 +1141,8 @@ class Ruleset(models.Model):
         self.name = name
         self.pk = None
         self.id = None
+        self.created_date = timezone.now()
+        self.updated_date = self.created_date
         self.save()
         self.sources = orig_sources
         self.categories = orig_categories
