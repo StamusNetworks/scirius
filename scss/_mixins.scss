@@ -1,0 +1,52 @@
+@mixin vertical-gradient($background-start, $background-end) {
+  background-image: linear-gradient(
+    to bottom,
+    $background-start 0%,
+    $background-end 100%
+  );
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(
+      startColorstr="$background-start",
+      endColorstr="$backgroud-end",
+      GradientType=0
+    );
+}
+@mixin button-variant($color, $background, $background-start, $background-end, $border) {
+  background-color: $background;
+  border-color: $border;
+  color: $color;
+    @include vertical-gradient($background-start, $background-end);
+  &:hover,
+  &:focus,
+  &:active,
+  &.active,
+  .open .dropdown-toggle#{&} {
+    background-color: $background;
+    background-image: none;
+    border-color: $border;
+    color: $color;
+  }
+  &:active,
+  &.active,
+  .open .dropdown-toggle#{&} {
+    background-image: none;
+    &:hover,
+    &:focus,
+    &.focus {
+      background-color: darken($background, 5%);
+      border-color: darken($border, 7%);
+    }
+  }
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &,
+    &:hover,
+    &:focus,
+    &:active,
+    &.active {
+      background-color: $background;
+      border-color: $border;
+    }
+  }
+}

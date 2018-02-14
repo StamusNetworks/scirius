@@ -5,7 +5,7 @@ import "../rules/static/rules/c3.min.css";
 import "../rules/static/rules/static.css";
 import "../node_modules/patternfly/dist/css/patternfly.css";
 import "../node_modules/patternfly/dist/css/patternfly-additions.css";
-//import "../scss/_styles.scss";
+import "../scss/_styles.scss";
 // JS
 import "../rules/static/js/bootstrap.min.js";
 import "../rules/static/js/tipsy.js";

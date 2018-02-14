@@ -1,0 +1,86 @@
+@import "./_variables.scss";
+@import "./_mixins.scss";
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  margin-top: 0;
+  .label {
+    font-size: 85%;
+  }
+  .label-success,
+  .progress-bar-success {
+    background-color: $success-color;
+  }
+  .label-warning,
+  .progress-bar-warning {
+    background-color: $warning-color;
+  }
+  .label-danger,
+  .progress-bar-danger {
+    background-color: $danger-color;
+  }
+  .panel-success {
+    border-color: $success-color;
+  }
+  .panel-warning {
+    border-color: $warning-color;
+  }
+  h2,
+  .title,
+  h2.panel-title,
+  .nav-tabs > li.active > a,
+  .nav-tabs > li.active > a:hover,
+  .nav-tabs > li.active > a:focus {
+    color: darken($brand-color, 20%);
+  }
+  ul.dropdown-menu li {
+    padding-right: 0;
+  }
+  #dashboards ul > li {
+    padding-right: 10px;
+  }
+  .form-control:focus {
+    border-color: $brand-color;
+    outline: 0;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075),
+      0 0 8px rgba(98, 187, 70, 0.6);
+  }
+  .form-control:hover {
+    border-color: $brand-color;
+  }
+  .btn-primary {
+    @include button-variant(white, darken($brand-color, 10%), $brand-color, darken($brand-color, 10%), darken($brand-color, 20%));
+  }
+  .jumbotron-cf {
+      background-color: $light-background;
+      border: 1px solid $light-border;
+      margin-bottom: 20px;
+  }
+  .probe-heading,
+  .panel-heading {
+      a {
+          color: white;
+      }
+  }
+  #tasks_finished .panel-heading {
+    a {
+      color: white;
+    }
+  }
+  table.paleblue, table.paleblue + ul.pagination {
+    font-family: 'Open Sans', sans-serif;
+  }
+  table.paleblue tr.even {
+    background-color: white;
+  }
+  .panel-body ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  .alert-dismissable .close, .alert-dismissible .close {
+    right: 0
+  }
+  a {
+    color: darken($brand-color, 10%);
+  }
+}
