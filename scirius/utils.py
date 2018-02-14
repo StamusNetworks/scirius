@@ -142,7 +142,7 @@ def scirius_render(request, template, context):
 
 def scirius_listing(request, objectname, name, template = 'rules/object_list.html', table = None, adduri = None):
     # FIXME could be improved by generating function name
-    assocfn = { 'Sources': SourceTable, 'Categories': CategoryTable, 'Rulesets': RulesetTable, 'Users': UserTable }
+    assocfn = { 'Categories': CategoryTable, 'Users': UserTable }
     olist = objectname.objects.all()
     if olist:
         if table == None:

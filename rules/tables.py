@@ -88,12 +88,6 @@ class RulesetTable(tables.Table):
         model = Ruleset
         fields = ("name", "created_date", "updated_date")
 
-class SourceTable(tables.Table):
-    name = tables.LinkColumn('source', args=[tables.A('pk')])
-    class Meta(DefaultMeta):
-        model = Source
-        fields = ("name", "created_date", "updated_date")
-
 class SourceUpdateTable(tables.Table):
     created_date = tables.LinkColumn('sourceupdate', args=[tables.A('pk')])
     class Meta(DefaultMeta):
