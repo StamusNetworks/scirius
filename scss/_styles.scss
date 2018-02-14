@@ -62,6 +62,13 @@ body {
           color: white;
       }
   }
+
+  .scirius_task {
+      a {
+          color: darken($brand-color, 10%);
+      }
+   }
+            
   #tasks_finished .panel-heading {
     a {
       color: white;
