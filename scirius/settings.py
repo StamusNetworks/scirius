@@ -150,7 +150,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 30
+    'PAGE_SIZE': 30 
 }
 
 # Static files (CSS, JavaScript, Images)
@@ -162,6 +162,9 @@ STATIC_URL = '/static/'
 SURICATA_BINARY = "suricata"
 
 SURICATA_NAME_IS_HOSTNAME = False
+
+# Sources update
+DEFAULT_SOURCE_INDEX_URL = "https://www.openinfosecfoundation.org/rules/index.yaml"
 
 # Elastic search
 

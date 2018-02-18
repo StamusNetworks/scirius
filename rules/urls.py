@@ -1,5 +1,5 @@
 """
-Copyright(C) 2014, Stamus Networks
+Copyright(C) 2014-2018, Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
 
 This file is part of Scirius.
@@ -31,6 +31,8 @@ urlpatterns = [
     url(r'^settings/$', views.system_settings, name='system_settings'),
     url(r'^source/$', views.sources, name='sources'),
     url(r'^source/add$', views.add_source, name='add_source'),
+    url(r'^source/add_public$', views.add_public_source, name='add_public_source'),
+    url(r'^source/update_public$', views.update_public_sources, name='update_public_sources'),
     url(r'^source/(?P<source_id>\d+)/$', views.source, name='source'),
     url(r'^source/(?P<source_id>\d+)/update$', views.update_source, name='update_source'),
     url(r'^source/(?P<source_id>\d+)/diff$', views.diff_source, name='diff_source'),

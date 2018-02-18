@@ -9,6 +9,7 @@ GitPython
 psutil
 Pygments
 pytz
+PyYAML
 requests
 six
 smmap

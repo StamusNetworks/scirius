@@ -37,6 +37,7 @@ from rules.es_graphs import *
 from rules.influx import *
 
 import json
+import yaml
 import re
 import os
 
@@ -807,6 +808,120 @@ def add_source(request):
         form = AddSourceForm() # An unbound form
 
     return scirius_render(request, 'rules/add_source.html', { 'form': form, })
+
+def fetch_public_sources():
+    proxy_params = get_system_settings().get_proxy_params()
+    try:
+        if proxy_params:
+            resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL, proxies = proxy_params)
+        else:
+            resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL)
+        resp.raise_for_status()
+    except requests.exceptions.ConnectionError, e:
+        if "Name or service not known" in str(e):
+            raise IOError("Connection error 'Name or service not known'")
+        elif "Connection timed out" in str(e):
+            raise IOError("Connection error 'Connection timed out'")
+        else:
+            raise IOError("Connection error '%s'" % (e))
+    except requests.exceptions.HTTPError:
+        if resp.status_code == 404:
+            raise IOError("URL not found on server (error 404), please check URL")
+        raise IOError("HTTP error %d sent by server, please check URL or server" % (resp.status_code))
+    except requests.exceptions.Timeout:
+        raise IOError("Request timeout, server may be down")
+    except requests.exceptions.TooManyRedirects:
+        raise IOError("Too many redirects, server may be broken")
+    # store as sources.yaml
+    sources_yaml = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, 'sources.yaml') 
+    with open(sources_yaml, 'w') as sfile:
+        sfile.write(resp.content)
+
+
+def update_public_sources(request):
+    fetch_public_sources()
+    return redirect('add_public_source')
+
+
+def add_public_source(request):
+    if not request.user.is_staff:
+        return scirius_render(request, 'rules/add_public_source.html', { 'error': 'Unsufficient permissions' })
+
+    sources_yaml = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, 'sources.yaml') 
+    if not os.path.exists(sources_yaml):
+        try:
+            fetch_public_sources()
+        except IOError, e:
+            return scirius_render(request, 'rules/add_public_source.html', { 'error': e, })
+    public_sources = None
+    with open(sources_yaml, 'r') as stream:
+        # replace dash by underscode in keys
+        yaml_data = re.sub(r'(\s+\w+)-(\w+):', r'\1_\2:', stream.read())
+        # FIXME error handling
+        public_sources = yaml.load(yaml_data)
+    if public_sources['version'] != 1:
+        error = "Unsupported version of sources definition"
+        return scirius_render(request, 'rules/add_public_source.html', { 'error': error, })
+    for source in public_sources['sources']:
+        if public_sources['sources'][source].has_key('support_url'):
+            public_sources['sources'][source]['support_url_cleaned'] = public_sources['sources'][source]['support_url'].split(' ')[0]
+        if public_sources['sources'][source].has_key('subscribe_url'):
+            public_sources['sources'][source]['subscribe_url_cleaned'] = public_sources['sources'][source]['subscribe_url'].split(' ')[0]
+        if public_sources['sources'][source]['url'].endswith('.rules'):
+            public_sources['sources'][source]['datatype'] = 'sig'
+        elif public_sources['sources'][source]['url'].endswith('z'):
+            public_sources['sources'][source]['datatype'] = 'sigs'
+        else:
+            public_sources['sources'][source]['datatype'] = 'other'
+    if request.is_ajax():
+        return HttpResponse(json.dumps(public_sources['sources']), content_type="application/json")
+    if request.method == 'POST':
+        form = AddPublicSourceForm(request.POST)
+        if form.is_valid():
+            source_id = form.cleaned_data['source_id']
+            source = public_sources['sources'][source_id]
+            source_uri = source['url']
+            params = {"__version__": "4.0"}
+            if form.cleaned_data.has_key('secret_code'):
+                params.update({'secret-code': form.cleaned_data['secret_code']})
+            source_uri = source_uri % params
+            try:
+                src = Source.objects.create(name = form.cleaned_data['name'],
+                        uri = source_uri,
+                        method = 'http',
+                        created_date = timezone.now(),
+                        datatype = source['datatype'],
+                        cert_verif = True,
+                        )
+            except IntegrityError, error:
+                return scirius_render(request, 'rules/add_public_source.html', { 'form': form, 'error': error })
+            try:
+                ruleset_list = form.cleaned_data['rulesets']
+            except:
+                ruleset_list = []
+            rulesets = [ ruleset.pk for ruleset in ruleset_list ]
+            if len(ruleset_list):
+                for ruleset in ruleset_list:
+                    ua = UserAction(action='create', user = request.user, userobject = src)
+                    ua.comment = form.cleaned_data['comment']
+                    ua.ruleset = ruleset
+                    ua.options = 'source'
+                    ua.save()
+            else:
+                ua = UserAction(action='create', user = request.user, userobject = src)
+                ua.comment = form.cleaned_data['comment']
+                ua.options = 'source'
+                ua.save()
+            ruleset_list = [ '"' + ruleset.name + '"' for ruleset in ruleset_list ]
+            return scirius_render(request, 'rules/add_public_source.html', { 'source': src,  'update': True, 'rulesets': rulesets, 'ruleset_list': ruleset_list})
+        else:
+            return scirius_render(request, 'rules/add_public_source.html', { 'form': form, 'error': 'form is not valid' })
+        
+
+
+    rulesets = Ruleset.objects.all()
+    return scirius_render(request, 'rules/add_public_source.html', { 'sources': public_sources['sources'], 'rulesets': rulesets })
+
 
 def edit_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)

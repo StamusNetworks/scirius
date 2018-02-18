@@ -90,6 +90,19 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
         if 'rulesets' in self.fields:
             self.fields['rulesets'].required =  False
 
+class AddPublicSourceForm(forms.ModelForm, RulesetChoiceForm):
+    source_id = forms.CharField(max_length=100)
+    secret_code = forms.CharField(max_length=100, required = False)
+
+    class Meta:
+        model = Source
+        exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count', 'method', 'datatype']
+
+    def __init__(self, *args, **kwargs):
+        super(AddPublicSourceForm, self).__init__(*args, **kwargs)
+        if 'rulesets' in self.fields:
+            self.fields['rulesets'].required =  False
+
 # Display choices of SourceAtVersion
 class RulesetForm(CommentForm):
     name = forms.CharField(max_length=100)
