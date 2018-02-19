@@ -56,6 +56,7 @@ body {
       border: 1px solid $light-border;
       margin-bottom: 20px;
   }
+
   .probe-heading,
   .panel-heading {
       a {
@@ -87,6 +88,8 @@ body {
   .alert-dismissable .close, .alert-dismissible .close {
     right: 0
   }
+
+  .panel-default .panel-heading .panel-title a,
   a {
     color: darken($brand-color, 10%);
   }
