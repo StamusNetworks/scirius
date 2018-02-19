@@ -64,8 +64,8 @@ def complete_context(request, context):
     if get_system_settings().use_elasticsearch:
         if request.GET.__contains__('duration'):
             duration = int(request.GET.get('duration', '24'))
-            if duration > 24 * 7:
-                duration = 24 * 7
+            if duration > 24 * 30:
+                duration = 24 * 30
             request.session['duration'] = duration
         else:
             duration = int(request.session.get('duration', '24'))
