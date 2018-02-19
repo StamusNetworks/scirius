@@ -54,8 +54,6 @@
             {% if request.user.is_superuser %}
                         <li><a href="{% url 'accounts_manage' '' %}" >{% bootstrap_icon "user"%} Manage accounts</a></li>
             {% endif %}
-            <li role="presentation" class="divider"></li>
-            <li><a target="_blank" href="https://github.com/StamusNetworks/scirius">{% bootstrap_icon "new-window"%} Scirius homepage</a></li>
 			</ul>
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#top-menu-collapse">
         <span class="sr-only">Toggle navigation</span>
@@ -77,9 +75,7 @@
 			<li><a id="{{ link.id }}" href="{{ link.url }}">{% bootstrap_icon link.icon %} {{ link.label }}</a></li>
 			{% endfor %}
 			{% endif %}
-			<li>
-				<a id="about" href="{% url 'scirius_about' %}">{% bootstrap_icon "info-sign" %} About</a>
-			</li>
+
 		</ul>
 <div class="navbar-right">
 		<form class="navbar-form navbar-nav"  action="{% url 'scirius_search' %}" method="post" role="search">{% csrf_token %}
@@ -89,6 +85,17 @@
 		</form>
 
 <ul class="nav navbar-nav">
+<li>
+<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="user">
+{% bootstrap_icon "question-sign" %} <span class="caret"/>
+
+<ul class="dropdown-menu" id="about_menu" role="menu">
+<li>
+  <a id="about" href="{% url 'scirius_about' %}">{% bootstrap_icon "question-sign" %} About Scirius</a>
+</li>
+            <li><a target="_blank" href="https://github.com/StamusNetworks/scirius">{% bootstrap_icon "new-window"%} Scirius homepage</a></li>
+	    </ul>
+</li>
 <li>
 <a class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
 {% bootstrap_icon "time" %} last {{ date }} <span class="caret"/>
@@ -101,7 +108,9 @@
    <li><a href="?duration=168">Last 7d</a></li>
    <li><a href="?duration=720">Last 30d</a></li>
 </ul>
-<li>
+</li>
+
+
 <li>
 			<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="user">
 			{% bootstrap_icon "user" %} {{ request.user }} <span class="caret"/>
