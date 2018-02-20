@@ -191,20 +191,15 @@ def elasticsearch(request):
                 hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
                 context = {'table': hosts}
                 return scirius_render(request, 'rules/table.html', context)
-        elif query == 'rule_src':
+        elif query in ['rule_src', 'rule_dest']:
+            if query == 'rule_src':
+                filter_ip = 'src_ip'
+            elif query == 'rule_dest':
+                filter_ip = 'dest_ip'
             sid = int(request.GET.get('sid', None))
             from_date = request.GET.get('from_date', None)
             if from_date != None and sid != None:
-                hosts = es_get_field_stats(request, 'src_ip.' + settings.ELASTICSEARCH_KEYWORD, RuleHostTable, '*', from_date = from_date,
-                    count = 10,
-                    qfilter = 'alert.signature_id:%d' % sid)
-                context = {'table': hosts}
-                return scirius_render(request, 'rules/table.html', context)
-        elif query == 'rule_dest':
-            sid = int(request.GET.get('sid', None))
-            from_date = request.GET.get('from_date', None)
-            if from_date != None and sid != None:
-                hosts = es_get_field_stats(request, 'dest_ip.' + settings.ELASTICSEARCH_KEYWORD, RuleHostTable, '*', from_date = from_date,
+                hosts = es_get_field_stats(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, RuleHostTable, '*', from_date = from_date,
                     count = 10,
                     qfilter = 'alert.signature_id:%d' % sid)
                 context = {'table': hosts}
