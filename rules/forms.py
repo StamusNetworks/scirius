@@ -49,7 +49,7 @@ class RulesetChoiceForm(CommentForm):
         ruleset_list =  Ruleset.objects.all()
         self.fields['rulesets'].queryset = ruleset_list
         if not len(ruleset_list):
-            if not isinstance(self, AddSourceForm):
+            if not (isinstance(self, AddSourceForm) or isinstance(self, AddPublicSourceForm)):
                 self.errors[NON_FIELD_ERRORS] = ['Please create a ruleset first']
             self.fields.pop('rulesets')
 
