@@ -72,7 +72,7 @@ class SourceForm(forms.ModelForm, CommentForm):
                               widget = forms.PasswordInput(render_value = True))
     class Meta:
         model = Source
-        exclude = ['created_date', 'updated_date']
+        exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count']
 
 class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
     file  = forms.FileField(required = False)
