@@ -86,12 +86,12 @@
 
 <ul class="nav navbar-nav">
 <li>
-<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="user">
+<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="about">
 {% bootstrap_icon "question-sign" %} <span class="caret"/>
 
 <ul class="dropdown-menu" id="about_menu" role="menu">
 <li>
-  <a id="about" href="{% url 'scirius_about' %}">{% bootstrap_icon "question-sign" %} About Scirius</a>
+  <a href="{% url 'scirius_about' %}">{% bootstrap_icon "question-sign" %} About Scirius</a>
 </li>
             <li><a target="_blank" href="https://github.com/StamusNetworks/scirius">{% bootstrap_icon "new-window"%} Scirius homepage</a></li>
 	    </ul>
