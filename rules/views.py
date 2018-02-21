@@ -170,6 +170,7 @@ class Reference:
 
 def elasticsearch(request):
     data = None
+    RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip'}
     if request.GET.__contains__('query'):
         query = request.GET.get('query', 'dashboards')
         if query == 'dashboards':
@@ -191,11 +192,8 @@ def elasticsearch(request):
                 hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
                 context = {'table': hosts}
                 return scirius_render(request, 'rules/table.html', context)
-        elif query in ['rule_src', 'rule_dest']:
-            if query == 'rule_src':
-                filter_ip = 'src_ip'
-            elif query == 'rule_dest':
-                filter_ip = 'dest_ip'
+        elif query in RULE_FIELDS_MAPPING.keys():
+            filter_ip = RULE_FIELDS_MAPPING[query]
             sid = int(request.GET.get('sid', None))
             from_date = request.GET.get('from_date', None)
             if from_date != None and sid != None:
