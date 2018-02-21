@@ -149,7 +149,8 @@ $(document).ready(function(){
   <!-- Nav tabs -->
   <ul class="nav nav-tabs" role="tablist" id="ruleinfo">
     {% if suricata_stats and elasticsearch %}
-    <li role="presentation" class="active"><a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Statistics</a></li>
+    <li role="presentation" class="active"><a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">IP and Time Stats</a></li>
+    <li role="presentation"><a href="#metastats" aria-controls="metastats" role="tab" data-toggle="tab">Advanced Data</a></li>
     {% endif %}
      <li role="presentation"><a href="#rule_status" aria-controls="rule_status" role="tab" data-toggle="tab">Information</a></li>
    <li role="presentation"><a href="#rule_comments" aria-controls="rule_comments" role="tab" data-toggle="tab">History</a></li>
@@ -235,6 +236,29 @@ $(document).ready(function(){
 
 {% endif %} {# if probes #}
 </div> <!-- tabpanel -->
+<div role="tabpanel" class="tab-pane fade in" id="metastats">
+<div class="container-fluid" >
+<!--
+<div class="col-md-4">
+<h2 class="title">Hits by assets</h2>
+<div id="stats_table">Fetching data...</div>
+</div>
+-->
+<div class="col-md-4">
+<h2 class="title">Source of attacks</h2>
+
+<div id="source_ip_table">Fetching data...</div>
+</div> <!-- col -->
+
+
+<div class="col-md-4">
+<h2 class="title">Target of attacks</h2>
+<div id="target_ip_table">Fetching data...</div>
+</div>
+
+</div> <!-- container-fluid -->
+</div> <!-- tabpanel -->
+
 {% endif %} {# suricata_stats and elasticsearch #}
 
 <div role="tabpanel" class="tab-pane fade in{% if not suricata_stats and not elasticsearch %} active{% endif %}" id="rule_status">
@@ -396,7 +420,7 @@ function load_stats() {
 
 $( 'document' ).ready(load_stats());
 
-function populate_topip_actions(pdiv, direction) {
+function populate_topip_actions(pdiv, field, direction) {
     pdiv.find("td.actions").each(
         function() {
             ip = $(this).parent("tr").children(".host").html();
@@ -409,7 +433,7 @@ function populate_topip_actions(pdiv, direction) {
                 $(this).parent("tr").children(".host").css('cursor', 'pointer');
                 $(this).parent("tr").children(".host").click( function() {
 			ip = $(this).text()
-			window.open("{{ evebox_url }}/#/events;q=" + direction +"_ip:\"" + ip + "\"");
+			window.open("{{ evebox_url }}/#/events;q=" + field + ":\"" + ip + "\"");
 		});
 	    {% endif %}
 
@@ -424,7 +448,7 @@ function load_ip_stats() {
           success: function(data) {
              $('#src_ip_table').empty();
              $('#src_ip_table').append(data);
-             populate_topip_actions($('#src_ip_table'), 'src');
+             populate_topip_actions($('#src_ip_table'), 'src_ip', 'src');
           },
 	  error: function(data) {
              $('#src_ip_table').text("Unable to get data.");
@@ -438,7 +462,45 @@ function load_ip_stats() {
           success: function(data) {
              $('#dest_ip_table').empty();
              $('#dest_ip_table').append(data);
-             populate_topip_actions($('#dest_ip_table'), 'dest');
+             populate_topip_actions($('#dest_ip_table'), 'dest_ip', 'dest');
+          },
+	  error: function(data) {
+             $('#dest_ip_table').text("Unable to get data.");
+             $("#error").text("Unable to get data from Elasticsearch");
+             $("#error").parent().toggle();
+	  }
+    });
+
+    $.ajax({
+       url: '{% url 'elasticsearch' %}?query=rule_source&sid={{ rule.pk }}&from_date={{ from_date }}',
+          success: function(data) {
+             $('#source_ip_table').empty();
+             $('#source_ip_table').append(data);
+             /* FIXME use real method */
+             {% if "dest_ip" in rule.content %}
+                populate_topip_actions($('#source_ip_table'), 'alert.source.ip', 'src');
+             {% else %}
+                populate_topip_actions($('#source_ip_table'), 'alert.source.ip', 'dest');
+             {% endif %}
+          },
+	  error: function(data) {
+             $('#src_ip_table').text("Unable to get data.");
+             $("#error").text("Unable to get data from Elasticsearch");
+             $("#error").parent().toggle();
+	  }
+    });
+
+    $.ajax({
+       url: '{% url 'elasticsearch' %}?query=rule_target&sid={{ rule.pk }}&from_date={{ from_date }}',
+          success: function(data) {
+             $('#target_ip_table').empty();
+             $('#target_ip_table').append(data);
+             /* FIXME use real method */
+             {% if "dest_ip" in rule.content %}
+                populate_topip_actions($('#target_ip_table'), 'alert.dest.ip', 'dest');
+             {% else %}
+                populate_topip_actions($('#target_ip_table'), 'alert.dest.ip', 'src');
+             {% endif %}
           },
 	  error: function(data) {
              $('#dest_ip_table').text("Unable to get data.");
