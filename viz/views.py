@@ -44,6 +44,22 @@ def dashboard(request):
     context['reload'] = reload
     return scirius_render(request, 'viz/dashboard.html', context)
 
+def dashboard_target(request):
+    context = {}
+    context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
+    if request.method == 'POST' and request.POST.has_key('filter'):
+        context['filter'] = request.POST['filter']
+        request.session['filter'] =  request.POST['filter']
+    else:
+        context['filter'] = request.session.get('filter', '*')
+    if request.GET.__contains__('reload'):
+        reload = int(request.GET.get('reload', '300'))
+        request.session['reload'] = reload
+    else:
+        reload = int(request.session.get('reload', '300'))
+    context['reload'] = reload
+    return scirius_render(request, 'viz/dashboard_target.html', context)
+
 def pktcity(request):
     context = {}
     if request.method == 'POST' and request.POST.has_key('filter'):

@@ -24,5 +24,6 @@ from viz import views
 
 urlpatterns = [
     url(r'^dashboard$', views.dashboard, name='viz_dashboard'),
+    url(r'^dashboard_target$', views.dashboard_target, name='viz_target_dashboard'),
     url(r'^pktcity$', views.pktcity, name='viz_pktcity'),
     ]
