@@ -1,5 +1,5 @@
 """
-Copyright(C) 2014-2016 Stamus Networks
+Copyright(C) 2014-2018 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
 
 This file is part of Scirius.
@@ -1539,7 +1539,7 @@ def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
         return None
 
 def es_get_ippair_network_alerts(from_date=0, hosts = None, qfilter = None):
-    data = render_template(IPPPAIR_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
+    data = render_template(IPPPAIR_NETINFO_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
