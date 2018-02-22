@@ -1519,6 +1519,42 @@ def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
     ip_list = []
     links = []
     for src_ip in raw_data:
+        if ':' in src_ip['key']:
+            group = 6
+        else:
+            group = 4
+        if not src_ip['key'] in ip_list:
+            nodes.append({'id': src_ip['key'], 'group': group})
+            ip_list.append(src_ip['key'])
+        for dest_ip in src_ip['dest_ip']['buckets']:
+            if not dest_ip['key'] in ip_list:
+                nodes.append({'id': dest_ip['key'], 'group': group})
+                ip_list.append(dest_ip['key'])
+            links.append({'source': ip_list.index(src_ip['key']), 'target': ip_list.index(dest_ip['key']), 'value': (math.log(dest_ip['doc_count']) + 1) * 2, 'alerts': dest_ip['alerts']['buckets']})
+    #nodes = set(nodes)
+    return json.dumps({'nodes': nodes, 'links': links})
+    try:
+        return data['hits']['hits'][0]['_source']
+    except:
+        return None
+
+def es_get_ippair_network_alerts(from_date=0, hosts = None, qfilter = None):
+    data = render_template(IPPPAIR_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
+    es_url = get_es_url(from_date)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
+    try:
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
+    except Exception, e:
+        return "BAM: " + str(e)
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    raw_data = data['aggregations']['src_ip']['buckets']
+    nodes = []
+    ip_list = []
+    links = []
+    for src_ip in raw_data:
         try:
             dest_obj = src_ip['net_src']['buckets'][0]
         except:
