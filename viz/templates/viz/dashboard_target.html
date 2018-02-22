@@ -194,14 +194,13 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
             .attr('ry',5)
             .style("fill", function (d) { if (d.id == "Internet") { return '#e8e0dc';} else if (d.id == "Red Team") { return '#e73535'; } else { return color(d.id + 1) ;} })
             .call(force.drag);
-/*
+
         var tgroup = svg.selectAll('g.group')
-            .data(groups).enter().append('text')
-	    .attr("x", function(d) { return 100 - 3; })
-	    .attr("y", 30)
+            .data(groups).enter().append('text').classed('group', true)
+
 	    .attr("dy", ".35em")
-	    .text(function (d) { console.log("got friend: " + d.id); return d.id; });
-*/
+	    .text(function (d) { return d.id; });
+
         var link = svg.selectAll(".link")
             .data(json.links)
           .enter().append("line")
@@ -222,7 +221,7 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
           .enter().append("g")
             .attr("class", "node")
           .append("circle")
-          .attr("r", 7)
+          .attr("r", 4)
           .attr("fill", function(d) { return ((d.type == "source") ? 'red' : 'blue'); })
           .call(force.drag);
       
@@ -243,6 +242,9 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
                .attr('y', function (d) { return d.bounds.y })
                .attr('width', function (d) { return d.bounds.width() })
                .attr('height', function(d) { return d.bounds.height() });
+
+          tgroup.attr("x", function(d) { return d.bounds.x + 10; })
+	    .attr("y", function(d) { return d.bounds.y + 10; });
               
         });
 
@@ -258,7 +260,7 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
             text = text + "</ul>";
             $("#highlight_info").empty();
             $("#highlight_info").append(text);
-            d3.selectAll("circle").data(json.nodes).attr("r", function(d) { if (d.id == json.links[i].source.id || d.id == json.links[i].target.id) return 14; return 7; });	
+            d3.selectAll("circle").data(json.nodes).attr("r", function(d) { if (d.id == json.links[i].source.id || d.id == json.links[i].target.id) return 7; return 4; });	
             d3.selectAll("line").data(json.links).attr("stroke", function(d) { if (d == json.links[i]) return "red"; return "#999"; });	
             i++;
             if (i >= json.links.length) {
