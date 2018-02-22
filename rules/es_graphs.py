@@ -992,10 +992,10 @@ def build_es_timestamping(date, data = 'alert'):
             elif settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'hourly':
                 date += timedelta(hours=1)
         if len(indexes) > 20:
-            return base_index + '*'
+            return base_index + '2*'
         return ','.join(indexes)
     except:
-        return base_index + '*'
+        return base_index + '2*'
 
 def get_es_url(from_date, data = 'alert'):
     if (data == 'alert' and '*' in settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX) or (data != 'alert' and '*' in settings.ELASTICSEARCH_LOGSTASH_INDEX):
