@@ -268,6 +268,15 @@ def elasticsearch(request):
                 hosts = None
             qfilter = request.GET.get('filter', None)
             data = es_get_ippair_alerts(from_date = from_date, hosts = hosts, qfilter = qfilter)
+        elif query == 'ippair_network_alerts':
+            from_date = request.GET.get('from_date', None)
+            cshosts = request.GET.get('hosts', None)
+            if cshosts:
+                hosts = cshosts.split(',')
+            else:
+                hosts = None
+            qfilter = request.GET.get('filter', None)
+            data = es_get_ippair_network_alerts(from_date = from_date, hosts = hosts, qfilter = qfilter)
         elif query == 'alerts_tail':
             from_date = request.GET.get('from_date', None)
             qfilter = request.GET.get('filter', None)
