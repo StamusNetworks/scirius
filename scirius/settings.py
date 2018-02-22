@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'django_tables2',
     'bootstrap3',
     'dbbackup',
+    'viz',
     'rules',
     'suricata',
     'accounts',

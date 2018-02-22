@@ -7,6 +7,7 @@ from rest_api import router
 urlpatterns = [
     url(r'^rules/', include('rules.urls')),
     url(r'^accounts/', include('accounts.urls')),
+    url(r'^viz/', include('viz.urls')),
     url(r'^'+ settings.RULESET_MIDDLEWARE + '/', include('' + settings.RULESET_MIDDLEWARE + '.urls')),
     url(r'^rest/', include(router.urls)),
     url('^$', homepage),
