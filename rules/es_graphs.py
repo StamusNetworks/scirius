@@ -1532,7 +1532,7 @@ def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
                 ip_list.append(dest_ip['key'])
             links.append({'source': ip_list.index(src_ip['key']), 'target': ip_list.index(dest_ip['key']), 'value': (math.log(dest_ip['doc_count']) + 1) * 2, 'alerts': dest_ip['alerts']['buckets']})
     #nodes = set(nodes)
-    return json.dumps({'nodes': nodes, 'links': links})
+    return {'nodes': nodes, 'links': links}
     try:
         return data['hits']['hits'][0]['_source']
     except:
@@ -1577,7 +1577,7 @@ def es_get_ippair_network_alerts(from_date=0, hosts = None, qfilter = None):
                 ip_list.append(dest_ip['key'])
             links.append({'source': ip_list.index(src_ip['key']), 'target': ip_list.index(dest_ip['key']), 'value': (math.log(dest_ip['doc_count']) + 1) * 2, 'alerts': dest_ip['net_dest']['buckets'][0]['alerts']['buckets']})
     #nodes = set(nodes)
-    return json.dumps({'nodes': nodes, 'links': links})
+    return {'nodes': nodes, 'links': links}
     try:
         return data['hits']['hits'][0]['_source']
     except:
