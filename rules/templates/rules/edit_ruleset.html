@@ -85,7 +85,16 @@ Choose an operation in the actions below:
 </div>
 <h2>Rename ruleset</h2>
 <form class="form" action="{% url 'edit_ruleset' ruleset.id %}" method="post">{% csrf_token %}
-    {% bootstrap_form form %}
+    {# {% bootstrap_form form %} #}
+    {% bootstrap_field form.name %}
+    {# {% bootstrap_field form.sources %}#}
+    <h2>Transformations</h2>
+    {% bootstrap_label "Transformations will be applied on all ruleset's categories" %}
+    {% bootstrap_field form.action %}
+    {% bootstrap_field form.lateral %}
+    {% bootstrap_field form.target %}
+
+    {% bootstrap_field form.comment %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">
             {% bootstrap_icon "ok" %} Submit

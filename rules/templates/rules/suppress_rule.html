@@ -51,4 +51,25 @@ This will also {% if operation == 'suppress' %}disable{% else %}enable{% endif %
 <h2 class="panel-title">Rule {{ rule.sid }}</h2>
 </div>
 
+<div class="panel-body">
+<ul class="action">
+{% if rule.state %}
+<li>
+    <a href="{% url 'edit_rule' rule.sid %}">Transform rule</a>
+</li>
+<li>
+<a href="{% url 'suppress_rule' rule.sid %}">Disable rule</a>
+</li>
+<li>
+<a href="{% url 'enable_rule' rule.sid %}">Enable rule</a>
+</li>
+<li>
+<a href="{% url 'threshold_rule' rule.sid %}?action=threshold">Threshold rule</a>
+</li>
+<li>
+<a href="{% url 'threshold_rule' rule.sid %}?action=suppress">Suppress rule</a>
+</li>
+{% endif %} {# rule.state #}
+</ul>
+</div>
 {% endblock %}

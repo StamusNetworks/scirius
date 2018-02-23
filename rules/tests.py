@@ -25,7 +25,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from models import Category, Rule, Ruleset, Source, SourceAtVersion
+from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation
 
 import tempfile
 from shutil import rmtree
@@ -99,14 +99,14 @@ class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
         self.http_post(reverse('rule-disable', args=(self.rule.pk,)), {'ruleset': self.ruleset.pk})
         self.ruleset.refresh_from_db()
 
-        disabled = self.ruleset.suppressed_rules.all()
+        disabled = self.ruleset.get_transformed_rules(key=Transformation.SUPPRESSED, value=Transformation.S_SUPPRESSED)
         self.assertEqual(len(disabled), 1)
         self.assertEqual(disabled[0].pk, self.rule.pk)
 
         self.http_post(reverse('rule-enable', args=(self.rule.pk,)), {'ruleset': self.ruleset.pk})
         self.ruleset.refresh_from_db()
 
-        disabled = self.ruleset.suppressed_rules.all()
+        disabled = self.ruleset.get_transformed_rules(key=Transformation.SUPPRESSED, value=Transformation.S_SUPPRESSED)
         self.assertEqual(len(disabled), 0)
 
     def test_003_rule_permission(self):

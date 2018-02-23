@@ -9,10 +9,32 @@
 <h2 class="panel-title">Transform category '{{ category.name }}' </h2>
 {% endif %}
 </div>
+
+<div class="panel-body">
+<ul class="action">
+{% if rule.state %}
+<li>
+    <a href="{% url 'edit_rule' rule.sid %}">Transform rule</a>
+</li>
+<li>
+<a href="{% url 'suppress_rule' rule.sid %}">Disable rule</a>
+</li>
+<li>
+<a href="{% url 'enable_rule' rule.sid %}">Enable rule</a>
+</li>
+<li>
+<a href="{% url 'threshold_rule' rule.sid %}?action=threshold">Threshold rule</a>
+</li>
+<li>
+<a href="{% url 'threshold_rule' rule.sid %}?action=suppress">Suppress rule</a>
+</li>
+{% endif %} {# rule.state #}
+</ul>
+</div>
+
 {% endblock %}
 
 {% block content %}
-
 {% if rule %}
 <h2>Transform rule</h2>
 {% if category_transforms %}
@@ -36,7 +58,7 @@ Changing transformation for the rule will add an exception.
 {% endif %}
 
 
-{% if category or rule.get_transform|length %}
+{% if category or rule.get_transformation_choices|length %}
 <p>
 Please choose a transformation to apply on current object. As transformation are exclusive, you need to pick one to apply.
 </p>
@@ -45,18 +67,23 @@ Please choose a transformation to apply on current object. As transformation are
 <div class="col-md-6">
 
 {% if rule %}
-<form action="{% url 'transform_rule' rule.pk %}" method="post" class="form">
+<form action="{% url 'edit_rule' rule.pk %}" method="post" class="form">
 {% else %}
 <form action="{% url 'transform_category' category.pk %}" method="post" class="form">
 {% endif %}
 
 {% csrf_token %}
-    {% bootstrap_form form %}
+    {% bootstrap_field form.rulesets %}
+    {% bootstrap_field form.action %}
+    {% bootstrap_field form.lateral %}
+    {% bootstrap_field form.target %}
+    {% bootstrap_field form.comment %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">
             {% bootstrap_icon "check" %} Valid
         </button>
     {% endbuttons %}
+
 </form>
 </div>
 </div>

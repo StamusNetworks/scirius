@@ -21,3 +21,5 @@ gunicorn
 djangorestframework                                                                                                                                                                                               
 markdown                                                                                                                                                                                                          
 django-filter
+idstools
+enum34

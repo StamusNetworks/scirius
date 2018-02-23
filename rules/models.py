@@ -27,6 +27,8 @@ from django.core.validators import validate_ipv4_address
 from django.db import transaction
 from django.utils import timezone
 from django.db.models import Q
+from idstools import rule as rule_idstools
+from enum import Enum, unique
 import requests
 import tempfile
 import tarfile
@@ -650,71 +652,360 @@ class SourceUpdate(models.Model):
         from django.core.urlresolvers import reverse
         return reverse('sourceupdate', args=[str(self.id)])
 
-class Transformable(object):
-    def get_transformation_sets(self, ruleset, python = False):
-        if python:
-            # Evaluate all queries for caching
-            tsets = {'drop': {
-                'type_set': set(ruleset.drop_rules.all().values_list('pk', flat=True)),
-                'category_set': set(ruleset.drop_categories.all().values_list('pk', flat=True)) },
-            'reject': {
-                'type_set': set(ruleset.reject_rules.all().values_list('pk', flat=True)),
-                'category_set': set(ruleset.reject_categories.all().values_list('pk', flat=True)) },
-            'filestore': {
-                'type_set': set(ruleset.filestore_rules.all().values_list('pk', flat=True)),
-                'category_set': set(ruleset.filestore_categories.all().values_list('pk', flat=True)) },
-            'none': {
-                'notype_set': set(ruleset.none_rules.all().values_list('pk', flat=True)) },
-            }
+
+class TransfoType(Enum):
+    @classmethod
+    def get_choices(cls, attr_=None):
+        return [(attr.value, attr.name.replace('_', ' ').title()) for attr in cls if attr_ is None or attr_ == attr]
+
+    @classmethod
+    def get_choices_name(cls, attr_=None):
+        return [attr.name.replace('_', ' ').title() for attr in cls if attr_ is None or attr_ == attr]
+
+    @classmethod
+    def get_choices_value(cls, attr_=None):
+        return [attr.value for attr in cls if attr_ is None or attr_ == attr]
+
+
+class Transformation(models.Model):
+    @unique
+    class Type(TransfoType):
+        ACTION = 'action'
+        LATERAL = 'lateral'
+        TARGET = 'target'
+        SUPPRESSED = 'suppressed'
+        NONE = 'none'
+
+    @unique
+    class ActionTransfoType(TransfoType):
+        DROP = 'drop'
+        REJECT = 'reject'
+        FILESTORE = 'filestore'
+        NONE = 'none'
+        BYPASS = 'bypass'
+        CATEGORY_DEFAULT = 'category'
+
+    @unique
+    class LateralTransfoType(TransfoType):
+        AUTO = 'auto'
+        YES = 'yes'
+        NO = 'no'
+        CATEGORY_DEFAULT = 'category'
+
+    @unique
+    class TargetTransfoType(TransfoType):
+        SOURCE = 'src'
+        DESTINATION = 'dst'
+        AUTO = 'auto'
+        CATEGORY_DEFAULT = 'category'
+        NONE = 'none'
+
+    @unique
+    class SuppressTransforType(TransfoType):
+        SUPPRESSED = 'suppressed'
+
+    class Meta:
+        abstract = True
+
+    # Keys
+    ACTION = Type.ACTION
+    LATERAL = Type.LATERAL
+    TARGET = Type.TARGET
+    SUPPRESSED = Type.SUPPRESSED
+
+    # Suppression value(s)
+    S_SUPPRESSED = SuppressTransforType.SUPPRESSED
+
+    # Action values
+    A_DROP = ActionTransfoType.DROP
+    A_REJECT = ActionTransfoType.REJECT
+    A_FILESTORE = ActionTransfoType.FILESTORE
+    A_NONE = ActionTransfoType.NONE
+    A_BYPASS = ActionTransfoType.BYPASS
+    A_CAT_DEFAULT = ActionTransfoType.CATEGORY_DEFAULT
+
+    # Lateral values
+    L_AUTO = LateralTransfoType.AUTO
+    L_YES = LateralTransfoType.YES
+    L_NO = LateralTransfoType.NO
+    L_CAT_DEFAULT = LateralTransfoType.CATEGORY_DEFAULT
+
+    # Target transformations
+    T_SOURCE = TargetTransfoType.SOURCE
+    T_DESTINATION = TargetTransfoType.DESTINATION
+    T_AUTO = TargetTransfoType.AUTO
+    T_CAT_DEFAULT = TargetTransfoType.CATEGORY_DEFAULT
+    T_NONE = TargetTransfoType.NONE
+
+    # Fields
+    key = models.CharField(max_length=15, choices=Type.get_choices(), default=Type.ACTION.value)
+    value = models.CharField(max_length=15, default=ActionTransfoType.NONE.value)
+
+
+class Transformable:
+    def get_transformation(self, ruleset, key):
+        raise NotImplementedError()
+
+    def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
+        raise NotImplementedError()
+
+    def _set_target(self, rule, target="dest_ip"):
+        target = ' target:%s;)' % target
+        rule.raw = re.sub(r"\)$", "%s" % (target), rule.raw) if target not in rule.raw else rule.raw
+
+    def _apply_auto_trans(self, rule_ids):
+        terms = re.split(r' +', rule_ids.format())
+        src = terms[2]
+        dst = terms[5]
+
+        # external net alsways seen as bad guy on attack
+        if src == "$EXTERNAL_NET":
+            self._set_target(rule_ids, target="dest_ip")
+
+        # external net alsways seen as bad guy on attack
+        elif dst == "$EXTERNAL_NET":
+            self._set_target(rule_ids, target="src_ip")
+
+        # any or IP address list on one side and a variable on other side implies variable is our asset so target
+        elif (src == "any" or src.startswith("[")) and dst.startswith("$"):
+            self._set_target(rule_ids, target="dest_ip")
+
+        # any or IP address list on one side and a variable on other side implies variable is our asset so target
+        elif src.startswith("$") and (dst == "any" or dst.startswith("[")):
+            self._set_target(rule_ids, target="src_ip")
+
+        elif rule_ids.sid in [2017060, 2023070, 2023071, 2023549, 2024297, 2023548, 2024435, 2023149]:
+            self._set_target(rule_ids, target="dest_ip")
+
+        elif rule_ids.sid in []:
+            self._set_target(rule_ids, target="src_ip")
+
+    def apply_lateral_target_transfo(self, content, key=Transformation.LATERAL, value=Transformation.L_YES):
+        rule_ids = rule_idstools.parse(content)
+
+        # don't work on commented rules
+        if rule_ids.format().startswith("#"):
+            return content
+
+        target_client = False
+        for meta in rule_ids.metadata:
+            if meta.startswith("attack_target"):
+                target_client = True
+                break
+
+        # LATERAL + YES
+        if key == Transformation.LATERAL:
+            if value == Transformation.L_YES:
+                rule_ids.raw = rule_ids.raw.replace("$EXTERNAL_NET", "any")
+                return rule_ids.format().encode("utf-8")
+            elif value == Transformation.L_AUTO:
+                if rule_ids.msg.startswith("ET POLICY"):
+                    return content
+
+                if rule_ids.classtype == "attempted-recon":
+                    target_client = True
+
+                if target_client is True:
+                    self._apply_auto_trans(rule_ids)
+
+                for meta in rule_ids.metadata:
+                    # if deployment can be internal then we can relax the constraint
+                    # on EXTERNAL_NET to try to catch the lateral movement
+                    if meta == "deployment Internal":
+                        rule_ids.raw = rule_ids.raw.replace("$EXTERNAL_NET", "any")
+
+        # TARGET + DST/SRC
+        if key == Transformation.TARGET:
+            if value == Transformation.T_SOURCE:
+                self._set_target(rule_ids, target='src_ip')
+                return rule_ids.format().encode("utf-8")
+            elif value == Transformation.T_DESTINATION:
+                self._set_target(rule_ids, target='dest_ip')
+                return rule_ids.format().encode("utf-8")
+            elif value == Transformation.T_AUTO:
+                if target_client is True:
+                    self._apply_auto_trans(rule_ids)
+
+        return rule_ids.format().encode("utf-8")
+
+
+class Cache:
+    TRANSFORMATIONS = None
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def enable_cache(cls):
+        if cls.TRANSFORMATIONS is None:
+            # Actions
+            ACTION = Transformation.ACTION
+            A_NONE = Transformation.A_NONE
+            A_FILESTORE = Transformation.A_FILESTORE
+            A_DROP = Transformation.A_DROP
+            A_REJECT = Transformation.A_REJECT
+            A_BYPASS = Transformation.A_BYPASS
+
+            # Lateral
+            LATERAL = Transformation.LATERAL
+            L_AUTO = Transformation.L_AUTO
+            L_YES = Transformation.L_YES
+            L_NO = Transformation.L_NO
+
+            # Target
+            TARGET = Transformation.TARGET
+            T_AUTO = Transformation.T_AUTO
+            T_SOURCE = Transformation.T_SOURCE
+            T_DST = Transformation.T_DESTINATION
+            T_NONE = Transformation.T_NONE
+
+            rule_str = Rule.__name__.lower()
+            category_str = Category.__name__.lower()
+
+            cls.TRANSFORMATIONS = {
+                    ACTION: {
+                        rule_str: {
+                            A_DROP: None, A_REJECT: None, A_FILESTORE: None, A_NONE: None, A_BYPASS: None,
+                        },
+                        category_str: {
+                            A_DROP: None, A_REJECT: None, A_FILESTORE: None, A_BYPASS: None,
+                        }
+                    },
+                    LATERAL: {
+                        rule_str: {
+                            L_AUTO: None, L_YES: None, L_NO: None,
+                        },
+                        category_str: {
+                            L_AUTO: None, L_YES: None,
+                        }
+                    },
+                    TARGET: {
+                        rule_str: {
+                            T_AUTO: None, T_SOURCE: None, T_DST: None, T_NONE: None,
+                        },
+                        category_str: {
+                            T_AUTO: None, T_SOURCE: None, T_DST: None,
+                        }
+                    }
+                }
+
+            # ##### Rules
+            # Actions
+            drop_rules = Rule.objects.filter(
+                                ruletransformation__key=ACTION.value,
+                                ruletransformation__value=A_DROP.value).values_list('pk', flat=True)
+            reject_rules = Rule.objects.filter(
+                                ruletransformation__key=ACTION.value,
+                                ruletransformation__value=A_REJECT.value).values_list('pk', flat=True)
+            filestore_rules = Rule.objects.filter(
+                                ruletransformation__key=ACTION.value,
+                                ruletransformation__value=A_FILESTORE.value).values_list('pk', flat=True)
+            none_rules = Rule.objects.filter(
+                                ruletransformation__key=ACTION.value,
+                                ruletransformation__value=A_NONE.value).values_list('pk', flat=True)
+            bypass_rules = Rule.objects.filter(
+                                ruletransformation__key=ACTION.value,
+                                ruletransformation__value=A_BYPASS.value).values_list('pk', flat=True)
+            # Lateral
+            rule_l_auto = Rule.objects.filter(
+                                ruletransformation__key=LATERAL.value,
+                                ruletransformation__value=L_AUTO.value).values_list('pk', flat=True)
+            rule_l_yes = Rule.objects.filter(
+                                ruletransformation__key=LATERAL.value,
+                                ruletransformation__value=L_YES.value).values_list('pk', flat=True)
+            rule_l_no = Rule.objects.filter(
+                                ruletransformation__key=LATERAL.value,
+                                ruletransformation__value=L_NO.value).values_list('pk', flat=True)
+
+            # Target
+            rule_t_auto = Rule.objects.filter(
+                                ruletransformation__key=TARGET.value,
+                                ruletransformation__value=T_AUTO.value).values_list('pk', flat=True)
+            rule_t_src = Rule.objects.filter(
+                                ruletransformation__key=TARGET.value,
+                                ruletransformation__value=T_SOURCE.value).values_list('pk', flat=True)
+            rule_t_dst = Rule.objects.filter(
+                                ruletransformation__key=TARGET.value,
+                                ruletransformation__value=T_DST.value).values_list('pk', flat=True)
+            rule_t_none = Rule.objects.filter(
+                                ruletransformation__key=TARGET.value,
+                                ruletransformation__value=T_NONE.value).values_list('pk', flat=True)
+
+            # #### Categories
+            # Actions
+            drop_cats = Category.objects.filter(
+                                categorytransformation__key=ACTION.value,
+                                categorytransformation__value=A_DROP.value).values_list('pk', flat=True)
+            reject_cats = Category.objects.filter(
+                                categorytransformation__key=ACTION.value,
+                                categorytransformation__value=A_REJECT.value).values_list('pk', flat=True)
+            filestore_cats = Category.objects.filter(
+                                categorytransformation__key=ACTION.value,
+                                categorytransformation__value=A_FILESTORE.value).values_list('pk', flat=True)
+            bypass_cats = Category.objects.filter(
+                                categorytransformation__key=ACTION.value,
+                                categorytransformation__value=A_BYPASS.value).values_list('pk', flat=True)
+
+            # Lateral
+            cat_l_auto = Category.objects.filter(
+                                categorytransformation__key=LATERAL.value,
+                                categorytransformation__value=L_AUTO.value).values_list('pk', flat=True)
+            cat_l_yes = Category.objects.filter(
+                                categorytransformation__key=LATERAL.value,
+                                categorytransformation__value=L_YES.value).values_list('pk', flat=True)
+            # Target
+            cat_t_auto = Category.objects.filter(
+                                categorytransformation__key=TARGET.value,
+                                categorytransformation__value=T_AUTO.value).values_list('pk', flat=True)
+            cat_t_src = Category.objects.filter(
+                                categorytransformation__key=TARGET.value,
+                                categorytransformation__value=T_SOURCE.value).values_list('pk', flat=True)
+            cat_t_dst = Category.objects.filter(
+                                categorytransformation__key=TARGET.value,
+                                categorytransformation__value=T_DST.value).values_list('pk', flat=True)
+
+            # Set rules action cache
+            cls.TRANSFORMATIONS[ACTION][rule_str][A_DROP] = set(drop_rules)
+            cls.TRANSFORMATIONS[ACTION][rule_str][A_REJECT] = set(reject_rules)
+            cls.TRANSFORMATIONS[ACTION][rule_str][A_FILESTORE] = set(filestore_rules)
+            cls.TRANSFORMATIONS[ACTION][rule_str][A_NONE] = set(none_rules)
+            cls.TRANSFORMATIONS[ACTION][rule_str][A_BYPASS] = set(bypass_rules)
+
+            cls.TRANSFORMATIONS[LATERAL][rule_str][L_AUTO] = set(rule_l_auto)
+            cls.TRANSFORMATIONS[LATERAL][rule_str][L_YES] = set(rule_l_yes)
+            cls.TRANSFORMATIONS[LATERAL][rule_str][L_NO] = set(rule_l_no)
+
+            cls.TRANSFORMATIONS[TARGET][rule_str][T_AUTO] = set(rule_t_auto)
+            cls.TRANSFORMATIONS[TARGET][rule_str][T_SOURCE] = set(rule_t_src)
+            cls.TRANSFORMATIONS[TARGET][rule_str][T_DST] = set(rule_t_dst)
+            cls.TRANSFORMATIONS[TARGET][rule_str][T_NONE] = set(rule_t_none)
+
+            # set categories action cache
+            cls.TRANSFORMATIONS[ACTION][category_str][A_DROP] = set(drop_cats)
+            cls.TRANSFORMATIONS[ACTION][category_str][A_REJECT] = set(reject_cats)
+            cls.TRANSFORMATIONS[ACTION][category_str][A_FILESTORE] = set(filestore_cats)
+            cls.TRANSFORMATIONS[ACTION][category_str][A_BYPASS] = set(bypass_cats)
+
+            cls.TRANSFORMATIONS[LATERAL][category_str][L_AUTO] = set(cat_l_auto)
+            cls.TRANSFORMATIONS[LATERAL][category_str][L_YES] = set(cat_l_yes)
+
+            cls.TRANSFORMATIONS[TARGET][category_str][T_AUTO] = set(cat_t_auto)
+            cls.TRANSFORMATIONS[TARGET][category_str][T_SOURCE] = set(cat_t_src)
+            cls.TRANSFORMATIONS[TARGET][category_str][T_DST] = set(cat_t_dst)
+
         else:
-            tsets = {'drop': {
-                'type_set': ruleset.drop_rules,
-                'category_set': ruleset.drop_categories },
-            'reject': {
-                'type_set': ruleset.reject_rules,
-                'category_set': ruleset.reject_categories },
-            'filestore': {
-                'type_set': ruleset.filestore_rules,
-                'category_set': ruleset.filestore_categories },
-            'none': {
-                'notype_set': ruleset.none_rules },
-            }
-        return tsets
+            raise Exception("Rule cache has not been closed")
 
-    def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
-        raise NotImplementedError()
+    @classmethod
+    def disable_cache(cls):
+        if cls.TRANSFORMATIONS is not None:
+            del cls.TRANSFORMATIONS
+            cls.TRANSFORMATIONS = None
+        else:
+            raise Exception("%s cache has not been open" % self.__class__.__name__)
 
-    def toggle_transformation(self, ruleset, type = "drop"):
-        raise NotImplementedError()
 
-    def toggle_drop(self, ruleset):
-        return self.toggle_transformation(ruleset, type = "drop")
-
-    def is_drop(self, ruleset, transformation_sets = None):
-        return self.is_transformed(ruleset, type = 'drop', transformation_sets = transformation_sets)
-
-    def toggle_reject(self, ruleset):
-        return self.toggle_transformation(ruleset, type = "reject")
-
-    def is_reject(self, ruleset, transformation_sets = None):
-        return self.is_transformed(ruleset, type = 'reject', transformation_sets = transformation_sets)
-
-    def toggle_filestore(self, ruleset):
-        return self.toggle_transformation(ruleset, type = "filestore")
-
-    def is_filestore(self, ruleset, transformation_sets = None):
-        return self.is_transformed(ruleset, type = 'filestore', transformation_sets = transformation_sets)
-
-    def get_transformation(self, ruleset, transformation_sets = None):
-        if self.is_reject(ruleset, transformation_sets):
-            return 'reject'
-        elif self.is_drop(ruleset, transformation_sets):
-            return 'drop'
-        elif self.is_filestore(ruleset, transformation_sets):
-            return 'filestore'
-        return None
-
-class Category(models.Model, Transformable):
+class Category(models.Model, Transformable, Cache):
     name = models.CharField(max_length=100)
     filename = models.CharField(max_length=200)
     descr = models.CharField(max_length=400, blank = True)
@@ -731,6 +1022,10 @@ class Category(models.Model, Transformable):
 
     def __unicode__(self):
         return self.name
+
+    def __init__(self, *args, **kwargs):
+        models.Model.__init__(self, *args, **kwargs)
+        Cache.__init__(self)
 
     def parse_rule_flowbit(self, source, line):
         flowbits = []
@@ -871,19 +1166,99 @@ class Category(models.Model, Transformable):
             ua.options = "category"
             ua.save()
 
-    def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
-        tsets = self.get_transformation_sets(ruleset)[type]
-        if self in tsets['category_set'].all():
-            return True
-        return False
+    def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
+        if Category.TRANSFORMATIONS is None:
+            return (self.pk in ruleset.get_transformed_categories(key=key, value=value).values_list('pk', flat=True))
 
-    def toggle_transformation(self, ruleset, type = "drop"):
-        tsets = self.get_transformation_sets(ruleset)[type]
-        if self.is_transformed(ruleset, type = type):
-            tsets['category_set'].remove(self)
+        category_str = Category.__name__.lower()
+        return (self.pk in Category.TRANSFORMATIONS[key][category_str][value])
+
+    def suppress_transformation(self, ruleset, key):
+        CategoryTransformation.objects.filter(
+                ruleset=ruleset,
+                category_transformation=self,
+                key=key.value).delete()
+
+    def toggle_transformation(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
+        if self.is_transformed(ruleset, key=key, value=value):
+            CategoryTransformation.objects.filter(
+                    ruleset=ruleset,
+                    category_transformation=self,
+                    key=key.value).delete()
         else:
-            tsets['category_set'].add(self)
+            c = CategoryTransformation(
+                    ruleset=ruleset,
+                    category_transformation=self,
+                    key=key.value,
+                    value=value.value)
+            c.save()
         ruleset.needs_test()
+
+    def get_transformation(self, ruleset, key=Transformation.ACTION):
+        NONE = None
+        TYPE = None
+
+        if key == Transformation.ACTION:
+            NONE = Transformation.A_NONE
+            TYPE = Transformation.ActionTransfoType
+        elif key == Transformation.LATERAL:
+            NONE = Transformation.L_NO
+            TYPE = Transformation.LateralTransfoType
+        elif key == Transformation.TARGET:
+            NONE = Transformation.T_NONE
+            TYPE = Transformation.TargetTransfoType
+        else:
+            raise Exception("Key '%s' is unknown" % key)
+
+        if Category.TRANSFORMATIONS is None:
+            ct = CategoryTransformation.objects.filter(
+                                    key=key.value,
+                                    ruleset=ruleset,
+                                    category_transformation=self).exclude(value=NONE.value)
+            if len(ct) > 0:
+                return TYPE(ct[0].value)
+        else:
+            category_str = Category.__name__.lower()
+
+            for trans, tsets in Category.TRANSFORMATIONS[key][category_str].iteritems():
+                if self.pk in tsets:  # DROP / REJECT / FILESTORE
+                    return trans
+
+        return None
+
+    @staticmethod
+    def get_transformation_choices(key=Transformation.ACTION):
+        # Keys
+        ACTION = Transformation.ACTION
+        LATERAL = Transformation.LATERAL
+        TARGET = Transformation.TARGET
+
+        allowed_choices = []
+
+        if key == ACTION:
+            all_choices_set = set(Transformation.ActionTransfoType.get_choices())
+            allowed_choices = list(all_choices_set.intersection(set(settings.RULESET_TRANSFORMATIONS)))
+
+            A_BYPASS = Transformation.A_BYPASS
+
+            # TODO: move me in settings.RULESET_TRANSFORMATIONS
+            allowed_choices.append((A_BYPASS.value, A_BYPASS.name.title()))
+
+        if key == TARGET:
+            CAT_DEFAULT = Transformation.T_CAT_DEFAULT
+            allowed_choices = list(Transformation.TargetTransfoType.get_choices())
+            allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace('_', ' ').title()))
+
+        if key == LATERAL:
+            CAT_DEFAULT = Transformation.L_CAT_DEFAULT
+            allowed_choices = list(Transformation.LateralTransfoType.get_choices())
+            allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace('_', ' ').title()))
+
+            L_YES = Transformation.L_YES
+            L_AUTO = Transformation.L_AUTO
+
+        return tuple(allowed_choices)
+
 
 class Flowbit(models.Model):
     FLOWBIT_TYPE = (('flowbits', 'Flowbits'), ('hostbits', 'Hostbits'), ('xbits', 'Xbits'))
@@ -894,7 +1269,8 @@ class Flowbit(models.Model):
     enable = models.BooleanField(default=True)
     source = models.ForeignKey(Source)
 
-class Rule(models.Model, Transformable):
+
+class Rule(models.Model, Transformable, Cache):
     sid = models.IntegerField(primary_key=True)
     category = models.ForeignKey(Category)
     msg = models.CharField(max_length=1000)
@@ -911,6 +1287,10 @@ class Rule(models.Model, Transformable):
 
     def __unicode__(self):
         return str(self.sid) + ":" + self.msg
+
+    def __init__(self, *args, **kwargs):
+        models.Model.__init__(self, *args, **kwargs)
+        Cache.__init__(self)
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
@@ -953,7 +1333,10 @@ class Rule(models.Model, Transformable):
         return
 
     def test(self, ruleset):
-        return ruleset.test_rule_buffer(self.generate_content(ruleset), single = True)
+        self.enable_cache()
+        test = ruleset.test_rule_buffer(self.generate_content(ruleset), single = True)
+        self.disable_cache()
+        return test
 
     def toggle_availability(self):
         toggle_rules = self.get_flowbits_group()
@@ -964,89 +1347,233 @@ class Rule(models.Model, Transformable):
             rule.state = not rule.state
             rule.save()
 
-    def apply_transformation(self, content, trans):
-        if trans == "reject":
-            content = re.sub("^ *\S+", "reject", content)
-        elif trans == "drop":
-            content = re.sub("^ *\S+", "drop", content)
-        elif trans == "filestore":
-            content = re.sub("; *\)", "; filestore;)", content)
+    def apply_transformation(self, content, key=Transformation.ACTION, value=None):
+
+        if key == Transformation.ACTION:
+            if value == Transformation.A_REJECT:
+                content = re.sub("^ *\S+", "reject", content)
+            elif value == Transformation.A_DROP:
+                content = re.sub("^ *\S+", "drop", content)
+            elif value == Transformation.A_FILESTORE:
+                content = re.sub("; *\)", "; filestore;)", content)
+            elif value == Transformation.A_BYPASS:
+                if 'noalert' in content:
+                    content = re.sub("; noalert;", "; noalert; bypass;", content)
+                else:
+                    content = re.sub("; *\)", "; noalert; bypass;)", content)
+
+        elif key == Transformation.LATERAL or key == Transformation.TARGET:
+            content = self.apply_lateral_target_transfo(content, key, value)
+
         return content
-
-    def generate_content(self, ruleset, transformation_sets = None):
-        content = self.content
-        # explicitely set prio on transformation here
-        trans = self.get_transformation(ruleset, transformation_sets)
-
-        if (trans in ('drop', 'reject') and self.can_drop()) or \
-                (trans == 'filestore' and self.can_filestore()):
-            content = self.apply_transformation(content, trans)
-
-        return content
-
-    def set_transformation(self, ruleset, type = "drop"):
-        self.remove_transformations(ruleset)
-        transformation_sets = self.get_transformation_sets(ruleset)
-        tsets = transformation_sets.pop(type, None)
-
-        if type == 'none':
-            if self not in tsets['notype_set'].all():
-                ruleset.none_rules.add(self)
-        else:
-            if self not in tsets['type_set'].all():
-                tsets['type_set'].add(self)
-        ruleset.needs_test()
-        ruleset.save()
-
-    def get_transformation(self, ruleset, transformation_sets=None):
-        if not transformation_sets:
-            transformation_sets = self.get_transformation_sets(ruleset, python=True)
-
-        if self.pk in transformation_sets['none']['notype_set']:
-            return None
-        for trans, tsets in transformation_sets.items():
-            if trans != 'none' and self.pk in tsets['type_set']:
-                return trans
-        for trans, tsets in transformation_sets.items():
-            if trans != 'none' and self.category.pk in tsets['category_set']:
-                return trans
-        return None
-
-    def remove_transformations(self, ruleset):
-        tsets = self.get_transformation_sets(ruleset)
-        for trans, tset in tsets.items():
-            if trans != 'none' and self in tset['type_set'].all():
-                tset['type_set'].remove(self)
-        if self in ruleset.none_rules.all():
-            ruleset.none_rules.remove(self)
-        ruleset.needs_test()
-        ruleset.save()
-
-    def is_transformed(self, ruleset, type = 'drop', transformation_sets = None):
-        trans = self.get_transformation(ruleset, transformation_sets)
-        if trans is None:
-            return False
-        return (type == trans)
 
     def can_drop(self):
-        return not "noalert" in self.content
+        return "noalert" not in self.content
 
     def can_filestore(self):
         if " http " in self.content or " smtp " in self.content:
             return True
         return False
 
-    def get_transform(self):
-        trans = ()
-        if self.can_drop():
-            if ('drop', 'Drop') in settings.RULESET_TRANSFORMATIONS:
-                trans = trans + (('drop', 'Drop'),)
-            if ('reject', 'Reject') in settings.RULESET_TRANSFORMATIONS:
-                trans = trans + (('reject', 'Reject'),)
-        if self.can_filestore():
-            if ('filestore', 'Filestore') in settings.RULESET_TRANSFORMATIONS:
-                trans = trans + (('filestore', 'Filestore'),)
-        return trans
+    def _can_auto_target_or_lateral(self, rule_ids):
+        terms = re.split(r' +', rule_ids.format())
+        src = terms[2]
+        dst = terms[5]
+
+        if 'deployment Internal' in rule_ids.metadata or \
+                src == '$EXTERNAL_NET' or dst == '$EXTERNAL_NET' or \
+                (src == "any" or src.startswith("[")) and dst.startswith("$") or \
+                src.startswith("$") and (dst == "any" or dst.startswith("[")) or \
+                rule_ids.sid in [2017060, 2023070, 2023071, 2023549, 2024297, 2023548, 2024435, 2023149] or \
+                rule_ids.sid in []:
+            return True
+
+        return False
+
+    def can_lateral(self, value):
+        rule_ids = rule_idstools.parse(self.content)
+
+        if '$EXTERNAL_NET' in rule_ids.raw:
+            return True
+
+        ret = False
+        if value == Transformation.L_AUTO and rule_ids.classtype == "attempted-recon":
+            for meta in rule_ids.metadata:
+                if meta.startswith("attack_target"):
+                    ret = self._can_auto_target_or_lateral(rule_ids)
+                    break
+
+        return ret
+
+    def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
+        if Rule.TRANSFORMATIONS is None:
+            return (self in ruleset.get_transformed_rules(key=key, value=value).values_list('pk', flat=True))
+
+        rule_str = Rule.__name__.lower()
+        return (self.pk in Rule.TRANSFORMATIONS[key][rule_str][value])
+
+    def get_transformation(self, ruleset, key=Transformation.ACTION):
+        NONE = None
+        TYPE = None
+
+        if key == Transformation.ACTION:
+            NONE = Transformation.A_NONE
+            TYPE = Transformation.ActionTransfoType
+        elif key == Transformation.LATERAL:
+            NONE = Transformation.L_NO
+            TYPE = Transformation.LateralTransfoType
+        elif key == Transformation.TARGET:
+            NONE = Transformation.T_NONE
+            TYPE = Transformation.TargetTransfoType
+        else:
+            raise Exception("Key '%s' is unknown" % key)
+
+        if Rule.TRANSFORMATIONS is None:
+            rt = RuleTransformation.objects.filter(
+                                key=key.value,
+                                ruleset=ruleset,
+                                rule_transformation=self).all()
+            if len(rt) > 0:
+                # if rt[0].value == NONE.value:
+                #     return None
+                return TYPE(rt[0].value)
+
+            ct = CategoryTransformation.objects.filter(
+                                    key=key.value,
+                                    ruleset=ruleset,
+                                    category_transformation=self.category).exclude(value=NONE.value)
+            if len(ct) > 0:
+                return TYPE(ct[0].value)
+        else:
+            rule_str = Rule.__name__.lower()
+            category_str = Category.__name__.lower()
+
+            # if self.pk in Rule.TRANSFORMATIONS[key][rule_str][NONE]:
+            #     return None
+
+            for trans, tsets in Rule.TRANSFORMATIONS[key][rule_str].iteritems():
+                if self.pk in tsets:
+                    return trans
+
+            for trans, tsets in Rule.TRANSFORMATIONS[key][category_str].iteritems():
+                if self.category.pk in tsets:
+                    return trans
+
+        return None
+
+    def remove_transformations(self, ruleset, key):
+        RuleTransformation.objects.filter(
+                ruleset=ruleset,
+                rule_transformation=self,
+                key=key.value).delete()
+
+        ruleset.needs_test()
+        ruleset.save()
+
+    def set_transformation(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
+        self.remove_transformations(ruleset, key)
+
+        r = RuleTransformation(
+                ruleset=ruleset,
+                rule_transformation=self,
+                key=key.value,
+                value=value.value)
+        r.save()
+
+        ruleset.needs_test()
+        ruleset.save()
+
+    def generate_content(self, ruleset):
+        content = self.content
+        # explicitely set prio on transformation here
+        # Action
+        ACTION = Transformation.ACTION
+        A_DROP = Transformation.A_DROP
+        A_FILESTORE = Transformation.A_FILESTORE
+        A_REJECT = Transformation.A_REJECT
+        A_BYPASS = Transformation.A_BYPASS
+
+        trans = self.get_transformation(key=ACTION, ruleset=ruleset)
+        if (trans in (A_DROP, A_REJECT) and self.can_drop()) or \
+                (trans == A_FILESTORE and self.can_filestore()) or \
+                (trans == A_BYPASS):
+            content = self.apply_transformation(content, key=Transformation.ACTION, value=trans)
+
+        # Lateral
+        LATERAL = Transformation.LATERAL
+        L_AUTO = Transformation.L_AUTO
+        L_YES = Transformation.L_YES
+        L_NO = Transformation.L_NO
+
+        trans = self.get_transformation(key=LATERAL, ruleset=ruleset)
+        if trans in (L_AUTO, L_YES, L_AUTO) and self.can_lateral(trans):
+            content = self.apply_transformation(content, key=Transformation.LATERAL, value=trans)
+
+        # Target
+        TARGET = Transformation.TARGET
+        T_SOURCE = Transformation.T_SOURCE
+        T_DESTINATION = Transformation.T_DESTINATION
+        T_AUTO = Transformation.T_AUTO
+
+        trans = self.get_transformation(key=TARGET, ruleset=ruleset)
+        if trans in (T_SOURCE, T_DESTINATION, T_AUTO):
+            content = self.apply_transformation(content, key=Transformation.TARGET, value=trans)
+
+        return content
+
+    def get_transformation_choices(self, key=Transformation.ACTION):
+        # Keys
+        ACTION = Transformation.ACTION
+        LATERAL = Transformation.LATERAL
+        TARGET = Transformation.TARGET
+
+        allowed_choices = []
+
+        if key == ACTION:
+            all_choices_set = set(Transformation.ActionTransfoType.get_choices())
+            allowed_choices = list(all_choices_set.intersection(set(settings.RULESET_TRANSFORMATIONS)))
+
+            A_DROP = Transformation.A_DROP
+            A_FILESTORE = Transformation.A_FILESTORE
+            A_REJECT = Transformation.A_REJECT
+            A_BYPASS = Transformation.A_BYPASS
+            A_NONE = Transformation.A_NONE
+            A_CATEGORY = Transformation.A_CAT_DEFAULT
+
+            # Remove not allowed actions
+            if not self.can_drop():
+                if (A_DROP.value, A_DROP.name.title()) in allowed_choices:
+                    allowed_choices.remove((A_DROP.value, A_DROP.name.title()))
+
+                if (A_REJECT.value, A_REJECT.name.title()) in allowed_choices:
+                    allowed_choices.remove((A_REJECT.value, A_REJECT.name.title()))
+
+            if not self.can_filestore():
+                if (A_FILESTORE.value, A_FILESTORE.name.title()) in allowed_choices:
+                    allowed_choices.remove((A_FILESTORE.value, A_FILESTORE.name.title()))
+
+            # Test with Bypass transformation
+            # TODO: move me in settings.RULESET_TRANSFORMATIONS
+            allowed_choices.append((A_BYPASS.value, A_BYPASS.name.title()))
+
+            # Add None/Category actions (Only for Rules)
+            allowed_choices.append((A_CATEGORY.value, A_CATEGORY.name.replace('_', ' ').title()))
+            allowed_choices.append((A_NONE.value, A_NONE.name.title()))
+
+        if key == TARGET:
+            allowed_choices = list(Transformation.TargetTransfoType.get_choices())
+
+        if key == LATERAL:
+            allowed_choices = list(Transformation.LateralTransfoType.get_choices())
+
+            L_YES = Transformation.L_YES
+            L_AUTO = Transformation.L_AUTO
+
+            for trans in (L_YES, L_AUTO):
+                if not self.can_lateral(trans):
+                    allowed_choices.remove((trans.value, trans.name.title()))
+
+        return tuple(allowed_choices)
 
 
 # we should use django reversion to keep track of this one
@@ -1069,17 +1596,11 @@ class Ruleset(models.Model):
     sources = models.ManyToManyField(SourceAtVersion)
     # List of Category selected in the ruleset
     categories = models.ManyToManyField(Category, blank = True)
-    drop_categories = models.ManyToManyField(Category, blank = True, related_name="categories_drop")
-    filestore_categories = models.ManyToManyField(Category, blank = True, related_name="categories_filestore")
-    reject_categories = models.ManyToManyField(Category, blank = True, related_name="categories_reject")
+    rules_transformation = models.ManyToManyField(Rule, through='RuleTransformation', related_name='rules_transformed', blank=True)
+    categories_transformation = models.ManyToManyField(Category, through='CategoryTransformation', related_name='categories_transformed', blank=True)
 
     # List or Rules to suppressed from the Ruleset
     # Exported as suppression list in oinkmaster
-    suppressed_rules = models.ManyToManyField(Rule, blank = True)
-    drop_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_drop")
-    filestore_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_filestore")
-    reject_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_reject")
-    none_rules = models.ManyToManyField(Rule, blank = True, related_name="rules_none")
 
     # Operations
     # Creation:
@@ -1109,6 +1630,60 @@ class Ruleset(models.Model):
 
     json_errors = property(_json_errors)
 
+    def get_transformed_categories(self,
+                                   key=Transformation.ACTION,
+                                   value=Transformation.A_DROP,
+                                   excludes=[],
+                                   order_by=None):
+
+        # All transformed categories from this ruleset
+        if key is None:
+            return Category.objects.filter(ruletransformation__ruleset=self)
+
+        categories = Category.objects.filter(
+                            categorytransformation__ruleset=self,
+                            categorytransformation__key=key.value,
+                            categorytransformation__value=value.value)
+
+        if order_by is not None:
+            categories = categories.order_by(order_by)
+
+        if excludes is not None:
+            if isinstance(excludes, (list, tuple, set)):
+                for exclude in excludes:
+                    categories = categories.exclude(pk__in=exclude)
+            elif isinstance(excludes, (str, unicode)):
+                categories = categories.exclude(pk__in=excludes)
+
+        return categories
+
+    def get_transformed_rules(self,
+                              key=Transformation.ACTION,
+                              value=Transformation.A_DROP,
+                              excludes=[],
+                              order_by=None):
+
+        # All transformed rules from this ruleset
+        if key is None:
+            return Rule.objects.filter(ruletransformation__ruleset=self)
+
+        rules = Rule.objects.filter(
+                            ruletransformation__ruleset=self,
+                            ruletransformation__key=key.value,
+                            ruletransformation__value=value.value)
+
+        if order_by is not None:
+            rules = rules.order_by(order_by)
+
+        if excludes is not None:
+            if isinstance(excludes, (list, tuple, set)):
+                for exclude in excludes:
+                    rules = rules.exclude(pk__in=exclude)
+            elif isinstance(excludes, (str, unicode)):
+                rules = rules.exclude(pk__in=excludes)
+
+        return rules
+
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
         return reverse('ruleset', args=[str(self.id)])
@@ -1122,9 +1697,10 @@ class Ruleset(models.Model):
         self.save()
 
     def generate(self):
-        rules = Rule.objects.select_related('category').filter(category__in = self.categories.all(), state = True)
-        # remove suppressed list
-        rules = list(set(rules.all()) - set(self.suppressed_rules.all()))
+        # TODO: manage other types
+        S_SUPPRESSED = Transformation.S_SUPPRESSED
+
+        rules = Rule.objects.select_related('category').filter(category__in=self.categories.all(), state=True).exclude(ruletransformation__value=S_SUPPRESSED.value)
         return rules
 
     def generate_threshold(self, directory):
@@ -1137,7 +1713,8 @@ class Ruleset(models.Model):
         orig_ruleset_pk = self.pk
         orig_sources = self.sources.all()
         orig_categories = self.categories.all()
-        orig_supp_rules = self.suppressed_rules.all()
+        orig_trans_rules = self.get_transformed_rules(key=None)
+        orig_trans_cats = self.get_transformed_categories(key=None)
         self.name = name
         self.pk = None
         self.id = None
@@ -1146,7 +1723,7 @@ class Ruleset(models.Model):
         self.save()
         self.sources = orig_sources
         self.categories = orig_categories
-        self.suppressed_rules = orig_supp_rules
+        self.rules_transformation = orig_trans_rules
         self.save()
         for threshold in Threshold.objects.filter(ruleset_id = orig_ruleset_pk):
             threshold.ruleset = self
@@ -1182,12 +1759,19 @@ class Ruleset(models.Model):
         rules = self.generate()
         self.rules_count = len(rules)
         file_content = "# Rules file for " + self.name + " generated by Scirius at " + str(timezone.now()) + "\n"
-        if len(rules):
-            tsets = rules[0].get_transformation_sets(self, python = True)
-        else:
-            tsets = None
-        rules_content = [ rule.generate_content(self, transformation_sets = tsets) for rule in rules ]
-        file_content += "\n".join(rules_content)
+
+        if len(rules) > 0:
+            Rule.enable_cache()
+
+            rules_content = []
+            for rule in rules:
+                c = rule.generate_content(self)
+                if c:
+                    rules_content.append(c)
+            file_content += "\n".join(rules_content)
+
+            Rule.disable_cache()
+
         return file_content
 
     def test_rule_buffer(self, rule_buffer, single = False):
@@ -1221,16 +1805,54 @@ class Ruleset(models.Model):
         return result
 
     def disable_rules(self, rules):
-        self.suppressed_rules.add(*rules)
+        SUPPRESSED = Transformation.SUPPRESSED
+        S_SUPPRESSED = Transformation.S_SUPPRESSED
+
+        rts = []
+        suppressed_rules = self.get_transformed_rules(key=SUPPRESSED, value=S_SUPPRESSED).values_list('pk', flat=True)
+        for rule in rules:
+            if rule.pk not in suppressed_rules:
+                rt = RuleTransformation(
+                        ruleset=self,
+                        rule_transformation=rule,
+                        key=SUPPRESSED.value,
+                        value=S_SUPPRESSED.value)
+                rts.append(rt)
+
+        RuleTransformation.objects.bulk_create(rts)
         self.needs_test()
 
     def enable_rules(self, rules):
-        self.suppressed_rules.remove(*rules)
+        SUPPRESSED = Transformation.SUPPRESSED
+        S_SUPPRESSED = Transformation.S_SUPPRESSED
+
+        RuleTransformation.objects.filter(
+                        ruleset=self,
+                        rule_transformation__in=rules,
+                        key=SUPPRESSED.value,
+                        value=S_SUPPRESSED.value).delete()
         self.needs_test()
-    
+
     def needs_test(self):
         self.need_test = True
         self.save()
+
+
+class RuleTransformation(Transformation):
+    ruleset = models.ForeignKey(Ruleset)
+    rule_transformation = models.ForeignKey(Rule)
+
+    class Meta:
+        unique_together = ('ruleset', 'rule_transformation', 'key')
+
+
+class CategoryTransformation(Transformation):
+    ruleset = models.ForeignKey(Ruleset)
+    category_transformation = models.ForeignKey(Category)
+
+    class Meta:
+        unique_together = ('ruleset', 'category_transformation', 'key')
+
 
 class Threshold(models.Model):
     THRESHOLD_TYPES = (('threshold', 'threshold'), ('suppress', 'suppress'))

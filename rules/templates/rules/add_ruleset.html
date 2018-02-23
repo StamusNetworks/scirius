@@ -1,6 +1,5 @@
 {% extends "rules/base.html" %}
 {% load bootstrap3  %}
-
 {% block sidebar %}
 <div class="panel-heading">
 <h2 class="panel-title">Add a Ruleset</h2>
@@ -8,6 +7,20 @@
 {% endblock %}
 
 {% block content %}
+
+<script>
+    $(document).ready(function($) {
+        $("input[name='sources']").click(function(){
+            alert('it works');
+            if ($(this).is(':checked')) {               
+                $('input[name="activate_categories"]').attr("disabled", false); 
+
+            else if ($(this).not(':checked')) {
+                $('input[name="activate_categories"]').attr("checked", false);
+                $('input[name="activate_categories"]').attr("disabled", true);
+            }
+        }); });
+</script>
 
 {% if missing %}
 
@@ -20,12 +33,23 @@
 <div class="row">
 <div class="col-md-6">
 <form action="{% url 'add_ruleset' %}" method="post" class="form">{% csrf_token %}
-    {% bootstrap_form form %}
+    {# {% bootstrap_form form %} #}
+    {% bootstrap_field form.name %}
+    {% bootstrap_field form.sources %}
+    {% bootstrap_label "Categories" %}
+    {% bootstrap_field form.activate_categories %}
+    {% bootstrap_label "Transformations will be applied on all ruleset's categories" %}
+    {% bootstrap_field form.action %}
+    {% bootstrap_field form.lateral %}
+    {% bootstrap_field form.target %}
+
+    {% bootstrap_field form.comment %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">
             {% bootstrap_icon "plus" %} Add 
         </button>
     {% endbuttons %}
+
 </form>
 </div>
 </div>

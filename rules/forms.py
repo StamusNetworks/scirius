@@ -22,7 +22,7 @@ from django import forms
 from django.utils import timezone
 from django.conf import settings
 from django.core.exceptions import NON_FIELD_ERRORS
-from rules.models import Ruleset, Rule, Source, Category, SourceAtVersion, SystemSettings, Threshold, UserAction
+from rules.models import Ruleset, Rule, Source, Category, SourceAtVersion, SystemSettings, Threshold, UserAction, Transformation
 
 
 class CommentForm(forms.Form):
@@ -38,7 +38,7 @@ class CommentForm(forms.Form):
         self.fields['comment'] = comment
 
 class RulesetChoiceForm(CommentForm):
-    rulesets_label = "Add object to the following ruleset(s)"
+    rulesets_label = "Set transformation to the following ruleset(s)"
     rulesets = forms.ModelMultipleChoiceField(None,
                         widget=forms.CheckboxSelectMultiple(),
                         label = rulesets_label,
@@ -106,9 +106,15 @@ class AddPublicSourceForm(forms.ModelForm, RulesetChoiceForm):
 # Display choices of SourceAtVersion
 class RulesetForm(CommentForm):
     name = forms.CharField(max_length=100)
-    activate_categories = forms.BooleanField(label = "Activate all categories in sources",
-                                             initial = True, required = False)
     sources = forms.ModelMultipleChoiceField(None, widget=forms.CheckboxSelectMultiple())
+    activate_categories = forms.BooleanField(label = "Activate all categories in selected sources",
+                                             initial = True, required = False)
+
+    rulesets_label = "Apply transformation(s) to the following ruleset(s)"
+    action = forms.ChoiceField()
+    lateral = forms.ChoiceField()
+    target = forms.ChoiceField()
+
 
     def create_ruleset(self):
         ruleset = Ruleset.objects.create(name = self.cleaned_data['name'],
@@ -127,12 +133,40 @@ class RulesetForm(CommentForm):
         sourceatversion = SourceAtVersion.objects.all()
         self.fields['sources'].queryset = sourceatversion
 
+        if len(Category.objects.all()) > 0:
+            self.fields['action'].choices = Category.get_transformation_choices(key=Transformation.ACTION) + (('none', 'None'),)
+            self.fields['lateral'].choices = Category.get_transformation_choices(key=Transformation.LATERAL)
+            self.fields['target'].choices = Category.get_transformation_choices(key=Transformation.TARGET)
+        else:
+            self.fields['action'].choices = (('none', 'None'),)
+            self.fields['lateral'].choices = (('none', 'None'),)
+            self.fields['target'].choices = (('none', 'None'),)
+
+
 class RulesetEditForm(forms.ModelForm, CommentForm):
     name = forms.CharField(max_length=100)
 
+    rulesets_label = "Apply transformation(s) to the following ruleset(s)"
+    action = forms.ChoiceField()
+    lateral = forms.ChoiceField()
+    target = forms.ChoiceField()
+
     class Meta:
         model = Ruleset
-        fields = ('name',)
+        fields = ('name', 'action', 'lateral', 'target')
+
+    def __init__(self, *args, **kwargs):
+        super(RulesetEditForm, self).__init__(*args, **kwargs)
+
+        if len(Category.objects.all()) > 0:
+            self.fields['action'].choices = Category.get_transformation_choices(key=Transformation.ACTION) + (('none', 'None'),)
+            self.fields['lateral'].choices = Category.get_transformation_choices(key=Transformation.LATERAL)
+            self.fields['target'].choices = Category.get_transformation_choices(key=Transformation.TARGET)
+        else:
+            self.fields['action'].choices = (('none', 'None'),)
+            self.fields['lateral'].choices = (('none', 'None'),)
+            self.fields['target'].choices = (('none', 'None'),)
+
 
 class RulesetCopyForm(CommentForm):
     name = forms.CharField(max_length=100)
@@ -159,28 +193,34 @@ class EditThresholdForm(forms.ModelForm, CommentForm):
         model = Threshold
         exclude = ['pk', 'rule']
 
-class RuleTransformForm(forms.ModelForm, RulesetChoiceForm):
+class RuleTransformForm(RulesetChoiceForm):
     rulesets_label = "Apply transformation(s) to the following ruleset(s)"
-    type = forms.ChoiceField()
-
-    class Meta:
-        model = Rule
-        fields = []
+    action = forms.ChoiceField()
+    lateral = forms.ChoiceField()
+    target = forms.ChoiceField()
 
     def __init__(self, *args, **kwargs):
+        rule = kwargs.pop('instance')
+
         super(RuleTransformForm, self).__init__(*args, **kwargs)
-        trans = self.instance.get_transform()
-        trans += (('none', 'None'), ('category', 'Category default'))
-        self.fields['type'].choices = trans
+        choices = rule.get_transformation_choices(key=Transformation.ACTION)
+        self.fields['action'].choices = choices
+        self.fields['lateral'].choices = rule.get_transformation_choices(key=Transformation.LATERAL)
+        self.fields['target'].choices = rule.get_transformation_choices(key=Transformation.TARGET)
+
 
 class CategoryTransformForm(RulesetChoiceForm):
     rulesets_label = "Apply transformation(s) to the following ruleset(s)"
-    type = forms.ChoiceField()
+    action = forms.ChoiceField()
+    lateral = forms.ChoiceField()
+    target = forms.ChoiceField()
 
     def __init__(self, *args, **kwargs):
         super(CategoryTransformForm, self).__init__(*args, **kwargs)
-        trans = settings.RULESET_TRANSFORMATIONS + (('none', 'None'),)
-        self.fields['type'].choices = trans
+        self.fields['action'].choices = Category.get_transformation_choices(key=Transformation.ACTION) + (('none', 'None'),)
+        self.fields['lateral'].choices = Category.get_transformation_choices(key=Transformation.LATERAL)
+        self.fields['target'].choices = Category.get_transformation_choices(key=Transformation.TARGET)
+
 
 class RuleCommentForm(forms.Form):
     comment = forms.CharField(widget = forms.Textarea)
