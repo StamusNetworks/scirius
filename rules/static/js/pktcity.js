@@ -265,7 +265,7 @@ function PktCityCreateScene(data) {
                 // Leave this function
                 var skybox = BABYLON.Mesh.CreateBox("skyBox", 300.0, scene);
                 var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
-                skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox/skybox", scene);
+                skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("/static/textures/skybox/skybox", scene);
                 skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
                 skyboxMaterial.backFaceCulling = false;
                 skyboxMaterial.disableLighting = true;
