@@ -168,4 +168,15 @@ $( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], null));
 	  <li><span class="type">Logged in as</span> {{ request.user }}</li>
         </ul>
         </div>
+        <div class="panel-heading">
+        <h2 class="panel-title">Visualizations</h2>
+        </div>
+        <div class="panel-body">
+        <ul class="action">
+        <li><a href="{% url 'viz_dashboard'%}" target="_blank">IP based Dashboard</a></li>
+        <li><a href="{% url 'viz_target_dashboard'%}" target="_blank">Organizational Dashboard</a></li>
+        <li><a href="{% url 'viz_pktcity'%}" target="_blank">Packets City (webGL)</a></li>
+        </ul>
+        </div>
+
 {% endblock %}

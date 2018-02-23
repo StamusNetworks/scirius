@@ -446,16 +446,6 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 </ul>
 
 
-<div class="panel-heading">
-<h2 class="panel-title">Visualizations</h2>
-</div>
-<div class="panel-body">
-<ul class="action">
-<li><a href="{% url 'viz_dashboard'%}" target="_blank">IP based Dashboard</a></li>
-<li><a href="{% url 'viz_target_dashboard'%}" target="_blank">Organizational Dashboard</a></li>
-<li><a href="{% url 'viz_pktcity'%}" target="_blank">Packets City (webGL)</a></li>
-</ul>
-</div>
 {% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
