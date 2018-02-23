@@ -146,8 +146,10 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
      type:"GET",
      url:esurl,
      success: function(json) {
-        if (json == null) {
-            $("#alerts").append("No data to build the graph");
+        if ((json == null) || (json.links.length == 0)) {
+             d3.select("svg#alerts").append('text').text("No data to build the graph.")
+             .attr("x", 150)
+             .attr("y", 150);
             return;
         }
 
@@ -163,7 +165,6 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
             .charge(-50)
             .size([width, height]);
         
-        json = JSON.parse(json);
         force
           .nodes(json.nodes)
           .links(json.links)
