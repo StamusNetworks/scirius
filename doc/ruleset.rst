@@ -1,3 +1,5 @@
+.. _rulesets:
+
 Rulesets
 ========
 
@@ -16,7 +18,7 @@ User actions logging
 --------------------
 
 All actions done in ruleset management are logged. It is possible to access
-their history by using `Actions history`_ in the Stamus icon menu.
+their history by using ``Actions history`` in the Stamus icon menu.
 
 Optional comment are available for each action to allow users to interact
 with each other.
@@ -172,7 +174,7 @@ You can also choose to enforce the suppression for a whole network and/or use a 
 You can verify the suppression by clicking on the ``Rules info`` tab. You will have an informational display about the status of the different (if any) threshold and suppression configurations.
 Alternatively you can also view that by clicking ``Rulesets`` and selecting the ruleset for which you have applied the particular suppression or threshold.
 
-In order for the suppression to become active you need to ``Push`` the updated ruleset to the probes. See `Updating Appliances ruleset`_ for complete instruction.
+In order for the suppression to become active you need to ``Push`` the updated ruleset to the probes. See :ref:`updating-appliances-ruleset` on SEE and :ref:`updating-suricata` on Scirius CE for complete instruction.
 
 
 Threshold alerts
@@ -199,7 +201,7 @@ The available fields are:
 You can verify the thresholding by clicking on the ``Rules info`` tab. You will have an informational display about the status of the different (if any) threshold and suppression configurations.
 Alternatively you can also view that by clicking ``Rulesets`` and selecting the ruleset for which you have applied the particular suppression or threshold.
 
-In order for the suppression to become active you need to ``Push`` the updated ruleset to the probes. See `Updating Appliances ruleset`_ for complete instruction.
+In order for the threshold to become active you need to ``Push`` the updated ruleset to the probes. See :ref:`updating-appliances-ruleset` on SEE and :ref:`updating-suricata` on Scirius CE for complete instruction.
 
 .. _rule-transformations:
 

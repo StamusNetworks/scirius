@@ -14,6 +14,8 @@ The parameters are the following:
 * Suricata configuration file: used to detect some configuration settings
 * Ruleset: choose the ruleset to use
 
+.. _updating-suricata:
+
 Updating ruleset
 ----------------
 
