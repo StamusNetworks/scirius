@@ -4,3 +4,5 @@ scirius/local_settings.py
 git-sources/*
 node_modules
 rules/static/dist
+rules/static/doc
+doc/_build/
