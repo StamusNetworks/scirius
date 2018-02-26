@@ -118,6 +118,9 @@ def scirius_render(request, template, context):
     if settings.USE_EVEBOX:
         context['evebox'] = 1
         context['evebox_url'] = "/evebox"
+    if settings.SCIRIUS_HAS_DOC:
+        djurl = request.resolver_match
+        context['help_link'] = help_links(djurl.view_name)
 
     context['toplinks'] = [{
         'id': 'suricata',
@@ -168,3 +171,13 @@ def scirius_listing(request, objectname, name, template = 'rules/object_list.htm
 
 def get_middleware_module(module):
     return import_module('%s.%s' % (settings.RULESET_MIDDLEWARE, module))
+
+def help_links(djlink):
+    HELP_LINKS_TABLE = {"add_source": {"name": "Creating a source", "base_url": "doc/ruleset.html", "anchor": "#creating-source" },
+         "threshold_rule": {"name": "Threshold alerts", "base_url": "doc/ruleset.html", "anchor": "#threshold-alerts" },
+         "suppress_rule": {"name": "Suppress alerts", "base_url": "doc/ruleset.html", "anchor": "#suppress-alerts" },
+    }
+    if HELP_LINKS_TABLE.has_key(djlink):
+        return HELP_LINKS_TABLE[djlink]
+    Probe = __import__(settings.RULESET_MIDDLEWARE)
+    return Probe.common.help_links(djlink)

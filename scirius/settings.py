@@ -164,6 +164,9 @@ SURICATA_BINARY = "suricata"
 
 SURICATA_NAME_IS_HOSTNAME = False
 
+# Do we have the doc
+SCIRIUS_HAS_DOC = True
+
 # Sources update
 DEFAULT_SOURCE_INDEX_URL = "https://www.openinfosecfoundation.org/rules/index.yaml"
 

@@ -158,14 +158,28 @@
 					<div class="panel-heading">
 					<h2 class="panel-title">Path</h2>
 					</div>
+                    <div class="panel-body">
 					<ol class="breadcrumb">
 					   {% for object in object_path %}
 					  <li><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></li>
 					  {% endfor %}
 					</ol>
+                    </div>
 					{% endif %}
+
                                         {% block status %}{% if middleware_status %}{% include middleware_status %}{% endif %} {% endblock %}
+
 			</div> <!-- panel -->
+            {% if help_link %}
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">Help</h2>
+                    </div>
+                    <div class="panel-body">
+                        <a href="{% static help_link.base_url %}{{ help_link.anchor }}" target="_blank">{% bootstrap_icon "book" %} {{ help_link.name }}</a>
+                </div>
+                </div>
+            {% endif %}
 
 		</div> <!-- col -->
 		{% if three_columns %}

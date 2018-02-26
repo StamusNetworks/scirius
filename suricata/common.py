@@ -306,3 +306,9 @@ logging:
 #result = test.rules(buf)
 #if not result['status']:
 #    print json.dumps(result['error'])
+
+def help_links(djlink):
+    HELP_LINKS_TABLE = {"suricata_update": {"name": "Updating Suricata ruleset", "base_url": "doc/suricata-ce.html", "anchor": "" }}
+    if HELP_LINKS_TABLE.has_key(djlink):
+        return HELP_LINKS_TABLE[djlink]
+    return None
