@@ -173,10 +173,10 @@
             {% if help_link %}
                   <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h2 class="panel-title">Help</h2>
+                        <h2 class="panel-title">{% bootstrap_icon "book" %} Help</h2>
                     </div>
                     <div class="panel-body">
-                        <a href="{% static help_link.base_url %}{{ help_link.anchor }}" target="_blank">{% bootstrap_icon "book" %} {{ help_link.name }}</a>
+                        <a href="{% static help_link.base_url %}{{ help_link.anchor }}" target="_blank">{{ help_link.name }}</a>
                 </div>
                 </div>
             {% endif %}
