@@ -174,8 +174,7 @@ def get_middleware_module(module):
 
 def help_links(djlink):
     HELP_LINKS_TABLE = {"add_source": {"name": "Creating a source", "base_url": "doc/ruleset.html", "anchor": "#creating-source" },
-         "threshold_rule": {"name": "Threshold alerts", "base_url": "doc/ruleset.html", "anchor": "#threshold-alerts" },
-         "suppress_rule": {"name": "Suppress alerts", "base_url": "doc/ruleset.html", "anchor": "#suppress-alerts" },
+         "threshold_rule": {"name": "Suppression and thresholding", "base_url": "doc/ruleset.html", "anchor": "#suppression-and-thresholding" },
     }
     if HELP_LINKS_TABLE.has_key(djlink):
         return HELP_LINKS_TABLE[djlink]
