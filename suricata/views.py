@@ -33,7 +33,7 @@ from scirius.utils import scirius_render
 
 from suricata.models import Suricata
 from rules.models import dependencies_check
-from rules.models import UserAction
+from rules.models import UserAction, Transformation
 
 from forms import *
 from rules.forms import CommentForm
@@ -61,7 +61,8 @@ def index(request, error = None):
         if error:
             context['error'] = error
         if suri.ruleset:
-            supp_rules = list(suri.ruleset.suppressed_rules.all())
+            supp_rules = list(Rule.objects.filter(ruletransformation__ruleset=suri.ruleset, ruletransformation__key=Transformation.SUPPRESSED.value, ruletransformation__value=Transformation.S_SUPPRESSED.value))
+
             if len(supp_rules):
                 suppressed = ",".join([ str(x.sid) for x in supp_rules])
                 context['suppressed'] = suppressed
