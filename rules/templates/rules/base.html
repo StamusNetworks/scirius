@@ -141,8 +141,8 @@
 {% if elasticsearch %}
                     <div id="health" class="label label-default"><a href="{% url 'elasticsearch' %}">Elasticsearch</a></div>
 {% endif %}
-                    <div id="disk-status" class="label label-default">Disk</div>
-                    <div id="memory-status" class="label label-default">Memory</div>
+                    <div id="disk-status" class="label label-default"><a href="{% url monitoring_url %}">Disk</a></div>
+                    <div id="memory-status" class="label label-default"><a href="{% url monitoring_url %}">Memory</a></div>
                     </div>
             </div>
 			<div class="panel panel-default" id="sidebar">

@@ -128,10 +128,12 @@ def scirius_render(request, template, context):
         'icon': 'eye-open',
         'label': 'Suricata'
     }]
+    context['monitoring_url'] = 'suricata_index'
     try:
         links = get_middleware_module('links')
         context['toplinks'] = links.TOPLINKS
         context['links'] = links.links(request)
+        context['monitoring_url'] = links.MONITORING_URL
     except:
         pass
     try:
