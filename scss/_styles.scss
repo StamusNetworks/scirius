@@ -8,22 +8,19 @@ body {
     font-size: 85%;
   }
   .label-success,
+  .panel-success .panel-heading,
   .progress-bar-success {
     background-color: $success-color;
   }
   .label-warning,
+  .panel-warning .panel-heading,
   .progress-bar-warning {
     background-color: $warning-color;
   }
   .label-danger,
+  .panel-danger .panel-heading,
   .progress-bar-danger {
     background-color: $danger-color;
-  }
-  .panel-success {
-    border-color: $success-color;
-  }
-  .panel-warning {
-    border-color: $warning-color;
   }
   h2,
   .title,
@@ -93,10 +90,10 @@ body {
   a {
     color: darken($brand-color, 10%);
   }
-  .list-view-pf-icon-success {
-    border-color: $success-color !important;
+  .list-view-pf-left .pficon.list-view-pf-icon-success {
+    border-color: $success-color;
   }
-  .list-view-pf-icon-danger {
-    border-color: $danger-color !important;
+  .list-view-pf-left .pficon.list-view-pf-icon-danger {
+    border-color: $danger-color;
   }
 }
