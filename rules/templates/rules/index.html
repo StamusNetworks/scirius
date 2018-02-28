@@ -150,7 +150,18 @@
 <script>
 $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null); });
 
-$( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], null));
+$( 'document' ).ready(function() {
+	load_rules({{ from_date }},  [ '*' ], null);
+        var canvas = document.createElement("canvas");
+        // Get WebGLRenderingContext from canvas element.
+        var gl = canvas.getContext("webgl")
+                 || canvas.getContext("experimental-webgl");
+         // Report the result.
+        if (!(gl && gl instanceof WebGLRenderingContext)) {
+	       $('#webgl-test').parent().click(function(event) {event.preventDefault(); }).addClass('text-muted');
+	       $('#webgl-test').text("Missing WebGL");
+        }
+});
 </script>
 {% endif %}
 
@@ -175,7 +186,7 @@ $( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], null));
         <ul class="action">
         <li><a href="{% url 'viz_dashboard'%}" target="_blank">IP based Dashboard</a></li>
         <li><a href="{% url 'viz_target_dashboard'%}" target="_blank">Organizational Dashboard</a></li>
-        <li><a href="{% url 'viz_pktcity'%}" target="_blank">Packets City (webGL)</a></li>
+        <li><a href="{% url 'viz_pktcity'%}" target="_blank">Packets City (<span id="webgl-test">webGL</span>)</a></li>
         </ul>
         </div>
 
