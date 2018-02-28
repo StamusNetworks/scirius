@@ -842,7 +842,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
 """
 
 
-IPPPAIR_ALERTS_COUNT = """
+IPPAIR_ALERTS_COUNT = """
 {
   "size": 0,
   "query": {
@@ -900,7 +900,7 @@ IPPPAIR_ALERTS_COUNT = """
 
 
 if settings.ELASTICSEARCH_VERSION >= 6:
-    IPPPAIR_ALERTS_COUNT = """
+    IPPAIR_ALERTS_COUNT = """
 {
   "size": 0,
   "query": {
@@ -956,7 +956,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
 }
 """
 
-IPPPAIR_NETINFO_ALERTS_COUNT = """
+IPPAIR_NETINFO_ALERTS_COUNT = """
 {
   "query": {
         "bool": {
@@ -1503,7 +1503,7 @@ def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
         return None
 
 def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
-    data = render_template(IPPPAIR_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
+    data = render_template(IPPAIR_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
@@ -1539,7 +1539,7 @@ def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
         return None
 
 def es_get_ippair_network_alerts(from_date=0, hosts = None, qfilter = None):
-    data = render_template(IPPPAIR_NETINFO_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
+    data = render_template(IPPAIR_NETINFO_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
