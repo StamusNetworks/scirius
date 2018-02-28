@@ -856,7 +856,7 @@ IPPAIR_ALERTS_COUNT = """
               }
             }, {
               "query_string": {
-                "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+                "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
                 "analyze_wildcard": true
               }
             }
@@ -914,7 +914,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
               }
             }, {
               "query_string": {
-                "query": "event_type:alert AND {{ hostname }}:{{ hosts }} {{ query_filter|safe }}",
+                "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
                 "analyze_wildcard": true
               }
             }
@@ -969,7 +969,86 @@ IPPAIR_NETINFO_ALERTS_COUNT = """
               }
             }, {
               "query_string": {
-                "query": "event_type:alert AND alert.source.net_info:* AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+                "query": "event_type:alert AND alert.source.net_info:* AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
+                "analyze_wildcard": true
+              }
+            }
+          ]
+        }
+      },
+        "aggs": {
+        "src_ip": {
+          "terms": {
+            "field": "alert.source.ip.{{ keyword }}",
+            "size": 40,
+            "order": {
+              "_count": "desc"
+            }
+          },
+          "aggs": {
+            "net_src": {
+              "terms": {
+                "field": "alert.source.net_info.{{ keyword }}",
+                "size": 1,
+                "order": {
+                  "_count": "desc"
+                }
+           },
+            "aggs": {
+              "dest_ip": {
+                "terms": {
+                  "field": "alert.target.ip.{{ keyword }}",
+                  "size": 40,
+                  "order": {
+                    "_count": "desc"
+                  }
+                },
+              "aggs": {
+                "net_dest": {
+                  "terms": {
+                    "field": "alert.target.net_info.{{ keyword }}",
+                    "size": 1,
+                    "order": {
+                      "_count": "desc"
+                    }
+                  },
+                  "aggs": {
+                    "alerts": {
+                        "terms": {
+                        "field": "alert.signature.{{ keyword }}",
+                        "size": 20,
+                        "order": {
+                            "_count": "desc"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
+if settings.ELASTICSEARCH_VERSION >= 6:
+    IPPAIR_NETINFO_ALERTS_COUNT = """
+{
+  "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": {{ from_date }}
+                }
+              }
+            }, {
+              "query_string": {
+                "query": "event_type:alert AND alert.source.net_info:* AND ({% for host in hosts %}{{ hostname }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
                 "analyze_wildcard": true
               }
             }
@@ -1503,7 +1582,7 @@ def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
         return None
 
 def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
-    data = render_template(IPPAIR_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
+    data = render_template(IPPAIR_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
@@ -1539,7 +1618,7 @@ def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
         return None
 
 def es_get_ippair_network_alerts(from_date=0, hosts = None, qfilter = None):
-    data = render_template(IPPAIR_NETINFO_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
+    data = render_template(IPPAIR_NETINFO_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
