@@ -599,7 +599,63 @@ def transform_category(request, cat_id):
 
             return redirect(cat_object)
     else:
-        form = CategoryTransformForm(initial={'action': 'drop', 'lateral': 'no', 'target': 'none'})
+        rulesets_ids = []
+        current_trans = {
+                Transformation.ACTION: Transformation.A_NONE,
+                Transformation.LATERAL: Transformation.L_NO,
+                Transformation.TARGET: Transformation.T_NONE
+        }
+
+        rulesets_res = {
+                Transformation.ACTION: {},
+                Transformation.LATERAL: {},
+                Transformation.TARGET: {},
+        }
+
+        initial = {'action': current_trans[Transformation.ACTION].value,
+                   'lateral': current_trans[Transformation.LATERAL].value,
+                   'target': current_trans[Transformation.TARGET].value,
+                   'rulesets': rulesets_ids
+                   }
+
+        rulesets = Ruleset.objects.all()
+        for idx_ruleset, ruleset in enumerate(rulesets):
+            trans_action = cat_object.get_transformation(ruleset, Transformation.ACTION)
+            trans_lateral = cat_object.get_transformation(ruleset, Transformation.LATERAL)
+            trans_target = cat_object.get_transformation(ruleset, Transformation.TARGET)
+            all_trans = [(Transformation.ACTION, trans_action), (Transformation.LATERAL, trans_lateral), (Transformation.TARGET, trans_target)]
+
+            for idx_trans, (key, value) in enumerate(all_trans, 1):
+                if value not in rulesets_res[key]:
+                    rulesets_res[key][value] = 0
+                rulesets_res[key][value] += 1
+
+                if value:
+                    rulesets_ids.append(ruleset.id)
+                    current_trans[key] = value
+
+                # Case 1: One transfo on all rulesets
+                # Case 2: one transfo on n rulesets on x. x-n rulesets without transfo (None)
+                if len(rulesets) == rulesets_res[key][value] or \
+                        (None in rulesets_res[key] and
+                         len(rulesets) == rulesets_res[key][value] + rulesets_res[key][None]):
+                    if value:
+                        initial[key.value] = current_trans[key].value
+
+        # Case 3: differents transformations are applied on n rulesets
+        for key, dict_val in rulesets_res.iteritems():
+            for val in dict_val.iterkeys():
+
+                if len(rulesets) == rulesets_res[key][val] or \
+                        (None in rulesets_res[key] and
+                         len(rulesets) == rulesets_res[key][val] + rulesets_res[key][None]):
+                    pass
+                else:
+                    initial[key.value] = 'none'
+                    if 'rulesets' in initial:
+                        del initial['rulesets']
+
+        form = CategoryTransformForm(initial=initial)
     context = {'category': cat_object, 'form': form}
     return scirius_render(request, 'rules/edit_rule.html', context)
 
