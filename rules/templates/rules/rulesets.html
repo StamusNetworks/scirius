@@ -90,7 +90,7 @@
         <strong>Sources:</strong>
         <ul class="list-group">
         {% for source in ruleset.sources.all %}
-        <li class="list-group-item">{{ source.name }}</li>
+        <li class="list-group-item"><a href="{% url 'source' source.source.pk %}">{{ source.name }}</a></li>
         {% endfor %}
         </ul>
         </div>
