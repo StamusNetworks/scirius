@@ -1396,6 +1396,7 @@ class Rule(models.Model, Transformable, Cache):
         return False
 
     def can_lateral(self, value):
+        content = self.content.encode('utf8')
         rule_ids = rule_idstools.parse(self.content)
 
         # Workaround: ref #674
@@ -1449,8 +1450,6 @@ class Rule(models.Model, Transformable, Cache):
                                 ruleset=ruleset,
                                 rule_transformation=self).all()
             if len(rt) > 0:
-                # if rt[0].value == NONE.value:
-                #     return None
                 return TYPE(rt[0].value)
 
             ct = CategoryTransformation.objects.filter(
@@ -1462,9 +1461,6 @@ class Rule(models.Model, Transformable, Cache):
         else:
             rule_str = Rule.__name__.lower()
             category_str = Category.__name__.lower()
-
-            # if self.pk in Rule.TRANSFORMATIONS[key][rule_str][NONE]:
-            #     return None
 
             for trans, tsets in Rule.TRANSFORMATIONS[key][rule_str].iteritems():
                 if self.pk in tsets:
@@ -1500,6 +1496,7 @@ class Rule(models.Model, Transformable, Cache):
 
     def generate_content(self, ruleset):
         content = self.content
+
         # explicitely set prio on transformation here
         # Action
         ACTION = Transformation.ACTION
@@ -1518,10 +1515,9 @@ class Rule(models.Model, Transformable, Cache):
         LATERAL = Transformation.LATERAL
         L_AUTO = Transformation.L_AUTO
         L_YES = Transformation.L_YES
-        L_NO = Transformation.L_NO
 
         trans = self.get_transformation(key=LATERAL, ruleset=ruleset)
-        if trans in (L_AUTO, L_YES, L_AUTO) and self.can_lateral(trans):
+        if trans in (L_YES, L_AUTO) and self.can_lateral(trans):
             content = self.apply_transformation(content, key=Transformation.LATERAL, value=trans)
 
         # Target
@@ -1532,7 +1528,13 @@ class Rule(models.Model, Transformable, Cache):
 
         trans = self.get_transformation(key=TARGET, ruleset=ruleset)
         if trans in (T_SOURCE, T_DESTINATION, T_AUTO):
-            content = self.apply_transformation(content, key=Transformation.TARGET, value=trans)
+            c = content
+            if isinstance(content, unicode):
+                c = content.encode('utf8')
+            content = self.apply_transformation(c, key=Transformation.TARGET, value=trans)
+
+        if isinstance(content, str):
+            content = content.decode('utf8')
 
         return content
 
@@ -1792,7 +1794,7 @@ class Ruleset(models.Model):
             for rule in rules:
                 c = rule.generate_content(self)
                 if c:
-                    rules_content.append(c)
+                    rules_content.append(c.decode('utf8'))
             file_content += "\n".join(rules_content)
 
             Rule.disable_cache()
