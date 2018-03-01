@@ -783,6 +783,11 @@ class Transformable:
     def apply_lateral_target_transfo(self, content, key=Transformation.LATERAL, value=Transformation.L_YES):
         rule_ids = rule_idstools.parse(content)
 
+        # Workaround: ref #674
+        # Cannot transform, idstools cannot parse it
+        if rule_ids is None:
+            return content
+
         # don't work on commented rules
         if rule_ids.format().startswith("#"):
             return content
@@ -1393,6 +1398,12 @@ class Rule(models.Model, Transformable, Cache):
     def can_lateral(self, value):
         rule_ids = rule_idstools.parse(self.content)
 
+        # Workaround: ref #674
+        # Cannot transform, idstools cannot parse it
+        # So remove this transformation from choices
+        if rule_ids is None:
+            return False
+
         if '$EXTERNAL_NET' in rule_ids.raw:
             return True
 
@@ -1404,6 +1415,10 @@ class Rule(models.Model, Transformable, Cache):
                     break
 
         return ret
+
+    def can_target(self):
+        rule_ids = rule_idstools.parse(self.content)
+        return (rule_ids is not None)
 
     def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
         if Rule.TRANSFORMATIONS is None:
@@ -1562,6 +1577,16 @@ class Rule(models.Model, Transformable, Cache):
 
         if key == TARGET:
             allowed_choices = list(Transformation.TargetTransfoType.get_choices())
+            # Workaround (self.target): ref #674
+            # Cannot transform, idstools cannot parse it
+            # So remove this transformation from choices
+            if not self.can_target():
+                T_AUTO = Transformation.T_AUTO
+                T_SOURCE = Transformation.T_SOURCE
+                T_DEST = Transformation.T_DESTINATION
+
+                for trans in (T_AUTO, T_SOURCE, T_DEST):
+                    allowed_choices.remove((trans.value, trans.name.title()))
 
         if key == LATERAL:
             allowed_choices = list(Transformation.LateralTransfoType.get_choices())
