@@ -98,4 +98,7 @@ body {
   .list-view-pf-left .pficon.list-view-pf-icon-danger {
     border-color: $danger-color;
   }
+  .list-view-pf-additional-info-item strong {
+    font-size: 14px;
+  }
 }
