@@ -518,7 +518,7 @@ def edit_rule(request, rule_id):
 
                 if len(rulesets) == rulesets_res[key][val] or \
                         (None in rulesets_res[key] and
-                         len(rulesets) == rulesets_res[key][value] + rulesets_res[key][None]):
+                         len(rulesets) == rulesets_res[key][val] + rulesets_res[key][None]):
                     pass
                 else:
                     initial[key.value] = 'category'
@@ -533,9 +533,14 @@ def edit_rule(request, rule_id):
     rulesets = Ruleset.objects.all()
 
     for ruleset in rulesets:
-        ctrans = rule_object.category.get_transformation(ruleset)
-        if ctrans:
-            category_transforms.append({'ruleset': ruleset, 'trans': ctrans.value})
+        trans_values = []
+        for trans_key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
+            trans_value = rule_object.category.get_transformation(ruleset, key=trans_key)
+            if trans_value:
+                trans_values.append('%s: %s' % (trans_key.name.title(), trans_value.name.title()))
+
+        if len(trans_values) > 0:
+            category_transforms.append({'ruleset': ruleset, 'trans': " | ".join(trans_values)})
 
     context = { 'rule': rule_object, 'form': form, 'category_transforms': category_transforms }
     return scirius_render(request, 'rules/edit_rule.html', context)
