@@ -30,7 +30,7 @@ from django.contrib import messages
 from scirius.utils import scirius_render, scirius_listing
 
 from rules.es_data import ESData
-from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation, CategoryTransformation
+from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation, CategoryTransformation, RulesetTransformation
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, HistoryTable
 
 from rules.es_graphs import *
@@ -495,7 +495,7 @@ def edit_rule(request, rule_id):
             trans_target = rule_object.get_transformation(ruleset, Transformation.TARGET)
             all_trans = [(Transformation.ACTION, trans_action), (Transformation.LATERAL, trans_lateral), (Transformation.TARGET, trans_target)]
 
-            for idx_trans, (key, value) in enumerate(all_trans, 1):
+            for key, value in all_trans:
                 if value not in rulesets_res[key]:
                     rulesets_res[key][value] = 0
                 rulesets_res[key][value] += 1 
@@ -530,20 +530,31 @@ def edit_rule(request, rule_id):
                 instance=rule_object)
 
     category_transforms = []
+    ruleset_transforms = []
     rulesets = Ruleset.objects.all()
 
     for ruleset in rulesets:
-        trans_values = []
+        trans_cats_values = []
+        trans_rulesets_values = []
         for trans_key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
-            trans_value = rule_object.category.get_transformation(ruleset, key=trans_key)
-            if trans_value:
-                trans_values.append('%s: %s' % (trans_key.name.title(), trans_value.name.title()))
+            trans_cat_value = rule_object.category.get_transformation(ruleset, key=trans_key)
+            trans_ruleset_value = ruleset.get_transformation(key=trans_key)
 
-        if len(trans_values) > 0:
-            category_transforms.append({'ruleset': ruleset, 'trans': " | ".join(trans_values)})
+            if trans_cat_value:
+                trans_cats_values.append('%s: %s' % (trans_key.name.title(), trans_cat_value.name.title()))
 
-    context = { 'rule': rule_object, 'form': form, 'category_transforms': category_transforms }
+            if trans_ruleset_value:
+                trans_rulesets_values.append('%s: %s' % (trans_key.name.title(), trans_ruleset_value.name.title()))
+
+        if len(trans_cats_values) > 0:
+            category_transforms.append({'category': rule_object.category, 'trans': " | ".join(trans_cats_values)})
+
+        if len(trans_rulesets_values) > 0:
+            ruleset_transforms.append({'ruleset': ruleset, 'trans': " | ".join(trans_rulesets_values)})
+
+    context = {'rulesets': rulesets, 'rule': rule_object, 'form': form, 'category_transforms': category_transforms, 'ruleset_transforms': ruleset_transforms}
     return scirius_render(request, 'rules/edit_rule.html', context)
+
 
 def transform_category(request, cat_id):
     cat_object = get_object_or_404(Category, pk=cat_id)
@@ -625,7 +636,7 @@ def transform_category(request, cat_id):
             trans_target = cat_object.get_transformation(ruleset, Transformation.TARGET)
             all_trans = [(Transformation.ACTION, trans_action), (Transformation.LATERAL, trans_lateral), (Transformation.TARGET, trans_target)]
 
-            for idx_trans, (key, value) in enumerate(all_trans, 1):
+            for key, value in all_trans:
                 if value not in rulesets_res[key]:
                     rulesets_res[key][value] = 0
                 rulesets_res[key][value] += 1
@@ -656,7 +667,21 @@ def transform_category(request, cat_id):
                         del initial['rulesets']
 
         form = CategoryTransformForm(initial=initial)
-    context = {'category': cat_object, 'form': form}
+
+    ruleset_transforms = []
+    rulesets = Ruleset.objects.all()
+
+    for ruleset in rulesets:
+        trans_values = []
+        for trans_key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
+            trans_value = ruleset.get_transformation(key=trans_key)
+            if trans_value:
+                trans_values.append('%s: %s' % (trans_key.name.title(), trans_value.name.title()))
+
+        if len(trans_values) > 0:
+            ruleset_transforms.append({'ruleset': ruleset, 'trans': " | ".join(trans_values)})
+
+    context = {'rulesets': rulesets, 'category': cat_object, 'form': form, 'ruleset_transforms': ruleset_transforms}
     return scirius_render(request, 'rules/edit_rule.html', context)
 
 def switch_rule(request, rule_id, operation = 'suppress'):
@@ -1289,22 +1314,27 @@ def add_ruleset(request):
                 ua.ruleset = ruleset
                 ua.save()
 
-                # Set transformations if there is at least 1 category
-                if form.cleaned_data['activate_categories']:
-                    form_action_trans = Transformation.ActionTransfoType(form.cleaned_data["action"])
-                    form_lateral_trans = Transformation.LateralTransfoType(form.cleaned_data["lateral"])
-                    form_target_trans = Transformation.TargetTransfoType(form.cleaned_data["target"])
+                form_action_trans = Transformation.ActionTransfoType(form.cleaned_data["action"])
+                form_lateral_trans = Transformation.LateralTransfoType(form.cleaned_data["lateral"])
+                form_target_trans = Transformation.TargetTransfoType(form.cleaned_data["target"])
+    
+                if form_action_trans != Transformation.A_NONE:
+                    ruleset.set_transformation(key=Transformation.ACTION, value=form_action_trans)
+                else:
+                    ruleset.remove_transformation(Transformation.ACTION)
 
-                    for category in ruleset.categories.all():
-                        if form_action_trans != Transformation.A_NONE:
-                            category.toggle_transformation(ruleset, key=Transformation.ACTION, value=form_action_trans)
-                        if form_lateral_trans != Transformation.L_NO:
-                            category.toggle_transformation(ruleset, key=Transformation.LATERAL, value=form_lateral_trans)
-                        if form_target_trans != Transformation.T_NONE:
-                            category.toggle_transformation(ruleset, key=Transformation.TARGET, value=form_target_trans)
+                if form_lateral_trans != Transformation.L_NO:
+                    ruleset.set_transformation(key=Transformation.LATERAL, value=form_lateral_trans)
+                else:
+                    ruleset.remove_transformation(Transformation.LATERAL)
+
+                if form_target_trans != Transformation.T_NONE:
+                    ruleset.set_transformation(key=Transformation.TARGET, value=form_target_trans)
+                else:
+                    ruleset.remove_transformation(Transformation.TARGET)
 
             except IntegrityError, error:
-                return scirius_render(request, 'rules/add_ruleset.html', { 'form': form, 'error': error })
+                return scirius_render(request, 'rules/add_ruleset.html', {'form': form, 'error': error})
 
             messages.success(request, "All changes are saved. Don't forget to apply them to update Ruleset.")
             return redirect(ruleset)
@@ -1418,22 +1448,21 @@ def edit_ruleset(request, ruleset_id):
                 form_action_trans = Transformation.ActionTransfoType(form.cleaned_data["action"])
                 form_lateral_trans = Transformation.LateralTransfoType(form.cleaned_data["lateral"])
                 form_target_trans = Transformation.TargetTransfoType(form.cleaned_data["target"])
+    
+                if form_action_trans != Transformation.A_NONE:
+                    ruleset.set_transformation(key=Transformation.ACTION, value=form_action_trans)
+                else:
+                    ruleset.remove_transformation(Transformation.ACTION)
 
-                for category in ruleset.categories.all():
-                    if form_action_trans != Transformation.A_NONE:
-                        category.toggle_transformation(ruleset, key=Transformation.ACTION, value=form_action_trans)
-                    else:
-                        category.suppress_transformation(ruleset, Transformation.ACTION)
+                if form_lateral_trans != Transformation.L_NO:
+                    ruleset.set_transformation(key=Transformation.LATERAL, value=form_lateral_trans)
+                else:
+                    ruleset.remove_transformation(Transformation.LATERAL)
 
-                    if form_lateral_trans != Transformation.L_NO:
-                        category.toggle_transformation(ruleset, key=Transformation.LATERAL, value=form_lateral_trans)
-                    else:
-                        category.suppress_transformation(ruleset, Transformation.LATERAL)
-
-                    if form_target_trans != Transformation.T_NONE:
-                        category.toggle_transformation(ruleset, key=Transformation.TARGET, value=form_target_trans)
-                    else:
-                        category.suppress_transformation(ruleset, Transformation.TARGET)
+                if form_target_trans != Transformation.T_NONE:
+                    ruleset.set_transformation(key=Transformation.TARGET, value=form_target_trans)
+                else:
+                    ruleset.remove_transformation(Transformation.TARGET)
 
         return redirect(ruleset)
     else:
@@ -1470,17 +1499,29 @@ def edit_ruleset(request, ruleset_id):
                        'lateral': Transformation.L_NO.value,
                        'target': Transformation.T_NONE.value
                        }
-            trans_action = CategoryTransformation.objects.filter(key=Transformation.ACTION.value, ruleset=ruleset)
+            trans_action = RulesetTransformation.objects.filter(key=Transformation.ACTION.value, ruleset_transformation=ruleset)
             if len(trans_action) > 0:
                 initial['action'] = trans_action[0].value
 
-            trans_lateral = CategoryTransformation.objects.filter(key=Transformation.LATERAL.value, ruleset=ruleset)
+            trans_lateral = RulesetTransformation.objects.filter(key=Transformation.LATERAL.value, ruleset_transformation=ruleset)
             if len(trans_lateral) > 0:
                 initial['lateral'] = trans_lateral[0].value
 
-            trans_target = CategoryTransformation.objects.filter(key=Transformation.TARGET.value, ruleset=ruleset)
-            if len(trans_action) > 0:
+            trans_target = RulesetTransformation.objects.filter(key=Transformation.TARGET.value, ruleset_transformation=ruleset)
+            if len(trans_target) > 0:
                 initial['target'] = trans_target[0].value
+
+            # trans_action = CategoryTransformation.objects.filter(key=Transformation.ACTION.value, ruleset=ruleset)
+            # if len(trans_action) > 0:
+            #     initial['action'] = trans_action[0].value
+
+            # trans_lateral = CategoryTransformation.objects.filter(key=Transformation.LATERAL.value, ruleset=ruleset)
+            # if len(trans_lateral) > 0:
+            #     initial['lateral'] = trans_lateral[0].value
+
+            # trans_target = CategoryTransformation.objects.filter(key=Transformation.TARGET.value, ruleset=ruleset)
+            # if len(trans_action) > 0:
+            #     initial['target'] = trans_target[0].value
 
             context['form'] = RulesetEditForm(instance=ruleset, initial=initial)
         return scirius_render(request, 'rules/edit_ruleset.html', context)

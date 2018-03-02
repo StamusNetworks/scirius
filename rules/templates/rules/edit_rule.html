@@ -38,34 +38,79 @@
 {% if rule %}
 <h2>Transform rule</h2>
 {% if category_transforms %}
+
+{% if ruleset_transforms %} 
+    <div class="panel panel-info">
+    <div class="panel-heading">Inheritance from rulesets</div>
+    <div class="panel-body">
+    This rule is part of rulesets 
+    
+    {% for ruleset in rulesets %}
+    <a href="{% url 'ruleset' ruleset.pk %}">'{{ ruleset.name }}'</a> 
+    {% endfor %}
+    so inherit from:
+    
+    <ul>
+    {% for transform in ruleset_transforms %}
+    <li>
+    	<a href="{% url 'category' transform.ruleset.pk %}">{{ transform.ruleset }}</a>: <div class="label label-info">{{ transform.trans }}</div>
+    </li>
+    {% endfor %}
+    </ul>
+    Changing transformation for the rule will add an exception.
+    </div>
+    </div>
+{% endif %}
+
 <div class="panel panel-info">
-<div class="panel-heading">Inheritance</div>
+<div class="panel-heading">Inheritance from categories</div>
 <div class="panel-body">
 This rule is part of category <a href="{% url 'category' rule.category.pk %}">'{{ rule.category.name }}'</a> so inherit from:
 <ul>
 {% for transform in category_transforms %}
 <li>
-	<a href="{% url 'ruleset' transform.ruleset.pk %}">{{ transform.ruleset }}</a>: <div class="label label-info">{{ transform.trans }}</div>
+	<a href="{% url 'category' transform.category.pk %}">{{ transform.category }}</a>: <div class="label label-info">{{ transform.trans }}</div>
 </li>
 {% endfor %}
 </ul>
 Changing transformation for the rule will add an exception.
 </div>
 </div>
+
 {% endif %}
 {% else %}
 <h2>Transform category</h2>
-{% endif %}
 
+<div class="panel panel-info">
+<div class="panel-heading">Inheritance</div>
+<div class="panel-body">
+This category is part of ruleset 
 
-{% if category or rule.get_transformation_choices|length %}
+{% for ruleset in rulesets %}
+<a href="{% url 'ruleset' ruleset.pk %}">'{{ ruleset.name }}'</a> 
+{% endfor %}
+so inherit from:
+
+<ul>
+{% for transform in ruleset_transforms %}
+<li>
+	<a href="{% url 'ruleset' transform.ruleset.pk %}">{{ transform.ruleset }}</a>: <div class="label label-info">{{ transform.trans }}</div>
+</li>
+{% endfor %}
+</ul>
+Changing transformation for the category will add an exception.
+</div>
+</div>
+
 <p>
 Please choose a transformation to apply on current object. As transformation are exclusive, you need to pick one to apply.
 </p>
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-6">
+{% endif %}
 
+{% if rulesets or category or rule.get_transformation_choices|length %}
 {% if rule %}
 <form action="{% url 'edit_rule' rule.pk %}" method="post" class="form">
 {% else %}
@@ -89,6 +134,11 @@ Please choose a transformation to apply on current object. As transformation are
 </div>
 </div>
 {% else %}
+{% if rule %}
 The rule can not be transformed because of its definition.
+{% else %}
+The Category can not be transformed because of its definition.
+{% endif %}
+
 {% endif %}
 {% endblock %}

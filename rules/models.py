@@ -866,6 +866,7 @@ class Cache:
 
             rule_str = Rule.__name__.lower()
             category_str = Category.__name__.lower()
+            ruleset_str = Ruleset.__name__.lower()
 
             cls.TRANSFORMATIONS = {
                     ACTION: {
@@ -873,6 +874,9 @@ class Cache:
                             A_DROP: None, A_REJECT: None, A_FILESTORE: None, A_NONE: None, A_BYPASS: None,
                         },
                         category_str: {
+                            A_DROP: None, A_REJECT: None, A_FILESTORE: None, A_NONE: None, A_BYPASS: None,
+                        },
+                        ruleset_str: {
                             A_DROP: None, A_REJECT: None, A_FILESTORE: None, A_BYPASS: None,
                         }
                     },
@@ -881,6 +885,9 @@ class Cache:
                             L_AUTO: None, L_YES: None, L_NO: None,
                         },
                         category_str: {
+                            L_AUTO: None, L_YES: None, L_NO: None,
+                        },
+                        ruleset_str: {
                             L_AUTO: None, L_YES: None,
                         }
                     },
@@ -889,6 +896,9 @@ class Cache:
                             T_AUTO: None, T_SOURCE: None, T_DST: None, T_NONE: None,
                         },
                         category_str: {
+                            T_AUTO: None, T_SOURCE: None, T_DST: None, T_NONE: None,
+                        },
+                        ruleset_str: {
                             T_AUTO: None, T_SOURCE: None, T_DST: None,
                         }
                     }
@@ -947,6 +957,9 @@ class Cache:
             filestore_cats = Category.objects.filter(
                                 categorytransformation__key=ACTION.value,
                                 categorytransformation__value=A_FILESTORE.value).values_list('pk', flat=True)
+            none_cats = Category.objects.filter(
+                                categorytransformation__key=ACTION.value,
+                                categorytransformation__value=A_NONE.value).values_list('pk', flat=True)
             bypass_cats = Category.objects.filter(
                                 categorytransformation__key=ACTION.value,
                                 categorytransformation__value=A_BYPASS.value).values_list('pk', flat=True)
@@ -958,6 +971,9 @@ class Cache:
             cat_l_yes = Category.objects.filter(
                                 categorytransformation__key=LATERAL.value,
                                 categorytransformation__value=L_YES.value).values_list('pk', flat=True)
+            cat_l_no = Category.objects.filter(
+                                categorytransformation__key=LATERAL.value,
+                                categorytransformation__value=L_NO.value).values_list('pk', flat=True)
             # Target
             cat_t_auto = Category.objects.filter(
                                 categorytransformation__key=TARGET.value,
@@ -968,6 +984,42 @@ class Cache:
             cat_t_dst = Category.objects.filter(
                                 categorytransformation__key=TARGET.value,
                                 categorytransformation__value=T_DST.value).values_list('pk', flat=True)
+            cat_t_none = Category.objects.filter(
+                                categorytransformation__key=TARGET.value,
+                                categorytransformation__value=T_NONE.value).values_list('pk', flat=True)
+
+            # #### Rulesets
+            # Actions
+            drop_rulesets = Ruleset.objects.filter(
+                                rulesettransformation__key=ACTION.value,
+                                rulesettransformation__value=A_DROP.value).values_list('pk', flat=True)
+            reject_rulesets = Ruleset.objects.filter(
+                                rulesettransformation__key=ACTION.value,
+                                rulesettransformation__value=A_REJECT.value).values_list('pk', flat=True)
+            filestore_rulesets = Ruleset.objects.filter(
+                                rulesettransformation__key=ACTION.value,
+                                rulesettransformation__value=A_FILESTORE.value).values_list('pk', flat=True)
+            bypass_rulesets = Ruleset.objects.filter(
+                                rulesettransformation__key=ACTION.value,
+                                rulesettransformation__value=A_BYPASS.value).values_list('pk', flat=True)
+
+            # Lateral
+            ruleset_l_auto = Ruleset.objects.filter(
+                                rulesettransformation__key=LATERAL.value,
+                                rulesettransformation__value=L_AUTO.value).values_list('pk', flat=True)
+            ruleset_l_yes = Ruleset.objects.filter(
+                                rulesettransformation__key=LATERAL.value,
+                                rulesettransformation__value=L_YES.value).values_list('pk', flat=True)
+            # Target
+            ruleset_t_auto = Ruleset.objects.filter(
+                                rulesettransformation__key=TARGET.value,
+                                rulesettransformation__value=T_AUTO.value).values_list('pk', flat=True)
+            ruleset_t_src = Ruleset.objects.filter(
+                                rulesettransformation__key=TARGET.value,
+                                rulesettransformation__value=T_SOURCE.value).values_list('pk', flat=True)
+            ruleset_t_dst = Ruleset.objects.filter(
+                                rulesettransformation__key=TARGET.value,
+                                rulesettransformation__value=T_DST.value).values_list('pk', flat=True)
 
             # Set rules action cache
             cls.TRANSFORMATIONS[ACTION][rule_str][A_DROP] = set(drop_rules)
@@ -990,13 +1042,29 @@ class Cache:
             cls.TRANSFORMATIONS[ACTION][category_str][A_REJECT] = set(reject_cats)
             cls.TRANSFORMATIONS[ACTION][category_str][A_FILESTORE] = set(filestore_cats)
             cls.TRANSFORMATIONS[ACTION][category_str][A_BYPASS] = set(bypass_cats)
+            cls.TRANSFORMATIONS[ACTION][category_str][A_NONE] = set(none_cats)
 
             cls.TRANSFORMATIONS[LATERAL][category_str][L_AUTO] = set(cat_l_auto)
             cls.TRANSFORMATIONS[LATERAL][category_str][L_YES] = set(cat_l_yes)
+            cls.TRANSFORMATIONS[LATERAL][category_str][L_NO] = set(cat_l_no)
 
             cls.TRANSFORMATIONS[TARGET][category_str][T_AUTO] = set(cat_t_auto)
             cls.TRANSFORMATIONS[TARGET][category_str][T_SOURCE] = set(cat_t_src)
             cls.TRANSFORMATIONS[TARGET][category_str][T_DST] = set(cat_t_dst)
+            cls.TRANSFORMATIONS[TARGET][category_str][T_NONE] = set(cat_t_none)
+
+            # set rulesets action cache
+            cls.TRANSFORMATIONS[ACTION][ruleset_str][A_DROP] = set(drop_rulesets)
+            cls.TRANSFORMATIONS[ACTION][ruleset_str][A_REJECT] = set(reject_rulesets)
+            cls.TRANSFORMATIONS[ACTION][ruleset_str][A_FILESTORE] = set(filestore_rulesets)
+            cls.TRANSFORMATIONS[ACTION][ruleset_str][A_BYPASS] = set(bypass_rulesets)
+
+            cls.TRANSFORMATIONS[LATERAL][ruleset_str][L_AUTO] = set(ruleset_l_auto)
+            cls.TRANSFORMATIONS[LATERAL][ruleset_str][L_YES] = set(ruleset_l_yes)
+
+            cls.TRANSFORMATIONS[TARGET][ruleset_str][T_AUTO] = set(ruleset_t_auto)
+            cls.TRANSFORMATIONS[TARGET][ruleset_str][T_SOURCE] = set(ruleset_t_src)
+            cls.TRANSFORMATIONS[TARGET][ruleset_str][T_DST] = set(ruleset_t_dst)
 
         else:
             raise Exception("Rule cache has not been closed")
@@ -1222,11 +1290,23 @@ class Category(models.Model, Transformable, Cache):
                                     category_transformation=self).exclude(value=NONE.value)
             if len(ct) > 0:
                 return TYPE(ct[0].value)
+
+            rt = RulesetTransformation.objects.filter(
+                                key=key.value,
+                                ruleset_transformation=ruleset).exclude(value=NONE.value)
+            if len(rt) > 0:
+                return TYPE(rt[0].value)
+
         else:
             category_str = Category.__name__.lower()
+            ruleset_str = Ruleset.__name__.lower()
 
             for trans, tsets in Category.TRANSFORMATIONS[key][category_str].iteritems():
-                if self.pk in tsets:  # DROP / REJECT / FILESTORE
+                if self.pk in tsets:  # DROP / REJECT / FILESTORE / NONE
+                    return trans
+
+            for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].iteritems():
+                if self.category.pk in tsets:
                     return trans
 
         return None
@@ -1261,6 +1341,9 @@ class Category(models.Model, Transformable, Cache):
 
             L_YES = Transformation.L_YES
             L_AUTO = Transformation.L_AUTO
+
+        # TODO: add me in *TransforType
+        allowed_choices.append(('ruleset', 'Ruleset Default'))
 
         return tuple(allowed_choices)
 
@@ -1455,18 +1538,30 @@ class Rule(models.Model, Transformable, Cache):
             ct = CategoryTransformation.objects.filter(
                                     key=key.value,
                                     ruleset=ruleset,
-                                    category_transformation=self.category).exclude(value=NONE.value)
+                                    category_transformation=self.category).all()
             if len(ct) > 0:
                 return TYPE(ct[0].value)
+
+            rt = RulesetTransformation.objects.filter(
+                                key=key.value,
+                                ruleset_transformation=ruleset).exclude(value=NONE.value)
+            if len(rt) > 0:
+                return TYPE(rt[0].value)
+
         else:
             rule_str = Rule.__name__.lower()
             category_str = Category.__name__.lower()
+            ruleset_str = Ruleset.__name__.lower()
 
             for trans, tsets in Rule.TRANSFORMATIONS[key][rule_str].iteritems():
                 if self.pk in tsets:
                     return trans
 
             for trans, tsets in Rule.TRANSFORMATIONS[key][category_str].iteritems():
+                if self.category.pk in tsets:
+                    return trans
+
+            for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].iteritems():
                 if self.category.pk in tsets:
                     return trans
 
@@ -1605,7 +1700,7 @@ class Rule(models.Model, Transformable, Cache):
 
 # we should use django reversion to keep track of this one
 # even if fixing HEAD may be complicated
-class Ruleset(models.Model):
+class Ruleset(models.Model, Transformable):
     name = models.CharField(max_length=100, unique = True)
     descr = models.CharField(max_length=400, blank = True)
     created_date = models.DateTimeField('date created')
@@ -1622,9 +1717,10 @@ class Ruleset(models.Model):
     # latest available
     sources = models.ManyToManyField(SourceAtVersion)
     # List of Category selected in the ruleset
-    categories = models.ManyToManyField(Category, blank = True)
+    categories = models.ManyToManyField(Category, blank=True)
     rules_transformation = models.ManyToManyField(Rule, through='RuleTransformation', related_name='rules_transformed', blank=True)
     categories_transformation = models.ManyToManyField(Category, through='CategoryTransformation', related_name='categories_transformed', blank=True)
+
 
     # List or Rules to suppressed from the Ruleset
     # Exported as suppression list in oinkmaster
@@ -1656,6 +1752,59 @@ class Ruleset(models.Model):
         return json.loads(self.errors)
 
     json_errors = property(_json_errors)
+
+    @staticmethod
+    def get_transformation_choices(key=Transformation.ACTION):
+        # Keys
+        ACTION = Transformation.ACTION
+        LATERAL = Transformation.LATERAL
+        TARGET = Transformation.TARGET
+
+        allowed_choices = []
+
+        if key == ACTION:
+            all_choices_set = set(Transformation.ActionTransfoType.get_choices())
+            allowed_choices = list(all_choices_set.intersection(set(settings.RULESET_TRANSFORMATIONS)))
+
+            A_BYPASS = Transformation.A_BYPASS
+
+            # TODO: move me in settings.RULESET_TRANSFORMATIONS
+            allowed_choices.append((A_BYPASS.value, A_BYPASS.name.title()))
+
+        if key == TARGET:
+            CAT_DEFAULT = Transformation.T_CAT_DEFAULT
+            allowed_choices = list(Transformation.TargetTransfoType.get_choices())
+            allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace('_', ' ').title()))
+
+        if key == LATERAL:
+            CAT_DEFAULT = Transformation.L_CAT_DEFAULT
+            allowed_choices = list(Transformation.LateralTransfoType.get_choices())
+            allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace('_', ' ').title()))
+
+            L_YES = Transformation.L_YES
+            L_AUTO = Transformation.L_AUTO
+
+        return tuple(allowed_choices)
+
+    def remove_transformation(self, key):
+        RulesetTransformation.objects.filter(
+                ruleset_transformation=self,
+                key=key.value).delete()
+
+        self.needs_test()
+        self.save()
+
+    def set_transformation(self, key=Transformation.ACTION, value=Transformation.A_DROP):
+        self.remove_transformation(key)
+
+        r = RulesetTransformation(
+                ruleset_transformation=self,
+                key=key.value,
+                value=value.value)
+        r.save()
+
+        self.needs_test()
+        self.save()
 
     def get_transformed_categories(self,
                                    key=Transformation.ACTION,
@@ -1710,6 +1859,38 @@ class Ruleset(models.Model):
                 rules = rules.exclude(pk__in=excludes)
 
         return rules
+
+    def get_transformation(self, key=Transformation.ACTION):
+        NONE = None
+        TYPE = None
+
+        if key == Transformation.ACTION:
+            NONE = Transformation.A_NONE
+            TYPE = Transformation.ActionTransfoType
+        elif key == Transformation.LATERAL:
+            NONE = Transformation.L_NO
+            TYPE = Transformation.LateralTransfoType
+        elif key == Transformation.TARGET:
+            NONE = Transformation.T_NONE
+            TYPE = Transformation.TargetTransfoType
+        else:
+            raise Exception("Key '%s' is unknown" % key)
+
+        rt = RulesetTransformation.objects.filter(
+                                key=key.value,
+                                ruleset_transformation=self).exclude(value=NONE.value)
+        if len(rt) > 0:
+            return TYPE(rt[0].value)
+
+        return None
+
+    def is_transformed(self, key=Transformation.ACTION, value=Transformation.A_DROP):
+        ruleset_str = Ruleset.__name__.lower()
+        rulesets_t = Ruleset.objects.filter(
+                rulesettransformation__key=key.value,
+                rulesettransformation__value=value.value)
+
+        return (self.pk in rulesets_t.values_list('pk', flat=True))
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
@@ -1794,7 +1975,7 @@ class Ruleset(models.Model):
             for rule in rules:
                 c = rule.generate_content(self)
                 if c:
-                    rules_content.append(c.decode('utf8'))
+                    rules_content.append(c)
             file_content += "\n".join(rules_content)
 
             Rule.disable_cache()
@@ -1879,6 +2060,13 @@ class CategoryTransformation(Transformation):
 
     class Meta:
         unique_together = ('ruleset', 'category_transformation', 'key')
+
+
+class RulesetTransformation(Transformation):
+    ruleset_transformation = models.ForeignKey(Ruleset, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('ruleset_transformation', 'key')
 
 
 class Threshold(models.Model):
