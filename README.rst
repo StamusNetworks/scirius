@@ -18,7 +18,8 @@ GNU GPLv3 license.
 Features
 ========
 
-Scirius can build Suricata ruleset composed of different sources. Sources or feeds can be public or custom.
+Scirius can build Suricata ruleset composed of different sources. Sources or feeds can be picked from public sources
+published by `OISF <https://oisf.net/>`_ or can be custom.
 
 .. image:: https://github.com/StamusNetworks/scirius/raw/master/doc/images/public-sources.png
     :alt: public sources from OISF
