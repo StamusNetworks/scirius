@@ -15,11 +15,3 @@ Welcome to Scirius's documentation!
    ruleset
    suricata-ce
    backup-ce
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
