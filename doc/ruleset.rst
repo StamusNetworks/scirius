@@ -37,7 +37,22 @@ the Appliance object and choose the Ruleset in the list.
 Creating Source
 ---------------
 
-To create a Source go to ``Sources -> Add`` (``Add`` being in the
+There is two methods to create a Source. First one is to use predefined public sources
+and the second one via manual addition.
+
+Public sources
+~~~~~~~~~~~~~~
+
+Go to ``Sources -> Add public source`` (``Add`` being in the ``Actions`` menu in the sidebar).
+
+Choose a source and click on the ``Add`` button. In the popup you can select to which ruleset you
+want to add the source. In some cases there will be some fields like the secret key provided by
+the rules editors to be entered.
+
+Manual addition
+~~~~~~~~~~~~~~~
+
+To create a Source go to ``Sources -> Add custom source`` (``Add`` being in the
 ``Actions`` menu in the sidebar). Then set the different fields and click ``Submit``.
 
 A source of datatype ``Signatures files in tar archive`` has to follow some rules:
