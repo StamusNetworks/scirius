@@ -4,21 +4,13 @@ Installation and setup
 Installing Scirius CE
 ---------------------
 
-Scirius CE is an application written in `Django <https://www.djangoproject.com/>`_. You can install
-it like any other Django application.
+Scirius CE is an application written in `Django <https://www.djangoproject.com/>`_. It requires
+at least Django 1.11 and has not yet support for Django 2.0.
 
-The following procedure has been tested on Debian Wheezy and Sid and Ubuntu LTS 12.04.
+Scirius CE also uses `webpack <https://webpack.js.org/>`_ for to build CSS and JS bundle.
 
 Dependencies
 ~~~~~~~~~~~~
-
-Scirius CE is using the following Django modules:
-
-* tables2
-* south
-* bootstrap3
-* requests
-* revproxy
 
 The easy way to install the dependencies is to use `pip <https://pypi.python.org/pypi/pip>`_:
 
@@ -43,15 +35,30 @@ You will also potentially needs the gitdb module ::
 
  pip install gitdb
 
+
+For npm and webpack, you need a stable version of npm and webpack version 3.11. On Debian
+you can do ::
+
+ sudo apt-get install npm
+ sudo npm install -g npm@latest
+ npm install
+ sudo npmg install -g webpack@3.11
+
 Running Scirius CE
 ~~~~~~~~~~~~~~~~~~
 
-Get the source, then inside the source ::
+From inside the source directory, you can initiate Django database ::
 
  python manage.py syncdb
 
 Authentication is by default in scirius so you will need to create a superuser
 account when proposed.
+
+Before starting the application you need to construct the bundles by running webpack ::
+
+ webpack
+
+This step as to be done after each code update.
 
 One of the easiest way to try Scirius CE is to run the Django test server ::
 
