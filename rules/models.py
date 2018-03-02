@@ -1562,7 +1562,7 @@ class Rule(models.Model, Transformable, Cache):
                     return trans
 
             for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].iteritems():
-                if self.category.pk in tsets:
+                if ruleset.pk in tsets:
                     return trans
 
         return None
