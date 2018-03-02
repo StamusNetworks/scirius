@@ -7,7 +7,7 @@ Installing Scirius CE
 Scirius CE is an application written in `Django <https://www.djangoproject.com/>`_. It requires
 at least Django 1.11 and has not yet support for Django 2.0.
 
-Scirius CE also uses `webpack <https://webpack.js.org/>`_ for to build CSS and JS bundle.
+Scirius CE also uses `webpack <https://webpack.js.org/>`_ to build CSS and JS bundles.
 
 Dependencies
 ~~~~~~~~~~~~
