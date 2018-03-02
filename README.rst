@@ -53,7 +53,7 @@ Support
 
 You can join IRC #SELKS channel on `irc.freenode.net <http://freenode.net/>`_ to get help.
 
-You can also ask Scirius related questions on `SELKS Forum <https://groups.google.com/forum/#!forum/selks>`_
+You can also ask Scirius related questions on `SELKS Forum <https://groups.google.com/forum/#!forum/selks>`_.
 
 Report an issue
 ---------------
