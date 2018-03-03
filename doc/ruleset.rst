@@ -31,8 +31,8 @@ ruleset. Once this is done, you can select which elements of the source you want
 use. For example, in the case of a signature ruleset, you can select which categories
 you want to use and which individual signature you want do disable.
 
-Once a Ruleset is defined, you can attach it to a Appliance. To do that simply edit
-the Appliance object and choose the Ruleset in the list.
+Once a Ruleset is defined, you can attach it to a Probe. To do that simply edit
+the Probe object and choose the Ruleset in the list.
 
 Creating Source
 ---------------
@@ -93,6 +93,9 @@ Creating Ruleset
 To create a Ruleset go to ``Ruleset -> Add`` (``Add`` being in the
 ``Actions`` menu in the sidebar). Then set the name of the Ruleset
 and choose which Sources to use and click ``Submit``.
+
+You can select the Sources to use and the transformations to apply. For more informations
+about them, see :ref:`rule-transformations`.
 
 Updating Ruleset
 ----------------
@@ -198,11 +201,21 @@ Alternatively you can also view that by clicking ``Rulesets`` and selecting the 
 
 In order for the suppression to become active you need to ``Push`` the updated ruleset to the probes. See `Updating Appliances ruleset`_ for complete instruction.
 
-Rule transformation
--------------------
+.. _rule-transformations:
 
-Rule transformation allows the action of a particular rule to be changed - to drop, reject or filestore.
+Rule transformations
+--------------------
+
+There is three types of rules transformations.  
+The first one `Action` allows the action of a particular rule to be changed - to drop, reject or filestore.
 Please note these actions requires advanced knowledge about rules and the rule keywords language.
+Second one is `Lateral` that modify the rules to detect lateral movement and third one is `Target` that update
+signatures by adding the target keyword.
+
+Transformation are relative to a ruleset. But they can be set globally on a ruleset or set on a category or on a specific rule. So it is easy to handle exceptions.
+
+Action transformation
+~~~~~~~~~~~~~~~~~~~~~
 
 Once you have a particular rule that you would like to transform  - in the rule's details page on the left hand side panel under ``Actions`` click 
 ``Transform rule``. You will be presented with a few choices:  
@@ -230,4 +243,30 @@ on the ``Toggle availability`` option on the left hand side panel menu.
 
 The history tab of the rule details page will have any comments and changes to the transformed rule for traceability.
 
+Lateral movement
+~~~~~~~~~~~~~~~~
+
+Signatures are often written with the EXTERNAL_NET and HOME_NET variables and this means they won't match
+if both sides of a flow are in the HOME_NET. Thus, lateral movements are not detected. This transformation
+change EXTERNAL_NET to any to be able to detect lateral movements.
+
+The option can have three values:
+
+- No: the replacement is not done
+- Yes: EXTERNAL_NET is replaced by any
+- Auto: Substitution is done if signature verify some properties
+
+Target keyword
+~~~~~~~~~~~~~~
+
+Available since Suricata 4.0, the target keyword can be used to tell which side of a flow triggering
+a signature is the targer. If this key is present then related events are enhanced to contain the source
+and target of the attack.
+
+The option can have four values:
+
+- Auto: an algorithm is used to determine the target if there is one
+- Destination: target is the destination IP
+- Source: target is the source IP
+- None: no transformation is done
 
