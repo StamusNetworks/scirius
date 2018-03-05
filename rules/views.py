@@ -1110,6 +1110,9 @@ def add_public_source(request):
     if public_sources['version'] != 1:
         error = "Unsupported version of sources definition"
         return scirius_render(request, 'rules/add_public_source.html', { 'error': error, })
+    # get list of already defined public sources
+    defined_pub_source = Source.objects.exclude(public_source__isnull = True)
+    added_sources = map(lambda x: x.public_source, defined_pub_source)
     for source in public_sources['sources']:
         if public_sources['sources'][source].has_key('support_url'):
             public_sources['sources'][source]['support_url_cleaned'] = public_sources['sources'][source]['support_url'].split(' ')[0]
@@ -1121,6 +1124,10 @@ def add_public_source(request):
             public_sources['sources'][source]['datatype'] = 'sigs'
         else:
             public_sources['sources'][source]['datatype'] = 'other'
+        if source in added_sources:
+            public_sources['sources'][source]['added'] = True
+        else:
+            public_sources['sources'][source]['added'] = False
     if request.is_ajax():
         return HttpResponse(json.dumps(public_sources['sources']), content_type="application/json")
     if request.method == 'POST':
@@ -1140,6 +1147,7 @@ def add_public_source(request):
                         created_date = timezone.now(),
                         datatype = source['datatype'],
                         cert_verif = True,
+                        public_source = source_id,
                         )
             except IntegrityError, error:
                 return scirius_render(request, 'rules/add_public_source.html', { 'form': form, 'error': error })
@@ -1168,7 +1176,7 @@ def add_public_source(request):
 
 
     rulesets = Ruleset.objects.all()
-    return scirius_render(request, 'rules/add_public_source.html', { 'sources': public_sources['sources'], 'rulesets': rulesets })
+    return scirius_render(request, 'rules/add_public_source.html', { 'sources': public_sources['sources'], 'rulesets': rulesets})
 
 
 def edit_source(request, source_id):

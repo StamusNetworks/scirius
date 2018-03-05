@@ -33,7 +33,6 @@ Add a Source
 
 <div class="container-fluid">
 <div class="list-group list-view-pf list-view-pf-view">
-
 {% for source, params in sources.items %}
   <div class="list-group-item">
   <div class="list-group-item-header">
@@ -41,7 +40,11 @@ Add a Source
         <span class="fa fa-angle-right"></span>
       </div>
     <div class="list-view-pf-actions">
+    {% if not params.added %}
       <a class="add_source_button" name="{{ source }}" style="cursor: pointer;"><button class="btn btn-default">Add</button></a>
+    {% else %}
+      <button class="btn btn-default" disabled>Added</button>
+    {% endif %}
     </div>
     <div class="list-view-pf-main-info">
       <div class="list-view-pf-left">

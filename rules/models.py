@@ -189,6 +189,7 @@ class Source(models.Model):
     authkey = models.CharField(max_length=400, blank = True, null = True)
     cats_count = models.IntegerField(default = 0)
     rules_count = models.IntegerField(default = 0)
+    public_source = models.CharField(max_length=100, blank = True, null = True)
 
     editable = True
     # git repo where we store the physical thing
