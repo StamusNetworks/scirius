@@ -175,9 +175,13 @@ def get_middleware_module(module):
     return import_module('%s.%s' % (settings.RULESET_MIDDLEWARE, module))
 
 def help_links(djlink):
-    HELP_LINKS_TABLE = {"add_source": {"name": "Creating a source", "base_url": "doc/ruleset.html", "anchor": "#creating-source" },
+    HELP_LINKS_TABLE = {
+        "sources": {"name": "Creating a source", "base_url": "doc/ruleset.html", "anchor": "#creating-source" },
+        "add_source": {"name": "Add a custom source", "base_url": "doc/ruleset.html", "anchor": "#manual-addition" },
+        "add_public_source": {"name": "Add a public source", "base_url": "doc/ruleset.html", "anchor": "#public-sources" },
          "threshold_rule": {"name": "Suppression and thresholding", "base_url": "doc/ruleset.html", "anchor": "#suppression-and-thresholding" },
          "add_ruleset": {"name": "Ruleset creation", "base_url": "doc/ruleset.html", "anchor": "#creating-ruleset" },
+         "edit_ruleset": {"name": "Edit Ruleset", "base_url": "doc/ruleset.html", "anchor": "#editing-ruleset" },
     }
     if HELP_LINKS_TABLE.has_key(djlink):
         return HELP_LINKS_TABLE[djlink]
