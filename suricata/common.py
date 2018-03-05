@@ -308,7 +308,10 @@ logging:
 #    print json.dumps(result['error'])
 
 def help_links(djlink):
-    HELP_LINKS_TABLE = {"suricata_update": {"name": "Updating Suricata ruleset", "base_url": "doc/suricata-ce.html", "anchor": "" }}
+    HELP_LINKS_TABLE = {
+        "suricata_edit": {"name": "Suricata setup", "base_url": "doc/suricata-ce.html", "anchor": "#setup" },
+        "suricata_update": {"name": "Updating Suricata ruleset", "base_url": "doc/suricata-ce.html", "anchor": "#updating-ruleset" },
+        }
     if HELP_LINKS_TABLE.has_key(djlink):
         return HELP_LINKS_TABLE[djlink]
     return None
