@@ -487,7 +487,7 @@ function load_ip_stats() {
              {% endif %}
           },
 	  error: function(data) {
-             $('#src_ip_table').text("Unable to get data.");
+             $('#source_ip_table').text("Unable to get data.");
              $("#error").text("Unable to get data from Elasticsearch");
              $("#error").parent().toggle();
 	  }
@@ -500,13 +500,13 @@ function load_ip_stats() {
              $('#target_ip_table').append(data);
              /* FIXME use real method */
              {% if "dest_ip" in rule.content %}
-                populate_topip_actions($('#target_ip_table'), 'alert.dest.ip', 'dest');
+                populate_topip_actions($('#target_ip_table'), 'alert.target.ip', 'dest');
              {% else %}
-                populate_topip_actions($('#target_ip_table'), 'alert.dest.ip', 'src');
+                populate_topip_actions($('#target_ip_table'), 'alert.target.ip', 'src');
              {% endif %}
           },
 	  error: function(data) {
-             $('#dest_ip_table').text("Unable to get data.");
+             $('#target_ip_table').text("Unable to get data.");
              $("#error").text("Unable to get data from Elasticsearch");
              $("#error").parent().toggle();
 	  }
