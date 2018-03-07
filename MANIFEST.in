@@ -5,6 +5,7 @@ recursive-include rules/templates *
 recursive-include suricata/static *
 recursive-include suricata/templates *
 recursive-include accounts/templates *
+recursive-include viz/templates *
 recursive-include accounts/migrations *
 recursive-include rules/migrations *
 recursive-include appliances/migrations *
