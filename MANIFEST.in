@@ -6,9 +6,9 @@ recursive-include suricata/static *
 recursive-include suricata/templates *
 recursive-include accounts/templates *
 recursive-include viz/templates *
+recursive-include viz/migrations *
 recursive-include accounts/migrations *
 recursive-include rules/migrations *
-recursive-include appliances/migrations *
 recursive-include suricata/migrations *
 recursive-include rules/management *.py
 recursive-include suricata/management *.py
