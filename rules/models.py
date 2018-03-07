@@ -685,6 +685,7 @@ class Transformation(models.Model):
         NONE = 'none'
         BYPASS = 'bypass'
         CATEGORY_DEFAULT = 'category'
+        RULESET_DEFAULT = 'ruleset'
 
     @unique
     class LateralTransfoType(TransfoType):
@@ -692,14 +693,16 @@ class Transformation(models.Model):
         YES = 'yes'
         NO = 'no'
         CATEGORY_DEFAULT = 'category'
+        RULESET_DEFAULT = 'ruleset'
 
     @unique
     class TargetTransfoType(TransfoType):
         SOURCE = 'src'
         DESTINATION = 'dst'
         AUTO = 'auto'
-        CATEGORY_DEFAULT = 'category'
         NONE = 'none'
+        CATEGORY_DEFAULT = 'category'
+        RULESET_DEFAULT = 'ruleset'
 
     @unique
     class SuppressTransforType(TransfoType):
@@ -724,19 +727,22 @@ class Transformation(models.Model):
     A_NONE = ActionTransfoType.NONE
     A_BYPASS = ActionTransfoType.BYPASS
     A_CAT_DEFAULT = ActionTransfoType.CATEGORY_DEFAULT
+    A_RULESET_DEFAULT = ActionTransfoType.RULESET_DEFAULT
 
     # Lateral values
     L_AUTO = LateralTransfoType.AUTO
     L_YES = LateralTransfoType.YES
     L_NO = LateralTransfoType.NO
     L_CAT_DEFAULT = LateralTransfoType.CATEGORY_DEFAULT
+    L_RULESET_DEFAULT = LateralTransfoType.RULESET_DEFAULT
 
     # Target transformations
     T_SOURCE = TargetTransfoType.SOURCE
     T_DESTINATION = TargetTransfoType.DESTINATION
     T_AUTO = TargetTransfoType.AUTO
-    T_CAT_DEFAULT = TargetTransfoType.CATEGORY_DEFAULT
     T_NONE = TargetTransfoType.NONE
+    T_CAT_DEFAULT = TargetTransfoType.CATEGORY_DEFAULT
+    T_RULESET_DEFAULT = TargetTransfoType.RULESET_DEFAULT
 
     # Fields
     key = models.CharField(max_length=15, choices=Type.get_choices(), default=Type.ACTION.value)
@@ -1326,9 +1332,13 @@ class Category(models.Model, Transformable, Cache):
             allowed_choices = list(all_choices_set.intersection(set(settings.RULESET_TRANSFORMATIONS)))
 
             A_BYPASS = Transformation.A_BYPASS
+            A_RULESET_DEFAULT = Transformation.A_RULESET_DEFAULT
+            A_NONE = Transformation.A_NONE
 
             # TODO: move me in settings.RULESET_TRANSFORMATIONS
             allowed_choices.append((A_BYPASS.value, A_BYPASS.name.title()))
+            allowed_choices.append((A_RULESET_DEFAULT.value, A_RULESET_DEFAULT.name.replace('_', ' ').title()))
+            allowed_choices.append((A_NONE.value, A_NONE.name.title()))
 
         if key == TARGET:
             CAT_DEFAULT = Transformation.T_CAT_DEFAULT
@@ -1340,13 +1350,7 @@ class Category(models.Model, Transformable, Cache):
             allowed_choices = list(Transformation.LateralTransfoType.get_choices())
             allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace('_', ' ').title()))
 
-            L_YES = Transformation.L_YES
-            L_AUTO = Transformation.L_AUTO
-
-        # TODO: add me in *TransforType
-        allowed_choices.append(('ruleset', 'Ruleset Default'))
-
-        return tuple(allowed_choices)
+        return tuple(sorted(allowed_choices))
 
 
 class Flowbit(models.Model):
@@ -1674,7 +1678,10 @@ class Rule(models.Model, Transformable, Cache):
             allowed_choices.append((A_NONE.value, A_NONE.name.title()))
 
         if key == TARGET:
+            RULESET_DEFAULT = Transformation.T_RULESET_DEFAULT
+
             allowed_choices = list(Transformation.TargetTransfoType.get_choices())
+            allowed_choices.remove((RULESET_DEFAULT.value, RULESET_DEFAULT.name.replace('_', ' ').title()))
             # Workaround (self.target): ref #674
             # Cannot transform, idstools cannot parse it
             # So remove this transformation from choices
@@ -1687,7 +1694,10 @@ class Rule(models.Model, Transformable, Cache):
                     allowed_choices.remove((trans.value, trans.name.title()))
 
         if key == LATERAL:
+            RULESET_DEFAULT = Transformation.L_RULESET_DEFAULT
+
             allowed_choices = list(Transformation.LateralTransfoType.get_choices())
+            allowed_choices.remove((RULESET_DEFAULT.value, RULESET_DEFAULT.name.replace('_', ' ').title()))
 
             L_YES = Transformation.L_YES
             L_AUTO = Transformation.L_AUTO
@@ -1768,19 +1778,27 @@ class Ruleset(models.Model, Transformable):
             allowed_choices = list(all_choices_set.intersection(set(settings.RULESET_TRANSFORMATIONS)))
 
             A_BYPASS = Transformation.A_BYPASS
+            A_NONE = Transformation.A_NONE
 
             # TODO: move me in settings.RULESET_TRANSFORMATIONS
             allowed_choices.append((A_BYPASS.value, A_BYPASS.name.title()))
+            allowed_choices.append((A_NONE.value, A_NONE.name.title()))
 
         if key == TARGET:
             CAT_DEFAULT = Transformation.T_CAT_DEFAULT
+            RULESET_DEFAULT = Transformation.T_RULESET_DEFAULT
+
             allowed_choices = list(Transformation.TargetTransfoType.get_choices())
             allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace('_', ' ').title()))
+            allowed_choices.remove((RULESET_DEFAULT.value, RULESET_DEFAULT.name.replace('_', ' ').title()))
 
         if key == LATERAL:
             CAT_DEFAULT = Transformation.L_CAT_DEFAULT
+            RULESET_DEFAULT = Transformation.L_RULESET_DEFAULT
+
             allowed_choices = list(Transformation.LateralTransfoType.get_choices())
             allowed_choices.remove((CAT_DEFAULT.value, CAT_DEFAULT.name.replace('_', ' ').title()))
+            allowed_choices.remove((RULESET_DEFAULT.value, RULESET_DEFAULT.name.replace('_', ' ').title()))
 
             L_YES = Transformation.L_YES
             L_AUTO = Transformation.L_AUTO

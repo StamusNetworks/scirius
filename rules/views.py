@@ -581,18 +581,25 @@ def transform_category(request, cat_id):
                         TYPE = Transformation.ACTION
                         NONE = Transformation.A_NONE
                         LOOP = (Transformation.A_DROP, Transformation.A_REJECT, Transformation.A_FILESTORE, Transformation.A_BYPASS)
+                        RULESET_DEFAULT = Transformation.A_RULESET_DEFAULT
 
                     if form_trans == form_lateral_trans:
                         TYPE = Transformation.LATERAL
                         NONE = Transformation.L_NO
                         LOOP = (Transformation.L_AUTO, Transformation.L_YES, Transformation.L_NO) 
+                        RULESET_DEFAULT = Transformation.L_RULESET_DEFAULT
 
                     if form_trans == form_target_trans:
                         TYPE = Transformation.TARGET
                         NONE = Transformation.T_NONE
                         LOOP = (Transformation.T_SOURCE, Transformation.T_DESTINATION, Transformation.T_AUTO)
+                        RULESET_DEFAULT = Transformation.T_RULESET_DEFAULT
 
                     trans = cat_object.get_transformation(ruleset, key=TYPE)
+
+                    if form_trans == RULESET_DEFAULT:
+                        cat_object.suppress_transformation(ruleset, key=TYPE)
+                        continue
 
                     for _trans in LOOP:
                         if _trans == form_trans:
@@ -612,9 +619,9 @@ def transform_category(request, cat_id):
     else:
         rulesets_ids = []
         current_trans = {
-                Transformation.ACTION: Transformation.A_NONE,
-                Transformation.LATERAL: Transformation.L_NO,
-                Transformation.TARGET: Transformation.T_NONE
+                Transformation.ACTION: Transformation.A_RULESET_DEFAULT,
+                Transformation.LATERAL: Transformation.L_RULESET_DEFAULT,
+                Transformation.TARGET: Transformation.T_RULESET_DEFAULT
         }
 
         rulesets_res = {

@@ -132,7 +132,7 @@ class RulesetForm(CommentForm):
         super(RulesetForm, self).__init__(*args, **kwargs)
         sourceatversion = SourceAtVersion.objects.all()
         self.fields['sources'].queryset = sourceatversion
-        self.fields['action'].choices = Ruleset.get_transformation_choices(key=Transformation.ACTION) + (('none', 'None'),)
+        self.fields['action'].choices = Ruleset.get_transformation_choices(key=Transformation.ACTION)
         self.fields['lateral'].choices = Ruleset.get_transformation_choices(key=Transformation.LATERAL)
         self.fields['target'].choices = Ruleset.get_transformation_choices(key=Transformation.TARGET)
 
@@ -151,7 +151,7 @@ class RulesetEditForm(forms.ModelForm, CommentForm):
 
     def __init__(self, *args, **kwargs):
         super(RulesetEditForm, self).__init__(*args, **kwargs)
-        self.fields['action'].choices = Ruleset.get_transformation_choices(key=Transformation.ACTION) + (('none', 'None'),)
+        self.fields['action'].choices = Ruleset.get_transformation_choices(key=Transformation.ACTION)
         self.fields['lateral'].choices = Ruleset.get_transformation_choices(key=Transformation.LATERAL)
         self.fields['target'].choices = Ruleset.get_transformation_choices(key=Transformation.TARGET)
 
@@ -205,7 +205,7 @@ class CategoryTransformForm(RulesetChoiceForm):
 
     def __init__(self, *args, **kwargs):
         super(CategoryTransformForm, self).__init__(*args, **kwargs)
-        self.fields['action'].choices = Category.get_transformation_choices(key=Transformation.ACTION) + (('none', 'None'),)
+        self.fields['action'].choices = Category.get_transformation_choices(key=Transformation.ACTION)
         self.fields['lateral'].choices = Category.get_transformation_choices(key=Transformation.LATERAL)
         self.fields['target'].choices = Category.get_transformation_choices(key=Transformation.TARGET)
 
