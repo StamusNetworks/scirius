@@ -24,7 +24,7 @@ ruleset downloaded from the official ET URL (or any other URL) or uploaded local
 
 .. index:: Category
 
-When a Source is splitted in multiple files, the set of Signatures in each individual
+When a Source containing Signatures is splitted in multiple files, the set of Signatures in each individual
 file is called a Category.
 
 User actions logging
