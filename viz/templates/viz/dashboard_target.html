@@ -81,15 +81,15 @@ Time: {% now "H:i:s" %} | Reload every {{ reload }}s
 </div>
 
 <div class="row">
-<div class="col-md-6">
+<div class="col-md-7">
 <h2 class="title">Source and Target</h3>
 <div  >
-<svg width="700" height="750" id="alerts"></svg>
+<svg width="1100" height="750" id="alerts"></svg>
 <div id="highlight_info">
 </div>
 </div>
 </div>
-<div class="col-md-6">
+<div class="col-md-5">
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-12">
@@ -178,7 +178,11 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
                 groupMap[g] = [];
             }
             groupMap[g].push(i);
-            v.width = v.height = 80;
+	    if (v.group == "Internet") {
+               v.width = v.height = 5;
+	    } else {
+               v.width = v.height = 30;
+	    }
         });
 
         var groups = [];
@@ -186,10 +190,11 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
             groups.push({ id: g, leaves: groupMap[g] });
         }
 
+        difflengths = 10 * 3 / Math.log10(json.nodes.length);
         force.nodes(json.nodes)
           .links(json.links)
           .groups(groups)
-          .symmetricDiffLinkLengths(30)
+          .symmetricDiffLinkLengths(difflengths)
           .avoidOverlaps(true)
           .start(10,15,20);
 /*
@@ -259,7 +264,7 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
 
         var i = 0;
         setInterval(function() {
-            text = "<div class='text-center'><h3 class='title'>"  + json.links[i].source.id + " <span class='glyphicon glyphicon-transfer'> </span> " + json.links[i].target.id + "</h3></div>"
+            text = "<div class='text-center'><h3 class='title'>"  + json.links[i].source.id + " <span class='glyphicon glyphicon-arrow-right'> </span> " + json.links[i].target.id + "</h3></div>"
             //text = text + "<h3 class='title text-center'>Alerts</h3> <ul class='list-group'>";
             text = text + "<ul class='list-group'>";
             d = json.links[i];
