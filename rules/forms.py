@@ -83,7 +83,7 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
 
     class Meta:
         model = Source
-        exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count']
+        exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count', 'public_source']
 
     def __init__(self, *args, **kwargs):
         super(AddSourceForm, self).__init__(*args, **kwargs)
