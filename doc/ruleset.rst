@@ -10,9 +10,22 @@ Scirius allows you to define a ``Ruleset`` which is a set of rules defining the 
 of Stamus Networks Suricata  probes regarding detection and inspection. You can have as many 
 Rulesets as you would like and you can attach a particular ``Ruleset`` to many ``Appliances``.
 
-A Ruleset is made of components selected in different ``Sources``. A Source is a set of
+.. index:: Ruleset
+
+A Ruleset is made of components selected in different ``Sources``. Transformation such
+as removing some rules, altering content can be applied to the signatures in the
+ruleset before it is pushed to the network probe(s).
+
+.. index:: Source
+
+A Source is a set of
 files providing information to Suricata. For example, this can be EmergingThreats 
 ruleset downloaded from the official ET URL (or any other URL) or uploaded locally.
+
+.. index:: Category
+
+When a Source is splitted in multiple files, the set of Signatures in each individual
+file is called a Category.
 
 User actions logging
 --------------------
@@ -149,8 +162,14 @@ To remove rules from suppressed list, simply check them in the array and click o
 Suppression and thresholding
 ----------------------------
 
-Alert numbers from a particular SN probe for a particular signature can be controlled through suppression or thresholding.
+Alert numbers for a particular signature can be controlled through suppression or thresholding.
+
+.. index:: Thresholding
+
 Thresholding is usually used when number of alerts needs to be  minimized - as for example maximum 1 alert per minute from that source or destination IP for that signature.
+
+.. index:: Suppression
+
 Suppression is used when the alerts need to be suppressed - aka do not generate alerts for that particular signature from that source or destination IP.
 
 Suppress alerts
@@ -180,7 +199,7 @@ In order for the suppression to become active you need to ``Push`` the updated r
 Threshold alerts
 ~~~~~~~~~~~~~~~~
 
-Click on ``Appliances`` and select/choose the desired StamusN probe. Click on the particular ``sid`` for the alerts that would need to be thresholded. On the 
+From a page displaying alert statistics click on the particular ``sid`` for the alerts that would need to be thresholded. On the 
 new screen make sure you are on the ``Rule stats`` tab then you can either click on ``Threshold`` under ``Action`` on the menu on the left hand side or choose directly by source or destination by clicking on 
 the arrow down (next to ``x``) next to the IP address. On the new page you will be informed if there already is some threshold or suppression in effect for that particular signature.
 The available fields are: 
@@ -207,6 +226,8 @@ In order for the threshold to become active you need to ``Push`` the updated rul
 
 Rule transformations
 --------------------
+
+.. index:: Transformations
 
 There is three types of rules transformations.  
 The first one `Action` allows the action of a particular rule to be changed - to drop, reject or filestore.
