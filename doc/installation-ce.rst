@@ -106,13 +106,13 @@ Link with Elasticsearch
 If you are using Suricata with Eve logging and Elasticsearch, you can get information
 about signatures displayed in the page showing information about Suricata:
 
-.. image:: https://github.com/StamusNetworks/scirius/raw/master/doc/images/suricata-display.png
+.. image:: images/suricata-display.png
     :alt: elasticsearch info in scirius
     :align: center
 
 You can also get graph and details about a specific rule:
 
-.. image:: https://github.com/StamusNetworks/scirius/raw/master/doc/images/rule-detail.png
+.. image:: images/rule-detail.png
     :alt: rule info in scirius
     :align: center
 
@@ -152,7 +152,7 @@ Link with Kibana
 If you are using Kibana, it is possible to get links to your dashboards by clicking the
 top left icon:
 
-.. image:: https://github.com/StamusNetworks/scirius/raw/master/doc/images/kibana-link.png
+.. image:: images/kibana-link.png
     :alt: kibana dropdown menu
     :align: center
 
