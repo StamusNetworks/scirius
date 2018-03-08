@@ -67,6 +67,7 @@ div.related {
     color: rgb(54, 54, 54);
     font-size: 1em;
     margin-bottom: 10px;
+    max-width: 1200px;
 }
  
 div.related a {
@@ -256,4 +257,8 @@ div.code-block-caption {
     background-color: #ddd;
     color: #222;
     border: 1px solid #C6C9CB;
+}
+
+div.section {
+    max-width: 900px;
 }
