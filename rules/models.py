@@ -1274,7 +1274,7 @@ class Category(models.Model, Transformable, Cache):
             c.save()
         ruleset.needs_test()
 
-    def get_transformation(self, ruleset, key=Transformation.ACTION):
+    def get_transformation(self, ruleset, key=Transformation.ACTION, override=False):
         NONE = None
         TYPE = None
 
@@ -1294,15 +1294,16 @@ class Category(models.Model, Transformable, Cache):
             ct = CategoryTransformation.objects.filter(
                                     key=key.value,
                                     ruleset=ruleset,
-                                    category_transformation=self).exclude(value=NONE.value)
+                                    category_transformation=self)
             if len(ct) > 0:
                 return TYPE(ct[0].value)
 
-            rt = RulesetTransformation.objects.filter(
-                                key=key.value,
-                                ruleset_transformation=ruleset).exclude(value=NONE.value)
-            if len(rt) > 0:
-                return TYPE(rt[0].value)
+            if override:
+                rt = RulesetTransformation.objects.filter(
+                                    key=key.value,
+                                    ruleset_transformation=ruleset)
+                if len(rt) > 0:
+                    return TYPE(rt[0].value)
 
         else:
             category_str = Category.__name__.lower()
@@ -1312,9 +1313,10 @@ class Category(models.Model, Transformable, Cache):
                 if self.pk in tsets:  # DROP / REJECT / FILESTORE / NONE
                     return trans
 
-            for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].iteritems():
-                if self.category.pk in tsets:
-                    return trans
+            if override:
+                for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].iteritems():
+                    if self.category.pk in tsets:
+                        return trans
 
         return None
 
@@ -1516,7 +1518,7 @@ class Rule(models.Model, Transformable, Cache):
         rule_str = Rule.__name__.lower()
         return (self.pk in Rule.TRANSFORMATIONS[key][rule_str][value])
 
-    def get_transformation(self, ruleset, key=Transformation.ACTION):
+    def get_transformation(self, ruleset, key=Transformation.ACTION, override=False):
         NONE = None
         TYPE = None
 
@@ -1540,18 +1542,19 @@ class Rule(models.Model, Transformable, Cache):
             if len(rt) > 0:
                 return TYPE(rt[0].value)
 
-            ct = CategoryTransformation.objects.filter(
-                                    key=key.value,
-                                    ruleset=ruleset,
-                                    category_transformation=self.category).all()
-            if len(ct) > 0:
-                return TYPE(ct[0].value)
+            if override:
+                ct = CategoryTransformation.objects.filter(
+                                        key=key.value,
+                                        ruleset=ruleset,
+                                        category_transformation=self.category).all()
+                if len(ct) > 0:
+                    return TYPE(ct[0].value)
 
-            rt = RulesetTransformation.objects.filter(
-                                key=key.value,
-                                ruleset_transformation=ruleset).exclude(value=NONE.value)
-            if len(rt) > 0:
-                return TYPE(rt[0].value)
+                rt = RulesetTransformation.objects.filter(
+                                    key=key.value,
+                                    ruleset_transformation=ruleset)
+                if len(rt) > 0:
+                    return TYPE(rt[0].value)
 
         else:
             rule_str = Rule.__name__.lower()
@@ -1562,13 +1565,14 @@ class Rule(models.Model, Transformable, Cache):
                 if self.pk in tsets:
                     return trans
 
-            for trans, tsets in Rule.TRANSFORMATIONS[key][category_str].iteritems():
-                if self.category.pk in tsets:
-                    return trans
+            if override:
+                for trans, tsets in Rule.TRANSFORMATIONS[key][category_str].iteritems():
+                    if self.category.pk in tsets:
+                        return trans
 
-            for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].iteritems():
-                if ruleset.pk in tsets:
-                    return trans
+                for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].iteritems():
+                    if ruleset.pk in tsets:
+                        return trans
 
         return None
 
@@ -1605,7 +1609,7 @@ class Rule(models.Model, Transformable, Cache):
         A_REJECT = Transformation.A_REJECT
         A_BYPASS = Transformation.A_BYPASS
 
-        trans = self.get_transformation(key=ACTION, ruleset=ruleset)
+        trans = self.get_transformation(key=ACTION, ruleset=ruleset, override=True)
         if (trans in (A_DROP, A_REJECT) and self.can_drop()) or \
                 (trans == A_FILESTORE and self.can_filestore()) or \
                 (trans == A_BYPASS):
@@ -1616,7 +1620,7 @@ class Rule(models.Model, Transformable, Cache):
         L_AUTO = Transformation.L_AUTO
         L_YES = Transformation.L_YES
 
-        trans = self.get_transformation(key=LATERAL, ruleset=ruleset)
+        trans = self.get_transformation(key=LATERAL, ruleset=ruleset, override=True)
         if trans in (L_YES, L_AUTO) and self.can_lateral(trans):
             content = self.apply_transformation(content, key=Transformation.LATERAL, value=trans)
 
@@ -1626,7 +1630,7 @@ class Rule(models.Model, Transformable, Cache):
         T_DESTINATION = Transformation.T_DESTINATION
         T_AUTO = Transformation.T_AUTO
 
-        trans = self.get_transformation(key=TARGET, ruleset=ruleset)
+        trans = self.get_transformation(key=TARGET, ruleset=ruleset, override=True)
         if trans in (T_SOURCE, T_DESTINATION, T_AUTO):
             c = content
             if isinstance(content, unicode):

@@ -157,7 +157,7 @@ def category(request, cat_id):
 
         transformations = {}
         for key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
-            trans = cat.get_transformation(ruleset, key)
+            trans = cat.get_transformation(ruleset, key, override=True)
             if trans:
                 transformations[key] = "%s: %s" % (key.value.capitalize(), trans.value.capitalize())
 
@@ -354,7 +354,7 @@ def rule(request, rule_id, key = 'pk'):
         status = 'Inactive'
 
         if rule.state and rule.category in ruleset.categories.all() and rule not in ruleset.get_transformed_rules(key=SUPPRESSED, value=S_SUPPRESSED):
-                status = 'Active'
+            status = 'Active'
 
         threshold = False
         if Threshold.objects.filter(rule=rule, ruleset=ruleset):
@@ -370,7 +370,7 @@ def rule(request, rule_id, key = 'pk'):
                         'content': content}
 
         for TYPE in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
-            trans = rule.get_transformation(ruleset, TYPE)
+            trans = rule.get_transformation(ruleset, TYPE, override=True)
             prefix = 'a_'
 
             if TYPE == Transformation.LATERAL:
@@ -489,7 +489,7 @@ def edit_rule(request, rule_id):
                    }
 
         rulesets = Ruleset.objects.all()
-        for idx_ruleset, ruleset in enumerate(rulesets):
+        for ruleset in rulesets:
             trans_action = rule_object.get_transformation(ruleset, Transformation.ACTION)
             trans_lateral = rule_object.get_transformation(ruleset, Transformation.LATERAL)
             trans_target = rule_object.get_transformation(ruleset, Transformation.TARGET)
@@ -609,10 +609,10 @@ def transform_category(request, cat_id):
                             cat_object.toggle_transformation(ruleset, key=TYPE, value=_trans)
 
                     # Enable new transformation
-                    if form_trans != NONE and form_trans != trans:
+                    if form_trans != trans:
                         cat_object.toggle_transformation(ruleset, key=TYPE, value=form_trans)
                         UserAction.objects.create(action='enable', options=form_trans.value, user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
-                    elif form_trans == NONE and trans:
+                    elif trans:
                         UserAction.objects.create(action='disable', options=trans.value, user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
 
             return redirect(cat_object)
@@ -637,7 +637,7 @@ def transform_category(request, cat_id):
                    }
 
         rulesets = Ruleset.objects.all()
-        for idx_ruleset, ruleset in enumerate(rulesets):
+        for ruleset in rulesets:
             trans_action = cat_object.get_transformation(ruleset, Transformation.ACTION)
             trans_lateral = cat_object.get_transformation(ruleset, Transformation.LATERAL)
             trans_target = cat_object.get_transformation(ruleset, Transformation.TARGET)
