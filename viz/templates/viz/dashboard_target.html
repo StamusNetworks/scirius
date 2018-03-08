@@ -167,7 +167,7 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
             width = +svg.attr("width"),
             height = +svg.attr("height");
         
-        var color = d3.scale.category20b();
+        var color = d3.scale.category20();
 
         var force = cola.d3adaptor(d3).linkDistance(100).size([width, height]);
 
@@ -201,12 +201,12 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
         var group = svg.selectAll('.group')
             .data(groups).enter().append('g');
 */
-
+        var color_index = 0;
         var group = svg.selectAll('.group')
             .data(groups).enter().append('rect').classed('group', true)
             .attr('rx',5)
             .attr('ry',5)
-            .style("fill", function (d) { if (d.id == "Internet") { return '#e8e0dc';} else if (d.id == "Red Team") { return '#e73535'; } else { return color(d.id + 1) ;} })
+            .style("fill", function (d) { return color(color_index++) ;})
             .call(force.drag);
 
         var tgroup = svg.selectAll('g.group')
