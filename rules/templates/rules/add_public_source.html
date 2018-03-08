@@ -147,7 +147,7 @@ Add a Source
         function() {
            var source_id = $(this).attr('name')
            $("#add_source_id").text(source_id);
-           $("input[name=source_id").val(source_id);
+           $("input[name=source_id]").val(source_id);
            $.ajax({
                 url: "{% url 'add_public_source' %}",
                 type: 'GET',
