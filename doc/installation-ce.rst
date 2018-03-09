@@ -40,9 +40,8 @@ For npm and webpack, you need a stable version of npm and webpack version 3.11. 
 you can do ::
 
  sudo apt-get install npm
- sudo npm install -g npm@latest
+ sudo npm install -g npm@latest webpack@3.11
  npm install
- sudo npm install -g webpack@3.11
 
 Running Scirius CE
 ~~~~~~~~~~~~~~~~~~
