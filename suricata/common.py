@@ -276,15 +276,25 @@ logging:
 """
         return config_buffer
 
+    def _escape_result(self, res):
+        for key in ('warnings', 'errors'):
+            lst = res.get(key, [])
+            escaped_lst = []
+            for msg in lst:
+                msg['message'] = escape(msg['message'])
+                escaped_lst.append(msg)
+            res[key] = lst
+        return res
+
     def rule(self, rule_buffer, config_buffer = None, related_files = None):
         if config_buffer == None:
             config_buffer = self.get_system_config_buffer()
         related_files = related_files or {}
         prov_result = self.rule_buffer(rule_buffer, config_buffer = config_buffer, related_files = related_files)
         if prov_result['status']:
-            return prov_result
+            return self._escape_result(prov_result)
         prov_result['errors'] = self.parse_suricata_error(prov_result['errors'], single = True)
-        return prov_result
+        return self._escape_result(prov_result)
 
     def rules(self, rule_buffer, config_buffer = None, related_files = None):
         if config_buffer == None:
@@ -292,9 +302,9 @@ logging:
         related_files = related_files or {}
         prov_result = self.rule_buffer(rule_buffer, config_buffer = config_buffer, related_files = related_files)
         if prov_result['status']:
-            return prov_result
+            return self._escape_result(prov_result)
         prov_result['errors'] = self.parse_suricata_error(prov_result['errors'], single = False)
-        return prov_result
+        return self._escape_result(prov_result)
 
 #buf = """
 #alert modbus any any -> any any (msg:"SURICATA Modbus invalid Protocol version"; app-layer-event:modbus.invalid_protocol_id; sid:2250001; rev:1;)
