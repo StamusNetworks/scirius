@@ -711,12 +711,12 @@ def switch_rule(request, rule_id, operation = 'disable'):
             return redirect(rule_object)
     else:
         form = RulesetSuppressForm()
-    rules = rule_object.get_flowbits_group()
+
     context = { 'rule': rule_object, 'form': form }
-    if len(rules):
-        rules = RuleTable(rules)
-        tables.RequestConfig(request).configure(rules)
-        context['rules'] = rules
+    rulesets = Ruleset.objects.all()
+    for ruleset in rulesets:
+        ruleset.deps_rules = rule_object.get_dependant_rules(ruleset)
+    context['rulesets'] = rulesets
     context['operation'] = operation
     return scirius_render(request, 'rules/disable_rule.html', context)
 

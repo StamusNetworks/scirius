@@ -1,5 +1,5 @@
 """
-Copyright(C) 2014, 2015 Stamus Networks
+Copyright(C) 2014-2018 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
 
 This file is part of Scirius.
@@ -1092,11 +1092,6 @@ class Category(models.Model, Transformable, Cache):
     created_date = models.DateTimeField('date created', default = timezone.now)
     source = models.ForeignKey(Source)
 
-    bitsregexp = {'flowbits': re.compile("flowbits *: *(isset|set),(.*?) *;"),
-                  'hostbits': re.compile("hostbits *: *(isset|set),(.*?) *;"),
-                  'xbits': re.compile("xbits *: *(isset|set),(.*?) *;"),
-                 }
-
     class Meta:
         verbose_name_plural = "categories"
 
@@ -1106,33 +1101,6 @@ class Category(models.Model, Transformable, Cache):
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
         Cache.__init__(self)
-
-    def parse_rule_flowbit(self, source, line):
-        flowbits = []
-        for ftype in self.bitsregexp:
-            match = self.bitsregexp[ftype].findall(line)
-            if match:
-                for flowinst in match:
-                   elt = Flowbit.objects.filter(source = source, name = flowinst[1], type=ftype)
-                   if elt:
-                       elt = elt[0]
-                       if flowinst[0] == "isset" and not elt.isset:
-                           elt.isset = True
-                           elt.save()
-                       if flowinst[0] == "set" and not elt.set:
-                           elt.set = True
-                           elt.save()
-                   else:
-                       if flowinst[0] == "isset":
-                           fisset = True
-                           fset = False
-                       else:
-                           fisset = False
-                           fset = True
-                       elt = Flowbit(type = ftype, name = flowinst[1], source = source, isset = fisset, set = fset)
-                       elt.save()
-                   flowbits.append(elt)
-        return flowbits
 
     def get_rules(self, source, existing_rules_hash=None):
         # parse file
@@ -1154,9 +1122,12 @@ class Category(models.Model, Transformable, Cache):
         for rule in Rule.objects.filter(category = self):
             rules_list.append(rule)
 
-        # If no flowbits are knowned in the source we try
-        # to parse them all. There should be no database query for ruleset
-        # that are not using them. If there is some, then do it only in update.
+        flowbits = { 'added': [] }
+        for key in ('flowbits', 'hostbits', 'xbits'):
+            flowbits[key] = {}
+            for flowb in Flowbit.objects.filter(source=source, type=key):
+                flowbits[key][flowb.name] = flowb
+
         with transaction.atomic():
             for line in rfile.readlines():
                 state = True
@@ -1181,16 +1152,13 @@ class Category(models.Model, Transformable, Cache):
                     msg = ""
                 else:
                     msg = match.groups()[0]
-                flowbits = []
-                if source.init_flowbits:
-                    flowbits = self.parse_rule_flowbit(source, line)
-                # FIXME detect if nothing has changed to avoir rules reload
+                # FIXME detect if nothing has changed to avoid rules reload
                 if existing_rules_hash.has_key(int(sid)):
                     # FIXME update references if needed
                     rule = existing_rules_hash[int(sid)]
                     if rule.category.source != source:
                         raise ValidationError('Duplicate SID: %d' % (int(sid)))
-                    if rev == None or rule.rev < rev or (source.init_flowbits and flowbits):
+                    if rev == None or rule.rev < rev:
                         rule.content = line
                         if rev == None:
                             rule.rev = 0
@@ -1199,12 +1167,10 @@ class Category(models.Model, Transformable, Cache):
                         if rule.category != self:
                             rule.category = self
                         rule.msg = msg
-                        if not source.init_flowbits:
-                            flowbits = self.parse_rule_flowbit(source, line)
-                        rule.flowbits = flowbits
                         rules_update["updated"].append(rule)
                         rule.updated_date = timezone.now()
                         rule.save()
+                        rule.parse_flowbits(source, flowbits)
                     else:
                         rules_unchanged.append(rule)
                 else:
@@ -1213,12 +1179,12 @@ class Category(models.Model, Transformable, Cache):
                     rule = Rule(category = self, sid = sid,
                                         rev = rev, content = line, msg = msg,
                                         state_in_source = state, state = state, imported_date = timezone.now())
-                    if not source.init_flowbits:
-                        flowbits = self.parse_rule_flowbit(source, line)
-                    rule.flowbits = flowbits
                     rules_update["added"].append(rule)
+                    rule.parse_flowbits(source, flowbits)
             if len(rules_update["added"]):
                 Rule.objects.bulk_create(rules_update["added"])
+            #if len(flowbits["added"]):
+            #    Flowbit.objects.bulk_create(flowbits["added"])
             rules_update["deleted"] = list(set(rules_list) -
                                       set(rules_update["added"]).union(set(rules_update["updated"])) -
                                       set(rules_unchanged))
@@ -1355,16 +1321,6 @@ class Category(models.Model, Transformable, Cache):
         return tuple(sorted(allowed_choices))
 
 
-class Flowbit(models.Model):
-    FLOWBIT_TYPE = (('flowbits', 'Flowbits'), ('hostbits', 'Hostbits'), ('xbits', 'Xbits'))
-    type = models.CharField(max_length=12, choices=FLOWBIT_TYPE)
-    name = models.CharField(max_length=100)
-    set = models.BooleanField(default=False)
-    isset = models.BooleanField(default=False)
-    enable = models.BooleanField(default=True)
-    source = models.ForeignKey(Source)
-
-
 class Rule(models.Model, Transformable, Cache):
     sid = models.IntegerField(primary_key=True)
     category = models.ForeignKey(Category)
@@ -1373,12 +1329,16 @@ class Rule(models.Model, Transformable, Cache):
     state_in_source = models.BooleanField(default=True)
     rev = models.IntegerField(default=0)
     content = models.CharField(max_length=10000)
-    flowbits = models.ManyToManyField(Flowbit)
     actions = GenericRelation(UserAction)
     imported_date = models.DateTimeField(default = timezone.now)
     updated_date = models.DateTimeField(default = timezone.now)
 
     hits = 0
+
+    BITSREGEXP = {'flowbits': re.compile("flowbits *: *(isset|set),(.*?) *;"),
+                  'hostbits': re.compile("hostbits *: *(isset|set),(.*?) *;"),
+                  'xbits': re.compile("xbits *: *(isset|set),(.*?) *;"),
+                 }
 
     def __unicode__(self):
         return str(self.sid) + ":" + self.msg
@@ -1391,12 +1351,55 @@ class Rule(models.Model, Transformable, Cache):
         from django.core.urlresolvers import reverse
         return reverse('rule', args=[str(self.sid)])
 
-    def get_flowbits_group(self):
-        rules = set()
-        for flowbit in self.flowbits.all():
-            rules_dep = Rule.objects.filter(category = self.category, flowbits = flowbit)
-            rules |= set(rules_dep)
-        return rules
+    def parse_flowbits(self, source, flowbits):
+        for ftype in self.BITSREGEXP:
+            match = self.BITSREGEXP[ftype].findall(self.content)
+            if match:
+                for flowinst in match:
+                    # create Flowbit if needed
+                    if not flowinst[1] in flowbits[ftype].keys():
+                        elt = Flowbit(type = ftype, name = flowinst[1],
+                                      source = source)
+                        flowbits[ftype][flowinst[1]] = elt
+                        flowbits["added"].append(elt)
+                        elt.save()
+                    else:
+                        elt = flowbits[ftype][flowinst[1]]
+
+                    if flowinst[0] == "isset":
+                        if not self.checker.filter(set=self):
+                            elt.isset.add(self)
+                            elt.save()
+                    else:
+                        if not self.setter.filter(set=self):
+                            elt.set.add(self)
+                            elt.save()
+
+    def is_active(self, ruleset):
+        if self.state and self.category in ruleset.categories.all() and self not in ruleset.get_transformed_rules(key=SUPPRESSED, value=S_SUPPRESSED):
+            return True
+        return False
+
+    # flowbit dependency:
+    # if we disable a rule that is the last one set a flag then we must disable all the 
+    # dependant rules
+    def get_dependant_rules(self, ruleset):
+        # get list of flowbit we are setting
+        flowbits_list = Flowbit.objects.filter(set = self).prefetch_related('set', 'isset')
+        dependant_rules = []
+        for flowbit in flowbits_list:
+            set_count = 0
+            for rule in flowbit.set.all():
+                if rule == self:
+                    continue
+                if rule.is_active(ruleset):
+                    set_count += 1
+            if set_count == 0:
+                dependant_rules.extend(list(flowbit.isset.all()))
+                # we need to recurse if ever we did disable in a chain of signatures
+                for drule in flowbit.isset.all():
+                    dependant_rules.extend(drule.get_dependant_rules(ruleset))
+        return dependant_rules
 
     def get_actions(self):
         qset = UserAction.objects.filter(Q(description__contains = "sig_id %d" % (self.pk)) | Q(description__contains = "'%d:" % (self.pk))).order_by('-date')
@@ -1406,7 +1409,7 @@ class Rule(models.Model, Transformable, Cache):
         return self.actions.filter(action = "comment").order_by('-date')
 
     def enable(self, ruleset, user = None, comment = None):
-        enable_rules = self.get_flowbits_group()
+        enable_rules = self.get_dependant_rules(ruleset)
         if not enable_rules:
             enable_rules |= {self}
         ruleset.enable_rules(enable_rules)
@@ -1417,7 +1420,7 @@ class Rule(models.Model, Transformable, Cache):
         return
 
     def disable(self, ruleset, user = None, comment = None):
-        disable_rules = self.get_flowbits_group()
+        disable_rules = self.get_dependant_rules(ruleset)
         if not disable_rules:
             disable_rules |= {self}
         ruleset.disable_rules(disable_rules)
@@ -1434,7 +1437,7 @@ class Rule(models.Model, Transformable, Cache):
         return test
 
     def toggle_availability(self):
-        toggle_rules = self.get_flowbits_group()
+        toggle_rules = self.get_dependant_rules(ruleset)
         self.category.source.needs_test()
         if not toggle_rules:
             toggle_rules |= {self}
@@ -1711,6 +1714,16 @@ class Rule(models.Model, Transformable, Cache):
                     allowed_choices.remove((trans.value, trans.name.title()))
 
         return tuple(allowed_choices)
+
+
+class Flowbit(models.Model):
+    FLOWBIT_TYPE = (('flowbits', 'Flowbits'), ('hostbits', 'Hostbits'), ('xbits', 'Xbits'))
+    type = models.CharField(max_length=12, choices=FLOWBIT_TYPE)
+    name = models.CharField(max_length=100)
+    set = models.ManyToManyField(Rule, related_name='setter')
+    isset = models.ManyToManyField(Rule, related_name='checker')
+    enable = models.BooleanField(default=True)
+    source = models.ForeignKey(Source)
 
 
 # we should use django reversion to keep track of this one
