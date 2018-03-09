@@ -18,7 +18,7 @@
 {% if operation == 'enable' %}
 <form action="{% url 'enable_category' category.pk %}" method="post">
 {% else %}
-<form action="{% url 'suppress_category' category.pk %}" method="post">
+<form action="{% url 'disable_category' category.pk %}" method="post">
 {% endif %}
 {% csrf_token %}
 {% bootstrap_form form %}
