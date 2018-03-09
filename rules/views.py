@@ -1351,7 +1351,10 @@ def add_ruleset(request):
             except IntegrityError, error:
                 return scirius_render(request, 'rules/add_ruleset.html', {'form': form, 'error': error})
 
-            messages.success(request, "All changes are saved. Don't forget to apply them to update Ruleset.")
+            msg = """All changes are saved. Don't forget update the ruleset to apply the changes.
+                     After the ruleset Update the changes would be updated on the probe(s) upon the next Ruleset Push"""
+
+            messages.success(request, msg)
             return redirect(ruleset)
     else:
         initial = {'action': Transformation.A_NONE.value,
@@ -1423,7 +1426,10 @@ def edit_ruleset(request, ruleset_id):
         if not form.is_valid():
             return redirect(ruleset)
 
-        messages.success(request, "All changes are saved. Don't forget to apply them to update Ruleset.")
+        msg = """All changes are saved. Don't forget update the ruleset to apply the changes.
+                 After the ruleset Update the changes would be updated on the probe(s) upon the next Ruleset Push"""
+
+        messages.success(request, msg)
         if request.POST.has_key('category'):
             category_selection = [ int(x) for x in request.POST.getlist('category_selection') ]
             # clean ruleset
