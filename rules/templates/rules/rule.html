@@ -41,7 +41,7 @@
 </div>
 <div class="panel-body">
 <ul class="action">
-{% if rule.state %}
+{% if rule.state and rulesets|length %}
 <li>
 {% if rule.get_transformation_choices|length %}
 <a href="{% url 'edit_rule' rule.sid %}">Edit rule</a>
