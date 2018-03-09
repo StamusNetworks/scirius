@@ -42,7 +42,7 @@ you can do ::
  sudo apt-get install npm
  sudo npm install -g npm@latest
  npm install
- sudo npmg install -g webpack@3.11
+ sudo npm install -g webpack@3.11
 
 Running Scirius CE
 ~~~~~~~~~~~~~~~~~~
