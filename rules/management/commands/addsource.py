@@ -1,5 +1,5 @@
 """
-Copyright(C) 2014, Stamus Networks
+Copyright(C) 2014-2018, Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
 
 This file is part of Scirius.
@@ -37,7 +37,7 @@ class Command(BaseCommand):
         method = options['method']
         datatype = options['datatype']
 
-        if method not in ['http']:
+        if method not in ['http', 'local']:
             raise CommandError("Method '%s' is not supported" % (method))
         if datatype not in ['sigs', 'sig']:
             raise CommandError("Data type '%s' is not supported" % (datatype))
@@ -48,5 +48,12 @@ class Command(BaseCommand):
             created_date = timezone.now(),
             datatype = datatype)
         self.stdout.write('Successfully created source "%s"' % name)
-        source.update()
-        self.stdout.write('Successfully update source "%s"' % name)
+        if source.method == 'http':
+            source.update()
+        else:
+            with open(uri, 'r') as f:
+                if source.datatype == 'sigs':
+                    source.handle_rules_in_tar(f)
+                elif self.datatype == 'sig':
+                    source.handle_rules_file(f)
+        self.stdout.write('Successfully updated source "%s"' % name)
