@@ -44,6 +44,7 @@
     <a onclick="UpdateRuleset{{ ruleset.id }}()" style="cursor: pointer;">Update ruleset</a>
     </li>
     <li><a href="{% url "edit_ruleset" ruleset.pk %}">Edit ruleset</a></li>
+    <li><a href="{% url "copy_ruleset" ruleset.pk %}">Copy ruleset</a></li>
     <li><a href="{% url "delete_ruleset" ruleset.pk %}">Delete ruleset</a></li>
   </ul>
 </div>
