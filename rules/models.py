@@ -1852,7 +1852,7 @@ class Ruleset(models.Model, Transformable):
 
         # All transformed categories from this ruleset
         if key is None:
-            return Category.objects.filter(ruletransformation__ruleset=self)
+            return Category.objects.filter(categorytransformation__ruleset=self)
 
         categories = Category.objects.filter(
                             categorytransformation__ruleset=self,
@@ -1959,8 +1959,6 @@ class Ruleset(models.Model, Transformable):
         orig_ruleset_pk = self.pk
         orig_sources = self.sources.all()
         orig_categories = self.categories.all()
-        orig_trans_rules = self.get_transformed_rules(key=None)
-        orig_trans_cats = self.get_transformed_categories(key=None)
         self.name = name
         self.pk = None
         self.id = None
@@ -1969,13 +1967,22 @@ class Ruleset(models.Model, Transformable):
         self.save()
         self.sources = orig_sources
         self.categories = orig_categories
-        self.rules_transformation = orig_trans_rules
         self.save()
         for threshold in Threshold.objects.filter(ruleset_id = orig_ruleset_pk):
             threshold.ruleset = self
             threshold.pk = None
             threshold.id = None
             threshold.save()
+        for tcat in CategoryTransformation.objects.filter(ruleset_id = orig_ruleset_pk):
+            tcat.ruleset = self
+            tcat.pk = None
+            tcat.id = None
+            tcat.save()
+        for trule in RuleTransformation.objects.filter(ruleset_id = orig_ruleset_pk):
+            trule.ruleset = self
+            trule.pk = None
+            trule.id = None
+            trule.save()
         return self
 
     def export_files(self, directory):
