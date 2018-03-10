@@ -15,10 +15,10 @@
 
 {% for ruleset in rulesets %}
 {% if ruleset.deps_rules|length %}
-In ruleset {{ ruleset.name }}, this will also {% if operation == 'suppress' %}disable{% else %}enable{% endif %} the following rules due to flowbits dependencies:
+In ruleset <strong>{{ ruleset.name }}</strong>, this will also {% if operation == 'suppress' %}disable{% else %}enable{% endif %} the following rules due to flowbits dependencies:
 <ul>
 {% for rule in ruleset.deps_rules %}
-<li>{{ rule.msg }}</li>
+<li><a href="{% url 'rule' rule.pk %}">{{ rule.msg }}</a></li>
 {% endfor %}
 </ul>
 {% endif %}
