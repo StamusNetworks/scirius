@@ -179,8 +179,17 @@ function UpdateSource{{ source.id }}() {
 </script>
 
 {% else %}
+<h3>No defined source</h3>
 <p>
-No source. Click on <a href="{% url "add_source" %}">Add</a> to add a source.
+You need at least a source to be able to create a Ruleset.
+<ul>
+	<li>
+		<a href="{% url "add_public_source" %}">Add a public source</a>
+	</li>
+	<li>
+		<a href="{% url "add_source" %}">Add a custom source</a>
+	</li>
+</ul>
 </p>
 {% endif %}
 {% endblock %}
