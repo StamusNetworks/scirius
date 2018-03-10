@@ -1430,9 +1430,13 @@ class Rule(models.Model, Transformable, Cache):
 
     def test(self, ruleset):
         self.enable_cache()
-        test = ruleset.test_rule_buffer(self.generate_content(ruleset), single = True)
-        self.disable_cache()
-        return test
+        try:
+            test = ruleset.test_rule_buffer(self.generate_content(ruleset), single = True)
+            self.disable_cache()
+            return test
+        except:
+            self.disable_cache()
+        return False
 
     def toggle_availability(self):
         toggle_rules = self.get_dependant_rules(ruleset)
