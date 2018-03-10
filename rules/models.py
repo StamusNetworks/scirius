@@ -1122,7 +1122,7 @@ class Category(models.Model, Transformable, Cache):
         for rule in Rule.objects.filter(category = self):
             rules_list.append(rule)
 
-        flowbits = { 'added': [] }
+        flowbits = { }
         for key in ('flowbits', 'hostbits', 'xbits'):
             flowbits[key] = {}
             for flowb in Flowbit.objects.filter(source=source, type=key):
@@ -1183,8 +1183,6 @@ class Category(models.Model, Transformable, Cache):
                     rule.parse_flowbits(source, flowbits)
             if len(rules_update["added"]):
                 Rule.objects.bulk_create(rules_update["added"])
-            #if len(flowbits["added"]):
-            #    Flowbit.objects.bulk_create(flowbits["added"])
             rules_update["deleted"] = list(set(rules_list) -
                                       set(rules_update["added"]).union(set(rules_update["updated"])) -
                                       set(rules_unchanged))
@@ -1361,7 +1359,6 @@ class Rule(models.Model, Transformable, Cache):
                         elt = Flowbit(type = ftype, name = flowinst[1],
                                       source = source)
                         flowbits[ftype][flowinst[1]] = elt
-                        flowbits["added"].append(elt)
                         elt.save()
                     else:
                         elt = flowbits[ftype][flowinst[1]]
