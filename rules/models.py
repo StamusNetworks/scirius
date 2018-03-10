@@ -1409,9 +1409,8 @@ class Rule(models.Model, Transformable, Cache):
         return self.actions.filter(action = "comment").order_by('-date')
 
     def enable(self, ruleset, user = None, comment = None):
-        enable_rules = self.get_dependant_rules(ruleset)
-        if not enable_rules:
-            enable_rules |= {self}
+        enable_rules = [self]
+        enable_rules.extend(self.get_dependant_rules(ruleset))
         ruleset.enable_rules(enable_rules)
         if user:
             ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', user = user, date = timezone.now(), comment = comment)
@@ -1420,9 +1419,8 @@ class Rule(models.Model, Transformable, Cache):
         return
 
     def disable(self, ruleset, user = None, comment = None):
-        disable_rules = self.get_dependant_rules(ruleset)
-        if not disable_rules:
-            disable_rules |= {self}
+        disable_rules = [self]
+        disable_rules.extend(self.get_dependant_rules(ruleset))
         ruleset.disable_rules(disable_rules)
         if user:
             ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', user = user, date = timezone.now(), comment = comment)
