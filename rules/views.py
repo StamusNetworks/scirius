@@ -1088,6 +1088,8 @@ def fetch_public_sources():
     except requests.exceptions.TooManyRedirects:
         raise IOError("Too many redirects, server may be broken")
     # store as sources.yaml
+    if not os.path.isdir(settings.GIT_SOURCES_BASE_DIRECTORY):
+        os.makedirs(settings.GIT_SOURCES_BASE_DIRECTORY)
     sources_yaml = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, 'sources.yaml') 
     with open(sources_yaml, 'w') as sfile:
         sfile.write(resp.content)
