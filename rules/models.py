@@ -1128,6 +1128,8 @@ class Category(models.Model, Transformable, Cache):
             for flowb in Flowbit.objects.filter(source=source, type=key):
                 flowbits[key][flowb.name] = flowb
 
+        creation_date = timezone.now()
+
         with transaction.atomic():
             for line in rfile.readlines():
                 state = True
@@ -1168,7 +1170,7 @@ class Category(models.Model, Transformable, Cache):
                             rule.category = self
                         rule.msg = msg
                         rules_update["updated"].append(rule)
-                        rule.updated_date = timezone.now()
+                        rule.updated_date = creation_date
                         rule.save()
                         rule.parse_flowbits(source, flowbits)
                     else:
