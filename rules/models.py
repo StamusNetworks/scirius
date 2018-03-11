@@ -1182,7 +1182,7 @@ class Category(models.Model, Transformable, Cache):
                                         rev = rev, content = line, msg = msg,
                                         state_in_source = state, state = state, imported_date = creation_date, updated_date = creation_date)
                     rules_update["added"].append(rule)
-                    rule.parse_flowbits(source, flowbits)
+                    rule.parse_flowbits(source, flowbits, addition = True)
             if len(rules_update["added"]):
                 Rule.objects.bulk_create(rules_update["added"])
             if len(flowbits["added"]["flowbit"]):
@@ -1357,7 +1357,7 @@ class Rule(models.Model, Transformable, Cache):
         from django.core.urlresolvers import reverse
         return reverse('rule', args=[str(self.sid)])
 
-    def parse_flowbits(self, source, flowbits):
+    def parse_flowbits(self, source, flowbits, addition = False):
         flowbit_count = 0
         for ftype in self.BITSREGEXP:
             match = self.BITSREGEXP[ftype].findall(self.content)
@@ -1382,11 +1382,11 @@ class Rule(models.Model, Transformable, Cache):
                         elt = flowbits[ftype][flowinst[1]]
 
                     if flowinst[0] == "isset":
-                        if not self.checker.filter(isset=self):
+                        if addition or not self.checker.filter(isset=self):
                             through_elt = Flowbit.isset.through(flowbit=elt, rule=self)
                             flowbits['added']['through_isset'].append(through_elt)
                     else:
-                        if not self.setter.filter(set=self):
+                        if addition or not self.setter.filter(set=self):
                             through_elt = Flowbit.set.through(flowbit=elt, rule=self)
                             flowbits['added']['through_set'].append(through_elt)
 
