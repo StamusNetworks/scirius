@@ -1122,7 +1122,7 @@ class Category(models.Model, Transformable, Cache):
         for rule in Rule.objects.filter(category = self):
             rules_list.append(rule)
 
-        flowbits = { }
+        flowbits = { 'added': {'flowbit': [], 'through_set': [], 'through_isset': [] }}
         for key in ('flowbits', 'hostbits', 'xbits'):
             flowbits[key] = {}
             for flowb in Flowbit.objects.filter(source=source, type=key):
@@ -1185,6 +1185,12 @@ class Category(models.Model, Transformable, Cache):
                     rule.parse_flowbits(source, flowbits)
             if len(rules_update["added"]):
                 Rule.objects.bulk_create(rules_update["added"])
+            if len(flowbits["added"]["flowbit"]):
+                Flowbit.objects.bulk_create(flowbits["added"]["flowbit"])
+            if len(flowbits["added"]["through_set"]):
+                Flowbit.set.through.objects.bulk_create(flowbits["added"]["through_set"])
+            if len(flowbits["added"]["through_isset"]):
+                Flowbit.isset.through.objects.bulk_create(flowbits["added"]["through_isset"])
             rules_update["deleted"] = list(set(rules_list) -
                                       set(rules_update["added"]).union(set(rules_update["updated"])) -
                                       set(rules_unchanged))
@@ -1352,27 +1358,35 @@ class Rule(models.Model, Transformable, Cache):
         return reverse('rule', args=[str(self.sid)])
 
     def parse_flowbits(self, source, flowbits):
+        flowbit_count = 0
         for ftype in self.BITSREGEXP:
             match = self.BITSREGEXP[ftype].findall(self.content)
             if match:
+                rule_flowbits = []
                 for flowinst in match:
+                    # avoid flowbit duplicate
+                    if not flowinst[1] in rule_flowbits:
+                        rule_flowbits.append(flowinst[1])
+                    else:
+                        continue
                     # create Flowbit if needed
                     if not flowinst[1] in flowbits[ftype].keys():
                         elt = Flowbit(type = ftype, name = flowinst[1],
                                       source = source)
+                        # limit at 20 *bits per rule
+                        elt.id = int(self.sid) * 20 + flowbit_count
+                        flowbit_count += 1
                         flowbits[ftype][flowinst[1]] = elt
-                        elt.save()
+                        flowbits['added']['flowbit'].append(elt)
                     else:
                         elt = flowbits[ftype][flowinst[1]]
 
                     if flowinst[0] == "isset":
-                        if not self.checker.filter(set=self):
-                            elt.isset.add(self)
-                            elt.save()
+                        through_elt = Flowbit.isset.through(flowbit=elt, rule=self)
+                        flowbits['added']['through_isset'].append(through_elt)
                     else:
-                        if not self.setter.filter(set=self):
-                            elt.set.add(self)
-                            elt.save()
+                        through_elt = Flowbit.set.through(flowbit=elt, rule=self)
+                        flowbits['added']['through_set'].append(through_elt)
 
     def is_active(self, ruleset):
         if self.state and self.category in ruleset.categories.all() and self not in ruleset.get_transformed_rules(key=SUPPRESSED, value=S_SUPPRESSED):
