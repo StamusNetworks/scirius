@@ -1114,7 +1114,7 @@ class Category(models.Model, Transformable, Cache):
         rules_update = {"added": [], "deleted": [], "updated": []}
         rules_unchanged = []
 
-        if not existing_rules_hash:
+        if existing_rules_hash == None:
             existing_rules_hash = {}
             for rule in Rule.objects.all().prefetch_related('category'):
                 existing_rules_hash[rule.sid] = rule
