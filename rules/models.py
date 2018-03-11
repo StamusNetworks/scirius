@@ -1382,11 +1382,13 @@ class Rule(models.Model, Transformable, Cache):
                         elt = flowbits[ftype][flowinst[1]]
 
                     if flowinst[0] == "isset":
-                        through_elt = Flowbit.isset.through(flowbit=elt, rule=self)
-                        flowbits['added']['through_isset'].append(through_elt)
+                        if not self.checker.filter(isset=self):
+                            through_elt = Flowbit.isset.through(flowbit=elt, rule=self)
+                            flowbits['added']['through_isset'].append(through_elt)
                     else:
-                        through_elt = Flowbit.set.through(flowbit=elt, rule=self)
-                        flowbits['added']['through_set'].append(through_elt)
+                        if not self.setter.filter(set=self):
+                            through_elt = Flowbit.set.through(flowbit=elt, rule=self)
+                            flowbits['added']['through_set'].append(through_elt)
 
     def is_active(self, ruleset):
         if self.state and self.category in ruleset.categories.all() and self not in ruleset.get_transformed_rules(key=SUPPRESSED, value=S_SUPPRESSED):
