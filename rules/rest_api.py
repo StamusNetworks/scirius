@@ -49,7 +49,7 @@ class RuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rule
         fields = ('pk', 'sid', 'category', 'msg', 'state', 'state_in_source', 'rev', 'content', \
-                'flowbits', 'imported_date', 'updated_date')
+                'imported_date', 'updated_date')
 
 
 class RuleViewSet(viewsets.ReadOnlyModelViewSet):
