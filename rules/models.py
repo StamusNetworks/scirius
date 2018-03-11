@@ -1180,7 +1180,7 @@ class Category(models.Model, Transformable, Cache):
                         rev = 0
                     rule = Rule(category = self, sid = sid,
                                         rev = rev, content = line, msg = msg,
-                                        state_in_source = state, state = state, imported_date = creation_date)
+                                        state_in_source = state, state = state, imported_date = creation_date, updated_date = creation_date)
                     rules_update["added"].append(rule)
                     rule.parse_flowbits(source, flowbits)
             if len(rules_update["added"]):
