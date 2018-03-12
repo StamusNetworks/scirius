@@ -1454,13 +1454,9 @@ class Rule(models.Model, Transformable, Cache):
         return False
 
     def toggle_availability(self):
-        toggle_rules = self.get_dependant_rules(ruleset)
         self.category.source.needs_test()
-        if not toggle_rules:
-            toggle_rules |= {self}
-        for rule in toggle_rules:
-            rule.state = not rule.state
-            rule.save()
+        self.state = not self.state
+        self.save()
 
     def apply_transformation(self, content, key=Transformation.ACTION, value=None):
 
