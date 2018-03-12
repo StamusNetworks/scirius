@@ -1979,6 +1979,11 @@ class Ruleset(models.Model, Transformable):
         self.sources = orig_sources
         self.categories = orig_categories
         self.save()
+        for truleset in RulesetTransformation.objects.filter(ruleset_transformation_id = orig_ruleset_pk):
+            truleset.ruleset_transformation = self
+            truleset.pk = None
+            truleset.id = None
+            truleset.save()
         for threshold in Threshold.objects.filter(ruleset_id = orig_ruleset_pk):
             threshold.ruleset = self
             threshold.pk = None
