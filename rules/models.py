@@ -1123,6 +1123,11 @@ class Category(models.Model, Transformable, Cache):
             rules_list.append(rule)
 
         flowbits = { 'added': {'flowbit': [], 'through_set': [], 'through_isset': [] }}
+        existing_flowbits = Flowbit.objects.all().order_by('-pk')
+        if len(existing_flowbits):
+            flowbits['last_pk'] = existing_flowbits[0].pk
+        else:
+            flowbits['last_pk'] = 1
         for key in ('flowbits', 'hostbits', 'xbits'):
             flowbits[key] = {}
             for flowb in Flowbit.objects.filter(source=source, type=key):
@@ -1358,7 +1363,6 @@ class Rule(models.Model, Transformable, Cache):
         return reverse('rule', args=[str(self.sid)])
 
     def parse_flowbits(self, source, flowbits, addition = False):
-        flowbit_count = 0
         for ftype in self.BITSREGEXP:
             match = self.BITSREGEXP[ftype].findall(self.content)
             if match:
@@ -1373,9 +1377,8 @@ class Rule(models.Model, Transformable, Cache):
                     if not flowinst[1] in flowbits[ftype].keys():
                         elt = Flowbit(type = ftype, name = flowinst[1],
                                       source = source)
-                        # limit at 20 *bits per rule
-                        elt.id = int(self.sid) * 20 + flowbit_count
-                        flowbit_count += 1
+                        flowbits['last_pk'] += 1
+                        elt.id = flowbits['last_pk']
                         flowbits[ftype][flowinst[1]] = elt
                         flowbits['added']['flowbit'].append(elt)
                     else:
