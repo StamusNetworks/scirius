@@ -1391,6 +1391,8 @@ class Rule(models.Model, Transformable, Cache):
                             flowbits['added']['through_set'].append(through_elt)
 
     def is_active(self, ruleset):
+        SUPPRESSED = Transformation.SUPPRESSED
+        S_SUPPRESSED = Transformation.S_SUPPRESSED
         if self.state and self.category in ruleset.categories.all() and self not in ruleset.get_transformed_rules(key=SUPPRESSED, value=S_SUPPRESSED):
             return True
         return False
