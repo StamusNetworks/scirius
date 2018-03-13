@@ -1418,7 +1418,7 @@ def edit_ruleset(request, ruleset_id):
         return scirius_render(request, 'rules/edit_ruleset.html', {'ruleset': ruleset, 'error': 'Unsufficient permissions'})
 
     # TODO: manage other types
-    SUPPRESSED = Transformation.Type.SUPPRESSED
+    SUPPRESSED = Transformation.SUPPRESSED
     S_SUPPRESSED = Transformation.S_SUPPRESSED
 
     if request.method == 'POST': # If the form has been submitted...
