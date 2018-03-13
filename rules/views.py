@@ -1353,7 +1353,7 @@ def add_ruleset(request):
             except IntegrityError, error:
                 return scirius_render(request, 'rules/add_ruleset.html', {'form': form, 'error': error})
 
-            msg = """All changes are saved. Don't forget update the ruleset to apply the changes.
+            msg = """All changes are saved. Don't forget to update the ruleset to apply the changes.
                      After the ruleset Update the changes would be updated on the probe(s) upon the next Ruleset Push"""
 
             messages.success(request, msg)
@@ -1428,7 +1428,7 @@ def edit_ruleset(request, ruleset_id):
         if not form.is_valid():
             return redirect(ruleset)
 
-        msg = """All changes are saved. Don't forget update the ruleset to apply the changes.
+        msg = """All changes are saved. Don't forget to update the ruleset to apply the changes.
                  After the ruleset Update the changes would be updated on the probe(s) upon the next Ruleset Push"""
 
         messages.success(request, msg)
