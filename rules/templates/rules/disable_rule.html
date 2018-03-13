@@ -15,7 +15,7 @@
 
 {% for ruleset in rulesets %}
 {% if ruleset.deps_rules|length %}
-In ruleset <strong>{{ ruleset.name }}</strong>, this will also {% if operation == 'suppress' %}disable{% else %}enable{% endif %} the following rules due to flowbits dependencies:
+In ruleset <strong>{{ ruleset.name }}</strong>, this will also {% if operation == 'disable' %}disable{% else %}enable{% endif %} the following rules due to flowbits dependencies:
 <ul>
 {% for rule in ruleset.deps_rules %}
 <li><a href="{% url 'rule' rule.pk %}">{{ rule.msg }}</a></li>
