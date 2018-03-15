@@ -417,6 +417,7 @@ var node;
     if (d.children == undefined) {
          window.open("/rules/rule/pk/" + d.key,"_self");
     }
+    var tooltip = build_path(d);
     $("#filter").empty();
     if (tooltip.length) {
         $("#filter").append("Filter: " + tooltip);
