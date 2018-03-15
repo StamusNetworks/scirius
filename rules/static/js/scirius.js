@@ -92,7 +92,7 @@ window.load_rules = load_rules;
 
 function draw_timeline(from_date, hosts, filter) {
 
-        esurl = "/rules/es?query=timeline&from_date=" + from_date + "&hosts=" + hosts.join()
+        var esurl = "/rules/es?query=timeline&from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
             esurl = esurl + "&filter=" + filter;
         }
@@ -214,7 +214,7 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
             hosts_list = "";
             hosts = ['global'];
         }
-        esurl = "/rules/es?query=logstash_eve&from_date=" + from_date + "&value=" + value + hosts_list
+        var esurl = "/rules/es?query=logstash_eve&from_date=" + from_date + "&value=" + value + hosts_list
 
         $.ajax(
                         {
@@ -331,7 +331,7 @@ function build_path(d) {
 window.build_path = build_path;
 
 function draw_sunburst(from_date, hosts, filter, callback) {
-        esurl = "/rules/es?query=rules_per_category&from_date=" + from_date + "&hosts=" + hosts.join()
+        var esurl = "/rules/es?query=rules_per_category&from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
             esurl = esurl + "&filter=" + filter;
         }
@@ -480,7 +480,7 @@ function arcTweenZoom(d) {
 window.draw_sunburst = draw_sunburst;
 
 function draw_circle(from_date, hosts, filter, callback) {
-        esurl = "/rules/es?query=rules_per_category&from_date=" + from_date + "&hosts=" + hosts.join()
+        var esurl = "/rules/es?query=rules_per_category&from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
             esurl = esurl + "&filter=" + filter;
         }
