@@ -1,3 +1,5 @@
+/* global nv, d3 */
+
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -37,14 +39,14 @@ function prepare_rule_details() {
                 }
             );
         } else {
-            sid = $( this ).parent().find("a").html();
+            var sid = $( this ).parent().find("a").html();
             $.ajax(
                 {
                         type:"GET",
                         url:"/rules/rule/"+sid,
                         success: function(data) {
-                            mylink = $('a').filter(function(index) { return $(this).text() == data.sid; });
-                            mytd = mylink.parent().parent().find(".msg");
+                            var mylink = $('a').filter(function(index) { return $(this).text() == data.sid; });
+                            var mytd = mylink.parent().parent().find(".msg");
                             mytd.append("<div class='detail'>" + data.highlight_content + "</div>");
                             mytd.find(".detail").slideDown();
                         },
@@ -130,7 +132,7 @@ function draw_timeline(from_date, hosts, filter) {
                                             .showXAxis(true)        //Show the x-axis
                               ;
                               } else {
-                            multigraph = false;
+                            var multigraph = false;
                             if (hosts.length > 1) {
                                     multigraph = true;
                             }
@@ -152,18 +154,18 @@ function draw_timeline(from_date, hosts, filter) {
 
                                 var end_interval = new Date().getTime();
                                 var sdata = []
-                                for (hi = 0; hi < hosts.length; hi++) {
-                                        gdata = []
+                                for (var hi = 0; hi < hosts.length; hi++) {
+                                        var gdata = []
                                         var starti = 0;
                                         var iter = 0;
                                         if (!data[hosts[hi]]) {
                                             continue;
                                         }
-                                        entries = data[hosts[hi]]['entries']
+                                        var entries = data[hosts[hi]]['entries']
                                         var interval = parseInt(data['interval']);
-                                        for (inter = parseInt(data['from_date']); inter < end_interval; inter = inter + interval) {
-                                            found = false;
-                                            for (i = starti; i < entries.length; i++) {
+                                        for (var inter = parseInt(data['from_date']); inter < end_interval; inter = inter + interval) {
+                                            var found = false;
+                                            for (var i = starti; i < entries.length; i++) {
                                                 if (Math.abs(entries[i]["time"] - inter) <= interval/2) {
                                                     gdata.push({x: inter, y: entries[i]["count"]});
                                                     found = true;
@@ -209,7 +211,7 @@ window.draw_timeline = draw_timeline;
 function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, autorange) {
 
         if (hosts) {
-            hosts_list  = "&hosts=" + hosts.join();
+            var hosts_list  = "&hosts=" + hosts.join();
         } else {
             hosts_list = "";
             hosts = ['global'];
@@ -255,16 +257,16 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
                                 var end_interval = new Date().getTime();
                                 chart.forceX([from_date, end_interval]);
                                 var sdata = []
-                                gdata = []
+                                var gdata = []
                                 var starti = 0;
                                 var iter = 0;
-                                for (hi = 0; hi < hosts.length; hi++) {
+                                for (var hi = 0; hi < hosts.length; hi++) {
                                     if (!data[hosts[hi]]) {
                                         continue;
                                     }
-                                    entries = data[hosts[hi]]['entries']
+                                    var entries = data[hosts[hi]]['entries']
                                     if (speed) {
-                                        for (i = 1; i < entries.length; i++) {
+                                        for (var i = 1; i < entries.length; i++) {
                                                 gdata.push({x: entries[i]["time"], y: Math.max((entries[i]["mean"] - entries[i-1]["mean"])/(data['interval']/1000), 0) });
                                         }
                                         sdata.push(
@@ -317,13 +319,13 @@ function draw_stats_timeline(from_date, value, tdiv, speed, hosts) {
 window.draw_stats_timeline = draw_stats_timeline;
 
 function build_path(d) {
-  tooltip = d.msg ? d.msg : d.key ? d.key : "Unknown";
+  var tooltip = d.msg ? d.msg : d.key ? d.key : "Unknown";
   if (tooltip == "categories") {
       return "";
   }
     tooltip = "<div class='label label-default'>" + tooltip + "</div>";
     if (d.parent && d.parent.key != "categories") {
-      tip = d.parent.key ? d.parent.key : "Unknown";
+      var tip = d.parent.key ? d.parent.key : "Unknown";
       tooltip = "<div class='label label-default'>"+ tip + "</div>\n" + tooltip;
     }
   return tooltip;
@@ -390,7 +392,7 @@ var node;
 
   $('path').mouseover(function(){
       var d = this.__data__;
-      tooltip = build_path(d);
+      var tooltip = build_path(d);
       $( "#circles").append("<div id='circles_tooltip'>" + tooltip + "</div>");
   });
   $('path').mouseout(function(){
@@ -549,7 +551,7 @@ function draw_circle(from_date, hosts, filter, callback) {
                      window.open("/rules/rule/pk/" + d.key,"_self");
                  }
                  $("#filter").empty();
-                 tooltip = build_path(d);
+                 var tooltip = build_path(d);
                  if (tooltip.length) {
                      $("#filter").append("Filter: " + tooltip);
                  }
