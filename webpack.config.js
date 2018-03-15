@@ -21,6 +21,11 @@ module.exports = {
         }
       },
       {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: ['eslint-loader']
+      },
+      {
         test: /\.(css|scss)$/,
         use: extractSass.extract({
           use: [
