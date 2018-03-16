@@ -375,11 +375,11 @@ var arc = d3.svg.arc()
     .innerRadius(function(d) { return Math.max(0, y(d.y)); })
     .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
 
-// Keep track of the node that is currently being displayed as the root.
-var node;
-  root = data;
-  node = root;
-  var path = svg.datum(root).selectAll("path")
+  // Keep track of the node that is currently being displayed as the root.
+  var node;
+  var data_root = data;
+  node = data_root;
+  var path = svg.datum(data_root).selectAll("path")
       .data(partition.nodes)
     .enter().append("path")
       .attr("d", arc)
@@ -512,9 +512,9 @@ function draw_circle(from_date, hosts, filter, callback) {
                .append("g")
                  .attr("transform", "translate(" + diameter / 2 + "," + diameter / 2 + ")");
             
-             root = data
-               var focus = root,
-                   nodes = pack.nodes(root),
+             var data_root = data
+               var focus = data_root,
+                   nodes = pack.nodes(data_root),
                    view;
              
                var circle = svg.selectAll("circle")
