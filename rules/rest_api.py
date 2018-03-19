@@ -75,7 +75,7 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
         serializer.is_valid(raise_exception=True)
         rule.disable(serializer.validated_data['ruleset'], request.user,
                 serializer.validated_data.get('comment', None))
-        return Response({'enable': 'ok'})
+        return Response({'disable': 'ok'})
 
 
 router = DefaultRouter()
