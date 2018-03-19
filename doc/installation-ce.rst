@@ -48,10 +48,12 @@ Running Scirius CE
 
 From inside the source directory, you can initiate Django database ::
 
- python manage.py syncdb
+ python manage.py migrate
 
 Authentication is by default in scirius so you will need to create a superuser
-account when proposed.
+account ::
+
+ python manage.py createsuperuser
 
 Before starting the application you need to construct the bundles by running webpack ::
 
