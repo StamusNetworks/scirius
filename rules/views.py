@@ -294,6 +294,15 @@ def elasticsearch(request):
             from_date = request.GET.get('from_date', None)
             qfilter = request.GET.get('filter', None)
             data = es_get_alerts_tail(from_date = from_date, qfilter = qfilter)
+        elif query == 'suri_log_tail':
+            from_date = request.GET.get('from_date', None)
+            qfilter = request.GET.get('filter', None)
+            cshosts = request.GET.get('hosts', None)
+            if cshosts:
+                hosts = cshosts.split(',')
+            else:
+                hosts = None
+            data = es_suri_log_tail(from_date=from_date, hosts=hosts)
         else:
             data = None
         return HttpResponse(json.dumps(data), content_type="application/json")

@@ -1145,7 +1145,40 @@ ALERTS_TAIL = """
   }
 }
 """
- 
+
+SURICATA_LOGS_TAIL = """
+{
+  "size": 100,
+  "sort": [{
+    "@timestamp": {
+      "order": "desc",
+      "unmapped_type": "boolean"
+    }
+  }],
+  "query": {
+    "bool": {
+      "must": [{
+        "range": {
+          "@timestamp": {
+            "gte": {{ from_date }}
+          }
+        }
+      }, {
+        "query_string": {
+      {% if hosts %}
+          {% for host in hosts|slice:":-1" %}
+          "query": "{{ hostname }}:{{ host }} AND event_type:engine",
+          {% endfor %}
+          "query": "{{ hostname }}:{{ hosts|last }} AND event_type:engine"
+      {% else %}
+          "query": "event_type:engine",
+      {% endif %}
+        }
+      }]
+    }
+  }
+}
+"""
 
 if settings.ELASTICSEARCH_VERSION >= 6:
     DASHBOARDS_QUERY_URL = "/%s/_search?size=" % settings.KIBANA_INDEX
@@ -1674,3 +1707,22 @@ def es_get_alerts_tail(from_date=0, qfilter = None):
     # returned data is JSON
     data = json.loads(data)
     return data['hits']['hits']
+
+def es_suri_log_tail(from_date, hosts):
+    context = {
+        'from_date': from_date,
+        'hosts': hosts,
+        'hostname': settings.ELASTICSEARCH_HOSTNAME
+    }
+    data = render_template(SURICATA_LOGS_TAIL, context)
+    es_url = get_es_url(from_date, data='engine')
+    req = urllib2.Request(es_url, data)
+    try:
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
+    except Exception, e:
+        raise
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)['hits']['hits']
+    data.reverse()
+    return data
