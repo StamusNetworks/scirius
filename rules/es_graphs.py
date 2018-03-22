@@ -1119,7 +1119,7 @@ ALERTS_TAIL = """
   "sort": [
     {
       "@timestamp": {
-        "order": "asc",
+        "order": "desc",
         "unmapped_type": "boolean"
       }
     }
@@ -1705,8 +1705,9 @@ def es_get_alerts_tail(from_date=0, qfilter = None):
         return "BAM: " + str(e)
     data = out.read()
     # returned data is JSON
-    data = json.loads(data)
-    return data['hits']['hits']
+    data = json.loads(data)['hits']['hits']
+    data.reverse()
+    return data
 
 def es_suri_log_tail(from_date, hosts):
     context = {
