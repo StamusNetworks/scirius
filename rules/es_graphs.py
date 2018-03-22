@@ -1189,10 +1189,10 @@ def build_es_timestamping(date, data = 'alert'):
 
 def get_es_url(from_date, data = 'alert'):
     if (data == 'alert' and '*' in settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX) or (data != 'alert' and '*' in settings.ELASTICSEARCH_LOGSTASH_INDEX):
-            if data == 'alert':
-                indexes = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
-            else:
-                indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX
+        if data == 'alert':
+            indexes = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
+        else:
+            indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX
     else:
         if from_date == 0:
             if data == 'alert':
