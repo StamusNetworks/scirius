@@ -4,7 +4,7 @@ from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 
-from rules.models import Rule, Ruleset
+from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, Transformation
 
 
 class ModelSerializer(serializers.ModelSerializer):
@@ -40,12 +40,50 @@ class RulesetViewSet(viewsets.ModelViewSet):
     filter_fields = ('name', 'descr')
 
 
+class CategoryChangeSerializer(serializers.Serializer):
+    ruleset = serializers.PrimaryKeyRelatedField(queryset=Ruleset.objects.all(), write_only=True)
+    comment = serializers.CharField(required=False, allow_blank=True, write_only=True)
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ('pk', 'name', 'filename', 'descr', 'created_date', 'source')
+
+
+class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    ordering_fields = ('pk', 'name', 'filename', 'created_date', 'source')
+    filter_fields = ('name', 'filename', 'source', 'created_date')
+
+    @detail_route(methods=['post'])
+    def enable(self, request, pk):
+        category = self.get_object()
+        serializer = CategoryChangeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        category.enable(serializer.validated_data['ruleset'], request.user,
+                serializer.validated_data.get('comment', None))
+        return Response({'enable': 'ok'})
+
+    @detail_route(methods=['post'])
+    def disable(self, request, pk):
+        category = self.get_object()
+        serializer = CategoryChangeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        category.disable(serializer.validated_data['ruleset'], request.user,
+                serializer.validated_data.get('comment', None))
+        return Response({'disable': 'ok'})
+
+
 class RuleChangeSerializer(serializers.Serializer):
     ruleset = serializers.PrimaryKeyRelatedField(queryset=Ruleset.objects.all(), write_only=True)
     comment = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
 
 class RuleSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Rule
         fields = ('pk', 'sid', 'category', 'msg', 'state', 'state_in_source', 'rev', 'content', \
@@ -58,6 +96,18 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
     ordering = ('sid',)
     ordering_fields = ('sid', 'category', 'msg', 'imported_date', 'updated_date')
     filter_fields = ('sid', 'category', 'msg')
+
+    @detail_route()
+    def content(self, request, pk):
+        rule = self.get_object()
+        # rulesets = Ruleset.objects.all()
+        rulesets = Ruleset.objects.filter(categories__rule=rule)
+        res = {}
+
+        for ruleset in rulesets:
+            res[ruleset.pk] = rule.generate_content(ruleset)
+
+        return Response(res)
 
     @detail_route(methods=['post'])
     def enable(self, request, pk):
@@ -78,6 +128,67 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
         return Response({'disable': 'ok'})
 
 
+class RulesetTransformationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = RulesetTransformation
+        fields = ('pk', 'ruleset', 'transfo_type', 'transfo_value')
+        extra_kwargs = {
+            'ruleset': {'source': 'ruleset_transformation'},
+            'transfo_type': {'source': 'key'},
+            'transfo_value': {'source': 'value'},
+        }
+
+
+class RulesetTransformationViewSet(viewsets.ModelViewSet):
+    queryset = RulesetTransformation.objects.all()
+    serializer_class = RulesetTransformationSerializer
+    filter_fields = ('ruleset_transformation',)
+    ordering_fields = ('ruleset_transformation')
+
+
+class CategoryTransformationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CategoryTransformation
+        fields = ('pk', 'ruleset', 'category', 'transfo_type', 'transfo_value')
+        extra_kwargs = {
+            'category': {'source': 'category_transformation'},
+            'transfo_type': {'source': 'key'},
+            'transfo_value': {'source': 'value'},
+        }
+
+
+class CategoryTransformationViewSet(viewsets.ModelViewSet):
+    queryset = CategoryTransformation.objects.all()
+    serializer_class = CategoryTransformationSerializer
+    filter_fields = ('category_transformation', 'ruleset')
+    ordering_fields = ('pk', 'ruleset', 'category_transformation')
+
+
+class RuleTransformationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = RuleTransformation
+        fields = ('pk', 'ruleset', 'rule', 'transfo_type', 'transfo_value')
+        extra_kwargs = {
+            'rule': {'source': 'rule_transformation'},
+            'transfo_type': {'source': 'key'},
+            'transfo_value': {'source': 'value'},
+        }
+
+
+class RuleTransformationViewSet(viewsets.ModelViewSet):
+    queryset = RuleTransformation.objects.all()
+    serializer_class = RuleTransformationSerializer
+    filter_fields = ('rule_transformation', 'ruleset')
+    ordering_fields = ('pk', 'ruleset', 'rule_transformation')
+
+
 router = DefaultRouter()
 router.register('rules/ruleset', RulesetViewSet)
+router.register('rules/category', CategoryViewSet)
 router.register('rules/rule', RuleViewSet)
+router.register('rules/transformations/rulesets', RulesetTransformationViewSet)
+router.register('rules/transformations/categories', CategoryTransformationViewSet)
+router.register('rules/transformations/rules', RuleTransformationViewSet)

@@ -83,8 +83,17 @@ class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
         self.category = Category.objects.create(name='test category', filename='test',
                 source=self.source)
         self.category.save()
+
+        content = """alert ip $HOME_NET any -> [103.207.29.161,103.207.29.171,103.225.168.222,103.234.36.190,103.234.37.4,103.4.164.34,
+        103.6.207.37,104.131.93.109,104.140.137.152,104.143.5.144,104.144.167.131,104.144.167.251,104.194.206.108,
+        104.199.121.36,104.207.154.26,104.223.87.207,104.43.200.222,106.187.48.236,107.161.19.71] 
+        any (msg:"ET CNC Shadowserver Reported CnC Server IP group 1"; 
+        reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,www.shadowserver.org; 
+        threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; 
+        flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)"""
+
         self.rule = Rule.objects.create(sid=1, category=self.category, msg='test rule',
-                content='test rule')
+                content=content)
         self.rule.save()
         self.ruleset = Ruleset.objects.create(name='test ruleset', descr='descr', created_date=timezone.now(),
                 updated_date=timezone.now())
@@ -124,3 +133,86 @@ class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
         # Read still authorized
         self.http_post(reverse('rule-disable', args=(self.rule.pk,)), {'ruleset': self.ruleset.pk},
                 status=status.HTTP_403_FORBIDDEN)
+
+    def test_004_rule_transformation(self):
+        # Transform ruleset
+        self.http_post(reverse('rulesettransformation-list'),
+                       {'ruleset': self.ruleset.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_FILESTORE.value},
+                       status=status.HTTP_201_CREATED)
+
+        # Check inheritance on category
+        transformation = self.category.get_transformation(ruleset=self.ruleset, key=Transformation.ACTION, override=True)
+        self.assertEqual(transformation, Transformation.A_FILESTORE)
+
+        # Check inheritance on rule
+        transformation = self.rule.get_transformation(ruleset=self.ruleset, key=Transformation.ACTION, override=True)
+        self.assertEqual(transformation, Transformation.A_FILESTORE)
+
+        # Transform Category
+        self.http_post(reverse('categorytransformation-list'),
+                       {'category': self.category.pk, 'ruleset': self.ruleset.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_DROP.value},
+                       status=status.HTTP_201_CREATED)
+
+        # Check category transformation
+        transformation = self.category.get_transformation(ruleset=self.ruleset, key=Transformation.ACTION)
+        self.assertEqual(transformation, Transformation.A_DROP)
+
+        # Check inheritance on rule (from category)
+        transformation = self.rule.get_transformation(ruleset=self.ruleset, key=Transformation.ACTION, override=True)
+        self.assertEqual(transformation, Transformation.A_DROP)
+
+        # Transform rule
+        self.http_post(reverse('ruletransformation-list'),
+                       {'rule': self.rule.pk, 'ruleset': self.ruleset.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_REJECT.value},
+                       status=status.HTTP_201_CREATED)
+
+        # Check transformed rule
+        transformed = self.ruleset.get_transformed_rules(key=Transformation.ACTION, value=Transformation.A_REJECT)
+        self.assertEqual(len(transformed), 1)
+        self.assertEqual(transformed[0].pk, self.rule.pk)
+
+        transformation = self.rule.get_transformation(ruleset=self.ruleset, key=Transformation.ACTION)
+        self.assertEqual(transformation, Transformation.A_REJECT)
+
+        # Transform same rule
+        self.http_patch(reverse('ruletransformation-detail',  args=(self.rule.pk,)),
+                        {'rule': self.rule.pk, 'ruleset': self.ruleset.pk,
+                            'transfo_type': Transformation.ACTION.value,
+                            'transfo_value': Transformation.A_DROP.value})
+
+        transformed = self.ruleset.get_transformed_rules(key=Transformation.ACTION, value=Transformation.A_REJECT)
+        self.assertEqual(len(transformed), 0)
+
+    def test_005_rule_transformation_content(self):
+        self.http_post(reverse('rulesettransformation-list'),
+                       {'ruleset': self.ruleset.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_DROP.value},
+                       status=status.HTTP_201_CREATED)
+
+        content = self.http_get(reverse('rule-content', args=(self.rule.pk,)))
+        self.assertEqual(u'drop' in content[self.ruleset.pk], True)
+
+        self.http_post(reverse('categorytransformation-list'),
+                       {'category': self.category.pk, 'ruleset': self.ruleset.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_REJECT.value},
+                       status=status.HTTP_201_CREATED)
+
+        content = self.http_get(reverse('rule-content', args=(self.rule.pk,)))
+        self.assertEqual(u'reject' in content[self.ruleset.pk], True)
+
+        self.http_post(reverse('ruletransformation-list'),
+                       {'rule': self.rule.pk, 'ruleset': self.ruleset.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_DROP.value},
+                       status=status.HTTP_201_CREATED)
+
+        content = self.http_get(reverse('rule-content', args=(self.rule.pk,)))
+        self.assertEqual(u'drop' in content[self.ruleset.pk], True)
