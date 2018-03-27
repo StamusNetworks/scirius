@@ -744,7 +744,7 @@ def delete_alerts(request, rule_id):
         form = CommentForm(request.POST)
         if form.is_valid():
             if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
-                Probe.common.es_delete_alerts_by_sid(rule_id)
+                Probe.common.es_delete_alerts_by_sid(rule_id, request=request)
             else:
                 result = es_delete_alerts_by_sid(rule_id)
                 if result.has_key('status') and result['status'] != 200:
