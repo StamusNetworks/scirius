@@ -25,7 +25,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation
+from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation
 
 import tempfile
 from shutil import rmtree
@@ -181,7 +181,8 @@ class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
         self.assertEqual(transformation, Transformation.A_REJECT)
 
         # Transform same rule
-        self.http_patch(reverse('ruletransformation-detail',  args=(self.rule.pk,)),
+        self.ruletransformation = RuleTransformation.objects.filter(rule_transformation=self.rule, ruleset=self.ruleset)
+        self.http_patch(reverse('ruletransformation-detail',  args=(self.ruletransformation[0].pk,)),
                         {'rule': self.rule.pk, 'ruleset': self.ruleset.pk,
                             'transfo_type': Transformation.ACTION.value,
                             'transfo_value': Transformation.A_DROP.value})
