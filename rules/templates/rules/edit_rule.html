@@ -104,11 +104,11 @@ Changing transformation for the category will add an exception.
 <p>
 Please choose a transformation to apply on current object. As transformation are exclusive, you need to pick one to apply.
 </p>
+{% endif %}
+
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-6">
-{% endif %}
-
 {% if rulesets or category or rule.get_transformation_choices|length %}
 {% if rule %}
 <form action="{% url 'edit_rule' rule.pk %}" method="post" class="form">
