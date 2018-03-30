@@ -51,7 +51,7 @@
     <ul>
     {% for transform in ruleset_transforms %}
     <li>
-    	<a href="{% url 'category' transform.ruleset.pk %}">{{ transform.ruleset }}</a>: <div class="label label-info">{{ transform.trans }}</div>
+        <a href="{% url 'ruleset' transform.ruleset.pk %}">{{ transform.ruleset }}</a>: <div class="label label-info">{{ transform.trans }}</div>
     </li>
     {% endfor %}
     </ul>
