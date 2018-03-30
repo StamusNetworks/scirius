@@ -37,8 +37,6 @@
 {% block content %}
 {% if rule %}
 <h2>Transform rule</h2>
-{% if category_transforms %}
-
 {% if ruleset_transforms %} 
     <div class="panel panel-info">
     <div class="panel-heading">Inheritance from rulesets</div>
@@ -62,6 +60,7 @@
     </div>
 {% endif %}
 
+{% if category_transforms %}
 <div class="panel panel-info">
 <div class="panel-heading">Inheritance from categories</div>
 <div class="panel-body">
