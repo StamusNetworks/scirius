@@ -182,9 +182,12 @@ Suppression is used when the alerts need to be suppressed - aka do not generate 
 Suppress alerts
 ~~~~~~~~~~~~~~~
 
-Click on ``Appliances`` and select/choose the desired StamusN probe. Click on the particular ``sid`` for the alerts that would need to be suppressed. On the 
-new screen make sure you are on the ``Rule stats`` tab then you can either click on ``Suppress rule`` under ``Action`` on the menu on the left hand side or choose directly by source or destination by clicking on 
-the ``x`` next to the IP address. On the new page you will be informed if there already is some threshold or suppression in effect for that particular signature.
+From any table displaying a list of alerts, click on the particular ``sid`` for the alerts that would need to be suppressed. This will
+display the rule page. There you can click on ``Edit rule`` under ``Action`` on the menu on the left hand side, then select ``Suppress rule`` in the same menu.
+From the rule page you can also reach the suppression creation page by being on the ``Ip and Time stats`` or ``Advanced Data`` tabs and clicking on 
+the ``x`` next to the IP address.
+
+On the new page you will be informed if there already is some threshold or suppression in effect for that particular signature.
 The available fields are: 
 
 - ``Ruleset`` for which ruleset this configuration applies
@@ -206,9 +209,12 @@ In order for the suppression to become active you need to ``Push`` the updated r
 Threshold alerts
 ~~~~~~~~~~~~~~~~
 
-From a page displaying alert statistics click on the particular ``sid`` for the alerts that would need to be thresholded. On the 
-new screen make sure you are on the ``Rule stats`` tab then you can either click on ``Threshold`` under ``Action`` on the menu on the left hand side or choose directly by source or destination by clicking on 
-the arrow down (next to ``x``) next to the IP address. On the new page you will be informed if there already is some threshold or suppression in effect for that particular signature.
+From any table displaying a list of alerts, click on the particular ``sid`` for the alerts that would need to be suppressed. This will
+display the rule page. There you can click on ``Edit rule`` under ``Action`` on the menu on the left hand side, then select ``Threshold rule`` in the same menu.
+From the rule page you can also reach the threshold creation page by being on the ``Ip and Time stats`` or ``Advanced Data`` tabs and clicking on 
+the arrow down (next to the ``x``) next to the IP address.
+
+On the new page you will be informed if there already is some threshold or suppression in effect for that particular signature.
 The available fields are: 
 
 - ``Type`` type of the threshold. It can be:
@@ -290,7 +296,7 @@ Target keyword
 ~~~~~~~~~~~~~~
 
 Available since Suricata 4.0, the target keyword can be used to tell which side of a flow triggering
-a signature is the targer. If this key is present then related events are enhanced to contain the source
+a signature is the target. If this key is present then related events are enhanced to contain the source
 and target of the attack.
 
 The option can have four values:
