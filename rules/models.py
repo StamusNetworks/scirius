@@ -40,6 +40,8 @@ import shutil
 import json
 import IPy
 
+from rules.tests_rules import TestRules
+
 from django.contrib.auth.models import User
 
 def validate_hostname(val):
@@ -614,7 +616,7 @@ class SourceAtVersion(models.Model):
 
     def test_rule_buffer(self, rule_buffer, single = False):
         Probe = __import__(settings.RULESET_MIDDLEWARE)
-        testor = Probe.common.Test()
+        testor = TestRules()
         tmpdir = tempfile.mkdtemp()
         self.export_files(tmpdir)
         related_files = {}
@@ -2050,7 +2052,7 @@ class Ruleset(models.Model, Transformable):
 
     def test_rule_buffer(self, rule_buffer, single = False):
         Probe = __import__(settings.RULESET_MIDDLEWARE)
-        testor = Probe.common.Test()
+        testor = TestRules()
         tmpdir = tempfile.mkdtemp()
         self.export_files(tmpdir)
         related_files = {}
