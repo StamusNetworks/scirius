@@ -93,8 +93,8 @@ to Suricata rules directory using its name as filename.
 
 If method is ``HTTP URL``, you will see an ``Optional authorization key`` field. This
 field is optional and can be used to authenticate Scirius against the remote server.
-It adds an authorization header to request allowing authentication on a large number of
-third party service.
+It adds an authorization header to HTTP request allowing authentication on a large number of
+third party services.
 This can be used in particular to import signatures from a `MISP <http://www.misp-project.org/>`_ instance. See
 `MISP documentation <https://www.circl.lu/doc/misp/automation/#automation-api>`_ for more information.
 
