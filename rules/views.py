@@ -1128,10 +1128,11 @@ def add_source(request):
 def fetch_public_sources():
     proxy_params = get_system_settings().get_proxy_params()
     try:
+        hdrs = { 'User-Agent': 'scirius' }
         if proxy_params:
-            resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL, proxies = proxy_params)
+            resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL, proxies = proxy_params, headers = hdrs)
         else:
-            resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL)
+            resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL, headers = hdrs)
         resp.raise_for_status()
     except requests.exceptions.ConnectionError, e:
         if "Name or service not known" in str(e):

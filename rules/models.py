@@ -752,10 +752,9 @@ class Source(models.Model):
 
     def update_ruleset_http(self, f):
         proxy_params = get_system_settings().get_proxy_params()
+        hdrs = { 'User-Agent': 'scirius' }
         if self.authkey:
-            hdrs = { 'Authorization': self.authkey }
-        else:
-            hdrs = None
+            hdrs['Authorization'] = self.authkey
         try:
             if proxy_params:
                 resp = requests.get(self.uri, proxies = proxy_params, headers = hdrs, verify = self.cert_verif)
