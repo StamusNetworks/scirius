@@ -37,16 +37,16 @@ if settings.SURICATA_UNIX_SOCKET:
 
 class Info():
     def status(self):
-        suri_running = False
+        suri_running = 'danger'
         if settings.SURICATA_UNIX_SOCKET:
             sc = suricatasc.SuricataSC(settings.SURICATA_UNIX_SOCKET)
             try:
                 sc.connect()
             except:
-                return False
+                return 'danger'
             res = sc.send_command('uptime', None)
             if res['return'] == 'OK':
-                suri_running = True
+                suri_running = 'success'
             sc.close()
         else:
             for proc in psutil.process_iter():
@@ -56,7 +56,7 @@ class Info():
                     pass
                 else:
                     if pinfo['name'] == 'Suricata-Main':
-                        suri_running = True
+                        suri_running = 'success'
                         break
         return suri_running
     def disk(self):

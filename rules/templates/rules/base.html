@@ -424,12 +424,7 @@ function get_suricata_health() {
                 if (!data) {
                         $("#suri-status").addClass("label-danger");
                 } else {
-
-                        if (data['running']) {
-                            $("#suri-status").addClass("label-success");
-                        } else {
-                            $("#suri-status").addClass("label-danger");
-                        }
+                        $("#suri-status").addClass("label-" + data['running']);
                 }
                 },
                 error: function(data) {
