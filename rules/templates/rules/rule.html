@@ -363,7 +363,7 @@ $(document).ready(function(){
 <div id="comments">
 {% if rule.get_actions %}
 {% for comment in rule.get_actions %}
-{% include "rules/useraction.html" %}
+<div class=bg-info><p>{{ comment.generate_description }} at {{ comment.date }}</div>
 {% endfor %}
 
 <script>

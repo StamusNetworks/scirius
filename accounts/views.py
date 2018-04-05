@@ -50,7 +50,11 @@ def loginview(request, target):
                 logger = logging.getLogger('authentication')
                 logger.info("Successful login for '%s' from '%s'", username, get_real_ip(request))
                 from rules.models import UserAction
-                UserAction.objects.create(action='login', user=user)
+                UserAction.create(
+                        action_type='login',
+                        user=user,
+                        force_insert=True
+                )
                 return redirect("/" + target)
             else:
                 form = LoginForm()
@@ -231,11 +235,17 @@ def manageuseraction(request, user_id, action):
     context = { 'action': 'User actions', 'user': user }
     return scirius_render(request, 'accounts/user.html', context)
 
+
 def logoutview(request):
     from rules.models import UserAction
-    UserAction.objects.create(action='logout', user=request.user)
+    UserAction.create(
+            action_type='logout',
+            user=request.user,
+            force_insert=True
+    )
     logout(request)
     return redirect(settings.LOGIN_URL)
+
 
 def token(request):
     return scirius_render(request, 'accounts/edit.html', context)

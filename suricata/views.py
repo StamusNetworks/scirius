@@ -95,8 +95,12 @@ def edit(request):
         if form.is_valid():
             if suri:
                 form.save()
-                ua = UserAction(action='modify', options='suricata', user = request.user, userobject = suri, comment = form.cleaned_data['comment'])
-                ua.save()
+                UserAction.create(
+                        action_type='edit_suricata',
+                        comment=form.cleaned_data['comment'],
+                        user=request.user,
+                        suricata=suri
+                )
                 return redirect(index)
             try:
                 suricata = Suricata.objects.create(name = form.cleaned_data['name'],
@@ -109,8 +113,12 @@ def edit(request):
                         )
             except IntegrityError, error:
                 return scirius_render(request, 'suricata/edit.html', { 'form': form, 'error': error })
-            ua = UserAction(action='create', options='suricata', user = request.user, userobject = suricata, comment = form.cleaned_data['comment'])
-            ua.save()
+            UserAction.create(
+                    action_type='create_suricata',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    suricata=suricata
+            )
             return redirect(index)
         else:
             return scirius_render(request, 'suricata/edit.html', { 'form': form, 'error': 'Invalid form' })
@@ -159,8 +167,12 @@ def update(request):
             else:
                 message.append("Suricata restart already asked.")
 
-        ua = UserAction(action='modify', options='ruleset', user = request.user, userobject = suri, comment = form.cleaned_data['comment'])
-        ua.save()
+        UserAction.create(
+                action_type='edit_suricata',
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                suricata=suri
+        )
         context =  { 'message': message, 'suricata': suri }
         return scirius_render(request, 'suricata/update.html', context)
     else:

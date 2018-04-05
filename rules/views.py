@@ -30,7 +30,7 @@ from django.contrib import messages
 from scirius.utils import scirius_render, scirius_listing
 
 from rules.es_data import ESData
-from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation, CategoryTransformation, RulesetTransformation
+from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation, CategoryTransformation, RulesetTransformation, UserAction, UserActionObject
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, HistoryTable
 
 from rules.es_graphs import *
@@ -460,8 +460,14 @@ def edit_rule(request, rule_id):
                             cat_trans = NONE
 
                         if trans != cat_trans:
-                            UserAction.objects.create(action='enable', options=cat_trans.value, user=request.user,
-                                                      userobject=rule_object, ruleset=ruleset, comment=form.cleaned_data['comment'])
+                            UserAction.create(
+                                    action_type='transform_rule',
+                                    comment=form.cleaned_data['comment'],
+                                    user=request.user,
+                                    transformation='%s: %s' % (TYPE.value, CAT_DEFAULT.name.replace('_', ' ').title()),
+                                    rule=rule_object,
+                                    ruleset=ruleset
+                            )
 
                         rule_object.remove_transformations(ruleset, TYPE)
                         continue
@@ -469,12 +475,23 @@ def edit_rule(request, rule_id):
                     rule_object.set_transformation(ruleset, key=TYPE, value=form_trans)
 
                     if form_trans != NONE and form_trans != trans:
-                        UserAction.objects.create(action='enable', options=form_trans.value, user=request.user,
-                                                  userobject=rule_object, ruleset=ruleset, comment=form.cleaned_data['comment'])
-
+                        UserAction.create(
+                                action_type='transform_rule',
+                                comment=form.cleaned_data['comment'],
+                                user=request.user,
+                                transformation='%s: %s' % (TYPE.value.title(), form_trans.value.title()),
+                                rule=rule_object,
+                                ruleset=ruleset
+                        )
                     elif form_trans == NONE and trans:
-                        UserAction.objects.create(action='disable', options=trans.value, user=request.user,
-                                                  userobject=rule_object, ruleset=ruleset, comment=form.cleaned_data['comment'])
+                        UserAction.create(
+                                action_type='transform_rule',
+                                comment=form.cleaned_data['comment'],
+                                user=request.user,
+                                transformation='%s: %s' % (TYPE.value.title(), trans.value.title()),
+                                rule=rule_object,
+                                ruleset=ruleset
+                        )
 
             return redirect(rule_object)
     else:
@@ -620,9 +637,23 @@ def transform_category(request, cat_id):
                     # Enable new transformation
                     if form_trans != trans:
                         cat_object.toggle_transformation(ruleset, key=TYPE, value=form_trans)
-                        UserAction.objects.create(action='enable', options=form_trans.value, user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        UserAction.create(
+                                action_type='transform_category',
+                                comment=form.cleaned_data['comment'],
+                                user=request.user,
+                                transformation='%s: %s' % (TYPE.value.title(), form_trans.value.title()),
+                                category=cat_object,
+                                ruleset=ruleset
+                        )
                     elif trans:
-                        UserAction.objects.create(action='disable', options=trans.value, user = request.user, userobject = cat_object, ruleset = ruleset, comment = form.cleaned_data['comment'])
+                        UserAction.create(
+                                action_type='transform_category',
+                                comment=form.cleaned_data['comment'],
+                                user=request.user,
+                                transformation='%s: %s' % (TYPE.value.title(), trans.value.title()),
+                                category=cat_object,
+                                ruleset=ruleset
+                        )
 
             return redirect(cat_object)
     else:
@@ -765,9 +796,12 @@ def delete_alerts(request, rule_id):
                     context['comment_form'] = CommentForm()
                     return scirius_render(request, 'rules/delete_alerts.html', context)
             messages.add_message(request, messages.INFO, "Events deletion may be in progress, graphics and stats could be not in sync.");
-            ua = UserAction(action='delete', options='alerts', user = request.user, userobject = rule_object)
-            ua.comment = form.cleaned_data['comment']
-            ua.save()
+            UserAction.create(
+                    action_type='delete_alerts',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    rule=rule_object
+            )
         return redirect(rule_object)
     else:
         context = {'object': rule_object }
@@ -784,9 +818,12 @@ def comment_rule(request, rule_id):
     if request.method == 'POST': # If the form has been submitted...
         form = RuleCommentForm(request.POST)
         if form.is_valid():
-            ua = UserAction(action='comment',user = request.user, userobject = rule_object)
-            ua.comment = form.cleaned_data['comment']
-            ua.save()
+            UserAction.create(
+                    action_type='comment_rule',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    rule=rule_object
+            )
     return redirect(rule_object)
 
 def toggle_availability(request, rule_id):
@@ -801,9 +838,12 @@ def toggle_availability(request, rule_id):
         return scirius_render(request, 'rules/rule.html', context)
 
     rule_object.toggle_availability()
-    ua = UserAction(action='modify', user = request.user, userobject = rule_object)
-    ua.options = 'rule availability'
-    ua.save()
+
+    UserAction.create(
+            action_type='toggle_availability',
+            user=request.user,
+            rule=rule_object
+    )
 
     return redirect(rule_object)
 
@@ -835,11 +875,16 @@ def threshold_rule(request, rule_id):
                 threshold.ruleset = ruleset
                 threshold.pk = None
                 threshold.save()
-                ua = UserAction(action='create', user = request.user, userobject = threshold)
-                ua.ruleset = ruleset
-                ua.comment = form.cleaned_data['comment']
-                ua.options = 'threshold'
-                ua.save()
+
+                UserAction.create(
+                        action_type='create_threshold',
+                        comment=form.cleaned_data['comment'],
+                        user=request.user,
+                        rule=rule_object,
+                        threshold=threshold,
+                        ruleset=ruleset
+                )
+
             return redirect(rule_object)
         else:
             context = {'rule': rule_object, 'form': form, 'error': 'Could not create threshold'}
@@ -1056,16 +1101,23 @@ def add_source(request):
             rulesets = [ ruleset.pk for ruleset in ruleset_list ]
             if len(ruleset_list):
                 for ruleset in ruleset_list:
-                    ua = UserAction(action='create', user = request.user, userobject = src)
-                    ua.comment = form.cleaned_data['comment']
-                    ua.ruleset = ruleset
-                    ua.options = 'source'
-                    ua.save()
+                    UserAction.create(
+                            action_type='create_source',
+                            comment=form.cleaned_data['comment'],
+                            user=request.user,
+                            source=src,
+                            ruleset=ruleset
+                    )
+
             else:
-                ua = UserAction(action='create', user = request.user, userobject = src)
-                ua.comment = form.cleaned_data['comment']
-                ua.options = 'source'
-                ua.save()
+                UserAction.create(
+                        action_type='create_source',
+                        comment=form.cleaned_data['comment'],
+                        user=request.user,
+                        source=src,
+                        ruleset='No Ruleset'
+                )
+
             ruleset_list = [ '"' + ruleset.name + '"' for ruleset in ruleset_list ]
             return scirius_render(request, 'rules/add_source.html', { 'source': src,  'update': True, 'rulesets': rulesets, 'ruleset_list': ruleset_list})
     else:
@@ -1176,16 +1228,21 @@ def add_public_source(request):
             rulesets = [ ruleset.pk for ruleset in ruleset_list ]
             if len(ruleset_list):
                 for ruleset in ruleset_list:
-                    ua = UserAction(action='create', user = request.user, userobject = src)
-                    ua.comment = form.cleaned_data['comment']
-                    ua.ruleset = ruleset
-                    ua.options = 'source'
-                    ua.save()
+                    UserAction.create(
+                            action_type='create_source',
+                            comment=form.cleaned_data['comment'],
+                            user=request.user,
+                            source=src,
+                            ruleset=ruleset
+                    )
             else:
-                ua = UserAction(action='create', user = request.user, userobject = src)
-                ua.comment = form.cleaned_data['comment']
-                ua.options = 'source'
-                ua.save()
+                UserAction.create(
+                        action_type='create_source',
+                        comment=form.cleaned_data['comment'],
+                        user=request.user,
+                        source=src,
+                        ruleset='No Ruleset'
+                )
             ruleset_list = [ '"' + ruleset.name + '"' for ruleset in ruleset_list ]
             return scirius_render(request, 'rules/add_public_source.html', { 'source': src,  'update': True, 'rulesets': rulesets, 'ruleset_list': ruleset_list})
         else:
@@ -1213,10 +1270,14 @@ def edit_source(request, source_id):
                     firstimport = True
                 source.new_uploaded_file(request.FILES['file'], firstimport)
             form.save()
-            ua = UserAction(action='modify', user = request.user, userobject = source)
-            ua.comment = form.cleaned_data['comment']
-            ua.options = 'source'
-            ua.save()
+
+            UserAction.create(
+                    action_type='edit_source',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    source=source
+            )
+
             return redirect(source)
         except ValueError:
             pass
@@ -1234,10 +1295,12 @@ def delete_source(request, source_id):
     if request.method == 'POST': # If the form has been submitted...
         form = CommentForm(request.POST)
         if form.is_valid():
-            ua = UserAction(action='delete', user = request.user, userobject = source)
-            ua.comment = form.cleaned_data['comment']
-            ua.options = 'source'
-            ua.save()
+            UserAction.create(
+                    action_type='delete_source',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    source=source
+            )
             source.delete()
         return redirect("/rules/source/")
     else:
@@ -1334,11 +1397,12 @@ def add_ruleset(request):
             # ...
             try:
                 ruleset = form.create_ruleset()
-                ua = UserAction(action='create', user = request.user, userobject = ruleset)
-                ua.comment = form.cleaned_data['comment']
-                ua.options = 'ruleset'
-                ua.ruleset = ruleset
-                ua.save()
+                UserAction.create(
+                        action_type='create_ruleset',
+                        comment=form.cleaned_data['comment'],
+                        user=request.user,
+                        ruleset=ruleset
+                )
 
                 form_action_trans = Transformation.ActionTransfoType(form.cleaned_data["action"])
                 form_lateral_trans = Transformation.LateralTransfoType(form.cleaned_data["lateral"])
@@ -1470,11 +1534,15 @@ def edit_ruleset(request, ruleset_id):
                     source.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
         else:
             form = RulesetEditForm(request.POST, instance=ruleset)
-    
+
             if form.is_valid():
-                ua = UserAction(userobject = ruleset, ruleset = ruleset, action = 'modify', user = request.user, date = timezone.now(), comment = form.cleaned_data['comment'])
-                ua.options = "rename"
-                ua.save()
+                UserAction.create(
+                        action_type='edit_ruleset',
+                        comment=form.cleaned_data['comment'],
+                        user=request.user,
+                        ruleset=ruleset
+                )
+
                 form.save()
 
                 form_action_trans = Transformation.ActionTransfoType(form.cleaned_data["action"])
@@ -1595,10 +1663,12 @@ def delete_ruleset(request, ruleset_id):
     if request.method == 'POST': # If the form has been submitted...
         form = CommentForm(request.POST)
         if form.is_valid():
-            ua = UserAction(action='delete', user = request.user, userobject = ruleset)
-            ua.comment = form.cleaned_data['comment']
-            ua.options = 'ruleset'
-            ua.save()
+            UserAction.create(
+                    action_type='delete_ruleset',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    ruleset=ruleset
+            )
             ruleset.delete()
         return redirect("/rules/ruleset/")
     else:
@@ -1616,11 +1686,12 @@ def copy_ruleset(request, ruleset_id):
         form = RulesetCopyForm(request.POST) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
             copy = ruleset.copy(form.cleaned_data['name'])
-            ua = UserAction(action='create', user = request.user, userobject = copy)
-            ua.comment = form.cleaned_data['comment']
-            ua.options = 'ruleset'
-            ua.ruleset = copy
-            ua.save()
+            UserAction.create(
+                    action_type='copy_ruleset',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    ruleset=ruleset
+            )
             return redirect(copy)
     else:
         form = RulesetCopyForm()
@@ -1733,6 +1804,7 @@ def threshold(request, threshold_id):
 def edit_threshold(request, threshold_id):
     threshold = get_object_or_404(Threshold, pk=threshold_id)
     rule = threshold.rule
+    ruleset = threshold.ruleset
 
     if not request.user.is_staff:
         return redirect(threshold)
@@ -1741,11 +1813,14 @@ def edit_threshold(request, threshold_id):
         form = EditThresholdForm(request.POST, instance=threshold) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
             form.save()
-            ua = UserAction(action='modify', user = request.user, userobject = threshold)
-            ua.comment = form.cleaned_data['comment']
-            ua.options = 'threshold'
-            ua.ruleset = threshold.ruleset
-            ua.save()
+            UserAction.create(
+                    action_type='edit_threshold',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    rule=rule,
+                    threshold=threshold,
+                    ruleset=ruleset
+            )
             return redirect(threshold)
         else:
             context = {'threshold': threshold, 'form': form, 'error': 'Invalid form'}            
@@ -1758,6 +1833,7 @@ def edit_threshold(request, threshold_id):
 def delete_threshold(request, threshold_id):
     threshold = get_object_or_404(Threshold, pk=threshold_id)
     ruleset = threshold.ruleset
+    rule = threshold.rule
     if not request.user.is_staff:
         context = { 'object': threshold, 'error': 'Unsufficient permissions', 'form': CommentForm() }
         return scirius_render(request, 'rules/delete.html', context)
@@ -1765,11 +1841,14 @@ def delete_threshold(request, threshold_id):
     if request.method == 'POST': # If the form has been submitted...
         form = CommentForm(request.POST)
         if form.is_valid():
-            ua = UserAction(action='delete', user = request.user, userobject = threshold)
-            ua.ruleset = ruleset
-            ua.options = 'threshold'
-            ua.comment = form.cleaned_data['comment']
-            ua.save()
+            UserAction.create(
+                    action_type='delete_threshold',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    rule=rule,
+                    threshold=threshold,
+                    ruleset=ruleset
+            )
             threshold.delete()
         return redirect(ruleset)
     else:
@@ -1778,10 +1857,10 @@ def delete_threshold(request, threshold_id):
 
 def history(request):
     history = UserAction.objects.all().order_by('-date')
-    useractions = HistoryTable(history)
-    tables.RequestConfig(request).configure(useractions)
+    # useractions = HistoryTable(history)
+    # tables.RequestConfig(request).configure(useractions)
 
-    context = {'table': useractions, 'history': history[:50]}
+    context = {'history': history[:50]}
     return scirius_render(request, 'rules/history.html', context)
 
 def delete_comment(request, comment_id):

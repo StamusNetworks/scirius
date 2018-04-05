@@ -31,67 +31,67 @@ Add a Source
         </div><!-- /row -->
       </div><!-- /container -->
 
-<div class="container-fluid">
-<div class="list-group list-view-pf list-view-pf-view">
-{% for source, params in sources.items %}
-  <div class="list-group-item">
-  <div class="list-group-item-header">
-      <div class="list-view-pf-expand">
-        <span class="fa fa-angle-right"></span>
-      </div>
-    <div class="list-view-pf-actions">
-    {% if not params.added %}
-      <a class="add_source_button" name="{{ source }}" style="cursor: pointer;"><button class="btn btn-default">Enable</button></a>
-    {% else %}
-      <button class="btn btn-default" disabled>Enabled</button>
-    {% endif %}
-    </div>
-    <div class="list-view-pf-main-info">
-      <div class="list-view-pf-left">
-        <span class="fa fa-external-link list-view-pf-icon-sm"></span>
-      </div>
-      <div class="list-view-pf-body">
-        <div class="list-view-pf-description">
-          <div class="list-group-item-heading">
-            {{ source }}
-          </div>
-          <div class="list-group-item-text">
-            {{ params.summary }}
-          </div>
-        </div>
-        <div class="list-view-pf-additional-info">
-          <div class="list-view-pf-additional-info-item"> <span class="fa fa-list-alt"> </span> License: {{ params.license }}
-          </div>
-          <div class="list-view-pf-additional-info-item">
-            <span class="fa fa-shield"> </span> Vendor: {{ params.vendor }}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+      <div class="container-fluid">
+          <div class="list-group list-view-pf list-view-pf-view">
+              {% for source, params in sources.items %}
+              <div class="list-group-item">
+                  <div class="list-group-item-header">
+                      <div class="list-view-pf-expand">
+                          <span class="fa fa-angle-right"></span>
+                      </div>
+                      <div class="list-view-pf-actions">
+                          {% if not params.added %}
+                          <a class="add_source_button" name="{{ source }}" style="cursor: pointer;"><button class="btn btn-default">Enable</button></a>
+                          {% else %}
+                          <button class="btn btn-default" disabled>Enabled</button>
+                          {% endif %}
+                      </div>
+                      <div class="list-view-pf-main-info">
+                          <div class="list-view-pf-left">
+                              <span class="fa fa-external-link list-view-pf-icon-sm"></span>
+                          </div>
+                          <div class="list-view-pf-body">
+                              <div class="list-view-pf-description">
+                                  <div class="list-group-item-heading">
+                                      {{ source }}
+                                  </div>
+                                  <div class="list-group-item-text">
+                                      {{ params.summary }}
+                                  </div>
+                              </div>
+                              <div class="list-view-pf-additional-info">
+                                  <div class="list-view-pf-additional-info-item"> <span class="fa fa-list-alt"> </span> License: {{ params.license }}
+                                  </div>
+                                  <div class="list-view-pf-additional-info-item">
+                                      <span class="fa fa-shield"> </span> Vendor: {{ params.vendor }}
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
 
-        <div class="list-group-item-container container-fluid hidden">
-      <div class="close">
-        <span class="pficon pficon-close"></span>
-      </div>
-      <div class="row">
-        <div class="col-md-6">
-        <dl class="dl-horizontal">
-        {% if params.description %}
-        <dt>Description</dt><dd>{{ params.description }}</dd>
-        {% endif %}
-        <dt>Source URL</dt><dd>{{ params.url }}</a></dd>
-        {% if params.subscribe_url %}
-        <dt>Subscribe URL</dt><dd><a href="{{ params.subscribe_url_cleaned }}">{{ params.subscribe_url }}</a></dd>
-        {% endif %}
-        {% if params.support_url %}
-        <dt>Support URL</dt><dd><a href="{{ params.support_url_cleaned }}">{{ params.support_url }}</a></dd>
-        {% endif %}
-        </dl>
-        </div>
-        </div>
-        </div>
-        </div>
+                  <div class="list-group-item-container container-fluid hidden">
+                      <div class="close">
+                          <span class="pficon pficon-close"></span>
+                      </div>
+                      <div class="row">
+                          <div class="col-md-6">
+                              <dl class="dl-horizontal">
+                                  {% if params.description %}
+                                  <dt>Description</dt><dd>{{ params.description }}</dd>
+                                  {% endif %}
+                                  <dt>Source URL</dt><dd>{{ params.url }}</a></dd>
+                                  {% if params.subscribe_url %}
+                                  <dt>Subscribe URL</dt><dd><a href="{{ params.subscribe_url_cleaned }}">{{ params.subscribe_url }}</a></dd>
+                                  {% endif %}
+                                  {% if params.support_url %}
+                                  <dt>Support URL</dt><dd><a href="{{ params.support_url_cleaned }}">{{ params.support_url }}</a></dd>
+                                  {% endif %}
+                              </dl>
+                          </div>
+                      </div>
+                  </div>
+              </div>
 
 
 {% endfor %}

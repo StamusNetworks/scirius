@@ -2,9 +2,7 @@
 {% extends "rules/base.html" %}
 {% block content %}
 <h2 class="title">User actions history</h2>
-{% for comment in history %}
 {% include "rules/useraction.html" %}
-{% endfor %}
 <script>
 $('button.comment_button').click(function() {
     var comment_pk = $(this).attr("id");

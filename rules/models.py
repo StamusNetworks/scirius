@@ -26,9 +26,11 @@ from django.core.exceptions import FieldError, SuspiciousOperation, ValidationEr
 from django.core.validators import validate_ipv4_address
 from django.db import transaction
 from django.utils import timezone
+from django.utils.html import mark_safe, format_html, format_html_join
 from django.db.models import Q
 from idstools import rule as rule_idstools
 from enum import Enum, unique
+from copy import deepcopy
 import requests
 import tempfile
 import tarfile
@@ -83,42 +85,254 @@ def validate_url(val):
 
     validate_hostname(netloc)
 
+
 class UserAction(models.Model):
-    ACTION_TYPE = (('disable', 'Disable'), ('enable', 'Enable'), ('comment', 'Comment'), ('activate', 'Activate'), ('deactivate', 'Deactivate'), ('create', 'Create'), ('delete', 'Delete'), ('modify', 'Modify'), ('login', 'Login'), ('logout', 'Logout'))
-    ruleset = models.ForeignKey('Ruleset', default = None, on_delete = models.SET_NULL, null = True, blank = True)
+    ACTIONS = {'create_ruleset': {
+                    'description': '{user} has created ruleset {ruleset}',
+                    'title': 'Create Ruleset'
+                },
+               'delete_ruleset': {
+                    'description': '{user} has deleted ruleset {ruleset}',
+                    'title': 'Delete Ruleset'
+                },
+               'copy_ruleset': {
+                   'description': '{user} has copied ruleset {ruleset}',
+                   'title': 'Copy Ruleset'
+                },
+               'edit_ruleset': {
+                   'description': '{user} has edited ruleset {ruleset}',
+                   'title': 'Edit Ruleset'
+                },
+               'create_source': {
+                    'description': '{user} has created source {source}',
+                    'title': 'Create Source'
+                },
+               'edit_source': {
+                    'description': '{user} has edited source {source}',
+                    'title': 'Edit Source'
+                },
+               'delete_source': {
+                    'description': '{user} has deleted source {source}',
+                    'title': 'Delete Source'
+                },
+               'enable_source': {
+                    'description': '{user} has enabled source {source} in ruleset {ruleset}',
+                    'title': 'Enable Source'
+                },
+               'disable_source': {
+                    'description': '{user} has disabled source {source} in ruleset {ruleset}',
+                    'title': 'Disable Source'
+                },
+               'disable_rule': {
+                    'description': '{user} has disabled rule {rule} in ruleset {ruleset}',
+                    'title': 'Disable Rule'
+                },
+               'enable_rule': {
+                    'description': '{user} has enabled rule {rule} in ruleset {ruleset}',
+                    'title': 'Enable Rule'
+                },
+               'comment_rule': {
+                    'description': '{user} has commented rule {rule}',
+                    'title': 'Comment Rule'
+                },
+               'toggle_availability': {
+                    'description': '{user} has modified rule availability {rule}',
+                    'title': 'Toggle Availability'
+                },
+               'delete_alerts': {
+                    'description': '{user} has deleted alerts from rule {rule}',
+                    'title': 'Delete Alerts'
+                },
+               'disable_category': {
+                    'description': '{user} has disabled category {category} in ruleset {ruleset}',
+                    'title': 'Disable Category'
+                },
+               'enable_category': {
+                    'description': '{user} has enabled category {category} in ruleset {ruleset}',
+                    'title': 'Enable Category'
+                },
+               'create_threshold': {
+                    'description': '{user} has created threshold %s on rule {rule} in ruleset {ruleset}',
+                    'title': 'Create Threshold'
+                },
+               'edit_threshold': {
+                    'description': '{user} has edited threshold {threshold} on rule {rule} in ruleset {ruleset}',
+                    'title': 'Edit Threshold'
+                },
+               'delete_threshold': {
+                    'description': '{user} has deleted threshold {threshold} on rule {rule} in ruleset {ruleset}',
+                    'title': 'Delete Threshold'
+                },
+               'login': {
+                    'description': 'Logged in as {user}',
+                    'title': 'Login'
+                },
+               'logout': {
+                    'description': '{user} has logged out',
+                    'title': 'Logout'
+                },
+               'transform_rule': {
+                    'description': '{user} has transformed rule {rule} to {transformation} in ruleset {ruleset}',
+                    'title': 'Transform Rule'
+                },
+               'transform_category': {
+                    'description': '{user} has transformed category {category} to {transformation} in ruleset {ruleset}',
+                    'title': 'Transform Category'
+                },
+               'transform_ruleset': {
+                    'description': '{user} has transformed ruleset {ruleset} to {transformation} in ruleset {ruleset}',
+                    'title': 'Transform Ruleset'
+                },
+               'edit_suricata': {
+                    'description': '{user} has edited suricata',
+                    'title': 'Edit Suricata'
+                },
+               'create_suricata': {
+                    'description': '{user} has created suricata',
+                    'title': 'Create Suricata'
+                },
+               }
+
+    action_type = models.CharField(max_length=1000, null=True)
+    date = models.DateTimeField('event date', default=timezone.now)
+    comment = models.TextField(null=True, blank=True)
+    user = models.ForeignKey(User, default=None, on_delete=models.SET_NULL, null=True, blank=True)
     username = models.CharField(max_length=100)
-    user = models.ForeignKey(User, default = None, on_delete = models.SET_NULL, null = True, blank = True)
-    action = models.CharField(max_length=12, choices = ACTION_TYPE)
-    options = models.CharField(max_length=1000, blank = True, default = None, null = True)
-    description = models.CharField(max_length=500, null = True)
-    comment = models.TextField(null = True, blank = True)
-    date = models.DateTimeField('event date', default = timezone.now)
-    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null = True)
-    object_id = models.PositiveIntegerField(null = True)
-    userobject = GenericForeignKey('content_type', 'object_id')
+    ua_objects = GenericRelation('UserActionObject', related_query_name='ua_objects')
+
+    # Compatibilty
+    description = models.CharField(max_length=1512, null=True)
 
     def __init__(self, *args, **kwargs):
         super(UserAction, self).__init__(*args, **kwargs)
         if not self.username and self.user:
             self.username = self.user.username
-        if not self.description:
-            self.description = self.generate_description()
+
+    def __unicode__(self):
+        return self.generate_description()
+
+    @classmethod
+    def create(cls, **kwargs):
+        if 'action_type' not in kwargs:
+            raise Exception('Cannot create UserAction without "action_type"')
+
+        force_insert = True if 'force_insert' in kwargs and kwargs.pop('force_insert') else False
+
+        # UserAction
+        ua_params = {}
+        for param in ('action_type', 'comment', 'user'):
+            if param in kwargs:
+                ua_params[param] = kwargs.pop(param)
+
+        ua = cls(**ua_params)
+        ua.save(force_insert)
+
+        # UserActionObject
+        for action_key, action_value in kwargs.iteritems():
+
+            ua_obj_params = {
+                'action_key': action_key,
+                'action_value': action_value,
+                'user_action': ua,
+            }
+
+            if not isinstance(action_value, (str, unicode,)):
+                ua_obj_params['content'] = action_value
+
+            ua_obj = UserActionObject(**ua_obj_params)
+            ua_obj.save()
+
+        # Used as test
+        ua.generate_description()
+
+        # Warning; do not remove.
+        # hack callback is called after UserAction.save is called. So the
+        # 2nd save will trigger the callback, once UserActionObject
+        # have been created
+        ua.save()
 
     def generate_description(self):
-        if self.userobject and self.content_type.model_class():
-            object_model = self.content_type.model_class().__name__
-        else:
-            object_model = None
-        if self.action in ('login', 'logout'):
-            return "User '%s' did %s" % (self.username, self.action)
-        elif self.ruleset:
-            if self.action in ["disable", "enable"]:
-                return "%s on ruleset '%s' for %s '%s' by user '%s'" % (self.action, self.ruleset, object_model, self.userobject, self.username) 
-            if self.action == "modify" and self.ruleset == self.userobject:
-               return "Ruleset '%s' has been modified by user '%s'" % (self.ruleset, self.username)
-            return "%s on %s '%s' by user '%s'" % (self.action, object_model, self.userobject, self.username) 
-        else:
-            return "%s on %s '%s' by user '%s'" % (self.action, object_model, self.userobject, self.username) 
+        if self.description:
+            return self.description
+
+        from scirius.utils import get_middleware_module
+        actions_dict = get_middleware_module('common').get_user_actions_dict()
+        if self.action_type not in actions_dict.keys():
+            raise Exception('Unkown action type "%s"' % self.action_type)
+
+        format_ = {'user': format_html('<strong>{}</strong>', self.username), 'datetime': self.date}
+        actions = UserActionObject.objects.filter(user_action=self).all()
+
+        for action in actions:
+            if action.content and hasattr(action.content, 'get_absolute_url'):
+                format_[action.action_key] = format_html('<a href="{}"><strong>{}</strong></a>',
+                                                         action.content.get_absolute_url(),
+                                                         action.action_value)
+            else:
+                format_[action.action_key] = format_html('<strong>{}</strong>', action.action_value)
+
+        html = format_html(actions_dict[self.action_type]['description'], **format_)
+        return html
+
+    def get_title(self):
+        if self.description:
+            return self.description[:15]
+
+        from scirius.utils import get_middleware_module
+        actions_dict = get_middleware_module('common').get_user_actions_dict()
+        if self.action_type not in actions_dict.keys():
+            raise Exception('Unkown action type "%s"' % self.action_type)
+
+        return actions_dict[self.action_type]['title']
+
+    @staticmethod
+    def get_icon():
+        return 'pficon-user'
+
+    def get_icons(self):
+        from scirius.utils import get_middleware_module
+        actions_dict = get_middleware_module('common').get_user_actions_dict()
+        actions = UserActionObject.objects.filter(user_action=self).all()
+
+        icons = [(self.get_icon(), self.username)]
+        for action in actions:
+
+            # ==== Coner cases
+            # transformation is str type
+            if action.action_key == 'transformation':
+                continue
+
+            ct = ContentType.objects.get(model=action.action_key)
+            klass = ct.model_class()
+
+            if hasattr(klass, 'get_icon'):
+                lb = klass.__name__
+
+                icon = klass.get_icon()
+                instances = klass.objects.filter(pk=action.object_id).all()
+
+                if len(instances):
+                    if isinstance(instances[0], Source):
+                        icon = Source.get_icon(instances[0])
+
+                    if isinstance(instances[0], Rule):
+                        lb = instances[0].pk
+                    else:
+                        lb = instances[0].name
+
+                icons.append((icon, lb))
+
+        html = format_html_join(
+                '\n', '<div class="list-view-pf-additional-info-item"><span class="fa {}"></span>{}</div>',
+                ((icon, klass_name) for icon, klass_name in icons)
+        )
+
+        return html
+
+    @staticmethod
+    def get_user_actions_dict():
+        return deepcopy(UserAction.ACTIONS)
+
 
 class SystemSettings(models.Model):
     use_http_proxy = models.BooleanField(default=False)
@@ -218,6 +432,13 @@ class Source(models.Model):
             self.init_flowbits = True
         else:
             self.init_flowbits = False
+
+    @staticmethod
+    def get_icon(instance=None):
+        if instance:
+            if instance.method == 'http':
+                return 'fa fa-external-link list-view-pf-icon-sm'
+        return 'pficon pficon-volume list-view-pf-icon-sm'
 
     def delete(self):
         self.needs_test()
@@ -569,6 +790,17 @@ class Source(models.Model):
             if sourceatversion in ruleset.sources.all():
                 ruleset.needs_test()
 
+
+class UserActionObject(models.Model):
+    action_key = models.CharField(max_length=20)
+    action_value = models.CharField(max_length=100)
+
+    user_action = models.ForeignKey(UserAction, related_name='user_action_objects')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
+    object_id = models.PositiveIntegerField(null=True)
+    content = GenericForeignKey('content_type', 'object_id')
+
+
 class SourceAtVersion(models.Model):
     source = models.ForeignKey(Source)
     # Sha1 or HEAD or tag
@@ -589,18 +821,26 @@ class SourceAtVersion(models.Model):
         ruleset.needs_test()
         ruleset.save()
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', user = user, date = timezone.now(), comment = comment)
-            ua.options = "source"
-            ua.save()
+            UserAction.create(
+                    action_type='enable_rule',
+                    comment=form.cleaned_data['comment'],
+                    user=user,
+                    source=self.source,
+                    ruleset=ruleset
+            )
 
     def disable(self, ruleset, user = None, comment = None):
         ruleset.sources.remove(self)
         ruleset.needs_test()
         ruleset.save()
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', user = user, date = timezone.now(), comment = comment)
-            ua.options = "source"
-            ua.save()
+            UserAction.create(
+                    action_type='disable_rule',
+                    comment=comment,
+                    user=user,
+                    source=self.source,
+                    ruleset=ruleset
+            )
 
     def export_files(self, directory):
         self.source.export_files(directory, self.version)
@@ -1104,6 +1344,10 @@ class Category(models.Model, Transformable, Cache):
         models.Model.__init__(self, *args, **kwargs)
         Cache.__init__(self)
 
+    @staticmethod
+    def get_icon():
+        return 'fa-list-alt'
+
     def get_rules(self, source, existing_rules_hash=None):
         # parse file
         # return an object with updates
@@ -1212,18 +1456,26 @@ class Category(models.Model, Transformable, Cache):
         ruleset.needs_test()
         ruleset.save()
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', user = user, date = timezone.now(), comment = comment)
-            ua.options = "category"
-            ua.save()
+            UserAction.create(
+                    action_type='enable_category',
+                    comment=comment,
+                    user=user,
+                    category=self,
+                    ruleset=ruleset
+            )
 
     def disable(self, ruleset, user = None, comment = None):
         ruleset.categories.remove(self)
         ruleset.needs_test()
         ruleset.save()
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', user = user, date = timezone.now(), comment = comment)
-            ua.options = "category"
-            ua.save()
+            UserAction.create(
+                    action_type='disable_category',
+                    comment=comment,
+                    user=user,
+                    category=self,
+                    ruleset=ruleset
+            )
 
     def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
         if Category.TRANSFORMATIONS is None:
@@ -1342,7 +1594,6 @@ class Rule(models.Model, Transformable, Cache):
     state_in_source = models.BooleanField(default=True)
     rev = models.IntegerField(default=0)
     content = models.CharField(max_length=10000)
-    actions = GenericRelation(UserAction)
     imported_date = models.DateTimeField(default = timezone.now)
     updated_date = models.DateTimeField(default = timezone.now)
 
@@ -1359,6 +1610,10 @@ class Rule(models.Model, Transformable, Cache):
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
         Cache.__init__(self)
+
+    @staticmethod
+    def get_icon():
+        return 'fa-shield'
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
@@ -1424,20 +1679,30 @@ class Rule(models.Model, Transformable, Cache):
         return dependant_rules
 
     def get_actions(self):
-        qset = UserAction.objects.filter(Q(description__contains = "sig_id %d" % (self.pk)) | Q(description__contains = "'%d:" % (self.pk))).order_by('-date')
-        return qset
+        uas = UserAction.objects.filter(
+                user_action_objects__content_type=ContentType.objects.get_for_model(Rule),
+                user_action_objects__object_id=self.pk).order_by('-date')
+        return uas
 
     def get_comments(self):
-        return self.actions.filter(action = "comment").order_by('-date')
+        uas = UserAction.objects.filter(
+                action_type="comment_rule",
+                user_action_objects__content_type=ContentType.objects.get_for_model(Rule),
+                user_action_objects__object_id=self.pk).order_by('-date')
+        return uas
 
     def enable(self, ruleset, user = None, comment = None):
         enable_rules = [self]
         enable_rules.extend(self.get_dependant_rules(ruleset))
         ruleset.enable_rules(enable_rules)
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'enable', user = user, date = timezone.now(), comment = comment)
-            ua.options = "rule"
-            ua.save()
+            UserAction.create(
+                    action_type='enable_rule',
+                    comment=comment,
+                    user=user,
+                    rule=self,
+                    ruleset=ruleset
+            )
         return
 
     def disable(self, ruleset, user = None, comment = None):
@@ -1445,9 +1710,13 @@ class Rule(models.Model, Transformable, Cache):
         disable_rules.extend(self.get_dependant_rules(ruleset))
         ruleset.disable_rules(disable_rules)
         if user:
-            ua = UserAction(userobject = self, ruleset = ruleset, action = 'disable', user = user, date = timezone.now(), comment = comment)
-            ua.options = "rule"
-            ua.save()
+            UserAction.create(
+                    action_type='disable_rule',
+                    comment=comment,
+                    user=user,
+                    rule=self,
+                    ruleset=ruleset
+            )
         return
 
     def test(self, ruleset):
@@ -1841,6 +2110,10 @@ class Ruleset(models.Model, Transformable):
             L_AUTO = Transformation.L_AUTO
 
         return tuple(allowed_choices)
+
+    @staticmethod
+    def get_icon():
+        return 'fa-list-alt'
 
     def remove_transformation(self, key):
         RulesetTransformation.objects.filter(

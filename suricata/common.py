@@ -27,6 +27,7 @@ import json
 import StringIO
 import re
 
+
 from django.conf import settings
 
 if settings.SURICATA_UNIX_SOCKET:
@@ -77,3 +78,11 @@ def help_links(djlink):
     if HELP_LINKS_TABLE.has_key(djlink):
         return HELP_LINKS_TABLE[djlink]
     return None
+
+
+def get_user_actions_dict():
+    from rules.models import UserAction
+    return UserAction.get_user_actions_dict()
+
+
+
