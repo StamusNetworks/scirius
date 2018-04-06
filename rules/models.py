@@ -1002,16 +1002,16 @@ class Transformable:
         target = ' target:%s;)' % target
         rule.raw = re.sub(r"\)$", "%s" % (target), rule.raw) if target not in rule.raw else rule.raw
 
-    def _apply_auto_trans(self, rule_ids):
+    def _apply_target_trans(self, rule_ids):
         terms = re.split(r' +', rule_ids.format())
         src = terms[2]
         dst = terms[5]
 
-        # external net alsways seen as bad guy on attack
+        # external net always seen as bad guy on attack
         if src == "$EXTERNAL_NET":
             self._set_target(rule_ids, target="dest_ip")
 
-        # external net alsways seen as bad guy on attack
+        # external net always seen as bad guy on attack
         elif dst == "$EXTERNAL_NET":
             self._set_target(rule_ids, target="src_ip")
 
@@ -1041,12 +1041,6 @@ class Transformable:
         if rule_ids.format().startswith("#"):
             return content
 
-        target_client = False
-        for meta in rule_ids.metadata:
-            if meta.startswith("attack_target"):
-                target_client = True
-                break
-
         # LATERAL + YES
         if key == Transformation.LATERAL:
             if value == Transformation.L_YES:
@@ -1055,13 +1049,6 @@ class Transformable:
             elif value == Transformation.L_AUTO:
                 if rule_ids.msg.startswith("ET POLICY"):
                     return content
-
-                if rule_ids.classtype == "attempted-recon":
-                    target_client = True
-
-                if target_client is True:
-                    self._apply_auto_trans(rule_ids)
-
                 for meta in rule_ids.metadata:
                     # if deployment can be internal then we can relax the constraint
                     # on EXTERNAL_NET to try to catch the lateral movement
@@ -1077,8 +1064,20 @@ class Transformable:
                 self._set_target(rule_ids, target='dest_ip')
                 return rule_ids.format().encode("utf-8")
             elif value == Transformation.T_AUTO:
+                target_client = False
+                for meta in rule_ids.metadata:
+                    if meta.startswith("attack_target"):
+                        target_client = True
+                        break
+
+                # not satisfactory but doing the best we can not too miss something like
+                # a successful bruteforce
+                if rule_ids.classtype == "attempted-recon":
+                    target_client = True
+                if rule_ids.classtype == "not-suspicious":
+                    target_client = False
                 if target_client is True:
-                    self._apply_auto_trans(rule_ids)
+                    self._apply_target_trans(rule_ids)
 
         return rule_ids.format().encode("utf-8")
 
@@ -1762,21 +1761,6 @@ class Rule(models.Model, Transformable, Cache):
             return True
         return False
 
-    def _can_auto_target_or_lateral(self, rule_ids):
-        terms = re.split(r' +', rule_ids.format())
-        src = terms[2]
-        dst = terms[5]
-
-        if 'deployment Internal' in rule_ids.metadata or \
-                src == '$EXTERNAL_NET' or dst == '$EXTERNAL_NET' or \
-                (src == "any" or src.startswith("[")) and dst.startswith("$") or \
-                src.startswith("$") and (dst == "any" or dst.startswith("[")) or \
-                rule_ids.sid in [2017060, 2023070, 2023071, 2023549, 2024297, 2023548, 2024435, 2023149] or \
-                rule_ids.sid in []:
-            return True
-
-        return False
-
     def can_lateral(self, value):
         content = self.content.encode('utf8')
         rule_ids = rule_idstools.parse(self.content)
@@ -1790,14 +1774,7 @@ class Rule(models.Model, Transformable, Cache):
         if '$EXTERNAL_NET' in rule_ids.raw:
             return True
 
-        ret = False
-        if value == Transformation.L_AUTO and rule_ids.classtype == "attempted-recon":
-            for meta in rule_ids.metadata:
-                if meta.startswith("attack_target"):
-                    ret = self._can_auto_target_or_lateral(rule_ids)
-                    break
-
-        return ret
+        return False
 
     def can_target(self):
         rule_ids = rule_idstools.parse(self.content)

@@ -50,6 +50,126 @@ class SourceCreationTestCase(TestCase):
         self.assertNotEqual(len(Category.objects.filter(source = self.source)), 0)
 
 
+class TransformationTestCase(TestCase):
+    def setUp(self):
+        self.source = Source.objects.create(name='test source', created_date=timezone.now(), method='local', datatype='sig')
+        self.source.save()
+        self.source_at_version = SourceAtVersion.objects.create(source=self.source, version='42')
+        self.source_at_version.save()
+        self.category = Category.objects.create(name='test category', filename='test', source=self.source)
+        self.category.save()
+
+        # Commented rule
+        content = '#alert tcp $EXTERNAL_NET any -> $HOME_NET 445 (msg:"GPL NETBIOS SMB-DS Trans2 FIND_FIRST2 attempt"; \
+flow:established,to_server; content:"|00|"; depth:1; content:"|FF|SMB2"; within:5; distance:3; content:"|01 00|"; \
+within:2; distance:56; flowbits:set,smb.trans2; flowbits:noalert; classtype:protocol-command-decode; sid:2103141; \
+rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23;)'
+
+        self.rule_commented = Rule.objects.create(sid=1, category=self.category, msg='test commented rule', content=content)
+        self.rule_commented.save()
+
+        # Lateral yes
+        content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 143 (msg:"GPL IMAP Overflow Attempt"; flow:to_server,established; \
+content:"|E8 C0 FF FF FF|/bin/sh"; classtype:attempted-admin; sid:2100293; rev:8; metadata:created_at 2010_09_23, updated_at 2010_09_23;)'
+
+        self.rule_lateral_yes = Rule.objects.create(sid=2, category=self.category, msg='test lateral yes', content=content)
+        self.rule_lateral_yes.save()
+
+        # Lateral auto
+        content = 'alert dns $HOME_NET any -> any any (msg:"ET POLICY DNS Query to .onion proxy Domain (onion. sx)"; dns_query; \
+content:".onion.sx"; nocase; isdataat:!1,relative; metadata: former_category POLICY; \
+reference:url,en.wikipedia.org/wiki/Tor_(anonymity_network); classtype:bad-unknown; sid:2025446; rev:2; \
+metadata:affected_product Windows_XP_Vista_7_8_10_Server_32_64_Bit, attack_target Client_Endpoint, \
+deployment Perimeter, signature_severity Minor, created_at 2018_03_28, performance_impact Moderate, updated_at 2018_03_30;)'
+
+        self.rule_lateral_auto_no_transfo = Rule.objects.create(sid=3, category=self.category, msg='test lateral auto => no transfo', content=content)
+        self.rule_lateral_auto_no_transfo.save()
+
+        content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
+flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
+metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
+deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
+
+        self.rule_lateral_auto_transfo = Rule.objects.create(sid=4, category=self.category, msg='test lateral auto => transfo', content=content)
+        self.rule_lateral_auto_transfo.save()
+
+        # Target Auto
+        content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
+flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
+metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
+deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
+
+        self.rule_target_auto_transfo = Rule.objects.create(sid=5, category=self.category, msg='test target auto => transfo', content=content)
+        self.rule_target_auto_transfo.save()
+
+        content = 'alert http $EXTERNAL_NET any -> $HOME_NET any (msg:"ET WEB_CLIENT HTA File Download Flowbit Set"; \
+flow:established,to_client; content:"Content-Type|3A| application/hta"; http_header; fast_pattern:12,16; flowbits:set,et.http.hta; \
+flowbits:noalert; metadata: former_category WEB_CLIENT; classtype:not-suspicious; sid:2024195; rev:2; \
+metadata:affected_product Windows_XP_Vista_7_8_10_Server_32_64_Bit, attack_target Client_Endpoint, deployment Perimeter, \
+signature_severity Major, created_at 2017_04_10, performance_impact Low, updated_at 2017_04_10;)'
+
+        self.rule_target_auto_no_transfo = Rule.objects.create(sid=6, category=self.category, msg='test target auto => no transfo', content=content)
+        self.rule_target_auto_no_transfo.save()
+
+        # Target Source
+        content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
+flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
+metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
+deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
+
+        self.rule_target_source_transfo = Rule.objects.create(sid=7, category=self.category, msg='test target source => transfo', content=content)
+        self.rule_target_source_transfo.save()
+
+        # Target Destination
+        content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
+flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
+metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
+deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
+
+        self.rule_target_destination_transfo = Rule.objects.create(sid=8, category=self.category, msg='test target destination => transfo', content=content)
+        self.rule_target_destination_transfo.save()
+
+    def tearDown(self):
+        pass
+
+    def test_001_commented_rule(self):
+        content = self.rule_commented.apply_lateral_target_transfo(self.rule_commented.content, Transformation.LATERAL, Transformation.L_YES)
+        self.assertEqual(self.rule_commented.content, content)
+
+    def test_002_lateral_yes(self):
+        content = self.rule_lateral_yes.apply_lateral_target_transfo(self.rule_lateral_yes.content, key=Transformation.LATERAL, value=Transformation.L_YES)
+        self.assertEqual('alert tcp any any' in content, True)
+
+    def test_003_lateral_auto(self):
+        # ET POLICY disbale transformation
+        content = self.rule_lateral_auto_no_transfo.apply_lateral_target_transfo(self.rule_lateral_auto_no_transfo.content, Transformation.LATERAL, Transformation.L_AUTO)
+        self.assertEqual(self.rule_lateral_auto_no_transfo.content, content)
+
+        # deployment Interna enable Transformation
+        content = self.rule_lateral_auto_transfo.apply_lateral_target_transfo(self.rule_lateral_auto_transfo.content, Transformation.LATERAL, Transformation.L_AUTO)
+        self.assertEqual('alert tcp any any' in content, True)
+
+    def test_004_target_auto(self):
+        # attack_target enable transformation
+        content = self.rule_target_auto_transfo.apply_lateral_target_transfo(self.rule_target_auto_transfo.content, Transformation.TARGET, Transformation.T_AUTO)
+        self.assertEqual(content.endswith('target:dest_ip;)'), True)
+
+        # attack_target enable transformation
+        # but not-suspicious disable it
+        content = self.rule_target_auto_no_transfo.apply_lateral_target_transfo(self.rule_target_auto_no_transfo.content, Transformation.TARGET, Transformation.T_AUTO)
+        self.assertEqual(self.rule_target_auto_no_transfo.content, content)
+
+    def test_005_target_source(self):
+        # attack_target enable transformation
+        content = self.rule_target_source_transfo.apply_lateral_target_transfo(self.rule_target_source_transfo.content, Transformation.TARGET, Transformation.T_SOURCE)
+        self.assertEqual(content.endswith('target:src_ip;)'), True)
+
+    def test_005_target_destination(self):
+        # attack_target enable transformation
+        content = self.rule_target_destination_transfo.apply_lateral_target_transfo(self.rule_target_destination_transfo.content, Transformation.TARGET, Transformation.T_DESTINATION)
+        self.assertEqual(content.endswith('target:dest_ip;)'), True)
+
+
 class RestAPITestBase(object):
     def setUp(self):
         self.user = User.objects.create(username='scirius', password='scirius', is_superuser=True, is_staff=True)
@@ -84,13 +204,13 @@ class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
                 source=self.source)
         self.category.save()
 
-        content = """alert ip $HOME_NET any -> [103.207.29.161,103.207.29.171,103.225.168.222,103.234.36.190,103.234.37.4,103.4.164.34,
-        103.6.207.37,104.131.93.109,104.140.137.152,104.143.5.144,104.144.167.131,104.144.167.251,104.194.206.108,
-        104.199.121.36,104.207.154.26,104.223.87.207,104.43.200.222,106.187.48.236,107.161.19.71] 
-        any (msg:"ET CNC Shadowserver Reported CnC Server IP group 1"; 
-        reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,www.shadowserver.org; 
-        threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; 
-        flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)"""
+        content = 'alert ip $HOME_NET any -> [103.207.29.161,103.207.29.171,103.225.168.222,103.234.36.190,103.234.37.4,103.4.164.34, \
+103.6.207.37,104.131.93.109,104.140.137.152,104.143.5.144,104.144.167.131,104.144.167.251,104.194.206.108, \
+104.199.121.36,104.207.154.26,104.223.87.207,104.43.200.222,106.187.48.236,107.161.19.71] \
+any (msg:"ET CNC Shadowserver Reported CnC Server IP group 1"; \
+reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,www.shadowserver.org;\
+threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; \
+flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
 
         self.rule = Rule.objects.create(sid=1, category=self.category, msg='test rule',
                 content=content)
