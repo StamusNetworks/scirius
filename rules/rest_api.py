@@ -95,7 +95,8 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = RuleSerializer
     ordering = ('sid',)
     ordering_fields = ('sid', 'category', 'msg', 'imported_date', 'updated_date')
-    filter_fields = ('sid', 'category', 'msg')
+    filter_fields = ('sid', 'category', 'msg', 'content')
+    search_fields = ('sid', 'msg', 'content')
 
     @detail_route()
     def content(self, request, pk):
