@@ -4,7 +4,7 @@ from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 
-from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, Transformation
+from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, Transformation, Source
 
 
 class ModelSerializer(serializers.ModelSerializer):
@@ -186,10 +186,34 @@ class RuleTransformationViewSet(viewsets.ModelViewSet):
     ordering_fields = ('pk', 'ruleset', 'rule_transformation')
 
 
+class SourceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Source
+        fields = ('pk', 'name', 'created_date', 'updated_date', 'method', 'datatype', 'uri', 'cert_verif', \
+                  'number_of_categories', 'number_of_rules')
+        read_only_fields = ('pk', 'created_date', 'updated_date', 'method', 'datatype', 'uri', 'cert_verif', \
+                            'number_of_categories', 'number_of_rules')
+        extra_kwargs = {
+            'number_of_categories': {'source': 'cats_count'},
+            'number_of_rules': {'source': 'rules_count'},
+        }
+
+
+class SourceViewSet(viewsets.ModelViewSet):
+    queryset = Source.objects.all()
+    serializer_class = SourceSerializer
+    ordering = ('name',)
+    ordering_fields = ('name', 'created_date', 'updated_date', 'cats_count', 'rules_count', 'method')
+    filter_fields = ('name', 'method')
+    search_fields = ('name', 'method')
+
+
 router = DefaultRouter()
 router.register('rules/ruleset', RulesetViewSet)
 router.register('rules/category', CategoryViewSet)
 router.register('rules/rule', RuleViewSet)
+router.register('rules/source', SourceViewSet)
 router.register('rules/transformations/rulesets', RulesetTransformationViewSet)
 router.register('rules/transformations/categories', CategoryTransformationViewSet)
 router.register('rules/transformations/rules', RuleTransformationViewSet)
