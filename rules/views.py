@@ -1650,8 +1650,12 @@ def ruleset_add_supprule(request, ruleset_id):
                 rule_object.disable(ruleset, user = request.user, comment = form.cleaned_data['comment'])
             ruleset.save()
         return redirect(ruleset)
-    context = { 'ruleset': ruleset }
+
+    rules = EditRuleTable(Rule.objects.all())
+    tables.RequestConfig(request).configure(rules)
+    context = {'ruleset': ruleset, 'rules': rules, 'form': CommentForm()}
     return scirius_render(request, 'rules/search_rule.html', context)
+
 
 def delete_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
