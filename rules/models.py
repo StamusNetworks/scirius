@@ -180,9 +180,24 @@ class UserAction(models.Model):
                     'title': 'Transform Category'
                 },
                'transform_ruleset': {
-                    'description': '{user} has transformed ruleset {ruleset} to {transformation} in ruleset {ruleset}',
+                    'description': '{user} has transformed ruleset {ruleset} to {transformation}',
                     'title': 'Transform Ruleset'
                 },
+                # Used only in REST API
+               'delete_transform_ruleset': {
+                    'description': '{user} has deleted transformation {transformation} on ruleset {ruleset}',
+                    'title': 'Deleted Ruleset Transformation'
+                },
+               'delete_transform_rule': {
+                    'description': '{user} has deleted transformation {transformation} on rule {rule} in ruleset {ruleset}',
+                    'title': 'Delete Rule Transformation'
+                },
+               'delete_transform_category': {
+                    'description': '{user} has deleted transformation {transformation} on category {category} in ruleset {ruleset}',
+                    'title': 'Delete Category Transformation'
+                },
+               # End REST API
+
                'edit_suricata': {
                     'description': '{user} has edited suricata',
                     'title': 'Edit Suricata'

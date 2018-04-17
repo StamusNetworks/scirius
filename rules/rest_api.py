@@ -1,10 +1,13 @@
 from django.conf import settings
+from django.utils import timezone
 from rest_framework import serializers, viewsets, permissions
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
+from rest_framework import status
 
-from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, Transformation, Source
+from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, \
+        Source, SourceAtVersion, UserAction
 
 
 class ModelSerializer(serializers.ModelSerializer):
@@ -23,13 +26,27 @@ class ModelSerializer(serializers.ModelSerializer):
         return None
 
 
+class CommentSerializer(serializers.Serializer):
+    comment = serializers.CharField(required=False, allow_blank=True, write_only=True, allow_null=True)
+
+
 class RulesetSerializer(serializers.ModelSerializer):
+    sources = serializers.PrimaryKeyRelatedField(queryset=SourceAtVersion.objects.all(), many=True)
+
     class Meta:
         model = Ruleset
-        fields = ('pk', 'name', 'descr', 'created_date', 'updated_date', 'need_test', 'validity', \
-                'errors', 'rules_count')
-        read_only_fields = ('pk', 'created_date', 'updated_date', 'need_test', 'validity', 'errors', \
-                'rules_count')
+        fields = ('pk', 'name', 'descr', 'created_date', 'updated_date', 'need_test', 'validity',
+                  'errors', 'rules_count', 'sources', 'categories')
+        read_only_fields = ('pk', 'created_date', 'updated_date', 'need_test', 'validity', 'errors',
+                            'rules_count')
+        extra_kwargs = {
+        }
+
+    def create(self, validated_data):
+        validated_data['created_date'] = timezone.now()
+        validated_data['updated_date'] = timezone.now()
+        instance = super(RulesetSerializer, self).create(validated_data)
+        return instance
 
 
 class RulesetViewSet(viewsets.ModelViewSet):
@@ -38,6 +55,68 @@ class RulesetViewSet(viewsets.ModelViewSet):
     ordering = ('name',)
     ordering_fields = ('name', 'created_date', 'updated_date', 'rules_count')
     filter_fields = ('name', 'descr')
+
+    def create(self, request, *args, **kwargs):
+        comment = request.data.pop('comment', None)
+        serializer = RulesetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+        ruleset = Ruleset.objects.filter(pk=serializer.data['pk'])[0]
+
+        UserAction.create(
+                action_type='create_ruleset',
+                comment=comment_serializer.validated_data['comment'],
+                user=request.user,
+                ruleset=ruleset
+        )
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def destroy(self, request, *args, **kwargs):
+        ruleset = self.get_object()
+        comment = request.data.pop('comment', None)
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        UserAction.create(
+                action_type='delete_ruleset',
+                user=request.user,
+                ruleset=ruleset,
+                comment=comment_serializer.validated_data['comment']
+        )
+        return super(RulesetViewSet, self).destroy(request, *args, **kwargs)
+
+    def _update_or_partial_update(self, request, partial, *args, **kwargs):
+        comment = request.data.pop('comment', None)
+
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        # This save is used to have the new name if user has edited ruleset name
+        serializer.save()
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        UserAction.create(
+                action_type='edit_ruleset',
+                comment=comment_serializer.validated_data['comment'],
+                user=request.user,
+                ruleset=instance
+        )
+
+    def update(self, request, *args, **kwargs):
+        self._update_or_partial_update(request, partial=False, *args, **kwargs)
+        return super(RulesetViewSet, self).update(request, partial=False, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        self._update_or_partial_update(request, partial=True, *args, **kwargs)
+        return super(RulesetViewSet, self).update(request, partial=True, *args, **kwargs)
 
 
 class CategoryChangeSerializer(serializers.Serializer):
@@ -101,7 +180,6 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
     @detail_route()
     def content(self, request, pk):
         rule = self.get_object()
-        # rulesets = Ruleset.objects.all()
         rulesets = Ruleset.objects.filter(categories__rule=rule)
         res = {}
 
@@ -146,6 +224,78 @@ class RulesetTransformationViewSet(viewsets.ModelViewSet):
     serializer_class = RulesetTransformationSerializer
     filter_fields = ('ruleset_transformation',)
     ordering_fields = ('ruleset_transformation')
+
+    def destroy(self, request, *args, **kwargs):
+        transfo = self.get_object()
+        comment = request.data.pop('comment', None)
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        UserAction.create(
+                action_type='delete_transform_ruleset',
+                comment=comment_serializer.validated_data['comment'],
+                user=request.user,
+                transformation='%s: %s' % (transfo.key, transfo.value.title()),
+                ruleset=transfo.ruleset_transformation
+        )
+        return super(RulesetTransformationViewSet, self).destroy(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        comment = request.data.pop('comment', None)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        ruleset = serializer.validated_data['ruleset_transformation']
+        trans_type = serializer.validated_data['key']
+        trans_value = serializer.validated_data['value']
+
+        UserAction.create(
+                action_type='transform_ruleset',
+                comment=comment_serializer.validated_data['comment'],
+                user=request.user,
+                transformation='%s: %s' % (trans_type, trans_value.title()),
+                ruleset=ruleset
+        )
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def _update_or_partial_update(self, request, partial, *args, **kwargs):
+        comment = request.data.pop('comment', None)
+
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        # This save is used to have the new name if user has edited transfo
+        serializer.save()
+
+        trans_type = serializer.validated_data['key']
+        trans_value = serializer.validated_data['value']
+        ruleset = serializer.validated_data['ruleset_transformation']
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        UserAction.create(
+                action_type='transform_ruleset',
+                comment=comment_serializer.validated_data['comment'],
+                user=request.user,
+                transformation='%s: %s' % (trans_type, trans_value.title()),
+                ruleset=ruleset
+        )
+
+    def update(self, request, pk, *args, **kwargs):
+        self._update_or_partial_update(request, partial=False, *args, **kwargs)
+        return super(RulesetTransformationViewSet, self).update(request, partial=False, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        self._update_or_partial_update(request, partial=True, *args, **kwargs)
+        return super(RulesetTransformationViewSet, self).update(request, partial=True, *args, **kwargs)
 
 
 class CategoryTransformationSerializer(serializers.ModelSerializer):
