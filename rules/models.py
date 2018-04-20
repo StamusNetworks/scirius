@@ -837,8 +837,8 @@ class SourceAtVersion(models.Model):
         ruleset.save()
         if user:
             UserAction.create(
-                    action_type='enable_rule',
-                    comment=form.cleaned_data['comment'],
+                    action_type='enable_source',
+                    comment=comment,
                     user=user,
                     source=self.source,
                     ruleset=ruleset
@@ -850,7 +850,7 @@ class SourceAtVersion(models.Model):
         ruleset.save()
         if user:
             UserAction.create(
-                    action_type='disable_rule',
+                    action_type='disable_source',
                     comment=comment,
                     user=user,
                     source=self.source,
