@@ -321,8 +321,8 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
     def test_001_ruleset_actions(self):
         params = {"name": "MyCreatedRuleset",
                   "comment": "My custom ruleset comment",
-                  "sources_at_version": [self.source_at_version.pk, self.source_at_version2.pk],
-                  "categories": True}
+                  "sources": [self.source_at_version.pk, self.source_at_version2.pk],
+                  "categories": [self.category.pk]}
 
         # Create Ruleset
         self.http_post(reverse('ruleset-list'), params, status=status.HTTP_201_CREATED)
@@ -342,16 +342,13 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
             params['name'] = 'MyRenamedCreatedRuleset%s' % idx
 
             if request == self.http_patch:
-                del params['sources_at_version']
-            else:
-                params['categories'] = False
+                params['sources'] = []
 
             request(reverse('ruleset-detail', args=(rulesets[0].pk,)), params, status=status.HTTP_200_OK)
 
             rulesets = Ruleset.objects.all()
             self.assertEqual(len(rulesets), 1)
             self.assertEqual(rulesets[0].name, "MyRenamedCreatedRuleset%s" % idx)
-            self.assertEqual(len(rulesets[0].categories.all()) == 0, True)
 
             if request == self.http_patch:
                 self.assertEqual(len(rulesets[0].sources.all()) == 0, True)
