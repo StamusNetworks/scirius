@@ -498,9 +498,9 @@ function get_memory_health() {
                         $("#memory-status").addClass("label-danger");
                 } else {
 			set_info_card("#mem-status-card-bar", data[2]);
-                        if (data[2] > 90) {
+                        if (data[2] > 95) {
                             $("#memory-status").addClass("label-danger");
-                        } else if (data[2] > 70) {
+                        } else if (data[2] > 85) {
                             $("#memory-status").addClass("label-warning");
                         } else {
                             $("#memory-status").addClass("label-success");
