@@ -12,6 +12,7 @@ Welcome to Scirius's documentation!
 
    intro-ce
    installation-ce
+   local-user-management
    ruleset
    suricata-ce
    backup-ce
