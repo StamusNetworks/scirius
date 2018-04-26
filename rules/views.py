@@ -1161,28 +1161,28 @@ def update_public_sources(request):
     return redirect('add_public_source')
 
 
-def add_public_source(request):
-    if not request.user.is_staff:
-        return scirius_render(request, 'rules/add_public_source.html', { 'error': 'Unsufficient permissions' })
-
+def get_public_sources(force_fetch=True):
     sources_yaml = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, 'sources.yaml') 
-    if not os.path.exists(sources_yaml):
+    if not os.path.exists(sources_yaml) or force_fetch is True:
         try:
             fetch_public_sources()
-        except IOError, e:
-            return scirius_render(request, 'rules/add_public_source.html', { 'error': e, })
+        except Exception as e:
+            raise Exception(e)
+
     public_sources = None
     with open(sources_yaml, 'r') as stream:
         # replace dash by underscode in keys
         yaml_data = re.sub(r'(\s+\w+)-(\w+):', r'\1_\2:', stream.read())
         # FIXME error handling
         public_sources = yaml.load(yaml_data)
+
     if public_sources['version'] != 1:
-        error = "Unsupported version of sources definition"
-        return scirius_render(request, 'rules/add_public_source.html', { 'error': error, })
+        raise Exception("Unsupported version of sources definition")
+
     # get list of already defined public sources
-    defined_pub_source = Source.objects.exclude(public_source__isnull = True)
+    defined_pub_source = Source.objects.exclude(public_source__isnull=True)
     added_sources = map(lambda x: x.public_source, defined_pub_source)
+
     for source in public_sources['sources']:
         if public_sources['sources'][source].has_key('support_url'):
             public_sources['sources'][source]['support_url_cleaned'] = public_sources['sources'][source]['support_url'].split(' ')[0]
@@ -1198,6 +1198,19 @@ def add_public_source(request):
             public_sources['sources'][source]['added'] = True
         else:
             public_sources['sources'][source]['added'] = False
+
+    return public_sources
+
+
+def add_public_source(request):
+    if not request.user.is_staff:
+        return scirius_render(request, 'rules/add_public_source.html', { 'error': 'Unsufficient permissions' })
+
+    try:
+        public_sources = get_public_sources()
+    except Exception as e:
+        return scirius_render(request, 'rules/add_public_source.html', {'error': e})
+
     if request.is_ajax():
         return HttpResponse(json.dumps(public_sources['sources']), content_type="application/json")
     if request.method == 'POST':

@@ -182,15 +182,25 @@ class RestAPITestBase(object):
     def _make_request(self, method, url, *args, **kwargs):
         func = getattr(self.client, method)
         http_status = kwargs.pop('status', status.HTTP_200_OK)
-        kwargs['format'] = 'json'
+
+        if 'format' not in kwargs:
+            kwargs['format'] = 'json'
         try:
             response = func(url, *args, **kwargs)
-        except Exception, e:
+        except Exception as e:
             msg = 'Request failure on %s:\n%s' % (url, e.args[0])
             e.args = (msg,) + e.args[1:]
             raise
-        self.assertEqual(response.status_code, http_status, 'Request failed: \n%s %s\n%s %s\n%s' %
-                (method.upper(), url, response.status_code, response.reason_phrase, response))
+
+        # behavior/status could be different on remote and local build
+        if isinstance(http_status, tuple):
+            self.assertEqual(response.status_code in http_status, True, 'Request failed: \n%s %s\n%s %s\n%s' %
+                             (method.upper(), url, response.status_code, response.reason_phrase, response))
+            return getattr(response, 'data', None), response.status_code
+        else:
+            self.assertEqual(response.status_code, http_status, 'Request failed: \n%s %s\n%s %s\n%s' %
+                             (method.upper(), url, response.status_code, response.reason_phrase, response))
+
         return getattr(response, 'data', None)
 
     http_get = lambda self, *args, **kwargs: self._make_request('get', *args, **kwargs)
@@ -199,6 +209,108 @@ class RestAPITestBase(object):
     http_patch = lambda self, *args, **kwargs: self._make_request('patch', *args, **kwargs)
     http_delete = lambda self, *args, **kwargs: self._make_request('delete', *args, **kwargs)
     http_options = lambda self, *args, **kwargs: self._make_request('options', *args, **kwargs)
+
+
+class RestAPISourceTestCase(RestAPITestBase, APITestCase):
+    def setUp(self):
+        RestAPITestBase.setUp(self)
+        APITestCase.setUp(self)
+
+        self.ruleset = Ruleset.objects.create(name='test ruleset', descr='descr', created_date=timezone.now(), updated_date=timezone.now())
+        self.ruleset.save()
+
+        content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
+flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
+metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
+deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
+
+        with open('/tmp/rules.rules', 'w') as f:
+            f.write(content)
+
+    def _create_public_source(self):
+        params = {
+                'name': 'sonic test public source',
+                'comment': 'MyPublicComment',
+                'public_source': 'oisf/trafficid',
+                }
+        self.http_post(reverse('publicsource-list'), params, status=status.HTTP_201_CREATED)
+        sources = Source.objects.filter(name='sonic test public source')
+        self.assertEqual(len(sources) == 1, True)
+
+        sources_at_version = SourceAtVersion.objects.filter(source=sources[0])
+        self.assertEqual(len(sources_at_version) == 1, True)
+
+        self.assertEqual(sources_at_version[0].source == sources[0], True)
+
+        self.public_source = sources[0]
+        self.ruleset.sources.add(sources_at_version[0])
+
+    def _create_custom_source(self, valid=False):
+
+        params = {
+                'name': 'sonic test custom source' if valid is False else 'sonic another custom source',
+                'comment': 'MyCustomComment' if valid is False else 'AnotherCustomCOmment',
+                'method': 'local',
+                'datatype': 'sigs' if valid is False else 'sig'
+                }
+        self.http_post(reverse('source-list'), params, status=status.HTTP_201_CREATED)
+        sources = Source.objects.filter(name='sonic test custom source' if valid is False else 'sonic another custom source')
+        self.assertEqual(len(sources) == 1, True)
+
+        sources_at_version = SourceAtVersion.objects.filter(source=sources[0])
+        self.assertEqual(len(sources_at_version) == 1, True)
+
+        self.assertEqual(sources_at_version[0].source == sources[0], True)
+
+        self.source = sources[0]
+        self.ruleset.sources.add(sources_at_version[0])
+
+    def test_001_source(self):
+        # ==================== Pubic source
+        self._create_public_source()
+        response = self.http_get(reverse('publicsource-fetch-list-sources'))
+        self.assertEqual('fetch' in response and response['fetch'] == 'ok', True)
+
+        response = self.http_post(reverse('publicsource-update-source', args=(self.public_source.pk,)))
+        self.assertEqual('update' in response and response['update'] == 'ok', True)
+
+        # behavior/status could be different on remote and local build
+        status_ = (status.HTTP_400_BAD_REQUEST, status.HTTP_200_OK)
+        response, status_ = self.http_post(reverse('publicsource-test', args=(self.public_source.pk,)), status=status_)
+
+        if status_ == status.HTTP_400_BAD_REQUEST:
+            self.assertEqual('errors' in response, True)
+        else:
+            self.assertEqual(status_, status.HTTP_200_OK)
+            self.assertEqual('test' in response and response['test'] == 'ok', True)
+
+        response = self.http_delete(reverse('publicsource-detail', args=(self.public_source.pk,)), status=status.HTTP_204_NO_CONTENT)
+        sources = Source.objects.filter(pk=self.public_source.pk)
+        self.assertEqual(len(sources), 0)
+
+        # ==================== Custom source
+        self._create_custom_source()
+        response = self.http_post(reverse('source-update-source', args=(self.source.pk,)))
+        self.assertEqual('update' in response and response['update'] == 'ok', True)
+
+        # wrong archive
+        with open('/usr/bin/find', 'rb') as f:
+            try:
+                response = None
+                response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': f}, format='multipart')
+            except Exception as e:
+                # Not a valid tar
+                self.assertEqual('Invalid tar file' in e.message, True)
+
+        response = self.http_delete(reverse('source-detail', args=(self.source.pk,)), status=status.HTTP_204_NO_CONTENT)
+        sources = Source.objects.filter(pk=self.source.pk)
+        self.assertEqual(len(sources), 0)
+
+        # good file format
+        self._create_custom_source(True)
+        with open('/tmp/rules.rules', 'r') as f:
+            response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': f}, format='multipart')
+        self.assertEqual('upload' in response and response['upload'] == 'ok', True)
 
 
 @unittest.skip("demonstrating skipping")

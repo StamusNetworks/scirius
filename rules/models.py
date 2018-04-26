@@ -111,6 +111,10 @@ class UserAction(models.Model):
                     'description': '{user} has edited source {source}',
                     'title': 'Edit Source'
                 },
+               'update_source': {
+                    'description': '{user} has updated source {source}',
+                    'title': 'Update Source'
+                },
                'delete_source': {
                     'description': '{user} has deleted source {source}',
                     'title': 'Delete Source'
@@ -273,7 +277,7 @@ class UserAction(models.Model):
         from scirius.utils import get_middleware_module
         actions_dict = get_middleware_module('common').get_user_actions_dict()
         if self.action_type not in actions_dict.keys():
-            raise Exception('Unkown action type "%s"' % self.action_type)
+            raise Exception('Unknown action type "%s"' % self.action_type)
 
         format_ = {'user': format_html('<strong>{}</strong>', self.username), 'datetime': self.date}
         actions = UserActionObject.objects.filter(user_action=self).all()
@@ -296,7 +300,7 @@ class UserAction(models.Model):
         from scirius.utils import get_middleware_module
         actions_dict = get_middleware_module('common').get_user_actions_dict()
         if self.action_type not in actions_dict.keys():
-            raise Exception('Unkown action type "%s"' % self.action_type)
+            raise Exception('Unknown action type "%s"' % self.action_type)
 
         return actions_dict[self.action_type]['title']
 
