@@ -341,13 +341,9 @@ class SourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Source
         fields = ('pk', 'name', 'created_date', 'updated_date', 'method', 'datatype', 'uri', 'cert_verif', \
-                  'number_of_categories', 'number_of_rules')
+                  'cats_count', 'rules_count')
         read_only_fields = ('pk', 'created_date', 'updated_date', 'method', 'datatype', 'uri', 'cert_verif', \
-                            'number_of_categories', 'number_of_rules')
-        extra_kwargs = {
-            'number_of_categories': {'source': 'cats_count'},
-            'number_of_rules': {'source': 'rules_count'},
-        }
+                            'cats_count', 'rules_count')
 
 
 class SourceViewSet(viewsets.ModelViewSet):
