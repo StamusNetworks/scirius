@@ -134,6 +134,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    ordering = ('name',)
     ordering_fields = ('pk', 'name', 'filename', 'created_date', 'source')
     filter_fields = ('name', 'filename', 'source', 'created_date')
 
@@ -222,8 +223,9 @@ class RulesetTransformationSerializer(serializers.ModelSerializer):
 class RulesetTransformationViewSet(viewsets.ModelViewSet):
     queryset = RulesetTransformation.objects.all()
     serializer_class = RulesetTransformationSerializer
+    ordering = ('pk',)
     filter_fields = ('ruleset_transformation',)
-    ordering_fields = ('ruleset_transformation')
+    ordering_fields = ('ruleset_transformation',)
 
     def destroy(self, request, *args, **kwargs):
         transfo = self.get_object()
@@ -314,6 +316,7 @@ class CategoryTransformationViewSet(viewsets.ModelViewSet):
     queryset = CategoryTransformation.objects.all()
     serializer_class = CategoryTransformationSerializer
     filter_fields = ('category_transformation', 'ruleset')
+    ordering = ('pk',)
     ordering_fields = ('pk', 'ruleset', 'category_transformation')
 
 
@@ -333,6 +336,7 @@ class RuleTransformationViewSet(viewsets.ModelViewSet):
     queryset = RuleTransformation.objects.all()
     serializer_class = RuleTransformationSerializer
     filter_fields = ('rule_transformation', 'ruleset')
+    ordering = ('pk',)
     ordering_fields = ('pk', 'ruleset', 'rule_transformation')
 
 
