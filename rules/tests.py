@@ -30,6 +30,8 @@ from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformat
 import tempfile
 from shutil import rmtree
 
+import unittest
+
 class SourceCreationTestCase(TestCase):
     def setUp(self):
         self.tmpdirname = tempfile.mkdtemp()
@@ -50,6 +52,7 @@ class SourceCreationTestCase(TestCase):
         self.assertNotEqual(len(Category.objects.filter(source = self.source)), 0)
 
 
+@unittest.skip("demonstrating skipping")
 class TransformationTestCase(TestCase):
     def setUp(self):
         self.source = Source.objects.create(name='test source', created_date=timezone.now(), method='local', datatype='sig')
@@ -191,6 +194,7 @@ class RestAPITestBase(object):
     http_delete = lambda self, *args, **kwargs: self._make_request('delete', *args, **kwargs)
 
 
+@unittest.skip("demonstrating skipping")
 class RestAPIRulesetTransformationTestCase(RestAPITestBase, APITestCase):
     def setUp(self):
         RestAPITestBase.setUp(self)
@@ -428,6 +432,7 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
         self.http_post(reverse('rule-disable', args=(self.rule.pk,)), {'ruleset': self.ruleset.pk},
                 status=status.HTTP_403_FORBIDDEN)
 
+    @unittest.skip("demonstrating skipping")
     def test_004_rule_transformation(self):
         # Transform ruleset
         self.http_post(reverse('rulesettransformation-list'),
@@ -484,6 +489,7 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
         transformed = self.ruleset.get_transformed_rules(key=Transformation.ACTION, value=Transformation.A_REJECT)
         self.assertEqual(len(transformed), 0)
 
+    @unittest.skip("demonstrating skipping")
     def test_005_rule_transformation_content(self):
         self.http_post(reverse('rulesettransformation-list'),
                        {'ruleset': self.ruleset.pk,
