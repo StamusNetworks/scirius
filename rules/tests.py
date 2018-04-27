@@ -26,6 +26,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, RulesetTransformation
+from rest_api import router
 
 import tempfile
 from shutil import rmtree
@@ -182,7 +183,12 @@ class RestAPITestBase(object):
         func = getattr(self.client, method)
         http_status = kwargs.pop('status', status.HTTP_200_OK)
         kwargs['format'] = 'json'
-        response = func(url, *args, **kwargs)
+        try:
+            response = func(url, *args, **kwargs)
+        except Exception, e:
+            msg = 'Request failure on %s:\n%s' % (url, e.args[0])
+            e.args = (msg,) + e.args[1:]
+            raise
         self.assertEqual(response.status_code, http_status, 'Request failed: \n%s %s\n%s %s\n%s' %
                 (method.upper(), url, response.status_code, response.reason_phrase, response))
         return getattr(response, 'data', None)
@@ -192,6 +198,7 @@ class RestAPITestBase(object):
     http_put = lambda self, *args, **kwargs: self._make_request('put', *args, **kwargs)
     http_patch = lambda self, *args, **kwargs: self._make_request('patch', *args, **kwargs)
     http_delete = lambda self, *args, **kwargs: self._make_request('delete', *args, **kwargs)
+    http_options = lambda self, *args, **kwargs: self._make_request('options', *args, **kwargs)
 
 
 @unittest.skip("demonstrating skipping")
@@ -517,3 +524,48 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
 
         content = self.http_get(reverse('rule-content', args=(self.rule.pk,)))
         self.assertEqual(u'drop' in content[self.ruleset.pk], True)
+
+class RestAPIListTestCase(RestAPITestBase, APITestCase):
+    def setUp(self):
+        RestAPITestBase.setUp(self)
+        APITestCase.setUp(self)
+        self.router = router
+
+    def test_001_default_order(self):
+        # Ordering must be set to prevent:
+        # /usr/share/python/scirius-pro/local/lib/python2.7/site-packages/rest_framework/pagination.py:208: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'rules.models.RuleTransformation'> QuerySet
+        for url, viewset, view_name in self.router.registry:
+            if viewset().get_queryset().ordered:
+                continue
+            ERR = 'Viewset "%s" must set an "ordering" attribute or have an ordered queryset' % viewset.__name__
+            self.assertTrue(hasattr(viewset, 'ordering'), ERR)
+            self.assertNotEqual(len(viewset.ordering), 0, ERR)
+
+    def test_002_list(self):
+        for url, viewset, view_name in self.router.registry:
+            self.http_get(reverse(view_name + '-list'))
+
+    def test_003_list_order(self):
+        for url, viewset, view_name in self.router.registry:
+            if not hasattr(viewset, 'ordering_fields'):
+                continue
+            for field in viewset.ordering_fields:
+                self.http_get(reverse(view_name + '-list') + '?ordering=%s' % field)
+
+    def test_004_list_filter(self):
+        for url, viewset, view_name in self.router.registry:
+            if not hasattr(viewset, 'filter_fields'):
+                continue
+            for field in viewset.filter_fields:
+                self.http_get(reverse(view_name + '-list') + '?%s=0' % field)
+
+    def test_005_list_search(self):
+        for url, viewset, view_name in self.router.registry:
+            if not hasattr(viewset, 'search_fields'):
+                continue
+            url = reverse(view_name + '-list') + '?search=0'
+            self.http_get(url)
+
+    def test_006_options(self):
+        for url, viewset, view_name in self.router.registry:
+            self.http_options(reverse(view_name + '-list'))
