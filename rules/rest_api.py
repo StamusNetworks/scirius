@@ -17,6 +17,8 @@ from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.mixins import UpdateModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAdminUser
 
+from django_filters import rest_framework as filters
+
 from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, \
         Source, SourceAtVersion, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
 from rules.views import get_public_sources, fetch_public_sources
@@ -363,6 +365,15 @@ class RuleSerializer(serializers.ModelSerializer):
         return data
 
 
+class RuleFilter(filters.FilterSet):
+    min_created = filters.DateFilter(name="created", lookup_expr='gte')
+    max_created = filters.DateFilter(name="created", lookup_expr='lte')
+
+    class Meta:
+        model = Rule
+        fields = ['sid', 'category', 'msg', 'content', 'created', 'updated']
+
+
 class RuleViewSet(viewsets.ReadOnlyModelViewSet):
     """
     =============================================================================================================================================================
@@ -470,8 +481,8 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Rule.objects.all()
     serializer_class = RuleSerializer
     ordering = ('sid',)
-    ordering_fields = ('sid', 'category', 'msg', 'imported_date', 'updated_date')
-    filter_fields = ('sid', 'category', 'msg', 'content')
+    ordering_fields = ('sid', 'category', 'msg', 'imported_date', 'updated_date', 'created', 'updated')
+    filter_class = RuleFilter
     search_fields = ('sid', 'msg', 'content')
 
     @list_route(methods=['get'])
