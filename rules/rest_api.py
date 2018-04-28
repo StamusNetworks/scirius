@@ -348,7 +348,7 @@ class RuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rule
         fields = ('pk', 'sid', 'category', 'msg', 'state', 'state_in_source', 'rev', 'content',
-                  'imported_date', 'updated_date')
+                  'imported_date', 'updated_date', 'created', 'updated')
 
     def to_representation(self, instance):
         data = super(RuleSerializer, self).to_representation(instance)

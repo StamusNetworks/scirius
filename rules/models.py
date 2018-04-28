@@ -41,6 +41,7 @@ import git
 import shutil
 import json
 import IPy
+from datetime import date as datetime_date
 
 from rules.tests_rules import TestRules
 
@@ -1488,6 +1489,7 @@ class Category(models.Model, Transformable, Cache):
                         rule.msg = msg
                         rules_update["updated"].append(rule)
                         rule.updated_date = creation_date
+                        rule.parse_metadata()
                         rule.save()
                         rule.parse_flowbits(source, flowbits)
                     else:
@@ -1498,6 +1500,7 @@ class Category(models.Model, Transformable, Cache):
                     rule = Rule(category = self, sid = sid,
                                         rev = rev, content = line, msg = msg,
                                         state_in_source = state, state = state, imported_date = creation_date, updated_date = creation_date)
+                    rule.parse_metadata()
                     rules_update["added"].append(rule)
                     rule.parse_flowbits(source, flowbits, addition = True)
             if len(rules_update["added"]):
@@ -1662,6 +1665,8 @@ class Rule(models.Model, Transformable, Cache):
     content = models.CharField(max_length=10000)
     imported_date = models.DateTimeField(default = timezone.now)
     updated_date = models.DateTimeField(default = timezone.now)
+    created = models.DateField(blank = True, null = True)
+    updated = models.DateField(blank = True, null = True)
 
     hits = 0
 
@@ -1715,6 +1720,23 @@ class Rule(models.Model, Transformable, Cache):
                         if addition or not self.setter.filter(set=self):
                             through_elt = Flowbit.set.through(flowbit=elt, rule=self)
                             flowbits['added']['through_set'].append(through_elt)
+
+    def parse_metadata_time(self, sfield):
+        sdate = sfield.split(' ')[1]
+        if sdate:
+            de = sdate.split('_')
+            return datetime_date(int(de[0]),int(de[1]),int(de[2]))
+        return None
+
+    def parse_metadata(self):
+        rule_ids = rule_idstools.parse(self.content)
+        if rule_ids is None:
+            return
+        for meta in rule_ids.metadata:
+            if meta.startswith('created_at '):
+                self.created = self.parse_metadata_time(meta)
+            if meta.startswith('updated_at '):
+                self.updated = self.parse_metadata_time(meta)
 
     def is_active(self, ruleset):
         SUPPRESSED = Transformation.SUPPRESSED
