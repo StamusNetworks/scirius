@@ -368,6 +368,8 @@ class RuleSerializer(serializers.ModelSerializer):
 class RuleFilter(filters.FilterSet):
     min_created = filters.DateFilter(name="created", lookup_expr='gte')
     max_created = filters.DateFilter(name="created", lookup_expr='lte')
+    min_updated = filters.DateFilter(name="updated", lookup_expr='gte')
+    max_updated = filters.DateFilter(name="updated", lookup_expr='lte')
 
     class Meta:
         model = Rule
