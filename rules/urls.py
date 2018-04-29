@@ -75,4 +75,5 @@ urlpatterns = [
     url(r'^history$', views.history, name='history'),
     url(r'^comment$', views.history, name='comment'),
     url(r'^comment/(?P<comment_id>\d+)/delete$', views.delete_comment, name='delete_comment'),
+    url(r'^hunt$', views.hunt, name='hunt'),
 ]

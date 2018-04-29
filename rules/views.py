@@ -1923,3 +1923,7 @@ def delete_comment(request, comment_id):
     ua.delete()
     data = {'status': 'OK'}
     return HttpResponse(json.dumps(data), content_type="application/json")
+
+def hunt(request):
+    context = { }
+    return scirius_render(request, 'rules/hunt.html', context)

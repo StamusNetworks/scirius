@@ -27,7 +27,8 @@ from django.conf import settings
 import os
 import socket
 
-from rules.models import Ruleset
+from rules.models import Ruleset, Rule
+import json
 
 
 def validate_hostname(value):
@@ -57,6 +58,12 @@ class Suricata(models.Model):
             rfile.write(rules.encode('utf-8'))
         # export files at version
         self.ruleset.export_files(self.output_directory)
+        # FIXME gruick
+        with open(self.output_directory + "/" + "rules.json", 'w') as rfile:
+            for rule in Rule.objects.all():
+                dic = {'sid': rule.pk, 'created': str(rule.created), 'updated': str(rule.updated)}
+                rfile.write(json.dumps(dic) + '\n')
+
 
     def push(self):
         # For now we just create a file asking for reload

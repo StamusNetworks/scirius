@@ -47,6 +47,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
+    'webpack_loader',
 )
 
 if LooseVersion(get_version()) < LooseVersion('1.7'):
@@ -79,6 +80,13 @@ TEMPLATES = [
         },
     },
 ]
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+            'BUNDLE_DIR_NAME': 'bundles/',
+            'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.dev.json'),
+        }
+}
 
 ROOT_URLCONF = 'scirius.urls'
 

@@ -24,3 +24,4 @@ django-filter
 idstools
 enum34
 drf-schema-adapter
+django-webpack-loader
