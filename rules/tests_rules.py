@@ -31,6 +31,7 @@ from django.utils.html import escape
 
 class TestRules():
     VARIABLE_ERROR = 101
+    OPENING_RULE_FILE = 41 # Error when opening a file referenced in the source
     RULEFILE_ERRNO = [ 39, 42 ]
     USELESS_ERRNO = [ 40, 43, 44 ]
     CONFIG_FILE = """
@@ -144,6 +145,7 @@ config classification: default-login-attempt,Attempt to login by a default usern
         error_list = []
         warning_list = []
         variable_list = []
+        files_list = []
         error_stream = StringIO.StringIO(error)
         for line in error_stream:
             try:
@@ -160,6 +162,15 @@ config classification: default-login-attempt,Attempt to login by a default usern
                         s_err['engine']['message'] = "Custom address variable \"$%s\" is used and need to be defined in probes configuration" % (variable)
                         ret['warnings'].append(s_err['engine'])
                     continue
+                if errno == self.OPENING_RULE_FILE:
+                    m = re.match('opening hash file ([^:]*): No such file or directory', s_err['engine']['message'])
+                    if m is not None:
+                        filename = m.group(1)
+                        filename = filename.rsplit('/', 1)[1]
+                        files_list.append(filename)
+                        s_err['engine']['message'] = 'External file "%s" is a dependancy and needs to be added to rulesets' % filename
+                        ret['warnings'].append(s_err['engine'])
+                        continue
                 if not errno in self.USELESS_ERRNO:
                     # clean error message
                     if errno == 39:
@@ -169,6 +180,12 @@ config classification: default-login-attempt,Attempt to login by a default usern
                             if variable in s_err['engine']['message']:
                                 found = True
                                 break
+                        else:
+                            # exclude error on external file
+                            for filename in files_list:
+                                if re.search(': *%s *;' % filename, s_err['engine']['message']):
+                                    found = True
+                                    break
                         if found:
                             continue
                         s_err['engine']['message'] = s_err['engine']['message'].split(' from file')[0] 
