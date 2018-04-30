@@ -31,7 +31,6 @@ from rest_api import router
 import tempfile
 from shutil import rmtree
 
-import unittest
 
 class SourceCreationTestCase(TestCase):
     def setUp(self):
@@ -53,7 +52,6 @@ class SourceCreationTestCase(TestCase):
         self.assertNotEqual(len(Category.objects.filter(source = self.source)), 0)
 
 
-@unittest.skip("demonstrating skipping")
 class TransformationTestCase(TestCase):
     def setUp(self):
         self.source = Source.objects.create(name='test source', created_date=timezone.now(), method='local', datatype='sig')
@@ -313,7 +311,6 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
         self.assertEqual('upload' in response and response['upload'] == 'ok', True)
 
 
-@unittest.skip("demonstrating skipping")
 class RestAPIRulesetTransformationTestCase(RestAPITestBase, APITestCase):
     def setUp(self):
         RestAPITestBase.setUp(self)
@@ -551,7 +548,6 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
         self.http_post(reverse('rule-disable', args=(self.rule.pk,)), {'ruleset': self.ruleset.pk},
                 status=status.HTTP_403_FORBIDDEN)
 
-    @unittest.skip("demonstrating skipping")
     def test_004_rule_transformation(self):
         # Transform ruleset
         self.http_post(reverse('rulesettransformation-list'),
@@ -608,7 +604,6 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
         transformed = self.ruleset.get_transformed_rules(key=Transformation.ACTION, value=Transformation.A_REJECT)
         self.assertEqual(len(transformed), 0)
 
-    @unittest.skip("demonstrating skipping")
     def test_005_rule_transformation_content(self):
         self.http_post(reverse('rulesettransformation-list'),
                        {'ruleset': self.ruleset.pk,

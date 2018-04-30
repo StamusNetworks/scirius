@@ -1005,6 +1005,12 @@ class Transformation(models.Model):
     T_CAT_DEFAULT = TargetTransfoType.CATEGORY_DEFAULT
     T_RULESET_DEFAULT = TargetTransfoType.RULESET_DEFAULT
 
+    AVAILABLE_MODEL_TRANSFO = {
+        ACTION.value: (A_DROP.value, A_REJECT.value, A_FILESTORE.value, A_BYPASS.value, A_NONE.value,),
+        LATERAL.value: (L_AUTO.value, L_YES.value, L_NO.value,),
+        TARGET.value: (T_SOURCE.value, T_DESTINATION.value, T_AUTO.value, T_NONE.value,)
+    }
+
     # Fields
     key = models.CharField(max_length=15, choices=Type.get_choices(), default=Type.ACTION.value)
     value = models.CharField(max_length=15, default=ActionTransfoType.NONE.value)

@@ -11,7 +11,7 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
 
 from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, \
-        Source, SourceAtVersion, UserAction
+        Source, SourceAtVersion, UserAction, Transformation
 from rules.views import get_public_sources, fetch_public_sources
 
 
@@ -222,6 +222,110 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
         return Response({'disable': 'ok'})
 
 
+class BaseTransformationViewSet(viewsets.ModelViewSet):
+    def create(self, request, *args, **kwargs):
+        kwargs['fields'] = dict(self._fields)
+        kwargs['action_type'] = self._action_type
+
+        comment = request.data.pop('comment', None)
+        key = request.data.get('transfo_type')
+        value = request.data.get('transfo_value')
+        trans_ok = key in Transformation.AVAILABLE_MODEL_TRANSFO and value in Transformation.AVAILABLE_MODEL_TRANSFO[key]
+        msg = ''
+
+        if trans_ok is False:
+            values = Transformation.AVAILABLE_MODEL_TRANSFO.get(key, None)
+            if values is None:
+                keys = Transformation.AVAILABLE_MODEL_TRANSFO.keys()
+                msg = 'trans_key is not a known key. keys are "%s"' % ' / '.join(keys)
+            else:
+                msg = 'trans_value is not a known value for key "%s". values are "%s"' % (key, ' / '.join(values))
+            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        fields = kwargs['fields']
+        for key, value in dict(fields).iteritems():
+            fields[key] = serializer.validated_data[value]
+
+        fields['comment'] = comment
+        fields['action_type'] = kwargs['action_type']
+        fields['user'] = request.user
+        fields['transformation'] = '%s: %s' % (fields.pop('trans_type'), fields.pop('trans_value').title())
+
+        UserAction.create(**fields)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def destroy(self, request, *args, **kwargs):
+        kwargs['fields'] = dict(self._fields)
+        kwargs['action_type'] = 'delete_%s' % self._action_type
+
+        instance = self.get_object()
+        comment = request.data.pop('comment', None)
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        fields = kwargs['fields']
+        for key, value in dict(fields).iteritems():
+            fields[key] = getattr(instance, value)
+
+        fields['comment'] = comment
+        fields['action_type'] = kwargs['action_type']
+        fields['user'] = request.user
+        fields['transformation'] = '%s: %s' % (fields.pop('trans_type'), fields.pop('trans_value').title())
+
+        UserAction.create(**fields)
+        return super(BaseTransformationViewSet, self).destroy(request, *args, **kwargs)
+
+    def _update_or_partial_update(self, request, partial, *args, **kwargs):
+        kwargs['fields'] = dict(self._fields)
+        kwargs['action_type'] = self._action_type
+
+        comment = request.data.pop('comment', None)
+        key = request.data.get('transfo_type')
+        value = request.data.get('transfo_value')
+        trans_ok = key in Transformation.AVAILABLE_MODEL_TRANSFO and value in Transformation.AVAILABLE_MODEL_TRANSFO[key]
+        msg = ''
+
+        if trans_ok is False:
+            values = Transformation.AVAILABLE_MODEL_TRANSFO.get(key, None)
+            if values is None:
+                keys = Transformation.AVAILABLE_MODEL_TRANSFO.keys()
+                msg = 'trans_key is not a known key. keys are "%s"' % ' / '.join(keys)
+            else:
+                msg = 'trans_value is not a known value for key "%s". values are "%s"' % (key, ' / '.join(values))
+            return trans_ok, msg
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.instance.clean()
+        serializer.is_valid(raise_exception=True)
+
+        # This save is used to have the new name if user has edited transfo
+        serializer.save()
+
+        fields = kwargs['fields']
+        for key, value in dict(fields).iteritems():
+            fields[key] = serializer.validated_data[value]
+
+        fields['comment'] = comment_serializer.validated_data['comment']
+        fields['action_type'] = kwargs['action_type']
+        fields['user'] = request.user
+        fields['transformation'] = '%s: %s' % (fields.pop('trans_type'), fields.pop('trans_value').title())
+
+        UserAction.create(**fields)
+        return trans_ok, msg
+
+
 class RulesetTransformationSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -234,83 +338,31 @@ class RulesetTransformationSerializer(serializers.ModelSerializer):
         }
 
 
-class RulesetTransformationViewSet(viewsets.ModelViewSet):
+class RulesetTransformationViewSet(BaseTransformationViewSet):
     queryset = RulesetTransformation.objects.all()
     serializer_class = RulesetTransformationSerializer
     ordering = ('pk',)
     filter_fields = ('ruleset_transformation',)
     ordering_fields = ('ruleset_transformation',)
+    _fields = {'ruleset': 'ruleset_transformation', 'trans_type': 'key', 'trans_value': 'value'}
+    _action_type = 'transform_ruleset'
 
     def destroy(self, request, *args, **kwargs):
-        transfo = self.get_object()
-        comment = request.data.pop('comment', None)
-        comment_serializer = CommentSerializer(data={'comment': comment})
-        comment_serializer.is_valid(raise_exception=True)
-
-        UserAction.create(
-                action_type='delete_transform_ruleset',
-                comment=comment_serializer.validated_data['comment'],
-                user=request.user,
-                transformation='%s: %s' % (transfo.key, transfo.value.title()),
-                ruleset=transfo.ruleset_transformation
-        )
         return super(RulesetTransformationViewSet, self).destroy(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        comment = request.data.pop('comment', None)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        comment_serializer = CommentSerializer(data={'comment': comment})
-        comment_serializer.is_valid(raise_exception=True)
-
-        ruleset = serializer.validated_data['ruleset_transformation']
-        trans_type = serializer.validated_data['key']
-        trans_value = serializer.validated_data['value']
-
-        UserAction.create(
-                action_type='transform_ruleset',
-                comment=comment_serializer.validated_data['comment'],
-                user=request.user,
-                transformation='%s: %s' % (trans_type, trans_value.title()),
-                ruleset=ruleset
-        )
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def _update_or_partial_update(self, request, partial, *args, **kwargs):
-        comment = request.data.pop('comment', None)
-
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-
-        # This save is used to have the new name if user has edited transfo
-        serializer.save()
-
-        trans_type = serializer.validated_data['key']
-        trans_value = serializer.validated_data['value']
-        ruleset = serializer.validated_data['ruleset_transformation']
-
-        comment_serializer = CommentSerializer(data={'comment': comment})
-        comment_serializer.is_valid(raise_exception=True)
-
-        UserAction.create(
-                action_type='transform_ruleset',
-                comment=comment_serializer.validated_data['comment'],
-                user=request.user,
-                transformation='%s: %s' % (trans_type, trans_value.title()),
-                ruleset=ruleset
-        )
+        return super(RulesetTransformationViewSet, self).create(request, *args, **kwargs)
 
     def update(self, request, pk, *args, **kwargs):
-        self._update_or_partial_update(request, partial=False, *args, **kwargs)
+        trans_ok, msg = self._update_or_partial_update(request, partial=False, *args, **kwargs)
+        if trans_ok is False:
+            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
         return super(RulesetTransformationViewSet, self).update(request, partial=False, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
-        self._update_or_partial_update(request, partial=True, *args, **kwargs)
+        trans_ok, msg = self._update_or_partial_update(request, partial=True, *args, **kwargs)
+        if trans_ok is False:
+            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
         return super(RulesetTransformationViewSet, self).update(request, partial=True, *args, **kwargs)
 
 
@@ -326,12 +378,32 @@ class CategoryTransformationSerializer(serializers.ModelSerializer):
         }
 
 
-class CategoryTransformationViewSet(viewsets.ModelViewSet):
+class CategoryTransformationViewSet(BaseTransformationViewSet):
     queryset = CategoryTransformation.objects.all()
     serializer_class = CategoryTransformationSerializer
-    filter_fields = ('category_transformation', 'ruleset')
     ordering = ('pk',)
+    filter_fields = ('category_transformation', 'ruleset')
     ordering_fields = ('pk', 'ruleset', 'category_transformation')
+    _fields = {'ruleset': 'ruleset', 'trans_type': 'key', 'trans_value': 'value', 'category': 'category_transformation'}
+    _action_type = 'transform_category'
+
+    def destroy(self, request, *args, **kwargs):
+        return super(CategoryTransformationViewSet, self).destroy(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        return super(CategoryTransformationViewSet, self).create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        trans_ok, msg = self._update_or_partial_update(request, partial=False, *args, **kwargs)
+        if trans_ok is False:
+            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
+        return super(CategoryTransformationViewSet, self).update(request, partial=False, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        trans_ok, msg = self._update_or_partial_update(request, partial=True, *args, **kwargs)
+        if trans_ok is False:
+            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
+        return super(CategoryTransformationViewSet, self).update(request, partial=True, *args, **kwargs)
 
 
 class RuleTransformationSerializer(serializers.ModelSerializer):
@@ -346,12 +418,32 @@ class RuleTransformationSerializer(serializers.ModelSerializer):
         }
 
 
-class RuleTransformationViewSet(viewsets.ModelViewSet):
+class RuleTransformationViewSet(BaseTransformationViewSet):
     queryset = RuleTransformation.objects.all()
     serializer_class = RuleTransformationSerializer
-    filter_fields = ('rule_transformation', 'ruleset')
     ordering = ('pk',)
+    filter_fields = ('rule_transformation', 'ruleset')
     ordering_fields = ('pk', 'ruleset', 'rule_transformation')
+    _fields = {'ruleset': 'ruleset', 'trans_type': 'key', 'trans_value': 'value', 'rule': 'rule_transformation'}
+    _action_type = 'transform_rule'
+
+    def destroy(self, request, *args, **kwargs):
+        return super(RuleTransformationViewSet, self).destroy(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        return super(RuleTransformationViewSet, self).create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        trans_ok, msg = self._update_or_partial_update(request, partial=False, *args, **kwargs)
+        if trans_ok is False:
+            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
+        return super(RuleTransformationViewSet, self).update(request, partial=False, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        trans_ok, msg = self._update_or_partial_update(request, partial=True, *args, **kwargs)
+        if trans_ok is False:
+            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
+        return super(RuleTransformationViewSet, self).update(request, partial=True, *args, **kwargs)
 
 
 class BaseSourceSerializer(serializers.ModelSerializer):
@@ -574,6 +666,6 @@ router.register('rules/category', CategoryViewSet)
 router.register('rules/rule', RuleViewSet)
 router.register('rules/sources', SourceViewSet, base_name='source')
 router.register('rules/public_sources', PublicSourceViewSet, base_name='publicsource')
-# router.register('rules/transformations/rulesets', RulesetTransformationViewSet)
-# router.register('rules/transformations/categories', CategoryTransformationViewSet)
-# router.register('rules/transformations/rules', RuleTransformationViewSet)
+router.register('rules/transformations/rulesets', RulesetTransformationViewSet)
+router.register('rules/transformations/categories', CategoryTransformationViewSet)
+router.register('rules/transformations/rules', RuleTransformationViewSet)
