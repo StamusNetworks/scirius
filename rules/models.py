@@ -877,7 +877,6 @@ class SourceAtVersion(models.Model):
 
 
     def test_rule_buffer(self, rule_buffer, single = False):
-        Probe = __import__(settings.RULESET_MIDDLEWARE)
         testor = TestRules()
         tmpdir = tempfile.mkdtemp()
         self.export_files(tmpdir)
@@ -2328,7 +2327,6 @@ class Ruleset(models.Model, Transformable):
         return file_content
 
     def test_rule_buffer(self, rule_buffer, single = False):
-        Probe = __import__(settings.RULESET_MIDDLEWARE)
         testor = TestRules()
         tmpdir = tempfile.mkdtemp()
         self.export_files(tmpdir)
