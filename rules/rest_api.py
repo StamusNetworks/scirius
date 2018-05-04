@@ -80,6 +80,30 @@ class RulesetSerializer(serializers.ModelSerializer):
 
 
 class RulesetViewSet(viewsets.ModelViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Ruleset detail:\n
+        curl -k https://x.x.x.x/rest/rules/ruleset/<pk-ruleset>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    ==== POST ====\n
+    Create a ruleset:\n
+        curl -k https://x.x.x.x/rest/rules/ruleset/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"name": "SonicRuleset", "sources": [pk-source1, ..., pk-sourceN], "categories": [pk-category1, ..., pk-categoryN]}'
+
+    ==== PATCH ====\n
+    Patch a ruleset:\n
+        curl -k https://x.x.x.x/rest/rules/ruleset/<pk-ruleset>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"name": "PatchedSonicRuleset", "categories": [pk-category1, ..., pk-categoryN]}'
+
+    ==== PUT ====\n
+    Replace a ruleset:\n
+        curl -k https://x.x.x.x/rest/rules/ruleset/<pk-ruleset>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"name": "ReplacedSonicRuleset", "comment": "sonic comment", "sources": [pk-source1, ..., pk-sourceN, "categories": [pk-category1, ..., pk-categoryN]}'
+
+    ==== DELETE ====\n
+    Delete a ruleset:\n
+        curl -k https://x.x.x.x/rest/rules/ruleset/<pk-ruleset>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X DELETE
+
+    =============================================================================================================================================================
+    """
     queryset = Ruleset.objects.all()
     serializer_class = RulesetSerializer
     ordering = ('name',)
@@ -162,6 +186,21 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show a category:\n
+        curl -k https://x.x.x.x/rest/rules/category/<pk-category>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'
+
+    ==== POST ====\n
+    Disable a category in a ruleset:\n
+        curl -k https://x.x.x.x/rest/rules/category/<pk-category>/disable/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>}'
+
+    Enable a category in a ruleset:\n
+        curl -k https://x.x.x.x/rest/rules/category/<pk-category>/enable/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>}'
+
+    =============================================================================================================================================================
+    """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     ordering = ('name',)
@@ -201,6 +240,21 @@ class RuleSerializer(serializers.ModelSerializer):
 
 
 class RuleViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show a rule and its content:\n
+        curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'
+
+    ==== POST ====\n
+    Disable a rule in a ruleset:\n
+        curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/disable/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>}'
+
+    Enable a rule in a ruleset:\n
+        curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/enable/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>}'
+
+    =============================================================================================================================================================
+    """
     queryset = Rule.objects.all()
     serializer_class = RuleSerializer
     ordering = ('sid',)
@@ -355,6 +409,62 @@ class RulesetTransformationSerializer(serializers.ModelSerializer):
 
 
 class RulesetTransformationViewSet(BaseTransformationViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show a ruleset transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    ==== POST ====\n
+    Create a ruleset ACTION transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "action", "transfo_value": "drop"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "action", "transfo_value": "reject"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "action", "transfo_value": "filestore"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "action", "transfo_value": "bypass"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "action", "transfo_value": "none"}'
+
+    Create a ruleset TARGET transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "target", "transfo_value": "src"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "target", "transfo_value": "dst"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "target", "transfo_value": "auto"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "target", "transfo_value": "none"}'
+
+    Create a ruleset TARGET transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "lateral", "transfo_value": "yes"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "lateral", "transfo_value": "auto"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "lateral", "transfo_value": "no"}'
+
+    ==== PATCH ====\n
+    Patch a ruleset transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"transfo_type": "target", "transfo_value": "dst"}' 
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"transfo_type": "target", "transfo_value": "auto"}' 
+
+        ...
+
+    ==== PUT ====\n
+    Replace a ruleset transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"ruleset": <pk-ruleset>,  "transfo_type": "action", "transfo_value": "drop"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"ruleset": <pk-ruleset>,  "transfo_type": "target", "transfo_value": "src"}'
+
+        ...
+
+    ==== DELETE ====\n
+    Delete a ruleset:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X DELETE
+
+    =============================================================================================================================================================
+    """
     queryset = RulesetTransformation.objects.all()
     serializer_class = RulesetTransformationSerializer
     ordering = ('pk',)
@@ -395,6 +505,62 @@ class CategoryTransformationSerializer(serializers.ModelSerializer):
 
 
 class CategoryTransformationViewSet(BaseTransformationViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show a category transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    ==== POST ====\n
+    Create a category ACTION transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "action", "transfo_value": "drop"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "action", "transfo_value": "reject"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "action", "transfo_value": "filestore"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "action", "transfo_value": "bypass"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "action", "transfo_value": "none"}'
+
+    Create a category TARGET transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "target", "transfo_value": "src"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "target", "transfo_value": "dst"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "target", "transfo_value": "auto"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "target", "transfo_value": "none"}'
+
+    Create a category TARGET transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "lateral", "transfo_value": "yes"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "lateral", "transfo_value": "auto"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "lateral", "transfo_value": "no"}'
+
+    ==== PATCH ====\n
+    Patch a category transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"transfo_type": "target", "transfo_value": "dst"}' 
+
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"transfo_type": "target", "transfo_value": "auto"}' 
+
+        ...
+
+    ==== PUT ====\n
+    Replace a category transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "action", "transfo_value": "drop"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "target", "transfo_value": "src"}'
+
+        ...
+
+    ==== DELETE ====\n
+    Delete a category:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/categories/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X DELETE
+
+    =============================================================================================================================================================
+    """
     queryset = CategoryTransformation.objects.all()
     serializer_class = CategoryTransformationSerializer
     ordering = ('pk',)
@@ -435,6 +601,62 @@ class RuleTransformationSerializer(serializers.ModelSerializer):
 
 
 class RuleTransformationViewSet(BaseTransformationViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show a rule transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    ==== POST ====\n
+    Create a rule ACTION transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "action", "transfo_value": "drop"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "action", "transfo_value": "reject"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "action", "transfo_value": "filestore"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "action", "transfo_value": "bypass"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "action", "transfo_value": "none"}'
+
+    Create a rule TARGET transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "target", "transfo_value": "src"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "target", "transfo_value": "dst"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "target", "transfo_value": "auto"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "target", "transfo_value": "none"}'
+
+    Create a rule TARGET transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "lateral", "transfo_value": "yes"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "lateral", "transfo_value": "auto"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "lateral", "transfo_value": "no"}'
+
+    ==== PATCH ====\n
+    Patch a rule transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"transfo_type": "target", "transfo_value": "dst"}' 
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"transfo_type": "target", "transfo_value": "auto"}' 
+
+        ...
+
+    ==== PUT ====\n
+    Replace a rule transformation:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "action", "transfo_value": "drop"}'
+
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "target", "transfo_value": "src"}'
+
+        ...
+
+    ==== DELETE ====\n
+    Delete a rule:\n
+        curl -k https://x.x.x.x/rest/rules/transformations/rules/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X DELETE
+
+    =============================================================================================================================================================
+    """
     queryset = RuleTransformation.objects.all()
     serializer_class = RuleTransformationSerializer
     ordering = ('pk',)
@@ -635,6 +857,33 @@ class PublicSourceSerializer(BaseSourceSerializer):
 
 
 class PublicSourceViewSet(BaseSourceViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    List available public sources:\n
+        curl -k https://x.x.x.x/rest/rules/public_sources/list_sources/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Fetch sources list:
+        curl -k https://x.x.x.x/rest/rules/public_sources/fetch_list_sources/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    ==== POST ====\n
+    Create public source:\n
+        curl -k https://x.x.x.x/rest/rules/public_sources/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"name": "sonic public source", "public_source": "oisf/trafficid"}'
+
+    Update public source:\n
+        curl -k https://x.x.x.x/rest/rules/public_sources/<pk-public-source>/update_source/\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+
+        curl -k https://x.x.x.x/rest/rules/public_sources/<pk-public-source>/update_source/\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+
+    Test public source:\n
+        curl -k https://x.x.x.x/rest/rules/public_sources/<pk-public-source>/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+
+    ==== DELETE ====\n
+    Delete public source:\n
+        curl -k https://x.x.x.x/rest/rules/public_sources/<pk-public-source>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X DELETE
+
+    =============================================================================================================================================================
+    """
     queryset = Source.objects.all()
     serializer_class = PublicSourceSerializer
     ordering = ('name',)
@@ -659,6 +908,29 @@ class SourceSerializer(BaseSourceSerializer):
 
 
 class SourceViewSet(BaseSourceViewSet):
+    """
+    =============================================================================================================================================================
+    ==== POST ====\n
+    Create custom source:\n
+        curl -k https://x.x.x.x/rest/rules/sources/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"name": "sonic custom source", "method": "local", "datatype": "sigs"}'
+
+    Update custom (only for {method: http}):\n
+        curl -k https://x.x.x.x/rest/rules/sources/<pk-source>/update_source/\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+
+        curl -k https://x.x.x.x/rest/rules/sources/<pk-source>/update_source/\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+
+    Test custom source:\n
+        curl -k https://x.x.x.x/rest/rules/sources/<pk-source>/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+
+    Upload rules (only for {method: local}):\n
+        curl -k https://x.x.x.x/rest/rules/sources/<pk-source>/upload/ -H 'Authorization: Token <token>' --keepalive-time 20 -F file=@/tmp/emerging.rules.tar.gz  -X POST
+
+    ==== DELETE ====\n
+    Delete custom source:\n
+        curl -k https://x.x.x.x/rest/rules/sources/<pk-source>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X DELETE
+
+    =============================================================================================================================================================
+    """
     queryset = Source.objects.all()
     serializer_class = SourceSerializer
     parser_classes = (MultiPartParser, JSONParser)
