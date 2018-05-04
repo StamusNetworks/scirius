@@ -45,7 +45,7 @@ class CommentSerializer(serializers.Serializer):
 
 
 class RulesetSerializer(serializers.ModelSerializer):
-    sources = serializers.PrimaryKeyRelatedField(queryset=SourceAtVersion.objects.all(), many=True)
+    sources = serializers.PrimaryKeyRelatedField(queryset=Source.objects.all(), many=True)
 
     class Meta:
         model = Ruleset
@@ -61,6 +61,22 @@ class RulesetSerializer(serializers.ModelSerializer):
         validated_data['updated_date'] = timezone.now()
         instance = super(RulesetSerializer, self).create(validated_data)
         return instance
+
+    def to_representation(self, instance):
+        data = super(RulesetSerializer, self).to_representation(instance)
+        sources_at_version = instance.sources
+        sources = Source.objects.filter(sourceatversion__in=sources_at_version.all())
+        data['sources'] = [source.pk for source in sources]
+        return data
+
+    def to_internal_value(self, data):
+        sources = data.get('sources', None)
+        if sources is None:
+            return data
+
+        sources_at_version = SourceAtVersion.objects.filter(source__in=sources)
+        data['sources'] = [source_at_version.pk for source_at_version in sources_at_version]
+        return data
 
 
 class RulesetViewSet(viewsets.ModelViewSet):
