@@ -43,11 +43,11 @@ class HuntApp extends Component {
     }
 
     displayRuleset(ruleset) {
-    	ReactDOM.render(<Ruleset key={ruleset.pk} data={ruleset}/>, document.getElementById('app-content'));
+    	ReactDOM.render(<RulesetPage key={ruleset.pk} data={ruleset}/>, document.getElementById('app-content'));
     }
     
     displaySource(source) {
-    	ReactDOM.render(<Source key={source.pk} data={source} />, document.getElementById('app-content'));
+    	ReactDOM.render(<SourcePage key={source.pk} data={source} />, document.getElementById('app-content'));
     }
 
 
@@ -199,7 +199,7 @@ class RulesList extends Component {
 class RuleInList extends Component {
   handleClick = () => {
     //this.setState({rule: {this.props.data}});
-    const rdata = <Rule rule={this.props.data}/>
+    const rdata = <RulePage rule={this.props.data}/>
     ReactDOM.render(rdata, document.getElementById('app-content'));
   }
   render() {
@@ -226,15 +226,15 @@ class RuleInList extends Component {
 }
 
 
-class Rule extends Component {
+class RulePage extends Component {
     render() {
         return (
-            <h4>{this.props.rule.msg}</h4>
+            <h1>{this.props.rule.msg}</h1>
 	)
     }
 }
 
-class Source extends Component {
+class SourcePage extends Component {
     render() {
 	var source = this.props.data;
         return (
@@ -243,7 +243,7 @@ class Source extends Component {
     }
 }
 
-class Ruleset extends Component {
+class RulesetPage extends Component {
     render() {
 	var ruleset = this.props.data;
         return (
