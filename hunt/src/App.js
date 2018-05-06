@@ -157,25 +157,26 @@ class UserNavInfo extends Component {
 	}
 }
 
+
 class HuntPaginationRow extends Component {
-    state = {
-      pagination: {
-        page: 1,
-        perPage: 6,
-        perPageOptions: [6, 10, 15, 25, 50]
-      }
-    };
+  constructor(props) {
+    super(props);
+    this.onPageInput = this.onPageInput.bind(this);
+    this.onPerPageSelect = this.onPerPageSelect.bind(this);
+  };
 
   onPageInput = e => {
-    const newPaginationState = Object.assign({}, this.state.pagination);
+    const newPaginationState = Object.assign({}, this.props.pagination);
     newPaginationState.page = e.target.value;
-    this.setState({ pagination: newPaginationState });
+    this.props.onPaginationChange(newPaginationState);
   }
+
   onPerPageSelect = (eventKey, e) => {
-    const newPaginationState = Object.assign({}, this.state.pagination);
+    const newPaginationState = Object.assign({}, this.props.pagination);
     newPaginationState.perPage = eventKey;
-    this.setState({ pagination: newPaginationState });
+    this.props.onPaginationChange(newPaginationState);
   }
+
   render() {
     const {
       viewType,
@@ -195,7 +196,7 @@ class HuntPaginationRow extends Component {
       <PaginationRow
         viewType={viewType}
         pageInputValue={pageInputValue}
-        pagination={this.state.pagination}
+        pagination={this.props.pagination}
         amountOfPages={amountOfPages}
         pageSizeDropUp={pageSizeDropUp}
         itemCount={itemCount}
@@ -211,6 +212,7 @@ class HuntPaginationRow extends Component {
     );
   }
 }
+
 
 /*
 HuntPaginationRow.propTypes = {
@@ -240,14 +242,58 @@ class RulesList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      rules: [], categories: []
+      rules: [], categories: [],
+      pagination: {
+        page: 1,
+        perPage: 10,
+        perPageOptions: [6, 10, 15, 25, 50]
+      }
     };
+    this.fetchData = this.fetchData.bind(this);
+    this.handlePaginationChange = this.handlePaginationChange.bind(this);
+    this.onFirstPage = this.onFirstPage.bind(this);
+    this.onNextPage = this.onNextPage.bind(this);
+    this.onPrevPage = this.onPrevPage.bind(this);
+    this.onLastPage = this.onLastPage.bind(this);
   }
 
-  componentDidMount() {
-      axios.all([
-          axios.get(config.API_URL + config.RULE_PATH + "?ordering=-created&limit=10"),
-          axios.get(config.API_URL + config.CATEGORY_PATH + "?limit=100"),
+  handlePaginationChange(pagin) {
+     this.setState({pagination: pagin});
+     this.fetchData(pagin.page, pagin.perPage);
+  }
+
+  onFirstPage() {
+     const newPaginationState = Object.assign({}, this.state.pagination);
+     newPaginationState.page = 1;
+     this.setState({pagination: newPaginationState});
+     this.fetchData(newPaginationState.page, newPaginationState.perPage);
+  }
+
+  onNextPage() {
+     const newPaginationState = Object.assign({}, this.state.pagination);
+     newPaginationState.page = newPaginationState.page + 1;
+     this.setState({pagination: newPaginationState});
+     this.fetchData(newPaginationState.page, newPaginationState.perPage);
+  }
+
+  onPrevPage() {
+     const newPaginationState = Object.assign({}, this.state.pagination);
+     newPaginationState.page = newPaginationState.page - 1;
+     this.setState({pagination: newPaginationState});
+     this.fetchData(newPaginationState.page, newPaginationState.perPage);
+  }
+
+  onLastPage() {
+     const newPaginationState = Object.assign({}, this.state.pagination);
+     newPaginationState.page = Math.floor(this.state.rules_count / this.state.pagination.perPage) + 1;
+     this.setState({pagination: newPaginationState});
+     this.fetchData(newPaginationState.page, newPaginationState.perPage);
+  }
+
+  fetchData(page, per_page) {
+     axios.all([
+          axios.get(config.API_URL + config.RULE_PATH + "?ordering=-created&page_size=" + per_page + "&page=" + page),
+          axios.get(config.API_URL + config.CATEGORY_PATH + "?page_size=100"),
 	  ])
       .then(axios.spread((RuleRes, CatRes) => {
 	 var categories_array = CatRes.data['results'];
@@ -256,8 +302,12 @@ class RulesList extends Component {
 	     var cat = categories_array[i];
 	     categories[cat.pk] = cat;
 	 }
-         this.setState({ rules: RuleRes.data['results'], categories: categories});
-      }))
+         this.setState({ rules_count: RuleRes.data['count'], rules: RuleRes.data['results'], categories: categories});
+     }))
+  }
+
+  componentDidMount() {
+      this.fetchData(this.state.pagination.page, this.state.pagination.perPage)
   }
   
   render() {
@@ -271,7 +321,20 @@ class RulesList extends Component {
                 )
              })}
 	    </ListView>
-	    <HuntPaginationRow />
+	    <HuntPaginationRow
+	        pagination={this.state.pagination}
+	        onPaginationChange={this.handlePaginationChange}
+		amountOfPages = {Math.ceil(this.state.rules_count / this.state.pagination.perPage)}
+		pageInputValue = {this.state.pagination.page}
+		itemCount = {this.state.rules_count}
+		itemsStart = {(this.state.pagination.page - 1) * this.state.pagination.perPage}
+		itemsEnd = {Math.min(this.state.pagination.page * this.state.pagination.perPage - 1, this.state.rules_count) }
+		onFirstPage={this.onFirstPage}
+		onNextPage={this.onNextPage}
+		onPreviousPage={this.onPrevPage}
+		onLastPage={this.onLastPage}
+
+	    />
         </div>
     );
   }
