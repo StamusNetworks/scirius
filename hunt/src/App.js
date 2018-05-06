@@ -4,15 +4,53 @@ import { ListView, ListViewItem, ListViewInfoItem, Row, Col, ListViewIcon } from
 import { VerticalNav, Dropdown, Icon, MenuItem } from 'patternfly-react';
 import axios from 'axios';
 import * as config from './config/Api.js';
-import './App.css';
 import 'bootstrap3/dist/css/bootstrap.css'
 import 'patternfly/dist/css/patternfly.css'
 import 'patternfly/dist/css/patternfly-additions.css'
 import 'patternfly-react/dist/css/patternfly-react.css'
+import './App.css';
 
-function onClick() {}
+function onHomeClick() {
+   ReactDOM.render(<RulesList />, document.getElementById('app-content'));
+}
+
+function onDashboardClick() {
+   //ReactDOM.render(<RulesList />, document.getElementById('app-content'));
+}
+
+function onHistoryClick() {
+
+}
 
 class HuntApp extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      sources: [], rulesets: []
+    };
+    this.displaySource = this.displaySource.bind(this);
+    this.displayRuleset = this.displayRuleset.bind(this);
+  }
+
+    componentDidMount() {
+      axios.all([
+          axios.get(config.API_URL + config.SOURCE_PATH),
+          axios.get(config.API_URL + config.RULESET_PATH),
+	  ])
+      .then(axios.spread((SrcRes, RulesetRes) => {
+         this.setState({ rulesets: RulesetRes.data['results'], sources: SrcRes.data['results']});
+      }))
+    }
+
+    displayRuleset(ruleset) {
+    	ReactDOM.render(<Ruleset key={ruleset.pk} data={ruleset}/>, document.getElementById('app-content'));
+    }
+    
+    displaySource(source) {
+    	ReactDOM.render(<Source key={source.pk} data={source} />, document.getElementById('app-content'));
+    }
+
+
     render() {
         return(
             <div className="layout-pf layout-pf-fixed faux-layout">
@@ -27,34 +65,43 @@ class HuntApp extends Component {
             	      title="Home"
             	      iconClass="fa fa-home"
             	      initialActive
-            	      onClick={onClick()}
+            	      onClick={onHomeClick}
             	      className={null}
             	    />
 
             	    <VerticalNav.Item
             	      title="Dashboards"
             	      iconClass="fa fa-tachometer"
-            	      initialActive
-            	      onClick={onClick()}
+            	      onClick={onDashboardClick}
             	      className={null}
             	    >
             	        <VerticalNav.Badge count={42} />
             	    </VerticalNav.Item>
             	    <VerticalNav.Item title="IDS rules" iconClass="glyphicon glyphicon-eye-open">
-            	        <VerticalNav.SecondaryItem title="Sources" onClick={onClick()}>
-            	        	<VerticalNav.Badge count={9} tooltip="Whoa, that's a lot" />
+            	        <VerticalNav.SecondaryItem title="Sources" >
+                	    {this.state.sources.map(function(source) {
+				    return(
+	    		     <VerticalNav.TertiaryItem key={source.pk} title={source.name}  onClick={this.displaySource.bind(this, source)}  />
+			     )
+			     }, this)}
+	    		     <VerticalNav.TertiaryItem title="Add Source" href="/rules/source/add" />
             	        </VerticalNav.SecondaryItem>
-       			<VerticalNav.SecondaryItem title="Rulesets" />
+       			<VerticalNav.SecondaryItem title="Rulesets">
+                	    {this.state.rulesets.map(function(ruleset) {
+				    return(
+	    		     <VerticalNav.TertiaryItem key={ruleset.pk} title={ruleset.name} onClick={this.displayRuleset.bind(this, ruleset)} />
+			     )
+			     }, this)}
+	    		     <VerticalNav.TertiaryItem title="Add Ruleset" href="/rules/ruleset/add" >
+        			<Icon type="pf" name="help" />
+			     </VerticalNav.TertiaryItem>
+            	        </VerticalNav.SecondaryItem>
        	             </VerticalNav.Item>
-       		     <VerticalNav.Item title="History" iconClass="glyphicon glyphicon-list">
-       			<VerticalNav.SecondaryItem title="Item 3-A" />
-       			<VerticalNav.SecondaryItem title="Item 3-B">
-       				<VerticalNav.TertiaryItem title="Item 3-B-i" />
-       				<VerticalNav.TertiaryItem title="Item 3-B-ii" />
-       				<VerticalNav.TertiaryItem title="Item 3-B-iii" />
-       			</VerticalNav.SecondaryItem>
-       			<VerticalNav.SecondaryItem title="Item 3-C" />
-       		     </VerticalNav.Item>
+       		     <VerticalNav.Item
+		      title="History"
+		      iconClass="glyphicon glyphicon-list"
+            	      onClick={onHistoryClick}
+		     />
        		     <VerticalNav.Item 
 		       title="Setup"
 		       iconClass="glyphicon glyphicon-cog"
@@ -63,15 +110,15 @@ class HuntApp extends Component {
        		</VerticalNav>
        			<div className="container-fluid container-cards-pf container-pf-nav-pf-vertical">
        				<div className="row">
-						<div className="col-xs-12 col-sm-12 col-md-12">
-               				<RulesList />
-						</div>
+				    <div className="col-xs-12 col-sm-12 col-md-12" id="app-content" >
+				    </div>
        				</div>
        			</div>
        		</div>
         )
     }
 }
+
 
 class UserNavInfo extends Component {
 	render() {
@@ -113,7 +160,7 @@ class RulesList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      rules: []
+      rules: [], categories: []
     };
   }
 
@@ -153,7 +200,7 @@ class RuleInList extends Component {
   handleClick = () => {
     //this.setState({rule: {this.props.data}});
     const rdata = <Rule rule={this.props.data}/>
-    ReactDOM.render(rdata, document.getElementById('root'));
+    ReactDOM.render(rdata, document.getElementById('app-content'));
   }
   render() {
     var category = this.props.state.categories[this.props.data.category];
@@ -183,6 +230,24 @@ class Rule extends Component {
     render() {
         return (
             <h4>{this.props.rule.msg}</h4>
+	)
+    }
+}
+
+class Source extends Component {
+    render() {
+	var source = this.props.data;
+        return (
+            <h1>{source.name}</h1>
+	)
+    }
+}
+
+class Ruleset extends Component {
+    render() {
+	var ruleset = this.props.data;
+        return (
+            <h1>{ruleset.name}</h1>
 	)
     }
 }
