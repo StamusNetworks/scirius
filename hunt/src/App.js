@@ -15,7 +15,7 @@ function onHomeClick() {
 }
 
 function onDashboardClick() {
-   //ReactDOM.render(<RulesList />, document.getElementById('app-content'));
+   ReactDOM.render(<RulesList />, document.getElementById('app-content'));
 }
 
 function onHistoryClick() {
@@ -108,13 +108,13 @@ class HuntApp extends Component {
 		       href="/appliances"
 		     />
        		</VerticalNav>
-       			<div className="container-fluid container-cards-pf container-pf-nav-pf-vertical">
-       				<div className="row">
-				    <div className="col-xs-12 col-sm-12 col-md-12" id="app-content" >
-				    </div>
-       				</div>
-       			</div>
-       		</div>
+       		<div className="container-fluid container-cards-pf container-pf-nav-pf-vertical nav-pf-persistent-secondary">
+       			<div className="row row-cards-pf">
+			    <div className="col-xs-12 col-sm-12 col-md-12" id="app-content" >
+	       	            </div>
+       	         	</div>
+       	        </div>
+       	    </div>
         )
     }
 }
