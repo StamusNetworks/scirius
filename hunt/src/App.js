@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
 import { ListView, ListViewItem, ListViewInfoItem, Row, Col, ListViewIcon } from 'patternfly-react';
-import { VerticalNav, Dropdown, Icon, MenuItem } from 'patternfly-react';
+import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow } from 'patternfly-react';
 import axios from 'axios';
 import * as config from './config/Api.js';
 import 'bootstrap3/dist/css/bootstrap.css'
@@ -156,6 +157,85 @@ class UserNavInfo extends Component {
 	}
 }
 
+class HuntPaginationRow extends Component {
+    state = {
+      pagination: {
+        page: 1,
+        perPage: 6,
+        perPageOptions: [6, 10, 15, 25, 50]
+      }
+    };
+
+  onPageInput = e => {
+    const newPaginationState = Object.assign({}, this.state.pagination);
+    newPaginationState.page = e.target.value;
+    this.setState({ pagination: newPaginationState });
+  }
+  onPerPageSelect = (eventKey, e) => {
+    const newPaginationState = Object.assign({}, this.state.pagination);
+    newPaginationState.perPage = eventKey;
+    this.setState({ pagination: newPaginationState });
+  }
+  render() {
+    const {
+      viewType,
+      pageInputValue,
+      amountOfPages,
+      pageSizeDropUp,
+      itemCount,
+      itemsStart,
+      itemsEnd,
+      onFirstPage,
+      onPreviousPage,
+      onNextPage,
+      onLastPage
+    } = this.props;
+
+    return (
+      <PaginationRow
+        viewType={viewType}
+        pageInputValue={pageInputValue}
+        pagination={this.state.pagination}
+        amountOfPages={amountOfPages}
+        pageSizeDropUp={pageSizeDropUp}
+        itemCount={itemCount}
+        itemsStart={itemsStart}
+        itemsEnd={itemsEnd}
+        onPerPageSelect={this.onPerPageSelect}
+        onFirstPage={onFirstPage}
+        onPreviousPage={onPreviousPage}
+        onPageInput={this.onPageInput}
+        onNextPage={onNextPage}
+        onLastPage={onLastPage}
+      />
+    );
+  }
+}
+
+/*
+HuntPaginationRow.propTypes = {
+  viewType: PropTypes.oneOf(PAGINATION_VIEW_TYPES).isRequired,
+  pageInputValue: PropTypes.number.isRequired,
+  amountOfPages: PropTypes.number.isRequired,
+  pageSizeDropUp: PropTypes.bool,
+  itemCount: PropTypes.number.isRequired,
+  itemsStart: PropTypes.number.isRequired,
+  itemsEnd: PropTypes.number.isRequired,
+  onFirstPage: PropTypes.func,
+  onPreviousPage: PropTypes.func,
+  onNextPage: PropTypes.func,
+  onLastPage: PropTypes.func
+};
+
+HuntPaginationRow.defaultProps = {
+  pageSizeDropUp: true,
+  onFirstPage: noop,
+  onPreviousPage: noop,
+  onNextPage: noop,
+  onLastPage: noop
+};
+*/
+
 class RulesList extends Component {
   constructor(props) {
     super(props);
@@ -191,6 +271,7 @@ class RulesList extends Component {
                 )
              })}
 	    </ListView>
+	    <HuntPaginationRow />
         </div>
     );
   }
