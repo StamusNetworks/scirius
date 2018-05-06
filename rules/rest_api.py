@@ -24,9 +24,9 @@ from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTr
 from rules.views import get_public_sources, fetch_public_sources
 from rules.rest_processing import RuleProcessingFilterViewSet
 
+from scirius.rest_api import SciriusReadOnlyModelViewSet, SciriusModelViewSet
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
-
 
 class ServiceUnavailableException(APIException):
     status_code = 500
@@ -281,7 +281,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('pk', 'name', 'descr', 'created_date', 'source')
 
 
-class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+class CategoryViewSet(SciriusReadOnlyModelViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -376,7 +376,7 @@ class RuleFilter(filters.FilterSet):
         fields = ['sid', 'category', 'msg', 'content', 'created', 'updated']
 
 
-class RuleViewSet(viewsets.ReadOnlyModelViewSet):
+class RuleViewSet(SciriusReadOnlyModelViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
