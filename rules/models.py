@@ -939,7 +939,6 @@ class Transformation(models.Model):
         LATERAL = 'lateral'
         TARGET = 'target'
         SUPPRESSED = 'suppressed'
-        NONE = 'none'
 
     @unique
     class ActionTransfoType(TransfoType):

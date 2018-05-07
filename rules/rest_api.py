@@ -305,14 +305,14 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
         {"2":"drop ip $HOME_NET any -> [101.200.81.187,103.19.89.118,103.230.84.239,103.4.52.150,103.7.59.135] any (msg:\"ET CNC Zeus Tracker Reported CnC Server group 1\"; reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,zeustracker.abuse.ch; threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404150; rev:4984;)"}
 
     ==== POST ====\n
-    Disable a rule in a ruleset:\n
+    Disable a rule in a ruleset. Disabling a rule is equivalent to transform this rule to SUPPRESSED/SUPPRESSED:\n
         curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/disable/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>}'
 
     Return:\n
         HTTP/1.1 200 OK
         {"disable":"ok"}
 
-    Enable a rule in a ruleset:\n
+    Enable a rule in a ruleset. Enabling a rule is equivalent to remove SUPPRESSED/SUPPRESSED transformation on this rule. But it can't be done from transformation API :\n
         curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/enable/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>}'
 
     Return:\n
