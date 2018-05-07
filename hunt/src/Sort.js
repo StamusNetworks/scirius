@@ -23,7 +23,7 @@ export class RuleSort extends React.Component {
     state = {
       currentSortType: RuleSortFields[0],
       isSortNumeric: RuleSortFields[0].isNumeric,
-      isSortAscending: true
+      isSortAscending: false
     };
 
   updateCurrentSortType = sortType => {

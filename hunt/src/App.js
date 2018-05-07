@@ -5,7 +5,6 @@ import { ListView, ListViewItem, ListViewInfoItem, Row, Col, ListViewIcon } from
 import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow, Toolbar } from 'patternfly-react';
 import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
 import { RuleFilter } from './Filter.js';
-import { RuleSort } from './Sort.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
 import 'bootstrap3/dist/css/bootstrap.css'
@@ -359,8 +358,7 @@ class RulesList extends Component {
     return (
         <div className="RulesList">
 	<Toolbar>
-	    <RuleFilter UpdateFilter={this.UpdateFilter} />
-	    <RuleSort UpdateSort={this.UpdateSort} />
+	    <RuleFilter UpdateFilter={this.UpdateFilter}  UpdateSort={this.UpdateSort} />
       </Toolbar>
 	    <ListView>
             {this.state.rules.map(function(rule) {

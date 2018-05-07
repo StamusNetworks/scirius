@@ -1,5 +1,6 @@
 import React from 'react';
 import { Filter, FormControl, Toolbar } from 'patternfly-react';
+import { RuleSort } from './Sort.js';
 
 export const RuleFilterFields = [
   {
@@ -185,7 +186,7 @@ export class RuleFilter extends React.Component {
 
     return (
       <div>
-        <div style={{ width: 300 }}>
+        <div style={{ width: 450 }}>
           <Filter>
             <Filter.TypeSelector
               filterTypes={RuleFilterFields}
@@ -194,6 +195,7 @@ export class RuleFilter extends React.Component {
             />
             {this.renderInput()}
           </Filter>
+	      <RuleSort UpdateSort={this.props.UpdateSort}/>
         </div>
         {activeFilters &&
           activeFilters.length > 0 && (
@@ -213,7 +215,6 @@ export class RuleFilter extends React.Component {
                 })}
               </Filter.List>
               <a
-                href="#"
                 onClick={e => {
                   e.preventDefault();
                   this.clearFilters();
