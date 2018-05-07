@@ -370,6 +370,8 @@ class RuleFilter(filters.FilterSet):
     max_created = filters.DateFilter(name="created", lookup_expr='lte')
     min_updated = filters.DateFilter(name="updated", lookup_expr='gte')
     max_updated = filters.DateFilter(name="updated", lookup_expr='lte')
+    msg = filters.CharFilter(name="msg", lookup_expr='icontains')
+    content = filters.CharFilter(name="content", lookup_expr='icontains')
 
     class Meta:
         model = Rule
