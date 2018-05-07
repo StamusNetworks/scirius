@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { ListView, ListViewItem, ListViewInfoItem, Row, Col, ListViewIcon } from 'patternfly-react';
 import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow } from 'patternfly-react';
+import { RuleFilter } from './Filter.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
 import 'bootstrap3/dist/css/bootstrap.css'
@@ -247,7 +248,8 @@ class RulesList extends Component {
         page: 1,
         perPage: 10,
         perPageOptions: [6, 10, 15, 25, 50]
-      }
+      },
+      filters: []
     };
     this.fetchData = this.fetchData.bind(this);
     this.handlePaginationChange = this.handlePaginationChange.bind(this);
@@ -255,6 +257,7 @@ class RulesList extends Component {
     this.onNextPage = this.onNextPage.bind(this);
     this.onPrevPage = this.onPrevPage.bind(this);
     this.onLastPage = this.onLastPage.bind(this);
+    this.UpdateFilter = this.UpdateFilter.bind(this);
   }
 
   handlePaginationChange(pagin) {
@@ -266,33 +269,43 @@ class RulesList extends Component {
      const newPaginationState = Object.assign({}, this.state.pagination);
      newPaginationState.page = 1;
      this.setState({pagination: newPaginationState});
-     this.fetchData(newPaginationState.page, newPaginationState.perPage);
+     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters);
   }
 
   onNextPage() {
      const newPaginationState = Object.assign({}, this.state.pagination);
      newPaginationState.page = newPaginationState.page + 1;
      this.setState({pagination: newPaginationState});
-     this.fetchData(newPaginationState.page, newPaginationState.perPage);
+     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters);
   }
 
   onPrevPage() {
      const newPaginationState = Object.assign({}, this.state.pagination);
      newPaginationState.page = newPaginationState.page - 1;
      this.setState({pagination: newPaginationState});
-     this.fetchData(newPaginationState.page, newPaginationState.perPage);
+     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters);
   }
 
   onLastPage() {
      const newPaginationState = Object.assign({}, this.state.pagination);
      newPaginationState.page = Math.floor(this.state.rules_count / this.state.pagination.perPage) + 1;
      this.setState({pagination: newPaginationState});
-     this.fetchData(newPaginationState.page, newPaginationState.perPage);
+     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters);
   }
 
-  fetchData(page, per_page) {
+   UpdateFilter(filters) {
+	   console.log(filters);
+     this.setState({filters: filters});
+     this.fetchData(this.state.pagination.page, this.state.pagination.perPage, filters);
+   }
+
+  fetchData(page, per_page, filters) {
+     var string_filters = ""
+     for (var i=0; i < filters.length; i++) {
+         string_filters += "&" + filters[i].id + "=" + filters[i].value;
+     }
      axios.all([
-          axios.get(config.API_URL + config.RULE_PATH + "?ordering=-created&page_size=" + per_page + "&page=" + page),
+          axios.get(config.API_URL + config.RULE_PATH + "?ordering=-created&page_size=" + per_page + "&page=" + page + string_filters),
           axios.get(config.API_URL + config.CATEGORY_PATH + "?page_size=100"),
 	  ])
       .then(axios.spread((RuleRes, CatRes) => {
@@ -307,13 +320,14 @@ class RulesList extends Component {
   }
 
   componentDidMount() {
-      this.fetchData(this.state.pagination.page, this.state.pagination.perPage)
+      this.fetchData(this.state.pagination.page, this.state.pagination.perPage, this.state.filters)
   }
   
   render() {
     var state = this.state;
     return (
         <div className="RulesList">
+	    <RuleFilter UpdateFilter={this.UpdateFilter} />
 	    <ListView>
             {this.state.rules.map(function(rule) {
                 return(
@@ -329,6 +343,7 @@ class RulesList extends Component {
 		itemCount = {this.state.rules_count}
 		itemsStart = {(this.state.pagination.page - 1) * this.state.pagination.perPage}
 		itemsEnd = {Math.min(this.state.pagination.page * this.state.pagination.perPage - 1, this.state.rules_count) }
+		itemCount= {this.state.rules.length}
 		onFirstPage={this.onFirstPage}
 		onNextPage={this.onNextPage}
 		onPreviousPage={this.onPrevPage}
