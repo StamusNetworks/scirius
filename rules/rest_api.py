@@ -635,7 +635,7 @@ class PublicSourceSerializer(BaseSourceSerializer):
 
 
 class PublicSourceViewSet(BaseSourceViewSet):
-    queryset = Source.objects.filter(~Q(public_source=None))
+    queryset = Source.objects.all()
     serializer_class = PublicSourceSerializer
     ordering = ('name',)
     ordering_fields = ('name', 'created_date', 'updated_date', 'cats_count', 'rules_count',)
@@ -663,7 +663,7 @@ class SourceSerializer(BaseSourceSerializer):
 
 
 class SourceViewSet(BaseSourceViewSet):
-    queryset = Source.objects.filter(Q(public_source=None))
+    queryset = Source.objects.all()
     serializer_class = SourceSerializer
     parser_classes = (MultiPartParser, JSONParser)
     ordering = ('name',)
