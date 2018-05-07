@@ -249,7 +249,7 @@ class RulesList extends Component {
       rules: [], categories: [], rules_count: 0,
       pagination: {
         page: 1,
-        perPage: 10,
+        perPage: 6,
         perPageOptions: [6, 10, 15, 25, 50]
       },
       filters: [],
