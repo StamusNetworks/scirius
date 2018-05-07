@@ -130,7 +130,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
     filter_fields = ('name', 'descr')
 
     def create(self, request, *args, **kwargs):
-        comment = request.data.pop('comment', None)
+        comment = request.data.get('comment', None)
         serializer = RulesetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -151,7 +151,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         ruleset = self.get_object()
-        comment = request.data.pop('comment', None)
+        comment = request.data.get('comment', None)
         comment_serializer = CommentSerializer(data={'comment': comment})
         comment_serializer.is_valid(raise_exception=True)
 
@@ -164,7 +164,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
         return super(RulesetViewSet, self).destroy(request, *args, **kwargs)
 
     def _update_or_partial_update(self, request, partial, *args, **kwargs):
-        comment = request.data.pop('comment', None)
+        comment = request.data.get('comment', None)
 
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -347,7 +347,7 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         kwargs['fields'] = dict(self._fields)
         kwargs['action_type'] = self._action_type
 
-        comment = request.data.pop('comment', None)
+        comment = request.data.get('comment', None)
         key = request.data.get('transfo_type')
         value = request.data.get('transfo_value')
         trans_ok = key in Transformation.AVAILABLE_MODEL_TRANSFO and value in Transformation.AVAILABLE_MODEL_TRANSFO[key]
@@ -387,7 +387,7 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         kwargs['action_type'] = 'delete_%s' % self._action_type
 
         instance = self.get_object()
-        comment = request.data.pop('comment', None)
+        comment = request.data.get('comment', None)
         comment_serializer = CommentSerializer(data={'comment': comment})
         comment_serializer.is_valid(raise_exception=True)
 
@@ -407,7 +407,7 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         kwargs['fields'] = dict(self._fields)
         kwargs['action_type'] = self._action_type
 
-        comment = request.data.pop('comment', None)
+        comment = request.data.get('comment', None)
         key = request.data.get('transfo_type')
         value = request.data.get('transfo_value')
         trans_ok = key in Transformation.AVAILABLE_MODEL_TRANSFO and value in Transformation.AVAILABLE_MODEL_TRANSFO[key]
@@ -752,7 +752,7 @@ class BaseSourceSerializer(serializers.ModelSerializer):
 
 class BaseSourceViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
-        comment = request.data.pop('comment', None)
+        comment = request.data.get('comment', None)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -800,7 +800,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['post'])
     def update_source(self, request, pk):
-        comment = request.data.pop('comment', None)
+        comment = request.data.get('comment', None)
         is_async_str = request.query_params.get('async', u'false')
         is_async = lambda value: bool(value) and value.lower() not in (u'false', u'0')
         async_ = is_async(is_async_str)
@@ -857,7 +857,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['post'])
     def test(self, request, pk):
-        comment = request.data.pop('comment', None)
+        comment = request.data.get('comment', None)
         source = self.get_object()
 
         comment_serializer = CommentSerializer(data={'comment': comment})
