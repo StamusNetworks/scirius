@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { ListView, ListViewItem, ListViewInfoItem, Row, Col, ListViewIcon } from 'patternfly-react';
 import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow, Toolbar, Spinner } from 'patternfly-react';
+import { AboutModal } from 'patternfly-react';
 import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
 import { RuleFilter } from './Filter.js';
 import axios from 'axios';
@@ -124,6 +125,22 @@ class HuntApp extends Component {
 
 
 class UserNavInfo extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+	    showModal: false
+    }
+    this.AboutClick = this.AboutClick.bind(this);
+    this.closeModal = this.closeModal.bind(this);
+  }
+
+  AboutClick(e) {
+	  this.setState({showModal: true});
+  }
+  closeModal(e) {
+	  this.setState({showModal: false});
+  }
+
 	render() {
 		return(
 			<React.Fragment>
@@ -133,7 +150,7 @@ class UserNavInfo extends Component {
       				</Dropdown.Toggle>
       				<Dropdown.Menu>
         				<MenuItem>Help</MenuItem>
-        				<MenuItem>About</MenuItem>
+        				<MenuItem onClick={this.AboutClick}>About</MenuItem>
       				</Dropdown.Menu>
     			</Dropdown>
 			    <Dropdown componentClass="li" id="time">
@@ -154,6 +171,19 @@ class UserNavInfo extends Component {
         				<MenuItem>Logout</MenuItem>
     				</Dropdown.Menu>
 			   </Dropdown>
+			   
+        <AboutModal
+          show={this.state.showModal}
+          onHide={this.closeModal}
+          productTitle="Scirius Enterprise Edition"
+          //logo={logo}
+          altLogo="SEE Logo"
+          trademarkText="Copyright 2014-2018, Stamus Networks"
+        >
+          <AboutModal.Versions>
+            <AboutModal.VersionItem label="Version" versionText="31.0.0" />
+          </AboutModal.Versions>
+        </AboutModal>
 			</React.Fragment>
 		)
 	}
