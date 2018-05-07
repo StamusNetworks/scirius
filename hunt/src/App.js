@@ -262,7 +262,7 @@ class RulesList extends Component {
 
   handlePaginationChange(pagin) {
      this.setState({pagination: pagin});
-     this.fetchData(pagin.page, pagin.perPage);
+     this.fetchData(pagin.page, pagin.perPage, this.state.filters);
   }
 
   onFirstPage() {
@@ -343,7 +343,6 @@ class RulesList extends Component {
 		itemCount = {this.state.rules_count}
 		itemsStart = {(this.state.pagination.page - 1) * this.state.pagination.perPage}
 		itemsEnd = {Math.min(this.state.pagination.page * this.state.pagination.perPage - 1, this.state.rules_count) }
-		itemCount= {this.state.rules.length}
 		onFirstPage={this.onFirstPage}
 		onNextPage={this.onNextPage}
 		onPreviousPage={this.onPrevPage}
