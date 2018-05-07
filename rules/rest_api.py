@@ -18,6 +18,7 @@ from rest_framework.mixins import UpdateModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAdminUser
 
 from django_filters import rest_framework as filters
+from django_filters import fields as filters_fields
 
 from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, \
         Source, SourceAtVersion, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
@@ -365,13 +366,34 @@ class RuleSerializer(serializers.ModelSerializer):
         return data
 
 
+class ListFilter(filters.CharFilter):
+
+    def sanitize(self, value_list):
+        """
+        remove empty items in case of ?number=1,,2
+        """
+        return [v for v in value_list if v != u'']
+
+    def customize(self, value):
+        return value
+
+    def filter(self, qs, value):
+        multiple_vals = value.split(u",")
+        multiple_vals = self.sanitize(multiple_vals)
+        multiple_vals = map(self.customize, multiple_vals)
+        for val in multiple_vals:
+            fval = filters_fields.Lookup(val, 'icontains')
+            qs =  super(ListFilter, self).filter(qs, fval)
+        return qs
+
+
 class RuleFilter(filters.FilterSet):
     min_created = filters.DateFilter(name="created", lookup_expr='gte')
     max_created = filters.DateFilter(name="created", lookup_expr='lte')
     min_updated = filters.DateFilter(name="updated", lookup_expr='gte')
     max_updated = filters.DateFilter(name="updated", lookup_expr='lte')
-    msg = filters.CharFilter(name="msg", lookup_expr='icontains')
-    content = filters.CharFilter(name="content", lookup_expr='icontains')
+    msg = ListFilter(name="msg", lookup_expr='icontains')
+    content = ListFilter(name="content", lookup_expr='icontains')
 
     class Meta:
         model = Rule
