@@ -642,10 +642,6 @@ class PublicSourceViewSet(BaseSourceViewSet):
     filter_fields = ('name', 'method')
     search_fields = ('name', 'method')
 
-    @detail_route(methods=['post'])
-    def upload(self, request, pk):
-        return super(PublicSourceViewSet, self).upload(request, pk)
-
 
 class SourceSerializer(BaseSourceSerializer):
     datatype = serializers.ChoiceField(required=True, choices=Source.CONTENT_TYPE)
