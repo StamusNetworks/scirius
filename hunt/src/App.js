@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { ListView, ListViewItem, ListViewInfoItem, Row, Col, ListViewIcon } from 'patternfly-react';
-import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow } from 'patternfly-react';
+import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow, Toolbar } from 'patternfly-react';
 import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
 import { RuleFilter } from './Filter.js';
+import { RuleSort } from './Sort.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
 import 'bootstrap3/dist/css/bootstrap.css'
@@ -252,7 +253,8 @@ class RulesList extends Component {
         perPage: 10,
         perPageOptions: [6, 10, 15, 25, 50]
       },
-      filters: []
+      filters: [],
+      sort: {id: 'created', order: 'desc'}
     };
     this.fetchData = this.fetchData.bind(this);
     this.handlePaginationChange = this.handlePaginationChange.bind(this);
@@ -261,46 +263,51 @@ class RulesList extends Component {
     this.onPrevPage = this.onPrevPage.bind(this);
     this.onLastPage = this.onLastPage.bind(this);
     this.UpdateFilter = this.UpdateFilter.bind(this);
+    this.UpdateSort = this.UpdateSort.bind(this);
   }
 
   handlePaginationChange(pagin) {
      this.setState({pagination: pagin});
-     this.fetchData(pagin.page, pagin.perPage, this.state.filters);
+     this.fetchData(pagin.page, pagin.perPage, this.state.filters, this.state.sort);
   }
 
   onFirstPage() {
      const newPaginationState = Object.assign({}, this.state.pagination);
      newPaginationState.page = 1;
      this.setState({pagination: newPaginationState});
-     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters);
+     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters, this.state.sort);
   }
 
   onNextPage() {
      const newPaginationState = Object.assign({}, this.state.pagination);
      newPaginationState.page = newPaginationState.page + 1;
      this.setState({pagination: newPaginationState});
-     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters);
+     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters, this.state.sort);
   }
 
   onPrevPage() {
      const newPaginationState = Object.assign({}, this.state.pagination);
      newPaginationState.page = newPaginationState.page - 1;
      this.setState({pagination: newPaginationState});
-     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters);
+     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters, this.state.sort);
   }
 
   onLastPage() {
      const newPaginationState = Object.assign({}, this.state.pagination);
      newPaginationState.page = Math.floor(this.state.rules_count / this.state.pagination.perPage) + 1;
      this.setState({pagination: newPaginationState});
-     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters);
+     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters, this.state.sort);
   }
 
    UpdateFilter(filters) {
      this.setState({filters: filters});
-     this.fetchData(this.state.pagination.page, this.state.pagination.perPage, filters);
+     this.fetchData(this.state.pagination.page, this.state.pagination.perPage, filters, this.state.sort);
    }
 
+   UpdateSort(sort) {
+     this.setState({sort: sort});
+     this.fetchData(this.state.pagination.page, this.state.pagination.perPage, this.state.filters, sort);
+   }
 
    buildFilter(filters) {
      var l_filters = {};
@@ -318,11 +325,18 @@ class RulesList extends Component {
      return string_filters;
    }
 
-  fetchData(page, per_page, filters) {
+  fetchData(page, per_page, filters, sort) {
      var string_filters = this.buildFilter(filters);
+     var ordering = "";
+
+     if (sort['asc']) {
+        ordering=sort['id'];
+     } else {
+        ordering="-" + sort['id'];
+     }
 
      axios.all([
-          axios.get(config.API_URL + config.RULE_PATH + "?ordering=-created&page_size=" + per_page + "&page=" + page + string_filters),
+          axios.get(config.API_URL + config.RULE_PATH + "?ordering=" + ordering + "&page_size=" + per_page + "&page=" + page + string_filters),
           axios.get(config.API_URL + config.CATEGORY_PATH + "?page_size=100"),
 	  ])
       .then(axios.spread((RuleRes, CatRes) => {
@@ -337,14 +351,17 @@ class RulesList extends Component {
   }
 
   componentDidMount() {
-      this.fetchData(this.state.pagination.page, this.state.pagination.perPage, this.state.filters)
+      this.fetchData(this.state.pagination.page, this.state.pagination.perPage, this.state.filters, this.state.sort)
   }
   
   render() {
     var state = this.state;
     return (
         <div className="RulesList">
+	<Toolbar>
 	    <RuleFilter UpdateFilter={this.UpdateFilter} />
+	    <RuleSort UpdateSort={this.UpdateSort} />
+      </Toolbar>
 	    <ListView>
             {this.state.rules.map(function(rule) {
                 return(
