@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { ListView, ListViewItem, ListViewInfoItem, Row, Col, ListViewIcon } from 'patternfly-react';
-import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow, Toolbar } from 'patternfly-react';
+import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow, Toolbar, Spinner } from 'patternfly-react';
 import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
 import { RuleFilter } from './Filter.js';
 import axios from 'axios';
@@ -346,7 +346,7 @@ class RulesList extends Component {
 	     var cat = categories_array[i];
 	     categories[cat.pk] = cat;
 	 }
-         this.setState({ rules_count: RuleRes.data['count'], rules: RuleRes.data['results'], categories: categories});
+         this.setState({ rules_count: RuleRes.data['count'], rules: RuleRes.data['results'], categories: categories, loading: false});
      }))
   }
 
@@ -358,6 +358,7 @@ class RulesList extends Component {
     var state = this.state;
     return (
         <div className="RulesList">
+	<Spinner loading={this.state.loading} >
 	<Toolbar>
 	    <RuleFilter UpdateFilter={this.UpdateFilter}  UpdateSort={this.UpdateSort} />
       </Toolbar>
@@ -383,6 +384,7 @@ class RulesList extends Component {
 		onLastPage={this.onLastPage}
 
 	    />
+	    </Spinner>
         </div>
     );
   }
