@@ -294,16 +294,30 @@ class RulesList extends Component {
   }
 
    UpdateFilter(filters) {
-	   console.log(filters);
      this.setState({filters: filters});
      this.fetchData(this.state.pagination.page, this.state.pagination.perPage, filters);
    }
 
-  fetchData(page, per_page, filters) {
-     var string_filters = ""
+
+   buildFilter(filters) {
+     var l_filters = {};
      for (var i=0; i < filters.length; i++) {
-         string_filters += "&" + filters[i].id + "=" + filters[i].value;
+        if (filters[i].id in l_filters) {
+           l_filters[filters[i].id] += "," + filters[i].value;
+        } else {
+           l_filters[filters[i].id] = filters[i].value;
+        }
      }
+     var string_filters = "";
+     for (var k in l_filters) {
+         string_filters += "&" + k + "=" + l_filters[k];
+     }
+     return string_filters;
+   }
+
+  fetchData(page, per_page, filters) {
+     var string_filters = this.buildFilter(filters);
+
      axios.all([
           axios.get(config.API_URL + config.RULE_PATH + "?ordering=-created&page_size=" + per_page + "&page=" + page + string_filters),
           axios.get(config.API_URL + config.CATEGORY_PATH + "?page_size=100"),
