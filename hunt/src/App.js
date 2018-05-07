@@ -253,7 +253,8 @@ class RulesList extends Component {
         perPageOptions: [6, 10, 15, 25, 50]
       },
       filters: [],
-      sort: {id: 'created', order: 'desc'}
+      sort: {id: 'created', order: 'desc'},
+      loading: true
     };
     this.fetchData = this.fetchData.bind(this);
     this.handlePaginationChange = this.handlePaginationChange.bind(this);
