@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { ListView, ListViewItem, ListViewInfoItem, Row, Col, ListViewIcon } from 'patternfly-react';
 import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow } from 'patternfly-react';
+import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
 import { RuleFilter } from './Filter.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
@@ -214,8 +215,10 @@ class HuntPaginationRow extends Component {
   }
 }
 
+function noop() {
+	return;
+}
 
-/*
 HuntPaginationRow.propTypes = {
   viewType: PropTypes.oneOf(PAGINATION_VIEW_TYPES).isRequired,
   pageInputValue: PropTypes.number.isRequired,
@@ -237,13 +240,13 @@ HuntPaginationRow.defaultProps = {
   onNextPage: noop,
   onLastPage: noop
 };
-*/
+
 
 class RulesList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      rules: [], categories: [],
+      rules: [], categories: [], rules_count: 0,
       pagination: {
         page: 1,
         perPage: 10,
@@ -350,6 +353,7 @@ class RulesList extends Component {
              })}
 	    </ListView>
 	    <HuntPaginationRow
+	        viewType = {PAGINATION_VIEW.LIST}
 	        pagination={this.state.pagination}
 	        onPaginationChange={this.handlePaginationChange}
 		amountOfPages = {Math.ceil(this.state.rules_count / this.state.pagination.perPage)}
