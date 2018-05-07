@@ -88,6 +88,22 @@ class RulesetSerializer(serializers.ModelSerializer):
         data['categories'] = [unicode(category.pk) for category in categories]
         return data
 
+    def validate(self, data):
+        if 'categories' in data:
+            # /|\ this is sourceAtVersion because of to_internal_values/to_repesentation serializer methods
+            sources_at_version_pk = data['sources']
+            categories_pk = data['categories']
+
+            sources = Source.objects.filter(sourceatversion__in=sources_at_version_pk)
+            categories = Category.objects.filter(pk__in=categories_pk)
+
+            for category in categories:
+                if category.source not in list(sources):
+                    msg = 'one or more of categories is/are not in selected sources'
+                    raise serializers.ValidationError(msg)
+        return data
+        
+
 
 class RulesetViewSet(viewsets.ModelViewSet):
     """
