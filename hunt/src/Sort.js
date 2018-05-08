@@ -5,17 +5,26 @@ export const RuleSortFields = [
   {
     id: 'created',
     title: 'Created',
-    isNumeric: true
+    isNumeric: true,
+    defaultAsc: false,
+  },
+  {
+    id: 'alerts',
+    title: 'Alerts',
+    isNumeric: true,
+    defaultAsc: false,
   },
   {
     id: 'msg',
     title: 'Message',
-    isNumeric: false
+    isNumeric: false,
+    defaultAsc: true,
   },
   {
     id: 'updated',
     title: 'Updated',
-    isNumeric: true
+    isNumeric: true,
+    defaultAsc: false,
   }
 ];
 
@@ -32,9 +41,9 @@ export class RuleSort extends React.Component {
       this.setState({
         currentSortType: sortType,
         isSortNumeric: sortType.isNumeric,
-        isSortAscending: true
+        isSortAscending: sortType.defaultAsc
       });
-      this.props.UpdateSort({id: sortType['id'], asc: true});
+      this.props.UpdateSort({id: sortType['id'], asc: sortType['defaultAsc']});
     }
   }
 
