@@ -213,6 +213,16 @@ def elasticsearch(request):
             if host != None and from_date != None:
                 rules = es_get_top_rules(request, host, from_date = from_date, qfilter = qfilter, count = count, order = order)
                 return HttpResponse(json.dumps(rules), content_type="application/json")
+        elif query == 'sigs_list':
+            host = request.GET.get('host', None)
+            from_date = request.GET.get('from_date', None)
+            qfilter = request.GET.get('filter', None)
+            sids = request.GET.get('sids', None)
+            if host != None and from_date != None and sids != None:
+                # FIXME sanitize that
+                sids = sids.split(',')
+                stats = es_get_sigs_list_hits(request, sids, host, from_date = from_date, qfilter = qfilter)
+                return HttpResponse(json.dumps(stats), content_type="application/json")
         elif query in RULE_FIELDS_MAPPING.keys():
             filter_ip = RULE_FIELDS_MAPPING[query]
             sid = int(request.GET.get('sid', None))
