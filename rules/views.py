@@ -204,6 +204,15 @@ def elasticsearch(request):
                 hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
                 context = {'table': hosts}
                 return scirius_render(request, 'rules/table.html', context)
+        elif query == 'top_rules':
+            host = request.GET.get('host', None)
+            from_date = request.GET.get('from_date', None)
+            qfilter = request.GET.get('filter', None)
+            count = request.GET.get('count', 20)
+            order = request.GET.get('order', "desc")
+            if host != None and from_date != None:
+                rules = es_get_top_rules(request, host, from_date = from_date, qfilter = qfilter, count = count, order = order)
+                return HttpResponse(json.dumps(rules), content_type="application/json")
         elif query in RULE_FIELDS_MAPPING.keys():
             filter_ip = RULE_FIELDS_MAPPING[query]
             sid = int(request.GET.get('sid', None))
