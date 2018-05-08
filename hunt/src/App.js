@@ -5,6 +5,8 @@ import { ListView, ListViewItem, ListViewInfoItem, Row, Col, ListViewIcon } from
 import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow, Toolbar, Spinner } from 'patternfly-react';
 import { AboutModal } from 'patternfly-react';
 import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
+import C3Chart from 'react-c3js';
+import 'c3/c3.css';
 import { RuleFilter } from './Filter.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
@@ -355,6 +357,16 @@ class RulesList extends Component {
      return string_filters;
    }
 
+  buildTimelineDataSet(data) {
+    var tdata = data['buckets'];
+    var timeline = {x : 'x', xFormat: '%Y-%m-%dT%H:%M:%S.%LZ', type: 'bar',  columns: [['x'], ['alerts']]};
+    for (var key in tdata) {
+        timeline.columns[0].push(tdata[key].key_as_string);
+        timeline.columns[1].push(tdata[key].doc_count);
+    }
+    return timeline;
+  }
+
   fetchData(page, per_page, filters, sort) {
      var string_filters = this.buildFilter(filters);
      var ordering = "";
@@ -383,14 +395,14 @@ class RulesList extends Component {
                  for (var rule in RuleRes.data['results']) {
                     for (var info in res.data) {
                         if (res.data[info].key === RuleRes.data['results'][rule].sid) {
-                            RuleRes.data['results'][rule].timeline = res.data[info].timeline;
+                            RuleRes.data['results'][rule].timeline = this.buildTimelineDataSet(res.data[info].timeline);
                             RuleRes.data['results'][rule].hits = res.data[info].doc_count;
                             break;
                         }
                     }
                     if (RuleRes.data['results'][rule].hits === undefined) {
                         RuleRes.data['results'][rule].hits = 0;
-                        RuleRes.data['results'][rule].timeline = [];
+                        RuleRes.data['results'][rule].timeline = undefined;
                     }
                  }
                  this.setState({rules: RuleRes.data['results']});
@@ -460,7 +472,11 @@ class RuleInList extends Component {
 >
 <Row>
 <Col sm={11}>
-{this.props.data.content}
+<p>{this.props.data.content}</p>
+      {this.props.data.timeline &&
+      /* FIXME we should be dynamic on the width, auto don't work if we have just a few data */
+      <C3Chart data={ this.props.data.timeline } bar={{width: 10}} axis={{ x: { type: 'timeseries' } }} />
+      }
 </Col>
 </Row>
 </ListViewItem>
