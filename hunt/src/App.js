@@ -453,7 +453,7 @@ class RuleInList extends Component {
   additionalInfo={[<ListViewInfoItem key="created"><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
                    <ListViewInfoItem key="updated"><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
                    <ListViewInfoItem key="category"><p>Category: {category.name}</p></ListViewInfoItem>,
-                   <ListViewInfoItem key="hits"><p>Alerts: {this.props.data.hits}</p></ListViewInfoItem>
+                   <ListViewInfoItem key="hits"><Spinner loading={this.props.data.hits == undefined} size="xs"><p>Alerts <span className="badge">{this.props.data.hits}</span></p></Spinner></ListViewInfoItem>
   ]}
   heading={this.props.data.sid}
   description={this.props.data.msg}
