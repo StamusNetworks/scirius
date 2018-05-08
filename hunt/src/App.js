@@ -382,13 +382,13 @@ class RulesList extends Component {
                  /* we are going O(n2), we should fix that */
                  for (var rule in RuleRes.data['results']) {
                     for (var info in res.data) {
-                        if (res.data[info].key == RuleRes.data['results'][rule].sid) {
+                        if (res.data[info].key === RuleRes.data['results'][rule].sid) {
                             RuleRes.data['results'][rule].timeline = res.data[info].timeline;
                             RuleRes.data['results'][rule].hits = res.data[info].doc_count;
                             break;
                         }
                     }
-                    if (RuleRes.data['results'][rule].hits == undefined) {
+                    if (RuleRes.data['results'][rule].hits === undefined) {
                         RuleRes.data['results'][rule].hits = 0;
                         RuleRes.data['results'][rule].timeline = [];
                     }
@@ -453,7 +453,7 @@ class RuleInList extends Component {
   additionalInfo={[<ListViewInfoItem key="created"><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
                    <ListViewInfoItem key="updated"><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
                    <ListViewInfoItem key="category"><p>Category: {category.name}</p></ListViewInfoItem>,
-                   <ListViewInfoItem key="hits"><Spinner loading={this.props.data.hits == undefined} size="xs"><p>Alerts <span className="badge">{this.props.data.hits}</span></p></Spinner></ListViewInfoItem>
+                   <ListViewInfoItem key="hits"><Spinner loading={this.props.data.hits === undefined} size="xs"><p>Alerts <span className="badge">{this.props.data.hits}</span></p></Spinner></ListViewInfoItem>
   ]}
   heading={this.props.data.sid}
   description={this.props.data.msg}
