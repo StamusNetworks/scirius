@@ -377,6 +377,24 @@ class RulesList extends Component {
 	     categories[cat.pk] = cat;
 	 }
          this.setState({ rules_count: RuleRes.data['count'], rules: RuleRes.data['results'], categories: categories, loading: false});
+         var sids = Array.from(RuleRes.data['results'], x => x.sid).join()
+         axios.get(config.API_URL + config.ES_SIGS_LIST_PATH + sids).then(res => {
+                 /* we are going O(n2), we should fix that */
+                 for (var rule in RuleRes.data['results']) {
+                    for (var info in res.data) {
+                        if (res.data[info].key == RuleRes.data['results'][rule].sid) {
+                            RuleRes.data['results'][rule].timeline = res.data[info].timeline;
+                            RuleRes.data['results'][rule].hits = res.data[info].doc_count;
+                            break;
+                        }
+                    }
+                    if (RuleRes.data['results'][rule].hits == undefined) {
+                        RuleRes.data['results'][rule].hits = 0;
+                        RuleRes.data['results'][rule].timeline = [];
+                    }
+                 }
+                 this.setState({rules: RuleRes.data['results']});
+         })
      }))
   }
 
@@ -434,7 +452,8 @@ class RuleInList extends Component {
   leftContent={<ListViewIcon name="envelope" />}
   additionalInfo={[<ListViewInfoItem key="created"><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
                    <ListViewInfoItem key="updated"><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
-                   <ListViewInfoItem key="category"><p>Category: {category.name}</p></ListViewInfoItem>
+                   <ListViewInfoItem key="category"><p>Category: {category.name}</p></ListViewInfoItem>,
+                   <ListViewInfoItem key="hits"><p>Alerts: {this.props.data.hits}</p></ListViewInfoItem>
   ]}
   heading={this.props.data.sid}
   description={this.props.data.msg}
