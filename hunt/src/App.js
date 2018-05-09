@@ -31,7 +31,16 @@ class HuntApp extends Component {
     }
     this.state = {
       sources: [], rulesets: [], duration: duration, from_date: (Date.now() - duration * 3600 * 1000),
-      display: { page: PAGE_STATE.rules_list, item:undefined }
+      display: { page: PAGE_STATE.rules_list, item:undefined },
+      rules_list: {
+        pagination: {
+          page: 1,
+          perPage: 6,
+          perPageOptions: [6, 10, 15, 25, 50]
+        },
+        filters: [],
+        sort: {id: 'created', order: 'desc'},
+      }
     };
     this.displaySource = this.displaySource.bind(this);
     this.displayRuleset = this.displayRuleset.bind(this);
@@ -43,6 +52,7 @@ class HuntApp extends Component {
     this.onDashboardClick = this.onDashboardClick.bind(this);
     this.onHistoryClick = this.onHistoryClick.bind(this);
     this.switchPage = this.switchPage.bind(this);
+    this.updateRuleListState = this.updateRuleListState.bind(this);
     
   }
 
@@ -91,12 +101,15 @@ class HuntApp extends Component {
         this.setState({display: {page: page, item: item}});
   }
  
+    updateRuleListState(rules_list_state) {
+        this.setState({rules_list: rules_list_state});
+    }
 
     render() {
             var displayed_page = undefined;
             switch (this.state.display.page) {
                case PAGE_STATE.rules_list:
-                  displayed_page = <RulesList from_date={this.state.from_date} SwitchPage={this.switchPage}/>
+                  displayed_page = <RulesList rules_list={this.state.rules_list} from_date={this.state.from_date} SwitchPage={this.switchPage} updateRuleListState={this.updateRuleListState} />
                   break;
                case PAGE_STATE.source:
                   displayed_page = <SourcePage source={this.state.display.item} from_date={this.state.from_date}/>
@@ -340,13 +353,6 @@ class RulesList extends Component {
     super(props);
     this.state = {
       rules: [], categories: [], rules_count: 0,
-      pagination: {
-        page: 1,
-        perPage: 6,
-        perPageOptions: [6, 10, 15, 25, 50]
-      },
-      filters: [],
-      sort: {id: 'created', order: 'desc'},
       loading: true
     };
     this.fetchData = this.fetchData.bind(this);
@@ -367,46 +373,52 @@ class RulesList extends Component {
   }
 
   handlePaginationChange(pagin) {
-     this.setState({pagination: pagin});
-     this.fetchData(pagin.page, pagin.perPage, this.state.filters, this.state.sort);
+     const newRuleState = Object.assign({}, this.props.rules_list);
+     newRuleState.pagination = pagin;
+     this.props.updateRuleListState(newRuleState);
+     this.fetchData(newRuleState);
   }
 
   onFirstPage() {
-     const newPaginationState = Object.assign({}, this.state.pagination);
-     newPaginationState.page = 1;
-     this.setState({pagination: newPaginationState});
-     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters, this.state.sort);
+     const newRuleState = Object.assign({}, this.props.rules_list);
+     newRuleState.pagination.page = 1;
+     this.props.updateRuleListState(newRuleState);
+     this.fetchData(newRuleState);
   }
 
   onNextPage() {
-     const newPaginationState = Object.assign({}, this.state.pagination);
-     newPaginationState.page = newPaginationState.page + 1;
-     this.setState({pagination: newPaginationState});
-     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters, this.state.sort);
+     const newRuleState = Object.assign({}, this.props.rules_list);
+     newRuleState.pagination.page = newRuleState.pagination.page + 1;
+     this.props.updateRuleListState(newRuleState);
+     this.fetchData(newRuleState);
   }
 
   onPrevPage() {
-     const newPaginationState = Object.assign({}, this.state.pagination);
-     newPaginationState.page = newPaginationState.page - 1;
-     this.setState({pagination: newPaginationState});
-     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters, this.state.sort);
+     const newRuleState = Object.assign({}, this.props.rules_list);
+     newRuleState.pagination.page = newRuleState.pagination.page - 1;
+     this.props.updateRuleListState(newRuleState);
+     this.fetchData(newRuleState);
   }
 
   onLastPage() {
-     const newPaginationState = Object.assign({}, this.state.pagination);
-     newPaginationState.page = Math.floor(this.state.rules_count / this.state.pagination.perPage) + 1;
-     this.setState({pagination: newPaginationState});
-     this.fetchData(newPaginationState.page, newPaginationState.perPage, this.state.filters, this.state.sort);
+     const newRuleState = Object.assign({}, this.props.rules_list);
+     newRuleState.pagination.page = Math.floor(this.state.rules_count / this.props.rules_list.pagination.perPage) + 1;
+     this.props.updateRuleListState(newRuleState);
+     this.fetchData(newRuleState);
   }
 
    UpdateFilter(filters) {
-     this.setState({filters: filters});
-     this.fetchData(this.state.pagination.page, this.state.pagination.perPage, filters, this.state.sort);
+     const newRuleState = Object.assign({}, this.props.rules_list);
+     newRuleState.filters = filters;
+     this.props.updateRuleListState(newRuleState);
+     this.fetchData(newRuleState);
    }
 
    UpdateSort(sort) {
-     this.setState({sort: sort});
-     this.fetchData(this.state.pagination.page, this.state.pagination.perPage, this.state.filters, sort);
+     const newRuleState = Object.assign({}, this.props.rules_list);
+     newRuleState.sort = sort;
+     this.props.updateRuleListState(newRuleState);
+     this.fetchData(newRuleState);
    }
 
    buildFilter(filters) {
@@ -435,7 +447,6 @@ class RulesList extends Component {
     return timeline;
   }
 
-
   fetchHitsStats(rules) {
          var sids = Array.from(rules, x => x.sid).join()
 	 var from_date = "&from_date=" + this.props.from_date;
@@ -459,7 +470,11 @@ class RulesList extends Component {
 
   }
 
-  fetchData(page, per_page, filters, sort) {
+  fetchData(rules_stat) {
+     var page = rules_stat.pagination.page;
+     var per_page = rules_stat.pagination.perPage;
+     var filters = rules_stat.filters;
+     var sort = rules_stat.sort;
      var string_filters = this.buildFilter(filters);
      var ordering = "";
 
@@ -486,11 +501,10 @@ class RulesList extends Component {
   }
 
   componentDidMount() {
-      this.fetchData(this.state.pagination.page, this.state.pagination.perPage, this.state.filters, this.state.sort)
+      this.fetchData(this.props.rules_list)
   }
   
   render() {
-    var state = this.state;
     return (
         <div className="RulesList">
 	<Spinner loading={this.state.loading} >
@@ -500,19 +514,19 @@ class RulesList extends Component {
 	    <ListView>
             {this.state.rules.map(function(rule) {
                 return(
-                   <RuleInList key={rule.pk} data={rule} state={state} from_date={this.props.from_date} SwitchPage={this.props.SwitchPage} />
+                   <RuleInList key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.props.SwitchPage} />
                 )
              },this)}
 	    </ListView>
 	    <HuntPaginationRow
 	        viewType = {PAGINATION_VIEW.LIST}
-	        pagination={this.state.pagination}
+	        pagination={this.props.rules_list.pagination}
 	        onPaginationChange={this.handlePaginationChange}
-		amountOfPages = {Math.ceil(this.state.rules_count / this.state.pagination.perPage)}
-		pageInputValue = {this.state.pagination.page}
+		amountOfPages = {Math.ceil(this.state.rules_count / this.props.rules_list.pagination.perPage)}
+		pageInputValue = {this.props.rules_list.pagination.page}
 		itemCount = {this.state.rules_count}
-		itemsStart = {(this.state.pagination.page - 1) * this.state.pagination.perPage}
-		itemsEnd = {Math.min(this.state.pagination.page * this.state.pagination.perPage - 1, this.state.rules_count) }
+		itemsStart = {(this.props.rules_list.pagination.page - 1) * this.props.rules_list.pagination.perPage}
+		itemsEnd = {Math.min(this.props.rules_list.pagination.page * this.props.rules_list.pagination.perPage - 1, this.state.rules_count) }
 		onFirstPage={this.onFirstPage}
 		onNextPage={this.onNextPage}
 		onPreviousPage={this.onPrevPage}
