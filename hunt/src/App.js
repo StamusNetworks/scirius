@@ -427,9 +427,9 @@ class RulesList extends Component {
 
   buildTimelineDataSet(data) {
     var tdata = data['buckets'];
-    var timeline = {x : 'x', xFormat: '%Y-%m-%dT%H:%M:%S.%LZ', type: 'bar',  columns: [['x'], ['alerts']]};
+    var timeline = {x : 'x', type: 'bar',  columns: [['x'], ['alerts']]};
     for (var key in tdata) {
-        timeline.columns[0].push(tdata[key].key_as_string);
+        timeline.columns[0].push(tdata[key].key);
         timeline.columns[1].push(tdata[key].doc_count);
     }
     return timeline;
@@ -500,7 +500,7 @@ class RulesList extends Component {
 	    <ListView>
             {this.state.rules.map(function(rule) {
                 return(
-                   <RuleInList key={rule.pk} data={rule} state={state} SwitchPage={this.props.SwitchPage} />
+                   <RuleInList key={rule.pk} data={rule} state={state} from_date={this.props.from_date} SwitchPage={this.props.SwitchPage} />
                 )
              },this)}
 	    </ListView>
@@ -545,7 +545,15 @@ class RuleInList extends Component {
 <p>{this.props.data.content}</p>
       {this.props.data.timeline &&
       /* FIXME we should be dynamic on the width, auto don't work if we have just a few data */
-      <C3Chart data={ this.props.data.timeline } bar={{width: 10}} axis={{ x: { type: 'timeseries' } }} />
+      <C3Chart data={ this.props.data.timeline } bar={{width: 10}}
+               axis={{ x: { type: 'timeseries',
+                            localtime: true,
+                            min: this.props.from_date,
+                            max: Date.now(),
+                            tick: { fit: true, format: '%Y-%m-%d %H:%M'}
+                     } }
+                    }
+      />
       }
 </Col>
 </Row>
