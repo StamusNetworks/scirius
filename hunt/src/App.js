@@ -31,11 +31,16 @@ function onHistoryClick() {
 class HuntApp extends Component {
   constructor(props) {
     super(props);
+    var duration = localStorage.getItem('duration');
+    if (!duration) {
+	duration = 24;
+    }
     this.state = {
-      sources: [], rulesets: []
+      sources: [], rulesets: [], duration: duration
     };
     this.displaySource = this.displaySource.bind(this);
     this.displayRuleset = this.displayRuleset.bind(this);
+    this.changeDuration = this.changeDuration.bind(this);
   }
 
     componentDidMount() {
@@ -56,6 +61,10 @@ class HuntApp extends Component {
     	ReactDOM.render(<SourcePage key={source.pk} data={source} />, document.getElementById('app-content'));
     }
 
+   changeDuration(period) {
+	this.setState({ duration: period});
+	localStorage.setItem('duration', period);
+   }
 
     render() {
         return(
@@ -64,7 +73,7 @@ class HuntApp extends Component {
             	    <VerticalNav.Masthead title="Scirius">
 						<VerticalNav.Brand iconImg="/static/rules/stamus.png" titleImg="brand-alt.svg" />
 						<VerticalNav.IconBar>
-							<UserNavInfo/>
+							<UserNavInfo ChangeDuration={this.changeDuration} period={this.state.duration}/>
 						</VerticalNav.IconBar>
 					</VerticalNav.Masthead>
 		   <VerticalNav.Item
@@ -126,6 +135,15 @@ class HuntApp extends Component {
 }
 
 
+const USER_PERIODS = {
+  1: '1h',
+  6: '6h',
+  24: '24h',
+  48: '2d',
+  168: '7d',
+  720: '30d'
+};
+
 class UserNavInfo extends Component {
   constructor(props) {
     super(props);
@@ -157,11 +175,12 @@ class UserNavInfo extends Component {
     			</Dropdown>
 			    <Dropdown componentClass="li" id="time">
       				<Dropdown.Toggle useAnchor className="nav-item-iconic">
-        				<Icon type="fa" name="clock-o" /> Last 24h
+        				<Icon type="fa" name="clock-o" /> Last {USER_PERIODS[this.props.period]}
       				</Dropdown.Toggle>
       				<Dropdown.Menu>
-        				<MenuItem>Last 1h</MenuItem>
-        				<MenuItem>Last 6h</MenuItem>
+				        {Object.keys(USER_PERIODS).map((period) => {
+        				return (<MenuItem onClick={this.props.ChangeDuration.bind(this, period)}>Last {USER_PERIODS[period]}</MenuItem>)
+					}, this)}
     				</Dropdown.Menu>
 			   </Dropdown>
 			    <Dropdown componentClass="li" id="user">
