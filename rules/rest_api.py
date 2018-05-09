@@ -4,13 +4,19 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.html import escape
 from django.db.models import Q
+from collections import OrderedDict
+
 from django.core.exceptions import SuspiciousOperation, ValidationError
 
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers, viewsets, exceptions, mixins
 from rest_framework.decorators import detail_route, list_route
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import serializers, viewsets
+from rest_framework.decorators import detail_route, list_route
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ParseError
 from rest_framework.routers import DefaultRouter, url
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
@@ -26,6 +32,7 @@ from rules.views import get_public_sources, fetch_public_sources
 from rules.rest_processing import RuleProcessingFilterViewSet
 
 from scirius.rest_api import SciriusReadOnlyModelViewSet, SciriusModelViewSet
+from rules.es_graphs import es_get_sigs_list_hits, es_get_top_rules
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
 
@@ -345,13 +352,20 @@ class RuleChangeSerializer(serializers.Serializer):
     comment = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
 
+class HitTimelineEntry(serializers.Serializer):
+    date = serializers.IntegerField(read_only=True)
+    hits = serializers.IntegerField(read_only=True)
+
+
 class RuleSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
+    hits = serializers.IntegerField(read_only=True)
+    timeline = HitTimelineEntry(many=True, read_only=True)
 
     class Meta:
         model = Rule
         fields = ('pk', 'sid', 'category', 'msg', 'state', 'state_in_source', 'rev', 'content',
-                  'imported_date', 'updated_date', 'created', 'updated')
+                  'imported_date', 'updated_date', 'created', 'updated', 'hits', 'timeline')
 
     def to_representation(self, instance):
         data = super(RuleSerializer, self).to_representation(instance)
@@ -398,6 +412,65 @@ class RuleFilter(filters.FilterSet):
     class Meta:
         model = Rule
         fields = ['sid', 'category', 'msg', 'content', 'created', 'updated']
+
+
+def es_hits_params(request):
+    es_params = {}
+
+    # string args
+    for arg in ('hostname', 'qfilter'):
+        if arg in request.query_params:
+            es_params[arg] = request.query_params[arg]
+
+    # numeric args
+    for arg in ('from_date', 'interval'):
+        if arg in request.query_params:
+            es_params[arg] = int(request.query_params[arg])
+
+    if 'hostname' not in es_params:
+        es_params['hostname'] = '*'
+    return es_params
+
+
+class RuleHitsOrderingFilter(OrderingFilter):
+    def _get_hits_order(self, request, order):
+        es_top_kwargs = {
+            'count': Rule.objects.count(),
+            'order': order
+        }
+        es_top_kwargs.update(es_hits_params(request))
+        result = es_get_top_rules(request, **es_top_kwargs)
+        return [r['key'] for r in result]
+
+    def filter_queryset(self, request, queryset, view):
+        ordering = self.get_ordering(request, queryset, view)
+
+        if 'hits' in ordering or '-hits' in ordering:
+            if ordering[0] not in ('hits', '-hits'):
+                raise ParseError('hits ordering can only be the first ordering term')
+
+            ordering = ordering[1:]
+
+            if ordering:
+                queryset = queryset.order_by(*ordering)
+
+            # Index rules by sid
+            rules = OrderedDict([(r.sid, r) for r in queryset])
+
+            # Sorting
+            order = 'asc' if 'hits' in ordering else 'desc'
+            hits_order = self._get_hits_order(request, order)
+
+            queryset = []
+            for sid in hits_order:
+                queryset.append(rules.pop(sid))
+
+            # Append rules with no hit
+            queryset += rules.values()
+        elif ordering:
+            return queryset.order_by(*ordering)
+
+        return queryset
 
 
 class RuleViewSet(SciriusReadOnlyModelViewSet):
@@ -507,8 +580,9 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
     queryset = Rule.objects.all()
     serializer_class = RuleSerializer
     ordering = ('sid',)
-    ordering_fields = ('sid', 'category', 'msg', 'imported_date', 'updated_date', 'created', 'updated')
+    ordering_fields = ('sid', 'category', 'msg', 'imported_date', 'updated_date', 'created', 'updated', 'hits')
     filter_class = RuleFilter
+    filter_backends = (DjangoFilterBackend, SearchFilter, RuleHitsOrderingFilter)
     search_fields = ('sid', 'msg', 'content')
 
     @list_route(methods=['get'])
@@ -700,6 +774,64 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
                 res[ruleset.pk]['transformations'][key.value] = trans.value if trans else None
 
         return Response(res)
+
+    def _scirius_hit(self, r):
+        timeline = []
+        for entry in r['timeline']['buckets']:
+            timeline.append({
+                'date': entry['key'],
+                'hits': entry['doc_count']
+            })
+
+        return {
+            'hits': r['doc_count'],
+            'timeline': timeline
+        }
+
+    def _add_hits(self, request, data):
+        sids = [str(rule['sid']) for rule in data]
+
+        ## reformat ES's output
+        es_params = es_hits_params(request)
+        es_params['host'] = es_params.pop('hostname')
+        result = es_get_sigs_list_hits(request, sids, **es_params)
+
+        hits = {}
+        for r in result:
+            hits[r['key']] = self._scirius_hit(r)
+
+        for rule in data:
+            sid = rule['sid']
+            if sid in hits:
+                rule.update(hits[sid])
+            else:
+                rule.update({
+                    'hits': 0,
+                    'timeline': []
+                })
+        return data
+
+    def list(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        data = self._add_hits(request, serializer.data)
+        return self.get_paginated_response(serializer.data)
+
+    def _add_rule_hits(self, request, data):
+        es_params = es_hits_params(request)
+        es_params['host'] = es_params.pop('hostname')
+        sid = str(data['sid'])
+        result = es_get_sigs_list_hits(request, [sid], **es_params)
+        hit = self._scirius_hit(result[0])
+        data.update(hit)
+        return data
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = self._add_rule_hits(request, serializer.data)
+        return Response(data)
 
 
 class BaseTransformationViewSet(viewsets.ModelViewSet):
