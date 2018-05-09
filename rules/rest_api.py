@@ -46,11 +46,13 @@ class CommentSerializer(serializers.Serializer):
 
 class RulesetSerializer(serializers.ModelSerializer):
     sources = serializers.PrimaryKeyRelatedField(queryset=Source.objects.all(), many=True)
+    categories = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), many=True)
+    comment = serializers.CharField(required=False, allow_blank=True, write_only=True, allow_null=True)
 
     class Meta:
         model = Ruleset
         fields = ('pk', 'name', 'descr', 'created_date', 'updated_date', 'need_test', 'validity',
-                  'errors', 'rules_count', 'sources', 'categories')
+                  'errors', 'rules_count', 'sources', 'categories', 'comment')
         read_only_fields = ('pk', 'created_date', 'updated_date', 'need_test', 'validity', 'errors',
                             'rules_count')
         extra_kwargs = {
@@ -70,12 +72,20 @@ class RulesetSerializer(serializers.ModelSerializer):
         return data
 
     def to_internal_value(self, data):
-        sources = data.get('sources', None)
+        # In case of immutable data (website UI)
+        data = data.copy()
+        data.pop(u'csrfmiddlewaretoken', None)
+        sources = data.pop('sources', None)
+        categories = data.pop('categories', None)
+
         if sources is None:
             return data
 
         sources_at_version = SourceAtVersion.objects.filter(source__in=sources)
-        data['sources'] = [source_at_version.pk for source_at_version in sources_at_version]
+        categories = Category.objects.filter(pk__in=categories)
+
+        data['sources'] = [unicode(source_at_version.pk) for source_at_version in sources_at_version]
+        data['categories'] = [unicode(category.pk) for category in categories]
         return data
 
 
@@ -130,8 +140,14 @@ class RulesetViewSet(viewsets.ModelViewSet):
     filter_fields = ('name', 'descr')
 
     def create(self, request, *args, **kwargs):
-        comment = request.data.get('comment', None)
-        serializer = RulesetSerializer(data=request.data)
+        data = request.data.copy()
+        comment = data.pop('comment', None)
+
+        # because of rest website UI
+        if isinstance(comment, list):
+            comment = comment[0]
+
+        serializer = RulesetSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
