@@ -6,4 +6,4 @@ export const CATEGORY_PATH = "rest/rules/category/";
 //export const URL = process.env.API_URL;
 export const API_LOGIN = "/auth";
 
-export const ES_SIGS_LIST_PATH="rules/es?query=sigs_list&host=*&from_date=1525682184540&offset=0&sids=";
+export const ES_SIGS_LIST_PATH="rules/es?query=sigs_list&host=*&offset=0&sids=";

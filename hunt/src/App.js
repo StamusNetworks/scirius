@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { ListView, ListViewItem, ListViewInfoItem, Row, Col, ListViewIcon } from 'patternfly-react';
 import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow, Toolbar, Spinner } from 'patternfly-react';
@@ -16,17 +15,12 @@ import 'patternfly/dist/css/patternfly-additions.css'
 import 'patternfly-react/dist/css/patternfly-react.css'
 import './App.css';
 
-function onHomeClick() {
-   ReactDOM.render(<RulesList />, document.getElementById('app-content'));
-}
-
-function onDashboardClick() {
-   ReactDOM.render(<RulesList />, document.getElementById('app-content'));
-}
-
-function onHistoryClick() {
-
-}
+const PAGE_STATE = {
+   rules_list: 'RULES_LIST',
+   source: 'SOURCE',
+   ruleset: 'RULESET',
+   rule: 'RULE',
+};
 
 class HuntApp extends Component {
   constructor(props) {
@@ -36,12 +30,39 @@ class HuntApp extends Component {
 	duration = 24;
     }
     this.state = {
-      sources: [], rulesets: [], duration: duration
+      sources: [], rulesets: [], duration: duration, from_date: (Date.now() - duration * 3600 * 1000),
+      display: { page: PAGE_STATE.rules_list, item:undefined }
     };
     this.displaySource = this.displaySource.bind(this);
     this.displayRuleset = this.displayRuleset.bind(this);
     this.changeDuration = this.changeDuration.bind(this);
+
+    this.fromDate = this.fromDate.bind(this);
+
+    this.onHomeClick = this.onHomeClick.bind(this);
+    this.onDashboardClick = this.onDashboardClick.bind(this);
+    this.onHistoryClick = this.onHistoryClick.bind(this);
+    this.switchPage = this.switchPage.bind(this);
+    
   }
+
+    onHomeClick() {
+        this.setState({display: {page: PAGE_STATE.rules_list}});
+    }
+    
+    
+    onDashboardClick() {
+        this.setState({display: {page: PAGE_STATE.rules_list}});
+    }
+    
+    onHistoryClick() {
+    
+    }
+
+    fromDate(period) {
+	const duration = period * 3600 * 1000;
+	return Date.now() - duration;
+    }
 
     componentDidMount() {
       axios.all([
@@ -54,19 +75,39 @@ class HuntApp extends Component {
     }
 
     displayRuleset(ruleset) {
-    	ReactDOM.render(<RulesetPage key={ruleset.pk} data={ruleset}/>, document.getElementById('app-content'));
+        this.setState({display: {page:'RULESET', item: ruleset}});
     }
     
     displaySource(source) {
-    	ReactDOM.render(<SourcePage key={source.pk} data={source} />, document.getElementById('app-content'));
+        this.setState({display: {page:'SOURCE', item: source}});
     }
 
    changeDuration(period) {
-	this.setState({ duration: period});
+	this.setState({ duration: period, from_date: this.fromDate(period)});
 	localStorage.setItem('duration', period);
    }
 
+  switchPage(page, item) {
+        this.setState({display: {page: page, item: item}});
+  }
+ 
+
     render() {
+            var displayed_page = undefined;
+            switch (this.state.display.page) {
+               case PAGE_STATE.rules_list:
+                  displayed_page = <RulesList from_date={this.state.from_date} SwitchPage={this.switchPage}/>
+                  break;
+               case PAGE_STATE.source:
+                  displayed_page = <SourcePage source={this.state.display.item} from_date={this.state.from_date}/>
+                  break;
+               case PAGE_STATE.ruleset:
+                  displayed_page = <RulesetPage ruleset={this.state.display.item} from_date={this.state.from_date}/>
+                  break;
+               case PAGE_STATE.rule:
+                  displayed_page = <RulePage rule={this.state.display.item} from_date={this.state.from_date}/>
+                  break;
+            }
         return(
             <div className="layout-pf layout-pf-fixed faux-layout">
                 <VerticalNav sessionKey="storybookItemsAsJsx" showBadges>
@@ -80,14 +121,14 @@ class HuntApp extends Component {
             	      title="Home"
             	      iconClass="fa fa-home"
             	      initialActive
-            	      onClick={onHomeClick}
+            	      onClick={this.onHomeClick}
             	      className={null}
             	    />
 
             	    <VerticalNav.Item
             	      title="Dashboards"
             	      iconClass="fa fa-tachometer"
-            	      onClick={onDashboardClick}
+            	      onClick={this.onDashboardClick}
             	      className={null}
             	    >
             	        <VerticalNav.Badge count={42} />
@@ -115,7 +156,7 @@ class HuntApp extends Component {
        		     <VerticalNav.Item
 		      title="History"
 		      iconClass="glyphicon glyphicon-list"
-            	      onClick={onHistoryClick}
+            	      onClick={this.onHistoryClick}
 		     />
        		     <VerticalNav.Item 
 		       title="Setup"
@@ -126,6 +167,7 @@ class HuntApp extends Component {
        		<div className="container-fluid container-cards-pf container-pf-nav-pf-vertical nav-pf-persistent-secondary">
        			<div className="row row-cards-pf">
 			    <div className="col-xs-12 col-sm-12 col-md-12" id="app-content" >
+                                {displayed_page}
 	       	            </div>
        	         	</div>
        	        </div>
@@ -179,7 +221,7 @@ class UserNavInfo extends Component {
       				</Dropdown.Toggle>
       				<Dropdown.Menu>
 				        {Object.keys(USER_PERIODS).map((period) => {
-        				return (<MenuItem onClick={this.props.ChangeDuration.bind(this, period)}>Last {USER_PERIODS[period]}</MenuItem>)
+        				return (<MenuItem key={period} onClick={this.props.ChangeDuration.bind(this, period)}>Last {USER_PERIODS[period]}</MenuItem>)
 					}, this)}
     				</Dropdown.Menu>
 			   </Dropdown>
@@ -308,6 +350,7 @@ class RulesList extends Component {
       loading: true
     };
     this.fetchData = this.fetchData.bind(this);
+    this.fetchHitsStats = this.fetchHitsStats.bind(this);
     this.handlePaginationChange = this.handlePaginationChange.bind(this);
     this.onFirstPage = this.onFirstPage.bind(this);
     this.onNextPage = this.onNextPage.bind(this);
@@ -315,6 +358,12 @@ class RulesList extends Component {
     this.onLastPage = this.onLastPage.bind(this);
     this.UpdateFilter = this.UpdateFilter.bind(this);
     this.UpdateSort = this.UpdateSort.bind(this);
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+     if (prevProps.from_date !=  this.props.from_date) {
+             this.fetchHitsStats(this.state.rules);
+     }
   }
 
   handlePaginationChange(pagin) {
@@ -386,6 +435,30 @@ class RulesList extends Component {
     return timeline;
   }
 
+
+  fetchHitsStats(rules) {
+         var sids = Array.from(rules, x => x.sid).join()
+	 var from_date = "&from_date=" + this.props.from_date;
+         axios.get(config.API_URL + config.ES_SIGS_LIST_PATH + sids + from_date).then(res => {
+                 /* we are going O(n2), we should fix that */
+                 for (var rule in rules) {
+                    for (var info in res.data) {
+                        if (res.data[info].key === rules[rule].sid) {
+                            rules[rule].timeline = this.buildTimelineDataSet(res.data[info].timeline);
+                            rules[rule].hits = res.data[info].doc_count;
+                            break;
+                        }
+                    }
+                    if (rules[rule].hits === undefined) {
+                        rules[rule].hits = 0;
+                        rules[rule].timeline = undefined;
+                    }
+                 }
+                 this.setState({rules: rules});
+         })
+
+  }
+
   fetchData(page, per_page, filters, sort) {
      var string_filters = this.buildFilter(filters);
      var ordering = "";
@@ -408,24 +481,7 @@ class RulesList extends Component {
 	     categories[cat.pk] = cat;
 	 }
          this.setState({ rules_count: RuleRes.data['count'], rules: RuleRes.data['results'], categories: categories, loading: false});
-         var sids = Array.from(RuleRes.data['results'], x => x.sid).join()
-         axios.get(config.API_URL + config.ES_SIGS_LIST_PATH + sids).then(res => {
-                 /* we are going O(n2), we should fix that */
-                 for (var rule in RuleRes.data['results']) {
-                    for (var info in res.data) {
-                        if (res.data[info].key === RuleRes.data['results'][rule].sid) {
-                            RuleRes.data['results'][rule].timeline = this.buildTimelineDataSet(res.data[info].timeline);
-                            RuleRes.data['results'][rule].hits = res.data[info].doc_count;
-                            break;
-                        }
-                    }
-                    if (RuleRes.data['results'][rule].hits === undefined) {
-                        RuleRes.data['results'][rule].hits = 0;
-                        RuleRes.data['results'][rule].timeline = undefined;
-                    }
-                 }
-                 this.setState({rules: RuleRes.data['results']});
-         })
+	 this.fetchHitsStats(RuleRes.data['results']);
      }))
   }
 
@@ -444,9 +500,9 @@ class RulesList extends Component {
 	    <ListView>
             {this.state.rules.map(function(rule) {
                 return(
-                   <RuleInList key={rule.pk} data={rule} state={state}/>
+                   <RuleInList key={rule.pk} data={rule} state={state} SwitchPage={this.props.SwitchPage} />
                 )
-             })}
+             },this)}
 	    </ListView>
 	    <HuntPaginationRow
 	        viewType = {PAGINATION_VIEW.LIST}
@@ -470,16 +526,11 @@ class RulesList extends Component {
 }
 
 class RuleInList extends Component {
-  handleClick = () => {
-    //this.setState({rule: {this.props.data}});
-    const rdata = <RulePage rule={this.props.data}/>
-    ReactDOM.render(rdata, document.getElementById('app-content'));
-  }
   render() {
     var category = this.props.state.categories[this.props.data.category];
     return (
 	<ListViewItem
-  actions={<button onClick={this.handleClick}>View</button>}
+  actions={<button onClick={this.props.SwitchPage.bind(this, PAGE_STATE.rule).bind(this, this.props.data)}>View</button>}
   leftContent={<ListViewIcon name="envelope" />}
   additionalInfo={[<ListViewInfoItem key="created"><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
                    <ListViewInfoItem key="updated"><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
@@ -514,7 +565,7 @@ class RulePage extends Component {
 
 class SourcePage extends Component {
     render() {
-	var source = this.props.data;
+	var source = this.props.source;
         return (
             <h1>{source.name}</h1>
 	)
@@ -523,7 +574,7 @@ class SourcePage extends Component {
 
 class RulesetPage extends Component {
     render() {
-	var ruleset = this.props.data;
+	var ruleset = this.props.ruleset;
         return (
             <h1>{ruleset.name}</h1>
 	)
