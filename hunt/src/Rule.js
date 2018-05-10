@@ -3,6 +3,7 @@ import { ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 
 import C3Chart from 'react-c3js';
 import 'c3/c3.css';
 import { PAGE_STATE } from './Const.js';
+import { SciriusChart } from './Chart.js';
 
 export class RuleInList extends React.Component {
   render() {
@@ -27,7 +28,7 @@ export class RuleInList extends React.Component {
 <p>{this.props.data.content}</p>
       {this.props.data.timeline &&
       /* FIXME we should be dynamic on the width, auto don't work if we have just a few data */
-      <C3Chart data={ this.props.data.timeline } bar={{width: 10}}
+      <SciriusChart data={ this.props.data.timeline } bar={{width: 10}}
                axis={{ x: { type: 'timeseries',
                             localtime: true,
                             min: this.props.from_date,
@@ -72,8 +73,8 @@ export class RuleCard extends React.Component {
            </div>
            <Spinner loading={this.props.data.hits === undefined} size="xs">
       {this.props.data.timeline &&
-      <div className="chart-pf-sparline">
-      <C3Chart data={ this.props.data.timeline }
+      <div className="chart-pf-sparkline">
+      <SciriusChart data={ this.props.data.timeline }
                bar={{width: 2}}
                axis={{ x: { type: 'timeseries',
                             localtime: true,
@@ -88,11 +89,12 @@ export class RuleCard extends React.Component {
                }}
                size = {{ height: 50 }}
                point = {{ show: false }}
+               from_date = {this.props.from_date}
       />
       </div>
       }
       {!this.props.data.timeline &&
-          <div className="no-sparline">
+          <div className="no-sparkline">
              <p>No alert</p>
           </div>
       }
