@@ -57,18 +57,19 @@ export class RuleCard extends React.Component {
            <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={this.props.data.msg}>{this.props.data.msg}</h2>
        </div>
        <div className="card-pf-body">
-            <ul className="list-inline list-full">
-             <li className="pull-left">Cat: {category.name}</li>
-             {this.props.data.created &&
-             <li>Created: {this.props.data.created}</li>
-             }
-               <li className="pull-right">Alerts 
-               
-           <Spinner loading={this.props.data.hits === undefined} size="xs">
-               <span className="badge">{this.props.data.hits}</span>
-           </Spinner>
-         </li>
-          </ul>
+            <div className="container-fluid">
+               <div className="row">
+                  <div className="col-md-5">Cat: {category.name}</div>
+                    {this.props.data.created &&
+                  <div className="col-md-4">Created: {this.props.data.created}</div>
+                    }
+                  <div className="col-md-3">Alerts 
+                     <Spinner loading={this.props.data.hits === undefined} size="xs">
+                         <span className="badge">{this.props.data.hits}</span>
+                     </Spinner>
+                  </div>
+                </div>
+           </div>
            <Spinner loading={this.props.data.hits === undefined} size="xs">
       {this.props.data.timeline &&
       <div className="chart-pf-sparline">
