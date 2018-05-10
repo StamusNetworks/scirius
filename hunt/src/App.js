@@ -407,6 +407,7 @@ class RulesList extends Component {
    UpdateFilter(filters) {
      const newRuleState = Object.assign({}, this.props.rules_list);
      newRuleState.filters = filters;
+     newRuleState.pagination.page = 1;
      this.props.updateRuleListState(newRuleState);
      this.fetchData(newRuleState);
    }
