@@ -8,9 +8,6 @@ import { SciriusChart } from './Chart.js';
 export class RuleInList extends React.Component {
   render() {
     var category = this.props.state.categories[this.props.data.category];
-    if (this.props.data.timeline) {
-        this.props.data.timeline.type = 'bar';
-    }
     return (
 	<ListViewItem
   actions={<button onClick={this.props.SwitchPage.bind(this, PAGE_STATE.rule).bind(this, this.props.data)}>View</button>}
@@ -28,7 +25,7 @@ export class RuleInList extends React.Component {
 <p>{this.props.data.content}</p>
       {this.props.data.timeline &&
       /* FIXME we should be dynamic on the width, auto don't work if we have just a few data */
-      <SciriusChart data={ this.props.data.timeline } bar={{width: 10}}
+      <SciriusChart data={ this.props.data.timeline }
                axis={{ x: { type: 'timeseries',
                             localtime: true,
                             min: this.props.from_date,
@@ -48,9 +45,6 @@ export class RuleInList extends React.Component {
 export class RuleCard extends React.Component {
   render() {
     var category = this.props.state.categories[this.props.data.category];
-    if (this.props.data.timeline) {
-        this.props.data.timeline.type = 'area';
-    }
     return (
     <div className="col-xs-6 col-sm-4 col-md-4">
 	<div className="card-pf rule-card">
@@ -75,7 +69,6 @@ export class RuleCard extends React.Component {
       {this.props.data.timeline &&
       <div className="chart-pf-sparkline">
       <SciriusChart data={ this.props.data.timeline }
-               bar={{width: 2}}
                axis={{ x: { type: 'timeseries',
                             localtime: true,
                             min: this.props.from_date,

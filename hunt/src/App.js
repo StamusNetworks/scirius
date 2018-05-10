@@ -443,7 +443,7 @@ class RulesList extends Component {
 
   buildTimelineDataSet(data) {
     var tdata = data['buckets'];
-    var timeline = {x : 'x', type: 'bar',  columns: [['x'], ['alerts']]};
+    var timeline = {x : 'x', type: 'area',  columns: [['x'], ['alerts']]};
     for (var key in tdata) {
         timeline.columns[0].push(tdata[key].key);
         timeline.columns[1].push(tdata[key].doc_count);
