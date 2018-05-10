@@ -1,5 +1,5 @@
 import React from 'react';
-import { Filter, FormControl, Toolbar } from 'patternfly-react';
+import { Filter, FormControl, Toolbar, Button, Icon } from 'patternfly-react';
 import { RuleSort } from './Sort.js';
 
 export const RuleFilterFields = [
@@ -187,7 +187,7 @@ export class RuleFilter extends React.Component {
     const { currentFilterType, activeFilters } = this.state;
 
     return (
-      <div>
+	   <Toolbar>
         <div style={{ width: 450 }}>
           <Filter>
             <Filter.TypeSelector
@@ -199,6 +199,31 @@ export class RuleFilter extends React.Component {
           </Filter>
 	      <RuleSort ActiveSort={this.props.ActiveSort} UpdateSort={this.props.UpdateSort}/>
         </div>
+            <Toolbar.RightContent>
+                        <Toolbar.ViewSelector>
+            <Button
+              title="List View"
+              bsStyle="link"
+              className={{ active: this.props.rules_list.view_type === 'list' }}
+              onClick={() => {
+                this.props.setViewType('list');
+              }}
+            >
+              <Icon type="fa" name="th-list" />
+            </Button>
+            <Button
+              title="Card View"
+              bsStyle="link"
+              className={{ active: this.props.rules_list.view_type === 'card' }}
+              onClick={() => {
+                this.props.setViewType('card');
+              }}
+            >
+              <Icon type="fa" name="th" />
+            </Button>
+          </Toolbar.ViewSelector>
+            </Toolbar.RightContent>
+
         {activeFilters &&
           activeFilters.length > 0 && (
             <Toolbar.Results>
@@ -226,7 +251,7 @@ export class RuleFilter extends React.Component {
               </a>
             </Toolbar.Results>
           )}
-      </div>
+      </Toolbar>
     );
   }
 }

@@ -27,6 +27,26 @@
   to { transform: rotate(360deg); }
 }
 
-.toolbar-pf-results {
-  border-top: none;
+.rule-card {
+  min-height: 200px;
+}
+
+.no-sparline {
+  height: 50px;
+  width: 90%;
+  margin: 0;
+  padding: 0;
+  opacity: 0.5;
+  text-align: center;
+}
+
+.truncate-overflow {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-full {
+  text-align: center;
+  width: 100%;
 }

@@ -6,7 +6,7 @@ import { AboutModal, Button } from 'patternfly-react';
 import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
 import { RuleFilter } from './Filter.js';
 import { PAGE_STATE } from './Const.js';
-import { RuleInList } from './Rule.js';
+import { RuleInList, RuleCard } from './Rule.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
 import 'bootstrap3/dist/css/bootstrap.css'
@@ -33,6 +33,7 @@ class HuntApp extends Component {
         },
         filters: [],
         sort: {id: 'created', asc: false},
+        view_type: 'list'
       }
     };
     this.displaySource = this.displaySource.bind(this);
@@ -358,6 +359,8 @@ class RulesList extends Component {
     this.onLastPage = this.onLastPage.bind(this);
     this.UpdateFilter = this.UpdateFilter.bind(this);
     this.UpdateSort = this.UpdateSort.bind(this);
+
+    this.setViewType = this.setViewType.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -413,6 +416,12 @@ class RulesList extends Component {
      newRuleState.sort = sort;
      this.props.updateRuleListState(newRuleState);
      this.fetchData(newRuleState);
+   }
+
+   setViewType(type) {
+        const newRuleState = Object.assign({}, this.props.rules_list);
+        newRuleState.view_type = type;
+        this.props.updateRuleListState(newRuleState);
    }
 
    buildFilter(filters) {
@@ -505,9 +514,8 @@ class RulesList extends Component {
     return (
         <div className="RulesList">
 	<Spinner loading={this.state.loading} >
-	<Toolbar>
-	    <RuleFilter ActiveFilters={this.props.rules_list.filters} ActiveSort={this.props.rules_list.sort} UpdateFilter={this.UpdateFilter}  UpdateSort={this.UpdateSort} />
-      </Toolbar>
+	    <RuleFilter ActiveFilters={this.props.rules_list.filters} rules_list={this.props.rules_list} ActiveSort={this.props.rules_list.sort} UpdateFilter={this.UpdateFilter}  UpdateSort={this.UpdateSort} setViewType={this.setViewType}/>
+            {this.props.rules_list.view_type === 'list' &&
 	    <ListView>
             {this.state.rules.map(function(rule) {
                 return(
@@ -515,6 +523,18 @@ class RulesList extends Component {
                 )
              },this)}
 	    </ListView>
+            }
+            {this.props.rules_list.view_type === 'card' &&
+                <div className='container-fluid container-cards-pf'>
+                <div className='row row-cards-pf'>
+                {this.state.rules.map(function(rule) {
+                         return(
+                                <RuleCard key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.props.SwitchPage} />
+                )
+             },this)}
+                </div>
+                </div>
+            }
 	    <HuntPaginationRow
 	        viewType = {PAGINATION_VIEW.LIST}
 	        pagination={this.props.rules_list.pagination}
