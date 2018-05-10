@@ -1257,14 +1257,15 @@ SIGS_LIST_HITS = """
     "alerts": {
       "terms": {
         "field": "alert.signature_id",
-        "size": {{ count }}
+        "size": {{ count }},
+        "min_doc_count": 1
       },
       "aggs": {
         "timeline": {
           "date_histogram": {
             "field": "@timestamp",
             "interval": "{{ interval }}s",
-            "min_doc_count": 1
+            "min_doc_count": 0
           }
         }
       }
