@@ -55,9 +55,11 @@ export class RuleCard extends React.Component {
             <div className="container-fluid">
                <div className="row">
                   <div className="col-md-5 truncate-overflow"  data-toggle="tooltip" title={category.name}>Cat: {category.name}</div>
+                  <div className="col-md-4">
                     {this.props.data.created &&
-                  <div className="col-md-4">Created: {this.props.data.created}</div>
+                  <p>Created: {this.props.data.created}</p>
                     }
+                  </div>
                   <div className="col-md-3">Alerts 
                      <Spinner loading={this.props.data.hits === undefined} size="xs">
                          <span className="badge">{this.props.data.hits}</span>
