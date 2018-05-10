@@ -346,7 +346,8 @@ class RulesList extends Component {
     super(props);
     this.state = {
       rules: [], categories: [], rules_count: 0,
-      loading: true
+      loading: true,
+      refresh_data: false,
     };
     this.fetchData = this.fetchData.bind(this);
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
@@ -477,6 +478,7 @@ class RulesList extends Component {
         ordering="-" + sort['id'];
      }
 
+     this.setState({refresh_data: true});
      axios.all([
           axios.get(config.API_URL + config.RULE_PATH + "?ordering=" + ordering + "&page_size=" + per_page + "&page=" + page + string_filters),
           axios.get(config.API_URL + config.CATEGORY_PATH + "?page_size=100"),
@@ -488,7 +490,7 @@ class RulesList extends Component {
 	     var cat = categories_array[i];
 	     categories[cat.pk] = cat;
 	 }
-         this.setState({ rules_count: RuleRes.data['count'], rules: RuleRes.data['results'], categories: categories, loading: false});
+         this.setState({ rules_count: RuleRes.data['count'], rules: RuleRes.data['results'], categories: categories, loading: false, refresh_data: false});
 	 this.fetchHitsStats(RuleRes.data['results']);
      }))
   }
