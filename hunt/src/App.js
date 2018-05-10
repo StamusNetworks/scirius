@@ -509,7 +509,7 @@ class RulesList extends Component {
         <div className="RulesList">
 	<Spinner loading={this.state.loading} >
 	<Toolbar>
-	    <RuleFilter UpdateFilter={this.UpdateFilter}  UpdateSort={this.UpdateSort} />
+	    <RuleFilter ActiveFilters={this.props.rules_list.filters} UpdateFilter={this.UpdateFilter}  UpdateSort={this.UpdateSort} />
       </Toolbar>
 	    <ListView>
             {this.state.rules.map(function(rule) {

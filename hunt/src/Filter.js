@@ -18,12 +18,14 @@ export const RuleFilterFields = [
 ];
 
 export class RuleFilter extends React.Component {
-
-    state = {
+  constructor(props) {
+    super(props);
+    this.state = {
       currentFilterType: RuleFilterFields[0],
-      activeFilters: [],
+      activeFilters: this.props.ActiveFilters,
       currentValue: ''
     };
+  }
 
   filterAdded = (field, value) => {
     let filterText = '';
