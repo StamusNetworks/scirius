@@ -361,7 +361,7 @@ class RulesList extends Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-     if (prevProps.from_date !=  this.props.from_date) {
+     if (prevProps.from_date !==  this.props.from_date) {
              this.fetchHitsStats(this.state.rules);
      }
   }
