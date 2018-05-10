@@ -447,14 +447,16 @@ class RulesList extends Component {
          axios.get(config.API_URL + config.ES_SIGS_LIST_PATH + sids + from_date).then(res => {
                  /* we are going O(n2), we should fix that */
                  for (var rule in rules) {
+                    var found = false;
                     for (var info in res.data) {
                         if (res.data[info].key === rules[rule].sid) {
                             rules[rule].timeline = this.buildTimelineDataSet(res.data[info].timeline);
                             rules[rule].hits = res.data[info].doc_count;
+                            found = true;
                             break;
                         }
                     }
-                    if (rules[rule].hits === undefined) {
+                    if (found === false) {
                         rules[rule].hits = 0;
                         rules[rule].timeline = undefined;
                     }
