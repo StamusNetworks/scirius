@@ -59,7 +59,7 @@ export class RuleCard extends React.Component {
        <div className="card-pf-body">
             <div className="container-fluid">
                <div className="row">
-                  <div className="col-md-5">Cat: {category.name}</div>
+                  <div className="col-md-5 truncate-overflow"  data-toggle="tooltip" title={category.name}>Cat: {category.name}</div>
                     {this.props.data.created &&
                   <div className="col-md-4">Created: {this.props.data.created}</div>
                     }
