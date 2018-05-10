@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { ListView, ListViewItem, ListViewInfoItem, Row, Col, ListViewIcon } from 'patternfly-react';
+import { ListView } from 'patternfly-react';
 import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow, Toolbar, Spinner } from 'patternfly-react';
-import { AboutModal } from 'patternfly-react';
+import { AboutModal, Button } from 'patternfly-react';
 import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
-import C3Chart from 'react-c3js';
-import 'c3/c3.css';
 import { RuleFilter } from './Filter.js';
+import { PAGE_STATE } from './Const.js';
+import { RuleInList } from './Rule.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
 import 'bootstrap3/dist/css/bootstrap.css'
@@ -14,13 +14,6 @@ import 'patternfly/dist/css/patternfly.css'
 import 'patternfly/dist/css/patternfly-additions.css'
 import 'patternfly-react/dist/css/patternfly-react.css'
 import './App.css';
-
-const PAGE_STATE = {
-   rules_list: 'RULES_LIST',
-   source: 'SOURCE',
-   ruleset: 'RULESET',
-   rule: 'RULE',
-};
 
 class HuntApp extends Component {
   constructor(props) {
@@ -538,44 +531,6 @@ class RulesList extends Component {
     );
   }
 }
-
-class RuleInList extends Component {
-  render() {
-    var category = this.props.state.categories[this.props.data.category];
-    return (
-	<ListViewItem
-  actions={<button onClick={this.props.SwitchPage.bind(this, PAGE_STATE.rule).bind(this, this.props.data)}>View</button>}
-  leftContent={<ListViewIcon name="envelope" />}
-  additionalInfo={[<ListViewInfoItem key="created"><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
-                   <ListViewInfoItem key="updated"><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
-                   <ListViewInfoItem key="category"><p>Category: {category.name}</p></ListViewInfoItem>,
-                   <ListViewInfoItem key="hits"><Spinner loading={this.props.data.hits === undefined} size="xs"><p>Alerts <span className="badge">{this.props.data.hits}</span></p></Spinner></ListViewInfoItem>
-  ]}
-  heading={this.props.data.sid}
-  description={this.props.data.msg}
->
-<Row>
-<Col sm={11}>
-<p>{this.props.data.content}</p>
-      {this.props.data.timeline &&
-      /* FIXME we should be dynamic on the width, auto don't work if we have just a few data */
-      <C3Chart data={ this.props.data.timeline } bar={{width: 10}}
-               axis={{ x: { type: 'timeseries',
-                            localtime: true,
-                            min: this.props.from_date,
-                            max: Date.now(),
-                            tick: { fit: true, format: '%Y-%m-%d %H:%M'}
-                     } }
-                    }
-      />
-      }
-</Col>
-</Row>
-</ListViewItem>
-    )
-  }
-}
-
 
 class RulePage extends Component {
     render() {
