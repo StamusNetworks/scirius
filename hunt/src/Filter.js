@@ -197,7 +197,7 @@ export class RuleFilter extends React.Component {
             />
             {this.renderInput()}
           </Filter>
-	      <RuleSort UpdateSort={this.props.UpdateSort}/>
+	      <RuleSort ActiveSort={this.props.ActiveSort} UpdateSort={this.props.UpdateSort}/>
         </div>
         {activeFilters &&
           activeFilters.length > 0 && (

@@ -39,7 +39,7 @@ class HuntApp extends Component {
           perPageOptions: [6, 10, 15, 25, 50]
         },
         filters: [],
-        sort: {id: 'created', order: 'desc'},
+        sort: {id: 'created', asc: false},
       }
     };
     this.displaySource = this.displaySource.bind(this);
@@ -509,7 +509,7 @@ class RulesList extends Component {
         <div className="RulesList">
 	<Spinner loading={this.state.loading} >
 	<Toolbar>
-	    <RuleFilter ActiveFilters={this.props.rules_list.filters} UpdateFilter={this.UpdateFilter}  UpdateSort={this.UpdateSort} />
+	    <RuleFilter ActiveFilters={this.props.rules_list.filters} ActiveSort={this.props.rules_list.sort} UpdateFilter={this.UpdateFilter}  UpdateSort={this.UpdateSort} />
       </Toolbar>
 	    <ListView>
             {this.state.rules.map(function(rule) {

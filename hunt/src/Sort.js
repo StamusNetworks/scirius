@@ -29,11 +29,21 @@ export const RuleSortFields = [
 ];
 
 export class RuleSort extends React.Component {
-    state = {
-      currentSortType: RuleSortFields[0],
-      isSortNumeric: RuleSortFields[0].isNumeric,
-      isSortAscending: false
+  constructor(props) {
+    super(props);
+    var sort_type;
+    for (var i = 0; i<RuleSortFields.length; i++){
+         if (this.props.ActiveSort.id === RuleSortFields[i].id) {
+            sort_type = RuleSortFields[i];
+            break;
+         }
+    }
+    this.state = {
+      currentSortType: sort_type,
+      isSortNumeric: sort_type.isNumeric,
+      isSortAscending: sort_type.asc
     };
+  }
 
   updateCurrentSortType = sortType => {
     const { currentSortType } = this.state;
