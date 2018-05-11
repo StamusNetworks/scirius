@@ -115,6 +115,10 @@ class UserAction(models.Model):
                     'description': '{user} has updated source {source}',
                     'title': 'Update Source'
                 },
+               'upload_source': {
+                    'description': '{user} has uploaded source {source}',
+                    'title': 'Upload Source'
+                },
                'delete_source': {
                     'description': '{user} has deleted source {source}',
                     'title': 'Delete Source'

@@ -750,6 +750,8 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
 
 
 class BaseSourceSerializer(serializers.ModelSerializer):
+    comment = serializers.CharField(required=False, allow_blank=True, write_only=True, allow_null=True)
+
     class Meta:
         model = Source
         fields = ('pk', 'name', 'created_date', 'updated_date', 'method', 'datatype', 'uri', 'cert_verif',
@@ -768,8 +770,14 @@ class BaseSourceSerializer(serializers.ModelSerializer):
 
 class BaseSourceViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
-        comment = request.data.get('comment', None)
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        comment = data.pop('comment', None)
+
+        # because of rest website UI
+        if isinstance(comment, list):
+            comment = comment[0]
+
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
@@ -789,15 +797,32 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         source = self.get_object()
+        # Do not need to copy 'request.data' and pop 'comment'
+        # because we are not using serializer there
+        comment = request.data.get('comment', None)
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
         UserAction.create(
                 action_type='delete_source',
                 user=request.user,
-                source=source
+                source=source,
+                comment=comment_serializer.validated_data['comment']
         )
         return super(BaseSourceViewSet, self).destroy(request, *args, **kwargs)
 
     def upload(self, request, pk):
+        data = request.data.copy()
+        comment = data.pop('comment', None)
+
+        # because of rest website UI
+        if isinstance(comment, list):
+            comment = comment[0]
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
         source = self.get_object()
+
         if source.method != 'local':
             msg = 'No upload is allowed. method is currently "%s"' % source.method
             return Response({'upload': msg}, status=status.HTTP_400_BAD_REQUEST)
@@ -812,10 +837,19 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
             raise ServiceUnavailableException(error)
             return Response({'upload': error.message}, status=status.HTTP_400_BAD_REQUEST)
 
+        UserAction.create(
+                action_type='upload_source',
+                comment=comment_serializer.validated_data['comment'],
+                user=request.user,
+                source=source
+        )
+
         return Response({'upload': 'ok'}, status=200)
 
     @detail_route(methods=['post'])
     def update_source(self, request, pk):
+        # Do not need to copy 'request.data' and pop 'comment'
+        # because we are not using serializer there
         comment = request.data.get('comment', None)
         is_async_str = request.query_params.get('async', u'false')
         is_async = lambda value: bool(value) and value.lower() not in (u'false', u'0')
@@ -873,12 +907,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['post'])
     def test(self, request, pk):
-        comment = request.data.get('comment', None)
         source = self.get_object()
-
-        comment_serializer = CommentSerializer(data={'comment': comment})
-        comment_serializer.is_valid(raise_exception=True)
-
         sources_at_version = SourceAtVersion.objects.filter(source=source, version='HEAD')
         res = sources_at_version[0].test()
 
@@ -898,7 +927,7 @@ class PublicSourceSerializer(BaseSourceSerializer):
 
     class Meta(BaseSourceSerializer.Meta):
         model = BaseSourceSerializer.Meta.model
-        fields = BaseSourceSerializer.Meta.fields + ('public_source',)
+        fields = BaseSourceSerializer.Meta.fields + ('public_source', 'comment')
         read_only_fields = BaseSourceSerializer.Meta.read_only_fields + ('public_source',)
 
     def create(self, validated_data):
@@ -998,7 +1027,7 @@ class SourceSerializer(BaseSourceSerializer):
 
     class Meta(BaseSourceSerializer.Meta):
         model = BaseSourceSerializer.Meta.model
-        fields = BaseSourceSerializer.Meta.fields + ('method',)
+        fields = BaseSourceSerializer.Meta.fields + ('method', 'comment')
         read_only_fields = BaseSourceSerializer.Meta.read_only_fields
 
     def create(self, validated_data):
