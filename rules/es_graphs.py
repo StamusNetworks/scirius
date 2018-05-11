@@ -1267,6 +1267,13 @@ SIGS_LIST_HITS = """
             "interval": "{{ interval }}s",
             "min_doc_count": 0
           }
+        },
+        "probes": {
+           "terms": {
+               "field": "{{ hostname }}.{{ keyword }}",
+               "size": 10,
+               "min_doc_count": 1
+           }
         }
       }
     }
@@ -1388,7 +1395,8 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
         tables.RequestConfig(request).configure(rules)
     return rules
 
-def es_get_field_stats(request, field, FieldTable, hostname, key='host', count=20, from_date=0 , qfilter = None):
+
+def es_get_field_stats(request, field, hostname, key='host', count=20, from_date=0 , qfilter = None):
     data = render_template(TOP_QUERY, {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': field}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
@@ -1407,6 +1415,14 @@ def es_get_field_stats(request, field, FieldTable, hostname, key='host', count=2
         else:
             data = data['facets']['table']['terms']
     except:
+        return None
+    return data
+
+
+def es_get_field_stats_as_table(request, field, FieldTable, hostname, key='host', count=20, from_date=0 , qfilter = None):
+    data = es_get_field_stats(request, field, hostname,
+                              key=key, count=count, from_date=from_date, qfilter=qfilter)
+    if data == None:
         objects = FieldTable([])
         tables.RequestConfig(request).configure(objects)
         return objects

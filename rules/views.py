@@ -227,12 +227,19 @@ def elasticsearch(request):
             filter_ip = RULE_FIELDS_MAPPING[query]
             sid = int(request.GET.get('sid', None))
             from_date = request.GET.get('from_date', None)
+            ajax = request.GET.get('json', None)
             if from_date != None and sid != None:
-                hosts = es_get_field_stats(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, RuleHostTable, '*', from_date = from_date,
-                    count = 10,
-                    qfilter = 'alert.signature_id:%d' % sid)
-                context = {'table': hosts}
-                return scirius_render(request, 'rules/table.html', context)
+                if ajax:
+                    data = es_get_field_stats(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, '*', from_date = from_date,
+                        count = 10,
+                        qfilter = 'alert.signature_id:%d' % sid)
+                    return HttpResponse(json.dumps(data), content_type="application/json")
+                else:
+                    hosts = es_get_field_stats_as_table(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, RuleHostTable, '*', from_date = from_date,
+                        count = 10,
+                        qfilter = 'alert.signature_id:%d' % sid)
+                    context = {'table': hosts}
+                    return scirius_render(request, 'rules/table.html', context)
         elif query == 'timeline':
             from_date = request.GET.get('from_date', None)
             cshosts = request.GET.get('hosts', None)

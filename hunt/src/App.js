@@ -463,6 +463,7 @@ class RulesList extends Component {
                     for (var info in res.data) {
                         if (res.data[info].key === rules[rule].sid) {
                             rules[rule].timeline = this.buildTimelineDataSet(res.data[info].timeline);
+                            rules[rule].probes = res.data[info].probes;
                             rules[rule].hits = res.data[info].doc_count;
                             found = true;
                             break;
@@ -470,6 +471,7 @@ class RulesList extends Component {
                     }
                     if (found === false) {
                         rules[rule].hits = 0;
+                        rules[rule].probes = [];
                         rules[rule].timeline = undefined;
                     }
                  }
