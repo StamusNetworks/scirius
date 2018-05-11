@@ -247,7 +247,7 @@ class UserNavInfo extends Component {
           show={this.state.showModal}
           onHide={this.closeModal}
           productTitle="Scirius Enterprise Edition"
-          //logo={logo}
+          logo={scirius_logo}
           altLogo="SEE Logo"
           trademarkText="Copyright 2014-2018, Stamus Networks"
         >
