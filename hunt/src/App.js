@@ -14,6 +14,7 @@ import 'patternfly/dist/css/patternfly.css'
 import 'patternfly/dist/css/patternfly-additions.css'
 import 'patternfly-react/dist/css/patternfly-react.css'
 import './App.css';
+import scirius_logo from './img/scirius-by-stamus.svg';
 
 class HuntApp extends Component {
   constructor(props) {
@@ -119,7 +120,7 @@ class HuntApp extends Component {
             <div className="layout-pf layout-pf-fixed faux-layout">
                 <VerticalNav sessionKey="storybookItemsAsJsx" showBadges>
             	    <VerticalNav.Masthead title="Scirius">
-						<VerticalNav.Brand iconImg="/static/rules/stamus.png" titleImg="brand-alt.svg" />
+						<VerticalNav.Brand titleImg={scirius_logo} />
 						<VerticalNav.IconBar>
 							<UserNavInfo ChangeDuration={this.changeDuration} period={this.state.duration}/>
 						</VerticalNav.IconBar>
