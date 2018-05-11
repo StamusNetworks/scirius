@@ -201,7 +201,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('pk', 'name', 'filename', 'descr', 'created_date', 'source')
+        fields = ('pk', 'name', 'descr', 'created_date', 'source')
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
@@ -213,7 +213,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":127,"name":"emerging-dos","filename":"rules/emerging-dos.rules","descr":"","created_date":"2018-05-07T14:27:26.620906+02:00","source":9}
+        {"pk":127,"name":"emerging-dos","descr":"","created_date":"2018-05-07T14:27:26.620906+02:00","source":9}
 
     ==== POST ====\n
     Disable a category in a ruleset:\n
@@ -235,8 +235,8 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     ordering = ('name',)
-    ordering_fields = ('pk', 'name', 'filename', 'created_date', 'source')
-    filter_fields = ('name', 'filename', 'source', 'created_date')
+    ordering_fields = ('pk', 'name', 'created_date', 'source')
+    filter_fields = ('name', 'source', 'created_date')
 
     @detail_route(methods=['post'])
     def enable(self, request, pk):
