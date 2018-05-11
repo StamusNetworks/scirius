@@ -1,7 +1,5 @@
 import React from 'react';
 import { ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
-import C3Chart from 'react-c3js';
-import 'c3/c3.css';
 import { PAGE_STATE } from './Const.js';
 import { SciriusChart } from './Chart.js';
 

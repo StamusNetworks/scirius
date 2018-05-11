@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { ListView } from 'patternfly-react';
-import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow, Toolbar, Spinner } from 'patternfly-react';
-import { AboutModal, Button } from 'patternfly-react';
+import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow, Spinner } from 'patternfly-react';
+import { AboutModal } from 'patternfly-react';
 import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
 import { RuleFilter } from './Filter.js';
 import { PAGE_STATE } from './Const.js';
@@ -104,6 +104,7 @@ class HuntApp extends Component {
             var displayed_page = undefined;
             switch (this.state.display.page) {
                case PAGE_STATE.rules_list:
+               default:
                   displayed_page = <RulesList rules_list={this.state.rules_list} from_date={this.state.from_date} SwitchPage={this.switchPage} updateRuleListState={this.updateRuleListState} />
                   break;
                case PAGE_STATE.source:
