@@ -18,11 +18,12 @@ export class RuleInList extends React.Component {
   heading={this.props.data.sid}
   description={this.props.data.msg}
 >
+      {this.props.data.timeline &&
 <Row>
 <Col sm={11}>
-<p>{this.props.data.content}</p>
-      {this.props.data.timeline &&
-      /* FIXME we should be dynamic on the width, auto don't work if we have just a few data */
+<div className="container-fuild">
+   <div className="row">
+      <div className="col-md-10">
       <SciriusChart data={ this.props.data.timeline }
                axis={{ x: { type: 'timeseries',
                             localtime: true,
@@ -32,9 +33,20 @@ export class RuleInList extends React.Component {
                      } }
                     }
       />
-      }
+      </div>
+      <div className="col-md-2">
+         <h4>Probes</h4>
+         <ul className='list-group'>
+	    {this.props.data.probes.buckets.map( item => {
+		return(<li className='list-group-item'>{item.key} <span className='badge'>{item.doc_count}</span></li>)
+	    })}
+         </ul>
+      </div>
+   </div>
+</div>
 </Col>
 </Row>
+      }
 </ListViewItem>
     )
   }
