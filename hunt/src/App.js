@@ -20,22 +20,29 @@ class HuntApp extends Component {
   constructor(props) {
     super(props);
     var duration = localStorage.getItem('duration');
+    var rules_list_conf = localStorage.getItem('rules_list');
     if (!duration) {
-	duration = 24;
+	    duration = 24;
+    }
+    if (!rules_list_conf) {
+        rules_list_conf = {
+            pagination: {
+              page: 1,
+              perPage: 6,
+              perPageOptions: [6, 10, 15, 25, 50]
+            },
+            filters: [],
+            sort: {id: 'created', asc: false},
+            view_type: 'list'
+        };
+        localStorage.setItem('rules_list', JSON.stringify(rules_list_conf));
+    } else {
+        rules_list_conf = JSON.parse(rules_list_conf);
     }
     this.state = {
       sources: [], rulesets: [], duration: duration, from_date: (Date.now() - duration * 3600 * 1000),
       display: { page: PAGE_STATE.rules_list, item:undefined },
-      rules_list: {
-        pagination: {
-          page: 1,
-          perPage: 6,
-          perPageOptions: [6, 10, 15, 25, 50]
-        },
-        filters: [],
-        sort: {id: 'created', asc: false},
-        view_type: 'list'
-      }
+      rules_list: rules_list_conf
     };
     this.displaySource = this.displaySource.bind(this);
     this.displayRuleset = this.displayRuleset.bind(this);
@@ -98,6 +105,7 @@ class HuntApp extends Component {
  
     updateRuleListState(rules_list_state) {
         this.setState({rules_list: rules_list_state});
+        localStorage.setItem('rules_list', JSON.stringify(rules_list_state));
     }
 
     render() {
