@@ -133,17 +133,13 @@ export class RulePage extends React.Component {
 
     componentDidMount() {
        var rule = JSON.parse(JSON.stringify(this.props.rule));
-       rule.timeline = undefined;
        updateHitsStats([rule], this.props.from_date, this.updateRuleState);
-       this.setState({rule: rule});
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
        if (prevProps.from_date !==  this.props.from_date) {
             var rule = JSON.parse(JSON.stringify(this.props.rule));
-            rule.timeline = undefined;
             updateHitsStats([rule], this.props.from_date, this.updateRuleState);
-            this.setState({rule: rule});
        }
     }
 
@@ -168,6 +164,7 @@ export class RulePage extends React.Component {
                                     }
                                    }
                                  }
+                            from_date = {this.props.from_date}
                          />
                       }
                 </div>
@@ -244,7 +241,6 @@ export function updateHitsStats(rules, p_from_date, updateCallback) {
          var sids = Array.from(rules, x => x.sid).join()
 	     var from_date = "&from_date=" + p_from_date;
          var url = config.API_URL + config.ES_SIGS_LIST_PATH + sids + from_date;
-         console.log(url);
          axios.get(url).then(res => {
                  /* we are going O(n2), we should fix that */
                  for (var rule in rules) {
