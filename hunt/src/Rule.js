@@ -146,6 +146,7 @@ export class RulePage extends React.Component {
                 <div className='row row-cards-pf'>
                     <RuleStat title="Sources" rule={this.props.rule} item='src' from_date={this.props.from_date} />
                     <RuleStat title="Destinations" rule={this.props.rule} item='dest' from_date={this.props.from_date} />
+                    <RuleStat title="Probes" rule={this.props.rule} item='probe' from_date={this.props.from_date} />
                 </div>
             </div>
             </div>
