@@ -207,7 +207,7 @@ class RuleStat extends React.Component {
 
     render() {
         return (
-	    <div className="col-xs-6 col-sm-4 col-md-4">
+	    <div className="col-xs-6 col-sm-4 col-md-3">
 	<div className="card-pf rule-card">
        <div className="card-pf-heading">
            <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={this.props.title}>{this.props.title}</h2>
