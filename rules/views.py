@@ -182,7 +182,7 @@ class Reference:
 
 def elasticsearch(request):
     data = None
-    RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip'}
+    RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip', 'rule_probe': settings.ELASTICSEARCH_HOSTNAME}
     if request.GET.__contains__('query'):
         query = request.GET.get('query', 'dashboards')
         if query == 'dashboards':
