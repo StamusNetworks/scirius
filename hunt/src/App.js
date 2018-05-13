@@ -6,7 +6,7 @@ import { AboutModal } from 'patternfly-react';
 import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
 import { RuleFilter } from './Filter.js';
 import { PAGE_STATE } from './Const.js';
-import { RuleInList, RuleCard } from './Rule.js';
+import { RuleInList, RuleCard, RulePage } from './Rule.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
 import 'bootstrap3/dist/css/bootstrap.css'
@@ -559,14 +559,6 @@ class RulesList extends Component {
         </div>
     );
   }
-}
-
-class RulePage extends Component {
-    render() {
-        return (
-            <h1>{this.props.rule.msg}</h1>
-	)
-    }
 }
 
 class SourcePage extends Component {

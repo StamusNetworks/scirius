@@ -46,3 +46,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.list-view-pf .list-group-item {
+  display: block;
+}

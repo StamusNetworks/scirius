@@ -1,7 +1,11 @@
 import React from 'react';
 import { ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
+import axios from 'axios';
 import { PAGE_STATE } from './Const.js';
 import { SciriusChart } from './Chart.js';
+import * as config from './config/Api.js';
+import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
+
 
 export class RuleInList extends React.Component {
   render() {
@@ -36,11 +40,14 @@ export class RuleInList extends React.Component {
       </div>
       <div className="col-md-2">
          <h4>Probes</h4>
-         <ul className='list-group'>
+         <ListGroup>
 	    {this.props.data.probes.buckets.map( item => {
-		return(<li className='list-group-item'>{item.key} <span className='badge'>{item.doc_count}</span></li>)
+		return(<ListGroupItem key={item.key}>
+		 {item.key}     
+		 <Badge>{item.doc_count}</Badge>
+		 </ListGroupItem>)
 	    })}
-         </ul>
+         </ListGroup>
       </div>
    </div>
 </div>
@@ -113,4 +120,73 @@ export class RuleCard extends React.Component {
    </div>
     )
   }
+}
+
+export class RulePage extends React.Component {
+    render() {
+        return (
+            <div>
+            <h1>{this.props.rule.msg}</h1>
+            <div className='container-fluid container-cards-pf'>
+                <div className='row'>
+                     <p>{this.props.rule.content}</p>
+                     {this.props.rule.timeline &&
+                        <SciriusChart data={ this.props.rule.timeline }
+                            axis={{ x: { type: 'timeseries',
+                                    localtime: true,
+                                    min: this.props.from_date,
+                                    max: Date.now(),
+                                    tick: { fit: true, format: '%Y-%m-%d %H:%M'}
+                                    }
+                                   }
+                                 }
+                         />
+                      }
+                </div>
+                <div className='row row-cards-pf'>
+                    <RuleStat title="Sources" rule={this.props.rule} item='src' from_date={this.props.from_date} />
+                    <RuleStat title="Destinations" rule={this.props.rule} item='dest' from_date={this.props.from_date} />
+                </div>
+            </div>
+            </div>
+	)
+    }
+}
+
+class RuleStat extends React.Component {
+    constructor(props) {
+	super(props);
+  	this.state = {data: []};
+    }
+
+    componentDidMount() {
+          axios.get(config.API_URL + config.ES_BASE_PATH +
+                    'rule_' + this.props.item + '&from_date=' + this.props.from_date +
+                    '&sid=' + this.props.rule.sid)
+             .then(res => {
+               console.log(res);
+               this.setState({ data: res.data });
+            })
+    }
+
+    render() {
+        return (
+	    <div className="col-xs-6 col-sm-4 col-md-4">
+	<div className="card-pf rule-card">
+       <div className="card-pf-heading">
+           <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={this.props.title}>{this.props.title}</h2>
+       </div>
+       <div className="card-pf-body">
+	<ListGroup>
+	    {this.state.data.map( item => {
+		return(<ListGroupItem key={item.key}>
+		 {item.key}     
+		 <Badge>{item.doc_count}</Badge>
+		 </ListGroupItem>)
+	    })}
+	</ListGroup>
+	</div>
+        </div>
+	</div>);
+    }
 }
