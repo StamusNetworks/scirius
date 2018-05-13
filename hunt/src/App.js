@@ -66,12 +66,12 @@ class HuntApp extends Component {
   }
 
     onHomeClick() {
-        this.setState({display: {page: PAGE_STATE.rules_list}});
+        this.switchPage(PAGE_STATE.rules_list, undefined);
     }
     
     
     onDashboardClick() {
-        this.setState({display: {page: PAGE_STATE.rules_list}});
+        this.switchPage(PAGE_STATE.rules_list, undefined);
     }
     
     onHistoryClick() {
@@ -94,11 +94,11 @@ class HuntApp extends Component {
     }
 
     displayRuleset(ruleset) {
-        this.setState({display: {page:'RULESET', item: ruleset}});
+        this.switchPage(PAGE_STATE.ruleset, ruleset);
     }
     
     displaySource(source) {
-        this.setState({display: {page:'SOURCE', item: source}});
+        this.switchPage(PAGE_STATE.source, source);
     }
 
    changeDuration(period) {
@@ -107,9 +107,13 @@ class HuntApp extends Component {
    }
 
   switchPage(page, item) {
+      if (!page) {
+	      console.log("switchPage called with null param");
+	      return;
+      }
       const page_display = {page: page, item: item};
       this.setState({display: page_display});
-	  localStorage.setItem('page_display', JSON.stringify(page_display));
+      localStorage.setItem('page_display', JSON.stringify(page_display));
   }
  
     updateRuleListState(rules_list_state) {
