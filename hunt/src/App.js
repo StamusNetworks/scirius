@@ -6,7 +6,7 @@ import { AboutModal } from 'patternfly-react';
 import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
 import { RuleFilter } from './Filter.js';
 import { PAGE_STATE } from './Const.js';
-import { RuleInList, RuleCard, RulePage } from './Rule.js';
+import { RuleInList, RuleCard, RulePage, updateHitsStats } from './Rule.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
 import 'bootstrap3/dist/css/bootstrap.css'
@@ -380,6 +380,8 @@ class RulesList extends Component {
     this.UpdateSort = this.UpdateSort.bind(this);
 
     this.setViewType = this.setViewType.bind(this);
+
+    this.updateRulesState = this.updateRulesState.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -460,41 +462,12 @@ class RulesList extends Component {
      return string_filters;
    }
 
-  buildTimelineDataSet(data) {
-    var tdata = data['buckets'];
-    var timeline = {x : 'x', type: 'area',  columns: [['x'], ['alerts']]};
-    for (var key in tdata) {
-        timeline.columns[0].push(tdata[key].key);
-        timeline.columns[1].push(tdata[key].doc_count);
-    }
-    return timeline;
+  updateRulesState(rules) {
+         this.setState({rules: rules});
   }
 
   fetchHitsStats(rules) {
-         var sids = Array.from(rules, x => x.sid).join()
-	 var from_date = "&from_date=" + this.props.from_date;
-         axios.get(config.API_URL + config.ES_SIGS_LIST_PATH + sids + from_date).then(res => {
-                 /* we are going O(n2), we should fix that */
-                 for (var rule in rules) {
-                    var found = false;
-                    for (var info in res.data) {
-                        if (res.data[info].key === rules[rule].sid) {
-                            rules[rule].timeline = this.buildTimelineDataSet(res.data[info].timeline);
-                            rules[rule].probes = res.data[info].probes;
-                            rules[rule].hits = res.data[info].doc_count;
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (found === false) {
-                        rules[rule].hits = 0;
-                        rules[rule].probes = [];
-                        rules[rule].timeline = undefined;
-                    }
-                 }
-                 this.setState({rules: rules});
-         })
-
+         updateHitsStats(rules, this.props.from_date, this.updateRulesState);
   }
 
   fetchData(rules_stat) {

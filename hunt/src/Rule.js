@@ -123,15 +123,43 @@ export class RuleCard extends React.Component {
 }
 
 export class RulePage extends React.Component {
+    constructor(props) {
+        super(props);
+        var rule = JSON.parse(JSON.stringify(this.props.rule));
+        rule.timeline = undefined;
+        this.state = { rule: rule};
+        this.updateRuleState = this.updateRuleState.bind(this);
+    }
+
+    componentDidMount() {
+       var rule = JSON.parse(JSON.stringify(this.props.rule));
+       rule.timeline = undefined;
+       updateHitsStats([rule], this.props.from_date, this.updateRuleState);
+       this.setState({rule: rule});
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+       if (prevProps.from_date !==  this.props.from_date) {
+            var rule = JSON.parse(JSON.stringify(this.props.rule));
+            rule.timeline = undefined;
+            updateHitsStats([rule], this.props.from_date, this.updateRuleState);
+            this.setState({rule: rule});
+       }
+    }
+
+    updateRuleState(rule) {
+        this.setState({rule: rule[0]});
+    }
+
     render() {
         return (
             <div>
-            <h1>{this.props.rule.msg}</h1>
+            <h1>{this.state.rule.msg}</h1>
             <div className='container-fluid container-cards-pf'>
                 <div className='row'>
-                     <p>{this.props.rule.content}</p>
-                     {this.props.rule.timeline &&
-                        <SciriusChart data={ this.props.rule.timeline }
+                     <p>{this.state.rule.content}</p>
+                     {this.state.rule.timeline &&
+                        <SciriusChart data={ this.state.rule.timeline }
                             axis={{ x: { type: 'timeseries',
                                     localtime: true,
                                     min: this.props.from_date,
@@ -144,9 +172,9 @@ export class RulePage extends React.Component {
                       }
                 </div>
                 <div className='row row-cards-pf'>
-                    <RuleStat title="Sources" rule={this.props.rule} item='src' from_date={this.props.from_date} />
-                    <RuleStat title="Destinations" rule={this.props.rule} item='dest' from_date={this.props.from_date} />
-                    <RuleStat title="Probes" rule={this.props.rule} item='probe' from_date={this.props.from_date} />
+                    <RuleStat title="Sources" rule={this.state.rule} item='src' from_date={this.props.from_date} />
+                    <RuleStat title="Destinations" rule={this.state.rule} item='dest' from_date={this.props.from_date} />
+                    <RuleStat title="Probes" rule={this.state.rule} item='probe' from_date={this.props.from_date} />
                 </div>
             </div>
             </div>
@@ -156,18 +184,28 @@ export class RulePage extends React.Component {
 
 class RuleStat extends React.Component {
     constructor(props) {
-	super(props);
-  	this.state = {data: []};
+	    super(props);
+  	    this.state = {data: []};
+        this.updateData = this.updateData.bind(this);
     }
 
-    componentDidMount() {
+    updateData() {
           axios.get(config.API_URL + config.ES_BASE_PATH +
                     'rule_' + this.props.item + '&from_date=' + this.props.from_date +
                     '&sid=' + this.props.rule.sid)
              .then(res => {
-               console.log(res);
                this.setState({ data: res.data });
             })
+    }
+
+    componentDidMount() {
+            this.updateData();
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+       if (prevProps.from_date !==  this.props.from_date) {
+               this.updateData();
+       }
     }
 
     render() {
@@ -190,4 +228,44 @@ class RuleStat extends React.Component {
         </div>
 	</div>);
     }
+}
+
+function buildTimelineDataSet(data) {
+    var tdata = data['buckets'];
+    var timeline = {x : 'x', type: 'area',  columns: [['x'], ['alerts']]};
+    for (var key in tdata) {
+        timeline.columns[0].push(tdata[key].key);
+        timeline.columns[1].push(tdata[key].doc_count);
+    }
+    return timeline;
+}
+
+export function updateHitsStats(rules, p_from_date, updateCallback) {
+         var sids = Array.from(rules, x => x.sid).join()
+	     var from_date = "&from_date=" + p_from_date;
+         var url = config.API_URL + config.ES_SIGS_LIST_PATH + sids + from_date;
+         console.log(url);
+         axios.get(url).then(res => {
+                 /* we are going O(n2), we should fix that */
+                 for (var rule in rules) {
+                    var found = false;
+                    for (var info in res.data) {
+                        if (res.data[info].key === rules[rule].sid) {
+                            rules[rule].timeline = buildTimelineDataSet(res.data[info].timeline);
+                            rules[rule].probes = res.data[info].probes;
+                            rules[rule].hits = res.data[info].doc_count;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found === false) {
+                        rules[rule].hits = 0;
+                        rules[rule].probes = [];
+                        rules[rule].timeline = undefined;
+                    }
+                 }
+                 if (updateCallback) {
+                    updateCallback(rules);
+                 }
+         });
 }
