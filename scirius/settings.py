@@ -84,9 +84,17 @@ TEMPLATES = [
 WEBPACK_LOADER = {
     'DEFAULT': {
             'BUNDLE_DIR_NAME': 'bundles/',
-            'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.dev.json'),
+            'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.prod.json'),
         }
 }
+
+## For development (set that up in your local settings)
+#WEBPACK_LOADER = {
+#    'DEFAULT': {
+#            'BUNDLE_DIR_NAME': 'bundles/',
+#            'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.dev.json'),
+#        }
+#}
 
 ROOT_URLCONF = 'scirius.urls'
 
@@ -169,6 +177,9 @@ DRF_AUTO_METADATA_ADAPTER = 'drf_auto_endpoint.adapters.ReactJsonSchemaAdapter'
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "assets"),
+]
 
 # Suricata binary
 SURICATA_BINARY = "suricata"
