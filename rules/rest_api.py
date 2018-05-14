@@ -2,7 +2,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q
 from django.core.exceptions import SuspiciousOperation, ValidationError
-from rest_framework import serializers, viewsets, exceptions
+from rest_framework import serializers, viewsets, exceptions, mixins
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
@@ -11,7 +11,7 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
 
 from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, \
-        Source, SourceAtVersion, UserAction, Transformation
+        Source, SourceAtVersion, UserAction, UserActionObject, Transformation
 from rules.views import get_public_sources, fetch_public_sources
 
 
@@ -1129,6 +1129,79 @@ class SourceViewSet(BaseSourceViewSet):
         return super(SourceViewSet, self).upload(request, pk)
 
 
+class UserActionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserAction
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        from scirius.utils import get_middleware_module
+        data = super(UserActionSerializer, self).to_representation(instance)
+        actions_dict = get_middleware_module('common').get_user_actions_dict()
+
+        all_content = {}
+        format_ = {'user': instance.username, 'datetime': instance.date}
+        for ua_obj in UserActionObject.objects.filter(user_action=instance):
+            content = {}
+
+            # build description
+            format_[ua_obj.action_key] = ua_obj.action_value
+
+            # Transformation has None type
+            if ua_obj.content_type is not None:
+                klass = ua_obj.content_type.model_class()
+                content['type'] = klass.__name__
+
+                if klass.__name__ != 'Rule':
+                    content['pk'] = ua_obj.object_id
+                else:
+                    content['sid'] = ua_obj.object_id
+
+            content['value'] = ua_obj.action_value
+            all_content[ua_obj.action_key] = content
+
+        data['title'] = instance.get_title()
+        data['description_raw'] = actions_dict[instance.action_type]['description']
+        data['description'] = actions_dict[instance.action_type]['description'].format(**format_) if instance.description is None else self.description
+        data['ua_objects'] = all_content
+
+        return data
+
+
+class UserActionViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show an user action :\n
+        curl -k https://x.x.x.x/rest/history/<pk-useraction>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"id":612,"action_type":"disable_category","date":"2018-05-14T16:13:24.711372+02:00","comment":null,"username":"scirius","description":"scirius has disabled category emerging-scada in ruleset SonicRulesetOther","user":1,"title":"Disable Category","description_raw":"{user} has disabled category {category} in ruleset {ruleset}","ua_objects":{"category":{"pk":147,"type":"Category","value":"emerging-scada"},"ruleset":{"pk":65,"type":"Ruleset","value":"SonicRulesetOther"}}}
+
+    Ordering by username ASC:\n
+        curl -k https://x.x.x.x/rest/rules/history/?ordering=username -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Ordering by username DESC:\n
+        curl -k https://x.x.x.x/rest/rules/history/?ordering=-username -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Filtering by username and action_type:\n
+        curl -k https://x.x.x.x/rest/rules/history/?date=&username=scirius&user_action_objects__action_key=&action_type=edit_ruleset -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Ordering & Filtering:\n
+        curl -k https://x.x.x.x/rest/rules/history/?action_type=edit_ruleset&date=&ordering=username&user_action_objects__action_key=&username=scirius -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    =============================================================================================================================================================
+    """
+
+    queryset = UserAction.objects.all()
+    serializer_class = UserActionSerializer
+    filter_fields = ('date', 'username', 'user_action_objects__action_key', 'action_type')
+    ordering = ('pk', 'date', 'username', 'user_action_objects__action_key', 'action_type')
+    ordering_fields = ('pk', 'date', 'username', 'user_action_objects__action_key', 'action_type')
+
+
 router = DefaultRouter()
 router.register('rules/ruleset', RulesetViewSet)
 router.register('rules/category', CategoryViewSet)
@@ -1138,3 +1211,4 @@ router.register('rules/public_source', PublicSourceViewSet, base_name='publicsou
 router.register('rules/transformation/ruleset', RulesetTransformationViewSet)
 router.register('rules/transformation/category', CategoryTransformationViewSet)
 router.register('rules/transformation/rule', RuleTransformationViewSet)
+router.register('rules/history', UserActionViewSet)
