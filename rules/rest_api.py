@@ -940,10 +940,11 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
 
 class PublicSourceSerializer(BaseSourceSerializer):
     public_source = serializers.CharField(required=True)
+    secret_code = serializers.CharField(required=False)
 
     class Meta(BaseSourceSerializer.Meta):
         model = BaseSourceSerializer.Meta.model
-        fields = BaseSourceSerializer.Meta.fields + ('public_source', 'comment')
+        fields = BaseSourceSerializer.Meta.fields + ('public_source', 'secret_code', 'comment')
         read_only_fields = BaseSourceSerializer.Meta.read_only_fields + ('public_source',)
 
     def create(self, validated_data):
@@ -957,7 +958,18 @@ class PublicSourceSerializer(BaseSourceSerializer):
         if source_name not in public_sources['sources']:
             raise exceptions.NotFound(detail='Unknown public source "%s"' % source_name)
 
-        validated_data['uri'] = public_sources['sources'][source_name]['url']
+        uri = public_sources['sources'][source_name]['url']
+        if 'secret-code' not in uri:
+            if 'secret_code' in validated_data:
+                raise exceptions.NotFound(detail='No secret code needed')
+        else:
+            if 'secret_code' not in validated_data:
+                raise exceptions.NotFound(detail='Secret code is needed')
+            uri = uri % {'secret-code': validated_data.pop('secret_code')}
+
+        uri = uri % {'__version__': '4.0'}
+
+        validated_data['uri'] = uri
         validated_data['datatype'] = public_sources['sources'][source_name]['datatype']
         validated_data['method'] = 'http'
         validated_data['public_source'] = source_name
@@ -1043,7 +1055,7 @@ class SourceSerializer(BaseSourceSerializer):
 
     class Meta(BaseSourceSerializer.Meta):
         model = BaseSourceSerializer.Meta.model
-        fields = BaseSourceSerializer.Meta.fields + ('method', 'comment')
+        fields = BaseSourceSerializer.Meta.fields + ('method', 'uri', 'authkey', 'comment')
         read_only_fields = BaseSourceSerializer.Meta.read_only_fields
 
     def create(self, validated_data):
@@ -1061,7 +1073,7 @@ class SourceViewSet(BaseSourceViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":1,"name":"Source1","created_date":"2018-05-04T10:15:46.216023+02:00","updated_date":"2018-05-04T15:22:15.267123+02:00","method":"http","datatype":"sigs","uri":"https://rules.emergingthreats.net/open/suricata-4.0/emerging.rules.tar.gz","cert_verif":true,"cats_count":47,"rules_count":25490}
+        {"pk":1,"name":"Source1","created_date":"2018-05-04T10:15:46.216023+02:00","updated_date":"2018-05-04T15:22:15.267123+02:00","method":"http","datatype":"sigs","uri":"https://rules.emergingthreats.net/open/suricata-4.0/emerging.rules.tar.gz","cert_verif":true,"cats_count":47,"rules_count":25490,"authkey":"123456789"}
 
     ==== POST ====\n
     Create custom source:\n
@@ -1069,7 +1081,7 @@ class SourceViewSet(BaseSourceViewSet):
 
     Return:\n
         HTTP/1.1 201 Created
-        {"pk":5,"name":"sonic Custom source","created_date":"2018-05-07T12:01:00.658118+02:00","updated_date":"2018-05-07T12:01:00.658126+02:00","method":"local","datatype":"sigs","uri":null,"cert_verif":true,"cats_count":0,"rules_count":0}
+        {"pk":5,"name":"sonic Custom source","created_date":"2018-05-07T12:01:00.658118+02:00","updated_date":"2018-05-07T12:01:00.658126+02:00","method":"local","datatype":"sigs","uri":null,"cert_verif":true,"cats_count":0,"rules_count":0,"authkey":"123456789"}
 
     Update custom (only for {method: http}):\n
         curl -k https://x.x.x.x/rest/rules/source/<pk-source>/update_source/\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
