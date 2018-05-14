@@ -479,7 +479,7 @@ class RulesetTransformationViewSet(BaseTransformationViewSet):
     =============================================================================================================================================================
     ==== GET ====\n
     Show a ruleset transformation:\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/transformation/ruleset/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -487,25 +487,25 @@ class RulesetTransformationViewSet(BaseTransformationViewSet):
 
     ==== POST ====\n
     Create a ruleset ACTION transformation (drop / reject / filestore / bypass / none):\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "action", "transfo_value": "drop"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/ruleset/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "action", "transfo_value": "drop"}'
 
     Return:\n
         HTTP/1.1 201 Created
         {"pk":5,"ruleset":2,"transfo_type":"action","transfo_value":"drop"}
 
     Create a ruleset TARGET transformation (src / dst / auto / none):\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "target", "transfo_value": "src"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/ruleset/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "target", "transfo_value": "src"}'
 
     Return:\n
         HTTP/1.1 201 Created
         {"pk":5,"ruleset":2,"transfo_type":"target","transfo_value":"src"}
 
     Create a ruleset TARGET transformation (yes / auto / no):\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "lateral", "transfo_value": "yes"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/ruleset/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "lateral", "transfo_value": "yes"}'
 
     ==== PATCH ====\n
     Patch a ruleset transformation:\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"transfo_type": "target", "transfo_value": "dst"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/ruleset/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"transfo_type": "target", "transfo_value": "dst"}'
 
     Return:\n
         HTTP/1.1 200 OK
@@ -513,7 +513,7 @@ class RulesetTransformationViewSet(BaseTransformationViewSet):
 
     ==== PUT ====\n
     Replace a ruleset transformation:\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"ruleset": <pk-ruleset>,  "transfo_type": "action", "transfo_value": "drop"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/ruleset/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"ruleset": <pk-ruleset>,  "transfo_type": "action", "transfo_value": "drop"}'
 
     Return:\n
         HTTP/1.1 200 OK
@@ -521,7 +521,7 @@ class RulesetTransformationViewSet(BaseTransformationViewSet):
 
     ==== DELETE ====\n
     Delete a ruleset transformation:\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rulesets/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X DELETE
+        curl -k https://x.x.x.x/rest/rules/transformation/ruleset/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X DELETE
 
     Return:\n
         HTTP/1.1 204 No Content
@@ -572,7 +572,7 @@ class CategoryTransformationViewSet(BaseTransformationViewSet):
     =============================================================================================================================================================
     ==== GET ====\n
     Show a category transformation:\n
-        curl -k https://x.x.x.x/rest/rules/transformations/categories/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/transformation/category/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -580,21 +580,21 @@ class CategoryTransformationViewSet(BaseTransformationViewSet):
 
     ==== POST ====\n
     Create a category ACTION transformation: (drop / reject / filestore / bypass / none)\n
-        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "action", "transfo_value": "drop"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/category/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "action", "transfo_value": "drop"}'
 
     Return:\n
         HTTP/1.1 201 Created
         {"pk":3,"ruleset":9,"category":27,"transfo_type":"lateral","transfo_value":"yes"}
 
     Create a category TARGET transformation: (src / dst / auto / none)\n
-        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "target", "transfo_value": "src"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/category/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "target", "transfo_value": "src"}'
 
     Return:\n
         HTTP/1.1 201 Created
         {"pk":4,"ruleset":9,"category":27,"transfo_type":"target","transfo_value":"src"}
 
     Create a category LATERAL transformation (yes / auto / no):\n
-        curl -k https://x.x.x.x/rest/rules/transformations/categories/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "lateral", "transfo_value": "yes"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/category/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "lateral", "transfo_value": "yes"}'
 
     Return:\n
         HTTP/1.1 201 Created
@@ -602,7 +602,7 @@ class CategoryTransformationViewSet(BaseTransformationViewSet):
 
     ==== PATCH ====\n
     Patch a category transformation:\n
-        curl -k https://x.x.x.x/rest/rules/transformations/categories/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"transfo_type": "target", "transfo_value": "dst"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/category/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"transfo_type": "target", "transfo_value": "dst"}'
 
     Return:\n
         HTTP/1.1 200 OK
@@ -610,7 +610,7 @@ class CategoryTransformationViewSet(BaseTransformationViewSet):
 
     ==== PUT ====\n
     Replace a category transformation:\n
-        curl -k https://x.x.x.x/rest/rules/transformations/categories/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "action", "transfo_value": "drop"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/category/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"ruleset": <pk-ruleset>, "category": <pk-category>, "transfo_type": "action", "transfo_value": "drop"}'
 
     Return:\n
         HTTP/1.1 200 OK
@@ -618,7 +618,7 @@ class CategoryTransformationViewSet(BaseTransformationViewSet):
 
     ==== DELETE ====\n
     Delete a category transformation:\n
-        curl -k https://x.x.x.x/rest/rules/transformations/categories/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X DELETE
+        curl -k https://x.x.x.x/rest/rules/transformation/category/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X DELETE
 
     Return:\n
         HTTP/1.1 204 No Content
@@ -669,7 +669,7 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
     =============================================================================================================================================================
     ==== GET ====\n
     Show a rule transformation:\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rules/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/transformation/rule/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -677,21 +677,21 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
 
     ==== POST ====\n
     Create a rule ACTION transformation (drop / reject / filestore / bypass / none):\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "action", "transfo_value": "reject"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/rule/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "action", "transfo_value": "reject"}'
 
     Return:\n
         HTTP/1.1 201 Created
         {"pk":4,"ruleset":9,"rule":2404150,"transfo_type":"action","transfo_value":"reject"}
 
     Create a rule TARGET transformation: (src / dst / auto / none)\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "target", "transfo_value": "src"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/rule/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "target", "transfo_value": "src"}'
 
     Return:\n
         HTTP/1.1 201 Created
         {"pk":5,"ruleset":9,"rule":2404150,"transfo_type":"target","transfo_value":"src"}
 
     Create a rule LATERAL transformation (yes / auto / no):\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rules/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "lateral", "transfo_value": "yes"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/rule/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "lateral", "transfo_value": "yes"}'
 
     Return:\n
         HTTP/1.1 201 Created
@@ -699,7 +699,7 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
 
     ==== PATCH ====\n
     Patch a rule transformation:\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rules/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"transfo_type": "action", "transfo_value": "drop"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/rule/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"transfo_type": "action", "transfo_value": "drop"}'
 
     Return:\n
         HTTP/1.1 200 OK
@@ -707,7 +707,7 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
 
     ==== PUT ====\n
     Replace a rule transformation:\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rules/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "action", "transfo_value": "bypass"}'
+        curl -k https://x.x.x.x/rest/rules/transformation/rule/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"ruleset": <pk-ruleset>, "rule": <sid-rule>, "transfo_type": "action", "transfo_value": "bypass"}'
 
     Return:\n
         HTTP/1.1 200 OK
@@ -715,7 +715,7 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
 
     ==== DELETE ====\n
     Delete a rule:\n
-        curl -k https://x.x.x.x/rest/rules/transformations/rules/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X DELETE
+        curl -k https://x.x.x.x/rest/rules/transformation/rule/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X DELETE
 
     Return:\n
         HTTP/1.1 204 No Content
@@ -955,14 +955,14 @@ class PublicSourceViewSet(BaseSourceViewSet):
     =============================================================================================================================================================
     ==== GET ====\n
     List all used sources:\n
-        curl -k https://x.x.x.x/rest/rules/public_sources/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+        curl -k https://x.x.x.x/rest/rules/public_source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
         HTTP/1.1 200 OK
         {"pk":1,"name":"Source1","created_date":"2018-05-04T10:15:46.216023+02:00","updated_date":"2018-05-04T15:22:15.267123+02:00","method":"http","datatype":"sigs","uri":"https://rules.emergingthreats.net/open/suricata-4.0/emerging.rules.tar.gz","cert_verif":true,"cats_count":47,"rules_count":25490}
 
     List available public sources:\n
-        curl -k https://x.x.x.x/rest/rules/public_sources/list_sources/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+        curl -k https://x.x.x.x/rest/rules/public_source/list_sources/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -974,7 +974,7 @@ class PublicSourceViewSet(BaseSourceViewSet):
         "et/pro":{"replaces":["et/open"],"vendor":"Proofpoint","description":"Proofpoint ET Pro is a timely and accurate rule set for detecting and blocking advanced threats","license":"Commercial","subscribe_url":"https://www.proofpoint.com/us/threat-insight/et-pro-ruleset","url":"https://rules.emergingthreatspro.com/%(secret-code)s/suricata-%(__version__)s/etpro.rules.tar.gz","summary":"Emerging Threats Pro Ruleset","subscribe_url_cleaned":"https://www.proofpoint.com/us/threat-insight/et-pro-ruleset","datatype":"sigs","added":false,"parameters":{"secret_code":{"prompt":"Emerging Threats Pro access code"}}}}
 
     Fetch sources list:\n
-        curl -k https://x.x.x.x/rest/rules/public_sources/fetch_list_sources/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+        curl -k https://x.x.x.x/rest/rules/public_source/fetch_list_sources/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -982,23 +982,23 @@ class PublicSourceViewSet(BaseSourceViewSet):
 
     ==== POST ====\n
     Create public source:\n
-        curl -k https://x.x.x.x/rest/rules/public_sources/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"name": "sonic public source", "public_source": "oisf/trafficid"}'
+        curl -k https://x.x.x.x/rest/rules/public_source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"name": "sonic public source", "public_source": "oisf/trafficid"}'
 
     Return:\n
         HTTP/1.1 201 Created
         {"pk":4,"name":"sonic public source","created_date":"2018-05-07T11:54:56.450782+02:00","updated_date":"2018-05-07T11:54:56.450791+02:00","method":"http","datatype":"sig","uri":"https://raw.githubusercontent.com/jasonish/suricata-trafficid/master/rules/traffic-id.rules","cert_verif":true,"cats_count":0,"rules_count":0,"public_source":"oisf/trafficid"}
 
     Update public source:\n
-        curl -k https://x.x.x.x/rest/rules/public_sources/<pk-public-source>/update_source/\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
-        curl -k https://x.x.x.x/rest/rules/public_sources/<pk-public-source>/update_source/\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
     Return:\n
         HTTP/1.1 200 OK
         {"update":"ok"}
 
     Test public source:\n
-        curl -k https://x.x.x.x/rest/rules/public_sources/<pk-public-source>/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
     Return:\n
         HTTP/1.1 200 OK
@@ -1006,7 +1006,7 @@ class PublicSourceViewSet(BaseSourceViewSet):
 
     ==== DELETE ====\n
     Delete public source:\n
-        curl -k https://x.x.x.x/rest/rules/public_sources/<pk-public-source>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X DELETE
+        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X DELETE
 
     Return:\n
         HTTP/1.1 204 No Content
@@ -1041,7 +1041,7 @@ class SourceViewSet(BaseSourceViewSet):
     =============================================================================================================================================================
     ==== GET ====\n
     List all used sources:\n
-        curl -k https://x.x.x.x/rest/rules/sources/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+        curl -k https://x.x.x.x/rest/rules/source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -1049,30 +1049,30 @@ class SourceViewSet(BaseSourceViewSet):
 
     ==== POST ====\n
     Create custom source:\n
-        curl -k https://x.x.x.x/rest/rules/sources/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"name": "sonic custom source", "method": "local", "datatype": "sigs"}'
+        curl -k https://x.x.x.x/rest/rules/source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"name": "sonic custom source", "method": "local", "datatype": "sigs"}'
 
     Return:\n
         HTTP/1.1 201 Created
         {"pk":5,"name":"sonic Custom source","created_date":"2018-05-07T12:01:00.658118+02:00","updated_date":"2018-05-07T12:01:00.658126+02:00","method":"local","datatype":"sigs","uri":null,"cert_verif":true,"cats_count":0,"rules_count":0}
 
     Update custom (only for {method: http}):\n
-        curl -k https://x.x.x.x/rest/rules/sources/<pk-source>/update_source/\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/update_source/\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
-        curl -k https://x.x.x.x/rest/rules/sources/<pk-source>/update_source/\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/update_source/\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
     Return:\n
         HTTP/1.1 200 OK
         {"update":"ok"}
 
     Test custom source:\n
-        curl -k https://x.x.x.x/rest/rules/sources/<pk-source>/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
     Return:\n
         HTTP/1.1 200 OK
         {"test":"ok"}
 
     Upload rules (only for {method: local}):\n
-        curl -k https://x.x.x.x/rest/rules/sources/<pk-source>/upload/ -H 'Authorization: Token <token>' --keepalive-time 20 -F file=@/tmp/emerging.rules.tar.gz  -X POST
+        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/upload/ -H 'Authorization: Token <token>' --keepalive-time 20 -F file=@/tmp/emerging.rules.tar.gz  -X POST
 
     Return:\n
         HTTP/1.1 100 Continue
@@ -1081,7 +1081,7 @@ class SourceViewSet(BaseSourceViewSet):
 
     ==== DELETE ====\n
     Delete custom source:\n
-        curl -k https://x.x.x.x/rest/rules/sources/<pk-source>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X DELETE
+        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X DELETE
 
     Return:\n
         HTTP/1.1 204 No Content
@@ -1105,8 +1105,8 @@ router = DefaultRouter()
 router.register('rules/ruleset', RulesetViewSet)
 router.register('rules/category', CategoryViewSet)
 router.register('rules/rule', RuleViewSet)
-router.register('rules/sources', SourceViewSet, base_name='source')
-router.register('rules/public_sources', PublicSourceViewSet, base_name='publicsource')
-router.register('rules/transformations/rulesets', RulesetTransformationViewSet)
-router.register('rules/transformations/categories', CategoryTransformationViewSet)
-router.register('rules/transformations/rules', RuleTransformationViewSet)
+router.register('rules/source', SourceViewSet, base_name='source')
+router.register('rules/public_source', PublicSourceViewSet, base_name='publicsource')
+router.register('rules/transformation/ruleset', RulesetTransformationViewSet)
+router.register('rules/transformation/category', CategoryTransformationViewSet)
+router.register('rules/transformation/rule', RuleTransformationViewSet)
