@@ -161,7 +161,6 @@ class HuntApp extends Component {
             	      onClick={this.onDashboardClick}
             	      className={null}
             	    >
-            	        <VerticalNav.Badge count={42} />
             	    </VerticalNav.Item>
             	    <VerticalNav.Item title="IDS rules" iconClass="glyphicon glyphicon-eye-open">
             	        <VerticalNav.SecondaryItem title="Sources" >
