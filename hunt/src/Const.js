@@ -3,6 +3,7 @@ export const PAGE_STATE = {
    source: 'SOURCE',
    ruleset: 'RULESET',
    rule: 'RULE',
+   dashboards: 'DASHBOARDS',
 };
 
 

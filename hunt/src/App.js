@@ -5,6 +5,7 @@ import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow, Spinner } from 'p
 import { AboutModal } from 'patternfly-react';
 import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
 import { RuleFilter } from './Filter.js';
+import { HuntDashboard } from './Dashboard.js';
 import { PAGE_STATE } from './Const.js';
 import { RuleInList, RuleCard, RulePage, updateHitsStats } from './Rule.js';
 import axios from 'axios';
@@ -71,7 +72,7 @@ class HuntApp extends Component {
     
     
     onDashboardClick() {
-        this.switchPage(PAGE_STATE.rules_list, undefined);
+        this.switchPage(PAGE_STATE.dashboards, undefined);
     }
     
     onHistoryClick() {
@@ -136,6 +137,9 @@ class HuntApp extends Component {
                   break;
                case PAGE_STATE.rule:
                   displayed_page = <RulePage rule={this.state.display.item} from_date={this.state.from_date}/>
+                  break;
+               case PAGE_STATE.dashboards:
+                  displayed_page = <HuntDashboard from_date={this.state.from_date}/>
                   break;
             }
         return(
