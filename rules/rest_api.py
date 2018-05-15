@@ -360,12 +360,12 @@ class HitTimelineEntry(serializers.Serializer):
 class RuleSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     hits = serializers.IntegerField(read_only=True)
-    timeline = HitTimelineEntry(many=True, read_only=True)
+    timeline_data = HitTimelineEntry(many=True, read_only=True)
 
     class Meta:
         model = Rule
         fields = ('pk', 'sid', 'category', 'msg', 'state', 'state_in_source', 'rev', 'content',
-                  'imported_date', 'updated_date', 'created', 'updated', 'hits', 'timeline')
+                  'imported_date', 'updated_date', 'created', 'updated', 'hits', 'timeline_data')
 
     def to_representation(self, instance):
         data = super(RuleSerializer, self).to_representation(instance)
@@ -463,7 +463,10 @@ class RuleHitsOrderingFilter(OrderingFilter):
 
             queryset = []
             for sid in hits_order:
-                queryset.append(rules.pop(sid))
+                try:
+                    queryset.append(rules.pop(sid))
+                except KeyError:
+                    pass
 
             # Append rules with no hit
             queryset += rules.values()
@@ -785,7 +788,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
 
         return {
             'hits': r['doc_count'],
-            'timeline': timeline
+            'timeline_data': timeline
         }
 
     def _add_hits(self, request, data):
@@ -807,7 +810,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
             else:
                 rule.update({
                     'hits': 0,
-                    'timeline': []
+                    'timeline_data': []
                 })
         return data
 
