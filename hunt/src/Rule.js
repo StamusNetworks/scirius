@@ -41,10 +41,10 @@ export class RuleInList extends React.Component {
       <div className="col-md-2">
          <h4>Probes</h4>
          <ListGroup>
-	    {this.props.data.probes.buckets.map( item => {
-		return(<ListGroupItem key={item.key}>
-		 {item.key}     
-		 <Badge>{item.doc_count}</Badge>
+	    {this.props.data.probes.map( item => {
+		return(<ListGroupItem key={item.probe}>
+		 {item.probe}     
+		 <Badge>{item.hits}</Badge>
 		 </ListGroupItem>)
 	    })}
          </ListGroup>
@@ -234,8 +234,15 @@ class RuleStat extends React.Component {
     }
 }
 
-function buildTimelineDataSet(data) {
-    var tdata = data['buckets'];
+function buildProbesSet(data) {
+    var probes = [];
+    for (var probe in data) {
+	probes.push({probe: data[probe].key, hits: data[probe].doc_count});
+    }
+    return probes;
+}
+
+function buildTimelineDataSet(tdata) {
     var timeline = {x : 'x', type: 'area',  columns: [['x'], ['alerts']]};
     for (var key in tdata) {
         timeline.columns[0].push(tdata[key].key);
@@ -257,8 +264,8 @@ export function updateHitsStats(rules, p_from_date, updateCallback, qfilter) {
                     var found = false;
                     for (var info in res.data) {
                         if (res.data[info].key === rules[rule].sid) {
-                            rules[rule].timeline = buildTimelineDataSet(res.data[info].timeline);
-                            rules[rule].probes = res.data[info].probes;
+                            rules[rule].timeline = buildTimelineDataSet(res.data[info].timeline['buckets']);
+                            rules[rule].probes = buildProbesSet(res.data[info].probes['buckets']);
                             rules[rule].hits = res.data[info].doc_count;
                             found = true;
                             break;

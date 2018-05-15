@@ -496,6 +496,23 @@ class RulesList extends Component {
          this.setState({rules: rules});
   }
 
+  buildTimelineDataSet(tdata) {
+    var timeline = {x : 'x', type: 'area',  columns: [['x'], ['alerts']]};
+    for (var key in tdata) {
+        timeline.columns[0].push(tdata[key].date);
+        timeline.columns[1].push(tdata[key].hits);
+    }
+    return timeline;
+  }
+
+  buildHitsStats(rules) {
+       for (var rule in rules) {
+          rules[rule].timeline = this.buildTimelineDataSet(rules[rule].timeline_data);
+	  rules[rule].timeline_data = undefined;
+       }
+       this.updateRulesState(rules);
+   }
+
   fetchHitsStats(rules) {
 	 var qfilter = this.buildQFilter(this.props.rules_list.filters);
          updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
@@ -528,7 +545,11 @@ class RulesList extends Component {
 	     categories[cat.pk] = cat;
 	 }
          this.setState({ rules_count: RuleRes.data['count'], rules: RuleRes.data['results'], categories: categories, loading: false, refresh_data: false});
-	 this.fetchHitsStats(RuleRes.data['results']);
+	 if (!RuleRes.data.results[0].timeline_data) {
+	     this.fetchHitsStats(RuleRes.data['results']);
+	 } else {
+             this.buildHitsStats(RuleRes.data['results']);
+	 }
      }))
   }
 
