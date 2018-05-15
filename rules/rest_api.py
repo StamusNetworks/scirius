@@ -455,6 +455,7 @@ class RuleHitsOrderingFilter(OrderingFilter):
             if ordering[0] not in ('hits', '-hits'):
                 raise ParseError('hits ordering can only be the first ordering term')
 
+            hits_order = ordering[0]
             ordering = ordering[1:]
 
             if ordering:
@@ -464,7 +465,7 @@ class RuleHitsOrderingFilter(OrderingFilter):
             rules = OrderedDict([(r.sid, r) for r in queryset])
 
             # Sorting
-            order = 'asc' if 'hits' in ordering else 'desc'
+            order = 'asc' if hits_order == 'hits' else 'desc'
             hits_order = self._get_hits_order(request, order)
 
             queryset = []
