@@ -41,7 +41,7 @@ export class RuleSort extends React.Component {
     this.state = {
       currentSortType: sort_type,
       isSortNumeric: sort_type.isNumeric,
-      isSortAscending: sort_type.asc
+      isSortAscending: this.props.ActiveSort.asc
     };
   }
 
