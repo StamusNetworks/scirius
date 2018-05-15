@@ -25,7 +25,7 @@ export class RuleInList extends React.Component {
       {this.props.data.timeline &&
 <Row>
 <Col sm={11}>
-<div className="container-fuild">
+<div className="container-fluid">
    <div className="row">
       <div className="col-md-10">
       <SciriusChart data={ this.props.data.timeline }
