@@ -821,21 +821,6 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         data = self._add_hits(request, serializer.data)
         return self.get_paginated_response(serializer.data)
 
-    def _add_rule_hits(self, request, data):
-        es_params = es_hits_params(request)
-        es_params['host'] = es_params.pop('hostname')
-        sid = str(data['sid'])
-        result = es_get_sigs_list_hits(request, [sid], **es_params)
-        hit = self._scirius_hit(result[0])
-        data.update(hit)
-        return data
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        data = self._add_rule_hits(request, serializer.data)
-        return Response(data)
-
 
 class BaseTransformationViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
