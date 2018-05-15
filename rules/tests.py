@@ -441,7 +441,7 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
     def test_001_ruleset_actions(self):
         params = {"name": "MyCreatedRuleset",
                   "comment": "My custom ruleset comment",
-                  "sources": [self.source_at_version.pk, self.source_at_version2.pk],
+                  "sources": [self.source.pk, self.source2.pk],
                   "categories": [self.category.pk]}
 
         # Create Ruleset
@@ -481,7 +481,6 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
         self.http_delete(reverse('ruleset-detail', args=(rulesets[0].pk,)), status=status.HTTP_204_NO_CONTENT)
         rulesets = Ruleset.objects.all()
         self.assertEqual(len(rulesets), 0)
-
 
 
 class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
