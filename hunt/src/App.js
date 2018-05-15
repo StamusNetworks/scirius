@@ -456,18 +456,38 @@ class RulesList extends Component {
         this.props.updateRuleListState(newRuleState);
    }
 
+   buildQFilter(filters) {
+     var qfilter = [];
+     for (var i=0; i < filters.length; i++) {
+	if (filters[i].id === 'probe') {
+            qfilter.push('host.raw:' + filters[i].value);
+	    continue;
+	}
+     }
+     if (qfilter.length === 0) {
+	 return undefined;
+     }
+     return qfilter.join(" AND ");
+   }
+
    buildFilter(filters) {
      var l_filters = {};
      for (var i=0; i < filters.length; i++) {
-        if (filters[i].id in l_filters) {
-           l_filters[filters[i].id] += "," + filters[i].value;
-        } else {
-           l_filters[filters[i].id] = filters[i].value;
-        }
+	if (filters[i].id !== 'probe') {
+               if (filters[i].id in l_filters) {
+               l_filters[filters[i].id] += "," + filters[i].value;
+            } else {
+               l_filters[filters[i].id] = filters[i].value;
+            }
+	}
      }
      var string_filters = "";
      for (var k in l_filters) {
          string_filters += "&" + k + "=" + l_filters[k];
+     }
+     var qfilter = this.buildQFilter(filters);
+     if (qfilter) {
+	 string_filters += '&qfilter=' +  qfilter;
      }
      return string_filters;
    }
@@ -477,7 +497,8 @@ class RulesList extends Component {
   }
 
   fetchHitsStats(rules) {
-         updateHitsStats(rules, this.props.from_date, this.updateRulesState);
+	 var qfilter = this.buildQFilter(this.props.rules_list.filters);
+         updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
   }
 
   fetchData(rules_stat) {
@@ -496,7 +517,7 @@ class RulesList extends Component {
 
      this.setState({refresh_data: true});
      axios.all([
-          axios.get(config.API_URL + config.RULE_PATH + "?ordering=" + ordering + "&page_size=" + per_page + "&page=" + page + string_filters),
+          axios.get(config.API_URL + config.RULE_PATH + "?ordering=" + ordering + "&page_size=" + per_page + "&page=" + page + "&from_date=" + this.props.from_date + string_filters),
           axios.get(config.API_URL + config.CATEGORY_PATH + "?page_size=100"),
 	  ])
       .then(axios.spread((RuleRes, CatRes) => {

@@ -14,6 +14,11 @@ export const RuleFilterFields = [
     title: 'Content',
     placeholder: 'Filter by Content',
     filterType: 'text'
+  }, {
+    id: 'probe',
+    title: 'Probe',
+    placeholder: 'Filter hits by Probe',
+    filterType: 'text'
   }
 ];
 
