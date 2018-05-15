@@ -257,7 +257,7 @@ export function updateHitsStats(rules, p_from_date, updateCallback, qfilter) {
 	     var from_date = "&from_date=" + p_from_date;
          var url = config.API_URL + config.ES_SIGS_LIST_PATH + sids + from_date;
 	 if (qfilter) {
-	     url += "&qfilter=" + qfilter;
+	     url += "&filter=" + qfilter;
 	 }
          axios.get(url).then(res => {
                  /* we are going O(n2), we should fix that */
