@@ -36,6 +36,7 @@ export class RuleInList extends React.Component {
                             tick: { fit: true, format: '%Y-%m-%d %H:%M'}
                      } }
                     }
+		from_date = {this.props.from_date}
       />
       </div>
       <div className="col-md-2">
