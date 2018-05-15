@@ -357,15 +357,21 @@ class HitTimelineEntry(serializers.Serializer):
     hits = serializers.IntegerField(read_only=True)
 
 
+class ProbeEntry(serializers.Serializer):
+    probe = serializers.CharField(read_only=True)
+    hits = serializers.IntegerField(read_only=True)
+
+
 class RuleSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     hits = serializers.IntegerField(read_only=True)
     timeline_data = HitTimelineEntry(many=True, read_only=True)
+    probes = ProbeEntry(many=True, read_only=True)
 
     class Meta:
         model = Rule
         fields = ('pk', 'sid', 'category', 'msg', 'state', 'state_in_source', 'rev', 'content',
-                  'imported_date', 'updated_date', 'created', 'updated', 'hits', 'timeline_data')
+                  'imported_date', 'updated_date', 'created', 'updated', 'hits', 'timeline_data', 'probes')
 
     def to_representation(self, instance):
         data = super(RuleSerializer, self).to_representation(instance)
@@ -786,9 +792,17 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
                 'hits': entry['doc_count']
             })
 
+        probes = []
+        for entry in r['probes']['buckets']:
+            probes.append({
+                'probe': entry['key'],
+                'hits': entry['doc_count']
+            })
+
         return {
             'hits': r['doc_count'],
-            'timeline_data': timeline
+            'timeline_data': timeline,
+            'probes': probes
         }
 
     def _add_hits(self, request, data):
@@ -810,7 +824,8 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
             else:
                 rule.update({
                     'hits': 0,
-                    'timeline_data': []
+                    'timeline_data': [],
+                    'probes': []
                 })
         return data
 
