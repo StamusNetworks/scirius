@@ -154,7 +154,7 @@ class HuntApp extends Component {
 		   <VerticalNav.Item
             	      title="Home"
             	      iconClass="fa fa-home"
-            	      initialActive
+            	      initialActive = { this.state.display.page === PAGE_STATE.rules_list }
             	      onClick={this.onHomeClick}
             	      className={null}
             	    />
@@ -162,6 +162,7 @@ class HuntApp extends Component {
             	    <VerticalNav.Item
             	      title="Dashboards"
             	      iconClass="fa fa-tachometer"
+            	      initialActive = { this.state.display.page === PAGE_STATE.dashboards }
             	      onClick={this.onDashboardClick}
             	      className={null}
             	    >
@@ -189,11 +190,13 @@ class HuntApp extends Component {
        		     <VerticalNav.Item
 		      title="History"
 		      iconClass="glyphicon glyphicon-list"
+            	      initialActive = { this.state.display.page === PAGE_STATE.history }
             	      onClick={this.onHistoryClick}
 		     />
        		     <VerticalNav.Item 
 		       title="Setup"
 		       iconClass="glyphicon glyphicon-cog"
+              	       initialActive = { this.state.display.page === PAGE_STATE.setup }
 		       href="/appliances"
 		     />
        		</VerticalNav>

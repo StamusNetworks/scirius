@@ -4,6 +4,8 @@ export const PAGE_STATE = {
    ruleset: 'RULESET',
    rule: 'RULE',
    dashboards: 'DASHBOARDS',
+   history: 'HISTORY',
+   setup: 'SETUP',
 };
 
 
