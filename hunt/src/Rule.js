@@ -62,6 +62,10 @@ export class RuleInList extends React.Component {
 export class RuleCard extends React.Component {
   render() {
     var category = this.props.state.categories[this.props.data.category];
+    var imported = undefined;
+    if (!this.props.data.created) {
+    	imported = this.props.data.imported_date.split("T")[0];
+    }
     return (
     <div className="col-xs-6 col-sm-4 col-md-4">
 	<div className="card-pf rule-card">
@@ -75,6 +79,9 @@ export class RuleCard extends React.Component {
                   <div className="col-md-4">
                     {this.props.data.created &&
                   <p>Created: {this.props.data.created}</p>
+                    }
+                    {!this.props.data.created &&
+                  <p>Imported: {imported}</p>
                     }
                   </div>
                   <div className="col-md-3">Alerts 
