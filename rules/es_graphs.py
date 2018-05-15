@@ -1183,6 +1183,7 @@ SURICATA_LOGS_TAIL = """
 
 TOP_ALERTS = """
 {
+  "size": 0,
   "query": {
     "bool": {
       "must": [
