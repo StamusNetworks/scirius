@@ -9,7 +9,7 @@ export const RuleSortFields = [
     defaultAsc: false,
   },
   {
-    id: 'alerts',
+    id: 'hits',
     title: 'Alerts',
     isNumeric: true,
     defaultAsc: false,
