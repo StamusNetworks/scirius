@@ -462,6 +462,9 @@ class RulesList extends Component {
 	if (filters[i].id === 'probe') {
             qfilter.push('host.raw:' + filters[i].value);
 	    continue;
+	} else if (filters[i].id === 'sprobe') {
+            qfilter.push('host.raw:' + filters[i].value.id);
+	    continue;
 	}
      }
      if (qfilter.length === 0) {

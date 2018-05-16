@@ -19,6 +19,12 @@ export const RuleFilterFields = [
     title: 'Probe',
     placeholder: 'Filter hits by Probe',
     filterType: 'text'
+  }, {
+    id: 'sprobe',
+    title: 'Check Probe',
+    placeholder: 'Filter hits by Probe',
+    filterType: 'select',
+    filterValues: [{title: 'sn-probe-1', id:'sn-probe-1'}, {title: 'infra1', id:'infra1'}] 
   }
 ];
 
