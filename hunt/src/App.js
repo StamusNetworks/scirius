@@ -6,6 +6,7 @@ import { AboutModal } from 'patternfly-react';
 import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
 import { RuleFilter } from './Filter.js';
 import { HuntDashboard } from './Dashboard.js';
+import { HuntNotificationArea } from './Notifications.js';
 import { PAGE_STATE } from './Const.js';
 import { RuleInList, RuleCard, RulePage, updateHitsStats } from './Rule.js';
 import axios from 'axios';
@@ -226,10 +227,12 @@ class UserNavInfo extends Component {
   constructor(props) {
     super(props);
     this.state = {
-	    showModal: false
+	    showModal: false,
+	    showNotifications: false
     }
     this.AboutClick = this.AboutClick.bind(this);
     this.closeModal = this.closeModal.bind(this);
+    this.toggleNotifications = this.toggleNotifications.bind(this);
   }
 
   AboutClick(e) {
@@ -238,10 +241,21 @@ class UserNavInfo extends Component {
   closeModal(e) {
 	  this.setState({showModal: false});
   }
+  toggleNotifications(e) {
+	  this.setState({showNotifications: !this.state.showNotifications});
+  }
 
 	render() {
 		return(
 			<React.Fragment>
+        		<li className="dropdown">
+			   <a id="notifications" className="nav-item-iconic" onClick={this.toggleNotifications}>
+			      <Icon type="fa" name="bell" />
+			   </a>
+			</li>
+			{this.state.showNotifications &&
+			<HuntNotificationArea />
+			}
     			<Dropdown componentClass="li" id="help">
       				<Dropdown.Toggle useAnchor className="nav-item-iconic">
         				<Icon type="pf" name="help" />
