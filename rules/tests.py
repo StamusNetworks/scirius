@@ -429,7 +429,7 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
 
         self.source2 = Source.objects.create(name='test source 2', created_date=timezone.now(), method='local', datatype='sig')
         self.source2.save()
-        self.source_at_version2 = SourceAtVersion.objects.create(source=self.source, version='69')
+        self.source_at_version2 = SourceAtVersion.objects.create(source=self.source2, version='69')
         self.source_at_version2.save()
 
         self.category = Category.objects.create(name='test category', filename='test', source=self.source)
@@ -481,6 +481,81 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
         self.http_delete(reverse('ruleset-detail', args=(rulesets[0].pk,)), status=status.HTTP_204_NO_CONTENT)
         rulesets = Ruleset.objects.all()
         self.assertEqual(len(rulesets), 0)
+
+    def test_002_create_ruleset_source_wrong_category(self):
+        params = {"name": "MyCreatedRuleset",
+                  "comment": "My custom ruleset comment",
+                  "sources": [self.source2.pk],
+                  "categories": [self.category.pk]}
+
+        self.http_post(reverse('ruleset-list'), params, status=status.HTTP_400_BAD_REQUEST)
+
+    def test_003_create_ruleset_no_source_categories(self):
+        params = {"name": "MyCreatedRuleset",
+                  "comment": "My custom ruleset comment",
+                  "categories": [self.category.pk]}
+
+        self.http_post(reverse('ruleset-list'), params, status=status.HTTP_400_BAD_REQUEST)
+
+    def test_004_create_ruleset_sources_categories(self):
+        params = {"name": "MyCreatedRuleset",
+                  "comment": "My custom ruleset comment",
+                  "sources": [self.source.pk],
+                  "categories": [self.category.pk]}
+
+        self.http_post(reverse('ruleset-list'), params, status=status.HTTP_201_CREATED)
+
+    def test_005_update_ruleset_source_wrong_category(self):
+        params = {"name": "MyCreatedRuleset",
+                  "comment": "My custom ruleset comment",
+                  "sources": [self.source.pk],
+                  "categories": [self.category.pk]}
+
+        # Create valid Ruleset
+        self.http_post(reverse('ruleset-list'), params, status=status.HTTP_201_CREATED)
+        rulesets = Ruleset.objects.all()
+        self.assertEqual(len(rulesets), 1)
+
+        # PUT/PATCH
+        params["sources"] = [self.source2.pk]
+        for idx, request in enumerate((self.http_put, self.http_patch)):
+            params['name'] = 'MyRenamedCreatedRuleset%s' % idx
+            request(reverse('ruleset-detail', args=(rulesets[0].pk,)), params, status=status.HTTP_400_BAD_REQUEST)
+
+    def test_006_update_ruleset_no_source_categories(self):
+        params = {"name": "MyCreatedRuleset",
+                  "comment": "My custom ruleset comment",
+                  "sources": [self.source.pk],
+                  "categories": [self.category.pk]}
+
+        # Create valid Ruleset
+        self.http_post(reverse('ruleset-list'), params, status=status.HTTP_201_CREATED)
+        rulesets = Ruleset.objects.all()
+        self.assertEqual(len(rulesets), 1)
+
+        # PUT/PATCH
+        params.pop("sources")
+        for idx, request in enumerate((self.http_put, self.http_patch)):
+            params['name'] = 'MyRenamedCreatedRuleset%s' % idx
+
+            # 200 because category is linked to source which is already in DB
+            request(reverse('ruleset-detail', args=(rulesets[0].pk,)), params, status=status.HTTP_200_OK)
+
+    def test_007_update_ruleset_sources_categories(self):
+        params = {"name": "MyCreatedRuleset",
+                  "comment": "My custom ruleset comment",
+                  "sources": [self.source.pk],
+                  "categories": [self.category.pk]}
+
+        # Create valid Ruleset
+        self.http_post(reverse('ruleset-list'), params, status=status.HTTP_201_CREATED)
+        rulesets = Ruleset.objects.all()
+        self.assertEqual(len(rulesets), 1)
+
+        # PUT/PATCH
+        for idx, request in enumerate((self.http_put, self.http_patch)):
+            params['name'] = 'MyRenamedCreatedRuleset%s' % idx
+            request(reverse('ruleset-detail', args=(rulesets[0].pk,)), params, status=status.HTTP_200_OK)
 
 
 class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
