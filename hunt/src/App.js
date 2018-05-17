@@ -7,6 +7,7 @@ import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
 import { RuleFilter } from './Filter.js';
 import { HuntDashboard } from './Dashboard.js';
 import { HuntNotificationArea } from './Notifications.js';
+import { HistoryPage } from './History.js';
 import { PAGE_STATE } from './Const.js';
 import { RuleInList, RuleCard, RulePage, updateHitsStats } from './Rule.js';
 import axios from 'axios';
@@ -77,7 +78,7 @@ class HuntApp extends Component {
     }
     
     onHistoryClick() {
-    
+        this.switchPage(PAGE_STATE.history, undefined);
     }
 
     fromDate(period) {
@@ -141,6 +142,9 @@ class HuntApp extends Component {
                   break;
                case PAGE_STATE.dashboards:
                   displayed_page = <HuntDashboard from_date={this.state.from_date}/>
+                  break;
+               case PAGE_STATE.history:
+                  displayed_page = <HistoryPage from_date={this.state.from_date}/>
                   break;
             }
         return(
