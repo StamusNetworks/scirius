@@ -7,6 +7,32 @@ import * as config from './config/Api.js';
 import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 
 
+export const RuleFilterFields = [
+  {
+    id: 'msg',
+    title: 'Message',
+    placeholder: 'Filter by Message',
+    filterType: 'text'
+  },
+  {
+    id: 'search',
+    title: 'Content',
+    placeholder: 'Filter by Content',
+    filterType: 'text'
+  }, {
+    id: 'probe',
+    title: 'Probe',
+    placeholder: 'Filter hits by Probe',
+    filterType: 'text'
+  }, {
+    id: 'sprobe',
+    title: 'Check Probe',
+    placeholder: 'Filter hits by Probe',
+    filterType: 'select',
+    filterValues: [{title: 'sn-probe-1', id:'sn-probe-1'}, {title: 'infra1', id:'infra1'}] 
+  }
+];
+
 export class RuleInList extends React.Component {
   render() {
     var category = this.props.state.categories[this.props.data.category];

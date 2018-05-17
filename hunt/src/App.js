@@ -4,12 +4,12 @@ import { ListView } from 'patternfly-react';
 import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow, Spinner } from 'patternfly-react';
 import { AboutModal } from 'patternfly-react';
 import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
-import { RuleFilter } from './Filter.js';
+import { HuntFilter } from './Filter.js';
 import { HuntDashboard } from './Dashboard.js';
 import { HuntNotificationArea } from './Notifications.js';
 import { HistoryPage } from './History.js';
 import { PAGE_STATE } from './Const.js';
-import { RuleInList, RuleCard, RulePage, updateHitsStats } from './Rule.js';
+import { RuleInList, RuleCard, RulePage, updateHitsStats, RuleFilterFields } from './Rule.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
 import 'bootstrap3/dist/css/bootstrap.css'
@@ -582,7 +582,14 @@ class RulesList extends Component {
     return (
         <div className="RulesList">
 	<Spinner loading={this.state.loading} >
-	    <RuleFilter ActiveFilters={this.props.rules_list.filters} rules_list={this.props.rules_list} ActiveSort={this.props.rules_list.sort} UpdateFilter={this.UpdateFilter}  UpdateSort={this.UpdateSort} setViewType={this.setViewType}/>
+	    <HuntFilter ActiveFilters={this.props.rules_list.filters}
+	          rules_list={this.props.rules_list}
+		  ActiveSort={this.props.rules_list.sort}
+		  UpdateFilter={this.UpdateFilter}
+		  UpdateSort={this.UpdateSort}
+		  setViewType={this.setViewType}
+		  filterFields={RuleFilterFields}
+            />
             {this.props.rules_list.view_type === 'list' &&
 	    <ListView>
             {this.state.rules.map(function(rule) {

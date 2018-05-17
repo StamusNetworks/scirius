@@ -2,37 +2,12 @@ import React from 'react';
 import { Filter, FormControl, Toolbar, Button, Icon } from 'patternfly-react';
 import { RuleSort } from './Sort.js';
 
-export const RuleFilterFields = [
-  {
-    id: 'msg',
-    title: 'Message',
-    placeholder: 'Filter by Message',
-    filterType: 'text'
-  },
-  {
-    id: 'search',
-    title: 'Content',
-    placeholder: 'Filter by Content',
-    filterType: 'text'
-  }, {
-    id: 'probe',
-    title: 'Probe',
-    placeholder: 'Filter hits by Probe',
-    filterType: 'text'
-  }, {
-    id: 'sprobe',
-    title: 'Check Probe',
-    placeholder: 'Filter hits by Probe',
-    filterType: 'select',
-    filterValues: [{title: 'sn-probe-1', id:'sn-probe-1'}, {title: 'infra1', id:'infra1'}] 
-  }
-];
-
-export class RuleFilter extends React.Component {
+export class HuntFilter extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentFilterType: RuleFilterFields[0],
+      filterFields: this.props.filterFields,
+      currentFilterType: this.props.filterFields[0],
       activeFilters: this.props.ActiveFilters,
       currentValue: ''
     };
@@ -202,7 +177,7 @@ export class RuleFilter extends React.Component {
         <div style={{ width: 450 }}>
           <Filter>
             <Filter.TypeSelector
-              filterTypes={RuleFilterFields}
+              filterTypes={this.props.filterFields}
               currentFilterType={currentFilterType}
               onFilterTypeSelected={this.selectFilterType}
             />
