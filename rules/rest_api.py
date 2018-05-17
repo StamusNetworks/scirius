@@ -1162,8 +1162,8 @@ class UserActionSerializer(serializers.ModelSerializer):
             all_content[ua_obj.action_key] = content
 
         data['title'] = instance.get_title()
-        data['description_raw'] = actions_dict[instance.action_type]['description']
-        data['description'] = actions_dict[instance.action_type]['description'].format(**format_) if instance.description is None else self.description
+        data['description_raw'] = actions_dict[instance.action_type]['description'] if instance.action_type is not None else None
+        data['description'] = actions_dict[instance.action_type]['description'].format(**format_) if instance.description is None else instance.description
         data['ua_objects'] = all_content
 
         return data
