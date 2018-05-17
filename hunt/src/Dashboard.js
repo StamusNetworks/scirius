@@ -9,11 +9,11 @@ export class HuntDashboard extends React.Component {
         return(
 	    <div>
 	       <div className="container-fluid">
-	          <div class="row">
-		      <div class="col-md-10">
+	          <div className="row">
+		      <div className="col-md-10">
 		         <HuntTimeline from_date={this.props.from_date} />
 	              </div>
-		      <div class="col-md-2">
+		      <div className="col-md-2">
                          <HuntTrend from_date={this.props.from_date} />
 	              </div>
 		  </div>
