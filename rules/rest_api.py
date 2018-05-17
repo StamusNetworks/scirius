@@ -45,8 +45,8 @@ class CommentSerializer(serializers.Serializer):
 
 
 class RulesetSerializer(serializers.ModelSerializer):
-    sources = serializers.PrimaryKeyRelatedField(queryset=Source.objects.all(), many=True)
-    categories = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), many=True)
+    sources = serializers.PrimaryKeyRelatedField(queryset=Source.objects.all(), many=True, required=False)
+    categories = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), many=True, required=False)
     comment = serializers.CharField(required=False, allow_blank=True, write_only=True, allow_null=True)
 
     class Meta:
@@ -72,16 +72,13 @@ class RulesetSerializer(serializers.ModelSerializer):
         return data
 
     def to_internal_value(self, data):
-        # In case of immutable data (website UI)
-        data = data.copy()
-        data.pop(u'csrfmiddlewaretoken', None)
-        sources = data.pop('sources', None)
+        data = super(RulesetSerializer, self).to_internal_value(data)
 
-        if sources is None:
+        if 'sources' not in data:
             return data
 
-        sources_at_version = SourceAtVersion.objects.filter(source__in=sources)
-        data['sources'] = [unicode(source_at_version.pk) for source_at_version in sources_at_version]
+        sources = SourceAtVersion.objects.filter(source__in=data['sources'])
+        data['sources'] = list(sources)
         return data
 
 
@@ -135,6 +132,18 @@ class RulesetViewSet(viewsets.ModelViewSet):
     ordering_fields = ('name', 'created_date', 'updated_date', 'rules_count')
     filter_fields = ('name', 'descr')
 
+    def _validate_categories(self, sources_at_version, categories):
+        if len(sources_at_version) == 0 and len(categories) > 0:
+            msg = 'No source selected or wrong selected source(s). Cannot add categories without their source.'
+            raise serializers.ValidationError(msg)
+        elif len(sources_at_version) > 0 and len(categories) > 0:
+            sources = Source.objects.filter(sourceatversion__in=sources_at_version)
+
+            for category in categories:
+                if category.source not in sources:
+                    msg = 'One or more of categories is/are not in selected sources.'
+                    raise serializers.ValidationError(msg)
+
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
         comment = data.pop('comment', None)
@@ -147,32 +156,20 @@ class RulesetViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         # /|\ this is sourceAtVersion because of to_internal_values/to_repesentation serializer methods
-        sources_at_version_pk = serializer.validated_data.get('sources', [])
-        categories_pk = serializer.validated_data.get('categories', [])
-
-        if len(sources_at_version_pk) == 0 and len(categories_pk) > 0:
-            msg = 'No source selected or wrong selected source(s). Cannot add categories without their source. '
-            return Response({'create': msg}, status=status.HTTP_400_BAD_REQUEST)
-        elif len(sources_at_version_pk) > 0 and len(categories_pk) > 0:
-            sources = Source.objects.filter(sourceatversion__in=sources_at_version_pk)
-            categories = Category.objects.filter(pk__in=categories_pk)
-
-            for category in categories:
-                if category.source not in list(sources):
-                    msg = 'one or more of categories is/are not in selected sources'
-                    return Response({'create': msg}, status=status.HTTP_400_BAD_REQUEST)
+        sources = serializer.validated_data.get('sources', [])
+        categories = serializer.validated_data.get('categories', [])
+        self._validate_categories(sources, categories)
 
         serializer.save()
 
         comment_serializer = CommentSerializer(data={'comment': comment})
         comment_serializer.is_valid(raise_exception=True)
-        ruleset = Ruleset.objects.filter(pk=serializer.data['pk'])[0]
 
         UserAction.create(
                 action_type='create_ruleset',
                 comment=comment_serializer.validated_data['comment'],
                 user=request.user,
-                ruleset=ruleset
+                ruleset=serializer.instance
         )
 
         headers = self.get_success_headers(serializer.data)
@@ -199,31 +196,15 @@ class RulesetViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
 
-        # /|\ this is sourceAtVersion because of to_internal_values/to_repesentation serializer methods
-        sources_at_version_pk = serializer.validated_data.get('sources', [])
-        categories_pk = serializer.validated_data.get('categories', [])
+        sources = instance.sources.all()
+        if 'sources' in serializer.validated_data:
+            sources = serializer.validated_data['sources']
 
-        if len(sources_at_version_pk) == 0 and len(categories_pk) > 0:
-            sources_at_version = instance.sources.all()
-            if len(sources_at_version) == 0:
-                msg = 'No source selected or wrong selected source(s). Cannot add categories without their source.'
-                return False, msg
+        categories = instance.categories.all()
+        if 'categories' in serializer.validated_data:
+            categories = serializer.validated_data['categories']
 
-            # Will go into next condition if len > 0
-            sources_at_version_pk = [source_at_version.pk for source_at_version in sources_at_version]
-
-        if len(sources_at_version_pk) > 0 and len(categories_pk) > 0:
-            sources = Source.objects.filter(sourceatversion__in=sources_at_version_pk)
-            categories = Category.objects.filter(pk__in=categories_pk)
-
-            if len(categories) == 0:
-                msg = 'Wrong selected categories'
-                return False, msg
-
-            for category in categories:
-                if category.source not in list(sources):
-                    msg = 'one or more of categories is/are not in selected sources'
-                    return False, msg
+        self._validate_categories(sources, categories)
 
         # This save is used to have the new name if user has edited ruleset name
         serializer.save()

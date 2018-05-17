@@ -461,8 +461,17 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
         for idx, request in enumerate((self.http_put, self.http_patch)):
             params['name'] = 'MyRenamedCreatedRuleset%s' % idx
 
+            status_ = status.HTTP_200_OK
             if request == self.http_patch:
                 params['sources'] = []
+                status_ = status.HTTP_400_BAD_REQUEST
+
+            request(reverse('ruleset-detail', args=(rulesets[0].pk,)), params, status=status_)
+
+            status_ = status.HTTP_200_OK
+            if request == self.http_patch:
+                del params['sources']
+                status_ = status.HTTP_400_BAD_REQUEST
 
             request(reverse('ruleset-detail', args=(rulesets[0].pk,)), params, status=status.HTTP_200_OK)
 
@@ -470,10 +479,7 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
             self.assertEqual(len(rulesets), 1)
             self.assertEqual(rulesets[0].name, "MyRenamedCreatedRuleset%s" % idx)
 
-            if request == self.http_patch:
-                self.assertEqual(len(rulesets[0].sources.all()) == 0, True)
-            else:
-                self.assertEqual(len(rulesets[0].sources.all()) == 2, True)
+            self.assertEqual(len(rulesets[0].sources.all()) == 2, True)
 
         # Delete
         rulesets = Ruleset.objects.all()
