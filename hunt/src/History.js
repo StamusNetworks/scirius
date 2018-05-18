@@ -1,7 +1,7 @@
 import React from 'react';
 import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon } from 'patternfly-react';
 import { Icon } from 'patternfly-react';
-import { PAGINATION_VIEW } from 'patternfly-react';
+import { PAGINATION_VIEW, Row, Col} from 'patternfly-react';
 import axios from 'axios';
 import { HuntFilter } from './Filter.js';
 import { HuntList, HuntPaginationRow } from './Api.js';
@@ -118,7 +118,18 @@ class HistoryItem extends React.Component {
 	        heading={this.props.data.action_type}
 	        description={this.props.data.description}
 		key={this.props.data.pk}
-	     />
+	     >
+	       {this.props.data.comment &&
+	       <Row>
+	           <Col sm={11}>
+		        <div className="container-fluid">
+			   <strong>Comment</strong>
+		           <p>{this.props.data.comment}</p>
+		   	</div>
+		   </Col>
+	       </Row>
+	       }
+	     </ListViewItem>
 	)
     }
 }
