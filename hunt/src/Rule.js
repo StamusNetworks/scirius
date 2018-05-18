@@ -33,6 +33,33 @@ export const RuleFilterFields = [
   }
 ];
 
+export const RuleSortFields = [
+  {
+    id: 'created',
+    title: 'Created',
+    isNumeric: true,
+    defaultAsc: false,
+  },
+  {
+    id: 'hits',
+    title: 'Alerts',
+    isNumeric: true,
+    defaultAsc: false,
+  },
+  {
+    id: 'msg',
+    title: 'Message',
+    isNumeric: false,
+    defaultAsc: true,
+  },
+  {
+    id: 'updated',
+    title: 'Updated',
+    isNumeric: true,
+    defaultAsc: false,
+  }
+];
+
 export class RuleInList extends React.Component {
   render() {
     var category = this.props.state.categories[this.props.data.category];

@@ -1,40 +1,13 @@
 import React from 'react';
 import { Sort } from 'patternfly-react';
 
-export const RuleSortFields = [
-  {
-    id: 'created',
-    title: 'Created',
-    isNumeric: true,
-    defaultAsc: false,
-  },
-  {
-    id: 'hits',
-    title: 'Alerts',
-    isNumeric: true,
-    defaultAsc: false,
-  },
-  {
-    id: 'msg',
-    title: 'Message',
-    isNumeric: false,
-    defaultAsc: true,
-  },
-  {
-    id: 'updated',
-    title: 'Updated',
-    isNumeric: true,
-    defaultAsc: false,
-  }
-];
-
-export class RuleSort extends React.Component {
+export class HuntSort extends React.Component {
   constructor(props) {
     super(props);
     var sort_type;
-    for (var i = 0; i<RuleSortFields.length; i++){
-         if (this.props.ActiveSort.id === RuleSortFields[i].id) {
-            sort_type = RuleSortFields[i];
+    for (var i = 0; i<this.props.config.length; i++){
+         if (this.props.ActiveSort.id === this.props.config[i].id) {
+            sort_type = this.props.config[i];
             break;
          }
     }
@@ -70,7 +43,7 @@ export class RuleSort extends React.Component {
     return (
         <Sort>
           <Sort.TypeSelector
-            sortTypes={RuleSortFields}
+            sortTypes={this.props.config}
             currentSortType={currentSortType}
             onSortTypeSelected={this.updateCurrentSortType}
           />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Filter, FormControl, Toolbar, Button, Icon } from 'patternfly-react';
-import { RuleSort } from './Sort.js';
+import { HuntSort } from './Sort.js';
 
 export class HuntFilter extends React.Component {
   constructor(props) {
@@ -9,6 +9,7 @@ export class HuntFilter extends React.Component {
       filterFields: this.props.filterFields,
       currentFilterType: this.props.filterFields[0],
       activeFilters: this.props.ActiveFilters,
+      showDisplayToggle: this.props.displayToggle,
       currentValue: ''
     };
   }
@@ -171,7 +172,6 @@ export class HuntFilter extends React.Component {
 
   render() {
     const { currentFilterType, activeFilters } = this.state;
-
     return (
 	   <Toolbar>
         <div style={{ width: 450 }}>
@@ -183,14 +183,15 @@ export class HuntFilter extends React.Component {
             />
             {this.renderInput()}
           </Filter>
-	      <RuleSort ActiveSort={this.props.ActiveSort} UpdateSort={this.props.UpdateSort}/>
+	      <HuntSort config={this.props.sort_config} ActiveSort={this.props.ActiveSort} UpdateSort={this.props.UpdateSort}/>
         </div>
+	    {this.state.showDisplayToggle &&
             <Toolbar.RightContent>
                         <Toolbar.ViewSelector>
             <Button
               title="List View"
               bsStyle="link"
-              className={{ active: this.props.rules_list.view_type === 'list' }}
+              className={{ active: this.props.config.view_type === 'list' }}
               onClick={() => {
                 this.props.setViewType('list');
               }}
@@ -200,7 +201,7 @@ export class HuntFilter extends React.Component {
             <Button
               title="Card View"
               bsStyle="link"
-              className={{ active: this.props.rules_list.view_type === 'card' }}
+              className={{ active: this.props.config.view_type === 'card' }}
               onClick={() => {
                 this.props.setViewType('card');
               }}
@@ -209,6 +210,7 @@ export class HuntFilter extends React.Component {
             </Button>
           </Toolbar.ViewSelector>
             </Toolbar.RightContent>
+	    }
 
         {activeFilters &&
           activeFilters.length > 0 && (

@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { ListView } from 'patternfly-react';
-import { VerticalNav, Dropdown, Icon, MenuItem, PaginationRow, Spinner } from 'patternfly-react';
+import { VerticalNav, Dropdown, Icon, MenuItem, Spinner } from 'patternfly-react';
 import { AboutModal } from 'patternfly-react';
-import { PAGINATION_VIEW, PAGINATION_VIEW_TYPES } from 'patternfly-react';
+import { PAGINATION_VIEW } from 'patternfly-react';
 import { HuntFilter } from './Filter.js';
 import { HuntDashboard } from './Dashboard.js';
 import { HuntNotificationArea } from './Notifications.js';
 import { HistoryPage } from './History.js';
 import { PAGE_STATE } from './Const.js';
-import { RuleInList, RuleCard, RulePage, updateHitsStats, RuleFilterFields } from './Rule.js';
+import { RuleInList, RuleCard, RulePage, updateHitsStats, RuleFilterFields, RuleSortFields } from './Rule.js';
+import { HuntList, HuntPaginationRow } from './Api.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
 import 'bootstrap3/dist/css/bootstrap.css'
@@ -24,6 +24,7 @@ class HuntApp extends Component {
     super(props);
     var duration = localStorage.getItem('duration');
     var rules_list_conf = localStorage.getItem('rules_list');
+    var history_conf = localStorage.getItem('history');
     var page_display = localStorage.getItem('page_display');
     if (!duration) {
 	    duration = 24;
@@ -43,6 +44,23 @@ class HuntApp extends Component {
     } else {
         rules_list_conf = JSON.parse(rules_list_conf);
     }
+
+    if (!history_conf) {
+        history_conf = {
+            pagination: {
+              page: 1,
+              perPage: 6,
+              perPageOptions: [6, 10, 15, 25, 50]
+            },
+            filters: [],
+            sort: {id: 'date', asc: false},
+            view_type: 'list'
+        };
+        localStorage.setItem('history', JSON.stringify(history_conf));
+    } else {
+        history_conf = JSON.parse(history_conf);
+    }
+
     if (!page_display) {
         page_display = { page: PAGE_STATE.rules_list, item:undefined };
         localStorage.setItem('page_display', JSON.stringify(page_display));
@@ -52,7 +70,8 @@ class HuntApp extends Component {
     this.state = {
       sources: [], rulesets: [], duration: duration, from_date: (Date.now() - duration * 3600 * 1000),
       display: page_display,
-      rules_list: rules_list_conf
+      rules_list: rules_list_conf,
+      history: history_conf
     };
     this.displaySource = this.displaySource.bind(this);
     this.displayRuleset = this.displayRuleset.bind(this);
@@ -65,6 +84,7 @@ class HuntApp extends Component {
     this.onHistoryClick = this.onHistoryClick.bind(this);
     this.switchPage = this.switchPage.bind(this);
     this.updateRuleListState = this.updateRuleListState.bind(this);
+    this.updateHistoryListState = this.updateHistoryListState.bind(this);
     
   }
 
@@ -124,12 +144,17 @@ class HuntApp extends Component {
         localStorage.setItem('rules_list', JSON.stringify(rules_list_state));
     }
 
+    updateHistoryListState(history_state) {
+        this.setState({history: history_state});
+        localStorage.setItem('history', JSON.stringify(history_state));
+    }
+
     render() {
             var displayed_page = undefined;
             switch (this.state.display.page) {
                case PAGE_STATE.rules_list:
                default:
-                  displayed_page = <RulesList rules_list={this.state.rules_list} from_date={this.state.from_date} SwitchPage={this.switchPage} updateRuleListState={this.updateRuleListState} />
+                  displayed_page = <RulesList config={this.state.rules_list} from_date={this.state.from_date} SwitchPage={this.switchPage} updateListState={this.updateRuleListState} />
                   break;
                case PAGE_STATE.source:
                   displayed_page = <SourcePage source={this.state.display.item} from_date={this.state.from_date}/>
@@ -144,7 +169,7 @@ class HuntApp extends Component {
                   displayed_page = <HuntDashboard from_date={this.state.from_date}/>
                   break;
                case PAGE_STATE.history:
-                  displayed_page = <HistoryPage from_date={this.state.from_date}/>
+                  displayed_page = <HistoryPage config={this.state.history} from_date={this.state.from_date} updateListState={this.updateHistoryListState} />
                   break;
             }
         return(
@@ -307,89 +332,7 @@ class UserNavInfo extends Component {
 }
 
 
-class HuntPaginationRow extends Component {
-  constructor(props) {
-    super(props);
-    this.onPageInput = this.onPageInput.bind(this);
-    this.onPerPageSelect = this.onPerPageSelect.bind(this);
-  };
-
-  onPageInput = e => {
-    const newPaginationState = Object.assign({}, this.props.pagination);
-    newPaginationState.page = e.target.value;
-    this.props.onPaginationChange(newPaginationState);
-  }
-
-  onPerPageSelect = (eventKey, e) => {
-    const newPaginationState = Object.assign({}, this.props.pagination);
-    newPaginationState.perPage = eventKey;
-    this.props.onPaginationChange(newPaginationState);
-  }
-
-  render() {
-    const {
-      viewType,
-      pageInputValue,
-      amountOfPages,
-      pageSizeDropUp,
-      itemCount,
-      itemsStart,
-      itemsEnd,
-      onFirstPage,
-      onPreviousPage,
-      onNextPage,
-      onLastPage
-    } = this.props;
-
-    return (
-      <PaginationRow
-        viewType={viewType}
-        pageInputValue={pageInputValue}
-        pagination={this.props.pagination}
-        amountOfPages={amountOfPages}
-        pageSizeDropUp={pageSizeDropUp}
-        itemCount={itemCount}
-        itemsStart={itemsStart}
-        itemsEnd={itemsEnd}
-        onPerPageSelect={this.onPerPageSelect}
-        onFirstPage={onFirstPage}
-        onPreviousPage={onPreviousPage}
-        onPageInput={this.onPageInput}
-        onNextPage={onNextPage}
-        onLastPage={onLastPage}
-      />
-    );
-  }
-}
-
-function noop() {
-	return;
-}
-
-HuntPaginationRow.propTypes = {
-  viewType: PropTypes.oneOf(PAGINATION_VIEW_TYPES).isRequired,
-  pageInputValue: PropTypes.number.isRequired,
-  amountOfPages: PropTypes.number.isRequired,
-  pageSizeDropUp: PropTypes.bool,
-  itemCount: PropTypes.number.isRequired,
-  itemsStart: PropTypes.number.isRequired,
-  itemsEnd: PropTypes.number.isRequired,
-  onFirstPage: PropTypes.func,
-  onPreviousPage: PropTypes.func,
-  onNextPage: PropTypes.func,
-  onLastPage: PropTypes.func
-};
-
-HuntPaginationRow.defaultProps = {
-  pageSizeDropUp: true,
-  onFirstPage: noop,
-  onPreviousPage: noop,
-  onNextPage: noop,
-  onLastPage: noop
-};
-
-
-class RulesList extends Component {
+class RulesList extends HuntList {
   constructor(props) {
     super(props);
     this.state = {
@@ -397,19 +340,8 @@ class RulesList extends Component {
       loading: true,
       refresh_data: false,
     };
-    this.fetchData = this.fetchData.bind(this);
-    this.fetchHitsStats = this.fetchHitsStats.bind(this);
-    this.handlePaginationChange = this.handlePaginationChange.bind(this);
-    this.onFirstPage = this.onFirstPage.bind(this);
-    this.onNextPage = this.onNextPage.bind(this);
-    this.onPrevPage = this.onPrevPage.bind(this);
-    this.onLastPage = this.onLastPage.bind(this);
-    this.UpdateFilter = this.UpdateFilter.bind(this);
-    this.UpdateSort = this.UpdateSort.bind(this);
-
-    this.setViewType = this.setViewType.bind(this);
-
     this.updateRulesState = this.updateRulesState.bind(this);
+    this.fetchHitsStats = this.fetchHitsStats.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -417,62 +349,6 @@ class RulesList extends Component {
              this.fetchHitsStats(this.state.rules);
      }
   }
-
-  handlePaginationChange(pagin) {
-     const newRuleState = Object.assign({}, this.props.rules_list);
-     newRuleState.pagination = pagin;
-     this.props.updateRuleListState(newRuleState);
-     this.fetchData(newRuleState);
-  }
-
-  onFirstPage() {
-     const newRuleState = Object.assign({}, this.props.rules_list);
-     newRuleState.pagination.page = 1;
-     this.props.updateRuleListState(newRuleState);
-     this.fetchData(newRuleState);
-  }
-
-  onNextPage() {
-     const newRuleState = Object.assign({}, this.props.rules_list);
-     newRuleState.pagination.page = newRuleState.pagination.page + 1;
-     this.props.updateRuleListState(newRuleState);
-     this.fetchData(newRuleState);
-  }
-
-  onPrevPage() {
-     const newRuleState = Object.assign({}, this.props.rules_list);
-     newRuleState.pagination.page = newRuleState.pagination.page - 1;
-     this.props.updateRuleListState(newRuleState);
-     this.fetchData(newRuleState);
-  }
-
-  onLastPage() {
-     const newRuleState = Object.assign({}, this.props.rules_list);
-     newRuleState.pagination.page = Math.floor(this.state.rules_count / this.props.rules_list.pagination.perPage) + 1;
-     this.props.updateRuleListState(newRuleState);
-     this.fetchData(newRuleState);
-  }
-
-   UpdateFilter(filters) {
-     const newRuleState = Object.assign({}, this.props.rules_list);
-     newRuleState.filters = filters;
-     newRuleState.pagination.page = 1;
-     this.props.updateRuleListState(newRuleState);
-     this.fetchData(newRuleState);
-   }
-
-   UpdateSort(sort) {
-     const newRuleState = Object.assign({}, this.props.rules_list);
-     newRuleState.sort = sort;
-     this.props.updateRuleListState(newRuleState);
-     this.fetchData(newRuleState);
-   }
-
-   setViewType(type) {
-        const newRuleState = Object.assign({}, this.props.rules_list);
-        newRuleState.view_type = type;
-        this.props.updateRuleListState(newRuleState);
-   }
 
    buildQFilter(filters) {
      var qfilter = [];
@@ -540,22 +416,12 @@ class RulesList extends Component {
   }
 
   fetchData(rules_stat) {
-     var page = rules_stat.pagination.page;
-     var per_page = rules_stat.pagination.perPage;
      var filters = rules_stat.filters;
-     var sort = rules_stat.sort;
      var string_filters = this.buildFilter(filters);
-     var ordering = "";
-
-     if (sort['asc']) {
-        ordering=sort['id'];
-     } else {
-        ordering="-" + sort['id'];
-     }
 
      this.setState({refresh_data: true});
      axios.all([
-          axios.get(config.API_URL + config.RULE_PATH + "?ordering=" + ordering + "&page_size=" + per_page + "&page=" + page + "&from_date=" + this.props.from_date + string_filters),
+          axios.get(config.API_URL + config.RULE_PATH + this.buildListUrlParams(rules_stat) + "&from_date=" + this.props.from_date + string_filters),
           axios.get(config.API_URL + config.CATEGORY_PATH + "?page_size=100"),
 	  ])
       .then(axios.spread((RuleRes, CatRes) => {
@@ -575,22 +441,24 @@ class RulesList extends Component {
   }
 
   componentDidMount() {
-      this.fetchData(this.props.rules_list)
+      this.fetchData(this.props.config)
   }
   
   render() {
     return (
         <div className="RulesList">
 	<Spinner loading={this.state.loading} >
-	    <HuntFilter ActiveFilters={this.props.rules_list.filters}
-	          rules_list={this.props.rules_list}
-		  ActiveSort={this.props.rules_list.sort}
+	    <HuntFilter ActiveFilters={this.props.config.filters}
+	          config={this.props.config}
+		  ActiveSort={this.props.config.sort}
 		  UpdateFilter={this.UpdateFilter}
 		  UpdateSort={this.UpdateSort}
 		  setViewType={this.setViewType}
 		  filterFields={RuleFilterFields}
+		  sort_config={RuleSortFields}
+		  displayToggle={true}
             />
-            {this.props.rules_list.view_type === 'list' &&
+            {this.props.config.view_type === 'list' &&
 	    <ListView>
             {this.state.rules.map(function(rule) {
                 return(
@@ -599,7 +467,7 @@ class RulesList extends Component {
              },this)}
 	    </ListView>
             }
-            {this.props.rules_list.view_type === 'card' &&
+            {this.props.config.view_type === 'card' &&
                 <div className='container-fluid container-cards-pf'>
                 <div className='row row-cards-pf'>
                 {this.state.rules.map(function(rule) {
@@ -612,13 +480,13 @@ class RulesList extends Component {
             }
 	    <HuntPaginationRow
 	        viewType = {PAGINATION_VIEW.LIST}
-	        pagination={this.props.rules_list.pagination}
+	        pagination={this.props.config.pagination}
 	        onPaginationChange={this.handlePaginationChange}
-		amountOfPages = {Math.ceil(this.state.rules_count / this.props.rules_list.pagination.perPage)}
-		pageInputValue = {this.props.rules_list.pagination.page}
+		amountOfPages = {Math.ceil(this.state.rules_count / this.props.config.pagination.perPage)}
+		pageInputValue = {this.props.config.pagination.page}
 		itemCount = {this.state.rules_count}
-		itemsStart = {(this.props.rules_list.pagination.page - 1) * this.props.rules_list.pagination.perPage}
-		itemsEnd = {Math.min(this.props.rules_list.pagination.page * this.props.rules_list.pagination.perPage - 1, this.state.rules_count) }
+		itemsStart = {(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
+		itemsEnd = {Math.min(this.props.config.pagination.page * this.props.config.pagination.perPage - 1, this.state.rules_count) }
 		onFirstPage={this.onFirstPage}
 		onNextPage={this.onNextPage}
 		onPreviousPage={this.onPrevPage}
