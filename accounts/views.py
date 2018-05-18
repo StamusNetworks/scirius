@@ -148,7 +148,11 @@ def manageview(request, action):
             else:
                 context['error'] = 'Not enough permission to create users'
         else:
-            context['error'] = 'Invalid form'
+            if action != 'add':
+                context['error'] = 'Invalid form'
+            else:
+                context['error'] = 'Username and/or password are not valid'
+
             context['form'] = form
             return scirius_render(request, 'accounts/user.html', context)
     else:
@@ -160,12 +164,12 @@ def manageview(request, action):
 
 def manageuser(request, user_id):
     user = get_object_or_404(User, pk=user_id)
-    context = { 'action': 'User actions', 'user': user }
+    context = {'action': 'User actions', 'user': user}
     return scirius_render(request, 'accounts/user.html', context)
 
 def manageuseraction(request, user_id, action):
     user = get_object_or_404(User, pk=user_id)
-    context = { 'action': 'User actions', 'user': user }
+    context = {'action': 'User actions', 'user': user}
     if request.method == 'POST':
         if not request.user.is_superuser:
             context['error'] = 'Unsufficient permissions'
@@ -181,14 +185,14 @@ def manageuseraction(request, user_id, action):
                     sciriususer = SciriusUser.objects.create(user = user, timezone = form.cleaned_data['timezone'])
                 sciriususer.save()
             else:
-                context['error'] = 'Invalid form'
+                context['error'] = 'Edition form is not valid'
         elif action == 'password':
             form = PasswordForm(request.POST)
             if form.is_valid():
                 user.set_password(form.cleaned_data['password'])
                 user.save()
             else:
-                context['error'] = 'Invalid form'
+                context['error'] = 'Password form is not valid'
         elif action == "delete":
             form = DeleteForm(request.POST)
             if form.is_valid():
@@ -196,7 +200,7 @@ def manageuseraction(request, user_id, action):
                     user.delete()
                     return redirect('/accounts/manage/')
             else:
-                context['error'] = 'Invalid form'
+                context['error'] = 'Delete form is not valid'
 
         return scirius_render(request, 'accounts/user.html', context)
     if action == "activate":
@@ -205,12 +209,14 @@ def manageuseraction(request, user_id, action):
             return scirius_render(request, 'accounts/user.html', context)
         user.is_active = True
         user.save()
+        context['current_action'] = 'Activate user %s' % user.username
     elif action == "deactivate":
         if not request.user.is_superuser:
             context['error'] = 'Unsufficient permissions'
             return scirius_render(request, 'accounts/user.html', context)
         user.is_active = False
         user.save()
+        context['current_action'] = 'Deactivate user %s' % user.username
     elif action == "edit":
         if not request.user.is_superuser:
             context['error'] = 'Unsufficient permissions'
@@ -221,6 +227,7 @@ def manageuseraction(request, user_id, action):
         except:
             pass
         context['form'] = form
+        context['current_action'] = 'Edit user %s' % user.username
         return scirius_render(request, 'accounts/user.html', context)
     elif action == "password":
         if not request.user.is_superuser:
@@ -228,6 +235,7 @@ def manageuseraction(request, user_id, action):
             return scirius_render(request, 'accounts/user.html', context)
         form = PasswordForm()
         context['form'] = form
+        context['current_action'] = 'Edit password for user %s' % user.username
         return scirius_render(request, 'accounts/user.html', context)
     elif action == "delete":
         if not request.user.is_superuser:
@@ -235,7 +243,8 @@ def manageuseraction(request, user_id, action):
             return scirius_render(request, 'accounts/user.html', context)
         context = { 'confirm_action': 'Delete user', 'user': user, 'action': 'delete'}
         return scirius_render(request, 'accounts/user.html', context)
-    context = { 'action': 'User actions', 'user': user }
+
+    context['current_action'] = 'User %s' % user.username
     return scirius_render(request, 'accounts/user.html', context)
 
 

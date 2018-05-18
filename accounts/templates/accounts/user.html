@@ -9,7 +9,7 @@
 <li><a href="{% url 'accounts_manage' '' %}">Users list</a></li>
 </ul>
 
-{% if not current_action and not confirm_action %}
+{% if current_action != 'Add user' and not confirm_action %}
 <div class="panel-heading">
 <h2 class="panel-title">Actions</h2>
 </div>
@@ -27,8 +27,6 @@
 <div class="row">
 {% if current_action %}
 <h2>{{ current_action }}</h2>
-{% else %}
-<h2>Editing user {{ user.username }}</h2>
 {% endif %}
 {% if form %}
 <form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
