@@ -1659,7 +1659,7 @@ class UserActionSerializer(serializers.ModelSerializer):
         return data
 
 
-class UserActionViewSet(viewsets.ReadOnlyModelViewSet):
+class UserActionViewSet(SciriusReadOnlyModelViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
