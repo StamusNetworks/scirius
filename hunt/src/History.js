@@ -56,7 +56,6 @@ export class HistoryPage extends HuntList {
     
     
     fetchData(history_stat) {
-	    console.log(config.API_URL + config.HISTORY_PATH + this.buildListUrlParams(history_stat));
 	axios.get(config.API_URL + config.HISTORY_PATH + this.buildListUrlParams(history_stat))
         .then(res => {
                this.setState({ data: res.data, count: res.data.count });
@@ -109,12 +108,16 @@ export class HistoryPage extends HuntList {
 class HistoryItem extends React.Component {
     render() {
 	var date = new Date(Date.parse(this.props.data.date)).toLocaleString('en-GB', { timeZone: 'UTC' });
+	var info= [<ListViewInfoItem key="date"><p>Date: {date}</p></ListViewInfoItem>,
+			   <ListViewInfoItem key="user"><p><Icon type="pf" name="user" /> {this.props.data.username}</p></ListViewInfoItem>
+	        ];
+	if (this.props.data.ua_objects.ruleset && this.props.data.ua_objects.ruleset.pk) {
+		info.push(<ListViewInfoItem key="ruleset"><p><Icon type="fa" name="th" /> {this.props.data.ua_objects.ruleset.value}</p></ListViewInfoItem>);
+	}
         return(
 	    <ListViewItem
 	        leftContent={<ListViewIcon name="envelope" />}
-	        additionalInfo={[<ListViewInfoItem key="date"><p>Date: {date}</p></ListViewInfoItem>,
-			   <ListViewInfoItem key="user"><p><Icon type="pf" name="user" /> {this.props.data.username}</p></ListViewInfoItem>
-	        ]}
+	        additionalInfo={info}
 	        heading={this.props.data.action_type}
 	        description={this.props.data.description}
 		key={this.props.data.pk}
