@@ -20,7 +20,7 @@ Probe = __import__(settings.RULESET_MIDDLEWARE)
 
 class ServiceUnavailableException(APIException):
     status_code = 500
-    default_detail = 'Internal Server Error, try again later.'
+    default_detail = 'Internal Server Error.'
     default_code = 'internal_error'
 
 
@@ -135,14 +135,14 @@ class RulesetViewSet(viewsets.ModelViewSet):
     def _validate_categories(self, sources_at_version, categories):
         if len(sources_at_version) == 0 and len(categories) > 0:
             msg = 'No source selected or wrong selected source(s). Cannot add categories without their source.'
-            raise serializers.ValidationError(msg)
+            raise serializers.ValidationError({'sources': [msg]})
         elif len(sources_at_version) > 0 and len(categories) > 0:
             sources = Source.objects.filter(sourceatversion__in=sources_at_version)
 
             for category in categories:
                 if category.source not in sources:
                     msg = 'One or more of categories is/are not in selected sources.'
-                    raise serializers.ValidationError(msg)
+                    raise serializers.ValidationError({'categories': [msg]})
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
@@ -189,7 +189,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
         )
         return super(RulesetViewSet, self).destroy(request, *args, **kwargs)
 
-    def _update_or_partial_update(self, request, partial, *args, **kwargs):
+    def _update_or_partial_update(self, request, partial):
         comment = request.data.get('comment', None)
 
         instance = self.get_object()
@@ -218,19 +218,14 @@ class RulesetViewSet(viewsets.ModelViewSet):
                 user=request.user,
                 ruleset=instance
         )
-        return True, None
 
     def update(self, request, *args, **kwargs):
-        res, msg = self._update_or_partial_update(request, partial=False, *args, **kwargs)
-        if res is False:
-            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
-        return super(RulesetViewSet, self).update(request, partial=False, *args, **kwargs)
+        self._update_or_partial_update(request, False)
+        return super(RulesetViewSet, self).update(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
-        res, msg = self._update_or_partial_update(request, partial=True, *args, **kwargs)
-        if res is False:
-            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
-        return super(RulesetViewSet, self).update(request, partial=True, *args, **kwargs)
+        self._update_or_partial_update(request, True)
+        return super(RulesetViewSet, self).partial_update(request, *args, **kwargs)
 
 
 class CategoryChangeSerializer(serializers.Serializer):
@@ -395,13 +390,16 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         msg = ''
 
         if trans_ok is False:
+            msg = '"%s" is not a valid choice.'
+            title = 'transfo_value'
+            type_ = value
             values = Transformation.AVAILABLE_MODEL_TRANSFO.get(key, None)
+
             if values is None:
-                keys = Transformation.AVAILABLE_MODEL_TRANSFO.keys()
-                msg = 'trans_key is not a known key. keys are "%s"' % ' / '.join(keys)
-            else:
-                msg = 'trans_value is not a known value for key "%s". values are "%s"' % (key, ' / '.join(values))
-            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
+                title = 'transfo_type'
+                type_ = key
+
+            raise serializers.ValidationError({title: [msg % type_]})
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -444,9 +442,10 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         UserAction.create(**fields)
         return super(BaseTransformationViewSet, self).destroy(request, *args, **kwargs)
 
-    def _update_or_partial_update(self, request, partial, *args, **kwargs):
-        kwargs['fields'] = dict(self._fields)
-        kwargs['action_type'] = self._action_type
+    def _update_or_partial_update(self, request, partial):
+        params = {}
+        params['fields'] = dict(self._fields)
+        params['action_type'] = self._action_type
 
         comment = request.data.get('comment', None)
         key = request.data.get('transfo_type')
@@ -455,13 +454,15 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         msg = ''
 
         if trans_ok is False:
+            msg = '"%s" is not a valid choice.'
+            title = 'transfo_value'
+            type_ = value
             values = Transformation.AVAILABLE_MODEL_TRANSFO.get(key, None)
+
             if values is None:
-                keys = Transformation.AVAILABLE_MODEL_TRANSFO.keys()
-                msg = 'trans_key is not a known key. keys are "%s"' % ' / '.join(keys)
-            else:
-                msg = 'trans_value is not a known value for key "%s". values are "%s"' % (key, ' / '.join(values))
-            return trans_ok, msg
+                title = 'transfo_type'
+                type_ = key
+            return trans_ok, title, msg % type_
 
         comment_serializer = CommentSerializer(data={'comment': comment})
         comment_serializer.is_valid(raise_exception=True)
@@ -474,17 +475,17 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         # This save is used to have the new name if user has edited transfo
         serializer.save()
 
-        fields = kwargs['fields']
+        fields = params['fields']
         for key, value in dict(fields).iteritems():
             fields[key] = serializer.validated_data[value]
 
         fields['comment'] = comment_serializer.validated_data['comment']
-        fields['action_type'] = kwargs['action_type']
+        fields['action_type'] = params['action_type']
         fields['user'] = request.user
         fields['transformation'] = '%s: %s' % (fields.pop('trans_type'), fields.pop('trans_value').title())
 
         UserAction.create(**fields)
-        return trans_ok, msg
+        return trans_ok, None, None
 
 
 class RulesetTransformationSerializer(serializers.ModelSerializer):
@@ -568,16 +569,16 @@ class RulesetTransformationViewSet(BaseTransformationViewSet):
         return super(RulesetTransformationViewSet, self).create(request, *args, **kwargs)
 
     def update(self, request, pk, *args, **kwargs):
-        trans_ok, msg = self._update_or_partial_update(request, partial=False, *args, **kwargs)
+        trans_ok, title, msg = self._update_or_partial_update(request, False)
         if trans_ok is False:
-            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
-        return super(RulesetTransformationViewSet, self).update(request, partial=False, *args, **kwargs)
+            raise serializers.ValidationError({title: [msg]})
+        return super(RulesetTransformationViewSet, self).update(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
-        trans_ok, msg = self._update_or_partial_update(request, partial=True, *args, **kwargs)
+        trans_ok, title, msg = self._update_or_partial_update(request, True)
         if trans_ok is False:
-            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
-        return super(RulesetTransformationViewSet, self).update(request, partial=True, *args, **kwargs)
+            raise serializers.ValidationError({title: [msg]})
+        return super(RulesetTransformationViewSet, self).partial_update(request, *args, **kwargs)
 
 
 class CategoryTransformationSerializer(serializers.ModelSerializer):
@@ -665,16 +666,16 @@ class CategoryTransformationViewSet(BaseTransformationViewSet):
         return super(CategoryTransformationViewSet, self).create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        trans_ok, msg = self._update_or_partial_update(request, partial=False, *args, **kwargs)
+        trans_ok, title, msg = self._update_or_partial_update(request, False)
         if trans_ok is False:
-            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
-        return super(CategoryTransformationViewSet, self).update(request, partial=False, *args, **kwargs)
+            raise serializers.ValidationError({title: [msg]})
+        return super(CategoryTransformationViewSet, self).update(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
-        trans_ok, msg = self._update_or_partial_update(request, partial=True, *args, **kwargs)
+        trans_ok, title, msg = self._update_or_partial_update(request, True)
         if trans_ok is False:
-            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
-        return super(CategoryTransformationViewSet, self).update(request, partial=True, *args, **kwargs)
+            raise serializers.ValidationError({title: [msg]})
+        return super(CategoryTransformationViewSet, self).partial_update(request, *args, **kwargs)
 
 
 class RuleTransformationSerializer(serializers.ModelSerializer):
@@ -762,16 +763,16 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
         return super(RuleTransformationViewSet, self).create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        trans_ok, msg = self._update_or_partial_update(request, partial=False, *args, **kwargs)
+        trans_ok, title, msg = self._update_or_partial_update(request, False)
         if trans_ok is False:
-            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
-        return super(RuleTransformationViewSet, self).update(request, partial=False, *args, **kwargs)
+            raise serializers.ValidationError({title: [msg]})
+        return super(RuleTransformationViewSet, self).update(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
-        trans_ok, msg = self._update_or_partial_update(request, partial=True, *args, **kwargs)
+        trans_ok, title, msg = self._update_or_partial_update(request, True)
         if trans_ok is False:
-            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
-        return super(RuleTransformationViewSet, self).update(request, partial=True, *args, **kwargs)
+            raise serializers.ValidationError({title: [msg]})
+        return super(RuleTransformationViewSet, self).partial_update(request, *args, **kwargs)
 
 
 class BaseSourceSerializer(serializers.ModelSerializer):
@@ -850,17 +851,15 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
 
         if source.method != 'local':
             msg = 'No upload is allowed. method is currently "%s"' % source.method
-            return Response({'upload': msg}, status=status.HTTP_400_BAD_REQUEST)
+            raise serializers.ValidationError({'upload': [msg]})
 
         if not request.FILES.has_key('file'):
-            msg = 'No file to upload'
-            return Response({'upload': msg}, status=status.HTTP_400_BAD_REQUEST)
+            raise serializers.ValidationError({'file': ['This field is required.']})
 
         try:
             source.handle_uploaded_file(request.FILES['file'])
         except Exception as error:
             raise ServiceUnavailableException(error)
-            return Response({'upload': error.message}, status=status.HTTP_400_BAD_REQUEST)
 
         UserAction.create(
                 action_type='upload_source',
@@ -890,8 +889,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
                 if hasattr(Probe.common, 'update_source_rest'):
                     Probe.common.update_source_rest(request, source)
                 else:
-                    msg = 'Can not launch update in asynchronous'
-                    return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
+                    raise ServiceUnavailableException()
             else:
                 source.update()
         except Exception as errors:
@@ -904,7 +902,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
             else:
                 msg = 'Error updating source'
             msg = '%s: %s' % (msg, errors)
-            return Response({'update': msg}, status=status.HTTP_400_BAD_REQUEST)
+            raise serializers.ValidationError({'update': [msg]})
 
         UserAction.create(
                 action_type='update_source',
@@ -926,8 +924,8 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
     def fetch_list_sources(self, request):
         try:
             fetch_public_sources()
-        except:
-            raise ServiceUnavailableException()
+        except Exception as e:
+            raise ServiceUnavailableException(e)
         return Response({'fetch': 'ok'})
 
     @detail_route(methods=['post'])
@@ -936,15 +934,15 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         sources_at_version = SourceAtVersion.objects.filter(source=source, version='HEAD')
         res = sources_at_version[0].test()
 
-        if 'status' in res and res['status'] is True:
-            del res['status']
-            res['test'] = 'ok'
+        if ('status' not in res or res['status'] is False) or \
+                ('errors' not in res or len(res['errors']) > 0):
+            raise serializers.ValidationError({'test': {'errors': res['errors']}})
 
-        if 'errors' in res and len(res['errors']) == 0:
-            del res['errors']
-            return Response(res)
+        response = {'test': 'ok'}
+        if 'warnings' in res and len(res['warnings']) > 0:
+            response['warnings'] = res['warnings']
 
-        return Response(res, status=status.HTTP_400_BAD_REQUEST)
+        return Response(response)
 
 
 class PublicSourceSerializer(BaseSourceSerializer):
@@ -970,10 +968,10 @@ class PublicSourceSerializer(BaseSourceSerializer):
         uri = public_sources['sources'][source_name]['url']
         if 'secret-code' not in uri:
             if 'secret_code' in validated_data:
-                raise exceptions.NotFound(detail='No secret code needed')
+                raise serializers.ValidationError({'secret_code': ['No secret code needed']})
         else:
             if 'secret_code' not in validated_data:
-                raise exceptions.NotFound(detail='Secret code is needed')
+                raise serializers.ValidationError({'secret_code': ['Secret code is needed']})
             uri = uri % {'secret-code': validated_data.pop('secret_code')}
 
         uri = uri % {'__version__': '4.0'}

@@ -277,7 +277,7 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
         response, status_ = self.http_post(reverse('publicsource-test', args=(self.public_source.pk,)), status=status_)
 
         if status_ == status.HTTP_400_BAD_REQUEST:
-            self.assertEqual('errors' in response, True)
+            self.assertEqual('errors' in response['test'], True)
         else:
             self.assertEqual(status_, status.HTTP_200_OK)
             self.assertEqual('test' in response and response['test'] == 'ok', True)
