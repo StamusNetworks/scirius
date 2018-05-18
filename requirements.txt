@@ -18,8 +18,9 @@ ipy
 elasticsearch
 django-ipware
 gunicorn
-djangorestframework                                                                                                                                                                                               
-markdown                                                                                                                                                                                                          
+djangorestframework
+markdown
 django-filter
 idstools
 enum34
+drf-schema-adapter
