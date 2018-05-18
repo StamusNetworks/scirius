@@ -1,10 +1,13 @@
 import React from 'react';
-import { ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
+import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
 import axios from 'axios';
 import { PAGE_STATE } from './Const.js';
+import { PAGINATION_VIEW } from 'patternfly-react';
 import { SciriusChart } from './Chart.js';
 import * as config from './config/Api.js';
 import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
+import { HuntFilter } from './Filter.js';
+import { HuntList, HuntPaginationRow } from './Api.js';
 
 
 export const RuleFilterFields = [
@@ -335,4 +338,171 @@ export function updateHitsStats(rules, p_from_date, updateCallback, qfilter) {
                     updateCallback(rules);
                  }
          });
+}
+
+export class RulesList extends HuntList {
+  constructor(props) {
+    super(props);
+    this.state = {
+      rules: [], categories: [], rules_count: 0,
+      loading: true,
+      refresh_data: false,
+    };
+    this.updateRulesState = this.updateRulesState.bind(this);
+    this.fetchHitsStats = this.fetchHitsStats.bind(this);
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+     if (prevProps.from_date !==  this.props.from_date) {
+             this.fetchHitsStats(this.state.rules);
+     }
+  }
+
+   buildQFilter(filters) {
+     var qfilter = [];
+     for (var i=0; i < filters.length; i++) {
+	if (filters[i].id === 'probe') {
+            qfilter.push('host.raw:' + filters[i].value);
+	    continue;
+	} else if (filters[i].id === 'sprobe') {
+            qfilter.push('host.raw:' + filters[i].value.id);
+	    continue;
+	}
+     }
+     if (qfilter.length === 0) {
+	 return undefined;
+     }
+     return qfilter.join(" AND ");
+   }
+
+   buildFilter(filters) {
+     var l_filters = {};
+     for (var i=0; i < filters.length; i++) {
+	if (filters[i].id !== 'probe') {
+               if (filters[i].id in l_filters) {
+               l_filters[filters[i].id] += "," + filters[i].value;
+            } else {
+               l_filters[filters[i].id] = filters[i].value;
+            }
+	}
+     }
+     var string_filters = "";
+     for (var k in l_filters) {
+         string_filters += "&" + k + "=" + l_filters[k];
+     }
+     var qfilter = this.buildQFilter(filters);
+     if (qfilter) {
+	 string_filters += '&qfilter=' +  qfilter;
+     }
+     return string_filters;
+   }
+
+  updateRulesState(rules) {
+         this.setState({rules: rules});
+  }
+
+  buildTimelineDataSet(tdata) {
+    var timeline = {x : 'x', type: 'area',  columns: [['x'], ['alerts']]};
+    for (var key in tdata) {
+        timeline.columns[0].push(tdata[key].date);
+        timeline.columns[1].push(tdata[key].hits);
+    }
+    return timeline;
+  }
+
+  buildHitsStats(rules) {
+       for (var rule in rules) {
+          rules[rule].timeline = this.buildTimelineDataSet(rules[rule].timeline_data);
+	  rules[rule].timeline_data = undefined;
+       }
+       this.updateRulesState(rules);
+   }
+
+  fetchHitsStats(rules) {
+	 var qfilter = this.buildQFilter(this.props.rules_list.filters);
+         updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
+  }
+
+  fetchData(rules_stat) {
+     var filters = rules_stat.filters;
+     var string_filters = this.buildFilter(filters);
+
+     this.setState({refresh_data: true});
+     axios.all([
+          axios.get(config.API_URL + config.RULE_PATH + this.buildListUrlParams(rules_stat) + "&from_date=" + this.props.from_date + string_filters),
+          axios.get(config.API_URL + config.CATEGORY_PATH + "?page_size=100"),
+	  ])
+      .then(axios.spread((RuleRes, CatRes) => {
+	 var categories_array = CatRes.data['results'];
+	 var categories = {};
+	 for (var i = 0; i < categories_array.length; i++) {
+	     var cat = categories_array[i];
+	     categories[cat.pk] = cat;
+	 }
+         this.setState({ rules_count: RuleRes.data['count'], rules: RuleRes.data['results'], categories: categories, loading: false, refresh_data: false});
+	 if (!RuleRes.data.results[0].timeline_data) {
+	     this.fetchHitsStats(RuleRes.data['results']);
+	 } else {
+             this.buildHitsStats(RuleRes.data['results']);
+	 }
+     }))
+  }
+
+  componentDidMount() {
+      this.fetchData(this.props.config)
+  }
+  
+  render() {
+    return (
+        <div className="RulesList">
+	<Spinner loading={this.state.loading} >
+	    <HuntFilter ActiveFilters={this.props.config.filters}
+	          config={this.props.config}
+		  ActiveSort={this.props.config.sort}
+		  UpdateFilter={this.UpdateFilter}
+		  UpdateSort={this.UpdateSort}
+		  setViewType={this.setViewType}
+		  filterFields={RuleFilterFields}
+		  sort_config={RuleSortFields}
+		  displayToggle={true}
+            />
+            {this.props.config.view_type === 'list' &&
+	    <ListView>
+            {this.state.rules.map(function(rule) {
+                return(
+                   <RuleInList key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.props.SwitchPage} />
+                )
+             },this)}
+	    </ListView>
+            }
+            {this.props.config.view_type === 'card' &&
+                <div className='container-fluid container-cards-pf'>
+                <div className='row row-cards-pf'>
+                {this.state.rules.map(function(rule) {
+                         return(
+                                <RuleCard key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.props.SwitchPage} />
+                )
+             },this)}
+                </div>
+                </div>
+            }
+	    <HuntPaginationRow
+	        viewType = {PAGINATION_VIEW.LIST}
+	        pagination={this.props.config.pagination}
+	        onPaginationChange={this.handlePaginationChange}
+		amountOfPages = {Math.ceil(this.state.rules_count / this.props.config.pagination.perPage)}
+		pageInputValue = {this.props.config.pagination.page}
+		itemCount = {this.state.rules_count}
+		itemsStart = {(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
+		itemsEnd = {Math.min(this.props.config.pagination.page * this.props.config.pagination.perPage - 1, this.state.rules_count) }
+		onFirstPage={this.onFirstPage}
+		onNextPage={this.onNextPage}
+		onPreviousPage={this.onPrevPage}
+		onLastPage={this.onLastPage}
+
+	    />
+	    </Spinner>
+        </div>
+    );
+  }
 }
