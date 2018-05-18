@@ -186,8 +186,9 @@ class RestAPITestBase(object):
         try:
             response = func(url, *args, **kwargs)
         except Exception as e:
-            msg = 'Request failure on %s:\n%s' % (url, e.args[0])
-            e.args = (msg,) + e.args[1:]
+            if len(e.args) >= 1:
+                msg = 'Request failure on %s:\n%s' % (url, e.args[0])
+                e.args = (msg,) + e.args[1:]
             raise
 
         # behavior/status could be different on remote and local build
