@@ -14,7 +14,7 @@ const HistoryFilterFields = [
     placeholder: 'Filter by Message',
     filterType: 'text'
   }, {
-    id: 'user',
+    id: 'username',
     title: 'User',
     placeholder: 'Filter by User',
     filterType: 'text'
@@ -29,15 +29,9 @@ const HistorySortFields = [
     defaultAsc: false,
   },
   {
-    id: 'msg',
-    title: 'Message',
-    isNumeric: false,
-    defaultAsc: true,
-  },
-  {
     id: 'username',
-    title: 'Username',
-    isNumeric: true,
+    title: 'User',
+    isNumeric: false,
     defaultAsc: false,
   }
 ];
@@ -54,9 +48,10 @@ export class HistoryPage extends HuntList {
 	this.fetchData(this.props.config);
     }
     
-    
+
     fetchData(history_stat) {
-	axios.get(config.API_URL + config.HISTORY_PATH + this.buildListUrlParams(history_stat))
+	var string_filters = this.buildFilter(history_stat.filters);
+	axios.get(config.API_URL + config.HISTORY_PATH + this.buildListUrlParams(history_stat) + string_filters)
         .then(res => {
                this.setState({ data: res.data, count: res.data.count });
           })

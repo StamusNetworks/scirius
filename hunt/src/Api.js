@@ -99,8 +99,27 @@ export class HuntList extends React.Component {
          this.UpdateFilter = this.UpdateFilter.bind(this);
          this.UpdateSort = this.UpdateSort.bind(this);
      
+         this.buildFilter = this.buildFilter.bind(this);
+
          this.setViewType = this.setViewType.bind(this);
     }
+
+   buildFilter(filters) {
+     var l_filters = {};
+     for (var i=0; i < filters.length; i++) {
+            if (filters[i].id in l_filters) {
+               l_filters[filters[i].id] += "," + filters[i].value;
+            } else {
+               l_filters[filters[i].id] = filters[i].value;
+            }
+	 }
+     var string_filters = "";
+     for (var k in l_filters) {
+         string_filters += "&" + k + "=" + l_filters[k];
+     }
+
+     return string_filters;
+   }
 
   handlePaginationChange(pagin) {
      const newListState = Object.assign({}, this.props.config);
