@@ -6,6 +6,7 @@ import axios from 'axios';
 import { HuntFilter } from './Filter.js';
 import { HuntList, HuntPaginationRow } from './Api.js';
 import * as config from './config/Api.js';
+import { PAGE_STATE } from './Const.js';
 
 const HistoryFilterFields = [
   {
@@ -74,7 +75,7 @@ export class HistoryPage extends HuntList {
 	        <ListView>
 	        {this.state.data.results &&
 	           this.state.data.results.map( item => {
-	               return(<HistoryItem key={item.id} data={item} />);
+	               return(<HistoryItem key={item.id} data={item} switchPage={this.props.switchPage} />);
 	           })
 	        }
 	        </ListView>
@@ -108,6 +109,9 @@ class HistoryItem extends React.Component {
 	        ];
 	if (this.props.data.ua_objects.ruleset && this.props.data.ua_objects.ruleset.pk) {
 		info.push(<ListViewInfoItem key="ruleset"><p><Icon type="fa" name="th" /> {this.props.data.ua_objects.ruleset.value}</p></ListViewInfoItem>);
+	}
+	if (this.props.data.ua_objects.rule && this.props.data.ua_objects.rule.sid) {
+		info.push(<ListViewInfoItem key="rule"><p><a onClick={e => { return this.props.switchPage(PAGE_STATE.rule, this.props.data.ua_objects.rule.sid);}}><Icon type="fa" name="bell" /> {this.props.data.ua_objects.rule.sid}</a></p></ListViewInfoItem>);
 	}
         return(
 	    <ListViewItem

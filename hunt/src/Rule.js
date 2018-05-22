@@ -190,14 +190,27 @@ export class RulePage extends React.Component {
     constructor(props) {
         super(props);
         var rule = JSON.parse(JSON.stringify(this.props.rule));
-        rule.timeline = undefined;
-        this.state = { rule: rule};
+	if (typeof rule === 'number') {
+            this.state = { rule: undefined, sid: rule};
+	} else {
+	    rule.timeline = undefined;
+            this.state = { rule: rule, sid: rule.sid};
+	}
         this.updateRuleState = this.updateRuleState.bind(this);
     }
 
     componentDidMount() {
-       var rule = JSON.parse(JSON.stringify(this.props.rule));
-       updateHitsStats([rule], this.props.from_date, this.updateRuleState, undefined);
+       var rule = this.state.rule;
+       var sid = this.state.sid;
+       if (rule !== undefined) {
+           updateHitsStats([rule], this.props.from_date, this.updateRuleState, undefined);
+       } else {
+           axios.get(config.API_URL + config.RULE_PATH + sid).then(
+		res => { 
+                         updateHitsStats([res.data], this.props.from_date, this.updateRuleState, undefined);
+		}
+	   )
+       }
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -214,7 +227,10 @@ export class RulePage extends React.Component {
     render() {
         return (
             <div>
-            <h1>{this.state.rule.msg}</h1>
+	    <Spinner loading={this.state.rule === undefined}>
+	    {this.state.rule &&
+            <div>
+	    <h1>{this.state.rule.msg}</h1>
             <div className='container-fluid container-cards-pf'>
                 <div className='row'>
                      <p>{this.state.rule.content}</p>
@@ -238,6 +254,9 @@ export class RulePage extends React.Component {
                     <RuleStat title="Probes" rule={this.state.rule} item='probe' from_date={this.props.from_date} />
                 </div>
             </div>
+	    </div>
+	    }
+	    </Spinner>
             </div>
 	)
     }

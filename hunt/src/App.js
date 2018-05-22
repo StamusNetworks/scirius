@@ -165,7 +165,7 @@ class HuntApp extends Component {
                   displayed_page = <HuntDashboard from_date={this.state.from_date}/>
                   break;
                case PAGE_STATE.history:
-                  displayed_page = <HistoryPage config={this.state.history} from_date={this.state.from_date} updateListState={this.updateHistoryListState} />
+                  displayed_page = <HistoryPage config={this.state.history} from_date={this.state.from_date} updateListState={this.updateHistoryListState} switchPage={this.switchPage}/>
                   break;
             }
         return(
