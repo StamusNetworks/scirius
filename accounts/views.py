@@ -141,7 +141,10 @@ def manageview(request, action):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             if request.user.is_superuser:
-                form.save()
+                ruser = form.save()
+
+                sciriususer = SciriusUser.objects.create(user=ruser, timezone='UTC')
+                sciriususer.save()
             else:
                 context['error'] = 'Not enough permission to create users'
         else:
