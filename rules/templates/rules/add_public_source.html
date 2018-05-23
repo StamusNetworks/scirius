@@ -7,12 +7,15 @@
 Add a Source
 </h2>
 </div>
+
+{% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
         <ul class="action">
 	     <li> <a href="{% url "update_public_sources" %}">Update public sources</a></li>
 	</ul>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -41,7 +44,11 @@ Add a Source
                       </div>
                       <div class="list-view-pf-actions">
                           {% if not params.added %}
+                              {% if request.user.is_staff %}
                           <a class="add_source_button" name="{{ source }}" style="cursor: pointer;"><button class="btn btn-default">Enable</button></a>
+                              {% else %}
+                                <button class="btn btn-default" disabled>Available</button>
+                              {% endif %}
                           {% else %}
                           <button class="btn btn-default" disabled>Enabled</button>
                           {% endif %}

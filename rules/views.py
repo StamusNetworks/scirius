@@ -1158,7 +1158,8 @@ def fetch_public_sources():
 
 
 def update_public_sources(request):
-    fetch_public_sources()
+    if request.user.is_staff:
+        fetch_public_sources()
     return redirect('add_public_source')
 
 
