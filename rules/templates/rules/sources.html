@@ -5,6 +5,8 @@
     <h2 class="panel-title">Defined sources</h2>
 </div>
 <ul><li>List of feeds.</li></ul>
+
+{% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Actions</h2>
 </div>
@@ -12,6 +14,7 @@
 	     <li> <a href="{% url "add_public_source" %}">Add public source</a></li>
 	     <li> <a href="{% url "add_source" %}">Add custom source</a></li>
 	</ul>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -42,11 +45,13 @@
   <button class="btn btn-link dropdown-toggle" type="button" id="dropdownKebabRight{{ source.pk }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
     <span class="fa fa-ellipsis-v"></span>
   </button>
+{% if request.user.is_staff %}
   <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownKebabRight{{ source.pk }}">
     <li><a onclick="UpdateSource{{ source.pk }}()" style="cursor: pointer;">Update source</a></li>
     <li><a href="{% url "edit_source" source.pk %}">Edit source</a></li>
     <li><a href="{% url "delete_source" source.pk %}">Delete source</a></li>
   </ul>
+{% endif %}
 </div>
 
     </div>
@@ -182,6 +187,8 @@ function UpdateSource{{ source.id }}() {
 <h3>No defined source</h3>
 <p>
 You need at least a source to be able to create a Ruleset.
+</p>
+{% if request.user.is_staff %}
 <ul>
 	<li>
 		<a href="{% url "add_public_source" %}">Add a public source</a>
@@ -190,6 +197,8 @@ You need at least a source to be able to create a Ruleset.
 		<a href="{% url "add_source" %}">Add a custom source</a>
 	</li>
 </ul>
-</p>
+{% else %}
+<p>Ask user with access to create one.</p>
+{% endif %}
 {% endif %}
 {% endblock %}
