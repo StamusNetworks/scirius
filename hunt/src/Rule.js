@@ -389,7 +389,7 @@ export class RuleEditKebab extends React.Component {
     render() {
         return(
             <React.Fragment>
-                <DropdownKebab id="ruleActions">
+                <DropdownKebab id="ruleActions" pullRight>
                         <MenuItem onClick={ e => {this.displayToggle("Enable") }}>
                         Enable Rule
                         </MenuItem>
