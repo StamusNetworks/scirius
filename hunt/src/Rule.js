@@ -3,6 +3,7 @@ import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinn
 import axios from 'axios';
 import { PAGE_STATE } from './Const.js';
 import { PAGINATION_VIEW } from 'patternfly-react';
+import { Modal, DropdownKebab, MenuItem, Icon, Button } from 'patternfly-react';
 import { SciriusChart } from './Chart.js';
 import * as config from './config/Api.js';
 import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
@@ -191,12 +192,14 @@ export class RulePage extends React.Component {
         super(props);
         var rule = JSON.parse(JSON.stringify(this.props.rule));
 	if (typeof rule === 'number') {
-            this.state = { rule: undefined, sid: rule};
+            this.state = { rule: undefined, sid: rule, toggle: { show: false, action: "Disable" }};
 	} else {
 	    rule.timeline = undefined;
-            this.state = { rule: rule, sid: rule.sid};
+            this.state = { rule: rule, sid: rule.sid, toggle: { show: false, action: "Disable" }};
 	}
         this.updateRuleState = this.updateRuleState.bind(this);
+        this.displayToggle = this.displayToggle.bind(this);
+        this.hideToggle = this.hideToggle.bind(this);
     }
 
     componentDidMount() {
@@ -224,13 +227,33 @@ export class RulePage extends React.Component {
         this.setState({rule: rule[0]});
     }
 
+    displayToggle(action) {
+        this.setState({toggle: {show: true, action: action}});
+    }
+
+    hideToggle() {
+        this.setState({toggle: {show: false, action: this.state.toggle.action}});
+    }
+
     render() {
         return (
             <div>
 	    <Spinner loading={this.state.rule === undefined}>
 	    {this.state.rule &&
             <div>
-	    <h1>{this.state.rule.msg}</h1>
+	    <h1>{this.state.rule.msg}
+            <span className="pull-right"> 
+                <DropdownKebab id="ruleActions">
+                        <MenuItem onClick={ e => {this.displayToggle("Enable") }}>
+                        Enable Rule
+                        </MenuItem>
+                        <MenuItem  onClick={ e => {this.displayToggle("Disable") }}> 
+                        Disable Rule
+                        </MenuItem>
+                </DropdownKebab>
+                <RuleToggleModal show={this.state.toggle.show} config={this.state} close={this.hideToggle}/>
+            </span>
+        </h1>
             <div className='container-fluid container-cards-pf'>
                 <div className='row'>
                      <p>{this.state.rule.content}</p>
@@ -357,6 +380,69 @@ export function updateHitsStats(rules, p_from_date, updateCallback, qfilter) {
                     updateCallback(rules);
                  }
          });
+}
+
+export class RuleToggleModal extends React.Component {
+    constructor(props) {
+        super(props);
+        this.submit = this.submit.bind(this);
+        this.state = {rulesets: []};
+    }
+
+    componentDidMount(props) {
+          axios.get(config.API_URL + config.RULESET_PATH).then(res => {
+               this.setState({rulesets: res.data['results']});
+          })
+    }
+
+    submit() {
+
+    }
+
+    render() {
+       return(
+            <Modal show={this.props.show} onHide={this.props.close}>
+    <Modal.Header>
+      <button
+        className="close"
+        onClick={this.props.close}
+        aria-hidden="true"
+        aria-label="Close"
+      >
+        <Icon type="pf" name="close" />
+      </button>
+      <Modal.Title>{this.props.config.toggle.action} Rule {this.props.config.rule.sid}</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+      <form className="form-horizontal">
+        <div className="form-group container">
+        <label>Choose Ruleset(s)</label>
+              {this.state.rulesets.map(function(ruleset) {
+                      return(<div className="row">
+                           <div className="col-sm-9">
+                         <input type="checkbox" key={ruleset.pk} id={ruleset.pk}/> <label>{ruleset.name}</label>
+                         </div>
+                      </div>);
+                  })
+              }
+        </div>
+      </form>
+    </Modal.Body>
+    <Modal.Footer>
+      <Button
+        bsStyle="default"
+        className="btn-cancel"
+        onClick={this.props.close}
+      >
+        Cancel
+      </Button>
+      <Button bsStyle="primary" onClick={this.submit}>
+        Submit
+      </Button>
+    </Modal.Footer>
+  </Modal>
+       )
+    }
 }
 
 export class RulesList extends HuntList {
