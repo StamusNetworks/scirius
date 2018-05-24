@@ -438,8 +438,8 @@ export class RulesList extends HuntList {
    }
 
   fetchHitsStats(rules) {
-	 var qfilter = this.buildQFilter(this.props.rules_list.filters);
-         updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
+	 var qfilter = this.buildQFilter(this.props.config.filters);
+     updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
   }
 
   fetchData(rules_stat) {
