@@ -70,9 +70,10 @@ export const RuleSortFields = [
 export class RuleInList extends React.Component {
   render() {
     var category = this.props.state.categories[this.props.data.category];
+    var kebab_config = { rule: this.props.data };
     return (
 	<ListViewItem
-  actions={<button onClick={this.props.SwitchPage.bind(this, PAGE_STATE.rule).bind(this, this.props.data)}>View</button>}
+  actions={[<button onClick={this.props.SwitchPage.bind(this, PAGE_STATE.rule).bind(this, this.props.data)}>View</button>, <RuleEditKebab config={kebab_config}/> ]}
   leftContent={<ListViewIcon name="envelope" />}
   additionalInfo={[<ListViewInfoItem key="created"><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
                    <ListViewInfoItem key="updated"><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
@@ -201,8 +202,6 @@ export class RulePage extends React.Component {
             this.state = { rule: rule, sid: rule.sid, toggle: { show: false, action: "Disable" }};
 	}
         this.updateRuleState = this.updateRuleState.bind(this);
-        this.displayToggle = this.displayToggle.bind(this);
-        this.hideToggle = this.hideToggle.bind(this);
     }
 
     componentDidMount() {
@@ -230,13 +229,7 @@ export class RulePage extends React.Component {
         this.setState({rule: rule[0]});
     }
 
-    displayToggle(action) {
-        this.setState({toggle: {show: true, action: action}});
-    }
 
-    hideToggle() {
-        this.setState({toggle: {show: false, action: this.state.toggle.action}});
-    }
 
     render() {
         return (
@@ -246,15 +239,7 @@ export class RulePage extends React.Component {
             <div>
 	    <h1>{this.state.rule.msg}
             <span className="pull-right"> 
-                <DropdownKebab id="ruleActions">
-                        <MenuItem onClick={ e => {this.displayToggle("Enable") }}>
-                        Enable Rule
-                        </MenuItem>
-                        <MenuItem  onClick={ e => {this.displayToggle("Disable") }}> 
-                        Disable Rule
-                        </MenuItem>
-                </DropdownKebab>
-                <RuleToggleModal show={this.state.toggle.show} config={this.state} close={this.hideToggle}/>
+                <RuleEditKebab config={this.state} />
             </span>
         </h1>
             <div className='container-fluid container-cards-pf'>
@@ -385,6 +370,39 @@ export function updateHitsStats(rules, p_from_date, updateCallback, qfilter) {
          });
 }
 
+export class RuleEditKebab extends React.Component {
+    constructor(props) {
+        super(props);
+        this.displayToggle = this.displayToggle.bind(this);
+        this.hideToggle = this.hideToggle.bind(this);
+        this.state = { toggle: { show: false, action: "Disable" }};
+    }
+
+    displayToggle(action) {
+        this.setState({toggle: {show: true, action: action}});
+    }
+
+    hideToggle() {
+        this.setState({toggle: {show: false, action: this.state.toggle.action}});
+    }
+
+    render() {
+        return(
+            <React.Fragment>
+                <DropdownKebab id="ruleActions">
+                        <MenuItem onClick={ e => {this.displayToggle("Enable") }}>
+                        Enable Rule
+                        </MenuItem>
+                        <MenuItem  onClick={ e => {this.displayToggle("Disable") }}> 
+                        Disable Rule
+                        </MenuItem>
+                </DropdownKebab>
+                <RuleToggleModal show={this.state.toggle.show} action={this.state.toggle.action} config={this.props.config} close={this.hideToggle}/>
+            </React.Fragment>
+        )
+    }
+}
+
 export class RuleToggleModal extends React.Component {
     constructor(props) {
         super(props);
@@ -408,7 +426,7 @@ export class RuleToggleModal extends React.Component {
                      data['comment'] = this.state.comment
                  }
                  var url = config.API_URL + config.RULE_PATH + this.props.config.rule.sid;
-                 if (this.props.config.toggle.action === "Enable") {
+                 if (this.props.action === "Enable") {
                      url = url + '/enable/';
                  } else {
                      url = url + '/disable/';
@@ -463,7 +481,7 @@ export class RuleToggleModal extends React.Component {
       >
         <Icon type="pf" name="close" />
       </button>
-      <Modal.Title>{this.props.config.toggle.action} Rule {this.props.config.rule.sid}</Modal.Title>
+      <Modal.Title>{this.props.action} Rule {this.props.config.rule.sid}</Modal.Title>
     </Modal.Header>
     <Modal.Body>
        <form className="form-horizontal container">
