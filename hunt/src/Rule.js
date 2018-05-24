@@ -10,6 +10,9 @@ import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 import { HuntFilter } from './Filter.js';
 import { HuntList, HuntPaginationRow } from './Api.js';
 
+axios.defaults.xsrfCookieName = 'csrftoken';
+axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+
 
 export const RuleFilterFields = [
   {
@@ -385,8 +388,9 @@ export function updateHitsStats(rules, p_from_date, updateCallback, qfilter) {
 export class RuleToggleModal extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {rulesets: [], selected: []};
         this.submit = this.submit.bind(this);
-        this.state = {rulesets: []};
+        this.handleChange = this.handleChange.bind(this);
     }
 
     componentDidMount(props) {
@@ -396,7 +400,46 @@ export class RuleToggleModal extends React.Component {
     }
 
     submit() {
+         this.state.selected.map(
+             function(ruleset) {
+                 var data = {ruleset: ruleset}
+                 var url = config.API_URL + config.RULE_PATH + this.props.config.rule.sid;
+                 if (this.props.config.toggle.action === "Enable") {
+                     url = url + '/enable/';
+                 } else {
+                     url = url + '/disable/';
+                 }
+                 axios.post(url, data).then(
+                     function(res) {
+                         // Fixme notification or something
+                         console.log("action on rule is a success");
+                     }
+                 );
+                 return;
+             }
+         , this); 
+         this.props.close();
+    }
 
+    handleChange(event) {
+        const target = event.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+        console.log("check " + value + "for " + name);
+        var sel_list = this.state.selected;
+        if (value === false) {
+             // pop element
+             var index = sel_list.indexOf(name);
+             if (index >= 0) {
+                 sel_list.splice(index, 1);
+                 this.setState({selected: sel_list});
+             }
+        } else {
+            if (sel_list.indexOf(name) < 0) {
+                 sel_list.push(name);
+                 this.setState({selected: sel_list});
+            }
+        }
     }
 
     render() {
@@ -418,12 +461,12 @@ export class RuleToggleModal extends React.Component {
         <div className="form-group container">
         <label>Choose Ruleset(s)</label>
               {this.state.rulesets.map(function(ruleset) {
-                      return(<div className="row">
+                      return(<div className="row"  key={ruleset.pk}>
                            <div className="col-sm-9">
-                         <input type="checkbox" key={ruleset.pk} id={ruleset.pk}/> <label>{ruleset.name}</label>
+                         <input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange}/> <label>{ruleset.name}</label>
                          </div>
                       </div>);
-                  })
+                  }, this)
               }
         </div>
       </form>
