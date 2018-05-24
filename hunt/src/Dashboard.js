@@ -125,7 +125,6 @@ class HuntTimeline extends React.Component {
 			 g_data.columns.push(pdata);
 		     }
 	     }
-	     console.log(g_data);
 	}
 
 	return(
