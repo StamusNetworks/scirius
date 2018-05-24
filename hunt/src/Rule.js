@@ -388,9 +388,10 @@ export function updateHitsStats(rules, p_from_date, updateCallback, qfilter) {
 export class RuleToggleModal extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {rulesets: [], selected: []};
+        this.state = {rulesets: [], selected: [], comment: ""};
         this.submit = this.submit.bind(this);
         this.handleChange = this.handleChange.bind(this);
+        this.handleCommentChange = this.handleCommentChange.bind(this);
     }
 
     componentDidMount(props) {
@@ -402,7 +403,10 @@ export class RuleToggleModal extends React.Component {
     submit() {
          this.state.selected.map(
              function(ruleset) {
-                 var data = {ruleset: ruleset}
+                 var data = {ruleset: ruleset};
+                 if (this.state.comment.length > 0) {
+                     data['comment'] = this.state.comment
+                 }
                  var url = config.API_URL + config.RULE_PATH + this.props.config.rule.sid;
                  if (this.props.config.toggle.action === "Enable") {
                      url = url + '/enable/';
@@ -442,6 +446,11 @@ export class RuleToggleModal extends React.Component {
         }
     }
 
+
+    handleCommentChange(event) {
+        this.setState({comment: event.target.value});
+    }
+
     render() {
        return(
             <Modal show={this.props.show} onHide={this.props.close}>
@@ -457,8 +466,8 @@ export class RuleToggleModal extends React.Component {
       <Modal.Title>{this.props.config.toggle.action} Rule {this.props.config.rule.sid}</Modal.Title>
     </Modal.Header>
     <Modal.Body>
-      <form className="form-horizontal">
-        <div className="form-group container">
+       <form className="form-horizontal container">
+        <div className="form-group">
         <label>Choose Ruleset(s)</label>
               {this.state.rulesets.map(function(ruleset) {
                       return(<div className="row"  key={ruleset.pk}>
@@ -468,6 +477,12 @@ export class RuleToggleModal extends React.Component {
                       </div>);
                   }, this)
               }
+        </div>
+
+        <div className="form-group">
+            <div className="col-sm-9">
+                <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange} />
+            </div>
         </div>
       </form>
     </Modal.Body>
