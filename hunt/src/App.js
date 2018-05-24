@@ -180,7 +180,7 @@ class HuntApp extends Component {
 		   <VerticalNav.Item
             	      title="Home"
             	      iconClass="fa fa-home"
-            	      initialActive = { this.state.display.page === PAGE_STATE.rules_list }
+            	      initialActive = { [PAGE_STATE.rules_list, PAGE_STATE.rule, PAGE_STATE.source, PAGE_STATE.ruleset].indexOf(this.state.display.page) >= 0 }
             	      onClick={this.onHomeClick}
             	      className={null}
             	    />
