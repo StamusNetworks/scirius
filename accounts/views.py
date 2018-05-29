@@ -76,23 +76,47 @@ def loginview(request, target):
 
 def editview(request, action):
     if request.user.is_authenticated():
+        request_data = None
+        context = {}
+
         if request.method == 'POST':
-            context = { 'action': 'User settings' }
-            orig_superuser = request.user.is_superuser
-            orig_staff = request.user.is_staff
-            if (action == 'password'):
-                form = PasswordChangeForm(data=request.POST, user = request.user)
-            elif (action == 'settings'):
-                if request.user.is_superuser:
-                    form = UserSettingsForm(request.POST, instance = request.user)
-                else:
-                    form = NormalUserSettingsForm(request.POST, instance = request.user)
-            elif action == 'token':
+            request_data = request.POST
+
+        if action == 'password':
+            form = PasswordChangeForm(user=request.user, data=request_data)
+            context = {'form': form, 'action': 'Change password'}
+        elif action == 'settings':
+            tz = 'UTC'
+            if hasattr(request.user, 'sciriususer'):
+                tz = request.user.sciriususer.timezone
+            initial = {'timezone': tz}
+
+            if request.user.is_superuser:
+                form = UserSettingsForm(request_data, instance=request.user, initial=initial)
+            else:
+                form = NormalUserSettingsForm(request_data, instance=request.user, initial=initial)
+
+            context = {'form': form, 'action': 'Edit settings for ' + request.user.username}
+        elif action == 'token':
+            initial = {}
+            token = Token.objects.filter(user=request.user)
+            if len(token):
+                initial['token'] = token[0]
+            form = TokenForm(request_data, initial=initial)
+            context = {'form': form, 'action': 'User token'}
+        else:
+            context = {'action': 'User settings'}
+
+        if request.method == 'POST':
+            if action == 'token':
                 current_tokens = Token.objects.filter(user=request.user)
                 for token in current_tokens:
                     token.delete()
                 Token.objects.create(user=request.user)
                 return redirect('accounts_edit', action='token')
+
+            orig_superuser = request.user.is_superuser
+            orig_staff = request.user.is_staff
             if form.is_valid():
                 ruser = form.save(commit = False)
                 if not orig_superuser:
@@ -106,34 +130,8 @@ def editview(request, action):
                     except:
                         sciriususer = SciriusUser.objects.create(user = ruser, timezone = form.cleaned_data['timezone'])
                     sciriususer.save()
-            else:
-                context['error'] = 'Invalid form'
-            return scirius_render(request, 'accounts/edit.html', context)
-        else:
-            if (action == 'password'):
-                form = PasswordChangeForm(request.user)
-                context = { 'form': form, 'action': 'Change password' }
-            elif (action == 'settings'):
-                if request.user.is_superuser:
-                    form = UserSettingsForm(instance = request.user, )
-                else:
-                    form = NormalUserSettingsForm(instance = request.user)
-                try:
-                    form.initial['timezone'] = request.user.sciriususer.timezone
-                except:
-                    pass
-                context = { 'form': form, 'action': 'Edit settings for ' + request.user.username }
-            elif (action == 'token'):
-                initial = {}
-                token = Token.objects.filter(user=request.user)
-                if len(token):
-                    initial['token'] = token[0]
-                form = TokenForm(initial=initial)
-                context = { 'form': form, 'action': 'User token'}
-            else:
-                context = { 'action': 'User settings' }
+        return scirius_render(request, 'accounts/edit.html', context)
 
-            return scirius_render(request, 'accounts/edit.html', context)
 
 def manageview(request, action):
     context = { 'action': 'User management' }
