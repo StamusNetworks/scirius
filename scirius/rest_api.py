@@ -5,6 +5,7 @@ from rest_framework.routers import DefaultRouter
 
 from utils import get_middleware_module
 from rules.rest_api import router as rules_router
+from accounts.rest_api import router as accounts_router
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,6 +25,7 @@ class SciriusRouter(DefaultRouter):
         super(SciriusRouter, self).__init__(self, *args, **kwargs)
         self.register('scirius/user', UserViewSet)
         self.registry.extend(rules_router.registry)
+        self.registry.extend(accounts_router.registry)
         try:
             self.registry.extend(get_middleware_module('rest_api').router.registry)
         except AttributeError:
