@@ -23,7 +23,7 @@ from django.contrib.auth.models import User
 import pytz
 
 class LoginForm(forms.Form):
-    username = forms.CharField(max_length=20)
+    username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)
     persistent = forms.BooleanField(label="Remember this browser.", required = False)
 
