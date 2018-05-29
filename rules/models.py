@@ -255,7 +255,7 @@ class UserAction(models.Model):
 
             ua_obj_params = {
                 'action_key': action_key,
-                'action_value': action_value,
+                'action_value': unicode(action_value)[:100],
                 'user_action': ua,
             }
 
