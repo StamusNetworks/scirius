@@ -294,7 +294,13 @@ class UserAction(models.Model):
             else:
                 format_[action.action_key] = format_html('<strong>{}</strong>', action.action_value)
 
-        html = format_html(actions_dict[self.action_type]['description'], **format_)
+        try:
+            html = format_html(actions_dict[self.action_type]['description'], **format_)
+        except KeyError as e:
+            # bug compatibility: workaround for action_value > 100
+            # UserActionObjects related to UserAction (self) were
+            # not inserted on creation
+            html = ''
         return html
 
     def get_title(self):
