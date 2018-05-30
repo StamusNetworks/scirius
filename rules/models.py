@@ -139,6 +139,14 @@ class UserAction(models.Model):
                     'description': '{user} has enabled rule {rule} in ruleset {ruleset}',
                     'title': 'Enable Rule'
                 },
+               'suppress_rule': {
+                    'description': '{user} has suppressed rule {rule} in ruleset {ruleset}',
+                    'title': 'Suppress Rule'
+                },
+               'delete_suppress_rule': {
+                    'description': '{user} has deleted suppressed rule {rule} in ruleset {ruleset}',
+                    'title': 'Delete Suppress Rule'
+                },
                'comment_rule': {
                     'description': '{user} has commented rule {rule}',
                     'title': 'Comment Rule'
@@ -160,7 +168,7 @@ class UserAction(models.Model):
                     'title': 'Enable Category'
                 },
                'create_threshold': {
-                    'description': '{user} has created threshold %s on rule {rule} in ruleset {ruleset}',
+                    'description': '{user} has created threshold on rule {rule} in ruleset {ruleset}',
                     'title': 'Create Threshold'
                 },
                'edit_threshold': {

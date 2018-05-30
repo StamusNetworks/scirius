@@ -855,13 +855,17 @@ def threshold_rule(request, rule_id):
         return scirius_render(request, 'rules/rule.html', context)
 
     if request.method == 'POST': # If the form has been submitted...
+        action_type = 'create_threshold'
+
         if request.POST.has_key('threshold_type'):
             if request.POST['threshold_type'] == 'threshold':
                 form = AddRuleThresholdForm(request.POST)
             else:
                 form = AddRuleSuppressForm(request.POST)
+                action_type = 'suppress_rule'
         else:
             context = {'rule': rule_object, 'form': form, 'error': 'Invalid form, threshold type is missing'}
+
             if request.POST['threshold_type'] == 'suppress':
                 context['type'] = 'suppress'
             else:
@@ -877,7 +881,7 @@ def threshold_rule(request, rule_id):
                 threshold.save()
 
                 UserAction.create(
-                        action_type='create_threshold',
+                        action_type=action_type,
                         comment=form.cleaned_data['comment'],
                         user=request.user,
                         rule=rule_object,
@@ -1860,8 +1864,9 @@ def delete_threshold(request, threshold_id):
     if request.method == 'POST': # If the form has been submitted...
         form = CommentForm(request.POST)
         if form.is_valid():
+            action_type = 'delete_suppress_rule' if threshold.threshold_type == 'suppress' else 'delete_threshold'
             UserAction.create(
-                    action_type='delete_threshold',
+                    action_type=action_type,
                     comment=form.cleaned_data['comment'],
                     user=request.user,
                     rule=rule,
