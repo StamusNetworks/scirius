@@ -263,8 +263,3 @@ def logoutview(request):
     )
     logout(request)
     return redirect(settings.LOGIN_URL)
-
-
-def token(request):
-    return scirius_render(request, 'accounts/edit.html', context)
-

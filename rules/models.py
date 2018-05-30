@@ -1363,7 +1363,7 @@ class Cache:
             del cls.TRANSFORMATIONS
             cls.TRANSFORMATIONS = None
         else:
-            raise Exception("%s cache has not been open" % self.__class__.__name__)
+            raise Exception("%s cache has not been open" % cls.__name__)
 
 
 class Category(models.Model, Transformable, Cache):

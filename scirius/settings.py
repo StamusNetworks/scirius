@@ -267,7 +267,7 @@ if KIBANA_PROXY:
     INSTALLED_APPS += ( 'revproxy',)
 
 if 'ELASTICSEARCH_2X' in globals():
-    if ELASTICSEARCH_2X == True:
+    if ELASTICSEARCH_2X == True: # pylint: disable=undefined-variable
         ELASTICSEARCH_VERSION = 2
     else:
         ELASTICSEARCH_VERSION = 1
