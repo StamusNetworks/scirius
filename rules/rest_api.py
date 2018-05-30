@@ -225,7 +225,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         self._update_or_partial_update(request, True)
-        return super(RulesetViewSet, self).partial_update(request, *args, **kwargs)
+        return super(RulesetViewSet, self).update(request, partial=True, *args, **kwargs)
 
 
 class CategoryChangeSerializer(serializers.Serializer):
@@ -477,7 +477,8 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
 
         fields = params['fields']
         for key, value in dict(fields).iteritems():
-            fields[key] = serializer.validated_data[value]
+            if value in serializer.validated_data:
+                fields[key] = serializer.validated_data[value]
 
         fields['comment'] = comment_serializer.validated_data['comment']
         fields['action_type'] = params['action_type']
@@ -578,7 +579,7 @@ class RulesetTransformationViewSet(BaseTransformationViewSet):
         trans_ok, title, msg = self._update_or_partial_update(request, True)
         if trans_ok is False:
             raise serializers.ValidationError({title: [msg]})
-        return super(RulesetTransformationViewSet, self).partial_update(request, *args, **kwargs)
+        return super(RulesetTransformationViewSet, self).update(request, partial=True, *args, **kwargs)
 
 
 class CategoryTransformationSerializer(serializers.ModelSerializer):
@@ -675,7 +676,7 @@ class CategoryTransformationViewSet(BaseTransformationViewSet):
         trans_ok, title, msg = self._update_or_partial_update(request, True)
         if trans_ok is False:
             raise serializers.ValidationError({title: [msg]})
-        return super(CategoryTransformationViewSet, self).partial_update(request, *args, **kwargs)
+        return super(CategoryTransformationViewSet, self).update(request, partial=True, *args, **kwargs)
 
 
 class RuleTransformationSerializer(serializers.ModelSerializer):
@@ -772,7 +773,7 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
         trans_ok, title, msg = self._update_or_partial_update(request, True)
         if trans_ok is False:
             raise serializers.ValidationError({title: [msg]})
-        return super(RuleTransformationViewSet, self).partial_update(request, *args, **kwargs)
+        return super(RuleTransformationViewSet, self).update(request, partial=True, *args, **kwargs)
 
 
 class BaseSourceSerializer(serializers.ModelSerializer):
