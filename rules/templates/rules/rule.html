@@ -389,6 +389,7 @@ No comment.
 {% endif %}
 </div>
 
+{% if request.user.is_staff %}
 <h3 class="title">Add comment</h3>
 <form class="form" action="{% url 'comment_rule' rule.pk %}" method="post">
     {% csrf_token %}
@@ -399,6 +400,7 @@ No comment.
         </button>
     {% endbuttons %}
 </form>
+{% endif %}
 </div>
 </div>
 </div>

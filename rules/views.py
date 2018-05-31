@@ -816,14 +816,15 @@ def comment_rule(request, rule_id):
     rule_object = get_object_or_404(Rule, sid=rule_id)
 
     if request.method == 'POST': # If the form has been submitted...
-        form = RuleCommentForm(request.POST)
-        if form.is_valid():
-            UserAction.create(
-                    action_type='comment_rule',
-                    comment=form.cleaned_data['comment'],
-                    user=request.user,
-                    rule=rule_object
-            )
+        if request.user.is_staff:
+            form = RuleCommentForm(request.POST)
+            if form.is_valid():
+                UserAction.create(
+                        action_type='comment_rule',
+                        comment=form.cleaned_data['comment'],
+                        user=request.user,
+                        rule=rule_object
+                )
     return redirect(rule_object)
 
 def toggle_availability(request, rule_id):
