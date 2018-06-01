@@ -154,10 +154,18 @@ def manageview(request, action):
             context['form'] = form
             return scirius_render(request, 'accounts/user.html', context)
     else:
+        if request.user.is_superuser is False:
+            if len(action) == 0:
+                action = 'list'
+
+            context['error'] = 'Not enough permission to %s users' % action
+            return scirius_render(request, 'accounts/user.html', context)
+
         if (action == 'add'):
             form = UserCreationForm()
             context = { 'form': form, 'current_action': 'Add user'}
             return scirius_render(request, 'accounts/user.html', context)
+
     return scirius_listing(request, User, 'Users', adduri="/accounts/manage/add")
 
 def manageuser(request, user_id):
