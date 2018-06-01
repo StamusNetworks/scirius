@@ -1092,7 +1092,7 @@ class Transformable:
                 for meta in rule_ids.metadata:
                     # if deployment can be internal then we can relax the constraint
                     # on EXTERNAL_NET to try to catch the lateral movement
-                    if meta == "deployment Internal":
+                    if meta == "deployment Internal" or meta == "deployment Datacenter":
                         rule_ids.raw = rule_ids.raw.replace("$EXTERNAL_NET", "any")
 
         # TARGET + DST/SRC
