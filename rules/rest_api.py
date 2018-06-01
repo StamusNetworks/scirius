@@ -917,8 +917,8 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
     def list_sources(self, request):
         try:
             public_sources = get_public_sources(False)
-        except:
-            raise ServiceUnavailableException()
+        except Exception as e:
+            raise serializers.ValidationError({'list': [str(e)]})
         return Response(public_sources['sources'])
 
     @list_route(methods=['get'])
@@ -926,7 +926,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         try:
             fetch_public_sources()
         except Exception as e:
-            raise ServiceUnavailableException(e)
+            raise serializers.ValidationError({'fetch': [str(e)]})
         return Response({'fetch': 'ok'})
 
     @detail_route(methods=['post'])
