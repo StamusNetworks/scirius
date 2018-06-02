@@ -182,7 +182,7 @@ class Reference:
 
 def elasticsearch(request):
     data = None
-    RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip', 'rule_probe': settings.ELASTICSEARCH_HOSTNAME}
+    RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip', 'rule_probe': settings.ELASTICSEARCH_HOSTNAME, 'field_stats': None}
     if request.GET.__contains__('query'):
         query = request.GET.get('query', 'dashboards')
         if query == 'dashboards':
@@ -224,7 +224,10 @@ def elasticsearch(request):
                 stats = es_get_sigs_list_hits(request, sids, host, from_date = from_date, qfilter = qfilter)
                 return HttpResponse(json.dumps(stats), content_type="application/json")
         elif query in RULE_FIELDS_MAPPING.keys():
-            filter_ip = RULE_FIELDS_MAPPING[query]
+            if query == 'field_stats':
+                filter_ip = request.GET.get('field', 'src_ip')
+            else:
+                filter_ip = RULE_FIELDS_MAPPING[query]
             sid = int(request.GET.get('sid', None))
             from_date = request.GET.get('from_date', None)
             ajax = request.GET.get('json', None)
