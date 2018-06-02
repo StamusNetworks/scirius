@@ -260,9 +260,9 @@ export class RulePage extends React.Component {
                       }
                 </div>
                 <div className='row row-cards-pf'>
-                    <RuleStat title="Sources" rule={this.state.rule} item='src' from_date={this.props.from_date} />
-                    <RuleStat title="Destinations" rule={this.state.rule} item='dest' from_date={this.props.from_date} />
-                    <RuleStat title="Probes" rule={this.state.rule} item='probe' from_date={this.props.from_date} />
+                    <RuleStat title="Sources" rule={this.state.rule} item='src_ip' from_date={this.props.from_date} />
+                    <RuleStat title="Destinations" rule={this.state.rule} item='dest_ip' from_date={this.props.from_date} />
+                    <RuleStat title="Probes" rule={this.state.rule} item='host' from_date={this.props.from_date} />
                 </div>
             </div>
 	    </div>
@@ -282,7 +282,7 @@ class RuleStat extends React.Component {
 
     updateData() {
           axios.get(config.API_URL + config.ES_BASE_PATH +
-                    'rule_' + this.props.item + '&from_date=' + this.props.from_date +
+                    'field_stats&field=' + this.props.item + '&from_date=' + this.props.from_date +
                     '&sid=' + this.props.rule.sid)
              .then(res => {
                this.setState({ data: res.data });
