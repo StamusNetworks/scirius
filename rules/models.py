@@ -1042,13 +1042,23 @@ class Transformable:
         target = ' target:%s;)' % target
         rule.raw = re.sub(r"\)$", "%s" % (target), rule.raw) if target not in rule.raw else rule.raw
 
+    def _test_scan_rules(self, rule_ids):
+        for option in rule_ids.options:
+            if option['name'] == 'flags':
+                if option['value'] == 'S,12':
+                    return True
+                return False
+        return False
+
     def _apply_target_trans(self, rule_ids):
         terms = re.split(r' +', rule_ids.format())
         src = terms[2]
         dst = terms[5]
 
-        # external net always seen as bad guy on attack
-        if src == "$EXTERNAL_NET":
+        if self._test_scan_rules(rule_ids):
+            self._set_target(rule_ids, target="dest_ip")
+        # external net always seen as bad guy on attack if not OUTBOUND
+        elif src == "$EXTERNAL_NET":
             self._set_target(rule_ids, target="dest_ip")
 
         # external net always seen as bad guy on attack
