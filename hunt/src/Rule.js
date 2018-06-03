@@ -557,6 +557,7 @@ export class RulesList extends HuntList {
       loading: true,
       refresh_data: false,
       view: 'rules_list',
+      display_toggle: true,
     };
     this.updateRulesState = this.updateRulesState.bind(this);
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
@@ -635,7 +636,7 @@ export class RulesList extends HuntList {
   }
 
   displayRule(rule) {
-      this.setState({display_rule: rule, view: 'rule'});
+      this.setState({display_rule: rule, view: 'rule', display_toggle: false});
   }
 
   fetchData(rules_stat) {
@@ -679,7 +680,7 @@ export class RulesList extends HuntList {
 		  setViewType={this.setViewType}
 		  filterFields={RuleFilterFields}
 		  sort_config={RuleSortFields}
-		  displayToggle={true}
+		  displayToggle={this.state.display_toggle}
             />
 	    {this.state.view === 'rules_list' &&
             this.props.config.view_type === 'list' &&
@@ -703,9 +704,7 @@ export class RulesList extends HuntList {
                 </div>
                 </div>
             }
-            {this.state.view === 'rule' &&
-	        <RulePage rule={this.state.display_rule} from_date={this.props.from_date}/>
-	    }
+            {this.state.view === 'rules_list' &&
 	    <HuntPaginationRow
 	        viewType = {PAGINATION_VIEW.LIST}
 	        pagination={this.props.config.pagination}
@@ -721,6 +720,10 @@ export class RulesList extends HuntList {
 		onLastPage={this.onLastPage}
 
 	    />
+	    }
+            {this.state.view === 'rule' &&
+	        <RulePage rule={this.state.display_rule} from_date={this.props.from_date}/>
+	    }
 	    </Spinner>
         </div>
     );

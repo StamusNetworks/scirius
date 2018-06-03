@@ -9,7 +9,6 @@ export class HuntFilter extends React.Component {
       filterFields: this.props.filterFields,
       currentFilterType: this.props.filterFields[0],
       activeFilters: this.props.ActiveFilters,
-      showDisplayToggle: this.props.displayToggle,
       currentValue: ''
     };
   }
@@ -185,7 +184,7 @@ export class HuntFilter extends React.Component {
           </Filter>
 	      <HuntSort config={this.props.sort_config} ActiveSort={this.props.ActiveSort} UpdateSort={this.props.UpdateSort}/>
         </div>
-	    {this.state.showDisplayToggle &&
+	    {this.props.displayToggle &&
             <Toolbar.RightContent>
                         <Toolbar.ViewSelector>
             <Button
