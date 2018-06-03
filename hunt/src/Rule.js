@@ -465,7 +465,7 @@ export class RuleToggleModal extends React.Component {
                          console.log("action on rule is a success");
                      }
                  );
-                 return;
+                 return true;
              }
          , this); 
          this.props.close();
