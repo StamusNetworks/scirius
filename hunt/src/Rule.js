@@ -1,7 +1,6 @@
 import React from 'react';
 import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
 import axios from 'axios';
-import { PAGE_STATE } from './Const.js';
 import { PAGINATION_VIEW } from 'patternfly-react';
 import { Modal, DropdownKebab, MenuItem, Icon, Button } from 'patternfly-react';
 import { SciriusChart } from './Chart.js';
@@ -563,6 +562,7 @@ export class RulesList extends HuntList {
     this.updateRulesState = this.updateRulesState.bind(this);
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
     this.displayRule = this.displayRule.bind(this);
+    this.RuleUpdateFilter = this.RuleUpdateFilter.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -637,9 +637,9 @@ export class RulesList extends HuntList {
   }
 
   displayRule(rule) {
-      this.setState({display_rule: rule, view: 'rule', display_toggle: false});
+      this.setState({display_rule: rule});
       let activeFilters = [...this.props.config.filters, {label:"sid: " + rule.sid, field: 'sid', value: rule.sid}];
-      this.UpdateFilter(activeFilters);
+      this.RuleUpdateFilter(activeFilters);
   }
 
   fetchData(rules_stat) {
@@ -670,6 +670,23 @@ export class RulesList extends HuntList {
   componentDidMount() {
       this.fetchData(this.props.config)
   }
+
+  RuleUpdateFilter(filters) {
+        // iterate on filter, if we have a sid we display the rule page
+	var found_sid = false;
+	for (var i = 0; i < filters.length; i++) {
+	    if (filters[i].field === 'sid') {
+		found_sid = true;
+		break;
+	    }
+	}
+	if (found_sid === true) {
+		this.setState({view: 'rule', display_toggle: false});
+	} else {
+		this.setState({view: 'rules_list', display_toggle: true});
+	}
+  	this.UpdateFilter(filters);
+  }
   
   render() {
     return (
@@ -678,7 +695,7 @@ export class RulesList extends HuntList {
 	    <HuntFilter ActiveFilters={this.props.config.filters}
 	          config={this.props.config}
 		  ActiveSort={this.props.config.sort}
-		  UpdateFilter={this.UpdateFilter}
+		  UpdateFilter={this.RuleUpdateFilter}
 		  UpdateSort={this.UpdateSort}
 		  setViewType={this.setViewType}
 		  filterFields={RuleFilterFields}
