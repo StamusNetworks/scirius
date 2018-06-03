@@ -73,7 +73,7 @@ export class RuleInList extends React.Component {
     var kebab_config = { rule: this.props.data };
     return (
 	<ListViewItem
-  actions={[<button onClick={this.props.SwitchPage.bind(this, PAGE_STATE.rule).bind(this, this.props.data)}>View</button>, <RuleEditKebab config={kebab_config}/> ]}
+  actions={[<button onClick={e => {this.props.SwitchPage(this.props.data)}}>View</button>, <RuleEditKebab config={kebab_config}/> ]}
   leftContent={<ListViewIcon name="envelope" />}
   additionalInfo={[<ListViewInfoItem key="created"><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
                    <ListViewInfoItem key="updated"><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
@@ -182,7 +182,7 @@ export class RuleCard extends React.Component {
            </Spinner>
          <div>
             SID: <strong>{this.props.data.sid}</strong>
-            <span className="pull-right"><button onClick={this.props.SwitchPage.bind(this, PAGE_STATE.rule).bind(this, this.props.data)}>View</button></span>
+            <span className="pull-right"><button onClick={e => {this.props.SwitchPage(this.props.data)}}>View</button></span>
          </div>
       </div>
    </div>
@@ -556,9 +556,11 @@ export class RulesList extends HuntList {
       rules: [], categories: [], rules_count: 0,
       loading: true,
       refresh_data: false,
+      view: 'rules_list',
     };
     this.updateRulesState = this.updateRulesState.bind(this);
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
+    this.displayRule = this.displayRule.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -632,6 +634,10 @@ export class RulesList extends HuntList {
      updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
   }
 
+  displayRule(rule) {
+      this.setState({display_rule: rule, view: 'rule'});
+  }
+
   fetchData(rules_stat) {
      var filters = rules_stat.filters;
      var string_filters = this.buildFilter(filters);
@@ -675,26 +681,31 @@ export class RulesList extends HuntList {
 		  sort_config={RuleSortFields}
 		  displayToggle={true}
             />
-            {this.props.config.view_type === 'list' &&
+	    {this.state.view === 'rules_list' &&
+            this.props.config.view_type === 'list' &&
 	    <ListView>
             {this.state.rules.map(function(rule) {
                 return(
-                   <RuleInList key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.props.SwitchPage} />
+                   <RuleInList key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule} />
                 )
              },this)}
 	    </ListView>
             }
-            {this.props.config.view_type === 'card' &&
+            {this.state.view === 'rules_list' &&
+	     this.props.config.view_type === 'card' &&
                 <div className='container-fluid container-cards-pf'>
                 <div className='row row-cards-pf'>
                 {this.state.rules.map(function(rule) {
                          return(
-                                <RuleCard key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.props.SwitchPage} />
+                                <RuleCard key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule} />
                 )
              },this)}
                 </div>
                 </div>
             }
+            {this.state.view === 'rule' &&
+	        <RulePage rule={this.state.display_rule} from_date={this.props.from_date}/>
+	    }
 	    <HuntPaginationRow
 	        viewType = {PAGINATION_VIEW.LIST}
 	        pagination={this.props.config.pagination}
