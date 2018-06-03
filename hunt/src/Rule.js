@@ -264,6 +264,15 @@ export class RulePage extends React.Component {
                     <RuleStat title="Destinations" rule={this.state.rule} item='dest_ip' from_date={this.props.from_date} />
                     <RuleStat title="Probes" rule={this.state.rule} item='host' from_date={this.props.from_date} />
                 </div>
+                <div className='row row-cards-pf'>
+                    <RuleStat title="Hostname" rule={this.state.rule} item='http.hostname' from_date={this.props.from_date} />
+                    <RuleStat title="URL" rule={this.state.rule} item='http.url' from_date={this.props.from_date} />
+                    <RuleStat title="User agent" rule={this.state.rule} item='http.http_user_agent' from_date={this.props.from_date} />
+                </div>
+                <div className='row row-cards-pf'>
+                    <RuleStat title="Name" rule={this.state.rule} item='dns.query.rrname' from_date={this.props.from_date} />
+                    <RuleStat title="Type" rule={this.state.rule} item='dns.query.rrtype' from_date={this.props.from_date} />
+                </div>
             </div>
 	    </div>
 	    }
