@@ -196,10 +196,10 @@ export class RulePage extends React.Component {
         super(props);
         var rule = JSON.parse(JSON.stringify(this.props.rule));
 	if (typeof rule === 'number') {
-            this.state = { rule: undefined, sid: rule, toggle: { show: false, action: "Disable" }};
+            this.state = { rule: undefined, sid: rule, toggle: { show: false, action: "Disable" }, extinfo: { http: false, dns: false }};
 	} else {
 	    rule.timeline = undefined;
-            this.state = { rule: rule, sid: rule.sid, toggle: { show: false, action: "Disable" }};
+            this.state = { rule: rule, sid: rule.sid, toggle: { show: false, action: "Disable" }, extinfo: { http: false, dns: false }};
 	}
         this.updateRuleState = this.updateRuleState.bind(this);
     }
@@ -209,6 +209,21 @@ export class RulePage extends React.Component {
        var sid = this.state.sid;
        if (rule !== undefined) {
            updateHitsStats([rule], this.props.from_date, this.updateRuleState, undefined);
+	   axios.get(config.API_URL + config.ES_BASE_PATH +
+                    'field_stats&field=app_proto&from_date=' + this.props.from_date +
+                    '&sid=' + this.props.rule.sid)
+             .then(res => {
+	       var extinfo = this.state.extinfo;
+	       for (var i=0; i < res.data.length; i++) {
+                    if (res.data[i].key === "dns") {
+                         extinfo.dns = true;
+		    }
+                    if (res.data[i].key === "http") {
+                         extinfo.http = true;
+		    }
+	       }
+	       this.setState({extinfo: extinfo});
+            }) 
        } else {
            axios.get(config.API_URL + config.RULE_PATH + sid).then(
 		res => { 
@@ -264,15 +279,19 @@ export class RulePage extends React.Component {
                     <RuleStat title="Destinations" rule={this.state.rule} item='dest_ip' from_date={this.props.from_date} />
                     <RuleStat title="Probes" rule={this.state.rule} item='host' from_date={this.props.from_date} />
                 </div>
+		{this.state.extinfo.http &&
                 <div className='row row-cards-pf'>
                     <RuleStat title="Hostname" rule={this.state.rule} item='http.hostname' from_date={this.props.from_date} />
                     <RuleStat title="URL" rule={this.state.rule} item='http.url' from_date={this.props.from_date} />
                     <RuleStat title="User agent" rule={this.state.rule} item='http.http_user_agent' from_date={this.props.from_date} />
                 </div>
+		}
+		{this.state.extinfo.dns &&
                 <div className='row row-cards-pf'>
                     <RuleStat title="Name" rule={this.state.rule} item='dns.query.rrname' from_date={this.props.from_date} />
                     <RuleStat title="Type" rule={this.state.rule} item='dns.query.rrtype' from_date={this.props.from_date} />
                 </div>
+		}
             </div>
 	    </div>
 	    }
