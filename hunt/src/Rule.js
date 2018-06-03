@@ -638,6 +638,8 @@ export class RulesList extends HuntList {
 
   displayRule(rule) {
       this.setState({display_rule: rule, view: 'rule', display_toggle: false});
+      let activeFilters = [...this.props.config.filters, {label:"sid: " + rule.sid, field: 'sid', value: rule.sid}];
+      this.UpdateFilter(activeFilters);
   }
 
   fetchData(rules_stat) {
