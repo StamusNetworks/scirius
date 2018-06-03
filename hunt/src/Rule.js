@@ -668,19 +668,29 @@ export class RulesList extends HuntList {
   }
 
   componentDidMount() {
-      this.fetchData(this.props.config)
+      var sid = this.findSID(this.props.config.filters);
+      if (sid !== undefined) {
+          this.setState({display_rule: sid, view: 'rule', display_toggle: false, loading: false});
+      } else {
+          this.fetchData(this.props.config);
+      }
+  }
+
+  findSID(filters) {
+	var found_sid = undefined;
+	for (var i = 0; i < filters.length; i++) {
+	    if (filters[i].id === 'sid') {
+		found_sid = filters[i].value;
+		break;
+	    }
+	}
+	return found_sid;
   }
 
   RuleUpdateFilter(filters) {
         // iterate on filter, if we have a sid we display the rule page
-	var found_sid = false;
-	for (var i = 0; i < filters.length; i++) {
-	    if (filters[i].id === 'sid') {
-		found_sid = true;
-		break;
-	    }
-	}
-	if (found_sid === true) {
+	var found_sid = this.findSID(filters);
+	if (found_sid !== undefined) {
 		this.setState({view: 'rule', display_toggle: false});
 	} else {
 		this.setState({view: 'rules_list', display_toggle: true});
