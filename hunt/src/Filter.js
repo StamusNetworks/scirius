@@ -8,7 +8,6 @@ export class HuntFilter extends React.Component {
     this.state = {
       filterFields: this.props.filterFields,
       currentFilterType: this.props.filterFields[0],
-      activeFilters: this.props.ActiveFilters,
       currentValue: ''
     };
   }
@@ -33,8 +32,7 @@ export class HuntFilter extends React.Component {
       filterText += value;
     }
 
-    let activeFilters = [...this.state.activeFilters, { label: filterText, id: field.id, value: value }];
-    this.setState({ activeFilters: activeFilters });
+    let activeFilters = [...this.props.ActiveFilters, { label: filterText, id: field.id, value: value }];
     this.props.UpdateFilter(activeFilters);
   };
 
@@ -107,7 +105,7 @@ export class HuntFilter extends React.Component {
   }
 
   removeFilter = filter => {
-    const { activeFilters } = this.state;
+    const activeFilters = this.props.ActiveFilters;
 
     let index = activeFilters.indexOf(filter);
     if (index > -1) {
@@ -170,7 +168,8 @@ export class HuntFilter extends React.Component {
   }
 
   render() {
-    const { currentFilterType, activeFilters } = this.state;
+    const { currentFilterType } = this.state;
+    const activeFilters = this.props.ActiveFilters;
     return (
 	   <Toolbar>
         <div style={{ width: 450 }}>

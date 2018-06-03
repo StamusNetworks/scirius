@@ -9,6 +9,7 @@ import * as config from './config/Api.js';
 import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 import { HuntFilter } from './Filter.js';
 import { HuntList, HuntPaginationRow } from './Api.js';
+import { HuntDashboard } from './Dashboard.js';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -27,9 +28,9 @@ export const RuleFilterFields = [
     placeholder: 'Filter by Content',
     filterType: 'text'
   }, {
-    id: 'probe',
-    title: 'Probe',
-    placeholder: 'Filter hits by Probe',
+    id: 'sid',
+    title: 'Signature ID',
+    placeholder: 'Filter by Signature',
     filterType: 'text'
   }, {
     id: 'sprobe',
@@ -724,6 +725,10 @@ export class RulesList extends HuntList {
             {this.state.view === 'rule' &&
 	        <RulePage rule={this.state.display_rule} from_date={this.props.from_date}/>
 	    }
+            {this.state.view === 'dahsboard' &&
+	        <HuntDashboard />
+	    }
+
 	    </Spinner>
         </div>
     );
