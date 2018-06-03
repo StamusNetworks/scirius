@@ -638,7 +638,7 @@ export class RulesList extends HuntList {
 
   displayRule(rule) {
       this.setState({display_rule: rule});
-      let activeFilters = [...this.props.config.filters, {label:"sid: " + rule.sid, field: 'sid', value: rule.sid}];
+      let activeFilters = [...this.props.config.filters, {label:"Signature ID: " + rule.sid, id: 'sid', value: rule.sid}];
       this.RuleUpdateFilter(activeFilters);
   }
 
@@ -675,7 +675,7 @@ export class RulesList extends HuntList {
         // iterate on filter, if we have a sid we display the rule page
 	var found_sid = false;
 	for (var i = 0; i < filters.length; i++) {
-	    if (filters[i].field === 'sid') {
+	    if (filters[i].id === 'sid') {
 		found_sid = true;
 		break;
 	    }
