@@ -19,7 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django.shortcuts import redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -123,6 +123,8 @@ def editview(request, action):
                     ruser.is_superuser = False
                     ruser.is_staff = orig_staff
                 ruser.save()
+                if action == 'password':
+                    update_session_auth_hash(request, ruser)
                 if action == 'settings':
                     try:
                         sciriususer = ruser.sciriususer
@@ -197,6 +199,9 @@ def manageuseraction(request, user_id, action):
             if form.is_valid():
                 user.set_password(form.cleaned_data['password'])
                 user.save()
+                if user == request.user:
+                    # If the user change his own password prevent the session to be invalidated
+                    update_session_auth_hash(request, user)
             else:
                 context['error'] = 'Password form is not valid'
         elif action == "delete":
