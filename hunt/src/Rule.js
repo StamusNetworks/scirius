@@ -3,6 +3,7 @@ import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinn
 import axios from 'axios';
 import { PAGINATION_VIEW } from 'patternfly-react';
 import { Modal, DropdownKebab, MenuItem, Icon, Button, DropdownButton } from 'patternfly-react';
+import { Form, FormGroup, FormControl } from 'patternfly-react';
 import { SciriusChart } from './Chart.js';
 import * as config from './config/Api.js';
 import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
@@ -548,14 +549,30 @@ export class RuleToggleModal extends React.Component {
       </button>
       {this.props.config.rule &&
         <Modal.Title>{this.props.action} Rule {this.props.config.rule.sid}</Modal.Title>
-	||
+       ||
 	<Modal.Title>Add a {this.props.action} action</Modal.Title>
       }
     </Modal.Header>
     <Modal.Body>
-       <form className="form-horizontal container">
-        <div className="form-group">
-        <label>Choose Ruleset(s)</label>
+       <Form horizontal>
+       {this.props.config.filters &&
+	   this.props.config.filters.map((item, index) => {
+                  return (
+		  <FormGroup key={item.id} controlId={item.id} disabled={false}>
+			<Col sm={3}>
+			<strong>{item.id}</strong>
+			</Col>
+			<Col sm={9}>
+			<FormControl type={item.id} disabled={false} value={item.value} />
+			</Col>
+	          </FormGroup>
+		  )
+	       }
+	       )
+       }
+        <FormGroup controlId="ruleset" disabled={false}>
+            <Col sm={6}>
+	      <label>Choose Ruleset(s)</label>
               {this.state.rulesets.map(function(ruleset) {
                       return(<div className="row"  key={ruleset.pk}>
                            <div className="col-sm-9">
@@ -564,14 +581,15 @@ export class RuleToggleModal extends React.Component {
                       </div>);
                   }, this)
               }
-        </div>
+	    </Col>
+        </FormGroup>
 
         <div className="form-group">
             <div className="col-sm-9">
                 <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange} />
             </div>
         </div>
-      </form>
+      </Form>
     </Modal.Body>
     <Modal.Footer>
       <Button
