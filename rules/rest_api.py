@@ -155,7 +155,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
         serializer = RulesetSerializer(data=data)
         serializer.is_valid(raise_exception=True)
 
-        # /|\ this is sourceAtVersion because of to_internal_values/to_repesentation serializer methods
+        # /|\ this is sourceAtVersion because of to_internal_values/to_representation serializer methods
         sources = serializer.validated_data.get('sources', [])
         categories = serializer.validated_data.get('categories', [])
         self._validate_categories(sources, categories)
@@ -292,6 +292,11 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
                 serializer.validated_data.get('comment', None))
         return Response({'disable': 'ok'})
 
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return CategorySerializer
+        return CategoryChangeSerializer
+
 
 class RuleChangeSerializer(serializers.Serializer):
     ruleset = serializers.PrimaryKeyRelatedField(queryset=Ruleset.objects.all(), write_only=True)
@@ -376,6 +381,11 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
         rule.disable(serializer.validated_data['ruleset'], request.user,
                 serializer.validated_data.get('comment', None))
         return Response({'disable': 'ok'})
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return RuleSerializer
+        return RuleChangeSerializer
 
 
 class BaseTransformationViewSet(viewsets.ModelViewSet):
