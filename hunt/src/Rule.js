@@ -207,6 +207,20 @@ export class RulePage extends React.Component {
             this.state = { rule: rule, sid: rule.sid, toggle: { show: false, action: "Disable" }, extinfo: { http: false, dns: false }};
 	}
         this.updateRuleState = this.updateRuleState.bind(this);
+        this.updateExtInfo = this.updateExtInfo.bind(this);
+    }
+
+    updateExtInfo(data) {
+	       var extinfo = this.state.extinfo;
+	       for (var i=0; i < data.length; i++) {
+                    if (data[i].key === "dns") {
+                         extinfo.dns = true;
+		    }
+                    if (data[i].key === "http") {
+                         extinfo.http = true;
+		    }
+	       }
+	       this.setState({extinfo: extinfo});
     }
 
     componentDidMount() {
@@ -219,21 +233,18 @@ export class RulePage extends React.Component {
                     'field_stats&field=app_proto&from_date=' + this.props.from_date +
                     '&sid=' + this.props.rule.sid)
              .then(res => {
-	       var extinfo = this.state.extinfo;
-	       for (var i=0; i < res.data.length; i++) {
-                    if (res.data[i].key === "dns") {
-                         extinfo.dns = true;
-		    }
-                    if (res.data[i].key === "http") {
-                         extinfo.http = true;
-		    }
-	       }
-	       this.setState({extinfo: extinfo});
+		     this.updateExtInfo(res.data);
             }) 
        } else {
            axios.get(config.API_URL + config.RULE_PATH + sid).then(
 		res => { 
                          updateHitsStats([res.data], this.props.from_date, this.updateRuleState, qfilter);
+	   axios.get(config.API_URL + config.ES_BASE_PATH +
+                    'field_stats&field=app_proto&from_date=' + this.props.from_date +
+                    '&sid=' + sid)
+             .then(res => {
+		     this.updateExtInfo(res.data);
+            }) 
 		}
 	   )
        }
