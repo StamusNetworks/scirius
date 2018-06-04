@@ -2,7 +2,7 @@ import React from 'react';
 import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
 import axios from 'axios';
 import { PAGINATION_VIEW } from 'patternfly-react';
-import { Modal, DropdownKebab, MenuItem, Icon, Button } from 'patternfly-react';
+import { Modal, DropdownKebab, MenuItem, Icon, Button, DropdownButton } from 'patternfly-react';
 import { SciriusChart } from './Chart.js';
 import * as config from './config/Api.js';
 import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
@@ -634,6 +634,10 @@ export class RulesList extends HuntList {
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
     this.displayRule = this.displayRule.bind(this);
     this.RuleUpdateFilter = this.RuleUpdateFilter.bind(this);
+    this.actionsButtons = this.actionsButtons.bind(this);
+    this.createSuppress = this.createSuppress.bind(this);
+    this.createThreshold = this.createThreshold.bind(this);
+    this.createTag = this.createTag.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -751,6 +755,30 @@ export class RulesList extends HuntList {
 	}
   	this.UpdateFilter(filters);
   }
+
+  createSuppress() {
+	this.setState({action: true});
+  }
+
+  createThreshold() {
+	this.setState({action: true});
+  }
+  
+  createTag() {
+	this.setState({action: true});
+  }
+
+  actionsButtons() {
+      return(<div className="form-group">
+	         <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions">
+		 <MenuItem eventKey="1" onClick={e => { this.createSuppress(); }}>Suppress</MenuItem>
+		 <MenuItem eventKey="2" onClick={e => { this.createThreshold(); }}>Threshold</MenuItem>
+		 <MenuItem divider />
+		 <MenuItem eventKey="3" onClick={e => { this.createTag(); }}>Tag</MenuItem>
+	         </DropdownButton>
+		 </div>
+       );
+  }
   
   render() {
     return (
@@ -765,6 +793,7 @@ export class RulesList extends HuntList {
 		  filterFields={RuleFilterFields}
 		  sort_config={RuleSortFields}
 		  displayToggle={this.state.display_toggle}
+		  actionsButtons={this.actionsButtons}
             />
 	    {this.state.view === 'rules_list' &&
             this.props.config.view_type === 'list' &&

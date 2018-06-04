@@ -1,5 +1,5 @@
 import React from 'react';
-import { Filter, FormControl, Toolbar, Button, Icon, DropdownButton, MenuItem } from 'patternfly-react';
+import { Filter, FormControl, Toolbar, Button, Icon} from 'patternfly-react';
 import { HuntSort } from './Sort.js';
 
 export class HuntFilter extends React.Component {
@@ -185,14 +185,7 @@ export class HuntFilter extends React.Component {
 	      </div>
 
             <Toolbar.RightContent>
-		 <div className="form-group">
-	         <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions">
-		 <MenuItem eventKey="1">Suppress</MenuItem>
-		 <MenuItem eventKey="2">Threshold</MenuItem>
-		 <MenuItem divider />
-		 <MenuItem eventKey="3">Tag</MenuItem>
-	         </DropdownButton>
-		 </div>
+	    { this.props.actionsButtons && this.props.actionsButtons() }
 	    {this.props.displayToggle &&
                         <Toolbar.ViewSelector>
             <Button
