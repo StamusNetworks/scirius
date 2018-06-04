@@ -73,7 +73,7 @@ export class RuleInList extends React.Component {
     var kebab_config = { rule: this.props.data };
     return (
 	<ListViewItem
-  actions={[<button onClick={e => {this.props.SwitchPage(this.props.data)}}>View</button>, <RuleEditKebab config={kebab_config}/> ]}
+  actions={[<a onClick={e => {this.props.SwitchPage(this.props.data)}}><Icon type="fa" name="search-plus"/> </a>, <RuleEditKebab config={kebab_config}/> ]}
   leftContent={<ListViewIcon name="envelope" />}
   additionalInfo={[<ListViewInfoItem key="created"><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
                    <ListViewInfoItem key="updated"><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
@@ -182,7 +182,7 @@ export class RuleCard extends React.Component {
            </Spinner>
          <div>
             SID: <strong>{this.props.data.sid}</strong>
-            <span className="pull-right"><button onClick={e => {this.props.SwitchPage(this.props.data)}}>View</button></span>
+            <span className="pull-right"><a onClick={e => {this.props.SwitchPage(this.props.data)}}><Icon type="fa" name="search-plus"/> </a></span>
          </div>
       </div>
    </div>
