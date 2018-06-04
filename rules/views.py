@@ -230,12 +230,17 @@ def elasticsearch(request):
                 filter_ip = RULE_FIELDS_MAPPING[query]
             sid = int(request.GET.get('sid', None))
             from_date = request.GET.get('from_date', None)
+            qfilter = request.GET.get('qfilter', None)
+            if qfilter:
+                qfilter = 'alert.signature_id:%d AND %s' % (sid, qfilter)
+            else:
+                qfilter = 'alert.signature_id:%d' % sid
             ajax = request.GET.get('json', None)
             if from_date != None and sid != None:
                 if ajax:
                     data = es_get_field_stats(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, '*', from_date = from_date,
                         count = 10,
-                        qfilter = 'alert.signature_id:%d' % sid)
+                        qfilter = qfilter)
                     return HttpResponse(json.dumps(data), content_type="application/json")
                 else:
                     hosts = es_get_field_stats_as_table(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, RuleHostTable, '*', from_date = from_date,
