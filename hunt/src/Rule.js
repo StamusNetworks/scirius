@@ -871,7 +871,6 @@ export class RulesList extends HuntList {
 
 	    </Spinner>
 	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config} close={this.closeAction} />
-	    }
         </div>
     );
   }
