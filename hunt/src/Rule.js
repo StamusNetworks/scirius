@@ -32,6 +32,11 @@ export const RuleFilterFields = [
     placeholder: 'Filter by Signature',
     filterType: 'text'
   }, {
+    id: 'dns.query.rrname',
+    title: 'DNS RRName',
+    placeholder: 'Filter by DNS Query',
+    filterType: 'text'
+  }, {
     id: 'sprobe',
     title: 'Check Probe',
     placeholder: 'Filter hits by Probe',
@@ -207,8 +212,9 @@ export class RulePage extends React.Component {
     componentDidMount() {
        var rule = this.state.rule;
        var sid = this.state.sid;
+       var qfilter = buildQFilter(this.props.config.filters);
        if (rule !== undefined) {
-           updateHitsStats([rule], this.props.from_date, this.updateRuleState, undefined);
+           updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
 	   axios.get(config.API_URL + config.ES_BASE_PATH +
                     'field_stats&field=app_proto&from_date=' + this.props.from_date +
                     '&sid=' + this.props.rule.sid)
@@ -227,24 +233,23 @@ export class RulePage extends React.Component {
        } else {
            axios.get(config.API_URL + config.RULE_PATH + sid).then(
 		res => { 
-                         updateHitsStats([res.data], this.props.from_date, this.updateRuleState, undefined);
+                         updateHitsStats([res.data], this.props.from_date, this.updateRuleState, qfilter);
 		}
 	   )
        }
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
+       var qfilter = buildQFilter(this.props.config.filters);
        if (prevProps.from_date !==  this.props.from_date) {
             var rule = JSON.parse(JSON.stringify(this.props.rule));
-            updateHitsStats([rule], this.props.from_date, this.updateRuleState, undefined);
+            updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
        }
     }
 
     updateRuleState(rule) {
         this.setState({rule: rule[0]});
     }
-
-
 
     render() {
         return (
@@ -275,21 +280,21 @@ export class RulePage extends React.Component {
                       }
                 </div>
                 <div className='row row-cards-pf'>
-                    <RuleStat title="Sources" rule={this.state.rule} item='src_ip' from_date={this.props.from_date} />
-                    <RuleStat title="Destinations" rule={this.state.rule} item='dest_ip' from_date={this.props.from_date} />
-                    <RuleStat title="Probes" rule={this.state.rule} item='host' from_date={this.props.from_date} />
+                    <RuleStat title="Sources" rule={this.state.rule} config={this.props.config} item='src_ip' from_date={this.props.from_date} />
+                    <RuleStat title="Destinations" rule={this.state.rule} config={this.props.config}  item='dest_ip' from_date={this.props.from_date} />
+                    <RuleStat title="Probes" rule={this.state.rule} config={this.props.config}  item='host' from_date={this.props.from_date} />
                 </div>
 		{this.state.extinfo.http &&
                 <div className='row row-cards-pf'>
-                    <RuleStat title="Hostname" rule={this.state.rule} item='http.hostname' from_date={this.props.from_date} />
-                    <RuleStat title="URL" rule={this.state.rule} item='http.url' from_date={this.props.from_date} />
-                    <RuleStat title="User agent" rule={this.state.rule} item='http.http_user_agent' from_date={this.props.from_date} />
+                    <RuleStat title="Hostname" rule={this.state.rule}  config={this.props.config} item='http.hostname' from_date={this.props.from_date} />
+                    <RuleStat title="URL" rule={this.state.rule}  config={this.props.config} item='http.url' from_date={this.props.from_date} />
+                    <RuleStat title="User agent" rule={this.state.rule}  config={this.props.config} item='http.http_user_agent' from_date={this.props.from_date} />
                 </div>
 		}
 		{this.state.extinfo.dns &&
                 <div className='row row-cards-pf'>
-                    <RuleStat title="Name" rule={this.state.rule} item='dns.query.rrname' from_date={this.props.from_date} />
-                    <RuleStat title="Type" rule={this.state.rule} item='dns.query.rrtype' from_date={this.props.from_date} />
+                    <RuleStat title="Name" rule={this.state.rule}  config={this.props.config} item='dns.query.rrname' from_date={this.props.from_date} />
+                    <RuleStat title="Type" rule={this.state.rule}  config={this.props.config} item='dns.query.rrtype' from_date={this.props.from_date} />
                 </div>
 		}
             </div>
@@ -309,9 +314,10 @@ class RuleStat extends React.Component {
     }
 
     updateData() {
+          var qfilter = buildQFilter(this.props.config.filters);
           axios.get(config.API_URL + config.ES_BASE_PATH +
                     'field_stats&field=' + this.props.item + '&from_date=' + this.props.from_date +
-                    '&sid=' + this.props.rule.sid)
+                    '&sid=' + this.props.rule.sid + '&qfilter=' + qfilter)
              .then(res => {
                this.setState({ data: res.data });
             })
@@ -549,6 +555,28 @@ export class RuleToggleModal extends React.Component {
     }
 }
 
+function buildQFilter(filters) {
+     var qfilter = [];
+     for (var i=0; i < filters.length; i++) {
+	if (filters[i].id === 'probe') {
+            qfilter.push('host.raw:' + filters[i].value);
+	    continue;
+	} else if (filters[i].id === 'sprobe') {
+            qfilter.push('host.raw:' + filters[i].value.id);
+	    continue;
+	}
+	// FIXME find a dynamic way
+	else if (filters[i].id === 'dns.query.rrname') {
+            qfilter.push('dns.query.rrname:' + filters[i].value);
+	    continue;
+	}
+     }
+     if (qfilter.length === 0) {
+	 return undefined;
+     }
+     return qfilter.join(" AND ");
+}
+
 export class RulesList extends HuntList {
   constructor(props) {
     super(props);
@@ -571,23 +599,6 @@ export class RulesList extends HuntList {
      }
   }
 
-   buildQFilter(filters) {
-     var qfilter = [];
-     for (var i=0; i < filters.length; i++) {
-	if (filters[i].id === 'probe') {
-            qfilter.push('host.raw:' + filters[i].value);
-	    continue;
-	} else if (filters[i].id === 'sprobe') {
-            qfilter.push('host.raw:' + filters[i].value.id);
-	    continue;
-	}
-     }
-     if (qfilter.length === 0) {
-	 return undefined;
-     }
-     return qfilter.join(" AND ");
-   }
-
    buildFilter(filters) {
      var l_filters = {};
      for (var i=0; i < filters.length; i++) {
@@ -603,7 +614,7 @@ export class RulesList extends HuntList {
      for (var k in l_filters) {
          string_filters += "&" + k + "=" + l_filters[k];
      }
-     var qfilter = this.buildQFilter(filters);
+     var qfilter = buildQFilter(filters);
      if (qfilter) {
 	 string_filters += '&qfilter=' +  qfilter;
      }
@@ -632,7 +643,7 @@ export class RulesList extends HuntList {
    }
 
   fetchHitsStats(rules) {
-	 var qfilter = this.buildQFilter(this.props.config.filters);
+	 var qfilter = buildQFilter(this.props.config.filters);
      updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
   }
 
@@ -752,7 +763,7 @@ export class RulesList extends HuntList {
 	    />
 	    }
             {this.state.view === 'rule' &&
-	        <RulePage rule={this.state.display_rule} from_date={this.props.from_date}/>
+	        <RulePage rule={this.state.display_rule} config={this.props.config} from_date={this.props.from_date}/>
 	    }
             {this.state.view === 'dahsboard' &&
 	        <HuntDashboard />
