@@ -176,7 +176,7 @@ $( 'document' ).ready(function() {
 	</div>
 	<div class="panel-body">
         <ul>
-	  <li><span class="type">Logged in as</span> {{ request.user }}</li>
+	  <li><span class="type">Logged in as</span> {{ request.user|truncatechars:20 }}</li>
         </ul>
         </div>
         <div class="panel-heading">
