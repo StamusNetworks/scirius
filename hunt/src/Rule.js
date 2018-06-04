@@ -546,7 +546,11 @@ export class RuleToggleModal extends React.Component {
       >
         <Icon type="pf" name="close" />
       </button>
-      <Modal.Title>{this.props.action} Rule {this.props.config.rule.sid}</Modal.Title>
+      {this.props.config.rule &&
+        <Modal.Title>{this.props.action} Rule {this.props.config.rule.sid}</Modal.Title>
+	||
+	<Modal.Title>Add a {this.props.action} action</Modal.Title>
+      }
     </Modal.Header>
     <Modal.Body>
        <form className="form-horizontal container">
@@ -629,6 +633,7 @@ export class RulesList extends HuntList {
       refresh_data: false,
       view: 'rules_list',
       display_toggle: true,
+      action: { view: false, type: 'suppress'}
     };
     this.updateRulesState = this.updateRulesState.bind(this);
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
@@ -638,6 +643,7 @@ export class RulesList extends HuntList {
     this.createSuppress = this.createSuppress.bind(this);
     this.createThreshold = this.createThreshold.bind(this);
     this.createTag = this.createTag.bind(this);
+    this.closeAction = this.closeAction.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -757,15 +763,19 @@ export class RulesList extends HuntList {
   }
 
   createSuppress() {
-	this.setState({action: true});
+	this.setState({action: {view: true, type: 'suppress'}});
   }
 
   createThreshold() {
-	this.setState({action: true});
+	this.setState({action: {view: true, type: 'threshold'}});
   }
   
   createTag() {
-	this.setState({action: true});
+	this.setState({action: {view: true, type: 'tag'}});
+  }
+
+  closeAction() {
+        this.setState({action: {view: false, type: 'suppress'}});
   }
 
   actionsButtons() {
@@ -842,6 +852,8 @@ export class RulesList extends HuntList {
 	    }
 
 	    </Spinner>
+	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config} close={this.closeAction} />
+	    }
         </div>
     );
   }
