@@ -27,7 +27,6 @@ urlpatterns = [
     url(r'^about/$', views.about, name='scirius_about'),
     url(r'^search$', views.search, name='scirius_search'),
     url(r'^es$', views.elasticsearch, name='elasticsearch'),
-    url(r'^influxdb$', views.influxdb, name='influxdb'),
     url(r'^settings/$', views.system_settings, name='system_settings'),
     url(r'^source/$', views.sources, name='sources'),
     url(r'^source/add$', views.add_source, name='add_source'),

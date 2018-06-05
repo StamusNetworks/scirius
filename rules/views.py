@@ -34,7 +34,6 @@ from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependen
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, HistoryTable
 
 from rules.es_graphs import *
-from rules.influx import *
 
 import json
 import yaml
@@ -314,12 +313,6 @@ def elasticsearch(request):
             context = {}
             template = Probe.common.get_es_template()
             return scirius_render(request, template, context)
-
-def influxdb(request):
-    time_range = int(request.GET.get('time_range', 3600))
-    request = request.GET.get('request', 'eve_rate')
-    data = influx_get_timeline(time_range, request = request)
-    return HttpResponse(json.dumps(data), content_type="application/json")
 
 def rule(request, rule_id, key = 'pk'):
     if request.is_ajax():
