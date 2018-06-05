@@ -228,7 +228,7 @@ class UserAction(models.Model):
     date = models.DateTimeField('event date', default=timezone.now)
     comment = models.TextField(null=True, blank=True)
     user = models.ForeignKey(User, default=None, on_delete=models.SET_NULL, null=True, blank=True)
-    username = models.CharField(max_length=100)
+    username = models.CharField(max_length=150)
     ua_objects = GenericRelation('UserActionObject', related_query_name='ua_objects')
 
     # Compatibilty
