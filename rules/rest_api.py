@@ -1151,7 +1151,7 @@ class UserActionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserAction
-        fields = '__all__'
+        fields = ('pk', 'action_type', 'date', 'comment', 'user', 'username', 'ua_objects')
 
     def to_representation(self, instance):
         from scirius.utils import get_middleware_module
