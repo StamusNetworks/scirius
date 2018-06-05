@@ -293,9 +293,9 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
         return Response({'disable': 'ok'})
 
     def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return CategorySerializer
-        return CategoryChangeSerializer
+        if self.action in ('enable', 'disable'):
+            return CategoryChangeSerializer
+        return CategorySerializer
 
 
 class RuleChangeSerializer(serializers.Serializer):
@@ -383,9 +383,9 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
         return Response({'disable': 'ok'})
 
     def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return RuleSerializer
-        return RuleChangeSerializer
+        if self.action in ('enable', 'disable'):
+            return RuleChangeSerializer
+        return RuleSerializer
 
 
 class BaseTransformationViewSet(viewsets.ModelViewSet):
