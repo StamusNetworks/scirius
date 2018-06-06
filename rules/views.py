@@ -326,7 +326,10 @@ def elasticsearch(request):
         elif query == 'alerts_tail':
             from_date = request.GET.get('from_date', None)
             qfilter = request.GET.get('filter', None)
-            data = es_get_alerts_tail(from_date = from_date, qfilter = qfilter)
+            search_target = request.GET.get('search_target', True)
+            if search_target != True:
+                search_target = False
+            data = es_get_alerts_tail(from_date = from_date, qfilter = qfilter, search_target = search_target)
         elif query == 'suri_log_tail':
             from_date = request.GET.get('from_date', None)
             qfilter = request.GET.get('filter', None)

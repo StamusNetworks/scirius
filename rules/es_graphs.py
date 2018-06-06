@@ -1136,7 +1136,7 @@ ALERTS_TAIL = """
             }
         ,{
             "query_string": {
-              "query": "event_type:alert AND alert.target.ip:* {{ query_filter|safe }}",
+              "query": "event_type:alert {{ target_only }} {{ query_filter|safe }}",
               "analyze_wildcard": true
             }
         }
@@ -1807,8 +1807,12 @@ def es_get_ippair_network_alerts(from_date=0, hosts = None, qfilter = None):
     except:
         return None
 
-def es_get_alerts_tail(from_date=0, qfilter = None):
-    data = render_template(ALERTS_TAIL, {'from_date': from_date}, qfilter = qfilter)
+def es_get_alerts_tail(from_date=0, qfilter = None, search_target=True):
+    if search_target:
+        context = {'from_date': from_date, 'target_only': 'AND alert.target.ip:*'}
+    else:
+        context = {'from_date': from_date, 'target_only': ''}
+    data = render_template(ALERTS_TAIL, context, qfilter = qfilter)
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
