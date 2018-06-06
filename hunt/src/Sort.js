@@ -11,6 +11,9 @@ export class HuntSort extends React.Component {
             break;
          }
     }
+    if (sort_type === undefined) {
+        sort_type = this.props.config[0]
+    }
     this.state = {
       currentSortType: sort_type,
       isSortNumeric: sort_type.isNumeric,

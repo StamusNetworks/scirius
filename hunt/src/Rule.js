@@ -230,7 +230,7 @@ export class RulePage extends React.Component {
     componentDidMount() {
        var rule = this.state.rule;
        var sid = this.state.sid;
-       var qfilter = buildQFilter(this.props.config.filters);
+       var qfilter = buildQFilter(this.props.filters);
        if (rule !== undefined) {
            updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
 	   axios.get(config.API_URL + config.ES_BASE_PATH +
@@ -255,9 +255,9 @@ export class RulePage extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-       var qfilter = buildQFilter(this.props.config.filters);
+       var qfilter = buildQFilter(this.props.filters);
        if ((prevProps.from_date !==  this.props.from_date) ||
-           (prevProps.config.filters.length !==  this.props.config.filters.length)) {
+           (prevProps.filters.length !==  this.props.filters.length)) {
             var rule = JSON.parse(JSON.stringify(this.state.rule));
             updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
        }
@@ -296,21 +296,21 @@ export class RulePage extends React.Component {
                       }
                 </div>
                 <div className='row row-cards-pf'>
-                    <RuleStat title="Sources" rule={this.state.rule} config={this.props.config} item='src_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
-                    <RuleStat title="Destinations" rule={this.state.rule} config={this.props.config}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
-                    <RuleStat title="Probes" rule={this.state.rule} config={this.props.config}  item='host' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                    <RuleStat title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                    <RuleStat title="Destinations" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                    <RuleStat title="Probes" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='host' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
                 </div>
 		{this.state.extinfo.http &&
                 <div className='row row-cards-pf'>
-                    <RuleStat title="Hostname" rule={this.state.rule}  config={this.props.config} item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
-                    <RuleStat title="URL" rule={this.state.rule}  config={this.props.config} item='http.url' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter}/>
-                    <RuleStat title="User agent" rule={this.state.rule}  config={this.props.config} item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                    <RuleStat title="Hostname" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                    <RuleStat title="URL" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.url' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter}/>
+                    <RuleStat title="User agent" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
                 </div>
 		}
 		{this.state.extinfo.dns &&
                 <div className='row row-cards-pf'>
-                    <RuleStat title="Name" rule={this.state.rule}  config={this.props.config} item='dns.query.rrname' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} />
-                    <RuleStat title="Type" rule={this.state.rule}  config={this.props.config} item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                    <RuleStat title="Name" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} />
+                    <RuleStat title="Type" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
                 </div>
 		}
             </div>
@@ -330,7 +330,7 @@ class RuleStat extends React.Component {
     }
 
     updateData() {
-          var qfilter = buildQFilter(this.props.config.filters);
+          var qfilter = buildQFilter(this.props.filters);
 	  if (qfilter) {
 		qfilter = '&qfilter=' + qfilter;
 	  } else {
@@ -353,7 +353,7 @@ class RuleStat extends React.Component {
        if (prevProps.from_date !==  this.props.from_date) {
                this.updateData();
        }
-       if (prevProps.config.filters.length !==  this.props.config.filters.length) {
+       if (prevProps.filters.length !==  this.props.filters.length) {
                this.updateData();
        }
     }
@@ -361,7 +361,7 @@ class RuleStat extends React.Component {
     addFilter(key, value) {
 	console.log(key);
 	console.log(value);
-        let activeFilters = [...this.props.config.filters, {label:"" + key + ": " + value, id: key, value: value}];
+        let activeFilters = [...this.props.filters, {label:"" + key + ": " + value, id: key, value: value}];
         this.props.UpdateFilter(activeFilters);
     }
 
@@ -555,8 +555,8 @@ export class RuleToggleModal extends React.Component {
     </Modal.Header>
     <Modal.Body>
        <Form horizontal>
-       {this.props.config.filters &&
-	   this.props.config.filters.map((item, index) => {
+       {this.props.filters &&
+	   this.props.filters.map((item, index) => {
                   return (
 		  <FormGroup key={item.id} controlId={item.id} disabled={false}>
 			<Col sm={3}>
@@ -608,7 +608,7 @@ export class RuleToggleModal extends React.Component {
     }
 }
 
-function buildQFilter(filters) {
+export function buildQFilter(filters) {
      var qfilter = [];
      for (var i=0; i < filters.length; i++) {
 	if (filters[i].id === 'probe') {
@@ -714,18 +714,17 @@ export class RulesList extends HuntList {
    }
 
   fetchHitsStats(rules) {
-	 var qfilter = buildQFilter(this.props.config.filters);
+	 var qfilter = buildQFilter(this.props.filters);
      updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
   }
 
   displayRule(rule) {
       this.setState({display_rule: rule});
-      let activeFilters = [...this.props.config.filters, {label:"Signature ID: " + rule.sid, id: 'sid', value: rule.sid}];
+      let activeFilters = [...this.props.filters, {label:"Signature ID: " + rule.sid, id: 'sid', value: rule.sid}];
       this.RuleUpdateFilter(activeFilters);
   }
 
-  fetchData(rules_stat) {
-     var filters = rules_stat.filters;
+  fetchData(rules_stat, filters) {
      var string_filters = this.buildFilter(filters);
 
      this.setState({refresh_data: true});
@@ -750,11 +749,11 @@ export class RulesList extends HuntList {
   }
 
   componentDidMount() {
-      var sid = this.findSID(this.props.config.filters);
+      var sid = this.findSID(this.props.filters);
       if (sid !== undefined) {
           this.setState({display_rule: sid, view: 'rule', display_toggle: false, loading: false});
       } else {
-          this.fetchData(this.props.config);
+          this.fetchData(this.props.config, this.props.filters);
       }
   }
 
@@ -812,7 +811,7 @@ export class RulesList extends HuntList {
     return (
         <div className="RulesList">
 	<Spinner loading={this.state.loading} >
-	    <HuntFilter ActiveFilters={this.props.config.filters}
+	    <HuntFilter ActiveFilters={this.props.filters}
 	          config={this.props.config}
 		  ActiveSort={this.props.config.sort}
 		  UpdateFilter={this.RuleUpdateFilter}
@@ -863,14 +862,14 @@ export class RulesList extends HuntList {
 	    />
 	    }
             {this.state.view === 'rule' &&
-	        <RulePage rule={this.state.display_rule} config={this.props.config} from_date={this.props.from_date} UpdateFilter={this.RuleUpdateFilter}/>
+	        <RulePage rule={this.state.display_rule} config={this.props.config} filters={this.props.filters} from_date={this.props.from_date} UpdateFilter={this.RuleUpdateFilter}/>
 	    }
-            {this.state.view === 'dahsboard' &&
+            {this.state.view === 'dashboard' &&
 	        <HuntDashboard />
 	    }
 
 	    </Spinner>
-	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config} close={this.closeAction} />
+	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} />
         </div>
     );
   }

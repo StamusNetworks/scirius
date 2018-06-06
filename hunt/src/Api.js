@@ -125,50 +125,50 @@ export class HuntList extends React.Component {
      const newListState = Object.assign({}, this.props.config);
      newListState.pagination = pagin;
      this.props.updateListState(newListState);
-     this.fetchData(newListState);
+     this.fetchData(newListState, this.props.filters);
   }
 
   onFirstPage() {
      const newListState = Object.assign({}, this.props.config);
      newListState.pagination.page = 1;
      this.props.updateListState(newListState);
-     this.fetchData(newListState);
+     this.fetchData(newListState, this.props.filters);
   }
 
   onNextPage() {
      const newListState = Object.assign({}, this.props.config);
      newListState.pagination.page = newListState.pagination.page + 1;
      this.props.updateListState(newListState);
-     this.fetchData(newListState);
+     this.fetchData(newListState, this.props.filters);
   }
 
   onPrevPage() {
      const newListState = Object.assign({}, this.props.config);
      newListState.pagination.page = newListState.pagination.page - 1;
      this.props.updateListState(newListState);
-     this.fetchData(newListState);
+     this.fetchData(newListState, this.props.filters);
   }
 
   onLastPage() {
      const newListState = Object.assign({}, this.props.config);
      newListState.pagination.page = Math.floor(this.state.rules_count / this.props.config.pagination.perPage) + 1;
      this.props.updateListState(newListState);
-     this.fetchData(newListState);
+     this.fetchData(newListState, this.props.filters);
   }
 
    UpdateFilter(filters) {
      const newListState = Object.assign({}, this.props.config);
-     newListState.filters = filters;
      newListState.pagination.page = 1;
+     this.props.updateFilterState(filters);
      this.props.updateListState(newListState);
-     this.fetchData(newListState);
+     this.fetchData(newListState, filters);
    }
 
    UpdateSort(sort) {
      const newListState = Object.assign({}, this.props.config);
      newListState.sort = sort;
      this.props.updateListState(newListState);
-     this.fetchData(newListState);
+     this.fetchData(newListState, this.props.filters);
    }
 
    setViewType(type) {
@@ -178,8 +178,12 @@ export class HuntList extends React.Component {
    }
 
 
-   fetchData(state) {
+   fetchData(state, filters) {
         return;
+   }
+
+   componentDidMount() {
+	this.fetchData(this.props.config, this.props.filters);
    }
 
     buildListUrlParams(page_params) {

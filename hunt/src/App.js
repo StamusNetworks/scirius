@@ -5,7 +5,8 @@ import { HuntDashboard } from './Dashboard.js';
 import { HuntNotificationArea } from './Notifications.js';
 import { HistoryPage } from './History.js';
 import { PAGE_STATE } from './Const.js';
-import { RulePage, RulesList } from './Rule.js';
+import { RulesList } from './Rule.js';
+import { AlertsList } from './Alerts.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
 import 'bootstrap3/dist/css/bootstrap.css'
@@ -20,8 +21,11 @@ class HuntApp extends Component {
     super(props);
     var duration = localStorage.getItem('duration');
     var rules_list_conf = localStorage.getItem('rules_list');
+    var alerts_list_conf = localStorage.getItem('alerts_list');
     var history_conf = localStorage.getItem('history');
     var page_display = localStorage.getItem('page_display');
+    var ids_filters = localStorage.getItem('ids_filters');
+    var history_filters = localStorage.getItem('history_filters');
     if (!duration) {
 	    duration = 24;
     }
@@ -32,13 +36,27 @@ class HuntApp extends Component {
               perPage: 6,
               perPageOptions: [6, 10, 15, 25, 50]
             },
-            filters: [],
             sort: {id: 'created', asc: false},
             view_type: 'list'
         };
         localStorage.setItem('rules_list', JSON.stringify(rules_list_conf));
     } else {
         rules_list_conf = JSON.parse(rules_list_conf);
+    }
+
+    if (!alerts_list_conf) {
+        alerts_list_conf = {
+            pagination: {
+              page: 1,
+              perPage: 20,
+              perPageOptions: [20, 50, 100]
+            },
+            sort: {id: 'timestamp', asc: false},
+            view_type: 'list'
+        };
+        localStorage.setItem('alerts_list', JSON.stringify(alerts_list_conf));
+    } else {
+        alerts_list_conf = JSON.parse(alerts_list_conf);
     }
 
     if (!history_conf) {
@@ -48,7 +66,6 @@ class HuntApp extends Component {
               perPage: 6,
               perPageOptions: [6, 10, 15, 25, 50]
             },
-            filters: [],
             sort: {id: 'date', asc: false},
             view_type: 'list'
         };
@@ -56,6 +73,21 @@ class HuntApp extends Component {
     } else {
         history_conf = JSON.parse(history_conf);
     }
+
+    if (!ids_filters) {
+        ids_filters = [];
+        localStorage.setItem('ids_filters', JSON.stringify(ids_filters));
+    } else {
+        ids_filters = JSON.parse(ids_filters);
+    }
+
+    if (!history_filters) {
+        history_filters = [];
+        localStorage.setItem('history_filters', JSON.stringify(history_filters));
+    } else {
+        history_filters = JSON.parse(history_filters);
+    }
+
 
     if (!page_display) {
         page_display = { page: PAGE_STATE.rules_list, item:undefined };
@@ -67,7 +99,10 @@ class HuntApp extends Component {
       sources: [], rulesets: [], duration: duration, from_date: (Date.now() - duration * 3600 * 1000),
       display: page_display,
       rules_list: rules_list_conf,
-      history: history_conf
+      alerts_list: alerts_list_conf,
+      ids_filters: ids_filters,
+      history: history_conf,
+      history_filters: history_filters,
     };
     this.displaySource = this.displaySource.bind(this);
     this.displayRuleset = this.displayRuleset.bind(this);
@@ -78,8 +113,10 @@ class HuntApp extends Component {
     this.onHomeClick = this.onHomeClick.bind(this);
     this.onDashboardClick = this.onDashboardClick.bind(this);
     this.onHistoryClick = this.onHistoryClick.bind(this);
+    this.onAlertsClick = this.onAlertsClick.bind(this);
     this.switchPage = this.switchPage.bind(this);
     this.updateRuleListState = this.updateRuleListState.bind(this);
+    this.updateIDSFilterState = this.updateIDSFilterState.bind(this);
     this.updateHistoryListState = this.updateHistoryListState.bind(this);
     
   }
@@ -88,6 +125,9 @@ class HuntApp extends Component {
         this.switchPage(PAGE_STATE.rules_list, undefined);
     }
     
+    onAlertsClick() {
+        this.switchPage(PAGE_STATE.alerts_list, undefined);
+    }
     
     onDashboardClick() {
         this.switchPage(PAGE_STATE.dashboards, undefined);
@@ -140,6 +180,16 @@ class HuntApp extends Component {
         localStorage.setItem('rules_list', JSON.stringify(rules_list_state));
     }
 
+    updateIDSFilterState(filters) {
+        this.setState({ids_filters: filters});
+        localStorage.setItem('ids_filters', JSON.stringify(filters));
+    }
+
+    updateHistoryFilterState(filters) {
+        this.setState({history_filters: filters});
+        localStorage.setItem('history_filters', JSON.stringify(filters));
+    }
+
     updateHistoryListState(history_state) {
         this.setState({history: history_state});
         localStorage.setItem('history', JSON.stringify(history_state));
@@ -150,7 +200,7 @@ class HuntApp extends Component {
             switch (this.state.display.page) {
                case PAGE_STATE.rules_list:
                default:
-                  displayed_page = <RulesList config={this.state.rules_list} from_date={this.state.from_date} SwitchPage={this.switchPage} updateListState={this.updateRuleListState} />
+                  displayed_page = <RulesList config={this.state.rules_list} filters={this.state.ids_filters} from_date={this.state.from_date} SwitchPage={this.switchPage} updateListState={this.updateRuleListState} updateFilterState={this.updateIDSFilterState} />
                   break;
                case PAGE_STATE.source:
                   displayed_page = <SourcePage source={this.state.display.item} from_date={this.state.from_date}/>
@@ -158,14 +208,14 @@ class HuntApp extends Component {
                case PAGE_STATE.ruleset:
                   displayed_page = <RulesetPage ruleset={this.state.display.item} from_date={this.state.from_date}/>
                   break;
-               case PAGE_STATE.rule:
-                  displayed_page = <RulePage rule={this.state.display.item} from_date={this.state.from_date}/>
-                  break;
                case PAGE_STATE.dashboards:
                   displayed_page = <HuntDashboard from_date={this.state.from_date}/>
                   break;
                case PAGE_STATE.history:
                   displayed_page = <HistoryPage config={this.state.history} from_date={this.state.from_date} updateListState={this.updateHistoryListState} switchPage={this.switchPage}/>
+                  break;
+		case PAGE_STATE.alerts_list:
+                  displayed_page = <AlertsList config={this.state.history} filters={this.state.ids_filters} from_date={this.state.from_date} updateListState={this.updateHistoryListState} switchPage={this.switchPage} updateFilterState={this.updateIDSFilterState} />
                   break;
             }
         return(
@@ -184,7 +234,12 @@ class HuntApp extends Component {
             	      onClick={this.onHomeClick}
             	      className={null}
             	    />
-
+       		     <VerticalNav.Item
+		      title="Alerts"
+		      iconClass="glyphicon glyphicon-list"
+            	      initialActive = { this.state.display.page === PAGE_STATE.alerts_list }
+            	      onClick={this.onAlertsClick}
+		     />
             	    <VerticalNav.Item
             	      title="Dashboards"
             	      iconClass="fa fa-tachometer"
