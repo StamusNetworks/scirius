@@ -870,7 +870,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         try:
             source.handle_uploaded_file(request.FILES['file'])
         except Exception as error:
-            raise ServiceUnavailableException(error)
+            raise serializers.ValidationError({'upload': [str(error)]})
 
         UserAction.create(
                 action_type='upload_source',
@@ -970,8 +970,8 @@ class PublicSourceSerializer(BaseSourceSerializer):
 
         try:
             public_sources = get_public_sources(False)
-        except:
-            raise ServiceUnavailableException()
+        except Exception as e:
+            raise serializers.ValidationError({'list': [str(e)]})
 
         if source_name not in public_sources['sources']:
             raise exceptions.NotFound(detail='Unknown public source "%s"' % source_name)
