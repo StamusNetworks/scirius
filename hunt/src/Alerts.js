@@ -106,23 +106,12 @@ export class AlertsList extends HuntList {
 class AlertInList extends React.Component {
     constructor(props) {
        super(props);
-       this.displayField = this.displayField.bind(this);
+       this.addFilter = this.addFilter.bind(this);
     }
 
     addFilter(key, value) {
-	console.log(key);
-	console.log(value);
         let activeFilters = [...this.props.filters, {label:"" + key + ": " + value, id: key, value: value}];
         this.props.UpdateFilter(activeFilters);
-    }
-
-    displayField(field_name, field, value) {
-       return(
-           <React.Fragment>
-               <dt>{field_name}</dt>
-	       <dd>{value}  <a onClick={ e => {this.addFilter(field, value)}}><Icon type="fa" name="search-plus"/></a></dd>
-           </React.Fragment>
-       )
     }
 
     render() {
@@ -155,12 +144,12 @@ class AlertInList extends React.Component {
 		    {data.http !== undefined &&
 	         <Col sm={4}>
 		        <dl className="dl-horizontal">
-			   {this.displayField("Host", "http.hostname", data.http.hostname)}
-			   {this.displayField("URL", "http.url", data.http.url)}
-			   {this.displayField("Method", "http.http_method", data.http.http_method)}
-			   {this.displayField("User Agent", "http.http_user_agent", data.http.http_user_agent)}
+			   <EventField field_name="Host" field="http.hostname" value={data.http.hostname} addFilter={this.addFilter} />
+			   <EventField field_name="URL" field="http.url" value={data.http.url} addFilter={this.addFilter} />
+			   <EventField field_name="Method" field="http.http_method" value={data.http.http_method} addFilter={this.addFilter} />
+			   <EventField field_name="User Agent" field="http.http_user_agent" value={data.http.http_user_agent} addFilter={this.addFilter} />
 			   {data.http.http_refer !== undefined &&
-			     this.displayField("Referrer", "http.http_refer", data.http.http_refer)
+			      <EventField field_name="Referrer" field="http.http_refer" value={data.http.http_refer} addFilter={this.addFilter} />
 			   }
 			</dl>
 		 </Col>
@@ -200,4 +189,27 @@ class AlertInList extends React.Component {
            </ListViewItem>
     )
     }
+}
+
+class EventField extends React.Component {
+    constructor(props) {
+       super(props);
+       this.state = {display_actions: false };
+    }
+
+   render() {
+      return(
+           <React.Fragment>
+               <dt>{this.props.field_name}</dt>
+	       <dd
+	           onMouseOver={e => {this.setState({display_actions: true})}}
+	           onMouseOut={e => {this.setState({display_actions: false})}}
+	       >{this.props.value}
+	             {this.state.display_actions &&
+		         <a onClick={ e => {this.props.addFilter(this.props.field, this.props.value)}}> <Icon type="fa" name="search-plus"/></a>
+		     }
+	       </dd>
+           </React.Fragment>
+	   )
+   }
 }
