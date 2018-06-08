@@ -1219,8 +1219,8 @@ class UserActionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = UserAction.objects.all()
     serializer_class = UserActionSerializer
     filter_fields = ('date', 'username', 'user_action_objects__action_key', 'action_type')
-    ordering = ('pk', 'date', 'username', 'user_action_objects__action_key', 'action_type')
-    ordering_fields = ('pk', 'date', 'username', 'user_action_objects__action_key', 'action_type')
+    ordering = ('-pk',)
+    ordering_fields = ('pk', 'date', 'username', 'action_type')
 
 
 router = DefaultRouter()
