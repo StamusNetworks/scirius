@@ -1289,7 +1289,17 @@ def edit_source(request, source_id):
                 if not categories:
                     firstimport = True
                 source.new_uploaded_file(request.FILES['file'], firstimport)
+
             form.save()
+
+            if source.datatype == 'sig':
+                categories = Category.objects.filter(source=source)
+                firstimport = False if len(categories) > 0 else True
+
+                if 'name' in form.changed_data and firstimport is False:
+                    category = categories[0]  # sig => one2one source/category
+                    category.name = '%s Sigs' % form.cleaned_data['name']
+                    category.save()
 
             UserAction.create(
                     action_type='edit_source',
