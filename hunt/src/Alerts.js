@@ -150,6 +150,9 @@ class AlertInList extends React.Component {
 			   <dt>URL</dt><dd>{data.http.url}</dd>
 			   <dt>Method</dt><dd>{data.http.http_method}</dd>
 			   <dt>User Agent</dt><dd>{data.http.http_user_agent}</dd>
+			   {data.http.http_refer !== undefined &&
+			     <React.Fragment><dt>HTTP referrer</dt><dd>{data.http.http_refer}</dd></React.Fragment>
+			   }
 			</dl>
 		 </Col>
 		    }
