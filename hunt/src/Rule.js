@@ -635,6 +635,10 @@ export function buildQFilter(filters) {
             qfilter.push('http.hostname:' + filters[i].value);
 	    continue;
 	}
+	else if (filters[i].id === 'sid') {
+            qfilter.push('alert.signature_id:' + filters[i].value);
+	    continue;
+	}
      }
      if (qfilter.length === 0) {
 	 return null;
