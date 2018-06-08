@@ -4,7 +4,7 @@ import { buildQFilter } from './Rule.js';
 import { HuntFilter } from './Filter.js';
 import * as config from './config/Api.js';
 
-import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
+import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner, Icon } from 'patternfly-react';
 import axios from 'axios';
 
 export const AlertFilterFields = [
@@ -40,14 +40,8 @@ export const AlertFilterFields = [
 
 export const AlertSortFields = [
   {
-    id: 'created',
-    title: 'Created',
-    isNumeric: true,
-    defaultAsc: false,
-  },
-  {
-    id: 'hits',
-    title: 'Alerts',
+    id: 'timestamp',
+    title: 'timestamp',
     isNumeric: true,
     defaultAsc: false,
   },
@@ -56,12 +50,6 @@ export const AlertSortFields = [
     title: 'Message',
     isNumeric: false,
     defaultAsc: true,
-  },
-  {
-    id: 'updated',
-    title: 'Updated',
-    isNumeric: true,
-    defaultAsc: false,
   }
 ];
 
@@ -104,7 +92,7 @@ export class AlertsList extends HuntList {
            <ListView>
            {this.state.alerts.map(rule => {
                   return(
-                      <AlertInList key={rule._id} id={rule._id} data={rule._source}  from_date={this.props.from_date} />
+                      <AlertInList key={rule._id} id={rule._id} data={rule._source}  from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} filters={this.props.filters} />
                   )
               })
            }
@@ -116,6 +104,27 @@ export class AlertsList extends HuntList {
 }
 
 class AlertInList extends React.Component {
+    constructor(props) {
+       super(props);
+       this.displayField = this.displayField.bind(this);
+    }
+
+    addFilter(key, value) {
+	console.log(key);
+	console.log(value);
+        let activeFilters = [...this.props.filters, {label:"" + key + ": " + value, id: key, value: value}];
+        this.props.UpdateFilter(activeFilters);
+    }
+
+    displayField(field_name, field, value) {
+       return(
+           <React.Fragment>
+               <dt>{field_name}</dt>
+	       <dd>{value}  <a onClick={ e => {this.addFilter(field, value)}}><Icon type="fa" name="search-plus"/></a></dd>
+           </React.Fragment>
+       )
+    }
+
     render() {
         var data = this.props.data;
         var ip_params = data.src_ip + ':' + data.src_port +' -> ' + data.dest_ip + ':' + data.dest_port;
@@ -146,12 +155,12 @@ class AlertInList extends React.Component {
 		    {data.http !== undefined &&
 	         <Col sm={4}>
 		        <dl className="dl-horizontal">
-			   <dt>Host</dt><dd>{data.http.hostname}</dd>
-			   <dt>URL</dt><dd>{data.http.url}</dd>
-			   <dt>Method</dt><dd>{data.http.http_method}</dd>
-			   <dt>User Agent</dt><dd>{data.http.http_user_agent}</dd>
+			   {this.displayField("Host", "http.hostname", data.http.hostname)}
+			   {this.displayField("URL", "http.url", data.http.url)}
+			   {this.displayField("Method", "http.http_method", data.http.http_method)}
+			   {this.displayField("User Agent", "http.http_user_agent", data.http.http_user_agent)}
 			   {data.http.http_refer !== undefined &&
-			     <React.Fragment><dt>HTTP referrer</dt><dd>{data.http.http_refer}</dd></React.Fragment>
+			     this.displayField("Referrer", "http.http_refer", data.http.http_refer)
 			   }
 			</dl>
 		 </Col>

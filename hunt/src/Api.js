@@ -199,7 +199,7 @@ export class HuntList extends React.Component {
             ordering="-" + sort['id'];
          }
     
-         return "?ordering=" + ordering + "&page_size=" + per_page + "&page=" + page
+         return "ordering=" + ordering + "&page_size=" + per_page + "&page=" + page
     
     }
 }

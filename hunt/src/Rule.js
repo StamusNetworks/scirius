@@ -737,7 +737,7 @@ export class RulesList extends HuntList {
 
      this.setState({refresh_data: true});
      axios.all([
-          axios.get(config.API_URL + config.RULE_PATH + this.buildListUrlParams(rules_stat) + "&from_date=" + this.props.from_date + string_filters),
+          axios.get(config.API_URL + config.RULE_PATH + "?" + this.buildListUrlParams(rules_stat) + "&from_date=" + this.props.from_date + string_filters),
           axios.get(config.API_URL + config.CATEGORY_PATH + "?page_size=100"),
 	  ])
       .then(axios.spread((RuleRes, CatRes) => {
