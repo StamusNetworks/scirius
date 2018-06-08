@@ -1171,10 +1171,13 @@ class UserActionSerializer(serializers.ModelSerializer):
                 klass = ua_obj.content_type.model_class()
                 content['type'] = klass.__name__
 
-                if klass.__name__ != 'Rule':
-                    content['pk'] = ua_obj.object_id
-                else:
-                    content['sid'] = ua_obj.object_id
+                # Check existance of content_object
+                sub_instances = klass.objects.filter(pk=ua_obj.object_id)
+                if len(sub_instances) > 0:
+                    if klass.__name__ != 'Rule':
+                        content['pk'] = ua_obj.object_id
+                    else:
+                        content['sid'] = ua_obj.object_id
 
             content['value'] = ua_obj.action_value
             all_content[ua_obj.action_key] = content
