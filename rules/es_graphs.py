@@ -1822,7 +1822,6 @@ def es_get_alerts_tail(from_date=0, qfilter = None, search_target=True):
     data = out.read()
     # returned data is JSON
     data = json.loads(data)['hits']['hits']
-    data.reverse()
     return data
 
 def es_suri_log_tail(from_date, hosts):
