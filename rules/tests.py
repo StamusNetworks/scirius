@@ -25,11 +25,15 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, RulesetTransformation
+from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, RulesetTransformation, UserAction
 from rest_api import router
 
 import tempfile
 from shutil import rmtree
+from StringIO import StringIO
+
+
+ET_URL = 'https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz'
 
 
 class SourceCreationTestCase(TestCase):
@@ -39,7 +43,7 @@ class SourceCreationTestCase(TestCase):
             self.source = Source.objects.create(name="ET Open",
                                        method = "http",
                                        datatype = "sigs",
-                                       uri="https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz",
+                                       uri=ET_URL,
                                        created_date=timezone.now())
 
     def tearDown(self):
@@ -192,13 +196,17 @@ class RestAPITestBase(object):
             raise
 
         # behavior/status could be different on remote and local build
+        try:
+            data_msg = unicode(getattr(response, 'data', None))
+        except UnicodeDecodeError:
+            data_msg = repr(getattr(response, 'data', None))
+        msg = 'Request failed: \n%s %s\n%s %s\n%s' % (method.upper(), url, response.status_code, response.reason_phrase, data_msg)
+
         if isinstance(http_status, tuple):
-            self.assertEqual(response.status_code in http_status, True, 'Request failed: \n%s %s\n%s %s\n%s' %
-                             (method.upper(), url, response.status_code, response.reason_phrase, response))
+            self.assertEqual(response.status_code in http_status, True, msg)
             return getattr(response, 'data', None), response.status_code
         else:
-            self.assertEqual(response.status_code, http_status, 'Request failed: \n%s %s\n%s %s\n%s' %
-                             (method.upper(), url, response.status_code, response.reason_phrase, response))
+            self.assertEqual(response.status_code, http_status, msg)
 
         return getattr(response, 'data', None)
 
@@ -211,20 +219,17 @@ class RestAPITestBase(object):
 
 
 class RestAPISourceTestCase(RestAPITestBase, APITestCase):
+    RULE_CONTENT = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
+flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
+metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
+deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
+
     def setUp(self):
         RestAPITestBase.setUp(self)
         APITestCase.setUp(self)
 
         self.ruleset = Ruleset.objects.create(name='test ruleset', descr='descr', created_date=timezone.now(), updated_date=timezone.now())
         self.ruleset.save()
-
-        content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
-flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
-metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
-deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
-
-        with open('/tmp/rules.rules', 'w') as f:
-            f.write(content)
 
     def _create_public_source(self):
         params = {
@@ -244,16 +249,16 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
         self.public_source = sources[0]
         self.ruleset.sources.add(sources_at_version[0])
 
-    def _create_custom_source(self, valid=False):
-
+    def _create_custom_source(self, method, datatype, **kwargs):
         params = {
-                'name': 'sonic test custom source' if valid is False else 'sonic another custom source',
-                'comment': 'MyCustomComment' if valid is False else 'AnotherCustomCOmment',
-                'method': 'local',
-                'datatype': 'sigs' if valid is False else 'sig'
-                }
+            'name': 'sonic test custom source',
+            'comment': 'MyCustomComment',
+            'method': method,
+            'datatype':  datatype
+        }
+        params.update(kwargs)
         self.http_post(reverse('source-list'), params, status=status.HTTP_201_CREATED)
-        sources = Source.objects.filter(name='sonic test custom source' if valid is False else 'sonic another custom source')
+        sources = Source.objects.filter(name='sonic test custom source')
         self.assertEqual(len(sources) == 1, True)
 
         sources_at_version = SourceAtVersion.objects.filter(source=sources[0])
@@ -264,14 +269,13 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
         self.source = sources[0]
         self.ruleset.sources.add(sources_at_version[0])
 
-    def test_001_source(self):
-        # ==================== Pubic source
+    def test_001_public_source(self):
         self._create_public_source()
         response = self.http_get(reverse('publicsource-fetch-list-sources'))
-        self.assertEqual('fetch' in response and response['fetch'] == 'ok', True)
+        self.assertDictEqual(response, {'fetch': 'ok'})
 
         response = self.http_post(reverse('publicsource-update-source', args=(self.public_source.pk,)))
-        self.assertEqual('update' in response and response['update'] == 'ok', True)
+        self.assertDictEqual(response, {'update': 'ok'})
 
         # behavior/status could be different on remote and local build
         status_ = (status.HTTP_400_BAD_REQUEST, status.HTTP_200_OK)
@@ -283,34 +287,69 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
             self.assertEqual(status_, status.HTTP_200_OK)
             self.assertEqual('test' in response and response['test'] == 'ok', True)
 
+            self.http_get(reverse('publicsource-list-sources'))
+
         response = self.http_delete(reverse('publicsource-detail', args=(self.public_source.pk,)), status=status.HTTP_204_NO_CONTENT)
         sources = Source.objects.filter(pk=self.public_source.pk)
         self.assertEqual(len(sources), 0)
 
-        # ==================== Custom source
-        self._create_custom_source()
-        response = self.http_post(reverse('source-update-source', args=(self.source.pk,)))
-        self.assertEqual('update' in response and response['update'] == 'ok', True)
+    def test_002_custom_source_upload(self):
+        self._create_custom_source('local', 'sig')
+        response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': StringIO(self.RULE_CONTENT)}, format='multipart')
+        self.assertDictEqual(response, {'upload': 'ok'})
 
-        # wrong archive
+        response = self.http_post(reverse('source-update-source', args=(self.source.pk,)))
+        self.assertDictEqual(response, {'update': 'ok'})
+
+        response = self.http_get(reverse('category-list') + '?source=%i' % self.source.pk)
+        categories = response.get('results', [])
+        self.assertEqual(len(categories), 1)
+
+        response = self.http_get(reverse('rule-list') + '?category=%i' % categories[0]['pk'])
+        rules = response.get('results', [])
+        self.assertEqual(len(rules), 1)
+
+        rule = rules[0]
+        self.assertDictContainsSubset({
+            'sid': 2014530,
+            'msg': 'ET TROJAN Metasploit Meterpreter stdapi_* Command Request',
+            'state': True,
+            'state_in_source': True,
+            'content': self.RULE_CONTENT,
+            'rev': 3
+        }, rule)
+
+    def test_003_custom_source_bad_upload(self):
+        self._create_custom_source('local', 'sigs')
+
         with open('/usr/bin/find', 'rb') as f:
-            try:
-                response = None
-                response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': f}, format='multipart')
-            except Exception as e:
-                # Not a valid tar
-                self.assertEqual('Invalid tar file' in e.message, True)
+            response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': f}, format='multipart', status=status.HTTP_400_BAD_REQUEST)
+            self.assertDictEqual(response, {'upload': ['Invalid tar file']})
 
         response = self.http_delete(reverse('source-detail', args=(self.source.pk,)), status=status.HTTP_204_NO_CONTENT)
         sources = Source.objects.filter(pk=self.source.pk)
         self.assertEqual(len(sources), 0)
 
-        # good file format
-        self._create_custom_source(True)
-        with open('/tmp/rules.rules', 'r') as f:
-            response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': f}, format='multipart')
-        self.assertEqual('upload' in response and response['upload'] == 'ok', True)
+    def test_004_custom_source_http(self):
+        self._create_custom_source('http', 'sigs', uri=ET_URL, cert_verif=True)
 
+        response = self.http_post(reverse('source-update-source', args=(self.source.pk,)))
+        self.assertDictEqual(response, {'update': 'ok'})
+
+    def test_005_custom_source_bad_http(self):
+        self._create_custom_source('http', 'sigs', uri='http://localhost:1234/')
+
+        response = self.http_post(reverse('source-update-source', args=(self.source.pk,)), status=status.HTTP_400_BAD_REQUEST)
+        msg = str(response.get('update', [''])[0])
+        self.assertRegexpMatches(msg, 'Can not fetch data: .* Connection refused')
+
+    def test_006_custom_source_delete(self):
+        self._create_custom_source('local', 'sig')
+        response = self.http_delete(reverse('source-detail', args=(self.source.pk,)), {'comment': 'source delete'}, status=status.HTTP_204_NO_CONTENT)
+
+        ua = UserAction.objects.order_by('pk').last()
+        self.assertEqual(ua.action_type, 'delete_source')
+        self.assertEqual(ua.comment, 'source delete')
 
 class RestAPIRulesetTransformationTestCase(RestAPITestBase, APITestCase):
     def setUp(self):
