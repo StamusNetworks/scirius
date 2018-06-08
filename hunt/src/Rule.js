@@ -639,6 +639,10 @@ export function buildQFilter(filters) {
             qfilter.push('alert.signature_id:' + filters[i].value);
 	    continue;
 	}
+	else if (filters[i].id === 'msg') {
+            qfilter.push('alert.signature:' + filters[i].value);
+	    continue;
+	}
      }
      if (qfilter.length === 0) {
 	 return null;
