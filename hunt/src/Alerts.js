@@ -123,7 +123,7 @@ class AlertInList extends React.Component {
            <ListViewItem
             id={this.props.id}
             leftContent={<ListViewIcon type="pf" name="security" />}
-            heading={data.alert.signature}
+            heading={<span data-toggle="tooltip" title={data.alert.signature}>{data.alert.signature}</span>}
             description={ip_params}
 	    additionalInfo={[
 	    		     <ListViewInfoItem key="timestamp"><p>{data.timestamp}</p></ListViewInfoItem>,
@@ -143,7 +143,7 @@ class AlertInList extends React.Component {
 			</dl>
 		 </Col>
 		    }
-		    {data.app_proto === "http" &&
+		    {data.http !== undefined &&
 	         <Col sm={4}>
 		        <dl className="dl-horizontal">
 			   <dt>Host</dt><dd>{data.http.hostname}</dd>
@@ -169,6 +169,22 @@ class AlertInList extends React.Component {
 		 </Col>
 		    }
               </Row>
+	      {data.http &&
+	      <Row>
+	         { data.http.http_request_body_printable &&
+	         <Col sm={6}>
+		      <strong>HTTP request body</strong>
+		      <pre>{data.http.http_request_body_printable}</pre>
+		 </Col>
+	         }
+	         {data.http.http_response_body_printable &&
+	         <Col sm={6}>
+		      <strong>HTTP response body</strong>
+		      <pre>{data.http.http_response_body_printable}</pre>
+		 </Col>
+	         }
+              </Row>
+	      }
            </ListViewItem>
     )
     }
