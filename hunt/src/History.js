@@ -46,7 +46,7 @@ export class HistoryPage extends HuntList {
     }
 
     componentDidMount() {
-	this.fetchData(this.props.config);
+	this.fetchData(this.props.config, this.props.filters);
     }
     
 

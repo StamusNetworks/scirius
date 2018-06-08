@@ -1,5 +1,5 @@
 import React from 'react';
-import { HuntList, HuntPaginationRow } from './Api.js';
+import { HuntList } from './Api.js';
 import { buildQFilter } from './Rule.js';
 import { HuntFilter } from './Filter.js';
 import * as config from './config/Api.js';
@@ -74,7 +74,7 @@ export class AlertsList extends HuntList {
       loading: true,
       refresh_data: false,
     };
-         this.fetchData = this.fetchData.bind(this);
+   this.fetchData = this.fetchData.bind(this);
   }
 
   fetchData(state, filters) {
@@ -90,25 +90,26 @@ export class AlertsList extends HuntList {
   render() {
     return (
        <div className="AlertsList">
-       <h1>Alerts list</h1>
 	    <HuntFilter ActiveFilters={this.props.filters}
 	          config={this.props.config}
 		  ActiveSort={this.props.config.sort}
-		  UpdateFilter={this.RuleUpdateFilter}
+		  UpdateFilter={this.UpdateFilter}
 		  UpdateSort={this.UpdateSort}
 		  setViewType={this.setViewType}
 		  filterFields={AlertFilterFields}
 		  sort_config={AlertSortFields}
 		  displayToggle={this.state.display_toggle}
             />
+         <Spinner loading={this.state.loading}>
            <ListView>
            {this.state.alerts.map(rule => {
                   return(
-                      <AlertInList key={rule._id} id={rule._id} data={rule._source} />
+                      <AlertInList key={rule._id} id={rule._id} data={rule._source}  from_date={this.props.from_date} />
                   )
               })
            }
            </ListView>
+	 </Spinner>  
        </div>
     )
   }
@@ -117,13 +118,58 @@ export class AlertsList extends HuntList {
 class AlertInList extends React.Component {
     render() {
         var data = this.props.data;
-        var ip_params = data.src_ip + '->' + data.dest_ip;
+        var ip_params = data.src_ip + ':' + data.src_port +' -> ' + data.dest_ip + ':' + data.dest_port;
         return(
            <ListViewItem
             id={this.props.id}
+            leftContent={<ListViewIcon type="pf" name="security" />}
             heading={data.alert.signature}
             description={ip_params}
-           />
+	    additionalInfo={[
+	    		     <ListViewInfoItem key="timestamp"><p>{data.timestamp}</p></ListViewInfoItem>,
+	    		     <ListViewInfoItem key="app_proto"><p>Proto: {data.app_proto}</p></ListViewInfoItem>,
+	                     <ListViewInfoItem key="host"><p>Probe: {data.host}</p></ListViewInfoItem>,
+	                     <ListViewInfoItem key="category"><p>Category: {data.alert.category}</p></ListViewInfoItem>,
+	                    ]}
+	   >
+	      <Row>
+		    {data.alert.target !== undefined &&
+	         <Col sm={4}>
+		        <dl className="dl-horizontal">
+			   <dt>Target IP</dt><dd>{data.alert.target.ip}</dd>
+			   <dt>Target Network</dt><dd>{data.alert.target.net_info.join(', ')}</dd>
+			   <dt>Source IP</dt><dd>{data.alert.source.ip}</dd>
+			   <dt>Source Network</dt><dd>{data.alert.source.net_info.join(', ')}</dd>
+			</dl>
+		 </Col>
+		    }
+		    {data.app_proto === "http" &&
+	         <Col sm={4}>
+		        <dl className="dl-horizontal">
+			   <dt>Host</dt><dd>{data.http.hostname}</dd>
+			   <dt>URL</dt><dd>{data.http.url}</dd>
+			   <dt>Method</dt><dd>{data.http.http_method}</dd>
+			   <dt>User Agent</dt><dd>{data.http.http_user_agent}</dd>
+			</dl>
+		 </Col>
+		    }
+		    {data.alert.metadata &&
+	         <Col sm={4}>
+		      <dl className="dl-horizontal">
+		      {   
+			  Object.entries(data.alert.metadata).map( field => {
+			  return(
+			      <React.Fragment key={field[0]} >
+                                  <dt>{field[0]}</dt><dd>{field[1].join(', ')}</dd>
+			      </React.Fragment>
+			  )
+		      })
+		      }
+		      </dl>
+		 </Col>
+		    }
+              </Row>
+           </ListViewItem>
     )
     }
 }

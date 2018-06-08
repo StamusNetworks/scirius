@@ -116,6 +116,7 @@ class HuntApp extends Component {
     this.onAlertsClick = this.onAlertsClick.bind(this);
     this.switchPage = this.switchPage.bind(this);
     this.updateRuleListState = this.updateRuleListState.bind(this);
+    this.updateAlertListState = this.updateAlertListState.bind(this);
     this.updateIDSFilterState = this.updateIDSFilterState.bind(this);
     this.updateHistoryListState = this.updateHistoryListState.bind(this);
     
@@ -180,6 +181,11 @@ class HuntApp extends Component {
         localStorage.setItem('rules_list', JSON.stringify(rules_list_state));
     }
 
+    updateAlertListState(alerts_list_state) {
+        this.setState({alerts_list: alerts_list_state});
+        localStorage.setItem('alerts_list', JSON.stringify(alerts_list_state));
+    }
+
     updateIDSFilterState(filters) {
         this.setState({ids_filters: filters});
         localStorage.setItem('ids_filters', JSON.stringify(filters));
@@ -212,10 +218,10 @@ class HuntApp extends Component {
                   displayed_page = <HuntDashboard from_date={this.state.from_date}/>
                   break;
                case PAGE_STATE.history:
-                  displayed_page = <HistoryPage config={this.state.history} from_date={this.state.from_date} updateListState={this.updateHistoryListState} switchPage={this.switchPage}/>
+                  displayed_page = <HistoryPage config={this.state.history} filters={this.state.history_filters} from_date={this.state.from_date} updateListState={this.updateHistoryListState} switchPage={this.switchPage} updateFilterState={this.updateHistoryFilterState}/>
                   break;
 		case PAGE_STATE.alerts_list:
-                  displayed_page = <AlertsList config={this.state.history} filters={this.state.ids_filters} from_date={this.state.from_date} updateListState={this.updateHistoryListState} switchPage={this.switchPage} updateFilterState={this.updateIDSFilterState} />
+                  displayed_page = <AlertsList config={this.state.alerts_list} filters={this.state.ids_filters} from_date={this.state.from_date} updateListState={this.updateAlertListState} switchPage={this.switchPage} updateFilterState={this.updateIDSFilterState} />
                   break;
             }
         return(
