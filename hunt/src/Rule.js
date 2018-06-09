@@ -611,27 +611,31 @@ export class RuleToggleModal extends React.Component {
 export function buildQFilter(filters) {
      var qfilter = [];
      for (var i=0; i < filters.length; i++) {
+	var f_prefix = '';
+	if (filters[i].negated) {
+            f_prefix = 'NOT ';
+	}
 	if (filters[i].id === 'probe') {
-            qfilter.push('host.raw:' + filters[i].value);
+            qfilter.push(f_prefix + 'host.raw:' + filters[i].value);
 	    continue;
 	} else if (filters[i].id === 'sprobe') {
-            qfilter.push('host.raw:' + filters[i].value.id);
+            qfilter.push(f_prefix + 'host.raw:' + filters[i].value.id);
 	    continue;
 	}
 	else if (filters[i].id === 'sid') {
-            qfilter.push('alert.signature_id:' + filters[i].value);
+            qfilter.push(f_prefix + 'alert.signature_id:' + filters[i].value);
 	    continue;
 	}
 	else if (filters[i].id === 'msg') {
-            qfilter.push('alert.signature:' + filters[i].value);
+            qfilter.push(f_prefix + 'alert.signature:' + filters[i].value);
 	    continue;
 	}
 	else if (typeof filters[i].value === 'string') {
-            qfilter.push(filters[i].id + ':"' + filters[i].value + '"');
+            qfilter.push(f_prefix + filters[i].id + ':"' + filters[i].value + '"');
 	    continue;
 	}
 	else {
-            qfilter.push(filters[i].id + ':' + filters[i].value);
+            qfilter.push(f_prefix + filters[i].id + ':' + filters[i].value);
 	    continue;
 	}
      }

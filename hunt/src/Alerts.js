@@ -114,8 +114,9 @@ class AlertInList extends React.Component {
        this.addFilter = this.addFilter.bind(this);
     }
 
-    addFilter(key, value) {
-        let activeFilters = [...this.props.filters, {label:"" + key + ": " + value, id: key, value: value}];
+    addFilter(key, value, negated) {
+        let activeFilters = [...this.props.filters,
+	                     {label:"" + key + ": " + value, id: key, value: value, negated: negated}];
         this.props.UpdateFilter(activeFilters);
     }
 

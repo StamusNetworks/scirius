@@ -32,7 +32,7 @@ export class HuntFilter extends React.Component {
       filterText += value;
     }
 
-    let activeFilters = [...this.props.ActiveFilters, { label: filterText, id: field.id, value: value }];
+    let activeFilters = [...this.props.ActiveFilters, { label: filterText, id: field.id, value: value, negated: false }];
     this.props.UpdateFilter(activeFilters);
   };
 
@@ -224,7 +224,9 @@ export class HuntFilter extends React.Component {
                       onRemove={this.removeFilter}
                       filterData={item}
                     >
-                      {item.label}
+		      { item.negated &&
+		         <span>Not</span>
+		      } {item.label}
                     </Filter.Item>
                   );
                 })}
