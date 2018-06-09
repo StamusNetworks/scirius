@@ -618,29 +618,20 @@ export function buildQFilter(filters) {
             qfilter.push('host.raw:' + filters[i].value.id);
 	    continue;
 	}
-	// FIXME find a dynamic way
-	else if (filters[i].id === 'dns.query.rrname') {
-            qfilter.push('dns.query.rrname:' + filters[i].value);
-	    continue;
-	}
-	else if (filters[i].id === 'src_ip') {
-            qfilter.push('src_ip:' + filters[i].value);
-	    continue;
-	}
-	else if (filters[i].id === 'dest_ip') {
-            qfilter.push('dest_ip:' + filters[i].value);
-	    continue;
-	}
-	else if (filters[i].id === 'http.hostname') {
-            qfilter.push('http.hostname:' + filters[i].value);
-	    continue;
-	}
 	else if (filters[i].id === 'sid') {
             qfilter.push('alert.signature_id:' + filters[i].value);
 	    continue;
 	}
 	else if (filters[i].id === 'msg') {
             qfilter.push('alert.signature:' + filters[i].value);
+	    continue;
+	}
+	else if (typeof filters[i].value === 'string') {
+            qfilter.push(filters[i].id + ':"' + filters[i].value + '"');
+	    continue;
+	}
+	else {
+            qfilter.push(filters[i].id + ':' + filters[i].value);
 	    continue;
 	}
      }

@@ -2,6 +2,7 @@ import React from 'react';
 import { HuntList } from './Api.js';
 import { buildQFilter } from './Rule.js';
 import { HuntFilter } from './Filter.js';
+import { EventField } from './Event.js';
 import * as config from './config/Api.js';
 
 import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner, Icon } from 'patternfly-react';
@@ -70,7 +71,11 @@ export class AlertsList extends HuntList {
      this.setState({refresh_data: true});
      var url = config.API_URL + config.ES_BASE_PATH + 'alerts_tail&search_target=0&' + this.buildListUrlParams(state) + "&from_date=" + this.props.from_date + '&filter=' + string_filters;
      axios.get(url).then( res => {
-          this.setState({alerts: res.data, loading: false});
+	  if ((res.data !== null) && (typeof res.data !== 'string')) {
+              this.setState({alerts: res.data, loading: false});
+	  } else {
+              this.setState({loading: false});
+	  }
      }
      )
   }
@@ -146,6 +151,7 @@ class AlertInList extends React.Component {
 		        <dl className="dl-horizontal">
 			   <EventField field_name="Host" field="http.hostname" value={data.http.hostname} addFilter={this.addFilter} />
 			   <EventField field_name="URL" field="http.url" value={data.http.url} addFilter={this.addFilter} />
+			   <EventField field_name="Status" field="http.status" value={data.http.status} addFilter={this.addFilter} />
 			   <EventField field_name="Method" field="http.http_method" value={data.http.http_method} addFilter={this.addFilter} />
 			   <EventField field_name="User Agent" field="http.http_user_agent" value={data.http.http_user_agent} addFilter={this.addFilter} />
 			   {data.http.http_refer !== undefined &&
@@ -191,25 +197,4 @@ class AlertInList extends React.Component {
     }
 }
 
-class EventField extends React.Component {
-    constructor(props) {
-       super(props);
-       this.state = {display_actions: false };
-    }
 
-   render() {
-      return(
-           <React.Fragment>
-               <dt>{this.props.field_name}</dt>
-	       <dd
-	           onMouseOver={e => {this.setState({display_actions: true})}}
-	           onMouseOut={e => {this.setState({display_actions: false})}}
-	       >{this.props.value}
-	             {this.state.display_actions &&
-		         <a onClick={ e => {this.props.addFilter(this.props.field, this.props.value)}}> <Icon type="fa" name="search-plus"/></a>
-		     }
-	       </dd>
-           </React.Fragment>
-	   )
-   }
-}
