@@ -33,6 +33,9 @@ export class EventValue extends React.Component {
 		         <a onClick={ e => {this.props.addFilter(this.props.field, this.props.value, true)}}> <Icon type="fa" name="search-minus"/></a>
                      </React.Fragment>
 		     }
+                {this.props.right_info && 
+		    <span className="pull-right">{this.props.right_info}</span>
+                }
 	    </div>
 	)
     }

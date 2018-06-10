@@ -10,6 +10,7 @@ import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 import { HuntFilter } from './Filter.js';
 import { HuntList, HuntPaginationRow } from './Api.js';
 import { HuntDashboard } from './Dashboard.js';
+import { EventValue } from './Event.js';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -327,6 +328,7 @@ class RuleStat extends React.Component {
 	    super(props);
   	    this.state = {data: []};
         this.updateData = this.updateData.bind(this);
+	this.addFilter = this.addFilter.bind(this);
     }
 
     updateData() {
@@ -358,10 +360,8 @@ class RuleStat extends React.Component {
        }
     }
 
-    addFilter(key, value) {
-	console.log(key);
-	console.log(value);
-        let activeFilters = [...this.props.filters, {label:"" + key + ": " + value, id: key, value: value}];
+    addFilter(key, value, negated) {
+        let activeFilters = [...this.props.filters, {label:"" + key + ": " + value, id: key, value: value, negated: negated}];
         this.props.UpdateFilter(activeFilters);
     }
 
@@ -376,8 +376,10 @@ class RuleStat extends React.Component {
 	<ListGroup>
 	    {this.state.data.map( item => {
 		return(<ListGroupItem key={item.key}>
-		 {item.key} <a onClick={ e => {this.addFilter(this.props.item, item.key)}}><Icon type="fa" name="search-plus"/></a>
-		 <Badge>{item.doc_count}</Badge>
+		 <EventValue field={this.props.item} value={item.key}
+		             addFilter={this.addFilter}
+			     right_info={<Badge>{item.doc_count}</Badge>}
+		 />
 		 </ListGroupItem>)
 	    })}
 	</ListGroup>
