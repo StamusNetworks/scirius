@@ -4,6 +4,7 @@ import { buildQFilter } from './Rule.js';
 import { HuntFilter } from './Filter.js';
 import { EventField } from './Event.js';
 import * as config from './config/Api.js';
+import ReactJson from 'react-json-view';
 
 import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner, Icon } from 'patternfly-react';
 import axios from 'axios';
@@ -204,6 +205,19 @@ class AlertInList extends React.Component {
 	         }
               </Row>
 	      }
+	      <Row>
+	        <Col sm={12}>
+		   <strong>Full JSON event</strong>
+		   <ReactJson
+		       name={false}
+		       src={data}
+		       displayDataTypes = {false}
+		       displayObjectSize = {false}
+		       collapseStringsAfterLength = {150}
+		       collapsed = {true}
+		    />
+		</Col>
+	      </Row>
            </ListViewItem>
     )
     }
