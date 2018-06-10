@@ -123,13 +123,13 @@ class AlertInList extends React.Component {
 
     render() {
         var data = this.props.data;
-        var ip_params = data.src_ip + ':' + data.src_port +' -> ' + data.dest_ip + ':' + data.dest_port;
+        var ip_params = data.src_ip + ' -> ' + data.dest_ip;
         return(
            <ListViewItem
             id={this.props.id}
             leftContent={<ListViewIcon type="pf" name="security" />}
-            heading={<span data-toggle="tooltip" title={data.alert.signature}>{data.alert.signature}</span>}
-            description={ip_params}
+            description={<span data-toggle="tooltip" title={data.alert.signature}>{data.alert.signature}</span>}
+            heading={ip_params}
 	    additionalInfo={[
 	    		     <ListViewInfoItem key="timestamp"><p>{data.timestamp}</p></ListViewInfoItem>,
 	    		     <ListViewInfoItem key="app_proto"><p>Proto: {data.app_proto}</p></ListViewInfoItem>,
@@ -194,13 +194,13 @@ class AlertInList extends React.Component {
 	         { data.http.http_request_body_printable &&
 	         <Col sm={6}>
 		      <strong>HTTP request body</strong>
-		      <pre>{data.http.http_request_body_printable}</pre>
+		      <pre style={{"max-height": "12pc"}} >{data.http.http_request_body_printable}</pre>
 		 </Col>
 	         }
 	         {data.http.http_response_body_printable &&
 	         <Col sm={6}>
 		      <strong>HTTP response body</strong>
-		      <pre>{data.http.http_response_body_printable}</pre>
+		      <pre style={{"max-height": "12pc"}} >{data.http.http_response_body_printable}</pre>
 		 </Col>
 	         }
               </Row>
