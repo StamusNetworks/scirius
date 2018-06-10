@@ -149,11 +149,11 @@ class AlertInList extends React.Component {
 		    {data.alert.target !== undefined &&
 	         <Col sm={4}>
 		        <dl className="dl-horizontal">
-			   <dt>Target IP</dt><dd>{data.alert.target.ip}</dd>
-			   <dt>Target port</dt><dd>{data.alert.target.port}</dd>
+			   <EventField field_name="Target IP" field="alert.target.ip" value={data.alert.target.ip} addFilter={this.addFilter} />
+			   <EventField field_name="Target port" field="alert.target.port" value={data.alert.target.port} addFilter={this.addFilter} />
 			   <dt>Target Network</dt><dd>{data.alert.target.net_info.join(', ')}</dd>
-			   <dt>Source IP</dt><dd>{data.alert.source.ip}</dd>
-			   <dt>Source port</dt><dd>{data.alert.source.port}</dd>
+			   <EventField field_name="Source IP" field="alert.source.ip" value={data.alert.source.ip} addFilter={this.addFilter} />
+			   <EventField field_name="Source port" field="alert.source.port" value={data.alert.source.port} addFilter={this.addFilter} />
 			   <dt>Source Network</dt><dd>{data.alert.source.net_info.join(', ')}</dd>
 			</dl>
 		 </Col>
@@ -179,7 +179,7 @@ class AlertInList extends React.Component {
 			  Object.entries(data.alert.metadata).map( field => {
 			  return(
 			      <React.Fragment key={field[0]} >
-                                  <dt>{field[0]}</dt><dd>{field[1].join(', ')}</dd>
+                                  <EventField field_name={field[0]} field={'alert.metadata.' + field[0]} value={field[1].join(', ')} addFilter={this.addFilter} />
 			      </React.Fragment>
 			  )
 		      })
