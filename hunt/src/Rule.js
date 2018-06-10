@@ -656,6 +656,7 @@ export class RulesList extends HuntList {
       refresh_data: false,
       view: 'rules_list',
       display_toggle: true,
+      only_hits: true,
       action: { view: false, type: 'suppress'}
     };
     this.updateRulesState = this.updateRulesState.bind(this);
@@ -801,14 +802,24 @@ export class RulesList extends HuntList {
   }
 
   actionsButtons() {
-      return(<div className="form-group">
+      return(<React.Fragment>
+             <div className="form-group">
+                 <label>
+		     <input type="checkbox"
+		            name="only_hits"
+			    checked={this.state.only_hits}
+			    onChange={e => {this.setState({only_hits: !this.state.only_hits})}}
+	             /> Only hits</label>
+             </div>
+	     <div className="form-group">
 	         <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions">
 		 <MenuItem eventKey="1" onClick={e => { this.createSuppress(); }}>Suppress</MenuItem>
 		 <MenuItem eventKey="2" onClick={e => { this.createThreshold(); }}>Threshold</MenuItem>
 		 <MenuItem divider />
 		 <MenuItem eventKey="3" onClick={e => { this.createTag(); }}>Tag</MenuItem>
 	         </DropdownButton>
-		 </div>
+	     </div>
+	     </React.Fragment>
        );
   }
   
@@ -842,9 +853,11 @@ export class RulesList extends HuntList {
                 <div className='container-fluid container-cards-pf'>
                 <div className='row row-cards-pf'>
                 {this.state.rules.map(function(rule) {
+			 if ((!this.state.only_hits) || (rule.hits > 0)) {
                          return(
                                 <RuleCard key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule} />
                 )
+			 }
              },this)}
                 </div>
                 </div>
