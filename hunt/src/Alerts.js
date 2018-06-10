@@ -149,12 +149,12 @@ class AlertInList extends React.Component {
 		    {data.alert.target !== undefined &&
 	         <Col sm={4}>
 		        <dl className="dl-horizontal">
-			   <EventField field_name="Target IP" field="alert.target.ip" value={data.alert.target.ip} addFilter={this.addFilter} />
-			   <EventField field_name="Target port" field="alert.target.port" value={data.alert.target.port} addFilter={this.addFilter} />
-			   <dt>Target Network</dt><dd>{data.alert.target.net_info.join(', ')}</dd>
+			   <dt>Source Network</dt><dd>{data.alert.source.net_info.join(', ')}</dd>
 			   <EventField field_name="Source IP" field="alert.source.ip" value={data.alert.source.ip} addFilter={this.addFilter} />
 			   <EventField field_name="Source port" field="alert.source.port" value={data.alert.source.port} addFilter={this.addFilter} />
-			   <dt>Source Network</dt><dd>{data.alert.source.net_info.join(', ')}</dd>
+			   <dt>Target Network</dt><dd>{data.alert.target.net_info.join(', ')}</dd>
+			   <EventField field_name="Target IP" field="alert.target.ip" value={data.alert.target.ip} addFilter={this.addFilter} />
+			   <EventField field_name="Target port" field="alert.target.port" value={data.alert.target.port} addFilter={this.addFilter} />
 			</dl>
 		 </Col>
 		    }
