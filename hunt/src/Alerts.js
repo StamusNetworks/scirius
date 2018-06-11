@@ -144,6 +144,8 @@ class AlertInList extends React.Component {
 			   <EventField field_name="Source port" field="src_port" value={data.src_port} addFilter={this.addFilter} />
 			   <EventField field_name="Destination IP" field="dest_ip" value={data.dest_ip} addFilter={this.addFilter} />
 			   <EventField field_name="Destination port" field="dest_port" value={data.dest_port} addFilter={this.addFilter} />
+			   <EventField field_name="Application protocol" field="app_proto" value={data.app_proto} addFilter={this.addFilter} />
+			   <EventField field_name="Probe" field="probe" value={data.host} addFilter={this.addFilter} />
 			</dl>
 		 </Col>
 
