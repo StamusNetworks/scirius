@@ -91,7 +91,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":9,"name":"MyCreatedRuleset","descr":"","created_date":"2018-05-04T16:10:43.698843+02:00","updated_date":"2018-05-04T16:10:43.698852+02:00","need_test":true,"validity":true,"errors":"\"\"","rules_count":204,"sources":[1],"categories":[27]}
+        {"pk":9,"name":"MyCreatedRuleset","descr":"","created_date":"2018-05-04T16:10:43.698843+02:00","updated_date":"2018-05-04T16:10:43.698852+02:00","need_test":true,"validity":true,"errors":"\\"\\"","rules_count":204,"sources":[1],"categories":[27]}
 
     ==== POST ====\n
     Create a ruleset:\n
@@ -107,7 +107,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":12,"name":"SonicRulesetPatched","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","need_test":false,"validity":true,"errors":"\"\"","rules_count":204,"sources":[1],"categories":[27,1]}
+        {"pk":12,"name":"SonicRulesetPatched","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","need_test":false,"validity":true,"errors":"\\"\\"","rules_count":204,"sources":[1],"categories":[27,1]}
 
     ==== PUT ====\n
     Replace a ruleset:\n
@@ -115,7 +115,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":12,"name":"SonicRulesetReplaced","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","need_test":false,"validity":true,"errors":"\"\"","rules_count":204,"sources":[1],"categories":[1]}
+        {"pk":12,"name":"SonicRulesetReplaced","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","need_test":false,"validity":true,"errors":"\\"\\"","rules_count":204,"sources":[1],"categories":[1]}
 
     ==== DELETE ====\n
     Delete a ruleset:\n
@@ -320,14 +320,14 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":2404150,"sid":2404150,"category":27,"msg":"ET CNC Zeus Tracker Reported CnC Server group 1","state":true,"state_in_source":true,"rev":4983,"content":"alert ip $HOME_NET any -> [101.200.81.187,103.19.89.118,103.230.84.239,103.4.52.150,103.7.59.135] any (msg:\"ET CNC Zeus Tracker Reported CnC Server group 1\"; reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,zeustracker.abuse.ch; threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404150; rev:4983;)","imported_date":"2018-05-04T10:15:52.886070+02:00","updated_date":"2018-05-04T10:15:52.886070+02:00"}
+        {"pk":2404150,"sid":2404150,"category":27,"msg":"ET CNC Zeus Tracker Reported CnC Server group 1","state":true,"state_in_source":true,"rev":4983,"content":"alert ip $HOME_NET any -> [101.200.81.187,103.19.89.118,103.230.84.239,103.4.52.150,103.7.59.135] any (msg:\\"ET CNC Zeus Tracker Reported CnC Server group 1\\"; reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,zeustracker.abuse.ch; threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404150; rev:4983;)","imported_date":"2018-05-04T10:15:52.886070+02:00","updated_date":"2018-05-04T10:15:52.886070+02:00"}
 
     Show a transformed rule content:\n
         curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/content/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
-        {"2":"drop ip $HOME_NET any -> [101.200.81.187,103.19.89.118,103.230.84.239,103.4.52.150,103.7.59.135] any (msg:\"ET CNC Zeus Tracker Reported CnC Server group 1\"; reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,zeustracker.abuse.ch; threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404150; rev:4984;)"}
+        {"2":"drop ip $HOME_NET any -> [101.200.81.187,103.19.89.118,103.230.84.239,103.4.52.150,103.7.59.135] any (msg:\\"ET CNC Zeus Tracker Reported CnC Server group 1\\"; reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,zeustracker.abuse.ch; threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404150; rev:4984;)"}
 
     ==== POST ====\n
     Disable a rule in a ruleset. Disabling a rule is equivalent to transform this rule to SUPPRESSED/SUPPRESSED:\n
@@ -1035,9 +1035,9 @@ class PublicSourceViewSet(BaseSourceViewSet):
         {"pk":4,"name":"sonic public source","created_date":"2018-05-07T11:54:56.450782+02:00","updated_date":"2018-05-07T11:54:56.450791+02:00","method":"http","datatype":"sig","uri":"https://raw.githubusercontent.com/jasonish/suricata-trafficid/master/rules/traffic-id.rules","cert_verif":true,"cats_count":0,"rules_count":0,"public_source":"oisf/trafficid"}
 
     Update public source:\n
-        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/\\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
-        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/\\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
     Return:\n
         HTTP/1.1 200 OK
@@ -1102,9 +1102,9 @@ class SourceViewSet(BaseSourceViewSet):
         {"pk":5,"name":"sonic Custom source","created_date":"2018-05-07T12:01:00.658118+02:00","updated_date":"2018-05-07T12:01:00.658126+02:00","method":"local","datatype":"sigs","uri":null,"cert_verif":true,"cats_count":0,"rules_count":0,"authkey":"123456789"}
 
     Update custom (only for {method: http}):\n
-        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/update_source/\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/update_source/\\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
-        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/update_source/\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/update_source/\\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
     Return:\n
         HTTP/1.1 200 OK
