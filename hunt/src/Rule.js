@@ -551,7 +551,8 @@ export class RuleToggleModal extends React.Component {
       </button>
       {this.props.config.rule &&
         <Modal.Title>{this.props.action} Rule {this.props.config.rule.sid}</Modal.Title>
-       ||
+      }
+      {!this.props.config.rule &&
 	<Modal.Title>Add a {this.props.action} action</Modal.Title>
       }
     </Modal.Header>
@@ -856,8 +857,9 @@ export class RulesList extends HuntList {
 			 if ((!this.state.only_hits) || (rule.hits > 0)) {
                          return(
                                 <RuleCard key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule} />
-                )
+                         )
 			 }
+			 return(null);
              },this)}
                 </div>
                 </div>

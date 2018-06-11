@@ -5,8 +5,7 @@ import { HuntFilter } from './Filter.js';
 import { EventField } from './Event.js';
 import * as config from './config/Api.js';
 import ReactJson from 'react-json-view';
-
-import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner, Icon } from 'patternfly-react';
+import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
 import axios from 'axios';
 
 export const AlertFilterFields = [
