@@ -242,7 +242,7 @@ class HuntApp extends Component {
             	    />
        		     <VerticalNav.Item
 		      title="Alerts"
-		      iconClass="glyphicon glyphicon-list"
+		      iconClass="pficon pficon-security"
             	      initialActive = { this.state.display.page === PAGE_STATE.alerts_list }
             	      onClick={this.onAlertsClick}
 		     />
