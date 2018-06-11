@@ -204,10 +204,10 @@ export class RulePage extends React.Component {
         super(props);
         var rule = JSON.parse(JSON.stringify(this.props.rule));
 	if (typeof rule === 'number') {
-            this.state = { rule: undefined, sid: rule, toggle: { show: false, action: "Disable" }, extinfo: { http: false, dns: false }};
+            this.state = { rule: undefined, sid: rule, toggle: { show: false, action: "Disable" }, extinfo: { http: false, dns: false, tls: false }};
 	} else {
 	    rule.timeline = undefined;
-            this.state = { rule: rule, sid: rule.sid, toggle: { show: false, action: "Disable" }, extinfo: { http: false, dns: false }};
+            this.state = { rule: rule, sid: rule.sid, toggle: { show: false, action: "Disable" }, extinfo: { http: false, dns: false, tls: false }};
 	}
         this.updateRuleState = this.updateRuleState.bind(this);
         this.updateExtInfo = this.updateExtInfo.bind(this);
@@ -224,6 +224,9 @@ export class RulePage extends React.Component {
 		    }
                     if (data[i].key === "http") {
                          extinfo.http = true;
+		    }
+                    if (data[i].key === "tls") {
+                         extinfo.tls = true;
 		    }
 	       }
 	       this.setState({extinfo: extinfo});
@@ -313,6 +316,13 @@ export class RulePage extends React.Component {
                 <div className='row row-cards-pf'>
                     <RuleStat title="Name" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} />
                     <RuleStat title="Type" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                </div>
+		}
+		{this.state.extinfo.tls &&
+                <div className='row row-cards-pf'>
+                    <RuleStat title="Subject DN" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} />
+                    <RuleStat title="SNI" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} />
+                    <RuleStat title="Fingerprint" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
                 </div>
 		}
             </div>
