@@ -17,19 +17,21 @@
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-6">
-{% if form %}
-<form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
-    {% bootstrap_form form %}
-    {% buttons %}
-        <button type="submit" class="btn btn-primary">
-            {% if action == 'User token' %}
-                {% bootstrap_icon "refresh" %} Regenerate
-            {% else %}
-                {% bootstrap_icon "ok" %} Valid
-            {% endif %}
-        </button>
-    {% endbuttons %}
-</form>
+{% if edition %}
+    {% if form %}
+    <form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
+        {% bootstrap_form form %}
+        {% buttons %}
+            <button type="submit" class="btn btn-primary">
+                {% if action == 'User token' %}
+                    {% bootstrap_icon "refresh" %} Regenerate
+                {% else %}
+                    {% bootstrap_icon "ok" %} Valid
+                {% endif %}
+            </button>
+        {% endbuttons %}
+    </form>
+    {% endif %}
 {% else %}
 <h2>Logged in as {{user.username}}</h2>
 <ul class="list-group">

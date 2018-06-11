@@ -84,7 +84,7 @@ def editview(request, action):
 
         if action == 'password':
             form = PasswordChangeForm(user=request.user, data=request_data)
-            context = {'form': form, 'action': 'Change password'}
+            context = {'form': form, 'action': 'Change password', 'edition': True}
         elif action == 'settings':
             tz = 'UTC'
             if hasattr(request.user, 'sciriususer'):
@@ -96,16 +96,16 @@ def editview(request, action):
             else:
                 form = NormalUserSettingsForm(request_data, instance=request.user, initial=initial)
 
-            context = {'form': form, 'action': 'Edit settings for ' + request.user.username}
+            context = {'form': form, 'action': 'Edit settings for ' + request.user.username, 'edition': True}
         elif action == 'token':
             initial = {}
             token = Token.objects.filter(user=request.user)
             if len(token):
                 initial['token'] = token[0]
             form = TokenForm(request_data, initial=initial)
-            context = {'form': form, 'action': 'User token'}
+            context = {'form': form, 'action': 'User token', 'edition': True}
         else:
-            context = {'action': 'User settings'}
+            context = {'action': 'User settings', 'edition': False}
 
         if request.method == 'POST':
             if action == 'token':
@@ -118,6 +118,9 @@ def editview(request, action):
             orig_superuser = request.user.is_superuser
             orig_staff = request.user.is_staff
             if form.is_valid():
+                context['edition'] = False
+                context['action'] = 'User settings'
+
                 ruser = form.save(commit = False)
                 if not orig_superuser:
                     ruser.is_superuser = False
