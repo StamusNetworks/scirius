@@ -80,12 +80,13 @@ export class RuleInList extends React.Component {
     var kebab_config = { rule: this.props.data };
     return (
 	<ListViewItem
-  actions={[<a onClick={e => {this.props.SwitchPage(this.props.data)}}><Icon type="fa" name="search-plus"/> </a>, <RuleEditKebab config={kebab_config}/> ]}
+	   key={this.props.data.sid}
+  actions={[<a key={"actions-" + this.props.data.sid} onClick={e => {this.props.SwitchPage(this.props.data)}}><Icon type="fa" name="search-plus"/> </a>, <RuleEditKebab key={"kebab-" + this.props.data.sid} config={kebab_config}/> ]}
   leftContent={<ListViewIcon name="envelope" />}
-  additionalInfo={[<ListViewInfoItem key="created"><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
-                   <ListViewInfoItem key="updated"><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
-                   <ListViewInfoItem key="category"><p>Category: {category.name}</p></ListViewInfoItem>,
-                   <ListViewInfoItem key="hits"><Spinner loading={this.props.data.hits === undefined} size="xs"><p>Alerts <span className="badge">{this.props.data.hits}</span></p></Spinner></ListViewInfoItem>
+  additionalInfo={[<ListViewInfoItem key={"created-" + this.props.data.sid} ><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
+                   <ListViewInfoItem key={"updated-" + this.props.data.sid}><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
+                   <ListViewInfoItem key={"category-" + this.props.data.sid}><p>Category: {category.name}</p></ListViewInfoItem>,
+                   <ListViewInfoItem key={"hits-" + this.props.data.sid}><Spinner loading={this.props.data.hits === undefined} size="xs"><p>Alerts <span className="badge">{this.props.data.hits}</span></p></Spinner></ListViewInfoItem>
   ]}
   heading={this.props.data.sid}
   description={this.props.data.msg}
@@ -660,7 +661,8 @@ export class RulesList extends HuntList {
       view: 'rules_list',
       display_toggle: true,
       only_hits: true,
-      action: { view: false, type: 'suppress'}
+      action: { view: false, type: 'suppress'},
+      net_error: undefined
     };
     this.updateRulesState = this.updateRulesState.bind(this);
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
@@ -744,6 +746,7 @@ export class RulesList extends HuntList {
       .then(axios.spread((RuleRes, CatRes) => {
 	 var categories_array = CatRes.data['results'];
 	 var categories = {};
+	 this.setState({net_error: undefined});
 	 for (var i = 0; i < categories_array.length; i++) {
 	     var cat = categories_array[i];
 	     categories[cat.pk] = cat;
@@ -754,7 +757,9 @@ export class RulesList extends HuntList {
 	 } else {
              this.buildHitsStats(RuleRes.data['results']);
 	 }
-     }))
+     })).catch( e => {
+         this.setState({net_error: e, loading: false});
+     });
   }
 
   componentDidMount() {
@@ -830,6 +835,9 @@ export class RulesList extends HuntList {
     return (
         <div className="RulesList">
 	<Spinner loading={this.state.loading} >
+	    {this.state.net_error !== undefined &&
+	         <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>	
+	    }
 	    <HuntFilter ActiveFilters={this.props.filters}
 	          config={this.props.config}
 		  ActiveSort={this.props.config.sort}
@@ -846,7 +854,7 @@ export class RulesList extends HuntList {
 	    <ListView>
             {this.state.rules.map(function(rule) {
                 return(
-                   <RuleInList key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule} />
+                   <RuleInList key={rule.sid} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule} />
                 )
              },this)}
 	    </ListView>
