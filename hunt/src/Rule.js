@@ -480,10 +480,12 @@ export class RuleToggleModal extends React.Component {
         this.handleCommentChange = this.handleCommentChange.bind(this);
     }
 
-    componentDidMount(props) {
-          axios.get(config.API_URL + config.RULESET_PATH).then(res => {
+    componentDidUpdate() {
+	  if (this.state.rulesets.length === 0) {
+             axios.get(config.API_URL + config.RULESET_PATH).then(res => {
                this.setState({rulesets: res.data['results']});
-          })
+             })
+	  }
     }
 
     submit() {
