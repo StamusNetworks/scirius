@@ -68,8 +68,13 @@ export class AlertsList extends HuntList {
 
   fetchData(state, filters) {
      var string_filters = buildQFilter(filters);
+     if (string_filters === null) {
+        string_filters = "";
+     } else {
+        string_filters = "&filter=" + string_filters;
+     }
      this.setState({refresh_data: true});
-     var url = config.API_URL + config.ES_BASE_PATH + 'alerts_tail&search_target=0&' + this.buildListUrlParams(state) + "&from_date=" + this.props.from_date + '&filter=' + string_filters;
+     var url = config.API_URL + config.ES_BASE_PATH + 'alerts_tail&search_target=0&' + this.buildListUrlParams(state) + "&from_date=" + this.props.from_date + string_filters;
      axios.get(url).then( res => {
 	  if ((res.data !== null) && (typeof res.data !== 'string')) {
               this.setState({alerts: res.data, loading: false});
