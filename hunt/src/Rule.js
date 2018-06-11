@@ -654,13 +654,19 @@ export function buildQFilter(filters) {
 export class RulesList extends HuntList {
   constructor(props) {
     super(props);
+
+    var only_hits = localStorage.getItem("rules_list.only_hits");
+    if (!only_hits) {
+        only_hits = false;
+    }
+
     this.state = {
       rules: [], categories: [], rules_count: 0,
       loading: true,
       refresh_data: false,
       view: 'rules_list',
       display_toggle: true,
-      only_hits: true,
+      only_hits: only_hits,
       action: { view: false, type: 'suppress'},
       net_error: undefined
     };
@@ -673,6 +679,7 @@ export class RulesList extends HuntList {
     this.createThreshold = this.createThreshold.bind(this);
     this.createTag = this.createTag.bind(this);
     this.closeAction = this.closeAction.bind(this);
+    this.toggleOnlyHits = this.toggleOnlyHits.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -809,6 +816,11 @@ export class RulesList extends HuntList {
         this.setState({action: {view: false, type: 'suppress'}});
   }
 
+  toggleOnlyHits() {
+	localStorage.setItem("rules_list.only_hits", !this.state.only_hits);
+	this.setState({only_hits: !this.state.only_hits});
+  }
+
   actionsButtons() {
       return(<React.Fragment>
              <div className="form-group">
@@ -816,7 +828,7 @@ export class RulesList extends HuntList {
 		     <input type="checkbox"
 		            name="only_hits"
 			    checked={this.state.only_hits}
-			    onChange={e => {this.setState({only_hits: !this.state.only_hits})}}
+			    onChange={this.toggleOnlyHits}
 	             /> Only hits</label>
              </div>
 	     <div className="form-group">
