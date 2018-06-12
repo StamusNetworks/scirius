@@ -94,12 +94,15 @@ class AccountSerializer(serializers.ModelSerializer):
         user_data = validated_data.pop('user')
         user = instance.user
 
-        instance.timezone = validated_data.get('timezone', instance.timezone)
-        instance.save()
-
         for key, value in user_data.iteritems():
+            if key == 'password':
+                raise serializers.ValidationError({'password': 'You do not have permission to perform this action'})
+
             if hasattr(user, key):
                 setattr(user, key, value)
+
+        instance.timezone = validated_data.get('timezone', instance.timezone)
+        instance.save()
 
         user.save()
         return instance
@@ -162,17 +165,17 @@ class AccountViewSet(viewsets.ModelViewSet):
 
     def update(self, request, pk, *args, **kwargs):
         if request.user.is_superuser is False:
-            for right in ('is_active', 'is_staff', 'is_superuser'):
+            for right in ('is_active', 'is_staff', 'is_superuser',):
                 if right in request.data:
-                    raise PermissionDenied()
+                    raise PermissionDenied({right: 'You do not have permission to perform this action.'})
 
         return super(AccountViewSet, self).update(request, pk, *args, **kwargs)
 
     def partial_update(self, request, pk, *args, **kwargs):
         if request.user.is_superuser is False:
-            for right in ('is_active', 'is_staff', 'is_superuser'):
+            for right in ('is_active', 'is_staff', 'is_superuser',):
                 if right in request.data:
-                    raise PermissionDenied()
+                    raise PermissionDenied({right: 'You do not have permission to perform this action.'})
 
         return super(AccountViewSet, self).update(request, pk, partial=True, *args, **kwargs)
 

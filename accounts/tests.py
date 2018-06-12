@@ -33,6 +33,7 @@ class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
 
         # Create scirius user is_superuser
         APITestCase.setUp(self)
+        self.sciriususer_super = SciriusUser.objects.create(user=self.user, timezone='UTC')
 
         # Create Scirius User is_staff
         params = {'username': 'sonic_staff', 'timezone': 'UTC', 'password': '69scirius69', 'is_superuser': False, 'is_staff': True, 'is_active': True}
@@ -120,6 +121,21 @@ class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
         self.client.force_login(self.sciriususer_staff.user)
         params = {'is_superuser': True}
         self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_staff.pk,)), params, status=status.HTTP_403_FORBIDDEN)
+
+    def test_010_fail_update_user_active_password_from_details_api_with_user_super(self):
+        self.client.force_login(self.user)
+        params = {"username": "sonic_active_updated", "password": "51other51"}
+        self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_active.pk,)), params, status=status.HTTP_403_FORBIDDEN)
+
+    def test_011_fail_update_user_staff_password_from_details_api_with_user_super(self):
+        self.client.force_login(self.user)
+        params = {"username": "sonic_staff_updated", "password": "51other51"}
+        self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_staff.pk,)), params, status=status.HTTP_403_FORBIDDEN)
+
+    def test_012_fail_update_user_super_password_from_details_api_with_user_super(self):
+        self.client.force_login(self.user)
+        params = {"username": "sonic_super_updated", "password": "51other51"}
+        self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_super.pk,)), params, status=status.HTTP_403_FORBIDDEN)
 
     # ################
     # ###### Password
