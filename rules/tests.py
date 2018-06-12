@@ -603,6 +603,24 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
             params['name'] = 'MyRenamedCreatedRuleset%s' % idx
             request(reverse('ruleset-detail', args=(rulesets[0].pk,)), params, status=status.HTTP_200_OK)
 
+    def test_008_copy_ruleset(self):
+        params = {"name": "MyCreatedRuleset",
+                  "comment": "My custom ruleset comment",
+                  "sources": [self.source.pk, self.source2.pk],
+                  "categories": [self.category.pk]}
+
+        # Create Ruleset
+        response = self.http_post(reverse('ruleset-list'), params, status=status.HTTP_201_CREATED)
+        ruleset = Ruleset.objects.get(pk=response['pk'])
+
+        params = {'name': 'MyCreatedRulesetCopy'}
+        self.http_post(reverse('ruleset-copy', args=(response['pk'],)), params, status=status.HTTP_200_OK)
+
+        ruleset_copy = Ruleset.objects.filter(name='MyCreatedRulesetCopy')[0]
+        self.assertNotEqual(ruleset.pk, ruleset_copy.pk)
+        self.assertEqual(len(ruleset.sources.all()), len(ruleset_copy.sources.all()))
+        self.assertEqual(len(ruleset.categories.all()), len(ruleset_copy.categories.all()))
+
 
 class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
     def setUp(self):

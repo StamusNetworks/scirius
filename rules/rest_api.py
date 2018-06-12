@@ -44,6 +44,10 @@ class CommentSerializer(serializers.Serializer):
     comment = serializers.CharField(required=False, allow_blank=True, write_only=True, allow_null=True)
 
 
+class CopyRulesetSerializer(serializers.Serializer):
+    name = serializers.CharField(required=True, allow_blank=False)
+
+
 class RulesetSerializer(serializers.ModelSerializer):
     sources = serializers.PrimaryKeyRelatedField(queryset=Source.objects.all(), many=True, required=False)
     categories = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), many=True, required=False)
@@ -100,6 +104,13 @@ class RulesetViewSet(viewsets.ModelViewSet):
     Return:\n
         HTTP/1.1 201 Created
         {"pk":12,"name":"SonicRuleset","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","need_test":true,"validity":true,"errors":"","rules_count":0,"sources":[1],"categories":[27]}
+
+    Copy a ruleset:\n
+        curl -k https://x.x.x.x/rest/rules/ruleset/<pk-ruleset>/copy/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST  -d '{"name": "copyRuleset1", "comment": "need a clone"}'
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"copy":"ok"}
 
     ==== PATCH ====\n
     Patch a ruleset:\n
@@ -226,6 +237,25 @@ class RulesetViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         self._update_or_partial_update(request, True)
         return super(RulesetViewSet, self).update(request, partial=True, *args, **kwargs)
+
+    @detail_route(methods=['post'])
+    def copy(self, request, pk):
+        data = request.data.copy()
+        ruleset = self.get_object()
+
+        comment = data.pop('comment', None)
+        copy_serializer = CopyRulesetSerializer(data=data)
+        copy_serializer.is_valid(raise_exception=True)
+
+        ruleset.copy(copy_serializer.validated_data['name'])
+        UserAction.create(
+                action_type='copy_ruleset',
+                comment=comment,
+                user=request.user,
+                ruleset=ruleset
+            )
+
+        return Response({'copy': 'ok'})
 
 
 class CategoryChangeSerializer(serializers.Serializer):
