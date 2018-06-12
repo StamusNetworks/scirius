@@ -148,7 +148,9 @@ class AlertInList extends React.Component {
 			   <EventField field_name="Source port" field="src_port" value={data.src_port} addFilter={this.addFilter} />
 			   <EventField field_name="Destination IP" field="dest_ip" value={data.dest_ip} addFilter={this.addFilter} />
 			   <EventField field_name="Destination port" field="dest_port" value={data.dest_port} addFilter={this.addFilter} />
+			   {data.app_proto &&
 			   <EventField field_name="Application protocol" field="app_proto" value={data.app_proto} addFilter={this.addFilter} />
+			   }
 			   <EventField field_name="Probe" field="probe" value={data.host} addFilter={this.addFilter} />
 			</dl>
 		 </Col>
@@ -176,6 +178,28 @@ class AlertInList extends React.Component {
 			   {data.http.http_refer !== undefined &&
 			      <EventField field_name="Referrer" field="http.http_refer" value={data.http.http_refer} addFilter={this.addFilter} />
 			   }
+			</dl>
+		 </Col>
+		    }
+		    {data.tls !== undefined &&
+	         <Col sm={4}>
+		        <dl className="dl-horizontal">
+			   <EventField field_name="TLS Subject" field="tls.subject" value={data.tls.subject} addFilter={this.addFilter} />
+			   <EventField field_name="TLS Issuer" field="tls.issuerdn" value={data.tls.issuerdn} addFilter={this.addFilter} />
+			   <EventField field_name="TLS SNI" field="tls.sni" value={data.tls.sni} addFilter={this.addFilter} />
+			   <EventField field_name="TLS not before" field="tls.notbefore" value={data.tls.notbefore} addFilter={this.addFilter} />
+			   <EventField field_name="TLS not after" field="tls.notafter" value={data.tls.notafter} addFilter={this.addFilter} />
+			</dl>
+		 </Col>
+		    }
+		    {data.flow !== undefined &&
+	         <Col sm={4}>
+		        <dl className="dl-horizontal">
+			   <EventField field_name="Flow start" field="flow.start" value={data.flow.start} addFilter={this.addFilter} />
+			   <EventField field_name="Pkts to server" field="flow.pkts_toserver" value={data.flow.pkts_toserver} addFilter={this.addFilter} />
+			   <EventField field_name="Bytes to server" field="flow.bytes_toserver" value={data.flow.bytes_toserver} addFilter={this.addFilter} />
+			   <EventField field_name="Pkts to client" field="flow.pkts_toclient" value={data.flow.pkts_toclient} addFilter={this.addFilter} />
+			   <EventField field_name="Bytes to client" field="flow.bytes_toclient" value={data.flow.bytes_toclient} addFilter={this.addFilter} />
 			</dl>
 		 </Col>
 		    }
