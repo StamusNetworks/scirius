@@ -374,6 +374,13 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
         HTTP/1.1 200 OK
         {"enable":"ok"}
 
+    Comment a rule:\n
+        curl -v -k https://x.x.x.x/rest/rules/rule/<sid-rule>/comment/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"comment": "comment this rule"}'
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"comment":"ok"}
+
     =============================================================================================================================================================
     """
     queryset = Rule.objects.all()
@@ -393,6 +400,22 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
             res[ruleset.pk] = rule.generate_content(ruleset)
 
         return Response(res)
+
+    @detail_route(methods=['post'])
+    def comment(self, request, pk):
+        rule = self.get_object()
+        comment = request.data.get('comment', None)
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        UserAction.create(
+                action_type='comment_rule',
+                comment=comment,
+                user=request.user,
+                rule=rule
+            )
+        return Response({'comment': 'ok'})
 
     @detail_route(methods=['post'])
     def enable(self, request, pk):

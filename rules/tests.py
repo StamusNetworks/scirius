@@ -770,6 +770,14 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
         content = self.http_get(reverse('rule-content', args=(self.rule.pk,)))
         self.assertEqual(u'drop' in content[self.ruleset.pk], True)
 
+    def test_008_rule_comment(self):
+        comment = 'Need a comment for my test.'
+        self.http_post(reverse('rule-comment', args=(self.rule.pk,)), {'comment': comment})
+
+        ua = UserAction.objects.order_by('pk').last()
+        self.assertEqual(ua.comment, comment)
+
+
 class RestAPIListTestCase(RestAPITestBase, APITestCase):
     def setUp(self):
         RestAPITestBase.setUp(self)
