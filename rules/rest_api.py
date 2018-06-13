@@ -381,6 +381,13 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
         HTTP/1.1 200 OK
         {"comment":"ok"}
 
+    Toggle availabililty:\n
+        curl -v -k https://x.x.x.x/rest/rules/rule/<sid-rule>/toggle_availability/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"comment": "toggle rule"}'
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"toggle_availability":"ok"}
+
     =============================================================================================================================================================
     """
     queryset = Rule.objects.all()
@@ -416,6 +423,25 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
                 rule=rule
             )
         return Response({'comment': 'ok'})
+
+    @detail_route(methods=['post'])
+    def toggle_availability(self, request, pk):
+        rule = self.get_object()
+        comment = request.data.get('comment', None)
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        rule.toggle_availability()
+
+        UserAction.create(
+                action_type='toggle_availability',
+                comment=comment,
+                user=request.user,
+                rule=rule
+            )
+
+        return Response({'toggle_availability': 'ok'})
 
     @detail_route(methods=['post'])
     def enable(self, request, pk):
