@@ -359,6 +359,13 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
         HTTP/1.1 200 OK
         {"2":"drop ip $HOME_NET any -> [101.200.81.187,103.19.89.118,103.230.84.239,103.4.52.150,103.7.59.135] any (msg:\\"ET CNC Zeus Tracker Reported CnC Server group 1\\"; reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,zeustracker.abuse.ch; threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404150; rev:4984;)"}
 
+    Get rule status in its rulesets:\n
+        curl -v -k https://x.x.x.x/rest/rules/rule/<sid-rule>/status/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"1":{"active":true,"valid":{"status":true,"errors":""},"name":"Ruleset1","transformations":{"action":"reject","lateral":null,"target":null}},"2":{"active":true,"valid":{"status":true,"errors":""},"name":"copyRuleset1","transformations":{"action":"reject","lateral":null,"target":null}},"4":{"active":true,"valid":{"status":true,"errors":""},"name":"copyRuleset123","transformations":{"action":"reject","lateral":null,"target":null}}}
+
     ==== POST ====\n
     Disable a rule in a ruleset. Disabling a rule is equivalent to transform this rule to SUPPRESSED/SUPPRESSED:\n
         curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/disable/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>}'
@@ -465,6 +472,24 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action in ('enable', 'disable'):
             return RuleChangeSerializer
         return RuleSerializer
+
+    @detail_route(methods=['get'])
+    def status(self, request, pk):
+        rule = self.get_object()
+
+        res = {}
+        for ruleset in Ruleset.objects.all():
+            res[ruleset.pk] = {}
+            res[ruleset.pk]['name'] = ruleset.name
+            res[ruleset.pk]['active'] = rule.is_active(ruleset)
+            res[ruleset.pk]['valid'] = rule.test(ruleset)
+
+            res[ruleset.pk]['transformations'] = {}
+            for key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
+                trans = rule.get_transformation(key=key, ruleset=ruleset, override=True)
+                res[ruleset.pk]['transformations'][key.value] = trans.value if trans else None
+
+        return Response(res)
 
 
 class BaseTransformationViewSet(viewsets.ModelViewSet):

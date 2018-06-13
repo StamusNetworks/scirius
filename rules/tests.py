@@ -770,6 +770,27 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
         content = self.http_get(reverse('rule-content', args=(self.rule.pk,)))
         self.assertEqual(u'drop' in content[self.ruleset.pk], True)
 
+    def test_006_rule_status(self):
+        self.http_post(reverse('rulesettransformation-list'),
+                       {'ruleset': self.ruleset.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_DROP.value},
+                       status=status.HTTP_201_CREATED)
+
+        status_ = self.http_get(reverse('rule-status', args=(self.rule.pk,)))
+        self.assertTrue(self.ruleset.pk in status_)
+        self.assertEqual(status_[self.ruleset.pk]['transformations']['action'], 'drop')
+
+        self.http_post(reverse('categorytransformation-list'),
+                       {'category': self.category.pk, 'ruleset': self.ruleset.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_REJECT.value},
+                       status=status.HTTP_201_CREATED)
+
+        status_ = self.http_get(reverse('rule-status', args=(self.rule.pk,)))
+        self.assertTrue(self.ruleset.pk in status_)
+        self.assertEqual(status_[self.ruleset.pk]['transformations']['action'], 'reject')
+
     def test_007_rule_toggle_availability(self):
         self.http_post(reverse('rule-toggle-availability', args=(self.rule.pk,)), {}, status=status.HTTP_200_OK)
         rule = Rule.objects.get(pk=self.rule.pk)
