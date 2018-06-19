@@ -1372,7 +1372,7 @@ def ruleset(request, ruleset_id, mode = 'struct', error = None):
         S_SUPPRESSED = Transformation.S_SUPPRESSED
         A_REJECT = Transformation.A_REJECT
         A_DROP = Transformation.A_DROP
-        A_FILESTORE = Transformation.A_REJECT
+        A_FILESTORE = Transformation.A_FILESTORE
 
         for trans in (S_SUPPRESSED, A_REJECT, A_DROP, A_FILESTORE):
             # Rules transformation
