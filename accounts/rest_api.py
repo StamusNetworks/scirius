@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.validators import UniqueValidator
 
 from accounts.models import SciriusUser
 from rules.rest_permissions import IsCurrentUserOrSuperUserOrReadOnly
@@ -18,7 +19,7 @@ TIMEZONES = [(x, x) for x in pytz.all_timezones]
 
 
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(required=False)
+    username = serializers.CharField(required=False, validators=[UniqueValidator(queryset=User.objects.all())])
     password = serializers.CharField(required=False)
 
     class Meta:

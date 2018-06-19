@@ -227,3 +227,7 @@ class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
         self.client.force_login(self.user)
         self.http_get(reverse('sciriususer-list'), {}, status=status.HTTP_200_OK)
 
+    def test_043_unique_user(self):
+        self.client.force_login(self.user)
+        r = self.http_post(reverse('sciriususer-list'), {'username': 'scirius', 'password': 'scirius'}, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'username': ['This field must be unique.']})
