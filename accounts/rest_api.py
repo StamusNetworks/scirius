@@ -79,6 +79,9 @@ class AccountSerializer(serializers.ModelSerializer):
         if 'timezone' not in validated_data:
             validated_data['timezone'] = 'UTC'
 
+        if validated_data['timezone'] not in pytz.all_timezones:
+            raise serializers.ValidationError({'timezone': ['Not a valid choice.']})
+
         password = user_data.pop('password')
         try:
             password_validation.validate_password(password=password, user=User)
@@ -102,7 +105,15 @@ class AccountSerializer(serializers.ModelSerializer):
             if hasattr(user, key):
                 setattr(user, key, value)
 
-        instance.timezone = validated_data.get('timezone', instance.timezone)
+        timezone = validated_data.get('timezone', instance.timezone)
+        if timezone not in pytz.all_timezones:
+            # to avoid deadlock
+            if instance.timezone not in pytz.all_timezones:
+                instance.timezone = 'UTC'
+                instance.save()
+            raise serializers.ValidationError({'timezone': ['Not a valid choice.']})
+
+        instance.timezone = timezone
         instance.save()
 
         user.save()
