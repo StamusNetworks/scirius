@@ -852,3 +852,7 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
     def test_006_options(self):
         for url, viewset, view_name in self.router.registry:
             self.http_options(reverse(view_name + '-list'))
+
+    def test_007_documentation(self):
+        for url, viewset, view_name in self.router.registry:
+            self.assertNotEqual(viewset.__doc__, None, 'Viewset %s has no documentation' % view_name)
