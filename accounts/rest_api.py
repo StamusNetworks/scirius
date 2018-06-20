@@ -135,7 +135,7 @@ class AccountViewSet(viewsets.ModelViewSet):
         HTTP/1.1 200 OK
 
     ==== POST ====\n
-    Create Scirius User:\n
+    Create Scirius User with super user:\n
         curl -k https://x.x.x.x/rest/accounts/sciriususer/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"username": "sonic", "password": "69scirius69", "timezone": "UTC"}'
 
     Return:\n
@@ -149,8 +149,12 @@ class AccountViewSet(viewsets.ModelViewSet):
         HTTP/1.1 200 OK
         {"token":"64f803c77076b50081543d01ed9d1c4f52aec104"}
 
-    Modify Scirius User password:\n
+    /|\ Active/staff users can only update their own password.
+    Modify Scirius User own password (active/staff):\n
         curl -k https://x.x.x.x/rest/accounts/sciriususer/<pk-sciriususer>/password/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"old_password": "69scirius69", "new_password": "51scirius51"}'
+
+    Super user modify any Scirius User password (without old_password):\n
+        curl -k https://x.x.x.x/rest/accounts/sciriususer/<pk-sciriususer>/password/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"new_password": "51scirius51"}'
 
     Return:\n
         HTTP/1.1 200 OK
