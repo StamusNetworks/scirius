@@ -23,8 +23,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
+from accounts.rest_api import router
 from models import SciriusUser
-from rules.tests import RestAPITestBase
+from rules.tests import RestAPITestBase, RestAPIListTestCase
 
 
 class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
@@ -231,3 +232,9 @@ class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
         self.client.force_login(self.user)
         r = self.http_post(reverse('sciriususer-list'), {'username': 'scirius', 'password': 'scirius'}, status=status.HTTP_400_BAD_REQUEST)
         self.assertDictEqual(r, {'username': ['This field must be unique.']})
+
+
+class RestAPIAccountListTestCase(RestAPIListTestCase):
+    def setUp(self):
+        super(RestAPIAccountListTestCase, self).setUp()
+        self.router = router
