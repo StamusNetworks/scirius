@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import json
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -25,7 +26,8 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, RulesetTransformation, UserAction
+from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, RulesetTransformation, UserAction, \
+        SourceUpdate
 from rest_api import router
 
 import tempfile
@@ -345,11 +347,12 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
 
     def test_006_custom_source_delete(self):
         self._create_custom_source('local', 'sig')
-        response = self.http_delete(reverse('source-detail', args=(self.source.pk,)), {'comment': 'source delete'}, status=status.HTTP_204_NO_CONTENT)
+        self.http_delete(reverse('source-detail', args=(self.source.pk,)), {'comment': 'source delete'}, status=status.HTTP_204_NO_CONTENT)
 
         ua = UserAction.objects.order_by('pk').last()
         self.assertEqual(ua.action_type, 'delete_source')
         self.assertEqual(ua.comment, 'source delete')
+
 
 class RestAPIRulesetTransformationTestCase(RestAPITestBase, APITestCase):
     def setUp(self):
@@ -856,3 +859,49 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
     def test_007_documentation(self):
         for url, viewset, view_name in self.router.registry:
             self.assertNotEqual(viewset.__doc__, None, 'Viewset %s has no documentation' % view_name)
+
+
+class RestAPIChangelogTestCase(RestAPITestBase, APITestCase):
+    def setUp(self):
+        RestAPITestBase.setUp(self)
+        APITestCase.setUp(self)
+
+    def _create_public_source(self):
+        self.ruleset = Ruleset.objects.create(name='test ruleset', descr='descr', created_date=timezone.now(), updated_date=timezone.now())
+        self.ruleset.save()
+
+        params = {
+                'name': 'sonic test public source',
+                'comment': 'MyPublicComment',
+                'public_source': 'oisf/trafficid',
+                }
+        self.http_post(reverse('publicsource-list'), params, status=status.HTTP_201_CREATED)
+        sources = Source.objects.filter(name='sonic test public source')
+        self.assertEqual(len(sources) == 1, True)
+
+        sources_at_version = SourceAtVersion.objects.filter(source=sources[0])
+        self.assertEqual(len(sources_at_version) == 1, True)
+
+        self.assertEqual(sources_at_version[0].source == sources[0], True)
+
+        self.public_source = sources[0]
+        self.ruleset.sources.add(sources_at_version[0])
+
+    def test_001_all_changelog(self):
+        self._create_public_source()
+        data = {"deleted": [], "updated": [{"msg": "SURICATA TRAFFIC-ID: Debian APT-GET", "category": "Suricata Traffic ID ruleset Sigs", "pk": 300000032, "sid": 300000032}, 
+            {"msg": "SURICATA TRAFFIC-ID: Ubuntu APT-GET", "category": "Suricata Traffic ID ruleset Sigs", "pk": 300000033, "sid": 300000033}], "added": []}
+        sha = '9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6'
+
+        SourceUpdate.objects.create(
+            source=self.public_source,
+            created_date=timezone.now(),
+            data=json.dumps(data),
+            version=sha,
+            changed=len(data["deleted"]) + len(data["added"]) + len(data["updated"]),
+        )
+
+        self.public_source.update()
+        response = self.http_get(reverse('sourceupdate-list'))
+        self.assertEqual(response['results'][0]['source'], self.public_source.pk)
+        self.assertEqual(response['results'][0]['data']['updated'], data['updated'])

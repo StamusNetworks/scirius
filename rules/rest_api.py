@@ -2,6 +2,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q
 from django.core.exceptions import SuspiciousOperation, ValidationError
+
 from rest_framework import serializers, viewsets, exceptions, mixins
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
@@ -11,7 +12,7 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
 
 from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, \
-        Source, SourceAtVersion, UserAction, UserActionObject, Transformation
+        Source, SourceAtVersion, SourceUpdate, UserAction, UserActionObject, Transformation
 from rules.views import get_public_sources, fetch_public_sources
 
 
@@ -1343,6 +1344,54 @@ class UserActionViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ('pk', 'date', 'username', 'action_type')
 
 
+class ChangelogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SourceUpdate
+        fields = ('pk', 'source', 'created_date', 'data', 'version', 'changed',)
+
+    def to_representation(self, instance):
+        data = super(ChangelogSerializer, self).to_representation(instance)
+        data['data'] = instance.diff()
+        return data
+
+
+class ChangelogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    =============================================================================================================================================================
+    Show all Changelogs from all sources:\n
+        curl -k https://x.x.x.x/rest/rules/changelog/source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"count":4,"next":null,"previous":null,"results":[{"pk":1,"source":1,"created_date":"2018-07-03T15:20:59.168931Z","data":{"deleted":[],"date":"2018-07-03T15:20:59.168931Z",
+        "updated":[{"msg":"SURICATA TRAFFIC-ID: Debian APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000032,"pk":300000032},
+        {"msg":"SURICATA TRAFFIC-ID: Ubuntu APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000033,"pk":300000033}],"added":[],"stats":{"deleted":0,"updated":2,"added":0}},
+        "version":"9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6","changed":2},{"pk":2,"source":2,"created_date":"2018-07-03T15:25:24.449902Z","data":{"deleted":[],
+        "date":"2018-07-03T15:25:24.449902Z","updated":[],"added":[],"stats":{"deleted":0,"updated":0,"added":0}},"version":"fbae31b8d3a12e1d603e8ce64e7ae0f4f0cff130","changed":0},
+        {"pk":3,"source":1,"created_date":"2018-07-03T15:25:25.376499Z","data":{"deleted":[],"date":"2018-07-03T15:25:25.376499Z","updated":[{"msg":"SURICATA TRAFFIC-ID: Debian APT-GET",
+        "category":"Suricata Traffic ID ruleset Sigs","sid":300000032,"pk":300000032},{"msg":"SURICATA TRAFFIC-ID: Ubuntu APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000033,
+        "pk":300000033}],"added":[],"stats":{"deleted":0,"updated":2,"added":0}},"version":"9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6","changed":2},{"pk":4,"source":1,"created_date":"2018-07-03T17:14:02.359963Z",
+        "data":{"deleted":[],"date":"2018-07-03T17:14:02.359963Z","updated":[{"msg":"SURICATA TRAFFIC-ID: Debian APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000032,"pk":300000032},
+        {"msg":"SURICATA TRAFFIC-ID: Ubuntu APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000033,"pk":300000033}],"added":[],"stats":{"deleted":0,"updated":2,"added":0}},
+        "version":"9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6","changed":2}]}
+
+    Show changelogs filter by source:\n
+        curl -k https://x.x.x.x/rest/rules/changelog/source/\?source\=2 -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Show changelogs filter by version:\n
+        curl -k https://x.x.x.x/rest/rules/changelog/source/\?version\=9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6 -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    =============================================================================================================================================================
+    """
+    serializer_class = ChangelogSerializer
+    queryset = SourceUpdate.objects.all()
+    filter_fields = ('source', 'version')
+    ordering = ('-pk',)
+    ordering_fields = ('pk', 'source', 'version',)
+
+
 router = DefaultRouter()
 router.register('rules/ruleset', RulesetViewSet)
 router.register('rules/category', CategoryViewSet)
@@ -1353,3 +1402,4 @@ router.register('rules/transformation/ruleset', RulesetTransformationViewSet)
 router.register('rules/transformation/category', CategoryTransformationViewSet)
 router.register('rules/transformation/rule', RuleTransformationViewSet)
 router.register('rules/history', UserActionViewSet)
+router.register('rules/changelog/source', ChangelogViewSet)
