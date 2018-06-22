@@ -1,5 +1,8 @@
+from suripyg import SuriHTMLFormat
+
 from django.conf import settings
 from django.utils import timezone
+from django.utils.html import escape
 from django.db.models import Q
 from django.core.exceptions import SuspiciousOperation, ValidationError
 
@@ -341,6 +344,18 @@ class RuleSerializer(serializers.ModelSerializer):
         fields = ('pk', 'sid', 'category', 'msg', 'state', 'state_in_source', 'rev', 'content', \
                 'imported_date', 'updated_date')
 
+    def to_representation(self, instance):
+        data = super(RuleSerializer, self).to_representation(instance)
+        request = self.context['request']
+        highlight_str = request.query_params.get('highlight', u'false')
+        is_highlight = lambda value: bool(value) and value.lower() not in (u'false', u'0')
+        highlight = is_highlight(highlight_str)
+
+        if highlight is True:
+            data['content'] = SuriHTMLFormat(data['content'])
+
+        return data
+
 
 class RuleViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -352,6 +367,29 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
     Return:\n
         HTTP/1.1 200 OK
         {"pk":2404150,"sid":2404150,"category":27,"msg":"ET CNC Zeus Tracker Reported CnC Server group 1","state":true,"state_in_source":true,"rev":4983,"content":"alert ip $HOME_NET any -> [101.200.81.187,103.19.89.118,103.230.84.239,103.4.52.150,103.7.59.135] any (msg:\\"ET CNC Zeus Tracker Reported CnC Server group 1\\"; reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,zeustracker.abuse.ch; threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404150; rev:4983;)","imported_date":"2018-05-04T10:15:52.886070+02:00","updated_date":"2018-05-04T10:15:52.886070+02:00"}
+
+    Show a rule and its none transformed content in html:\n
+        curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/\highlight=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"pk":2404000,"sid":2404000,"category":28,"msg":"ET CNC Shadowserver Reported CnC Server IP group 1","state":true,"state_in_source":true,"rev":5032,
+        "content":"<div class=\"highlight\"><pre><span></span><span class=\"kt\">alert</span><span class=\"w\"> </span><span class=\"kc\">ip</span><span class=\"w\"> 
+        </span><span class=\"nv\">$HOME_NET</span><span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"o\">-&gt;</span>
+        <span class=\"w\"> </span><span class=\"err\">[</span><span class=\"nv\">109.196.130.50</span><span class=\"err\">,</span><span class=\"nv\">151.13.184.200</span>
+        <span class=\"err\">]</span><span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"err\">(</span><span class=\"k\">msg:</span>
+        <span class=\"s\">&quot;ET CNC Shadowserver Reported CnC Server IP group 1&quot;</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">reference:</span>
+        <span class=\"nv\">url</span><span class=\"p\">,</span><span class=\"na\">doc.emergingthreats.net/bin/view/Main/BotCC</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">reference:</span><span class=\"nv\">url</span><span class=\"p\">,</span><span class=\"na\">www.shadowserver.org</span><span class=\"p\">;</span>
+        <span class=\"w\"> </span><span class=\"k\">threshold:</span><span class=\"w\"> </span><span class=\"na\">type</span><span class=\"w\"> </span>
+        <span class=\"na\">limit</span><span class=\"err\">,</span><span class=\"w\"> </span><span class=\"na\">track</span><span class=\"w\"> </span><span class=\"na\">by_src</span>
+        <span class=\"err\">,</span><span class=\"w\"> </span><span class=\"na\">seconds</span><span class=\"w\"> </span><span class=\"m\">3600</span><span class=\"err\">,</span>
+        <span class=\"w\"> </span><span class=\"na\">count</span><span class=\"w\"> </span><span class=\"m\">1</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">flow</span>
+        <span class=\"err\">bits</span><span class=\"k\">:</span><span class=\"na\">set</span><span class=\"err\">,ET.Evil</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">flow</span><span class=\"err\">bits</span><span class=\"k\">:</span><span class=\"na\">set</span><span class=\"err\">,ET.BotccIP</span><span class=\"p\">;</span>
+        <span class=\"w\"> </span><span class=\"k\">classtype:</span><span class=\"err\">trojan-activity</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">sid:</span>
+        <span class=\"m\">2404000</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">rev:</span><span class=\"m\">5032</span><span class=\"p\">;</span>
+        <span class=\"err\">)</span><span class=\"w\"></span>\\n</pre></div>\\n","imported_date":"2018-06-21T15:39:05.121431+02:00","updated_date":"2018-06-21T15:39:05.121431+02:00"}
 
     Show a transformed rule content:\n
         curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/content/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
@@ -366,6 +404,28 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
     Return:\n
         HTTP/1.1 200 OK
         {"1":{"active":true,"valid":{"status":true,"errors":""},"name":"Ruleset1","transformations":{"action":"reject","lateral":null,"target":null}},"2":{"active":true,"valid":{"status":true,"errors":""},"name":"copyRuleset1","transformations":{"action":"reject","lateral":null,"target":null}},"4":{"active":true,"valid":{"status":true,"errors":""},"name":"copyRuleset123","transformations":{"action":"reject","lateral":null,"target":null}}}
+
+    Show a transformed rule content in html:\n
+        curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/content/\?highlight=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"1":"<div class=\"highlight\"><pre><span></span><span class=\"kt\">drop</span><span class=\"w\"> </span><span class=\"kc\">ip</span><span class=\"w\"> </span>
+        <span class=\"nv\">$HOME_NET</span><span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"o\">-&gt;</span><span class=\"w\"> </span>
+        <span class=\"err\">[</span><span class=\"nv\">109.196.130.50</span><span class=\"err\">,</span><span class=\"nv\">151.13.184.200</span><span class=\"err\">]</span>
+        <span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"err\">(</span><span class=\"k\">msg:</span>
+        <span class=\"s\">&quot;ET CNC Shadowserver Reported CnC Server IP group 1&quot;</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">reference:</span>
+        <span class=\"nv\">url</span><span class=\"p\">,</span><span class=\"na\">doc.emergingthreats.net/bin/view/Main/BotCC</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">reference:</span><span class=\"nv\">url</span><span class=\"p\">,</span><span class=\"na\">www.shadowserver.org</span><span class=\"p\">;</span>
+        <span class=\"w\"> </span><span class=\"k\">threshold:</span><span class=\"w\"> </span><span class=\"na\">type</span><span class=\"w\"> </span><span class=\"na\">limit</span>
+        <span class=\"err\">,</span><span class=\"w\"> </span><span class=\"na\">track</span><span class=\"w\"> </span><span class=\"na\">by_src</span><span class=\"err\">,</span>
+        <span class=\"w\"> </span><span class=\"na\">seconds</span><span class=\"w\"> </span><span class=\"m\">3600</span><span class=\"err\">,</span><span class=\"w\"> </span>
+        <span class=\"na\">count</span><span class=\"w\"> </span><span class=\"m\">1</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">flow</span>
+        <span class=\"err\">bits</span><span class=\"k\">:</span><span class=\"na\">set</span><span class=\"err\">,ET.Evil</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">flow</span><span class=\"err\">bits</span><span class=\"k\">:</span><span class=\"na\">set</span><span class=\"err\">,ET.BotccIP</span><span class=\"p\">;</span>
+        <span class=\"w\"> </span><span class=\"k\">classtype:</span><span class=\"err\">trojan-activity</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">sid:</span>
+        <span class=\"m\">2404000</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">rev:</span><span class=\"m\">5032</span><span class=\"p\">;</span>
+        <span class=\"err\">)</span><span class=\"w\"></span>\\n</pre></div>\\n"}
 
     ==== POST ====\n
     Disable a rule in a ruleset. Disabling a rule is equivalent to transform this rule to SUPPRESSED/SUPPRESSED:\n
@@ -405,14 +465,19 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
     filter_fields = ('sid', 'category', 'msg', 'content')
     search_fields = ('sid', 'msg', 'content')
 
-    @detail_route()
+    @detail_route(methods=['get'])
     def content(self, request, pk):
         rule = self.get_object()
         rulesets = Ruleset.objects.filter(categories__rule=rule)
         res = {}
 
+        highlight_str = request.query_params.get('highlight', u'false')
+        is_highlight = lambda value: bool(value) and value.lower() not in (u'false', u'0')
+        highlight = is_highlight(highlight_str)
+
         for ruleset in rulesets:
-            res[ruleset.pk] = rule.generate_content(ruleset)
+            content = rule.generate_content(ruleset)
+            res[ruleset.pk] = content if not highlight else SuriHTMLFormat(content)
 
         return Response(res)
 
