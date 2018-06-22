@@ -50,3 +50,11 @@
 .list-view-pf .list-group-item {
   display: block;
 }
+
+.eventFiltersHidden {
+  visibility: hidden;
+}
+
+.eventFilters {
+  visibility: visible;
+}
