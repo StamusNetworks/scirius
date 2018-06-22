@@ -27,7 +27,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, RulesetTransformation, UserAction, \
-        SourceUpdate
+        SourceUpdate, SystemSettings
 from rest_api import router
 
 import tempfile
@@ -862,10 +862,6 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
 
 
 class RestAPIChangelogTestCase(RestAPITestBase, APITestCase):
-    def setUp(self):
-        RestAPITestBase.setUp(self)
-        APITestCase.setUp(self)
-
     def _create_public_source(self):
         self.ruleset = Ruleset.objects.create(name='test ruleset', descr='descr', created_date=timezone.now(), updated_date=timezone.now())
         self.ruleset.save()
@@ -889,8 +885,8 @@ class RestAPIChangelogTestCase(RestAPITestBase, APITestCase):
 
     def test_001_all_changelog(self):
         self._create_public_source()
-        data = {"deleted": [], "updated": [{"msg": "SURICATA TRAFFIC-ID: Debian APT-GET", "category": "Suricata Traffic ID ruleset Sigs", "pk": 300000032, "sid": 300000032}, 
-            {"msg": "SURICATA TRAFFIC-ID: Ubuntu APT-GET", "category": "Suricata Traffic ID ruleset Sigs", "pk": 300000033, "sid": 300000033}], "added": []}
+        data = {"deleted": [], "updated": [{"msg": "SURICATA TRAFFIC-ID: Debian APT-GET", "category": "Suricata Traffic ID ruleset Sigs", "pk": 300000032, "sid": 300000032},
+                {"msg": "SURICATA TRAFFIC-ID: Ubuntu APT-GET", "category": "Suricata Traffic ID ruleset Sigs", "pk": 300000033, "sid": 300000033}], "added": []}
         sha = '9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6'
 
         SourceUpdate.objects.create(
@@ -905,3 +901,30 @@ class RestAPIChangelogTestCase(RestAPITestBase, APITestCase):
         response = self.http_get(reverse('sourceupdate-list'))
         self.assertEqual(response['results'][0]['source'], self.public_source.pk)
         self.assertEqual(response['results'][0]['data']['updated'], data['updated'])
+
+
+class RestAPISystemSettingsTestCase(RestAPITestBase, APITestCase):
+    def setUp(self):
+        RestAPITestBase.setUp(self)
+        APITestCase.setUp(self)
+
+        self.system_settings = SystemSettings.objects.get_or_create(id=1)[0]
+
+    def test_001_system_get(self):
+        content = self.http_get(reverse('systemsettings'))
+        self.assertEqual('custom_elasticsearch' in content, True)
+        self.assertEqual('elasticsearch_url' in content, True)
+        self.assertEqual('http_proxy' in content, True)
+        self.assertEqual('use_http_proxy' in content, True)
+        self.assertEqual('use_elasticsearch' in content, True)
+
+    def test_002_system_settings_update(self):
+        params = {'use_http_proxy': True, 'http_proxy': '', 'https_proxy': '', 'use_elasticsearch': True, 'custom_elasticsearch': False, 'elasticsearch_url': 'http://elasticsearch:9200/'}
+        content = self.http_patch(reverse('systemsettings'), params)
+        self.assertEqual(content['use_http_proxy'], True)
+        self.assertEqual(content['use_elasticsearch'], True)
+
+        params = {'use_http_proxy': False, 'http_proxy': '', 'https_proxy': '', 'use_elasticsearch': False, 'custom_elasticsearch': False, 'elasticsearch_url': 'http://elasticsearch:9200/'}
+        content = self.http_put(reverse('systemsettings'), params)
+        self.assertEqual(content['use_http_proxy'], False)
+        self.assertEqual(content['use_elasticsearch'], False)

@@ -10,12 +10,14 @@ from rest_framework import serializers, viewsets, exceptions, mixins
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import DefaultRouter, url
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
+from rest_framework.mixins import UpdateModelMixin, RetrieveModelMixin
+from rest_framework.permissions import IsAdminUser
 
 from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, \
-        Source, SourceAtVersion, SourceUpdate, UserAction, UserActionObject, Transformation
+        Source, SourceAtVersion, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
 from rules.views import get_public_sources, fetch_public_sources
 
 
@@ -1457,6 +1459,51 @@ class ChangelogViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ('pk', 'source', 'version',)
 
 
+class SystemSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SystemSettings
+        fields = '__all__'
+
+
+class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show system settings:\n
+        curl -k https://x.x.x.x/rest/rules/system_settings/1/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    ==== PUT/PATCH ====\n
+        curl -k https://x.x.x.x/rest/rules/system_settings/1/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"use_http_proxy":false,"http_proxy":"","https_proxy":"","use_elasticsearch":true,"custom_elasticsearch":false,"elasticsearch_url":"http://elasticsearch:9200/"}'
+        curl -k https://x.x.x.x/rest/rules/system_settings/1/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"use_http_proxy":false,"http_proxy":"","https_proxy":"","use_elasticsearch":true,"custom_elasticsearch":false,"elasticsearch_url":"http://elasticsearch:9200/"}'
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"id":1,"use_http_proxy":false,"http_proxy":"","https_proxy":"","use_elasticsearch":true,"custom_elasticsearch":false,"elasticsearch_url":"http://elasticsearch:9200/"}
+
+    =============================================================================================================================================================
+    """
+    permission_classes = (IsAdminUser,)
+    serializer_class = SystemSettingsSerializer
+    queryset = SystemSettings.objects.all()
+
+    def get_object(self):
+        obj = get_system_settings()
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+
+def get_custom_urls():
+    urls = []
+    url_ = url(r'rules/system_settings/$', SystemSettingsViewSet.as_view({
+        'get': 'retrieve',
+        'put': 'update',
+        'patch': 'partial_update',
+        }), name='systemsettings')
+
+    urls.append(url_)
+    return urls
+
+
 router = DefaultRouter()
 router.register('rules/ruleset', RulesetViewSet)
 router.register('rules/category', CategoryViewSet)
@@ -1468,3 +1515,4 @@ router.register('rules/transformation/category', CategoryTransformationViewSet)
 router.register('rules/transformation/rule', RuleTransformationViewSet)
 router.register('rules/history', UserActionViewSet)
 router.register('rules/changelog/source', ChangelogViewSet)
+router.register('rules/system_settings', SystemSettingsViewSet)

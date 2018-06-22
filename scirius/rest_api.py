@@ -4,7 +4,7 @@ from rest_framework import serializers, viewsets
 from rest_framework.routers import DefaultRouter
 
 from utils import get_middleware_module
-from rules.rest_api import router as rules_router
+from rules.rest_api import router as rules_router, get_custom_urls
 from accounts.rest_api import router as accounts_router
 
 
@@ -30,5 +30,11 @@ class SciriusRouter(DefaultRouter):
             self.registry.extend(get_middleware_module('rest_api').router.registry)
         except AttributeError:
             pass
+
+    def get_urls(self):
+        urls = super(SciriusRouter, self).get_urls()
+        urls += get_custom_urls()
+        return urls
+
 
 router = SciriusRouter()
