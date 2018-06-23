@@ -53,8 +53,10 @@
 
 .eventFiltersHidden {
   visibility: hidden;
+  margin-left: 5px;
 }
 
 .eventFilters {
   visibility: visible;
+  margin-left: 5px;
 }

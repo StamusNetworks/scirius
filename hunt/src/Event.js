@@ -228,7 +228,7 @@ class EventIPInfo extends React.Component {
        						 <Icon type="pf" name="close" />
      				 		</button>
 					<Modal.Title>
-						Some Info from Onyphe.io for {this.props.value}
+						Some Info from <a href={"https://www.onyphe.io/search/?query=" + this.props.value} target="_blank">Onyphe.io for {this.props.value}</a>
 					</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
