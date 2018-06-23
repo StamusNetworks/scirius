@@ -59,4 +59,9 @@
 .eventFilters {
   visibility: visible;
   margin-left: 5px;
+  cursor: pointer;
+}
+
+.eventFilters a {
+  text-decoration: none;
 }

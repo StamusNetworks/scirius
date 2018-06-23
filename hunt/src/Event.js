@@ -214,9 +214,7 @@ class EventIPInfo extends React.Component {
 	render() {
 		return(
 			<React.Fragment>
-			<a onClick={this.displayIPInfo}>
-				<Icon type="fa" name="info-circle"/>
-			</a>
+			<a onClick={this.displayIPInfo}> <Icon type="fa" name="info-circle"/></a>
 			<Modal show={this.state.show_ip_info} onHide={this.closeIPInfo}>
 				<Modal.Header>
 					      <button
@@ -283,9 +281,7 @@ class EventValueInfo extends React.Component {
 			return(<EventIPInfo value={this.props.value} />);
 		} else {
 			return(
-				<a href={"https://www.onyphe.io/search/?query=" + this.props.value} target="_blank">
-					<Icon type="fa" name="info-circle"/>
-				</a>
+				<a href={"https://www.onyphe.io/search/?query=" + this.props.value} target="_blank"> <Icon type="fa" name="info-circle"/></a>
 			);
 		}
 	} 
