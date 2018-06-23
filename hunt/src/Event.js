@@ -58,6 +58,11 @@ class EventIPDatascan extends React.Component {
 					<dt>Port</dt><dd>{this.props.data.port}</dd>
 				</React.Fragment>
 				}
+				{this.props.data.data &&
+				<React.Fragment>
+					<dt>Data</dt><dd>{this.props.data.data.substring(0, 200)}</dd>
+				</React.Fragment>
+				}
 				{this.props.data.seen_date &&
 				<React.Fragment>
 					<dt>Seen date</dt><dd>{this.props.data.seen_date}</dd>
@@ -134,20 +139,20 @@ class EventIPResolver extends React.Component {
 			<Col md={6}>
 			        <h4>Resolver info</h4>
 				<dl>
-				{this.props.data["@type"] &&
-				<React.Fragment>
-					<dt>Type</dt><dd>{this.props.data["@type"]}</dd>
-				</React.Fragment>
-				}
-				{this.props.data.forward &&
-				<React.Fragment>
-					<dt>Forward</dt><dd>{this.props.data.forward}</dd>
-				</React.Fragment>
-				}
-				{this.props.data.seen_date &&
-				<React.Fragment>
-					<dt>Seen date</dt><dd>{this.props.data.seen_date}</dd>
-				</React.Fragment>
+				{this.props.data.map( item => {
+					var value = "unknown";
+					if (item["@type"] === "forward") {
+						value = item.forward;
+					}
+					if (item["@type"] === "reverse") {
+						value = item.reverse;
+					}
+					return(
+						<React.Fragment>
+							<dt>{item["@type"]}</dt><dd>{value} ({item.seen_date})</dd>
+						</React.Fragment>
+					)
+				})
 				}
 				</dl>
 			</Col>
@@ -157,28 +162,22 @@ class EventIPResolver extends React.Component {
 
 class EventIPPastries extends React.Component {
 	render() {
-		var base_url = "";
-		if (this.props.data["@type"] === "pastebin") {
-			base_url = "https://pastebin.com/";
-		}
+		var base_url = "https://pastebin.com/";
 		return(
 			<Col md={6}>
 			        <h4>Pastries info</h4>
 				<dl>
-				{this.props.data["@type"] &&
-				<React.Fragment>
-					<dt>Type</dt><dd>{this.props.data["@type"]}</dd>
-				</React.Fragment>
-				}
-				{this.props.data.key &&
-				<React.Fragment>
-					<dt>Entry</dt><dd><a href={base_url + this.props.data.key} target="_blank">{base_url + this.props.data.key}</a></dd>
-				</React.Fragment>
-				}
-				{this.props.data.seen_date &&
-				<React.Fragment>
-					<dt>Seen date</dt><dd>{this.props.data.seen_date}</dd>
-				</React.Fragment>
+				{this.props.data.map( item => {
+					if (item["@type"] === "pastebin") {
+						return(
+						<React.Fragment>
+							<dt><a href={base_url + item.key} target="_blank">{base_url + item.key}</a></dt><dd>{item.seen_date}</dd>
+						</React.Fragment>
+						)
+					} else {
+						return null;
+					}
+				})
 				}
 				</dl>
 			</Col>
@@ -212,6 +211,18 @@ class EventIPInfo extends React.Component {
 	}
 
 	render() {
+		var pastries = [];
+		var resolvers = [];
+		if (this.state.ipinfo) {
+			this.state.ipinfo.map( item => {
+				if (item["@category"] === "pastries") {
+					pastries.push(item);
+				}
+				if (item["@category"] === "resolver") {
+					resolvers.push(item);
+				}
+			})
+		}
 		return(
 			<React.Fragment>
 			<a onClick={this.displayIPInfo}> <Icon type="fa" name="info-circle"/></a>
@@ -245,14 +256,15 @@ class EventIPInfo extends React.Component {
 							if (item["@category"] === "threatlist") {
 								return(<EventIPThreatlist data={item}/>);
 							}
-							if (item["@category"] === "resolver") {
-								return(<EventIPResolver data={item}/>);
-							}
-							if (item["@category"] === "pastries") {
-								return(<EventIPPastries data={item}/>);
-							}
+
 							return null;
 					})}
+							{resolvers.length > 0 &&
+								<EventIPResolver data={resolvers}/>
+							}
+							{pastries.length > 0 &&
+								<EventIPPastries data={pastries}/>
+							}
 						</Row>
 					}
 					{this.state.ipinfo === null &&
