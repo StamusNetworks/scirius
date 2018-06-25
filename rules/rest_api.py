@@ -429,6 +429,9 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
         <span class=\"m\">2404000</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">rev:</span><span class=\"m\">5032</span><span class=\"p\">;</span>
         <span class=\"err\">)</span><span class=\"w\"></span>\\n</pre></div>\\n"}
 
+    Filter action/reject on all transformed rules:\n
+        curl -k https://x.x.x.x/rest/rules/rule/transformation/\?transfo_type\=action\&transfo_value\=reject -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
     ==== POST ====\n
     Disable a rule in a ruleset. Disabling a rule is equivalent to transform this rule to SUPPRESSED/SUPPRESSED:\n
         curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/disable/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>}'
@@ -466,6 +469,104 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ('sid', 'category', 'msg', 'imported_date', 'updated_date')
     filter_fields = ('sid', 'category', 'msg', 'content')
     search_fields = ('sid', 'msg', 'content')
+
+    @list_route(methods=['get'])
+    def transformation(self, request):
+        copy_params = request.query_params.dict()
+        key_str = copy_params.pop('transfo_type', None)
+        value_str = copy_params.pop('transfo_value', None)
+
+        errors = {}
+        if key_str is None:
+            errors['transfo_type'] = ['This field is required.']
+
+        if value_str is None:
+            errors['transfo_value'] = ['This field is required.']
+
+        if len(errors) > 0:
+            raise serializers.ValidationError(errors)
+
+        params = {}
+        if key_str:
+            params['key'] = key_str
+        if value_str:
+            params['value'] = value_str
+
+        # Check wrongs filters types (other than type/value)
+        if len(copy_params) > 0:
+            params_str = ', '.join(copy_params.keys())
+            raise serializers.ValidationError({'filters': ['Wrong filters: "%s"' % params_str]})
+
+        # Check key/value filters
+        # Key
+        if key_str:
+            if key_str not in Transformation.AVAILABLE_MODEL_TRANSFO.keys():
+                raise serializers.ValidationError({'filters': ['Wrong filter type "%s".' % key_str]})
+
+            # Value
+            if value_str and value_str not in Transformation.AVAILABLE_MODEL_TRANSFO[key_str]:
+                raise serializers.ValidationError({'filters': ['Wrong filter value "%s" for key "%s".' % (value_str, key_str)]})
+
+        res = {}
+        Rule.enable_cache()
+
+        for ruleset in Ruleset.objects.all():
+            trans_rules = RuleTransformation.objects.filter(ruleset=ruleset, **params)
+            trans_cats = CategoryTransformation.objects.filter(ruleset=ruleset, **params)
+            trans_rulesets = RulesetTransformation.objects.filter(ruleset_transformation=ruleset, **params)
+
+            all_rules = set()
+            key = Transformation.Type(key_str)
+            value = None
+
+            if key == Transformation.ACTION:
+                value = Transformation.ActionTransfoType(value_str)
+            elif key == Transformation.LATERAL:
+                value = Transformation.LateralTransfoType(value_str)
+            elif key == Transformation.TARGET:
+                value = Transformation.TargetTransfoType(value_str)
+
+            if ruleset.pk not in res:
+                res[ruleset.pk] = {'name': ruleset.name,
+                                   'transformation': {'transfo_key': key_str, 'transfo_value': value_str},
+                                   'rules': []
+                                   }
+
+            for trans in trans_rules:
+                all_rules.add(trans.rule_transformation.pk)
+
+            for trans in trans_cats:
+                category = trans.category_transformation
+                for rule in category.rule_set.all():
+                    rule_trans_value = rule.get_transformation(ruleset, key=key)
+                    if rule_trans_value is None or rule_trans_value == value:
+                        all_rules.add(rule.sid)
+
+            if trans_rulesets:
+                for category in ruleset.categories.all():
+                    trans_cat = CategoryTransformation.objects.filter(ruleset=ruleset, category_transformation=category)
+
+                    if len(trans_cat) == 0:
+                        for rule in category.rule_set.all():
+                            rule_trans_value = rule.get_transformation(ruleset, key=key)
+                            if rule_trans_value is None or rule_trans_value == value:
+                                all_rules.add(rule.sid)
+                    else:
+                        for trans in trans_cat:
+                            for rule in category.rule_set.all():
+                                rule_trans_value = rule.get_transformation(ruleset, key=key)
+                                if trans.key == key and trans.value == value:
+                                    if rule_trans_value is None or rule_trans_value == value:
+                                        all_rules.add(rule.sid)
+                                else:
+                                    if rule_trans_value == value:
+                                        all_rules.add(rule.sid)
+
+            res[ruleset.pk]['rules'] = list(all_rules)
+            res[ruleset.pk]['rules_count'] = len(all_rules)
+
+        Rule.disable_cache()
+        return Response(res)
 
     @detail_route(methods=['get'])
     def content(self, request, pk):
@@ -893,6 +994,9 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
+    Show all transformed rules:\n
+        curl -k https://x.x.x.x/rest/rules/transformation/rule/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
     Show a rule transformation:\n
         curl -k https://x.x.x.x/rest/rules/transformation/rule/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 

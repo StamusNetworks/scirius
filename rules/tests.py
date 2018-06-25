@@ -810,6 +810,48 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
         ua = UserAction.objects.order_by('pk').last()
         self.assertEqual(ua.comment, comment)
 
+    def test_009_get_transformed_rules(self):
+        # Transform ruleset
+        self.http_post(reverse('rulesettransformation-list'),
+                       {'ruleset': self.ruleset.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_REJECT.value},
+                       status=status.HTTP_201_CREATED)
+        params = '?transfo_type=%s&transfo_value=%s' % (Transformation.ACTION.value, Transformation.A_REJECT.value)
+        content = self.http_get(reverse('rule-transformation') + params)
+
+        self.assertEqual(self.ruleset.pk in content, True)
+        self.assertEqual(content[self.ruleset.pk]['rules'][0], self.rule.pk)
+        self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_key'], Transformation.ACTION.value)
+        self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_value'], Transformation.A_REJECT.value)
+
+        self.http_post(reverse('categorytransformation-list'),
+                       {'ruleset': self.ruleset.pk, 'category': self.category.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_DROP.value},
+                       status=status.HTTP_201_CREATED)
+        params = '?transfo_type=%s&transfo_value=%s' % (Transformation.ACTION.value, Transformation.A_DROP.value)
+        content = self.http_get(reverse('rule-transformation') + params)
+
+        self.assertEqual(self.ruleset.pk in content, True)
+        self.assertEqual(content[self.ruleset.pk]['rules'][0], self.rule.pk)
+        self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_key'], Transformation.ACTION.value)
+        self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_value'], Transformation.A_DROP.value)
+
+        self.http_post(reverse('ruletransformation-list'),
+                       {'ruleset': self.ruleset.pk, 'rule': self.rule.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_BYPASS.value},
+                       status=status.HTTP_201_CREATED)
+        self.assertEqual(self.ruleset.pk in content, True)
+        params = '?transfo_type=%s&transfo_value=%s' % (Transformation.ACTION.value, Transformation.A_BYPASS.value)
+        content = self.http_get(reverse('rule-transformation') + params)
+
+        self.assertEqual(self.ruleset.pk in content, True)
+        self.assertEqual(content[self.ruleset.pk]['rules'][0], self.rule.pk)
+        self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_key'], Transformation.ACTION.value)
+        self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_value'], Transformation.A_BYPASS.value)
+
 
 class RestAPIListTestCase(RestAPITestBase, APITestCase):
     def setUp(self):
