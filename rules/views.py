@@ -1524,10 +1524,6 @@ def edit_ruleset(request, ruleset_id):
         if not form.is_valid():
             return redirect(ruleset)
 
-        msg = """All changes are saved. Don't forget to update the ruleset to apply the changes.
-                 After the ruleset Update the changes would be updated on the probe(s) upon the next Ruleset Push"""
-
-        messages.success(request, msg)
         if request.POST.has_key('category'):
             category_selection = [ int(x) for x in request.POST.getlist('category_selection') ]
             # clean ruleset
@@ -1586,6 +1582,13 @@ def edit_ruleset(request, ruleset_id):
                     ruleset.set_transformation(key=Transformation.TARGET, value=form_target_trans)
                 else:
                     ruleset.remove_transformation(Transformation.TARGET)
+            else:
+                return scirius_render(request, 'rules/edit_ruleset.html', {'ruleset': ruleset, 'error': 'Invalid form.', 'form': form})
+
+        msg = """All changes are saved. Don't forget to update the ruleset to apply the changes.
+                 After the ruleset Update the changes would be updated on the probe(s) upon the next Ruleset Push"""
+
+        messages.success(request, msg)
 
         return redirect(ruleset)
     else:
