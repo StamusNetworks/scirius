@@ -579,6 +579,11 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         for key, value in dict(fields).iteritems():
             if value in serializer.validated_data:
                 fields[key] = serializer.validated_data[value]
+            else:
+                if partial is True:
+                    val = getattr(instance, value, None)
+                    if val is not None:
+                        fields[key] = val
 
         fields['comment'] = comment_serializer.validated_data['comment']
         fields['action_type'] = params['action_type']
