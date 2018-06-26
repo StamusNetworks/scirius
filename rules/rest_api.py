@@ -20,6 +20,7 @@ from rest_framework.permissions import IsAdminUser
 from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, \
         Source, SourceAtVersion, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
 from rules.views import get_public_sources, fetch_public_sources
+from rules.rest_processing import RuleProcessingFilterViewSet
 
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
@@ -1648,3 +1649,4 @@ router.register('rules/transformation/rule', RuleTransformationViewSet)
 router.register('rules/history', UserActionViewSet)
 router.register('rules/changelog/source', ChangelogViewSet)
 router.register('rules/system_settings', SystemSettingsViewSet)
+router.register('rules/processing-filter', RuleProcessingFilterViewSet)

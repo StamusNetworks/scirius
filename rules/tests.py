@@ -26,13 +26,15 @@ from django.utils import timezone
 from rest_framework import status, mixins
 from rest_framework.test import APITestCase
 
-from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, RulesetTransformation, UserAction, \
-        SourceUpdate, SystemSettings
+from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, \
+    RulesetTransformation, SourceUpdate, SystemSettings, UserAction, RuleProcessingFilter, RuleProcessingFilterDef
 from rest_api import router
 
+from copy import deepcopy
 import tempfile
 from shutil import rmtree
 from StringIO import StringIO
+import itertools
 
 
 ET_URL = 'https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz'
@@ -851,6 +853,202 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
         self.assertEqual(content[self.ruleset.pk]['rules'][0], self.rule.pk)
         self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_key'], Transformation.ACTION.value)
         self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_value'], Transformation.A_BYPASS.value)
+
+
+class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
+    DEFAULT_FILTER = {
+        'filter_defs': [{
+            'key': 'event_type',
+            'value': 'http',
+            'operator': 'equal'
+        }],
+        'action': 'suppress',
+        'index': 0
+    }
+    DEFAULT_FILTER2 = {
+        'filter_defs': [{
+            'key': 'host',
+            'value': 'probe-test',
+            'operator': 'equal'
+        }],
+        'action': 'suppress',
+        'index': 0
+    }
+
+    def setUp(self):
+        RestAPITestBase.setUp(self)
+        APITestCase.setUp(self)
+        self.list_url = reverse('ruleprocessingfilter-list')
+        self.detail_url = lambda x: reverse('ruleprocessingfilter-detail', args=(x,))
+
+    def test_001_create(self):
+        r = self.http_post(self.list_url, self.DEFAULT_FILTER, status=status.HTTP_201_CREATED)
+        self.assertDictContainsSubset(self.DEFAULT_FILTER, r)
+        self.filter_pk = r['pk']
+
+    def test_002_create_invalid_filter(self):
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['filter_defs'] = []
+        r = self.http_post(self.list_url, f, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'filter_defs': ['This field is required.']})
+        self.assertEqual(RuleProcessingFilter.objects.count(), 0)
+        self.assertEqual(RuleProcessingFilterDef.objects.count(), 0)
+
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['filter_defs'] = [{'key': 'test', 'operator': 'equal'}]
+        r = self.http_post(self.list_url, f, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'filter_defs': [{'value': ['This field is required.']}]})
+        self.assertEqual(RuleProcessingFilter.objects.count(), 0)
+        self.assertEqual(RuleProcessingFilterDef.objects.count(), 0)
+
+    def test_003_update_filter_existing(self):
+        self.test_001_create()
+
+        r = self.http_patch(self.detail_url(self.filter_pk), {
+            'filter_defs': [{'key': 'event_type', 'value': 'dns', 'operator': 'equal'}]
+        })
+
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['filter_defs'][0]['value'] = 'dns'
+        self.assertDictContainsSubset(f, r)
+
+    def test_004_update_filter_add(self):
+        self.test_001_create()
+
+        # Filter value update
+        new_filter = {
+            'key': 'host',
+            'value': 'probe1',
+            'operator': 'equal'
+        }
+        filters = deepcopy(self.DEFAULT_FILTER['filter_defs'])
+        filters.append(new_filter)
+
+        r = self.http_patch(self.detail_url(self.filter_pk), {
+            'filter_defs': filters
+        })
+
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['filter_defs'].append(new_filter)
+        self.assertDictContainsSubset(f, r)
+        self.assertEqual(len(r['filter_defs']), 2)
+
+    def test_005_update_filter_rm(self):
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['filter_defs'].append({
+            'key': 'host',
+            'value': 'probe1',
+            'operator': 'equal'
+        })
+
+        r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        self.assertDictContainsSubset(f, r)
+
+        r = self.http_patch(self.detail_url(r['pk']), {
+            'filter_defs': self.DEFAULT_FILTER['filter_defs']
+        })
+
+        self.assertDictContainsSubset(self.DEFAULT_FILTER, r)
+        self.assertEqual(len(r['filter_defs']), 1)
+
+    def test_006_order_create_empty(self):
+        f = deepcopy(self.DEFAULT_FILTER)
+        f.pop('index')
+
+        r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        self.assertDictContainsSubset(self.DEFAULT_FILTER, r)
+
+    def test_007_order_create_append(self):
+        self.test_001_create()
+
+        f = deepcopy(self.DEFAULT_FILTER2)
+        f.pop('index')
+
+        r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        f = deepcopy(self.DEFAULT_FILTER2)
+        f['index'] = 1
+
+        self.assertDictContainsSubset(f, r)
+
+        r = self.http_get(self.list_url)
+        self.assertDictContainsSubset(self.DEFAULT_FILTER, r['results'][0])
+        self.assertDictContainsSubset(f, r['results'][1])
+
+    def test_008_order_create_insert(self):
+        self.test_001_create()
+
+        self.http_post(self.list_url, self.DEFAULT_FILTER2, status=status.HTTP_201_CREATED)
+
+        f1 = deepcopy(self.DEFAULT_FILTER)
+        f1['index'] = 1
+
+        r = self.http_get(self.list_url)
+        self.assertDictContainsSubset(self.DEFAULT_FILTER2, r['results'][0])
+        self.assertDictContainsSubset(f1, r['results'][1])
+
+    def test_009_order_create_oob(self):
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['index'] = 1
+        r = self.http_post(self.list_url, f, status=status.HTTP_400_BAD_REQUEST)
+
+        self.assertDictEqual(r, {'index': ['Invalid index value (too high).']})
+
+    def _check_order(self, expected):
+        r = self.http_get(self.list_url)
+        order = [f['pk'] for f in r['results']]
+        self.assertListEqual(expected, order)
+        indices = [f['index'] for f in r['results']]
+        self.assertListEqual(indices, range(4))
+
+    def _test_010_order_update(self, prev_index, new_index):
+        filters = []
+        for i in range(4):
+            f = deepcopy(self.DEFAULT_FILTER)
+            f.pop('index')
+            r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+            filters.append(r['pk'])
+
+        pk_to_move = filters[prev_index]
+        expected = deepcopy(filters)
+
+        if new_index is None:
+            expected.pop(prev_index)
+            expected.append(pk_to_move)
+        else:
+            if prev_index != new_index:
+                expected.pop(prev_index)
+
+                if new_index < len(filters):
+                    insert_before_pk = filters[new_index]
+                    _new_index = expected.index(insert_before_pk)
+                    expected.insert(_new_index, pk_to_move)
+                else:
+                    expected.append(pk_to_move)
+
+        self.http_patch(self.detail_url(pk_to_move), {'index': new_index})
+        self._check_order(expected)
+
+    def test_011_order_update_oob(self):
+        self.test_001_create()
+        r = self.http_patch(self.detail_url(self.filter_pk), {'index': 2}, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'index': ['Invalid index value (too high).']})
+
+    def test_012_delete(self):
+        self.test_007_order_create_append()
+
+        self.http_delete(self.detail_url(self.filter_pk), status=status.HTTP_204_NO_CONTENT)
+        r = self.http_get(self.list_url)
+
+        self.assertEqual(r['count'], 1)
+        self.assertDictContainsSubset(self.DEFAULT_FILTER2, r['results'][0])
+
+
+def order_update_lambda(a, b):
+    return lambda x: RestAPIRuleProcessingFilterTestCase._test_010_order_update(x, a, b)
+
+
+for a, b in itertools.product(range(4), range(5) + [None]):
+    setattr(RestAPIRuleProcessingFilterTestCase, 'test_010_order_update_%i_to_%s' % (a, repr(b)), order_update_lambda(a, b))
 
 
 class RestAPIListTestCase(RestAPITestBase, APITestCase):

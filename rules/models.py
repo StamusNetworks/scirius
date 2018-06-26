@@ -2475,6 +2475,33 @@ class Threshold(models.Model):
                 return False
         return True
 
+
+class RuleProcessingFilter(models.Model):
+    ACTIONS = (('suppress', 'Suppress'), ('threshold', 'Threshold'),
+                ('tag', 'Tag'), ('tagkeep', 'Tag and keep'))
+
+    action = models.CharField(max_length=10, choices=ACTIONS)
+    options = models.CharField(max_length=512, null=True, blank=True)
+    index = models.PositiveIntegerField()
+    description = models.TextField(default='')
+    enabled = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['index']
+
+
+class RuleProcessingFilterDef(models.Model):
+    OPERATOR = (('equal', 'Equal'), ('different', 'Different'), ('contains', 'Contains'))
+
+    key = models.CharField(max_length=512)
+    value = models.CharField(max_length=512)
+    operator = models.CharField(max_length=10, choices=OPERATOR)
+    proc_filter = models.ForeignKey(RuleProcessingFilter, related_name='filter_defs')
+
+    class Meta:
+        ordering = ['key']
+
+
 def dependencies_check(obj):
     if obj == Source:
         return
