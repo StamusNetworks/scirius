@@ -492,6 +492,17 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        # Check that transformation is allowed
+        if isinstance(self, RuleTransformationViewSet):
+            rule = serializer.validated_data['rule_transformation']
+            transfo_type = Transformation.Type(key)
+            choices_ = rule.get_transformation_choices(transfo_type)
+            choices = [choice[0] for choice in choices_]
+
+            if value not in choices:
+                raise serializers.ValidationError({'transfo_value': '"%s" is not a valid choice.' % value})
+
         serializer.save()
 
         comment_serializer = CommentSerializer(data={'comment': comment})
