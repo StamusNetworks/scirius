@@ -226,6 +226,20 @@ class UserAction(models.Model):
                     'description': '{user} has edited system settings',
                     'title': 'Edit System Settings'
                 },
+
+               # Rule processing filter
+               'create_rule_filter': {
+                    'description': '{user} has created rule filter {rule_filter}',
+                    'title': 'Create rule filter'
+                },
+               'edit_rule_filter': {
+                    'description': '{user} has edited rule filter {rule_filter}',
+                    'title': 'Edit rule filter'
+                },
+               'delete_rule_filter': {
+                    'description': '{user} has deleted rule filter {rule_filter}',
+                    'title': 'Delete rule filter'
+                },
                }
 
     action_type = models.CharField(max_length=1000, null=True)
@@ -2525,9 +2539,23 @@ class RuleProcessingFilter(models.Model):
 
         raise Exception('Invalid processing filter action %s' % self.action)
 
+    @staticmethod
+    def get_icon():
+        return 'pficon-filter'
+
+    def __unicode__(self):
+        filters = []
+        for f in self.filter_defs.order_by('key'):
+            filters.append(unicode(f))
+        return '%s (%s)' % (self.action, ', '.join(filters))
+
 
 class RuleProcessingFilterDef(models.Model):
     OPERATOR = (('equal', 'Equal'), ('different', 'Different'), ('contains', 'Contains'))
+    OPERATOR_DISPLAY = {
+        'equal': '=',
+        'different': '!='
+    }
 
     key = models.CharField(max_length=512)
     value = models.CharField(max_length=512)
@@ -2537,6 +2565,9 @@ class RuleProcessingFilterDef(models.Model):
     class Meta:
         ordering = ['key']
 
+    def __unicode__(self):
+        op = self.OPERATOR_DISPLAY.get(self.operator, self.operator)
+        return '%s %s %s' % (self.key, op, self.value)
 
 def dependencies_check(obj):
     if obj == Source:

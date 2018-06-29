@@ -23,7 +23,7 @@ import json
 from django.db import models
 from rest_framework import serializers, viewsets, exceptions
 
-from rules.models import RuleProcessingFilter, RuleProcessingFilterDef, Threshold
+from rules.models import RuleProcessingFilter, RuleProcessingFilterDef, Threshold, UserAction
 
 
 class RuleProcessingFilterDefSerializer(serializers.ModelSerializer):
@@ -65,10 +65,11 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
     filter_defs = RuleProcessingFilterDefSerializer(many=True)
     index = serializers.IntegerField(default=None, allow_null=True)
     options = JSONStringField(default=None, allow_null=True)
+    comment = serializers.CharField(required=False, allow_blank=True, write_only=True, allow_null=True)
 
     class Meta:
         model = RuleProcessingFilter
-        fields = ('pk', 'filter_defs', 'action', 'options', 'index', 'description', 'enabled')
+        fields = ('pk', 'filter_defs', 'action', 'options', 'index', 'description', 'enabled', 'comment')
 
     def to_internal_value(self, data):
         options = data.get('options')
@@ -180,6 +181,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
 
     def _update_or_create(self, operation, instance, validated_data):
         filters = validated_data.pop('filter_defs', None)
+        comment = validated_data.pop('comment', None)
         previous_index = None
         new_index = None
         index_max = RuleProcessingFilter.objects.aggregate(models.Max('index'))['index__max']
@@ -201,6 +203,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError({'index': ['Invalid index value (too high).']})
 
             instance = super(RuleProcessingFilterSerializer, self).create(validated_data)
+            user_action = 'create'
         else:
             if filters is not None and len(filters) == 0:
                 # Error on empty list only
@@ -216,6 +219,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError({'index': ['Invalid index value (too high).']})
 
             instance = super(RuleProcessingFilterSerializer, self).update(instance, validated_data)
+            user_action = 'edit'
 
         self._reorder(instance, previous_index, new_index)
 
@@ -227,6 +231,12 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                     instance.delete()
                 raise
 
+        UserAction.create(
+                action_type='%s_rule_filter' % user_action,
+                comment=comment,
+                user=self.context['request'].user,
+                rule_filter=instance
+        )
         return instance
 
     update = lambda self, instance, validated_data: RuleProcessingFilterSerializer._update_or_create(self, 'update', instance, validated_data)
@@ -242,6 +252,17 @@ class RuleProcessingFilterViewSet(viewsets.ModelViewSet):
     search_fields = ('description', 'filter_defs__key', 'filter_defs__value')
 
     def destroy(self, request, *args, **kwargs):
+        from rules.rest_api import CommentSerializer
+        comment_serializer = CommentSerializer(data=request.data)
+        comment_serializer.is_valid(raise_exception=True)
+
+        UserAction.create(
+                action_type='delete_rule_filter',
+                comment=comment_serializer.validated_data.get('comment'),
+                user=request.user,
+                rule_filter=self.get_object()
+        )
+
         index = self.get_object().index
         response = super(RuleProcessingFilterViewSet, self).destroy(request, *args, **kwargs)
 

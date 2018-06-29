@@ -894,9 +894,14 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         scirius.utils.get_middleware_module = lambda x: import_module('suricata.%s' % x)
 
     def test_001_create(self):
-        r = self.http_post(self.list_url, self.DEFAULT_FILTER, status=status.HTTP_201_CREATED)
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['comment'] = 'test comment'
+        r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
         self.assertDictContainsSubset(self.DEFAULT_FILTER, r)
         self.filter_pk = r['pk']
+        ua = UserAction.objects.last()
+        self.assertEqual(ua.action_type, 'create_rule_filter')
+        self.assertEqual(ua.comment, 'test comment')
 
     def test_002_create_invalid_filter(self):
         f = deepcopy(self.DEFAULT_FILTER)
@@ -917,12 +922,17 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         self.test_001_create()
 
         r = self.http_patch(self.detail_url(self.filter_pk), {
-            'filter_defs': [{'key': 'event_type', 'value': 'dns', 'operator': 'equal'}]
+            'filter_defs': [{'key': 'event_type', 'value': 'dns', 'operator': 'equal'}],
+            'comment': 'test comment'
         })
 
         f = deepcopy(self.DEFAULT_FILTER)
         f['filter_defs'][0]['value'] = 'dns'
         self.assertDictContainsSubset(f, r)
+
+        ua = UserAction.objects.last()
+        self.assertEqual(ua.action_type, 'edit_rule_filter')
+        self.assertEqual(ua.comment, 'test comment')
 
     def test_004_update_filter_add(self):
         self.test_001_create()
@@ -1048,11 +1058,15 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
     def test_012_delete(self):
         self.test_007_order_create_append()
 
-        self.http_delete(self.detail_url(self.filter_pk), status=status.HTTP_204_NO_CONTENT)
+        self.http_delete(self.detail_url(self.filter_pk), {'comment': 'test comment'}, status=status.HTTP_204_NO_CONTENT)
         r = self.http_get(self.list_url)
 
         self.assertEqual(r['count'], 1)
         self.assertDictContainsSubset(self.DEFAULT_FILTER2, r['results'][0])
+
+        ua = UserAction.objects.last()
+        self.assertEqual(ua.action_type, 'delete_rule_filter')
+        self.assertEqual(ua.comment, 'test comment')
 
     def test_013_suppress_validation_error(self):
         f = deepcopy(self.DEFAULT_FILTER)
