@@ -19,6 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import json
+from IPy import IP
 
 from django.db import models
 from rest_framework import serializers, viewsets, exceptions
@@ -27,9 +28,24 @@ from rules.models import RuleProcessingFilter, RuleProcessingFilterDef, Threshol
 
 
 class RuleProcessingFilterDefSerializer(serializers.ModelSerializer):
+    IP_FIELDS = ('src_ip', 'dest_ip', 'alert.source.ip', 'alert.target.ip', 'dns.rdata', 'dns.answers.rdata', 'dns.grouped.A')
+
     class Meta:
         model = RuleProcessingFilterDef
         exclude = ('id', 'proc_filter')
+
+    def validate(self, data):
+        if data['key'] in self.IP_FIELDS:
+            try:
+                addr = IP(data['value'])
+                if data['operator'] == 'contains' and len(addr) == 1:
+                    raise ValueError('not a network address')
+            except ValueError:
+                _type = 'IP'
+                if data['operator'] == 'contains':
+                    _type = 'network'
+                raise serializers.ValidationError({'value': ['This field requires a valid %s address.' % _type]})
+        return data
 
 
 class JSONStringField(serializers.Field):

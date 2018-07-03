@@ -1157,6 +1157,14 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         threshold = f.get_threshold_content()
         self.assertEqual(threshold, 'threshold gen_id 1, sig_id 1, type both, track by_dst, count 1, seconds 60\n')
 
+    def test_022_ip_validation(self):
+        r = self.http_post(self.list_url, {
+            'filter_defs': [{'key': 'dest_ip', 'value': '192.168.0.', 'operator': 'equal'}],
+            'action': 'suppress',
+            'rulesets': [self.ruleset.pk]
+        }, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'filter_defs': [{'value': ['This field requires a valid IP address.']}]})
+
 
 def order_update_lambda(a, b):
     return lambda x: RestAPIRuleProcessingFilterTestCase._test_010_order_update(x, a, b)
