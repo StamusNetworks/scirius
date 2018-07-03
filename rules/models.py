@@ -2274,6 +2274,10 @@ class Ruleset(models.Model, Transformable):
             for threshold in Threshold.objects.filter(ruleset = self):
                 f.write("%s\n" % (threshold))
 
+            from scirius.utils import get_middleware_module
+            for threshold in get_middleware_module('common').get_processing_filter_thresholds(self):
+                f.write(threshold)
+
     def copy(self, name):
         orig_ruleset_pk = self.pk
         orig_sources = self.sources.all()
@@ -2488,6 +2492,38 @@ class RuleProcessingFilter(models.Model):
 
     class Meta:
         ordering = ['index']
+
+    def get_options(self):
+        if not self.options:
+            return {}
+        return json.loads(self.options)
+
+    def get_threshold_content(self):
+        sid = self.filter_defs.get(key='alert.signature_id').value
+
+        if self.action == 'suppress':
+            try:
+                src_ip = self.filter_defs.get(key='src_ip')
+            except models.ObjectDoesNotExist:
+                src_ip = None
+            try:
+                dest_ip = self.filter_defs.get(key='dest_ip')
+            except models.ObjectDoesNotExist:
+                dest_ip = None
+
+            if src_ip:
+                ip_str = src_ip.value
+                track_by = 'by_src'
+            else:
+                ip_str = dest_ip.value
+                track_by = 'by_dst'
+
+            return 'suppress gen_id 1, sid_id %s, track %s, ip %s\n' % (sid, track_by, ip_str)
+        elif self.action == 'threshold':
+            options = self.get_options()
+            return 'threshold gen_id 1, sig_id %s, type %s, track %s, count %s, seconds %s\n' % (sid, options['type'], options['track'], options['count'], options['seconds'])
+
+        raise Exception('Invalid processing filter action %s' % self.action)
 
 
 class RuleProcessingFilterDef(models.Model):

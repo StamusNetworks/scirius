@@ -35,6 +35,7 @@ import tempfile
 from shutil import rmtree
 from StringIO import StringIO
 import itertools
+from importlib import import_module
 
 
 ET_URL = 'https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz'
@@ -881,6 +882,17 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         self.list_url = reverse('ruleprocessingfilter-list')
         self.detail_url = lambda x: reverse('ruleprocessingfilter-detail', args=(x,))
 
+        import scirius.utils
+        self.middleware = scirius.utils.get_middleware_module
+
+    def tearDown(self):
+        import scirius.utils
+        scirius.utils.get_middleware_module = self.middleware
+
+    def _force_suricata_middleware(self):
+        import scirius.utils
+        scirius.utils.get_middleware_module = lambda x: import_module('suricata.%s' % x)
+
     def test_001_create(self):
         r = self.http_post(self.list_url, self.DEFAULT_FILTER, status=status.HTTP_201_CREATED)
         self.assertDictContainsSubset(self.DEFAULT_FILTER, r)
@@ -1041,6 +1053,86 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
 
         self.assertEqual(r['count'], 1)
         self.assertDictContainsSubset(self.DEFAULT_FILTER2, r['results'][0])
+
+    def test_013_suppress_validation_error(self):
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['options'] = {'test': 'test'}
+        r = self.http_post(self.list_url, f, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'options': ['Action "suppress" does not accept options.']})
+
+    def test_014_threshold_create(self):
+        f = {
+            'filter_defs': [{'key': 'alert.sid', 'value': '1', 'operator': 'equal'}],
+            'action': 'threshold',
+            'options': {'type': 'both', 'count': 2, 'seconds': 30, 'track': 'by_src'},
+        }
+        r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        self.assertDictContainsSubset(f, r)
+        self.filter_pk = r['pk']
+
+    def test_015_threshold_create_invalid(self):
+        r = self.http_post(self.list_url, {
+            'filter_defs': [{'key': 'alert.sid', 'value': '1', 'operator': 'equal'}],
+            'action': 'threshold',
+            'options': {'count': 2, 'seconds': 30, 'track': 'by_src'},
+        }, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'options': [{'type': ['This field is required.']}]})
+
+    def test_016_threshold_update(self):
+        self.test_014_threshold_create()
+        self.http_patch(self.detail_url(self.filter_pk), {
+            'action': 'suppress',
+            'options': {}
+        })
+
+    def test_017_threshold_update_invalid(self):
+        self.test_014_threshold_create()
+        r = self.http_patch(self.detail_url(self.filter_pk), {
+            'action': 'threshold',
+            'options': {}
+        }, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'options': [{'type': ['This field is required.'],
+            'track': ['This field is required.']}]})
+
+    def test_018_suri_tag_create_invalid(self):
+        self._force_suricata_middleware()
+        r = self.http_post(self.list_url, {
+            'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal'}],
+            'action': 'tag',
+            'options': {'tag': 'test'}
+        }, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'non_field_errors': ['Action "tag" is not supported.']})
+
+    def test_019_suri_filter_defs_invalid(self):
+        self._force_suricata_middleware()
+        r = self.http_post(self.list_url, {
+            'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal'}],
+            'action': 'suppress',
+        }, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'filter_defs': ['A filter with a key "alert.signature_id" is required.']})
+
+    def test_020_suri_suppress_generate(self):
+        self.http_post(self.list_url, {
+            'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal'},
+                {'key': 'alert.signature_id', 'value': '1', 'operator': 'equal'}],
+            'action': 'suppress',
+        }, status=status.HTTP_201_CREATED)
+
+        f = RuleProcessingFilter.objects.all()[0]
+        suppress = f.get_threshold_content()
+        self.assertEqual(suppress, 'suppress gen_id 1, sid_id 1, track by_src, ip 192.168.0.1\n')
+
+    def test_021_suri_threshold_generate(self):
+        self.http_post(self.list_url, {
+            'filter_defs': [{'key': 'dest_ip', 'value': '192.168.0.1', 'operator': 'equal'},
+                {'key': 'alert.signature_id', 'value': '1', 'operator': 'equal'}],
+            'action': 'threshold',
+            'options': {'type': 'both', 'track': 'by_dst'},
+        }, status=status.HTTP_201_CREATED)
+
+        f = RuleProcessingFilter.objects.all()[0]
+        threshold = f.get_threshold_content()
+        self.assertEqual(threshold, 'threshold gen_id 1, sig_id 1, type both, track by_dst, count 1, seconds 60\n')
 
 
 def order_update_lambda(a, b):
