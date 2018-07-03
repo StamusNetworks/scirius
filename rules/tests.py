@@ -857,30 +857,33 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
 
 
 class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
-    DEFAULT_FILTER = {
-        'filter_defs': [{
-            'key': 'event_type',
-            'value': 'http',
-            'operator': 'equal'
-        }],
-        'action': 'suppress',
-        'index': 0
-    }
-    DEFAULT_FILTER2 = {
-        'filter_defs': [{
-            'key': 'host',
-            'value': 'probe-test',
-            'operator': 'equal'
-        }],
-        'action': 'suppress',
-        'index': 0
-    }
-
     def setUp(self):
         RestAPITestBase.setUp(self)
         APITestCase.setUp(self)
         self.list_url = reverse('ruleprocessingfilter-list')
         self.detail_url = lambda x: reverse('ruleprocessingfilter-detail', args=(x,))
+        self.ruleset = Ruleset.objects.create(name='test ruleset', descr='descr', created_date=timezone.now(), updated_date=timezone.now())
+
+        self.DEFAULT_FILTER = {
+            'filter_defs': [{
+                'key': 'event_type',
+                'value': 'http',
+                'operator': 'equal'
+            }],
+            'action': 'suppress',
+            'index': 0,
+            'rulesets': [self.ruleset.pk]
+        }
+        self.DEFAULT_FILTER2 = {
+            'filter_defs': [{
+                'key': 'host',
+                'value': 'probe-test',
+                'operator': 'equal'
+            }],
+            'action': 'suppress',
+            'index': 0,
+            'rulesets': [self.ruleset.pk]
+        }
 
         import scirius.utils
         self.middleware = scirius.utils.get_middleware_module
@@ -1079,6 +1082,7 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
             'filter_defs': [{'key': 'alert.sid', 'value': '1', 'operator': 'equal'}],
             'action': 'threshold',
             'options': {'type': 'both', 'count': 2, 'seconds': 30, 'track': 'by_src'},
+            'rulesets': [self.ruleset.pk]
         }
         r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
         self.assertDictContainsSubset(f, r)
@@ -1089,6 +1093,7 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
             'filter_defs': [{'key': 'alert.sid', 'value': '1', 'operator': 'equal'}],
             'action': 'threshold',
             'options': {'count': 2, 'seconds': 30, 'track': 'by_src'},
+            'rulesets': [self.ruleset.pk]
         }, status=status.HTTP_400_BAD_REQUEST)
         self.assertDictEqual(r, {'options': [{'type': ['This field is required.']}]})
 
@@ -1113,7 +1118,8 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         r = self.http_post(self.list_url, {
             'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal'}],
             'action': 'tag',
-            'options': {'tag': 'test'}
+            'options': {'tag': 'test'},
+            'rulesets': [self.ruleset.pk]
         }, status=status.HTTP_400_BAD_REQUEST)
         self.assertDictEqual(r, {'non_field_errors': ['Action "tag" is not supported.']})
 
@@ -1122,6 +1128,7 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         r = self.http_post(self.list_url, {
             'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal'}],
             'action': 'suppress',
+            'rulesets': [self.ruleset.pk]
         }, status=status.HTTP_400_BAD_REQUEST)
         self.assertDictEqual(r, {'filter_defs': ['A filter with a key "alert.signature_id" is required.']})
 
@@ -1130,6 +1137,7 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
             'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal'},
                 {'key': 'alert.signature_id', 'value': '1', 'operator': 'equal'}],
             'action': 'suppress',
+            'rulesets': [self.ruleset.pk]
         }, status=status.HTTP_201_CREATED)
 
         f = RuleProcessingFilter.objects.all()[0]
@@ -1142,6 +1150,7 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
                 {'key': 'alert.signature_id', 'value': '1', 'operator': 'equal'}],
             'action': 'threshold',
             'options': {'type': 'both', 'track': 'by_dst'},
+            'rulesets': [self.ruleset.pk]
         }, status=status.HTTP_201_CREATED)
 
         f = RuleProcessingFilter.objects.all()[0]

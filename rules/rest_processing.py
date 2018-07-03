@@ -69,7 +69,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RuleProcessingFilter
-        fields = ('pk', 'filter_defs', 'action', 'options', 'index', 'description', 'enabled', 'comment')
+        fields = ('pk', 'filter_defs', 'action', 'options', 'rulesets', 'index', 'description', 'enabled', 'comment')
 
     def to_internal_value(self, data):
         options = data.get('options')

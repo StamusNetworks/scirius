@@ -2503,6 +2503,7 @@ class RuleProcessingFilter(models.Model):
     index = models.PositiveIntegerField()
     description = models.TextField(default='')
     enabled = models.BooleanField(default=True)
+    rulesets = models.ManyToManyField(Ruleset, related_name='processing_filters')
 
     class Meta:
         ordering = ['index']

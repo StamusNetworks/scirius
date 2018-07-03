@@ -88,5 +88,5 @@ def get_user_actions_dict():
 def get_processing_filter_thresholds(ruleset):
     from rules.models import RuleProcessingFilter
 
-    for f in RuleProcessingFilter.objects.filter(enabled=True, action__in=('suppress', 'threshold')):
+    for f in ruleset.processing_filters.filter(enabled=True, action__in=('suppress', 'threshold')):
         yield f.get_threshold_content()
