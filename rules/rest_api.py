@@ -1315,7 +1315,7 @@ class UserActionViewSet(viewsets.ReadOnlyModelViewSet):
     =============================================================================================================================================================
     ==== GET ====\n
     Show an user action :\n
-        curl -k https://x.x.x.x/rest/history/<pk-useraction>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/history/<pk-useraction>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
