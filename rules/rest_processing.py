@@ -23,6 +23,8 @@ from IPy import IP
 
 from django.db import models
 from rest_framework import serializers, viewsets, exceptions
+from rest_framework.decorators import list_route
+from rest_framework.response import Response
 
 from rules.models import RuleProcessingFilter, RuleProcessingFilterDef, Threshold, UserAction
 
@@ -67,7 +69,7 @@ class ThresholdOptionsSerializer(serializers.Serializer):
 
 
 class TagOptionsSerializer(serializers.Serializer):
-    tag = serializers.CharField(max_length=256)
+    tag = serializers.CharField(max_length=512)
 
 
 ACTION_OPTIONS_SERIALIZER = {
@@ -259,6 +261,10 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
     create = lambda self, validated_data: RuleProcessingFilterSerializer._update_or_create(self, 'create', None, validated_data)
 
 
+class RuleProcessingTestSerializer(serializers.Serializer):
+    fields = serializers.ListField(child=serializers.CharField(max_length=256))
+
+
 class RuleProcessingFilterViewSet(viewsets.ModelViewSet):
     queryset = RuleProcessingFilter.objects.all()
     serializer_class = RuleProcessingFilterSerializer
@@ -285,3 +291,11 @@ class RuleProcessingFilterViewSet(viewsets.ModelViewSet):
         # Update index values
         RuleProcessingFilter.objects.filter(index__gt=index).update(index=models.F('index') - 1)
         return response
+
+    @list_route(methods=['post'])
+    def test(self, request):
+        from scirius.utils import get_middleware_module
+        fields_serializer = RuleProcessingTestSerializer(data=request.data)
+        fields_serializer.is_valid(raise_exception=True)
+        capabilities = get_middleware_module('common').get_processing_filter_capabilities(fields_serializer.validated_data['fields'])
+        return Response(capabilities)

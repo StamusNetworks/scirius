@@ -1165,6 +1165,15 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         }, status=status.HTTP_400_BAD_REQUEST)
         self.assertDictEqual(r, {'filter_defs': [{'value': ['This field requires a valid IP address.']}]})
 
+    def test_023_capabilities_test(self):
+        self._force_suricata_middleware()
+        r = self.http_post(reverse('ruleprocessingfilter-test'), {'fields': ['src_ip', 'dns.rdata']})
+        self.assertDictEqual(r, {
+            'fields': ['src_ip'],
+            'operators': ['equal'],
+            'actions': ['suppress', 'threshold']
+        })
+
 
 def order_update_lambda(a, b):
     return lambda x: RestAPIRuleProcessingFilterTestCase._test_010_order_update(x, a, b)
