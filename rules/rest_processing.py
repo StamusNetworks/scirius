@@ -265,6 +265,11 @@ class RuleProcessingTestSerializer(serializers.Serializer):
     fields = serializers.ListField(child=serializers.CharField(max_length=256))
 
 
+class RuleProcessingFilterIntersectSerializer(serializers.Serializer):
+    filter_defs = RuleProcessingFilterDefSerializer(many=True)
+    index = serializers.IntegerField(default=None, allow_null=True)
+
+
 class RuleProcessingFilterViewSet(viewsets.ModelViewSet):
     queryset = RuleProcessingFilter.objects.all()
     serializer_class = RuleProcessingFilterSerializer
@@ -299,3 +304,25 @@ class RuleProcessingFilterViewSet(viewsets.ModelViewSet):
         fields_serializer.is_valid(raise_exception=True)
         capabilities = get_middleware_module('common').get_processing_filter_capabilities(fields_serializer.validated_data['fields'])
         return Response(capabilities)
+
+    @list_route(methods=['post'])
+    def intersect(self, request):
+        from scirius.utils import get_middleware_module
+        fields_serializer = RuleProcessingFilterIntersectSerializer(data=request.data)
+        fields_serializer.is_valid(raise_exception=True)
+        index = fields_serializer.validated_data.get('index', None)
+        if index is None:
+            rf = RuleProcessingFilter.objects.all()
+        else:
+            rf = RuleProcessingFilter.objects.filter(index__lt=index)
+
+        # Match filters keys
+        keys = [f['key'] for f in fields_serializer.validated_data['filter_defs']]
+        matching_rf = rf.filter(filter_defs__key__in=keys)
+
+        lst = matching_rf.distinct().order_by('index')
+
+        # Paginate response
+        page = self.paginate_queryset(lst)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)

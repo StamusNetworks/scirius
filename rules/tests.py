@@ -1174,6 +1174,50 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
             'actions': ['suppress', 'threshold']
         })
 
+    def test_024_intersect_match(self):
+        self.test_007_order_create_append()
+
+        conflict_filter = {
+            'filter_defs': [{
+                'key': 'event_type',
+                'value': 'dns',
+                'operator': 'equal'
+            }],
+        }
+        r = self.http_post(reverse('ruleprocessingfilter-intersect'), conflict_filter)
+        self.assertEqual(r.get('count'), 1)
+        self.assertDictContainsSubset(self.DEFAULT_FILTER, r['results'][0])
+
+    def test_025_intersect_multi_match(self):
+        self.test_007_order_create_append()
+
+        conflict_filter = {
+            'filter_defs': [{
+                'key': 'event_type',
+                'value': 'dns',
+                'operator': 'equal'
+            }, {
+                'key': 'host',
+                'value': 'test42',
+                'operator': 'contains'
+            }],
+        }
+        r = self.http_post(reverse('ruleprocessingfilter-intersect'), conflict_filter)
+        self.assertEqual(r.get('count'), 2)
+
+    def test_026_intersect_no_match(self):
+        self.test_007_order_create_append()
+
+        conflict_filter = {
+            'filter_defs': [{
+                'key': 'alert.signature_id',
+                'value': 'dns',
+                'operator': 'equal'
+            }],
+        }
+        r = self.http_post(reverse('ruleprocessingfilter-intersect'), conflict_filter)
+        self.assertEqual(r.get('count'), 0)
+
 
 def order_update_lambda(a, b):
     return lambda x: RestAPIRuleProcessingFilterTestCase._test_010_order_update(x, a, b)
