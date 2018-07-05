@@ -1402,7 +1402,7 @@ def render_template(tmpl, dictionary, qfilter = None):
     context['hostname'] = settings.ELASTICSEARCH_HOSTNAME
     return bytearray(templ.render(context), encoding="utf-8")
 
-def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None):
+def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None, dict_format=False):
     data = render_template(TOP_QUERY, {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': 'alert.signature_id'}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
@@ -1421,9 +1421,16 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
         else:
             data = data['facets']['table']['terms']
     except:
+        if dict_format:
+            return []
+
         rules = ExtendedRuleTable([])
         tables.RequestConfig(request).configure(rules)
         return rules
+
+    if dict_format:
+        return data if data is not None else []
+
     rules = []
     if data != None:
         for elt in data:
@@ -1448,8 +1455,7 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
         tables.RequestConfig(request).configure(rules)
     return rules
 
-
-def es_get_field_stats(request, field, hostname, key='host', count=20, from_date=0 , qfilter = None):
+def es_get_field_stats(request, field, hostname, key='host', count=20, from_date=0 , qfilter = None, dict_format=False):
     data = render_template(TOP_QUERY, {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': field}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
@@ -1468,7 +1474,13 @@ def es_get_field_stats(request, field, hostname, key='host', count=20, from_date
         else:
             data = data['facets']['table']['terms']
     except:
+        if dict_format:
+            return []
         return None
+
+    if dict_format:
+        return data if data is not None else []
+
     return data
 
 
@@ -1494,7 +1506,8 @@ def es_get_field_stats_as_table(request, field, FieldTable, hostname, key='host'
         tables.RequestConfig(request).configure(objects)
     return objects
 
-def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
+
+def es_get_sid_by_hosts(request, sid, count=20, from_date=0, dict_format=False):
     data = render_template(SID_BY_HOST_QUERY, {'rule_sid': sid, 'alerts_number': count, 'from_date': from_date})
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
@@ -1514,6 +1527,10 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
             data = data['facets']['terms']['terms']
     except:
         return None
+
+    if dict_format:
+        return data if data is not None else []
+
     stats = []
     if data != None:
         for elt in data:

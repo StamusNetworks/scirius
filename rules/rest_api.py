@@ -1,4 +1,5 @@
 from suripyg import SuriHTMLFormat
+from time import time
 
 from django.conf import settings
 from django.utils import timezone
@@ -19,6 +20,7 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException, ParseError
 from rest_framework.routers import DefaultRouter, url
+from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.mixins import UpdateModelMixin, RetrieveModelMixin
@@ -26,11 +28,17 @@ from rest_framework.permissions import IsAdminUser
 
 from django_filters import rest_framework as filters
 from django_filters import fields as filters_fields
+from elasticsearch.exceptions import ConnectionError
 
 from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, \
         Source, SourceAtVersion, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
 from rules.views import get_public_sources, fetch_public_sources
 from rules.rest_processing import RuleProcessingFilterViewSet
+from rules.es_data import ESData
+
+from rules.es_graphs import es_get_stats, es_get_rules_stats, es_get_dashboard, es_get_sid_by_hosts, es_get_field_stats, \
+        es_get_timeline, es_get_metrics_timeline, es_get_health, es_get_indices, es_get_rules_per_category, es_get_alerts_count, \
+        es_get_latest_stats, es_get_ippair_alerts, es_get_ippair_network_alerts, es_get_alerts_tail, es_suri_log_tail
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet, SciriusModelViewSet
 from rules.es_graphs import es_get_sigs_list_hits, es_get_top_rules, ESError
@@ -1752,7 +1760,10 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"id":612,"action_type":"disable_category","date":"2018-05-14T16:13:24.711372+02:00","comment":null,"username":"scirius","description":"scirius has disabled category emerging-scada in ruleset SonicRulesetOther","user":1,"title":"Disable Category","description_raw":"{user} has disabled category {category} in ruleset {ruleset}","ua_objects":{"category":{"pk":147,"type":"Category","value":"emerging-scada"},"ruleset":{"pk":65,"type":"Ruleset","value":"SonicRulesetOther"}}}
+        {"id":612,"action_type":"disable_category","date":"2018-05-14T16:13:24.711372+02:00","comment":null,"username":"scirius",
+        "description":"scirius has disabled category emerging-scada in ruleset SonicRulesetOther","user":1,"title":"Disable Category",
+        "description_raw":"{user} has disabled category {category} in ruleset {ruleset}","ua_objects":{"category":{"pk":147,"type":"Category","value":"emerging-scada"},
+        "ruleset":{"pk":65,"type":"Ruleset","value":"SonicRulesetOther"}}}
 
     Ordering by username ASC:\n
         curl -k "https://x.x.x.x/rest/rules/history/?ordering=username" -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
@@ -1848,6 +1859,555 @@ class ChangelogViewSet(viewsets.ReadOnlyModelViewSet):
     filter_fields = ('source', 'version')
     ordering = ('-pk',)
     ordering_fields = ('pk', 'source', 'version',)
+
+
+class ESDashboardViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show dashboard :\n
+        curl -k https://x.x.x.x/rest/rules/es/dashboard/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"stats":{"SN-FILE-Transactions":"SN FILE-Transactions","SN-VLAN":"SN VLAN","SN-OVERVIEW":"SN OVERVIEW","SN-SMTP":"SN SMTP","SN-HTTP":"SN HTTP","SN-ALERTS":"SN ALERTS","SN-TLS":"SN TLS","SN-IDS":"SN IDS","SN-STATS":"SN STATS","SN-FLOW":"SN FLOW","SN-SSH":"SN SSH","SN-DNS":"SN DNS","SN-ALL":"SN ALL"}}
+
+    =============================================================================================================================================================
+    """
+    def get(self, request, format=None):
+        return Response({'stats': es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)})
+
+
+class ESRulesViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+
+    Show rules stats:\n
+        curl -k https://x.x.x.x/rest/rules/es/rules/\?host\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+        curl -k https://x.x.x.x/rest/rules/es/rules/\?host\=ProbeMain\&from_date\=1537264545477\&filter=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"rules":[{"key":2522690,"doc_count":5},{"key":2100498,"doc_count":4},{"key":2523038,"doc_count":3},{"key":2013028,"doc_count":2},{"key":2522628,"doc_count":1},{"key":2522916,"doc_count":1}]}
+
+    =============================================================================================================================================================
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        host = request.GET.get('host', None)
+        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        qfilter = request.GET.get('filter', None)
+
+        errors = {}
+        if host is None:
+            errors['host'] = ['This field is required.']
+
+        if len(errors) > 0:
+            raise serializers.ValidationError(errors)
+
+        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        return Response({'rules': es_get_rules_stats(request, host, from_date=from_date, qfilter=qfilter, dict_format=True)})
+
+
+class ESRuleViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show a rule stats:\n
+        curl -k https://x.x.x.x/rest/rules/es/rule/\?sid\=2522628\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"rule":[{"key":"ProbeMain","doc_count":1}]}
+
+    =============================================================================================================================================================
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        sid = request.GET.get('sid', None)
+        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+
+        errors = {}
+        if sid is None:
+            errors['sid'] = ['This field is required.']
+
+        if len(errors) > 0:
+            raise serializers.ValidationError(errors)
+
+        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        return Response({'rule': es_get_sid_by_hosts(request, sid, from_date=from_date, dict_format=True)})
+
+
+class ESFilterIPViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+    field: rule_src, rule_dest, rule_source, rule_target
+           rule_src / rule_dest: src & dest IP of the packet that triggered the alert
+           rule_source / rule_target: IP of the source & target of the attack
+
+    Show a rule stats:\n
+        curl -k https://x.x.x.x/rest/rules/es/filter_ip/\?field\=rule_src\&sid\=2522628\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"hosts":[{"key":"212.47.239.163","doc_count":1}]}
+
+    Show a rule stats:\n
+        curl -k https://x.x.x.x/rest/rules/es/filter_ip/\?field\=rule_dest\&sid\=2522628\&from_date\=1537264545477 -H 'Authorization: Token dba92b07973ba061f9a0d48a1afd98d1e7b717d6' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"hosts":[{"key":"192.168.0.14","doc_count":1}]}
+
+    =============================================================================================================================================================
+    """
+
+    RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip'}
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        errors = {}
+        field = request.GET.get('field', None)
+        sid = request.GET.get('sid', None)
+        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+
+        if sid is None:
+            errors['sid'] = ['This field is required.']
+
+        if field is None:
+            errors['field'] = ['This field is required.']
+
+        if len(errors) > 0:
+            raise serializers.ValidationError(errors)
+
+        if field not in self.RULE_FIELDS_MAPPING.keys():
+            raise exceptions.NotFound(detail='"%s" is not a valid field' % field)
+
+        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+
+        filter_ip = self.RULE_FIELDS_MAPPING[field]
+        hosts = es_get_field_stats(request,
+                                   filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
+                                   '*',
+                                   from_date=from_date,
+                                   count=10,
+                                   qfilter='alert.signature_id:%s' % sid,
+                                   dict_format=True)
+
+        return Response({'hosts': hosts})
+
+
+class ESTimelineViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+
+    Show timeline:\n
+        curl -k https://x.x.x.x/rest/rules/es/timeline/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/es/timeline/\?hosts\=ProbeMain\&from_date\=1537264545477\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+       HTTP/1.1 200 OK
+       {"hosts":{"ProbeMain":{"entries":[{"count":2,"time":1530620640000},{"count":17,"time":1530698400000},{"count":1,"time":1530750240000}]},"from_date":1528184544572,"interval":25920000}} 
+
+    =============================================================================================================================================================
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        chosts = request.GET.get('hosts', None)
+        qfilter = request.GET.get('filter', None)
+        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+
+        if chosts:
+            chosts = chosts.split(',')
+
+        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        return Response({'hosts': es_get_timeline(from_date=from_date, hosts=chosts, qfilter=qfilter)})
+
+
+class ESLogstashEveViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+
+    Logstash Events examples:\n
+        1. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.cpu.user.pct\&from_date\=1537264545477\&hosts\=ProbeMain\&filter\=system.filesystem.mount_point.raw:/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        2. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.memory.actual.used.pct\&from_date\=1537264545477\&hosts\=ProbeMain -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        3. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.network.in.bytes\&from_date\=1537264545477\&hosts\=ProbeMain\&filter\=system.network.name:eth0 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        4. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.filesystem.used.pct\&from_date\=1537264545477\&hosts\=ProbeMain\&filter\=system.filesystem.mount_point.raw:/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        5. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.filesystem.used.pct\&from_date\=1537264545477\&hosts\=ProbeMain\&filter\=system.filesystem.mount_point.raw:/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        1. {"logstash_eve":{"from_date":1528189628098,"interval":25920000}}
+        2. {"logstash_eve":{"ProbeMain":{"entries":[{"mean":0.3259543928641156,"time":1530620640000},{"mean":null,"time":1530646560000},{"mean":0.1408457946136733,"time":1530672480000},{"mean":0.21490591046354307,"time":1530698400000},{"mean":null,"time":1530724320000},
+           {"mean":0.3362637047414426,"time":1530750240000},{"mean":0.3794413974849127,"time":1530776160000}]},"from_date":1528189751975,"interval":25920000}}
+        3. {"logstash_eve":{"ProbeMain":{"entries":[{"mean":279981525.3389121,"time":1530620640000},{"mean":null,"time":1530646560000},{"mean":150212918.69626167,"time":1530672480000},
+           {"mean":3426892519.905911,"time":1530698400000},{"mean":null,"time":1530724320000},{"mean":155888225.38518518,"time":1530750240000},{"mean":359010903.6592179,"time":1530776160000}]},"from_date":1528189528880,"interval":25920000}}
+        4. {"logstash_eve":{"from_date":1528189589850,"interval":25920000}}
+
+    =============================================================================================================================================================
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        chosts = request.GET.get('hosts', None)
+        value = request.GET.get('value', None)
+        qfilter = request.GET.get('filter', None)
+        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+
+        if chosts:
+            chosts = chosts.split(',')
+
+        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        return Response({'logstash_eve': es_get_metrics_timeline(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter)})
+
+
+class ESHealthViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show health:\n
+        curl -k https://x.x.x.x/rest/rules/es/health/ -H 'Authorization: Token dba92b07973ba061f9a0d48a1afd98d1e7b717d6' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        {"health":{"status":"green","number_of_nodes":1,"unassigned_shards":0,"number_of_pending_tasks":0,"number_of_in_flight_fetch":0,"timed_out":false,"active_primary_shards":90,"task_max_waiting_in_queue_millis":0,
+        "cluster_name":"elasticsearch","relocating_shards":0,"active_shards_percent_as_number":100.0,"active_shards":90,"initializing_shards":0,"number_of_data_nodes":1,"delayed_unassigned_shards":0}}
+
+    =============================================================================================================================================================
+    """
+
+    def get(self, request, format=None):
+        return Response({'health': es_get_health()})
+
+
+class ESStatsViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show stats:\n
+        curl -k https://x.x.x.x/rest/rules/es/stats/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        {"stats":{"status":"green","cluster_name":"elasticsearch","timestamp":1530781977351,"_nodes":{"successful":1,"failed":0,"total":1},
+        "indices":{"count":18,"completion":{"size_in_bytes":0},"fielddata":{"evictions":0,"memory_size_in_bytes":6800},"docs":{"count":94039,"deleted":0},
+        "segments":{"count":367,"max_unsafe_auto_id_timestamp":9223372036854775807,"term_vectors_memory_in_bytes":0,"version_map_memory_in_bytes":4283,
+        "norms_memory_in_bytes":12608,"stored_fields_memory_in_bytes":127544,"file_sizes":{},"doc_values_memory_in_bytes":1683116,"fixed_bit_set_memory_in_bytes":0,
+        "points_memory_in_bytes":42600,"terms_memory_in_bytes":6025236,"memory_in_bytes":7891104,"index_writer_memory_in_bytes":38890804},
+        "shards":{"replication":0.0,"total":90,"primaries":90,"index":{"replication":{"max":0.0,"avg":0.0,"min":0.0},"primaries":{"max":5,"avg":5.0,"min":5},
+        "shards":{"max":5,"avg":5.0,"min":5}}},"query_cache":{"miss_count":409,"total_count":2352,"evictions":0,"memory_size_in_bytes":62169,"hit_count":1943,
+        "cache_size":44,"cache_count":44},"store":{"size_in_bytes":90624330,"throttle_time_in_millis":0}},"nodes":{"count":{"master":1,"total":1,"data":1,
+        "coordinating_only":0,"ingest":1},"fs":{"free_in_bytes":1081936871424,"spins":"true","total_in_bytes":1082123276288,"available_in_bytes":1070925000704},
+        "versions":["5.6.9"],"process":{"open_file_descriptors":{"max":394,"avg":394,"min":394},"cpu":{"percent":0}},"network_types":{"transport_types":{"netty4":1},
+        "http_types":{"netty4":1}},"jvm":{"mem":{"heap_used_in_bytes":1564867136,"heap_max_in_bytes":3119906816},"threads":39,"max_uptime_in_millis":9822316,
+        "versions":[{"vm_name":"OpenJDK 64-Bit Server VM","count":1,"version":"1.8.0_171","vm_version":"25.171-b11","vm_vendor":"Oracle Corporation"}]},"plugins":[],
+        "os":{"mem":{"free_in_bytes":607629312,"free_percent":10,"used_in_bytes":5666541568,"total_in_bytes":6274170880,"used_percent":90},"allocated_processors":2,
+        "names":[{"count":1,"name":"Linux"}],"available_processors":2}}}}
+
+    =============================================================================================================================================================
+    """
+    def get(self, request, format=None):
+        return Response({'stats': es_get_stats()})
+
+
+class ESIndicesViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show indices:\n
+        curl -k https://x.x.x.x/rest/rules/es/indices/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        {"indices":[{"count":12512,"deleted":0,"name":"logstash-2018.07.03"},{"count":15712,"deleted":0,"name":"logstash-2018.07.05"},
+        {"count":56821,"deleted":0,"name":"logstash-2018.07.04"},{"count":17,"deleted":0,"name":"logstash-alert-2018.07.04"},
+        {"count":26,"deleted":0,"name":"logstash-alert-2018.07.05"},{"count":2,"deleted":0,"name":"logstash-alert-2018.07.03"},
+        {"count":258,"deleted":0,"name":".kibana"},{"count":13,"deleted":0,"name":"logstash-http-2018.07.05"},
+        {"count":124,"deleted":0,"name":"logstash-http-2018.07.04"},{"count":22,"deleted":0,"name":"logstash-fileinfo-2018.07.05"},
+        {"count":98,"deleted":0,"name":"logstash-fileinfo-2018.07.04"},{"count":25,"deleted":0,"name":"logstash-ssh-2018.07.04"},
+        {"count":60,"deleted":0,"name":"logstash-ssh-2018.07.05"},{"count":628,"deleted":0,"name":"logstash-ifacestats-2018.07.04"},
+        {"count":174,"deleted":0,"name":"logstash-ifacestats-2018.07.05"},{"count":6476,"deleted":0,"name":"logstash-dns-2018.07.04"},
+        {"count":1757,"deleted":0,"name":"logstash-tls-2018.07.04"},{"count":122,"deleted":0,"name":"logstash-ifacestats-2018.07.03"}]}
+
+    =============================================================================================================================================================
+    """
+
+    def get(self, request, format=None):
+        return Response({'indices': es_get_indices()})
+
+
+class ESRulesPerCategoryViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+
+    Show rules per category:\n
+        curl -k https://x.x.x.x/rest/rules/es/rules_per_category/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/es/rules_per_category/\?hosts\=ProbeMain\&from_date\=1537264545477\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"rule_per_category":{"children":[{"children":[{"msg":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 520","key":2523038,"doc_count":17},
+        {"msg":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 434","key":2522866,"doc_count":14},
+        {"msg":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 346","key":2522690,"doc_count":13},
+        {"msg":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 315","key":2522628,"doc_count":1},
+        {"msg":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 459","key":2522916,"doc_count":1}],
+        "key":"Misc Attack","doc_count":46},{"children":[{"msg":"GPL ATTACK_RESPONSE id check returned root","key":2100498,"doc_count":4}],
+        "key":"Potentially Bad Traffic","doc_count":4},{"children":[{"msg":"ET POLICY curl User-Agent Outbound","key":2013028,"doc_count":2}],
+        "key":"Attempted Information Leak","doc_count":2}],"key":"categories"}}
+
+    =============================================================================================================================================================
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        chosts = request.GET.get('hosts', None)
+        qfilter = request.GET.get('filter', None)
+        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+
+        if chosts is None:
+            raise serializers.ValidationError({'hosts': ['This field is required.']})
+        else:
+            chosts = chosts.split(',')
+
+        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        return Response({'rule_per_category': es_get_rules_per_category(from_date=from_date, hosts=chosts, qfilter=qfilter)})
+
+
+class ESAlertsCountViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+
+    Show alerts count:\n
+        1. curl -k https://x.x.x.x/rest/rules/es/alerts_count/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        2. curl -k https://x.x.x.x/rest/rules/es/alerts_count/\?hosts\=ProbeMain\&from_date\=1537264545477&prev=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        3. curl -k https://x.x.x.x/rest/rules/es/alerts_count/\?hosts\=ProbeMain\&from_date\=1537264545477&prev=true\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        1. {"alerts_count":{"doc_count":18}}
+        2. {"alerts_count":{"prev_doc_count":25,"doc_count":17}}
+
+    =============================================================================================================================================================
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        chosts = request.GET.get('hosts', None)
+        qfilter = request.GET.get('filter', None)
+        prev = request.GET.get('prev', None)
+        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+
+        if chosts:
+            chosts = chosts.split(',')
+
+        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        prev = 1 if prev is not None and prev != 'false' else None
+
+        return Response({'alerts_count': es_get_alerts_count(from_date=from_date, hosts=chosts, qfilter=qfilter, prev=prev)})
+
+
+class ESLatestStatsViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+
+    Show alerts count:\n
+        curl -k https://192.168.0.17/rest/rules/es/latest_stats/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token dba92b07973ba061f9a0d48a1afd98d1e7b717d6' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"latest_stats":{"stats":{"ftp":{"memcap":0,"memcap_delta":0,"memuse":0,"memuse_delta":0},"uptime":52161,"detect":{"alert_delta":0,"engines":[{"rules_loaded":20843,"id":0,"rules_failed":0,
+        "last_reload":"2018-07-11T09:45:33.630288+0200"}],"alert":65},"http":{"memcap":0,"memcap_delta":0,"memuse":0,"memuse_delta":0},
+        "flow_mgr":{"rows_checked_delta":0,"rows_skipped":65534,"closed_pruned_delta":0,"rows_maxlen_delta":1,"flows_notimeout":2,"rows_empty_delta":-1,"flows_removed":0,"est_pruned":6375,
+        "flows_removed_delta":0,"flows_timeout_inuse":0,"est_pruned_delta":0,"rows_busy":0,"flows_timeout":0,"new_pruned":18776,"bypassed_pruned_delta":0,"flows_checked_delta":2,"rows_skipped_delta":-1,
+        "rows_maxlen":1,"new_pruned_delta":2,"rows_empty":0,"rows_busy_delta":0,"flows_notimeout_delta":2,"closed_pruned":3909,"flows_timeout_inuse_delta":0,"bypassed_pruned":0,"flows_timeout_delta":0,
+        "flows_checked":2,"rows_checked":65536},"capture":{"kernel_drops_delta":0,"kernel_packets":4705396,"kernel_drops":2519,"kernel_packets_delta":517},"defrag":{"max_frag_hits":0,
+        "ipv4":{"timeouts":0,"reassembled":50,"fragments_delta":0,"reassembled_delta":0,"fragments":100,"timeouts_delta":0},"max_frag_hits_delta":0,"ipv6":{"timeouts":0,"reassembled":0,"fragments_delta":0,
+        "reassembled_delta":0,"fragments":0,"timeouts_delta":0}},"flow":{"tcp_delta":1,"emerg_mode_entered_delta":0,"memuse":7323352,"icmpv4_delta":0,"pkts_bypassed_delta":0,"tcp_reuse":0,
+        "emerg_mode_over":0,"emerg_mode_entered":0,"udp_delta":0,"spare_delta":0,"udp":9596,"memcap":0,"icmpv6_delta":0,"tcp_reuse_delta":0,"tcp":19447,"pkts_bypassed":0,"memcap_delta":0,"icmpv6":46,
+        "icmpv4":0,"memuse_delta":312,"spare":10000,"emerg_mode_over_delta":0},"tcp":{"overlap_delta":0,
+        ........
+
+    =============================================================================================================================================================
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        chosts = request.GET.get('hosts', None)
+        qfilter = request.GET.get('filter', None)
+        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+
+        if chosts:
+            chosts = chosts.split(',')
+
+        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        return Response({'latest_stats': es_get_latest_stats(from_date=from_date, hosts=chosts, qfilter=qfilter)})
+
+
+class ESIPPairAlertsViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+
+    Show ip pair alerts:\n
+        curl -k https://x.x.x.x/rest/rules/es/ip_pair_alerts/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/es/ip_pair_alerts/\?hosts\=ProbeMain\&from_date\=1537264545477\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"ippair_alerts":{"nodes":[{"group":4,"id":"212.47.239.163"},{"group":4,"id":"192.168.0.14"},{"group":4,"id":"37.187.17.67"},
+        {"group":4,"id":"192.168.0.25"},{"group":4,"id":"62.210.244.146"}],"links":[{"source":0,"alerts":[{"key":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 346","doc_count":4}],
+        "target":1,"value":4.772588722239782},{"source":2,"alerts":[{"key":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 434","doc_count":4}],
+        "target":3,"value":4.772588722239782},{"source":4,"alerts":[{"key":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 520","doc_count":4}],
+        "target":3,"value":4.772588722239782}]}}
+
+    =============================================================================================================================================================
+
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        chosts = request.GET.get('hosts', None)
+        qfilter = request.GET.get('filter', None)
+        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+
+        if chosts:
+            chosts = chosts.split(',')
+
+        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        return Response({'ippair_alerts': es_get_ippair_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter)})
+
+
+class ESIPPairNetworkAlertsViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+
+    Show ip pair network alerts:\n
+        curl -k https://x.x.x.x/rest/rules/es/ip_pair_network_alerts/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"ippair_network_alerts":{"nodes":[],"links":[]}}
+
+    =============================================================================================================================================================
+
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        chosts = request.GET.get('hosts', None)
+        qfilter = request.GET.get('filter', None)
+        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+
+        if chosts:
+            chosts = chosts.split(',')
+
+        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        return Response({'ippair_network_alerts': es_get_ippair_network_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter)})
+
+
+class ESAlertsTailViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+
+    Show alert tail:\n
+        curl -k https://x.x.x.x/rest/rules/es/alerts_tail/\?from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"alerts_tail":[]}
+
+    =============================================================================================================================================================
+
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        qfilter = request.GET.get('filter', None)
+        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        return Response({'alerts_tail': es_get_alerts_tail(from_date=from_date, qfilter=qfilter)})
+
+
+class ESSuriLogTailViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show alert tail:\n
+        curl -k https://192.168.0.17/rest/rules/es/suri_log_tail/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"suri_log_tail":[
+        {"sort":[1530779257071],"_type":"log","_source":{"engine":{"message":"This is Suricata version 4.1.0-dev (rev 2973ecd)"},"type":"log","event_type":"engine","timestamp":"2018-07-05T10:27:37.071716+0200","tags":["beats_input_codec_json_applied"],"beat":{"hostname":"ProbeMain","name":"ProbeMain","version":"5.6.9"},"input_type":"log","@timestamp":"2018-07-05T08:27:37.071Z","source":"/var/log/suricata/suricata.json","host":"ProbeMain","offset":56988,"@version":"1"},"_score":null,"_index":"logstash-2018.07.05","_id":"AWRpIvbZiu8Nj3hTWm5b"},
+        {"sort":[1530779257229],"_type":"log","_source":{"engine":{"message":"CPUs/cores online: 1"},"type":"log","event_type":"engine","timestamp":"2018-07-05T10:27:37.229985+0200","tags":["beats_input_codec_json_applied"],"beat":{"hostname":"ProbeMain","name":"ProbeMain","version":"5.6.9"},"input_type":"log","@timestamp":"2018-07-05T08:27:37.229Z","source":"/var/log/suricata/suricata.json","host":"ProbeMain","offset":57103,"@version":"1"},"_score":null,"_index":"logstash-2018.07.05","_id":"AWRpIvbZiu8Nj3hTWm5c"},
+        {"sort":[1530779257902],"_type":"log","_source":{"engine":{"message":"eve-log output device (regular) initialized: eve-alert.json"},"type":"log","event_type":"engine","timestamp":"2018-07-05T10:27:37.902961+0200","tags":["beats_input_codec_json_applied"],"beat":{"hostname":"ProbeMain","name":"ProbeMain","version":"5.6.9"},"input_type":"log","@timestamp":"2018-07-05T08:27:37.902Z","source":"/var/log/suricata/suricata.json","host":"ProbeMain","offset":57748,"@version":"1"},"_score":null,"_index":"logstash-2018.07.05","_id":"AWRpIvbZiu8Nj3hTWm5g"},
+        {"sort":[1530779257902],"_type":"log","_source":{"engine":{"message":"eve-log output device (regular) initialized: eve.json"},"type":"log","event_type":"engine","timestamp":"2018-07-05T10:27:37.902882+0200","tags":["beats_input_codec_json_applied"],"beat":{"hostname":"ProbeMain","name":"ProbeMain","version":"5.6.9"},"input_type":"log","@timestamp":"2018-07-05T08:27:37.902Z","source":"/var/log/suricata/suricata.json","host":"ProbeMain","offset":57376,"@version":"1"},"_score":null,"_index":"logstash-2018.07.05","_id":"AWRpIvbZiu8Nj3hTWm5e"},
+        ....
+        ]
+
+    =============================================================================================================================================================
+
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        chosts = request.GET.get('hosts', None)
+        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+
+        if chosts:
+            chosts = chosts.split(',')
+
+        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        return Response({'suri_log_tail': es_suri_log_tail(from_date=from_date, hosts=chosts)})
+
+
+class ESDeleteLogsViewSet(APIView):
+    """
+    =============================================================================================================================================================
+    ==== POST ====\n
+    Erase all elasticsearch logs:\n
+        curl -k https://x.x.x.x/rest/rules/es/delete_all_logs/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"appliance_pk": <pk_appliance>}'
+
+    Return:\n
+        HTTP/1.1 204 No Content
+        {"delete_es_logs":"ok"}
+
+    =============================================================================================================================================================
+    """
+
+    def post(self, request, format=None):
+        es_data = ESData()
+        msg = None
+
+        try:
+            es_data.es_clear()
+        except ConnectionError as e:
+            msg = 'Could not connect to Elasticsearch'
+        except Exception as e:
+            msg = 'Clearing failed: %s' % e
+
+        if msg is not None:
+            raise serializers.ValidationError({'delete_es_logs': [msg]})
+
+        return Response({'delete_es_logs': 'ok'})
 
 
 class SystemSettingsSerializer(serializers.ModelSerializer):
@@ -1947,6 +2507,25 @@ def get_custom_urls():
 
     url_ = url(r'rules/hunt-filter/$', HuntFilterAPIView.as_view(), name='hunt_filter')
     urls.append(url_)
+
+    urls.append(url(r'rules/es/dashboard/$', ESDashboardViewSet.as_view(), name='es_dashboard'))
+    urls.append(url(r'rules/es/rules/$', ESRulesViewSet.as_view(), name='es_rules'))
+    urls.append(url(r'rules/es/rule/$', ESRuleViewSet.as_view(), name='es_rule'))
+    urls.append(url(r'rules/es/filter_ip/$', ESFilterIPViewSet.as_view(), name='es_filter_ip'))
+    urls.append(url(r'rules/es/timeline/$', ESTimelineViewSet.as_view(), name='es_timeline'))
+    urls.append(url(r'rules/es/logstash_eve/$', ESLogstashEveViewSet.as_view(), name='es_logstash_eve'))
+    urls.append(url(r'rules/es/health/$', ESHealthViewSet.as_view(), name='es_health'))
+    urls.append(url(r'rules/es/stats/$', ESStatsViewSet.as_view(), name='es_stats'))
+    urls.append(url(r'rules/es/indices/$', ESIndicesViewSet.as_view(), name='es_indices'))
+    urls.append(url(r'rules/es/rules_per_category/$', ESRulesPerCategoryViewSet.as_view(), name='es_rules_per_category'))
+    urls.append(url(r'rules/es/alerts_count/$', ESAlertsCountViewSet.as_view(), name='es_alerts_count'))
+    urls.append(url(r'rules/es/latest_stats/$', ESLatestStatsViewSet.as_view(), name='es_latest_stats'))
+    urls.append(url(r'rules/es/ip_pair_alerts/$', ESIPPairAlertsViewSet.as_view(), name='es_ip_pair_alerts'))
+    urls.append(url(r'rules/es/ip_pair_network_alerts/$', ESIPPairNetworkAlertsViewSet.as_view(), name='es_ip_pair_network_alerts'))
+    urls.append(url(r'rules/es/alerts_tail/$', ESAlertsTailViewSet.as_view(), name='es_alerts_tail'))
+    urls.append(url(r'rules/es/suri_log_tail/$', ESSuriLogTailViewSet.as_view(), name='es_suri_log_tail'))
+    urls.append(url(r'rules/es/delete_logs/$', ESDeleteLogsViewSet.as_view(), name='es_delete_logs'))
+
     return urls
 
 
