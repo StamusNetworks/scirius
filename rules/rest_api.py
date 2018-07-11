@@ -340,11 +340,12 @@ class RuleChangeSerializer(serializers.Serializer):
 
 
 class RuleSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
 
     class Meta:
         model = Rule
-        fields = ('pk', 'sid', 'category', 'msg', 'state', 'state_in_source', 'rev', 'content', \
-                'imported_date', 'updated_date')
+        fields = ('pk', 'sid', 'category', 'msg', 'state', 'state_in_source', 'rev', 'content',
+                  'imported_date', 'updated_date')
 
     def to_representation(self, instance):
         data = super(RuleSerializer, self).to_representation(instance)
