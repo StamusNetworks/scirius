@@ -336,14 +336,15 @@ class UserAction(models.Model):
 
             # ==== Coner cases
             # transformation is str type
-            if action.action_key == 'transformation':
+            # or workaround for UserAction which can contains no instance but str (ex: create a source without a ruleset)
+            if action.action_key == 'transformation' or (action.action_key == 'ruleset' and action.action_value == 'No Ruleset'):
                 continue
 
-            ct = ContentType.objects.get(model=action.action_key)
+            ct = action.content_type
             klass = ct.model_class()
 
             if hasattr(klass, 'get_icon'):
-                lb = klass.__name__
+                lb = action.action_value
 
                 icon = klass.get_icon()
                 instances = klass.objects.filter(pk=action.object_id).all()
@@ -354,8 +355,6 @@ class UserAction(models.Model):
 
                     if isinstance(instances[0], Rule):
                         lb = instances[0].pk
-                    else:
-                        lb = instances[0].name
 
                 icons.append((icon, lb))
 
