@@ -568,7 +568,7 @@ RULES_PER_CATEGORY = """
               }
             },
             { "query_string": {
-              "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+              "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
               "analyze_wildcard": true
               }
             }
@@ -626,7 +626,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
               }
             },
             { "query_string": {
-              "query": "event_type:alert AND {{ hostname }}:{{ hosts }} {{ query_filter|safe }}",
+              "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
               "analyze_wildcard": true
               }
             }
@@ -651,7 +651,7 @@ ALERTS_COUNT_PER_HOST = """
             }
             ,{
         "query_string": {
-          "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
           "analyze_wildcard": true
         }
       }
@@ -679,7 +679,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
             }
             ,{
         "query_string": {
-          "query": "event_type:alert AND {{ hostname }}:{{ hosts }} {{ query_filter|safe }}",
+          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
           "analyze_wildcard": true
         }
       }
@@ -722,7 +722,7 @@ ALERTS_TREND_PER_HOST = """
             }
             ,{
         "query_string": {
-          "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
           "analyze_wildcard": true
         }
       }
@@ -764,7 +764,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
             }
             ,{
         "query_string": {
-          "query": "event_type:alert AND {{ hostname }}:{{ hosts }} {{ query_filter|safe }}",
+          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
           "analyze_wildcard": true
         }
       }
@@ -797,7 +797,7 @@ LATEST_STATS_ENTRY = """
             }
         ,{
             "query_string": {
-              "query": "event_type:stats AND {{ hostname }}.{{ keyword }}:{{ hosts }} {{ query_filter|safe }}",
+              "query": "event_type:stats AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
               "analyze_wildcard": true
             }
         }
@@ -831,7 +831,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
             }
         ,{
             "query_string": {
-              "query": "event_type:stats AND {{ hostname }}:{{ hosts }} {{ query_filter|safe }}",
+              "query": "event_type:stats AND ({% for host in hosts %}{{ hostname }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
               "analyze_wildcard": true
             }
         }
@@ -1706,7 +1706,7 @@ def compact_tree(tree):
     return cdata
 
 def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
-    data = render_template(RULES_PER_CATEGORY, {'from_date': from_date, 'hosts': hosts[0]}, qfilter = qfilter)
+    data = render_template(RULES_PER_CATEGORY, {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
@@ -1768,7 +1768,7 @@ def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
         templ = ALERTS_TREND_PER_HOST
     else:
         templ = ALERTS_COUNT_PER_HOST
-    context = {'from_date': from_date, 'hosts': hosts[0]}
+    context = {'from_date': from_date, 'hosts': hosts}
     if prev:
         # compute delta with now and from_date
         from_datetime = datetime.fromtimestamp(int(from_date)/1000)
@@ -1798,7 +1798,7 @@ def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
         return {"doc_count": data["hits"]["total"] };
 
 def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
-    data = render_template(LATEST_STATS_ENTRY, {'from_date': from_date, 'hosts': hosts[0]})
+    data = render_template(LATEST_STATS_ENTRY, {'from_date': from_date, 'hosts': hosts})
     es_url = get_es_url(from_date, data = 'stats')
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
