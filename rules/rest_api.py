@@ -6,6 +6,7 @@ from django.utils.html import escape
 from django.db.models import Q
 from django.core.exceptions import SuspiciousOperation, ValidationError
 
+from rest_framework.validators import UniqueValidator
 from rest_framework import serializers, viewsets, exceptions, mixins
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
@@ -51,7 +52,7 @@ class CommentSerializer(serializers.Serializer):
 
 
 class CopyRulesetSerializer(serializers.Serializer):
-    name = serializers.CharField(required=True, allow_blank=False)
+    name = serializers.CharField(required=True, allow_blank=False, validators=[UniqueValidator(queryset=Ruleset.objects.all())])
 
 
 class RulesetSerializer(serializers.ModelSerializer):
@@ -254,6 +255,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
         copy_serializer.is_valid(raise_exception=True)
 
         ruleset.copy(copy_serializer.validated_data['name'])
+
         UserAction.create(
                 action_type='copy_ruleset',
                 comment=comment,
