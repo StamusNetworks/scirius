@@ -1806,9 +1806,7 @@ class Rule(models.Model, Transformable, Cache):
         return "noalert" not in self.content
 
     def can_filestore(self):
-        if " http " in self.content or " smtp " in self.content:
-            return True
-        return False
+        return self.content.split(' ')[1] in ('http', 'smtp', 'smb', 'nfs')
 
     def can_lateral(self, value):
         content = self.content.encode('utf8')
