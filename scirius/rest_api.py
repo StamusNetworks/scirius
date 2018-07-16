@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.conf import settings
 from rest_framework import serializers, viewsets
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import DefaultRouter, Route
 
 from utils import get_middleware_module
 from rules.rest_api import router as rules_router, get_custom_urls
@@ -34,6 +34,12 @@ class SciriusRouter(DefaultRouter):
     def get_urls(self):
         urls = super(SciriusRouter, self).get_urls()
         urls += get_custom_urls()
+
+        try:
+            urls += get_middleware_module('rest_api').get_custom_urls()
+        except AttributeError:
+            pass
+
         return urls
 
 

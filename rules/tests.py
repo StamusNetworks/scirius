@@ -23,7 +23,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
-from rest_framework import status
+from rest_framework import status, mixins
 from rest_framework.test import APITestCase
 
 from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, RulesetTransformation, UserAction, \
@@ -863,7 +863,7 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
         # Ordering must be set to prevent:
         # /usr/share/python/scirius-pro/local/lib/python2.7/site-packages/rest_framework/pagination.py:208: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'rules.models.RuleTransformation'> QuerySet
         for url, viewset, view_name in self.router.registry:
-            if viewset().get_queryset().ordered:
+            if viewset().get_queryset().ordered or not issubclass(viewset, mixins.ListModelMixin):
                 continue
             ERR = 'Viewset "%s" must set an "ordering" attribute or have an ordered queryset' % viewset.__name__
             self.assertTrue(hasattr(viewset, 'ordering'), ERR)
@@ -871,7 +871,8 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
 
     def test_002_list(self):
         for url, viewset, view_name in self.router.registry:
-            self.http_get(reverse(view_name + '-list'))
+            if issubclass(viewset, mixins.ListModelMixin):
+                self.http_get(reverse(view_name + '-list'))
 
     def test_003_list_order(self):
         for url, viewset, view_name in self.router.registry:
@@ -896,7 +897,8 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
 
     def test_006_options(self):
         for url, viewset, view_name in self.router.registry:
-            self.http_options(reverse(view_name + '-list'))
+            if issubclass(viewset, mixins.ListModelMixin):
+                self.http_options(reverse(view_name + '-list'))
 
     def test_007_documentation(self):
         for url, viewset, view_name in self.router.registry:
