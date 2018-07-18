@@ -541,30 +541,28 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":2404150,"sid":2404150,"category":27,"msg":"ET CNC Zeus Tracker Reported CnC Server group 1","state":true,"state_in_source":true,"rev":4983,"content":"alert ip $HOME_NET any -> [101.200.81.187,103.19.89.118,103.230.84.239,103.4.52.150,103.7.59.135] any (msg:\\"ET CNC Zeus Tracker Reported CnC Server group 1\\"; reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,zeustracker.abuse.ch; threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404150; rev:4983;)","imported_date":"2018-05-04T10:15:52.886070+02:00","updated_date":"2018-05-04T10:15:52.886070+02:00"}
+        {"pk":300000000,"sid":300000000,"category":{"pk":1403,"name":"Suricata Traffic ID ruleset Sigs","descr":"","created_date":"2018-07-18T13:54:05.045025+02:00","source":69},
+        "msg":"SURICATA TRAFFIC-ID: bing","state":true,"state_in_source":true,"rev":1,"content":"alert tls any any -> any any (msg:\"SURICATA TRAFFIC-ID: bing\"; tls_sni; content:\"bing.com\";
+        isdataat:!1,relative; flow:to_server,established; flowbits: set,traffic/id/bing; flowbits:set,traffic/label/search; noalert; sid:300000000; rev:1;)\n","imported_date":"2018-07-18T13:54:05.153618+02:00",
+        "updated_date":"2018-07-18T13:54:05.153618+02:00"}
 
     Show a rule and its none transformed content in html:\n
-        curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/\highlight=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/\?highlight=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":2404000,"sid":2404000,"category":28,"msg":"ET CNC Shadowserver Reported CnC Server IP group 1","state":true,"state_in_source":true,"rev":5032,
-        "content":"<div class=\"highlight\"><pre><span></span><span class=\"kt\">alert</span><span class=\"w\"> </span><span class=\"kc\">ip</span><span class=\"w\"> 
-        </span><span class=\"nv\">$HOME_NET</span><span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"o\">-&gt;</span>
-        <span class=\"w\"> </span><span class=\"err\">[</span><span class=\"nv\">109.196.130.50</span><span class=\"err\">,</span><span class=\"nv\">151.13.184.200</span>
-        <span class=\"err\">]</span><span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"err\">(</span><span class=\"k\">msg:</span>
-        <span class=\"s\">&quot;ET CNC Shadowserver Reported CnC Server IP group 1&quot;</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">reference:</span>
-        <span class=\"nv\">url</span><span class=\"p\">,</span><span class=\"na\">doc.emergingthreats.net/bin/view/Main/BotCC</span><span class=\"p\">;</span><span class=\"w\"> </span>
-        <span class=\"k\">reference:</span><span class=\"nv\">url</span><span class=\"p\">,</span><span class=\"na\">www.shadowserver.org</span><span class=\"p\">;</span>
-        <span class=\"w\"> </span><span class=\"k\">threshold:</span><span class=\"w\"> </span><span class=\"na\">type</span><span class=\"w\"> </span>
-        <span class=\"na\">limit</span><span class=\"err\">,</span><span class=\"w\"> </span><span class=\"na\">track</span><span class=\"w\"> </span><span class=\"na\">by_src</span>
-        <span class=\"err\">,</span><span class=\"w\"> </span><span class=\"na\">seconds</span><span class=\"w\"> </span><span class=\"m\">3600</span><span class=\"err\">,</span>
-        <span class=\"w\"> </span><span class=\"na\">count</span><span class=\"w\"> </span><span class=\"m\">1</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">flow</span>
-        <span class=\"err\">bits</span><span class=\"k\">:</span><span class=\"na\">set</span><span class=\"err\">,ET.Evil</span><span class=\"p\">;</span><span class=\"w\"> </span>
-        <span class=\"k\">flow</span><span class=\"err\">bits</span><span class=\"k\">:</span><span class=\"na\">set</span><span class=\"err\">,ET.BotccIP</span><span class=\"p\">;</span>
-        <span class=\"w\"> </span><span class=\"k\">classtype:</span><span class=\"err\">trojan-activity</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">sid:</span>
-        <span class=\"m\">2404000</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">rev:</span><span class=\"m\">5032</span><span class=\"p\">;</span>
-        <span class=\"err\">)</span><span class=\"w\"></span>\\n</pre></div>\\n","imported_date":"2018-06-21T15:39:05.121431+02:00","updated_date":"2018-06-21T15:39:05.121431+02:00"}
+        {"pk":300000000,"sid":300000000,"category":{"pk":1403,"name":"Suricata Traffic ID ruleset Sigs","descr":"","created_date":"2018-07-18T13:54:05.045025+02:00","source":69},
+        "msg":"SURICATA TRAFFIC-ID: bing","state":true,"state_in_source":true,"rev":1,"content":"<div class=\"highlight\"><pre><span></span><span class=\"kt\">alert</span><span class=\"w\"> </span>
+        <span class=\"err\">tls</span><span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"o\">-&gt;</span>
+        <span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"err\">(</span><span class=\"k\">msg:</span>
+        <span class=\"s\">&quot;SURICATA TRAFFIC-ID: bing&quot;</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"err\">tls_sni</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">content:</span><span class=\"s\">&quot;bing.com&quot;</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">isdataat:</span><span class=\"err\">!</span>
+        <span class=\"m\">1</span><span class=\"err\">,</span><span class=\"na\">relative</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">flow:</span><span class=\"na\">to_server</span>
+        <span class=\"err\">,</span><span class=\"na\">established</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">flow</span><span class=\"err\">bits</span><span class=\"k\">:</span>
+        <span class=\"w\"> </span><span class=\"na\">set</span><span class=\"err\">,traffic/</span><span class=\"k\">id</span><span class=\"err\">/bing</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">flow</span><span class=\"err\">bits</span><span class=\"k\">:</span><span class=\"na\">set</span><span class=\"err\">,traffic/label/search</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">noalert</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">sid:</span><span class=\"m\">300000000</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">rev:</span><span class=\"m\">1</span><span class=\"p\">;</span><span class=\"err\">)</span><span class=\"w\"></span>\n</pre></div>\n","imported_date":"2018-07-18T13:54:05.153618+02:00","updated_date":"2018-07-18T13:54:05.153618+02:00"}
 
     Show a transformed rule content:\n
         curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/content/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
