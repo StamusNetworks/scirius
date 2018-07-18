@@ -76,7 +76,12 @@ export const RuleSortFields = [
 
 export class RuleInList extends React.Component {
   render() {
-    var category = this.props.state.categories[this.props.data.category];
+    var category = this.props.data.category;
+    var source = this.props.state.sources[category.source];
+    var cat_tooltip = category.name;
+    if (source && source.name) {
+	    cat_tooltip = source.name + ": " + category.name;
+    }
     var kebab_config = { rule: this.props.data };
     return (
 	<ListViewItem
@@ -85,7 +90,7 @@ export class RuleInList extends React.Component {
   leftContent={<ListViewIcon name="envelope" />}
   additionalInfo={[<ListViewInfoItem key={"created-" + this.props.data.sid} ><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
                    <ListViewInfoItem key={"updated-" + this.props.data.sid}><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
-                   <ListViewInfoItem key={"category-" + this.props.data.sid}><p>Category: {category.name}</p></ListViewInfoItem>,
+                   <ListViewInfoItem key={"category-" + this.props.data.sid}><p  data-toggle="tooltip" title={cat_tooltip}>Category: {category.name}</p></ListViewInfoItem>,
                    <ListViewInfoItem key={"hits-" + this.props.data.sid}><Spinner loading={this.props.data.hits === undefined} size="xs"><p>Alerts <span className="badge">{this.props.data.hits}</span></p></Spinner></ListViewInfoItem>
   ]}
   heading={this.props.data.sid}
@@ -131,7 +136,12 @@ export class RuleInList extends React.Component {
 
 export class RuleCard extends React.Component {
   render() {
-    var category = this.props.state.categories[this.props.data.category];
+    var category = this.props.data.category;
+    var source = this.props.state.sources[category.source];
+    var cat_tooltip = category.name;
+    if (source && source.name) {
+	    cat_tooltip = source.name + ": " + category.name;
+    }
     var imported = undefined;
     if (!this.props.data.created) {
     	imported = this.props.data.imported_date.split("T")[0];
@@ -145,7 +155,7 @@ export class RuleCard extends React.Component {
        <div className="card-pf-body">
             <div className="container-fluid">
                <div className="row">
-                  <div className="col-md-5 truncate-overflow"  data-toggle="tooltip" title={category.name}>Cat: {category.name}</div>
+                  <div className="col-md-5 truncate-overflow"  data-toggle="tooltip" title={cat_tooltip}>Cat: {category.name}</div>
                   <div className="col-md-4">
                     {this.props.data.created &&
                   <p>Created: {this.props.data.created}</p>
@@ -671,7 +681,7 @@ export class RulesList extends HuntList {
     }
 
     this.state = {
-      rules: [], categories: [], rules_count: 0,
+      rules: [], sources: [], rules_count: 0,
       loading: true,
       refresh_data: false,
       view: 'rules_list',
@@ -758,17 +768,17 @@ export class RulesList extends HuntList {
      this.setState({refresh_data: true});
      axios.all([
           axios.get(config.API_URL + config.RULE_PATH + "?" + this.buildListUrlParams(rules_stat) + "&from_date=" + this.props.from_date + string_filters),
-          axios.get(config.API_URL + config.CATEGORY_PATH + "?page_size=100"),
+          axios.get(config.API_URL + config.SOURCE_PATH + "?page_size=100"),
 	  ])
-      .then(axios.spread((RuleRes, CatRes) => {
-	 var categories_array = CatRes.data['results'];
-	 var categories = {};
+      .then(axios.spread((RuleRes, SrcRes) => {
+	 var sources_array = SrcRes.data['results'];
+	 var sources = {};
 	 this.setState({net_error: undefined});
-	 for (var i = 0; i < categories_array.length; i++) {
-	     var cat = categories_array[i];
-	     categories[cat.pk] = cat;
+	 for (var i = 0; i < sources_array.length; i++) {
+	     var src = sources_array[i];
+	     sources[src.pk] = src;
 	 }
-         this.setState({ rules_count: RuleRes.data['count'], rules: RuleRes.data['results'], categories: categories, loading: false, refresh_data: false});
+         this.setState({ rules_count: RuleRes.data['count'], rules: RuleRes.data['results'], sources: sources, loading: false, refresh_data: false});
 	 if (!RuleRes.data.results[0].timeline_data) {
 	     this.fetchHitsStats(RuleRes.data['results']);
 	 } else {
