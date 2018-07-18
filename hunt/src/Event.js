@@ -221,6 +221,7 @@ class EventIPInfo extends React.Component {
 				if (item["@category"] === "resolver") {
 					resolvers.push(item);
 				}
+				return 1;
 			})
 		}
 		return(
