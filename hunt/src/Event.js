@@ -1,7 +1,6 @@
 import React from 'react';
 import axios from 'axios';
 import { Icon, Modal, Button, Row, Col } from 'patternfly-react';
-import { ONYPHE_API_KEY } from './config/Onyphe.js'
 
 export class EventField extends React.Component {
    render() {
@@ -200,7 +199,7 @@ class EventIPInfo extends React.Component {
 	displayIPInfo() {
 		this.setState({show_ip_info: true});
 		if (this.state.ipinfo === null) {
-			axios.get("https://www.onyphe.io/api/ip/" + this.props.value + "?apikey=" + ONYPHE_API_KEY).then(
+			axios.get("https://www.onyphe.io/api/ip/" + this.props.value + "?apikey=" + process.env.REACT_APP_ONYPHE_API_KEY).then(
 				res => {
 					console.log(res.data['results']);
 					this.setState({ipinfo: res.data['results']});	
@@ -290,7 +289,7 @@ class EventIPInfo extends React.Component {
 class EventValueInfo extends React.Component {
     render() {
 	if (['src_ip', 'dest_ip', 'alert.source.ip', 'alert.target.ip'].indexOf(this.props.field) > -1 ) {
-		if (ONYPHE_API_KEY) {
+		if (process.env.REACT_APP_ONYPHE_API_KEY) {
 			return(<EventIPInfo value={this.props.value} />);
 		} else {
 			return(
