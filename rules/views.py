@@ -1805,6 +1805,11 @@ def system_settings(request):
 
         if form_id is not None:
             context['form_id'] = form_id
+
+        UserAction.create(
+                action_type='system_settings',
+                user=request.user,
+        )
     context['global_settings'] = get_system_settings()
     return scirius_render(request, 'rules/system_settings.html', context)
 

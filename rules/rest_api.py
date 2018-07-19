@@ -1598,6 +1598,31 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
         self.check_object_permissions(self.request, obj)
         return obj
 
+    def _update_or_partial_update(self, request):
+        data = request.data.copy()
+        comment = data.pop('comment', None)
+
+        # because of rest website UI
+        if isinstance(comment, list):
+            comment = comment[0]
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        UserAction.create(
+                action_type='system_settings',
+                comment=comment_serializer.validated_data['comment'],
+                user=request.user
+        )
+
+    def update(self, request, *args, **kwargs):
+        self._update_or_partial_update(request)
+        return super(SystemSettingsViewSet, self).update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        self._update_or_partial_update(request)
+        return super(SystemSettingsViewSet, self).update(request, partial=True, *args, **kwargs)
+
 
 def get_custom_urls():
     urls = []

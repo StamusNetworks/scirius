@@ -222,6 +222,10 @@ class UserAction(models.Model):
                     'description': '{user} has created suricata',
                     'title': 'Create Suricata'
                 },
+               'system_settings': {
+                    'description': '{user} has edited system settings',
+                    'title': 'Edit System Settings'
+                },
                }
 
     action_type = models.CharField(max_length=1000, null=True)
