@@ -65,3 +65,7 @@
 .eventFilters a {
   text-decoration: none;
 }
+
+span.eventValue {
+  max-width: 10em;
+}

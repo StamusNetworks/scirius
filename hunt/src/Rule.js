@@ -311,28 +311,28 @@ export class RulePage extends React.Component {
                       }
                 </div>
                 <div className='row row-cards-pf'>
-                    <RuleStat title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
-                    <RuleStat title="Destinations" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
-                    <RuleStat title="Probes" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='host' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                    <HuntStat title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                    <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                    <HuntStat title="Probes" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='host' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
                 </div>
 		{this.state.extinfo.http &&
                 <div className='row row-cards-pf'>
-                    <RuleStat title="Hostname" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
-                    <RuleStat title="URL" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.url' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter}/>
-                    <RuleStat title="User agent" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                    <HuntStat title="Hostname" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                    <HuntStat title="URL" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.url' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter}/>
+                    <HuntStat title="User agent" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
                 </div>
 		}
 		{this.state.extinfo.dns &&
                 <div className='row row-cards-pf'>
-                    <RuleStat title="Name" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} />
-                    <RuleStat title="Type" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                    <HuntStat title="Name" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} />
+                    <HuntStat title="Type" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
                 </div>
 		}
 		{this.state.extinfo.tls &&
                 <div className='row row-cards-pf'>
-                    <RuleStat title="Subject DN" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} />
-                    <RuleStat title="SNI" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} />
-                    <RuleStat title="Fingerprint" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
+                    <HuntStat title="Subject DN" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} />
+                    <HuntStat title="SNI" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} />
+                    <HuntStat title="Fingerprint" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
                 </div>
 		}
             </div>
@@ -344,7 +344,7 @@ export class RulePage extends React.Component {
     }
 }
 
-class RuleStat extends React.Component {
+export class HuntStat extends React.Component {
     constructor(props) {
 	    super(props);
   	    this.state = {data: []};
@@ -361,8 +361,10 @@ class RuleStat extends React.Component {
 	  }
 
           axios.get(config.API_URL + config.ES_BASE_PATH +
-                    'field_stats&field=' + this.props.item + '&from_date=' + this.props.from_date +
-                    '&sid=' + this.props.rule.sid + qfilter)
+                    'field_stats&field=' + this.props.item +
+		    '&from_date=' + this.props.from_date +
+		    '&page_size=5' +
+                    qfilter)
              .then(res => {
                this.setState({ data: res.data });
             })
@@ -657,7 +659,7 @@ export function buildQFilter(filters) {
 	    continue;
 	}
 	else if (typeof filters[i].value === 'string') {
-            qfilter.push(f_prefix + filters[i].id + ':"' + filters[i].value + '"');
+            qfilter.push(f_prefix + filters[i].id + ':"' + encodeURIComponent(filters[i].value) + '"');
 	    continue;
 	}
 	else {

@@ -215,7 +215,8 @@ class HuntApp extends Component {
                   displayed_page = <RulesetPage ruleset={this.state.display.item} from_date={this.state.from_date}/>
                   break;
                case PAGE_STATE.dashboards:
-                  displayed_page = <HuntDashboard from_date={this.state.from_date}/>
+	          // FIXME remove or change updateRuleListState
+                  displayed_page = <HuntDashboard config={this.state.rules_list} filters={this.state.ids_filters} from_date={this.state.from_date} SwitchPage={this.switchPage} updateListState={this.updateRuleListState} updateFilterState={this.updateIDSFilterState} />
                   break;
                case PAGE_STATE.history:
                   displayed_page = <HistoryPage config={this.state.history} filters={this.state.history_filters} from_date={this.state.from_date} updateListState={this.updateHistoryListState} switchPage={this.switchPage} updateFilterState={this.updateHistoryFilterState}/>

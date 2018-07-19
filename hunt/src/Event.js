@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import { Icon, Modal, Button, Row, Col } from 'patternfly-react';
+import TextTruncate from 'react-text-truncate';
 
 export class EventField extends React.Component {
    render() {
@@ -308,12 +309,18 @@ export class EventValue extends React.Component {
     }
 
     render() {
+	var value_text = this.props.value;
+	var ellipsis = '';
+	if (this.props.value.length > 38) {
+		ellipsis = '...';
+		value_text = <span title={this.props.value}>{this.props.value.substring(0, 38) + ellipsis}</span>;
+	}
         return(
 	    <div
 	        onMouseOver={e => {this.setState({display_actions: true})}}
 	        onMouseOut={e => {this.setState({display_actions: false})}}
 	       >
-	       {this.props.value}
+		   {value_text}
                      <span className={this.state.display_actions ? 'eventFilters' : 'eventFiltersHidden'} >
 		         <EventValueInfo field={this.props.field} value={this.props.value} />
 		         <a onClick={ e => {this.props.addFilter(this.props.field, this.props.value, false)}}> <Icon type="fa" name="search-plus"/></a>
