@@ -81,6 +81,7 @@ export class HuntDashboard extends HuntList {
 		  </div>
 	          <div className="row row-cards-pf">
 		    <h4>Metadata information</h4>
+                    <HuntStat title="Signature severity" config={this.props.config} filters={this.props.filters}  item='alert.metadata.signature_severity' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
                     <HuntStat title="Attack target" config={this.props.config} filters={this.props.filters}  item='alert.metadata.attack_target' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
                     <HuntStat title="Affected product" config={this.props.config} filters={this.props.filters}  item='alert.metadata.affected_product' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
                     <HuntStat title="Malware family" config={this.props.config} filters={this.props.filters}  item='alert.metadata.malware_family' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
