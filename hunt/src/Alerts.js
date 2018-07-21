@@ -224,13 +224,13 @@ class AlertInList extends React.Component {
 	         { data.http.http_request_body_printable &&
 	         <Col sm={6}>
 		      <strong>HTTP request body</strong>
-		      <pre style={{"max-height": "12pc"}} >{data.http.http_request_body_printable}</pre>
+		      <pre style={{"maxHeight": "12pc"}} >{data.http.http_request_body_printable}</pre>
 		 </Col>
 	         }
 	         {data.http.http_response_body_printable &&
 	         <Col sm={6}>
 		      <strong>HTTP response body</strong>
-		      <pre style={{"max-height": "12pc"}} >{data.http.http_response_body_printable}</pre>
+		      <pre style={{"maxHeight": "12pc"}} >{data.http.http_response_body_printable}</pre>
 		 </Col>
 	         }
               </Row>
