@@ -245,9 +245,14 @@ def elasticsearch(request):
             count = request.GET.get('page_size', 10)
             if from_date != None:
                 if ajax:
-                    data = es_get_field_stats(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, '*', from_date = from_date,
-                        count = count,
-                        qfilter = qfilter)
+                    if filter_ip in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status']:
+                        data = es_get_field_stats(request, filter_ip, '*', from_date = from_date,
+                            count = count,
+                            qfilter = qfilter)
+                    else:
+                        data = es_get_field_stats(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, '*', from_date = from_date,
+                            count = count,
+                            qfilter = qfilter)
                     return HttpResponse(json.dumps(data), content_type="application/json")
                 else:
                     hosts = es_get_field_stats_as_table(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, RuleHostTable, '*', from_date = from_date,
