@@ -90,6 +90,7 @@ export class HuntDashboard extends HuntList {
                     <HuntStat title="Hostname" config={this.props.config} filters={this.props.filters}  item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
                     <HuntStat title="URL" config={this.props.config} filters={this.props.filters}  item='http.url' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}/>
                     <HuntStat title="User agent" config={this.props.config} filters={this.props.filters}  item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
+                    <HuntStat title="Status" config={this.props.config} filters={this.props.filters}  item='http.status' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
                 </div>
                 <div className='row row-cards-pf'>
 		    <h4>DNS information</h4>
