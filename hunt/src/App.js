@@ -248,7 +248,7 @@ class HuntApp extends Component {
             	      onClick={this.onAlertsClick}
 		     />
             	    <VerticalNav.Item
-            	      title="Dashboards"
+            	      title="Dashboard"
             	      iconClass="fa fa-tachometer"
             	      initialActive = { this.state.display.page === PAGE_STATE.dashboards }
             	      onClick={this.onDashboardClick}
