@@ -1,7 +1,6 @@
 import React from 'react';
 import axios from 'axios';
 import { Icon, Modal, Button, Row, Col } from 'patternfly-react';
-import TextTruncate from 'react-text-truncate';
 
 export class EventField extends React.Component {
    render() {
