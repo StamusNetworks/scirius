@@ -60,7 +60,7 @@ export class HuntDashboard extends HuntList {
     		  setViewType={this.setViewType}
     		  filterFields={RuleFilterFields}
     		  sort_config={RuleSortFields}
-    		  displayToggle={this.state.display_toggle}
+    		  displayToggle={undefined}
     		  actionsButtons={undefined}
                 />
 
