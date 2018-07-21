@@ -236,7 +236,7 @@ class HuntApp extends Component {
 					</VerticalNav.Masthead>
 		   <VerticalNav.Item
             	      title="Home"
-            	      iconClass="fa fa-home"
+            	      iconClass="glyphicon glyphicon-eye-open"
             	      initialActive = { [PAGE_STATE.rules_list, PAGE_STATE.rule, PAGE_STATE.source, PAGE_STATE.ruleset].indexOf(this.state.display.page) >= 0 }
             	      onClick={this.onHomeClick}
             	      className={null}
@@ -255,7 +255,7 @@ class HuntApp extends Component {
             	      className={null}
             	    >
             	    </VerticalNav.Item>
-            	    <VerticalNav.Item title="IDS rules" iconClass="glyphicon glyphicon-eye-open">
+            	    <VerticalNav.Item title="IDS rules" iconClass="pficon pficon-middleware">
             	        <VerticalNav.SecondaryItem title="Sources" >
                 	    {this.state.sources.map(function(source) {
 				    return(
@@ -285,7 +285,7 @@ class HuntApp extends Component {
 		       title="Setup"
 		       iconClass="glyphicon glyphicon-cog"
               	       initialActive = { this.state.display.page === PAGE_STATE.setup }
-		       href="/appliances"
+		       href="/rules"
 		     />
        		</VerticalNav>
        		<div className="container-fluid container-cards-pf container-pf-nav-pf-vertical nav-pf-persistent-secondary">

@@ -67,10 +67,10 @@ export class HuntDashboard extends HuntList {
 	       <div className="container-fluid container-cards-pf">
 	          <div className="row">
 		      <div className="col-md-10">
-		         <HuntTimeline from_date={this.props.from_date} />
+		         <HuntTimeline from_date={this.props.from_date} filters={this.props.filters} />
 	              </div>
 		      <div className="col-md-2">
-                         <HuntTrend from_date={this.props.from_date} />
+                         <HuntTrend from_date={this.props.from_date} filters={this.props.filters} />
 	              </div>
 		  </div>
  	          <div className="row row-cards-pf">
@@ -117,70 +117,6 @@ export class HuntDashboard extends HuntList {
     }
 }
 
-
-
-/*
-class HuntAlertsTop extends React.Component {
-  constructor(props) {
-    super(props);
-    var seen_sigs = localStorage.getItem("seen_sigs");
-    if (!seen_sigs) {
-	seen_sigs = [];
-    }
-    this.state = {
-      rules: [],
-      loading: true,
-      refresh_data: false,
-      net_error: undefined,
-      seen_sigs: seen_sigs
-    }
-    this.fetchData = this.fetchData.bind(this);
-  }
-
-   fetchData() {
-          axios.get(config.API_URL + config.RULE_PATH + "?ordering=-hits&page_size=6&from_date=" + this.props.from_date).then(
-		res => {
-         		this.setState({ rules: res.data['results'], loading: false, refresh_data: false});
-		}
-	  )
-    }
-
-  componentDidMount() {
-         this.fetchData();
-  }
-
-  componentDidUpdate(prevProps, prevState, snapshot) {
-     if (prevProps.from_date !==  this.props.from_date) {
-         this.fetchData();
-     }
-  }
-
-    render() {
-        return(
-	       <ListGroup>
-	       {this.state.rules.map( rule => {
-		       var new_badge = undefined;
-		       if (this.props.filter === "untagged") {
-			       if (this.state.seen_sigs.indexOf(rule.pk) === -1) {
-		       		new_badge = <Badge>new</Badge>;
-			       }
-		       }
-		       return(
-		         <ListGroupItem>
-			     <EventValue
-			     	key={rule.pk}
-				value={rule.msg}
-				right_info={<React.Fragment>{new_badge}<Badge>{rule.hits}</Badge></React.Fragment>}
-			     />
-			 </ListGroupItem>
-		       )
-	       })
-	       }
-	      </ListGroup>
-	    )
-    }
-}
-*/
 
 class HuntTrend extends React.Component {
     constructor(props) {
