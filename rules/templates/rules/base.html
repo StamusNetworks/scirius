@@ -70,6 +70,7 @@
 			<li><a id="home" href="{% url 'rules_index' %}">{% bootstrap_icon "home" %} Home</a></li>
 			<li><a id="source" href="{% url 'sources' %}">{% bootstrap_icon "cloud-download" %} Sources</a></li>
 			<li><a id="ruleset" href="{% url 'rulesets' %}">{% bootstrap_icon "th" %} Rulesets</a></li>
+			<li><a id="hunt" href="{% url 'hunt' %}"><span class="pficon pficon-rebalance"> Hunt</span></a></li>
 			{% if toplinks %}
 			{% for link in toplinks %}
 			<li><a id="{{ link.id }}" href="{{ link.url }}">{% bootstrap_icon link.icon %} {{ link.label }}</a></li>
