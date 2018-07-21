@@ -389,6 +389,7 @@ export class HuntStat extends React.Component {
     }
 
     render() {
+	    if (this.state.data.length) {
         return (
 	    <div className="col-xs-6 col-sm-4 col-md-3">
 	<div className="card-pf rule-card">
@@ -408,7 +409,11 @@ export class HuntStat extends React.Component {
 	</ListGroup>
 	</div>
         </div>
-	</div>);
+	</div>
+	);
+	    } else {
+		return null;
+	    }
     }
 }
 
