@@ -73,6 +73,13 @@ export class HuntDashboard extends HuntList {
                          <HuntTrend from_date={this.props.from_date} />
 	              </div>
 		  </div>
+ 	          <div className="row row-cards-pf">
+		    <h4>Basic information</h4>
+                    <HuntStat title="IP Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
+                    <HuntStat title="IP Destinations" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
+                    <HuntStat title="Signatures" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.signature' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
+                    <HuntStat title="Probes" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='host' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
+		  </div>
 	          <div className="row row-cards-pf">
 		    <h4>Organizational information</h4>
                     <HuntStat title="Sources" config={this.props.config} filters={this.props.filters}  item='alert.source.ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
@@ -110,14 +117,7 @@ export class HuntDashboard extends HuntList {
     }
 }
 
-/*
- 	          <div className="row row-cards-pf">
-                    <HuntStat title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
-                    <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
-                    <HuntStat title="Probes" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='host' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
-		  </div>
 
- */
 
 /*
 class HuntAlertsTop extends React.Component {
