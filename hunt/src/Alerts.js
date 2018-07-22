@@ -1,43 +1,12 @@
 import React from 'react';
 import { HuntList } from './Api.js';
-import { buildQFilter } from './Rule.js';
+import { buildQFilter, RuleFilterFields } from './Rule.js';
 import { HuntFilter } from './Filter.js';
 import { EventField } from './Event.js';
 import * as config from './config/Api.js';
 import ReactJson from 'react-json-view';
 import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
 import axios from 'axios';
-
-export const AlertFilterFields = [
-  {
-    id: 'msg',
-    title: 'Message',
-    placeholder: 'Filter by Message',
-    filterType: 'text'
-  },
-  {
-    id: 'search',
-    title: 'Content',
-    placeholder: 'Filter by Content',
-    filterType: 'text'
-  }, {
-    id: 'sid',
-    title: 'Signature ID',
-    placeholder: 'Filter by Signature',
-    filterType: 'text'
-  }, {
-    id: 'dns.query.rrname',
-    title: 'DNS RRName',
-    placeholder: 'Filter by DNS Query',
-    filterType: 'text'
-  }, {
-    id: 'sprobe',
-    title: 'Check Probe',
-    placeholder: 'Filter hits by Probe',
-    filterType: 'select',
-    filterValues: [{title: 'sn-probe-1', id:'sn-probe-1'}, {title: 'infra1', id:'infra1'}] 
-  }
-];
 
 export const AlertSortFields = [
   {
@@ -94,7 +63,7 @@ export class AlertsList extends HuntList {
 		  UpdateFilter={this.UpdateFilter}
 		  UpdateSort={this.UpdateSort}
 		  setViewType={this.setViewType}
-		  filterFields={AlertFilterFields}
+		  filterFields={RuleFilterFields}
 		  sort_config={AlertSortFields}
 		  displayToggle={this.state.display_toggle}
             />

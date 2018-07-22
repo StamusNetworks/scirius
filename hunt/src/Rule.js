@@ -18,6 +18,13 @@ axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 
 export const RuleFilterFields = [
   {
+    id: 'alert.tag',
+    title: 'Tag',
+    placeholder: 'Filter by Tag',
+    filterType: 'select',
+    filterValues: [{title: 'Untagged', id:'untagged'}, {title: 'Relevant', id:'relevant'}] 
+  },
+  {
     id: 'msg',
     title: 'Message',
     placeholder: 'Filter by Message',
@@ -659,6 +666,14 @@ export function buildQFilter(filters) {
             qfilter.push(f_prefix + 'alert.signature_id:' + filters[i].value);
 	    continue;
 	}
+	else if (filters[i].id === 'alert.tag') {
+	    if (filters[i].value.id === 'untagged') {
+		qfilter.push('NOT alert.tag:*');
+	    } else {
+            	qfilter.push(f_prefix + 'alert.tag:' + filters[i].value.id);
+	    }
+	    continue;
+	}
 	else if (filters[i].id === 'msg') {
             qfilter.push(f_prefix + 'alert.signature:' + filters[i].value);
 	    continue;
@@ -718,8 +733,8 @@ export class RulesList extends HuntList {
    buildFilter(filters) {
      var l_filters = {};
      for (var i=0; i < filters.length; i++) {
-	if (filters[i].id !== 'probe') {
-               if (filters[i].id in l_filters) {
+	if (filters[i].id !== 'probe' && filters[i].id !== 'alert.tag') {
+            if (filters[i].id in l_filters) {
                l_filters[filters[i].id] += "," + filters[i].value;
             } else {
                l_filters[filters[i].id] = filters[i].value;
