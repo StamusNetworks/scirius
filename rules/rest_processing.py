@@ -296,14 +296,14 @@ class RuleProcessingFilterViewSet(viewsets.ModelViewSet):
         HTTP/1.1 201 Created
         {"pk":2,"filter_defs":[{"key":"alert.signature_id","value":"2000005","operator":"equal"}],"action":"threshold","options":{"count":10,"seconds":60,"type":"both","track":"by_src"},"rulesets":[1],"index":0,"description":"","enabled":true}
 
-    List the rule filtering capabilities supported by the backend:
+    List the rule filtering capabilities supported by the backend:\n
         curl -k https://x.x.x.x/rest/rules/processing-filter/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"fields": ["alert.signature_id", "src_ip"]}'
 
     Return:\n
         HTTP/1.1 200 OK
         {"fields":["alert.signature_id","src_ip"],"operators":["equal","different","contains"],"actions":["suppress","threshold","tag","tagkeep"]}
 
-    List existing filter rules with a common key, before <index>:
+    List existing filter rules with a common key, before <index>:\n
         curl -k https://x.x.x.x/rest/rules/processing-filter/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"filter_defs": [{"key": "src_ip", "value": "127.0.0.1", "operator": "equal"}], "index": <index>}'
 
     Return:\n
@@ -311,7 +311,7 @@ class RuleProcessingFilterViewSet(viewsets.ModelViewSet):
         {"count":1,"next":null,"previous":null,"results":[{"pk":1,"filter_defs":[{"key":"src_ip","value":"192.168.0.1","operator":"equal"}],"action":"suppress","options":{},"rulesets":[1],"index":0,"description":"","enabled":true}]}
 
     ==== PATCH ====\n
-    Move the filter rule with <pk> before currently at <index>:
+    Move the filter rule with <pk> before currently at <index>:\n
         curl -k https://x.x.x.x/rest/rules/processing-filter/<pk>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X PATCH -d '{"index": <index>}'
 
     Return:\n
@@ -319,7 +319,7 @@ class RuleProcessingFilterViewSet(viewsets.ModelViewSet):
         {"pk":2,"filter_defs":[{"key":"alert.signature_id","value":"2000005","operator":"equal"}],"action":"threshold","options":{},"rulesets":[1],"index":1,"description":"","enabled":true}l
 
     ==== DELETE ====\n
-    Remove a filter rule:
+    Remove a filter rule:\n
         curl -k https://x.x.x.x/rest/rules/processing-filter/<pk>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X DELETE
 
     Return:\n
