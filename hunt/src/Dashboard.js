@@ -1,13 +1,14 @@
 import React from 'react';
 import axios from 'axios';
 //import { SciriusChart } from './Chart.js';
-import { DonutChart, LineChart } from 'patternfly-react';
+import { DonutChart } from 'patternfly-react';
 //import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 //import { EventValue } from './Event.js';
 import { HuntStat, RuleFilterFields, buildQFilter } from './Rule.js';
 import { HuntList } from './Api.js';
 import { HuntFilter } from './Filter.js';
 import * as config from './config/Api.js';
+import { SciriusChart } from './Chart.js';
 
 export const RuleSortFields = [
   {
@@ -194,6 +195,7 @@ class HuntTimeline extends React.Component {
 
     fetchData() {
         var string_filters = "";
+        var key = undefined;
         var qfilter = buildQFilter(this.props.filters);
         if (qfilter) {
    	        string_filters += '&filter=' +  qfilter;
@@ -201,8 +203,43 @@ class HuntTimeline extends React.Component {
 	    axios.get(config.API_URL + config.ES_BASE_PATH +
                     'timeline&hosts=*&from_date=' + this.props.from_date + string_filters)
              .then(res => {
-               this.setState({ data: res.data });
-            })
+            /* iterate on actual row: build x array, for each row build hash x -> value */
+            /* sort x array */
+            /* for key in x array, build each row, value if exists, 0 if not */
+         var prows = {x: []};
+	     for (key in res.data) {
+		     if (!(['interval', 'from_date'].includes(key))) {
+			    prows[key] = {};
+			    for (var entry in res.data[key].entries) {
+                    if (prows['x'].indexOf(res.data[key].entries[entry].time) === -1) {
+                        prows['x'].push(res.data[key].entries[entry].time);
+                    }
+                    prows[key][res.data[key].entries[entry].time] = res.data[key].entries[entry].count;
+			    }
+		     }
+	     }
+
+         var pprows = prows['x'].slice();
+         pprows.sort(function(a, b){return a - b});
+         var putindrows = [''];
+         putindrows[0] = pprows;
+         putindrows[0].unshift('x');
+         for (key in prows) {
+            if (key === 'x') {
+                    continue;
+            }
+            var pvalue = [key];
+            for (var i=1; i < putindrows[0].length; i++) {
+                if (putindrows[0][i] in prows[key]) {
+                    pvalue.push(prows[key][putindrows[0][i]]);
+                } else {
+                    pvalue.push(0);
+                }
+            }
+            putindrows.push(pvalue);
+         }
+         this.setState({data: {x: 'x', columns: putindrows }});
+       })
     }
 
     componentDidMount() {
@@ -216,29 +253,26 @@ class HuntTimeline extends React.Component {
     }
 
     render() {
-        var g_data = {
-	            columns: [
-	            ],
-		    type: 'line'
-	        };	
-	if (this.state.data) {
-	     for (var key in this.state.data) {
-		     if (!(['interval', 'from_date'].includes(key))) {
-			 var pdata = [key];
-			 for (var entry in this.state.data[key].entries) {
-                             pdata.push(this.state.data[key].entries[entry].count);
-			 }
-			 g_data.columns.push(pdata);
-		     }
-	     }
-	}
-
-	return(
+    return(
 	     <div>
 		   {this.state.data &&
-		      <LineChart
-		          data={g_data}
-		      />
+      <SciriusChart data={ this.state.data }
+               axis={{ x: { type: 'timeseries',
+                            localtime: true,
+                            min: this.props.from_date,
+                            max: Date.now(),
+                            tick: { fit: true, format: '%Y-%m-%d %H:%M'},
+                            show: true
+                     },
+                     y: { show: true }
+               }}
+               legend = {{
+                  show: true    
+               }}
+               size = {{ height: 190 }}
+               point = {{ show: false }}
+               from_date = {this.props.from_date}
+      />
 		   }
               </div>
         );
