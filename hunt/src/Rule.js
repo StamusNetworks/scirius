@@ -22,7 +22,7 @@ export const RuleFilterFields = [
     title: 'Tag',
     placeholder: 'Filter by Tag',
     filterType: 'select',
-    filterValues: [{title: 'Untagged', id:'untagged'}, {title: 'Relevant', id:'relevant'}] 
+    filterValues: [{title: 'Untagged', id:'untagged'}, {title: 'Relevant', id:'relevant'}, {title: 'Informational', id:'informational'}] 
   },
   {
     id: 'msg',
