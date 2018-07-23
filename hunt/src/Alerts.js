@@ -113,6 +113,16 @@ class AlertInList extends React.Component {
 	      <Row>
 	         <Col sm={4}>
 		        <dl className="dl-horizontal">
+			   <EventField field_name="Signature" field="alert.signature" value={data.alert.signature} addFilter={this.addFilter} />
+			   <EventField field_name="SID" field="alert.signature_id" value={data.alert.signature_id} addFilter={this.addFilter} />
+			   <EventField field_name="Category" field="alert.category" value={data.alert.category} addFilter={this.addFilter} />
+			   <EventField field_name="Severity" field="alert.severity" value={data.alert.severity} addFilter={this.addFilter} />
+			   <EventField field_name="Revision" field="alert.rev" value={data.alert.rev} addFilter={this.addFilter} />
+			</dl>
+		 </Col>
+
+	         <Col sm={4}>
+		        <dl className="dl-horizontal">
 			   <EventField field_name="Source IP" field="src_ip" value={data.src_ip} addFilter={this.addFilter} />
 			   <EventField field_name="Source port" field="src_port" value={data.src_port} addFilter={this.addFilter} />
 			   <EventField field_name="Destination IP" field="dest_ip" value={data.dest_ip} addFilter={this.addFilter} />
