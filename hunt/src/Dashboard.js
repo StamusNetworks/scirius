@@ -4,7 +4,7 @@ import axios from 'axios';
 import { DonutChart, LineChart } from 'patternfly-react';
 //import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 //import { EventValue } from './Event.js';
-import { HuntStat, RuleFilterFields } from './Rule.js';
+import { HuntStat, RuleFilterFields, buildQFilter } from './Rule.js';
 import { HuntList } from './Api.js';
 import { HuntFilter } from './Filter.js';
 import * as config from './config/Api.js';
@@ -126,8 +126,14 @@ class HuntTrend extends React.Component {
     }
 
     fetchData() {
+        var string_filters = "";
+        var qfilter = buildQFilter(this.props.filters);
+        if (qfilter) {
+   	        string_filters += '&filter=' +  qfilter;
+        }
 	    axios.get(config.API_URL + config.ES_BASE_PATH +
-                    'alerts_count&prev=1&hosts=*&from_date=' + this.props.from_date)
+                    'alerts_count&prev=1&hosts=*&from_date=' + this.props.from_date
+                    + string_filters)
              .then(res => {
                this.setState({ data: res.data });
             })
@@ -138,7 +144,7 @@ class HuntTrend extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-       if (prevProps.from_date !==  this.props.from_date) {
+       if ((prevProps.from_date !==  this.props.from_date) || (prevProps.filters !== this.props.filters)) {
            this.fetchData();
        }
     }
@@ -187,8 +193,13 @@ class HuntTimeline extends React.Component {
     }
 
     fetchData() {
+        var string_filters = "";
+        var qfilter = buildQFilter(this.props.filters);
+        if (qfilter) {
+   	        string_filters += '&filter=' +  qfilter;
+        }
 	    axios.get(config.API_URL + config.ES_BASE_PATH +
-                    'timeline&hosts=*&from_date=' + this.props.from_date)
+                    'timeline&hosts=*&from_date=' + this.props.from_date + string_filters)
              .then(res => {
                this.setState({ data: res.data });
             })
@@ -199,7 +210,7 @@ class HuntTimeline extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-       if (prevProps.from_date !==  this.props.from_date) {
+       if ((prevProps.from_date !==  this.props.from_date) || (prevProps.filters !== this.props.filters)) {
            this.fetchData();
        }
     }
