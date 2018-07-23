@@ -4,6 +4,7 @@ export const RULESET_PATH = "rest/rules/ruleset/";
 export const SOURCE_PATH = "rest/rules/source/";
 export const CATEGORY_PATH = "rest/rules/category/";
 export const HISTORY_PATH = "rest/rules/history/";
+export const PROCESSING_PATH = "rest/rules/processing-filter/";
 //export const URL = process.env.API_URL;
 export const API_LOGIN = "/auth";
 

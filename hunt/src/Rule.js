@@ -36,7 +36,7 @@ export const RuleFilterFields = [
     placeholder: 'Filter by Content',
     filterType: 'text'
   }, {
-    id: 'sid',
+    id: 'alert.signature_id',
     title: 'Signature ID',
     placeholder: 'Filter by Signature',
     filterType: 'text'
@@ -509,18 +509,42 @@ export class RuleEditKebab extends React.Component {
 export class RuleToggleModal extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {rulesets: [], selected: [], comment: ""};
+        this.state = {rulesets: [], selected: [], supported_filters: [], comment: ""};
         this.submit = this.submit.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleCommentChange = this.handleCommentChange.bind(this);
+        this.updateFilter = this.updateFilter.bind(this);
     }
 
-    componentDidUpdate() {
+    updateFilter() {
+      if (this.props.filters && this.props.filters.length > 0) {
+        var wanted_filters = Array.from(this.props.filters, x => x.id);
+        var req_data = {fields: wanted_filters};
+        axios.post(config.API_URL + config.PROCESSING_PATH + "test/", req_data).then( res => {
+          var supp_filters = [];
+          for(var i = 0; i < this.props.filters.length; i++) {
+            if (res.data.fields.indexOf(this.props.filters[i].id) !== -1) {
+                supp_filters.push(this.props.filters[i]);
+            }
+          }
+          this.setState({supported_filters: supp_filters});
+        });
+      }
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+            if (prevProps.filters !== this.props.filters) {
+                this.updateFilter();
+            }
+    }
+
+    componentDidMount() {
 	  if (this.state.rulesets.length === 0) {
              axios.get(config.API_URL + config.RULESET_PATH).then(res => {
                this.setState({rulesets: res.data['results']});
              })
 	  }
+        this.updateFilter();
     }
 
     submit() {
@@ -595,8 +619,8 @@ export class RuleToggleModal extends React.Component {
     </Modal.Header>
     <Modal.Body>
        <Form horizontal>
-       {this.props.filters &&
-	   this.props.filters.map((item, index) => {
+       {this.state.supported_filters &&
+	   this.state.supported_filters.map((item, index) => {
                   return (
 		  <FormGroup key={item.id} controlId={item.id} disabled={false}>
 			<Col sm={3}>
@@ -662,7 +686,7 @@ export function buildQFilter(filters) {
             qfilter.push(f_prefix + 'host.raw:' + filters[i].value.id);
 	    continue;
 	}
-	else if (filters[i].id === 'sid') {
+	else if (filters[i].id === 'alert.signature_id') {
             qfilter.push(f_prefix + 'alert.signature_id:' + filters[i].value);
 	    continue;
 	}
@@ -780,7 +804,7 @@ export class RulesList extends HuntList {
 
   displayRule(rule) {
       this.setState({display_rule: rule});
-      let activeFilters = [...this.props.filters, {label:"Signature ID: " + rule.sid, id: 'sid', value: rule.sid}];
+      let activeFilters = [...this.props.filters, {label:"Signature ID: " + rule.sid, id: 'alert.signature_id', value: rule.sid}];
       this.RuleUpdateFilter(activeFilters);
   }
 
@@ -823,7 +847,7 @@ export class RulesList extends HuntList {
   findSID(filters) {
 	var found_sid = undefined;
 	for (var i = 0; i < filters.length; i++) {
-	    if (filters[i].id === 'sid') {
+	    if (filters[i].id === 'alert.signature_id') {
 		found_sid = filters[i].value;
 		break;
 	    }
