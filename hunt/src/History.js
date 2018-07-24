@@ -52,7 +52,7 @@ export class HistoryPage extends HuntList {
 
     fetchData(history_stat, filters) {
 	var string_filters = this.buildFilter(filters);
-	axios.get(config.API_URL + config.HISTORY_PATH + this.buildListUrlParams(history_stat) + string_filters)
+	axios.get(config.API_URL + config.HISTORY_PATH + "?" + this.buildListUrlParams(history_stat) + string_filters)
         .then(res => {
                this.setState({ data: res.data, count: res.data.count });
           })
@@ -75,7 +75,7 @@ export class HistoryPage extends HuntList {
 	        <ListView>
 	        {this.state.data.results &&
 	           this.state.data.results.map( item => {
-	               return(<HistoryItem key={item.id} data={item} switchPage={this.props.switchPage} />);
+	               return(<HistoryItem key={item.pk} data={item} switchPage={this.props.switchPage} />);
 	           })
 	        }
 	        </ListView>
