@@ -493,10 +493,10 @@ export class RuleEditKebab extends React.Component {
         return(
             <React.Fragment>
                 <DropdownKebab id="ruleActions" pullRight>
-                        <MenuItem onClick={ e => {this.displayToggle("Enable") }}>
+                        <MenuItem onClick={ e => {this.displayToggle("enable") }}>
                         Enable Rule
                         </MenuItem>
-                        <MenuItem  onClick={ e => {this.displayToggle("Disable") }}> 
+                        <MenuItem  onClick={ e => {this.displayToggle("disable") }}> 
                         Disable Rule
                         </MenuItem>
                 </DropdownKebab>
@@ -513,6 +513,7 @@ export class RuleToggleModal extends React.Component {
         this.submit = this.submit.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleCommentChange = this.handleCommentChange.bind(this);
+        this.handleFieldChange = this.handleFieldChange.bind(this);
         this.updateFilter = this.updateFilter.bind(this);
     }
 
@@ -524,6 +525,8 @@ export class RuleToggleModal extends React.Component {
           var supp_filters = [];
           for(var i = 0; i < this.props.filters.length; i++) {
             if (res.data.fields.indexOf(this.props.filters[i].id) !== -1) {
+                this.props.filters[i].operator = "equal";
+                this.props.filters[i].key = this.props.filters[i].id;
                 supp_filters.push(this.props.filters[i]);
             }
           }
@@ -548,27 +551,37 @@ export class RuleToggleModal extends React.Component {
     }
 
     submit() {
-         this.state.selected.map(
-             function(ruleset) {
-                 var data = {ruleset: ruleset};
-                 if (this.state.comment.length > 0) {
-                     data['comment'] = this.state.comment
-                 }
-                 var url = config.API_URL + config.RULE_PATH + this.props.config.rule.sid;
-                 if (this.props.action === "Enable") {
-                     url = url + '/enable/';
-                 } else {
-                     url = url + '/disable/';
-                 }
-                 axios.post(url, data).then(
-                     function(res) {
-                         // Fixme notification or something
-                         console.log("action on rule is a success");
+         if (["enable", "disable"].indexOf(this.props.action) !== -1) {
+             this.state.selected.map(
+                 function(ruleset) {
+                     var data = {ruleset: ruleset};
+                     if (this.state.comment.length > 0) {
+                         data['comment'] = this.state.comment
                      }
-                 );
-                 return true;
-             }
-         , this); 
+                     var url = config.API_URL + config.RULE_PATH + this.props.config.rule.sid;
+                     if (this.props.action === "enable") {
+                         url = url + '/enable/';
+                     } else {
+                         url = url + '/disable/';
+                     }
+                     axios.post(url, data).then(
+                         function(res) {
+                             // Fixme notification or something
+                             console.log("action on rule is a success");
+                         }
+                     );
+                     return true;
+                 }
+             , this);
+         } else if (["suppress", "threshold"].indexOf(this.props.action) !== -1) {
+            //{"filter_defs": [{"key": "src_ip", "value": "192.168.0.1", "operator": "equal"}], "action": "suppress", "rulesets": [1]}
+            var data = {filter_defs: this.state.supported_filters, action: this.props.action, rulesets: this.state.selected, comment: this.state.comment};
+            axios.post(config.API_URL + config.PROCESSING_PATH, data).then(
+                res => {
+                    console.log("action creation is a success");
+                }
+            )
+         }
          this.props.close();
     }
 
@@ -576,7 +589,6 @@ export class RuleToggleModal extends React.Component {
         const target = event.target;
         const value = target.type === 'checkbox' ? target.checked : target.value;
         const name = target.name;
-        console.log("check " + value + "for " + name);
         var sel_list = this.state.selected;
         if (value === false) {
              // pop element
@@ -597,6 +609,17 @@ export class RuleToggleModal extends React.Component {
     handleCommentChange(event) {
         this.setState({comment: event.target.value});
     }
+
+    handleFieldChange(event) {
+            var sfilters = Object.assign([], this.state.supported_filters);
+            for (var filter in sfilters) {
+                if (sfilters[filter].id === event.target.id) {
+                    sfilters[filter].value = event.target.value;
+                }
+            }
+            this.setState({supported_filters: sfilters});
+    }
+
 
     render() {
        return(
@@ -627,7 +650,7 @@ export class RuleToggleModal extends React.Component {
 			<strong>{item.id}</strong>
 			</Col>
 			<Col sm={9}>
-			<FormControl type={item.id} disabled={false} value={item.value} />
+			<FormControl type={item.id} disabled={false} defaultValue={item.value} onChange={this.handleFieldChange} />
 			</Col>
 	          </FormGroup>
 		  )
