@@ -263,6 +263,10 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
 
 class RuleProcessingTestSerializer(serializers.Serializer):
     fields = serializers.ListField(child=serializers.CharField(max_length=256))
+    action = serializers.ChoiceField((('suppress', 'Suppress'),
+                        ('threshold', 'Threshold'),
+                        ('tag', 'Tag'),
+                        ('tagkeep', 'Tag and Keep')))
 
 
 class RuleProcessingFilterIntersectSerializer(serializers.Serializer):
@@ -297,11 +301,11 @@ class RuleProcessingFilterViewSet(viewsets.ModelViewSet):
         {"pk":2,"filter_defs":[{"key":"alert.signature_id","value":"2000005","operator":"equal"}],"action":"threshold","options":{"count":10,"seconds":60,"type":"both","track":"by_src"},"rulesets":[1],"index":0,"description":"","enabled":true}
 
     List the rule filtering capabilities supported by the backend:\n
-        curl -k https://x.x.x.x/rest/rules/processing-filter/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"fields": ["alert.signature_id", "src_ip"]}'
+        curl -k https://x.x.x.x/rest/rules/processing-filter/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"fields": ["alert.signature_id", "src_ip"], "action": "suppress"}'
 
     Return:\n
         HTTP/1.1 200 OK
-        {"fields":["alert.signature_id","src_ip"],"operators":["equal","different","contains"],"actions":["suppress","threshold","tag","tagkeep"]}
+        {"fields":["alert.signature_id","src_ip"],"operators":["equal","different","contains"]}
 
     List existing filter rules with a common key, before <index>:\n
         curl -k https://x.x.x.x/rest/rules/processing-filter/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"filter_defs": [{"key": "src_ip", "value": "127.0.0.1", "operator": "equal"}], "index": <index>}'
@@ -359,7 +363,7 @@ class RuleProcessingFilterViewSet(viewsets.ModelViewSet):
         from scirius.utils import get_middleware_module
         fields_serializer = RuleProcessingTestSerializer(data=request.data)
         fields_serializer.is_valid(raise_exception=True)
-        capabilities = get_middleware_module('common').get_processing_filter_capabilities(fields_serializer.validated_data['fields'])
+        capabilities = get_middleware_module('common').get_processing_filter_capabilities(fields_serializer.validated_data['fields'], fields_serializer.validated_data['action'])
         return Response(capabilities)
 
     @list_route(methods=['post'])

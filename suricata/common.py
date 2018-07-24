@@ -92,9 +92,16 @@ def get_processing_filter_thresholds(ruleset):
         yield f.get_threshold_content()
 
 PROCESSING_FILTER_FIELDS = set(('src_ip', 'dest_ip', 'alert.signature_id'))
-def get_processing_filter_capabilities(fields):
-    return {
-        'fields': sorted(list(PROCESSING_FILTER_FIELDS & set(fields))),
-        'operators': ['equal'],
-        'actions': ['suppress', 'threshold']
-    }
+PROCESSING_THRESHOLD_FIELDS = set(('alert.signature_id',))
+def get_processing_filter_capabilities(fields, action):
+    if action == 'suppress':
+        return {
+            'fields': sorted(list(PROCESSING_FILTER_FIELDS & set(fields))),
+            'operators': ['equal']
+        }
+    elif action == 'threshold':
+        return {
+            'fields': sorted(list(PROCESSING_THRESHOLD_FIELDS & set(fields))),
+            'operators': ['equal']
+        }
+    return { 'fields': [], 'operators': ['equal'] }
