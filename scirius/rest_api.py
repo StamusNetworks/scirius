@@ -2,22 +2,11 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from rest_framework import serializers, viewsets
 from rest_framework.routers import DefaultRouter, Route
-from rest_framework.pagination import PageNumberPagination
 
 from utils import get_middleware_module
 from accounts.rest_api import router as accounts_router
 
-class SciriusSetPagination(PageNumberPagination):
-    page_size_query_param = 'page_size'
-
-
-class SciriusReadOnlyModelViewSet(viewsets.ReadOnlyModelViewSet):
-    pagination_class = SciriusSetPagination
-
-
-class SciriusModelViewSet(viewsets.ModelViewSet):
-    pagination_class = SciriusSetPagination
-
+from rest_utils import SciriusModelViewSet
 from rules.rest_api import router as rules_router, get_custom_urls
 
 class UserSerializer(serializers.ModelSerializer):

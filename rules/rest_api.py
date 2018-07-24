@@ -31,7 +31,7 @@ from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTr
 from rules.views import get_public_sources, fetch_public_sources
 from rules.rest_processing import RuleProcessingFilterViewSet
 
-from scirius.rest_api import SciriusReadOnlyModelViewSet, SciriusModelViewSet
+from scirius.rest_utils import SciriusReadOnlyModelViewSet, SciriusModelViewSet
 from rules.es_graphs import es_get_sigs_list_hits, es_get_top_rules
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
