@@ -510,8 +510,10 @@ export class RuleToggleModal extends React.Component {
     constructor(props) {
         super(props);
         this.state = {rulesets: [], selected: [], supported_filters: [], comment: "",
-			options: {type: "both", count: 1, seconds: 60, track: "by_src"}};
+			options: {type: "both", count: 1, seconds: 60, track: "by_src"},
+            errors: undefined};
         this.submit = this.submit.bind(this);
+        this.close = this.close.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleCommentChange = this.handleCommentChange.bind(this);
         this.handleFieldChange = this.handleFieldChange.bind(this);
@@ -552,6 +554,11 @@ export class RuleToggleModal extends React.Component {
         this.updateFilter();
     }
 
+    close() {
+        this.setState({errors: undefined});
+        this.props.close();
+    }
+
     submit() {
          if (["enable", "disable"].indexOf(this.props.action) !== -1) {
              this.state.selected.map(
@@ -570,9 +577,12 @@ export class RuleToggleModal extends React.Component {
                          function(res) {
                              // Fixme notification or something
                              console.log("action on rule is a success");
-                             this.props.close();
+                             this.close();
                          }
-                     );
+                     ).catch (error => {
+                         console.log("action creation failure");
+                         this.setState({errors: error.response.data});
+                     });
                      return true;
                  }
              , this);
@@ -585,11 +595,12 @@ export class RuleToggleModal extends React.Component {
             axios.post(config.API_URL + config.PROCESSING_PATH, data).then(
                 res => {
                     console.log("action creation is a success");
-                    this.props.close();
+                    this.close();
                 }
             ).catch(
                 error => {
-                    console.log(error.response);
+                    console.log("action creation failure");
+                    this.setState({errors: error.response.data});
                 }
             )
          }
@@ -631,21 +642,19 @@ export class RuleToggleModal extends React.Component {
     }
 
     handleThresholdChange(event) {
-	    console.log(event.target);
-            var options = Object.assign({}, this.state.options);
+        var options = Object.assign({}, this.state.options);
 	    options[event.target.id] = event.target.value;
-	    console.log(options);
 	    this.setState({options: options});
     }
 
 
     render() {
        return(
-            <Modal show={this.props.show} onHide={this.props.close}>
+            <Modal show={this.props.show} onHide={this.close}>
     <Modal.Header>
       <button
         className="close"
-        onClick={this.props.close}
+        onClick={this.close}
         aria-hidden="true"
         aria-label="Close"
       >
@@ -659,6 +668,21 @@ export class RuleToggleModal extends React.Component {
       }
     </Modal.Header>
     <Modal.Body>
+	    {this.state.errors !== undefined &&
+             <div>
+             {Object.keys(this.state.errors).map( field => {
+                    return(
+                      <div key={field}>
+                       {this.state.errors[field].map( error => {
+                            return(<div key={error} className="alert alert-danger">{field}: {error}</div>)
+                    })
+                    }
+                      </div>
+                    );
+             })
+             }
+             </div>
+	    }
        <Form horizontal>
        {this.state.supported_filters &&
 	   this.state.supported_filters.map((item, index) => {
