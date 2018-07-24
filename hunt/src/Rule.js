@@ -520,7 +520,7 @@ export class RuleToggleModal extends React.Component {
     updateFilter() {
       if (this.props.filters && this.props.filters.length > 0) {
         var wanted_filters = Array.from(this.props.filters, x => x.id);
-        var req_data = {fields: wanted_filters};
+        var req_data = {fields: wanted_filters, action: this.props.action};
         axios.post(config.API_URL + config.PROCESSING_PATH + "test/", req_data).then( res => {
           var supp_filters = [];
           for(var i = 0; i < this.props.filters.length; i++) {
@@ -536,7 +536,7 @@ export class RuleToggleModal extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-            if (prevProps.filters !== this.props.filters) {
+            if ((prevProps.filters !== this.props.filters) || (prevProps.action !== this.props.action)) {
                 this.updateFilter();
             }
     }
