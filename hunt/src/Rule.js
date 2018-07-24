@@ -509,11 +509,13 @@ export class RuleEditKebab extends React.Component {
 export class RuleToggleModal extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {rulesets: [], selected: [], supported_filters: [], comment: ""};
+        this.state = {rulesets: [], selected: [], supported_filters: [], comment: "",
+			options: {type: "both", count: 1, seconds: 60, track: "by_src"}};
         this.submit = this.submit.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleCommentChange = this.handleCommentChange.bind(this);
         this.handleFieldChange = this.handleFieldChange.bind(this);
+        this.handleThresholdChange = this.handleThresholdChange.bind(this);
         this.updateFilter = this.updateFilter.bind(this);
     }
 
@@ -568,6 +570,7 @@ export class RuleToggleModal extends React.Component {
                          function(res) {
                              // Fixme notification or something
                              console.log("action on rule is a success");
+                             this.props.close();
                          }
                      );
                      return true;
@@ -576,13 +579,20 @@ export class RuleToggleModal extends React.Component {
          } else if (["suppress", "threshold"].indexOf(this.props.action) !== -1) {
             //{"filter_defs": [{"key": "src_ip", "value": "192.168.0.1", "operator": "equal"}], "action": "suppress", "rulesets": [1]}
             var data = {filter_defs: this.state.supported_filters, action: this.props.action, rulesets: this.state.selected, comment: this.state.comment};
+            if (this.props.action === "threshold") {
+                    data.options = this.state.options;
+            }
             axios.post(config.API_URL + config.PROCESSING_PATH, data).then(
                 res => {
                     console.log("action creation is a success");
+                    this.props.close();
+                }
+            ).catch(
+                error => {
+                    console.log(error.response);
                 }
             )
          }
-         this.props.close();
     }
 
     handleChange(event) {
@@ -618,6 +628,14 @@ export class RuleToggleModal extends React.Component {
                 }
             }
             this.setState({supported_filters: sfilters});
+    }
+
+    handleThresholdChange(event) {
+	    console.log(event.target);
+            var options = Object.assign({}, this.state.options);
+	    options[event.target.id] = event.target.value;
+	    console.log(options);
+	    this.setState({options: options});
     }
 
 
@@ -656,6 +674,38 @@ export class RuleToggleModal extends React.Component {
 		  )
 	       }
 	       )
+       }
+       {this.props.action === 'threshold' &&
+            <React.Fragment>
+		  <FormGroup key="count" controlId="count" disabled={false}>
+			<Col sm={3}>
+			<strong>Count</strong>
+			</Col>
+			<Col sm={9}>
+			<FormControl type="integer" disabled={false} defaultValue={1} onChange={this.handleThresholdChange} />
+			</Col>
+		   </FormGroup>
+		   <FormGroup key="seconds" controlId="seconds" disabled={false}>
+			<Col sm={3}>
+			<strong>Seconds</strong>
+			</Col>
+			<Col sm={9}>
+			<FormControl type="integer" disabled={false} defaultValue={60} onChange={this.handleThresholdChange} />
+			</Col>
+	          </FormGroup>
+		  <FormGroup key="track" controlId="track_by" disabled={false}>
+			<Col sm={3}>
+		       <strong>Track by</strong>
+			</Col>
+			<Col sm={3}>
+		  <FormControl componentClass="select" placeholder="by_src" onChange={this.handleThresholdChange}>
+        		<option value="by_src">By Source</option>
+        		<option value="by_dest">By Destination</option>
+      		  </FormControl>
+			</Col>
+		  </FormGroup>
+             </React.Fragment>
+
        }
         <FormGroup controlId="ruleset" disabled={false}>
             <Col sm={6}>
