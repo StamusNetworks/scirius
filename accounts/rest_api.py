@@ -6,7 +6,7 @@ from rest_framework import serializers, viewsets
 from rest_framework.routers import DefaultRouter
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.validators import UniqueValidator
 
@@ -232,6 +232,12 @@ class AccountViewSet(viewsets.ModelViewSet):
         scirius_user.user.save()
         scirius_user.save()
         return Response({'password': 'updated'})
+
+    @list_route(methods=['get'])
+    def current_user(self, request, *args, **kwargs):
+        user = request.user
+        sciriususer = SciriusUser.objects.get(user=user)
+        return Response(sciriususer.to_dict())
 
 
 router = DefaultRouter()
