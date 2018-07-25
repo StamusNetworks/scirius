@@ -235,7 +235,7 @@ class HuntApp extends Component {
 						</VerticalNav.IconBar>
 					</VerticalNav.Masthead>
 		   <VerticalNav.Item
-            	      title="Home"
+                      title="Signatures"
             	      iconClass="glyphicon glyphicon-eye-open"
             	      initialActive = { [PAGE_STATE.rules_list, PAGE_STATE.rule, PAGE_STATE.source, PAGE_STATE.ruleset].indexOf(this.state.display.page) >= 0 }
             	      onClick={this.onHomeClick}
@@ -282,8 +282,8 @@ class HuntApp extends Component {
             	      onClick={this.onHistoryClick}
 		     />
        		     <VerticalNav.Item 
-		       title="Setup"
-		       iconClass="glyphicon glyphicon-cog"
+		       title="Home"
+		       iconClass="fa fa-home"
               	       initialActive = { this.state.display.page === PAGE_STATE.setup }
 		       href="/rules"
 		     />
