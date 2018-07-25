@@ -1298,6 +1298,9 @@ from rules.models import Rule
 from rules.tables import ExtendedRuleTable, RuleStatsTable
 import django_tables2 as tables
 
+class ESError(Exception):
+    pass
+
 def build_es_timestamping(date, data = 'alert'):
     format_table = { 'daily': '%Y.%m.%d', 'hourly': '%Y.%m.%d.%H' }
     now = datetime.now()
@@ -1852,8 +1855,8 @@ def es_get_top_rules(request, hostname, count=20, from_date=0 , order="desc", in
     req = urllib2.Request(es_url, data, headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except Exception, e:
-        return "BAM: " + str(e)
+    except urllib2.URLError as e:
+        raise ESError(e)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1870,8 +1873,9 @@ def es_get_sigs_list_hits(request, sids, host, from_date=0, order="desc", interv
     req = urllib2.Request(es_url, data, headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except Exception, e:
-        return "BAM: " + str(e)
+    except urllib2.URLError as e:
+        raise ESError(e)
+
     data = out.read()
     # returned data is JSON
     data = json.loads(data)

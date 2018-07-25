@@ -32,7 +32,7 @@ from rules.views import get_public_sources, fetch_public_sources
 from rules.rest_processing import RuleProcessingFilterViewSet
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet, SciriusModelViewSet
-from rules.es_graphs import es_get_sigs_list_hits, es_get_top_rules
+from rules.es_graphs import es_get_sigs_list_hits, es_get_top_rules, ESError
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
 
@@ -445,7 +445,14 @@ class RuleHitsOrderingFilter(OrderingFilter):
             'order': order
         }
         es_top_kwargs.update(es_hits_params(request))
-        result = es_get_top_rules(request, **es_top_kwargs)
+        try:
+            result = es_get_top_rules(request, **es_top_kwargs)
+        except ESError:
+            _order = 'sid'
+            if order == 'desc':
+                _order = '-sid'
+            return Rule.objects.order_by('sid').values_list('sid', flat=True)
+
         return [r['key'] for r in result]
 
     def filter_queryset(self, request, queryset, view):
@@ -812,7 +819,10 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         ## reformat ES's output
         es_params = es_hits_params(request)
         es_params['host'] = es_params.pop('hostname')
-        result = es_get_sigs_list_hits(request, sids, **es_params)
+        try:
+            result = es_get_sigs_list_hits(request, sids, **es_params)
+        except ESError:
+            return data
 
         hits = {}
         for r in result:
