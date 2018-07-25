@@ -1167,11 +1167,10 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
 
     def test_023_capabilities_test(self):
         self._force_suricata_middleware()
-        r = self.http_post(reverse('ruleprocessingfilter-test'), {'fields': ['src_ip', 'dns.rdata']})
+        r = self.http_post(reverse('ruleprocessingfilter-test'), {'fields': ['src_ip', 'dns.rdata'], 'action': 'threshold'})
         self.assertDictEqual(r, {
             'fields': ['src_ip'],
-            'operators': ['equal'],
-            'actions': ['suppress', 'threshold']
+            'operators': ['equal']
         })
 
     def test_024_intersect_match(self):
