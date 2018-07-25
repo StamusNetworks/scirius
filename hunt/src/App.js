@@ -335,11 +335,6 @@ class UserNavInfo extends Component {
 	render() {
 		return(
 			<React.Fragment>
-        		<li className="dropdown">
-			   <a id="notifications" className="nav-item-iconic" onClick={this.toggleNotifications}>
-			      <Icon type="fa" name="bell" />
-			   </a>
-			</li>
 			{this.state.showNotifications &&
 			<HuntNotificationArea />
 			}
