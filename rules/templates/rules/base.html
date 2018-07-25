@@ -339,8 +339,10 @@ function load_dashboards() {
                                 key = keys[i];
                                 {% if kibana_version == 3 %}
                                 dh += "<li><a target='_blank' href='{{ kibana_url }}/#/dashboard/elasticsearch/" + key + "'>" + data[key] + "</a></li>";
-                                {% else %}
+                                {% elif kibana_version < 6 %}
                                 dh += "<li><a target='_blank' href='{{ kibana_url }}/#/dashboard/" + key + "'>" + data[key] + "</a></li>";
+                                {% else %}
+                                dh += "<li><a target='_blank' href='{{ kibana_url }}/app/kibana#/dashboard/" + key + "'>" + data[key] + "</a></li>";
                                 {% endif %}
                         }
                         $("#dashboards").append(dh);

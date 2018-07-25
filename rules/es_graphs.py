@@ -1497,7 +1497,10 @@ def es_get_dashboard(count=20):
         dashboards = {}
         for elt in data:
             try:
-                dashboards[elt["_id"]] = elt["_source"]["title"]
+                if settings.ELASTICSEARCH_VERSION >= 6:
+                    dashboards[elt["_id"].split(':')[1]] = elt["_source"]["dashboard"]["title"]
+                else:
+                    dashboards[elt["_id"]] = elt["_source"]["title"]
             except:
                 dashboards[elt["_id"]] = elt["_id"]
                 pass
