@@ -1863,7 +1863,10 @@ def es_get_top_rules(request, hostname, count=20, from_date=0 , order="desc", in
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
-    return data['aggregations']['alerts']['buckets']
+    try:
+        return data['aggregations']['alerts']['buckets']
+    except:
+        return[]
 
 def es_get_sigs_list_hits(request, sids, host, from_date=0, order="desc", interval=None, qfilter = None):
     if interval == None:
