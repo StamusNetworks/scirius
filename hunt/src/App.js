@@ -315,11 +315,20 @@ class UserNavInfo extends Component {
     super(props);
     this.state = {
 	    showModal: false,
-	    showNotifications: false
+	    showNotifications: false,
+	    user: undefined,
     }
     this.AboutClick = this.AboutClick.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.toggleNotifications = this.toggleNotifications.bind(this);
+  }
+
+  componentDidMount() {
+        axios.get(config.API_URL + config.USER_PATH + 'current_user').then(
+		res => {
+			this.setState({user: res.data});
+		}
+	);
   }
 
   AboutClick(e) {
@@ -333,6 +342,10 @@ class UserNavInfo extends Component {
   }
 
 	render() {
+                var user = " ...";
+		if (this.state.user !== undefined) {
+			user = this.state.user.username;
+		}
 		return(
 			<React.Fragment>
 			{this.state.showNotifications &&
@@ -359,11 +372,11 @@ class UserNavInfo extends Component {
 			   </Dropdown>
 			    <Dropdown componentClass="li" id="user">
       				<Dropdown.Toggle useAnchor className="nav-item-iconic">
-        				<Icon type="pf" name="user" /> Eric Leblond
+        				<Icon type="pf" name="user" /> {user}
       				</Dropdown.Toggle>
       				<Dropdown.Menu>
-        				<MenuItem>Preferences</MenuItem>
-        				<MenuItem>Logout</MenuItem>
+        				<MenuItem href="/accounts/edit"><span className="glyphicon glyphicon-cog"> </span> Account settings</MenuItem>
+        				<MenuItem href="/accounts/logout"><span className="glyphicon glyphicon-log-out"> </span> Logout</MenuItem>
     				</Dropdown.Menu>
 			   </Dropdown>
 			   
