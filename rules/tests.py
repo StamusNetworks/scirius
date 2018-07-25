@@ -1167,13 +1167,21 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
 
     def test_023_capabilities_test(self):
         self._force_suricata_middleware()
-        r = self.http_post(reverse('ruleprocessingfilter-test'), {'fields': ['src_ip', 'dns.rdata'], 'action': 'threshold'})
+        r = self.http_post(reverse('ruleprocessingfilter-test'), {'fields': ['src_ip', 'dns.rdata'], 'action': 'suppress'})
         self.assertDictEqual(r, {
             'fields': ['src_ip'],
             'operators': ['equal']
         })
 
-    def test_024_intersect_match(self):
+    def test_024_capabilities_test(self):
+        self._force_suricata_middleware()
+        r = self.http_post(reverse('ruleprocessingfilter-test'), {'fields': ['src_ip', 'dns.rdata'], 'action': 'threshold'})
+        self.assertDictEqual(r, {
+            'fields': [],
+            'operators': ['equal']
+        })
+
+    def test_025_intersect_match(self):
         self.test_007_order_create_append()
 
         conflict_filter = {
@@ -1187,7 +1195,7 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         self.assertEqual(r.get('count'), 1)
         self.assertDictContainsSubset(self.DEFAULT_FILTER, r['results'][0])
 
-    def test_025_intersect_multi_match(self):
+    def test_026_intersect_multi_match(self):
         self.test_007_order_create_append()
 
         conflict_filter = {
@@ -1204,7 +1212,7 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         r = self.http_post(reverse('ruleprocessingfilter-intersect'), conflict_filter)
         self.assertEqual(r.get('count'), 2)
 
-    def test_026_intersect_no_match(self):
+    def test_027_intersect_no_match(self):
         self.test_007_order_create_append()
 
         conflict_filter = {

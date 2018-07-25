@@ -27,6 +27,8 @@ import json
 import StringIO
 import re
 
+from rest_framework import serializers
+
 
 from django.conf import settings
 
@@ -84,6 +86,40 @@ def get_user_actions_dict():
     from rules.models import UserAction
     return UserAction.get_user_actions_dict()
 
+def validate_rule_postprocessing(data):
+    action = data.get('action')
+    if action not in ('suppress', 'threshold'):
+        raise serializers.ValidationError('Action "%s" is not supported.' % action)
+
+    has_sid = False
+    has_ip = False
+    has_bad_operator = False
+
+    for f in data.get('filter_defs', []):
+        if f.get('key') == 'alert.signature_id':
+            has_sid = True
+
+        if f.get('key') in ('src_ip', 'dest_ip'):
+            if action == 'suppress':
+                if has_ip:
+                    raise serializers.ValidationError({'filter_defs': ['Only one field with key "src_ip" or "dest_ip" is accepted.']})
+                has_ip = True
+            else:
+                raise serializers.ValidationError({'filter_defs': ['Field "%s" is not supported for threshold.' % f['key']]})
+
+        if f.get('operator') != 'equal':
+            has_bad_operator = True
+
+    errors = []
+    if not has_sid:
+        errors.append('A filter with a key "alert.signature_id" is required.')
+    if not has_ip:
+        errors.append('A filter with a key "src_ip" or "dest_ip" is required.')
+    if has_bad_operator:
+        errors.append('Only operator "equal" is supported.')
+
+    if errors:
+        raise serializers.ValidationError({'filter_defs': errors})
 
 def get_processing_filter_thresholds(ruleset):
     from rules.models import RuleProcessingFilter
