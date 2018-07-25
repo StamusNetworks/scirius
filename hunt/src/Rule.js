@@ -922,11 +922,13 @@ export class RulesList extends HuntList {
 	     sources[src.pk] = src;
 	 }
          this.setState({ rules_count: RuleRes.data['count'], rules: RuleRes.data['results'], sources: sources, loading: false, refresh_data: false});
-	 if (!RuleRes.data.results[0].timeline_data) {
-	     this.fetchHitsStats(RuleRes.data['results']);
-	 } else {
-             this.buildHitsStats(RuleRes.data['results']);
-	 }
+	 if (RuleRes.data.results.length > 0) {
+            if (!RuleRes.data.results[0].timeline_data) {
+	            this.fetchHitsStats(RuleRes.data['results']);
+	        } else {
+                this.buildHitsStats(RuleRes.data['results']);
+	        }
+     }
      })).catch( e => {
          this.setState({net_error: e, loading: false});
      });
