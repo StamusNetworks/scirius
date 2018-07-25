@@ -333,7 +333,7 @@ module.exports = {
     // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
     // You can remove this if you don't use Moment.js:
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-    new BundleTracker({path: paths.statsRoot, filename: 'webpack-stats.prod.json'}),
+    new BundleTracker({path: paths.webpackRoot, filename: 'webpack-stats.prod.json'}),
   ],
   // Some libraries import Node modules but don't use them in the browser.
   // Tell Webpack to provide empty mocks for them so importing them works.
