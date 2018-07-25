@@ -497,6 +497,9 @@ def edit_rule(request, rule_id):
                     trans = rule_object.get_transformation(ruleset, TYPE)
 
                     if form_trans == CAT_DEFAULT:
+                        if trans is None:
+                            continue
+
                         cat_trans = rule_object.category.get_transformation(ruleset, TYPE)
                         if cat_trans is None:
                             cat_trans = NONE
