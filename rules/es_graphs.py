@@ -1284,7 +1284,7 @@ SIGS_LIST_HITS = """
 
 
 if settings.ELASTICSEARCH_VERSION >= 6:
-    DASHBOARDS_QUERY_URL = "/%s/_search?size=" % settings.KIBANA_INDEX
+    DASHBOARDS_QUERY_URL = "/%s/_search?q=type:dashboard&size=" % settings.KIBANA_INDEX
 else:
     DASHBOARDS_QUERY_URL = "/%s/dashboard/_search?size=" % settings.KIBANA_INDEX
 
