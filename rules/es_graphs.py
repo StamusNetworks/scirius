@@ -1879,4 +1879,7 @@ def es_get_sigs_list_hits(request, sids, host, from_date=0, order="desc", interv
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
-    return data['aggregations']['alerts']['buckets']
+    try:
+        return data['aggregations']['alerts']['buckets']
+    except:
+        return []
