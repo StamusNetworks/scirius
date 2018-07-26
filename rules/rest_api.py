@@ -1701,6 +1701,13 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
     ordering = ('-pk',)
     ordering_fields = ('pk', 'date', 'username', 'action_type')
 
+    @list_route(methods=['get'])
+    def get_action_type_list(self, request):
+        from scirius.utils import get_middleware_module
+        actions_dict = get_middleware_module('common').get_user_actions_dict()
+        res = {key: value['title'] for key, value in actions_dict.iteritems()}
+        return Response({'action_type_list': res})
+
 
 class ChangelogSerializer(serializers.ModelSerializer):
     class Meta:
