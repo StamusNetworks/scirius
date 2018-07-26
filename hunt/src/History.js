@@ -35,21 +35,18 @@ export class HistoryPage extends HuntList {
                 placeholder: 'Filter by User',
                 filterType: 'text'
               }, {
+                id: 'comment',
+                title: 'Comment',
+                placeholder: 'Filter by Comment',
+                filterType: 'text'
+              }, {
                 id: 'action_type',
                 title: 'Action Type',
                 placeholder: 'Filter by Action Type',
                 filterType: 'select',
                 filterValues: []
               }
-            /*
-              , {
-                id: 'comment',
-                title: 'Comment',
-                placeholder: 'Filter by Comment',
-                filterType: 'text'
-              }
-            */
-            ];
+	    ];
   	    this.state = {data: [], count: 0, filter_fields: HistoryFilterFields};
 	    this.fetchData = this.fetchData.bind(this)
     }
