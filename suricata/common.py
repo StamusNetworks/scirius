@@ -86,6 +86,12 @@ def get_user_actions_dict():
     from rules.models import UserAction
     return UserAction.get_user_actions_dict()
 
+
+def get_hunt_filters():
+    from rules.models import get_hunt_filters
+    return get_hunt_filters()
+
+
 def validate_rule_postprocessing(data):
     action = data.get('action')
     if action not in ('suppress', 'threshold'):

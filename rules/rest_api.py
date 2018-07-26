@@ -8,6 +8,7 @@ from collections import OrderedDict
 
 from django.core.exceptions import SuspiciousOperation, ValidationError
 
+from rest_framework.views import APIView
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers, viewsets, exceptions, mixins
 from rest_framework.decorators import detail_route, list_route
@@ -1825,6 +1826,14 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
         return super(SystemSettingsViewSet, self).update(request, partial=True, *args, **kwargs)
 
 
+class HuntFilterAPIView(APIView):
+
+    def get(self, request, format=None):
+        from scirius.utils import get_middleware_module
+        filters = get_middleware_module('common').get_hunt_filters()
+        return Response(filters)
+
+
 def get_custom_urls():
     urls = []
     url_ = url(r'rules/system_settings/$', SystemSettingsViewSet.as_view({
@@ -1833,6 +1842,9 @@ def get_custom_urls():
         'patch': 'partial_update',
         }), name='systemsettings')
 
+    urls.append(url_)
+
+    url_ = url(r'rules/hunt-filter/$', HuntFilterAPIView.as_view())
     urls.append(url_)
     return urls
 

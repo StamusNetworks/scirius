@@ -47,6 +47,32 @@ from rules.tests_rules import TestRules
 
 from django.contrib.auth.models import User
 
+
+_HUNT_FILTERS = [
+                    {
+                      'id': 'msg',
+                      'title': 'Message',
+                      'placeholder': 'Filter by Message',
+                      'filterType': 'text'
+                    },
+                    {
+                      'id': 'search',
+                      'title': 'Content',
+                      'placeholder': 'Filter by Content',
+                      'filterType': 'text'
+                    }, {
+                      'id': 'sid',
+                      'title': 'Signature ID',
+                      'placeholder': 'Filter by Signature',
+                      'filterType': 'text'
+                    }
+                ]
+
+
+def get_hunt_filters():
+    return deepcopy(_HUNT_FILTERS)
+
+
 def validate_hostname(val):
     try:
         validate_ipv4_address(val)
