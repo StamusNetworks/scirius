@@ -32,7 +32,13 @@ export class HuntFilter extends React.Component {
       filterText += value;
     }
 
-    let activeFilters = [...this.props.ActiveFilters, { label: filterText, id: field.id, value: value, negated: false }];
+    var fvalue;
+    if (typeof(value) ==="object") {
+	    fvalue = value.id;
+    } else {
+	    fvalue = value;
+    }
+    let activeFilters = [...this.props.ActiveFilters, { label: filterText, id: field.id, value: fvalue, negated: false }];
     this.props.UpdateFilter(activeFilters);
   };
 
