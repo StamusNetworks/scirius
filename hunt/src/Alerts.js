@@ -11,7 +11,7 @@ import axios from 'axios';
 export const AlertSortFields = [
   {
     id: 'timestamp',
-    title: 'timestamp',
+    title: 'Timestamp',
     isNumeric: true,
     defaultAsc: false,
   },
