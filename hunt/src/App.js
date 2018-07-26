@@ -325,7 +325,7 @@ class UserNavInfo extends Component {
   }
 
   componentDidMount() {
-        axios.get(config.API_URL + config.USER_PATH + 'current_user').then(
+        axios.get(config.API_URL + config.USER_PATH + 'current_user/').then(
 		res => {
 			this.setState({user: res.data});
 		}
