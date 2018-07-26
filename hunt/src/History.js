@@ -45,14 +45,9 @@ export class HistoryPage extends HuntList {
 	    this.fetchData = this.fetchData.bind(this)
     }
 
-    componentDidMount() {
-	this.fetchData(this.props.config, this.props.filters);
-    }
-    
-
     fetchData(history_stat, filters) {
-	var string_filters = this.buildFilter(filters);
-	axios.get(config.API_URL + config.HISTORY_PATH + "?" + this.buildListUrlParams(history_stat) + string_filters)
+	    var string_filters = this.buildFilter(filters);
+	    axios.get(config.API_URL + config.HISTORY_PATH + "?" + this.buildListUrlParams(history_stat) + string_filters)
         .then(res => {
                this.setState({ data: res.data, count: res.data.count });
           })
@@ -61,7 +56,7 @@ export class HistoryPage extends HuntList {
 
     render() {
 	return(
-	    <div>
+	    <div className="HistoryList">
                <HuntFilter ActiveFilters={this.props.filters}
                    config={this.props.config}
 		   ActiveSort={this.props.config.sort}
