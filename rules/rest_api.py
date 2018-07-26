@@ -1844,7 +1844,7 @@ def get_custom_urls():
 
     urls.append(url_)
 
-    url_ = url(r'rules/hunt-filter/$', HuntFilterAPIView.as_view())
+    url_ = url(r'rules/hunt-filter/$', HuntFilterAPIView.as_view(), name='hunt_filter')
     urls.append(url_)
     return urls
 
