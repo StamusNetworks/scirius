@@ -16,44 +16,6 @@ axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 
 
-export const RuleFilterFields = [
-  {
-    id: 'alert.tag',
-    title: 'Tag',
-    placeholder: 'Filter by Tag',
-    filterType: 'select',
-    filterValues: [{title: 'Untagged', id:'untagged'}, {title: 'Relevant', id:'relevant'}, {title: 'Informational', id:'informational'}] 
-  },
-  {
-    id: 'msg',
-    title: 'Message',
-    placeholder: 'Filter by Message',
-    filterType: 'text'
-  },
-  {
-    id: 'search',
-    title: 'Content',
-    placeholder: 'Filter by Content',
-    filterType: 'text'
-  }, {
-    id: 'alert.signature_id',
-    title: 'Signature ID',
-    placeholder: 'Filter by Signature',
-    filterType: 'text'
-  }, {
-    id: 'dns.query.rrname',
-    title: 'DNS RRName',
-    placeholder: 'Filter by DNS Query',
-    filterType: 'text'
-  }, {
-    id: 'sprobe',
-    title: 'Check Probe',
-    placeholder: 'Filter hits by Probe',
-    filterType: 'select',
-    filterValues: [{title: 'sn-probe-1', id:'sn-probe-1'}, {title: 'infra1', id:'infra1'}] 
-  }
-];
-
 export const RuleSortFields = [
   {
     id: 'created',
@@ -831,7 +793,8 @@ export class RulesList extends HuntList {
       display_toggle: true,
       only_hits: only_hits,
       action: { view: false, type: 'suppress'},
-      net_error: undefined
+      net_error: undefined,
+      rules_filters: []
     };
     this.updateRulesState = this.updateRulesState.bind(this);
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
@@ -941,6 +904,11 @@ export class RulesList extends HuntList {
       } else {
           this.fetchData(this.props.config, this.props.filters);
       }
+      axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
+      	res => {
+		this.setState({rules_filters: res.data});
+	}
+      );
   }
 
   findSID(filters) {
@@ -1021,7 +989,7 @@ export class RulesList extends HuntList {
 		  UpdateFilter={this.RuleUpdateFilter}
 		  UpdateSort={this.UpdateSort}
 		  setViewType={this.setViewType}
-		  filterFields={RuleFilterFields}
+		  filterFields={this.state.rules_filters}
 		  sort_config={RuleSortFields}
 		  displayToggle={this.state.display_toggle}
 		  actionsButtons={this.actionsButtons}

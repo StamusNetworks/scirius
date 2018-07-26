@@ -12,6 +12,12 @@ export class HuntFilter extends React.Component {
     };
   }
 
+  componentDidUpdate(prevProps, prevState, snapshot) {
+	  if (prevProps.filterFields.length === 0 && this.props.filterFields.length !== 0) {
+		this.setState({currentFilterType: this.props.filterFields[0]});
+	  }
+  }
+
   filterAdded = (field, value) => {
     let filterText = '';
     if (field.title) {

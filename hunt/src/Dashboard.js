@@ -4,7 +4,7 @@ import axios from 'axios';
 import { DonutChart } from 'patternfly-react';
 //import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 //import { EventValue } from './Event.js';
-import { HuntStat, RuleFilterFields, buildQFilter } from './Rule.js';
+import { HuntStat, buildQFilter } from './Rule.js';
 import { HuntList } from './Api.js';
 import { HuntFilter } from './Filter.js';
 import * as config from './config/Api.js';
@@ -36,7 +36,8 @@ export class HuntDashboard extends HuntList {
       display_toggle: true,
       only_hits: only_hits,
       action: { view: false, type: 'suppress'},
-      net_error: undefined
+      net_error: undefined,
+      rules_filters: []
     };
     //this.updateRulesState = this.updateRulesState.bind(this);
     //this.fetchHitsStats = this.fetchHitsStats.bind(this);
@@ -50,6 +51,13 @@ export class HuntDashboard extends HuntList {
     //this.toggleOnlyHits = this.toggleOnlyHits.bind(this);
   }
 
+    componentDidMount() {
+      axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
+      	res => {
+		this.setState({rules_filters: res.data});
+	});
+    }
+
     render() {
         return(
 	    <div>
@@ -59,7 +67,7 @@ export class HuntDashboard extends HuntList {
     		  UpdateFilter={this.UpdateFilter}
     		  UpdateSort={this.UpdateSort}
     		  setViewType={this.setViewType}
-    		  filterFields={RuleFilterFields}
+    		  filterFields={this.state.rules_filters}
     		  sort_config={RuleSortFields}
     		  displayToggle={undefined}
     		  actionsButtons={undefined}

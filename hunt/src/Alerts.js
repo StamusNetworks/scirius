@@ -1,6 +1,6 @@
 import React from 'react';
 import { HuntList } from './Api.js';
-import { buildQFilter, RuleFilterFields } from './Rule.js';
+import { buildQFilter } from './Rule.js';
 import { HuntFilter } from './Filter.js';
 import { EventField } from './Event.js';
 import * as config from './config/Api.js';
@@ -31,10 +31,21 @@ export class AlertsList extends HuntList {
       alerts: [],
       loading: true,
       refresh_data: false,
+      rules_filters: []
     };
    this.fetchData = this.fetchData.bind(this);
   }
 
+
+  componentDidMount() {
+	this.fetchData(this.props.config, this.props.filters);
+      axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
+      	res => {
+		this.setState({rules_filters: res.data});
+	}
+  	);
+  }
+  
   fetchData(state, filters) {
      var string_filters = buildQFilter(filters);
      if (string_filters === null) {
@@ -63,7 +74,7 @@ export class AlertsList extends HuntList {
 		  UpdateFilter={this.UpdateFilter}
 		  UpdateSort={this.UpdateSort}
 		  setViewType={this.setViewType}
-		  filterFields={RuleFilterFields}
+		  filterFields={this.state.rules_filters}
 		  sort_config={AlertSortFields}
 		  displayToggle={this.state.display_toggle}
             />
