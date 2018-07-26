@@ -3,7 +3,7 @@ from suripyg import SuriHTMLFormat
 from django.conf import settings
 from django.utils import timezone
 from django.utils.html import escape
-from django.db.models import Q
+from django.db import models
 from collections import OrderedDict
 
 from django.core.exceptions import SuspiciousOperation, ValidationError
@@ -450,6 +450,15 @@ def es_hits_params(request):
 
 
 class RuleHitsOrderingFilter(OrderingFilter):
+    def get_query_param(self, request, param):
+        param = request.query_params.get(param)
+        if param is not None:
+            try:
+                param = int(param)
+            except ValueError:
+                param = None
+        return param
+
     def _get_hits_order(self, request, order):
         es_top_kwargs = {
             'count': Rule.objects.count(),
@@ -459,12 +468,26 @@ class RuleHitsOrderingFilter(OrderingFilter):
         try:
             result = es_get_top_rules(request, **es_top_kwargs)
         except ESError:
-            _order = 'sid'
-            if order == 'desc':
-                _order = '-sid'
-            return Rule.objects.order_by('sid').values_list('sid', flat=True)
+            queryset = Rule.objects.order_by('sid')
+            queryset = queryset.annotate(hits=models.Value(0, output_field=models.IntegerField()))
+            queryset = queryset.annotate(hits=models.ExpressionWrapper(models.Value(0), output_field=models.IntegerField()))
+            return queryset.values_list('sid', 'hits')
 
-        return [r['key'] for r in result]
+        result = map(lambda x: (x['key'], x['doc_count']), result)
+        return result
+
+    def _filter_min_max(self, request, queryset, hits_order):
+        hits_by_sid = dict(hits_order)
+
+        min_hits = self.get_query_param(request, 'hits_min')
+        if min_hits is not None:
+            queryset = filter(lambda x: hits_by_sid.get(x.sid, 0) >= min_hits, queryset)
+
+        max_hits = self.get_query_param(request, 'hits_max')
+        if max_hits is not None:
+            queryset = filter(lambda x: hits_by_sid.get(x.sid, 0) <= max_hits, queryset)
+
+        return queryset
 
     def filter_queryset(self, request, queryset, view):
         ordering = self.get_ordering(request, queryset, view)
@@ -479,24 +502,32 @@ class RuleHitsOrderingFilter(OrderingFilter):
             if ordering:
                 queryset = queryset.order_by(*ordering)
 
-            # Index rules by sid
-            rules = OrderedDict([(r.sid, r) for r in queryset])
-
             # Sorting
             order = 'asc' if hits_order == 'hits' else 'desc'
             hits_order = self._get_hits_order(request, order)
 
+            queryset = self._filter_min_max(request, queryset, hits_order)
+
+            # Index rules by sid
+            rules = OrderedDict([(r.sid, r) for r in queryset])
+
             queryset = []
-            for sid in hits_order:
+            for sid, count in hits_order:
                 try:
                     queryset.append(rules.pop(sid))
                 except KeyError:
                     pass
 
-            # Append rules with no hit
             queryset += rules.values()
-        elif ordering:
-            return queryset.order_by(*ordering)
+
+        else:
+            if ordering:
+                queryset = queryset.order_by(*ordering)
+
+            if self.get_query_param(request, 'hits_min') is not None \
+                    or self.get_query_param(request, 'hits_max') is not None:
+                hits_order = self._get_hits_order(request, 'asc')
+                queryset = self._filter_min_max(request, queryset, hits_order)
 
         return queryset
 
