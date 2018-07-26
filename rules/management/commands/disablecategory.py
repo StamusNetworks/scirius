@@ -33,10 +33,10 @@ class Command(BaseCommand):
         catname = options['category']
         
         try:
-            ruleset = Ruleset.objects.filter(name = name)
+            ruleset = Ruleset.objects.filter(name = ruleset)
             ruleset = ruleset[0]
         except:
-            raise CommandError("No ruleset with name '%s' is defined" % (name))
+            raise CommandError("No ruleset with name '%s' is defined" % (ruleset))
         try:
             categories = Category.objects.filter(name = catname)
         except:
@@ -44,5 +44,5 @@ class Command(BaseCommand):
         for cat in categories:
             ruleset.categories.remove(cat)
         ruleset.save()
-        self.stdout.write('Successfully removed "%s" from ruleset "%s"' % (catname, name))
+        self.stdout.write('Successfully removed "%s" from ruleset "%s"' % (catname, ruleset))
 
