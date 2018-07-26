@@ -420,6 +420,16 @@ class RuleFilter(filters.FilterSet):
         fields = ['sid', 'category', 'msg', 'content', 'created', 'updated']
 
 
+class UserActionFilter(filters.FilterSet):
+    min_date = filters.DateFilter(name='date', lookup_expr='gte')
+    max_date = filters.DateFilter(name='date', lookup_expr='lte')
+    comment = ListFilter(name='comment', lookup_expr='icontains')
+
+    class Meta:
+        model = UserAction
+        fields = ['username', 'date', 'action_type', 'comment', 'user_action_objects__action_key', 'user_action_objects__action_value']
+
+
 def es_hits_params(request):
     es_params = {}
 
@@ -1697,9 +1707,9 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
 
     queryset = UserAction.objects.all()
     serializer_class = UserActionSerializer
-    filter_fields = ('date', 'username', 'user_action_objects__action_key', 'action_type')
     ordering = ('-pk',)
     ordering_fields = ('pk', 'date', 'username', 'action_type')
+    filter_class = UserActionFilter
 
     @list_route(methods=['get'])
     def get_action_type_list(self, request):
