@@ -54,6 +54,6 @@ class Command(BaseCommand):
             with open(uri, 'r') as f:
                 if source.datatype == 'sigs':
                     source.handle_rules_in_tar(f)
-                elif self.datatype == 'sig':
+                elif source.datatype == 'sig':
                     source.handle_rules_file(f)
         self.stdout.write('Successfully updated source "%s"' % name)
