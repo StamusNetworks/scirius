@@ -8,27 +8,6 @@ import { HuntList, HuntPaginationRow } from './Api.js';
 import * as config from './config/Api.js';
 import { PAGE_STATE } from './Const.js';
 
-const HistoryFilterFields = [
-{
-    id: 'username',
-    title: 'User',
-    placeholder: 'Filter by User',
-    filterType: 'text'
-  }, {
-    id: 'action_type',
-    title: 'Action Type',
-    placeholder: 'Filter by Action Type',
-    filterType: 'text'
-  }
-/*
-  , {
-    id: 'comment',
-    title: 'Comment',
-    placeholder: 'Filter by Comment',
-    filterType: 'text'
-  }
-*/
-];
 
 const HistorySortFields = [
   {
@@ -49,7 +28,29 @@ const HistorySortFields = [
 export class HistoryPage extends HuntList {
     constructor(props) {
 	    super(props);
-  	    this.state = {data: [], count: 0};
+            var HistoryFilterFields = [
+            {
+                id: 'username',
+                title: 'User',
+                placeholder: 'Filter by User',
+                filterType: 'text'
+              }, {
+                id: 'action_type',
+                title: 'Action Type',
+                placeholder: 'Filter by Action Type',
+                filterType: 'select',
+                filterValues: []
+              }
+            /*
+              , {
+                id: 'comment',
+                title: 'Comment',
+                placeholder: 'Filter by Comment',
+                filterType: 'text'
+              }
+            */
+            ];
+  	    this.state = {data: [], count: 0, filter_fields: HistoryFilterFields};
 	    this.fetchData = this.fetchData.bind(this)
     }
 
@@ -62,6 +63,27 @@ export class HistoryPage extends HuntList {
     
     }
 
+    componentDidMount() {
+	axios.get(config.API_URL + config.HISTORY_PATH + 'get_action_type_list/').then(
+			res => {
+				var filter_fields = Object.assign([], this.state.filter_fields);
+				var actions;
+				for (var field in filter_fields) {
+					if (filter_fields[field].id !== 'action_type') {
+						continue;
+					}
+					actions = filter_fields[field];
+					break;
+				}
+				actions.filterValues = [];
+				for (var item in res.data.action_type_list) {
+					actions.filterValues.push({id: item, title: res.data.action_type_list[item]});
+				}
+				this.setState(filter_fields: filter_fields);
+			}
+		);
+    }
+
     render() {
 	return(
 	    <div className="HistoryList">
@@ -71,7 +93,7 @@ export class HistoryPage extends HuntList {
 		   UpdateFilter={this.UpdateFilter}
 		   UpdateSort={this.UpdateSort}
 		   setViewType={this.setViewType}
-		   filterFields={HistoryFilterFields}
+		   filterFields={this.state.filter_fields}
                    sort_config={HistorySortFields}
 		   displayToggle={false}
 	        />
