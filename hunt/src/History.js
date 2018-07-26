@@ -9,17 +9,25 @@ import * as config from './config/Api.js';
 import { PAGE_STATE } from './Const.js';
 
 const HistoryFilterFields = [
-  {
-    id: 'msg',
-    title: 'Message',
-    placeholder: 'Filter by Message',
-    filterType: 'text'
-  }, {
+{
     id: 'username',
     title: 'User',
     placeholder: 'Filter by User',
     filterType: 'text'
+  }, {
+    id: 'action_type',
+    title: 'Action Type',
+    placeholder: 'Filter by Action Type',
+    filterType: 'text'
   }
+/*
+  , {
+    id: 'comment',
+    title: 'Comment',
+    placeholder: 'Filter by Comment',
+    filterType: 'text'
+  }
+*/
 ];
 
 const HistorySortFields = [
