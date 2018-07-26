@@ -10,15 +10,6 @@ import { HuntFilter } from './Filter.js';
 import * as config from './config/Api.js';
 import { SciriusChart } from './Chart.js';
 
-export const RuleSortFields = [
-  {
-    id: 'hits',
-    title: 'Alerts',
-    isNumeric: true,
-    defaultAsc: false,
-  }
-];
-
 export class HuntDashboard extends HuntList {
   constructor(props) {
     super(props);
@@ -68,7 +59,7 @@ export class HuntDashboard extends HuntList {
     		  UpdateSort={this.UpdateSort}
     		  setViewType={this.setViewType}
     		  filterFields={this.state.rules_filters}
-    		  sort_config={RuleSortFields}
+    		  sort_config={undefined}
     		  displayToggle={undefined}
     		  actionsButtons={undefined}
                 />

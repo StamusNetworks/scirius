@@ -193,7 +193,9 @@ export class HuntFilter extends React.Component {
             />
             {this.renderInput()}
           </Filter>
+	      {this.props.sort_config &&
 	      <HuntSort config={this.props.sort_config} ActiveSort={this.props.ActiveSort} UpdateSort={this.props.UpdateSort}/>
+	      }
 	      </div>
 
             <Toolbar.RightContent>
