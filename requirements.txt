@@ -20,7 +20,7 @@ django-ipware
 gunicorn
 djangorestframework
 markdown
-django-filter
+django-filter<2.0
 idstools
 enum34
 drf-schema-adapter
