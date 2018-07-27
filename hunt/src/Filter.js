@@ -186,9 +186,8 @@ export class HuntFilter extends React.Component {
     
     this.props.ActiveFilters.forEach( item => {
 	if (item.query === undefined) {
-		item.query = 'all';
-	}
-    	if (this.props.queryType.indexOf(item.query) !== -1) {
+		activeFilters.push(item);
+	} else if (this.props.queryType.indexOf(item.query) !== -1) {
 		activeFilters.push(item);
 	}
     });

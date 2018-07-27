@@ -860,7 +860,7 @@ export class RulesList extends HuntList {
 
   displayRule(rule) {
       this.setState({display_rule: rule});
-      let activeFilters = [...this.props.filters, {label:"Signature ID: " + rule.sid, id: 'alert.signature_id', value: rule.sid}];
+      let activeFilters = [...this.props.filters, {label:"Signature ID: " + rule.sid, id: 'alert.signature_id', value: rule.sid, query: 'filter'}];
       this.RuleUpdateFilter(activeFilters);
   }
 
