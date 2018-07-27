@@ -1053,7 +1053,7 @@ class RulesetTransformationViewSet(BaseTransformationViewSet):
         HTTP/1.1 201 Created
         {"pk":5,"ruleset":2,"transfo_type":"target","transfo_value":"src"}
 
-    Create a ruleset TARGET transformation (yes / auto / no):\n
+    Create a ruleset LATERAL transformation (yes / auto / no):\n
         curl -k https://x.x.x.x/rest/rules/transformation/ruleset/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "lateral", "transfo_value": "yes"}'
 
     ==== PATCH ====\n
