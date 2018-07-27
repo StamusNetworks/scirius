@@ -506,7 +506,7 @@ export class RuleToggleModal extends React.Component {
 		var options = {};
 		if (this.props.action === 'threshold') {
 			options = {type: "both", count: 1, seconds: 60, track: "by_src"};
-		} else if (this.props.action === 'tag') {
+		} else if (this.props.action in ['tag', 'tagkeep']) {
 			options = {tag: "relevant"};
 		}
 		this.setState({options: options});
@@ -562,10 +562,10 @@ export class RuleToggleModal extends React.Component {
                      return true;
                  }
              , this);
-         } else if (["suppress", "threshold", "tag"].indexOf(this.props.action) !== -1) {
+         } else if (["suppress", "threshold", "tag", "tagkeep"].indexOf(this.props.action) !== -1) {
             //{"filter_defs": [{"key": "src_ip", "value": "192.168.0.1", "operator": "equal"}], "action": "suppress", "rulesets": [1]}
             var data = {filter_defs: this.state.supported_filters, action: this.props.action, rulesets: this.state.selected, comment: this.state.comment};
-            if (this.props.action in ["threshold", "tag"]) {
+            if (this.props.action in ["threshold", "tag", "tagkeep"]) {
                     data.options = this.state.options;
             }
             axios.post(config.API_URL + config.PROCESSING_PATH, data).then(
@@ -711,6 +711,19 @@ export class RuleToggleModal extends React.Component {
 		  <FormGroup key="tag" controlId="tag" disabled={false}>
 			<Col sm={3}>
 		       <strong>Tag</strong>
+			</Col>
+			<Col sm={4}>
+		  <FormControl componentClass="select" placeholder="relevant" onChange={this.handleOptionsChange}>
+        		<option value="relevant">Relevant</option>
+        		<option value="informational">Informational</option>
+      		  </FormControl>
+		  </Col>
+		  </FormGroup>
+       }
+       {this.props.action === 'tagkeep' &&
+		  <FormGroup key="tagkeep" controlId="tagkeep" disabled={false}>
+			<Col sm={3}>
+		       <strong>Tag and Keep</strong>
 			</Col>
 			<Col sm={4}>
 		  <FormControl componentClass="select" placeholder="relevant" onChange={this.handleOptionsChange}>
@@ -968,6 +981,10 @@ export class RulesList extends HuntList {
 	this.setState({action: {view: true, type: 'tag'}});
   }
 
+  createTagKeep() {
+	this.setState({action: {view: true, type: 'tagkeep'}});
+  }
+
   closeAction() {
         this.setState({action: {view: false, type: 'suppress'}});
   }
@@ -981,6 +998,7 @@ export class RulesList extends HuntList {
 		 <MenuItem eventKey="2" onClick={e => { this.createThreshold(); }}>Threshold</MenuItem>
 		 <MenuItem divider />
 		 <MenuItem eventKey="3" onClick={e => { this.createTag(); }}>Tag</MenuItem>
+		 <MenuItem eventKey="4" onClick={e => { this.createTagKeep(); }}>Tag and Keep</MenuItem>
 	         </DropdownButton>
 	     </div>
        );
