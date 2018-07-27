@@ -783,18 +783,12 @@ export class RulesList extends HuntList {
   constructor(props) {
     super(props);
 
-    var only_hits = localStorage.getItem("rules_list.only_hits");
-    if (!only_hits) {
-        only_hits = false;
-    }
-
     this.state = {
       rules: [], sources: [], rules_count: 0,
       loading: true,
       refresh_data: false,
       view: 'rules_list',
       display_toggle: true,
-      only_hits: only_hits,
       action: { view: false, type: 'suppress'},
       net_error: undefined,
       rules_filters: []
@@ -808,7 +802,6 @@ export class RulesList extends HuntList {
     this.createThreshold = this.createThreshold.bind(this);
     this.createTag = this.createTag.bind(this);
     this.closeAction = this.closeAction.bind(this);
-    this.toggleOnlyHits = this.toggleOnlyHits.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -952,21 +945,9 @@ export class RulesList extends HuntList {
         this.setState({action: {view: false, type: 'suppress'}});
   }
 
-  toggleOnlyHits() {
-	localStorage.setItem("rules_list.only_hits", !this.state.only_hits);
-	this.setState({only_hits: !this.state.only_hits});
-  }
 
   actionsButtons() {
-      return(<React.Fragment>
-             <div className="form-group">
-                 <label>
-		     <input type="checkbox"
-		            name="only_hits"
-			    checked={this.state.only_hits}
-			    onChange={this.toggleOnlyHits}
-	             /> Only hits</label>
-             </div>
+      return(
 	     <div className="form-group">
 	         <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions">
 		 <MenuItem eventKey="1" onClick={e => { this.createSuppress(); }}>Suppress</MenuItem>
@@ -975,7 +956,6 @@ export class RulesList extends HuntList {
 		 <MenuItem eventKey="3" onClick={e => { this.createTag(); }}>Tag</MenuItem>
 	         </DropdownButton>
 	     </div>
-	     </React.Fragment>
        );
   }
   
@@ -1013,12 +993,9 @@ export class RulesList extends HuntList {
                 <div className='container-fluid container-cards-pf'>
                 <div className='row row-cards-pf'>
                 {this.state.rules.map(function(rule) {
-			 if ((!this.state.only_hits) || (rule.hits > 0)) {
                          return(
                                 <RuleCard key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule} />
                          )
-			 }
-			 return(null);
              },this)}
                 </div>
                 </div>
