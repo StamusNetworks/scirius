@@ -33,18 +33,21 @@ export class HistoryPage extends HuntList {
                 id: 'username',
                 title: 'User',
                 placeholder: 'Filter by User',
-                filterType: 'text'
+                filterType: 'text',
+		queryType: 'all'
               }, {
                 id: 'comment',
                 title: 'Comment',
                 placeholder: 'Filter by Comment',
-                filterType: 'text'
+                filterType: 'text',
+		queryType: 'all'
               }, {
                 id: 'action_type',
                 title: 'Action Type',
                 placeholder: 'Filter by Action Type',
                 filterType: 'select',
-                filterValues: []
+                filterValues: [],
+    		queryType: 'all'
               }
 	    ];
   	    this.state = {data: [], count: 0, filter_fields: HistoryFilterFields};
@@ -61,6 +64,7 @@ export class HistoryPage extends HuntList {
     }
 
     componentDidMount() {
+	this.fetchData(this.props.config, this.props.filters);
 	axios.get(config.API_URL + config.HISTORY_PATH + 'get_action_type_list/').then(
 			res => {
 				var filter_fields = Object.assign([], this.state.filter_fields);
@@ -93,6 +97,7 @@ export class HistoryPage extends HuntList {
 		   filterFields={this.state.filter_fields}
                    sort_config={HistorySortFields}
 		   displayToggle={false}
+		   queryType={['all']}
 	        />
 	        <ListView>
 	        {this.state.data.results &&

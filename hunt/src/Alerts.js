@@ -41,7 +41,13 @@ export class AlertsList extends HuntList {
 	this.fetchData(this.props.config, this.props.filters);
       axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
       	res => {
-		this.setState({rules_filters: res.data});
+		var fdata = [];
+		for (var i in res.data) {
+			if (res.data[i].queryType === 'filter') {
+				fdata.push(res.data[i]);
+			}
+		}
+		this.setState({rules_filters: fdata});
 	}
   	);
   }
@@ -77,6 +83,7 @@ export class AlertsList extends HuntList {
 		  filterFields={this.state.rules_filters}
 		  sort_config={AlertSortFields}
 		  displayToggle={this.state.display_toggle}
+		  queryType={['filter']}
             />
          <Spinner loading={this.state.loading}>
            <ListView>
@@ -101,7 +108,7 @@ class AlertInList extends React.Component {
 
     addFilter(key, value, negated) {
         let activeFilters = [...this.props.filters,
-	                     {label:"" + key + ": " + value, id: key, value: value, negated: negated}];
+	                     {label:"" + key + ": " + value, id: key, value: value, negated: negated, query: 'filter'}];
         this.props.UpdateFilter(activeFilters);
     }
 

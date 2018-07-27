@@ -45,7 +45,13 @@ export class HuntDashboard extends HuntList {
     componentDidMount() {
       axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
       	res => {
-		this.setState({rules_filters: res.data});
+		var fdata = [];
+		for (var i in res.data) {
+			if (res.data[i].queryType === 'filter') {
+				fdata.push(res.data[i]);
+			}
+		}
+		this.setState({rules_filters: fdata});
 	});
     }
 
@@ -62,6 +68,7 @@ export class HuntDashboard extends HuntList {
     		  sort_config={undefined}
     		  displayToggle={undefined}
     		  actionsButtons={undefined}
+		  queryType={['filter']}
                 />
 
 	       <div className="container-fluid container-cards-pf">

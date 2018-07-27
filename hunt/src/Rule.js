@@ -353,7 +353,7 @@ export class HuntStat extends React.Component {
     }
 
     addFilter(key, value, negated) {
-        let activeFilters = [...this.props.filters, {label:"" + key + ": " + value, id: key, value: value, negated: negated}];
+        let activeFilters = [...this.props.filters, {label:"" + key + ": " + value, id: key, value: value, negated: negated, query: 'filter'}];
         this.props.UpdateFilter(activeFilters);
     }
 
@@ -762,8 +762,8 @@ export function buildQFilter(filters) {
 	    continue;
 	}
 	else if ((filters[i].id === 'hits_min') || (filters[i].id === 'hits_max')) {
-	    continue;
-	}
+            continue;
+        }
 	else if (typeof filters[i].value === 'string') {
             qfilter.push(f_prefix + filters[i].id + ':"' + encodeURIComponent(filters[i].value) + '"');
 	    continue;
@@ -996,6 +996,7 @@ export class RulesList extends HuntList {
 		  sort_config={RuleSortFields}
 		  displayToggle={this.state.display_toggle}
 		  actionsButtons={this.actionsButtons}
+		  queryType={['filter', 'rest']}
             />
 	    {this.state.view === 'rules_list' &&
             this.props.config.view_type === 'list' &&

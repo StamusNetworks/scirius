@@ -44,7 +44,8 @@ export class HuntFilter extends React.Component {
     } else {
 	    fvalue = value;
     }
-    let activeFilters = [...this.props.ActiveFilters, { label: filterText, id: field.id, value: fvalue, negated: false }];
+    console.log(field);
+    let activeFilters = [...this.props.ActiveFilters, { label: filterText, id: field.id, value: fvalue, negated: false, query: field.queryType }];
     this.props.UpdateFilter(activeFilters);
   };
 
@@ -181,7 +182,16 @@ export class HuntFilter extends React.Component {
 
   render() {
     const { currentFilterType } = this.state;
-    const activeFilters = this.props.ActiveFilters;
+    var activeFilters = []
+    
+    this.props.ActiveFilters.forEach( item => {
+	if (item.query === undefined) {
+		item.query = 'all';
+	}
+    	if (this.props.queryType.indexOf(item.query) !== -1) {
+		activeFilters.push(item);
+	}
+    });
     return (
 	   <Toolbar>
         <div style={{ width: 450 }}>
