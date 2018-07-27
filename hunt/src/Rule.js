@@ -650,7 +650,11 @@ export class RuleToggleModal extends React.Component {
                     return(
                       <div key={field}>
                        {this.state.errors[field].map( error => {
-                            return(<div key={error} className="alert alert-danger">{field}: {error}</div>)
+			    if (typeof(error) === 'object') {
+				return(<div key={1} className="alert alert-danger">{field}: {JSON.stringify(error)}</div>);
+			    } else {
+                            	return(<div key={error} className="alert alert-danger">{field}: {error}</div>)
+			    }
                     })
                     }
                       </div>
