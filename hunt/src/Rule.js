@@ -472,15 +472,16 @@ export class RuleToggleModal extends React.Component {
     constructor(props) {
         super(props);
         this.state = {rulesets: [], selected: [], supported_filters: [], comment: "",
-			options: {type: "both", count: 1, seconds: 60, track: "by_src"},
+			options: {},
             errors: undefined};
         this.submit = this.submit.bind(this);
         this.close = this.close.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleCommentChange = this.handleCommentChange.bind(this);
         this.handleFieldChange = this.handleFieldChange.bind(this);
-        this.handleThresholdChange = this.handleThresholdChange.bind(this);
+        this.handleOptionsChange = this.handleOptionsChange.bind(this);
         this.updateFilter = this.updateFilter.bind(this);
+        this.setDefaultOptions = this.setDefaultOptions.bind(this);
     }
 
     updateFilter() {
@@ -501,19 +502,32 @@ export class RuleToggleModal extends React.Component {
       }
     }
 
+    setDefaultOptions() {
+		var options = {};
+		if (this.props.action === 'threshold') {
+			options = {type: "both", count: 1, seconds: 60, track: "by_src"};
+		} else if (this.props.action === 'tag') {
+			options = {tag: "relevant"};
+		}
+		this.setState({options: options});
+    }
+
+
     componentDidUpdate(prevProps, prevState, snapshot) {
             if ((prevProps.filters !== this.props.filters) || (prevProps.action !== this.props.action)) {
                 this.updateFilter();
+		this.setDefaultOptions();
             }
     }
 
     componentDidMount() {
-	  if (this.state.rulesets.length === 0) {
+	if (this.state.rulesets.length === 0) {
              axios.get(config.API_URL + config.RULESET_PATH).then(res => {
                this.setState({rulesets: res.data['results']});
              })
-	  }
+	}
         this.updateFilter();
+	this.setDefaultOptions();
     }
 
     close() {
@@ -548,10 +562,10 @@ export class RuleToggleModal extends React.Component {
                      return true;
                  }
              , this);
-         } else if (["suppress", "threshold"].indexOf(this.props.action) !== -1) {
+         } else if (["suppress", "threshold", "tag"].indexOf(this.props.action) !== -1) {
             //{"filter_defs": [{"key": "src_ip", "value": "192.168.0.1", "operator": "equal"}], "action": "suppress", "rulesets": [1]}
             var data = {filter_defs: this.state.supported_filters, action: this.props.action, rulesets: this.state.selected, comment: this.state.comment};
-            if (this.props.action === "threshold") {
+            if (this.props.action in ["threshold", "tag"]) {
                     data.options = this.state.options;
             }
             axios.post(config.API_URL + config.PROCESSING_PATH, data).then(
@@ -603,7 +617,7 @@ export class RuleToggleModal extends React.Component {
             this.setState({supported_filters: sfilters});
     }
 
-    handleThresholdChange(event) {
+    handleOptionsChange(event) {
         var options = Object.assign({}, this.state.options);
 	    options[event.target.id] = event.target.value;
 	    this.setState({options: options});
@@ -668,7 +682,7 @@ export class RuleToggleModal extends React.Component {
 			<strong>Count</strong>
 			</Col>
 			<Col sm={9}>
-			<FormControl type="integer" disabled={false} defaultValue={1} onChange={this.handleThresholdChange} />
+			<FormControl type="integer" disabled={false} defaultValue={1} onChange={this.handleOptionsChange} />
 			</Col>
 		   </FormGroup>
 		   <FormGroup key="seconds" controlId="seconds" disabled={false}>
@@ -676,7 +690,7 @@ export class RuleToggleModal extends React.Component {
 			<strong>Seconds</strong>
 			</Col>
 			<Col sm={9}>
-			<FormControl type="integer" disabled={false} defaultValue={60} onChange={this.handleThresholdChange} />
+			<FormControl type="integer" disabled={false} defaultValue={60} onChange={this.handleOptionsChange} />
 			</Col>
 	          </FormGroup>
 		  <FormGroup key="track" controlId="track_by" disabled={false}>
@@ -684,7 +698,7 @@ export class RuleToggleModal extends React.Component {
 		       <strong>Track by</strong>
 			</Col>
 			<Col sm={3}>
-		  <FormControl componentClass="select" placeholder="by_src" onChange={this.handleThresholdChange}>
+		  <FormControl componentClass="select" placeholder="by_src" onChange={this.handleOptionsChange}>
         		<option value="by_src">By Source</option>
         		<option value="by_dest">By Destination</option>
       		  </FormControl>
@@ -692,6 +706,19 @@ export class RuleToggleModal extends React.Component {
 		  </FormGroup>
              </React.Fragment>
 
+       }
+       {this.props.action === 'tag' &&
+		  <FormGroup key="tag" controlId="tag" disabled={false}>
+			<Col sm={3}>
+		       <strong>Tag</strong>
+			</Col>
+			<Col sm={4}>
+		  <FormControl componentClass="select" placeholder="relevant" onChange={this.handleOptionsChange}>
+        		<option value="relevant">Relevant</option>
+        		<option value="informational">Informational</option>
+      		  </FormControl>
+		  </Col>
+		  </FormGroup>
        }
         <FormGroup controlId="ruleset" disabled={false}>
             <Col sm={6}>
@@ -718,7 +745,7 @@ export class RuleToggleModal extends React.Component {
       <Button
         bsStyle="default"
         className="btn-cancel"
-        onClick={this.props.close}
+        onClick={this.close}
       >
         Cancel
       </Button>
