@@ -116,6 +116,9 @@ def validate_rule_postprocessing(data):
         if f.get('operator') != 'equal':
             has_bad_operator = True
 
+    if action == 'threshold':
+        has_ip = True
+
     errors = []
     if not has_sid:
         errors.append('A filter with a key "alert.signature_id" is required.')
