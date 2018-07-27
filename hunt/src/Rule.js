@@ -761,6 +761,9 @@ export function buildQFilter(filters) {
             qfilter.push(f_prefix + 'alert.signature:' + filters[i].value);
 	    continue;
 	}
+	else if ((filters[i].id === 'hits_min') || (filters[i].id === 'hits_max')) {
+	    continue;
+	}
 	else if (typeof filters[i].value === 'string') {
             qfilter.push(f_prefix + filters[i].id + ':"' + encodeURIComponent(filters[i].value) + '"');
 	    continue;
