@@ -200,6 +200,7 @@ def manageuseraction(request, user_id, action):
                 sciriususer.save()
             else:
                 context['error'] = 'Edition form is not valid'
+                context['form'] = form
         elif action == 'password':
             form = PasswordForm(request.POST)
             if form.is_valid():
