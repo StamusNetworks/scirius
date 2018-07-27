@@ -50,6 +50,18 @@ from django.contrib.auth.models import User
 
 _HUNT_FILTERS = [
                     {
+                      'id': 'hits_min',
+                      'title': 'Hits min',
+                      'placeholder': 'Minimum Hits Count',
+                      'filterType': 'integer'
+                    },
+                    {
+                      'id': 'hits_max',
+                      'title': 'Hits max',
+                      'placeholder': 'Maximum Hits Count',
+                      'filterType': 'integer'
+                    },
+                    {
                       'id': 'msg',
                       'title': 'Message',
                       'placeholder': 'Filter by Message',
