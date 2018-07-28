@@ -7,6 +7,8 @@ import { Modal, DropdownKebab, MenuItem, Icon, Button } from 'patternfly-react';
 import { Form, FormGroup, FormControl } from 'patternfly-react';
 import { Col } from 'patternfly-react';
 
+import { HuntRestError } from './Error.js';
+
 export class FiltersList extends HuntList {
     constructor(props) {
 	    super(props);
@@ -152,7 +154,6 @@ class FilterEditKebab extends React.Component {
 class FilterToggleModal extends React.Component {
     constructor(props) {
         super(props);
-        var new_index = 0;
         this.state = { comment: "", new_index: 0,
             errors: undefined};
         this.close = this.close.bind(this);
@@ -180,10 +181,28 @@ class FilterToggleModal extends React.Component {
             if (['move', 'movetop', 'movebottom'].indexOf(this.props.action) !== -1) {
                 var data = {index: this.state.new_index, comment: this.state.comment}
 	            axios.patch(config.API_URL + config.PROCESSING_PATH + this.props.data.pk + '/', data).then( res => {
-                    console.log("I'm happy at " + this.state.new_index);
+                    console.log("Moved filter to " + this.state.new_index);
+                    /* TODO warn top level to refresh the list order */
                     this.close();
                 }
-                )
+                ).catch (error => {
+                         console.log("action creation failure");
+                         this.setState({errors: error.response.data});
+                     });
+
+            }
+            if (this.props.action === 'delete') {
+                axios.delete(config.API_URL + config.PROCESSING_PATH + this.props.data.pk + '/').then(
+                    res => {
+                        console.log("Deleted filter");
+                        /* TODO warn top level to refresh the list order */
+                        this.close();
+                    }
+                ).catch (error => {
+                         console.log("action creation failure");
+                         this.setState({errors: error.response.data});
+                     }
+                );
             }
     }
 
@@ -229,6 +248,7 @@ class FilterToggleModal extends React.Component {
       }
     </Modal.Header>
     <Modal.Body>
+       <HuntRestError errors={this.state.errors} />
        <Form horizontal>
     {this.props.action === 'move' &&
         <FormGroup key="index" controlId="index" disabled={false}>
