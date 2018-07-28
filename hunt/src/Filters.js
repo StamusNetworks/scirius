@@ -82,7 +82,7 @@ class FilterItem extends React.Component {
             addinfo.push(info);
         }
         if (Object.keys(this.props.rulesets).length > 0) {
-            var rulesets = item.rulesets.map(item => { return(<ListViewInfoItem><p>Ruleset: {this.props.rulesets[item]['name']}</p></ListViewInfoItem>); });
+            var rulesets = item.rulesets.map(item => { return(<ListViewInfoItem key={item + '-ruleset'}><p>Ruleset: {this.props.rulesets[item]['name']}</p></ListViewInfoItem>); });
             addinfo.push(rulesets);
         }
         var description = '';
@@ -108,10 +108,10 @@ class FilterItem extends React.Component {
                 break;
         }
         var actions_menu = [<span key={item.pk  + '-index'} className="badge badge-default">{item.index}</span>];
-        actions_menu.push(<FilterEditKebab key={item.pk} data={item} last_index={this.props.last_index} needUpdate={this.props.needUpdate} />);
+        actions_menu.push(<FilterEditKebab key={item.pk + '-kebab'} data={item} last_index={this.props.last_index} needUpdate={this.props.needUpdate} />);
         return(
             <ListViewItem
-                key={item.pk}
+                key={item.pk + '-listitem'}
                 leftContent={icon}
                 additionalInfo = {addinfo}
                 heading={item.action}
