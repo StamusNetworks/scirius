@@ -293,26 +293,6 @@ class HuntApp extends Component {
             	      initialActive = { this.state.display.page === PAGE_STATE.filters_list }
             	      onClick={this.onFiltersClick}
 		     />
-            	    <VerticalNav.Item title="IDS rules" iconClass="pficon pficon-middleware">
-            	        <VerticalNav.SecondaryItem title="Sources" >
-                	    {this.state.sources.map(function(source) {
-				    return(
-	    		     <VerticalNav.TertiaryItem key={source.pk} title={source.name}  onClick={this.displaySource.bind(this, source)}  />
-			     )
-			     }, this)}
-	    		     <VerticalNav.TertiaryItem title="Add Source" href="/rules/source/add" />
-            	        </VerticalNav.SecondaryItem>
-       			<VerticalNav.SecondaryItem title="Rulesets">
-                	    {this.state.rulesets.map(function(ruleset) {
-				    return(
-	    		     <VerticalNav.TertiaryItem key={ruleset.pk} title={ruleset.name} onClick={this.displayRuleset.bind(this, ruleset)} />
-			     )
-			     }, this)}
-	    		     <VerticalNav.TertiaryItem title="Add Ruleset" href="/rules/ruleset/add" >
-        			<Icon type="pf" name="help" />
-			     </VerticalNav.TertiaryItem>
-            	        </VerticalNav.SecondaryItem>
-       	             </VerticalNav.Item>
        		     <VerticalNav.Item
 		      title="History"
 		      iconClass="glyphicon glyphicon-list"
