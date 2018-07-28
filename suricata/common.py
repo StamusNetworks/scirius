@@ -92,9 +92,9 @@ def get_hunt_filters():
     return get_hunt_filters()
 
 
-def validate_rule_postprocessing(data):
+def validate_rule_postprocessing(data, partial):
     action = data.get('action')
-    if action not in ('suppress', 'threshold'):
+    if not partial and action not in ('suppress', 'threshold'):
         raise serializers.ValidationError('Action "%s" is not supported.' % action)
 
     has_sid = False
@@ -120,10 +120,11 @@ def validate_rule_postprocessing(data):
         has_ip = True
 
     errors = []
-    if not has_sid:
-        errors.append('A filter with a key "alert.signature_id" is required.')
-    if not has_ip:
-        errors.append('A filter with a key "src_ip" or "dest_ip" is required.')
+    if not partial:
+        if not has_sid:
+            errors.append('A filter with a key "alert.signature_id" is required.')
+        if not has_ip:
+            errors.append('A filter with a key "src_ip" or "dest_ip" is required.')
     if has_bad_operator:
         errors.append('Only operator "equal" is supported.')
 

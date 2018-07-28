@@ -107,12 +107,17 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({'options': ['Action "%s" does not accept options.' % action]})
             options = {}
 
-        data['options'] = options
+        if self.partial:
+            if 'options' in data:
+                data['options'] = options
+        else:
+            data['options'] = options
+        
         return super(RuleProcessingFilterSerializer, self).to_internal_value(data)
 
     def validate(self, data):
         from scirius.utils import get_middleware_module
-        get_middleware_module('common').validate_rule_postprocessing(data)
+        get_middleware_module('common').validate_rule_postprocessing(data, self.partial)
         return data
 
     def _set_filters(self, instance, filters):
