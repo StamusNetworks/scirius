@@ -82,9 +82,9 @@ export class HuntDashboard extends HuntList {
 		  </div>
  	          <div className="row row-cards-pf">
 		    <h4>Basic information</h4>
-                    <HuntStat title="IP Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
-                    <HuntStat title="IP Destinations" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
                     <HuntStat title="Signatures" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.signature' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
+                    <HuntStat title="Categories" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.category' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
+                    <HuntStat title="Severities" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.severity' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
                     <HuntStat title="Probes" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='host' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
 		  </div>
 	          <div className="row row-cards-pf">
@@ -99,6 +99,13 @@ export class HuntDashboard extends HuntList {
                     <HuntStat title="Attack target" config={this.props.config} filters={this.props.filters}  item='alert.metadata.attack_target' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
                     <HuntStat title="Affected product" config={this.props.config} filters={this.props.filters}  item='alert.metadata.affected_product' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
                     <HuntStat title="Malware family" config={this.props.config} filters={this.props.filters}  item='alert.metadata.malware_family' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
+		  </div>
+ 	          <div className="row row-cards-pf">
+		    <h4>IP information</h4>
+                    <HuntStat title="Sources IP" rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
+                    <HuntStat title="Source Ports" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='src_port' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
+                    <HuntStat title="Destinations IP" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
+                    <HuntStat title="Destinations Ports" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_port' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
 		  </div>
                 <div className='row row-cards-pf'>
 		    <h4>HTTP information</h4>
