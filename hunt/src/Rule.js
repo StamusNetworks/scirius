@@ -8,6 +8,7 @@ import { SciriusChart } from './Chart.js';
 import * as config from './config/Api.js';
 import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 import { HuntFilter } from './Filter.js';
+import { HuntRestError } from './Error.js';
 import { HuntList, HuntPaginationRow } from './Api.js';
 import { HuntDashboard } from './Dashboard.js';
 import { EventValue } from './Event.js';
@@ -644,25 +645,7 @@ export class RuleToggleModal extends React.Component {
       }
     </Modal.Header>
     <Modal.Body>
-	    {this.state.errors !== undefined &&
-             <div>
-             {Object.keys(this.state.errors).map( field => {
-                    return(
-                      <div key={field}>
-                       {this.state.errors[field].map( error => {
-			    if (typeof(error) === 'object') {
-				return(<div key={1} className="alert alert-danger">{field}: {JSON.stringify(error)}</div>);
-			    } else {
-                            	return(<div key={error} className="alert alert-danger">{field}: {error}</div>)
-			    }
-                    })
-                    }
-                      </div>
-                    );
-             })
-             }
-             </div>
-	    }
+       <HuntRestError errors={this.state.errors} />
        <Form horizontal>
        {this.state.supported_filters &&
 	   this.state.supported_filters.map((item, index) => {
