@@ -12,12 +12,21 @@ import { HuntRestError } from './Error.js';
 export class FiltersList extends HuntList {
     constructor(props) {
 	    super(props);
-  	    this.state = {data: [], count: 0};
+  	    this.state = {data: [], count: 0, rulesets: []};
 	    this.fetchData = this.fetchData.bind(this)
 	    this.needUpdate = this.needUpdate.bind(this)
     }
 
     componentDidMount() {
+    	if (this.state.rulesets.length === 0) {
+             axios.get(config.API_URL + config.RULESET_PATH).then(res => {
+               var rulesets = {}
+               for (var index in res.data['results']) {
+                    rulesets[res.data['results'][index].pk] = res.data['results'][index];
+               }
+               this.setState({rulesets: rulesets});
+            })
+	    }
 	    this.fetchData(this.props.config, this.props.filters);
     }
     
@@ -39,7 +48,7 @@ export class FiltersList extends HuntList {
 	        <ListView>
 	        {this.state.data.results &&
 	           this.state.data.results.map( item => {
-	               return(<FilterItem key={item.pk} data={item} switchPage={this.props.switchPage} last_index={this.state.count} needUpdate={this.needUpdate} />);
+	               return(<FilterItem key={item.pk} data={item} switchPage={this.props.switchPage} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} />);
 	           })
 	        }
 	        </ListView>
@@ -71,6 +80,10 @@ class FilterItem extends React.Component {
         for (var i in item.filter_defs) {
             var info = <ListViewInfoItem key={"filter-" + i}><p>{item.filter_defs[i].key}: {item.filter_defs[i].value}</p></ListViewInfoItem>;
             addinfo.push(info);
+        }
+        if (Object.keys(this.props.rulesets).length > 0) {
+            var rulesets = item.rulesets.map(item => { return(<ListViewInfoItem><p>Ruleset: {this.props.rulesets[item]['name']}</p></ListViewInfoItem>); });
+            addinfo.push(rulesets);
         }
         var description = '';
         if (item.action !== 'suppress') {
