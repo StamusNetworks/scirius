@@ -34,7 +34,7 @@ export class FiltersList extends HuntList {
 	        <ListView>
 	        {this.state.data.results &&
 	           this.state.data.results.map( item => {
-	               return(<FilterItem key={item.pk} data={item} switchPage={this.props.switchPage} last_index={this.state.count - 1} />);
+	               return(<FilterItem key={item.pk} data={item} switchPage={this.props.switchPage} last_index={this.state.count} />);
 	           })
 	        }
 	        </ListView>
