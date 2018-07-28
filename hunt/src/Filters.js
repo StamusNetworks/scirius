@@ -14,6 +14,7 @@ export class FiltersList extends HuntList {
 	    super(props);
   	    this.state = {data: [], count: 0};
 	    this.fetchData = this.fetchData.bind(this)
+	    this.needUpdate = this.needUpdate.bind(this)
     }
 
     componentDidMount() {
@@ -27,6 +28,10 @@ export class FiltersList extends HuntList {
             })
     }
 
+    needUpdate() {
+	    this.fetchData(this.props.config, this.props.filters);
+    }
+
     render() {
 	return(
 	    <div>
@@ -34,7 +39,7 @@ export class FiltersList extends HuntList {
 	        <ListView>
 	        {this.state.data.results &&
 	           this.state.data.results.map( item => {
-	               return(<FilterItem key={item.pk} data={item} switchPage={this.props.switchPage} last_index={this.state.count} />);
+	               return(<FilterItem key={item.pk} data={item} switchPage={this.props.switchPage} last_index={this.state.count} needUpdate={this.needUpdate} />);
 	           })
 	        }
 	        </ListView>
@@ -90,7 +95,7 @@ class FilterItem extends React.Component {
                 break;
         }
         var actions_menu = [<span key={item.pk  + '-index'} className="badge badge-default">{item.index}</span>];
-        actions_menu.push(<FilterEditKebab key={item.pk} data={item} last_index={this.props.last_index} />);
+        actions_menu.push(<FilterEditKebab key={item.pk} data={item} last_index={this.props.last_index} needUpdate={this.props.needUpdate} />);
         return(
             <ListViewItem
                 key={item.pk}
@@ -145,7 +150,7 @@ class FilterEditKebab extends React.Component {
                         Delete Filter
                         </MenuItem>
                 </DropdownKebab>
-	            <FilterToggleModal show={this.state.toggle.show} action={this.state.toggle.action} data={this.props.data}  close={this.closeAction} last_index={this.props.last_index} />
+	            <FilterToggleModal show={this.state.toggle.show} action={this.state.toggle.action} data={this.props.data}  close={this.closeAction} last_index={this.props.last_index} needUpdate={this.props.needUpdate}/>
             </React.Fragment>
         )
     }
@@ -182,7 +187,7 @@ class FilterToggleModal extends React.Component {
                 var data = {index: this.state.new_index, comment: this.state.comment}
 	            axios.patch(config.API_URL + config.PROCESSING_PATH + this.props.data.pk + '/', data).then( res => {
                     console.log("Moved filter to " + this.state.new_index);
-                    /* TODO warn top level to refresh the list order */
+                    this.props.needUpdate();
                     this.close();
                 }
                 ).catch (error => {
@@ -195,7 +200,7 @@ class FilterToggleModal extends React.Component {
                 axios.delete(config.API_URL + config.PROCESSING_PATH + this.props.data.pk + '/').then(
                     res => {
                         console.log("Deleted filter");
-                        /* TODO warn top level to refresh the list order */
+                        this.props.needUpdate();
                         this.close();
                     }
                 ).catch (error => {
