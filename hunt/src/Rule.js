@@ -753,6 +753,7 @@ export class RuleToggleModal extends React.Component {
 
         <div className="form-group">
             <div className="col-sm-9">
+	    <strong>Optional comment</strong>
                 <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange} />
             </div>
         </div>
