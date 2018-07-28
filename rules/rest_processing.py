@@ -27,6 +27,7 @@ from rest_framework.decorators import list_route
 from rest_framework.response import Response
 
 from rules.models import RuleProcessingFilter, RuleProcessingFilterDef, Threshold, UserAction
+from scirius.rest_utils import SciriusModelViewSet
 
 
 class RuleProcessingFilterDefSerializer(serializers.ModelSerializer):
@@ -240,7 +241,7 @@ class RuleProcessingFilterIntersectSerializer(serializers.Serializer):
     index = serializers.IntegerField(default=None, allow_null=True)
 
 
-class RuleProcessingFilterViewSet(viewsets.ModelViewSet):
+class RuleProcessingFilterViewSet(SciriusModelViewSet):
     '''
     =============================================================================================================================================================
     ==== GET ====\n
