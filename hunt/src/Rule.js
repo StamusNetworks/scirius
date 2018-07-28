@@ -619,7 +619,7 @@ export class RuleToggleModal extends React.Component {
     }
 
     handleOptionsChange(event) {
-        var options = Object.assign({}, this.state.options);
+	    var options = Object.assign({}, this.state.options);
 	    options[event.target.id] = event.target.value;
 	    this.setState({options: options});
     }
@@ -680,14 +680,14 @@ export class RuleToggleModal extends React.Component {
 			<FormControl type="integer" disabled={false} defaultValue={60} onChange={this.handleOptionsChange} />
 			</Col>
 	          </FormGroup>
-		  <FormGroup key="track" controlId="track_by" disabled={false}>
+		  <FormGroup key="track" controlId="track" disabled={false}>
 			<Col sm={3}>
 		       <strong>Track by</strong>
 			</Col>
 			<Col sm={3}>
 		  <FormControl componentClass="select" placeholder="by_src" onChange={this.handleOptionsChange}>
         		<option value="by_src">By Source</option>
-        		<option value="by_dest">By Destination</option>
+        		<option value="by_dst">By Destination</option>
       		  </FormControl>
 			</Col>
 		  </FormGroup>
