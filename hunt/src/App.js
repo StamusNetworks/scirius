@@ -7,6 +7,7 @@ import { HistoryPage } from './History.js';
 import { PAGE_STATE } from './Const.js';
 import { RulesList } from './Rule.js';
 import { AlertsList } from './Alerts.js';
+import { FiltersList } from './Filters.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
 import 'bootstrap3/dist/css/bootstrap.css'
@@ -23,6 +24,7 @@ class HuntApp extends Component {
     var rules_list_conf = localStorage.getItem('rules_list');
     var alerts_list_conf = localStorage.getItem('alerts_list');
     var history_conf = localStorage.getItem('history');
+    var filters_list_conf = localStorage.getItem('filters_list');
     var page_display = localStorage.getItem('page_display');
     var ids_filters = localStorage.getItem('ids_filters');
     var history_filters = localStorage.getItem('history_filters');
@@ -57,6 +59,21 @@ class HuntApp extends Component {
         localStorage.setItem('alerts_list', JSON.stringify(alerts_list_conf));
     } else {
         alerts_list_conf = JSON.parse(alerts_list_conf);
+    }
+
+    if (!filters_list_conf) {
+        filters_list_conf = {
+            pagination: {
+              page: 1,
+              perPage: 20,
+              perPageOptions: [20, 50, 100]
+            },
+            sort: {id: 'timestamp', asc: false},
+            view_type: 'list'
+        };
+        localStorage.setItem('filters_list', JSON.stringify(filters_list_conf));
+    } else {
+        filters_list_conf = JSON.parse(filters_list_conf);
     }
 
     if (!history_conf) {
@@ -103,6 +120,7 @@ class HuntApp extends Component {
       ids_filters: ids_filters,
       history: history_conf,
       history_filters: history_filters,
+      filters_list: filters_list_conf,
     };
     this.displaySource = this.displaySource.bind(this);
     this.displayRuleset = this.displayRuleset.bind(this);
@@ -113,6 +131,7 @@ class HuntApp extends Component {
     this.onHomeClick = this.onHomeClick.bind(this);
     this.onDashboardClick = this.onDashboardClick.bind(this);
     this.onHistoryClick = this.onHistoryClick.bind(this);
+    this.onFiltersClick = this.onFiltersClick.bind(this);
     this.onAlertsClick = this.onAlertsClick.bind(this);
     this.switchPage = this.switchPage.bind(this);
     this.updateRuleListState = this.updateRuleListState.bind(this);
@@ -137,6 +156,10 @@ class HuntApp extends Component {
     
     onHistoryClick() {
         this.switchPage(PAGE_STATE.history, undefined);
+    }
+
+    onFiltersClick() {
+        this.switchPage(PAGE_STATE.filters_list, undefined);
     }
 
     fromDate(period) {
@@ -187,6 +210,11 @@ class HuntApp extends Component {
         localStorage.setItem('alerts_list', JSON.stringify(alerts_list_state));
     }
 
+    updateFilterListState(filters_list_state) {
+        this.setState({filters_list: filters_list_state});
+        localStorage.setItem('filters_list', JSON.stringify(filters_list_state));
+    }
+
     updateIDSFilterState(filters) {
         this.setState({ids_filters: filters});
         localStorage.setItem('ids_filters', JSON.stringify(filters));
@@ -224,6 +252,9 @@ class HuntApp extends Component {
                   break;
 		case PAGE_STATE.alerts_list:
                   displayed_page = <AlertsList config={this.state.alerts_list} filters={this.state.ids_filters} from_date={this.state.from_date} updateListState={this.updateAlertListState} switchPage={this.switchPage} updateFilterState={this.updateIDSFilterState} />
+		  break;
+		case PAGE_STATE.filters_list:
+                  displayed_page = <FiltersList config={this.state.filters_list} filters={this.state.filters_filters} from_date={this.state.from_date} updateListState={this.updateFilterListState} switchPage={this.switchPage} updateFilterState={this.updateFiltersFilterState} />
                   break;
             }
         return(
@@ -254,8 +285,13 @@ class HuntApp extends Component {
             	      initialActive = { this.state.display.page === PAGE_STATE.dashboards }
             	      onClick={this.onDashboardClick}
             	      className={null}
-            	    >
-            	    </VerticalNav.Item>
+            	    />
+       		     <VerticalNav.Item
+		      title="Filters"
+		      iconClass="glyphicon glyphicon-filter"
+            	      initialActive = { this.state.display.page === PAGE_STATE.filters_list }
+            	      onClick={this.onFiltersClick}
+		     />
             	    <VerticalNav.Item title="IDS rules" iconClass="pficon pficon-middleware">
             	        <VerticalNav.SecondaryItem title="Sources" >
                 	    {this.state.sources.map(function(source) {

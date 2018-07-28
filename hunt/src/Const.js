@@ -5,6 +5,7 @@ export const PAGE_STATE = {
    ruleset: 'RULESET',
    dashboards: 'DASHBOARDS',
    history: 'HISTORY',
+   filters_list: 'FILTERS',
    setup: 'SETUP',
 };
 
