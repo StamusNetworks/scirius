@@ -566,7 +566,7 @@ export class RuleToggleModal extends React.Component {
          } else if (["suppress", "threshold", "tag", "tagkeep"].indexOf(this.props.action) !== -1) {
             //{"filter_defs": [{"key": "src_ip", "value": "192.168.0.1", "operator": "equal"}], "action": "suppress", "rulesets": [1]}
             var data = {filter_defs: this.state.supported_filters, action: this.props.action, rulesets: this.state.selected, comment: this.state.comment};
-            if (this.props.action in ["threshold", "tag", "tagkeep"]) {
+            if (["threshold", "tag", "tagkeep"].indexOf(this.props.action) !== -1) {
                     data.options = this.state.options;
             }
             axios.post(config.API_URL + config.PROCESSING_PATH, data).then(
