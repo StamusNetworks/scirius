@@ -30,8 +30,8 @@ export class FiltersList extends HuntList {
 	    this.fetchData(this.props.config, this.props.filters);
     }
     
-    fetchData(history_stat, filters) {
-	    axios.get(config.API_URL + config.PROCESSING_PATH)
+    fetchData(filters_stat, filters) {
+	    axios.get(config.API_URL + config.PROCESSING_PATH + "?" + this.buildListUrlParams(filters_stat))
             .then(res => {
                this.setState({ data: res.data, count: res.data.count });
             })

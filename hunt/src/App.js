@@ -139,6 +139,7 @@ class HuntApp extends Component {
     this.updateIDSFilterState = this.updateIDSFilterState.bind(this);
     this.updateHistoryListState = this.updateHistoryListState.bind(this);
     this.updateHistoryFilterState = this.updateHistoryFilterState.bind(this);
+    this.updateFilterListState = this.updateFilterListState.bind(this);
     
   }
 
