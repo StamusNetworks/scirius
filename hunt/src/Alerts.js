@@ -115,6 +115,26 @@ class AlertInList extends React.Component {
     render() {
         var data = this.props.data;
         var ip_params = data.src_ip + ' -> ' + data.dest_ip;
+	var source_network = undefined;
+	var target_network = undefined;
+	if (data.alert.source) {
+		if (data.alert.source.net_info_agg) {
+			source_network = <EventField field_name="Source Network" field="alert.source.net_info_agg" value={data.alert.source.net_info_agg} addFilter={this.addFilter} />;
+		} else {
+			if (data.alert.source.net_info) {
+				source_network = <React.Fragment><dt>Source Network</dt><dd>{data.alert.source.net_info.join(', ')}</dd></React.Fragment>
+			}
+		}
+	}
+	if (data.alert.target) {
+		if (data.alert.target.net_info_agg) {
+			target_network = <EventField field_name="Target Network" field="alert.target.net_info_agg" value={data.alert.target.net_info_agg} addFilter={this.addFilter} />;
+		} else {
+			if (data.alert.target.net_info) {
+				target_network = <React.Fragment><dt>Source Network</dt><dd>{data.alert.target.net_info.join(', ')}</dd></React.Fragment>
+			}
+		}
+	}
         return(
            <ListViewItem
             id={this.props.id}
@@ -136,13 +156,22 @@ class AlertInList extends React.Component {
 			   <EventField field_name="Category" field="alert.category" value={data.alert.category} addFilter={this.addFilter} />
 			   <EventField field_name="Severity" field="alert.severity" value={data.alert.severity} addFilter={this.addFilter} />
 			   <EventField field_name="Revision" field="alert.rev" value={data.alert.rev} addFilter={this.addFilter} />
+			   {data.alert.tag &&
+			   <EventField field_name="Tagged" field="alert.tag" value={data.alert.tag} addFilter={this.addFilter} />
+			   }
 			</dl>
 		 </Col>
 
 	         <Col sm={4}>
 		        <dl className="dl-horizontal">
+			   {data.net_info && data.net_info.src_agg &&
+			   <EventField field_name="Source Network" field="net_info.src_agg" value={data.net_info.src_agg} addFilter={this.addFilter} />
+			   }
 			   <EventField field_name="Source IP" field="src_ip" value={data.src_ip} addFilter={this.addFilter} />
 			   <EventField field_name="Source port" field="src_port" value={data.src_port} addFilter={this.addFilter} />
+			   {data.net_info && data.net_info.dest_agg &&
+			   <EventField field_name="Destination Network" field="net_info.dest_agg" value={data.net_info.dest_agg} addFilter={this.addFilter} />
+			   }
 			   <EventField field_name="Destination IP" field="dest_ip" value={data.dest_ip} addFilter={this.addFilter} />
 			   <EventField field_name="Destination port" field="dest_port" value={data.dest_port} addFilter={this.addFilter} />
 			   <EventField field_name="IP protocol" field="proto" value={data.proto} addFilter={this.addFilter} />
@@ -156,18 +185,10 @@ class AlertInList extends React.Component {
 		    {data.alert.target !== undefined &&
 	         <Col sm={4}>
 		        <dl className="dl-horizontal">
-			    { data.alert.source.net_info !== undefined &&
-			      <React.Fragment>
-			   <dt>Source Network</dt><dd>{data.alert.source.net_info.join(', ')}</dd>
-			      </React.Fragment>
-			   }
+			    { source_network }
 			   <EventField field_name="Source IP" field="alert.source.ip" value={data.alert.source.ip} addFilter={this.addFilter} />
 			   <EventField field_name="Source port" field="alert.source.port" value={data.alert.source.port} addFilter={this.addFilter} />
-			    { data.alert.target.net_info !== undefined &&
-			      <React.Fragment>
-			   <dt>Target Network</dt><dd>{data.alert.target.net_info.join(', ')}</dd>
-			      </React.Fragment>
-			    }
+			    { target_network  }
 			   <EventField field_name="Target IP" field="alert.target.ip" value={data.alert.target.ip} addFilter={this.addFilter} />
 			   <EventField field_name="Target port" field="alert.target.port" value={data.alert.target.port} addFilter={this.addFilter} />
 			</dl>
