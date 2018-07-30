@@ -150,6 +150,11 @@ class AlertInList extends React.Component {
 	   >
 	      <Row>
 	         <Col sm={4}>
+		 	<div className="card-pf">
+			<div className="card-pf-heading">
+			<h5 className="card-title">Signature</h5>
+			</div>
+			<div className="card-pf-body">
 		        <dl className="dl-horizontal">
 			   <EventField field_name="Signature" field="alert.signature" value={data.alert.signature} addFilter={this.addFilter} />
 			   <EventField field_name="SID" field="alert.signature_id" value={data.alert.signature_id} addFilter={this.addFilter} />
@@ -160,9 +165,16 @@ class AlertInList extends React.Component {
 			   <EventField field_name="Tagged" field="alert.tag" value={data.alert.tag} addFilter={this.addFilter} />
 			   }
 			</dl>
+			</div>
+			</div>
 		 </Col>
 
 	         <Col sm={4}>
+		 	<div className="card-pf">
+			<div className="card-pf-heading">
+			<h5>IP and basic information</h5>
+			</div>
+			<div className="card-pf-body">
 		        <dl className="dl-horizontal">
 			   {data.net_info && data.net_info.src_agg &&
 			   <EventField field_name="Source Network" field="net_info.src_agg" value={data.net_info.src_agg} addFilter={this.addFilter} />
@@ -180,10 +192,17 @@ class AlertInList extends React.Component {
 			   }
 			   <EventField field_name="Probe" field="probe" value={data.host} addFilter={this.addFilter} />
 			</dl>
+			</div>
+			</div>
 		 </Col>
 
 		    {data.alert.target !== undefined &&
 	         <Col sm={4}>
+		 	<div className="card-pf">
+			<div className="card-pf-heading">
+			<h5>Attack vector</h5>
+			</div>
+			<div className="card-pf-body">
 		        <dl className="dl-horizontal">
 			    { source_network }
 			   <EventField field_name="Source IP" field="alert.source.ip" value={data.alert.source.ip} addFilter={this.addFilter} />
@@ -192,10 +211,19 @@ class AlertInList extends React.Component {
 			   <EventField field_name="Target IP" field="alert.target.ip" value={data.alert.target.ip} addFilter={this.addFilter} />
 			   <EventField field_name="Target port" field="alert.target.port" value={data.alert.target.port} addFilter={this.addFilter} />
 			</dl>
+			</div>
+			</div>
 		 </Col>
 		    }
+		</Row>
+		<Row>
 		    {data.http !== undefined &&
 	         <Col sm={4}>
+		 	<div className="card-pf">
+			<div className="card-pf-heading">
+			<h5>HTTP</h5>
+			</div>
+			<div className="card-pf-body">
 		        <dl className="dl-horizontal">
 			   <EventField field_name="Host" field="http.hostname" value={data.http.hostname} addFilter={this.addFilter} />
 			   <EventField field_name="URL" field="http.url" value={data.http.url} addFilter={this.addFilter} />
@@ -206,10 +234,17 @@ class AlertInList extends React.Component {
 			      <EventField field_name="Referrer" field="http.http_refer" value={data.http.http_refer} addFilter={this.addFilter} />
 			   }
 			</dl>
+			</div>
+			</div>
 		 </Col>
 		    }
 		    {data.tls !== undefined &&
 	         <Col sm={4}>
+		 	<div className="card-pf">
+			<div className="card-pf-heading">
+			<h5>TLS</h5>
+			</div>
+			<div className="card-pf-body">
 		        <dl className="dl-horizontal">
 			   <EventField field_name="TLS Subject" field="tls.subject" value={data.tls.subject} addFilter={this.addFilter} />
 			   <EventField field_name="TLS Issuer" field="tls.issuerdn" value={data.tls.issuerdn} addFilter={this.addFilter} />
@@ -217,10 +252,17 @@ class AlertInList extends React.Component {
 			   <EventField field_name="TLS not before" field="tls.notbefore" value={data.tls.notbefore} addFilter={this.addFilter} />
 			   <EventField field_name="TLS not after" field="tls.notafter" value={data.tls.notafter} addFilter={this.addFilter} />
 			</dl>
+			</div>
+			</div>
 		 </Col>
 		    }
 		    {data.flow !== undefined &&
 	         <Col sm={4}>
+		 	<div className="card-pf">
+			<div className="card-pf-heading">
+			<h5>Flow</h5>
+			</div>
+			<div className="card-pf-body">
 		        <dl className="dl-horizontal">
 			   <EventField field_name="Flow start" field="flow.start" value={data.flow.start} addFilter={this.addFilter} />
 			   <EventField field_name="Pkts to server" field="flow.pkts_toserver" value={data.flow.pkts_toserver} addFilter={this.addFilter} />
@@ -228,10 +270,17 @@ class AlertInList extends React.Component {
 			   <EventField field_name="Pkts to client" field="flow.pkts_toclient" value={data.flow.pkts_toclient} addFilter={this.addFilter} />
 			   <EventField field_name="Bytes to client" field="flow.bytes_toclient" value={data.flow.bytes_toclient} addFilter={this.addFilter} />
 			</dl>
+			</div>
+			</div>
 		 </Col>
 		    }
 		    {data.alert.metadata &&
 	         <Col sm={4}>
+		 	<div className="card-pf">
+			<div className="card-pf-heading">
+			<h5>Signature metadata</h5>
+			</div>
+			<div className="card-pf-body">
 		      <dl className="dl-horizontal">
 		      {   
 			  Object.entries(data.alert.metadata).map( field => {
@@ -243,22 +292,28 @@ class AlertInList extends React.Component {
 		      })
 		      }
 		      </dl>
+		      </div>
+			</div>
 		 </Col>
 		    }
               </Row>
 	      {data.http &&
 	      <Row>
 	         { data.http.http_request_body_printable &&
+		 	<div className="card-pf">
 	         <Col sm={6}>
 		      <strong>HTTP request body</strong>
 		      <pre style={{"maxHeight": "12pc"}} >{data.http.http_request_body_printable}</pre>
 		 </Col>
+		 </div>
 	         }
 	         {data.http.http_response_body_printable &&
+		 	<div className="card-pf">
 	         <Col sm={6}>
 		      <strong>HTTP response body</strong>
 		      <pre style={{"maxHeight": "12pc"}} >{data.http.http_response_body_printable}</pre>
 		 </Col>
+		 </div>
 	         }
               </Row>
 	      }
