@@ -1721,16 +1721,16 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
         {"id":612,"action_type":"disable_category","date":"2018-05-14T16:13:24.711372+02:00","comment":null,"username":"scirius","description":"scirius has disabled category emerging-scada in ruleset SonicRulesetOther","user":1,"title":"Disable Category","description_raw":"{user} has disabled category {category} in ruleset {ruleset}","ua_objects":{"category":{"pk":147,"type":"Category","value":"emerging-scada"},"ruleset":{"pk":65,"type":"Ruleset","value":"SonicRulesetOther"}}}
 
     Ordering by username ASC:\n
-        curl -k https://x.x.x.x/rest/rules/history/?ordering=username -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k "https://x.x.x.x/rest/rules/history/?ordering=username" -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Ordering by username DESC:\n
-        curl -k https://x.x.x.x/rest/rules/history/?ordering=-username -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k "https://x.x.x.x/rest/rules/history/?ordering=-username" -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Filtering by username and action_type:\n
-        curl -k https://x.x.x.x/rest/rules/history/?date=&username=scirius&user_action_objects__action_key=&action_type=edit_ruleset -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k "https://x.x.x.x/rest/rules/history/?date=&username=scirius&user_action_objects__action_key=&action_type=edit_ruleset" -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Ordering & Filtering:\n
-        curl -k https://x.x.x.x/rest/rules/history/?action_type=edit_ruleset&date=&ordering=username&user_action_objects__action_key=&username=scirius -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k "https://x.x.x.x/rest/rules/history/?action_type=edit_ruleset&date=&ordering=username&user_action_objects__action_key=&username=scirius" -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     =============================================================================================================================================================
     """
