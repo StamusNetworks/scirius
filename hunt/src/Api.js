@@ -151,7 +151,7 @@ export class HuntList extends React.Component {
 
   onLastPage() {
      const newListState = Object.assign({}, this.props.config);
-     newListState.pagination.page = Math.floor(this.state.rules_count / this.props.config.pagination.perPage) + 1;
+     newListState.pagination.page = Math.floor(this.state.count / this.props.config.pagination.perPage) + 1;
      this.props.updateListState(newListState);
      this.fetchData(newListState, this.props.filters);
   }

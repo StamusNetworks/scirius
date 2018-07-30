@@ -818,7 +818,7 @@ export class RulesList extends HuntList {
     super(props);
 
     this.state = {
-      rules: [], sources: [], rules_count: 0,
+      rules: [], sources: [], count: 0,
       loading: true,
       refresh_data: false,
       view: 'rules_list',
@@ -914,7 +914,7 @@ export class RulesList extends HuntList {
 	     var src = sources_array[i];
 	     sources[src.pk] = src;
 	 }
-         this.setState({ rules_count: RuleRes.data['count'], rules: RuleRes.data['results'], sources: sources, loading: false, refresh_data: false});
+         this.setState({ count: RuleRes.data['count'], rules: RuleRes.data['results'], sources: sources, loading: false, refresh_data: false});
 	 if (RuleRes.data.results.length > 0) {
             if (!RuleRes.data.results[0].timeline_data) {
 	            this.fetchHitsStats(RuleRes.data['results']);
@@ -1044,11 +1044,11 @@ export class RulesList extends HuntList {
 	        viewType = {PAGINATION_VIEW.LIST}
 	        pagination={this.props.config.pagination}
 	        onPaginationChange={this.handlePaginationChange}
-		amountOfPages = {Math.ceil(this.state.rules_count / this.props.config.pagination.perPage)}
+		amountOfPages = {Math.ceil(this.state.count / this.props.config.pagination.perPage)}
 		pageInputValue = {this.props.config.pagination.page}
-		itemCount = {this.state.rules_count}
+		itemCount = {this.state.count}
 		itemsStart = {(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
-		itemsEnd = {Math.min(this.props.config.pagination.page * this.props.config.pagination.perPage - 1, this.state.rules_count) }
+		itemsEnd = {Math.min(this.props.config.pagination.page * this.props.config.pagination.perPage - 1, this.state.count) }
 		onFirstPage={this.onFirstPage}
 		onNextPage={this.onNextPage}
 		onPreviousPage={this.onPrevPage}
