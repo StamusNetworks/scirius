@@ -33,7 +33,7 @@ export class FiltersList extends HuntList {
     fetchData(filters_stat, filters) {
 	    axios.get(config.API_URL + config.PROCESSING_PATH + "?" + this.buildListUrlParams(filters_stat))
             .then(res => {
-               this.setState({ data: res.data, count: res.data.count });
+               this.setState({ data: res.data.results, count: res.data.count });
             })
     }
 
@@ -46,8 +46,8 @@ export class FiltersList extends HuntList {
 	    <div>
 
 	        <ListView>
-	        {this.state.data.results &&
-	           this.state.data.results.map( item => {
+	        {this.state.data &&
+	           this.state.data.map( item => {
 	               return(<FilterItem key={item.pk} data={item} switchPage={this.props.switchPage} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} />);
 	           })
 	        }
