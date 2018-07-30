@@ -78,7 +78,7 @@ class FilterItem extends React.Component {
         var item = this.props.data;
         var addinfo = [];
         for (var i in item.filter_defs) {
-            var info = <ListViewInfoItem key={"filter-" + i}><p>{item.filter_defs[i].key}: {item.filter_defs[i].value}</p></ListViewInfoItem>;
+            var info = <ListViewInfoItem key={"filter-" + i}><p>{item.filter_defs[i].operator === "different" && "Not "}{item.filter_defs[i].key}: {item.filter_defs[i].value}</p></ListViewInfoItem>;
             addinfo.push(info);
         }
         if (Object.keys(this.props.rulesets).length > 0) {

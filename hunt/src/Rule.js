@@ -493,7 +493,14 @@ export class RuleToggleModal extends React.Component {
           var supp_filters = [];
           for(var i = 0; i < this.props.filters.length; i++) {
             if (res.data.fields.indexOf(this.props.filters[i].id) !== -1) {
-                this.props.filters[i].operator = "equal";
+		if (this.props.filters[i].negated === false) {
+			this.props.filters[i].operator = "equal";
+		} else {
+			if (res.data.operators.indexOf("different") === -1) {
+				continue;
+			}
+			this.props.filters[i].operator = "different";
+		}
                 this.props.filters[i].key = this.props.filters[i].id;
                 supp_filters.push(this.props.filters[i]);
             }
@@ -657,10 +664,10 @@ export class RuleToggleModal extends React.Component {
 	   this.state.supported_filters.map((item, index) => {
                   return (
 		  <FormGroup key={item.id} controlId={item.id} disabled={false}>
-			<Col sm={3}>
-			<strong>{item.id}</strong>
+			<Col sm={4}>
+			<strong>{item.negated && "Not " }{item.id}</strong>
 			</Col>
-			<Col sm={9}>
+			<Col sm={8}>
 			<FormControl type={item.id} disabled={false} defaultValue={item.value} onChange={this.handleFieldChange} />
 			</Col>
 	          </FormGroup>
@@ -671,26 +678,26 @@ export class RuleToggleModal extends React.Component {
        {this.props.action === 'threshold' &&
             <React.Fragment>
 		  <FormGroup key="count" controlId="count" disabled={false}>
-			<Col sm={3}>
+			<Col sm={4}>
 			<strong>Count</strong>
 			</Col>
-			<Col sm={9}>
+			<Col sm={8}>
 			<FormControl type="integer" disabled={false} defaultValue={1} onChange={this.handleOptionsChange} />
 			</Col>
 		   </FormGroup>
 		   <FormGroup key="seconds" controlId="seconds" disabled={false}>
-			<Col sm={3}>
+			<Col sm={4}>
 			<strong>Seconds</strong>
 			</Col>
-			<Col sm={9}>
+			<Col sm={8}>
 			<FormControl type="integer" disabled={false} defaultValue={60} onChange={this.handleOptionsChange} />
 			</Col>
 	          </FormGroup>
 		  <FormGroup key="track" controlId="track" disabled={false}>
-			<Col sm={3}>
+			<Col sm={4}>
 		       <strong>Track by</strong>
 			</Col>
-			<Col sm={3}>
+			<Col sm={8}>
 		  <FormControl componentClass="select" placeholder="by_src" onChange={this.handleOptionsChange}>
         		<option value="by_src">By Source</option>
         		<option value="by_dst">By Destination</option>
