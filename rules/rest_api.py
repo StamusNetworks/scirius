@@ -1501,6 +1501,12 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
 
         return Response(response)
 
+    @detail_route(methods=['post'])
+    def build_counter(self, request, pk):
+        instance = self.get_object()
+        instance.build_counters()
+        return Response({'build_counter': 'ok'})
+
 
 class PublicSourceSerializer(BaseSourceSerializer):
     public_source = serializers.CharField(required=True)
@@ -1546,7 +1552,7 @@ class PublicSourceViewSet(BaseSourceViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
-    List all used sources:\n
+    List all used sources: (if cats_count == 0 and/or rules_count == 0 call update_source THEN build_counter api)\n
         curl -k https://x.x.x.x/rest/rules/public_source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
@@ -1633,6 +1639,7 @@ class SourceViewSet(BaseSourceViewSet):
     =============================================================================================================================================================
     ==== GET ====\n
     List all used sources:\n
+    List all used sources: (if cats_count == 0 and/or rules_count == 0 call update_source (if method==http) THEN build_counter api)\n
         curl -k https://x.x.x.x/rest/rules/source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
@@ -1648,9 +1655,9 @@ class SourceViewSet(BaseSourceViewSet):
         {"pk":5,"name":"sonic Custom source","created_date":"2018-05-07T12:01:00.658118+02:00","updated_date":"2018-05-07T12:01:00.658126+02:00","method":"local","datatype":"sigs","uri":null,"cert_verif":true,"cats_count":0,"rules_count":0,"authkey":"123456789"}
 
     Update custom (only for {method: http}):\n
-        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/update_source/\\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k "https://x.x.x.x/rest/rules/source/<pk-source>/update_source/?async=true" -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
-        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/update_source/\\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k "https://x.x.x.x/rest/rules/source/<pk-source>/update_source/?async=false" -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
     Return:\n
         HTTP/1.1 200 OK
