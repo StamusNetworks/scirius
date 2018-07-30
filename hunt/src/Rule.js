@@ -784,10 +784,10 @@ export function buildQFilter(filters) {
 	    continue;
 	}
 	else if (filters[i].id === 'alert.tag') {
-	    if (filters[i].value.id === 'untagged') {
+	    if (filters[i].value === 'untagged') {
 		qfilter.push('NOT alert.tag:*');
 	    } else {
-            	qfilter.push(f_prefix + 'alert.tag:' + filters[i].value.id);
+            	qfilter.push(f_prefix + 'alert.tag:"' + filters[i].value + '"');
 	    }
 	    continue;
 	}
