@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { PaginationRow } from 'patternfly-react';
+import { PaginationRow, DropdownButton, MenuItem } from 'patternfly-react';
 import { PAGINATION_VIEW_TYPES } from 'patternfly-react';
 
 
@@ -105,6 +105,12 @@ export class HuntList extends React.Component {
          this.buildFilter = this.buildFilter.bind(this);
 
          this.setViewType = this.setViewType.bind(this);
+
+    	 this.actionsButtons = this.actionsButtons.bind(this);
+    	 this.createSuppress = this.createSuppress.bind(this);
+    	 this.createThreshold = this.createThreshold.bind(this);
+    	 this.createTag = this.createTag.bind(this);
+    	 this.closeAction = this.closeAction.bind(this);
     }
 
    buildFilter(filters) {
@@ -184,6 +190,42 @@ export class HuntList extends React.Component {
    fetchData(state, filters) {
         return;
    }
+
+  createSuppress() {
+	this.setState({action: {view: true, type: 'suppress'}});
+  }
+
+  createThreshold() {
+	this.setState({action: {view: true, type: 'threshold'}});
+  }
+  
+  createTag() {
+	this.setState({action: {view: true, type: 'tag'}});
+  }
+
+  createTagKeep() {
+	this.setState({action: {view: true, type: 'tagkeep'}});
+  }
+
+  closeAction() {
+        this.setState({action: {view: false, type: 'suppress'}});
+  }
+
+
+  actionsButtons() {
+      return(
+	     <div className="form-group">
+	         <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions">
+		 <MenuItem eventKey="1" onClick={e => { this.createSuppress(); }}>Suppress</MenuItem>
+		 <MenuItem eventKey="2" onClick={e => { this.createThreshold(); }}>Threshold</MenuItem>
+		 <MenuItem divider />
+		 <MenuItem eventKey="3" onClick={e => { this.createTag(); }}>Tag</MenuItem>
+		 <MenuItem eventKey="4" onClick={e => { this.createTagKeep(); }}>Tag and Keep</MenuItem>
+	         </DropdownButton>
+	     </div>
+       );
+  }
+
 
    componentDidMount() {
 	this.fetchData(this.props.config, this.props.filters);

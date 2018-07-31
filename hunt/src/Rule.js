@@ -2,7 +2,7 @@ import React from 'react';
 import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
 import axios from 'axios';
 import { PAGINATION_VIEW } from 'patternfly-react';
-import { Modal, DropdownKebab, MenuItem, Icon, Button, DropdownButton } from 'patternfly-react';
+import { Modal, DropdownKebab, MenuItem, Icon, Button } from 'patternfly-react';
 import { Form, FormGroup, FormControl } from 'patternfly-react';
 import { SciriusChart } from './Chart.js';
 import * as config from './config/Api.js';
@@ -442,9 +442,9 @@ export function updateHitsStats(rules, p_from_date, updateCallback, qfilter) {
 export class RuleEditKebab extends React.Component {
     constructor(props) {
         super(props);
+        this.state = { toggle: { show: false, action: "Disable" }};
         this.displayToggle = this.displayToggle.bind(this);
         this.hideToggle = this.hideToggle.bind(this);
-        this.state = { toggle: { show: false, action: "Disable" }};
     }
 
     displayToggle(action) {
@@ -841,11 +841,6 @@ export class RulesList extends HuntList {
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
     this.displayRule = this.displayRule.bind(this);
     this.RuleUpdateFilter = this.RuleUpdateFilter.bind(this);
-    this.actionsButtons = this.actionsButtons.bind(this);
-    this.createSuppress = this.createSuppress.bind(this);
-    this.createThreshold = this.createThreshold.bind(this);
-    this.createTag = this.createTag.bind(this);
-    this.closeAction = this.closeAction.bind(this);
   }
 
    buildFilter(filters) {
@@ -967,40 +962,6 @@ export class RulesList extends HuntList {
   	this.UpdateFilter(filters);
   }
 
-  createSuppress() {
-	this.setState({action: {view: true, type: 'suppress'}});
-  }
-
-  createThreshold() {
-	this.setState({action: {view: true, type: 'threshold'}});
-  }
-  
-  createTag() {
-	this.setState({action: {view: true, type: 'tag'}});
-  }
-
-  createTagKeep() {
-	this.setState({action: {view: true, type: 'tagkeep'}});
-  }
-
-  closeAction() {
-        this.setState({action: {view: false, type: 'suppress'}});
-  }
-
-
-  actionsButtons() {
-      return(
-	     <div className="form-group">
-	         <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions">
-		 <MenuItem eventKey="1" onClick={e => { this.createSuppress(); }}>Suppress</MenuItem>
-		 <MenuItem eventKey="2" onClick={e => { this.createThreshold(); }}>Threshold</MenuItem>
-		 <MenuItem divider />
-		 <MenuItem eventKey="3" onClick={e => { this.createTag(); }}>Tag</MenuItem>
-		 <MenuItem eventKey="4" onClick={e => { this.createTagKeep(); }}>Tag and Keep</MenuItem>
-	         </DropdownButton>
-	     </div>
-       );
-  }
   
   render() {
     return (

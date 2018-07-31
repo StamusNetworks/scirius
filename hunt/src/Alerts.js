@@ -1,6 +1,6 @@
 import React from 'react';
 import { HuntList } from './Api.js';
-import { buildQFilter } from './Rule.js';
+import { buildQFilter, RuleToggleModal } from './Rule.js';
 import { HuntFilter } from './Filter.js';
 import { EventField } from './Event.js';
 import * as config from './config/Api.js';
@@ -31,6 +31,8 @@ export class AlertsList extends HuntList {
       alerts: [],
       loading: true,
       refresh_data: false,
+      action: { view: false, type: 'suppress'},
+      net_error: undefined,
       rules_filters: []
     };
    this.fetchData = this.fetchData.bind(this);
@@ -83,6 +85,7 @@ export class AlertsList extends HuntList {
 		  filterFields={this.state.rules_filters}
 		  sort_config={AlertSortFields}
 		  displayToggle={this.state.display_toggle}
+		  actionsButtons={this.actionsButtons}
 		  queryType={['filter']}
             />
          <Spinner loading={this.state.loading}>
@@ -95,6 +98,7 @@ export class AlertsList extends HuntList {
               })
            }
            </ListView>
+	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} />
        </div>
     )
   }
