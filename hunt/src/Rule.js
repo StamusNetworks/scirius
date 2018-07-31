@@ -71,7 +71,7 @@ export class RuleInList extends React.Component {
 <Col sm={11}>
 <div className="container-fluid">
    <div className="row">
-      <pre style={{whiteSpace: "pre-wrap"}}>{this.props.data.content}</pre>
+      <div className="SigContent" dangerouslySetInnerHTML={{__html: this.props.data.content}}></div>
    </div>
    <div className="row">
       <div className="col-md-10">
@@ -228,7 +228,7 @@ export class RulePage extends React.Component {
 		     this.updateExtInfo(res.data);
             }) 
        } else {
-           axios.get(config.API_URL + config.RULE_PATH + sid).then(
+           axios.get(config.API_URL + config.RULE_PATH + sid + "/?highlight=true").then(
 		res => { 
                          updateHitsStats([res.data], this.props.from_date, this.updateRuleState, qfilter);
 	   axios.get(config.API_URL + config.ES_BASE_PATH +
@@ -268,7 +268,7 @@ export class RulePage extends React.Component {
         </h1>
             <div className='container-fluid container-cards-pf'>
                 <div className='row'>
-                     <p>{this.state.rule.content}</p>
+      		     <div className="SigContent" dangerouslySetInnerHTML={{__html: this.state.rule.content}}></div>
                      {this.state.rule.timeline &&
                         <SciriusChart data={ this.state.rule.timeline }
                             axis={{ x: { type: 'timeseries',
@@ -907,7 +907,7 @@ export class RulesList extends HuntList {
 
      this.setState({refresh_data: true, loading: true});
      axios.all([
-          axios.get(config.API_URL + config.RULE_PATH + "?" + this.buildListUrlParams(rules_stat) + "&from_date=" + this.props.from_date + string_filters),
+          axios.get(config.API_URL + config.RULE_PATH + "?" + this.buildListUrlParams(rules_stat) + "&from_date=" + this.props.from_date + "&highlight=true" + string_filters),
           axios.get(config.API_URL + config.SOURCE_PATH + "?page_size=100"),
 	  ])
       .then(axios.spread((RuleRes, SrcRes) => {

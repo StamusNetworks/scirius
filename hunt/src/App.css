@@ -127,3 +127,11 @@ div.navbar-header button.navbar-toggle:hover .icon-bar {
 .nav-pf-tertiary-nav .nav-item-pf-header {
   color: #777;
 }
+
+.SigContent pre {
+  white-space: pre-wrap;
+}
+
+.highlight .err {
+  border: none;
+}
