@@ -71,6 +71,9 @@ export class RuleInList extends React.Component {
 <Col sm={11}>
 <div className="container-fluid">
    <div className="row">
+      <pre style={{whiteSpace: "pre-wrap"}}>{this.props.data.content}</pre>
+   </div>
+   <div className="row">
       <div className="col-md-10">
       <SciriusChart data={ this.props.data.timeline }
                axis={{ x: { type: 'timeseries',
