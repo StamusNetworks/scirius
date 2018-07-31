@@ -293,7 +293,7 @@ class HuntApp extends Component {
             	      className={null}
             	    />
        		     <VerticalNav.Item
-		      title="Filters"
+		      title="Actions"
 		      iconClass="glyphicon glyphicon-filter"
             	      initialActive = { this.state.display.page === PAGE_STATE.filters_list }
             	      onClick={this.onFiltersClick}
