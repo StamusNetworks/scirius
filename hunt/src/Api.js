@@ -186,6 +186,12 @@ export class HuntList extends React.Component {
 	this.fetchData(this.props.config, this.props.filters);
    }
 
+   componentDidUpdate(prevProps, prevState, snapshot) {
+       if (prevProps.from_date !==  this.props.from_date) {
+		this.fetchData(this.props.config, this.props.filters);
+       }
+   }
+
     buildListUrlParams(page_params) {
          var page = page_params.pagination.page;
          var per_page = page_params.pagination.perPage;

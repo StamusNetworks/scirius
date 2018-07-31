@@ -134,6 +134,7 @@ class HuntApp extends Component {
     this.onFiltersClick = this.onFiltersClick.bind(this);
     this.onAlertsClick = this.onAlertsClick.bind(this);
     this.switchPage = this.switchPage.bind(this);
+    this.needReload = this.needReload.bind(this);
     this.updateRuleListState = this.updateRuleListState.bind(this);
     this.updateAlertListState = this.updateAlertListState.bind(this);
     this.updateIDSFilterState = this.updateIDSFilterState.bind(this);
@@ -142,6 +143,10 @@ class HuntApp extends Component {
     this.updateFilterListState = this.updateFilterListState.bind(this);
     
   }
+
+    needReload() {
+	this.setState({from_date: (Date.now() - this.state.duration * 3600 * 1000)});
+    }
 
     onHomeClick() {
         this.switchPage(PAGE_STATE.rules_list, undefined);
@@ -264,7 +269,7 @@ class HuntApp extends Component {
             	    <VerticalNav.Masthead title="Scirius">
 						<VerticalNav.Brand titleImg={scirius_logo} />
 						<VerticalNav.IconBar>
-							<UserNavInfo ChangeDuration={this.changeDuration} period={this.state.duration}/>
+							<UserNavInfo ChangeDuration={this.changeDuration} period={this.state.duration} needReload={this.needReload}/>
 						</VerticalNav.IconBar>
 					</VerticalNav.Masthead>
 		   <VerticalNav.Item
@@ -366,6 +371,21 @@ class UserNavInfo extends Component {
 		}
 		return(
 			<React.Fragment>
+			    <li className="dropdown">
+			    <a id="refreshtime" role="button" className="nav-item-iconic" onClick={this.props.needReload}>
+			    		<Icon type="fa" name="refresh" />
+					</a>
+			    </li>
+			    <Dropdown componentClass="li" id="time">
+      				<Dropdown.Toggle useAnchor className="nav-item-iconic">
+        				<Icon type="fa" name="clock-o" /> Last {USER_PERIODS[this.props.period]}
+      				</Dropdown.Toggle>
+      				<Dropdown.Menu>
+				        {Object.keys(USER_PERIODS).map((period) => {
+        				return (<MenuItem key={period} onClick={this.props.ChangeDuration.bind(this, period)}>Last {USER_PERIODS[period]}</MenuItem>)
+					}, this)}
+    				</Dropdown.Menu>
+			   </Dropdown>
 			{this.state.showNotifications &&
 			<HuntNotificationArea />
 			}
@@ -378,16 +398,7 @@ class UserNavInfo extends Component {
                                         <MenuItem onClick={this.AboutClick}><span className="glyphicon glyphicon-question-sign"> </span> About</MenuItem>
       				</Dropdown.Menu>
     			</Dropdown>
-			    <Dropdown componentClass="li" id="time">
-      				<Dropdown.Toggle useAnchor className="nav-item-iconic">
-        				<Icon type="fa" name="clock-o" /> Last {USER_PERIODS[this.props.period]}
-      				</Dropdown.Toggle>
-      				<Dropdown.Menu>
-				        {Object.keys(USER_PERIODS).map((period) => {
-        				return (<MenuItem key={period} onClick={this.props.ChangeDuration.bind(this, period)}>Last {USER_PERIODS[period]}</MenuItem>)
-					}, this)}
-    				</Dropdown.Menu>
-			   </Dropdown>
+
 			    <Dropdown componentClass="li" id="user">
       				<Dropdown.Toggle useAnchor className="nav-item-iconic">
         				<Icon type="pf" name="user" /> {user}
