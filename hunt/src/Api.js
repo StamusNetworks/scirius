@@ -12,9 +12,12 @@ export class HuntPaginationRow extends React.Component {
   };
 
   onPageInput = e => {
-    const newPaginationState = Object.assign({}, this.props.pagination);
-    newPaginationState.page = e.target.value;
-    this.props.onPaginationChange(newPaginationState);
+    const val = parseInt(e.target.value, 10);
+    if (val > 0) {
+    	const newPaginationState = Object.assign({}, this.props.pagination);
+    	newPaginationState.page = val;
+    	this.props.onPaginationChange(newPaginationState);
+    }
   }
 
   onPerPageSelect = (eventKey, e) => {
