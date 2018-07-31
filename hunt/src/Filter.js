@@ -44,7 +44,6 @@ export class HuntFilter extends React.Component {
     } else {
 	    fvalue = value;
     }
-    console.log(field);
     let activeFilters = [...this.props.ActiveFilters, { label: filterText, id: field.id, value: fvalue, negated: false, query: field.queryType }];
     this.props.UpdateFilter(activeFilters);
   };
