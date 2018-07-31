@@ -30,16 +30,6 @@ export class HuntDashboard extends HuntList {
       net_error: undefined,
       rules_filters: []
     };
-    //this.updateRulesState = this.updateRulesState.bind(this);
-    //this.fetchHitsStats = this.fetchHitsStats.bind(this);
-    //this.displayRule = this.displayRule.bind(this);
-    //this.RuleUpdateFilter = this.RuleUpdateFilter.bind(this);
-    //this.actionsButtons = this.actionsButtons.bind(this);
-    //this.createSuppress = this.createSuppress.bind(this);
-    //this.createThreshold = this.createThreshold.bind(this);
-    //this.createTag = this.createTag.bind(this);
-    //this.closeAction = this.closeAction.bind(this);
-    //this.toggleOnlyHits = this.toggleOnlyHits.bind(this);
   }
 
     componentDidMount() {
