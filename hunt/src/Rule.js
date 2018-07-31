@@ -567,7 +567,7 @@ export class RuleToggleModal extends React.Component {
                          url = url + '/disable/';
                      }
                      axios.post(url, data).then(
-                         function(res) {
+                         res =>  {
                              // Fixme notification or something
                              console.log("action on rule is a success");
                              this.close();
