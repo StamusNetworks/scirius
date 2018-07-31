@@ -845,12 +845,6 @@ export class RulesList extends HuntList {
     this.closeAction = this.closeAction.bind(this);
   }
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
-     if (prevProps.from_date !==  this.props.from_date) {
-             this.fetchHitsStats(this.state.rules);
-     }
-  }
-
    buildFilter(filters) {
      var l_filters = {};
      for (var i=0; i < filters.length; i++) {
@@ -908,7 +902,7 @@ export class RulesList extends HuntList {
   fetchData(rules_stat, filters) {
      var string_filters = this.buildFilter(filters);
 
-     this.setState({refresh_data: true});
+     this.setState({refresh_data: true, loading: true});
      axios.all([
           axios.get(config.API_URL + config.RULE_PATH + "?" + this.buildListUrlParams(rules_stat) + "&from_date=" + this.props.from_date + string_filters),
           axios.get(config.API_URL + config.SOURCE_PATH + "?page_size=100"),
@@ -1008,7 +1002,6 @@ export class RulesList extends HuntList {
   render() {
     return (
         <div className="RulesList">
-	<Spinner loading={this.state.loading} >
 	    {this.state.net_error !== undefined &&
 	         <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>	
 	    }
@@ -1024,6 +1017,8 @@ export class RulesList extends HuntList {
 		  actionsButtons={this.actionsButtons}
 		  queryType={['filter', 'rest']}
             />
+	    <Spinner loading={this.state.loading} >
+	    </Spinner>
 	    {this.state.view === 'rules_list' &&
             this.props.config.view_type === 'list' &&
 	    <ListView>
@@ -1070,7 +1065,6 @@ export class RulesList extends HuntList {
 	        <HuntDashboard />
 	    }
 
-	    </Spinner>
 	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} />
         </div>
     );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon } from 'patternfly-react';
-import { Icon } from 'patternfly-react';
+import { Icon, Spinner } from 'patternfly-react';
 import { PAGINATION_VIEW, Row, Col} from 'patternfly-react';
 import axios from 'axios';
 import { HuntFilter } from './Filter.js';
@@ -56,10 +56,13 @@ export class HistoryPage extends HuntList {
 
     fetchData(history_stat, filters) {
 	    var string_filters = this.buildFilter(filters);
+            this.setState({refresh_data: true, loading: true});
 	    axios.get(config.API_URL + config.HISTORY_PATH + "?" + this.buildListUrlParams(history_stat) + string_filters)
         .then(res => {
-               this.setState({ data: res.data, count: res.data.count });
-          })
+               this.setState({ data: res.data, count: res.data.count, refresh_data: false, loading:false });
+          }).catch (res => {
+               this.setState({ refresh_data: false, loading:false });
+	  });
     
     }
 
@@ -99,6 +102,8 @@ export class HistoryPage extends HuntList {
 		   displayToggle={false}
 		   queryType={['all']}
 	        />
+	    <Spinner loading={this.state.loading} >
+	    </Spinner>
 	        <ListView>
 	        {this.state.data.results &&
 	           this.state.data.results.map( item => {

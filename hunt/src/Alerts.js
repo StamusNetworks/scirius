@@ -59,7 +59,7 @@ export class AlertsList extends HuntList {
      } else {
         string_filters = "&filter=" + string_filters;
      }
-     this.setState({refresh_data: true});
+     this.setState({refresh_data: true, loading: true});
      var url = config.API_URL + config.ES_BASE_PATH + 'alerts_tail&search_target=0&' + this.buildListUrlParams(state) + "&from_date=" + this.props.from_date + string_filters;
      axios.get(url).then( res => {
 	  if ((res.data !== null) && (typeof res.data !== 'string')) {
@@ -86,6 +86,7 @@ export class AlertsList extends HuntList {
 		  queryType={['filter']}
             />
          <Spinner loading={this.state.loading}>
+	 </Spinner>  
            <ListView>
            {this.state.alerts.map(rule => {
                   return(
@@ -94,7 +95,6 @@ export class AlertsList extends HuntList {
               })
            }
            </ListView>
-	 </Spinner>  
        </div>
     )
   }

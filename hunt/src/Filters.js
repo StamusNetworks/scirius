@@ -5,7 +5,7 @@ import * as config from './config/Api.js';
 import { HuntList, HuntPaginationRow } from './Api.js';
 import { Modal, DropdownKebab, MenuItem, Icon, Button } from 'patternfly-react';
 import { Form, FormGroup, FormControl } from 'patternfly-react';
-import { Col } from 'patternfly-react';
+import { Col, Spinner} from 'patternfly-react';
 
 import { HuntRestError } from './Error.js';
 
@@ -31,9 +31,12 @@ export class FiltersList extends HuntList {
     }
     
     fetchData(filters_stat, filters) {
+        this.setState({loading: true});
 	    axios.get(config.API_URL + config.PROCESSING_PATH + "?" + this.buildListUrlParams(filters_stat))
             .then(res => {
-               this.setState({ data: res.data.results, count: res.data.count });
+               this.setState({ data: res.data.results, count: res.data.count, loading: false });
+            }).catch(res => {
+                    this.setState({loading: false});
             })
     }
 
@@ -44,7 +47,8 @@ export class FiltersList extends HuntList {
     render() {
 	return(
 	    <div>
-
+	        <Spinner loading={this.state.loading} >
+	        </Spinner>
 	        <ListView>
 	        {this.state.data &&
 	           this.state.data.map( item => {
