@@ -4,7 +4,7 @@ import axios from 'axios';
 import { DonutChart } from 'patternfly-react';
 //import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 //import { EventValue } from './Event.js';
-import { HuntStat, buildQFilter } from './Rule.js';
+import { HuntStat, buildQFilter, RuleToggleModal } from './Rule.js';
 import { HuntList } from './Api.js';
 import { HuntFilter } from './Filter.js';
 import * as config from './config/Api.js';
@@ -67,7 +67,7 @@ export class HuntDashboard extends HuntList {
     		  filterFields={this.state.rules_filters}
     		  sort_config={undefined}
     		  displayToggle={undefined}
-    		  actionsButtons={undefined}
+		  actionsButtons={this.actionsButtons}
 		  queryType={['filter']}
                 />
 
@@ -128,6 +128,7 @@ export class HuntDashboard extends HuntList {
                     <HuntStat title="Fingerprint" config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
                 </div>
 	      </div>	  
+	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} />
 	    </div>
 	    );
     }
