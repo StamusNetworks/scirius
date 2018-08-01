@@ -1745,7 +1745,11 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
     def get_action_type_list(self, request):
         from scirius.utils import get_middleware_module
         actions_dict = get_middleware_module('common').get_user_actions_dict()
-        res = {key: value['title'] for key, value in actions_dict.iteritems()}
+
+        res = OrderedDict()
+        for key, value in actions_dict.iteritems():
+            res.update({key: value['title']})
+
         return Response({'action_type_list': res})
 
 

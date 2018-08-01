@@ -31,6 +31,7 @@ from django.db.models import Q
 from idstools import rule as rule_idstools
 from enum import Enum, unique
 from copy import deepcopy
+from collections import OrderedDict
 import requests
 import tempfile
 import tarfile
@@ -131,160 +132,178 @@ def validate_url(val):
 
 
 class UserAction(models.Model):
-    ACTIONS = {'create_ruleset': {
-                    'description': '{user} has created ruleset {ruleset}',
-                    'title': 'Create Ruleset'
-                },
-               'delete_ruleset': {
-                    'description': '{user} has deleted ruleset {ruleset}',
-                    'title': 'Delete Ruleset'
-                },
-               'copy_ruleset': {
-                   'description': '{user} has copied ruleset {ruleset}',
-                   'title': 'Copy Ruleset'
-                },
-               'edit_ruleset': {
-                   'description': '{user} has edited ruleset {ruleset}',
-                   'title': 'Edit Ruleset'
-                },
-               'create_source': {
-                    'description': '{user} has created source {source}',
-                    'title': 'Create Source'
-                },
-               'edit_source': {
-                    'description': '{user} has edited source {source}',
-                    'title': 'Edit Source'
-                },
-               'update_source': {
-                    'description': '{user} has updated source {source}',
-                    'title': 'Update Source'
-                },
-               'upload_source': {
-                    'description': '{user} has uploaded source {source}',
-                    'title': 'Upload Source'
-                },
-               'delete_source': {
-                    'description': '{user} has deleted source {source}',
-                    'title': 'Delete Source'
-                },
-               'enable_source': {
-                    'description': '{user} has enabled source {source} in ruleset {ruleset}',
-                    'title': 'Enable Source'
-                },
-               'disable_source': {
-                    'description': '{user} has disabled source {source} in ruleset {ruleset}',
-                    'title': 'Disable Source'
-                },
-               'disable_rule': {
-                    'description': '{user} has disabled rule {rule} in ruleset {ruleset}',
-                    'title': 'Disable Rule'
-                },
-               'enable_rule': {
-                    'description': '{user} has enabled rule {rule} in ruleset {ruleset}',
-                    'title': 'Enable Rule'
-                },
-               'suppress_rule': {
-                    'description': '{user} has suppressed rule {rule} in ruleset {ruleset}',
-                    'title': 'Suppress Rule'
-                },
-               'delete_suppress_rule': {
-                    'description': '{user} has deleted suppressed rule {rule} in ruleset {ruleset}',
-                    'title': 'Delete Suppress Rule'
-                },
-               'comment_rule': {
-                    'description': '{user} has commented rule {rule}',
-                    'title': 'Comment Rule'
-                },
-               'toggle_availability': {
-                    'description': '{user} has modified rule availability {rule}',
-                    'title': 'Toggle Availability'
-                },
-               'delete_alerts': {
-                    'description': '{user} has deleted alerts from rule {rule}',
-                    'title': 'Delete Alerts'
-                },
-               'disable_category': {
-                    'description': '{user} has disabled category {category} in ruleset {ruleset}',
-                    'title': 'Disable Category'
-                },
-               'enable_category': {
-                    'description': '{user} has enabled category {category} in ruleset {ruleset}',
-                    'title': 'Enable Category'
-                },
-               'create_threshold': {
-                    'description': '{user} has created threshold on rule {rule} in ruleset {ruleset}',
-                    'title': 'Create Threshold'
-                },
-               'edit_threshold': {
-                    'description': '{user} has edited threshold {threshold} on rule {rule} in ruleset {ruleset}',
-                    'title': 'Edit Threshold'
-                },
-               'delete_threshold': {
-                    'description': '{user} has deleted threshold {threshold} on rule {rule} in ruleset {ruleset}',
-                    'title': 'Delete Threshold'
-                },
-               'login': {
+    ACTIONS = OrderedDict([
+               # Login/Logout
+               ('login', {
                     'description': 'Logged in as {user}',
                     'title': 'Login'
-                },
-               'logout': {
+                }),
+               ('logout', {
                     'description': '{user} has logged out',
                     'title': 'Logout'
-                },
-               'transform_rule': {
-                    'description': '{user} has transformed rule {rule} to {transformation} in ruleset {ruleset}',
-                    'title': 'Transform Rule'
-                },
-               'transform_category': {
-                    'description': '{user} has transformed category {category} to {transformation} in ruleset {ruleset}',
-                    'title': 'Transform Category'
-                },
-               'transform_ruleset': {
+                }),
+
+               # Sources:
+               ('create_source', {
+                    'description': '{user} has created source {source}',
+                    'title': 'Create Source'
+                }),
+               ('update_source', {
+                    'description': '{user} has updated source {source}',
+                    'title': 'Update Source'
+                }),
+               ('edit_source', {
+                    'description': '{user} has edited source {source}',
+                    'title': 'Edit Source'
+                }),
+               ('upload_source', {
+                    'description': '{user} has uploaded source {source}',
+                    'title': 'Upload Source'
+                }),
+               ('enable_source', {
+                    'description': '{user} has enabled source {source} in ruleset {ruleset}',
+                    'title': 'Enable Source'
+                }),
+               ('disable_source', {
+                    'description': '{user} has disabled source {source} in ruleset {ruleset}',
+                    'title': 'Disable Source'
+                }),
+               ('delete_source', {
+                    'description': '{user} has deleted source {source}',
+                    'title': 'Delete Source'
+                }),
+
+               # Rulesets:
+               ('create_ruleset', {
+                    'description': '{user} has created ruleset {ruleset}',
+                    'title': 'Create Ruleset'
+                }),
+               ('transform_ruleset', {
                     'description': '{user} has transformed ruleset {ruleset} to {transformation}',
                     'title': 'Transform Ruleset'
-                },
+                }),
+               ('edit_ruleset', {
+                   'description': '{user} has edited ruleset {ruleset}',
+                   'title': 'Edit Ruleset'
+                }),
+               ('copy_ruleset', {
+                   'description': '{user} has copied ruleset {ruleset}',
+                   'title': 'Copy Ruleset'
+                }),
+               ('delete_ruleset', {
+                    'description': '{user} has deleted ruleset {ruleset}',
+                    'title': 'Delete Ruleset'
+                }),
+
+               # Categories:
+               ('enable_category', {
+                    'description': '{user} has enabled category {category} in ruleset {ruleset}',
+                    'title': 'Enable Category'
+                }),
+               ('transform_category', {
+                    'description': '{user} has transformed category {category} to {transformation} in ruleset {ruleset}',
+                    'title': 'Transform Category'
+                }),
+               ('disable_category', {
+                    'description': '{user} has disabled category {category} in ruleset {ruleset}',
+                    'title': 'Disable Category'
+                }),
+
+               # Rules:
+               ('enable_rule', {
+                    'description': '{user} has enabled rule {rule} in ruleset {ruleset}',
+                    'title': 'Enable Rule'
+                }),
+               ('comment_rule', {
+                    'description': '{user} has commented rule {rule}',
+                    'title': 'Comment Rule'
+                }),
+               ('transform_rule', {
+                    'description': '{user} has transformed rule {rule} to {transformation} in ruleset {ruleset}',
+                    'title': 'Transform Rule'
+                }),
+               ('suppress_rule', {
+                    'description': '{user} has suppressed rule {rule} in ruleset {ruleset}',
+                    'title': 'Suppress Rule'
+                }),
+               ('disable_rule', {
+                    'description': '{user} has disabled rule {rule} in ruleset {ruleset}',
+                    'title': 'Disable Rule'
+                }),
+               ('delete_suppress_rule', {
+                    'description': '{user} has deleted suppressed rule {rule} in ruleset {ruleset}',
+                    'title': 'Delete Suppress Rule'
+                }),
+
+               # Toggle availability
+               ('toggle_availability', {
+                    'description': '{user} has modified rule availability {rule}',
+                    'title': 'Toggle Availability'
+                }),
+
+               # Thresholds:
+               ('create_threshold', {
+                    'description': '{user} has created threshold on rule {rule} in ruleset {ruleset}',
+                    'title': 'Create Threshold'
+                }),
+               ('edit_threshold', {
+                    'description': '{user} has edited threshold {threshold} on rule {rule} in ruleset {ruleset}',
+                    'title': 'Edit Threshold'
+                }),
+               ('delete_threshold', {
+                    'description': '{user} has deleted threshold {threshold} on rule {rule} in ruleset {ruleset}',
+                    'title': 'Delete Threshold'
+                }),
+
                 # Used only in REST API
-               'delete_transform_ruleset': {
+               ('delete_transform_ruleset', {
                     'description': '{user} has deleted transformation {transformation} on ruleset {ruleset}',
                     'title': 'Deleted Ruleset Transformation'
-                },
-               'delete_transform_rule': {
+                }),
+               ('delete_transform_rule', {
                     'description': '{user} has deleted transformation {transformation} on rule {rule} in ruleset {ruleset}',
                     'title': 'Delete Rule Transformation'
-                },
-               'delete_transform_category': {
+                }),
+               ('delete_transform_category', {
                     'description': '{user} has deleted transformation {transformation} on category {category} in ruleset {ruleset}',
                     'title': 'Delete Category Transformation'
-                },
+                }),
                # End REST API
 
-               'edit_suricata': {
+               # Suricata
+               ('edit_suricata', {
                     'description': '{user} has edited suricata',
                     'title': 'Edit Suricata'
-                },
-               'create_suricata': {
+                }),
+               ('create_suricata', {
                     'description': '{user} has created suricata',
                     'title': 'Create Suricata'
-                },
-               'system_settings': {
+                }),
+
+               # Settings
+               ('system_settings', {
                     'description': '{user} has edited system settings',
                     'title': 'Edit System Settings'
-                },
+                }),
+               ('delete_alerts', {
+                    'description': '{user} has deleted alerts from rule {rule}',
+                    'title': 'Delete Alerts'
+                }),
 
                # Rule processing filter
-               'create_rule_filter': {
+               ('create_rule_filter', {
                     'description': '{user} has created rule filter {rule_filter}',
                     'title': 'Create rule filter'
-                },
-               'edit_rule_filter': {
+                }),
+               ('edit_rule_filter', {
                     'description': '{user} has edited rule filter {rule_filter}',
                     'title': 'Edit rule filter'
-                },
-               'delete_rule_filter': {
+                }),
+               ('delete_rule_filter', {
                     'description': '{user} has deleted rule filter {rule_filter}',
                     'title': 'Delete rule filter'
-                },
-               }
+                })
+            ])
 
     action_type = models.CharField(max_length=1000, null=True)
     date = models.DateTimeField('event date', default=timezone.now)
