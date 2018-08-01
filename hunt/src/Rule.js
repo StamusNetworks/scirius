@@ -494,6 +494,7 @@ export class RuleToggleModal extends React.Component {
         var req_data = {fields: wanted_filters, action: this.props.action};
         axios.post(config.API_URL + config.PROCESSING_PATH + "test/", req_data).then( res => {
           var supp_filters = [];
+	  var notfound = true;
           for(var i = 0; i < this.props.filters.length; i++) {
             if (res.data.fields.indexOf(this.props.filters[i].id) !== -1) {
 		if (this.props.filters[i].negated === false) {
@@ -506,10 +507,20 @@ export class RuleToggleModal extends React.Component {
 		}
                 this.props.filters[i].key = this.props.filters[i].id;
                 supp_filters.push(this.props.filters[i]);
+		notfound = false;
             }
           }
-          this.setState({supported_filters: supp_filters});
-        });
+          this.setState({supported_filters: supp_filters, noaction: notfound});
+	  if (notfound) {
+	  	this.setState({errors: {filters: ['No filters available']}});
+	  }
+        }).catch( error => {
+		if (error.response.status === 403) {
+			this.setState({errors: {permission: ['Insufficient permissions']}, noaction: true});
+		}
+	});
+      } else {
+	  	this.setState({errors: {filters: ['No filters available']}, noaction: true});
       }
     }
 
@@ -592,7 +603,6 @@ export class RuleToggleModal extends React.Component {
                 }
             ).catch(
                 error => {
-                    console.log("action creation failure");
                     this.setState({errors: error.response.data});
                 }
             )
@@ -662,6 +672,7 @@ export class RuleToggleModal extends React.Component {
     </Modal.Header>
     <Modal.Body>
        <HuntRestError errors={this.state.errors} />
+       {!this.state.noaction &&
        <Form horizontal>
        {this.state.supported_filters &&
 	   this.state.supported_filters.map((item, index) => {
@@ -757,6 +768,10 @@ export class RuleToggleModal extends React.Component {
             </div>
         </div>
       </Form>
+       }
+       {this.state.noaction &&
+	<p>You need enough permissions and at least a filter supported by the ruleset backend to define an action</p>
+       }
     </Modal.Body>
     <Modal.Footer>
       <Button
@@ -766,9 +781,11 @@ export class RuleToggleModal extends React.Component {
       >
         Cancel
       </Button>
+      {!this.state.noaction &&
       <Button bsStyle="primary" onClick={this.submit}>
         Submit
       </Button>
+      }
     </Modal.Footer>
   </Modal>
        )
