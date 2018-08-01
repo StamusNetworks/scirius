@@ -233,7 +233,10 @@ class FilterToggleModal extends React.Component {
     }
 
     handleChange(event) {
-        this.setState({new_index: event.target.value});
+        const val = parseInt(event.target.value, 10);
+        if (val >= 0) {
+                this.setState({new_index: val});
+        }
     }
 
     render() {
