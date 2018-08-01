@@ -72,7 +72,7 @@ export class HuntDashboard extends HuntList {
 		  </div>
  	          <div className="row row-cards-pf">
 		    <h4>Basic information</h4>
-                    <HuntStat title="Signatures" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.signature' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
+                    <HuntStat title="Signatures" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.signature' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={4}/>
                     <HuntStat title="Categories" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.category' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
                     <HuntStat title="Severities" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.severity' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2}/>
                     <HuntStat title="Probes" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='host' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}/>
