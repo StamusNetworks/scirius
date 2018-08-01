@@ -1736,6 +1736,21 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
     Ordering & Filtering:\n
         curl -k "https://x.x.x.x/rest/rules/history/?action_type=edit_ruleset&date=&ordering=username&user_action_objects__action_key=&username=scirius" -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
+    Get list of action type:\n
+        curl -k https://x.x.x.x/rest/rules/history/get_action_type_list/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"action_type_list":{"create_appliance":"Create Appliance","delete_alerts":"Delete Alerts","delete_threshold":"Delete Threshold","transform_ruleset":"Transform Ruleset","create_source":"Create Source",
+        "comment_rule":"Comment Rule","enable_category":"Enable Category","delete_ruleset":"Delete Ruleset","system_settings":"Edit System Settings","toggle_availability":"Toggle Availability","login":"Login",
+        "edit_suricata":"Edit Suricata","delete_transform_category":"Delete Category Transformation","delete_transform_ruleset":"Deleted Ruleset Transformation","delete_transform_rule":"Delete Rule Transformation",
+        "create_network_def":"Create Network Definition","create_threshold":"Create Threshold","edit_threshold":"Edit Threshold","delete_network_def":"Delete Network Definition","create_ruleset":"Create Ruleset",
+        "transform_category":"Transform Category","transform_rule":"Transform Rule","edit_rule_filter":"Edit rule filter","update_source":"Update Source","upload_source":"Upload Source","suppress_rule":"Suppress Rule",
+        "create_template":"Create Template","delete_suppress_rule":"Delete Suppress Rule","edit_source":"Edit Source","logout":"Logout","delete_appliance":"Delete Appliance","delete_template":"Delete Template",
+        "edit_appliance":"Edit Appliance","edit_template":"Edit Template","create_suricata":"Create Suricata","disable_category":"Disable Category","disable_rule":"Disable Rule","enable_source":"Enable Source",
+        "edit_network_def":"Edit Network Definition","delete_source":"Delete Source","enable_rule":"Enable Rule","disable_source":"Disable Source","edit_ruleset":"Edit Ruleset","delete_rule_filter":"Delete rule filter",
+        "import_network_def":"Import Network Definition","copy_ruleset":"Copy Ruleset","create_rule_filter":"Create rule filter"}}
+
     =============================================================================================================================================================
     """
 
@@ -1864,6 +1879,25 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
 
 
 class HuntFilterAPIView(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Get all hunt filters:\n
+        curl -k https://x.x.x.x/rest/rules/hunt-filter/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        [{"filterType":"select","filterValues":[{"id":"untagged","title":"Untagged"},{"id":"relevant","title":"Relevant"},
+        {"id":"informational","title":"Informational"}],"placeholder":"Filter hits by Tag","id":"alert.tag","title":"Tag"},
+        {"filterType":"select","filterValues":[{"id":"Probe1","title":"Probe1"}],"placeholder":"Filter hits by Probe","id":"probe","title":"Probe"},
+        {"placeholder":"Minimum Hits Count","title":"Hits min","filterType":"integer","id":"hits_min","queryType":"rest"},
+        {"placeholder":"Maximum Hits Count","title":"Hits max","filterType":"integer","id":"hits_max","queryType":"rest"},
+        {"placeholder":"Filter by Message","title":"Message","filterType":"text","id":"msg","queryType":"filter"},
+        {"placeholder":"Filter by Content","title":"Content","filterType":"text","id":"search","queryType":"rest"},
+        {"placeholder":"Filter by Signature","title":"Signature ID","filterType":"text","id":"sid","queryType":"filter"}]
+
+    =============================================================================================================================================================
+    """
 
     def get(self, request, format=None):
         from scirius.utils import get_middleware_module
