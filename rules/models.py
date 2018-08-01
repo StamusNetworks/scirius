@@ -580,7 +580,7 @@ class Source(models.Model):
             # don't allow tar file with file in root dir
             if member.isfile() and not '/' in member.name:
                 raise SuspiciousOperation("Suspect tar file contains file in root directory '%s' instead of under 'rules' directory" % (member.name))
-            if member.isdir() and member.name.endswith('rules'):
+            if member.isdir() and ('/' + member.name).endswith('/rules'):
                 if rules_dir:
                     raise SuspiciousOperation("Tar file contains two 'rules' directory instead of one")
                 dir_list.append(member)
