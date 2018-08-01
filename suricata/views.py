@@ -33,7 +33,7 @@ from scirius.utils import scirius_render
 
 from suricata.models import Suricata
 from rules.models import dependencies_check
-from rules.models import UserAction, Transformation
+from rules.models import UserAction, Transformation, Rule
 
 from forms import *
 from rules.forms import CommentForm
