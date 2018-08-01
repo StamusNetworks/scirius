@@ -982,7 +982,7 @@ export class RulesList extends HuntList {
   
   render() {
     return (
-        <div className="RulesList">
+        <div className="RulesList HuntList">
 	    {this.state.net_error !== undefined &&
 	         <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>	
 	    }

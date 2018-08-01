@@ -75,7 +75,7 @@ export class AlertsList extends HuntList {
 
   render() {
     return (
-       <div className="AlertsList">
+       <div className="AlertsList HuntList">
 	    <HuntFilter ActiveFilters={this.props.filters}
 	          config={this.props.config}
 		  ActiveSort={this.props.config.sort}

@@ -135,3 +135,7 @@ div.navbar-header button.navbar-toggle:hover .icon-bar {
 .highlight .err {
   border: none;
 }
+
+.HuntList .spinner {
+  margin-top: 10px;
+}

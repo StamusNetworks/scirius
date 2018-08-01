@@ -90,7 +90,7 @@ export class HistoryPage extends HuntList {
 
     render() {
 	return(
-	    <div className="HistoryList">
+	    <div className="HistoryList HuntList">
                <HuntFilter ActiveFilters={this.props.filters}
                    config={this.props.config}
 		   ActiveSort={this.props.config.sort}
