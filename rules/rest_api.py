@@ -1224,6 +1224,10 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
     Show all transformed rules:\n
         curl -k https://x.x.x.x/rest/rules/transformation/rule/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
+    Return:\n
+        HTTP/1.1 200 OK
+        {"count":1,"next":null,"previous":null,"results":[{"pk":4,"ruleset":7,"rule":2404000,"transfo_type":"action","transfo_value":"drop"}]}
+
     Show a rule transformation:\n
         curl -k https://x.x.x.x/rest/rules/transformation/rule/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
