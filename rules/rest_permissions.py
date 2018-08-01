@@ -30,7 +30,7 @@ class IsCurrentUserOrSuperUserOrReadOnly(permissions.BasePermission):
                 return False
 
         # All users are allowed to change their own password
-        if view.action == 'password' or view.action == 'token':
+        if view.action == 'password' or view.action == 'token' or view.action == 'current_user':
             return True
 
         return request.user.is_staff or request.user.is_superuser
