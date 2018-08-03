@@ -243,13 +243,13 @@ class FilterToggleModal extends React.Component {
        var action = this.props.action;
        switch (action) {
                case 'movetop':
-                    action = 'Send to top';
+                    action = 'Move to top';
                     break;
                case 'move':
                     action = 'Move';
                     break;
                case 'movebottom':
-                    action = 'Send to bottom';
+                    action = 'Move to bottom';
                     break;
                case 'delete':
                     action = 'Delete';
@@ -269,7 +269,7 @@ class FilterToggleModal extends React.Component {
         <Icon type="pf" name="close" />
       </button>
       {this.props.data &&
-        <Modal.Title>{action} {this.props.data.action} at position {this.props.data.index}</Modal.Title>
+        <Modal.Title>{action} {this.props.data.action} at current position {this.props.data.index}</Modal.Title>
       }
     </Modal.Header>
     <Modal.Body>
