@@ -80,6 +80,10 @@ class ESData(object):
         i = 0
         ids = []
 
+        if settings.ELASTICSEARCH_VERSION >= 6:
+            body['query']['query_string']['query'] += ' type:%s' % _type
+            _type = 'doc'
+
         while True:
             res = self.client.search(index='.kibana', from_=i, doc_type=_type, body=body, request_cache=False)
             if len(res['hits']['hits']) == 0:
@@ -100,16 +104,26 @@ class ESData(object):
         os.makedirs(dest)
 
         while True:
-            res = self.client.search(index='.kibana', from_=i, doc_type=_type, body=body)
+            if settings.ELASTICSEARCH_VERSION < 6:
+                res = self.client.search(index='.kibana', from_=i, doc_type=_type, body=body)
+            else:
+                res = self.client.search(index='.kibana', from_=i, body=body)
+
             if len(res['hits']['hits']) == 0:
                 break
             i += 10
 
             for hit in res['hits']['hits']:
+
                 _id = hit['_id']
                 filename = os.path.join(dest, _id)
                 filename += '.json'
-                res = self.client.get(index='.kibana', doc_type=_type, id=_id)
+
+                if settings.ELASTICSEARCH_VERSION < 6:
+                    res = self.client.get(index='.kibana', doc_type=_type, id=_id)
+                else:
+                    res = self.client.get(index='.kibana', doc_type='doc', id=_id)
+
                 with open(filename, 'w') as f:
                     f.write(json.dumps(res['_source'], separators= (',', ':')))
 
@@ -119,17 +133,36 @@ class ESData(object):
 
         if full:
             _types = _types + ('index-pattern',)
-            body = {'query': {'match_all': {}}}
-        else:
-            body = {
-                'query': {
-                    'query_string': {
-                        'query': 'NOT title: SN *'
-                    }
-                }
-            }
 
         for _type in _types:
+            if settings.ELASTICSEARCH_VERSION < 6:
+                if full:
+                    body = {'query': {'match_all': {}}}
+                else:
+                    body = {
+                        'query': {
+                            'query_string': {
+                                'query': 'NOT title: SN *'
+                            }
+                        }
+                    }
+            else:
+                if full:
+                    body = {
+                        'query': {
+                            'query_string': {
+                                'query': 'type: %s' % _type
+                            }
+                        }
+                    }
+                else:
+                    body = {
+                        'query': {
+                            'query_string': {
+                                'query': 'type: %s AND NOT title: SN *' % _type
+                            }
+                        }
+                    }
             self._kibana_export_obj(dest, _type, body)
 
         f = tempfile.NamedTemporaryFile(delete=False)
@@ -156,7 +189,11 @@ class ESData(object):
             content = f.read()
         name = _file.rsplit('/', 1)[1]
         name = name.rsplit('.', 1)[0]
-        self.client.create(index='.kibana', doc_type=_type, id=name, body=content, refresh=True)
+        if settings.ELASTICSEARCH_VERSION < 6:
+            doc_type = _type
+        else:
+            doc_type = 'doc'
+        self.client.create(index='.kibana', doc_type=doc_type, id=name, body=content, refresh=True)
 
     def _kibana_set_default_index(self, idx):
         res = self.client.search(index='.kibana', doc_type='config', body={'query': {'match_all': {}}}, request_cache=False)
@@ -234,10 +271,10 @@ class ESData(object):
         if self._get_kibana_subdirfiles('index-pattern') == []:
             raise Exception('Please make sure Kibana dashboards are installed at %s: no index-pattern found' % settings.KIBANA_DASHBOARDS_PATH)
 
-        self._kibana_remove('dashboard', {'query': {'match': {'title': 'SN*'}}})
-        self._kibana_remove('visualization', {'query': {'match': {'title': 'SN*'}}})
-        self._kibana_remove('search', {'query': {'match': {'title': 'SN*'}}})
-        self._kibana_remove('index-pattern', {'query': {'match_all': {}}})
+        self._kibana_remove('dashboard', {'query': {'query_string': {'query': 'SN*'}}})
+        self._kibana_remove('visualization', {'query': {'query_string': {'query': 'SN*'}}})
+        self._kibana_remove('search', {'query': {'query_string': {'query': 'SN*'}}})
+        self._kibana_remove('index-pattern', {'query': {'query_string': {'query': '*'}}})
 
         for _type in ('index-pattern', 'search', 'visualization', 'dashboard'):
             for _file in self._get_kibana_subdirfiles(_type):
