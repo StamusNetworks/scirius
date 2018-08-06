@@ -152,7 +152,8 @@ export class RuleCard extends React.Component {
                             localtime: true,
                             min: this.props.from_date,
                             max: Date.now(),
-                            show: false
+                            show: false,
+                            tick: { fit: true, format: '%Y-%m-%d %H:%M'}
                      },
                      y: { show: false }
                }}
