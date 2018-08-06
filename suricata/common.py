@@ -137,8 +137,15 @@ def get_processing_filter_thresholds(ruleset):
     for f in ruleset.processing_filters.filter(enabled=True, action__in=('suppress', 'threshold')):
         yield f.get_threshold_content()
 
+
 PROCESSING_FILTER_FIELDS = set(('src_ip', 'dest_ip', 'alert.signature_id'))
 PROCESSING_THRESHOLD_FIELDS = set(('alert.signature_id',))
+
+
+def get_processing_actions_capabilities(fields):
+    return (('suppress', 'Suppress'), ('threshold', 'Threshold'))
+
+
 def get_processing_filter_capabilities(fields, action):
     if action == 'suppress':
         return {

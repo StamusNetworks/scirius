@@ -233,7 +233,11 @@ class RuleProcessingTestSerializer(serializers.Serializer):
     action = serializers.ChoiceField((('suppress', 'Suppress'),
                         ('threshold', 'Threshold'),
                         ('tag', 'Tag'),
-                        ('tagkeep', 'Tag and Keep')))
+                        ('tagkeep', 'Tag and Keep')), allow_null=True)
+
+
+class RuleProcessingTestActionsSerializer(serializers.Serializer):
+    fields = serializers.ListField(child=serializers.CharField(max_length=256))
 
 
 class RuleProcessingFilterIntersectSerializer(serializers.Serializer):
@@ -332,6 +336,14 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
         fields_serializer.is_valid(raise_exception=True)
         capabilities = get_middleware_module('common').get_processing_filter_capabilities(fields_serializer.validated_data['fields'], fields_serializer.validated_data['action'])
         return Response(capabilities)
+
+    @list_route(methods=['post'])
+    def test_actions(self, request):
+        from scirius.utils import get_middleware_module
+        fields_serializer = RuleProcessingTestActionsSerializer(data=request.data)
+        fields_serializer.is_valid(raise_exception=True)
+        capabilities = get_middleware_module('common').get_processing_actions_capabilities(fields_serializer.validated_data.get('fields'))
+        return Response({'actions': capabilities})
 
     @list_route(methods=['post'])
     def intersect(self, request):

@@ -21,6 +21,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import axios from 'axios';
+import * as config from './config/Api.js';
 import { PaginationRow, DropdownButton, MenuItem } from 'patternfly-react';
 import { PAGINATION_VIEW_TYPES } from 'patternfly-react';
 
@@ -127,11 +129,10 @@ export class HuntList extends React.Component {
 
          this.setViewType = this.setViewType.bind(this);
 
-    	 this.actionsButtons = this.actionsButtons.bind(this);
-    	 this.createSuppress = this.createSuppress.bind(this);
-    	 this.createThreshold = this.createThreshold.bind(this);
-    	 this.createTag = this.createTag.bind(this);
-    	 this.closeAction = this.closeAction.bind(this);
+         this.actionsButtons = this.actionsButtons.bind(this);
+         this.createAction = this.createAction.bind(this);
+         this.closeAction = this.closeAction.bind(this);
+         this.loadActions = this.loadActions.bind(this);
     }
 
    buildFilter(filters) {
@@ -192,6 +193,7 @@ export class HuntList extends React.Component {
      this.props.updateFilterState(filters);
      this.props.updateListState(newListState);
      this.fetchData(newListState, filters);
+     this.loadActions(filters)
    }
 
    UpdateSort(sort) {
@@ -212,39 +214,51 @@ export class HuntList extends React.Component {
         return;
    }
 
-  createSuppress() {
-	this.setState({action: {view: true, type: 'suppress'}});
+  loadActions(filters) {
+       if (filters === undefined) {
+          filters = this.props.filters;
+       }
+       filters = filters.map(f => f['id']);
+       var req_data = {fields: filters};
+       axios.post(config.API_URL + config.PROCESSING_PATH + "test_actions/", req_data).then(
+         res => {this.setState({supported_actions: res.data.actions});});
   }
 
-  createThreshold() {
-	this.setState({action: {view: true, type: 'threshold'}});
-  }
-  
-  createTag() {
-	this.setState({action: {view: true, type: 'tag'}});
-  }
-
-  createTagKeep() {
-	this.setState({action: {view: true, type: 'tagkeep'}});
+  createAction(type) {
+	this.setState({action: {view: true, type: type}});
   }
 
   closeAction() {
-        this.setState({action: {view: false, type: 'suppress'}});
+        this.setState({action: {view: false, type: null}});
   }
 
-
   actionsButtons() {
+      if (this.state.supported_actions.length === 0) {
+        return (
+        <div className="form-group">
+          <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions" disabled>
+          </DropdownButton>
+        </div>
+        );
+      }
+      var actions = []
+      let eventKey = 1;
+      for (let i = 0; i < this.state.supported_actions.length; i++) {
+          let action = this.state.supported_actions[i];
+          if (action[0] === '-') {
+              actions.push(<MenuItem key={'divider' + i} divider />)
+          } else {
+              actions.push(<MenuItem key={action[0]} eventKey={eventKey} onClick={e=> {this.createAction(action[0])}}>{action[1]}</MenuItem>)
+              eventKey++;
+          }
+      }
       return(
-	     <div className="form-group">
-	         <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions">
-		 <MenuItem eventKey="1" onClick={e => { this.createSuppress(); }}>Suppress</MenuItem>
-		 <MenuItem eventKey="2" onClick={e => { this.createThreshold(); }}>Threshold</MenuItem>
-		 <MenuItem divider />
-		 <MenuItem eventKey="3" onClick={e => { this.createTag(); }}>Tag</MenuItem>
-		 <MenuItem eventKey="4" onClick={e => { this.createTagKeep(); }}>Tag and Keep</MenuItem>
-	         </DropdownButton>
-	     </div>
-       );
+        <div className="form-group">
+          <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions">
+            {actions}
+          </DropdownButton>
+        </div>
+      );
   }
 
 

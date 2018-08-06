@@ -510,11 +510,11 @@ export class RuleToggleModal extends React.Component {
         this.handleCommentChange = this.handleCommentChange.bind(this);
         this.handleFieldChange = this.handleFieldChange.bind(this);
         this.handleOptionsChange = this.handleOptionsChange.bind(this);
-        this.updateFilter = this.updateFilter.bind(this);
+        this.updateActionDialog = this.updateActionDialog.bind(this);
         this.setDefaultOptions = this.setDefaultOptions.bind(this);
     }
 
-    updateFilter() {
+    updateActionDialog() {
       if (this.props.filters && this.props.filters.length > 0) {
         var wanted_filters = Array.from(this.props.filters, x => x.id);
         var req_data = {fields: wanted_filters, action: this.props.action};
@@ -536,10 +536,12 @@ export class RuleToggleModal extends React.Component {
 		notfound = false;
             }
           }
-          this.setState({supported_filters: supp_filters, noaction: notfound});
+
+          var errors = undefined;
 	  if (notfound) {
-	  	this.setState({errors: {filters: ['No filters available']}});
+	      errors = {filters: ['No filters available']};
 	  }
+          this.setState({supported_filters: supp_filters, noaction: notfound, errors: errors});
         }).catch( error => {
 		if (error.response.status === 403) {
 			this.setState({errors: {permission: ['Insufficient permissions']}, noaction: true});
@@ -568,10 +570,12 @@ export class RuleToggleModal extends React.Component {
 
 
     componentDidUpdate(prevProps, prevState, snapshot) {
+        if (this.props.show) {
             if ((prevProps.filters !== this.props.filters) || (prevProps.action !== this.props.action)) {
-                this.updateFilter();
+                this.updateActionDialog();
 		this.setDefaultOptions();
             }
+        }
     }
 
     componentDidMount() {
@@ -580,7 +584,7 @@ export class RuleToggleModal extends React.Component {
                this.setState({rulesets: res.data['results']});
              })
 	}
-        this.updateFilter();
+        this.updateActionDialog();
 	this.setDefaultOptions();
     }
 
@@ -878,7 +882,8 @@ export class RulesList extends HuntList {
       display_toggle: true,
       action: { view: false, type: 'suppress'},
       net_error: undefined,
-      rules_filters: []
+      rules_filters: [],
+      supported_actions: []
     };
     this.updateRulesState = this.updateRulesState.bind(this);
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
@@ -936,7 +941,7 @@ export class RulesList extends HuntList {
 
   displayRule(rule) {
       this.setState({display_rule: rule});
-      let activeFilters = [...this.props.filters, {label:"Signature ID: " + rule.sid, id: 'alert.signature_id', value: rule.sid, query: 'filter'}];
+      let activeFilters = [...this.props.filters, {label:"Signature ID: " + rule.sid, id: 'alert.signature_id', value: rule.sid, query: 'filter', negated: false}];
       this.RuleUpdateFilter(activeFilters);
   }
 
@@ -981,6 +986,7 @@ export class RulesList extends HuntList {
 		this.setState({rules_filters: res.data});
 	}
       );
+      this.loadActions();
   }
 
   findSID(filters) {

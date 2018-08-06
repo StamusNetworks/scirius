@@ -49,7 +49,8 @@ export class HuntDashboard extends HuntList {
       only_hits: only_hits,
       action: { view: false, type: 'suppress'},
       net_error: undefined,
-      rules_filters: []
+      rules_filters: [],
+      supported_actions: []
     };
   }
 
@@ -64,6 +65,7 @@ export class HuntDashboard extends HuntList {
 		}
 		this.setState({rules_filters: fdata});
 	});
+      this.loadActions();
     }
 
     render() {

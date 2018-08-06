@@ -54,7 +54,8 @@ export class AlertsList extends HuntList {
       refresh_data: false,
       action: { view: false, type: 'suppress'},
       net_error: undefined,
-      rules_filters: []
+      rules_filters: [],
+      supported_actions: []
     };
    this.fetchData = this.fetchData.bind(this);
   }
@@ -73,6 +74,7 @@ export class AlertsList extends HuntList {
 		this.setState({rules_filters: fdata});
 	}
   	);
+        this.loadActions();
   }
   
   fetchData(state, filters) {
