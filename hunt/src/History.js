@@ -170,7 +170,7 @@ class HistoryItem extends React.Component {
 	    <ListViewItem
 	        leftContent={<ListViewIcon name="envelope" />}
 	        additionalInfo={info}
-	        heading={this.props.data.action_type}
+	        heading={this.props.data.title}
 	        description={this.props.data.description}
 		key={this.props.data.pk}
 	     >
