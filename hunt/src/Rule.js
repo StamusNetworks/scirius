@@ -787,7 +787,7 @@ export class RuleToggleModal extends React.Component {
               {this.state.rulesets.map(function(ruleset) {
                       return(<div className="row"  key={ruleset.pk}>
                            <div className="col-sm-9">
-                         <input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange}/> <label>{ruleset.name}</label>
+                          <label htmlFor={ruleset.pk}><input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange}/>{ruleset.name}</label>
                          </div>
                       </div>);
                   }, this)
