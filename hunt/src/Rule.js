@@ -515,6 +515,10 @@ export class RuleToggleModal extends React.Component {
     }
 
     updateActionDialog() {
+      if (['enable', 'disable'].indexOf(this.props.action) !== -1) {
+          this.setState({supported_filters: [], noaction: false, errors: undefined});
+          return;
+      }
       if (this.props.filters && this.props.filters.length > 0) {
         var wanted_filters = Array.from(this.props.filters, x => x.id);
         var req_data = {fields: wanted_filters, action: this.props.action};
