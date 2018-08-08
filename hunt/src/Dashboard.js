@@ -163,7 +163,9 @@ class HuntTrend extends React.Component {
                     'alerts_count&prev=1&hosts=*&from_date=' + this.props.from_date
                     + string_filters)
              .then(res => {
-               this.setState({ data: res.data });
+                  if (typeof(res.data) !== 'string') {
+               	      this.setState({ data: res.data });
+	          }
             })
     }
 
@@ -192,7 +194,7 @@ class HuntTrend extends React.Component {
 	} else {
 		g_data = {
 	            columns: [
-	            ["previous", 100],
+	            ["previous", 0],
 	            ["current", 0]
 	            ],
 	            groups: [
@@ -202,12 +204,10 @@ class HuntTrend extends React.Component {
 	}
         return(
 		<div>
-		   {this.state.data &&
 		      <DonutChart
 		          data={g_data}
                           title={{type: "percent" }}
 		      />
-		   }
 		</div>
 	);
     }
