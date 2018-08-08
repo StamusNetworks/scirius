@@ -523,6 +523,7 @@ class Source(models.Model):
     cats_count = models.IntegerField(default = 0)
     rules_count = models.IntegerField(default = 0)
     public_source = models.CharField(max_length=100, blank = True, null = True)
+    use_iprep = models.BooleanField('Use IP reputation for group signatures', default=True)
 
     editable = True
     # git repo where we store the physical thing
@@ -1477,6 +1478,91 @@ class Category(models.Model, Transformable, Cache):
     def get_icon():
         return 'fa-list-alt'
 
+    def build_sigs_group(self):
+        # query sigs with group set
+        rules = Rule.objects.filter(group = True, category = self)
+        sigs_groups = {}
+        # build hash on message
+        for rule in rules:
+            # let's get the new IP only, will output that as text field at save time
+            rule.ips_list = set()
+            sigs_groups[rule.msg] = rule
+        return sigs_groups
+
+    def parse_group_signature(self, group_rule, rule):
+        if group_rule.group_by == 'by_src':
+            ips_list = Rule.IPSREGEXP['src'].findall(rule.header)[0]
+        else:
+            ips_list = Rule.IPSREGEXP['dest'].findall(rule.header)[0]
+        ips_list = ips_list[1:-1].split(',')
+        group_rule.ips_list.update(ips_list)
+
+    def add_group_signature(self, sigs_groups, line, existing_rules_hash, source, flowbits, rules_update):
+        # parse the line with ids tools
+        # TODO hand idstools parsing errors
+        rule = rule_idstools.parse(line)
+        rule_base_msg = Rule.GROUPSNAMEREGEXP.findall(rule.msg)[0]
+        # check if we already have a signature in the group signatures
+        # that match
+        if rule_base_msg in sigs_groups:
+            # TODO coherence check
+            # add IPs to the list
+            self.parse_group_signature(sigs_groups[rule_base_msg], rule)
+            # Is there an existing rule to clean ? this is needed at
+            # conversion of source to use iprep but we will have a different
+            # message in this case (with group)
+            if existing_rules_hash.has_key(rule.sid):
+                # the sig is already present and it is a group sid so let's declare it
+                # updated to avoid its deletion later in process. No else clause because
+                # the signature will be deleted as it is not referenced in a changed or
+                # unchanged list
+                if rule_base_msg == existing_rules_hash[rule.sid].msg:
+                    rules_update["updated"].append(existing_rules_hash[rule.sid])
+        else:
+            creation_date = timezone.now()
+            state = True
+            if rule.raw.startswith("#"):
+                state = False
+            # update rule content
+            content = rule.raw
+            iprep_group = rule.sid
+            ips_list = Rule.IPSREGEXP['src'].findall(rule.header)[0]
+            if ips_list.startswith('['):
+                track_by = 'src'
+            else:
+                track_by = 'dst'
+            content = content.replace(';)','; iprep:%s,%s,>,1;)' % (track_by, iprep_group))
+            # replace IP list by any
+            content = re.sub(r'\[\d+.*\d+\]', r'any', content)
+            # fix message
+            content = re.sub(r'msg:".*";', r'msg:"%s";' % rule_base_msg, content)
+            # if we already have a signature with the SID we are probably parsing
+            # a source that has just been switched to iprep. So we get the old
+            # rule and we update the content to avoid loosing information.
+            if existing_rules_hash.has_key(rule.sid):
+                group_rule = existing_rules_hash[rule.sid]
+                group_rule.group = True
+                group_rule.msg = rule_base_msg
+                group_rule.content = content
+                group_rule.updated_date = creation_date
+                group_rule.rev = rule.rev
+                rules_update["updated"].append(group_rule)
+            else:
+                group_rule = Rule(category = self, sid = rule.sid, group = True,
+                        rev = rule.rev, content = content, msg = rule_base_msg,
+                        state_in_source = state, state = state,
+                        imported_date = creation_date, updated_date = creation_date)
+                rules_update["updated"].append(group_rule)
+            group_rule.parse_metadata()
+            group_rule.parse_flowbits(source, flowbits, addition = True)
+            if track_by == 'src':
+                group_rule.group_by = 'by_src'
+            else:
+                group_rule.group_by = 'by_dest'
+            group_rule.ips_list = set()
+            self.parse_group_signature(group_rule, rule)
+            sigs_groups[group_rule.msg] = group_rule
+
     def get_rules(self, source, existing_rules_hash=None):
         # parse file
         # return an object with updates
@@ -1510,6 +1596,10 @@ class Category(models.Model, Transformable, Cache):
 
         creation_date = timezone.now()
 
+        rules_groups = {}
+        if source.use_iprep:
+            rules_groups = self.build_sigs_group()
+
         with transaction.atomic():
             for line in rfile.readlines():
                 state = True
@@ -1534,39 +1624,50 @@ class Category(models.Model, Transformable, Cache):
                     msg = ""
                 else:
                     msg = match.groups()[0]
-                # FIXME detect if nothing has changed to avoid rules reload
-                if existing_rules_hash.has_key(int(sid)):
-                    # FIXME update references if needed
-                    rule = existing_rules_hash[int(sid)]
-                    if rule.category.source != source:
-                        raise ValidationError('Duplicate SID: %d' % (int(sid)))
-                    if rev == None or rule.rev < rev:
-                        rule.content = line
-                        if rev == None:
-                            rule.rev = 0
-                        else:
-                            rule.rev = rev
-                        if rule.category != self:
-                            rule.category = self
-                        rule.msg = msg
-                        rules_update["updated"].append(rule)
-                        rule.updated_date = creation_date
-                        rule.parse_metadata()
-                        rule.save()
-                        rule.parse_flowbits(source, flowbits)
-                    else:
-                        rules_unchanged.append(rule)
+
+                if source.use_iprep and Rule.GROUPSNAMEREGEXP.match(msg):
+                    self.add_group_signature(rules_groups, line, existing_rules_hash, source, flowbits, rules_update)
                 else:
-                    if rev == None:
-                        rev = 0
-                    rule = Rule(category = self, sid = sid,
-                                        rev = rev, content = line, msg = msg,
-                                        state_in_source = state, state = state, imported_date = creation_date, updated_date = creation_date)
-                    rule.parse_metadata()
-                    rules_update["added"].append(rule)
-                    rule.parse_flowbits(source, flowbits, addition = True)
+                    if existing_rules_hash.has_key(int(sid)):
+                        # FIXME update references if needed
+                        rule = existing_rules_hash[int(sid)]
+                        if rule.category.source != source:
+                            raise ValidationError('Duplicate SID: %d' % (int(sid)))
+                        if rev == None or rule.rev < rev:
+                            rule.content = line
+                            if rev == None:
+                                rule.rev = 0
+                            else:
+                                rule.rev = rev
+                            if rule.category != self:
+                                rule.category = self
+                            rule.msg = msg
+                            rules_update["updated"].append(rule)
+                            rule.updated_date = creation_date
+                            rule.parse_metadata()
+                            rule.save()
+                            rule.parse_flowbits(source, flowbits)
+                        else:
+                            rules_unchanged.append(rule)
+                    else:
+                        if rev == None:
+                            rev = 0
+                        rule = Rule(category = self, sid = sid,
+                                            rev = rev, content = line, msg = msg,
+                                            state_in_source = state, state = state, imported_date = creation_date, updated_date = creation_date)
+                        rule.parse_metadata()
+                        rules_update["added"].append(rule)
+                        rule.parse_flowbits(source, flowbits, addition = True)
             if len(rules_update["added"]):
                 Rule.objects.bulk_create(rules_update["added"])
+            if len(rules_groups):
+                for rule in rules_groups:
+                    # If IP list is empty it will be deleted because it has not
+                    # been put in a changed or unchanged list. So we just care
+                    # about saving the rule.
+                    if len(rules_groups[rule].ips_list) > 0:
+                        rules_groups[rule].group_ips_list = ",".join(rules_groups[rule].ips_list)
+                        rules_groups[rule].save()
             if len(flowbits["added"]["flowbit"]):
                 Flowbit.objects.bulk_create(flowbits["added"]["flowbit"])
             if len(flowbits["added"]["through_set"]):
@@ -1718,6 +1819,7 @@ class Category(models.Model, Transformable, Cache):
 
 
 class Rule(models.Model, Transformable, Cache):
+    GROUP_BY_CHOICES= (('by_src', 'by_src'),('by_dst', 'by_dst'))
     sid = models.IntegerField(primary_key=True)
     category = models.ForeignKey(Category)
     msg = models.CharField(max_length=1000)
@@ -1729,6 +1831,9 @@ class Rule(models.Model, Transformable, Cache):
     updated_date = models.DateTimeField(default = timezone.now)
     created = models.DateField(blank = True, null = True)
     updated = models.DateField(blank = True, null = True)
+    group = models.BooleanField(default = False)
+    group_by = models.CharField(max_length = 10, choices = GROUP_BY_CHOICES, default='by_src')
+    group_ips_list = models.TextField(blank = True, null = True)  # store one IP per line
 
     hits = 0
 
@@ -1736,6 +1841,10 @@ class Rule(models.Model, Transformable, Cache):
                   'hostbits': re.compile("hostbits *: *(isset|set),(.*?) *;"),
                   'xbits': re.compile("xbits *: *(isset|set),(.*?) *;"),
                  }
+
+    IPSREGEXP = {'src': re.compile('^\S+ +\S+ (.*) +\S+ +\->'), 'dest': re.compile('\-> (.*) +\S+$')}
+
+    GROUPSNAMEREGEXP = re.compile('^(.*) +group +\d+$')
 
     def __unicode__(self):
         return str(self.sid) + ":" + self.msg
@@ -2130,6 +2239,8 @@ class Rule(models.Model, Transformable, Cache):
 
         return tuple(allowed_choices)
 
+def build_iprep_name(msg):
+    return re.sub('[^0-9a-zA-Z]+', '_', msg.replace(' ',''))
 
 class Flowbit(models.Model):
     FLOWBIT_TYPE = (('flowbits', 'Flowbits'), ('hostbits', 'Hostbits'), ('xbits', 'Xbits'))
@@ -2670,3 +2781,18 @@ def dependencies_check(obj):
 
     if len(Ruleset.objects.all()) == 0:
             return "You need first to create a ruleset."
+
+def export_iprep_files(target_dir):
+    group_rules = Rule.objects.filter(group = True)
+    cat_map = {}
+    with open(target_dir + "/" + "scirius-categories.txt", 'w') as rfile:
+        index = 1
+        for rule in group_rules:
+            rfile.write('%s,%d,%s\n' % (index, rule.sid, rule.msg))
+            cat_map[index] = rule
+            index = index + 1
+    with open(target_dir + "/" + "scirius-iprep.list", 'w') as rfile:
+        for cate in cat_map:
+            iprep_group = cat_map[cate].sid
+            for IP in cat_map[cate].group_ips_list.split(','):
+                rfile.write('%s,%d,100\n' % (IP, cate))
