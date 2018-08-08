@@ -164,7 +164,7 @@ class HistoryItem extends React.Component {
 		info.push(<ListViewInfoItem key="ruleset"><p><Icon type="fa" name="th" /> {this.props.data.ua_objects.ruleset.value}</p></ListViewInfoItem>);
 	}
 	if (this.props.data.ua_objects.rule && this.props.data.ua_objects.rule.sid) {
-		info.push(<ListViewInfoItem key="rule"><p><a onClick={e => { return this.props.switchPage(PAGE_STATE.rule, this.props.data.ua_objects.rule.sid);}}><Icon type="fa" name="bell" /> {this.props.data.ua_objects.rule.sid}</a></p></ListViewInfoItem>);
+		info.push(<ListViewInfoItem key="rule"><p><a onClick={e => { return this.props.switchPage(PAGE_STATE.rules_list, this.props.data.ua_objects.rule.sid);}}><Icon type="fa" name="bell" /> {this.props.data.ua_objects.rule.sid}</a></p></ListViewInfoItem>);
 	}
         return(
 	    <ListViewItem

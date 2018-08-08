@@ -223,6 +223,9 @@ class HuntApp extends Component {
 	      console.log("switchPage called with null param");
 	      return;
       }
+      if (page === PAGE_STATE.rules_list && item !== undefined) {
+          this.updateIDSFilterState([{label: "Signature ID: " + item, id: 'alert.signature_id', value: item, negated: false, query: 'filter'}]);
+      }
       const page_display = {page: page, item: item};
       this.setState({display: page_display});
       localStorage.setItem('page_display', JSON.stringify(page_display));
