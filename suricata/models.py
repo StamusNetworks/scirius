@@ -27,7 +27,7 @@ from django.conf import settings
 import os
 import socket
 
-from rules.models import Ruleset, Rule
+from rules.models import Ruleset, Rule, export_iprep_files
 import json
 
 
@@ -63,7 +63,8 @@ class Suricata(models.Model):
             for rule in Rule.objects.all():
                 dic = {'sid': rule.pk, 'created': str(rule.created), 'updated': str(rule.updated)}
                 rfile.write(json.dumps(dic) + '\n')
-
+        # Export IPrep
+        export_iprep_files(self.output_directory)
 
     def push(self):
         # For now we just create a file asking for reload
