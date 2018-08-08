@@ -31,12 +31,8 @@ import { AlertsList } from './Alerts.js';
 import { FiltersList } from './Filters.js';
 import axios from 'axios';
 import * as config from './config/Api.js';
-import 'bootstrap3/dist/css/bootstrap.css'
-import 'patternfly/dist/css/patternfly.css'
-import 'patternfly/dist/css/patternfly-additions.css'
-import 'patternfly-react/dist/css/patternfly-react.css'
 import './pygments.css';
-import './App.css';
+import './css/App.css';
 import scirius_logo from './img/scirius-by-stamus.svg';
 
 class HuntApp extends Component {

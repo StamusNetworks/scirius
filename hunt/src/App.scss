@@ -1,6 +1,7 @@
-.App {
-  //text-align: center;
-}
+@import '../../scss/_styles.scss';
+
+@import 'patternfly';
+@import 'patternfly-react';
 
 .App-logo {
   animation: App-logo-spin infinite 20s linear;
