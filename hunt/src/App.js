@@ -38,6 +38,8 @@ import scirius_logo from './img/scirius-by-stamus.svg';
 class HuntApp extends Component {
   constructor(props) {
     super(props);
+    this.timer = null;
+    var interval = localStorage.getItem('interval');
     var duration = localStorage.getItem('duration');
     var rules_list_conf = localStorage.getItem('rules_list');
     var alerts_list_conf = localStorage.getItem('alerts_list');
@@ -49,6 +51,7 @@ class HuntApp extends Component {
     if (!duration) {
 	    duration = 24;
     }
+
     if (!rules_list_conf) {
         rules_list_conf = {
             pagination: {
@@ -132,6 +135,7 @@ class HuntApp extends Component {
     }
     this.state = {
       sources: [], rulesets: [], duration: duration, from_date: (Date.now() - duration * 3600 * 1000),
+      interval: interval,
       display: page_display,
       rules_list: rules_list_conf,
       alerts_list: alerts_list_conf,
@@ -143,6 +147,7 @@ class HuntApp extends Component {
     this.displaySource = this.displaySource.bind(this);
     this.displayRuleset = this.displayRuleset.bind(this);
     this.changeDuration = this.changeDuration.bind(this);
+    this.changeRefreshInterval = this.changeRefreshInterval.bind(this);
 
     this.fromDate = this.fromDate.bind(this);
 
@@ -199,6 +204,10 @@ class HuntApp extends Component {
       .then(axios.spread((SrcRes, RulesetRes) => {
          this.setState({ rulesets: RulesetRes.data['results'], sources: SrcRes.data['results']});
       }))
+
+      if (this.state.interval) {
+          this.timer = setInterval(this.needReload, this.state.interval * 1000);
+      }
     }
 
     displayRuleset(ruleset) {
@@ -212,6 +221,22 @@ class HuntApp extends Component {
    changeDuration(period) {
 	this.setState({ duration: period, from_date: this.fromDate(period)});
 	localStorage.setItem('duration', period);
+   }
+
+   changeRefreshInterval(interval) {
+	  this.setState({ interval: interval});
+	  localStorage.setItem('interval', interval);
+
+      if (interval) {
+          if (this.timer) {
+              clearInterval(this.timer);
+              this.timer = null;
+          }
+          this.timer = setInterval(this.needReload, interval * 1000);
+      } else {
+          clearInterval(this.timer);
+          this.timer = null;
+      }
    }
 
   switchPage(page, item) {
@@ -289,9 +314,12 @@ class HuntApp extends Component {
                 <VerticalNav sessionKey="storybookItemsAsJsx" showBadges>
             	    <VerticalNav.Masthead title="Scirius">
 						<VerticalNav.Brand titleImg={scirius_logo} />
+
 						<VerticalNav.IconBar>
-							<UserNavInfo ChangeDuration={this.changeDuration} period={this.state.duration} needReload={this.needReload}/>
+							<UserNavInfo ChangeDuration={this.changeDuration} ChangeRefreshInterval={this.changeRefreshInterval} interval={this.state.interval} period={this.state.duration} needReload={this.needReload}/>
 						</VerticalNav.IconBar>
+
+
 					</VerticalNav.Masthead>
 		   <VerticalNav.Item
                       title="Signatures"
@@ -354,6 +382,19 @@ const USER_PERIODS = {
   720: '30d'
 };
 
+
+const REFRESH_INTERVAL = {
+  '': 'Off',
+  10: '10s',
+  30: '30s',
+  60: '1m',
+  120: '2m',
+  300: '5m',
+  900: '15m',
+  1800: '30m',
+  3600: '1h'
+};
+
 class UserNavInfo extends Component {
   constructor(props) {
     super(props);
@@ -392,11 +433,24 @@ class UserNavInfo extends Component {
 		}
 		return(
 			<React.Fragment>
+
+			    <Dropdown componentClass="li" id="timeinterval">
+			        <Dropdown.Toggle useAnchor className="nav-item-iconic">
+			            <Icon type="fa" name="clock-o" /> Refresh Interval {REFRESH_INTERVAL[this.props.interval]}
+			        </Dropdown.Toggle>
+			        <Dropdown.Menu>
+			            {Object.keys(REFRESH_INTERVAL).map((interval) => {
+			                return (<MenuItem key={interval} onClick={this.props.ChangeRefreshInterval.bind(this, interval)}>{REFRESH_INTERVAL[interval]}</MenuItem>)
+			            }, this)}
+			        </Dropdown.Menu>
+			    </Dropdown>
+
 			    <li className="dropdown">
 			    <a id="refreshtime" role="button" className="nav-item-iconic" onClick={this.props.needReload}>
 			    		<Icon type="fa" name="refresh" />
 					</a>
 			    </li>
+
 			    <Dropdown componentClass="li" id="time">
       				<Dropdown.Toggle useAnchor className="nav-item-iconic">
         				<Icon type="fa" name="clock-o" /> Last {USER_PERIODS[this.props.period]}
@@ -407,6 +461,7 @@ class UserNavInfo extends Component {
 					}, this)}
     				</Dropdown.Menu>
 			   </Dropdown>
+
 			{this.state.showNotifications &&
 			<HuntNotificationArea />
 			}
