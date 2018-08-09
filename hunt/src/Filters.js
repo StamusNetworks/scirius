@@ -26,7 +26,7 @@ import * as config from './config/Api.js';
 import { HuntList, HuntPaginationRow } from './Api.js';
 import { Modal, DropdownKebab, MenuItem, Icon, Button } from 'patternfly-react';
 import { Form, FormGroup, FormControl } from 'patternfly-react';
-import { Col, Spinner} from 'patternfly-react';
+import { Row, Col, Spinner} from 'patternfly-react';
 
 import { HuntRestError } from './Error.js';
 
@@ -73,7 +73,7 @@ export class FiltersList extends HuntList {
 	        <ListView>
 	        {this.state.data &&
 	           this.state.data.map( item => {
-	               return(<FilterItem key={item.pk} data={item} switchPage={this.props.switchPage} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} />);
+	               return(<FilterItem key={item.pk} data={item} switchPage={this.props.switchPage} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} from_date={this.props.from_date} />);
 	           })
 	        }
 	        </ListView>
@@ -99,6 +99,31 @@ export class FiltersList extends HuntList {
 }
 
 class FilterItem extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { data: undefined, loading: true };
+    }
+
+    componentDidMount() {
+	    this.fetchData(this.props.config, this.props.filters);
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+       if (prevProps.from_date !==  this.props.from_date) {
+               this.fetchData(this.props.config, this.props.filters);
+       }
+    }
+    
+    fetchData(filters_stat, filters) {
+        this.setState({loading: true});
+	    axios.get(config.API_URL + config.ES_BASE_PATH + "poststats_summary&value=rule_filter_" + this.props.data.pk + "&from_date=" + this.props.from_date)
+            .then(res => {
+               this.setState({ data: res.data, loading: false });
+            }).catch(res => {
+                    this.setState({loading: false});
+            })
+    }
+    
     render() {
         var item = this.props.data;
         var addinfo = [];
@@ -142,7 +167,30 @@ class FilterItem extends React.Component {
                 heading={item.action}
                 description={description}
                 actions={actions_menu}
-            />
+            >
+            {this.state.data &&
+            <Row>
+                {this.state.data.map( item => {
+                        return(
+                    <div className="col-xs-3 col-sm-2 col-md-2">
+                        <div className="card-pf card-pf-accented card-pf-aggregate-status">
+                          <h2 className="card-pf-title">
+                                <a href="#"><span className="fa fa-shield"></span>{item.key}</a>
+                          </h2>
+                        <div className="card-pf-body">
+                            <p className="card-pf-aggregate-status-notifications">
+                              <span className="card-pf-aggregate-status-notification"><a href="#"><span className="pficon pficon-ok"></span>{item.seen.value}</a></span>
+                              <span className="card-pf-aggregate-status-notification"><a href="#"><span className="pficon pficon-error-circle-o"></span>{item.drop.value}</a></span>
+                            </p>
+                        </div>
+                        </div> 
+                    </div> 
+                        )
+                })
+                }
+            </Row>
+            }
+            </ListViewItem>
         )
     }
 }
