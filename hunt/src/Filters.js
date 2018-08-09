@@ -83,9 +83,9 @@ export class FiltersList extends HuntList {
 	            onPaginationChange={this.handlePaginationChange}
 		    amountOfPages = {Math.ceil(this.state.count / this.props.config.pagination.perPage)}
 		    pageInputValue = {this.props.config.pagination.page}
-		    itemCount = {this.state.count}
+		    itemCount = {this.state.count - 1} // used as last item
 		    itemsStart = {(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
-		    itemsEnd = {Math.min(this.props.config.pagination.page * this.props.config.pagination.perPage - 1, this.state.count) }
+		    itemsEnd = {Math.min(this.props.config.pagination.page * this.props.config.pagination.perPage - 1, this.state.count - 1) }
 		    onFirstPage={this.onFirstPage}
 		    onNextPage={this.onNextPage}
 		    onPreviousPage={this.onPrevPage}
@@ -208,6 +208,9 @@ class FilterToggleModal extends React.Component {
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         if (prevProps.action !== this.props.action) {
+            // Move to top / Launch dialog init with 0, then event to update new_index
+            this.setState({new_index: 0});
+
             if (this.props.action === 'movebottom') {
                 this.setState({new_index: this.props.last_index});
             }
@@ -302,7 +305,7 @@ class FilterToggleModal extends React.Component {
 			<strong>New index</strong>
 			</Col>
 			<Col sm={9}>
-			<FormControl type="integer" disabled={false} defaultValue={0} onChange={this.handleChange} />
+			<FormControl type="number" min={0} max={50000} disabled={false} defaultValue={0} onChange={this.handleChange} />
 			</Col>
 		   </FormGroup>
 

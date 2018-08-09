@@ -1065,9 +1065,9 @@ export class RulesList extends HuntList {
 	        onPaginationChange={this.handlePaginationChange}
 		amountOfPages = {Math.ceil(this.state.count / this.props.config.pagination.perPage)}
 		pageInputValue = {this.props.config.pagination.page}
-		itemCount = {this.state.count}
+		itemCount = {this.state.count - 1} // used as last item
 		itemsStart = {(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
-		itemsEnd = {Math.min(this.props.config.pagination.page * this.props.config.pagination.perPage - 1, this.state.count) }
+		itemsEnd = {Math.min(this.props.config.pagination.page * this.props.config.pagination.perPage - 1, this.state.count - 1) }
 		onFirstPage={this.onFirstPage}
 		onNextPage={this.onNextPage}
 		onPreviousPage={this.onPrevPage}
