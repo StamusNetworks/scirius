@@ -1282,6 +1282,55 @@ SIGS_LIST_HITS = """
 }
 """
 
+POSTSTATS_SUMMARY = """
+{
+  "size": 0,
+  "aggs": {
+    "hosts": {
+      "terms": {
+        "field": "host.keyword",
+        "size": 5,
+        "order": {
+          "_term": "desc"
+        }
+      },
+      "aggs": {
+        "seen": {
+          "sum": {
+            "field": "poststats.{{ filter }}.seen_delta"
+          }
+        },
+        "drop": {
+          "sum": {
+            "field": "poststats.{{ filter }}.drop_delta"
+          }
+        }
+      }
+    }
+  },
+  "version": true,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "query_string": {
+            "query": "event_type:poststats {{ query_filter|safe }}",
+            "analyze_wildcard": true
+          }
+        },
+        {
+           "range": {
+             "@timestamp": {
+               "from": {{ from_date }},
+               "to": "now"
+             }
+           }
+        }
+      ]
+    }
+  }
+}
+"""
 
 if settings.ELASTICSEARCH_VERSION >= 6:
     DASHBOARDS_QUERY_URL = "/%s/_search?q=type:dashboard&size=" % settings.KIBANA_INDEX
@@ -1580,6 +1629,20 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
     data['from_date'] = from_date
     data['interval'] = int(interval) * 1000
     return data
+
+def es_get_poststats(from_date=0,  value = "poststats.rule_filter_1", hosts = None, qfilter = None):
+    data = render_template(POSTSTATS_SUMMARY, {'from_date': from_date, 'filter': value, 'hosts': hosts}, qfilter = qfilter)
+    es_url = get_es_url(from_date, data = 'poststats')
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
+    try:
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
+    except:
+        return None
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    return data['aggregations']['hosts']['buckets']
 
 def es_get_json(uri):
     req = urllib2.Request(get_es_path(uri))

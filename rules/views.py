@@ -276,6 +276,16 @@ def elasticsearch(request):
             else:
                 hosts = None
             data = es_get_metrics_timeline(from_date = from_date, value = value, hosts = hosts, qfilter = qfilter)
+        elif query == 'poststats_summary':
+            from_date = request.GET.get('from_date', None)
+            value = request.GET.get('value', None)
+            cshosts = request.GET.get('hosts', None)
+            qfilter = request.GET.get('filter', None)
+            if cshosts:
+                hosts = cshosts.split(',')
+            else:
+                hosts = None
+            data = es_get_poststats(from_date = from_date, value = value, hosts = hosts, qfilter = qfilter)
         elif query == 'health':
             data = es_get_health()
         elif query == 'stats':
