@@ -54,14 +54,14 @@ _HUNT_FILTERS = [
                       'id': 'hits_min',
                       'title': 'Hits min',
                       'placeholder': 'Minimum Hits Count',
-                      'filterType': 'integer',
+                      'filterType': 'number',
                       'queryType': 'rest'
                     },
                     {
                       'id': 'hits_max',
                       'title': 'Hits max',
                       'placeholder': 'Maximum Hits Count',
-                      'filterType': 'integer',
+                      'filterType': 'number',
                       'queryType': 'rest'
                     },
                     {
