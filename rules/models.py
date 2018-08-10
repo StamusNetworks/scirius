@@ -1494,7 +1494,10 @@ class Category(models.Model, Transformable, Cache):
             ips_list = Rule.IPSREGEXP['src'].findall(rule.header)[0]
         else:
             ips_list = Rule.IPSREGEXP['dest'].findall(rule.header)[0]
-        ips_list = ips_list[1:-1].split(',')
+        if ips_list.startswith('['):
+            ips_list = ips_list[1:-1].split(',')
+        else:
+            ips_list = [ips_list, ]
         group_rule.ips_list.update(ips_list)
         group_rule.next_rev = rule.rev
 
