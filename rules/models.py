@@ -1496,8 +1496,9 @@ class Category(models.Model, Transformable, Cache):
             ips_list = Rule.IPSREGEXP['dest'].findall(rule.header)[0]
         ips_list = ips_list[1:-1].split(',')
         group_rule.ips_list.update(ips_list)
+        group_rule.rev = rule.rev
 
-    def add_group_signature(self, sigs_groups, line, existing_rules_hash, source, flowbits, rules_update):
+    def add_group_signature(self, sigs_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged):
         # parse the line with ids tools
         # TODO hand idstools parsing errors
         rule = rule_idstools.parse(line)
@@ -1506,18 +1507,21 @@ class Category(models.Model, Transformable, Cache):
         # that match
         if rule_base_msg in sigs_groups:
             # TODO coherence check
-            # add IPs to the list
-            self.parse_group_signature(sigs_groups[rule_base_msg], rule)
-            # Is there an existing rule to clean ? this is needed at
-            # conversion of source to use iprep but we will have a different
-            # message in this case (with group)
-            if existing_rules_hash.has_key(rule.sid):
-                # the sig is already present and it is a group sid so let's declare it
-                # updated to avoid its deletion later in process. No else clause because
-                # the signature will be deleted as it is not referenced in a changed or
-                # unchanged list
-                if rule_base_msg == existing_rules_hash[rule.sid].msg:
-                    rules_update["updated"].append(existing_rules_hash[rule.sid])
+            # add IPs to the list if revision has changed
+            if rule.rev != sigs_groups[rule_base_msg].rev:
+                self.parse_group_signature(sigs_groups[rule_base_msg], rule)
+                # Is there an existing rule to clean ? this is needed at
+                # conversion of source to use iprep but we will have a different
+                # message in this case (with group)
+                if existing_rules_hash.has_key(rule.sid):
+                    # the sig is already present and it is a group sid so let's declare it
+                    # updated to avoid its deletion later in process. No else clause because
+                    # the signature will be deleted as it is not referenced in a changed or
+                    # unchanged list
+                    if rule_base_msg == existing_rules_hash[rule.sid].msg:
+                        rules_update["updated"].append(existing_rules_hash[rule.sid])
+            else:
+                rules_unchanged.append(sigs_groups[rule_base_msg])
         else:
             creation_date = timezone.now()
             state = True
@@ -1626,7 +1630,7 @@ class Category(models.Model, Transformable, Cache):
                     msg = match.groups()[0]
 
                 if source.use_iprep and Rule.GROUPSNAMEREGEXP.match(msg):
-                    self.add_group_signature(rules_groups, line, existing_rules_hash, source, flowbits, rules_update)
+                    self.add_group_signature(rules_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged)
                 else:
                     if existing_rules_hash.has_key(int(sid)):
                         # FIXME update references if needed
