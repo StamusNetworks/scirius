@@ -1557,8 +1557,8 @@ class Category(models.Model, Transformable, Cache):
                         state_in_source = state, state = state,
                         imported_date = creation_date, updated_date = creation_date)
                 rules_update["updated"].append(group_rule)
-            group_rule.parse_metadata()
-            group_rule.parse_flowbits(source, flowbits, addition = True)
+                group_rule.parse_metadata()
+                group_rule.parse_flowbits(source, flowbits, addition = True)
             if track_by == 'src':
                 group_rule.group_by = 'by_src'
             else:
