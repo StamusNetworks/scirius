@@ -15,7 +15,7 @@ $navbar-pf-vertical-active-color:                                   $color-pf-bl
 
 $navbar-pf-vertical-border-color:                                   $color-sn-purple !default;
 $navbar-pf-vertical-border-style:                                   solid !default;
-$navbar-pf-vertical-border-width:                                   2px !default;
+$navbar-pf-vertical-border-width:                                   1px !default;
 $navbar-pf-vertical-navbar-toggle-icon-bar-hover-bg:                $color-sn-purple !default;
 
 $nav-pf-vertical-bg-color:                                          $color-sn-menu !default;
@@ -105,4 +105,7 @@ span.eventValue {
 .navbar-pf-vertical {
   border-bottom: $navbar-pf-vertical-border-color $navbar-pf-vertical-border-style $navbar-pf-vertical-border-width;
   border-top: none;
+  -webkit-box-shadow: 3px 2px 3px 0px rgba(123,18,68,0.38);
+  -moz-box-shadow: 3px 2px 3px 0px rgba(123,18,68,0.38);
+  box-shadow: 3px 2px 3px 0px rgba(123,18,68,0.38);
 }
