@@ -1496,7 +1496,7 @@ class Category(models.Model, Transformable, Cache):
             ips_list = Rule.IPSREGEXP['dest'].findall(rule.header)[0]
         ips_list = ips_list[1:-1].split(',')
         group_rule.ips_list.update(ips_list)
-        group_rule.rev = rule.rev
+        group_rule.next_rev = rule.rev
 
     def add_group_signature(self, sigs_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged):
         # parse the line with ids tools
@@ -1553,7 +1553,7 @@ class Category(models.Model, Transformable, Cache):
                 rules_update["updated"].append(group_rule)
             else:
                 group_rule = Rule(category = self, sid = rule.sid, group = True,
-                        rev = rule.rev, content = content, msg = rule_base_msg,
+                        rev = rule.rev - 1, content = content, msg = rule_base_msg,
                         state_in_source = state, state = state,
                         imported_date = creation_date, updated_date = creation_date)
                 rules_update["updated"].append(group_rule)
@@ -1671,6 +1671,7 @@ class Category(models.Model, Transformable, Cache):
                     # about saving the rule.
                     if len(rules_groups[rule].ips_list) > 0:
                         rules_groups[rule].group_ips_list = ",".join(rules_groups[rule].ips_list)
+                        rules_groups[rule].rev = rules_groups[rule].next_rev
                         rules_groups[rule].save()
             if len(flowbits["added"]["flowbit"]):
                 Flowbit.objects.bulk_create(flowbits["added"]["flowbit"])
