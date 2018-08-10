@@ -175,12 +175,12 @@ class FilterItem extends React.Component {
                     <div className="col-xs-3 col-sm-2 col-md-2">
                         <div className="card-pf card-pf-accented card-pf-aggregate-status">
                           <h2 className="card-pf-title">
-                                <a href="#"><span className="fa fa-shield"></span>{item.key}</a>
+                                <span className="fa fa-shield"></span>{item.key}
                           </h2>
                         <div className="card-pf-body">
                             <p className="card-pf-aggregate-status-notifications">
-                              <span className="card-pf-aggregate-status-notification"><a href="#"><span className="pficon pficon-ok"></span>{item.seen.value}</a></span>
-                              <span className="card-pf-aggregate-status-notification"><a href="#"><span className="pficon pficon-error-circle-o"></span>{item.drop.value}</a></span>
+                              <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok"></span>{item.seen.value}</span>
+                              <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-error-circle-o"></span>{item.drop.value}</span>
                             </p>
                         </div>
                         </div> 
