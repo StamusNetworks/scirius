@@ -1,19 +1,38 @@
+$color-pf-black:                #030303 !default;
+$color-pf-white:                #fff !default;
+$color-sn-border:               #ddd !default;
+$color-sn-menu:                 #f5f5f5 !default;
+$color-sn-purple:               #7b1244 !default;
+$color-sn-purple-light:         lighten($color-sn-purple, 10%) !default;
+
+$color-pf-blue:                 $color-sn-purple !default;
+
+$link-hover-color:                                                  $color-sn-purple-light !default;
+
+$navbar-pf-vertical-bg-color:                                       $color-sn-menu !default;
+$navbar-pf-vertical-color:                                          lighten($color-pf-black, 20%) !default;
+$navbar-pf-vertical-active-color:                                   $color-pf-black !default;
+
+$navbar-pf-vertical-border-color:                                   $color-sn-border !default;
+$navbar-pf-vertical-border-style:                                   solid !default;
+$navbar-pf-vertical-border-width:                                   1px !default;
+$navbar-pf-vertical-navbar-toggle-icon-bar-hover-bg:                $color-sn-purple !default;
+
+$nav-pf-vertical-bg-color:                                          $color-sn-menu !default;
+$nav-pf-vertical-color:                                             lighten($color-pf-black, 20%) !default;
+$nav-pf-vertical-icon-color:                                        lighten($color-pf-black, 20%) !default;
+$nav-pf-vertical-item-border-color:                                 $color-sn-border !default;
+$nav-pf-vertical-border-color:                                      $color-sn-border !default;
+
+$nav-pf-vertical-active-bg-color:                                   lighten($color-sn-menu, 40%) !default;
+$nav-pf-vertical-active-color:                                      $color-sn-purple !default;
+$nav-pf-vertical-active-icon-color:                                 $color-sn-purple !default;
+$nav-pf-vertical-active-before-color:                               $color-sn-purple !default;
+
 @import '../../scss/_styles.scss';
 
 @import 'patternfly';
 @import 'patternfly-react';
-
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
-}
-
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
-}
 
 .App-title {
   font-size: 1.5em;
@@ -71,64 +90,6 @@ span.eventValue {
   max-width: 10em;
 }
 
-nav.navbar-pf-vertical {
-  background-color: #f8f8f8;
-  border: solid 1px #e7e7e7;
-  border-top: none;
-  color: #777;
-}
-
-.navbar-pf-vertical .nav .nav-item-iconic, .navbar-pf-vertical .nav .nav-item-iconic .caret, .navbar-pf-vertical .nav .nav-item-iconic .fa, .navbar-pf-vertical .nav .nav-item-iconic .pficon {
-  color: #777;
-}
-
-.navbar-pf-vertical .nav .nav-item-iconic:hover , .navbar-pf-vertical .nav .nav-item-iconic:hover, .navbar-pf-vertical .nav .nav-item-iconic .fa:hover, .navbar-pf-vertical .nav .nav-item-iconic .pficon:hover {
-  color: #333;
-}
-
-div.navbar-header button.navbar-toggle .icon-bar {
-   background: #777;
-}
-
-div.navbar-header button.navbar-toggle:hover .icon-bar {
-   background: #333;
-}
-
-.nav-pf-vertical-with-badges, .nav-pf-secondary-nav, .nav-pf-tertiary-nav {
-  background-color: #e8e8e8;
-  border: solid 1px #e7e7e7;
-  color: #333;
-}
-
-.nav-item-pf-header {
-  color: #333;
-}
-
-.nav-pf-vertical .list-group-item.active a {
-  background-color: #f5f5f5;
-  color: #333;
-}
-
-.nav-pf-vertical .list-group-item a {
-  color: #333;
-}
-
-.nav-pf-vertical .list-group-item {
-  border: solid 1px #d7d7d7;
-}
-
-.navbar-pf-vertical .nav .nav-item-iconic:hover .caret, .navbar-pf-vertical .nav .nav-item-iconic:focus .caret, .navbar-pf-vertical .nav .nav-item-iconic:hover .fa, .navbar-pf-vertical .nav .nav-item-iconic:focus .fa, .navbar-pf-vertical .nav .nav-item-iconic:hover .glyphicon, .navbar-pf-vertical .nav .nav-item-iconic:focus .glyphicon, .navbar-pf-vertical .nav .nav-item-iconic:hover .pficon, .navbar-pf-vertical .nav .nav-item-iconic:focus .pficon {
-  color: #333;
-}
-
-.nav-pf-vertical .list-group-item > a .fa, .nav-pf-vertical .list-group-item > a .glyphicon, .nav-pf-vertical .list-group-item > a .pficon {
-  color: #7b1244;
-}
-
-.nav-pf-tertiary-nav .nav-item-pf-header {
-  color: #777;
-}
-
 .SigContent pre {
   white-space: pre-wrap;
 }
@@ -139,4 +100,9 @@ div.navbar-header button.navbar-toggle:hover .icon-bar {
 
 .HuntList .spinner {
   margin-top: 10px;
+}
+
+.navbar-pf-vertical {
+  border-bottom: $navbar-pf-vertical-border-color $navbar-pf-vertical-border-style $navbar-pf-vertical-border-width;
+  border-top: none;
 }
