@@ -209,12 +209,13 @@ export class RulePage extends React.Component {
         super(props);
         var rule = JSON.parse(JSON.stringify(this.props.rule));
 	if (typeof rule === 'number') {
-            this.state = { rule: undefined, sid: rule, toggle: { show: false, action: "Disable" }, extinfo: { http: false, dns: false, tls: false }};
+            this.state = { rule: undefined, rule_status: undefined, sid: rule, toggle: { show: false, action: "Disable" }, extinfo: { http: false, dns: false, tls: false }};
 	} else {
 	    rule.timeline = undefined;
-            this.state = { rule: rule, sid: rule.sid, toggle: { show: false, action: "Disable" }, extinfo: { http: false, dns: false, tls: false }};
+            this.state = { rule: rule, rule_status: undefined, sid: rule.sid, toggle: { show: false, action: "Disable" }, extinfo: { http: false, dns: false, tls: false }};
 	}
         this.updateRuleState = this.updateRuleState.bind(this);
+        this.fetchRuleStatus = this.fetchRuleStatus.bind(this);
         this.updateExtInfo = this.updateExtInfo.bind(this);
     }
 
@@ -237,6 +238,18 @@ export class RulePage extends React.Component {
 	       this.setState({extinfo: extinfo});
     }
 
+    fetchRuleStatus(sid) {
+           axios.get(config.API_URL + config.RULE_PATH + sid + "/status/").then(
+		res => {
+			var rstatus = [];
+			for (var key in res.data) {
+				rstatus.push(res.data[key]);
+			}
+			this.setState({rule_status: rstatus});
+		}
+	   )
+    }
+
     componentDidMount() {
        var rule = this.state.rule;
        var sid = this.state.sid;
@@ -249,6 +262,7 @@ export class RulePage extends React.Component {
              .then(res => {
 		     this.updateExtInfo(res.data);
             }) 
+	   this.fetchRuleStatus(rule.sid);
        } else {
            axios.get(config.API_URL + config.RULE_PATH + sid + "/?highlight=true").then(
 		res => { 
@@ -261,6 +275,7 @@ export class RulePage extends React.Component {
             }) 
 		}
 	   )
+	   this.fetchRuleStatus(sid);
        }
     }
 
@@ -305,6 +320,17 @@ export class RulePage extends React.Component {
                          />
                       }
                 </div>
+		{this.state.rule_status !== undefined &&
+		<Row>
+			{
+				this.state.rule_status.map( rstatus => {
+					return(
+						<RuleStatus key={rstatus.name} rule_status={rstatus} />
+					);
+				})
+			}
+		</Row>
+		}
                 <div className='row row-cards-pf'>
                     <HuntStat title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
                     <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter}/>
@@ -1086,4 +1112,44 @@ export class RulesList extends HuntList {
         </div>
     );
   }
+}
+
+class RuleStatus extends React.Component {
+	render() {
+		const valid = this.props.rule_status.valid;
+		var validity = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok"></span>Valid</span>;
+		if (valid.status !== true) {
+			validity = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-error-circle-o"></span>Valid</span>;
+		}
+		const trans = this.props.rule_status.transformations;
+		var action = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok" title="Action transformation"></span>{trans.action}</span>;
+		if (trans.action === null) {
+			action = undefined;
+		}
+		var target = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-import" title="Target transformation"></span>{trans.target}</span>;
+		if (trans.target == null) {
+			target = undefined;
+		}
+		var lateral = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-integration" title="Lateral transformation"></span>{trans.lateral}</span>;
+		if (trans.lateral == null) {
+			lateral = undefined;
+		}
+		return(
+		     <div className="col-xs-6 col-sm-4 col-md-4">
+                        <div className="card-pf card-pf-accented card-pf-aggregate-status">
+                          <h2 className="card-pf-title">
+                                <span className="fa fa-shield"></span>{this.props.rule_status.name}
+                          </h2>
+                        <div className="card-pf-body">
+                            <p className="card-pf-aggregate-status-notifications">
+			      {validity}
+			      {action}
+			      {target}
+			      {lateral}
+                            </p>
+                        </div>
+                        </div>
+                    </div>
+		);
+	}
 }
