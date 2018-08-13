@@ -254,7 +254,7 @@ config classification: default-login-attempt,Attempt to login by a default usern
         # start suricata in test mode
         suriprocess = subprocess.Popen(suri_cmd , stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (outdata, errdata) = suriprocess.communicate()
-        #shutil.rmtree(tmpdir)
+        shutil.rmtree(tmpdir)
         # if success ok
         if suriprocess.returncode == 0:
             return {'status': True, 'errors': ''}
