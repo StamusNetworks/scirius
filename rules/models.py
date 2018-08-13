@@ -1852,7 +1852,7 @@ class Rule(models.Model, Transformable, Cache):
 
     IPSREGEXP = {'src': re.compile('^\S+ +\S+ (.*) +\S+ +\->'), 'dest': re.compile('\-> (.*) +\S+$')}
 
-    GROUPSNAMEREGEXP = re.compile('^(.*) +group +\d+$', re.IGNORECASE)
+    GROUPSNAMEREGEXP = re.compile('^(.*) +group +\d+$')
 
     def __unicode__(self):
         return str(self.sid) + ":" + self.msg
