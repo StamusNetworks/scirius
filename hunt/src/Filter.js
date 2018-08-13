@@ -279,6 +279,7 @@ export class HuntFilter extends React.Component {
                   e.preventDefault();
                   this.clearFilters();
                 }}
+                style={{cursor:'pointer'}}
               >
                 Clear All Filters
               </a>

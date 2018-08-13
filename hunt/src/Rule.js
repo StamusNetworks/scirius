@@ -195,7 +195,12 @@ export class RuleCard extends React.Component {
            </Spinner>
          <div>
             SID: <strong>{this.props.data.sid}</strong>
-            <span className="pull-right"><a onClick={e => {this.props.SwitchPage(this.props.data)}}><Icon type="fa" name="search-plus"/> </a></span>
+            <span className="pull-right">
+               <a onClick={e => {this.props.SwitchPage(this.props.data)}}
+                  style={{cursor:'pointer'}}>
+                <Icon type="fa" name="search-plus"/>
+                </a>
+            </span>
          </div>
       </div>
    </div>
