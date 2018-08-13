@@ -813,12 +813,13 @@ export class RuleToggleModal extends React.Component {
 		  </FormGroup>
        }
         <FormGroup controlId="ruleset" disabled={false}>
-            <Col sm={6}>
+            <Col sm={12}>
 	      <label>Choose Ruleset(s)</label>
               {this.state.rulesets.map(function(ruleset) {
                       return(<div className="row"  key={ruleset.pk}>
                            <div className="col-sm-9">
-                          <label htmlFor={ruleset.pk}><input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange}/>{ruleset.name}</label>
+                          <label htmlFor={ruleset.pk}><input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange}/> {ruleset.name}</label>
+                          {ruleset.warnings && <div>{ruleset.warnings}</div>}
                          </div>
                       </div>);
                   }, this)

@@ -71,15 +71,14 @@ class RulesetSerializer(serializers.ModelSerializer):
     sources = serializers.PrimaryKeyRelatedField(queryset=Source.objects.all(), many=True, required=False)
     categories = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), many=True, required=False)
     comment = serializers.CharField(required=False, allow_blank=True, write_only=True, allow_null=True)
+    warnings = serializers.CharField(required=False, allow_blank=True, read_only=True, allow_null=True)
 
     class Meta:
         model = Ruleset
         fields = ('pk', 'name', 'descr', 'created_date', 'updated_date', 'need_test', 'validity',
-                  'errors', 'rules_count', 'sources', 'categories', 'comment')
+                  'errors', 'rules_count', 'sources', 'categories', 'comment', 'warnings')
         read_only_fields = ('pk', 'created_date', 'updated_date', 'need_test', 'validity', 'errors',
-                            'rules_count')
-        extra_kwargs = {
-        }
+                            'rules_count', 'warnings')
 
     def create(self, validated_data):
         validated_data['created_date'] = timezone.now()
@@ -92,6 +91,12 @@ class RulesetSerializer(serializers.ModelSerializer):
         sources_at_version = instance.sources
         sources = Source.objects.filter(sourceatversion__in=sources_at_version.all())
         data['sources'] = [source.pk for source in sources]
+
+        try:
+            from scirius.utils import get_middleware_module
+            data.update(get_middleware_module('common').get_rest_ruleset(instance))
+        except AttributeError:
+            pass
         return data
 
     def to_internal_value(self, data):
