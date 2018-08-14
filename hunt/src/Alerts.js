@@ -327,20 +327,28 @@ class AlertInList extends React.Component {
 	      {data.http &&
 	      <Row>
 	         { data.http.http_request_body_printable &&
-		 	<div className="card-pf">
-	         <Col sm={6}>
-		      <strong>HTTP request body</strong>
-		      <pre style={{"maxHeight": "12pc"}} >{data.http.http_request_body_printable}</pre>
-		 </Col>
-		 </div>
+	            <Col sm={6}>
+		 	           <div className="card-pf">
+			                    <div className="card-pf-heading">
+		                        <h5>HTTP request body</h5>
+                                </div>
+			                    <div className="card-pf-body">
+		                        <pre style={{"maxHeight": "12pc"}} >{data.http.http_request_body_printable}</pre>
+                                </div>
+		               </div>
+		        </Col>
 	         }
 	         {data.http.http_response_body_printable &&
-		 	<div className="card-pf">
-	         <Col sm={6}>
-		      <strong>HTTP response body</strong>
-		      <pre style={{"maxHeight": "12pc"}} >{data.http.http_response_body_printable}</pre>
-		 </Col>
-		 </div>
+	            <Col sm={6}>
+		 	            <div className="card-pf">
+			                    <div className="card-pf-heading">
+		                        <h5>HTTP response body</h5>
+                                </div>
+			                    <div className="card-pf-body">
+		                        <pre style={{"maxHeight": "12pc"}} >{data.http.http_response_body_printable}</pre>
+                                </div>
+		                </div>
+		        </Col>
 	         }
               </Row>
 	      }
