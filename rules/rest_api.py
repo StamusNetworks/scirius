@@ -523,7 +523,10 @@ class RuleHitsOrderingFilter(OrderingFilter):
                 except KeyError:
                     pass
 
-            queryset += rules.values()
+            if order == 'desc':
+                queryset += rules.values()
+            else:
+                queryset = rules.values() + queryset
 
         else:
             if ordering:
