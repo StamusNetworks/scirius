@@ -29,21 +29,6 @@ import ReactJson from 'react-json-view';
 import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
 import axios from 'axios';
 
-export const AlertSortFields = [
-  {
-    id: 'timestamp',
-    title: 'Timestamp',
-    isNumeric: true,
-    defaultAsc: false,
-  },
-  {
-    id: 'msg',
-    title: 'Message',
-    isNumeric: false,
-    defaultAsc: true,
-  }
-];
-
 
 export class AlertsList extends HuntList {
   constructor(props) {
@@ -106,7 +91,7 @@ export class AlertsList extends HuntList {
 		  UpdateSort={this.UpdateSort}
 		  setViewType={this.setViewType}
 		  filterFields={this.state.rules_filters}
-		  sort_config={AlertSortFields}
+		  sort_config={undefined}
 		  displayToggle={this.state.display_toggle}
 		  actionsButtons={this.actionsButtons}
 		  queryType={['filter']}
