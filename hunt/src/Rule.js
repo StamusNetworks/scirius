@@ -982,7 +982,7 @@ export class RulesList extends HuntList {
 
   displayRule(rule) {
       this.setState({display_rule: rule});
-      let activeFilters = [...this.props.filters, {label:"Signature ID: " + rule.sid, id: 'alert.signature_id', value: rule.sid, query: 'filter', negated: false}];
+      let activeFilters = [...this.props.filters, {label:"alert.signature_id: " + rule.sid, id: 'alert.signature_id', value: rule.sid, query: 'filter', negated: false}];
       this.RuleUpdateFilter(activeFilters);
   }
 
@@ -1034,8 +1034,8 @@ export class RulesList extends HuntList {
 	var found_sid = undefined;
 	for (var i = 0; i < filters.length; i++) {
 	    if (filters[i].id === 'alert.signature_id') {
-		found_sid = filters[i].value;
-		break;
+		    found_sid = filters[i].value;
+		    break;
 	    }
 	}
 	return found_sid;
@@ -1045,9 +1045,9 @@ export class RulesList extends HuntList {
         // iterate on filter, if we have a sid we display the rule page
 	var found_sid = this.findSID(filters);
 	if (found_sid !== undefined) {
-		this.setState({view: 'rule', display_toggle: false});
+		this.setState({view: 'rule', display_toggle: false, display_rule: found_sid});
 	} else {
-		this.setState({view: 'rules_list', display_toggle: true});
+		this.setState({view: 'rules_list', display_toggle: true, display_rule: undefined});
 	}
   	this.UpdateFilter(filters);
   }
