@@ -1128,15 +1128,15 @@ class RuleStatus extends React.Component {
 			validity = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-error-circle-o"></span>Valid</span>;
 		}
 		const trans = this.props.rule_status.transformations;
-		var action = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok" title="Action transformation"></span>{trans.action}</span>;
+		var action = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok" title="Action transformation"></span>Action: {trans.action}</span>;
 		if (trans.action === null) {
 			action = undefined;
 		}
-		var target = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-import" title="Target transformation"></span>{trans.target}</span>;
+		var target = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-import" title="Target transformation"></span>Target: {trans.target}</span>;
 		if (trans.target == null) {
 			target = undefined;
 		}
-		var lateral = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-integration" title="Lateral transformation"></span>{trans.lateral}</span>;
+		var lateral = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-integration" title="Lateral transformation"></span>Lateral: {trans.lateral}</span>;
 		if (trans.lateral == null) {
 			lateral = undefined;
 		}
