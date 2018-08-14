@@ -55,6 +55,7 @@ _HUNT_FILTERS = [
                       'title': 'Hits min',
                       'placeholder': 'Minimum Hits Count',
                       'filterType': 'number',
+                      'valueType': 'positiveint',
                       'queryType': 'rest'
                     },
                     {
@@ -62,6 +63,7 @@ _HUNT_FILTERS = [
                       'title': 'Hits max',
                       'placeholder': 'Maximum Hits Count',
                       'filterType': 'number',
+                      'valueType': 'positiveint',
                       'queryType': 'rest'
                     },
                     {
@@ -69,6 +71,7 @@ _HUNT_FILTERS = [
                       'title': 'Message',
                       'placeholder': 'Filter by Message',
                       'filterType': 'text',
+                      'valueType': 'text',
                       'queryType': 'filter'
                     },
                     {
@@ -76,12 +79,14 @@ _HUNT_FILTERS = [
                       'title': 'Content',
                       'placeholder': 'Filter by Content',
                       'filterType': 'text',
+                      'valueType': 'text',
                       'queryType': 'rest'
                     }, {
                       'id': 'sid',
                       'title': 'Signature ID',
                       'placeholder': 'Filter by Signature',
                       'filterType': 'text',
+                      'valueType': 'text',
                       'queryType': 'filter'
                     }
                 ]
