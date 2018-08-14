@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import React from 'react';
-import { Filter, FormControl, Toolbar, Button, Icon} from 'patternfly-react';
+import { Filter, FormControl, FormGroup, Toolbar, Button, Icon} from 'patternfly-react';
 import { HuntSort } from './Sort.js';
 
 export class HuntFilter extends React.Component {
@@ -156,6 +156,19 @@ export class HuntFilter extends React.Component {
     this.props.UpdateFilter([]);
   }
 
+  getValidationState = () => {
+    const { currentFilterType, currentValue, filterCategory } = this.state;
+    if (currentFilterType.valueType == 'positiveint') {
+	var val = parseInt(currentValue);
+	if (val >= 0)  {
+		return 'success';
+	} else {
+		return 'error';
+	}
+    }
+    return null;
+  }
+
   renderInput() {
     const { currentFilterType, currentValue, filterCategory } = this.state;
     if (!currentFilterType) {
@@ -189,6 +202,10 @@ export class HuntFilter extends React.Component {
       );
     } else {
       return (
+      	<FormGroup
+	  controlId="select-filter"	
+	  validationState={this.getValidationState()}
+      	>
         <FormControl
           type={currentFilterType.filterType}
           value={currentValue}
@@ -196,6 +213,7 @@ export class HuntFilter extends React.Component {
           onChange={e => this.updateCurrentValue(e)}
           onKeyPress={e => this.onValueKeyPress(e)}
         />
+	</FormGroup>
       );
     }
   }
