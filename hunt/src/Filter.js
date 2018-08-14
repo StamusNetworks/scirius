@@ -130,10 +130,18 @@ export class HuntFilter extends React.Component {
     const { currentValue, currentFilterType } = this.state;
 
     if (keyEvent.key === 'Enter' && currentValue && currentValue.length > 0) {
-      this.setState({ currentValue: '' });
-      this.filterAdded(currentFilterType, currentValue);
-      keyEvent.stopPropagation();
-      keyEvent.preventDefault();
+      if (currentFilterType.valueType === 'positiveint') {
+	var val = parseInt(currentValue);
+	if (val >= 0)  {
+      		this.setState({ currentValue: '' });
+      		this.filterAdded(currentFilterType, val);
+	}
+      } else {
+      	this.setState({ currentValue: '' });
+      	this.filterAdded(currentFilterType, currentValue);
+      }
+     keyEvent.stopPropagation();
+     keyEvent.preventDefault();
     }
   }
 
