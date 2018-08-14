@@ -131,7 +131,7 @@ export class HuntFilter extends React.Component {
 
     if (keyEvent.key === 'Enter' && currentValue && currentValue.length > 0) {
       if (currentFilterType.valueType === 'positiveint') {
-	var val = parseInt(currentValue);
+	var val = parseInt(currentValue, 10);
 	if (val >= 0)  {
       		this.setState({ currentValue: '' });
       		this.filterAdded(currentFilterType, val);
@@ -165,9 +165,9 @@ export class HuntFilter extends React.Component {
   }
 
   getValidationState = () => {
-    const { currentFilterType, currentValue, filterCategory } = this.state;
-    if (currentFilterType.valueType == 'positiveint') {
-	var val = parseInt(currentValue);
+    const { currentFilterType, currentValue } = this.state;
+    if (currentFilterType.valueType === 'positiveint') {
+	var val = parseInt(currentValue, 10);
 	if (val >= 0)  {
 		return 'success';
 	} else {
