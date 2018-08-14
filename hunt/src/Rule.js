@@ -244,10 +244,15 @@ export class RulePage extends React.Component {
     }
 
     fetchRuleStatus(sid) {
-           axios.get(config.API_URL + config.RULE_PATH + sid + "/status/").then(
-		res => {
+           axios.all([
+                axios.get(config.API_URL + config.RULE_PATH + sid + "/status/"),
+                axios.get(config.API_URL + config.RULE_PATH + sid + "/content/?highlight=1")
+                ]).then(
+		                ([res, rescontent]) => {
 			var rstatus = [];
 			for (var key in res.data) {
+                res.data[key]['pk'] = key;    
+                res.data[key].content = rescontent.data[key];
 				rstatus.push(res.data[key]);
 			}
 			this.setState({rule_status: rstatus});
@@ -330,7 +335,7 @@ export class RulePage extends React.Component {
 			{
 				this.state.rule_status.map( rstatus => {
 					return(
-						<RuleStatus key={rstatus.name} rule_status={rstatus} />
+					      <RuleStatus rule={this.state.rule} key={rstatus.pk} rule_status={rstatus}/>
 					);
 				})
 			}
@@ -1121,6 +1126,21 @@ export class RulesList extends HuntList {
 }
 
 class RuleStatus extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {display_content: false};
+    }
+
+    showRuleContent = () => {
+        this.setState({display_content: true}); 
+    }
+
+    hideRuleContent = () => {
+        this.setState({display_content: false}); 
+    }
+
+
 	render() {
 		const valid = this.props.rule_status.valid;
 		var validity = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok"></span>Valid</span>;
@@ -1142,7 +1162,7 @@ class RuleStatus extends React.Component {
 		}
 		return(
 		     <div className="col-xs-6 col-sm-4 col-md-4">
-                        <div className="card-pf card-pf-accented card-pf-aggregate-status">
+                        <div className="card-pf card-pf-accented card-pf-aggregate-status" onClick={this.showRuleContent} style={{cursor:'pointer'}}>
                           <h2 className="card-pf-title">
                                 <span className="fa fa-shield"></span>{this.props.rule_status.name}
                           </h2>
@@ -1155,7 +1175,38 @@ class RuleStatus extends React.Component {
                             </p>
                         </div>
                         </div>
+
+                        <RuleContentModal display={this.state.display_content} rule={this.props.rule} close={this.hideRuleContent} rule_status={this.props.rule_status}/>
                     </div>
 		);
 	}
 }
+
+
+class RuleContentModal extends React.Component {
+   render() {
+           return(
+                   <Modal
+                        show={this.props.display} onHide={this.props.close}
+                        bsSize="large" aria-labelledby="contained-modal-title-lg"
+                   >
+                           <Modal.Header>
+                                 <button
+                                   className="close"
+                                   onClick={this.props.close}
+                                   aria-hidden="true"
+                                   aria-label="Close"
+                                 >
+                                     <Icon type="pf" name="close" />
+                                 </button>
+                                 <Modal.Title>Transformed rule content in {this.props.rule_status.name}</Modal.Title>
+                           </Modal.Header>
+                           <Modal.Body>
+                                 <div className="SigContent" dangerouslySetInnerHTML={{__html: this.props.rule_status.content}}></div>
+                           </Modal.Body>
+                   </Modal>
+           )
+   }
+}
+
+
