@@ -135,13 +135,15 @@ export class HuntFilter extends React.Component {
 	if (val >= 0)  {
       		this.setState({ currentValue: '' });
       		this.filterAdded(currentFilterType, val);
+                keyEvent.stopPropagation();
+                keyEvent.preventDefault();
 	}
       } else {
       	this.setState({ currentValue: '' });
       	this.filterAdded(currentFilterType, currentValue);
+        keyEvent.stopPropagation();
+        keyEvent.preventDefault();
       }
-     keyEvent.stopPropagation();
-     keyEvent.preventDefault();
     }
   }
 
@@ -208,10 +210,26 @@ export class HuntFilter extends React.Component {
           />
         </Filter.CategorySelector>
       );
+    } else if (currentFilterType.valueType === 'positiveint' ) {
+      return (
+                      <FormGroup
+	  controlId="input-filter"
+	  validationState={this.getValidationState()}
+          >
+        <FormControl
+          type={currentFilterType.filterType}
+          value={currentValue}
+	  min={0}
+          placeholder={currentFilterType.placeholder}
+          onChange={e => this.updateCurrentValue(e)}
+          onKeyPress={e => this.onValueKeyPress(e)}
+        />
+        </FormGroup>
+      );
     } else {
       return (
       	<FormGroup
-	  controlId="select-filter"	
+	  controlId="input-filter"
 	  validationState={this.getValidationState()}
       	>
         <FormControl
