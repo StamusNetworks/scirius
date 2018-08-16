@@ -147,6 +147,11 @@ class AlertInList extends React.Component {
 			}
 		}
 	}
+
+    var has_target = data.alert.target !== undefined;
+    var has_lateral = data.alert.lateral !== undefined;
+    var has_lateral_or_target = has_target || has_lateral;
+
         return(
            <ListViewItem
             id={this.props.id}
@@ -208,20 +213,27 @@ class AlertInList extends React.Component {
 			</div>
 		 </Col>
 
-		    {data.alert.target !== undefined &&
+		    {has_lateral_or_target &&
 	         <Col sm={4}>
 		 	<div className="card-pf">
 			<div className="card-pf-heading">
-			<h5>Attack vector</h5>
+			<h5>Attack vector and lateral movement</h5>
 			</div>
 			<div className="card-pf-body">
 		        <dl className="dl-horizontal">
+                {has_target &&
+                <React.Fragment>
 			    { source_network }
 			   <EventField field_name="Source IP" field="alert.source.ip" value={data.alert.source.ip} addFilter={this.addFilter} />
 			   <EventField field_name="Source port" field="alert.source.port" value={data.alert.source.port} addFilter={this.addFilter} />
 			    { target_network  }
 			   <EventField field_name="Target IP" field="alert.target.ip" value={data.alert.target.ip} addFilter={this.addFilter} />
 			   <EventField field_name="Target port" field="alert.target.port" value={data.alert.target.port} addFilter={this.addFilter} />
+               </React.Fragment>
+                }
+               {has_lateral &&
+			   <EventField field_name="Lateral movement" field="alert.lateral" value={data.alert.lateral} addFilter={this.addFilter} />
+               }
 			</dl>
 			</div>
 			</div>
