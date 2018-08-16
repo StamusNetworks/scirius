@@ -2772,7 +2772,7 @@ class RuleProcessingFilterDef(models.Model):
     proc_filter = models.ForeignKey(RuleProcessingFilter, related_name='filter_defs')
 
     class Meta:
-        ordering = ['key']
+        ordering = ('key', 'value')
 
     def __unicode__(self):
         op = self.OPERATOR_DISPLAY.get(self.operator, self.operator)

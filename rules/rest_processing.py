@@ -35,7 +35,8 @@ class RuleProcessingFilterDefSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RuleProcessingFilterDef
-        exclude = ('id', 'proc_filter')
+        fields = ('pk', 'key', 'value', 'operator')
+        read_only_fields = ('pk',)
 
     def validate(self, data):
         if data['key'] in self.IP_FIELDS:
@@ -123,6 +124,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
 
     def _set_filters(self, instance, filters):
         current_filters = instance.filter_defs.all()
+        filters_pk = []
 
         for f in filters:
             f['proc_filter'] = instance
@@ -133,17 +135,17 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({'filter_defs': [e.detail]})
 
             # Update existing, create new ones
-            try:
-                f_obj = current_filters.get(key=f['key'])
-            except models.ObjectDoesNotExist:
+            if f.get('pk'):
+                f_obj = current_filters.get(pk=f['pk'])
+                f_obj = serializer.update(f_obj, f)
+                filters_pk.append(f_obj.pk)
+            else:
                 f_obj = serializer.create(f)
-                continue
-
-            f_obj = serializer.update(f_obj, f)
+                filters_pk.append(f_obj.pk)
 
         # Remove deleted filters
         for f_obj in current_filters:
-            if f_obj.key not in [f['key'] for f in filters]:
+            if f_obj.pk not in filters_pk:
                 f_obj.delete()
 
     def _reorder(self, instance, previous_index, new_index):

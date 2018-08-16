@@ -896,10 +896,15 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         import scirius.utils
         scirius.utils.get_middleware_module = lambda x: import_module('suricata.%s' % x)
 
+    def _remove_filters_pk(self, f):
+        for f_def in f['filter_defs']:
+            f_def.pop('pk', None)
+
     def test_001_create(self):
         f = deepcopy(self.DEFAULT_FILTER)
         f['comment'] = 'test comment'
         r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        self._remove_filters_pk(r)
         self.assertDictContainsSubset(self.DEFAULT_FILTER, r)
         self.filter_pk = r['pk']
         ua = UserAction.objects.last()
@@ -931,6 +936,7 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
 
         f = deepcopy(self.DEFAULT_FILTER)
         f['filter_defs'][0]['value'] = 'dns'
+        self._remove_filters_pk(r)
         self.assertDictContainsSubset(f, r)
 
         ua = UserAction.objects.last()
@@ -955,6 +961,7 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
 
         f = deepcopy(self.DEFAULT_FILTER)
         f['filter_defs'].append(new_filter)
+        self._remove_filters_pk(r)
         self.assertDictContainsSubset(f, r)
         self.assertEqual(len(r['filter_defs']), 2)
 
@@ -967,12 +974,15 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         })
 
         r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        r['filter_defs'][0].pop('pk')
+        r['filter_defs'][1].pop('pk')
         self.assertDictContainsSubset(f, r)
 
         r = self.http_patch(self.detail_url(r['pk']), {
             'filter_defs': self.DEFAULT_FILTER['filter_defs']
         })
 
+        self._remove_filters_pk(r)
         self.assertDictContainsSubset(self.DEFAULT_FILTER, r)
         self.assertEqual(len(r['filter_defs']), 1)
 
@@ -981,6 +991,7 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         f.pop('index')
 
         r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        self._remove_filters_pk(r)
         self.assertDictContainsSubset(self.DEFAULT_FILTER, r)
 
     def test_007_order_create_append(self):
@@ -990,13 +1001,16 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         f.pop('index')
 
         r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        self._remove_filters_pk(r)
         f = deepcopy(self.DEFAULT_FILTER2)
         f['index'] = 1
 
         self.assertDictContainsSubset(f, r)
 
         r = self.http_get(self.list_url)
+        self._remove_filters_pk(r['results'][0])
         self.assertDictContainsSubset(self.DEFAULT_FILTER, r['results'][0])
+        self._remove_filters_pk(r['results'][1])
         self.assertDictContainsSubset(f, r['results'][1])
 
     def test_008_order_create_insert(self):
@@ -1008,7 +1022,9 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         f1['index'] = 1
 
         r = self.http_get(self.list_url)
+        self._remove_filters_pk(r['results'][0])
         self.assertDictContainsSubset(self.DEFAULT_FILTER2, r['results'][0])
+        self._remove_filters_pk(r['results'][1])
         self.assertDictContainsSubset(f1, r['results'][1])
 
     def test_009_order_create_oob(self):
@@ -1065,6 +1081,7 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         r = self.http_get(self.list_url)
 
         self.assertEqual(r['count'], 1)
+        self._remove_filters_pk(r['results'][0])
         self.assertDictContainsSubset(self.DEFAULT_FILTER2, r['results'][0])
 
         ua = UserAction.objects.last()
@@ -1085,6 +1102,7 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
             'rulesets': [self.ruleset.pk]
         }
         r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        self._remove_filters_pk(r)
         self.assertDictContainsSubset(f, r)
         self.filter_pk = r['pk']
 
@@ -1193,6 +1211,7 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         }
         r = self.http_post(reverse('ruleprocessingfilter-intersect'), conflict_filter)
         self.assertEqual(r.get('count'), 1)
+        self._remove_filters_pk(r['results'][0])
         self.assertDictContainsSubset(self.DEFAULT_FILTER, r['results'][0])
 
     def test_026_intersect_multi_match(self):
@@ -1224,6 +1243,22 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
         }
         r = self.http_post(reverse('ruleprocessingfilter-intersect'), conflict_filter)
         self.assertEqual(r.get('count'), 0)
+
+    def test_028_create(self):
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['filter_defs'] = [{
+            'key': 'event_type',
+            'value': 'dns',
+            'operator': 'different'
+        }, {
+            'key': 'event_type',
+            'value': 'http',
+            'operator': 'different'
+        }]
+
+        r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        self._remove_filters_pk(r)
+        self.assertDictContainsSubset(f, r)
 
 
 def order_update_lambda(a, b):
