@@ -152,18 +152,24 @@ class AlertInList extends React.Component {
     var has_lateral = data.alert.lateral !== undefined;
     var has_lateral_or_target = has_target || has_lateral;
 
+    var add_info = [
+	    		     <ListViewInfoItem key="timestamp"><p>{data.timestamp}</p></ListViewInfoItem>,
+	    		     <ListViewInfoItem key="app_proto"><p>Proto: {data.app_proto}</p></ListViewInfoItem>,
+	                     <ListViewInfoItem key="host"><p>Probe: {data.host}</p></ListViewInfoItem>,
+	                     <ListViewInfoItem key="category"><p>Category: {data.alert.category}</p></ListViewInfoItem>,
+	                    ];
+        if (data.alert.tag) {
+	                     add_info.push(<ListViewInfoItem key="tag"><p>Tag: {data.alert.tag}</p></ListViewInfoItem>)
+
+        }
+
         return(
            <ListViewItem
             id={this.props.id}
             leftContent={<ListViewIcon type="pf" name="security" />}
             description={<span data-toggle="tooltip" title={data.alert.signature}>{data.alert.signature}</span>}
             heading={ip_params}
-	    additionalInfo={[
-	    		     <ListViewInfoItem key="timestamp"><p>{data.timestamp}</p></ListViewInfoItem>,
-	    		     <ListViewInfoItem key="app_proto"><p>Proto: {data.app_proto}</p></ListViewInfoItem>,
-	                     <ListViewInfoItem key="host"><p>Probe: {data.host}</p></ListViewInfoItem>,
-	                     <ListViewInfoItem key="category"><p>Category: {data.alert.category}</p></ListViewInfoItem>,
-	                    ]}
+	    additionalInfo={add_info}
 	   >
 	      <Row>
 	         <Col sm={4}>
