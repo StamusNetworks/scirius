@@ -555,6 +555,7 @@ export class RuleToggleModal extends React.Component {
         this.handleOptionsChange = this.handleOptionsChange.bind(this);
         this.updateActionDialog = this.updateActionDialog.bind(this);
         this.setDefaultOptions = this.setDefaultOptions.bind(this);
+        this.onFieldKeyPress = this.onFieldKeyPress.bind(this);
     }
 
     updateActionDialog() {
@@ -615,6 +616,12 @@ export class RuleToggleModal extends React.Component {
 		this.setState({options: options});
     }
 
+    onFieldKeyPress(keyEvent) {
+      if (keyEvent.key === 'Enter') {
+        keyEvent.stopPropagation();
+        keyEvent.preventDefault();
+      }
+    }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         if ((prevProps.filters !== this.props.filters) || (prevProps.action !== this.props.action)) {
@@ -753,7 +760,7 @@ export class RuleToggleModal extends React.Component {
 			<strong>{item.negated && "Not " }{item.id}</strong>
 			</Col>
 			<Col sm={8}>
-			<FormControl type={item.id} disabled={false} defaultValue={item.value} onChange={this.handleFieldChange} />
+			<FormControl type={item.id} disabled={false} defaultValue={item.value} onChange={this.handleFieldChange} onKeyPress={e => this.onFieldKeyPress(e)} />
 			</Col>
 	          </FormGroup>
 		  )

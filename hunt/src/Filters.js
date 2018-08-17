@@ -251,6 +251,7 @@ class FilterToggleModal extends React.Component {
         this.submit = this.submit.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleCommentChange = this.handleCommentChange.bind(this);
+        this.onFieldKeyPress = this.onFieldKeyPress.bind(this);
     }
 
 
@@ -311,6 +312,17 @@ class FilterToggleModal extends React.Component {
         }
     }
 
+    onFieldKeyPress(keyEvent) {
+      if (keyEvent.key === 'Enter') {
+        if (this.state.new_index < 0) {
+          // Propagate event to trigger validation error
+          return;
+        }
+        keyEvent.stopPropagation();
+        keyEvent.preventDefault();
+      }
+    }
+
     render() {
        var action = this.props.action;
        switch (action) {
@@ -353,7 +365,7 @@ class FilterToggleModal extends React.Component {
 			<strong>New index</strong>
 			</Col>
 			<Col sm={9}>
-			<FormControl type="number" min={0} max={50000} disabled={false} defaultValue={0} onChange={this.handleChange} />
+			<FormControl type="number" min={0} max={50000} disabled={false} defaultValue={0} onChange={this.handleChange} onKeyPress={e => this.onFieldKeyPress(e)} />
 			</Col>
 		   </FormGroup>
 
