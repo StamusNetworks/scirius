@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import React from 'react';
-import { Filter, FormControl, FormGroup, Toolbar, Button, Icon} from 'patternfly-react';
+import { Filter, FormControl, FormGroup, Toolbar, Button, Icon, Switch} from 'patternfly-react';
 import { HuntSort } from './Sort.js';
 
 export class HuntFilter extends React.Component {
@@ -257,7 +257,7 @@ export class HuntFilter extends React.Component {
     });
     return (
 	   <Toolbar>
-        <div style={{ width: 450 }}>
+        <div style={{ width: 750 }}>
           <Filter>
             <Filter.TypeSelector
               filterTypes={this.props.filterFields}
@@ -269,6 +269,13 @@ export class HuntFilter extends React.Component {
 	      {this.props.sort_config &&
 	      <HuntSort config={this.props.sort_config} ActiveSort={this.props.ActiveSort} UpdateSort={this.props.UpdateSort}/>
 	      }
+        <div className="form-group">
+          <ul className="list-inline">
+            <li>Informational <Switch bsSize="normal" onColor="info" /></li>
+            <li>Relevant <Switch bsSize="normal" onColor="warning" /></li>
+            <li>Untagged <Switch bsSize="normal" onColor="default" /></li>
+          </ul>
+        </div>
 	      </div>
 
             <Toolbar.RightContent>
