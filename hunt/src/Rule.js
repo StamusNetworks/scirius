@@ -805,7 +805,7 @@ export class RuleToggleModal extends React.Component {
 		  </FormGroup>
        }
        {this.props.action === 'tagkeep' &&
-		  <FormGroup key="tagkeep" controlId="tagkeep" disabled={false}>
+		  <FormGroup key="tag" controlId="tag" disabled={false}>
 			<Col sm={3}>
 		       <strong>Tag and Keep</strong>
 			</Col>
