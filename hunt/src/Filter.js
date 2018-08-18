@@ -34,11 +34,20 @@ export class HuntFilter extends React.Component {
            	break;
            }
     }
+    var Filters = this.props.filterFields;
+    var got_alert_tag = false;
+    for (i = 0; i < Filters.length; i++) {
+           if (Filters[i].id === 'alert.tag') {
+		got_alert_tag = true;
+           	break;
+           }
+    }
     this.state = {
       filterFields: this.props.filterFields,
       currentFilterType: this.props.filterFields[0],
       currentValue: '',
-      tag_filters: tag_filters
+      tag_filters: tag_filters,
+      got_alert_tag: got_alert_tag
     };
     this.toggleInformational = this.toggleInformational.bind(this);
     this.toggleRelevant = this.toggleRelevant.bind(this);
@@ -86,6 +95,13 @@ export class HuntFilter extends React.Component {
   componentDidUpdate(prevProps, prevState, snapshot) {
 	  if (prevProps.filterFields.length === 0 && this.props.filterFields.length !== 0) {
 		this.setState({currentFilterType: this.props.filterFields[0]});
+		var Filters = this.props.filterFields;
+		for (var i = 0; i < Filters.length; i++) {
+			if (Filters[i].id === 'alert.tag') {
+				this.setState({got_alert_tag: true});
+				break;
+			}
+		}
 	  }
   }
 
@@ -334,6 +350,7 @@ export class HuntFilter extends React.Component {
 	      {this.props.sort_config &&
 	      <HuntSort config={this.props.sort_config} ActiveSort={this.props.ActiveSort} UpdateSort={this.props.UpdateSort}/>
 	      }
+	      { this.state.got_alert_tag &&
         <div className="form-group">
           <ul className="list-inline">
             <li><Switch bsSize="small" onColor="info" value={this.state.tag_filters.informational} onChange={this.toggleInformational}/> Informational</li>
@@ -341,6 +358,7 @@ export class HuntFilter extends React.Component {
             <li><Switch bsSize="small" onColor="primary" value={this.state.tag_filters.untagged} onChange={this.toggleUntagged}/> Untagged</li>
           </ul>
         </div>
+	      }
 	      </div>
 
             <Toolbar.RightContent>
