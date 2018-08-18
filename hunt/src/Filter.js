@@ -338,7 +338,7 @@ export class HuntFilter extends React.Component {
     
     return (
 	   <Toolbar>
-        <div style={{ width: 750 }}>
+        <div style={{ width: 850 }}>
           <Filter>
             <Filter.TypeSelector
               filterTypes={this.props.filterFields}
