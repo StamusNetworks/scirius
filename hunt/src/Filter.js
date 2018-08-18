@@ -26,11 +26,61 @@ import { HuntSort } from './Sort.js';
 export class HuntFilter extends React.Component {
   constructor(props) {
     super(props);
+    var tag_filters = {untagged: true, informational: true, relevant: true};
+    var activeFilters = this.props.ActiveFilters; 
+    for (var i = 0; i < activeFilters.length; i++) {
+           if (activeFilters[i].id === 'alert.tag') {
+           	tag_filters = activeFilters[i].value;
+           	break;
+           }
+    }
     this.state = {
       filterFields: this.props.filterFields,
       currentFilterType: this.props.filterFields[0],
-      currentValue: ''
+      currentValue: '',
+      tag_filters: tag_filters
     };
+    this.toggleInformational = this.toggleInformational.bind(this);
+    this.toggleRelevant = this.toggleRelevant.bind(this);
+    this.toggleUntagged = this.toggleUntagged.bind(this);
+    this.toggleSwitch = this.toggleSwitch.bind(this);
+  }
+
+  toggleSwitch(key) {
+        var tfilters = Object.assign({}, this.state.tag_filters);
+	tfilters[key] = ! this.state.tag_filters[key];
+	this.setState({tag_filters: tfilters});
+	/* Update the filters on alert.tag and send the update */
+        var activeFilters = this.props.ActiveFilters; 
+	var tag_filters = {id: "alert.tag", value: tfilters};
+	if (activeFilters.length === 0) {
+		activeFilters.push(tag_filters);
+	} else {
+	   var updated = false;
+           for (var i = 0; i < activeFilters.length; i++) {
+		if (activeFilters[i].id === 'alert.tag') {
+			activeFilters[i] = tag_filters;
+			updated = true;
+			break;
+		}
+	   }
+	   if (updated === false) {
+		activeFilters.push(tag_filters);
+	   }
+	}
+        this.props.UpdateFilter(activeFilters);
+  }
+
+  toggleInformational() {
+	this.toggleSwitch('informational');
+  }
+
+  toggleUntagged() {
+	this.toggleSwitch('untagged');
+  }
+
+  toggleRelevant() {
+	this.toggleSwitch('relevant');
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -60,8 +110,12 @@ export class HuntFilter extends React.Component {
     }
 
     var fvalue;
-    if (typeof(value) ==="object") {
-	    fvalue = value.id;
+    if (typeof(value) === "object") {
+	    if (field.id !== "alert.tag") {
+	    	fvalue = value.id;
+	    } else {
+		fvalue = value;
+	    }
     } else {
 	    fvalue = value;
     }
@@ -162,8 +216,16 @@ export class HuntFilter extends React.Component {
   }
 
   clearFilters = () => {
-    this.setState({ activeFilters: [] });
-    this.props.UpdateFilter([]);
+   var tag_filters = [];
+   const activeFilters = this.props.ActiveFilters;
+   for (var i = 0; i < activeFilters.length; i++) {
+	if (activeFilters[i].id === 'alert.tag') {
+		tag_filters = [ activeFilters[i], ];
+		break;
+	}
+   }
+    this.setState({ activeFilters: tag_filters });
+    this.props.UpdateFilter(tag_filters);
   }
 
   getValidationState = () => {
@@ -247,14 +309,17 @@ export class HuntFilter extends React.Component {
   render() {
     const { currentFilterType } = this.state;
     var activeFilters = []
-    
     this.props.ActiveFilters.forEach( item => {
 	if (item.query === undefined) {
-		activeFilters.push(item);
+		/* remove alert.tag from display as it is handle by switches*/
+		if (item.id !== 'alert.tag') {
+			activeFilters.push(item);
+		}
 	} else if (this.props.queryType.indexOf(item.query) !== -1) {
 		activeFilters.push(item);
 	}
     });
+    
     return (
 	   <Toolbar>
         <div style={{ width: 750 }}>
@@ -271,9 +336,9 @@ export class HuntFilter extends React.Component {
 	      }
         <div className="form-group">
           <ul className="list-inline">
-            <li><Switch bsSize="normal" onColor="info" /> Informational</li>
-            <li><Switch bsSize="normal" onColor="warning" /> Relevant</li>
-            <li><Switch bsSize="normal" onColor="primary" /> Untagged</li>
+            <li><Switch bsSize="small" onColor="info" value={this.state.tag_filters.informational} onChange={this.toggleInformational}/> Informational</li>
+            <li><Switch bsSize="small" onColor="warning" value={this.state.tag_filters.relevant} onChange={this.toggleRelevant}/> Relevant</li>
+            <li><Switch bsSize="small" onColor="primary" value={this.state.tag_filters.untagged} onChange={this.toggleUntagged}/> Untagged</li>
           </ul>
         </div>
 	      </div>

@@ -882,10 +882,20 @@ export function buildQFilter(filters) {
 	    continue;
 	}
 	else if (filters[i].id === 'alert.tag') {
-	    if (filters[i].value === 'untagged') {
-		qfilter.push('NOT alert.tag:*');
-	    } else {
-            	qfilter.push(f_prefix + 'alert.tag:"' + filters[i].value + '"');
+	    var tag_filters = [];
+	    if (filters[i].value['untagged'] === true) {
+		tag_filters.push('(NOT alert.tag:*)');
+	    }
+	    if (filters[i].value['informational'] === true) {
+            	tag_filters.push('alert.tag:"informational"');
+	    }
+	    if (filters[i].value['relevant'] === true) {
+            	tag_filters.push('alert.tag:"relevant"');
+	    }
+	    if (tag_filters.length === 0) {
+ 		qfilter.push('alert.tag:"undefined"');
+	    } else if (tag_filters.length < 3) {
+ 		qfilter.push("(" + tag_filters.join(" OR ") + ")");
 	    }
 	    continue;
 	}
