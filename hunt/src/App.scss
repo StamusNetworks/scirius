@@ -125,3 +125,18 @@ span.eventValue {
 .about-modal-pf .modal-footer {
     background-color: $color-pf-white;
 }
+
+.list-view-pf-left .pficon.list-view-pf-icon-sm.relevant {
+    color: $color-pf-orange-400;
+    /* border-color: $color-pf-orange-400; */
+}
+
+.list-view-pf-left .pficon.list-view-pf-icon-sm.informational {
+    color: #675d5c;
+    /* border-color: #675d5c; */
+}
+
+.list-view-pf-left .pficon.list-view-pf-icon-sm.primary {
+    color: $color-sn-purple;
+    /* border-color: $color-sn-purple; */
+}

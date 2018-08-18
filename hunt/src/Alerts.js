@@ -158,15 +158,16 @@ class AlertInList extends React.Component {
 	                     <ListViewInfoItem key="host"><p>Probe: {data.host}</p></ListViewInfoItem>,
 	                     <ListViewInfoItem key="category"><p>Category: {data.alert.category}</p></ListViewInfoItem>,
 	                    ];
+   var iconclass="primary";
         if (data.alert.tag) {
-	                     add_info.push(<ListViewInfoItem key="tag"><p>Tag: {data.alert.tag}</p></ListViewInfoItem>)
-
+	        add_info.push(<ListViewInfoItem key="tag"><p>Tag: {data.alert.tag}</p></ListViewInfoItem>)
+		iconclass=data.alert.tag;
         }
 
         return(
            <ListViewItem
             id={this.props.id}
-            leftContent={<ListViewIcon type="pf" name="security" />}
+            leftContent={<ListViewIcon type="pf" name="security" className={iconclass} />}
             description={<span data-toggle="tooltip" title={data.alert.signature}>{data.alert.signature}</span>}
             heading={ip_params}
 	    additionalInfo={add_info}

@@ -271,9 +271,9 @@ export class HuntFilter extends React.Component {
 	      }
         <div className="form-group">
           <ul className="list-inline">
-            <li>Informational <Switch bsSize="normal" onColor="info" /></li>
-            <li>Relevant <Switch bsSize="normal" onColor="warning" /></li>
-            <li>Untagged <Switch bsSize="normal" onColor="default" /></li>
+            <li><Switch bsSize="normal" onColor="info" /> Informational</li>
+            <li><Switch bsSize="normal" onColor="warning" /> Relevant</li>
+            <li><Switch bsSize="normal" onColor="primary" /> Untagged</li>
           </ul>
         </div>
 	      </div>
