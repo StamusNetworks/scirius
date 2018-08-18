@@ -335,13 +335,19 @@ export class HuntFilter extends React.Component {
 		activeFilters.push(item);
 	}
     });
+    var menuFilters = [];
+    this.props.filterFields.forEach( item => {
+	    if (item.filterType !== 'hunt') {
+		menuFilters.push(item);
+	    }
+    });
     
     return (
 	   <Toolbar>
         <div style={{ width: 850 }}>
           <Filter>
             <Filter.TypeSelector
-              filterTypes={this.props.filterFields}
+              filterTypes={menuFilters}
               currentFilterType={currentFilterType}
               onFilterTypeSelected={this.selectFilterType}
             />
