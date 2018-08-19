@@ -98,10 +98,11 @@ export class HuntFilter extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
+	  var i = 0;
 	  if (prevProps.filterFields.length === 0 && this.props.filterFields.length !== 0) {
 		this.setState({currentFilterType: this.props.filterFields[0]});
 		var Filters = this.props.filterFields;
-		for (var i = 0; i < Filters.length; i++) {
+		for (i = 0; i < Filters.length; i++) {
 			if (Filters[i].id === 'alert.tag') {
 				this.setState({got_alert_tag: true});
 				break;
@@ -109,7 +110,7 @@ export class HuntFilter extends React.Component {
 		}
 	  }
           const activeFilters = this.props.ActiveFilters; 
-          for (var i = 0; i < activeFilters.length; i++) {
+          for (i = 0; i < activeFilters.length; i++) {
 		if (activeFilters[i].id === 'alert.tag') {
 			if (activeFilters[i].value !== this.state.tag_filters) {
 				this.setState({tag_filters: activeFilters[i].value});
