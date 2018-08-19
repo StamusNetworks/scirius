@@ -27,14 +27,14 @@ export class HuntFilter extends React.Component {
   constructor(props) {
     super(props);
     var tag_filters = {untagged: true, informational: true, relevant: true};
-    var activeFilters = this.props.ActiveFilters; 
+    const activeFilters = this.props.ActiveFilters; 
     for (var i = 0; i < activeFilters.length; i++) {
            if (activeFilters[i].id === 'alert.tag') {
            	tag_filters = activeFilters[i].value;
            	break;
            }
     }
-    var Filters = this.props.filterFields;
+    const Filters = this.props.filterFields;
     var got_alert_tag = false;
     for (i = 0; i < Filters.length; i++) {
            if (Filters[i].id === 'alert.tag') {
@@ -108,7 +108,7 @@ export class HuntFilter extends React.Component {
 			}
 		}
 	  }
-          var activeFilters = this.props.ActiveFilters; 
+          const activeFilters = this.props.ActiveFilters; 
           for (var i = 0; i < activeFilters.length; i++) {
 		if (activeFilters[i].id === 'alert.tag') {
 			if (activeFilters[i].value !== this.state.tag_filters) {

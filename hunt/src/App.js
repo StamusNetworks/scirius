@@ -297,7 +297,7 @@ class HuntApp extends Component {
                   break;
                case PAGE_STATE.dashboards:
 	          // FIXME remove or change updateRuleListState
-                  displayed_page = <HuntDashboard config={this.state.rules_list} filters={this.state.ids_filters} from_date={this.state.from_date} SwitchPage={this.switchPage} updateListState={this.updateRuleListState} updateFilterState={this.updateIDSFilterState} />
+                  displayed_page = <HuntDashboard config={this.state.rules_list} filters={this.state.ids_filters} from_date={this.state.from_date} SwitchPage={this.switchPage} updateListState={this.updateRuleListState} updateFilterState={this.updateIDSFilterState} needReload={this.needReload} />
                   break;
                case PAGE_STATE.history:
                   displayed_page = <HistoryPage config={this.state.history} filters={this.state.history_filters} from_date={this.state.from_date} updateListState={this.updateHistoryListState} switchPage={this.switchPage} updateFilterState={this.updateHistoryFilterState}/>

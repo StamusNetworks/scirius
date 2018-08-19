@@ -156,7 +156,7 @@ export class HuntList extends React.Component {
 
   updateAlertTag(tfilters) {
 	/* Update the filters on alert.tag and send the update */
-    var activeFilters = this.props.filters; 
+    var activeFilters = Object.assign([], this.props.filters);
 	var tag_filters = {id: "alert.tag", value: tfilters};
 	if (activeFilters.length === 0) {
 		activeFilters.push(tag_filters);
@@ -182,7 +182,6 @@ export class HuntList extends React.Component {
     	filterText = field;
     	filterText += ': ';
     	filterText += value;
-
 	let activeFilters = [...this.props.filters, { label: filterText, id: field, value: value, negated: negated }];
     	this.UpdateFilter(activeFilters);
     } else {
@@ -233,6 +232,9 @@ export class HuntList extends React.Component {
      this.props.updateFilterState(filters);
      this.props.updateListState(newListState);
      this.fetchData(newListState, filters);
+     if (this.props.needReload) {
+        this.props.needReload();
+     }
      this.loadActions(filters)
    }
 
