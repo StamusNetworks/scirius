@@ -108,6 +108,16 @@ export class HuntFilter extends React.Component {
 			}
 		}
 	  }
+          var activeFilters = this.props.ActiveFilters; 
+          for (var i = 0; i < activeFilters.length; i++) {
+		if (activeFilters[i].id === 'alert.tag') {
+			if (activeFilters[i].value !== this.state.tag_filters) {
+				this.setState({tag_filters: activeFilters[i].value});
+			}
+			break;
+		}
+	  }
+	  
   }
 
   filterAdded = (field, value) => {

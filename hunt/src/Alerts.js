@@ -101,7 +101,7 @@ export class AlertsList extends HuntList {
            <ListView>
            {this.state.alerts.map(rule => {
                   return(
-                      <AlertInList key={rule._id} id={rule._id} data={rule._source}  from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} filters={this.props.filters} />
+                      <AlertInList key={rule._id} id={rule._id} data={rule._source}  from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} filters={this.props.filters} addFilter={this.addFilter} />
                   )
               })
            }
@@ -119,9 +119,7 @@ class AlertInList extends React.Component {
     }
 
     addFilter(key, value, negated) {
-        let activeFilters = [...this.props.filters,
-	                     {label:"" + key + ": " + value, id: key, value: value, negated: negated, query: 'filter'}];
-        this.props.UpdateFilter(activeFilters);
+	this.props.addFilter(key, value, negated);
     }
 
     render() {

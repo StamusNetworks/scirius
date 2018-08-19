@@ -133,6 +133,8 @@ export class HuntList extends React.Component {
          this.createAction = this.createAction.bind(this);
          this.closeAction = this.closeAction.bind(this);
          this.loadActions = this.loadActions.bind(this);
+
+         this.updateAlertTag = this.updateAlertTag.bind(this);
     }
 
    buildFilter(filters) {
@@ -151,6 +153,44 @@ export class HuntList extends React.Component {
 
      return string_filters;
    }
+
+  updateAlertTag(tfilters) {
+	/* Update the filters on alert.tag and send the update */
+    var activeFilters = this.props.filters; 
+	var tag_filters = {id: "alert.tag", value: tfilters};
+	if (activeFilters.length === 0) {
+		activeFilters.push(tag_filters);
+	} else {
+	   var updated = false;
+       for (var i = 0; i < activeFilters.length; i++) {
+	        if (activeFilters[i].id === 'alert.tag') {
+	            activeFilters[i] = tag_filters;
+	            updated = true;
+	            break;
+	        }
+	   }
+	   if (updated === false) {
+		activeFilters.push(tag_filters);
+	   }
+	}
+        this.UpdateFilter(activeFilters);
+  }
+
+  addFilter = (field, value, negated) => {
+    if (field !== "alert.tag") {
+    	let filterText = '';
+    	filterText = field;
+    	filterText += ': ';
+    	filterText += value;
+
+	let activeFilters = [...this.props.filters, { label: filterText, id: field, value: value, negated: negated }];
+    	this.UpdateFilter(activeFilters);
+    } else {
+        var tfilters = {untagged: false, informational: false, relevant: false};
+	    tfilters[value] = true;
+	    this.updateAlertTag(tfilters);
+    }
+  }
 
   handlePaginationChange(pagin) {
      const newListState = Object.assign({}, this.props.config);
