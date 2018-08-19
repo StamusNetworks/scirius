@@ -34,6 +34,11 @@ import * as config from './config/Api.js';
 import './pygments.css';
 import './css/App.css';
 import scirius_logo from './img/scirius-by-stamus.svg';
+import keymap from './Keymap';
+import { ShortcutManager } from 'react-shortcuts';
+import PropTypes from 'prop-types';
+
+const shortcutManager = new ShortcutManager(keymap);
 
 class HuntApp extends Component {
   constructor(props) {
@@ -282,6 +287,10 @@ class HuntApp extends Component {
         localStorage.setItem('history', JSON.stringify(history_state));
     }
 
+    getChildContext() {
+        return { shortcuts: shortcutManager }
+    }
+
     render() {
             var displayed_page = undefined;
             switch (this.state.display.page) {
@@ -522,3 +531,7 @@ class RulesetPage extends Component {
 }
 
 export default HuntApp;
+
+HuntApp.childContextTypes = {
+  shortcuts: PropTypes.object.isRequired
+}

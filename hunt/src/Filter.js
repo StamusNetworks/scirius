@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import { Filter, FormControl, FormGroup, Toolbar, Button, Icon, Switch} from 'patternfly-react';
+import { Shortcuts } from 'react-shortcuts';
 import { HuntSort } from './Sort.js';
 
 export class HuntFilter extends React.Component {
@@ -273,6 +274,29 @@ export class HuntFilter extends React.Component {
     return null;
   }
 
+   _handleShortcuts = (action, event) => {
+    switch (action) {
+      case 'SEE_UNTAGGED':
+        var tfilters = {untagged: true, informational: false, relevant: false};
+        this.updateAlertTag(tfilters);
+        break
+      case 'SEE_INFORMATIONAL':
+        tfilters = {untagged: false, informational: true, relevant: false};
+        this.updateAlertTag(tfilters);
+        break
+      case 'SEE_RELEVANT':
+        tfilters = {untagged: false, informational: false, relevant: true};
+        this.updateAlertTag(tfilters);
+        break
+      case 'SEE_ALL':
+        tfilters = {untagged: true, informational: true, relevant: true};
+        this.updateAlertTag(tfilters);
+        break
+      default:
+        break;
+    }
+  }
+
   renderInput() {
     const { currentFilterType, currentValue, filterCategory } = this.state;
     if (!currentFilterType) {
@@ -359,6 +383,12 @@ export class HuntFilter extends React.Component {
     });
     
     return (
+          <Shortcuts
+        name='HUNT_FILTER'
+        handler={this._handleShortcuts}
+        isolate={true}
+        targetNodeSelector='body'
+      >
 	   <Toolbar>
         <div style={{ width: 850 }}>
           <Filter>
@@ -443,6 +473,7 @@ export class HuntFilter extends React.Component {
             </Toolbar.Results>
           )}
       </Toolbar>
+      </Shortcuts>
     );
   }
 }
