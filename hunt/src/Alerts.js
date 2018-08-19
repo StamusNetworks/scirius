@@ -52,7 +52,7 @@ export class AlertsList extends HuntList {
       	res => {
 		var fdata = [];
 		for (var i in res.data) {
-			if (res.data[i].queryType === 'filter') {
+			if (['filter', 'hunt'].indexOf(res.data[i].queryType) !== -1) {
 				fdata.push(res.data[i]);
 			}
 		}
