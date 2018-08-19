@@ -53,11 +53,10 @@ export class HuntFilter extends React.Component {
     this.toggleRelevant = this.toggleRelevant.bind(this);
     this.toggleUntagged = this.toggleUntagged.bind(this);
     this.toggleSwitch = this.toggleSwitch.bind(this);
+    this.updateAlertTag = this.updateAlertTag.bind(this);
   }
 
-  toggleSwitch(key) {
-        var tfilters = Object.assign({}, this.state.tag_filters);
-	tfilters[key] = ! this.state.tag_filters[key];
+  updateAlertTag(tfilters) {
 	this.setState({tag_filters: tfilters});
 	/* Update the filters on alert.tag and send the update */
         var activeFilters = this.props.ActiveFilters; 
@@ -78,6 +77,12 @@ export class HuntFilter extends React.Component {
 	   }
 	}
         this.props.UpdateFilter(activeFilters);
+  }
+
+  toggleSwitch(key) {
+        var tfilters = Object.assign({}, this.state.tag_filters);
+	tfilters[key] = ! this.state.tag_filters[key];
+	this.updateAlertTag(tfilters);
   }
 
   toggleInformational() {
