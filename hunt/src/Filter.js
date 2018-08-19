@@ -390,7 +390,7 @@ export class HuntFilter extends React.Component {
         targetNodeSelector='body'
       >
 	   <Toolbar>
-        <div style={{ width: 850 }}>
+        <div>
           <Filter>
             <Filter.TypeSelector
               filterTypes={menuFilters}
