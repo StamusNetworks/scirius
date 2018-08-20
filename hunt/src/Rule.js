@@ -77,7 +77,7 @@ export class RuleInList extends React.Component {
     return (
 	<ListViewItem
 	   key={this.props.data.sid}
-  actions={[<a key={"actions-" + this.props.data.sid} onClick={e => {this.props.SwitchPage(this.props.data)}}><Icon type="fa" name="search-plus"/> </a>, <RuleEditKebab key={"kebab-" + this.props.data.sid} config={kebab_config}/> ]}
+  actions={[<a key={"actions-" + this.props.data.sid} onClick={e => {this.props.SwitchPage(this.props.data)}}><Icon type="fa" name="search-plus"/> </a>, <RuleEditKebab key={"kebab-" + this.props.data.sid} config={kebab_config} rulesets={this.props.rulesets} /> ]}
   leftContent={<ListViewIcon name="envelope" />}
   additionalInfo={[<ListViewInfoItem key={"created-" + this.props.data.sid} ><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
                    <ListViewInfoItem key={"updated-" + this.props.data.sid}><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
@@ -264,6 +264,7 @@ export class RulePage extends React.Component {
        var rule = this.state.rule;
        var sid = this.state.sid;
        var qfilter = buildQFilter(this.props.filters);
+
        if (rule !== undefined) {
            updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
 	   axios.get(config.API_URL + config.ES_BASE_PATH +
@@ -313,7 +314,7 @@ export class RulePage extends React.Component {
 		{ (this.state.rule && this.state.rule.hits !== undefined) &&
 	        <span className="label label-primary">{this.state.rule.hits} hit{this.state.rule.hits > 1 && 's'}</span>
 		}
-                <RuleEditKebab config={this.state} />
+                <RuleEditKebab config={this.state} rulesets={this.props.rulesets} />
             </span>
         </h1>
             <div className='container-fluid container-cards-pf'>
@@ -534,7 +535,7 @@ export class RuleEditKebab extends React.Component {
 			Rule page in Scirius
 			</MenuItem>
                 </DropdownKebab>
-                <RuleToggleModal show={this.state.toggle.show} action={this.state.toggle.action} config={this.props.config} close={this.hideToggle}/>
+                <RuleToggleModal show={this.state.toggle.show} action={this.state.toggle.action} config={this.props.config} close={this.hideToggle} rulesets={this.props.rulesets} />
             </React.Fragment>
         )
     }
@@ -543,7 +544,7 @@ export class RuleEditKebab extends React.Component {
 export class RuleToggleModal extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {rulesets: [], selected: [], supported_filters: [], comment: "",
+        this.state = {selected: [], supported_filters: [], comment: "",
 			options: {},
             errors: undefined};
         this.submit = this.submit.bind(this);
@@ -625,11 +626,7 @@ export class RuleToggleModal extends React.Component {
     }
 
     componentDidMount() {
-	if (this.state.rulesets.length === 0) {
-             axios.get(config.API_URL + config.RULESET_PATH).then(res => {
-               this.setState({rulesets: res.data['results']});
-             })
-	}
+
         this.updateActionDialog();
 	this.setDefaultOptions();
     }
@@ -826,7 +823,7 @@ export class RuleToggleModal extends React.Component {
         <FormGroup controlId="ruleset" disabled={false}>
             <Col sm={12}>
 	      <label>Choose Ruleset(s)</label>
-              {this.state.rulesets.map(function(ruleset) {
+              {this.props.rulesets.map(function(ruleset) {
                       return(<div className="row"  key={ruleset.pk}>
                            <div className="col-sm-9">
                           <label htmlFor={ruleset.pk}><input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange}/> {ruleset.name}</label>
@@ -932,7 +929,7 @@ export class RulesList extends HuntList {
     super(props);
 
     this.state = {
-      rules: [], sources: [], count: 0,
+      rules: [], sources: [], rulesets: [], count: 0,
       loading: true,
       refresh_data: false,
       view: 'rules_list',
@@ -1033,6 +1030,11 @@ export class RulesList extends HuntList {
 
   componentDidMount() {
       var sid = this.findSID(this.props.filters);
+       if (this.state.rulesets.length === 0) {
+             axios.get(config.API_URL + config.RULESET_PATH).then(res => {
+               this.setState({rulesets: res.data['results']});
+             })
+       }
       if (sid !== undefined) {
           this.setState({display_rule: sid, view: 'rule', display_toggle: false, loading: false});
       } else {
@@ -1103,7 +1105,7 @@ export class RulesList extends HuntList {
 	    <ListView>
             {this.state.rules.map(function(rule) {
                 return(
-                   <RuleInList key={rule.sid} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule}  addFilter={this.addFilter}/>
+                   <RuleInList key={rule.sid} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule}  addFilter={this.addFilter} rulesets = {this.state.rulesets} />
                 )
              },this)}
 	    </ListView>
@@ -1138,13 +1140,13 @@ export class RulesList extends HuntList {
 	    />
 	    }
             {this.state.view === 'rule' &&
-	        <RulePage rule={this.state.display_rule} config={this.props.config} filters={this.props.filters} from_date={this.props.from_date} UpdateFilter={this.RuleUpdateFilter} addFilter={this.addFilter}/>
+	        <RulePage rule={this.state.display_rule} config={this.props.config} filters={this.props.filters} from_date={this.props.from_date} UpdateFilter={this.RuleUpdateFilter} addFilter={this.addFilter} rulesets={this.state.rulesets}/>
 	    }
             {this.state.view === 'dashboard' &&
 	        <HuntDashboard />
 	    }
 
-	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} />
+	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
         </div>
     );
   }
