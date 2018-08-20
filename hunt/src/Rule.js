@@ -1040,7 +1040,16 @@ export class RulesList extends HuntList {
       }
       axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
       	res => {
-		this.setState({rules_filters: res.data});
+		var fdata = [];
+		for (var i in res.data) {
+			/* Allow ES and rest filters */
+			if (['filter', 'rest'].indexOf(res.data[i].queryType) !== -1) {
+				if (res.data[i].filterType !== 'hunt') {
+					fdata.push(res.data[i]);
+				}
+			}
+		}
+		this.setState({rules_filters: fdata});
 	}
       );
       this.loadActions();

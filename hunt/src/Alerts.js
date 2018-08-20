@@ -52,8 +52,11 @@ export class AlertsList extends HuntList {
       	res => {
 		var fdata = [];
 		for (var i in res.data) {
-			if (['filter', 'hunt'].indexOf(res.data[i].queryType) !== -1) {
-				fdata.push(res.data[i]);
+			/* Only ES filter are allowed for Alert page */
+			if (['filter'].indexOf(res.data[i].queryType) !== -1) {
+				if (res.data[i].filterType !== 'hunt') {
+					fdata.push(res.data[i]);
+				}
 			}
 		}
 		this.setState({rules_filters: fdata});
