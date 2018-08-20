@@ -821,7 +821,7 @@ export class RuleToggleModal extends React.Component {
         <FormGroup controlId="ruleset" disabled={false}>
             <Col sm={12}>
 	      <label>Choose Ruleset(s)</label>
-              {this.props.rulesets.map(function(ruleset) {
+              {this.props.rulesets && this.props.rulesets.map(function(ruleset) {
                       return(<div className="row"  key={ruleset.pk}>
                            <div className="col-sm-9">
                           <label htmlFor={ruleset.pk}><input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange}/> {ruleset.name}</label>
