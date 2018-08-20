@@ -124,10 +124,10 @@ export class HuntFilter extends React.Component {
 
   filterAdded = (field, value) => {
     let filterText = '';
-    if (field.title) {
+    if (field.title && field.queryType !== 'filter') {
       filterText = field.title;
     } else {
-      filterText = field;
+      filterText = field.id;
     }
     filterText += ': ';
 
