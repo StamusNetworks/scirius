@@ -310,6 +310,9 @@ export class RulePage extends React.Component {
             <div>
 	    <h1>{this.state.rule.msg}
             <span className="pull-right"> 
+		{ (this.state.rule && this.state.rule.hits !== undefined) &&
+	        <span className="label label-primary">{this.state.rule.hits} hit{this.state.rule.hits > 1 && 's'}</span>
+		}
                 <RuleEditKebab config={this.state} />
             </span>
         </h1>
