@@ -32,4 +32,12 @@ export class SciriusChart extends C3Chart {
           this.chart.axis.max(range);
           this.updateChart(newProps);
   }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+	  if (prevProps.data && this.props.data) {
+		  if ((prevProps.data.columns.length !== 1) && (this.props.data.columns.length === 1)) {
+			this.chart.unload();
+		  }
+	  }
+  }
 }
