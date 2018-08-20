@@ -35,6 +35,7 @@ export class AlertsList extends HuntList {
     super(props);
     this.state = {
       alerts: [],
+      rulesets: [],
       loading: true,
       refresh_data: false,
       action: { view: false, type: 'suppress'},
@@ -48,6 +49,11 @@ export class AlertsList extends HuntList {
 
   componentDidMount() {
 	this.fetchData(this.props.config, this.props.filters);
+       if (this.state.rulesets.length === 0) {
+             axios.get(config.API_URL + config.RULESET_PATH).then(res => {
+               this.setState({rulesets: res.data['results']});
+             })
+       }
       axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
       	res => {
 		var fdata = [];
@@ -109,7 +115,7 @@ export class AlertsList extends HuntList {
               })
            }
            </ListView>
-	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} />
+	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
        </div>
     )
   }

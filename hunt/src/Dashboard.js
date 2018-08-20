@@ -41,7 +41,7 @@ export class HuntDashboard extends HuntList {
     }
 
     this.state = {
-      rules: [], sources: [], rules_count: 0,
+      rules: [], sources: [], rulesets: [], rules_count: 0,
       loading: true,
       refresh_data: false,
       view: 'rules_list',
@@ -55,6 +55,11 @@ export class HuntDashboard extends HuntList {
   }
 
     componentDidMount() {
+       if (this.state.rulesets.length === 0) {
+             axios.get(config.API_URL + config.RULESET_PATH).then(res => {
+               this.setState({rulesets: res.data['results']});
+             })
+       }
       axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
       	res => {
 		var fdata = [];
@@ -141,7 +146,7 @@ export class HuntDashboard extends HuntList {
                     <HuntStat title="Fingerprint" config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
                 </div>
 	      </div>	  
-	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} />
+	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
 	    </div>
 	    );
     }
