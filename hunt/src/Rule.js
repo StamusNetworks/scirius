@@ -617,11 +617,9 @@ export class RuleToggleModal extends React.Component {
 
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        if (this.props.show) {
-            if ((prevProps.filters !== this.props.filters) || (prevProps.action !== this.props.action)) {
-                this.updateActionDialog();
-		this.setDefaultOptions();
-            }
+        if ((prevProps.filters !== this.props.filters) || (prevProps.action !== this.props.action)) {
+            this.updateActionDialog();
+            this.setDefaultOptions();
         }
     }
 
