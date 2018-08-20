@@ -62,7 +62,7 @@ class HuntApp extends Component {
             pagination: {
               page: 1,
               perPage: 6,
-              perPageOptions: [6, 10, 15, 25, 50]
+              perPageOptions: [6, 10, 15, 25]
             },
             sort: {id: 'created', asc: false},
             view_type: 'list'
