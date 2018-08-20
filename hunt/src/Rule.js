@@ -529,6 +529,10 @@ export class RuleEditKebab extends React.Component {
                         <MenuItem  onClick={ e => {this.displayToggle("disable") }}> 
                         Disable Rule
                         </MenuItem>
+			<MenuItem divider />
+			<MenuItem href={'/rules/rule/pk/' + this.props.config.rule.pk + '/'}>
+			Rule page in Scirius
+			</MenuItem>
                 </DropdownKebab>
                 <RuleToggleModal show={this.state.toggle.show} action={this.state.toggle.action} config={this.props.config} close={this.hideToggle}/>
             </React.Fragment>
