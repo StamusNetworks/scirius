@@ -217,7 +217,7 @@ class HuntTrend extends React.Component {
 		<div>
 		      <DonutChart
 		          data={g_data}
-                          title={{type: "percent" }}
+                  title={{type: "max" }}
 		      />
 		</div>
 	);
