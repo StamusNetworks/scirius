@@ -298,11 +298,11 @@ class AlertInList extends React.Component {
 			</div>
 			<div className="card-pf-body">
 		        <dl className="dl-horizontal">
-			   <EventField field_name="TLS Subject" field="tls.subject" value={data.tls.subject} addFilter={this.addFilter} />
-			   <EventField field_name="TLS Issuer" field="tls.issuerdn" value={data.tls.issuerdn} addFilter={this.addFilter} />
-			   <EventField field_name="TLS SNI" field="tls.sni" value={data.tls.sni} addFilter={this.addFilter} />
-			   <EventField field_name="TLS not before" field="tls.notbefore" value={data.tls.notbefore} addFilter={this.addFilter} />
-			   <EventField field_name="TLS not after" field="tls.notafter" value={data.tls.notafter} addFilter={this.addFilter} />
+			   <EventField field_name="Subject" field="tls.subject" value={data.tls.subject} addFilter={this.addFilter} />
+			   <EventField field_name="Issuer" field="tls.issuerdn" value={data.tls.issuerdn} addFilter={this.addFilter} />
+			   <EventField field_name="Server Name Indication" field="tls.sni" value={data.tls.sni} addFilter={this.addFilter} />
+			   <EventField field_name="Not Before" field="tls.notbefore" value={data.tls.notbefore} addFilter={this.addFilter} />
+			   <EventField field_name="Not After" field="tls.notafter" value={data.tls.notafter} addFilter={this.addFilter} />
 			   {(data.tls.ja3 && data.tls.ja3.hash !== undefined) &&
 			   <EventField field_name="JA3" field="tls.ja3.hash" value={data.tls.ja3.hash} addFilter={this.addFilter} />
                }
