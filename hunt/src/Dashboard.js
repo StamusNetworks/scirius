@@ -276,6 +276,9 @@ class HuntTimeline extends React.Component {
             }
             putindrows.push(pvalue);
          }
+         if (putindrows.length === 1) {
+                putindrows = [];
+         }
          this.setState({data: {x: 'x', columns: putindrows }});
        })
     }

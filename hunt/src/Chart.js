@@ -24,20 +24,16 @@ import 'c3/c3.css';
 
 export class SciriusChart extends C3Chart {
   componentWillReceiveProps(newProps) {
-          var range = this.chart.axis.min();
-          range.x = newProps.from_date;
-          this.chart.axis.min(range);
-          range = this.chart.axis.max();
-          range.x = Date.now();
-          this.chart.axis.max(range);
-          this.updateChart(newProps);
-  }
-
-  componentDidUpdate(prevProps, prevState, snapshot) {
-	  if (prevProps.data && this.props.data) {
-		  if ((prevProps.data.columns.length !== 1) && (this.props.data.columns.length === 1)) {
-			this.chart.unload();
-		  }
-	  }
+        if (newProps.data && newProps.data.columns.length <= 1) {
+           this.chart.unload();
+        } else {
+           var range = this.chart.axis.min();
+           range.x = newProps.from_date;
+           this.chart.axis.min(range);
+           range = this.chart.axis.max();
+           range.x = Date.now();
+           this.chart.axis.max(range);
+           this.updateChart(newProps);
+        }
   }
 }
