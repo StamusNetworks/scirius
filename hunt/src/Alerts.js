@@ -221,6 +221,9 @@ class AlertInList extends React.Component {
 			   {data.app_proto &&
 			   <EventField field_name="Application protocol" field="app_proto" value={data.app_proto} addFilter={this.addFilter} />
 			   }
+			   {data.app_proto_orig &&
+			   <EventField field_name="Original application protocol" field="app_proto_orig" value={data.app_proto_orig} addFilter={this.addFilter} />
+			   }
 			   <EventField field_name="Probe" field="probe" value={data.host} addFilter={this.addFilter} />
 			</dl>
 			</div>
@@ -265,12 +268,23 @@ class AlertInList extends React.Component {
 		        <dl className="dl-horizontal">
 			   <EventField field_name="Host" field="http.hostname" value={data.http.hostname} addFilter={this.addFilter} />
 			   <EventField field_name="URL" field="http.url" value={data.http.url} addFilter={this.addFilter} />
+			   {data.http.status !== undefined &&
 			   <EventField field_name="Status" field="http.status" value={data.http.status} addFilter={this.addFilter} />
+               }
 			   <EventField field_name="Method" field="http.http_method" value={data.http.http_method} addFilter={this.addFilter} />
 			   <EventField field_name="User Agent" field="http.http_user_agent" value={data.http.http_user_agent} addFilter={this.addFilter} />
 			   {data.http.http_refer !== undefined &&
 			      <EventField field_name="Referrer" field="http.http_refer" value={data.http.http_refer} addFilter={this.addFilter} />
 			   }
+			   {data.http.http_port !== undefined &&
+			      <EventField field_name="Port" field="http.http_port" value={data.http.http_port} addFilter={this.addFilter} />
+               }
+			   {data.http.http_content_type !== undefined &&
+			      <EventField field_name="Content Type" field="http.http_content_type" value={data.http.http_content_type} addFilter={this.addFilter} />
+               }
+			   {data.http.http_length !== undefined &&
+			      <EventField field_name="Length" field="http.http_length" value={data.http.http_length} addFilter={this.addFilter} />
+               }
 			</dl>
 			</div>
 			</div>
@@ -289,6 +303,100 @@ class AlertInList extends React.Component {
 			   <EventField field_name="TLS SNI" field="tls.sni" value={data.tls.sni} addFilter={this.addFilter} />
 			   <EventField field_name="TLS not before" field="tls.notbefore" value={data.tls.notbefore} addFilter={this.addFilter} />
 			   <EventField field_name="TLS not after" field="tls.notafter" value={data.tls.notafter} addFilter={this.addFilter} />
+			   {(data.tls.ja3 && data.tls.ja3.hash !== undefined) &&
+			   <EventField field_name="JA3" field="tls.ja3.hash" value={data.tls.ja3.hash} addFilter={this.addFilter} />
+               }
+			</dl>
+			</div>
+			</div>
+		 </Col>
+		    }
+		    {data.ssh !== undefined &&
+	         <Col sm={4}>
+		 	<div className="card-pf">
+			<div className="card-pf-heading">
+			<h5>SSH</h5>
+			</div>
+			<div className="card-pf-body">
+		        <dl className="dl-horizontal">
+                { data.ssh.client &&
+                <React.Fragment>
+			   <EventField field_name="Client Software" field="ssh.client.software_version" value={data.ssh.client.software_version} addFilter={this.addFilter} />
+			   <EventField field_name="Client Version"  field="ssh.client.proto_version" value={data.ssh.client.proto_version} addFilter={this.addFilter} />
+                </React.Fragment>
+                }
+                {data.ssh.server &&
+                <React.Fragment>
+			   <EventField field_name="Server Software" field="ssh.server.software_version" value={data.ssh.server.software_version} addFilter={this.addFilter} />
+			   <EventField field_name="Server Version"  field="ssh.server.proto_version" value={data.ssh.server.proto_version} addFilter={this.addFilter} />
+                </React.Fragment>
+                }
+			</dl>
+			</div>
+			</div>
+		 </Col>
+		    }
+		    {data.smb !== undefined &&
+	         <Col sm={4}>
+		 	<div className="card-pf">
+			<div className="card-pf-heading">
+			<h5>SMB</h5>
+			</div>
+			<div className="card-pf-body">
+		        <dl className="dl-horizontal">
+			   {data.smb.command !== undefined &&
+			   <EventField field_name="Command" field="smb.command" value={data.smb.command} addFilter={this.addFilter} />
+               }
+			   {data.smb.status !== undefined &&
+			   <EventField field_name="Status" field="smb.status" value={data.smb.status} addFilter={this.addFilter} />
+               }
+			   {data.smb.filename !== undefined &&
+			   <EventField field_name="Filename" field="smb.filename" value={data.smb.filename} addFilter={this.addFilter} />
+               }
+			   {data.smb.share !== undefined &&
+			   <EventField field_name="Share" field="smb.share" value={data.smb.share} addFilter={this.addFilter} />
+               }
+			   {data.smb.session_id !== undefined &&
+			   <EventField field_name="Session ID" field="smb.session_id" value={data.smb.session_id} addFilter={this.addFilter} />
+               }
+			</dl>
+			</div>
+			</div>
+		 </Col>
+		    }
+		    {(data.dns !== undefined && data.dns.query ) &&
+	         <Col sm={4}>
+		 	<div className="card-pf">
+			<div className="card-pf-heading">
+			<h5>DNS</h5>
+			</div>
+			<div className="card-pf-body">
+		        <dl className="dl-horizontal">
+			   {(data.dns.query && data.dns.query.rrname !== undefined) &&
+			   <EventField field_name="Queried Name" field="dns.query.rrname" value={data.dns.query.rrname} addFilter={this.addFilter} />
+               }
+			   {(data.dns.query && data.dns.query.rrtype !== undefined) &&
+			   <EventField field_name="Queried Type" field="dns.query.rrtype" value={data.dns.query.rrtype} addFilter={this.addFilter} />
+               }
+			</dl>
+			</div>
+			</div>
+		 </Col>
+		    }
+		    {data['ftp-data'] !== undefined &&
+	         <Col sm={4}>
+		 	<div className="card-pf">
+			<div className="card-pf-heading">
+			<h5>FTP data</h5>
+			</div>
+			<div className="card-pf-body">
+		        <dl className="dl-horizontal">
+			   {data['ftp-data'].command !== undefined &&
+			   <EventField field_name="Command" field="ftp-data.command" value={data['ftp-data'].command} addFilter={this.addFilter} />
+               }
+			   {data['ftp-data'].filename !== undefined &&
+			   <EventField field_name="Filename" field="ftp-data.filename" value={data['ftp-data'].filename} addFilter={this.addFilter} />
+               }
 			</dl>
 			</div>
 			</div>
