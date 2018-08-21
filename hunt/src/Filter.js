@@ -35,14 +35,7 @@ export class HuntFilter extends React.Component {
            	break;
            }
     }
-    const Filters = this.props.filterFields;
-    var got_alert_tag = false;
-    for (i = 0; i < Filters.length; i++) {
-           if (Filters[i].id === 'alert.tag') {
-		got_alert_tag = true;
-           	break;
-           }
-    }
+    var got_alert_tag = true;
     this.state = {
       filterFields: this.props.filterFields,
       currentFilterType: this.props.filterFields[0],
@@ -100,19 +93,10 @@ export class HuntFilter extends React.Component {
 
   componentDidUpdate(prevProps, prevState, snapshot) {
 	  var i = 0;
-	  if (prevProps.filterFields.length === 0 && this.props.filterFields.length !== 0) {
-		this.setState({currentFilterType: this.props.filterFields[0]});
-		var Filters = this.props.filterFields;
-		for (i = 0; i < Filters.length; i++) {
-			if (Filters[i].id === 'alert.tag') {
-				this.setState({got_alert_tag: true});
-				break;
-			}
-		}
-	  }
-          const activeFilters = this.props.ActiveFilters; 
-          for (i = 0; i < activeFilters.length; i++) {
-		if (activeFilters[i].id === 'alert.tag') {
+
+      const activeFilters = this.props.ActiveFilters; 
+      for (i = 0; i < activeFilters.length; i++) {
+      if (activeFilters[i].id === 'alert.tag') {
 			if (activeFilters[i].value !== this.state.tag_filters) {
 				this.setState({tag_filters: activeFilters[i].value});
 			}
