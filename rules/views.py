@@ -798,9 +798,11 @@ def switch_rule(request, rule_id, operation = 'disable'):
         if form.is_valid(): # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
             for ruleset in rulesets:
-                if operation == 'disable':
+                suppressed_rules = ruleset.get_transformed_rules(key=Transformation.SUPPRESSED,
+                                                                value=Transformation.S_SUPPRESSED).values_list('pk', flat=True)
+                if rule_object.pk not in suppressed_rules and operation == 'disable' :
                     rule_object.disable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
-                elif operation == 'enable':
+                elif rule_object.pk in suppressed_rules and operation == 'enable':
                     rule_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
                 ruleset.save()
             return redirect(rule_object)
