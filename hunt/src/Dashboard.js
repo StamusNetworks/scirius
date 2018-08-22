@@ -331,7 +331,7 @@ class HuntTimeline extends React.Component {
                   show: true    
                }}
                size = {{ height: 190 }}
-               point = {{ show: false }}
+               point = {{ show: true }}
                from_date = {this.props.from_date}
       />
 		   }
