@@ -14,5 +14,6 @@ Welcome to Scirius's documentation!
    installation-ce
    local-user-management
    ruleset
+   hunt
    suricata-ce
    backup-ce
