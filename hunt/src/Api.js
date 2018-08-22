@@ -185,8 +185,14 @@ export class HuntList extends React.Component {
 	let activeFilters = [...this.props.filters, { label: filterText, id: field, value: value, negated: negated }];
     	this.UpdateFilter(activeFilters);
     } else {
-        var tfilters = {untagged: false, informational: false, relevant: false};
-	    tfilters[value] = true;
+        var tfilters = {};
+        if (negated) {
+            tfilters = {untagged: true, informational: true, relevant: true};
+	        tfilters[value] = false;
+        } else {
+            tfilters = {untagged: false, informational: false, relevant: false};
+	        tfilters[value] = true;
+        }
 	    this.updateAlertTag(tfilters);
     }
   }
