@@ -144,11 +144,31 @@ export class HuntDashboard extends HuntList {
                 </div>
                 <div className='row row-cards-pf'>
 		    <h4>TLS information</h4>
-                    <HuntStat title="SNI" config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Server Name Indication" config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
                     <HuntStat title="Subject DN" config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
                     <HuntStat title="Issuer DN" config={this.props.config} filters={this.props.filters} item='tls.issuerdn' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} />
                     <HuntStat title="Fingerprint" config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="JA3 Hash" config={this.props.config} filters={this.props.filters}  item='tls.ja3.hash' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
                 </div>
+                <div className='row row-cards-pf'>
+		    <h4>SMTP information</h4>
+                    <HuntStat title="Mail From" config={this.props.config} filters={this.props.filters} item='smtp.mail_from' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="RCPT To" config={this.props.config} filters={this.props.filters} item='smtp.rcpt_to' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Helo" config={this.props.config} filters={this.props.filters} item='smtp.helo' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                </div>
+                <div className='row row-cards-pf'>
+		    <h4>SMB information</h4>
+                    <HuntStat title="Command" config={this.props.config} filters={this.props.filters} item='smb.command' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Status" config={this.props.config} filters={this.props.filters} item='smb.status' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Filename" config={this.props.config} filters={this.props.filters} item='smb.filename' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Share" config={this.props.config} filters={this.props.filters} item='smb.share' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                </div>
+                <div className='row row-cards-pf'>
+		    <h4>SSH information</h4>
+                    <HuntStat title="Client Software" config={this.props.config} filters={this.props.filters} item='ssh.client.software_version' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Server Software" config={this.props.config} filters={this.props.filters}  item='ssh.server.software_version' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                </div>
+
 	      </div>	  
 	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
 	    </div>
