@@ -479,7 +479,7 @@ class UserNavInfo extends Component {
         				<Icon type="pf" name="help" />
       				</Dropdown.Toggle>
       				<Dropdown.Menu>
-                                        <MenuItem href="/static/doc/index.html" target="_blank"><span className="glyphicon glyphicon-book"> </span> Help</MenuItem>
+                                        <MenuItem href="/static/doc/hunt.html" target="_blank"><span className="glyphicon glyphicon-book"> </span> Help</MenuItem>
                                         <MenuItem onClick={this.AboutClick}><span className="glyphicon glyphicon-question-sign"> </span> About</MenuItem>
       				</Dropdown.Menu>
     			</Dropdown>
