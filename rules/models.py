@@ -82,11 +82,11 @@ _HUNT_FILTERS = [
                       'valueType': 'text',
                       'queryType': 'rest'
                     }, {
-                      'id': 'sid',
+                      'id': 'alert.signature_id',
                       'title': 'Signature ID',
-                      'placeholder': 'Filter by Signature',
-                      'filterType': 'text',
-                      'valueType': 'text',
+                      'placeholder': 'Filter by Signature ID',
+                      'filterType': 'number',
+                      'valueType': 'positiveint',
                       'queryType': 'filter'
                     }
                 ]
