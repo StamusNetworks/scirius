@@ -1192,6 +1192,11 @@ class RuleStatus extends React.Component {
 		if (trans.lateral == null) {
 			lateral = undefined;
 		}
+		var active = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-on"></span>Active</span>;
+		if (!this.props.rule_status.active) {
+			active = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-off"></span>Disabled</span>;
+		}
+
 		return(
 		     <div className="col-xs-6 col-sm-4 col-md-4">
                         <div className="card-pf card-pf-accented card-pf-aggregate-status" onClick={this.showRuleContent} style={{cursor:'pointer'}}>
@@ -1200,6 +1205,7 @@ class RuleStatus extends React.Component {
                           </h2>
                         <div className="card-pf-body">
                             <p className="card-pf-aggregate-status-notifications">
+			      {active}
 			      {validity}
 			      {action}
 			      {target}
