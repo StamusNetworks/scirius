@@ -988,7 +988,7 @@ IPPAIR_NETINFO_ALERTS_COUNT = """
           "aggs": {
             "net_src": {
               "terms": {
-                "field": "alert.source.net_info.{{ keyword }}",
+                "field": "alert.source.net_info_agg.{{ keyword }}",
                 "size": 1,
                 "order": {
                   "_count": "desc"
@@ -1006,7 +1006,7 @@ IPPAIR_NETINFO_ALERTS_COUNT = """
               "aggs": {
                 "net_dest": {
                   "terms": {
-                    "field": "alert.target.net_info.{{ keyword }}",
+                    "field": "alert.target.net_info_agg.{{ keyword }}",
                     "size": 1,
                     "order": {
                       "_count": "desc"
@@ -1067,7 +1067,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
           "aggs": {
             "net_src": {
               "terms": {
-                "field": "alert.source.net_info.{{ keyword }}",
+                "field": "alert.source.net_info_agg.{{ keyword }}",
                 "size": 1,
                 "order": {
                   "_count": "desc"
@@ -1085,7 +1085,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
               "aggs": {
                 "net_dest": {
                   "terms": {
-                    "field": "alert.target.net_info.{{ keyword }}",
+                    "field": "alert.target.net_info_agg.{{ keyword }}",
                     "size": 1,
                     "order": {
                       "_count": "desc"
