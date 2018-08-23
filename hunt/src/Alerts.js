@@ -171,6 +171,11 @@ class AlertInList extends React.Component {
 		iconclass=data.alert.tag;
         }
 
+        var dns_query = undefined;
+        if (data.dns && data.dns.query) {
+                dns_query = data.dns.query[0];
+        }
+
         return(
            <ListViewItem
             id={this.props.id}
@@ -364,7 +369,7 @@ class AlertInList extends React.Component {
 			</div>
 		 </Col>
 		    }
-		    {(data.dns !== undefined && data.dns.query ) &&
+		    {(data.dns !== undefined && dns_query !== undefined) &&
 	         <Col sm={4}>
 		 	<div className="card-pf">
 			<div className="card-pf-heading">
@@ -372,11 +377,11 @@ class AlertInList extends React.Component {
 			</div>
 			<div className="card-pf-body">
 		        <dl className="dl-horizontal">
-			   {(data.dns.query && data.dns.query.rrname !== undefined) &&
-			   <EventField field_name="Queried Name" field="dns.query.rrname" value={data.dns.query.rrname} addFilter={this.addFilter} />
+			   {dns_query.rrname !== undefined &&
+			   <EventField field_name="Queried Name" field="dns.query.rrname" value={dns_query.rrname} addFilter={this.addFilter} />
                }
-			   {(data.dns.query && data.dns.query.rrtype !== undefined) &&
-			   <EventField field_name="Queried Type" field="dns.query.rrtype" value={data.dns.query.rrtype} addFilter={this.addFilter} />
+			   {dns_query.rrtype !== undefined &&
+			   <EventField field_name="Queried Type" field="dns.query.rrtype" value={dns_query.rrtype} addFilter={this.addFilter} />
                }
 			</dl>
 			</div>
