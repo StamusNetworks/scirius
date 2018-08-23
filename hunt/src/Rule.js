@@ -221,6 +221,7 @@ export class RulePage extends React.Component {
 	}
         this.updateRuleState = this.updateRuleState.bind(this);
         this.fetchRuleStatus = this.fetchRuleStatus.bind(this);
+        this.updateRuleStatus = this.updateRuleStatus.bind(this);
         this.updateExtInfo = this.updateExtInfo.bind(this);
     }
 
@@ -241,6 +242,10 @@ export class RulePage extends React.Component {
 		    }
 	       }
 	       this.setState({extinfo: extinfo});
+    }
+
+    updateRuleStatus() {
+	    return this.fetchRuleStatus(this.state.rule.sid);
     }
 
     fetchRuleStatus(sid) {
@@ -314,7 +319,7 @@ export class RulePage extends React.Component {
 		{ (this.state.rule && this.state.rule.hits !== undefined) &&
 	        <span className="label label-primary">{this.state.rule.hits} hit{this.state.rule.hits > 1 && 's'}</span>
 		}
-                <RuleEditKebab config={this.state} rulesets={this.props.rulesets} />
+                <RuleEditKebab config={this.state} rulesets={this.props.rulesets} refresh_callback = {this.updateRuleStatus} />
             </span>
         </h1>
             <div className='container-fluid container-cards-pf'>
@@ -535,7 +540,7 @@ export class RuleEditKebab extends React.Component {
 			Rule page in Scirius
 			</MenuItem>
                 </DropdownKebab>
-                <RuleToggleModal show={this.state.toggle.show} action={this.state.toggle.action} config={this.props.config} close={this.hideToggle} rulesets={this.props.rulesets} />
+                <RuleToggleModal show={this.state.toggle.show} action={this.state.toggle.action} config={this.props.config} close={this.hideToggle} rulesets={this.props.rulesets} refresh_callback={this.props.refresh_callback} />
             </React.Fragment>
         )
     }
@@ -659,6 +664,9 @@ export class RuleToggleModal extends React.Component {
                          res =>  {
                              // Fixme notification or something
                              console.log("action on rule is a success");
+			     if (this.props.refresh_callback) {
+				this.props.refresh_callback();
+			     }
                              this.close();
                          }
                      ).catch (error => {
