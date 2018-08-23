@@ -185,7 +185,9 @@ $( 'document' ).ready(function() {
         <div class="panel-body">
         <ul class="action">
         <li><a href="{% url 'viz_dashboard'%}" target="_blank">IP based Dashboard</a></li>
+        {% if netinfo_agg %}
         <li><a href="{% url 'viz_target_dashboard'%}" target="_blank">Organizational Dashboard</a></li>
+        {% endif %}
         <li><a href="{% url 'viz_pktcity'%}" target="_blank">Packets City (<span id="webgl-test">webGL</span>)</a></li>
         </ul>
         </div>

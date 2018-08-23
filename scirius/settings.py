@@ -274,6 +274,8 @@ LOGIN_URL = '/accounts/login/'
 
 IPWARE_PRIVATE_IP_PREFIX = ()
 
+HAVE_NETINFO_AGG = False
+
 try:
     from local_settings import *
 except:
