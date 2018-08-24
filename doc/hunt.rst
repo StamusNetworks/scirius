@@ -112,3 +112,16 @@ will not be suppressed or thesholded by any  of the actions found later
 in the processing of actions.
 
 Tag and keep action is only available for Scirius EE and Stamus probes.
+
+Keyboard shortcuts
+------------------
+
+Tag filtering
+~~~~~~~~~~~~~
+
+Here is the complete list:
+
+- `A`: display all events
+- `R`: display only Relevant events
+- `I`: display only Informational events
+- `U`: display only Untagged events
