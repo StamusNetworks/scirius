@@ -144,3 +144,8 @@ span.eventValue {
 .card-pf-aggregate-status-notifications {
    font-size: 18px;
 }
+
+
+.list-view-pf .list-group-item-heading {
+   flex-basis: calc(35% - 20px);
+}
