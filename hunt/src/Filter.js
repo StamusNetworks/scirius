@@ -444,7 +444,7 @@ export class HuntFilter extends React.Component {
                       filterData={item}
                     >
 		      { item.negated &&
-		         <span>Not</span>
+		         <span class="badge badge-primary">Not</span>
 		      } {item.label}
                     </Filter.Item>
                   );
