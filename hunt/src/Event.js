@@ -331,9 +331,9 @@ export class EventValue extends React.Component {
     render() {
 	var value_text = this.props.value;
 	var ellipsis = '';
-	if (this.props.value && this.props.value.length > 38) {
-		ellipsis = '...';
-		value_text = <span title={this.props.value}>{this.props.value.substring(0, 38) + ellipsis}</span>;
+	if (this.props.value && this.props.value.length > 35) {
+		ellipsis = '…';
+		value_text = <span title={this.props.value}>{this.props.value.substring(0, 35) + ellipsis}</span>;
 	}
         return(
 	    <div
