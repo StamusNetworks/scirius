@@ -287,8 +287,8 @@ class AlertInList extends React.Component {
 			   {data.http.http_content_type !== undefined &&
 			      <EventField field_name="Content Type" field="http.http_content_type" value={data.http.http_content_type} addFilter={this.addFilter} />
                }
-			   {data.http.http_length !== undefined &&
-			      <EventField field_name="Length" field="http.http_length" value={data.http.http_length} addFilter={this.addFilter} />
+			   {data.http.length !== undefined &&
+			      <EventField field_name="Length" field="http.http_length" value={data.http.length} addFilter={this.addFilter} />
                }
 			</dl>
 			</div>
