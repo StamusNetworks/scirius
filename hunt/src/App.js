@@ -133,7 +133,7 @@ class HuntApp extends Component {
 
 
     if (!page_display) {
-        page_display = { page: PAGE_STATE.rules_list, item:undefined };
+        page_display = { page: PAGE_STATE.dashboards, item:undefined };
         localStorage.setItem('page_display', JSON.stringify(page_display));
     } else {
         page_display = JSON.parse(page_display);
@@ -330,6 +330,13 @@ class HuntApp extends Component {
 
 
 					</VerticalNav.Masthead>
+            	    <VerticalNav.Item
+            	      title="Dashboard"
+            	      iconClass="fa fa-tachometer"
+            	      initialActive = { this.state.display.page === PAGE_STATE.dashboards }
+            	      onClick={this.onDashboardClick}
+            	      className={null}
+            	    />
 		   <VerticalNav.Item
                       title="Signatures"
             	      iconClass="glyphicon glyphicon-eye-open"
@@ -343,13 +350,6 @@ class HuntApp extends Component {
             	      initialActive = { this.state.display.page === PAGE_STATE.alerts_list }
             	      onClick={this.onAlertsClick}
 		     />
-            	    <VerticalNav.Item
-            	      title="Dashboard"
-            	      iconClass="fa fa-tachometer"
-            	      initialActive = { this.state.display.page === PAGE_STATE.dashboards }
-            	      onClick={this.onDashboardClick}
-            	      className={null}
-            	    />
        		     <VerticalNav.Item
 		      title="Actions"
 		      iconClass="glyphicon glyphicon-filter"
