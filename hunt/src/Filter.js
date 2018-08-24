@@ -207,10 +207,10 @@ export class HuntFilter extends React.Component {
           if (val >= 0)  {
             this.setState({ currentValue: '' });
             this.filterAdded(currentFilterType, val);
+          } else {
+            // Propagate event to trigger validation error
+            return
           }
-
-          // Propagate event to trigger validation error
-          return
         } else {
           this.setState({ currentValue: '' });
           this.filterAdded(currentFilterType, currentValue);
