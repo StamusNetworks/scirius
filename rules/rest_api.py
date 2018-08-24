@@ -456,13 +456,20 @@ def es_hits_params(request):
 
 class RuleHitsOrderingFilter(OrderingFilter):
     def get_query_param(self, request, param):
-        param = request.query_params.get(param)
-        if param is not None:
+        value = request.query_params.get(param)
+        if value is not None:
             try:
-                param = int(param)
+                if ',' in value:
+                    values = [int(x) for x in value.split(',')]
+                    if param == 'hits_min':
+                        return max(values)
+                    else:
+                        return min(values)
+
+                value = int(value)
             except ValueError:
-                param = None
-        return param
+                value = None
+        return value
 
     def _get_hits_order(self, request, order):
         es_top_kwargs = {
