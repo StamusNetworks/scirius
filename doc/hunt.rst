@@ -30,6 +30,12 @@ Pages can be accessed via a click in the left menu. Jumping from one page to ano
 page will keep the filters untouched allowing the analyst to alternate between the
 different views available.
 
+Dashboard
+~~~~~~~~~
+
+This page displays a dashboard with statistics about the most interesting data and protocol metadata
+that can be seen in alerts.
+
 Signatures
 ~~~~~~~~~~
 
@@ -41,12 +47,6 @@ Alerts
 
 This page displays the individual alert events as a list. It is possible to expand an event to
 see all details including metadata about it.
-
-Dashboard
-~~~~~~~~~
-
-This page displays a dashboard with statistics about the most interesting data and protocol metadata
-that can be seen in alerts.
 
 Actions
 ~~~~~~~
