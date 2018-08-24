@@ -104,6 +104,9 @@ export class HuntFilter extends React.Component {
 		}
 	  }
 	  
+      if (prevProps.filterFields !== this.props.filterFields && this.state.currentFilterType === undefined) {
+        this.setState({currentFilterType: this.props.filterFields[0]})
+      }
   }
 
   filterAdded = (field, value) => {
