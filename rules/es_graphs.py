@@ -1400,7 +1400,7 @@ def render_template(tmpl, dictionary, qfilter = None):
         context['query_filter'] = re.sub('"','\\"', query_filter)
     context['keyword'] = settings.ELASTICSEARCH_KEYWORD
     context['hostname'] = settings.ELASTICSEARCH_HOSTNAME
-    return templ.render(context)
+    return bytearray(templ.render(context), encoding="utf-8")
 
 def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None):
     data = render_template(TOP_QUERY, {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': 'alert.signature_id'}, qfilter = qfilter)
