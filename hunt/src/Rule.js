@@ -290,7 +290,13 @@ export class RulePage extends React.Component {
 		     this.updateExtInfo(res.data);
             }) 
 		}
-	   )
+	   ).catch( error => {
+		if (error.response.status === 404) {
+			this.setState({errors: {signature: ['Signature not found']}, rule: null});
+			return;
+		}
+		this.setState({rule: null});
+	   })
 	   this.fetchRuleStatus(sid);
        }
     }
