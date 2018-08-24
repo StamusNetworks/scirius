@@ -133,7 +133,7 @@ class AlertInList extends React.Component {
 
     render() {
         var data = this.props.data;
-        var ip_params = data.src_ip + ' -> ' + data.dest_ip;
+        var ip_params = <div> {data.src_ip} <span className="glyphicon glyphicon-arrow-right"></span> {data.dest_ip} </div>;
 	var source_network = undefined;
 	var target_network = undefined;
 	if (data.alert.source) {
