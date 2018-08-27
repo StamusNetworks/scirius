@@ -330,24 +330,20 @@ export class EventValue extends React.Component {
 
     render() {
 	var value_text = this.props.value;
-	var ellipsis = '';
-	if (this.props.value && this.props.value.length > 35) {
-		ellipsis = '…';
-		value_text = <span title={this.props.value}>{this.props.value.substring(0, 35) + ellipsis}</span>;
-	}
         return(
 	    <div
 	        onMouseOver={e => {this.setState({display_actions: true})}}
 	        onMouseOut={e => {this.setState({display_actions: false})}}
+		className="value-field-complete"
 	       >
-		   {value_text}
-                     <span className={this.state.display_actions ? 'eventFilters' : 'eventFiltersHidden'} >
+		   <span className="value-field" title={value_text}>{value_text}</span>
+                     <span className={this.state.display_actions ? 'eventFilters value-actions' : 'eventFiltersHidden value-actions'} >
 		         <EventValueInfo field={this.props.field} value={this.props.value} />
 		         <a onClick={ e => {this.props.addFilter(this.props.field, this.props.value, false)}}> <Icon type="fa" name="search-plus"/></a>
 		         <a onClick={ e => {this.props.addFilter(this.props.field, this.props.value, true)}}> <Icon type="fa" name="search-minus"/></a>
                      </span>
                 {this.props.right_info && 
-		    <span className="pull-right">{this.props.right_info}</span>
+		    <span className="value-right-info">{this.props.right_info}</span>
                 }
 	    </div>
 	)

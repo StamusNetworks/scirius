@@ -149,3 +149,27 @@ span.eventValue {
 .list-view-pf .list-group-item-heading {
    flex-basis: calc(35% - 20px);
 }
+
+.value-field-complete {
+   display: flex;
+   flex-direction: row;
+   width: 100%;
+   justify-content: space-between;
+   margin-right: 0px;
+   padding-right: 0px;
+}
+
+.value-field {
+   overflow: hidden;
+   white-space: nowrap;
+   text-overflow: ellipsis;
+}
+
+.value-actions {
+   flex-basis: calc(70px);
+   flex-grow: 1;
+}
+
+.value.right-info {
+   flex-grow: 1;
+}
