@@ -198,6 +198,11 @@ export class HuntList extends React.Component {
   }
 
   handlePaginationChange(pagin) {
+     var last_page = Math.ceil(this.state.count / pagin.perPage);
+     if (pagin.page > last_page) {
+       pagin.page = last_page;
+     }
+
      const newListState = Object.assign({}, this.props.config);
      newListState.pagination = pagin;
      this.props.updateListState(newListState);
@@ -227,7 +232,7 @@ export class HuntList extends React.Component {
 
   onLastPage() {
      const newListState = Object.assign({}, this.props.config);
-     newListState.pagination.page = Math.floor(this.state.count / this.props.config.pagination.perPage) + 1;
+     newListState.pagination.page = Math.ceil(this.state.count / this.props.config.pagination.perPage);
      this.props.updateListState(newListState);
      this.fetchData(newListState, this.props.filters);
   }
