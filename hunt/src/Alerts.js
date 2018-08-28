@@ -448,6 +448,21 @@ class AlertInList extends React.Component {
 		 </Col>
 		    }
               </Row>
+	      {data.payload_printable &&
+	      <Row>
+	            <Col sm={12}>
+	           <div className="card-pf">
+			                    <div className="card-pf-heading">
+		                        <h5>Payload printable</h5>
+                                </div>
+			                    <div className="card-pf-body">
+		                        <pre style={{"maxHeight": "12pc"}} >{data.payload_printable}</pre>
+                                </div>
+		               </div>
+
+		    </Col>
+              </Row>
+	      }
 	      {data.http &&
 	      <Row>
 	         { data.http.http_request_body_printable &&
