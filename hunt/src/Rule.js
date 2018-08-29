@@ -306,7 +306,10 @@ export class RulePage extends React.Component {
        if ((prevProps.from_date !==  this.props.from_date) ||
            (prevProps.filters.length !==  this.props.filters.length)) {
             var rule = JSON.parse(JSON.stringify(this.state.rule));
-            updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
+
+            if (rule) {
+                updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
+            }
        }
     }
 
