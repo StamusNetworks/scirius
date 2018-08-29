@@ -101,7 +101,7 @@ export class RuleInList extends React.Component {
                             localtime: true,
                             min: this.props.from_date,
                             max: Date.now(),
-                            tick: { fit: false, count: 7, format: '%Y-%m-%d %H:%M'}
+                            tick: { fit: false, format: '%Y-%m-%d %H:%M'}
                      } }
                     }
 		from_date = {this.props.from_date}
@@ -340,7 +340,7 @@ export class RulePage extends React.Component {
                                     localtime: true,
                                     min: this.props.from_date,
                                     max: Date.now(),
-                                    tick: { fit: false, count: 8, format: '%Y-%m-%d %H:%M'}
+                                    tick: { fit: false, format: '%Y-%m-%d %H:%M'}
                                     }
                                    }
                                  }
