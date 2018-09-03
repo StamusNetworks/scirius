@@ -595,6 +595,9 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
     Show a transformed rule content in html:\n
         curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/content/\?highlight=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
+    Get rule's comments:\n
+        curl -v -k https://x.x.x.x/rest/rules/rule/<sid-rule>/comment/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
     Return:\n
         HTTP/1.1 200 OK
         {"1":"<div class=\"highlight\"><pre><span></span><span class=\"kt\">drop</span><span class=\"w\"> </span><span class=\"kc\">ip</span><span class=\"w\"> </span>
@@ -770,21 +773,27 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
 
         return Response(res)
 
-    @detail_route(methods=['post'])
+    @detail_route(methods=['post', 'get'])
     def comment(self, request, pk):
-        rule = self.get_object()
-        comment = request.data.get('comment', None)
+        if request.method == 'POST':
+            rule = self.get_object()
+            comment = request.data.get('comment', None)
 
-        comment_serializer = CommentSerializer(data={'comment': comment})
-        comment_serializer.is_valid(raise_exception=True)
+            comment_serializer = CommentSerializer(data={'comment': comment})
+            comment_serializer.is_valid(raise_exception=True)
 
-        UserAction.create(
-                action_type='comment_rule',
-                comment=comment,
-                user=request.user,
-                rule=rule
-            )
-        return Response({'comment': 'ok'})
+            UserAction.create(
+                    action_type='comment_rule',
+                    comment=comment,
+                    user=request.user,
+                    rule=rule
+                )
+            return Response({'comment': 'ok'})
+        elif request.method == 'GET':
+            rule = self.get_object()
+            uas = rule.get_comments()
+            comments = [ua.comment for ua in uas]
+            return Response(comments)
 
     @detail_route(methods=['post'])
     def toggle_availability(self, request, pk):
