@@ -70,7 +70,6 @@
 			<li><a id="home" href="{% url 'rules_index' %}">{% bootstrap_icon "home" %} Home</a></li>
 			<li><a id="source" href="{% url 'sources' %}">{% bootstrap_icon "cloud-download" %} Sources</a></li>
 			<li><a id="ruleset" href="{% url 'rulesets' %}">{% bootstrap_icon "th" %} Rulesets</a></li>
-			<li><a id="hunt" href="{% url 'hunt' %}"><span class="pficon pficon-rebalance"> Hunt</span></a></li>
 			{% if toplinks %}
 			{% for link in toplinks %}
 			<li><a id="{{ link.id }}" href="{{ link.url }}">{% bootstrap_icon link.icon %} {{ link.label }}</a></li>
@@ -124,6 +123,33 @@
             <li><a href="/accounts/logout/" >{% bootstrap_icon "log-out"%} Logout</a></li>
 </ul>
 </li>
+
+<li class="applauncher-pf  applauncher-pf-block-list  dropdown">
+  <a class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+    <span class="fa fa-th applauncher-pf-icon" aria-hidden="true"></span>
+    <span class="dropdown-title">
+      <span class="applauncher-pf-title">
+        Application Launcher
+        <span class="caret" aria-hidden="true"></span>
+      </span>
+    </span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="applauncher-pf-item" role="presentation">
+      <a class="applauncher-pf-link" href="/rules/hunt" role="menuitem">
+        <i class="applauncher-pf-link-icon pficon pficon-rebalance" aria-hidden="true"></i>
+        <span class="applauncher-pf-link-title">Hunt</span>
+      </a>
+    </li>
+    <li class="applauncher-pf-item" role="presentation">
+      <a class="applauncher-pf-link" href="/rules" role="menuitem">
+        <i class="applauncher-pf-link-icon pficon pficon-home" aria-hidden="true"></i>
+        <span class="applauncher-pf-link-title">Administration</span>
+      </a>
+    </li>
+  </ul>
+</li>
+
 </ul>
 
 </div>

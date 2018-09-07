@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import React, { Component } from 'react';
-import { VerticalNav, Dropdown, Icon, MenuItem } from 'patternfly-react';
+import { VerticalNav, Dropdown, Icon, MenuItem, ApplicationLauncher, ApplicationLauncherItem } from 'patternfly-react';
 import { AboutModal } from 'patternfly-react';
 import { HuntDashboard } from './Dashboard.js';
 import { HuntNotificationArea } from './Notifications.js';
@@ -364,12 +364,7 @@ class HuntApp extends Component {
             	      initialActive = { this.state.display.page === PAGE_STATE.history }
             	      onClick={this.onHistoryClick}
 		     />
-       		     <VerticalNav.Item 
-		       title="Home"
-		       iconClass="fa fa-home"
-              	       initialActive = { this.state.display.page === PAGE_STATE.setup }
-		       href="/rules"
-		     />
+
        		</VerticalNav>
        		<div className="container-fluid container-cards-pf container-pf-nav-pf-vertical nav-pf-persistent-secondary">
        			<div className="row row-cards-pf">
@@ -412,11 +407,15 @@ class UserNavInfo extends Component {
     this.state = {
 	    showModal: false,
 	    showNotifications: false,
-	    user: undefined,
+        user: undefined,
+        isShown: false,
     }
     this.AboutClick = this.AboutClick.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.toggleNotifications = this.toggleNotifications.bind(this);
+    this.toggleiSshown = this.toggleiSshown.bind(this);
+    this.toggleHunt = this.toggleHunt.bind(this);
+    this.toggleHome = this.toggleHome.bind(this);
   }
 
   componentDidMount() {
@@ -435,6 +434,20 @@ class UserNavInfo extends Component {
   }
   toggleNotifications(e) {
 	  this.setState({showNotifications: !this.state.showNotifications});
+  }
+
+  toggleiSshown() {
+      this.setState({isShown: !this.state.isShown});
+  }
+
+  toggleHunt() {
+    this.setState({isShown: !this.state.isShown});
+    window.open("/rules/hunt", "_self");
+  }
+
+  toggleHome() {
+        this.setState({isShown: !this.state.isShown});
+    window.open("/rules", "_self");
   }
 
 	render() {
@@ -495,7 +508,23 @@ class UserNavInfo extends Component {
         				<MenuItem href="/accounts/logout"><span className="glyphicon glyphicon-log-out"> </span> Logout</MenuItem>
     				</Dropdown.Menu>
 			   </Dropdown>
-			   
+
+                <ApplicationLauncher grid open={this.state.isShown} toggleLauncher={this.toggleiSshown}>
+                    <ApplicationLauncherItem
+                    icon="rebalance"
+                    title="Hunt"
+                    tooltip="Hunt"
+                    onClick={this.toggleHunt}
+                    />
+
+                    <ApplicationLauncherItem
+                    icon="home"
+                    title="Administration"
+                    tooltip="Scirius"
+                    onClick={this.toggleHome}
+                    />
+                </ApplicationLauncher>
+
         <AboutModal
           show={this.state.showModal}
           onHide={this.closeModal}
