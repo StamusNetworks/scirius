@@ -350,12 +350,14 @@ class HuntApp extends Component {
             	      initialActive = { this.state.display.page === PAGE_STATE.alerts_list }
             	      onClick={this.onAlertsClick}
 		     />
+             { (process.env.REACT_APP_HAS_ACTION === '1' || process.env.NODE_ENV === 'development') &&
        		     <VerticalNav.Item
 		      title="Actions"
 		      iconClass="glyphicon glyphicon-filter"
             	      initialActive = { this.state.display.page === PAGE_STATE.filters_list }
             	      onClick={this.onFiltersClick}
 		     />
+             }
        		     <VerticalNav.Item
 		      title="History"
 		      iconClass="glyphicon glyphicon-list"

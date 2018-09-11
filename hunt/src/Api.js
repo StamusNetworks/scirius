@@ -286,6 +286,7 @@ export class HuntList extends React.Component {
   }
 
   actionsButtons() {
+    if (process.env.REACT_APP_HAS_ACTION === '1' || process.env.NODE_ENV === 'development') {
       if (this.state.supported_actions.length === 0) {
         return (
         <div className="form-group">
@@ -312,6 +313,7 @@ export class HuntList extends React.Component {
           </DropdownButton>
         </div>
       );
+    }
   }
 
 

@@ -392,7 +392,7 @@ export class HuntFilter extends React.Component {
 	      {this.props.sort_config &&
 	      <HuntSort config={this.props.sort_config} ActiveSort={this.props.ActiveSort} UpdateSort={this.props.UpdateSort}/>
 	      }
-	      { this.state.got_alert_tag &&
+	      { this.state.got_alert_tag && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') &&
         <div className="form-group">
           <ul className="list-inline">
             <li><Switch bsSize="small" onColor="info" value={this.state.tag_filters.informational} onChange={this.toggleInformational}/> Informational</li>
