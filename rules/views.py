@@ -34,7 +34,6 @@ from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependen
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, HistoryTable
 
 from rules.es_graphs import *
-from rules.influx import *
 
 import json
 import yaml
@@ -183,7 +182,7 @@ class Reference:
 
 def elasticsearch(request):
     data = None
-    RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip'}
+    RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip', 'rule_probe': settings.ELASTICSEARCH_HOSTNAME, 'field_stats': None}
     if request.GET.__contains__('query'):
         query = request.GET.get('query', 'dashboards')
         if query == 'dashboards':
@@ -205,16 +204,62 @@ def elasticsearch(request):
                 hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
                 context = {'table': hosts}
                 return scirius_render(request, 'rules/table.html', context)
-        elif query in RULE_FIELDS_MAPPING.keys():
-            filter_ip = RULE_FIELDS_MAPPING[query]
-            sid = int(request.GET.get('sid', None))
+        elif query == 'top_rules':
+            host = request.GET.get('host', None)
             from_date = request.GET.get('from_date', None)
-            if from_date != None and sid != None:
-                hosts = es_get_field_stats(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, RuleHostTable, '*', from_date = from_date,
-                    count = 10,
-                    qfilter = 'alert.signature_id:%d' % sid)
-                context = {'table': hosts}
-                return scirius_render(request, 'rules/table.html', context)
+            qfilter = request.GET.get('filter', None)
+            count = request.GET.get('count', 20)
+            order = request.GET.get('order', "desc")
+            if host != None and from_date != None:
+                rules = es_get_top_rules(request, host, from_date = from_date, qfilter = qfilter, count = count, order = order)
+                return HttpResponse(json.dumps(rules), content_type="application/json")
+        elif query == 'sigs_list':
+            host = request.GET.get('host', None)
+            from_date = request.GET.get('from_date', None)
+            qfilter = request.GET.get('filter', None)
+            sids = request.GET.get('sids', None)
+            if host != None and from_date != None and sids != None:
+                # FIXME sanitize that
+                sids = sids.split(',')
+                stats = es_get_sigs_list_hits(request, sids, host, from_date = from_date, qfilter = qfilter)
+                return HttpResponse(json.dumps(stats), content_type="application/json")
+        elif query in RULE_FIELDS_MAPPING.keys():
+            if query == 'field_stats':
+                filter_ip = request.GET.get('field', 'src_ip')
+            else:
+                filter_ip = RULE_FIELDS_MAPPING[query]
+            sid = request.GET.get('sid', None)
+            if sid != None:
+                sid = int(sid)
+                sid_filter = 'alert.signature_id:%d' % sid
+            else:
+                sid_filter = None
+            from_date = request.GET.get('from_date', None)
+            qfilter = request.GET.get('qfilter', None)
+            if qfilter:
+                if sid_filter != None:
+                    qfilter = '%s AND %s' % (sid_filter, qfilter)
+            else:
+                qfilter = sid_filter
+            ajax = request.GET.get('json', None)
+            count = request.GET.get('page_size', 10)
+            if from_date != None:
+                if ajax:
+                    if filter_ip in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status']:
+                        data = es_get_field_stats(request, filter_ip, '*', from_date = from_date,
+                            count = count,
+                            qfilter = qfilter)
+                    else:
+                        data = es_get_field_stats(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, '*', from_date = from_date,
+                            count = count,
+                            qfilter = qfilter)
+                    return HttpResponse(json.dumps(data), content_type="application/json")
+                else:
+                    hosts = es_get_field_stats_as_table(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, RuleHostTable, '*', from_date = from_date,
+                        count = 10,
+                        qfilter = qfilter)
+                    context = {'table': hosts}
+                    return scirius_render(request, 'rules/table.html', context)
         elif query == 'timeline':
             from_date = request.GET.get('from_date', None)
             cshosts = request.GET.get('hosts', None)
@@ -231,6 +276,16 @@ def elasticsearch(request):
             else:
                 hosts = None
             data = es_get_metrics_timeline(from_date = from_date, value = value, hosts = hosts, qfilter = qfilter)
+        elif query == 'poststats_summary':
+            from_date = request.GET.get('from_date', None)
+            value = request.GET.get('value', None)
+            cshosts = request.GET.get('hosts', None)
+            qfilter = request.GET.get('filter', None)
+            if cshosts:
+                hosts = cshosts.split(',')
+            else:
+                hosts = None
+            data = es_get_poststats(from_date = from_date, value = value, hosts = hosts, qfilter = qfilter)
         elif query == 'health':
             data = es_get_health()
         elif query == 'stats':
@@ -293,7 +348,10 @@ def elasticsearch(request):
         elif query == 'alerts_tail':
             from_date = request.GET.get('from_date', None)
             qfilter = request.GET.get('filter', None)
-            data = es_get_alerts_tail(from_date = from_date, qfilter = qfilter)
+            search_target = request.GET.get('search_target', True)
+            if search_target != True:
+                search_target = False
+            data = es_get_alerts_tail(from_date = from_date, qfilter = qfilter, search_target = search_target)
         elif query == 'suri_log_tail':
             from_date = request.GET.get('from_date', None)
             qfilter = request.GET.get('filter', None)
@@ -314,12 +372,6 @@ def elasticsearch(request):
             context = {}
             template = Probe.common.get_es_template()
             return scirius_render(request, template, context)
-
-def influxdb(request):
-    time_range = int(request.GET.get('time_range', 3600))
-    request = request.GET.get('request', 'eve_rate')
-    data = influx_get_timeline(time_range, request = request)
-    return HttpResponse(json.dumps(data), content_type="application/json")
 
 def rule(request, rule_id, key = 'pk'):
     if request.is_ajax():
@@ -455,6 +507,9 @@ def edit_rule(request, rule_id):
                     trans = rule_object.get_transformation(ruleset, TYPE)
 
                     if form_trans == CAT_DEFAULT:
+                        if trans is None:
+                            continue
+
                         cat_trans = rule_object.category.get_transformation(ruleset, TYPE)
                         if cat_trans is None:
                             cat_trans = NONE
@@ -743,9 +798,11 @@ def switch_rule(request, rule_id, operation = 'disable'):
         if form.is_valid(): # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
             for ruleset in rulesets:
-                if operation == 'disable':
+                suppressed_rules = ruleset.get_transformed_rules(key=Transformation.SUPPRESSED,
+                                                                value=Transformation.S_SUPPRESSED).values_list('pk', flat=True)
+                if rule_object.pk not in suppressed_rules and operation == 'disable' :
                     rule_object.disable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
-                elif operation == 'enable':
+                elif rule_object.pk in suppressed_rules and operation == 'enable':
                     rule_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
                 ruleset.save()
             return redirect(rule_object)
@@ -1289,7 +1346,17 @@ def edit_source(request, source_id):
                 if not categories:
                     firstimport = True
                 source.new_uploaded_file(request.FILES['file'], firstimport)
+
             form.save()
+
+            if source.datatype == 'sig':
+                categories = Category.objects.filter(source=source)
+                firstimport = False if len(categories) > 0 else True
+
+                if 'name' in form.changed_data and firstimport is False:
+                    category = categories[0]  # sig => one2one source/category
+                    category.name = '%s Sigs' % form.cleaned_data['name']
+                    category.save()
 
             UserAction.create(
                     action_type='edit_source',
@@ -1369,7 +1436,7 @@ def ruleset(request, ruleset_id, mode = 'struct', error = None):
         S_SUPPRESSED = Transformation.S_SUPPRESSED
         A_REJECT = Transformation.A_REJECT
         A_DROP = Transformation.A_DROP
-        A_FILESTORE = Transformation.A_REJECT
+        A_FILESTORE = Transformation.A_FILESTORE
 
         for trans in (S_SUPPRESSED, A_REJECT, A_DROP, A_FILESTORE):
             # Rules transformation
@@ -1521,10 +1588,6 @@ def edit_ruleset(request, ruleset_id):
         if not form.is_valid():
             return redirect(ruleset)
 
-        msg = """All changes are saved. Don't forget to update the ruleset to apply the changes.
-                 After the ruleset Update the changes would be updated on the probe(s) upon the next Ruleset Push"""
-
-        messages.success(request, msg)
         if request.POST.has_key('category'):
             category_selection = [ int(x) for x in request.POST.getlist('category_selection') ]
             # clean ruleset
@@ -1583,6 +1646,13 @@ def edit_ruleset(request, ruleset_id):
                     ruleset.set_transformation(key=Transformation.TARGET, value=form_target_trans)
                 else:
                     ruleset.remove_transformation(Transformation.TARGET)
+            else:
+                return scirius_render(request, 'rules/edit_ruleset.html', {'ruleset': ruleset, 'error': 'Invalid form.', 'form': form})
+
+        msg = """All changes are saved. Don't forget to update the ruleset to apply the changes.
+                 After the ruleset Update the changes would be updated on the probe(s) upon the next Ruleset Push"""
+
+        messages.success(request, msg)
 
         return redirect(ruleset)
     else:
@@ -1799,6 +1869,11 @@ def system_settings(request):
 
         if form_id is not None:
             context['form_id'] = form_id
+
+        UserAction.create(
+                action_type='system_settings',
+                user=request.user,
+        )
     context['global_settings'] = get_system_settings()
     return scirius_render(request, 'rules/system_settings.html', context)
 
@@ -1893,3 +1968,7 @@ def delete_comment(request, comment_id):
     ua.delete()
     data = {'status': 'OK'}
     return HttpResponse(json.dumps(data), content_type="application/json")
+
+def hunt(request):
+    context = { }
+    return scirius_render(request, 'rules/hunt.html', context)

@@ -27,6 +27,8 @@ import json
 import StringIO
 import re
 
+from rest_framework import serializers
+
 
 from django.conf import settings
 
@@ -85,4 +87,74 @@ def get_user_actions_dict():
     return UserAction.get_user_actions_dict()
 
 
+def get_hunt_filters():
+    from rules.models import get_hunt_filters
+    return get_hunt_filters()
 
+
+def validate_rule_postprocessing(data, partial):
+    action = data.get('action')
+    if not partial and action not in ('suppress', 'threshold'):
+        raise serializers.ValidationError('Action "%s" is not supported.' % action)
+
+    has_sid = False
+    has_ip = False
+    has_bad_operator = False
+
+    for f in data.get('filter_defs', []):
+        if f.get('key') == 'alert.signature_id':
+            has_sid = True
+
+        if f.get('key') in ('src_ip', 'dest_ip'):
+            if action == 'suppress':
+                if has_ip:
+                    raise serializers.ValidationError({'filter_defs': ['Only one field with key "src_ip" or "dest_ip" is accepted.']})
+                has_ip = True
+            else:
+                raise serializers.ValidationError({'filter_defs': ['Field "%s" is not supported for threshold.' % f['key']]})
+
+        if f.get('operator') != 'equal':
+            has_bad_operator = True
+
+    if action == 'threshold':
+        has_ip = True
+
+    errors = []
+    if not partial:
+        if not has_sid:
+            errors.append('A filter with a key "alert.signature_id" is required.')
+        if not has_ip:
+            errors.append('A filter with a key "src_ip" or "dest_ip" is required.')
+    if has_bad_operator:
+        errors.append('Only operator "equal" is supported.')
+
+    if errors:
+        raise serializers.ValidationError({'filter_defs': errors})
+
+def get_processing_filter_thresholds(ruleset):
+    from rules.models import RuleProcessingFilter
+
+    for f in ruleset.processing_filters.filter(enabled=True, action__in=('suppress', 'threshold')):
+        yield f.get_threshold_content()
+
+
+PROCESSING_FILTER_FIELDS = set(('src_ip', 'dest_ip', 'alert.signature_id'))
+PROCESSING_THRESHOLD_FIELDS = set(('alert.signature_id',))
+
+
+def get_processing_actions_capabilities(fields):
+    return (('suppress', 'Suppress'), ('threshold', 'Threshold'))
+
+
+def get_processing_filter_capabilities(fields, action):
+    if action == 'suppress':
+        return {
+            'fields': sorted(list(PROCESSING_FILTER_FIELDS & set(fields))),
+            'operators': ['equal']
+        }
+    elif action == 'threshold':
+        return {
+            'fields': sorted(list(PROCESSING_THRESHOLD_FIELDS & set(fields))),
+            'operators': ['equal']
+        }
+    return { 'fields': [], 'operators': ['equal'] }

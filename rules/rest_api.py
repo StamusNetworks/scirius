@@ -1,22 +1,41 @@
+from suripyg import SuriHTMLFormat
+
 from django.conf import settings
 from django.utils import timezone
-from django.db.models import Q
+from django.utils.html import escape
+from django.db import models
+from collections import OrderedDict
+
 from django.core.exceptions import SuspiciousOperation, ValidationError
+
+from rest_framework.views import APIView
+from rest_framework.validators import UniqueValidator
 from rest_framework import serializers, viewsets, exceptions, mixins
 from rest_framework.decorators import detail_route, list_route
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import serializers, viewsets
+from rest_framework.decorators import detail_route, list_route
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
-from rest_framework.exceptions import APIException
-from rest_framework.routers import DefaultRouter
+from rest_framework.exceptions import APIException, ParseError
+from rest_framework.routers import DefaultRouter, url
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
+from rest_framework.mixins import UpdateModelMixin, RetrieveModelMixin
+from rest_framework.permissions import IsAdminUser
+
+from django_filters import rest_framework as filters
+from django_filters import fields as filters_fields
 
 from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, \
-        Source, SourceAtVersion, UserAction, UserActionObject, Transformation
+        Source, SourceAtVersion, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
 from rules.views import get_public_sources, fetch_public_sources
+from rules.rest_processing import RuleProcessingFilterViewSet
 
+from scirius.rest_utils import SciriusReadOnlyModelViewSet, SciriusModelViewSet
+from rules.es_graphs import es_get_sigs_list_hits, es_get_top_rules, ESError
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
-
 
 class ServiceUnavailableException(APIException):
     status_code = 500
@@ -44,19 +63,22 @@ class CommentSerializer(serializers.Serializer):
     comment = serializers.CharField(required=False, allow_blank=True, write_only=True, allow_null=True)
 
 
+class CopyRulesetSerializer(serializers.Serializer):
+    name = serializers.CharField(required=True, allow_blank=False, validators=[UniqueValidator(queryset=Ruleset.objects.all())])
+
+
 class RulesetSerializer(serializers.ModelSerializer):
     sources = serializers.PrimaryKeyRelatedField(queryset=Source.objects.all(), many=True, required=False)
     categories = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), many=True, required=False)
     comment = serializers.CharField(required=False, allow_blank=True, write_only=True, allow_null=True)
+    warnings = serializers.CharField(required=False, allow_blank=True, read_only=True, allow_null=True)
 
     class Meta:
         model = Ruleset
         fields = ('pk', 'name', 'descr', 'created_date', 'updated_date', 'need_test', 'validity',
-                  'errors', 'rules_count', 'sources', 'categories', 'comment')
+                  'errors', 'rules_count', 'sources', 'categories', 'comment', 'warnings')
         read_only_fields = ('pk', 'created_date', 'updated_date', 'need_test', 'validity', 'errors',
-                            'rules_count')
-        extra_kwargs = {
-        }
+                            'rules_count', 'warnings')
 
     def create(self, validated_data):
         validated_data['created_date'] = timezone.now()
@@ -69,6 +91,12 @@ class RulesetSerializer(serializers.ModelSerializer):
         sources_at_version = instance.sources
         sources = Source.objects.filter(sourceatversion__in=sources_at_version.all())
         data['sources'] = [source.pk for source in sources]
+
+        try:
+            from scirius.utils import get_middleware_module
+            data.update(get_middleware_module('common').get_rest_ruleset(instance))
+        except AttributeError:
+            pass
         return data
 
     def to_internal_value(self, data):
@@ -91,7 +119,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":9,"name":"MyCreatedRuleset","descr":"","created_date":"2018-05-04T16:10:43.698843+02:00","updated_date":"2018-05-04T16:10:43.698852+02:00","need_test":true,"validity":true,"errors":"\"\"","rules_count":204,"sources":[1],"categories":[27]}
+        {"pk":9,"name":"MyCreatedRuleset","descr":"","created_date":"2018-05-04T16:10:43.698843+02:00","updated_date":"2018-05-04T16:10:43.698852+02:00","need_test":true,"validity":true,"errors":"\\"\\"","rules_count":204,"sources":[1],"categories":[27]}
 
     ==== POST ====\n
     Create a ruleset:\n
@@ -101,13 +129,20 @@ class RulesetViewSet(viewsets.ModelViewSet):
         HTTP/1.1 201 Created
         {"pk":12,"name":"SonicRuleset","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","need_test":true,"validity":true,"errors":"","rules_count":0,"sources":[1],"categories":[27]}
 
+    Copy a ruleset:\n
+        curl -k https://x.x.x.x/rest/rules/ruleset/<pk-ruleset>/copy/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST  -d '{"name": "copyRuleset1", "comment": "need a clone"}'
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"copy":"ok"}
+
     ==== PATCH ====\n
     Patch a ruleset:\n
         curl -k https://x.x.x.x/rest/rules/ruleset/<pk-ruleset>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"name": "PatchedSonicRuleset", "categories": [pk-category1, ..., pk-categoryN]}'
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":12,"name":"SonicRulesetPatched","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","need_test":false,"validity":true,"errors":"\"\"","rules_count":204,"sources":[1],"categories":[27,1]}
+        {"pk":12,"name":"SonicRulesetPatched","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","need_test":false,"validity":true,"errors":"\\"\\"","rules_count":204,"sources":[1],"categories":[27,1]}
 
     ==== PUT ====\n
     Replace a ruleset:\n
@@ -115,7 +150,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":12,"name":"SonicRulesetReplaced","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","need_test":false,"validity":true,"errors":"\"\"","rules_count":204,"sources":[1],"categories":[1]}
+        {"pk":12,"name":"SonicRulesetReplaced","descr":"","created_date":"2018-05-07T11:27:21.482840+02:00","updated_date":"2018-05-07T11:27:21.482853+02:00","need_test":false,"validity":true,"errors":"\\"\\"","rules_count":204,"sources":[1],"categories":[1]}
 
     ==== DELETE ====\n
     Delete a ruleset:\n
@@ -227,6 +262,26 @@ class RulesetViewSet(viewsets.ModelViewSet):
         self._update_or_partial_update(request, True)
         return super(RulesetViewSet, self).update(request, partial=True, *args, **kwargs)
 
+    @detail_route(methods=['post'])
+    def copy(self, request, pk):
+        data = request.data.copy()
+        ruleset = self.get_object()
+
+        comment = data.pop('comment', None)
+        copy_serializer = CopyRulesetSerializer(data=data)
+        copy_serializer.is_valid(raise_exception=True)
+
+        ruleset.copy(copy_serializer.validated_data['name'])
+
+        UserAction.create(
+                action_type='copy_ruleset',
+                comment=comment,
+                user=request.user,
+                ruleset=ruleset
+            )
+
+        return Response({'copy': 'ok'})
+
 
 class CategoryChangeSerializer(serializers.Serializer):
     ruleset = serializers.PrimaryKeyRelatedField(queryset=Ruleset.objects.all(), write_only=True)
@@ -240,7 +295,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('pk', 'name', 'descr', 'created_date', 'source')
 
 
-class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+class CategoryViewSet(SciriusReadOnlyModelViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -303,15 +358,196 @@ class RuleChangeSerializer(serializers.Serializer):
     comment = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
 
+class HitTimelineEntry(serializers.Serializer):
+    date = serializers.IntegerField(read_only=True)
+    hits = serializers.IntegerField(read_only=True)
+
+
+class ProbeEntry(serializers.Serializer):
+    probe = serializers.CharField(read_only=True)
+    hits = serializers.IntegerField(read_only=True)
+
+
 class RuleSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    hits = serializers.IntegerField(read_only=True)
+    timeline_data = HitTimelineEntry(many=True, read_only=True)
+    probes = ProbeEntry(many=True, read_only=True)
 
     class Meta:
         model = Rule
-        fields = ('pk', 'sid', 'category', 'msg', 'state', 'state_in_source', 'rev', 'content', \
-                'imported_date', 'updated_date')
+        fields = ('pk', 'sid', 'category', 'msg', 'state', 'state_in_source', 'rev', 'content',
+                  'imported_date', 'updated_date', 'created', 'updated', 'hits', 'timeline_data', 'probes')
+
+    def to_representation(self, instance):
+        data = super(RuleSerializer, self).to_representation(instance)
+        request = self.context['request']
+        highlight_str = request.query_params.get('highlight', u'false')
+        is_highlight = lambda value: bool(value) and value.lower() not in (u'false', u'0')
+        highlight = is_highlight(highlight_str)
+
+        if highlight is True:
+            data['content'] = SuriHTMLFormat(data['content'])
+
+        return data
 
 
-class RuleViewSet(viewsets.ReadOnlyModelViewSet):
+class ListFilter(filters.CharFilter):
+
+    def sanitize(self, value_list):
+        """
+        remove empty items in case of ?number=1,,2
+        """
+        return [v for v in value_list if v != u'']
+
+    def customize(self, value):
+        return value
+
+    def filter(self, qs, value):
+        multiple_vals = value.split(u",")
+        multiple_vals = self.sanitize(multiple_vals)
+        multiple_vals = map(self.customize, multiple_vals)
+        for val in multiple_vals:
+            fval = filters_fields.Lookup(val, 'icontains')
+            qs =  super(ListFilter, self).filter(qs, fval)
+        return qs
+
+
+class RuleFilter(filters.FilterSet):
+    min_created = filters.DateFilter(name="created", lookup_expr='gte')
+    max_created = filters.DateFilter(name="created", lookup_expr='lte')
+    min_updated = filters.DateFilter(name="updated", lookup_expr='gte')
+    max_updated = filters.DateFilter(name="updated", lookup_expr='lte')
+    msg = ListFilter(name="msg", lookup_expr='icontains')
+    content = ListFilter(name="content", lookup_expr='icontains')
+
+    class Meta:
+        model = Rule
+        fields = ['sid', 'category', 'msg', 'content', 'created', 'updated']
+
+
+class UserActionFilter(filters.FilterSet):
+    min_date = filters.DateFilter(name='date', lookup_expr='gte')
+    max_date = filters.DateFilter(name='date', lookup_expr='lte')
+    comment = ListFilter(name='comment', lookup_expr='icontains')
+
+    class Meta:
+        model = UserAction
+        fields = ['username', 'date', 'action_type', 'comment', 'user_action_objects__action_key', 'user_action_objects__action_value']
+
+
+def es_hits_params(request):
+    es_params = {}
+
+    # string args
+    for arg in ('hostname', 'qfilter'):
+        if arg in request.query_params:
+            es_params[arg] = request.query_params[arg]
+
+    # numeric args
+    for arg in ('from_date', 'interval'):
+        if arg in request.query_params:
+            es_params[arg] = int(request.query_params[arg])
+
+    if 'hostname' not in es_params:
+        es_params['hostname'] = '*'
+    return es_params
+
+
+class RuleHitsOrderingFilter(OrderingFilter):
+    def get_query_param(self, request, param):
+        value = request.query_params.get(param)
+        if value is not None:
+            try:
+                if ',' in value:
+                    values = [int(x) for x in value.split(',')]
+                    if param == 'hits_min':
+                        return max(values)
+                    else:
+                        return min(values)
+
+                value = int(value)
+            except ValueError:
+                value = None
+        return value
+
+    def _get_hits_order(self, request, order):
+        es_top_kwargs = {
+            'count': Rule.objects.count(),
+            'order': order
+        }
+        es_top_kwargs.update(es_hits_params(request))
+        try:
+            result = es_get_top_rules(request, **es_top_kwargs)
+        except ESError:
+            queryset = Rule.objects.order_by('sid')
+            queryset = queryset.annotate(hits=models.Value(0, output_field=models.IntegerField()))
+            queryset = queryset.annotate(hits=models.ExpressionWrapper(models.Value(0), output_field=models.IntegerField()))
+            return queryset.values_list('sid', 'hits')
+
+        result = map(lambda x: (x['key'], x['doc_count']), result)
+        return result
+
+    def _filter_min_max(self, request, queryset, hits_order):
+        hits_by_sid = dict(hits_order)
+
+        min_hits = self.get_query_param(request, 'hits_min')
+        if min_hits is not None:
+            queryset = filter(lambda x: hits_by_sid.get(x.sid, 0) >= min_hits, queryset)
+
+        max_hits = self.get_query_param(request, 'hits_max')
+        if max_hits is not None:
+            queryset = filter(lambda x: hits_by_sid.get(x.sid, 0) <= max_hits, queryset)
+
+        return queryset
+
+    def filter_queryset(self, request, queryset, view):
+        ordering = self.get_ordering(request, queryset, view)
+
+        if 'hits' in ordering or '-hits' in ordering:
+            if ordering[0] not in ('hits', '-hits'):
+                raise ParseError('hits ordering can only be the first ordering term')
+
+            hits_order = ordering[0]
+            ordering = ordering[1:]
+
+            if ordering:
+                queryset = queryset.order_by(*ordering)
+
+            # Sorting
+            order = 'asc' if hits_order == 'hits' else 'desc'
+            hits_order = self._get_hits_order(request, order)
+
+            queryset = self._filter_min_max(request, queryset, hits_order)
+
+            # Index rules by sid
+            rules = OrderedDict([(r.sid, r) for r in queryset])
+
+            queryset = []
+            for sid, count in hits_order:
+                try:
+                    queryset.append(rules.pop(sid))
+                except KeyError:
+                    pass
+
+            if order == 'desc':
+                queryset += rules.values()
+            else:
+                queryset = rules.values() + queryset
+
+        else:
+            if ordering:
+                queryset = queryset.order_by(*ordering)
+
+            if self.get_query_param(request, 'hits_min') is not None \
+                    or self.get_query_param(request, 'hits_max') is not None:
+                hits_order = self._get_hits_order(request, 'asc')
+                queryset = self._filter_min_max(request, queryset, hits_order)
+
+        return queryset
+
+
+class RuleViewSet(SciriusReadOnlyModelViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -320,14 +556,69 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":2404150,"sid":2404150,"category":27,"msg":"ET CNC Zeus Tracker Reported CnC Server group 1","state":true,"state_in_source":true,"rev":4983,"content":"alert ip $HOME_NET any -> [101.200.81.187,103.19.89.118,103.230.84.239,103.4.52.150,103.7.59.135] any (msg:\"ET CNC Zeus Tracker Reported CnC Server group 1\"; reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,zeustracker.abuse.ch; threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404150; rev:4983;)","imported_date":"2018-05-04T10:15:52.886070+02:00","updated_date":"2018-05-04T10:15:52.886070+02:00"}
+        {"pk":300000000,"sid":300000000,"category":{"pk":1403,"name":"Suricata Traffic ID ruleset Sigs","descr":"","created_date":"2018-07-18T13:54:05.045025+02:00","source":69},
+        "msg":"SURICATA TRAFFIC-ID: bing","state":true,"state_in_source":true,"rev":1,"content":"alert tls any any -> any any (msg:\"SURICATA TRAFFIC-ID: bing\"; tls_sni; content:\"bing.com\";
+        isdataat:!1,relative; flow:to_server,established; flowbits: set,traffic/id/bing; flowbits:set,traffic/label/search; noalert; sid:300000000; rev:1;)\\n","imported_date":"2018-07-18T13:54:05.153618+02:00","updated_date":"2018-07-18T13:54:05.153618+02:00"}
+
+    Show a rule and its none transformed content in html:\n
+        curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/\?highlight=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"pk":300000000,"sid":300000000,"category":{"pk":1403,"name":"Suricata Traffic ID ruleset Sigs","descr":"","created_date":"2018-07-18T13:54:05.045025+02:00","source":69},
+        "msg":"SURICATA TRAFFIC-ID: bing","state":true,"state_in_source":true,"rev":1,"content":"<div class=\"highlight\"><pre><span></span><span class=\"kt\">alert</span><span class=\"w\"> </span>
+        <span class=\"err\">tls</span><span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"o\">-&gt;</span>
+        <span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"err\">(</span><span class=\"k\">msg:</span>
+        <span class=\"s\">&quot;SURICATA TRAFFIC-ID: bing&quot;</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"err\">tls_sni</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">content:</span><span class=\"s\">&quot;bing.com&quot;</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">isdataat:</span><span class=\"err\">!</span>
+        <span class=\"m\">1</span><span class=\"err\">,</span><span class=\"na\">relative</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">flow:</span><span class=\"na\">to_server</span>
+        <span class=\"err\">,</span><span class=\"na\">established</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">flow</span><span class=\"err\">bits</span><span class=\"k\">:</span>
+        <span class=\"w\"> </span><span class=\"na\">set</span><span class=\"err\">,traffic/</span><span class=\"k\">id</span><span class=\"err\">/bing</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">flow</span><span class=\"err\">bits</span><span class=\"k\">:</span><span class=\"na\">set</span><span class=\"err\">,traffic/label/search</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">noalert</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">sid:</span><span class=\"m\">300000000</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">rev:</span><span class=\"m\">1</span><span class=\"p\">;</span><span class=\"err\">)</span><span class=\"w\"></span>\\n</pre></div>\\n","imported_date":"2018-07-18T13:54:05.153618+02:00","updated_date":"2018-07-18T13:54:05.153618+02:00"}
 
     Show a transformed rule content:\n
         curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/content/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
-        {"2":"drop ip $HOME_NET any -> [101.200.81.187,103.19.89.118,103.230.84.239,103.4.52.150,103.7.59.135] any (msg:\"ET CNC Zeus Tracker Reported CnC Server group 1\"; reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,zeustracker.abuse.ch; threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404150; rev:4984;)"}
+        {"2":"drop ip $HOME_NET any -> [101.200.81.187,103.19.89.118,103.230.84.239,103.4.52.150,103.7.59.135] any (msg:\\"ET CNC Zeus Tracker Reported CnC Server group 1\\"; reference:url,doc.emergingthreats.net/bin/view/Main/BotCC; reference:url,zeustracker.abuse.ch; threshold: type limit, track by_src, seconds 3600, count 1; flowbits:set,ET.Evil; flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404150; rev:4984;)"}
+
+    Get rule status in its rulesets:\n
+        curl -v -k https://x.x.x.x/rest/rules/rule/<sid-rule>/status/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"1":{"active":true,"valid":{"status":true,"errors":""},"name":"Ruleset1","transformations":{"action":"reject","lateral":null,"target":null}},"2":{"active":true,"valid":{"status":true,"errors":""},"name":"copyRuleset1","transformations":{"action":"reject","lateral":null,"target":null}},"4":{"active":true,"valid":{"status":true,"errors":""},"name":"copyRuleset123","transformations":{"action":"reject","lateral":null,"target":null}}}
+
+    Show a transformed rule content in html:\n
+        curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/content/\?highlight=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Get rule's comments:\n
+        curl -v -k https://x.x.x.x/rest/rules/rule/<sid-rule>/comment/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"1":"<div class=\"highlight\"><pre><span></span><span class=\"kt\">drop</span><span class=\"w\"> </span><span class=\"kc\">ip</span><span class=\"w\"> </span>
+        <span class=\"nv\">$HOME_NET</span><span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"o\">-&gt;</span><span class=\"w\"> </span>
+        <span class=\"err\">[</span><span class=\"nv\">109.196.130.50</span><span class=\"err\">,</span><span class=\"nv\">151.13.184.200</span><span class=\"err\">]</span>
+        <span class=\"w\"> </span><span class=\"nv\">any</span><span class=\"w\"> </span><span class=\"err\">(</span><span class=\"k\">msg:</span>
+        <span class=\"s\">&quot;ET CNC Shadowserver Reported CnC Server IP group 1&quot;</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">reference:</span>
+        <span class=\"nv\">url</span><span class=\"p\">,</span><span class=\"na\">doc.emergingthreats.net/bin/view/Main/BotCC</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">reference:</span><span class=\"nv\">url</span><span class=\"p\">,</span><span class=\"na\">www.shadowserver.org</span><span class=\"p\">;</span>
+        <span class=\"w\"> </span><span class=\"k\">threshold:</span><span class=\"w\"> </span><span class=\"na\">type</span><span class=\"w\"> </span><span class=\"na\">limit</span>
+        <span class=\"err\">,</span><span class=\"w\"> </span><span class=\"na\">track</span><span class=\"w\"> </span><span class=\"na\">by_src</span><span class=\"err\">,</span>
+        <span class=\"w\"> </span><span class=\"na\">seconds</span><span class=\"w\"> </span><span class=\"m\">3600</span><span class=\"err\">,</span><span class=\"w\"> </span>
+        <span class=\"na\">count</span><span class=\"w\"> </span><span class=\"m\">1</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">flow</span>
+        <span class=\"err\">bits</span><span class=\"k\">:</span><span class=\"na\">set</span><span class=\"err\">,ET.Evil</span><span class=\"p\">;</span><span class=\"w\"> </span>
+        <span class=\"k\">flow</span><span class=\"err\">bits</span><span class=\"k\">:</span><span class=\"na\">set</span><span class=\"err\">,ET.BotccIP</span><span class=\"p\">;</span>
+        <span class=\"w\"> </span><span class=\"k\">classtype:</span><span class=\"err\">trojan-activity</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">sid:</span>
+        <span class=\"m\">2404000</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">rev:</span><span class=\"m\">5032</span><span class=\"p\">;</span>
+        <span class=\"err\">)</span><span class=\"w\"></span>\\n</pre></div>\\n"}
+
+    Filter action/reject on all transformed rules:\n
+        curl -k https://x.x.x.x/rest/rules/rule/transformation/\?transfo_type\=action\&transfo_value\=reject -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     ==== POST ====\n
     Disable a rule in a ruleset. Disabling a rule is equivalent to transform this rule to SUPPRESSED/SUPPRESSED:\n
@@ -344,25 +635,184 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
         HTTP/1.1 200 OK
         {"enable":"ok"}
 
+    Comment a rule:\n
+        curl -v -k https://x.x.x.x/rest/rules/rule/<sid-rule>/comment/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"comment": "comment this rule"}'
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"comment":"ok"}
+
+    Toggle availabililty:\n
+        curl -v -k https://x.x.x.x/rest/rules/rule/<sid-rule>/toggle_availability/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"comment": "toggle rule"}'
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"toggle_availability":"ok"}
+
     =============================================================================================================================================================
     """
     queryset = Rule.objects.all()
     serializer_class = RuleSerializer
     ordering = ('sid',)
-    ordering_fields = ('sid', 'category', 'msg', 'imported_date', 'updated_date')
-    filter_fields = ('sid', 'category', 'msg', 'content')
+    ordering_fields = ('sid', 'category', 'msg', 'imported_date', 'updated_date', 'created', 'updated', 'hits')
+    filter_class = RuleFilter
+    filter_backends = (DjangoFilterBackend, SearchFilter, RuleHitsOrderingFilter)
     search_fields = ('sid', 'msg', 'content')
 
-    @detail_route()
+    @list_route(methods=['get'])
+    def transformation(self, request):
+        copy_params = request.query_params.dict()
+        key_str = copy_params.pop('transfo_type', None)
+        value_str = copy_params.pop('transfo_value', None)
+
+        errors = {}
+        if key_str is None:
+            errors['transfo_type'] = ['This field is required.']
+
+        if value_str is None:
+            errors['transfo_value'] = ['This field is required.']
+
+        if len(errors) > 0:
+            raise serializers.ValidationError(errors)
+
+        params = {}
+        if key_str:
+            params['key'] = key_str
+        if value_str:
+            params['value'] = value_str
+
+        # Check wrongs filters types (other than type/value)
+        if len(copy_params) > 0:
+            params_str = ', '.join(copy_params.keys())
+            raise serializers.ValidationError({'filters': ['Wrong filters: "%s"' % params_str]})
+
+        # Check key/value filters
+        # Key
+        if key_str:
+            if key_str not in Transformation.AVAILABLE_MODEL_TRANSFO.keys():
+                raise serializers.ValidationError({'filters': ['Wrong filter type "%s".' % key_str]})
+
+            # Value
+            if value_str and value_str not in Transformation.AVAILABLE_MODEL_TRANSFO[key_str]:
+                raise serializers.ValidationError({'filters': ['Wrong filter value "%s" for key "%s".' % (value_str, key_str)]})
+
+        res = {}
+        Rule.enable_cache()
+
+        for ruleset in Ruleset.objects.all():
+            trans_rules = RuleTransformation.objects.filter(ruleset=ruleset, **params)
+            trans_cats = CategoryTransformation.objects.filter(ruleset=ruleset, **params)
+            trans_rulesets = RulesetTransformation.objects.filter(ruleset_transformation=ruleset, **params)
+
+            all_rules = set()
+            key = Transformation.Type(key_str)
+            value = None
+
+            if key == Transformation.ACTION:
+                value = Transformation.ActionTransfoType(value_str)
+            elif key == Transformation.LATERAL:
+                value = Transformation.LateralTransfoType(value_str)
+            elif key == Transformation.TARGET:
+                value = Transformation.TargetTransfoType(value_str)
+
+            if ruleset.pk not in res:
+                res[ruleset.pk] = {'name': ruleset.name,
+                                   'transformation': {'transfo_key': key_str, 'transfo_value': value_str},
+                                   'rules': []
+                                   }
+
+            for trans in trans_rules:
+                all_rules.add(trans.rule_transformation.pk)
+
+            for trans in trans_cats:
+                category = trans.category_transformation
+                for rule in category.rule_set.all():
+                    rule_trans_value = rule.get_transformation(ruleset, key=key)
+                    if rule_trans_value is None or rule_trans_value == value:
+                        all_rules.add(rule.sid)
+
+            if trans_rulesets:
+                for category in ruleset.categories.all():
+                    trans_cat = CategoryTransformation.objects.filter(ruleset=ruleset, category_transformation=category)
+
+                    if len(trans_cat) == 0:
+                        for rule in category.rule_set.all():
+                            rule_trans_value = rule.get_transformation(ruleset, key=key)
+                            if rule_trans_value is None or rule_trans_value == value:
+                                all_rules.add(rule.sid)
+                    else:
+                        for trans in trans_cat:
+                            for rule in category.rule_set.all():
+                                rule_trans_value = rule.get_transformation(ruleset, key=key)
+                                if trans.key == key and trans.value == value:
+                                    if rule_trans_value is None or rule_trans_value == value:
+                                        all_rules.add(rule.sid)
+                                else:
+                                    if rule_trans_value == value:
+                                        all_rules.add(rule.sid)
+
+            res[ruleset.pk]['rules'] = list(all_rules)
+            res[ruleset.pk]['rules_count'] = len(all_rules)
+
+        Rule.disable_cache()
+        return Response(res)
+
+    @detail_route(methods=['get'])
     def content(self, request, pk):
         rule = self.get_object()
         rulesets = Ruleset.objects.filter(categories__rule=rule)
         res = {}
 
+        highlight_str = request.query_params.get('highlight', u'false')
+        is_highlight = lambda value: bool(value) and value.lower() not in (u'false', u'0')
+        highlight = is_highlight(highlight_str)
+
         for ruleset in rulesets:
-            res[ruleset.pk] = rule.generate_content(ruleset)
+            content = rule.generate_content(ruleset)
+            res[ruleset.pk] = content if not highlight else SuriHTMLFormat(content)
 
         return Response(res)
+
+    @detail_route(methods=['post', 'get'])
+    def comment(self, request, pk):
+        if request.method == 'POST':
+            rule = self.get_object()
+            comment = request.data.get('comment', None)
+
+            comment_serializer = CommentSerializer(data={'comment': comment})
+            comment_serializer.is_valid(raise_exception=True)
+
+            UserAction.create(
+                    action_type='comment_rule',
+                    comment=comment,
+                    user=request.user,
+                    rule=rule
+                )
+            return Response({'comment': 'ok'})
+        elif request.method == 'GET':
+            rule = self.get_object()
+            uas = rule.get_comments()
+            comments = [ua.comment for ua in uas]
+            return Response(comments)
+
+    @detail_route(methods=['post'])
+    def toggle_availability(self, request, pk):
+        rule = self.get_object()
+        comment = request.data.get('comment', None)
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        rule.toggle_availability()
+
+        UserAction.create(
+                action_type='toggle_availability',
+                comment=comment,
+                user=request.user,
+                rule=rule
+            )
+
+        return Response({'toggle_availability': 'ok'})
 
     @detail_route(methods=['post'])
     def enable(self, request, pk):
@@ -386,6 +836,79 @@ class RuleViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action in ('enable', 'disable'):
             return RuleChangeSerializer
         return RuleSerializer
+
+    @detail_route(methods=['get'])
+    def status(self, request, pk):
+        rule = self.get_object()
+
+        res = {}
+        for ruleset in Ruleset.objects.all():
+            res[ruleset.pk] = {}
+            res[ruleset.pk]['name'] = ruleset.name
+            res[ruleset.pk]['active'] = rule.is_active(ruleset)
+            res[ruleset.pk]['valid'] = rule.test(ruleset)
+
+            res[ruleset.pk]['transformations'] = {}
+            for key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
+                trans = rule.get_transformation(key=key, ruleset=ruleset, override=True)
+                res[ruleset.pk]['transformations'][key.value] = trans.value if trans else None
+
+        return Response(res)
+
+    def _scirius_hit(self, r):
+        timeline = []
+        for entry in r['timeline']['buckets']:
+            timeline.append({
+                'date': entry['key'],
+                'hits': entry['doc_count']
+            })
+
+        probes = []
+        for entry in r['probes']['buckets']:
+            probes.append({
+                'probe': entry['key'],
+                'hits': entry['doc_count']
+            })
+
+        return {
+            'hits': r['doc_count'],
+            'timeline_data': timeline,
+            'probes': probes
+        }
+
+    def _add_hits(self, request, data):
+        sids = [str(rule['sid']) for rule in data]
+
+        ## reformat ES's output
+        es_params = es_hits_params(request)
+        es_params['host'] = es_params.pop('hostname')
+        try:
+            result = es_get_sigs_list_hits(request, sids, **es_params)
+        except ESError:
+            return data
+
+        hits = {}
+        for r in result:
+            hits[r['key']] = self._scirius_hit(r)
+
+        for rule in data:
+            sid = rule['sid']
+            if sid in hits:
+                rule.update(hits[sid])
+            else:
+                rule.update({
+                    'hits': 0,
+                    'timeline_data': [],
+                    'probes': []
+                })
+        return data
+
+    def list(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        data = self._add_hits(request, serializer.data)
+        return self.get_paginated_response(serializer.data)
 
 
 class BaseTransformationViewSet(viewsets.ModelViewSet):
@@ -413,6 +936,17 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        # Check that transformation is allowed
+        if isinstance(self, RuleTransformationViewSet):
+            rule = serializer.validated_data['rule_transformation']
+            transfo_type = Transformation.Type(key)
+            choices_ = rule.get_transformation_choices(transfo_type)
+            choices = [choice[0] for choice in choices_]
+
+            if value not in choices:
+                raise serializers.ValidationError({'transfo_value': '"%s" is not a valid choice.' % value})
+
         serializer.save()
 
         comment_serializer = CommentSerializer(data={'comment': comment})
@@ -489,6 +1023,11 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         for key, value in dict(fields).iteritems():
             if value in serializer.validated_data:
                 fields[key] = serializer.validated_data[value]
+            else:
+                if partial is True:
+                    val = getattr(instance, value, None)
+                    if val is not None:
+                        fields[key] = val
 
         fields['comment'] = comment_serializer.validated_data['comment']
         fields['action_type'] = params['action_type']
@@ -537,7 +1076,7 @@ class RulesetTransformationViewSet(BaseTransformationViewSet):
         HTTP/1.1 201 Created
         {"pk":5,"ruleset":2,"transfo_type":"target","transfo_value":"src"}
 
-    Create a ruleset TARGET transformation (yes / auto / no):\n
+    Create a ruleset LATERAL transformation (yes / auto / no):\n
         curl -k https://x.x.x.x/rest/rules/transformation/ruleset/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>, "transfo_type": "lateral", "transfo_value": "yes"}'
 
     ==== PATCH ====\n
@@ -705,6 +1244,13 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
+    Show all transformed rules:\n
+        curl -k https://x.x.x.x/rest/rules/transformation/rule/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"count":1,"next":null,"previous":null,"results":[{"pk":4,"ruleset":7,"rule":2404000,"transfo_type":"action","transfo_value":"drop"}]}
+
     Show a rule transformation:\n
         curl -k https://x.x.x.x/rest/rules/transformation/rule/<pk-transfo>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
@@ -870,7 +1416,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         try:
             source.handle_uploaded_file(request.FILES['file'])
         except Exception as error:
-            raise ServiceUnavailableException(error)
+            raise serializers.ValidationError({'upload': [str(error)]})
 
         UserAction.create(
                 action_type='upload_source',
@@ -970,8 +1516,8 @@ class PublicSourceSerializer(BaseSourceSerializer):
 
         try:
             public_sources = get_public_sources(False)
-        except:
-            raise ServiceUnavailableException()
+        except Exception as e:
+            raise serializers.ValidationError({'list': [str(e)]})
 
         if source_name not in public_sources['sources']:
             raise exceptions.NotFound(detail='Unknown public source "%s"' % source_name)
@@ -1035,9 +1581,9 @@ class PublicSourceViewSet(BaseSourceViewSet):
         {"pk":4,"name":"sonic public source","created_date":"2018-05-07T11:54:56.450782+02:00","updated_date":"2018-05-07T11:54:56.450791+02:00","method":"http","datatype":"sig","uri":"https://raw.githubusercontent.com/jasonish/suricata-trafficid/master/rules/traffic-id.rules","cert_verif":true,"cats_count":0,"rules_count":0,"public_source":"oisf/trafficid"}
 
     Update public source:\n
-        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/\\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
-        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/\\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
     Return:\n
         HTTP/1.1 200 OK
@@ -1102,9 +1648,9 @@ class SourceViewSet(BaseSourceViewSet):
         {"pk":5,"name":"sonic Custom source","created_date":"2018-05-07T12:01:00.658118+02:00","updated_date":"2018-05-07T12:01:00.658126+02:00","method":"local","datatype":"sigs","uri":null,"cert_verif":true,"cats_count":0,"rules_count":0,"authkey":"123456789"}
 
     Update custom (only for {method: http}):\n
-        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/update_source/\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/update_source/\\?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
-        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/update_source/\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
+        curl -k https://x.x.x.x/rest/rules/source/<pk-source>/update_source/\\?async=false -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
     Return:\n
         HTTP/1.1 200 OK
@@ -1151,7 +1697,7 @@ class UserActionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserAction
-        fields = '__all__'
+        fields = ('pk', 'action_type', 'date', 'comment', 'user', 'username', 'ua_objects')
 
     def to_representation(self, instance):
         from scirius.utils import get_middleware_module
@@ -1171,10 +1717,13 @@ class UserActionSerializer(serializers.ModelSerializer):
                 klass = ua_obj.content_type.model_class()
                 content['type'] = klass.__name__
 
-                if klass.__name__ != 'Rule':
-                    content['pk'] = ua_obj.object_id
-                else:
-                    content['sid'] = ua_obj.object_id
+                # Check existance of content_object
+                sub_instances = klass.objects.filter(pk=ua_obj.object_id)
+                if len(sub_instances) > 0:
+                    if klass.__name__ != 'Rule':
+                        content['pk'] = ua_obj.object_id
+                    else:
+                        content['sid'] = ua_obj.object_id
 
             content['value'] = ua_obj.action_value
             all_content[ua_obj.action_key] = content
@@ -1187,37 +1736,211 @@ class UserActionSerializer(serializers.ModelSerializer):
         return data
 
 
-class UserActionViewSet(viewsets.ReadOnlyModelViewSet):
+class UserActionViewSet(SciriusReadOnlyModelViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
     Show an user action :\n
-        curl -k https://x.x.x.x/rest/history/<pk-useraction>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/history/<pk-useraction>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
         {"id":612,"action_type":"disable_category","date":"2018-05-14T16:13:24.711372+02:00","comment":null,"username":"scirius","description":"scirius has disabled category emerging-scada in ruleset SonicRulesetOther","user":1,"title":"Disable Category","description_raw":"{user} has disabled category {category} in ruleset {ruleset}","ua_objects":{"category":{"pk":147,"type":"Category","value":"emerging-scada"},"ruleset":{"pk":65,"type":"Ruleset","value":"SonicRulesetOther"}}}
 
     Ordering by username ASC:\n
-        curl -k https://x.x.x.x/rest/rules/history/?ordering=username -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k "https://x.x.x.x/rest/rules/history/?ordering=username" -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Ordering by username DESC:\n
-        curl -k https://x.x.x.x/rest/rules/history/?ordering=-username -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k "https://x.x.x.x/rest/rules/history/?ordering=-username" -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Filtering by username and action_type:\n
-        curl -k https://x.x.x.x/rest/rules/history/?date=&username=scirius&user_action_objects__action_key=&action_type=edit_ruleset -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k "https://x.x.x.x/rest/rules/history/?date=&username=scirius&user_action_objects__action_key=&action_type=edit_ruleset" -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Ordering & Filtering:\n
-        curl -k https://x.x.x.x/rest/rules/history/?action_type=edit_ruleset&date=&ordering=username&user_action_objects__action_key=&username=scirius -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k "https://x.x.x.x/rest/rules/history/?action_type=edit_ruleset&date=&ordering=username&user_action_objects__action_key=&username=scirius" -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Get list of action type:\n
+        curl -k https://x.x.x.x/rest/rules/history/get_action_type_list/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"action_type_list":{"create_appliance":"Create Appliance","delete_alerts":"Delete Alerts","delete_threshold":"Delete Threshold","transform_ruleset":"Transform Ruleset","create_source":"Create Source",
+        "comment_rule":"Comment Rule","enable_category":"Enable Category","delete_ruleset":"Delete Ruleset","system_settings":"Edit System Settings","toggle_availability":"Toggle Availability","login":"Login",
+        "edit_suricata":"Edit Suricata","delete_transform_category":"Delete Category Transformation","delete_transform_ruleset":"Deleted Ruleset Transformation","delete_transform_rule":"Delete Rule Transformation",
+        "create_network_def":"Create Network Definition","create_threshold":"Create Threshold","edit_threshold":"Edit Threshold","delete_network_def":"Delete Network Definition","create_ruleset":"Create Ruleset",
+        "transform_category":"Transform Category","transform_rule":"Transform Rule","edit_rule_filter":"Edit rule filter","update_source":"Update Source","upload_source":"Upload Source","suppress_rule":"Suppress Rule",
+        "create_template":"Create Template","delete_suppress_rule":"Delete Suppress Rule","edit_source":"Edit Source","logout":"Logout","delete_appliance":"Delete Appliance","delete_template":"Delete Template",
+        "edit_appliance":"Edit Appliance","edit_template":"Edit Template","create_suricata":"Create Suricata","disable_category":"Disable Category","disable_rule":"Disable Rule","enable_source":"Enable Source",
+        "edit_network_def":"Edit Network Definition","delete_source":"Delete Source","enable_rule":"Enable Rule","disable_source":"Disable Source","edit_ruleset":"Edit Ruleset","delete_rule_filter":"Delete rule filter",
+        "import_network_def":"Import Network Definition","copy_ruleset":"Copy Ruleset","create_rule_filter":"Create rule filter"}}
 
     =============================================================================================================================================================
     """
 
     queryset = UserAction.objects.all()
     serializer_class = UserActionSerializer
-    filter_fields = ('date', 'username', 'user_action_objects__action_key', 'action_type')
-    ordering = ('pk', 'date', 'username', 'user_action_objects__action_key', 'action_type')
-    ordering_fields = ('pk', 'date', 'username', 'user_action_objects__action_key', 'action_type')
+    ordering = ('-pk',)
+    ordering_fields = ('pk', 'date', 'username', 'action_type')
+    filter_class = UserActionFilter
+
+    @list_route(methods=['get'])
+    def get_action_type_list(self, request):
+        from scirius.utils import get_middleware_module
+        actions_dict = get_middleware_module('common').get_user_actions_dict()
+
+        res = OrderedDict()
+        for key, value in actions_dict.iteritems():
+            res.update({key: value['title']})
+
+        return Response({'action_type_list': res})
+
+
+class ChangelogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SourceUpdate
+        fields = ('pk', 'source', 'created_date', 'data', 'version', 'changed',)
+
+    def to_representation(self, instance):
+        data = super(ChangelogSerializer, self).to_representation(instance)
+        data['data'] = instance.diff()
+        return data
+
+
+class ChangelogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    =============================================================================================================================================================
+    Show all Changelogs from all sources:\n
+        curl -k https://x.x.x.x/rest/rules/changelog/source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"count":4,"next":null,"previous":null,"results":[{"pk":1,"source":1,"created_date":"2018-07-03T15:20:59.168931Z","data":{"deleted":[],"date":"2018-07-03T15:20:59.168931Z",
+        "updated":[{"msg":"SURICATA TRAFFIC-ID: Debian APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000032,"pk":300000032},
+        {"msg":"SURICATA TRAFFIC-ID: Ubuntu APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000033,"pk":300000033}],"added":[],"stats":{"deleted":0,"updated":2,"added":0}},
+        "version":"9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6","changed":2},{"pk":2,"source":2,"created_date":"2018-07-03T15:25:24.449902Z","data":{"deleted":[],
+        "date":"2018-07-03T15:25:24.449902Z","updated":[],"added":[],"stats":{"deleted":0,"updated":0,"added":0}},"version":"fbae31b8d3a12e1d603e8ce64e7ae0f4f0cff130","changed":0},
+        {"pk":3,"source":1,"created_date":"2018-07-03T15:25:25.376499Z","data":{"deleted":[],"date":"2018-07-03T15:25:25.376499Z","updated":[{"msg":"SURICATA TRAFFIC-ID: Debian APT-GET",
+        "category":"Suricata Traffic ID ruleset Sigs","sid":300000032,"pk":300000032},{"msg":"SURICATA TRAFFIC-ID: Ubuntu APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000033,
+        "pk":300000033}],"added":[],"stats":{"deleted":0,"updated":2,"added":0}},"version":"9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6","changed":2},{"pk":4,"source":1,"created_date":"2018-07-03T17:14:02.359963Z",
+        "data":{"deleted":[],"date":"2018-07-03T17:14:02.359963Z","updated":[{"msg":"SURICATA TRAFFIC-ID: Debian APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000032,"pk":300000032},
+        {"msg":"SURICATA TRAFFIC-ID: Ubuntu APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000033,"pk":300000033}],"added":[],"stats":{"deleted":0,"updated":2,"added":0}},
+        "version":"9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6","changed":2}]}
+
+    Show changelogs filter by source:\n
+        curl -k https://x.x.x.x/rest/rules/changelog/source/\?source\=2 -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Show changelogs filter by version:\n
+        curl -k https://x.x.x.x/rest/rules/changelog/source/\?version\=9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6 -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    =============================================================================================================================================================
+    """
+    serializer_class = ChangelogSerializer
+    queryset = SourceUpdate.objects.all()
+    filter_fields = ('source', 'version')
+    ordering = ('-pk',)
+    ordering_fields = ('pk', 'source', 'version',)
+
+
+class SystemSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SystemSettings
+        fields = '__all__'
+
+
+class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show system settings:\n
+        curl -k https://x.x.x.x/rest/rules/system_settings/1/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    ==== PUT/PATCH ====\n
+        curl -k https://x.x.x.x/rest/rules/system_settings/1/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PUT -d '{"use_http_proxy":false,"http_proxy":"","https_proxy":"","use_elasticsearch":true,"custom_elasticsearch":false,"elasticsearch_url":"http://elasticsearch:9200/"}'
+        curl -k https://x.x.x.x/rest/rules/system_settings/1/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"use_http_proxy":false,"http_proxy":"","https_proxy":"","use_elasticsearch":true,"custom_elasticsearch":false,"elasticsearch_url":"http://elasticsearch:9200/"}'
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"id":1,"use_http_proxy":false,"http_proxy":"","https_proxy":"","use_elasticsearch":true,"custom_elasticsearch":false,"elasticsearch_url":"http://elasticsearch:9200/"}
+
+    =============================================================================================================================================================
+    """
+    permission_classes = (IsAdminUser,)
+    serializer_class = SystemSettingsSerializer
+    queryset = SystemSettings.objects.all()
+
+    def get_object(self):
+        obj = get_system_settings()
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    def _update_or_partial_update(self, request):
+        data = request.data.copy()
+        comment = data.pop('comment', None)
+
+        # because of rest website UI
+        if isinstance(comment, list):
+            comment = comment[0]
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        UserAction.create(
+                action_type='system_settings',
+                comment=comment_serializer.validated_data['comment'],
+                user=request.user
+        )
+
+    def update(self, request, *args, **kwargs):
+        self._update_or_partial_update(request)
+        return super(SystemSettingsViewSet, self).update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        self._update_or_partial_update(request)
+        return super(SystemSettingsViewSet, self).update(request, partial=True, *args, **kwargs)
+
+
+class HuntFilterAPIView(APIView):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Get all hunt filters:\n
+        curl -k https://x.x.x.x/rest/rules/hunt-filter/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        [{"filterType":"select","filterValues":[{"id":"untagged","title":"Untagged"},{"id":"relevant","title":"Relevant"},
+        {"id":"informational","title":"Informational"}],"placeholder":"Filter hits by Tag","id":"alert.tag","title":"Tag"},
+        {"filterType":"select","filterValues":[{"id":"Probe1","title":"Probe1"}],"placeholder":"Filter hits by Probe","id":"probe","title":"Probe"},
+        {"placeholder":"Minimum Hits Count","title":"Hits min","filterType":"integer","id":"hits_min","queryType":"rest"},
+        {"placeholder":"Maximum Hits Count","title":"Hits max","filterType":"integer","id":"hits_max","queryType":"rest"},
+        {"placeholder":"Filter by Message","title":"Message","filterType":"text","id":"msg","queryType":"filter"},
+        {"placeholder":"Filter by Content","title":"Content","filterType":"text","id":"search","queryType":"rest"},
+        {"placeholder":"Filter by Signature","title":"Signature ID","filterType":"text","id":"sid","queryType":"filter"}]
+
+    =============================================================================================================================================================
+    """
+
+    def get(self, request, format=None):
+        from scirius.utils import get_middleware_module
+        filters = get_middleware_module('common').get_hunt_filters()
+        return Response(filters)
+
+
+def get_custom_urls():
+    urls = []
+    url_ = url(r'rules/system_settings/$', SystemSettingsViewSet.as_view({
+        'get': 'retrieve',
+        'put': 'update',
+        'patch': 'partial_update',
+        }), name='systemsettings')
+
+    urls.append(url_)
+
+    url_ = url(r'rules/hunt-filter/$', HuntFilterAPIView.as_view(), name='hunt_filter')
+    urls.append(url_)
+    return urls
 
 
 router = DefaultRouter()
@@ -1230,3 +1953,6 @@ router.register('rules/transformation/ruleset', RulesetTransformationViewSet)
 router.register('rules/transformation/category', CategoryTransformationViewSet)
 router.register('rules/transformation/rule', RuleTransformationViewSet)
 router.register('rules/history', UserActionViewSet)
+router.register('rules/changelog/source', ChangelogViewSet)
+router.register('rules/system_settings', SystemSettingsViewSet)
+router.register('rules/processing-filter', RuleProcessingFilterViewSet)

@@ -27,3 +27,17 @@ class SciriusUser(models.Model):
 
     user = models.OneToOneField(User)
     timezone = models.CharField(max_length=40, choices = TIMEZONES)
+
+    def to_dict(self):
+        return {
+                  "pk": self.pk,
+                  "timezone": self.timezone,
+                  "username": self.user.username,
+                  "first_name": self.user.first_name,
+                  "last_name": self.user.last_name,
+                  "is_staff": self.user.is_staff,
+                  "is_active": self.user.is_active,
+                  "is_superuser": self.user.is_superuser,
+                  "email": self.user.email,
+                  "date_joined": self.user.date_joined
+                }

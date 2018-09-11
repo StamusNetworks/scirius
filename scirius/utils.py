@@ -102,6 +102,8 @@ def scirius_render(request, template, context):
         context['suricata_stats'] = 1
     if settings.USE_LOGSTASH_STATS:
         context['logstash_stats'] = 1
+    if settings.HAVE_NETINFO_AGG:
+        context['netinfo_agg'] = 1
     if gsettings.use_elasticsearch:
         context['elasticsearch'] = 1
         if settings.USE_KIBANA:

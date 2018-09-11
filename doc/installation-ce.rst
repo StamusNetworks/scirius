@@ -88,6 +88,13 @@ your ``suricata.yaml`` file ::
  rule-files:
   - scirius.rules
 
+To use the `Use IP reputation instead of group` feature you also need to have ::
+
+ reputation-categories-file: /path/to/rules/scirius-categories.txt
+ default-reputation-path: /path/to/rules
+ reputation-files:
+  - scirius-iprep.list
+
 To interact with Scirius CE, you need to detect when ``/path/to/rules/scirius.reload`` file
 are created, initiate a reload or restart of Suricata when it is the case and delete the
 reload file once this is done.

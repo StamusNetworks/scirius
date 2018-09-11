@@ -988,7 +988,7 @@ IPPAIR_NETINFO_ALERTS_COUNT = """
           "aggs": {
             "net_src": {
               "terms": {
-                "field": "alert.source.net_info.{{ keyword }}",
+                "field": "alert.source.net_info_agg.{{ keyword }}",
                 "size": 1,
                 "order": {
                   "_count": "desc"
@@ -1006,7 +1006,7 @@ IPPAIR_NETINFO_ALERTS_COUNT = """
               "aggs": {
                 "net_dest": {
                   "terms": {
-                    "field": "alert.target.net_info.{{ keyword }}",
+                    "field": "alert.target.net_info_agg.{{ keyword }}",
                     "size": 1,
                     "order": {
                       "_count": "desc"
@@ -1067,7 +1067,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
           "aggs": {
             "net_src": {
               "terms": {
-                "field": "alert.source.net_info.{{ keyword }}",
+                "field": "alert.source.net_info_agg.{{ keyword }}",
                 "size": 1,
                 "order": {
                   "_count": "desc"
@@ -1085,7 +1085,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
               "aggs": {
                 "net_dest": {
                   "terms": {
-                    "field": "alert.target.net_info.{{ keyword }}",
+                    "field": "alert.target.net_info_agg.{{ keyword }}",
                     "size": 1,
                     "order": {
                       "_count": "desc"
@@ -1136,7 +1136,7 @@ ALERTS_TAIL = """
             }
         ,{
             "query_string": {
-              "query": "event_type:alert AND alert.target.ip:* {{ query_filter|safe }}",
+              "query": "event_type:alert {{ target_only }} {{ query_filter|safe }}",
               "analyze_wildcard": true
             }
         }
@@ -1180,6 +1180,158 @@ SURICATA_LOGS_TAIL = """
 }
 """
 
+
+TOP_ALERTS = """
+{
+  "size": 0,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "@timestamp": {
+              "gte": {{ from_date }}
+            }
+          }
+        }, {
+              "query_string": {
+                "query": "event_type:alert {{ query_filter|safe }}",
+                "analyze_wildcard": true
+           }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "alerts": {
+      "terms": {
+        "field": "alert.signature_id",
+        "size": {{ count }},
+        "order": {
+          "_count": "{{ order }}"
+        }
+      },
+      "aggs": {
+        "timeline": {
+          "date_histogram": {
+            "field": "@timestamp",
+            "interval": "{{ interval }}s",
+            "min_doc_count": 0
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
+SIGS_LIST_HITS = """
+{
+  "size": 0,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "@timestamp": {
+              "gte": {{ from_date }}
+            }
+          }
+        }, {
+              "query_string": {
+                "query": "event_type:alert {{ query_filter|safe }}",
+                "analyze_wildcard": true
+           }
+        } , {
+            "constant_score" : {
+                "filter" : {
+                    "terms" : { 
+                        "alert.signature_id" : [{{ sids }}]
+                     }
+                }
+            }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "alerts": {
+      "terms": {
+        "field": "alert.signature_id",
+        "size": {{ count }},
+        "min_doc_count": 1
+      },
+      "aggs": {
+        "timeline": {
+          "date_histogram": {
+            "field": "@timestamp",
+            "interval": "{{ interval }}s",
+            "min_doc_count": 0
+          }
+        },
+        "probes": {
+           "terms": {
+               "field": "{{ hostname }}.{{ keyword }}",
+               "size": 10,
+               "min_doc_count": 1
+           }
+        }
+      }
+    }
+  }
+}
+"""
+
+POSTSTATS_SUMMARY = """
+{
+  "size": 0,
+  "aggs": {
+    "hosts": {
+      "terms": {
+        "field": "host.keyword",
+        "size": 5,
+        "order": {
+          "_term": "desc"
+        }
+      },
+      "aggs": {
+        "seen": {
+          "sum": {
+            "field": "poststats.{{ filter }}.seen_delta"
+          }
+        },
+        "drop": {
+          "sum": {
+            "field": "poststats.{{ filter }}.drop_delta"
+          }
+        }
+      }
+    }
+  },
+  "version": true,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "query_string": {
+            "query": "event_type:poststats {{ query_filter|safe }}",
+            "analyze_wildcard": true
+          }
+        },
+        {
+           "range": {
+             "@timestamp": {
+               "from": {{ from_date }},
+               "to": "now"
+             }
+           }
+        }
+      ]
+    }
+  }
+}
+"""
+
 if settings.ELASTICSEARCH_VERSION >= 6:
     DASHBOARDS_QUERY_URL = "/%s/_search?q=type:dashboard&size=" % settings.KIBANA_INDEX
 else:
@@ -1194,6 +1346,9 @@ DELETE_ALERTS_URL_V5 = "%s*/_delete_by_query" % settings.ELASTICSEARCH_LOGSTASH_
 from rules.models import Rule
 from rules.tables import ExtendedRuleTable, RuleStatsTable
 import django_tables2 as tables
+
+class ESError(Exception):
+    pass
 
 def build_es_timestamping(date, data = 'alert'):
     format_table = { 'daily': '%Y.%m.%d', 'hourly': '%Y.%m.%d.%H' }
@@ -1245,7 +1400,7 @@ def render_template(tmpl, dictionary, qfilter = None):
         context['query_filter'] = re.sub('"','\\"', query_filter)
     context['keyword'] = settings.ELASTICSEARCH_KEYWORD
     context['hostname'] = settings.ELASTICSEARCH_HOSTNAME
-    return templ.render(context)
+    return bytearray(templ.render(context), encoding="utf-8")
 
 def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None):
     data = render_template(TOP_QUERY, {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': 'alert.signature_id'}, qfilter = qfilter)
@@ -1293,7 +1448,8 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
         tables.RequestConfig(request).configure(rules)
     return rules
 
-def es_get_field_stats(request, field, FieldTable, hostname, key='host', count=20, from_date=0 , qfilter = None):
+
+def es_get_field_stats(request, field, hostname, key='host', count=20, from_date=0 , qfilter = None):
     data = render_template(TOP_QUERY, {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': field}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
@@ -1312,6 +1468,14 @@ def es_get_field_stats(request, field, FieldTable, hostname, key='host', count=2
         else:
             data = data['facets']['table']['terms']
     except:
+        return None
+    return data
+
+
+def es_get_field_stats_as_table(request, field, FieldTable, hostname, key='host', count=20, from_date=0 , qfilter = None):
+    data = es_get_field_stats(request, field, hostname,
+                              key=key, count=count, from_date=from_date, qfilter=qfilter)
+    if data == None:
         objects = FieldTable([])
         tables.RequestConfig(request).configure(objects)
         return objects
@@ -1465,6 +1629,20 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
     data['from_date'] = from_date
     data['interval'] = int(interval) * 1000
     return data
+
+def es_get_poststats(from_date=0,  value = "poststats.rule_filter_1", hosts = None, qfilter = None):
+    data = render_template(POSTSTATS_SUMMARY, {'from_date': from_date, 'filter': value, 'hosts': hosts}, qfilter = qfilter)
+    es_url = get_es_url(from_date, data = 'poststats')
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
+    try:
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
+    except:
+        return None
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    return data['aggregations']['hosts']['buckets']
 
 def es_get_json(uri):
     req = urllib2.Request(get_es_path(uri))
@@ -1698,8 +1876,12 @@ def es_get_ippair_network_alerts(from_date=0, hosts = None, qfilter = None):
     except:
         return None
 
-def es_get_alerts_tail(from_date=0, qfilter = None):
-    data = render_template(ALERTS_TAIL, {'from_date': from_date}, qfilter = qfilter)
+def es_get_alerts_tail(from_date=0, qfilter = None, search_target=True):
+    if search_target:
+        context = {'from_date': from_date, 'target_only': 'AND alert.target.ip:*'}
+    else:
+        context = {'from_date': from_date, 'target_only': ''}
+    data = render_template(ALERTS_TAIL, context, qfilter = qfilter)
     es_url = get_es_url(from_date)
     req = urllib2.Request(es_url, data)
     try:
@@ -1709,7 +1891,6 @@ def es_get_alerts_tail(from_date=0, qfilter = None):
     data = out.read()
     # returned data is JSON
     data = json.loads(data)['hits']['hits']
-    data.reverse()
     return data
 
 def es_suri_log_tail(from_date, hosts):
@@ -1730,3 +1911,44 @@ def es_suri_log_tail(from_date, hosts):
     data = json.loads(data)['hits']['hits']
     data.reverse()
     return data
+
+def es_get_top_rules(request, hostname, count=20, from_date=0 , order="desc", interval=None, qfilter = None):
+    if interval == None:
+        interval = int((time() - (int(from_date) / 1000)) / 100)
+    data = render_template(TOP_ALERTS, {'interval': interval, 'count': count, 'from_date': from_date, 'order': order}, qfilter = qfilter)
+    es_url = get_es_url(from_date)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
+    try:
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
+    except urllib2.URLError as e:
+        raise ESError(e)
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    try:
+        return data['aggregations']['alerts']['buckets']
+    except:
+        return[]
+
+def es_get_sigs_list_hits(request, sids, host, from_date=0, order="desc", interval=None, qfilter = None):
+    if interval == None:
+        interval = int((time() - (int(from_date) / 1000)) / 100)
+    sids_list=', '.join(sids)
+    count = len(sids)
+    data = render_template(SIGS_LIST_HITS, {'sids': sids_list, 'interval': interval,'count': count, 'from_date': from_date}, qfilter = qfilter)
+    es_url = get_es_url(from_date)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
+    try:
+        out = urllib2.urlopen(req, timeout=TIMEOUT)
+    except urllib2.URLError as e:
+        raise ESError(e)
+
+    data = out.read()
+    # returned data is JSON
+    data = json.loads(data)
+    try:
+        return data['aggregations']['alerts']['buckets']
+    except:
+        return []

@@ -31,6 +31,7 @@ from django.db.models import Q
 from idstools import rule as rule_idstools
 from enum import Enum, unique
 from copy import deepcopy
+from collections import OrderedDict
 import requests
 import tempfile
 import tarfile
@@ -41,10 +42,59 @@ import git
 import shutil
 import json
 import IPy
+from datetime import date as datetime_date
 
 from rules.tests_rules import TestRules
 
 from django.contrib.auth.models import User
+
+
+_HUNT_FILTERS = [
+                    {
+                      'id': 'hits_min',
+                      'title': 'Hits min',
+                      'placeholder': 'Minimum Hits Count',
+                      'filterType': 'number',
+                      'valueType': 'positiveint',
+                      'queryType': 'rest'
+                    },
+                    {
+                      'id': 'hits_max',
+                      'title': 'Hits max',
+                      'placeholder': 'Maximum Hits Count',
+                      'filterType': 'number',
+                      'valueType': 'positiveint',
+                      'queryType': 'rest'
+                    },
+                    {
+                      'id': 'msg',
+                      'title': 'Message',
+                      'placeholder': 'Filter by Message',
+                      'filterType': 'text',
+                      'valueType': 'text',
+                      'queryType': 'filter'
+                    },
+                    {
+                      'id': 'search',
+                      'title': 'Content',
+                      'placeholder': 'Filter by Content',
+                      'filterType': 'text',
+                      'valueType': 'text',
+                      'queryType': 'rest'
+                    }, {
+                      'id': 'alert.signature_id',
+                      'title': 'Signature ID',
+                      'placeholder': 'Filter by Signature ID',
+                      'filterType': 'number',
+                      'valueType': 'positiveint',
+                      'queryType': 'filter'
+                    }
+                ]
+
+
+def get_hunt_filters():
+    return deepcopy(_HUNT_FILTERS)
+
 
 def validate_hostname(val):
     try:
@@ -87,142 +137,178 @@ def validate_url(val):
 
 
 class UserAction(models.Model):
-    ACTIONS = {'create_ruleset': {
-                    'description': '{user} has created ruleset {ruleset}',
-                    'title': 'Create Ruleset'
-                },
-               'delete_ruleset': {
-                    'description': '{user} has deleted ruleset {ruleset}',
-                    'title': 'Delete Ruleset'
-                },
-               'copy_ruleset': {
-                   'description': '{user} has copied ruleset {ruleset}',
-                   'title': 'Copy Ruleset'
-                },
-               'edit_ruleset': {
-                   'description': '{user} has edited ruleset {ruleset}',
-                   'title': 'Edit Ruleset'
-                },
-               'create_source': {
-                    'description': '{user} has created source {source}',
-                    'title': 'Create Source'
-                },
-               'edit_source': {
-                    'description': '{user} has edited source {source}',
-                    'title': 'Edit Source'
-                },
-               'update_source': {
-                    'description': '{user} has updated source {source}',
-                    'title': 'Update Source'
-                },
-               'upload_source': {
-                    'description': '{user} has uploaded source {source}',
-                    'title': 'Upload Source'
-                },
-               'delete_source': {
-                    'description': '{user} has deleted source {source}',
-                    'title': 'Delete Source'
-                },
-               'enable_source': {
-                    'description': '{user} has enabled source {source} in ruleset {ruleset}',
-                    'title': 'Enable Source'
-                },
-               'disable_source': {
-                    'description': '{user} has disabled source {source} in ruleset {ruleset}',
-                    'title': 'Disable Source'
-                },
-               'disable_rule': {
-                    'description': '{user} has disabled rule {rule} in ruleset {ruleset}',
-                    'title': 'Disable Rule'
-                },
-               'enable_rule': {
-                    'description': '{user} has enabled rule {rule} in ruleset {ruleset}',
-                    'title': 'Enable Rule'
-                },
-               'suppress_rule': {
-                    'description': '{user} has suppressed rule {rule} in ruleset {ruleset}',
-                    'title': 'Suppress Rule'
-                },
-               'delete_suppress_rule': {
-                    'description': '{user} has deleted suppressed rule {rule} in ruleset {ruleset}',
-                    'title': 'Delete Suppress Rule'
-                },
-               'comment_rule': {
-                    'description': '{user} has commented rule {rule}',
-                    'title': 'Comment Rule'
-                },
-               'toggle_availability': {
-                    'description': '{user} has modified rule availability {rule}',
-                    'title': 'Toggle Availability'
-                },
-               'delete_alerts': {
-                    'description': '{user} has deleted alerts from rule {rule}',
-                    'title': 'Delete Alerts'
-                },
-               'disable_category': {
-                    'description': '{user} has disabled category {category} in ruleset {ruleset}',
-                    'title': 'Disable Category'
-                },
-               'enable_category': {
-                    'description': '{user} has enabled category {category} in ruleset {ruleset}',
-                    'title': 'Enable Category'
-                },
-               'create_threshold': {
-                    'description': '{user} has created threshold on rule {rule} in ruleset {ruleset}',
-                    'title': 'Create Threshold'
-                },
-               'edit_threshold': {
-                    'description': '{user} has edited threshold {threshold} on rule {rule} in ruleset {ruleset}',
-                    'title': 'Edit Threshold'
-                },
-               'delete_threshold': {
-                    'description': '{user} has deleted threshold {threshold} on rule {rule} in ruleset {ruleset}',
-                    'title': 'Delete Threshold'
-                },
-               'login': {
+    ACTIONS = OrderedDict([
+               # Login/Logout
+               ('login', {
                     'description': 'Logged in as {user}',
                     'title': 'Login'
-                },
-               'logout': {
+                }),
+               ('logout', {
                     'description': '{user} has logged out',
                     'title': 'Logout'
-                },
-               'transform_rule': {
-                    'description': '{user} has transformed rule {rule} to {transformation} in ruleset {ruleset}',
-                    'title': 'Transform Rule'
-                },
-               'transform_category': {
-                    'description': '{user} has transformed category {category} to {transformation} in ruleset {ruleset}',
-                    'title': 'Transform Category'
-                },
-               'transform_ruleset': {
+                }),
+
+               # Sources:
+               ('create_source', {
+                    'description': '{user} has created source {source}',
+                    'title': 'Create Source'
+                }),
+               ('update_source', {
+                    'description': '{user} has updated source {source}',
+                    'title': 'Update Source'
+                }),
+               ('edit_source', {
+                    'description': '{user} has edited source {source}',
+                    'title': 'Edit Source'
+                }),
+               ('upload_source', {
+                    'description': '{user} has uploaded source {source}',
+                    'title': 'Upload Source'
+                }),
+               ('enable_source', {
+                    'description': '{user} has enabled source {source} in ruleset {ruleset}',
+                    'title': 'Enable Source'
+                }),
+               ('disable_source', {
+                    'description': '{user} has disabled source {source} in ruleset {ruleset}',
+                    'title': 'Disable Source'
+                }),
+               ('delete_source', {
+                    'description': '{user} has deleted source {source}',
+                    'title': 'Delete Source'
+                }),
+
+               # Rulesets:
+               ('create_ruleset', {
+                    'description': '{user} has created ruleset {ruleset}',
+                    'title': 'Create Ruleset'
+                }),
+               ('transform_ruleset', {
                     'description': '{user} has transformed ruleset {ruleset} to {transformation}',
                     'title': 'Transform Ruleset'
-                },
+                }),
+               ('edit_ruleset', {
+                   'description': '{user} has edited ruleset {ruleset}',
+                   'title': 'Edit Ruleset'
+                }),
+               ('copy_ruleset', {
+                   'description': '{user} has copied ruleset {ruleset}',
+                   'title': 'Copy Ruleset'
+                }),
+               ('delete_ruleset', {
+                    'description': '{user} has deleted ruleset {ruleset}',
+                    'title': 'Delete Ruleset'
+                }),
+
+               # Categories:
+               ('enable_category', {
+                    'description': '{user} has enabled category {category} in ruleset {ruleset}',
+                    'title': 'Enable Category'
+                }),
+               ('transform_category', {
+                    'description': '{user} has transformed category {category} to {transformation} in ruleset {ruleset}',
+                    'title': 'Transform Category'
+                }),
+               ('disable_category', {
+                    'description': '{user} has disabled category {category} in ruleset {ruleset}',
+                    'title': 'Disable Category'
+                }),
+
+               # Rules:
+               ('enable_rule', {
+                    'description': '{user} has enabled rule {rule} in ruleset {ruleset}',
+                    'title': 'Enable Rule'
+                }),
+               ('comment_rule', {
+                    'description': '{user} has commented rule {rule}',
+                    'title': 'Comment Rule'
+                }),
+               ('transform_rule', {
+                    'description': '{user} has transformed rule {rule} to {transformation} in ruleset {ruleset}',
+                    'title': 'Transform Rule'
+                }),
+               ('suppress_rule', {
+                    'description': '{user} has suppressed rule {rule} in ruleset {ruleset}',
+                    'title': 'Suppress Rule'
+                }),
+               ('disable_rule', {
+                    'description': '{user} has disabled rule {rule} in ruleset {ruleset}',
+                    'title': 'Disable Rule'
+                }),
+               ('delete_suppress_rule', {
+                    'description': '{user} has deleted suppressed rule {rule} in ruleset {ruleset}',
+                    'title': 'Delete Suppress Rule'
+                }),
+
+               # Toggle availability
+               ('toggle_availability', {
+                    'description': '{user} has modified rule availability {rule}',
+                    'title': 'Toggle Availability'
+                }),
+
+               # Thresholds:
+               ('create_threshold', {
+                    'description': '{user} has created threshold on rule {rule} in ruleset {ruleset}',
+                    'title': 'Create Threshold'
+                }),
+               ('edit_threshold', {
+                    'description': '{user} has edited threshold {threshold} on rule {rule} in ruleset {ruleset}',
+                    'title': 'Edit Threshold'
+                }),
+               ('delete_threshold', {
+                    'description': '{user} has deleted threshold {threshold} on rule {rule} in ruleset {ruleset}',
+                    'title': 'Delete Threshold'
+                }),
+
                 # Used only in REST API
-               'delete_transform_ruleset': {
+               ('delete_transform_ruleset', {
                     'description': '{user} has deleted transformation {transformation} on ruleset {ruleset}',
                     'title': 'Deleted Ruleset Transformation'
-                },
-               'delete_transform_rule': {
+                }),
+               ('delete_transform_rule', {
                     'description': '{user} has deleted transformation {transformation} on rule {rule} in ruleset {ruleset}',
                     'title': 'Delete Rule Transformation'
-                },
-               'delete_transform_category': {
+                }),
+               ('delete_transform_category', {
                     'description': '{user} has deleted transformation {transformation} on category {category} in ruleset {ruleset}',
                     'title': 'Delete Category Transformation'
-                },
+                }),
                # End REST API
 
-               'edit_suricata': {
+               # Suricata
+               ('edit_suricata', {
                     'description': '{user} has edited suricata',
                     'title': 'Edit Suricata'
-                },
-               'create_suricata': {
+                }),
+               ('create_suricata', {
                     'description': '{user} has created suricata',
                     'title': 'Create Suricata'
-                },
-               }
+                }),
+
+               # Settings
+               ('system_settings', {
+                    'description': '{user} has edited system settings',
+                    'title': 'Edit System Settings'
+                }),
+               ('delete_alerts', {
+                    'description': '{user} has deleted alerts from rule {rule}',
+                    'title': 'Delete Alerts'
+                }),
+
+               # Rule processing filter
+               ('create_rule_filter', {
+                    'description': '{user} has created rule filter {rule_filter}',
+                    'title': 'Create rule filter'
+                }),
+               ('edit_rule_filter', {
+                    'description': '{user} has edited rule filter {rule_filter}',
+                    'title': 'Edit rule filter'
+                }),
+               ('delete_rule_filter', {
+                    'description': '{user} has deleted rule filter {rule_filter}',
+                    'title': 'Delete rule filter'
+                })
+            ])
 
     action_type = models.CharField(max_length=1000, null=True)
     date = models.DateTimeField('event date', default=timezone.now)
@@ -336,14 +422,15 @@ class UserAction(models.Model):
 
             # ==== Coner cases
             # transformation is str type
-            if action.action_key == 'transformation':
+            # or workaround for UserAction which can contains no instance but str (ex: create a source without a ruleset)
+            if action.action_key == 'transformation' or (action.action_key == 'ruleset' and action.action_value == 'No Ruleset'):
                 continue
 
-            ct = ContentType.objects.get(model=action.action_key)
+            ct = action.content_type
             klass = ct.model_class()
 
             if hasattr(klass, 'get_icon'):
-                lb = klass.__name__
+                lb = action.action_value
 
                 icon = klass.get_icon()
                 instances = klass.objects.filter(pk=action.object_id).all()
@@ -354,8 +441,6 @@ class UserAction(models.Model):
 
                     if isinstance(instances[0], Rule):
                         lb = instances[0].pk
-                    else:
-                        lb = instances[0].name
 
                 icons.append((icon, lb))
 
@@ -443,6 +528,7 @@ class Source(models.Model):
     cats_count = models.IntegerField(default = 0)
     rules_count = models.IntegerField(default = 0)
     public_source = models.CharField(max_length=100, blank = True, null = True)
+    use_iprep = models.BooleanField('Use IP reputation for group signatures', default=True)
 
     editable = True
     # git repo where we store the physical thing
@@ -1042,13 +1128,23 @@ class Transformable:
         target = ' target:%s;)' % target
         rule.raw = re.sub(r"\)$", "%s" % (target), rule.raw) if target not in rule.raw else rule.raw
 
+    def _test_scan_rules(self, rule_ids):
+        for option in rule_ids.options:
+            if option['name'] == 'flags':
+                if option['value'] == 'S,12':
+                    return True
+                return False
+        return False
+
     def _apply_target_trans(self, rule_ids):
         terms = re.split(r' +', rule_ids.format())
         src = terms[2]
         dst = terms[5]
 
-        # external net always seen as bad guy on attack
-        if src == "$EXTERNAL_NET":
+        if self._test_scan_rules(rule_ids):
+            self._set_target(rule_ids, target="dest_ip")
+        # external net always seen as bad guy on attack if not OUTBOUND
+        elif src == "$EXTERNAL_NET":
             self._set_target(rule_ids, target="dest_ip")
 
         # external net always seen as bad guy on attack
@@ -1387,6 +1483,98 @@ class Category(models.Model, Transformable, Cache):
     def get_icon():
         return 'fa-list-alt'
 
+    def build_sigs_group(self):
+        # query sigs with group set
+        rules = Rule.objects.filter(group = True, category = self)
+        sigs_groups = {}
+        # build hash on message
+        for rule in rules:
+            # let's get the new IP only, will output that as text field at save time
+            rule.ips_list = set()
+            sigs_groups[rule.msg] = rule
+        return sigs_groups
+
+    def parse_group_signature(self, group_rule, rule):
+        if group_rule.group_by == 'by_src':
+            ips_list = Rule.IPSREGEXP['src'].findall(rule.header)[0]
+        else:
+            ips_list = Rule.IPSREGEXP['dest'].findall(rule.header)[0]
+        if ips_list.startswith('['):
+            ips_list = ips_list[1:-1].split(',')
+        else:
+            ips_list = [ips_list, ]
+        group_rule.ips_list.update(ips_list)
+        group_rule.next_rev = rule.rev
+
+    def add_group_signature(self, sigs_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged):
+        # parse the line with ids tools
+        # TODO hand idstools parsing errors
+        rule = rule_idstools.parse(line)
+        rule_base_msg = Rule.GROUPSNAMEREGEXP.findall(rule.msg)[0]
+        # check if we already have a signature in the group signatures
+        # that match
+        if rule_base_msg in sigs_groups:
+            # TODO coherence check
+            # add IPs to the list if revision has changed
+            if rule.rev != sigs_groups[rule_base_msg].rev:
+                self.parse_group_signature(sigs_groups[rule_base_msg], rule)
+                # Is there an existing rule to clean ? this is needed at
+                # conversion of source to use iprep but we will have a different
+                # message in this case (with group)
+                if existing_rules_hash.has_key(rule.sid):
+                    # the sig is already present and it is a group sid so let's declare it
+                    # updated to avoid its deletion later in process. No else clause because
+                    # the signature will be deleted as it is not referenced in a changed or
+                    # unchanged list
+                    if rule_base_msg == existing_rules_hash[rule.sid].msg:
+                        rules_update["updated"].append(existing_rules_hash[rule.sid])
+            else:
+                rules_unchanged.append(sigs_groups[rule_base_msg])
+        else:
+            creation_date = timezone.now()
+            state = True
+            if rule.raw.startswith("#"):
+                state = False
+            # update rule content
+            content = rule.raw
+            iprep_group = rule.sid
+            ips_list = Rule.IPSREGEXP['src'].findall(rule.header)[0]
+            if ips_list.startswith('['):
+                track_by = 'src'
+            else:
+                track_by = 'dst'
+            content = content.replace(';)','; iprep:%s,%s,>,1;)' % (track_by, iprep_group))
+            # replace IP list by any
+            content = re.sub(r'\[\d+.*\d+\]', r'any', content)
+            # fix message
+            content = re.sub(r'msg:".*";', r'msg:"%s";' % rule_base_msg, content)
+            # if we already have a signature with the SID we are probably parsing
+            # a source that has just been switched to iprep. So we get the old
+            # rule and we update the content to avoid loosing information.
+            if existing_rules_hash.has_key(rule.sid):
+                group_rule = existing_rules_hash[rule.sid]
+                group_rule.group = True
+                group_rule.msg = rule_base_msg
+                group_rule.content = content
+                group_rule.updated_date = creation_date
+                group_rule.rev = rule.rev
+                rules_update["updated"].append(group_rule)
+            else:
+                group_rule = Rule(category = self, sid = rule.sid, group = True,
+                        rev = rule.rev - 1, content = content, msg = rule_base_msg,
+                        state_in_source = state, state = state,
+                        imported_date = creation_date, updated_date = creation_date)
+                rules_update["updated"].append(group_rule)
+                group_rule.parse_metadata()
+                group_rule.parse_flowbits(source, flowbits, addition = True)
+            if track_by == 'src':
+                group_rule.group_by = 'by_src'
+            else:
+                group_rule.group_by = 'by_dest'
+            group_rule.ips_list = set()
+            self.parse_group_signature(group_rule, rule)
+            sigs_groups[group_rule.msg] = group_rule
+
     def get_rules(self, source, existing_rules_hash=None):
         # parse file
         # return an object with updates
@@ -1420,6 +1608,10 @@ class Category(models.Model, Transformable, Cache):
 
         creation_date = timezone.now()
 
+        rules_groups = {}
+        if source.use_iprep:
+            rules_groups = self.build_sigs_group()
+
         with transaction.atomic():
             for line in rfile.readlines():
                 state = True
@@ -1444,37 +1636,51 @@ class Category(models.Model, Transformable, Cache):
                     msg = ""
                 else:
                     msg = match.groups()[0]
-                # FIXME detect if nothing has changed to avoid rules reload
-                if existing_rules_hash.has_key(int(sid)):
-                    # FIXME update references if needed
-                    rule = existing_rules_hash[int(sid)]
-                    if rule.category.source != source:
-                        raise ValidationError('Duplicate SID: %d' % (int(sid)))
-                    if rev == None or rule.rev < rev:
-                        rule.content = line
-                        if rev == None:
-                            rule.rev = 0
-                        else:
-                            rule.rev = rev
-                        if rule.category != self:
-                            rule.category = self
-                        rule.msg = msg
-                        rules_update["updated"].append(rule)
-                        rule.updated_date = creation_date
-                        rule.save()
-                        rule.parse_flowbits(source, flowbits)
-                    else:
-                        rules_unchanged.append(rule)
+
+                if source.use_iprep and Rule.GROUPSNAMEREGEXP.match(msg):
+                    self.add_group_signature(rules_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged)
                 else:
-                    if rev == None:
-                        rev = 0
-                    rule = Rule(category = self, sid = sid,
-                                        rev = rev, content = line, msg = msg,
-                                        state_in_source = state, state = state, imported_date = creation_date, updated_date = creation_date)
-                    rules_update["added"].append(rule)
-                    rule.parse_flowbits(source, flowbits, addition = True)
+                    if existing_rules_hash.has_key(int(sid)):
+                        # FIXME update references if needed
+                        rule = existing_rules_hash[int(sid)]
+                        if rule.category.source != source:
+                            raise ValidationError('Duplicate SID: %d' % (int(sid)))
+                        if rev == None or rule.rev < rev:
+                            rule.content = line
+                            if rev == None:
+                                rule.rev = 0
+                            else:
+                                rule.rev = rev
+                            if rule.category != self:
+                                rule.category = self
+                            rule.msg = msg
+                            rules_update["updated"].append(rule)
+                            rule.updated_date = creation_date
+                            rule.parse_metadata()
+                            rule.save()
+                            rule.parse_flowbits(source, flowbits)
+                        else:
+                            rules_unchanged.append(rule)
+                    else:
+                        if rev == None:
+                            rev = 0
+                        rule = Rule(category = self, sid = sid,
+                                            rev = rev, content = line, msg = msg,
+                                            state_in_source = state, state = state, imported_date = creation_date, updated_date = creation_date)
+                        rule.parse_metadata()
+                        rules_update["added"].append(rule)
+                        rule.parse_flowbits(source, flowbits, addition = True)
             if len(rules_update["added"]):
                 Rule.objects.bulk_create(rules_update["added"])
+            if len(rules_groups):
+                for rule in rules_groups:
+                    # If IP list is empty it will be deleted because it has not
+                    # been put in a changed or unchanged list. So we just care
+                    # about saving the rule.
+                    if len(rules_groups[rule].ips_list) > 0:
+                        rules_groups[rule].group_ips_list = ",".join(rules_groups[rule].ips_list)
+                        rules_groups[rule].rev = rules_groups[rule].next_rev
+                        rules_groups[rule].save()
             if len(flowbits["added"]["flowbit"]):
                 Flowbit.objects.bulk_create(flowbits["added"]["flowbit"])
             if len(flowbits["added"]["through_set"]):
@@ -1626,6 +1832,7 @@ class Category(models.Model, Transformable, Cache):
 
 
 class Rule(models.Model, Transformable, Cache):
+    GROUP_BY_CHOICES= (('by_src', 'by_src'),('by_dst', 'by_dst'))
     sid = models.IntegerField(primary_key=True)
     category = models.ForeignKey(Category)
     msg = models.CharField(max_length=1000)
@@ -1635,6 +1842,11 @@ class Rule(models.Model, Transformable, Cache):
     content = models.CharField(max_length=10000)
     imported_date = models.DateTimeField(default = timezone.now)
     updated_date = models.DateTimeField(default = timezone.now)
+    created = models.DateField(blank = True, null = True)
+    updated = models.DateField(blank = True, null = True)
+    group = models.BooleanField(default = False)
+    group_by = models.CharField(max_length = 10, choices = GROUP_BY_CHOICES, default='by_src')
+    group_ips_list = models.TextField(blank = True, null = True)  # store one IP per line
 
     hits = 0
 
@@ -1642,6 +1854,10 @@ class Rule(models.Model, Transformable, Cache):
                   'hostbits': re.compile("hostbits *: *(isset|set),(.*?) *;"),
                   'xbits': re.compile("xbits *: *(isset|set),(.*?) *;"),
                  }
+
+    IPSREGEXP = {'src': re.compile('^\S+ +\S+ (.*) +\S+ +\->'), 'dest': re.compile('\-> (.*) +\S+$')}
+
+    GROUPSNAMEREGEXP = re.compile('^(.*) +group +\d+$')
 
     def __unicode__(self):
         return str(self.sid) + ":" + self.msg
@@ -1688,6 +1904,23 @@ class Rule(models.Model, Transformable, Cache):
                         if addition or not self.setter.filter(set=self):
                             through_elt = Flowbit.set.through(flowbit=elt, rule=self)
                             flowbits['added']['through_set'].append(through_elt)
+
+    def parse_metadata_time(self, sfield):
+        sdate = sfield.split(' ')[1]
+        if sdate:
+            de = sdate.split('_')
+            return datetime_date(int(de[0]),int(de[1]),int(de[2]))
+        return None
+
+    def parse_metadata(self):
+        rule_ids = rule_idstools.parse(self.content)
+        if rule_ids is None:
+            return
+        for meta in rule_ids.metadata:
+            if meta.startswith('created_at '):
+                self.created = self.parse_metadata_time(meta)
+            if meta.startswith('updated_at '):
+                self.updated = self.parse_metadata_time(meta)
 
     def is_active(self, ruleset):
         SUPPRESSED = Transformation.SUPPRESSED
@@ -1797,9 +2030,7 @@ class Rule(models.Model, Transformable, Cache):
         return "noalert" not in self.content
 
     def can_filestore(self):
-        if " http " in self.content or " smtp " in self.content:
-            return True
-        return False
+        return self.content.split(' ')[1] in ('http', 'smtp', 'smb', 'nfs')
 
     def can_lateral(self, value):
         content = self.content.encode('utf8')
@@ -2021,6 +2252,8 @@ class Rule(models.Model, Transformable, Cache):
 
         return tuple(allowed_choices)
 
+def build_iprep_name(msg):
+    return re.sub('[^0-9a-zA-Z]+', '_', msg.replace(' ',''))
 
 class Flowbit(models.Model):
     FLOWBIT_TYPE = (('flowbits', 'Flowbits'), ('hostbits', 'Hostbits'), ('xbits', 'Xbits'))
@@ -2263,6 +2496,10 @@ class Ruleset(models.Model, Transformable):
             for threshold in Threshold.objects.filter(ruleset = self):
                 f.write("%s\n" % (threshold))
 
+            from scirius.utils import get_middleware_module
+            for threshold in get_middleware_module('common').get_processing_filter_thresholds(self):
+                f.write(threshold)
+
     def copy(self, name):
         orig_ruleset_pk = self.pk
         orig_sources = self.sources.all()
@@ -2464,6 +2701,83 @@ class Threshold(models.Model):
                 return False
         return True
 
+
+class RuleProcessingFilter(models.Model):
+    ACTIONS = (('suppress', 'Suppress'), ('threshold', 'Threshold'),
+                ('tag', 'Tag'), ('tagkeep', 'Tag and keep'))
+
+    action = models.CharField(max_length=10, choices=ACTIONS)
+    options = models.CharField(max_length=512, null=True, blank=True)
+    index = models.PositiveIntegerField()
+    description = models.TextField(default='')
+    enabled = models.BooleanField(default=True)
+    rulesets = models.ManyToManyField(Ruleset, related_name='processing_filters')
+
+    class Meta:
+        ordering = ['index']
+
+    def get_options(self):
+        if not self.options:
+            return {}
+        return json.loads(self.options)
+
+    def get_threshold_content(self):
+        sid = self.filter_defs.get(key='alert.signature_id').value
+
+        if self.action == 'suppress':
+            try:
+                src_ip = self.filter_defs.get(key='src_ip')
+            except models.ObjectDoesNotExist:
+                src_ip = None
+            try:
+                dest_ip = self.filter_defs.get(key='dest_ip')
+            except models.ObjectDoesNotExist:
+                dest_ip = None
+
+            if src_ip:
+                ip_str = src_ip.value
+                track_by = 'by_src'
+            else:
+                ip_str = dest_ip.value
+                track_by = 'by_dst'
+
+            return 'suppress gen_id 1, sid_id %s, track %s, ip %s\n' % (sid, track_by, ip_str)
+        elif self.action == 'threshold':
+            options = self.get_options()
+            return 'threshold gen_id 1, sig_id %s, type %s, track %s, count %s, seconds %s\n' % (sid, options['type'], options['track'], options['count'], options['seconds'])
+
+        raise Exception('Invalid processing filter action %s' % self.action)
+
+    @staticmethod
+    def get_icon():
+        return 'pficon-filter'
+
+    def __unicode__(self):
+        filters = []
+        for f in self.filter_defs.order_by('key'):
+            filters.append(unicode(f))
+        return '%s (%s)' % (self.action, ', '.join(filters))
+
+
+class RuleProcessingFilterDef(models.Model):
+    OPERATOR = (('equal', 'Equal'), ('different', 'Different'), ('contains', 'Contains'))
+    OPERATOR_DISPLAY = {
+        'equal': '=',
+        'different': '!='
+    }
+
+    key = models.CharField(max_length=512)
+    value = models.CharField(max_length=512)
+    operator = models.CharField(max_length=10, choices=OPERATOR)
+    proc_filter = models.ForeignKey(RuleProcessingFilter, related_name='filter_defs')
+
+    class Meta:
+        ordering = ('key', 'value')
+
+    def __unicode__(self):
+        op = self.OPERATOR_DISPLAY.get(self.operator, self.operator)
+        return '%s %s %s' % (self.key, op, self.value)
+
 def dependencies_check(obj):
     if obj == Source:
         return
@@ -2480,3 +2794,18 @@ def dependencies_check(obj):
 
     if len(Ruleset.objects.all()) == 0:
             return "You need first to create a ruleset."
+
+def export_iprep_files(target_dir):
+    group_rules = Rule.objects.filter(group = True)
+    cat_map = {}
+    with open(target_dir + "/" + "scirius-categories.txt", 'w') as rfile:
+        index = 1
+        for rule in group_rules:
+            rfile.write('%s,%d,%s\n' % (index, rule.sid, rule.msg))
+            cat_map[index] = rule
+            index = index + 1
+    with open(target_dir + "/" + "scirius-iprep.list", 'w') as rfile:
+        for cate in cat_map:
+            iprep_group = cat_map[cate].sid
+            for IP in cat_map[cate].group_ips_list.split(','):
+                rfile.write('%s,%d,100\n' % (IP, cate))

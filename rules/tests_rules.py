@@ -231,9 +231,14 @@ config classification: default-login-attempt,Attempt to login by a default usern
         # write the config file in temp dir
         cf.write(config_buffer)
         cf.write("default-rule-path: " + tmpdir + "\n")
-        cf.write("default-reputation-path: " + tmpdir + "\n")
         cf.write("reference-config-file: " + tmpdir + "/reference.config\n")
         cf.write("classification-file: " + tmpdir + "/classification.config\n")
+        cf.write("reputation-categories-file: " + tmpdir + "/scirius-categories.txt\n")
+        cf.write("default-reputation-path: " + tmpdir + "\n")
+        cf.write("""reputation-files:
+  - scirius-iprep.list
+""")
+
         cf.close()
         related_files = related_files or {}
         for rfile in related_files:
@@ -241,6 +246,9 @@ config classification: default-login-attempt,Attempt to login by a default usern
             rf = open(related_file, 'w')
             rf.write(related_files[rfile])
             rf.close()
+
+        from rules.models import export_iprep_files
+        export_iprep_files(tmpdir)
             
         suri_cmd = ['suricata', '-T', '-l', tmpdir, '-S', rule_file, '-c', config_file]
         # start suricata in test mode

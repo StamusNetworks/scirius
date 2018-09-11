@@ -84,7 +84,7 @@ def editview(request, action):
 
         if action == 'password':
             form = PasswordChangeForm(user=request.user, data=request_data)
-            context = {'form': form, 'action': 'Change password'}
+            context = {'form': form, 'action': 'Change password', 'edition': True}
         elif action == 'settings':
             tz = 'UTC'
             if hasattr(request.user, 'sciriususer'):
@@ -96,16 +96,16 @@ def editview(request, action):
             else:
                 form = NormalUserSettingsForm(request_data, instance=request.user, initial=initial)
 
-            context = {'form': form, 'action': 'Edit settings for ' + request.user.username}
+            context = {'form': form, 'action': 'Edit settings for ' + request.user.username, 'edition': True}
         elif action == 'token':
             initial = {}
             token = Token.objects.filter(user=request.user)
             if len(token):
                 initial['token'] = token[0]
             form = TokenForm(request_data, initial=initial)
-            context = {'form': form, 'action': 'User token'}
+            context = {'form': form, 'action': 'User token', 'edition': True}
         else:
-            context = {'action': 'User settings'}
+            context = {'action': 'User settings', 'edition': False}
 
         if request.method == 'POST':
             if action == 'token':
@@ -118,6 +118,9 @@ def editview(request, action):
             orig_superuser = request.user.is_superuser
             orig_staff = request.user.is_staff
             if form.is_valid():
+                context['edition'] = False
+                context['action'] = 'User settings'
+
                 ruser = form.save(commit = False)
                 if not orig_superuser:
                     ruser.is_superuser = False
@@ -173,6 +176,9 @@ def manageview(request, action):
 def manageuser(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     context = {'action': 'User actions', 'user': user}
+    if not request.user.is_superuser:
+        context['error'] = 'Unsufficient permissions'
+        context['user'] = get_object_or_404(User, pk=request.user.pk)
     return scirius_render(request, 'accounts/user.html', context)
 
 def manageuseraction(request, user_id, action):
@@ -194,6 +200,7 @@ def manageuseraction(request, user_id, action):
                 sciriususer.save()
             else:
                 context['error'] = 'Edition form is not valid'
+                context['form'] = form
         elif action == 'password':
             form = PasswordForm(request.POST)
             if form.is_valid():
@@ -214,24 +221,21 @@ def manageuseraction(request, user_id, action):
                 context['error'] = 'Delete form is not valid'
 
         return scirius_render(request, 'accounts/user.html', context)
+
+    if not request.user.is_superuser:
+        context['error'] = 'Unsufficient permissions'
+        context['user'] = get_object_or_404(User, pk=request.user.pk)
+        return scirius_render(request, 'accounts/user.html', context)
+
     if action == "activate":
-        if not request.user.is_superuser:
-            context['error'] = 'Unsufficient permissions'
-            return scirius_render(request, 'accounts/user.html', context)
         user.is_active = True
         user.save()
         context['current_action'] = 'Activate user %s' % user.username
     elif action == "deactivate":
-        if not request.user.is_superuser:
-            context['error'] = 'Unsufficient permissions'
-            return scirius_render(request, 'accounts/user.html', context)
         user.is_active = False
         user.save()
         context['current_action'] = 'Deactivate user %s' % user.username
     elif action == "edit":
-        if not request.user.is_superuser:
-            context['error'] = 'Unsufficient permissions'
-            return scirius_render(request, 'accounts/user.html', context)
         form = UserSettingsForm(instance = user)
         try:
             form.initial['timezone'] = user.sciriususer.timezone
@@ -241,17 +245,11 @@ def manageuseraction(request, user_id, action):
         context['current_action'] = 'Edit user %s' % user.username
         return scirius_render(request, 'accounts/user.html', context)
     elif action == "password":
-        if not request.user.is_superuser:
-            context['error'] = 'Unsufficient permissions'
-            return scirius_render(request, 'accounts/user.html', context)
         form = PasswordForm()
         context['form'] = form
         context['current_action'] = 'Edit password for user %s' % user.username
         return scirius_render(request, 'accounts/user.html', context)
     elif action == "delete":
-        if not request.user.is_superuser:
-            context['error'] = 'Unsufficient permissions'
-            return scirius_render(request, 'accounts/user.html', context)
         context = { 'confirm_action': 'Delete user', 'user': user, 'action': 'delete'}
         return scirius_render(request, 'accounts/user.html', context)
 

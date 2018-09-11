@@ -47,6 +47,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
+    'webpack_loader',
 )
 
 if LooseVersion(get_version()) < LooseVersion('1.7'):
@@ -79,6 +80,21 @@ TEMPLATES = [
         },
     },
 ]
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+            'BUNDLE_DIR_NAME': 'rules/static/bundles/',
+            'STATS_FILE': os.path.join(BASE_DIR, 'rules/static/webpack-stats.prod.json'),
+        }
+}
+
+## For development (set that up in your local settings)
+#WEBPACK_LOADER = {
+#    'DEFAULT': {
+#            'BUNDLE_DIR_NAME': 'bundles/',
+#            'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.dev.json'),
+#        }
+#}
 
 ROOT_URLCONF = 'scirius.urls'
 
@@ -257,6 +273,8 @@ RULESET_TRANSFORMATIONS = (('reject', 'Reject'), ('drop', 'Drop'), ('filestore',
 LOGIN_URL = '/accounts/login/'
 
 IPWARE_PRIVATE_IP_PREFIX = ()
+
+HAVE_NETINFO_AGG = False
 
 try:
     from local_settings import *

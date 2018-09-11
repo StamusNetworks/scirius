@@ -260,9 +260,9 @@ Updated: {{ cdiff.stats.updated }}
     <ul>
     {% for error in ruleset.json_errors %}
         {% if error.sid %}
-            <li><span class="text-danger"><strong>{{ error.error }}</strong></span>: <a href="{% url 'rule_sid'  error.sid %}"><span>{{ error.message }}</span></a></li>
+            <li><span class="text-danger"><strong>{{ error.error }}</strong></span>: <a href="{% url 'rule_sid'  error.sid %}"><span>{{ error.message|safe }}</span></a></li>
         {% else %}
-            <li><span class="text-danger"><strong>{{ error.error }}</strong></span>: <span>{{ error.message }}</span></li>
+            <li><span class="text-danger"><strong>{{ error.error }}</strong></span>: <span>{{ error.message|safe }}</span></li>
         {% endif %}
     {% endfor %}
     </ul>

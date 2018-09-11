@@ -18,18 +18,27 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import json
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
-from rest_framework import status
+from rest_framework import status, mixins
 from rest_framework.test import APITestCase
 
-from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, RulesetTransformation
+from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, \
+    RulesetTransformation, SourceUpdate, SystemSettings, UserAction, RuleProcessingFilter, RuleProcessingFilterDef
 from rest_api import router
 
+from copy import deepcopy
 import tempfile
 from shutil import rmtree
+from StringIO import StringIO
+import itertools
+from importlib import import_module
+
+
+ET_URL = 'https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz'
 
 
 class SourceCreationTestCase(TestCase):
@@ -39,7 +48,7 @@ class SourceCreationTestCase(TestCase):
             self.source = Source.objects.create(name="ET Open",
                                        method = "http",
                                        datatype = "sigs",
-                                       uri="https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz",
+                                       uri=ET_URL,
                                        created_date=timezone.now())
 
     def tearDown(self):
@@ -192,13 +201,17 @@ class RestAPITestBase(object):
             raise
 
         # behavior/status could be different on remote and local build
+        try:
+            data_msg = unicode(getattr(response, 'data', None))
+        except UnicodeDecodeError:
+            data_msg = repr(getattr(response, 'data', None))
+        msg = 'Request failed: \n%s %s\n%s %s\n%s' % (method.upper(), url, response.status_code, response.reason_phrase, data_msg)
+
         if isinstance(http_status, tuple):
-            self.assertEqual(response.status_code in http_status, True, 'Request failed: \n%s %s\n%s %s\n%s' %
-                             (method.upper(), url, response.status_code, response.reason_phrase, response))
+            self.assertEqual(response.status_code in http_status, True, msg)
             return getattr(response, 'data', None), response.status_code
         else:
-            self.assertEqual(response.status_code, http_status, 'Request failed: \n%s %s\n%s %s\n%s' %
-                             (method.upper(), url, response.status_code, response.reason_phrase, response))
+            self.assertEqual(response.status_code, http_status, msg)
 
         return getattr(response, 'data', None)
 
@@ -211,20 +224,17 @@ class RestAPITestBase(object):
 
 
 class RestAPISourceTestCase(RestAPITestBase, APITestCase):
+    RULE_CONTENT = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
+flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
+metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
+deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
+
     def setUp(self):
         RestAPITestBase.setUp(self)
         APITestCase.setUp(self)
 
         self.ruleset = Ruleset.objects.create(name='test ruleset', descr='descr', created_date=timezone.now(), updated_date=timezone.now())
         self.ruleset.save()
-
-        content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
-flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
-metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
-deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
-
-        with open('/tmp/rules.rules', 'w') as f:
-            f.write(content)
 
     def _create_public_source(self):
         params = {
@@ -244,16 +254,16 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
         self.public_source = sources[0]
         self.ruleset.sources.add(sources_at_version[0])
 
-    def _create_custom_source(self, valid=False):
-
+    def _create_custom_source(self, method, datatype, **kwargs):
         params = {
-                'name': 'sonic test custom source' if valid is False else 'sonic another custom source',
-                'comment': 'MyCustomComment' if valid is False else 'AnotherCustomCOmment',
-                'method': 'local',
-                'datatype': 'sigs' if valid is False else 'sig'
-                }
+            'name': 'sonic test custom source',
+            'comment': 'MyCustomComment',
+            'method': method,
+            'datatype':  datatype
+        }
+        params.update(kwargs)
         self.http_post(reverse('source-list'), params, status=status.HTTP_201_CREATED)
-        sources = Source.objects.filter(name='sonic test custom source' if valid is False else 'sonic another custom source')
+        sources = Source.objects.filter(name='sonic test custom source')
         self.assertEqual(len(sources) == 1, True)
 
         sources_at_version = SourceAtVersion.objects.filter(source=sources[0])
@@ -264,14 +274,13 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
         self.source = sources[0]
         self.ruleset.sources.add(sources_at_version[0])
 
-    def test_001_source(self):
-        # ==================== Pubic source
+    def test_001_public_source(self):
         self._create_public_source()
         response = self.http_get(reverse('publicsource-fetch-list-sources'))
-        self.assertEqual('fetch' in response and response['fetch'] == 'ok', True)
+        self.assertDictEqual(response, {'fetch': 'ok'})
 
         response = self.http_post(reverse('publicsource-update-source', args=(self.public_source.pk,)))
-        self.assertEqual('update' in response and response['update'] == 'ok', True)
+        self.assertDictEqual(response, {'update': 'ok'})
 
         # behavior/status could be different on remote and local build
         status_ = (status.HTTP_400_BAD_REQUEST, status.HTTP_200_OK)
@@ -283,33 +292,69 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
             self.assertEqual(status_, status.HTTP_200_OK)
             self.assertEqual('test' in response and response['test'] == 'ok', True)
 
+            self.http_get(reverse('publicsource-list-sources'))
+
         response = self.http_delete(reverse('publicsource-detail', args=(self.public_source.pk,)), status=status.HTTP_204_NO_CONTENT)
         sources = Source.objects.filter(pk=self.public_source.pk)
         self.assertEqual(len(sources), 0)
 
-        # ==================== Custom source
-        self._create_custom_source()
-        response = self.http_post(reverse('source-update-source', args=(self.source.pk,)))
-        self.assertEqual('update' in response and response['update'] == 'ok', True)
+    def test_002_custom_source_upload(self):
+        self._create_custom_source('local', 'sig')
+        response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': StringIO(self.RULE_CONTENT)}, format='multipart')
+        self.assertDictEqual(response, {'upload': 'ok'})
 
-        # wrong archive
+        response = self.http_post(reverse('source-update-source', args=(self.source.pk,)))
+        self.assertDictEqual(response, {'update': 'ok'})
+
+        response = self.http_get(reverse('category-list') + '?source=%i' % self.source.pk)
+        categories = response.get('results', [])
+        self.assertEqual(len(categories), 1)
+
+        response = self.http_get(reverse('rule-list') + '?category=%i' % categories[0]['pk'])
+        rules = response.get('results', [])
+        self.assertEqual(len(rules), 1)
+
+        rule = rules[0]
+        self.assertDictContainsSubset({
+            'sid': 2014530,
+            'msg': 'ET TROJAN Metasploit Meterpreter stdapi_* Command Request',
+            'state': True,
+            'state_in_source': True,
+            'content': self.RULE_CONTENT,
+            'rev': 3
+        }, rule)
+
+    def test_003_custom_source_bad_upload(self):
+        self._create_custom_source('local', 'sigs')
+
         with open('/usr/bin/find', 'rb') as f:
-            try:
-                response = None
-                response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': f}, format='multipart')
-            except Exception as e:
-                # Not a valid tar
-                self.assertEqual('Invalid tar file' in e.message, True)
+            response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': f}, format='multipart', status=status.HTTP_400_BAD_REQUEST)
+            self.assertDictEqual(response, {'upload': ['Invalid tar file']})
 
         response = self.http_delete(reverse('source-detail', args=(self.source.pk,)), status=status.HTTP_204_NO_CONTENT)
         sources = Source.objects.filter(pk=self.source.pk)
         self.assertEqual(len(sources), 0)
 
-        # good file format
-        self._create_custom_source(True)
-        with open('/tmp/rules.rules', 'r') as f:
-            response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': f}, format='multipart')
-        self.assertEqual('upload' in response and response['upload'] == 'ok', True)
+    def test_004_custom_source_http(self):
+        self._create_custom_source('http', 'sigs', uri=ET_URL, cert_verif=True)
+
+        response = self.http_post(reverse('source-update-source', args=(self.source.pk,)))
+        self.assertDictEqual(response, {'update': 'ok'})
+
+    def test_005_custom_source_bad_http(self):
+        self._create_custom_source('http', 'sigs', uri='http://localhost:1234/')
+
+        response = self.http_post(reverse('source-update-source', args=(self.source.pk,)), status=status.HTTP_400_BAD_REQUEST)
+        msg = str(response.get('update', [''])[0])
+        self.assertRegexpMatches(msg, 'Can not fetch data: .* Connection refused')
+
+    def test_006_custom_source_delete(self):
+        self._create_custom_source('local', 'sig')
+        self.http_delete(reverse('source-detail', args=(self.source.pk,)), {'comment': 'source delete'}, status=status.HTTP_204_NO_CONTENT)
+
+        ua = UserAction.objects.order_by('pk').last()
+        self.assertEqual(ua.action_type, 'delete_source')
+        self.assertEqual(ua.comment, 'source delete')
 
 
 class RestAPIRulesetTransformationTestCase(RestAPITestBase, APITestCase):
@@ -564,6 +609,24 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
             params['name'] = 'MyRenamedCreatedRuleset%s' % idx
             request(reverse('ruleset-detail', args=(rulesets[0].pk,)), params, status=status.HTTP_200_OK)
 
+    def test_008_copy_ruleset(self):
+        params = {"name": "MyCreatedRuleset",
+                  "comment": "My custom ruleset comment",
+                  "sources": [self.source.pk, self.source2.pk],
+                  "categories": [self.category.pk]}
+
+        # Create Ruleset
+        response = self.http_post(reverse('ruleset-list'), params, status=status.HTTP_201_CREATED)
+        ruleset = Ruleset.objects.get(pk=response['pk'])
+
+        params = {'name': 'MyCreatedRulesetCopy'}
+        self.http_post(reverse('ruleset-copy', args=(response['pk'],)), params, status=status.HTTP_200_OK)
+
+        ruleset_copy = Ruleset.objects.filter(name='MyCreatedRulesetCopy')[0]
+        self.assertNotEqual(ruleset.pk, ruleset_copy.pk)
+        self.assertEqual(len(ruleset.sources.all()), len(ruleset_copy.sources.all()))
+        self.assertEqual(len(ruleset.categories.all()), len(ruleset_copy.categories.all()))
+
 
 class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
     def setUp(self):
@@ -713,6 +776,499 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
         content = self.http_get(reverse('rule-content', args=(self.rule.pk,)))
         self.assertEqual(u'drop' in content[self.ruleset.pk], True)
 
+    def test_006_rule_status(self):
+        self.http_post(reverse('rulesettransformation-list'),
+                       {'ruleset': self.ruleset.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_DROP.value},
+                       status=status.HTTP_201_CREATED)
+
+        status_ = self.http_get(reverse('rule-status', args=(self.rule.pk,)))
+        self.assertTrue(self.ruleset.pk in status_)
+        self.assertEqual(status_[self.ruleset.pk]['transformations']['action'], 'drop')
+
+        self.http_post(reverse('categorytransformation-list'),
+                       {'category': self.category.pk, 'ruleset': self.ruleset.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_REJECT.value},
+                       status=status.HTTP_201_CREATED)
+
+        status_ = self.http_get(reverse('rule-status', args=(self.rule.pk,)))
+        self.assertTrue(self.ruleset.pk in status_)
+        self.assertEqual(status_[self.ruleset.pk]['transformations']['action'], 'reject')
+
+    def test_007_rule_toggle_availability(self):
+        self.http_post(reverse('rule-toggle-availability', args=(self.rule.pk,)), {}, status=status.HTTP_200_OK)
+        rule = Rule.objects.get(pk=self.rule.pk)
+        self.assertEqual(rule.state, False)
+
+        self.http_post(reverse('rule-toggle-availability', args=(self.rule.pk,)), {}, status=status.HTTP_200_OK)
+        rule = Rule.objects.get(pk=self.rule.pk)
+        self.assertEqual(rule.state, True)
+
+    def test_008_rule_comment(self):
+        comment = 'Need a comment for my test.'
+        self.http_post(reverse('rule-comment', args=(self.rule.pk,)), {'comment': comment})
+
+        ua = UserAction.objects.order_by('pk').last()
+        self.assertEqual(ua.comment, comment)
+
+    def test_009_get_transformed_rules(self):
+        # Transform ruleset
+        self.http_post(reverse('rulesettransformation-list'),
+                       {'ruleset': self.ruleset.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_REJECT.value},
+                       status=status.HTTP_201_CREATED)
+        params = '?transfo_type=%s&transfo_value=%s' % (Transformation.ACTION.value, Transformation.A_REJECT.value)
+        content = self.http_get(reverse('rule-transformation') + params)
+
+        self.assertEqual(self.ruleset.pk in content, True)
+        self.assertEqual(content[self.ruleset.pk]['rules'][0], self.rule.pk)
+        self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_key'], Transformation.ACTION.value)
+        self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_value'], Transformation.A_REJECT.value)
+
+        self.http_post(reverse('categorytransformation-list'),
+                       {'ruleset': self.ruleset.pk, 'category': self.category.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_DROP.value},
+                       status=status.HTTP_201_CREATED)
+        params = '?transfo_type=%s&transfo_value=%s' % (Transformation.ACTION.value, Transformation.A_DROP.value)
+        content = self.http_get(reverse('rule-transformation') + params)
+
+        self.assertEqual(self.ruleset.pk in content, True)
+        self.assertEqual(content[self.ruleset.pk]['rules'][0], self.rule.pk)
+        self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_key'], Transformation.ACTION.value)
+        self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_value'], Transformation.A_DROP.value)
+
+        self.http_post(reverse('ruletransformation-list'),
+                       {'ruleset': self.ruleset.pk, 'rule': self.rule.pk,
+                           'transfo_type': Transformation.ACTION.value,
+                           'transfo_value': Transformation.A_BYPASS.value},
+                       status=status.HTTP_201_CREATED)
+        self.assertEqual(self.ruleset.pk in content, True)
+        params = '?transfo_type=%s&transfo_value=%s' % (Transformation.ACTION.value, Transformation.A_BYPASS.value)
+        content = self.http_get(reverse('rule-transformation') + params)
+
+        self.assertEqual(self.ruleset.pk in content, True)
+        self.assertEqual(content[self.ruleset.pk]['rules'][0], self.rule.pk)
+        self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_key'], Transformation.ACTION.value)
+        self.assertEqual(content[self.ruleset.pk]['transformation']['transfo_value'], Transformation.A_BYPASS.value)
+
+
+class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
+    def setUp(self):
+        RestAPITestBase.setUp(self)
+        APITestCase.setUp(self)
+        self.list_url = reverse('ruleprocessingfilter-list')
+        self.detail_url = lambda x: reverse('ruleprocessingfilter-detail', args=(x,))
+        self.ruleset = Ruleset.objects.create(name='test ruleset', descr='descr', created_date=timezone.now(), updated_date=timezone.now())
+
+        self.DEFAULT_FILTER = {
+            'filter_defs': [{
+                'key': 'event_type',
+                'value': 'http',
+                'operator': 'equal'
+            }],
+            'action': 'suppress',
+            'index': 0,
+            'rulesets': [self.ruleset.pk]
+        }
+        self.DEFAULT_FILTER2 = {
+            'filter_defs': [{
+                'key': 'host',
+                'value': 'probe-test',
+                'operator': 'equal'
+            }],
+            'action': 'suppress',
+            'index': 0,
+            'rulesets': [self.ruleset.pk]
+        }
+
+        import scirius.utils
+        self.middleware = scirius.utils.get_middleware_module
+
+    def tearDown(self):
+        import scirius.utils
+        scirius.utils.get_middleware_module = self.middleware
+
+    def _force_suricata_middleware(self):
+        import scirius.utils
+        scirius.utils.get_middleware_module = lambda x: import_module('suricata.%s' % x)
+
+    def _remove_filters_pk(self, f):
+        for f_def in f['filter_defs']:
+            f_def.pop('pk', None)
+
+    def test_001_create(self):
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['comment'] = 'test comment'
+        r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        self._remove_filters_pk(r)
+        self.assertDictContainsSubset(self.DEFAULT_FILTER, r)
+        self.filter_pk = r['pk']
+        ua = UserAction.objects.last()
+        self.assertEqual(ua.action_type, 'create_rule_filter')
+        self.assertEqual(ua.comment, 'test comment')
+
+    def test_002_create_invalid_filter(self):
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['filter_defs'] = []
+        r = self.http_post(self.list_url, f, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'filter_defs': ['This field is required.']})
+        self.assertEqual(RuleProcessingFilter.objects.count(), 0)
+        self.assertEqual(RuleProcessingFilterDef.objects.count(), 0)
+
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['filter_defs'] = [{'key': 'test', 'operator': 'equal'}]
+        r = self.http_post(self.list_url, f, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'filter_defs': [{'value': ['This field is required.']}]})
+        self.assertEqual(RuleProcessingFilter.objects.count(), 0)
+        self.assertEqual(RuleProcessingFilterDef.objects.count(), 0)
+
+    def test_003_update_filter_existing(self):
+        self.test_001_create()
+
+        r = self.http_patch(self.detail_url(self.filter_pk), {
+            'filter_defs': [{'key': 'event_type', 'value': 'dns', 'operator': 'equal'}],
+            'comment': 'test comment'
+        })
+
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['filter_defs'][0]['value'] = 'dns'
+        self._remove_filters_pk(r)
+        self.assertDictContainsSubset(f, r)
+
+        ua = UserAction.objects.last()
+        self.assertEqual(ua.action_type, 'edit_rule_filter')
+        self.assertEqual(ua.comment, 'test comment')
+
+    def test_004_update_filter_add(self):
+        self.test_001_create()
+
+        # Filter value update
+        new_filter = {
+            'key': 'host',
+            'value': 'probe1',
+            'operator': 'equal'
+        }
+        filters = deepcopy(self.DEFAULT_FILTER['filter_defs'])
+        filters.append(new_filter)
+
+        r = self.http_patch(self.detail_url(self.filter_pk), {
+            'filter_defs': filters
+        })
+
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['filter_defs'].append(new_filter)
+        self._remove_filters_pk(r)
+        self.assertDictContainsSubset(f, r)
+        self.assertEqual(len(r['filter_defs']), 2)
+
+    def test_005_update_filter_rm(self):
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['filter_defs'].append({
+            'key': 'host',
+            'value': 'probe1',
+            'operator': 'equal'
+        })
+
+        r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        r['filter_defs'][0].pop('pk')
+        r['filter_defs'][1].pop('pk')
+        self.assertDictContainsSubset(f, r)
+
+        r = self.http_patch(self.detail_url(r['pk']), {
+            'filter_defs': self.DEFAULT_FILTER['filter_defs']
+        })
+
+        self._remove_filters_pk(r)
+        self.assertDictContainsSubset(self.DEFAULT_FILTER, r)
+        self.assertEqual(len(r['filter_defs']), 1)
+
+    def test_006_order_create_empty(self):
+        f = deepcopy(self.DEFAULT_FILTER)
+        f.pop('index')
+
+        r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        self._remove_filters_pk(r)
+        self.assertDictContainsSubset(self.DEFAULT_FILTER, r)
+
+    def test_007_order_create_append(self):
+        self.test_001_create()
+
+        f = deepcopy(self.DEFAULT_FILTER2)
+        f.pop('index')
+
+        r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        self._remove_filters_pk(r)
+        f = deepcopy(self.DEFAULT_FILTER2)
+        f['index'] = 1
+
+        self.assertDictContainsSubset(f, r)
+
+        r = self.http_get(self.list_url)
+        self._remove_filters_pk(r['results'][0])
+        self.assertDictContainsSubset(self.DEFAULT_FILTER, r['results'][0])
+        self._remove_filters_pk(r['results'][1])
+        self.assertDictContainsSubset(f, r['results'][1])
+
+    def test_008_order_create_insert(self):
+        self.test_001_create()
+
+        self.http_post(self.list_url, self.DEFAULT_FILTER2, status=status.HTTP_201_CREATED)
+
+        f1 = deepcopy(self.DEFAULT_FILTER)
+        f1['index'] = 1
+
+        r = self.http_get(self.list_url)
+        self._remove_filters_pk(r['results'][0])
+        self.assertDictContainsSubset(self.DEFAULT_FILTER2, r['results'][0])
+        self._remove_filters_pk(r['results'][1])
+        self.assertDictContainsSubset(f1, r['results'][1])
+
+    def test_009_order_create_oob(self):
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['index'] = 1
+        r = self.http_post(self.list_url, f, status=status.HTTP_400_BAD_REQUEST)
+
+        self.assertDictEqual(r, {'index': ['Invalid index value (too high).']})
+
+    def _check_order(self, expected):
+        r = self.http_get(self.list_url)
+        order = [f['pk'] for f in r['results']]
+        self.assertListEqual(expected, order)
+        indices = [f['index'] for f in r['results']]
+        self.assertListEqual(indices, range(4))
+
+    def _test_010_order_update(self, prev_index, new_index):
+        filters = []
+        for i in range(4):
+            f = deepcopy(self.DEFAULT_FILTER)
+            f.pop('index')
+            r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+            filters.append(r['pk'])
+
+        pk_to_move = filters[prev_index]
+        expected = deepcopy(filters)
+
+        if new_index is None:
+            expected.pop(prev_index)
+            expected.append(pk_to_move)
+        else:
+            if prev_index != new_index:
+                expected.pop(prev_index)
+
+                if new_index < len(filters):
+                    insert_before_pk = filters[new_index]
+                    _new_index = expected.index(insert_before_pk)
+                    expected.insert(_new_index, pk_to_move)
+                else:
+                    expected.append(pk_to_move)
+
+        self.http_patch(self.detail_url(pk_to_move), {'index': new_index})
+        self._check_order(expected)
+
+    def test_011_order_update_oob(self):
+        self.test_001_create()
+        r = self.http_patch(self.detail_url(self.filter_pk), {'index': 2}, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'index': ['Invalid index value (too high).']})
+
+    def test_012_delete(self):
+        self.test_007_order_create_append()
+
+        self.http_delete(self.detail_url(self.filter_pk), {'comment': 'test comment'}, status=status.HTTP_204_NO_CONTENT)
+        r = self.http_get(self.list_url)
+
+        self.assertEqual(r['count'], 1)
+        self._remove_filters_pk(r['results'][0])
+        self.assertDictContainsSubset(self.DEFAULT_FILTER2, r['results'][0])
+
+        ua = UserAction.objects.last()
+        self.assertEqual(ua.action_type, 'delete_rule_filter')
+        self.assertEqual(ua.comment, 'test comment')
+
+    def test_013_suppress_validation_error(self):
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['options'] = {'test': 'test'}
+        r = self.http_post(self.list_url, f, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'options': ['Action "suppress" does not accept options.']})
+
+    def test_014_threshold_create(self):
+        f = {
+            'filter_defs': [{'key': 'alert.sid', 'value': '1', 'operator': 'equal'}],
+            'action': 'threshold',
+            'options': {'type': 'both', 'count': 2, 'seconds': 30, 'track': 'by_src'},
+            'rulesets': [self.ruleset.pk]
+        }
+        r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        self._remove_filters_pk(r)
+        self.assertDictContainsSubset(f, r)
+        self.filter_pk = r['pk']
+
+    def test_015_threshold_create_invalid(self):
+        r = self.http_post(self.list_url, {
+            'filter_defs': [{'key': 'alert.sid', 'value': '1', 'operator': 'equal'}],
+            'action': 'threshold',
+            'options': {'count': 2, 'seconds': 30, 'track': 'by_src'},
+            'rulesets': [self.ruleset.pk]
+        }, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'options': [{'type': ['This field is required.']}]})
+
+    def test_016_threshold_update(self):
+        self.test_014_threshold_create()
+        self.http_patch(self.detail_url(self.filter_pk), {
+            'action': 'suppress',
+            'options': {}
+        })
+
+    def test_017_threshold_update_invalid(self):
+        self.test_014_threshold_create()
+        r = self.http_patch(self.detail_url(self.filter_pk), {
+            'action': 'threshold',
+            'options': {}
+        }, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'options': [{'type': ['This field is required.'],
+            'track': ['This field is required.']}]})
+
+    def test_018_suri_tag_create_invalid(self):
+        self._force_suricata_middleware()
+        r = self.http_post(self.list_url, {
+            'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal'}],
+            'action': 'tag',
+            'options': {'tag': 'test'},
+            'rulesets': [self.ruleset.pk]
+        }, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'non_field_errors': ['Action "tag" is not supported.']})
+
+    def test_019_suri_filter_defs_invalid(self):
+        self._force_suricata_middleware()
+        r = self.http_post(self.list_url, {
+            'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal'}],
+            'action': 'suppress',
+            'rulesets': [self.ruleset.pk]
+        }, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'filter_defs': ['A filter with a key "alert.signature_id" is required.']})
+
+    def test_020_suri_suppress_generate(self):
+        self.http_post(self.list_url, {
+            'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal'},
+                {'key': 'alert.signature_id', 'value': '1', 'operator': 'equal'}],
+            'action': 'suppress',
+            'rulesets': [self.ruleset.pk]
+        }, status=status.HTTP_201_CREATED)
+
+        f = RuleProcessingFilter.objects.all()[0]
+        suppress = f.get_threshold_content()
+        self.assertEqual(suppress, 'suppress gen_id 1, sid_id 1, track by_src, ip 192.168.0.1\n')
+
+    def test_021_suri_threshold_generate(self):
+        self.http_post(self.list_url, {
+            'filter_defs': [{'key': 'dest_ip', 'value': '192.168.0.1', 'operator': 'equal'},
+                {'key': 'alert.signature_id', 'value': '1', 'operator': 'equal'}],
+            'action': 'threshold',
+            'options': {'type': 'both', 'track': 'by_dst'},
+            'rulesets': [self.ruleset.pk]
+        }, status=status.HTTP_201_CREATED)
+
+        f = RuleProcessingFilter.objects.all()[0]
+        threshold = f.get_threshold_content()
+        self.assertEqual(threshold, 'threshold gen_id 1, sig_id 1, type both, track by_dst, count 1, seconds 60\n')
+
+    def test_022_ip_validation(self):
+        r = self.http_post(self.list_url, {
+            'filter_defs': [{'key': 'dest_ip', 'value': '192.168.0.', 'operator': 'equal'}],
+            'action': 'suppress',
+            'rulesets': [self.ruleset.pk]
+        }, status=status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(r, {'filter_defs': [{'value': ['This field requires a valid IP address.']}]})
+
+    def test_023_capabilities_test(self):
+        self._force_suricata_middleware()
+        r = self.http_post(reverse('ruleprocessingfilter-test'), {'fields': ['src_ip', 'dns.rdata'], 'action': 'suppress'})
+        self.assertDictEqual(r, {
+            'fields': ['src_ip'],
+            'operators': ['equal']
+        })
+
+    def test_024_capabilities_test(self):
+        self._force_suricata_middleware()
+        r = self.http_post(reverse('ruleprocessingfilter-test'), {'fields': ['src_ip', 'dns.rdata'], 'action': 'threshold'})
+        self.assertDictEqual(r, {
+            'fields': [],
+            'operators': ['equal']
+        })
+
+    def test_025_intersect_match(self):
+        self.test_007_order_create_append()
+
+        conflict_filter = {
+            'filter_defs': [{
+                'key': 'event_type',
+                'value': 'dns',
+                'operator': 'equal'
+            }],
+        }
+        r = self.http_post(reverse('ruleprocessingfilter-intersect'), conflict_filter)
+        self.assertEqual(r.get('count'), 1)
+        self._remove_filters_pk(r['results'][0])
+        self.assertDictContainsSubset(self.DEFAULT_FILTER, r['results'][0])
+
+    def test_026_intersect_multi_match(self):
+        self.test_007_order_create_append()
+
+        conflict_filter = {
+            'filter_defs': [{
+                'key': 'event_type',
+                'value': 'dns',
+                'operator': 'equal'
+            }, {
+                'key': 'host',
+                'value': 'test42',
+                'operator': 'contains'
+            }],
+        }
+        r = self.http_post(reverse('ruleprocessingfilter-intersect'), conflict_filter)
+        self.assertEqual(r.get('count'), 2)
+
+    def test_027_intersect_no_match(self):
+        self.test_007_order_create_append()
+
+        conflict_filter = {
+            'filter_defs': [{
+                'key': 'alert.signature_id',
+                'value': 'dns',
+                'operator': 'equal'
+            }],
+        }
+        r = self.http_post(reverse('ruleprocessingfilter-intersect'), conflict_filter)
+        self.assertEqual(r.get('count'), 0)
+
+    def test_028_create(self):
+        f = deepcopy(self.DEFAULT_FILTER)
+        f['filter_defs'] = [{
+            'key': 'event_type',
+            'value': 'dns',
+            'operator': 'different'
+        }, {
+            'key': 'event_type',
+            'value': 'http',
+            'operator': 'different'
+        }]
+
+        r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
+        self._remove_filters_pk(r)
+        self.assertDictContainsSubset(f, r)
+
+
+def order_update_lambda(a, b):
+    return lambda x: RestAPIRuleProcessingFilterTestCase._test_010_order_update(x, a, b)
+
+
+for a, b in itertools.product(range(4), range(5) + [None]):
+    setattr(RestAPIRuleProcessingFilterTestCase, 'test_010_order_update_%i_to_%s' % (a, repr(b)), order_update_lambda(a, b))
+
+
 class RestAPIListTestCase(RestAPITestBase, APITestCase):
     def setUp(self):
         RestAPITestBase.setUp(self)
@@ -723,7 +1279,7 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
         # Ordering must be set to prevent:
         # /usr/share/python/scirius-pro/local/lib/python2.7/site-packages/rest_framework/pagination.py:208: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'rules.models.RuleTransformation'> QuerySet
         for url, viewset, view_name in self.router.registry:
-            if viewset().get_queryset().ordered:
+            if viewset().get_queryset().ordered or not issubclass(viewset, mixins.ListModelMixin):
                 continue
             ERR = 'Viewset "%s" must set an "ordering" attribute or have an ordered queryset' % viewset.__name__
             self.assertTrue(hasattr(viewset, 'ordering'), ERR)
@@ -731,7 +1287,8 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
 
     def test_002_list(self):
         for url, viewset, view_name in self.router.registry:
-            self.http_get(reverse(view_name + '-list'))
+            if issubclass(viewset, mixins.ListModelMixin):
+                self.http_get(reverse(view_name + '-list'))
 
     def test_003_list_order(self):
         for url, viewset, view_name in self.router.registry:
@@ -756,4 +1313,78 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
 
     def test_006_options(self):
         for url, viewset, view_name in self.router.registry:
-            self.http_options(reverse(view_name + '-list'))
+            if issubclass(viewset, mixins.ListModelMixin):
+                self.http_options(reverse(view_name + '-list'))
+
+    def test_007_documentation(self):
+        for url, viewset, view_name in self.router.registry:
+            self.assertNotEqual(viewset.__doc__, None, 'Viewset %s has no documentation' % view_name)
+
+
+class RestAPIChangelogTestCase(RestAPITestBase, APITestCase):
+    def _create_public_source(self):
+        self.ruleset = Ruleset.objects.create(name='test ruleset', descr='descr', created_date=timezone.now(), updated_date=timezone.now())
+        self.ruleset.save()
+
+        params = {
+                'name': 'sonic test public source',
+                'comment': 'MyPublicComment',
+                'public_source': 'oisf/trafficid',
+                }
+        self.http_post(reverse('publicsource-list'), params, status=status.HTTP_201_CREATED)
+        sources = Source.objects.filter(name='sonic test public source')
+        self.assertEqual(len(sources) == 1, True)
+
+        sources_at_version = SourceAtVersion.objects.filter(source=sources[0])
+        self.assertEqual(len(sources_at_version) == 1, True)
+
+        self.assertEqual(sources_at_version[0].source == sources[0], True)
+
+        self.public_source = sources[0]
+        self.ruleset.sources.add(sources_at_version[0])
+
+    def test_001_all_changelog(self):
+        self._create_public_source()
+        data = {"deleted": [], "updated": [{"msg": "SURICATA TRAFFIC-ID: Debian APT-GET", "category": "Suricata Traffic ID ruleset Sigs", "pk": 300000032, "sid": 300000032},
+                {"msg": "SURICATA TRAFFIC-ID: Ubuntu APT-GET", "category": "Suricata Traffic ID ruleset Sigs", "pk": 300000033, "sid": 300000033}], "added": []}
+        sha = '9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6'
+
+        SourceUpdate.objects.create(
+            source=self.public_source,
+            created_date=timezone.now(),
+            data=json.dumps(data),
+            version=sha,
+            changed=len(data["deleted"]) + len(data["added"]) + len(data["updated"]),
+        )
+
+        self.public_source.update()
+        response = self.http_get(reverse('sourceupdate-list'))
+        self.assertEqual(response['results'][0]['source'], self.public_source.pk)
+        self.assertEqual(response['results'][0]['data']['updated'], data['updated'])
+
+
+class RestAPISystemSettingsTestCase(RestAPITestBase, APITestCase):
+    def setUp(self):
+        RestAPITestBase.setUp(self)
+        APITestCase.setUp(self)
+
+        self.system_settings = SystemSettings.objects.get_or_create(id=1)[0]
+
+    def test_001_system_get(self):
+        content = self.http_get(reverse('systemsettings'))
+        self.assertEqual('custom_elasticsearch' in content, True)
+        self.assertEqual('elasticsearch_url' in content, True)
+        self.assertEqual('http_proxy' in content, True)
+        self.assertEqual('use_http_proxy' in content, True)
+        self.assertEqual('use_elasticsearch' in content, True)
+
+    def test_002_system_settings_update(self):
+        params = {'use_http_proxy': True, 'http_proxy': '', 'https_proxy': '', 'use_elasticsearch': True, 'custom_elasticsearch': False, 'elasticsearch_url': 'http://elasticsearch:9200/'}
+        content = self.http_patch(reverse('systemsettings'), params)
+        self.assertEqual(content['use_http_proxy'], True)
+        self.assertEqual(content['use_elasticsearch'], True)
+
+        params = {'use_http_proxy': False, 'http_proxy': '', 'https_proxy': '', 'use_elasticsearch': False, 'custom_elasticsearch': False, 'elasticsearch_url': 'http://elasticsearch:9200/'}
+        content = self.http_put(reverse('systemsettings'), params)
+        self.assertEqual(content['use_http_proxy'], False)
+        self.assertEqual(content['use_elasticsearch'], False)

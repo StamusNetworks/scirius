@@ -1,0 +1,175 @@
+$color-pf-black:                #030303 !default;
+$color-pf-white:                #fff !default;
+$color-sn-border:               #ddd !default;
+$color-sn-menu:                 #f5f5f5 !default;
+$color-sn-purple:               #7b1244 !default;
+$color-sn-purple-light:         lighten($color-sn-purple, 10%) !default;
+
+$color-pf-blue:                 $color-sn-purple !default;
+//$color-pf-blue:                  #AD9C9B !default;
+$color-pf-blue-25:               #e4cdcc !default;
+$color-pf-blue-50:               #dcc6c5 !default;
+$color-pf-blue-100:              #c8b4b3 !default;
+$color-pf-blue-200:              #b8a6a5 !default;
+$color-pf-blue-300:              #a49493 !default;
+$color-pf-blue-400:              #766a6a !default;
+$color-pf-blue-500:              #675d5c !default;
+$color-pf-blue-600:              #4d4645 !default;
+$color-pf-blue-700:              #3b3635 !default;
+
+
+
+$link-hover-color:                                                  $color-sn-purple-light !default;
+
+$navbar-pf-vertical-bg-color:                                       $color-sn-menu !default;
+$navbar-pf-vertical-color:                                          lighten($color-pf-black, 20%) !default;
+$navbar-pf-vertical-active-color:                                   $color-pf-black !default;
+
+$navbar-pf-vertical-border-color:                                   $color-sn-purple !default;
+$navbar-pf-vertical-border-style:                                   solid !default;
+$navbar-pf-vertical-border-width:                                   1px !default;
+$navbar-pf-vertical-navbar-toggle-icon-bar-hover-bg:                $color-sn-purple !default;
+
+$nav-pf-vertical-bg-color:                                          $color-sn-menu !default;
+$nav-pf-vertical-color:                                             lighten($color-pf-black, 20%) !default;
+$nav-pf-vertical-icon-color:                                        lighten($color-pf-black, 20%) !default;
+$nav-pf-vertical-item-border-color:                                 $color-sn-border !default;
+$nav-pf-vertical-border-color:                                      $color-sn-border !default;
+
+$nav-pf-vertical-active-bg-color:                                   lighten($color-sn-menu, 40%) !default;
+$nav-pf-vertical-active-color:                                      $color-sn-purple !default;
+$nav-pf-vertical-active-icon-color:                                 $color-sn-purple !default;
+$nav-pf-vertical-active-before-color:                               $color-sn-purple !default;
+
+@import '../../scss/_styles.scss';
+
+@import 'patternfly';
+@import 'patternfly-react';
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.rule-card {
+  min-height: 200px;
+}
+
+.no-sparkline {
+  height: 50px;
+  width: 90%;
+  margin: 0;
+  padding: 0;
+  opacity: 0.5;
+  text-align: center;
+  padding-top: 20px;
+}
+
+.truncate-overflow {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-view-pf .list-group-item {
+  display: block;
+}
+
+.eventFiltersHidden {
+  visibility: hidden;
+  margin-left: 5px;
+}
+
+.eventFilters {
+  visibility: visible;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.eventFilters a {
+  text-decoration: none;
+}
+
+span.eventValue {
+  max-width: 10em;
+}
+
+.SigContent pre {
+  white-space: pre-wrap;
+}
+
+.highlight .err {
+  border: none;
+}
+
+.HuntList .spinner {
+  margin-top: 10px;
+}
+
+.navbar-pf-vertical {
+  border-bottom: $navbar-pf-vertical-border-color $navbar-pf-vertical-border-style $navbar-pf-vertical-border-width;
+  border-top: none;
+  -webkit-box-shadow: 3px 2px 3px 0px rgba(123,18,68,0.38);
+  -moz-box-shadow: 3px 2px 3px 0px rgba(123,18,68,0.38);
+  box-shadow: 3px 2px 3px 0px rgba(123,18,68,0.38);
+}
+
+.about-modal-pf .modal-footer {
+    background-color: $color-pf-white;
+}
+
+.list-view-pf-left .pficon.list-view-pf-icon-sm.relevant {
+    color: $color-pf-orange-400;
+    /* border-color: $color-pf-orange-400; */
+}
+
+.list-view-pf-left .pficon.list-view-pf-icon-sm.informational {
+    color: #675d5c;
+    /* border-color: #675d5c; */
+}
+
+.list-view-pf-left .pficon.list-view-pf-icon-sm.primary {
+    color: $color-sn-purple;
+    /* border-color: $color-sn-purple; */
+}
+
+.card-pf-aggregate-status-notifications {
+   font-size: 18px;
+}
+
+
+.list-view-pf .list-group-item-heading {
+   flex-basis: calc(35% - 20px);
+}
+
+.value-field-complete {
+   display: flex;
+   flex-direction: row;
+   width: 100%;
+   justify-content: space-between;
+   margin-right: 0px;
+   padding-right: 0px;
+}
+
+.value-field {
+   overflow: hidden;
+   white-space: nowrap;
+   text-overflow: ellipsis;
+}
+
+.value-actions {
+   flex-basis: calc(70px);
+   flex-grow: 1;
+}
+
+.value.right-info {
+   flex-grow: 1;
+}

@@ -15,51 +15,7 @@
 <div class="container-fluid">
     <div class="list-group list-view-pf list-view-pf-view">
         {% for user_action in history %}
-        <div class="list-group-item">
-            <div class="list-group-item-header">
-                <div class="list-view-pf-expand">
-                    <span class="fa fa-angle-right"></span>
-                </div>
-                <div class="list-view-pf-actions">
-                </div>
-                <div class="list-view-pf-main-info">
-
-                    <div class="list-view-pf-left">
-                        <span class="fa fa-th list-view-pf-icon-sm"></span>
-                    </div>
-
-                    <div class="list-view-pf-body">
-                        <div class="list-view-pf-description">
-                            <div class="list-group-item-heading">
-                                {{ user_action.get_title }}
-                            </div>
-                            <div class="list-group-item-text">
-                                {{ user_action.date }}
-                            </div>
-                        </div>
-                        <div class="list-view-pf-additional-info">
-                            {{ user_action.get_icons }}
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="list-group-item-container container-fluid hidden">
-                <div class="close">
-                    <span class="pficon pficon-close"></span>
-                </div>
-                <div class="row">
-                        <dl class="dl-horizontal">
-                            <dt>Description:</dt><dd> {{ user_action.generate_description }}</dd>
-                            {% if user_action.comment %}
-                            <dt>Comment:</dt><dd>{{ user_action.comment }}</dd>
-                            {% else %}
-                            <dt>Comment:</dt><dd><p class="text-muted">No comment</p></dd>
-                            {% endif %}
-                        </dl>
-                </div>
-            </div>
-        </div>
+            {% include "rules/useraction_entry.html" with user_action=user_action %}
         {% endfor %}
     </div>
 </div>

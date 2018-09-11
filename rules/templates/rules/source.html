@@ -11,6 +11,7 @@
 {% if source.updated_date %}
        <li><span class="type">Updated:</span> {{ source.updated_date }}</li>
 {% endif %}
+       <li><span class="type">Use IP reputation:</span> {{ source.use_iprep }}</li>
 </ul>
 
 {% if request.user.is_staff %}

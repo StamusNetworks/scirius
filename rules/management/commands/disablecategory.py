@@ -29,7 +29,7 @@ class Command(BaseCommand):
         parser.add_argument('category', help='Category name')
 
     def handle(self, *args, **options):
-        ruleset = options['ruleset']
+        name = options['ruleset']
         catname = options['category']
         
         try:
