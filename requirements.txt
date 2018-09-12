@@ -23,5 +23,4 @@ markdown
 django-filter<2.0
 idstools
 enum34
-drf-schema-adapter
 django-webpack-loader
