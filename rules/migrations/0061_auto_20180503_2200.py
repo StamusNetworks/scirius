@@ -10,7 +10,11 @@ def parse_metadata_time(sfield):
     sdate = sfield.split(' ')[1]
     if sdate:
         de = sdate.split('_')
-        return datetime_date(int(de[0]),int(de[1]),int(de[2]))
+        try:
+            return datetime_date(int(de[0]),int(de[1]),int(de[2]))
+        except ValueError:
+            # Catches conversion to int failure, in case the date is 'unknown'
+            pass
     return None
 
 def migrate_parse_metadata(apps, schema_editor):
