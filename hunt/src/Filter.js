@@ -36,6 +36,9 @@ export class HuntFilter extends React.Component {
            }
     }
     var got_alert_tag = true;
+    if (this.props.got_alert_tag === false) {
+	got_alert_tag = false;
+    }
     this.state = {
       filterFields: this.props.filterFields,
       currentFilterType: this.props.filterFields[0],

@@ -122,6 +122,7 @@ export class HistoryPage extends HuntList {
                    sort_config={HistorySortFields}
 		   displayToggle={false}
 		   queryType={['all']}
+		   got_alert_tag={false}
 	        />
 	    <Spinner loading={this.state.loading} >
 	    </Spinner>
