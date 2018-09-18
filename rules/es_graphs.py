@@ -1529,7 +1529,8 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0):
     return stats
 
 def es_get_dashboard(count=20):
-    req = urllib2.Request(get_es_path(DASHBOARDS_QUERY_URL) + str(count))
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(get_es_path(DASHBOARDS_QUERY_URL) + str(count), headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
@@ -1645,7 +1646,8 @@ def es_get_poststats(from_date=0,  value = "poststats.rule_filter_1", hosts = No
     return data['aggregations']['hosts']['buckets']
 
 def es_get_json(uri):
-    req = urllib2.Request(get_es_path(uri))
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(get_es_path(uri), headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
@@ -1883,7 +1885,8 @@ def es_get_alerts_tail(from_date=0, qfilter = None, search_target=True):
         context = {'from_date': from_date, 'target_only': ''}
     data = render_template(ALERTS_TAIL, context, qfilter = qfilter)
     es_url = get_es_url(from_date)
-    req = urllib2.Request(es_url, data)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except Exception, e:
@@ -1901,7 +1904,8 @@ def es_suri_log_tail(from_date, hosts):
     }
     data = render_template(SURICATA_LOGS_TAIL, context)
     es_url = get_es_url(from_date, data='engine')
-    req = urllib2.Request(es_url, data)
+    headers = {'content-type': 'application/json'}
+    req = urllib2.Request(es_url, data, headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except Exception, e:
