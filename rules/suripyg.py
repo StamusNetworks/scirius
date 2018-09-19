@@ -62,6 +62,8 @@ class SuriLexer(RegexLexer):
              r'http_cookie|http_method|urilen|http_client_body|http_server_body|http_header|'
              r'http_raw_header|http_uri|http_raw_uri|http_stat_msg|http_stat_code|http_user_agent|'
              r'http_host|http_raw_host|'
+             r'http_accept|http_accept_lang|http_accept_enc|http_connection|http_content_len|http_content_type|'
+             r'http_protocol|http_request_line|http_response_line|http_start|'
              r'dns_query|'
              r'norm|raw|relative|bytes|big|little|align|invalid-entry|'
              r'enable|disable|client|server|both|either|printable|binary|'
