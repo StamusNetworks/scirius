@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Copyright(C) 2014, Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
@@ -17,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
-
+from __future__ import unicode_literals
 import json
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -356,6 +357,13 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
         self.assertEqual(ua.action_type, 'delete_source')
         self.assertEqual(ua.comment, 'source delete')
 
+    def test_007_source_name_unicode(self):
+        self._create_public_source()
+
+        unic = 'é&"_è-àç'
+        response = self.http_patch(reverse('publicsource-detail', args=(self.public_source.pk,)), {'name': unic})
+        self.assertEqual(response['name'].encode('utf-8'), unic)
+
 
 class RestAPIRulesetTransformationTestCase(RestAPITestBase, APITestCase):
     def setUp(self):
@@ -626,6 +634,17 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
         self.assertNotEqual(ruleset.pk, ruleset_copy.pk)
         self.assertEqual(len(ruleset.sources.all()), len(ruleset_copy.sources.all()))
         self.assertEqual(len(ruleset.categories.all()), len(ruleset_copy.categories.all()))
+
+    def test_009_ruleset_name_unicode(self):
+        name = "Rulesetàççé'-(è&_èç&àç\"ééè-"
+        params = {"name": name,
+                  "comment": "My custom ruleset comment",
+                  "sources": [self.source.pk, self.source2.pk],
+                  "categories": [self.category.pk]}
+
+        # Create Ruleset
+        response = self.http_post(reverse('ruleset-list'), params, status=status.HTTP_201_CREATED)
+        self.assertEqual(response['name'].encode('utf-8'), name)
 
 
 class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
