@@ -315,7 +315,31 @@ class AlertInList extends React.Component {
 			</div>
 			</div>
 		 </Col>
-		    }
+			}
+		    {data.smtp !== undefined &&
+	         <Col sm={4}>
+			 <div className="card-pf">
+			<div className="card-pf-heading">
+			<h5>SMTP</h5>
+			</div>
+			<div className="card-pf-body">
+		        <dl className="dl-horizontal">
+				{(data.smtp.mail_from !== undefined) &&
+				<EventField field_name="From" field="smtp.mail_from" value={data.smtp.mail_from} addFilter={this.addFilter} />
+				}
+				{(data.smtp.rcpt_to !== undefined) && data.smtp.rcpt_to.map(mail => {
+					return(
+						<EventField field_name="To" field="smtp.rcpt_to" value={mail} addFilter={this.addFilter} />
+					)
+				})}
+				{(data.smtp.helo !== undefined) &&
+				<EventField field_name="Helo" field="smtp.helo" value={data.smtp.helo} addFilter={this.addFilter} />
+				}
+			</dl>
+			</div>
+			</div>
+		 </Col>
+			}
 		    {data.ssh !== undefined &&
 	         <Col sm={4}>
 		 	<div className="card-pf">
