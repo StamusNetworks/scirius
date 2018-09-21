@@ -373,6 +373,25 @@ def elasticsearch(request):
             template = Probe.common.get_es_template()
             return scirius_render(request, template, context)
 
+
+def extract_rule_references(rule):
+    references = []
+    for ref in re.findall("reference: *(\w+), *(\S+);", rule.content):
+        refer = Reference(ref[0], ref[1])
+        if refer.key == 'url':
+            if not refer.value.startswith("http"):
+                refer.url = "http://" + refer.value
+            else:
+                refer.url = refer.value
+        elif refer.key == 'cve':
+            refer.url = "http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-" + refer.value
+            refer.key = refer.key.upper()
+        elif refer.key == 'bugtraq':
+            refer.url = "http://www.securityfocus.com/bid/" + refer.value
+        references.append(refer)
+    return references
+
+
 def rule(request, rule_id, key = 'pk'):
     if request.is_ajax():
         rule = get_object_or_404(Rule, sid=rule_id)
@@ -388,20 +407,7 @@ def rule(request, rule_id, key = 'pk'):
     rule_path = [rule.category.source, rule.category]
 
     rule.highlight_content = SuriHTMLFormat(rule.content)
-    references = []
-    for ref in re.findall("reference: *(\w+), *(\S+);", rule.content):
-        refer = Reference(ref[0], ref[1])
-        if refer.key == 'url':
-            if not refer.value.startswith("http"):
-                refer.url = "http://" + refer.value
-            else:
-                refer.url = refer.value
-        elif refer.key == 'cve':
-            refer.url = "http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-" + refer.value
-            refer.key = refer.key.upper()
-        elif refer.key == 'bugtraq':
-            refer.url = "http://www.securityfocus.com/bid/" + refer.value
-        references.append(refer)
+    references = extract_rule_references(rule)
     
     # build table of rulesets and display if rule is active
     rulesets = Ruleset.objects.all()

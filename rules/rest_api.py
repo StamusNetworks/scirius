@@ -29,7 +29,7 @@ from elasticsearch.exceptions import ConnectionError
 
 from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, \
         Source, SourceAtVersion, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
-from rules.views import get_public_sources, fetch_public_sources
+from rules.views import get_public_sources, fetch_public_sources, extract_rule_references
 from rules.rest_processing import RuleProcessingFilterViewSet
 from rules.es_data import ESData
 
@@ -664,6 +664,17 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
     filter_class = RuleFilter
     filter_backends = (DjangoFilterBackend, SearchFilter, RuleHitsOrderingFilter)
     search_fields = ('sid', 'msg', 'content')
+
+    @detail_route(methods=['get'])
+    def references(self, request, pk):
+        rule = self.get_object()
+        references = extract_rule_references(rule)
+
+        res = []
+        for reference in references:
+            res.append({'url': reference.url, 'key': reference.key, 'value': reference.value})
+
+        return Response(res)
 
     @list_route(methods=['get'])
     def transformation(self, request):

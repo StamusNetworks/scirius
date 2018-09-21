@@ -251,17 +251,19 @@ export class RulePage extends React.Component {
     fetchRuleStatus(sid) {
            axios.all([
                 axios.get(config.API_URL + config.RULE_PATH + sid + "/status/"),
-                axios.get(config.API_URL + config.RULE_PATH + sid + "/content/?highlight=1")
+                axios.get(config.API_URL + config.RULE_PATH + sid + "/content/?highlight=1"),
+                axios.get(config.API_URL + config.RULE_PATH + sid + "/references/")
                 ]).then(
-		                ([res, rescontent]) => {
-			var rstatus = [];
-			for (var key in res.data) {
-                res.data[key]['pk'] = key;    
-                res.data[key].content = rescontent.data[key];
-				rstatus.push(res.data[key]);
-			}
-			this.setState({rule_status: rstatus});
-		}
+                    ([res, rescontent, references_content]) => {
+                        var rstatus = [];
+                        for (var key in res.data) {
+                            res.data[key]['pk'] = key;
+                            res.data[key].content = rescontent.data[key];
+                            rstatus.push(res.data[key]);
+                        }
+                        this.setState({rule_status: rstatus});
+                        this.setState({rule_references: references_content.data});
+	            }
 	   )
     }
 
@@ -383,7 +385,31 @@ export class RulePage extends React.Component {
                     <HuntStat title="SNI" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter}  addFilter={this.props.addFilter}/>
                     <HuntStat title="Fingerprint" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                 </div>
-		}
+        }
+        <Row>
+        {this.state.rule_references && this.state.rule_references.length > 0 &&
+            <div className="col-xs-6 col-sm-4 col-md-4">
+                <div class="card-pf card-pf-accented card-pf-aggregate-status">
+                    {/* <div class="panel-heading">
+                        <h2 class="panel-title">References</h2>
+                    </div> */}
+                    <h2 className="card-pf-title">
+                        <span className="fa"></span>References
+                    </h2>
+                    <div class="card-pf-body">
+                        {this.state.rule_references.map( reference => {
+                                if(reference.url !== undefined) {
+                                    return(
+                                        <p><a href={reference.url} target="_blank">{reference.key[0].toUpperCase() + reference.key.substring(1) + ': ' + reference.value}</a></p>
+                                    );
+                                }
+                            })
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        </Row>
             </div>
 	    </div>
 	    }
