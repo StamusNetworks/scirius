@@ -24,7 +24,7 @@ import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinn
 import axios from 'axios';
 import { PAGINATION_VIEW } from 'patternfly-react';
 import { Modal, DropdownKebab, MenuItem, Icon, Button } from 'patternfly-react';
-import { Form, FormGroup, FormControl } from 'patternfly-react';
+import { Form, FormGroup, FormControl, Checkbox } from 'patternfly-react';
 import { SciriusChart } from './Chart.js';
 import * as config from './config/Api.js';
 import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
@@ -596,6 +596,7 @@ export class RuleToggleModal extends React.Component {
         this.updateActionDialog = this.updateActionDialog.bind(this);
         this.setDefaultOptions = this.setDefaultOptions.bind(this);
         this.onFieldKeyPress = this.onFieldKeyPress.bind(this);
+        this.toggleFilter = this.toggleFilter.bind(this);
     }
 
     updateActionDialog() {
@@ -618,7 +619,8 @@ export class RuleToggleModal extends React.Component {
 				continue;
 			}
 			this.props.filters[i].operator = "different";
-		}
+        }
+        this.props.filters[i].isChecked = true;
                 this.props.filters[i].key = this.props.filters[i].id;
                 supp_filters.push(this.props.filters[i]);
 		notfound = false;
@@ -713,7 +715,14 @@ export class RuleToggleModal extends React.Component {
              , this);
          } else if (["suppress", "threshold", "tag", "tagkeep"].indexOf(this.props.action) !== -1) {
             //{"filter_defs": [{"key": "src_ip", "value": "192.168.0.1", "operator": "equal"}], "action": "suppress", "rulesets": [1]}
-            var data = {filter_defs: this.state.supported_filters, action: this.props.action, rulesets: this.state.selected, comment: this.state.comment};
+
+            var filters = []
+            for (var filter of this.state.supported_filters) {
+                if (filter.isChecked) {
+                    filters.push(filter);
+                }
+            }
+            var data = {filter_defs: filters, action: this.props.action, rulesets: this.state.selected, comment: this.state.comment};
             if (["threshold", "tag", "tagkeep"].indexOf(this.props.action) !== -1) {
                     data.options = this.state.options;
             }
@@ -771,6 +780,17 @@ export class RuleToggleModal extends React.Component {
 	    this.setState({options: options});
     }
 
+    toggleFilter(event, item) {
+        var sfilters = Object.assign([], this.state.supported_filters);
+        for (var filter in sfilters) {
+            if (sfilters[filter].id === item.id) {
+                sfilters[filter].isChecked = !item.isChecked;
+                break;
+            }
+        }
+        this.setState({supported_filters: sfilters});
+    }
+
 
     render() {
        return(
@@ -800,10 +820,10 @@ export class RuleToggleModal extends React.Component {
                   return (
 		  <FormGroup key={item.id} controlId={item.id} disabled={false}>
 			<Col sm={4}>
-			<strong>{item.negated && "Not " }{item.id}</strong>
+			<Checkbox disabled={false} defaultChecked={true} onChange={(e) => {this.toggleFilter(e, item)}} > <strong>{item.negated && "Not " }{item.id}</strong> </Checkbox>
 			</Col>
 			<Col sm={8}>
-			<FormControl type={item.id} disabled={false} defaultValue={item.value} onChange={this.handleFieldChange} onKeyPress={e => this.onFieldKeyPress(e)} />
+			<FormControl type={item.id} disabled={!item.isChecked} defaultValue={item.value} onChange={this.handleFieldChange} onKeyPress={e => this.onFieldKeyPress(e)} />
 			</Col>
 	          </FormGroup>
 		  )
