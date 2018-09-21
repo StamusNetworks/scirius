@@ -3,7 +3,6 @@ from time import time
 
 from django.conf import settings
 from django.utils import timezone
-from django.utils.html import escape
 from django.db import models
 from collections import OrderedDict
 
@@ -11,11 +10,9 @@ from django.core.exceptions import SuspiciousOperation, ValidationError
 
 from rest_framework.views import APIView
 from rest_framework.validators import UniqueValidator
-from rest_framework import serializers, viewsets, exceptions, mixins
+from rest_framework import serializers, viewsets, exceptions
 from rest_framework.decorators import detail_route, list_route
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import serializers, viewsets
-from rest_framework.decorators import detail_route, list_route
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException, ParseError
@@ -40,10 +37,11 @@ from rules.es_graphs import es_get_stats, es_get_rules_stats, es_get_dashboard, 
         es_get_timeline, es_get_metrics_timeline, es_get_health, es_get_indices, es_get_rules_per_category, es_get_alerts_count, \
         es_get_latest_stats, es_get_ippair_alerts, es_get_ippair_network_alerts, es_get_alerts_tail, es_suri_log_tail
 
-from scirius.rest_utils import SciriusReadOnlyModelViewSet, SciriusModelViewSet
+from scirius.rest_utils import SciriusReadOnlyModelViewSet
 from rules.es_graphs import es_get_sigs_list_hits, es_get_top_rules, ESError
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
+
 
 class ServiceUnavailableException(APIException):
     status_code = 500
