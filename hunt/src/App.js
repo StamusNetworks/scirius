@@ -489,6 +489,21 @@ class UserNavInfo extends Component {
 			{this.state.showNotifications &&
 			<HuntNotificationArea />
 			}
+                <ApplicationLauncher grid open={this.state.isShown} toggleLauncher={this.toggleiSshown}>
+                    <ApplicationLauncherItem
+                    icon="rebalance"
+                    title="Hunt"
+                    tooltip="Threat Hunting"
+                    onClick={this.toggleHunt}
+                    />
+
+                    <ApplicationLauncherItem
+                    icon="server"
+                    title="Administration"
+                    tooltip="Appliances Management"
+                    onClick={this.toggleHome}
+                    />
+                </ApplicationLauncher>
     			<Dropdown componentClass="li" id="help">
       				<Dropdown.Toggle useAnchor className="nav-item-iconic">
         				<Icon type="pf" name="help" />
@@ -509,21 +524,7 @@ class UserNavInfo extends Component {
     				</Dropdown.Menu>
 			   </Dropdown>
 
-                <ApplicationLauncher grid open={this.state.isShown} toggleLauncher={this.toggleiSshown}>
-                    <ApplicationLauncherItem
-                    icon="rebalance"
-                    title="Hunt"
-                    tooltip="Hunt"
-                    onClick={this.toggleHunt}
-                    />
 
-                    <ApplicationLauncherItem
-                    icon="home"
-                    title="Administration"
-                    tooltip="Scirius"
-                    onClick={this.toggleHome}
-                    />
-                </ApplicationLauncher>
 
         <AboutModal
           show={this.state.showModal}
@@ -534,7 +535,7 @@ class UserNavInfo extends Component {
           trademarkText="Copyright 2014-2018, Stamus Networks"
         >
           <AboutModal.Versions>
-            <AboutModal.VersionItem label="Version" versionText="31.0.0" />
+            <AboutModal.VersionItem label="Version" versionText="32.0.0" />
           </AboutModal.Versions>
         </AboutModal>
 			</React.Fragment>

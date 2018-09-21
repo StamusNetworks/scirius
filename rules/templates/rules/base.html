@@ -86,20 +86,6 @@
 
 <ul class="nav navbar-nav">
 <li>
-<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="about">
-{% bootstrap_icon "question-sign" %} <span class="caret"/>
-
-<ul class="dropdown-menu" id="about_menu" role="menu">
-<li>
-  <a href="{% static 'doc/index.html' %}" target="_blank" >{% bootstrap_icon "book" %} User manual</a>
-</li>
-<li>
-  <a href="{% url 'scirius_about' %}">{% bootstrap_icon "question-sign" %} About Scirius</a>
-</li>
-            <li><a target="_blank" href="https://github.com/StamusNetworks/scirius">{% bootstrap_icon "new-window"%} Scirius homepage</a></li>
-	    </ul>
-</li>
-<li>
 <a class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
 {% bootstrap_icon "time" %} last {{ date }} <span class="caret"/>
 </a>
@@ -113,16 +99,6 @@
 </ul>
 </li>
 
-
-<li>
-			<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="user">
-			{% bootstrap_icon "user" %} {{ request.user }} <span class="caret"/>
-</a>
-			<ul class="dropdown-menu" id="user_menu" role="menu">
-            <li><a href="{% url 'accounts_edit' '' %}" >{% bootstrap_icon "cog"%} Account settings</a></li>
-            <li><a href="/accounts/logout/" >{% bootstrap_icon "log-out"%} Logout</a></li>
-</ul>
-</li>
 
 <li class="applauncher-pf  applauncher-pf-block-list  dropdown">
   <a class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
@@ -143,12 +119,37 @@
     </li>
     <li class="applauncher-pf-item" role="presentation">
       <a class="applauncher-pf-link" href="/rules" role="menuitem">
-        <i class="applauncher-pf-link-icon pficon pficon-home" aria-hidden="true"></i>
+        <i class="applauncher-pf-link-icon pficon pficon-server" aria-hidden="true"></i>
         <span class="applauncher-pf-link-title">Administration</span>
       </a>
     </li>
   </ul>
 </li>
+<li>
+<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="about">
+{% bootstrap_icon "question-sign" %} <span class="caret"/>
+
+<ul class="dropdown-menu" id="about_menu" role="menu">
+<li>
+  <a href="{% static 'doc/index.html' %}" target="_blank" >{% bootstrap_icon "book" %} User manual</a>
+</li>
+<li>
+  <a href="{% url 'scirius_about' %}">{% bootstrap_icon "question-sign" %} About Scirius</a>
+</li>
+            <li><a target="_blank" href="https://github.com/StamusNetworks/scirius">{% bootstrap_icon "new-window"%} Scirius homepage</a></li>
+	    </ul>
+</li>
+
+<li>
+			<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="user">
+			{% bootstrap_icon "user" %} {{ request.user }} <span class="caret"/>
+</a>
+			<ul class="dropdown-menu" id="user_menu" role="menu">
+            <li><a href="{% url 'accounts_edit' '' %}" >{% bootstrap_icon "cog"%} Account settings</a></li>
+            <li><a href="/accounts/logout/" >{% bootstrap_icon "log-out"%} Logout</a></li>
+</ul>
+</li>
+
 
 </ul>
 
