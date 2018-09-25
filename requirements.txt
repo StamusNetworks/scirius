@@ -19,7 +19,7 @@ elasticsearch
 django-ipware
 gunicorn
 djangorestframework
-markdown
+markdown<3.0
 django-filter<2.0
 idstools
 enum34
