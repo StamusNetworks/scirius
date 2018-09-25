@@ -518,6 +518,7 @@ class RuleHitsOrderingFilter(OrderingFilter):
             ordering = ordering[1:]
 
             if ordering:
+                ordering = ordering + ['sid']
                 queryset = queryset.order_by(*ordering)
 
             # Sorting
@@ -543,6 +544,7 @@ class RuleHitsOrderingFilter(OrderingFilter):
 
         else:
             if ordering:
+                ordering = ordering + ['sid']
                 queryset = queryset.order_by(*ordering)
 
             if self.get_query_param(request, 'hits_min') is not None \
