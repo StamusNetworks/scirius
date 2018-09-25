@@ -389,18 +389,18 @@ export class RulePage extends React.Component {
         <Row>
         {this.state.rule_references && this.state.rule_references.length > 0 &&
             <div className="col-xs-6 col-sm-4 col-md-4">
-                <div class="card-pf card-pf-accented card-pf-aggregate-status">
+                <div className="card-pf card-pf-accented card-pf-aggregate-status">
                     {/* <div class="panel-heading">
                         <h2 class="panel-title">References</h2>
                     </div> */}
                     <h2 className="card-pf-title">
                         <span className="fa"></span>References
                     </h2>
-                    <div class="card-pf-body">
-                        {this.state.rule_references.map( reference => {
+                    <div className="card-pf-body">
+                        {this.state.rule_references.map( (reference, idx) => {
                                 if(reference.url !== undefined) {
                                     return(
-                                        <p><a href={reference.url} target="_blank">{reference.key[0].toUpperCase() + reference.key.substring(1) + ': ' + reference.value}</a></p>
+                                        <p key={idx}><a href={reference.url} target="_blank">{reference.key[0].toUpperCase() + reference.key.substring(1) + ': ' + reference.value}</a></p>
                                     );
                                 }
                                 return null;
