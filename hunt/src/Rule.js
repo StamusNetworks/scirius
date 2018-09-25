@@ -403,6 +403,7 @@ export class RulePage extends React.Component {
                                         <p><a href={reference.url} target="_blank">{reference.key[0].toUpperCase() + reference.key.substring(1) + ': ' + reference.value}</a></p>
                                     );
                                 }
+                                return null;
                             })
                         }
                     </div>
