@@ -170,9 +170,9 @@ class FilterItem extends React.Component {
             >
             {this.state.data &&
             <Row>
-                {this.state.data.map( item => {
+                {this.state.data.map( (item, idx) => {
                         return(
-                    <div className="col-xs-3 col-sm-2 col-md-2">
+                    <div className="col-xs-3 col-sm-2 col-md-2" key={idx}>
                         <div className="card-pf card-pf-accented card-pf-aggregate-status">
                           <h2 className="card-pf-title">
                                 <span className="fa fa-shield"></span>{item.key}
