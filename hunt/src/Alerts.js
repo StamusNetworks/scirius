@@ -28,6 +28,7 @@ import * as config from './config/Api.js';
 import ReactJson from 'react-json-view';
 import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
 import axios from 'axios';
+import moment from 'moment';
 
 
 export class AlertsList extends HuntList {
@@ -160,7 +161,7 @@ class AlertInList extends React.Component {
     var has_lateral_or_target = has_target || has_lateral;
 
     var add_info = [
-	    		     <ListViewInfoItem key="timestamp"><p>{data.timestamp}</p></ListViewInfoItem>,
+			     <ListViewInfoItem key="timestamp"><p>{moment(data.timestamp).format('YYYY-MM-DD, hh:mm:ss a')}</p></ListViewInfoItem>,
 	    		     <ListViewInfoItem key="app_proto"><p>Proto: {data.app_proto}</p></ListViewInfoItem>,
 	                     <ListViewInfoItem key="host"><p>Probe: {data.host}</p></ListViewInfoItem>,
 	                     <ListViewInfoItem key="category"><p>Category: {data.alert.category}</p></ListViewInfoItem>,
@@ -327,9 +328,9 @@ class AlertInList extends React.Component {
 				{(data.smtp.mail_from !== undefined) &&
 				<EventField field_name="From" field="smtp.mail_from" value={data.smtp.mail_from} addFilter={this.addFilter} />
 				}
-				{(data.smtp.rcpt_to !== undefined) && data.smtp.rcpt_to.map(mail => {
+				{(data.smtp.rcpt_to !== undefined) && data.smtp.rcpt_to.map((mail, idx) => {
 					return(
-						<EventField field_name="To" field="smtp.rcpt_to" value={mail} addFilter={this.addFilter} />
+						<EventField field_name="To" field="smtp.rcpt_to" value={mail} addFilter={this.addFilter} key={idx} />
 					)
 				})}
 				{(data.smtp.helo !== undefined) &&
