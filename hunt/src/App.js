@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React, { Component } from 'react';
 import { VerticalNav, Dropdown, Icon, MenuItem, ApplicationLauncher, ApplicationLauncherItem } from 'patternfly-react';
-import { AboutModal } from 'patternfly-react';
+import { AboutModal, Modal, Form, Button } from 'patternfly-react';
 import { HuntDashboard } from './Dashboard.js';
 import { HuntNotificationArea } from './Notifications.js';
 import { HistoryPage } from './History.js';
@@ -405,7 +405,8 @@ class UserNavInfo extends Component {
   constructor(props) {
     super(props);
     this.state = {
-	    showModal: false,
+        showModal: false,
+        showUpdateModal: false,
 	    showNotifications: false,
         user: undefined,
         isShown: false,
@@ -416,6 +417,9 @@ class UserNavInfo extends Component {
     this.toggleiSshown = this.toggleiSshown.bind(this);
     this.toggleHunt = this.toggleHunt.bind(this);
     this.toggleHome = this.toggleHome.bind(this);
+    this.showUpdateThreatDetection = this.showUpdateThreatDetection.bind(this);
+    this.closeShowUpdate = this.closeShowUpdate.bind(this);
+    this.submitUpdate = this.submitUpdate.bind(this);
   }
 
   componentDidMount() {
@@ -450,6 +454,19 @@ class UserNavInfo extends Component {
     window.open("/rules", "_self");
   }
 
+  showUpdateThreatDetection() {
+        this.setState({showUpdateModal: !this.state.showUpdateModal});
+    }
+
+    closeShowUpdate() {
+        this.setState({showUpdateModal: false});
+    }
+
+    submitUpdate() {
+        axios.post(config.API_URL + config.UPDATE_PUSH_RULESET_PATH, {});
+        this.setState({showUpdateModal: false});
+    }
+
 	render() {
                 var user = " ...";
 		if (this.state.user !== undefined) {
@@ -457,6 +474,12 @@ class UserNavInfo extends Component {
 		}
 		return(
 			<React.Fragment>
+
+                <li className="dropdown">
+                    <div data-toggle="tooltip" title="Update threat detection" onClick={this.showUpdateThreatDetection} role="button" className="nav-item-iconic">
+                        <Icon type="fa" name="upload" />
+                    </div>
+                </li>
 
 			    <Dropdown componentClass="li" id="timeinterval">
 			        <Dropdown.Toggle useAnchor className="nav-item-iconic">
@@ -524,7 +547,43 @@ class UserNavInfo extends Component {
     				</Dropdown.Menu>
 			   </Dropdown>
 
+            <Modal show={this.state.showUpdateModal}>
+                <Modal.Header>
+                    <button
+                        className="close"
+                        onClick={this.closeShowUpdate}
+                        aria-hidden="true"
+                        aria-label="Close"
+                    >
+                        <Icon type="pf" name="close" />
+                    </button>
 
+                    <Modal.Title> Update threat detection </Modal.Title>
+
+                </Modal.Header>
+
+                <Modal.Body>
+                    <Form horizontal>
+                        You are going to update threat detection (push ruleset and update post processing).
+                        Do you want to continue ?
+                    </Form>
+                </Modal.Body>
+
+                <Modal.Footer>
+                    <Button
+                        bsStyle="default"
+                        className="btn-cancel"
+                        onClick={this.closeShowUpdate}
+                    >
+                        Cancel
+                    </Button>
+
+                    <Button bsStyle="primary" onClick={this.submitUpdate}>
+                        Submit
+                    </Button>
+
+                </Modal.Footer>
+            </Modal>
 
         <AboutModal
           show={this.state.showModal}

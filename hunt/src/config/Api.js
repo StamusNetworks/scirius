@@ -12,3 +12,5 @@ export const API_LOGIN = "/auth";
 
 export const ES_BASE_PATH="rules/es?json=1&query="
 export const ES_SIGS_LIST_PATH="rules/es?query=sigs_list&host=*&offset=0&sids=";
+
+export const UPDATE_PUSH_RULESET_PATH = "rest/appliances/appliance/update_push_all/";
