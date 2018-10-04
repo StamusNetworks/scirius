@@ -1241,8 +1241,9 @@ def get_public_sources(force_fetch=True):
 
     public_sources = None
     with open(sources_yaml, 'r') as stream:
+        buf = stream.read()
         # replace dash by underscode in keys
-        yaml_data = re.sub(r'(\s+\w+)-(\w+):', r'\1_\2:', stream.read())
+        yaml_data = re.sub(r'(\s+\w+)-(\w+):', r'\1_\2:', buf.decode('utf-8'))
         # FIXME error handling
         public_sources = yaml.load(yaml_data)
 
