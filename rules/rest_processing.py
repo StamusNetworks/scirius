@@ -281,11 +281,11 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
         {"fields":["alert.signature_id","src_ip"],"operators":["equal","different","contains"]}
 
     List existing actions with a common key, before <index>:\n
-        curl -k https://x.x.x.x/rest/rules/processing-filter/test/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"filter_defs": [{"key": "src_ip", "value": "127.0.0.1", "operator": "equal"}], "index": <index>}'
+        curl -k https://x.x.x.x/rest/rules/processing-filter/intersect/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"filter_defs": [{"key": "src_ip", "value": "192.168.3.2", "operator": "equal"}], "index": 1}'
 
     Return:\n
         HTTP/1.1 200 OK
-        {"count":1,"next":null,"previous":null,"results":[{"pk":1,"filter_defs":[{"key":"src_ip","value":"192.168.0.1","operator":"equal"}],"action":"suppress","options":{},"rulesets":[1],"index":0,"description":"","enabled":true}]}
+        {"count":1,"next":null,"previous":null,"results":[{"pk":1,"filter_defs":[{"key":"src_ip","value":"192.168.3.2","operator":"equal"}],"action":"suppress","options":{},"rulesets":[1],"index":0,"description":"","enabled":true}]}
 
     ==== PATCH ====\n
     Move the action with <pk> before currently at <index>:\n
