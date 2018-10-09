@@ -25,4 +25,7 @@ urlpatterns = [
     # Kibana 5.2 specific
     url(r'^(?P<path>ui/fonts.*)$', KibanaProxyView.as_view()),
     url(r'^(?P<path>es_admin.*)$', KibanaProxyView.as_view()),
+
+    # Moloch proxy
+    url(r'^moloch/(?P<path>.*)$', MolochProxyView.as_view()),
 ]

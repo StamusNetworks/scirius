@@ -40,3 +40,12 @@ class KibanaProxyView(ProxyView):
 class EveboxProxyView(ProxyView):
     upstream = "http://" + settings.EVEBOX_ADDRESS
     add_remote_user = True
+
+class MolochProxyView(ProxyView):
+    upstream = settings.MOLOCH_URL
+    add_remote_user = False
+
+    def get_request_headers(self):
+        headers = super(MolochProxyView, self).get_request_headers()
+        headers['REMOTE_USER'] = 'moloch'
+        return headers

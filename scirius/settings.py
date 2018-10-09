@@ -243,6 +243,10 @@ INFLUXDB_USER = "grafana"
 INFLUXDB_PASSWORD = "grafana"
 INFLUXDB_DATABASE = "scirius"
 
+# Moloch
+USE_MOLOCH = True
+MOLOCH_URL = "https://localhost:8005"
+
 # Proxy parameters
 # Set USE_PROXY to True to use a proxy to fetch ruleset update.
 # PROXY_PARAMS contains the proxy parameters.
