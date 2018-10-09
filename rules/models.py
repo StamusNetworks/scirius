@@ -284,6 +284,10 @@ class UserAction(models.Model):
                     'description': '{user} has created suricata',
                     'title': 'Create Suricata'
                 }),
+               ('update_push_all', {
+                    'description': '{user} has pushed ruleset {ruleset}',
+                    'title': 'Update/Push ruleset'
+                }),
 
                # Settings
                ('system_settings', {

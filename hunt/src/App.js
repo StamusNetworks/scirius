@@ -463,7 +463,11 @@ class UserNavInfo extends Component {
     }
 
     submitUpdate() {
-        axios.post(config.API_URL + config.UPDATE_PUSH_RULESET_PATH, {});
+        var url = config.UPDATE_PUSH_RULESET_PATH;
+        if (process.env.REACT_APP_HAS_TAG === '1') {
+            url = "rest/appliances/appliance/update_push_all/";
+        }
+        axios.post(config.API_URL + url, {});
         this.setState({showUpdateModal: false});
     }
 
