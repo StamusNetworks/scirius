@@ -17,7 +17,6 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException, ParseError
 from rest_framework.routers import DefaultRouter, url
-from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.mixins import UpdateModelMixin, RetrieveModelMixin
@@ -38,6 +37,7 @@ from rules.es_graphs import es_get_stats, es_get_rules_stats, es_get_dashboard, 
         es_get_latest_stats, es_get_ippair_alerts, es_get_ippair_network_alerts, es_get_alerts_tail, es_suri_log_tail
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
+from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL
 from rules.es_graphs import es_get_sigs_list_hits, es_get_top_rules, ESError
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
@@ -2425,6 +2425,7 @@ class SystemSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = SystemSettings
         fields = '__all__'
+        read_only_fields = ('kibana', 'kibana_url', 'evebox', 'evebox_url',)
 
 
 class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
@@ -2447,6 +2448,28 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
     permission_classes = (IsAdminUser,)
     serializer_class = SystemSettingsSerializer
     queryset = SystemSettings.objects.all()
+
+    def retrieve(self, request, pk=None):
+        return self.list(request)
+
+    def list(self, request):
+        instance = self.get_object()
+        serializer = SystemSettingsSerializer(instance)
+        data = serializer.data.copy()
+
+        data['kibana'] = USE_KIBANA
+        data['evebox'] = USE_EVEBOX
+
+        if USE_KIBANA:
+            if KIBANA_PROXY:
+                data['kibana_url'] = '/kibana'
+            else:
+                data['kibana_url'] = KIBANA_URL
+
+        if USE_EVEBOX:
+            data['evebox_url'] = '/evebox'
+
+        return Response(data)
 
     def get_object(self):
         obj = get_system_settings()

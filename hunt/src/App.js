@@ -401,6 +401,26 @@ const REFRESH_INTERVAL = {
   3600: '1h'
 };
 
+
+class ExternalLink extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {onclick: props.onClick, icon: props.icon, title: props.title, tooltip: props.tooltip};
+    }
+
+    render() {
+        return(
+            <li className="applauncher-pf-item" role="presentation">
+            <a className="applauncher-pf-link" onClick={this.state.onclick} href="/#" role="menuitem" data-toggle="tooltip" title={this.state.tooltip}>
+              <i className={this.state.icon} aria-hidden="true"></i>
+              <span className="applauncher-pf-link-title">{ this.state.title }</span>
+            </a>
+          </li>
+        )
+    }
+}
+
+
 class UserNavInfo extends Component {
   constructor(props) {
     super(props);
@@ -417,17 +437,21 @@ class UserNavInfo extends Component {
     this.toggleiSshown = this.toggleiSshown.bind(this);
     this.toggleHunt = this.toggleHunt.bind(this);
     this.toggleHome = this.toggleHome.bind(this);
+    this.toggleDashboards = this.toggleDashboards.bind(this);
+    this.toggleEvebox = this.toggleEvebox.bind(this);
     this.showUpdateThreatDetection = this.showUpdateThreatDetection.bind(this);
     this.closeShowUpdate = this.closeShowUpdate.bind(this);
     this.submitUpdate = this.submitUpdate.bind(this);
   }
 
   componentDidMount() {
-        axios.get(config.API_URL + config.USER_PATH + 'current_user/').then(
-		res => {
-			this.setState({user: res.data});
-		}
-	);
+    axios.all([
+        axios.get(config.API_URL + config.USER_PATH + 'current_user/'),
+        axios.get(config.API_URL + config.SYSTEM_SETTINGS_PATH),
+    ])
+    .then(axios.spread((current_user, system_settings) => {
+        this.setState({ user: current_user.data, system_settings: system_settings.data});
+    }));
   }
 
   AboutClick(e) {
@@ -452,6 +476,16 @@ class UserNavInfo extends Component {
   toggleHome() {
         this.setState({isShown: !this.state.isShown});
     window.open("/rules", "_self");
+  }
+
+  toggleDashboards() {
+    this.setState({isShown: !this.state.isShown});
+    window.open(this.state.system_settings['kibana_url'], "_self");
+  }
+
+  toggleEvebox() {
+    this.setState({isShown: !this.state.isShown});
+    window.open(this.state.system_settings['evebox_url'], "_self");
   }
 
   showUpdateThreatDetection() {
@@ -530,6 +564,23 @@ class UserNavInfo extends Component {
                     tooltip="Appliances Management"
                     onClick={this.toggleHome}
                     />
+
+                    {this.state.system_settings && this.state.system_settings['kibana'] &&
+                        <ExternalLink
+                            onClick={this.toggleDashboards}
+                            icon="glyphicon glyphicon-stats"
+                            title="Dashboards"
+                            tooltip="Kibana dashboards for ES" />
+                    }
+
+                    {this.state.system_settings && this.state.system_settings['evebox'] &&
+                        <ExternalLink
+                            onClick={this.toggleEvebox}
+                            icon="glyphicon glyphicon-stats"
+                            title="Events viewer"
+                            tooltip="Evebox alert and event management tool" />
+                    }
+
                 </ApplicationLauncher>
     			<Dropdown componentClass="li" id="help">
       				<Dropdown.Toggle useAnchor className="nav-item-iconic">

@@ -28,18 +28,6 @@
 			<img src="{% static 'rules/stamus.png' %}"/><span class="caret"/>
 </a>
 			<ul class="dropdown-menu" id="sc_menu" role="menu">
-			{% if kibana %}
-                        <li><a href="{{kibana_url}}" target="_blank">{% bootstrap_icon "stats"%} Dashboards</a>
-				<div id="dashboards"><ul><li>Loading data...</li></ul></div>
-                        </li>
-			{% endif %}
-			{% if evebox %}
-                        <li><a href="{{evebox_url}}" target="_blank">{% bootstrap_icon "th-list"%} Events viewer</a></li>
-			{% endif %}
-			{% if kibana or evebox %}
- 			<li role="presentation" class="divider"></li>
-			{% endif %}
-
             <li><a href="{% url 'system_settings' %}" >{% bootstrap_icon "list-alt"%} System settings</a></li>
                         {% block menusettings %}
 			        {% if links %}
@@ -112,17 +100,34 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li class="applauncher-pf-item" role="presentation">
-      <a class="applauncher-pf-link" href="/rules/hunt" role="menuitem">
+      <a class="applauncher-pf-link" href="/rules/hunt" role="menuitem" data-toggle="tooltip" title="Threat Hunting">
         <i class="applauncher-pf-link-icon pficon pficon-rebalance" aria-hidden="true"></i>
         <span class="applauncher-pf-link-title">Hunt</span>
       </a>
     </li>
     <li class="applauncher-pf-item" role="presentation">
-      <a class="applauncher-pf-link" href="/rules" role="menuitem">
+      <a class="applauncher-pf-link" href="/rules" role="menuitem" data-toggle="tooltip" title="Appliances Management">
         <i class="applauncher-pf-link-icon pficon pficon-server" aria-hidden="true"></i>
         <span class="applauncher-pf-link-title">Administration</span>
       </a>
     </li>
+
+    {% if kibana %}
+    <li class="applauncher-pf-item" role="presentation">
+      <a class="applauncher-pf-link" href="{{kibana_url}}" role="menuitem" data-toggle="tooltip" title="Kibana dashboards for ES">
+        <i class="glyphicon glyphicon-stats" aria-hidden="true"></i>
+        <span class="applauncher-pf-link-title">Dashboards</span>
+      </a>
+    </li>
+    {% endif %}
+    {% if evebox %}
+    <li class="applauncher-pf-item" role="presentation">
+      <a class="applauncher-pf-link" href="{{evebox_url}}" role="menuitem" data-toggle="tooltip" title="Evebox alert and event management tool">
+        <i class="glyphicon glyphicon-th-list" aria-hidden="true"></i>
+        <span class="applauncher-pf-link-title">Events viewer</span>
+      </a>
+    </li>
+    {% endif %}
   </ul>
 </li>
 <li>
@@ -335,62 +340,6 @@ function get_scirius_status() {
 }
 
 </script>
-
-{% if kibana %}
-<script>
-
-function load_dashboards() {
-    if (scirius_status == "red") {
-        $("#dashboards").empty();
-        $("#dashboards").append("<ul><li>Error getting data (Retrying)</li></ul>");
-        return;
-    }
-    $.ajax(
-        {
-                type:"GET",
-                url:"{% url 'elasticsearch' %}?query=dashboards",
-                success: function(data) {
-                if (!data) {
-                        $("#dashboards").empty();
-                        $("#dashboards").append("<ul><li>No dashboards</li><ul>");
-                        return;
-                } else {
-                        $("#dashboards").empty();
-                        var dh = "<ul>";
-                        var keys = [];
-                        for (var key in data) {
-                            keys.push(key);
-                        }
-                        keys.sort();
-                        for (var i=0; i < keys.length; i++) {
-                                key = keys[i];
-                                {% if kibana_version == 3 %}
-                                dh += "<li><a target='_blank' href='{{ kibana_url }}/#/dashboard/elasticsearch/" + key + "'>" + data[key] + "</a></li>";
-                                {% elif kibana_version < 6 %}
-                                dh += "<li><a target='_blank' href='{{ kibana_url }}/#/dashboard/" + key + "'>" + data[key] + "</a></li>";
-                                {% else %}
-                                dh += "<li><a target='_blank' href='{{ kibana_url }}/app/kibana#/dashboard/" + key + "'>" + data[key] + "</a></li>";
-                                {% endif %}
-                        }
-                        $("#dashboards").append(dh);
-                }
-                },
-                error: function(data) {
-                        start_down_check();
-                        $("#dashboards").empty();
-                        $("#dashboards").append("<ul><li>Error getting data</li></ul>");
-                },
-                timeout: 15000,
-        }
-    );
-}
-
-
-$( 'document' ).ready(load_dashboards());
-
-</script>
-{% endif %}
-
 
 {% if elasticsearch %}
 
