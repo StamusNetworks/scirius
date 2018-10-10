@@ -1,7 +1,7 @@
 from django.conf.urls import url, include
 from django.conf import settings
 
-from views import homepage, KibanaProxyView, EveboxProxyView
+from views import homepage, KibanaProxyView, EveboxProxyView, MolochProxyView
 from rest_api import router
 
 urlpatterns = [
