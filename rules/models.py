@@ -2029,6 +2029,7 @@ class Rule(models.Model, Transformable, Cache):
                     content = re.sub("; noalert;", "; noalert; bypass;", content)
                 else:
                     content = re.sub("; *\)", "; noalert; bypass;)", content)
+                content = re.sub("^ *\S+", "pass", content)
 
         elif key == Transformation.LATERAL or key == Transformation.TARGET:
             content = self.apply_lateral_target_transfo(content, key, value)
