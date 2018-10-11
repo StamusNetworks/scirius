@@ -101,4 +101,14 @@ body {
   .list-view-pf-additional-info-item strong {
     font-size: 14px;
   }
+  div.disabled_home
+  {
+    pointer-events: none;
+    opacity: 0.5;
+    background: #CCC;
+  }
+  div.card-pf-item.failure
+  {
+    color: $danger-color;
+  }
 }

@@ -19,18 +19,10 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import psutil
-import subprocess
-import tempfile
-import shutil
-import os
-import json
-import StringIO
-import re
-
 from rest_framework import serializers
 
-
 from django.conf import settings
+
 
 if settings.SURICATA_UNIX_SOCKET:
     try:
@@ -158,3 +150,17 @@ def get_processing_filter_capabilities(fields, action):
             'operators': ['equal']
         }
     return { 'fields': [], 'operators': ['equal'] }
+
+def get_homepage_context():
+    context = {
+        'title': 'Scirius Community Edition',
+        'content_lead': 'Scirius CE is a web application for threat hunting and Suricata ruleset management.',
+        'content_minor1': 'Scirius CE is developed by Stamus Networks and is available under the GNU GPLv3 license.',
+        'content_minor2': 'Manage multiple rulesets and rules sources. Upload and manage custom rules and any data files. Handle thresholding and suppression to limit verbosity of noisy alerts. Get suricata performance statistics and information about rules activity.',
+        'content_minor3': 'Interact with Elasticsearch, Kibana and other interfaces such as EveBox.',
+        'admin_title': 'Ruleset setup and Suricata management',
+        'version': settings.SCIRIUS_FLAVOR + " v" + settings.SCIRIUS_VERSION,
+        'icon': False,
+        'nb_probes': 1
+    }
+    return context

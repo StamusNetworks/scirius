@@ -1,0 +1,249 @@
+{% load staticfiles %}
+{% load bootstrap3 %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Scirius Home</title>
+  <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
+  <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
+  <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
+  <script src="{% static 'js/jquery.min.js' %}"></script>
+  <script src="{% static 'js/c3.min.js' %}" charset="utf-8"></script>
+  <script src="{% static 'js/d3.v3.min.js' %}" charset="utf-8"></script>
+  <script src="{% static 'js/nv.d3.min.js' %}" charset="utf-8"></script>
+  <link rel="stylesheet" type="text/css" href="{% static 'dist/styles.css' %}" />
+  <script src="{% static 'dist/scirius-bundle.js' %}"></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-collapse collapse" id="top-menu-collapse">
+        <div class="navbar-right">
+          {% include "rules/header_right.html" %}
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="blank-slate-pf" style="background-color:white">
+
+          <div class="row">
+            <div class="jumbotron fill" id="logininfo">
+              <img src="/static/rules/stamus.png">
+              <h2 style="color: #7A1243">{{ title }}</h2>
+              <p class="lead">
+                {{ content_lead }}
+              </p>
+              <hr class="m-y-2">
+              <p class="minor">{{ content_minor1 }}</p>
+              <p class="minor">{{ content_minor2 }}</p>
+              <p class="minor">{{ content_minor3 }}</p>
+              <p><h3>Click on  <div class="fa fa-th applauncher-pf-icon"/>  to switch applications</h3></p>
+            </div>
+          </div>
+
+          <div class="container-fluid container-cards-pf">
+            <div class="row row-cards-pf" style="margin-left: -35px; margin-right: -35px">
+
+              <div class="col-md-3 col-xs-11">
+                <a href="/rules" style="color: black; text-decoration: none;">
+                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1">
+                    <div class="card-pf-body">
+                      <div class="card-pf-top-element">
+                        <span class="pficon pficon-server list-view-pf-icon-sm" style="font-size: 5em"></span>
+                      </div>
+                      <h2 class="card-pf-title text-center" style="color: #7A1243">
+                        Administration
+                      </h2>
+                      <div class="card-pf-items text-center">
+                        {% if icon %}
+                        <div class="card-pf-item">
+                          <span class="pficon pficon-server list-view-pf-icon-sm"></span>
+                          <span class="card-pf-item-text">{{ nb_probes }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="card-pf-item">
+                          <span class="fa fa-check"></span>
+                        </div>
+                      </div>
+                      <p class="card-pf-info text-center"><strong>{{ admin_title }}</strong><br />
+                        (Enabled) </p>
+                    </div>
+                    <div class="card-pf-view-checkbox">
+                      <input type="checkbox">
+                    </div>
+                  </div>
+                </a>
+              </div>
+
+              <div class="col-md-3 col-xs-11">
+                <a href="/rules/hunt" style="color: black; text-decoration: none;">
+                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1">
+                    <div class="card-pf-body">
+                      <div class="card-pf-top-element">
+                        <span class="pficon pficon-rebalance" style="font-size: 5em"></span>
+                      </div>
+                      <h2 class="card-pf-title text-center" style="color: #7A1243">
+                        Hunt
+                      </h2>
+                      <div class="card-pf-items text-center">
+                        <div class="card-pf-item">
+                          <span class="pficon pficon-security"></span>
+                          <span class="card-pf-item-text alerts_count">--</span>
+                        </div>
+                        <div class="card-pf-item">
+                          <span class="fa fa-check"></span>
+                        </div>
+                      </div>
+                      <p class="card-pf-info text-center"><strong>Advanced threat hunting</strong><br />
+                        (Enabled) </p>
+                    </div>
+                    <div class="card-pf-view-checkbox">
+                      <input type="checkbox">
+                    </div>
+                  </div>
+                </a>
+              </div>
+
+              <div class="col-md-3 col-xs-11">
+                {% if kibana %}
+                <a href="{{ kibana_url }}" style="color: black; text-decoration: none;">
+                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1">
+                {% else %}
+                    <a href="/#" style="color: black; text-decoration: none;">
+                      <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select disabled_home"
+                        style="background-color:#f1f1f1">
+                {% endif %}
+                        <div class="card-pf-body">
+                          <div class="card-pf-top-element">
+                            <span class="glyphicon glyphicon-stats" style="font-size: 4.8em"></span>
+                          </div>
+                          <h2 class="card-pf-title text-center" style="color: #7A1243">
+                            Dashboards
+                          </h2>
+                        <div class="card-pf-items text-center">
+                {% if kibana %}
+                            <div class="card-pf-item">
+                                <span class="fa fa-check"></span>
+                            </div>
+                {% else %}
+                            <div class="card-pf-item failure">
+                                <span class="fa fa-remove"></span>
+                            </div>
+                {% endif %}
+                        </div>
+                          <p class="card-pf-info text-center"><strong>Kibana dashboards for Elasticsearch</strong><br />
+                {% if kibana %}
+                            (Enabled)
+                {% else %}
+                            (Disabled)
+                {% endif %}
+                          </p>
+                        </div>
+                        <div class="card-pf-view-checkbox">
+                          <input type="checkbox">
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+
+                  <div class="col-md-3 col-xs-11">
+                    {% if evebox %}
+                    <a href="{{ evebox_url }}" style="color: black; text-decoration: none;">
+                      <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1">
+                    {% else %}
+                        <a href="/#" style="color: black; text-decoration: none;">
+                          <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select disabled_home"
+                            style="background-color:#f1f1f1">
+                    {% endif %}
+                            <div class="card-pf-body">
+                              <div class="card-pf-top-element">
+                                <span class="glyphicon glyphicon-th-list" style="font-size: 4.8em"></span>
+                              </div>
+                              <h2 class="card-pf-title text-center" style="color: #7A1243">
+                                Events Viewer
+                              </h2>
+                            <div class="card-pf-items text-center">
+                    {% if evebox %}
+                                <div class="card-pf-item">
+                                    <span class="fa fa-check"></span>
+                                </div>
+                    {% else %}
+                                <div class="card-pf-item failure">
+                                    <span class="fa fa-remove"></span>
+                                </div>
+                    {% endif %}
+                            </div>
+                              <p class="card-pf-info text-center"><strong>Evebox alert and event management tool</strong><br />
+                    {% if evebox %}
+                                (Enabled)
+                    {% else %}
+                                (Disabled)
+                    {% endif %}
+                              </p>
+                            </div>
+                            <div class="card-pf-view-checkbox">
+                              <input type="checkbox">
+                            </div>
+                          </div>
+                        </a>
+                      </div>
+
+                  </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+        <div class="row">
+          <ul class="list-inline text-center">
+            </li>
+            <li><a href="https://www.stamus-networks.com/scirius-ce">Scirius Community Edition</a></li>
+            <li>
+            </li>
+            <li><a href="https://www.stamus-networks.com/scirius-ee-vs-ce">Scirius Enterprise Edition</a></li>
+            <li>
+            </li>
+            <li></li>
+            <li>
+            </li>
+          </ul>
+        </div>
+        <div class="row">
+          <p class="list-inline text-center"><a href="https://github.com/StamusNetworks/scirius">{{ version }}</a>.
+            Copyright (c) 2014-2018 <a href="https://www.stamus-networks.com">Stamus Networks</a>.</p>
+        </div>
+      </div>
+    </div><!-- container -->
+
+<script>
+    function get_alert_count() {
+    $.ajax({
+            type:"GET",
+            url: "{% url 'elasticsearch' %}?query=alerts_count&from_date={{ from_date }}&prev=1&hosts=*",
+            context: $(this),
+            success: function(data) {
+                    if (data && (typeof data !== 'string') && ('doc_count' in data)) {
+                      $(".alerts_count").text(data['doc_count']);
+                    }
+                  }
+          });
+    }
+    $( 'document' ).ready(
+        function() {
+            get_alert_count();
+            setInterval(get_alert_count, 15000);
+        }
+    )
+</script>
+</body>
+</html>

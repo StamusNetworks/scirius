@@ -1,0 +1,109 @@
+{% load staticfiles %}
+{% load bootstrap3 %}
+
+<ul class="nav navbar-nav">
+<li>
+<a class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+{% bootstrap_icon "time" %} last {{ date }} <span class="caret"/>
+</a>
+<ul class="dropdown-menu" id="display_menu">
+   <li><a href="?duration=1">Last 1h</a></li>
+   <li><a href="?duration=6">Last 6h</a></li>
+   <li><a href="?duration=24">Last 24h</a></li>
+   <li><a href="?duration=48">Last 2d</a></li>
+   <li><a href="?duration=168">Last 7d</a></li>
+   <li><a href="?duration=720">Last 30d</a></li>
+</ul>
+</li>
+
+<script>
+function is_first_connection() {
+    if (typeof localStorage != 'undefined') {
+        if ('first_connection_done' in localStorage === false) {
+            localStorage.setItem('first_connection_done', true);
+            $('.first_tooltip').tooltip({trigger: 'manual'}).tooltip('show');
+            $('.first_tooltip').on('click', function () {
+                $(this).tooltip('hide');
+            });
+        }
+    }
+}
+
+$( 'document' ).ready(
+    function() {
+        is_first_connection();
+    }
+)
+</script>
+
+<li class="applauncher-pf  applauncher-pf-block-list  dropdown">
+    <a class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+      <span class="fa fa-th applauncher-pf-icon first_tooltip" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Switch applications"></span>
+      <span class="dropdown-title">
+        <span class="applauncher-pf-title">
+          Application Launcher
+          <span class="caret" aria-hidden="true"></span>
+        </span>
+      </span>
+    </a>
+    <ul class="dropdown-menu" role="menu">
+      <li class="applauncher-pf-item" role="presentation">
+        <a class="applauncher-pf-link" href="/rules/hunt" role="menuitem">
+          <i class="applauncher-pf-link-icon pficon pficon-rebalance" aria-hidden="true"></i>
+          <span class="applauncher-pf-link-title">Hunt</span>
+        </a>
+      </li>
+      <li class="applauncher-pf-item" role="presentation">
+        <a class="applauncher-pf-link" href="/rules" role="menuitem">
+          <i class="applauncher-pf-link-icon pficon pficon-server" aria-hidden="true"></i>
+          <span class="applauncher-pf-link-title">Administration</span>
+        </a>
+      </li>
+  
+      {% if kibana %}
+      <li class="applauncher-pf-item" role="presentation">
+        <a class="applauncher-pf-link" href="{{kibana_url}}" role="menuitem">
+          <i class="glyphicon glyphicon-stats" aria-hidden="true"></i>
+          <span class="applauncher-pf-link-title">Dashboards</span>
+        </a>
+      </li>
+      {% endif %}
+      {% if evebox %}
+      <li class="applauncher-pf-item" role="presentation">
+        <a class="applauncher-pf-link" href="{{evebox_url}}" role="menuitem">
+          <i class="glyphicon glyphicon-th-list" aria-hidden="true"></i>
+          <span class="applauncher-pf-link-title">Events viewer</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </li>
+  <li>
+<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="about">
+{% bootstrap_icon "question-sign" %} <span class="caret"/>
+
+<ul class="dropdown-menu" id="about_menu" role="menu">
+<li>
+  <a href="{% static 'doc/index.html' %}" target="_blank" >{% bootstrap_icon "book" %} User manual</a>
+</li>
+<li>
+  <a href="{% url 'scirius_about' %}">{% bootstrap_icon "question-sign" %} About Scirius</a>
+</li>
+            <li><a target="_blank" href="https://github.com/StamusNetworks/scirius">{% bootstrap_icon "new-window"%} Scirius homepage</a></li>
+	    </ul>
+</li>
+
+<li>
+			<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="user">
+			{% bootstrap_icon "user" %} {{ request.user }} <span class="caret"/>
+</a>
+			<ul class="dropdown-menu" id="user_menu" role="menu">
+            <li><a href="{% url 'accounts_edit' '' %}" >{% bootstrap_icon "cog"%} Account settings</a></li>
+            <li><a href="/accounts/logout/" >{% bootstrap_icon "log-out"%} Logout</a></li>
+</ul>
+</li>
+
+
+</ul>
+
+</div>

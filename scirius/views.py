@@ -24,13 +24,16 @@ from django.shortcuts import redirect
 from django.conf import settings
 
 from revproxy.views import ProxyView
+from scirius.utils import scirius_render
+from utils import get_middleware_module
 
 # Avoid logging every request
 revproxy_logger = logging.getLogger('revproxy')
 revproxy_logger.setLevel(logging.WARNING)
 
 def homepage(request):
-    return redirect("rules/")
+    context = get_middleware_module('common').get_homepage_context()
+    return scirius_render(request, 'rules/home.html', context)
 
 # Proxy
 class KibanaProxyView(ProxyView):
