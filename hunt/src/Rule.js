@@ -104,7 +104,6 @@ export class RuleInList extends React.Component {
                             tick: { fit: false, format: '%Y-%m-%d %H:%M'}
                      } }
                     }
-		from_date = {this.props.from_date}
       />
       </div>
       <div className="col-md-2">
@@ -183,7 +182,6 @@ export class RuleCard extends React.Component {
                }}
                size = {{ height: 50 }}
                point = {{ show: false }}
-               from_date = {this.props.from_date}
       />
       </div>
       }
@@ -346,7 +344,6 @@ export class RulePage extends React.Component {
                                     }
                                    }
                                  }
-                            from_date = {this.props.from_date}
                          />
                       }
                 </div>

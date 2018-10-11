@@ -19,21 +19,27 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
-import C3Chart from 'react-c3js';
-import 'c3/c3.css';
+import React from 'react';
+var c3 = require("c3");
 
-export class SciriusChart extends C3Chart {
-  componentWillReceiveProps(newProps) {
-        if (newProps.data && newProps.data.columns.length <= 1) {
-           this.chart.unload();
-        } else {
-           var range = this.chart.axis.min();
-           range.x = newProps.from_date;
-           this.chart.axis.min(range);
-           range = this.chart.axis.max();
-           range.x = Date.now();
-           this.chart.axis.max(range);
-           this.updateChart(newProps);
-        }
-  }
+export class SciriusChart extends React.Component {
+    
+    chartRender = ( opts ) => {
+        c3.generate({
+            bindto: '#chart',
+            ...opts
+        });
+    }
+
+    componentDidMount() {
+        this.chartRender(this.props);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.chartRender(nextProps);
+    }
+
+    render() {
+        return (<div id="chart">loading</div>)
+    }
 }
