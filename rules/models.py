@@ -1618,6 +1618,7 @@ class Category(models.Model, Transformable, Cache):
 
         with transaction.atomic():
             for line in rfile.readlines():
+                line = line.decode('utf-8')
                 state = True
                 if line.startswith('#'):
                     # check if it is a commented signature

@@ -41,6 +41,8 @@ from importlib import import_module
 
 ET_URL = 'https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz'
 
+RULE_CONTENT = 'alert ip any any -> any any (msg:"Unicode test rule éàç"; content:"uid=0|28|root|29|"; classtype:bad-unknown; sid:2100498; rev:7; metadata:created_at 2010_09_23, updated_at 2010_09_23;)\n'
+
 
 class SourceCreationTestCase(TestCase):
     def setUp(self):
@@ -61,6 +63,17 @@ class SourceCreationTestCase(TestCase):
         self.assertEqual(len(SourceAtVersion.objects.filter(source = self.source)), 1)
         self.assertNotEqual(len(Category.objects.filter(source = self.source)), 0)
 
+    def test_unicode_rule(self):
+        source = Source.objects.create(name="Unicode rule",
+                                   method = "local",
+                                   datatype = "sig",
+                                   created_date=timezone.now())
+
+        f = tempfile.NamedTemporaryFile(dir=self.tmpdirname)
+        f.write(RULE_CONTENT.encode('utf-8'))
+        f.seek(0)
+        source.handle_rules_file(f)
+        self.assertEqual(Rule.objects.count(), 1)
 
 class TransformationTestCase(TestCase):
     def setUp(self):
@@ -225,11 +238,6 @@ class RestAPITestBase(object):
 
 
 class RestAPISourceTestCase(RestAPITestBase, APITestCase):
-    RULE_CONTENT = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
-flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
-metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
-deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
-
     def setUp(self):
         RestAPITestBase.setUp(self)
         APITestCase.setUp(self)
@@ -301,7 +309,7 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
 
     def test_002_custom_source_upload(self):
         self._create_custom_source('local', 'sig')
-        response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': StringIO(self.RULE_CONTENT)}, format='multipart')
+        response = self.http_post(reverse('source-upload', args=(self.source.pk,)), {'file': StringIO(RULE_CONTENT)}, format='multipart')
         self.assertDictEqual(response, {'upload': 'ok'})
 
         response = self.http_post(reverse('source-update-source', args=(self.source.pk,)))
@@ -316,13 +324,14 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
         self.assertEqual(len(rules), 1)
 
         rule = rules[0]
+
         self.assertDictContainsSubset({
-            'sid': 2014530,
-            'msg': 'ET TROJAN Metasploit Meterpreter stdapi_* Command Request',
+            'sid': 2100498,
+            'msg': 'Unicode test rule éàç',
             'state': True,
             'state_in_source': True,
-            'content': self.RULE_CONTENT,
-            'rev': 3
+            'content': RULE_CONTENT,
+            'rev': 7
         }, rule)
 
     def test_003_custom_source_bad_upload(self):
@@ -362,7 +371,7 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
 
         unic = 'é&"_è-àç'
         response = self.http_patch(reverse('publicsource-detail', args=(self.public_source.pk,)), {'name': unic})
-        self.assertEqual(response['name'].encode('utf-8'), unic)
+        self.assertEqual(response['name'], unic)
 
 
 class RestAPIRulesetTransformationTestCase(RestAPITestBase, APITestCase):
@@ -644,7 +653,7 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
 
         # Create Ruleset
         response = self.http_post(reverse('ruleset-list'), params, status=status.HTTP_201_CREATED)
-        self.assertEqual(response['name'].encode('utf-8'), name)
+        self.assertEqual(response['name'], name)
 
 
 class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
