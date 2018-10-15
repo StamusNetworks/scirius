@@ -972,7 +972,7 @@ export function buildQFilter(filters) {
 	    continue;
 	}
 	else if (filters[i].id === 'msg') {
-            qfilter.push(f_prefix + 'alert.signature:' + filters[i].value);
+            qfilter.push(f_prefix + 'alert.signature:"' + filters[i].value + '"');
 	    continue;
 	}
 	else if ((filters[i].id === 'hits_min') || (filters[i].id === 'hits_max')) {
