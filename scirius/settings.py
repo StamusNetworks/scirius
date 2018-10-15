@@ -216,7 +216,8 @@ KIBANA_URL = "http://localhost:9292"
 # Kibana index name
 KIBANA_INDEX = "kibana-int"
 # Kibana version
-KIBANA_VERSION=3
+KIBANA_VERSION=6
+KIBANA_VERSION_FULL='6.4.2'
 # Number of dashboards to display
 KIBANA_DASHBOARDS_COUNT = 20
 # Path to Kibana's dashboards installation

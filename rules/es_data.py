@@ -491,7 +491,7 @@ class ESData(object):
                         'defaultIndex': 'logstash-*'
                     }
                 }
-                self.client.create(index='.kibana', doc_type='doc', id='config:6.4.1', body=config, refresh=True)
+                self.client.create(index='.kibana', doc_type='doc', id='config:%s' % settings.KIBANA_VERSION_FULL, body=config, refresh=True)
             else:
                 print >> sys.stderr, "Warning: unknown ES version, not setting Kibana's defaultIndex"
 
