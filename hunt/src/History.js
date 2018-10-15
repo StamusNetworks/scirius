@@ -110,6 +110,13 @@ export class HistoryPage extends HuntList {
     }
 
     render() {
+		var expand = false;
+		for (var filter in this.props.filters) {
+			if (this.props.filters[filter].id === "comment") {
+				expand = true;
+				break;
+			}
+		}
 	return(
 	    <div className="HistoryList HuntList">
                <HuntFilter ActiveFilters={this.props.filters}
@@ -129,7 +136,7 @@ export class HistoryPage extends HuntList {
 	        <ListView>
 	        {this.state.data.results &&
 	           this.state.data.results.map( item => {
-	               return(<HistoryItem key={item.pk} data={item} switchPage={this.props.switchPage} />);
+	               return(<HistoryItem key={item.pk} data={item} switchPage={this.props.switchPage} expand_row={expand} />);
 	           })
 	        }
 	        </ListView>
@@ -174,6 +181,8 @@ class HistoryItem extends React.Component {
 	        heading={this.props.data.title}
 	        description={this.props.data.description}
 		key={this.props.data.pk}
+		compoundExpand={this.props.expand_row}
+		compoundExpanded={true}
 	     >
 	       {this.props.data.comment &&
 	       <Row>
