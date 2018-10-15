@@ -20,6 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.template import Context, Template
 from django.conf import settings
+from django.utils.html import format_html
 from datetime import datetime, timedelta
 
 import urllib2
@@ -568,7 +569,7 @@ RULES_PER_CATEGORY = """
               }
             },
             { "query_string": {
-              "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
+              "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
               "analyze_wildcard": true
               }
             }
@@ -626,7 +627,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
               }
             },
             { "query_string": {
-              "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
+              "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
               "analyze_wildcard": true
               }
             }
@@ -651,7 +652,7 @@ ALERTS_COUNT_PER_HOST = """
             }
             ,{
         "query_string": {
-          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
+          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
           "analyze_wildcard": true
         }
       }
@@ -679,7 +680,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
             }
             ,{
         "query_string": {
-          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
+          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
           "analyze_wildcard": true
         }
       }
@@ -722,7 +723,7 @@ ALERTS_TREND_PER_HOST = """
             }
             ,{
         "query_string": {
-          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
+          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
           "analyze_wildcard": true
         }
       }
@@ -764,7 +765,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
             }
             ,{
         "query_string": {
-          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
+          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
           "analyze_wildcard": true
         }
       }
@@ -797,7 +798,7 @@ LATEST_STATS_ENTRY = """
             }
         ,{
             "query_string": {
-              "query": "event_type:stats AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
+              "query": "event_type:stats AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
               "analyze_wildcard": true
             }
         }
@@ -831,7 +832,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
             }
         ,{
             "query_string": {
-              "query": "event_type:stats AND ({% for host in hosts %}{{ hostname }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
+              "query": "event_type:stats AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
               "analyze_wildcard": true
             }
         }
@@ -856,7 +857,7 @@ IPPAIR_ALERTS_COUNT = """
               }
             }, {
               "query_string": {
-                "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
+                "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
                 "analyze_wildcard": true
               }
             }
@@ -914,7 +915,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
               }
             }, {
               "query_string": {
-                "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
+                "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
                 "analyze_wildcard": true
               }
             }
@@ -969,7 +970,7 @@ IPPAIR_NETINFO_ALERTS_COUNT = """
               }
             }, {
               "query_string": {
-                "query": "event_type:alert AND alert.source.net_info:* AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
+                "query": "event_type:alert AND alert.source.net_info:* AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
                 "analyze_wildcard": true
               }
             }
@@ -1048,7 +1049,7 @@ if settings.ELASTICSEARCH_VERSION >= 6:
               }
             }, {
               "query_string": {
-                "query": "event_type:alert AND alert.source.net_info:* AND ({% for host in hosts %}{{ hostname }}:\\\"{{ host }}\\\" {% endfor %}) {{ query_filter|safe }}",
+                "query": "event_type:alert AND alert.source.net_info:* AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
                 "analyze_wildcard": true
               }
             }
@@ -1393,6 +1394,14 @@ def get_es_url(from_date, data = 'alert'):
     return URL % (get_es_address(), indexes)
 
 def render_template(tmpl, dictionary, qfilter = None):
+    if dictionary.get('hosts'):
+        hosts = []
+        for host in dictionary['hosts']:
+            if host != '*':
+                host = format_html('\\"{}\\"', host)
+            hosts.append(host)
+        dictionary['hosts'] = hosts
+
     templ = Template(tmpl)
     context = Context(dictionary)
     if qfilter != None:
