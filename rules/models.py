@@ -2051,7 +2051,7 @@ class Rule(models.Model, Transformable, Cache):
         # Workaround: ref #674
         # Cannot transform, idstools cannot parse it
         # So remove this transformation from choices
-        if rule_ids is None:
+        if rule_ids is None or 'outbound' in rule_ids['msg'].lower():
             return False
 
         if '$EXTERNAL_NET' in rule_ids.raw:
