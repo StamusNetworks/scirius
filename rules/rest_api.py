@@ -2450,9 +2450,6 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
     queryset = SystemSettings.objects.all()
 
     def retrieve(self, request, pk=None):
-        return self.list(request)
-
-    def list(self, request):
         instance = self.get_object()
         serializer = SystemSettingsSerializer(instance)
         data = serializer.data.copy()
