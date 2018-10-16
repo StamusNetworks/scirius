@@ -382,7 +382,7 @@ class HuntApp extends Component {
 		     />
 
        		</VerticalNav>
-       		<div className="container-fluid container-cards-pf container-pf-nav-pf-vertical nav-pf-persistent-secondary">
+       		<div className="container-fluid container-pf-nav-pf-vertical nav-pf-persistent-secondary">
        			<div className="row row-cards-pf">
 			    <div className="col-xs-12 col-sm-12 col-md-12" id="app-content" >
                                 {displayed_page}

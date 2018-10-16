@@ -174,3 +174,50 @@ span.eventValue {
     top: 20px;
     right: 35px;
 }
+
+.react-grid-item .dropdown-kebab-pf{
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.hunt-stat {
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  border-left: 1px solid #e0e0e0;
+  background: #FFF;
+  overflow: auto;
+}
+.hunt-stat:last-child {
+  border-right: 1px solid #e0e0e0;
+}
+.hunt-stat-title {
+  margin: 0px;
+  padding: 20px 25px;
+  font-size: 19px;
+}
+.hunt-stat-body {
+}
+.hunt-stat-body .list-group .list-group-item {
+  padding: 10px 35px;
+}
+.hunt-row {
+  margin-left: 10px;
+}
+.hunt-row h2 {
+  background: #e4e4e4;
+  padding: 20px 30px;
+  font-size: 25px;
+  margin: 0px;
+}
+.react-grid-item.react-grid-placeholder {
+  background: #7b1244 !important;
+}
+.react-draggable-dragging h2 {
+  background: #7b1244;
+  color: #FFFFFF;
+}
+.react-draggable-dragging .react-grid-layout {
+  border: 1px solid #7b1244;
+  background: #f5f5f5;
+}

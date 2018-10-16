@@ -21,68 +21,419 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import axios from 'axios';
-//import { SciriusChart } from './Chart.js';
 import { DonutChart } from 'patternfly-react';
-//import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
-//import { EventValue } from './Event.js';
-import { HuntStat, buildQFilter, RuleToggleModal } from './Rule.js';
+import { WidthProvider, Responsive } from "react-grid-layout";
+import store from 'store';
+import map from "lodash/map";
+import reject from "lodash/reject";
+import find from "lodash/find";
+import {Badge, ListGroup, ListGroupItem} from "react-bootstrap";
+import { buildQFilter } from './helpers/buildQFilter';
+import { RuleToggleModal } from './Rule.js';
 import { HuntList } from './Api.js';
 import { HuntFilter } from './Filter.js';
 import * as config from './config/Api.js';
 import { SciriusChart } from './Chart.js';
-import Modal from "patternfly-react/dist/esm/components/Modal/Modal";
-import ListGroup from "react-bootstrap/es/ListGroup";
-import ListGroupItem from "react-bootstrap/es/ListGroupItem";
 import {EventValue} from "./Event";
-import Badge from "react-bootstrap/es/Badge";
+import "../node_modules/react-grid-layout/css/styles.css";
+import '../node_modules/react-resizable/css/styles.css';
+import { Modal, DropdownKebab, MenuItem } from 'patternfly-react';
+
+const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 export class HuntDashboard extends HuntList {
-  constructor(props) {
-    super(props);
+    constructor(props) {
+        super(props);
 
-    var only_hits = localStorage.getItem("rules_list.only_hits");
-    if (!only_hits) {
-        only_hits = false;
+        let only_hits = localStorage.getItem("rules_list.only_hits");
+        if (!only_hits) {
+            only_hits = false;
+        }
+
+        this.panelAutoresize = false;
+        this.panelState = {};
+        this.panelsLoaded = 0;
+        this.panelsBooted = 'no';
+        this.panelsAdjusted = false;
+        this.breakPointChanged = false;
+        this.storedMicroLayout = [];
+        this.qFilter = "";
+        this.filters = "";
+
+        this.state = {
+            load: ['metadata', 'basic', 'organizational', 'ip', 'http', 'dns', 'tls', 'smtp', 'smb', 'ssh'],
+            // load: ['basic'],
+            breakPoint: 'lg',
+            dashboard: config.dashboard.sections,
+            rules: [], sources: [], rulesets: [], rules_count: 0,
+            loading: true,
+            refresh_data: false,
+            view: 'rules_list',
+            display_toggle: true,
+            only_hits: only_hits,
+            action: {view: false, type: 'suppress'},
+            net_error: undefined,
+            rules_filters: [],
+            supported_actions: [],
+            moreModal: null,
+            moreResults: [],
+        };
     }
 
-    this.state = {
-      rules: [], sources: [], rulesets: [], rules_count: 0,
-      loading: true,
-      refresh_data: false,
-      view: 'rules_list',
-      display_toggle: true,
-      only_hits: only_hits,
-      action: { view: false, type: 'suppress'},
-      net_error: undefined,
-      rules_filters: [],
-      supported_actions: [],
-      moreModal: null,
-      moreResults: [],
-    };
-  }
+    componentDidUpdate(prevProps, prevState){
+        // An adjustment of the panels height is needed for their first proper placement
+        if( this.panelsBooted === 'yes' && !this.panelsAdjusted ){
+            this.panelsAdjusted = true;
+            this.adjustPanelsHeight();
+        }
+
+        if( typeof this.props.system_settings !== 'undefined' ) {
+
+            this.qFilter = this.generateQFilter();
+            this.storedMicroLayout = store.get('dashboardMicroLayout');
+            // Initial booting of panels were moved here instead of componentDidMount, because of the undefined system_settings in componentDidMount
+            if( this.panelsBooted === 'no' ) {
+                this.bootPanels();
+            } else {
+                if( !this.filters.length ) {
+                    this.filters = JSON.stringify(this.props.filters);
+                } else {
+                    if (this.panelsBooted !== 'booting' && ( this.filters !== JSON.stringify(this.props.filters) || prevProps.from_date !== this.props.from_date )) {
+                        this.filters = JSON.stringify(this.props.filters);
+                        this.bootPanels();
+                    }
+                }
+            }
+        }
+
+    }
 
     componentDidMount() {
-       if (this.state.rulesets.length === 0) {
-             axios.get(config.API_URL + config.RULESET_PATH).then(res => {
-               this.setState({rulesets: res.data['results']});
-             })
-       }
-      axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
-      	res => {
-		var fdata = [];
-		for (var i in res.data) {
-			/* Only ES filter are allowed for Alert page */
-			if (['filter'].indexOf(res.data[i].queryType) !== -1) {
-				if (res.data[i].filterType !== 'hunt') {
-					fdata.push(res.data[i]);
-				}
-			}
-		}
-		this.setState({rules_filters: fdata});
-	}
-  	);
-      this.loadActions();
+        if (this.state.rulesets.length === 0) {
+            axios.get(config.API_URL + config.RULESET_PATH).then(res => {
+                this.setState({rulesets: res.data['results']});
+            })
+        }
+        axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
+            res => {
+                var fdata = [];
+                for (var i in res.data) {
+                    /* Only ES filter are allowed for Alert page */
+                    if (['filter'].indexOf(res.data[i].queryType) !== -1) {
+                        if (res.data[i].filterType !== 'hunt') {
+                            fdata.push(res.data[i]);
+                        }
+                    }
+                }
+                this.setState({rules_filters: fdata});
+            }
+        );
+
+        let timeout = false;
+        window.addEventListener('resize', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                if (typeof(Event) === 'function') {
+                    // modern browsers
+                    window.dispatchEvent(new Event('resize'));
+                } else {
+                    // for IE and other old browsers
+                    // causes deprecation warning on modern browsers
+                    var evt = window.document.createEvent('UIEvents');
+                    evt.initUIEvent('resize', true, false, window, 0);
+                    window.dispatchEvent(evt);
+                }
+            }, 250);
+        });
+
+        this.panelState = {...this.state};
     }
+
+    getBlockFromLS = ( panel, block, breakPoint ) => {
+        let result = {};
+        if( typeof this.storedMicroLayout !== 'undefined' && typeof this.storedMicroLayout[panel] !== 'undefined' && typeof this.storedMicroLayout[panel][breakPoint] !== 'undefined' ) {
+            result = find(this.storedMicroLayout[panel][breakPoint], {'i': block})
+        }
+        return result;
+    };
+
+    generateQFilter = () => {
+        let qfilter = buildQFilter(this.props.filters, this.props.system_settings);
+        if (qfilter) {
+            qfilter = '&qfilter=' + qfilter;
+        } else {
+            qfilter = "";
+        }
+        return qfilter;
+    }
+
+    bootPanels = () => {
+        this.panelsLoaded = 0;
+        this.panelsBooted = 'booting';
+        map(this.state.load, panel => this.bootPanel(panel));
+    }
+
+    bootPanel = (panel) => {
+        // Count the number of the blocks
+        let blocksLoaded = 0;
+        let newHeight = 0;
+        map(this.state.dashboard[panel].items, block => {
+
+            axios.get(config.API_URL + config.ES_BASE_PATH +
+                'field_stats&field=' + block.i +
+                '&from_date=' + this.props.from_date +
+                '&page_size=5' + this.qFilter)
+            .then(json => {
+
+                // Validation of the data property
+                if( typeof json.data === 'undefined' || json.data === null ) { json.data = [] };
+
+                // When all of the blocks from a single panel are loaded, then mark the panel as loaded
+                blocksLoaded++;
+                if( blocksLoaded === this.state.dashboard[panel].items.length ){
+                    this.panelsLoaded++;
+                }
+
+                const height = Math.ceil(( json.data.length * config.dashboard.block.defaultItemHeight + config.dashboard.block.defaultHeadHeight)/13);
+                const panelHeight = ( json.data.length ) ? 10+( json.data.length * config.dashboard.block.defaultItemHeight ) + config.dashboard.block.defaultHeadHeight + config.dashboard.panel.defaultHeadHeight: config.dashboard.panel.defaultHeadHeight;
+                const isPanelLoaded = (!this.state.dashboard[panel].items.find(itm => itm.data !== null && itm.data.length === 0));
+
+                const items = this.panelState.dashboard[panel].items.map(el => {
+                    if (el.i === block.i) {
+                        let data = ( json.data.length ) ? json.data : null;
+                        let extended = {
+                            data: data,
+                            dimensions: {
+                                ...el.dimensions,
+                                lg: {
+                                    ...el.dimensions.lg,
+                                    ...this.getBlockFromLS(panel, block.i, 'lg'),
+                                    maxH: height,
+                                    minH: height,
+                                    h: height,
+                                },
+                                md: {
+                                    ...el.dimensions.md,
+                                    ...this.getBlockFromLS(panel, block.i, 'md'),
+                                    maxH: height,
+                                    minH: height,
+                                    h: height,
+                                },
+                                sm: {
+                                    ...el.dimensions.sm,
+                                    ...this.getBlockFromLS(panel, block.i, 'sm'),
+                                    maxH: height,
+                                    minH: height,
+                                    h: height,
+                                },
+                                xs: {
+                                    ...el.dimensions.xs,
+                                    ...this.getBlockFromLS(panel, block.i, 'xs'),
+                                    maxH: height,
+                                    minH: height,
+                                    h: height,
+                                },
+                            }
+                        };
+                        return Object.assign({}, el, extended);
+                    }
+                    return el;
+                });
+
+                newHeight = ( newHeight < panelHeight ) ? panelHeight : newHeight;
+                this.panelState = {
+                    ...this.panelState,
+                    dashboard: {
+                        ...this.panelState.dashboard,
+                        [panel]: {
+                            ...this.panelState.dashboard[panel],
+                            loaded: isPanelLoaded,
+                            dimensions: {
+                                ...this.panelState.dashboard[panel].dimensions,
+                                h: newHeight,
+                                minH: newHeight
+                            },
+                            items
+                        }
+                    }
+                 };
+
+                // When all of the panels are loaded then hit the floor just once
+                if( this.panelsLoaded === this.state.load.length){
+                    this.panelsAdjusted = false;
+                    if( this.panelsBooted !== 'yes' ) {
+                        this.panelsBooted = 'yes';
+                    }
+                    this.setState({
+                        ...this.state,
+                        ...this.panelState,
+                    })
+                }
+
+            })
+        });
+    };
+
+    createElement = (block, panel) => {
+        this.state.dashboard[panel].items.find(itm => itm.i === block.i).loaded = true;
+        let url = config.API_URL + config.ES_BASE_PATH +
+            'field_stats&field=' + block.i +
+            '&from_date=' + this.props.from_date +
+            '&page_size=30' + this.qFilter;
+        return (
+            <div key={block.i}
+                  style={{background: "white"}}>
+                {this.props.children}
+                <h3 className="hunt-stat-title" data-toggle="tooltip" title={block.title}>{block.title}</h3>
+                {block.data.length === 5 && <DropdownKebab id={"more-"+this.props.item} pullRight={true}>
+                    <MenuItem onClick={(e) => this.loadMore(block, url) } data-toggle="modal" >Load more results</MenuItem>
+                </DropdownKebab>}
+                <div className="hunt-stat-body">
+                    <ListGroup>
+                        {block.data.map(item => {
+                            return (<ListGroupItem key={item.key}>
+                                <EventValue field={block.i} value={item.key}
+                                            addFilter={this.addFilter}
+                                            right_info={<Badge>{item.doc_count}</Badge>}
+                                />
+                            </ListGroupItem>)
+                        })}
+                    </ListGroup>
+                </div>
+            </div>
+        );
+    };
+
+    getMacroLayouts = () => {
+        return this.state.load.map(panel => {
+            return { ...this.state.dashboard[panel].dimensions, i: panel.toString() };
+        });
+    };
+
+    getMicroLayouts = (panel, bp) => {
+        return this.state.dashboard[panel].items.map(item => {
+            // return { ...config.dashboard.block.defaultDimensions, ...item.dimensions, i: item.item.toString() };
+            return { ...item.dimensions[bp], i: item.i.toString() };
+        });
+    };
+
+    resetDashboard = (e) => {
+        e.preventDefault();
+        let ask = window.confirm("Confirm reset positions of the dashboard panels?");
+        if( ask ){
+            store.remove('dashboardMacroLayout');
+            store.remove('dashboardMicroLayout');
+            window.location.reload();
+        }
+    };
+
+    adjustPanelsHeight = (p = null) => {
+        let panelsArray = [];
+
+        if( p === null ) {
+            panelsArray = this.state.load;
+        } else {
+            panelsArray.push(p);
+        }
+
+        let tmpState = this.state;
+        let stateChanged = false;
+        for( let panel of panelsArray ) {
+            let panelBodySize = this.getPanelBodySize(panel);
+            let panelRealSize = (parseInt(panelBodySize,10) + parseInt(config.dashboard.panel.defaultHeadHeight,10));
+            if (this.getPanelSize(panel) !== panelRealSize) {
+                stateChanged = true;
+                tmpState = {
+                    ...tmpState,
+                    dashboard: {
+                        ...tmpState.dashboard,
+                        [panel]: {
+                            ...tmpState.dashboard[panel],
+                            dimensions: {
+                                ...tmpState.dashboard[panel].dimensions,
+                                h: panelRealSize,
+                                minH: panelRealSize,
+                            }
+                        }
+                    }
+                };
+            }
+        }
+        if( stateChanged ) {
+            this.setState(tmpState);
+        }
+    };
+
+    getPanelSize = panel => parseInt(document.querySelector("#panel-" + panel).style.height.replace('px', ''),10);
+
+    getPanelBodySize = panel => parseInt(document.querySelector("#panel-" + panel + " div.react-grid-layout").style.height.replace('px', ''),10);
+
+    onChangeMacroLayout = (macroLayout) => {
+        store.set('dashboardMacroLayout', macroLayout);
+    };
+
+    onDragStartMicro = () => {
+        this.panelAutoresize = true;
+    };
+
+    onResizeStartMicro =() => {
+        this.panelAutoresize = true;
+    };
+
+    onChangeMicroLayout = (panel, microLayout) => {
+        if( this.panelAutoresize ) {
+            if (this.state.breakPoint !== null) {
+                let ls = store.get('dashboardMicroLayout') || {[panel]: {lg: {}, md: {}, sm: {}, xs: {}}};
+                store.set('dashboardMicroLayout', {
+                    ...ls,
+                    [panel]: {
+                        ...ls[panel],
+                        [this.state.breakPoint]: microLayout
+                    }
+                });
+
+                let obj = this.state;
+                for (let microItem of microLayout) {
+                    obj = {
+                        ...obj,
+                        dashboard: {
+                            ...this.state.dashboard,
+                            [panel]: {
+                                ...this.state.dashboard[panel],
+                                items: this.state.dashboard[panel].items.map((vv, ii) => {
+                                    let innerItem = {...vv};
+                                    if (microItem.i === vv.i) {
+                                        innerItem.dimensions[this.state.breakPoint] = microItem;
+                                    }
+                                    return Object.assign({}, vv, innerItem);
+                                }),
+                            }
+                        }
+                    };
+                };
+
+                this.setState(obj);
+            }
+            this.adjustPanelsHeight(panel);
+            this.panelAutoresize = false;
+        } else if ( this.breakPointChanged ) {
+            // Block any further redundant calls
+            this.breakPointChanged = false;
+            // Execute it with a little delay in order to be sure that the animation will be finished
+            setTimeout(() => {
+                this.adjustPanelsHeight();
+            },500);
+        }
+    };
+    onBreakPointChange = (breakpoint, cols, panel) => {
+        if( this.state.breakPoint !== breakpoint ) {
+            this.breakPointChanged = true;
+            this.setState({
+                ...this.state,
+                breakPoint: breakpoint
+            });
+        }
+    };
     loadMore = (item, url) => {
         axios.get(url)
             .then(json => {
@@ -92,98 +443,64 @@ export class HuntDashboard extends HuntList {
     hideMoreModal = () => this.setState({...this.state, moreModal: null });
     render() {
         return(
-	    <div>
-	    	  <HuntFilter ActiveFilters={this.props.filters}
-    	          config={this.props.config}
-    		  ActiveSort={this.props.config.sort}
-    		  UpdateFilter={this.UpdateFilter}
-    		  UpdateSort={this.UpdateSort}
-    		  setViewType={this.setViewType}
-    		  filterFields={this.state.rules_filters}
-    		  sort_config={undefined}
-    		  displayToggle={undefined}
-		  actionsButtons={this.actionsButtons}
-		  queryType={['filter', 'rest']}
-                />
+            <div className="HuntList">
 
-	       <div className="container-fluid container-cards-pf">
-	          <div className="row">
-		      <div className="col-md-9">
-		         <HuntTimeline system_settings={this.props.system_settings} from_date={this.props.from_date} filters={this.props.filters} />
-	              </div>
-		      <div className="col-md-3">
-                         <HuntTrend system_settings={this.props.system_settings} from_date={this.props.from_date} filters={this.props.filters} />
-	              </div>
-		  </div>
- 	          <div className="row row-cards-pf">
-		    <h4>Basic information</h4>
-                    <HuntStat title="Signatures" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.signature' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={4} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Categories" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.category' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Severities" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.severity' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Probes" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='host' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-		  </div>
-	          <div className="row row-cards-pf">
-		    <h4>Organizational information</h4>
-                    <HuntStat title="Sources" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='alert.source.ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Targets" system_settings={this.props.system_settings} config={this.props.config}  filters={this.props.filters}  item='alert.target.ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Lateral" system_settings={this.props.system_settings} config={this.props.config}  filters={this.props.filters}  item='alert.lateral' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-		  </div>
-	          <div className="row row-cards-pf">
-		    <h4>Metadata information</h4>
-                    <HuntStat title="Signature severity" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='alert.metadata.signature_severity' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Attack target" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='alert.metadata.attack_target' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Affected product" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='alert.metadata.affected_product' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Malware family" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='alert.metadata.malware_family' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-		  </div>
- 	          <div className="row row-cards-pf">
-		    <h4>IP information</h4>
-                    <HuntStat title="Sources IP" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Destinations IP" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Source Ports" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='src_port' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Destinations Ports" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_port' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="IP Protocols" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='proto' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter} loadMore={this.loadMore}/>
-		  </div>
-                <div className='row row-cards-pf'>
-		    <h4>HTTP information</h4>
-                    <HuntStat title="Hostname" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="URL" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='http.url' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="User agent" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Status" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='http.status' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                </div>
-                <div className='row row-cards-pf'>
-		    <h4>DNS information</h4>
-                    <HuntStat title="Name" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Type" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                </div>
-                <div className='row row-cards-pf'>
-		    <h4>TLS information</h4>
-                    <HuntStat title="Server Name Indication" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Subject DN" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Issuer DN" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='tls.issuerdn' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}  loadMore={this.loadMore}/>
-                    <HuntStat title="Fingerprint" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="JA3 Hash" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='tls.ja3.hash' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} loadMore={this.loadMore}/>
-                </div>
-                <div className='row row-cards-pf'>
-		    <h4>SMTP information</h4>
-                    <HuntStat title="Mail From" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smtp.mail_from' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="RCPT To" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smtp.rcpt_to' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Helo" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smtp.helo' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter} loadMore={this.loadMore}/>
-                </div>
-                <div className='row row-cards-pf'>
-		    <h4>SMB information</h4>
-                    <HuntStat title="Command" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smb.command' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Status" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smb.status' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Filename" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smb.filename' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Share" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smb.share' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter} loadMore={this.loadMore}/>
-                </div>
-                <div className='row row-cards-pf'>
-		    <h4>SSH information</h4>
-                    <HuntStat title="Client Software" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='ssh.client.software_version' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter} loadMore={this.loadMore}/>
-                    <HuntStat title="Server Software" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='ssh.server.software_version' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter} loadMore={this.loadMore}/>
-                </div>
+                    <HuntFilter
+                        ActiveFilters={this.props.filters}
+                        config={this.props.config}
+                        ActiveSort={this.props.config.sort}
+                        UpdateFilter={this.UpdateFilter}
+                        UpdateSort={this.UpdateSort}
+                        setViewType={this.setViewType}
+                        filterFields={this.state.rules_filters}
+                        sort_config={undefined}
+                        displayToggle={undefined}
+                        actionsButtons={this.actionsButtons}
+                        queryType={['filter']}
+                    />
 
-	      </div>	  
-	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
+                    <div className="row">
+                        <div className="col-md-10">
+                            <HuntTimeline from_date={this.props.from_date} filters={this.props.filters} />
+                        </div>
+                        <div className="col-md-2">
+                            <HuntTrend from_date={this.props.from_date} filters={this.props.filters} />
+                        </div>
+                    </div>
+                    <div className="row">
+                        <div className="col-md-12">
+
+                            <a href={"#reset"} className="pull-right" onClick={this.resetDashboard}>reset</a>
+                            <div className="clearfix"/>
+
+                            { this.panelsBooted !== 'no' && <ResponsiveReactGridLayout margin={[0, 0]} compactType={"vertical"} isResizable={false} rowHeight={1} draggableHandle={".hunt-row-title"} cols={{ lg: 1, md: 1, sm: 1, xs: 1, xxs: 1}} layouts={{lg:this.getMacroLayouts(),md:this.getMacroLayouts(),sm:this.getMacroLayouts(),xs:this.getMacroLayouts(),}} onLayoutChange={this.onChangeMacroLayout}>
+                            { this.panelsBooted !== 'no' && this.state.load.map((panel) => {
+                                    return <div className="hunt-row" key={panel} id={'panel-'+panel} >
+                                         <h2 className="hunt-row-title">{this.state.dashboard[panel].title}</h2>
+                                        <ResponsiveReactGridLayout margin={[3, 3]} compactType={"vertical"}
+                                                         layouts={{
+                                                             lg: this.getMicroLayouts(panel,'lg'),
+                                                             md: this.getMicroLayouts(panel,'md'),
+                                                             sm: this.getMicroLayouts(panel,'sm'),
+                                                             xs: this.getMicroLayouts(panel,'xs'),
+                                                         }}
+                                                         onDragStart={ this.onDragStartMicro }
+                                                         onBreakpointChange={(breakPoint, cols) => this.onBreakPointChange(breakPoint, cols, panel) }
+                                                         onLayoutChange={ (e) => this.onChangeMicroLayout(panel, e)}
+                                                         onResizeStart={this.onResizeStartMicro}
+                                                         isDraggable={true} isResizable={true} rowHeight={10}
+                                                         draggableHandle={".hunt-stat-title"}
+                                                         cols={{ lg: 32, md: 24, sm: 16, xs: 8, xxs: 4}} >
+                                            { reject(this.state.dashboard[panel].items, ['data', null]).map((block) => this.createElement(block, panel)) }
+                                        </ResponsiveReactGridLayout>
+                                     </div>
+                                 }
+                             )}
+                            </ResponsiveReactGridLayout> }
+                        </div>
+                    </div>
+
+                <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
                 <Modal show={!(this.state.moreModal===null)} onHide={() => { this.hideMoreModal() }}>
 
                     <Modal.Header>More results <Modal.CloseButton closeText={"Close"} onClick={() => { this.hideMoreModal() }}/> </Modal.Header>
@@ -192,18 +509,18 @@ export class HuntDashboard extends HuntList {
                             <ListGroup>
                                 {this.state.moreResults.map(item => {
                                     return (<ListGroupItem key={item.key}>
-                                        <EventValue field={this.state.moreModal} value={item.key}
+                                            {this.state.moreModal && <EventValue field={this.state.moreModal.i} value={item.key}
                                                     addFilter={this.addFilter}
                                                     right_info={<Badge>{item.doc_count}</Badge>}
-                                        />
+                                        />}
                                     </ListGroupItem>)
                                 })}
                             </ListGroup>
                         </div>
                     </Modal.Body>
                 </Modal>
-	    </div>
-	    );
+            </div>
+        );
     }
 }
 

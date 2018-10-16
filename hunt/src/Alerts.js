@@ -21,7 +21,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import { HuntList } from './Api.js';
-import { buildQFilter, RuleToggleModal } from './Rule.js';
+import { buildQFilter } from './helpers/buildQFilter';
+import { RuleToggleModal } from './Rule.js';
 import { HuntFilter } from './Filter.js';
 import { EventField } from './Event.js';
 import * as config from './config/Api.js';
