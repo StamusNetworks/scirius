@@ -229,8 +229,8 @@ class AlertInList extends React.Component {
 			   }
 			   {data.app_proto_orig &&
 			   <EventField field_name="Original application protocol" field="app_proto_orig" value={data.app_proto_orig} addFilter={this.addFilter} />
-			   }
-			   <EventField field_name="Probe" field="probe" value={data.host} addFilter={this.addFilter} />
+               }
+			   <EventField field_name="Probe" field="host" value={data.host} addFilter={this.addFilter} />
 			</dl>
 			</div>
 			</div>
