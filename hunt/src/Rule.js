@@ -110,10 +110,12 @@ export class RuleInList extends React.Component {
          <h4>Probes</h4>
          <ListGroup>
 	    {this.props.data.probes.map( item => {
-		return(<ListGroupItem key={item.probe}>
-		 {item.probe}     
-		 <Badge>{item.hits}</Badge>
-		 </ListGroupItem>)
+		return(
+        <ListGroupItem key={item.probe} >
+            <EventValue field={"host"} value={item.probe}
+                        addFilter={this.props.addFilter}
+                        right_info={<Badge>{item.hits}</Badge>} />
+        </ListGroupItem>)
 	    })}
          </ListGroup>
       </div>
