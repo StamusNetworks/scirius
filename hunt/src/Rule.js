@@ -360,26 +360,26 @@ export class RulePage extends React.Component {
 			}
 		</Row>
 		}
-                <div className='row row-cards-pf'>
+                <div className='row'>
                     <HuntStat system_settings={this.state.system_settings} title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                     <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                     <HuntStat title="Probes" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='host' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                 </div>
 		{this.state.extinfo.http &&
-                <div className='row row-cards-pf'>
+                <div className='row'>
                     <HuntStat system_settings={this.state.system_settings} title="Hostname" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                     <HuntStat system_settings={this.state.system_settings} title="URL" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.url' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                     <HuntStat system_settings={this.state.system_settings} title="User agent" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                 </div>
 		}
 		{this.state.extinfo.dns &&
-                <div className='row row-cards-pf'>
+                <div className='row'>
                     <HuntStat system_settings={this.state.system_settings} title="Name" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} />
                     <HuntStat system_settings={this.state.system_settings} title="Type" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                 </div>
 		}
 		{this.state.extinfo.tls &&
-                <div className='row row-cards-pf'>
+                <div className='row'>
                     <HuntStat system_settings={this.state.system_settings} title="Subject DN" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} />
                     <HuntStat system_settings={this.state.system_settings} title="SNI" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter}  addFilter={this.props.addFilter}/>
                     <HuntStat system_settings={this.state.system_settings} title="Fingerprint" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
