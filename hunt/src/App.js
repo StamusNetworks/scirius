@@ -576,7 +576,7 @@ class UserNavInfo extends Component {
                     {this.state.system_settings && this.state.system_settings['evebox'] &&
                         <ExternalLink
                             onClick={this.toggleEvebox}
-                            icon="glyphicon glyphicon-stats"
+                            icon="glyphicon glyphicon-th-list"
                             title="Events viewer"
                             tooltip="Evebox alert and event management tool" />
                     }
