@@ -37,7 +37,7 @@ from rules.es_graphs import es_get_stats, es_get_rules_stats, es_get_dashboard, 
         es_get_latest_stats, es_get_ippair_alerts, es_get_ippair_network_alerts, es_get_alerts_tail, es_suri_log_tail
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
-from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL
+from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD
 from rules.es_graphs import es_get_sigs_list_hits, es_get_top_rules, ESError
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
@@ -2456,6 +2456,7 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
 
         data['kibana'] = USE_KIBANA
         data['evebox'] = USE_EVEBOX
+        data['es_keyword'] = ELASTICSEARCH_KEYWORD
 
         if USE_KIBANA:
             if KIBANA_PROXY:

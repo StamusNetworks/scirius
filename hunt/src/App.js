@@ -205,9 +205,12 @@ class HuntApp extends Component {
       axios.all([
           axios.get(config.API_URL + config.SOURCE_PATH),
           axios.get(config.API_URL + config.RULESET_PATH),
+          axios.get(config.API_URL + config.SYSTEM_SETTINGS_PATH),
 	  ])
-      .then(axios.spread((SrcRes, RulesetRes) => {
-         this.setState({ rulesets: RulesetRes.data['results'], sources: SrcRes.data['results']});
+      .then(axios.spread((SrcRes, RulesetRes, system_settings) => {
+         this.setState({ rulesets: RulesetRes.data['results'],
+         sources: SrcRes.data['results'],
+         system_settings: system_settings.data});
       }))
 
       if (this.state.interval) {
@@ -296,26 +299,26 @@ class HuntApp extends Component {
             switch (this.state.display.page) {
                case PAGE_STATE.rules_list:
                default:
-                  displayed_page = <RulesList config={this.state.rules_list} filters={this.state.ids_filters} from_date={this.state.from_date} SwitchPage={this.switchPage} updateListState={this.updateRuleListState} updateFilterState={this.updateIDSFilterState} />
+                  displayed_page = <RulesList system_settings={this.state.system_settings} config={this.state.rules_list} filters={this.state.ids_filters} from_date={this.state.from_date} SwitchPage={this.switchPage} updateListState={this.updateRuleListState} updateFilterState={this.updateIDSFilterState} />
                   break;
                case PAGE_STATE.source:
-                  displayed_page = <SourcePage source={this.state.display.item} from_date={this.state.from_date}/>
+                  displayed_page = <SourcePage system_settings={this.state.system_settings} source={this.state.display.item} from_date={this.state.from_date}/>
                   break;
                case PAGE_STATE.ruleset:
-                  displayed_page = <RulesetPage ruleset={this.state.display.item} from_date={this.state.from_date}/>
+                  displayed_page = <RulesetPage system_settings={this.state.system_settings} ruleset={this.state.display.item} from_date={this.state.from_date}/>
                   break;
                case PAGE_STATE.dashboards:
 	          // FIXME remove or change updateRuleListState
-                  displayed_page = <HuntDashboard config={this.state.rules_list} filters={this.state.ids_filters} from_date={this.state.from_date} SwitchPage={this.switchPage} updateListState={this.updateRuleListState} updateFilterState={this.updateIDSFilterState} needReload={this.needReload} />
+                  displayed_page = <HuntDashboard system_settings={this.state.system_settings} config={this.state.rules_list} filters={this.state.ids_filters} from_date={this.state.from_date} SwitchPage={this.switchPage} updateListState={this.updateRuleListState} updateFilterState={this.updateIDSFilterState} needReload={this.needReload} />
                   break;
                case PAGE_STATE.history:
-                  displayed_page = <HistoryPage config={this.state.history} filters={this.state.history_filters} from_date={this.state.from_date} updateListState={this.updateHistoryListState} switchPage={this.switchPage} updateFilterState={this.updateHistoryFilterState}/>
+                  displayed_page = <HistoryPage system_settings={this.state.system_settings} config={this.state.history} filters={this.state.history_filters} from_date={this.state.from_date} updateListState={this.updateHistoryListState} switchPage={this.switchPage} updateFilterState={this.updateHistoryFilterState}/>
                   break;
 		case PAGE_STATE.alerts_list:
-                  displayed_page = <AlertsList config={this.state.alerts_list} filters={this.state.ids_filters} from_date={this.state.from_date} updateListState={this.updateAlertListState} switchPage={this.switchPage} updateFilterState={this.updateIDSFilterState} />
+                  displayed_page = <AlertsList system_settings={this.state.system_settings} config={this.state.alerts_list} filters={this.state.ids_filters} from_date={this.state.from_date} updateListState={this.updateAlertListState} switchPage={this.switchPage} updateFilterState={this.updateIDSFilterState} />
 		  break;
 		case PAGE_STATE.filters_list:
-                  displayed_page = <FiltersList config={this.state.filters_list} filters={this.state.filters_filters} from_date={this.state.from_date} updateListState={this.updateFilterListState} switchPage={this.switchPage} updateFilterState={this.updateFiltersFilterState} />
+                  displayed_page = <FiltersList system_settings={this.state.system_settings} config={this.state.filters_list} filters={this.state.filters_filters} from_date={this.state.from_date} updateListState={this.updateFilterListState} switchPage={this.switchPage} updateFilterState={this.updateFiltersFilterState} />
                   break;
             }
         return(
@@ -325,7 +328,7 @@ class HuntApp extends Component {
 						<VerticalNav.Brand titleImg={scirius_logo} />
 
 						<VerticalNav.IconBar>
-							<UserNavInfo ChangeDuration={this.changeDuration} ChangeRefreshInterval={this.changeRefreshInterval} interval={this.state.interval} period={this.state.duration} needReload={this.needReload}/>
+							<UserNavInfo system_settings={this.state.system_settings} ChangeDuration={this.changeDuration} ChangeRefreshInterval={this.changeRefreshInterval} interval={this.state.interval} period={this.state.duration} needReload={this.needReload}/>
 						</VerticalNav.IconBar>
 
 
@@ -445,13 +448,11 @@ class UserNavInfo extends Component {
   }
 
   componentDidMount() {
-    axios.all([
-        axios.get(config.API_URL + config.USER_PATH + 'current_user/'),
-        axios.get(config.API_URL + config.SYSTEM_SETTINGS_PATH),
-    ])
-    .then(axios.spread((current_user, system_settings) => {
-        this.setState({ user: current_user.data, system_settings: system_settings.data});
-    }));
+    axios.get(config.API_URL + config.USER_PATH + 'current_user/')
+    .then(
+        current_user => {
+            this.setState({ user: current_user.data});
+        });
   }
 
   AboutClick(e) {
@@ -480,12 +481,12 @@ class UserNavInfo extends Component {
 
   toggleDashboards() {
     this.setState({isShown: !this.state.isShown});
-    window.open(this.state.system_settings['kibana_url'], "_self");
+    window.open(this.props.system_settings['kibana_url'], "_self");
   }
 
   toggleEvebox() {
     this.setState({isShown: !this.state.isShown});
-    window.open(this.state.system_settings['evebox_url'], "_self");
+    window.open(this.props.system_settings['evebox_url'], "_self");
   }
 
   showUpdateThreatDetection() {
@@ -565,7 +566,7 @@ class UserNavInfo extends Component {
                     onClick={this.toggleHome}
                     />
 
-                    {this.state.system_settings && this.state.system_settings['kibana'] &&
+                    {this.props.system_settings && this.props.system_settings['kibana'] &&
                         <ExternalLink
                             onClick={this.toggleDashboards}
                             icon="glyphicon glyphicon-stats"
@@ -573,7 +574,7 @@ class UserNavInfo extends Component {
                             tooltip="Kibana dashboards for ES" />
                     }
 
-                    {this.state.system_settings && this.state.system_settings['evebox'] &&
+                    {this.props.system_settings && this.props.system_settings['evebox'] &&
                         <ExternalLink
                             onClick={this.toggleEvebox}
                             icon="glyphicon glyphicon-th-list"

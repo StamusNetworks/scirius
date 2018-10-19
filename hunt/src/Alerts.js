@@ -73,7 +73,7 @@ export class AlertsList extends HuntList {
   }
   
   fetchData(state, filters) {
-     var string_filters = buildQFilter(filters);
+     var string_filters = buildQFilter(filters, this.props.system_settings);
      if (string_filters === null) {
         string_filters = "";
      } else {

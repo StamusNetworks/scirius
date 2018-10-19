@@ -270,7 +270,7 @@ export class RulePage extends React.Component {
     componentDidMount() {
        var rule = this.state.rule;
        var sid = this.state.sid;
-       var qfilter = buildQFilter(this.props.filters);
+       var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
 
        if (rule !== undefined) {
            updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
@@ -304,7 +304,7 @@ export class RulePage extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-       var qfilter = buildQFilter(this.props.filters);
+       var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
        if ((prevProps.from_date !==  this.props.from_date) ||
            (prevProps.filters.length !==  this.props.filters.length)) {
             var rule = JSON.parse(JSON.stringify(this.state.rule));
@@ -361,28 +361,28 @@ export class RulePage extends React.Component {
 		</Row>
 		}
                 <div className='row row-cards-pf'>
-                    <HuntStat title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                    <HuntStat system_settings={this.state.system_settings} title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                     <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                     <HuntStat title="Probes" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='host' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                 </div>
 		{this.state.extinfo.http &&
                 <div className='row row-cards-pf'>
-                    <HuntStat title="Hostname" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                    <HuntStat title="URL" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.url' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                    <HuntStat title="User agent" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                    <HuntStat system_settings={this.state.system_settings} title="Hostname" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                    <HuntStat system_settings={this.state.system_settings} title="URL" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.url' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                    <HuntStat system_settings={this.state.system_settings} title="User agent" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                 </div>
 		}
 		{this.state.extinfo.dns &&
                 <div className='row row-cards-pf'>
-                    <HuntStat title="Name" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} />
-                    <HuntStat title="Type" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                    <HuntStat system_settings={this.state.system_settings} title="Name" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} />
+                    <HuntStat system_settings={this.state.system_settings} title="Type" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                 </div>
 		}
 		{this.state.extinfo.tls &&
                 <div className='row row-cards-pf'>
-                    <HuntStat title="Subject DN" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} />
-                    <HuntStat title="SNI" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter}  addFilter={this.props.addFilter}/>
-                    <HuntStat title="Fingerprint" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                    <HuntStat system_settings={this.state.system_settings} title="Subject DN" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} />
+                    <HuntStat system_settings={this.state.system_settings} title="SNI" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter}  addFilter={this.props.addFilter}/>
+                    <HuntStat system_settings={this.state.system_settings} title="Fingerprint" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
                 </div>
         }
         <Row>
@@ -428,7 +428,7 @@ export class HuntStat extends React.Component {
     }
 
     updateData() {
-          var qfilter = buildQFilter(this.props.filters);
+          var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
 	  if (qfilter) {
 		qfilter = '&qfilter=' + qfilter;
 	  } else {
@@ -934,10 +934,15 @@ export class RuleToggleModal extends React.Component {
     }
 }
 
-export function buildQFilter(filters) {
+export function buildQFilter(filters, system_settings) {
      var qfilter = [];
      for (var i=0; i < filters.length; i++) {
-	var f_prefix = '';
+        var f_prefix = '';
+        var f_suffix = '.raw';
+        if (filters[i].id === 'alert.category' && system_settings) {
+            f_suffix = '.' + system_settings['es_keyword'];
+        }
+
 	if (filters[i].negated) {
             f_prefix = 'NOT ';
 	}
@@ -978,7 +983,7 @@ export function buildQFilter(filters) {
             continue;
         }
 	else if (typeof filters[i].value === 'string') {
-            qfilter.push(f_prefix + filters[i].id + ':"' + encodeURIComponent(filters[i].value) + '"');
+	     qfilter.push(f_prefix + filters[i].id + f_suffix + ':"' + encodeURIComponent(filters[i].value) + '"');
 	    continue;
 	}
 	else {
@@ -1028,7 +1033,7 @@ export class RulesList extends HuntList {
      for (var k in l_filters) {
          string_filters += "&" + k + "=" + l_filters[k];
      }
-     var qfilter = buildQFilter(filters);
+     var qfilter = buildQFilter(filters, this.props.system_settings);
      if (qfilter) {
 	 string_filters += '&qfilter=' +  qfilter;
      }
@@ -1057,7 +1062,7 @@ export class RulesList extends HuntList {
    }
 
   fetchHitsStats(rules) {
-	 var qfilter = buildQFilter(this.props.filters);
+	 var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
      updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
   }
 
@@ -1208,7 +1213,7 @@ export class RulesList extends HuntList {
 	    />
 	    }
             {this.state.view === 'rule' &&
-	        <RulePage rule={this.state.display_rule} config={this.props.config} filters={this.props.filters} from_date={this.props.from_date} UpdateFilter={this.RuleUpdateFilter} addFilter={this.addFilter} rulesets={this.state.rulesets}/>
+	        <RulePage system_settings={this.props.system_settings} rule={this.state.display_rule} config={this.props.config} filters={this.props.filters} from_date={this.props.from_date} UpdateFilter={this.RuleUpdateFilter} addFilter={this.addFilter} rulesets={this.state.rulesets}/>
 	    }
             {this.state.view === 'dashboard' &&
 	        <HuntDashboard />

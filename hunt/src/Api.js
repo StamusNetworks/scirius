@@ -246,7 +246,7 @@ export class HuntList extends React.Component {
      if (this.props.needReload) {
         this.props.needReload();
      }
-     this.loadActions(filters)
+     this.loadActions(filters);
    }
 
    UpdateSort(sort) {

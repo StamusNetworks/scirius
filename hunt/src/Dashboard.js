@@ -96,77 +96,77 @@ export class HuntDashboard extends HuntList {
 	       <div className="container-fluid container-cards-pf">
 	          <div className="row">
 		      <div className="col-md-10">
-		         <HuntTimeline from_date={this.props.from_date} filters={this.props.filters} />
+		         <HuntTimeline system_settings={this.props.system_settings} from_date={this.props.from_date} filters={this.props.filters} />
 	              </div>
 		      <div className="col-md-2">
-                         <HuntTrend from_date={this.props.from_date} filters={this.props.filters} />
+                         <HuntTrend system_settings={this.props.system_settings} from_date={this.props.from_date} filters={this.props.filters} />
 	              </div>
 		  </div>
  	          <div className="row row-cards-pf">
 		    <h4>Basic information</h4>
-                    <HuntStat title="Signatures" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.signature' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={4} addFilter={this.addFilter}/>
-                    <HuntStat title="Categories" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.category' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
-                    <HuntStat title="Severities" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.severity' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter}/>
-                    <HuntStat title="Probes" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='host' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="Signatures" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.signature' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={4} addFilter={this.addFilter}/>
+                    <HuntStat title="Categories" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.category' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="Severities" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='alert.severity' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter}/>
+                    <HuntStat title="Probes" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='host' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
 		  </div>
 	          <div className="row row-cards-pf">
 		    <h4>Organizational information</h4>
-                    <HuntStat title="Sources" config={this.props.config} filters={this.props.filters}  item='alert.source.ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
-                    <HuntStat title="Targets" config={this.props.config}  filters={this.props.filters}  item='alert.target.ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
-                    <HuntStat title="Lateral" config={this.props.config}  filters={this.props.filters}  item='alert.lateral' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="Sources" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='alert.source.ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="Targets" system_settings={this.props.system_settings} config={this.props.config}  filters={this.props.filters}  item='alert.target.ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="Lateral" system_settings={this.props.system_settings} config={this.props.config}  filters={this.props.filters}  item='alert.lateral' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
 		  </div>
 	          <div className="row row-cards-pf">
 		    <h4>Metadata information</h4>
-                    <HuntStat title="Signature severity" config={this.props.config} filters={this.props.filters}  item='alert.metadata.signature_severity' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
-                    <HuntStat title="Attack target" config={this.props.config} filters={this.props.filters}  item='alert.metadata.attack_target' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
-                    <HuntStat title="Affected product" config={this.props.config} filters={this.props.filters}  item='alert.metadata.affected_product' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
-                    <HuntStat title="Malware family" config={this.props.config} filters={this.props.filters}  item='alert.metadata.malware_family' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="Signature severity" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='alert.metadata.signature_severity' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="Attack target" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='alert.metadata.attack_target' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="Affected product" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='alert.metadata.affected_product' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="Malware family" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='alert.metadata.malware_family' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
 		  </div>
  	          <div className="row row-cards-pf">
 		    <h4>IP information</h4>
-                    <HuntStat title="Sources IP" rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
-                    <HuntStat title="Destinations IP" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
-                    <HuntStat title="Source Ports" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='src_port' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter}/>
-                    <HuntStat title="Destinations Ports" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_port' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter}/>
-                    <HuntStat title="IP Protocols" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='proto' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter}/>
+                    <HuntStat title="Sources IP" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="Destinations IP" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="Source Ports" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='src_port' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter}/>
+                    <HuntStat title="Destinations Ports" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_port' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter}/>
+                    <HuntStat title="IP Protocols" system_settings={this.props.system_settings} rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='proto' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter}/>
 		  </div>
                 <div className='row row-cards-pf'>
 		    <h4>HTTP information</h4>
-                    <HuntStat title="Hostname" config={this.props.config} filters={this.props.filters}  item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
-                    <HuntStat title="URL" config={this.props.config} filters={this.props.filters}  item='http.url' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
-                    <HuntStat title="User agent" config={this.props.config} filters={this.props.filters}  item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
-                    <HuntStat title="Status" config={this.props.config} filters={this.props.filters}  item='http.status' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter}/>
+                    <HuntStat title="Hostname" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="URL" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='http.url' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="User agent" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="Status" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='http.status' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter}/>
                 </div>
                 <div className='row row-cards-pf'>
 		    <h4>DNS information</h4>
-                    <HuntStat title="Name" config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
-                    <HuntStat title="Type" config={this.props.config} filters={this.props.filters}  item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter}/>
+                    <HuntStat title="Name" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Type" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} col={2} addFilter={this.addFilter}/>
                 </div>
                 <div className='row row-cards-pf'>
 		    <h4>TLS information</h4>
-                    <HuntStat title="Server Name Indication" config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
-                    <HuntStat title="Subject DN" config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
-                    <HuntStat title="Issuer DN" config={this.props.config} filters={this.props.filters} item='tls.issuerdn' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} />
-                    <HuntStat title="Fingerprint" config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
-                    <HuntStat title="JA3 Hash" config={this.props.config} filters={this.props.filters}  item='tls.ja3.hash' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="Server Name Indication" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Subject DN" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Issuer DN" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='tls.issuerdn' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter} addFilter={this.addFilter} />
+                    <HuntStat title="Fingerprint" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
+                    <HuntStat title="JA3 Hash" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='tls.ja3.hash' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} addFilter={this.addFilter}/>
                 </div>
                 <div className='row row-cards-pf'>
 		    <h4>SMTP information</h4>
-                    <HuntStat title="Mail From" config={this.props.config} filters={this.props.filters} item='smtp.mail_from' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
-                    <HuntStat title="RCPT To" config={this.props.config} filters={this.props.filters} item='smtp.rcpt_to' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
-                    <HuntStat title="Helo" config={this.props.config} filters={this.props.filters} item='smtp.helo' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Mail From" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smtp.mail_from' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="RCPT To" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smtp.rcpt_to' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Helo" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smtp.helo' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
                 </div>
                 <div className='row row-cards-pf'>
 		    <h4>SMB information</h4>
-                    <HuntStat title="Command" config={this.props.config} filters={this.props.filters} item='smb.command' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
-                    <HuntStat title="Status" config={this.props.config} filters={this.props.filters} item='smb.status' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
-                    <HuntStat title="Filename" config={this.props.config} filters={this.props.filters} item='smb.filename' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
-                    <HuntStat title="Share" config={this.props.config} filters={this.props.filters} item='smb.share' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Command" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smb.command' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Status" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smb.status' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Filename" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smb.filename' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Share" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='smb.share' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
                 </div>
                 <div className='row row-cards-pf'>
 		    <h4>SSH information</h4>
-                    <HuntStat title="Client Software" config={this.props.config} filters={this.props.filters} item='ssh.client.software_version' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
-                    <HuntStat title="Server Software" config={this.props.config} filters={this.props.filters}  item='ssh.server.software_version' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Client Software" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters} item='ssh.client.software_version' from_date={this.props.from_date}  UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
+                    <HuntStat title="Server Software" system_settings={this.props.system_settings} config={this.props.config} filters={this.props.filters}  item='ssh.server.software_version' from_date={this.props.from_date} UpdateFilter={this.UpdateFilter}  addFilter={this.addFilter}/>
                 </div>
 
 	      </div>	  
@@ -186,7 +186,7 @@ class HuntTrend extends React.Component {
 
     fetchData() {
         var string_filters = "";
-        var qfilter = buildQFilter(this.props.filters);
+        var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
         if (qfilter) {
    	        string_filters += '&filter=' +  qfilter;
         }
@@ -254,7 +254,7 @@ class HuntTimeline extends React.Component {
     fetchData() {
         var string_filters = "";
         var key = undefined;
-        var qfilter = buildQFilter(this.props.filters);
+        var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
         if (qfilter) {
    	        string_filters += '&filter=' +  qfilter;
         }
