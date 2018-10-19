@@ -1968,7 +1968,7 @@ class Rule(models.Model, Transformable, Cache):
 
     def get_comments(self):
         uas = UserAction.objects.filter(
-                action_type="comment_rule",
+                action_type__in=['comment_rule', 'transform_rule', 'enable_rule', 'suppress_rule', 'disable_rule', 'delete_suppress_rule'],
                 user_action_objects__content_type=ContentType.objects.get_for_model(Rule),
                 user_action_objects__object_id=self.pk).order_by('-date')
         return uas

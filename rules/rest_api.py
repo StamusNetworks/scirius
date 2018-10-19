@@ -811,8 +811,14 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         elif request.method == 'GET':
             rule = self.get_object()
             uas = rule.get_comments()
-            comments = [ua.comment for ua in uas]
-            return Response(comments)
+            res = {rule.sid: []}
+            for ua in uas:
+                res[rule.sid].append({'title': ua.get_title(),
+                                      'icon': ua.get_icons(),
+                                      'comment': ua.comment if len(ua.comment) else 'No comment',
+                                      'description': ua.generate_description(),
+                                      'date': ua.date})
+            return Response(res)
 
     @detail_route(methods=['post'])
     def toggle_availability(self, request, pk):
