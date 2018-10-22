@@ -1153,6 +1153,7 @@ def add_source(request):
                         created_date = timezone.now(),
                         datatype = form.cleaned_data['datatype'],
                         cert_verif = form.cleaned_data['cert_verif'],
+                        use_iprep=form.cleaned_data['use_iprep']
                         )
                 if src.method == 'local' and request.FILES.has_key('file'):
                     try:
