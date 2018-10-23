@@ -1363,7 +1363,7 @@ class BaseSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Source
         fields = ('pk', 'name', 'created_date', 'updated_date', 'method', 'datatype', 'uri', 'cert_verif',
-                  'cats_count', 'rules_count',)
+                  'cats_count', 'rules_count', 'use_iprep')
         read_only_fields = ('pk', 'created_date', 'updated_date', 'method', 'datatype', 'cert_verif',
                             'cats_count', 'rules_count',)
 

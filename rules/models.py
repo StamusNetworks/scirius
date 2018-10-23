@@ -801,6 +801,7 @@ class Source(models.Model):
         self.rules_count = len(Rule.objects.filter(category__in = cats))
         self.save()
 
+    # This method cannot be called twice consecutively
     @transaction.atomic
     def update(self):
         # look for categories list: if none, first import
@@ -1650,7 +1651,7 @@ class Category(models.Model, Transformable, Cache):
                         rule = existing_rules_hash[int(sid)]
                         if rule.category.source != source:
                             raise ValidationError('Duplicate SID: %d' % (int(sid)))
-                        if rev == None or rule.rev < rev:
+                        if rev == None or rule.rev < rev or rule.group is True:
                             rule.content = line
                             if rev == None:
                                 rule.rev = 0
