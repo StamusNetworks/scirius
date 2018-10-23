@@ -1925,7 +1925,7 @@ class ESRulesViewSet(APIView):
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         return Response({'rules': es_get_rules_stats(request, host, from_date=from_date, qfilter=qfilter, dict_format=True)})
 
 
@@ -1955,7 +1955,7 @@ class ESRuleViewSet(APIView):
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         return Response({'rule': es_get_sid_by_hosts(request, sid, from_date=from_date, dict_format=True)})
 
 
@@ -2006,7 +2006,7 @@ class ESFilterIPViewSet(APIView):
         if field not in self.RULE_FIELDS_MAPPING.keys():
             raise exceptions.NotFound(detail='"%s" is not a valid field' % field)
 
-        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
 
         filter_ip = self.RULE_FIELDS_MAPPING[field]
         hosts = es_get_field_stats(request,
@@ -2046,7 +2046,7 @@ class ESTimelineViewSet(APIView):
         if chosts:
             chosts = chosts.split(',')
 
-        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         return Response({'hosts': es_get_timeline(from_date=from_date, hosts=chosts, qfilter=qfilter)})
 
 
@@ -2084,7 +2084,7 @@ class ESLogstashEveViewSet(APIView):
         if chosts:
             chosts = chosts.split(',')
 
-        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         return Response({'logstash_eve': es_get_metrics_timeline(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter)})
 
 
@@ -2195,7 +2195,7 @@ class ESRulesPerCategoryViewSet(APIView):
         else:
             chosts = chosts.split(',')
 
-        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         return Response({'rule_per_category': es_get_rules_per_category(from_date=from_date, hosts=chosts, qfilter=qfilter)})
 
 
@@ -2228,7 +2228,7 @@ class ESAlertsCountViewSet(APIView):
         if chosts:
             chosts = chosts.split(',')
 
-        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         prev = 1 if prev is not None and prev != 'false' else None
 
         return Response({'alerts_count': es_get_alerts_count(from_date=from_date, hosts=chosts, qfilter=qfilter, prev=prev)})
@@ -2269,7 +2269,7 @@ class ESLatestStatsViewSet(APIView):
         if chosts:
             chosts = chosts.split(',')
 
-        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         return Response({'latest_stats': es_get_latest_stats(from_date=from_date, hosts=chosts, qfilter=qfilter)})
 
 
@@ -2304,7 +2304,7 @@ class ESIPPairAlertsViewSet(APIView):
         if chosts:
             chosts = chosts.split(',')
 
-        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         return Response({'ippair_alerts': es_get_ippair_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter)})
 
 
@@ -2334,7 +2334,7 @@ class ESIPPairNetworkAlertsViewSet(APIView):
         if chosts:
             chosts = chosts.split(',')
 
-        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         return Response({'ippair_network_alerts': es_get_ippair_network_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter)})
 
 
@@ -2359,7 +2359,7 @@ class ESAlertsTailViewSet(APIView):
         milli_sec = 3600 * 1000
         qfilter = request.GET.get('filter', None)
         from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
-        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         return Response({'alerts_tail': es_get_alerts_tail(from_date=from_date, qfilter=qfilter)})
 
 
@@ -2392,7 +2392,7 @@ class ESSuriLogTailViewSet(APIView):
         if chosts:
             chosts = chosts.split(',')
 
-        from_date = min(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         return Response({'suri_log_tail': es_suri_log_tail(from_date=from_date, hosts=chosts)})
 
 
