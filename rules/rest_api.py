@@ -2057,19 +2057,62 @@ class ESLogstashEveViewSet(APIView):
     qfilter: "filter in Elasticsearch Query String Query format"
 
     Logstash Events examples:\n
-        1. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.cpu.user.pct\&from_date\=1537264545477\&hosts\=ProbeMain\&filter\=system.filesystem.mount_point.raw:/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        1. curl -k "https://x.x.x.x/rest/rules/es/logstash_eve/?value=system.cpu.user.pct&from_date=1540211796478&hosts=stamus"  -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
         2. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.memory.actual.used.pct\&from_date\=1537264545477\&hosts\=ProbeMain -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
         3. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.network.in.bytes\&from_date\=1537264545477\&hosts\=ProbeMain\&filter\=system.network.name:eth0 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
         4. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.filesystem.used.pct\&from_date\=1537264545477\&hosts\=ProbeMain\&filter\=system.filesystem.mount_point.raw:/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        5. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.filesystem.used.pct\&from_date\=1537264545477\&hosts\=ProbeMain\&filter\=system.filesystem.mount_point.raw:/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        5. curl -k "https://x.x.x.x/rest/rules/es/logstash_eve/?value=system.filesystem.used.pct&from_date=1540210439302&hosts=stamus&filter=system.filesystem.mount_point.raw:\"/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch\"" -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
-        1. {"logstash_eve":{"from_date":1528189628098,"interval":25920000}}
+        1. {"logstash_eve":{"from_date":1540211796478,"interval":868000,"stamus":{"entries":[{"mean":0.2518125013448298,"time":1540213664000},{"mean":0.12792068951088806,"time":1540214532000},{"mean":0.2473448278575108,"time":1540215400000},
+           {"mean":0.17718275841967812,"time":1540216268000},{"mean":0.26032413490887346,"time":1540217136000},{"mean":0.12027241340998945,"time":1540218004000},{"mean":0.11639655150216201,"time":1540218872000},
+           {"mean":0.22578214348426887,"time":1540219740000},{"mean":0.2087103447009777,"time":1540220608000},{"mean":0.18898275957025332,"time":1540221476000},{"mean":0.33865516992478534,"time":1540222344000},
+           {"mean":0.2423620681310522,"time":1540223212000},{"mean":0.15318965500798717,"time":1540224080000},{"mean":0.15162413772837868,"time":1540224948000},{"mean":0.25527407394515145,"time":1540225816000},
+           {"mean":null,"time":1540226684000},{"mean":null,"time":1540227552000},{"mean":null,"time":1540228420000},{"mean":null,"time":1540229288000},{"mean":null,"time":1540230156000},{"mean":null,"time":1540231024000},
+           {"mean":null,"time":1540231892000},{"mean":null,"time":1540232760000},{"mean":null,"time":1540233628000},{"mean":null,"time":1540234496000},{"mean":null,"time":1540235364000},{"mean":null,"time":1540236232000},
+           {"mean":null,"time":1540237100000},{"mean":null,"time":1540237968000},{"mean":null,"time":1540238836000},{"mean":null,"time":1540239704000},{"mean":null,"time":1540240572000},{"mean":null,"time":1540241440000},
+           {"mean":null,"time":1540242308000},{"mean":null,"time":1540243176000},{"mean":null,"time":1540244044000},{"mean":null,"time":1540244912000},{"mean":null,"time":1540245780000},{"mean":null,"time":1540246648000},
+           {"mean":null,"time":1540247516000},{"mean":null,"time":1540248384000},{"mean":null,"time":1540249252000},{"mean":null,"time":1540250120000},{"mean":null,"time":1540250988000},{"mean":null,"time":1540251856000},
+           {"mean":null,"time":1540252724000},{"mean":null,"time":1540253592000},{"mean":null,"time":1540254460000},{"mean":null,"time":1540255328000},{"mean":null,"time":1540256196000},{"mean":null,"time":1540257064000},
+           {"mean":null,"time":1540257932000},{"mean":null,"time":1540258800000},{"mean":null,"time":1540259668000},{"mean":null,"time":1540260536000},{"mean":null,"time":1540261404000},{"mean":null,"time":1540262272000},
+           {"mean":null,"time":1540263140000},{"mean":null,"time":1540264008000},{"mean":null,"time":1540264876000},{"mean":null,"time":1540265744000},{"mean":null,"time":1540266612000},{"mean":null,"time":1540267480000},
+           {"mean":null,"time":1540268348000},{"mean":null,"time":1540269216000},{"mean":null,"time":1540270084000},{"mean":null,"time":1540270952000},{"mean":null,"time":1540271820000},{"mean":null,"time":1540272688000},
+           {"mean":null,"time":1540273556000},{"mean":null,"time":1540274424000},{"mean":null,"time":1540275292000},{"mean":null,"time":1540276160000},{"mean":null,"time":1540277028000},{"mean":0.24997000135481356,"time":1540277896000},
+           {"mean":0.18144138093138562,"time":1540278764000},{"mean":0.33640000134192666,"time":1540279632000},{"mean":0.2678482750880307,"time":1540280500000},{"mean":0.16719654998902617,"time":1540281368000},
+           {"mean":0.3015750005309071,"time":1540282236000},{"mean":0.3708103494397525,"time":1540283104000},{"mean":0.3803034447904291,"time":1540283972000},{"mean":0.2580206908028701,"time":1540284840000},
+           {"mean":0.15135862035997982,"time":1540285708000},{"mean":0.17907241320815578,"time":1540286576000},{"mean":0.19569310314696411,"time":1540287444000},{"mean":0.15246896651284447,"time":1540288312000},
+           {"mean":0.1365241377518095,"time":1540289180000},{"mean":0.13442758676306954,"time":1540290048000},{"mean":0.1337482757095633,"time":1540290916000},{"mean":0.13650000069675775,"time":1540291784000},
+           {"mean":0.13234137872169757,"time":1540292652000},{"mean":0.13395862050097565,"time":1540293520000},{"mean":0.1352275856610002,"time":1540294388000},{"mean":0.1356607140707118,"time":1540295256000},
+           {"mean":0.2512724152926741,"time":1540296124000},{"mean":0.2668586211471722,"time":1540296992000},{"mean":0.17512963049941593,"time":1540297860000}]}}}
+
         2. {"logstash_eve":{"ProbeMain":{"entries":[{"mean":0.3259543928641156,"time":1530620640000},{"mean":null,"time":1530646560000},{"mean":0.1408457946136733,"time":1530672480000},{"mean":0.21490591046354307,"time":1530698400000},{"mean":null,"time":1530724320000},
            {"mean":0.3362637047414426,"time":1530750240000},{"mean":0.3794413974849127,"time":1530776160000}]},"from_date":1528189751975,"interval":25920000}}
+
         3. {"logstash_eve":{"ProbeMain":{"entries":[{"mean":279981525.3389121,"time":1530620640000},{"mean":null,"time":1530646560000},{"mean":150212918.69626167,"time":1530672480000},
            {"mean":3426892519.905911,"time":1530698400000},{"mean":null,"time":1530724320000},{"mean":155888225.38518518,"time":1530750240000},{"mean":359010903.6592179,"time":1530776160000}]},"from_date":1528189528880,"interval":25920000}}
+
         4. {"logstash_eve":{"from_date":1528189589850,"interval":25920000}}
+
+        5. {"logstash_eve":{"from_date":1540210439302,"interval":880000,"stamus":{"entries":[{"mean":9.999999747378752e-05,"time":1540213680000},{"mean":9.999999747378752e-05,"time":1540214560000},{"mean":9.999999747378752e-05,"time":1540215440000},
+           {"mean":9.999999747378752e-05,"time":1540216320000},{"mean":9.999999747378752e-05,"time":1540217200000},{"mean":9.999999747378752e-05,"time":1540218080000},{"mean":9.999999747378752e-05,"time":1540218960000},
+           {"mean":9.999999747378752e-05,"time":1540219840000},{"mean":9.999999747378752e-05,"time":1540220720000},{"mean":9.999999747378752e-05,"time":1540221600000},{"mean":9.999999747378752e-05,"time":1540222480000},
+           {"mean":9.999999747378752e-05,"time":1540223360000},{"mean":9.999999747378752e-05,"time":1540224240000},{"mean":0.00010344827324874571,"time":1540225120000},{"mean":0.0001142857113986143,"time":1540226000000},
+           {"mean":null,"time":1540226880000},{"mean":null,"time":1540227760000},{"mean":null,"time":1540228640000},{"mean":null,"time":1540229520000},{"mean":null,"time":1540230400000},{"mean":null,"time":1540231280000},
+           {"mean":null,"time":1540232160000},{"mean":null,"time":1540233040000},{"mean":null,"time":1540233920000},{"mean":null,"time":1540234800000},{"mean":null,"time":1540235680000},{"mean":null,"time":1540236560000},
+           {"mean":null,"time":1540237440000},{"mean":null,"time":1540238320000},{"mean":null,"time":1540239200000},{"mean":null,"time":1540240080000},{"mean":null,"time":1540240960000},{"mean":null,"time":1540241840000},
+           {"mean":null,"time":1540242720000},{"mean":null,"time":1540243600000},{"mean":null,"time":1540244480000},{"mean":null,"time":1540245360000},{"mean":null,"time":1540246240000},{"mean":null,"time":1540247120000},
+           {"mean":null,"time":1540248000000},{"mean":null,"time":1540248880000},{"mean":null,"time":1540249760000},{"mean":null,"time":1540250640000},{"mean":null,"time":1540251520000},{"mean":null,"time":1540252400000},
+           {"mean":null,"time":1540253280000},{"mean":null,"time":1540254160000},{"mean":null,"time":1540255040000},{"mean":null,"time":1540255920000},{"mean":null,"time":1540256800000},{"mean":null,"time":1540257680000},
+           {"mean":null,"time":1540258560000},{"mean":null,"time":1540259440000},{"mean":null,"time":1540260320000},{"mean":null,"time":1540261200000},{"mean":null,"time":1540262080000},{"mean":null,"time":1540262960000},
+           {"mean":null,"time":1540263840000},{"mean":null,"time":1540264720000},{"mean":null,"time":1540265600000},{"mean":null,"time":1540266480000},{"mean":null,"time":1540267360000},{"mean":null,"time":1540268240000},
+           {"mean":null,"time":1540269120000},{"mean":null,"time":1540270000000},{"mean":null,"time":1540270880000},{"mean":null,"time":1540271760000},{"mean":null,"time":1540272640000},{"mean":null,"time":1540273520000},
+           {"mean":null,"time":1540274400000},{"mean":null,"time":1540275280000},{"mean":null,"time":1540276160000},{"mean":null,"time":1540277040000},{"mean":9.999999747378752e-05,"time":1540277920000},
+           {"mean":9.999999747378752e-05,"time":1540278800000},{"mean":9.999999747378752e-05,"time":1540279680000},{"mean":9.999999747378752e-05,"time":1540280560000},{"mean":9.999999747378752e-05,"time":1540281440000},
+           {"mean":9.999999747378752e-05,"time":1540282320000},{"mean":9.999999747378752e-05,"time":1540283200000},{"mean":9.999999747378752e-05,"time":1540284080000},{"mean":0.00010666666397204001,"time":1540284960000},
+           {"mean":0.00011034482479866208,"time":1540285840000},{"mean":0.00013103447944841124,"time":1540286720000},{"mean":0.00019333332844932252,"time":1540287600000},{"mean":0.00019999999494757503,"time":1540288480000},
+           {"mean":0.00019999999494757503,"time":1540289360000},{"mean":0.00019999999494757503,"time":1540290240000},{"mean":0.00019999999494757503,"time":1540291120000},{"mean":0.00019999999494757503,"time":1540292000000},
+           {"mean":0.00019999999494757503,"time":1540292880000},{"mean":0.00019999999494757503,"time":1540293760000},{"mean":0.00019999999494757503,"time":1540294640000},{"mean":0.00019999999494757503,"time":1540295520000},
+           {"mean":0.00019999999494757503,"time":1540296400000},{"mean":0.00019999999494757503,"time":1540297280000},{"mean":0.00019999999494757503,"time":1540298160000}]}}}
 
     =============================================================================================================================================================
     """
