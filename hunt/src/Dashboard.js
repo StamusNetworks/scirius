@@ -90,7 +90,7 @@ export class HuntDashboard extends HuntList {
     		  sort_config={undefined}
     		  displayToggle={undefined}
 		  actionsButtons={this.actionsButtons}
-		  queryType={['filter']}
+		  queryType={['filter', 'rest']}
                 />
 
 	       <div className="container-fluid container-cards-pf">
