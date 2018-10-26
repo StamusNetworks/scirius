@@ -619,10 +619,18 @@ class UserNavInfo extends Component {
                 </Modal.Header>
 
                 <Modal.Body>
+                    {process.env.REACT_APP_HAS_TAG &&
                     <Form horizontal>
                         You are going to update threat detection (push ruleset and update post processing).
                         Do you want to continue ?
                     </Form>
+                    }
+                    {!process.env.REACT_APP_HAS_TAG &&
+                    <Form horizontal>
+                        You are going to update threat detection (update/push ruleset).
+                        Do you want to continue ?
+                    </Form>
+                    }
                 </Modal.Body>
 
                 <Modal.Footer>
