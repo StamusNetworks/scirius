@@ -114,10 +114,17 @@ export class HuntFilter extends React.Component {
 
   filterAdded = (field, value) => {
     let filterText = '';
-    if (field.title && field.queryType !== 'filter') {
-      filterText = field.title;
+    let field_id = field.id;
+
+    if (field.filterType !== 'complex-select-text') {
+        if (field.title && field.queryType !== 'filter') {
+            filterText = field.title;
+        } else {
+            filterText = field.id;
+        }
     } else {
-      filterText = field.id;
+        filterText = this.state.filterCategory.id + '.' + this.state.filterSubCategory.id;
+        field_id = filterText;
     }
     filterText += ': ';
 
@@ -142,7 +149,7 @@ export class HuntFilter extends React.Component {
     } else {
 	    fvalue = value;
     }
-    let activeFilters = [...this.props.ActiveFilters, { label: filterText, id: field.id, value: fvalue, negated: false, query: field.queryType }];
+    let activeFilters = [...this.props.ActiveFilters, { label: filterText, id: field_id, value: fvalue, negated: false, query: field.queryType }];
     this.props.UpdateFilter(activeFilters);
   };
 
@@ -180,7 +187,14 @@ export class HuntFilter extends React.Component {
   filterCategorySelected = category => {
     const { filterCategory } = this.state;
     if (filterCategory !== category) {
-      this.setState({ filterCategory: category, currentValue: '' });
+      this.setState({ filterCategory: category, filterSubCategory: undefined, currentValue: '' });
+    }
+  }
+
+  filterSubCategorySelected = category => {
+    const { filterSubCategory } = this.state;
+    if (filterSubCategory !== category) {
+      this.setState({ filterSubCategory: category, currentValue: '' });
     }
   }
 
@@ -291,7 +305,7 @@ export class HuntFilter extends React.Component {
   }
 
   renderInput() {
-    const { currentFilterType, currentValue, filterCategory } = this.state;
+    const { currentFilterType, currentValue, filterCategory, filterSubCategory } = this.state;
     if (!currentFilterType) {
       return null;
     }
@@ -321,7 +335,40 @@ export class HuntFilter extends React.Component {
           />
         </Filter.CategorySelector>
       );
-    } else if (currentFilterType.valueType === 'positiveint' ) {
+    } else if (currentFilterType.filterType === 'complex-select-text') {
+        return (
+            <Filter.CategorySelector
+              filterCategories={currentFilterType.filterCategories}
+              currentCategory={filterCategory}
+              placeholder={currentFilterType.placeholder}
+              onFilterCategorySelected={this.filterCategorySelected}
+            >
+            {filterCategory &&
+            <Filter.CategorySelector
+              filterCategories={filterCategory && filterCategory.filterValues}
+              currentCategory={filterSubCategory}
+              placeholder={currentFilterType.filterCategoriesPlaceholder}
+              onFilterCategorySelected={this.filterSubCategorySelected}
+            />
+            }
+            {filterCategory && filterSubCategory &&
+            <FormGroup
+                controlId="input-filter"
+                validationState={this.getValidationState()}
+            >
+                <FormControl
+                    type={currentFilterType.filterType}
+                    value={currentValue}
+                    placeholder={filterSubCategory.placeholder}
+                    onChange={e => this.updateCurrentValue(e)}
+                    onKeyPress={e => this.onValueKeyPress(e)}
+                />
+	        </FormGroup>
+            }
+            </Filter.CategorySelector>
+          );
+    }
+    else if (currentFilterType.valueType === 'positiveint' ) {
       return (
                       <FormGroup
 	  controlId="input-filter"

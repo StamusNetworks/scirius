@@ -88,6 +88,69 @@ _HUNT_FILTERS = [
                       'filterType': 'number',
                       'valueType': 'positiveint',
                       'queryType': 'filter'
+                    },
+                    {
+                      'id': 'protocol',
+                      'title': 'Protocol',
+                      'placeholder': 'Filter by Protocol',
+                      'filterType': 'complex-select-text',
+                      'filterCategoriesPlaceholder': 'Filter by type',
+                      'queryType': 'filter',
+                      'filterCategories': [
+                          {
+                              'id': 'dns',
+                              'title': 'DNS',
+                              'filterValues': [
+                                  {'id': 'query.rrname', 'title': 'Query Name'},
+                                  {'id': 'query.rrtype', 'title': 'Query Type'},
+                               ]
+                          },
+                          {
+                              'id': 'http',
+                              'title': 'HTTP',
+                              'filterValues': [
+                                  {'id': 'http_user_agent', 'title': 'User-Agent', 'placeholder': 'Filter by User Agent'},
+                                  {'id': 'hostname', 'title': 'Host', 'placeholder': 'Filter by Host'},
+                                  {'id': 'url', 'title': 'URL', 'placeholder': 'Filter by URL'},
+                                  {'id': 'status', 'title': 'Status', 'placeholder': 'Filter by Status'},
+                                  {'id': 'http_method', 'title': 'Method', 'placeholder': 'Filter by Method'},
+                                  {'id': 'http_content_type', 'title': 'Content Type', 'placeholder': 'Filter by Content Type'},
+                                  {'id': 'http_length', 'title': 'Length', 'placeholder': 'Filter by Content Length'},
+                               ]
+                          },
+                          {
+                              'id': 'smtp',
+                              'title': 'SMTP',
+                              'filterValues': [
+                                  {'id': 'mail_from', 'title': 'From', 'placeholder': 'Filter by From'},
+                                  {'id': 'rcpt_to', 'title': 'ID', 'placeholder': 'Filter by ID'},
+                                  {'id': 'helo', 'title': 'Helo', 'placeholder': 'Filter by Helo'}
+                               ]
+                          },
+                          {
+                              'id': 'ssh',
+                              'title': 'SSH',
+                              'filterValues': [
+                                  {'id': 'client.software_version', 'title': 'Client Software', 'placeholder': 'Filter by Client Software'},
+                                  {'id': 'client.proto_version', 'title': 'Client Version', 'placeholder': 'Filter by Client Version'},
+                                  {'id': 'server.software_version', 'title': 'Server Software', 'placeholder': 'Filter by Server Software'},
+                                  {'id': 'server.proto_version', 'title': 'Server Version', 'placeholder': 'Filter by Server Version'},
+                               ]
+                          },
+                          {
+                              'id': 'tls',
+                              'title': 'TLS',
+                              'filterValues': [
+                                  {'id': 'subject', 'title': 'Subject', 'placeholder': 'Filter by Subject'},
+                                  {'id': 'issuerdn', 'title': 'Issuer', 'placeholder': 'Filter by Issuer'},
+                                  {'id': 'sni', 'title': 'Server Name Indication', 'placeholder': 'Filter by Server Name Indication'},
+                                  {'id': 'version', 'title': 'Version', 'placeholder': 'Filter by Version'},
+                                  {'id': 'fingerprint', 'title': 'Fingerprint', 'placeholder': 'Filter by Fingerprint'},
+                                  {'id': 'serial', 'title': 'Serial', 'placeholder': 'Filter by Serial'},
+                                  {'id': 'ja3.hash', 'title': 'JA3 Hash', 'placeholder': 'Filter by JA3 Hash'},
+                               ]
+                          },
+                       ]
                     }
                 ]
 
