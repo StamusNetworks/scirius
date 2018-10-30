@@ -3,7 +3,7 @@
 
 <ul class="nav navbar-nav">
 <li>
-<a class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+<a class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown" href="#">
 {% bootstrap_icon "time" %} last {{ date }} <span class="caret"/>
 </a>
 <ul class="dropdown-menu" id="display_menu">
@@ -37,7 +37,7 @@ $( 'document' ).ready(
 </script>
 
 <li class="applauncher-pf  applauncher-pf-block-list  dropdown">
-    <a class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
+    <a class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown" href="#">
       <span class="fa fa-th applauncher-pf-icon first_tooltip" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Switch applications"></span>
       <span class="dropdown-title">
         <span class="applauncher-pf-title">
@@ -79,7 +79,7 @@ $( 'document' ).ready(
     </ul>
   </li>
   <li>
-<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="about">
+<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="about" href="#">
 {% bootstrap_icon "question-sign" %} <span class="caret"/>
 
 <ul class="dropdown-menu" id="about_menu" role="menu">
@@ -94,7 +94,7 @@ $( 'document' ).ready(
 </li>
 
 <li>
-			<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="user">
+			<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="user" href="#">
 			{% bootstrap_icon "user" %} {{ request.user }} <span class="caret"/>
 </a>
 			<ul class="dropdown-menu" id="user_menu" role="menu">
