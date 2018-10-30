@@ -70,6 +70,19 @@ class HuntApp extends Component {
         localStorage.setItem('rules_list', JSON.stringify(rules_list_conf));
     } else {
         rules_list_conf = JSON.parse(rules_list_conf);
+        // Sanity checks for the object retrieved from local storage
+        if( typeof rules_list_conf.pagination === 'undefined' ) {
+            rules_list_conf.pagination = {}
+        }
+        if( typeof rules_list_conf.pagination.page === 'undefined' ) {
+            rules_list_conf.pagination.page = 1;
+        }
+        if( typeof rules_list_conf.pagination.perPage === 'undefined' ) {
+            rules_list_conf.pagination.perPage = 6;
+        }
+        if( typeof rules_list_conf.pagination.perPageOptions === 'undefined' ) {
+            rules_list_conf.pagination.perPageOptions = [6, 10, 15, 25];
+        }
     }
 
     if (!alerts_list_conf) {

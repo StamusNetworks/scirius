@@ -237,9 +237,9 @@ export class HuntList extends React.Component {
      this.fetchData(newListState, this.props.filters);
   }
 
-   UpdateFilter(filters) {
+   UpdateFilter(filters, page = 1) {
      const newListState = Object.assign({}, this.props.config);
-     newListState.pagination.page = 1;
+     newListState.pagination.page = page;
      this.props.updateFilterState(filters);
      this.props.updateListState(newListState);
      this.fetchData(newListState, filters);

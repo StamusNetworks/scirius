@@ -38,6 +38,7 @@ axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 
 
+let statsCache = {};
 export const RuleSortFields = [
   {
     id: 'created',
@@ -527,8 +528,18 @@ export function updateHitsStats(rules, p_from_date, updateCallback, qfilter) {
 	 if (qfilter) {
 	     url += "&filter=" + qfilter;
 	 }
+      if( typeof statsCache[encodeURI(url)] !== 'undefined') {
+            processHitsStats(statsCache[encodeURI(url)], rules, updateCallback)
+          return;
+        }
          axios.get(url).then(res => {
                  /* we are going O(n2), we should fix that */
+             statsCache[encodeURI(url)] = res;
+             processHitsStats(res, rules, updateCallback)
+         });
+}
+
+function processHitsStats(res, rules, updateCallback) {
                  for (var rule in rules) {
                     var found = false;
                     for (var info in res.data) {
@@ -549,7 +560,6 @@ export function updateHitsStats(rules, p_from_date, updateCallback, qfilter) {
                  if (updateCallback) {
                     updateCallback(rules);
                  }
-         });
 }
 
 export class RuleEditKebab extends React.Component {
@@ -1020,6 +1030,13 @@ export class RulesList extends HuntList {
       rules_filters: [],
       supported_actions: []
     };
+    this.cache = {
+        page: 1,
+        perPage: null,
+        RuleRes: null,
+        SrcRes: null,
+        from_date: null,
+    };
     this.updateRulesState = this.updateRulesState.bind(this);
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
     this.displayRule = this.displayRule.bind(this);
@@ -1069,10 +1086,34 @@ export class RulesList extends HuntList {
        this.updateRulesState(rules);
    }
 
-  fetchHitsStats(rules) {
-	 var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
+  fetchHitsStats(rules, filters) {
+	 var qfilter = buildQFilter(filters, this.props.system_settings);
      updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
   }
+
+    processRulesData( RuleRes, SrcRes, filters ){
+        var sources_array = SrcRes.data['results'];
+        var sources = {};
+        this.setState({net_error: undefined});
+        for (var i = 0; i < sources_array.length; i++) {
+            var src = sources_array[i];
+            sources[src.pk] = src;
+        }
+        this.setState({
+            count: RuleRes.data['count'],
+            rules: RuleRes.data['results'],
+            sources: sources,
+            loading: false,
+            refresh_data: false
+        });
+        if (RuleRes.data.results.length > 0) {
+            if (typeof RuleRes.data.results[0].timeline_data === 'undefined' || !RuleRes.data.results[0].timeline_data.length) {
+                this.fetchHitsStats(RuleRes.data['results'], filters);
+            } else {
+                this.buildHitsStats(RuleRes.data['results']);
+            }
+        }
+    }
 
   displayRule(rule) {
       this.setState({display_rule: rule});
@@ -1081,7 +1122,11 @@ export class RulesList extends HuntList {
   }
 
   fetchData(rules_stat, filters) {
-     var string_filters = this.buildFilter(filters);
+      if( rules_stat.pagination.page === this.cache.page && rules_stat.pagination.perPage === this.cache.perPage && this.cache.RuleRes !== null && this.cache.SrcRes !== null && this.cache.from_date === this.props.from_date) {
+          this.processRulesData(this.cache.RuleRes, this.cache.SrcRes, filters);
+          return;
+      }
+     let string_filters = this.buildFilter(filters);
 
      this.setState({refresh_data: true, loading: true});
      axios.all([
@@ -1089,22 +1134,13 @@ export class RulesList extends HuntList {
           axios.get(config.API_URL + config.SOURCE_PATH + "?page_size=100"),
 	  ])
       .then(axios.spread((RuleRes, SrcRes) => {
-	 var sources_array = SrcRes.data['results'];
-	 var sources = {};
-	 this.setState({net_error: undefined});
-	 for (var i = 0; i < sources_array.length; i++) {
-	     var src = sources_array[i];
-	     sources[src.pk] = src;
-	 }
-         this.setState({ count: RuleRes.data['count'], rules: RuleRes.data['results'], sources: sources, loading: false, refresh_data: false});
-	 if (RuleRes.data.results.length > 0) {
-            if (!RuleRes.data.results[0].timeline_data) {
-	            this.fetchHitsStats(RuleRes.data['results']);
-	        } else {
-                this.buildHitsStats(RuleRes.data['results']);
-	        }
-     }
-     })).catch( e => {
+          this.cache.page = rules_stat.pagination.page;
+          this.cache.RuleRes = RuleRes;
+          this.cache.SrcRes = SrcRes;
+          this.cache.from_date = this.props.from_date;
+          this.cache.perPage = rules_stat.pagination.perPage;
+          this.processRulesData(RuleRes, SrcRes, filters);
+      })).catch( e => {
          this.setState({net_error: e, loading: false});
      });
   }
@@ -1157,7 +1193,7 @@ export class RulesList extends HuntList {
 	} else {
 		this.setState({view: 'rules_list', display_toggle: true, display_rule: undefined});
 	}
-  	this.UpdateFilter(filters);
+  	this.UpdateFilter(filters, this.cache.page);
   }
 
   
@@ -1179,10 +1215,13 @@ export class RulesList extends HuntList {
 		  actionsButtons={this.actionsButtons}
 		  queryType={['filter', 'rest']}
             />
-	    <Spinner loading={this.state.loading} >
-	    </Spinner>
 	    {this.state.view === 'rules_list' &&
             this.props.config.view_type === 'list' &&
+
+      <React.Fragment>
+      <Spinner loading={this.state.loading} >
+      </Spinner>
+
 	    <ListView>
             {this.state.rules.map(function(rule) {
                 return(
@@ -1190,6 +1229,7 @@ export class RulesList extends HuntList {
                 )
              },this)}
 	    </ListView>
+      </React.Fragment>
             }
             {this.state.view === 'rules_list' &&
 	     this.props.config.view_type === 'card' &&
