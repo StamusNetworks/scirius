@@ -95,7 +95,7 @@ export class RuleInList extends React.Component {
       <div className="SigContent" dangerouslySetInnerHTML={{__html: this.props.data.content}}></div>
    </div>
    <div className="row">
-      <div className="col-md-10">
+      <div className="col-md-12">
       <SciriusChart data={ this.props.data.timeline }
                axis={{ x: { type: 'timeseries',
                             localtime: true,
@@ -106,20 +106,22 @@ export class RuleInList extends React.Component {
                     }
       />
       </div>
-      <div className="col-md-2">
-         <h4>Probes</h4>
-         <ListGroup>
-	    {this.props.data.probes.map( item => {
-		return(
-        <ListGroupItem key={item.probe} >
-            <EventValue field={"host"} value={item.probe}
-                        addFilter={this.props.addFilter}
-                        right_info={<Badge>{item.hits}</Badge>} />
-        </ListGroupItem>)
-	    })}
-         </ListGroup>
-      </div>
-   </div>
+    </div>
+    <div className="row">
+        <div className="col-md-4">
+            <h4>Probes</h4>
+            <ListGroup>
+            {this.props.data.probes.map( item => {
+            return(
+            <ListGroupItem key={item.probe} >
+                <EventValue field={"host"} value={item.probe}
+                            addFilter={this.props.addFilter}
+                            right_info={<Badge>{item.hits}</Badge>} />
+            </ListGroupItem>)
+            })}
+            </ListGroup>
+        </div>
+    </div>
 </div>
 </Col>
 </Row>
