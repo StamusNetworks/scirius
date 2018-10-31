@@ -23,10 +23,15 @@ import React from 'react';
 var c3 = require("c3");
 
 export class SciriusChart extends React.Component {
+    constructor(props){
+        super(props);
+        // Generate unique ID for the chart
+        this.chartId = 'chart'+Math.random().toString(36).substr(2, 9);
+    }
     
     chartRender = ( opts ) => {
         c3.generate({
-            bindto: '#chart',
+            bindto: '#'+this.chartId,
             ...opts
         });
     }
@@ -40,6 +45,6 @@ export class SciriusChart extends React.Component {
     }
 
     render() {
-        return (<div id="chart">loading</div>)
+        return (<div id={this.chartId}>loading</div>)
     }
 }
