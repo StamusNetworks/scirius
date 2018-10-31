@@ -123,7 +123,7 @@ _HUNT_FILTERS = [
                               'title': 'SMTP',
                               'filterValues': [
                                   {'id': 'mail_from', 'title': 'From', 'placeholder': 'Filter by From'},
-                                  {'id': 'rcpt_to', 'title': 'ID', 'placeholder': 'Filter by ID'},
+                                  {'id': 'rcpt_to', 'title': 'To', 'placeholder': 'Filter by To'},
                                   {'id': 'helo', 'title': 'Helo', 'placeholder': 'Filter by Helo'}
                                ]
                           },
