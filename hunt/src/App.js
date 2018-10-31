@@ -423,6 +423,41 @@ class ExternalLink extends Component {
     }
 }
 
+class OutsideAlerter extends Component {
+    constructor(props) {
+      super(props);
+
+      this.setWrapperRef = this.setWrapperRef.bind(this);
+      this.handleClickOutside = this.handleClickOutside.bind(this);
+    }
+
+    componentDidMount() {
+      document.addEventListener('mousedown', this.handleClickOutside);
+    }
+
+    componentWillUnmount() {
+      document.removeEventListener('mousedown', this.handleClickOutside);
+    }
+
+    setWrapperRef(node) {
+      this.wrapperRef = node;
+    }
+
+    handleClickOutside(event) {
+      if (this.wrapperRef && !this.wrapperRef.contains(event.target)) {
+        this.props.hide();
+      }
+    }
+
+    render() {
+      return <span ref={this.setWrapperRef}>{this.props.children}</span>;
+    }
+}
+
+OutsideAlerter.propTypes = {
+    children: PropTypes.element.isRequired,
+};
+
 
 class UserNavInfo extends Component {
   constructor(props) {
@@ -438,6 +473,7 @@ class UserNavInfo extends Component {
     this.closeModal = this.closeModal.bind(this);
     this.toggleNotifications = this.toggleNotifications.bind(this);
     this.toggleiSshown = this.toggleiSshown.bind(this);
+    this.isShownFalse = this.isShownFalse.bind(this);
     this.toggleHunt = this.toggleHunt.bind(this);
     this.toggleHome = this.toggleHome.bind(this);
     this.toggleDashboards = this.toggleDashboards.bind(this);
@@ -467,6 +503,10 @@ class UserNavInfo extends Component {
 
   toggleiSshown() {
       this.setState({isShown: !this.state.isShown});
+  }
+
+  isShownFalse() {
+    this.setState({isShown: false});
   }
 
   toggleHunt() {
@@ -550,7 +590,8 @@ class UserNavInfo extends Component {
 
 			{this.state.showNotifications &&
 			<HuntNotificationArea />
-			}
+            }
+                <OutsideAlerter hide={this.isShownFalse}>
                 <ApplicationLauncher grid open={this.state.isShown} toggleLauncher={this.toggleiSshown}>
                     <ApplicationLauncherItem
                     icon="rebalance"
@@ -583,6 +624,7 @@ class UserNavInfo extends Component {
                     }
 
                 </ApplicationLauncher>
+                </OutsideAlerter>
     			<Dropdown componentClass="li" id="help">
       				<Dropdown.Toggle useAnchor className="nav-item-iconic">
         				<Icon type="pf" name="help" />
