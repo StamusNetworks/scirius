@@ -110,10 +110,10 @@ export class HuntDashboard extends HuntList {
 
 	       <div className="container-fluid container-cards-pf">
 	          <div className="row">
-		      <div className="col-md-10">
+		      <div className="col-md-9">
 		         <HuntTimeline system_settings={this.props.system_settings} from_date={this.props.from_date} filters={this.props.filters} />
 	              </div>
-		      <div className="col-md-2">
+		      <div className="col-md-3">
                          <HuntTrend system_settings={this.props.system_settings} from_date={this.props.from_date} filters={this.props.filters} />
 	              </div>
 		  </div>
@@ -248,21 +248,21 @@ class HuntTrend extends React.Component {
 	if (this.state.data) {
 		g_data = {
 	            columns: [
-	            ["previous", this.state.data.prev_doc_count],
-	            ["current", this.state.data.doc_count]
+	            ["previous count", this.state.data.prev_doc_count],
+	            ["current count", this.state.data.doc_count]
 	            ],
 	            groups: [
-	              ["previous", "current"]
-	            ]
+	              ["previous count", "current count"]
+                ]
 	        };	
 	} else {
 		g_data = {
 	            columns: [
-	            ["previous", 0],
-	            ["current", 0]
+	            ["previous count", 0],
+	            ["current count", 0]
 	            ],
 	            groups: [
-	              ["previous", "current"]
+	              ["previous count", "current count"]
 	            ]
 	        };
 	}
@@ -271,6 +271,8 @@ class HuntTrend extends React.Component {
 		      <DonutChart
 		          data={g_data}
                   title={{type: "max" }}
+                  tooltip={{show: true}}
+                  legend={{show: true, position: 'bottom'}}
 		      />
 		</div>
 	);
