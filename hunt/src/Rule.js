@@ -425,6 +425,7 @@ export class HuntStat extends React.Component {
     constructor(props) {
 	    super(props);
   	    this.state = {data: []};
+  	    this.url = '';
         this.updateData = this.updateData.bind(this);
 	this.addFilter = this.addFilter.bind(this);
     }
@@ -436,6 +437,8 @@ export class HuntStat extends React.Component {
 	  } else {
 		qfilter = "";
 	  }
+
+        this.url = config.API_URL + config.ES_BASE_PATH + 'field_stats&field=' + this.props.item + '&from_date=' + this.props.from_date + '&page_size=30' +qfilter
 
           axios.get(config.API_URL + config.ES_BASE_PATH +
                     'field_stats&field=' + this.props.item +
@@ -475,6 +478,9 @@ export class HuntStat extends React.Component {
 	<div className="card-pf rule-card">
        <div className="card-pf-heading">
            <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={this.props.title}>{this.props.title}</h2>
+           {this.state.data.length === 5 && <DropdownKebab id={"more-"+this.props.item}  pullRight={false}>
+                <MenuItem onClick={(e) => this.props.loadMore(this.props.item, this.url) } data-toggle="modal" >Load more results</MenuItem>
+            </DropdownKebab>}
        </div>
        <div className="card-pf-body">
 	<ListGroup>
