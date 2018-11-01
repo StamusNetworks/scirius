@@ -30,8 +30,6 @@ import { HuntList } from './Api.js';
 import { HuntFilter } from './Filter.js';
 import * as config from './config/Api.js';
 import { SciriusChart } from './Chart.js';
-import DropdownKebab from "patternfly-react/dist/esm/components/DropdownKebab/DropdownKebab";
-import MenuItem from "react-bootstrap/es/MenuItem";
 import Modal from "patternfly-react/dist/esm/components/Modal/Modal";
 import ListGroup from "react-bootstrap/es/ListGroup";
 import ListGroupItem from "react-bootstrap/es/ListGroupItem";
