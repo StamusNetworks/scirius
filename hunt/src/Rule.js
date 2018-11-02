@@ -1036,6 +1036,9 @@ export class RulesList extends HuntList {
         RuleRes: null,
         SrcRes: null,
         from_date: null,
+        filtersCount: null,
+        sortId: null,
+        sortAsc: null,
     };
     this.updateRulesState = this.updateRulesState.bind(this);
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
@@ -1081,7 +1084,7 @@ export class RulesList extends HuntList {
   buildHitsStats(rules) {
        for (var rule in rules) {
           rules[rule].timeline = this.buildTimelineDataSet(rules[rule].timeline_data);
-	  rules[rule].timeline_data = undefined;
+	  // rules[rule].timeline_data = undefined;
        }
        this.updateRulesState(rules);
    }
@@ -1107,7 +1110,7 @@ export class RulesList extends HuntList {
             refresh_data: false
         });
         if (RuleRes.data.results.length > 0) {
-            if (typeof RuleRes.data.results[0].timeline_data === 'undefined' || !RuleRes.data.results[0].timeline_data.length) {
+            if (!RuleRes.data.results[0].timeline_data) {
                 this.fetchHitsStats(RuleRes.data['results'], filters);
             } else {
                 this.buildHitsStats(RuleRes.data['results']);
@@ -1122,10 +1125,13 @@ export class RulesList extends HuntList {
   }
 
   fetchData(rules_stat, filters) {
-      if( rules_stat.pagination.page === this.cache.page && rules_stat.pagination.perPage === this.cache.perPage && this.cache.RuleRes !== null && this.cache.SrcRes !== null && this.cache.from_date === this.props.from_date) {
+      if( rules_stat.pagination.page === this.cache.page && rules_stat.pagination.perPage === this.cache.perPage && this.cache.RuleRes !== null && this.cache.SrcRes !== null && this.cache.from_date === this.props.from_date && this.cache.sortId === rules_stat.sort.id && this.cache.sortAsc === rules_stat.sort.asc && this.cache.filtersCount === filters.length) {
           this.processRulesData(this.cache.RuleRes, this.cache.SrcRes, filters);
           return;
       }
+     this.cache.filtersCount = filters.length;
+     this.cache.sortId = rules_stat.sort.id;
+     this.cache.sortAsc = rules_stat.sort.asc;
      let string_filters = this.buildFilter(filters);
 
      this.setState({refresh_data: true, loading: true});
