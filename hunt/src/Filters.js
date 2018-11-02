@@ -273,8 +273,9 @@ class FilterToggleModal extends React.Component {
     }
 
     submit() {
+	    var data = undefined;
             if (['move', 'movetop', 'movebottom'].indexOf(this.props.action) !== -1) {
-                var data = {index: this.state.new_index, comment: this.state.comment}
+                data = {index: this.state.new_index, comment: this.state.comment}
 	            axios.patch(config.API_URL + config.PROCESSING_PATH + this.props.data.pk + '/', data).then( res => {
                     console.log("Moved filter to " + this.state.new_index);
                     this.props.needUpdate();
@@ -287,7 +288,7 @@ class FilterToggleModal extends React.Component {
 
             }
             if (this.props.action === 'delete') {
-                var data = {comment: this.state.comment}
+                data = {comment: this.state.comment}
                 axios({
                     url: config.API_URL + config.PROCESSING_PATH + this.props.data.pk + '/',
                     data: data,
