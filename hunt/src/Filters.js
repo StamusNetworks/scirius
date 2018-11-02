@@ -287,7 +287,12 @@ class FilterToggleModal extends React.Component {
 
             }
             if (this.props.action === 'delete') {
-                axios.delete(config.API_URL + config.PROCESSING_PATH + this.props.data.pk + '/').then(
+                var data = {comment: this.state.comment}
+                axios({
+                    url: config.API_URL + config.PROCESSING_PATH + this.props.data.pk + '/',
+                    data: data,
+                    method: 'delete'
+                }).then(
                     res => {
                         console.log("Deleted filter");
                         this.props.needUpdate();
