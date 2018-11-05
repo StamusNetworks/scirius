@@ -1768,6 +1768,17 @@ class UserActionSerializer(serializers.ModelSerializer):
         return data
 
 
+class UserActionDateOrderingFilter(OrderingFilter):
+    def filter_queryset(self, request, queryset, view):
+        ordering = self.get_ordering(request, queryset, view)
+
+        if 'date' not in ordering or '-date' not in ordering:
+            ordering += [u'-date']
+            return queryset.order_by(*ordering)
+
+        return queryset
+
+
 class UserActionViewSet(SciriusReadOnlyModelViewSet):
     """
     =============================================================================================================================================================
@@ -1817,6 +1828,7 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
     ordering = ('-pk',)
     ordering_fields = ('pk', 'date', 'username', 'action_type')
     filter_class = UserActionFilter
+    filter_backends = (UserActionDateOrderingFilter,)
 
     @list_route(methods=['get'])
     def get_action_type_list(self, request):
