@@ -57,6 +57,7 @@ export class HuntDashboard extends HuntList {
         this.panelsAdjusted = false;
         this.breakPointChanged = false;
         this.storedMicroLayout = [];
+        this.storedMacroLayout = [];
         this.qFilter = "";
         this.filters = "";
 
@@ -77,6 +78,7 @@ export class HuntDashboard extends HuntList {
             supported_actions: [],
             moreModal: null,
             moreResults: [],
+            editMode: false,
         };
     }
 
@@ -91,6 +93,7 @@ export class HuntDashboard extends HuntList {
 
             this.qFilter = this.generateQFilter();
             this.storedMicroLayout = store.get('dashboardMicroLayout');
+            this.storedMacroLayout = store.get('dashboardMаcroLayout');
             // Initial booting of panels were moved here instead of componentDidMount, because of the undefined system_settings in componentDidMount
             if( this.panelsBooted === 'no' ) {
                 this.bootPanels();
@@ -153,6 +156,14 @@ export class HuntDashboard extends HuntList {
         let result = {};
         if( typeof this.storedMicroLayout !== 'undefined' && typeof this.storedMicroLayout[panel] !== 'undefined' && typeof this.storedMicroLayout[panel][breakPoint] !== 'undefined' ) {
             result = find(this.storedMicroLayout[panel][breakPoint], {'i': block})
+        }
+        return result;
+    };
+
+    getPanelFromLS = ( panel ) => {
+        let result = {};
+        if( typeof this.storedMacroLayout !== 'undefined' && typeof this.storedMacroLayout[panel] !== 'undefined' ) {
+            result = find(this.storedMacroLayout, {'i': panel})
         }
         return result;
     };
@@ -284,7 +295,7 @@ export class HuntDashboard extends HuntList {
             <div key={block.i}
                   style={{background: "white"}}>
                 {this.props.children}
-                <h3 className="hunt-stat-title" data-toggle="tooltip" title={block.title}>{block.title}</h3>
+                <h3 className={"hunt-stat-title " + ((this.state.editMode) ? 'dashboard-editable-mode' : '')} data-toggle="tooltip" title={block.title}>{block.title}</h3>
                 {block.data.length === 5 && <DropdownKebab id={"more-"+this.props.item} pullRight={true}>
                     <MenuItem onClick={(e) => this.loadMore(block, url) } data-toggle="modal" >Load more results</MenuItem>
                 </DropdownKebab>}
@@ -306,7 +317,7 @@ export class HuntDashboard extends HuntList {
 
     getMacroLayouts = () => {
         return this.state.load.map(panel => {
-            return { ...this.state.dashboard[panel].dimensions, i: panel.toString() };
+            return { ...this.state.dashboard[panel].dimensions, ...this.getPanelFromLS(panel), isDraggable: this.state.editMode, i: panel.toString() };
         });
     };
 
@@ -326,6 +337,14 @@ export class HuntDashboard extends HuntList {
             window.location.reload();
         }
     };
+
+    switchEditMode = (e) => {
+        this.setState({
+            ...this.state,
+            editMode: !this.state.editMode
+        })
+        e.preventDefault();
+    }
 
     adjustPanelsHeight = (p = null) => {
         let panelsArray = [];
@@ -370,6 +389,20 @@ export class HuntDashboard extends HuntList {
 
     onChangeMacroLayout = (macroLayout) => {
         store.set('dashboardMacroLayout', macroLayout);
+        let tmpState = this.state.dashboard;
+        for (let panel of macroLayout) {
+            tmpState = {
+                ...tmpState,
+                [panel.i]: {
+                    ...tmpState[panel.i],
+                    dimensions: panel
+                }
+            }
+        }
+        this.setState({
+            ...this.state,
+            dashboard: tmpState
+        })
     };
 
     onDragStartMicro = () => {
@@ -470,13 +503,17 @@ export class HuntDashboard extends HuntList {
                     <div className="row">
                         <div className="col-md-12">
 
-                            <a href={"#reset"} className="pull-right" onClick={this.resetDashboard}>reset</a>
+                            <div className="pull-right">
+                                <a href={"#edit"} onClick={this.switchEditMode}>{(this.state.editMode) ? 'switch off edit mode' : 'edit'}</a>
+                                <span> • </span>
+                                <a href={"#reset"} onClick={this.resetDashboard}>reset</a>
+                            </div>
                             <div className="clearfix"/>
 
                             { this.panelsBooted !== 'no' && <ResponsiveReactGridLayout margin={[0, 0]} compactType={"vertical"} isResizable={false} rowHeight={1} draggableHandle={".hunt-row-title"} cols={{ lg: 1, md: 1, sm: 1, xs: 1, xxs: 1}} layouts={{lg:this.getMacroLayouts(),md:this.getMacroLayouts(),sm:this.getMacroLayouts(),xs:this.getMacroLayouts(),}} onLayoutChange={this.onChangeMacroLayout}>
                             { this.panelsBooted !== 'no' && this.state.load.map((panel) => {
                                     return <div className="hunt-row" key={panel} id={'panel-'+panel} >
-                                         <h2 className="hunt-row-title">{this.state.dashboard[panel].title}</h2>
+                                         <h2 className={"hunt-row-title " + ((this.state.editMode) ? 'dashboard-editable-mode' : '')}>{this.state.dashboard[panel].title}</h2>
                                         <ResponsiveReactGridLayout margin={[3, 3]} compactType={"vertical"}
                                                          layouts={{
                                                              lg: this.getMicroLayouts(panel,'lg'),
@@ -488,7 +525,7 @@ export class HuntDashboard extends HuntList {
                                                          onBreakpointChange={(breakPoint, cols) => this.onBreakPointChange(breakPoint, cols, panel) }
                                                          onLayoutChange={ (e) => this.onChangeMicroLayout(panel, e)}
                                                          onResizeStart={this.onResizeStartMicro}
-                                                         isDraggable={true} isResizable={true} rowHeight={10}
+                                                         isDraggable={this.state.editMode} isResizable={this.state.editMode} rowHeight={10}
                                                          draggableHandle={".hunt-stat-title"}
                                                          cols={{ lg: 32, md: 24, sm: 16, xs: 8, xxs: 4}} >
                                             { reject(this.state.dashboard[panel].items, ['data', null]).map((block) => this.createElement(block, panel)) }
