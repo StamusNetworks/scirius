@@ -1754,7 +1754,8 @@ def es_delete_alerts_by_sid_v5(sid):
     delete_url = get_es_path(DELETE_ALERTS_URL_V5)
     data = { "query": { "match": { "alert.signature_id": sid } } }
     try:
-        r = requests.post(delete_url, data = json.dumps(data))
+        headers = {'content-type': 'application/json'}
+        r = requests.post(delete_url, data = json.dumps(data), headers=headers)
     except Exception, err:
         return {'msg': 'Elasticsearch error: %s' % str(err), 'status': 500 }
     if r.status_code == 200:
@@ -1764,7 +1765,7 @@ def es_delete_alerts_by_sid_v5(sid):
     elif r.status_code == 400:
         return {'msg': r.text, 'status': r.status_code }
     else:
-        return {'msg': 'Unknown error %s', 'status': r.status_code }
+        return {'msg': 'Unknown error', 'status': r.status_code }
 
 def es_delete_alerts_by_sid(sid):
     if settings.ELASTICSEARCH_VERSION <= 2:
