@@ -29,5 +29,3 @@ export const PAGE_STATE = {
     filters_list: 'FILTERS',
     setup: 'SETUP',
 };
-
-

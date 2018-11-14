@@ -20,15 +20,13 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import React from 'react';
-import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon } from 'patternfly-react';
-import { Icon, Spinner } from 'patternfly-react';
-import { PAGINATION_VIEW, Row, Col} from 'patternfly-react';
+import PropTypes from 'prop-types';
+import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Icon, Spinner, PAGINATION_VIEW, Row, Col } from 'patternfly-react';
 import axios from 'axios';
-import { HuntFilter } from './Filter.js';
-import { HuntList, HuntPaginationRow } from './Api.js';
-import * as config from './config/Api.js';
-import { PAGE_STATE } from './Const.js';
-
+import { HuntFilter } from './Filter';
+import { HuntList, HuntPaginationRow } from './Api';
+import * as config from './config/Api';
+import { PAGE_STATE } from './Const';
 
 const HistorySortFields = [
     {
@@ -49,7 +47,7 @@ const HistorySortFields = [
 export class HistoryPage extends HuntList {
     constructor(props) {
         super(props);
-        var HistoryFilterFields = [
+        const HistoryFilterFields = [
             {
                 id: 'username',
                 title: 'User',
@@ -71,52 +69,52 @@ export class HistoryPage extends HuntList {
                 queryType: 'all'
             }
         ];
-        this.state = { data: [], count: 0, filter_fields: HistoryFilterFields };
-        this.fetchData = this.fetchData.bind(this)
+        this.state = { data: [], count: 0, filterFields: HistoryFilterFields };
+        this.fetchData = this.fetchData.bind(this);
     }
 
-    fetchData(history_stat, filters) {
-        var string_filters = this.buildFilter(filters);
+    fetchData(historyStat, filters) {
+        const stringFilters = this.buildFilter(filters);
         this.setState({ refresh_data: true, loading: true });
-        axios.get(config.API_URL + config.HISTORY_PATH + "?" + this.buildListUrlParams(history_stat) + string_filters)
-        .then(res => {
-            this.setState({ data: res.data, count: res.data.count, refresh_data: false, loading: false });
-        }).catch(res => {
+        axios.get(`${config.API_URL}${config.HISTORY_PATH}?${this.buildListUrlParams(historyStat)}${stringFilters}`)
+        .then((res) => {
+            this.setState({
+                data: res.data, count: res.data.count, refresh_data: false, loading: false
+            });
+        }).catch(() => {
             this.setState({ refresh_data: false, loading: false });
         });
-
     }
 
     componentDidMount() {
         this.fetchData(this.props.config, this.props.filters);
-        axios.get(config.API_URL + config.HISTORY_PATH + 'get_action_type_list/').then(
-            res => {
-                var filter_fields = Object.assign([], this.state.filter_fields);
-                var actions;
-                for (var field in filter_fields) {
-                    if (filter_fields[field].id !== 'action_type') {
+        axios.get(`${config.API_URL}${config.HISTORY_PATH}get_action_type_list/`).then(
+            (res) => {
+                const filterFields = Object.assign([], this.state.filterFields);
+                let actions;
+                for (let field = 0; field < filterFields.length; field += 1) {
+                    if (filterFields[field].id !== 'action_type') {
+                        // eslint-disable-next-line no-continue
                         continue;
                     }
-                    actions = filter_fields[field];
+                    actions = filterFields[field];
                     break;
                 }
                 actions.filterValues = [];
-                for (var item in res.data.action_type_list) {
+                const actionTypeList = Object.keys(res.data.action_type_list);
+                for (let i = 0; i < actionTypeList.length; i += 1) {
+                    const item = actionTypeList[i];
                     actions.filterValues.push({ id: item, title: res.data.action_type_list[item] });
                 }
-                this.setState(filter_fields
-            :
-                filter_fields
-            )
-                ;
+                this.setState({ ...this.state, filterFields });
             }
         );
     }
 
     render() {
-        var expand = false;
-        for (var filter in this.props.filters) {
-            if (this.props.filters[filter].id === "comment") {
+        let expand = false;
+        for (let filter = 0; filter < this.props.filters; filter += 1) {
+            if (this.props.filters[filter].id === 'comment') {
                 expand = true;
                 break;
             }
@@ -124,24 +122,25 @@ export class HistoryPage extends HuntList {
         return (
             <div className="HistoryList HuntList">
                 <HuntFilter ActiveFilters={this.props.filters}
-                            config={this.props.config}
-                            ActiveSort={this.props.config.sort}
-                            UpdateFilter={this.UpdateFilter}
-                            UpdateSort={this.UpdateSort}
-                            setViewType={this.setViewType}
-                            filterFields={this.state.filter_fields}
-                            sort_config={HistorySortFields}
-                            displayToggle={false}
-                            queryType={['all']}
-                            got_alert_tag={false}
+                    config={this.props.config}
+                    ActiveSort={this.props.config.sort}
+                    UpdateFilter={this.UpdateFilter}
+                    UpdateSort={this.UpdateSort}
+                    setViewType={this.setViewType}
+                    filterFields={this.state.filterFields}
+                    sort_config={HistorySortFields}
+                    displayToggle={false}
+                    queryType={['all']}
+                    got_alert_tag={false}
                 />
                 <Spinner loading={this.state.loading}>
                 </Spinner>
                 <ListView>
-                    {this.state.data.results &&
-                    this.state.data.results.map(item => {
-                        return (<HistoryItem key={item.pk} data={item} switchPage={this.props.switchPage} expand_row={expand}/>);
-                    })
+                    {this.state.data.results && this.state.data.results.map((item) => (<HistoryItem key={item.pk}
+                        data={item}
+                        switchPage={this.props.switchPage}
+                        expand_row={expand}
+                    />))
                     }
                 </ListView>
                 <HuntPaginationRow
@@ -152,7 +151,7 @@ export class HistoryPage extends HuntList {
                     pageInputValue={this.props.config.pagination.page}
                     itemCount={this.state.count - 1} // used as last item
                     itemsStart={(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
-                    itemsEnd={Math.min(this.props.config.pagination.page * this.props.config.pagination.perPage - 1, this.state.count - 1)}
+                    itemsEnd={Math.min((this.props.config.pagination.page * this.props.config.pagination.perPage) - 1, this.state.count - 1)}
                     onFirstPage={this.onFirstPage}
                     onNextPage={this.onNextPage}
                     onPreviousPage={this.onPrevPage}
@@ -164,44 +163,51 @@ export class HistoryPage extends HuntList {
         );
     }
 }
+HistoryPage.propTypes = {
+    config: PropTypes.any,
+    filters: PropTypes.any,
+    switchPage: PropTypes.any,
+};
 
-
+// eslint-disable-next-line react/prefer-stateless-function
 class HistoryItem extends React.Component {
     render() {
-        var date = new Date(Date.parse(this.props.data.date)).toLocaleString('en-GB', { timeZone: 'UTC' });
-        var info = [<ListViewInfoItem key="date"><p>Date: {date}</p></ListViewInfoItem>,
-            <ListViewInfoItem key="user"><p><Icon type="pf" name="user"/> {this.props.data.username}</p> </ListViewInfoItem>
+        const date = new Date(Date.parse(this.props.data.date)).toLocaleString('en-GB', { timeZone: 'UTC' });
+        const info = [<ListViewInfoItem key="date"><p>Date: {date}</p></ListViewInfoItem>,
+            <ListViewInfoItem key="user"><p><Icon type="pf" name="user" /> {this.props.data.username}</p>
+            </ListViewInfoItem>
         ];
         if (this.props.data.ua_objects.ruleset && this.props.data.ua_objects.ruleset.pk) {
-            info.push(<ListViewInfoItem key="ruleset"><p><Icon type="fa" name="th"/> {this.props.data.ua_objects.ruleset.value}</p></ListViewInfoItem>);
+            info.push(<ListViewInfoItem key="ruleset"><p><Icon type="fa" name="th" /> {this.props.data.ua_objects.ruleset.value}</p></ListViewInfoItem>);
         }
         if (this.props.data.ua_objects.rule && this.props.data.ua_objects.rule.sid) {
-            info.push(<ListViewInfoItem key="rule"><p><a onClick={e => {
-                return this.props.switchPage(PAGE_STATE.rules_list, this.props.data.ua_objects.rule.sid);
-            }}><Icon type="fa" name="bell"/> {this.props.data.ua_objects.rule.sid}</a></p></ListViewInfoItem>);
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+            info.push(<ListViewInfoItem key="rule"><p><a onClick={() => this.props.switchPage(PAGE_STATE.rules_list, this.props.data.ua_objects.rule.sid)}><Icon type="fa" name="bell" /> {this.props.data.ua_objects.rule.sid}</a></p></ListViewInfoItem>);
         }
         return (
             <ListViewItem
-                leftContent={<ListViewIcon name="envelope"/>}
+                leftContent={<ListViewIcon name="envelope" />}
                 additionalInfo={info}
                 heading={this.props.data.title}
                 description={this.props.data.description}
                 key={this.props.data.pk}
                 compoundExpand={this.props.expand_row}
-                compoundExpanded={true}
+                compoundExpanded
             >
-                {this.props.data.comment &&
-                <Row>
+                {this.props.data.comment && <Row>
                     <Col sm={11}>
                         <div className="container-fluid">
                             <strong>Comment</strong>
                             <p>{this.props.data.comment}</p>
                         </div>
                     </Col>
-                </Row>
-                }
+                </Row>}
             </ListViewItem>
-        )
+        );
     }
 }
-
+HistoryItem.propTypes = {
+    data: PropTypes.any,
+    switchPage: PropTypes.any,
+    expand_row: PropTypes.any,
+};

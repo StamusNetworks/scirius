@@ -20,45 +20,43 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
-import { PAGINATION_VIEW, ListView, ListViewItem, ListViewInfoItem, ListViewIcon} from 'patternfly-react';
-import * as config from './config/Api.js';
-import { HuntList, HuntPaginationRow } from './Api.js';
-import { Modal, DropdownKebab, MenuItem, Icon, Button } from 'patternfly-react';
-import { Form, FormGroup, FormControl } from 'patternfly-react';
-import { Row, Col, Spinner} from 'patternfly-react';
-
-import { HuntRestError } from './Error.js';
+import { PAGINATION_VIEW, ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Modal, DropdownKebab, MenuItem, Icon, Button, Form, FormGroup, FormControl, Row, Col, Spinner } from 'patternfly-react';
+import * as config from './config/Api';
+import { HuntList, HuntPaginationRow } from './Api';
+import { HuntRestError } from './Error';
 
 export class FiltersList extends HuntList {
     constructor(props) {
         super(props);
         this.state = { data: [], count: 0, rulesets: [] };
-        this.fetchData = this.fetchData.bind(this)
-        this.needUpdate = this.needUpdate.bind(this)
+        this.fetchData = this.fetchData.bind(this);
+        this.needUpdate = this.needUpdate.bind(this);
     }
 
     componentDidMount() {
         if (this.state.rulesets.length === 0) {
-            axios.get(config.API_URL + config.RULESET_PATH).then(res => {
-                var rulesets = {}
-                for (var index in res.data['results']) {
-                    rulesets[res.data['results'][index].pk] = res.data['results'][index];
+            axios.get(`${config.API_URL}${config.RULESET_PATH}`).then((res) => {
+                const rulesets = {};
+                for (let index = 0; index < res.data.results.length; index += 1) {
+                    rulesets[res.data.results[index].pk] = res.data.results[index];
                 }
-                this.setState({ rulesets: rulesets });
-            })
+                this.setState({ rulesets });
+            });
         }
         this.fetchData(this.props.config, this.props.filters);
     }
 
-    fetchData(filters_stat, filters) {
+    // eslint-disable-next-line no-unused-vars
+    fetchData(filtersStat, filters) {
         this.setState({ loading: true });
-        axios.get(config.API_URL + config.PROCESSING_PATH + "?" + this.buildListUrlParams(filters_stat))
-        .then(res => {
+        axios.get(`${config.API_URL}${config.PROCESSING_PATH}?${this.buildListUrlParams(filtersStat)}`)
+        .then((res) => {
             this.setState({ data: res.data.results, count: res.data.count, loading: false });
-        }).catch(res => {
+        }).catch(() => {
             this.setState({ loading: false });
-        })
+        });
     }
 
     needUpdate() {
@@ -68,14 +66,11 @@ export class FiltersList extends HuntList {
     render() {
         return (
             <div>
-                <Spinner loading={this.state.loading}>
-                </Spinner>
+                <Spinner loading={this.state.loading}></Spinner>
                 <ListView>
-                    {this.state.data &&
-                    this.state.data.map(item => {
-                        return (<FilterItem key={item.pk} data={item} switchPage={this.props.switchPage} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} from_date={this.props.from_date}/>);
-                    })
-                    }
+                    {this.state.data && this.state.data.map((item) => (
+                        <FilterItem key={item.pk} data={item} switchPage={this.props.switchPage} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} from_date={this.props.from_date} />
+                    ))}
                 </ListView>
                 <HuntPaginationRow
                     viewType={PAGINATION_VIEW.LIST}
@@ -85,7 +80,7 @@ export class FiltersList extends HuntList {
                     pageInputValue={this.props.config.pagination.page}
                     itemCount={this.state.count - 1} // used as last item
                     itemsStart={(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
-                    itemsEnd={Math.min(this.props.config.pagination.page * this.props.config.pagination.perPage - 1, this.state.count - 1)}
+                    itemsEnd={Math.min((this.props.config.pagination.page * this.props.config.pagination.perPage) - 1, this.state.count - 1)}
                     onFirstPage={this.onFirstPage}
                     onNextPage={this.onNextPage}
                     onPreviousPage={this.onPrevPage}
@@ -94,13 +89,18 @@ export class FiltersList extends HuntList {
                 />
 
             </div>
-        )
+        );
     }
 }
+FiltersList.propTypes = {
+    config: PropTypes.any,
+    filters: PropTypes.any,
+};
 
 class FilterItem extends React.Component {
     constructor(props) {
         super(props);
+        // eslint-disable-next-line react/no-unused-state
         this.state = { data: undefined, loading: true };
     }
 
@@ -108,111 +108,114 @@ class FilterItem extends React.Component {
         this.fetchData(this.props.config, this.props.filters);
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
+    componentDidUpdate(prevProps) {
         if (prevProps.from_date !== this.props.from_date) {
             this.fetchData(this.props.config, this.props.filters);
         }
     }
 
-    fetchData(filters_stat, filters) {
+    // eslint-disable-next-line no-unused-vars
+    fetchData(filtersStat, filters) {
+        // eslint-disable-next-line react/no-unused-state
         this.setState({ loading: true });
-        axios.get(config.API_URL + config.ES_BASE_PATH + "poststats_summary&value=rule_filter_" + this.props.data.pk + "&from_date=" + this.props.from_date)
-        .then(res => {
+        axios.get(`${config.API_URL + config.ES_BASE_PATH}poststats_summary&value=rule_filter_${this.props.data.pk}&from_date=${this.props.from_date}`)
+        .then((res) => {
+            // eslint-disable-next-line react/no-unused-state
             this.setState({ data: res.data, loading: false });
-        }).catch(res => {
+        }).catch(() => {
+            // eslint-disable-next-line react/no-unused-state
             this.setState({ loading: false });
-        })
+        });
     }
 
     render() {
-        var item = this.props.data;
-        var addinfo = [];
-        for (var i in item.filter_defs) {
-            var info = <ListViewInfoItem key={"filter-" + i}>
-                <p>{item.filter_defs[i].operator === "different" && "Not "}{item.filter_defs[i].key}: {item.filter_defs[i].value}</p>
-            </ListViewInfoItem>;
+        const item = this.props.data;
+        const addinfo = [];
+        for (let i = 0; i < item.filter_defs.length; i += 1) {
+            const info = <ListViewInfoItem key={`filter-${i}`}><p>{item.filter_defs[i].operator === 'different' && 'Not '}{item.filter_defs[i].key}: {item.filter_defs[i].value}</p></ListViewInfoItem>;
             addinfo.push(info);
         }
         if (Object.keys(this.props.rulesets).length > 0) {
-            var rulesets = item.rulesets.map(item => {
-                return (<ListViewInfoItem key={item + '-ruleset'}><p>Ruleset: {this.props.rulesets[item]['name']}</p>
-                </ListViewInfoItem>);
-            });
+            const rulesets = item.rulesets.map((item2) => (<ListViewInfoItem key={`${item2}-ruleset`}><p>Ruleset: {this.props.rulesets[item2].name}</p></ListViewInfoItem>));
             addinfo.push(rulesets);
         }
-        var description = '';
+        let description = '';
         if (item.action !== 'suppress') {
-            description = <ul className="list-inline">{Object.keys(item.options).map(option => {
-                return (<li key={option}><strong>{option}</strong>: {item.options[option]}</li>)
-            })}</ul>;
+            description = <ul className="list-inline">{Object.keys(item.options).map((option) => (<li key={option}><strong>{option}</strong>: {item.options[option]}</li>))}</ul>;
         }
-        var icon = undefined;
+        let icon;
         switch (item.action) {
             case 'suppress':
-                icon = <ListViewIcon name="close"/>;
+                icon = <ListViewIcon name="close" />;
                 break;
             case 'threshold':
-                icon = <ListViewIcon name="minus"/>;
+                icon = <ListViewIcon name="minus" />;
                 break;
             case 'tag':
-                icon = <ListViewIcon name="envelope"/>;
+                icon = <ListViewIcon name="envelope" />;
                 break;
             case 'tagkeep':
-                icon = <ListViewIcon name="envelope"/>;
+                icon = <ListViewIcon name="envelope" />;
                 break;
             default:
-                icon = <ListViewIcon name="envelope"/>;
+                icon = <ListViewIcon name="envelope" />;
                 break;
         }
-        var actions_menu = [<span key={item.pk + '-index'} className="badge badge-default">{item.index}</span>];
-        actions_menu.push(<FilterEditKebab key={item.pk + '-kebab'} data={item} last_index={this.props.last_index} needUpdate={this.props.needUpdate}/>);
+        const actionsMenu = [<span key={`${item.pk}-index`} className="badge badge-default">{item.index}</span>];
+        actionsMenu.push(<FilterEditKebab key={`${item.pk}-kebab`} data={item} last_index={this.props.last_index} needUpdate={this.props.needUpdate} />);
         return (
             <ListViewItem
-                key={item.pk + '-listitem'}
+                key={`${item.pk}-listitem`}
                 leftContent={icon}
                 additionalInfo={addinfo}
                 heading={item.action}
                 description={description}
-                actions={actions_menu}
+                actions={actionsMenu}
             >
-                {this.state.data &&
-                <Row>
-                    {this.state.data.map((item, idx) => {
-                        return (
-                            <div className="col-xs-3 col-sm-2 col-md-2" key={idx}>
-                                <div className="card-pf card-pf-accented card-pf-aggregate-status">
-                                    <h2 className="card-pf-title">
-                                        <span className="fa fa-shield"></span>{item.key}
-                                    </h2>
-                                    <div className="card-pf-body">
-                                        <p className="card-pf-aggregate-status-notifications">
-                                            <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok"></span>{item.seen.value}</span>
-                                            <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-error-circle-o"></span>{item.drop.value}</span>
-                                        </p>
-                                    </div>
+                {this.state.data && <Row>
+                    {this.state.data.map((item2) => (
+                        <div className="col-xs-3 col-sm-2 col-md-2" key={item2.key}>
+                            <div className="card-pf card-pf-accented card-pf-aggregate-status">
+                                <h2 className="card-pf-title">
+                                    <span className="fa fa-shield" />{item2.key}
+                                </h2>
+                                <div className="card-pf-body">
+                                    <p className="card-pf-aggregate-status-notifications">
+                                        <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok" />{item2.seen.value}</span>
+                                        <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-error-circle-o" />{item2.drop.value}</span>
+                                    </p>
                                 </div>
                             </div>
-                        )
-                    })
+                        </div>
+                    ))
                     }
-                </Row>
-                }
+                </Row>}
             </ListViewItem>
-        )
+        );
     }
 }
+FilterItem.propTypes = {
+    config: PropTypes.any,
+    data: PropTypes.any,
+    filters: PropTypes.any,
+    from_date: PropTypes.any,
+    rulesets: PropTypes.any,
+    needUpdate: PropTypes.any,
+    last_index: PropTypes.any,
+};
 
+// eslint-disable-next-line react/no-multi-comp
 class FilterEditKebab extends React.Component {
     constructor(props) {
         super(props);
         this.displayToggle = this.displayToggle.bind(this);
         this.hideToggle = this.hideToggle.bind(this);
-        this.state = { toggle: { show: false, action: "delete" } };
+        this.state = { toggle: { show: false, action: 'delete' } };
         this.closeAction = this.closeAction.bind(this);
     }
 
     displayToggle(action) {
-        this.setState({ toggle: { show: true, action: action } });
+        this.setState({ toggle: { show: true, action } });
     }
 
     hideToggle() {
@@ -227,41 +230,38 @@ class FilterEditKebab extends React.Component {
         return (
             <React.Fragment>
                 <DropdownKebab id="filterActions" pullRight>
-                    {this.props.data.index !== 0 &&
-                    <MenuItem onClick={e => {
-                        this.displayToggle("movetop")
-                    }}>
+                    {this.props.data.index !== 0 && <MenuItem onClick={() => { this.displayToggle('movetop'); }}>
                         Send Filter to top
-                    </MenuItem>
-                    }
-                    <MenuItem onClick={e => {
-                        this.displayToggle("move")
-                    }}>
+                    </MenuItem>}
+                    <MenuItem onClick={() => { this.displayToggle('move'); }}>
                         Move Filter
                     </MenuItem>
-                    <MenuItem onClick={e => {
-                        this.displayToggle("movebottom")
-                    }}>
+                    <MenuItem onClick={() => { this.displayToggle('movebottom'); }}>
                         Send Filter to bottom
                     </MenuItem>
-                    <MenuItem divider/>
-                    <MenuItem onClick={e => {
-                        this.displayToggle("delete")
-                    }}>
+                    <MenuItem divider />
+                    <MenuItem onClick={() => { this.displayToggle('delete'); }}>
                         Delete Filter
                     </MenuItem>
                 </DropdownKebab>
-                <FilterToggleModal show={this.state.toggle.show} action={this.state.toggle.action} data={this.props.data} close={this.closeAction} last_index={this.props.last_index} needUpdate={this.props.needUpdate}/>
+                <FilterToggleModal show={this.state.toggle.show} action={this.state.toggle.action} data={this.props.data} close={this.closeAction} last_index={this.props.last_index} needUpdate={this.props.needUpdate} />
             </React.Fragment>
-        )
+        );
     }
 }
+FilterEditKebab.propTypes = {
+    data: PropTypes.any,
+    last_index: PropTypes.any,
+    needUpdate: PropTypes.any,
+};
 
+// eslint-disable-next-line react/no-multi-comp
 class FilterToggleModal extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            comment: "", new_index: 0,
+            comment: '',
+            new_index: 0,
             errors: undefined
         };
         this.close = this.close.bind(this);
@@ -271,67 +271,16 @@ class FilterToggleModal extends React.Component {
         this.onFieldKeyPress = this.onFieldKeyPress.bind(this);
     }
 
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
+    componentDidUpdate(prevProps) {
         if (prevProps.action !== this.props.action) {
             // Move to top / Launch dialog init with 0, then event to update new_index
+            // eslint-disable-next-line react/no-did-update-set-state
             this.setState({ new_index: 0 });
 
             if (this.props.action === 'movebottom') {
+                // eslint-disable-next-line react/no-did-update-set-state
                 this.setState({ new_index: this.props.last_index });
             }
-        }
-    }
-
-
-    close() {
-        this.setState({ errors: undefined });
-        this.props.close();
-    }
-
-    submit() {
-        var data = undefined;
-        if (['move', 'movetop', 'movebottom'].indexOf(this.props.action) !== -1) {
-            data = { index: this.state.new_index, comment: this.state.comment }
-            axios.patch(config.API_URL + config.PROCESSING_PATH + this.props.data.pk + '/', data).then(res => {
-                    console.log("Moved filter to " + this.state.new_index);
-                    this.props.needUpdate();
-                    this.close();
-                }
-            ).catch(error => {
-                console.log("action creation failure");
-                this.setState({ errors: error.response.data });
-            });
-
-        }
-        if (this.props.action === 'delete') {
-            data = { comment: this.state.comment }
-            axios({
-                url: config.API_URL + config.PROCESSING_PATH + this.props.data.pk + '/',
-                data: data,
-                method: 'delete'
-            }).then(
-                res => {
-                    console.log("Deleted filter");
-                    this.props.needUpdate();
-                    this.close();
-                }
-            ).catch(error => {
-                    console.log("action creation failure");
-                    this.setState({ errors: error.response.data });
-                }
-            );
-        }
-    }
-
-    handleCommentChange(event) {
-        this.setState({ comment: event.target.value });
-    }
-
-    handleChange(event) {
-        const val = parseInt(event.target.value, 10);
-        if (val >= 0) {
-            this.setState({ new_index: val });
         }
     }
 
@@ -346,8 +295,52 @@ class FilterToggleModal extends React.Component {
         }
     }
 
+    handleChange(event) {
+        const val = parseInt(event.target.value, 10);
+        if (val >= 0) {
+            this.setState({ new_index: val });
+        }
+    }
+
+    handleCommentChange(event) {
+        this.setState({ comment: event.target.value });
+    }
+
+    submit() {
+        let data;
+        if (['move', 'movetop', 'movebottom'].indexOf(this.props.action) !== -1) {
+            data = { index: this.state.new_index, comment: this.state.comment };
+            axios.patch(`${config.API_URL}${config.PROCESSING_PATH}${this.props.data.pk}/`, data).then(() => {
+                this.props.needUpdate();
+                this.close();
+            }).catch((error) => {
+                this.setState({ errors: error.response.data });
+            });
+        }
+        if (this.props.action === 'delete') {
+            data = { comment: this.state.comment };
+            axios({
+                url: `${config.API_URL}${config.PROCESSING_PATH}${this.props.data.pk}/`,
+                data,
+                method: 'delete'
+            }).then(
+                () => {
+                    this.props.needUpdate();
+                    this.close();
+                }
+            ).catch((error) => {
+                this.setState({ errors: error.response.data });
+            });
+        }
+    }
+
+    close() {
+        this.setState({ errors: undefined });
+        this.props.close();
+    }
+
     render() {
-        var action = this.props.action;
+        let { action } = this.props;
         switch (action) {
             case 'movetop':
                 action = 'Move to top';
@@ -373,30 +366,26 @@ class FilterToggleModal extends React.Component {
                         aria-hidden="true"
                         aria-label="Close"
                     >
-                        <Icon type="pf" name="close"/>
+                        <Icon type="pf" name="close" />
                     </button>
-                    {this.props.data &&
-                        <Modal.Title>{action} {this.props.data.action} at current position {this.props.data.index}</Modal.Title>
-                    }
+                    {this.props.data && <Modal.Title>{action} {this.props.data.action} at current position {this.props.data.index}</Modal.Title>}
                 </Modal.Header>
                 <Modal.Body>
-                    <HuntRestError errors={this.state.errors}/>
+                    <HuntRestError errors={this.state.errors} />
                     <Form horizontal>
-                        {this.props.action === 'move' &&
-                        <FormGroup key="index" controlId="index" disabled={false}>
+                        {this.props.action === 'move' && <FormGroup key="index" controlId="index" disabled={false}>
                             <Col sm={3}>
                                 <strong>New index</strong>
                             </Col>
                             <Col sm={9}>
-                                <FormControl type="number" min={0} max={50000} disabled={false} defaultValue={0} onChange={this.handleChange} onKeyPress={e => this.onFieldKeyPress(e)}/>
+                                <FormControl type="number" min={0} max={50000} disabled={false} defaultValue={0} onChange={this.handleChange} onKeyPress={(e) => this.onFieldKeyPress(e)} />
                             </Col>
                         </FormGroup>
-
                         }
                         <div className="form-group">
                             <div className="col-sm-9">
                                 <strong>Optional comment</strong>
-                                <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange}/>
+                                <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange} />
                             </div>
                         </div>
                     </Form>
@@ -414,6 +403,14 @@ class FilterToggleModal extends React.Component {
                     </Button>
                 </Modal.Footer>
             </Modal>
-        )
+        );
     }
 }
+FilterToggleModal.propTypes = {
+    action: PropTypes.any,
+    last_index: PropTypes.any,
+    data: PropTypes.any,
+    show: PropTypes.any,
+    close: PropTypes.func,
+    needUpdate: PropTypes.func,
+};

@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events,camelcase,react/sort-comp,no-lonely-if */
 /*
 Copyright(C) 2018 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
@@ -18,25 +19,24 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 import React, { Component } from 'react';
-import { VerticalNav, Dropdown, Icon, MenuItem, ApplicationLauncher, ApplicationLauncherItem } from 'patternfly-react';
-import { AboutModal, Modal, Form, Button } from 'patternfly-react';
-import { HuntDashboard } from './Dashboard.js';
-import { HuntNotificationArea } from './Notifications.js';
-import { HistoryPage } from './History.js';
-import { PAGE_STATE } from './Const.js';
-import { RulesList } from './Rule.js';
-import { AlertsList } from './Alerts.js';
-import { FiltersList } from './Filters.js';
-import axios from 'axios';
-import * as config from './config/Api.js';
-import './pygments.css';
-import './css/App.css';
-import scirius_logo from './img/scirius-by-stamus.svg';
-import keymap from './Keymap';
+import { VerticalNav, Dropdown, Icon, MenuItem, ApplicationLauncher, ApplicationLauncherItem, AboutModal, Modal, Form, Button } from 'patternfly-react';
 import { ShortcutManager } from 'react-shortcuts';
 import PropTypes from 'prop-types';
+import axios from 'axios';
+import { HuntDashboard } from './Dashboard';
+import { HuntNotificationArea } from './Notifications';
+import { HistoryPage } from './History';
+import { PAGE_STATE } from './Const';
+import { RulesList } from './Rule';
+import { AlertsList } from './Alerts';
+import { FiltersList } from './Filters';
+import * as config from './config/Api';
+import './pygments.css';
+// eslint-disable-next-line import/no-unresolved
+import './css/App.css';
+import sciriusLogo from './img/scirius-by-stamus.svg';
+import keymap from './Keymap';
 
 const shortcutManager = new ShortcutManager(keymap);
 
@@ -44,21 +44,21 @@ class HuntApp extends Component {
     constructor(props) {
         super(props);
         this.timer = null;
-        var interval = localStorage.getItem('interval');
-        var duration = localStorage.getItem('duration');
-        var rules_list_conf = localStorage.getItem('rules_list');
-        var alerts_list_conf = localStorage.getItem('alerts_list');
-        var history_conf = localStorage.getItem('history');
-        var filters_list_conf = localStorage.getItem('filters_list');
-        var page_display = localStorage.getItem('page_display');
-        var ids_filters = localStorage.getItem('ids_filters');
-        var history_filters = localStorage.getItem('history_filters');
+        const interval = localStorage.getItem('interval');
+        let duration = localStorage.getItem('duration');
+        let rulesListConf = localStorage.getItem('rules_list');
+        let alertsListConf = localStorage.getItem('alerts_list');
+        let historyConf = localStorage.getItem('history');
+        let filtersListConf = localStorage.getItem('filters_list');
+        let pageDisplay = localStorage.getItem('page_display');
+        let idsFilters = localStorage.getItem('ids_filters');
+        let historyFilters = localStorage.getItem('history_filters');
         if (!duration) {
             duration = 24;
         }
 
-        if (!rules_list_conf) {
-            rules_list_conf = {
+        if (!rulesListConf) {
+            rulesListConf = {
                 pagination: {
                     page: 1,
                     perPage: 6,
@@ -67,26 +67,26 @@ class HuntApp extends Component {
                 sort: { id: 'created', asc: false },
                 view_type: 'list'
             };
-            localStorage.setItem('rules_list', JSON.stringify(rules_list_conf));
+            localStorage.setItem('rules_list', JSON.stringify(rulesListConf));
         } else {
-            rules_list_conf = JSON.parse(rules_list_conf);
+            rulesListConf = JSON.parse(rulesListConf);
             // Sanity checks for the object retrieved from local storage
-            if (typeof rules_list_conf.pagination === 'undefined') {
-                rules_list_conf.pagination = {}
+            if (typeof rulesListConf.pagination === 'undefined') {
+                rulesListConf.pagination = {};
             }
-            if (typeof rules_list_conf.pagination.page === 'undefined') {
-                rules_list_conf.pagination.page = 1;
+            if (typeof rulesListConf.pagination.page === 'undefined') {
+                rulesListConf.pagination.page = 1;
             }
-            if (typeof rules_list_conf.pagination.perPage === 'undefined') {
-                rules_list_conf.pagination.perPage = 6;
+            if (typeof rulesListConf.pagination.perPage === 'undefined') {
+                rulesListConf.pagination.perPage = 6;
             }
-            if (typeof rules_list_conf.pagination.perPageOptions === 'undefined') {
-                rules_list_conf.pagination.perPageOptions = [6, 10, 15, 25];
+            if (typeof rulesListConf.pagination.perPageOptions === 'undefined') {
+                rulesListConf.pagination.perPageOptions = [6, 10, 15, 25];
             }
         }
 
-        if (!alerts_list_conf) {
-            alerts_list_conf = {
+        if (!alertsListConf) {
+            alertsListConf = {
                 pagination: {
                     page: 1,
                     perPage: 20,
@@ -95,13 +95,13 @@ class HuntApp extends Component {
                 sort: { id: 'timestamp', asc: false },
                 view_type: 'list'
             };
-            localStorage.setItem('alerts_list', JSON.stringify(alerts_list_conf));
+            localStorage.setItem('alerts_list', JSON.stringify(alertsListConf));
         } else {
-            alerts_list_conf = JSON.parse(alerts_list_conf);
+            alertsListConf = JSON.parse(alertsListConf);
         }
 
-        if (!filters_list_conf) {
-            filters_list_conf = {
+        if (!filtersListConf) {
+            filtersListConf = {
                 pagination: {
                     page: 1,
                     perPage: 20,
@@ -110,13 +110,13 @@ class HuntApp extends Component {
                 sort: { id: 'timestamp', asc: false },
                 view_type: 'list'
             };
-            localStorage.setItem('filters_list', JSON.stringify(filters_list_conf));
+            localStorage.setItem('filters_list', JSON.stringify(filtersListConf));
         } else {
-            filters_list_conf = JSON.parse(filters_list_conf);
+            filtersListConf = JSON.parse(filtersListConf);
         }
 
-        if (!history_conf) {
-            history_conf = {
+        if (!historyConf) {
+            historyConf = {
                 pagination: {
                     page: 1,
                     perPage: 6,
@@ -125,42 +125,44 @@ class HuntApp extends Component {
                 sort: { id: 'date', asc: false },
                 view_type: 'list'
             };
-            localStorage.setItem('history', JSON.stringify(history_conf));
+            localStorage.setItem('history', JSON.stringify(historyConf));
         } else {
-            history_conf = JSON.parse(history_conf);
+            historyConf = JSON.parse(historyConf);
         }
 
-        if (!ids_filters) {
-            ids_filters = [];
-            localStorage.setItem('ids_filters', JSON.stringify(ids_filters));
+        if (!idsFilters) {
+            idsFilters = [];
+            localStorage.setItem('ids_filters', JSON.stringify(idsFilters));
         } else {
-            ids_filters = JSON.parse(ids_filters);
+            idsFilters = JSON.parse(idsFilters);
         }
 
-        if (!history_filters) {
-            history_filters = [];
-            localStorage.setItem('history_filters', JSON.stringify(history_filters));
+        if (!historyFilters) {
+            historyFilters = [];
+            localStorage.setItem('history_filters', JSON.stringify(historyFilters));
         } else {
-            history_filters = JSON.parse(history_filters);
+            historyFilters = JSON.parse(historyFilters);
         }
 
-
-        if (!page_display) {
-            page_display = { page: PAGE_STATE.dashboards, item: undefined };
-            localStorage.setItem('page_display', JSON.stringify(page_display));
+        if (!pageDisplay) {
+            pageDisplay = { page: PAGE_STATE.dashboards, item: undefined };
+            localStorage.setItem('page_display', JSON.stringify(pageDisplay));
         } else {
-            page_display = JSON.parse(page_display);
+            pageDisplay = JSON.parse(pageDisplay);
         }
         this.state = {
-            sources: [], rulesets: [], duration: duration, from_date: (Date.now() - duration * 3600 * 1000),
-            interval: interval,
-            display: page_display,
-            rules_list: rules_list_conf,
-            alerts_list: alerts_list_conf,
-            ids_filters: ids_filters,
-            history: history_conf,
-            history_filters: history_filters,
-            filters_list: filters_list_conf,
+            sources: [],
+            rulesets: [],
+            duration,
+            from_date: (Date.now() - (duration * 3600 * 1000)),
+            interval,
+            display: pageDisplay,
+            rules_list: rulesListConf,
+            alerts_list: alertsListConf,
+            idsFilters,
+            history: historyConf,
+            historyFilters,
+            filters_list: filtersListConf,
             hasConnectivity: true,
             connectionProblem: 'Scirius is not currently available.',
         };
@@ -184,11 +186,30 @@ class HuntApp extends Component {
         this.updateHistoryListState = this.updateHistoryListState.bind(this);
         this.updateHistoryFilterState = this.updateHistoryFilterState.bind(this);
         this.updateFilterListState = this.updateFilterListState.bind(this);
-
     }
 
-    needReload() {
-        this.setState({ from_date: (Date.now() - this.state.duration * 3600 * 1000) });
+    getChildContext() {
+        return { shortcuts: shortcutManager };
+    }
+
+    componentDidMount() {
+        setInterval(this.get_scirius_status, 10000);
+        axios.all([
+            axios.get(config.API_URL + config.SOURCE_PATH),
+            axios.get(config.API_URL + config.RULESET_PATH),
+            axios.get(config.API_URL + config.SYSTEM_SETTINGS_PATH),
+        ])
+        .then(axios.spread((SrcRes, RulesetRes, systemSettings) => {
+            this.setState({
+                rulesets: RulesetRes.data.results,
+                sources: SrcRes.data.results,
+                systemSettings: systemSettings.data
+            });
+        }));
+
+        if (this.state.interval) {
+            this.timer = setInterval(this.needReload, this.state.interval * 1000);
+        }
     }
 
     onHomeClick() {
@@ -211,29 +232,13 @@ class HuntApp extends Component {
         this.switchPage(PAGE_STATE.filters_list, undefined);
     }
 
-    fromDate(period) {
-        const duration = period * 3600 * 1000;
-        return Date.now() - duration;
+    needReload() {
+        this.setState({ from_date: (Date.now() - (this.state.duration * 3600 * 1000)) });
     }
 
-    componentDidMount() {
-        setInterval(this.get_scirius_status, 10000);
-        axios.all([
-            axios.get(config.API_URL + config.SOURCE_PATH),
-            axios.get(config.API_URL + config.RULESET_PATH),
-            axios.get(config.API_URL + config.SYSTEM_SETTINGS_PATH),
-        ])
-        .then(axios.spread((SrcRes, RulesetRes, system_settings) => {
-            this.setState({
-                rulesets: RulesetRes.data['results'],
-                sources: SrcRes.data['results'],
-                system_settings: system_settings.data
-            });
-        }))
-
-        if (this.state.interval) {
-            this.timer = setInterval(this.needReload, this.state.interval * 1000);
-        }
+    fromDate = (period) => {
+        const duration = period * 3600 * 1000;
+        return Date.now() - duration;
     }
 
     displayRuleset(ruleset) {
@@ -250,7 +255,7 @@ class HuntApp extends Component {
     }
 
     changeRefreshInterval(interval) {
-        this.setState({ interval: interval });
+        this.setState({ ...this.state, interval });
         localStorage.setItem('interval', interval);
 
         if (interval) {
@@ -267,61 +272,56 @@ class HuntApp extends Component {
 
     switchPage(page, item) {
         if (!page) {
-            console.log("switchPage called with null param");
             return;
         }
         if (page === PAGE_STATE.rules_list && item !== undefined) {
             this.updateIDSFilterState([{
-                label: "Signature ID: " + item,
+                label: `Signature ID: ${item}`,
                 id: 'alert.signature_id',
                 value: item,
                 negated: false,
                 query: 'filter'
             }]);
         }
-        const page_display = { page: page, item: item };
-        this.setState({ display: page_display });
-        localStorage.setItem('page_display', JSON.stringify(page_display));
+        const pageDisplay = { page, item };
+        this.setState({ display: pageDisplay });
+        localStorage.setItem('page_display', JSON.stringify(pageDisplay));
     }
 
-    updateRuleListState(rules_list_state) {
-        this.setState({ rules_list: rules_list_state });
-        localStorage.setItem('rules_list', JSON.stringify(rules_list_state));
+    updateRuleListState(rulesListState) {
+        this.setState({ rules_list: rulesListState });
+        localStorage.setItem('rules_list', JSON.stringify(rulesListState));
     }
 
-    updateAlertListState(alerts_list_state) {
-        this.setState({ alerts_list: alerts_list_state });
-        localStorage.setItem('alerts_list', JSON.stringify(alerts_list_state));
+    updateAlertListState(alertsListState) {
+        this.setState({ alerts_list: alertsListState });
+        localStorage.setItem('alerts_list', JSON.stringify(alertsListState));
     }
 
-    updateFilterListState(filters_list_state) {
-        this.setState({ filters_list: filters_list_state });
-        localStorage.setItem('filters_list', JSON.stringify(filters_list_state));
+    updateFilterListState(filtersListState) {
+        this.setState({ filters_list: filtersListState });
+        localStorage.setItem('filters_list', JSON.stringify(filtersListState));
     }
 
     updateIDSFilterState(filters) {
-        this.setState({ ids_filters: filters });
+        this.setState({ idsFilters: filters });
         localStorage.setItem('ids_filters', JSON.stringify(filters));
     }
 
     updateHistoryFilterState(filters) {
-        this.setState({ history_filters: filters });
+        this.setState({ historyFilters: filters });
         localStorage.setItem('history_filters', JSON.stringify(filters));
     }
 
-    updateHistoryListState(history_state) {
-        this.setState({ history: history_state });
-        localStorage.setItem('history', JSON.stringify(history_state));
-    }
-
-    getChildContext() {
-        return { shortcuts: shortcutManager }
+    updateHistoryListState(historyState) {
+        this.setState({ history: historyState });
+        localStorage.setItem('history', JSON.stringify(historyState));
     }
 
     get_scirius_status = () => {
         axios({
             method: 'get',
-            url: "/rules/info",
+            url: '/rules/info',
             timeout: 15000,
         }).then((data) => {
             if (!data) {
@@ -332,7 +332,7 @@ class HuntApp extends Component {
                     });
                 }
             } else {
-                if (data.data['status'] === 'green') {
+                if (data.data.status === 'green') {
                     this.setState({
                         ...this.state,
                         hasConnectivity: true
@@ -359,40 +359,88 @@ class HuntApp extends Component {
     }
 
     render() {
-        var displayed_page = undefined;
+        let displayedPage = null;
         switch (this.state.display.page) {
             case PAGE_STATE.rules_list:
             default:
-                displayed_page = <RulesList system_settings={this.state.system_settings} config={this.state.rules_list} filters={this.state.ids_filters} from_date={this.state.from_date} SwitchPage={this.switchPage} updateListState={this.updateRuleListState} updateFilterState={this.updateIDSFilterState}/>
+                displayedPage = (<RulesList
+                    systemSettings={this.state.systemSettings}
+                    config={this.state.rules_list}
+                    filters={this.state.idsFilters}
+                    from_date={this.state.from_date}
+                    SwitchPage={this.switchPage}
+                    updateListState={this.updateRuleListState}
+                    updateFilterState={this.updateIDSFilterState}
+                />);
                 break;
             case PAGE_STATE.source:
-                displayed_page = <SourcePage system_settings={this.state.system_settings} source={this.state.display.item} from_date={this.state.from_date}/>
+                displayedPage = <SourcePage systemSettings={this.state.systemSettings} source={this.state.display.item} from_date={this.state.from_date} />;
                 break;
             case PAGE_STATE.ruleset:
-                displayed_page = <RulesetPage system_settings={this.state.system_settings} ruleset={this.state.display.item} from_date={this.state.from_date}/>
+                displayedPage = <RulesetPage systemSettings={this.state.systemSettings} ruleset={this.state.display.item} from_date={this.state.from_date} />;
                 break;
             case PAGE_STATE.dashboards:
                 // FIXME remove or change updateRuleListState
-                displayed_page = <HuntDashboard system_settings={this.state.system_settings} config={this.state.rules_list} filters={this.state.ids_filters} from_date={this.state.from_date} SwitchPage={this.switchPage} updateListState={this.updateRuleListState} updateFilterState={this.updateIDSFilterState} needReload={this.needReload}/>
+                displayedPage = (<HuntDashboard
+                    systemSettings={this.state.systemSettings}
+                    config={this.state.rules_list}
+                    filters={this.state.idsFilters}
+                    from_date={this.state.from_date}
+                    SwitchPage={this.switchPage}
+                    updateListState={this.updateRuleListState}
+                    updateFilterState={this.updateIDSFilterState}
+                    needReload={this.needReload}
+                />);
                 break;
             case PAGE_STATE.history:
-                displayed_page = <HistoryPage system_settings={this.state.system_settings} config={this.state.history} filters={this.state.history_filters} from_date={this.state.from_date} updateListState={this.updateHistoryListState} switchPage={this.switchPage} updateFilterState={this.updateHistoryFilterState}/>
+                displayedPage = (<HistoryPage
+                    systemSettings={this.state.systemSettings}
+                    config={this.state.history}
+                    filters={this.state.historyFilters}
+                    from_date={this.state.from_date}
+                    updateListState={this.updateHistoryListState}
+                    switchPage={this.switchPage}
+                    updateFilterState={this.updateHistoryFilterState}
+                />);
                 break;
             case PAGE_STATE.alerts_list:
-                displayed_page = <AlertsList system_settings={this.state.system_settings} config={this.state.alerts_list} filters={this.state.ids_filters} from_date={this.state.from_date} updateListState={this.updateAlertListState} switchPage={this.switchPage} updateFilterState={this.updateIDSFilterState}/>
+                displayedPage = (<AlertsList
+                    systemSettings={this.state.systemSettings}
+                    config={this.state.alerts_list}
+                    filters={this.state.idsFilters}
+                    from_date={this.state.from_date}
+                    updateListState={this.updateAlertListState}
+                    switchPage={this.switchPage}
+                    updateFilterState={this.updateIDSFilterState}
+                />);
                 break;
             case PAGE_STATE.filters_list:
-                displayed_page = <FiltersList system_settings={this.state.system_settings} config={this.state.filters_list} filters={this.state.filters_filters} from_date={this.state.from_date} updateListState={this.updateFilterListState} switchPage={this.switchPage} updateFilterState={this.updateFiltersFilterState}/>
+                displayedPage = (<FiltersList
+                    systemSettings={this.state.systemSettings}
+                    config={this.state.filters_list}
+                    filters={this.state.filters_filters}
+                    from_date={this.state.from_date}
+                    updateListState={this.updateFilterListState}
+                    switchPage={this.switchPage}
+                    updateFilterState={this.updateFiltersFilterState}
+                />);
                 break;
         }
         return (
             <div className="layout-pf layout-pf-fixed faux-layout">
                 <VerticalNav sessionKey="storybookItemsAsJsx" showBadges>
                     <VerticalNav.Masthead title="Scirius">
-                        <VerticalNav.Brand titleImg={scirius_logo}/>
+                        <VerticalNav.Brand titleImg={sciriusLogo} />
 
                         <VerticalNav.IconBar>
-                            <UserNavInfo system_settings={this.state.system_settings} ChangeDuration={this.changeDuration} ChangeRefreshInterval={this.changeRefreshInterval} interval={this.state.interval} period={this.state.duration} needReload={this.needReload}/>
+                            <UserNavInfo
+                                systemSettings={this.state.systemSettings}
+                                ChangeDuration={this.changeDuration}
+                                ChangeRefreshInterval={this.changeRefreshInterval}
+                                interval={this.state.interval}
+                                period={this.state.duration}
+                                needReload={this.needReload}
+                            />
                         </VerticalNav.IconBar>
 
 
@@ -417,14 +465,12 @@ class HuntApp extends Component {
                         initialActive={this.state.display.page === PAGE_STATE.alerts_list}
                         onClick={this.onAlertsClick}
                     />
-                    {(process.env.REACT_APP_HAS_ACTION === '1' || process.env.NODE_ENV === 'development') &&
-                    <VerticalNav.Item
+                    { (process.env.REACT_APP_HAS_ACTION === '1' || process.env.NODE_ENV === 'development') && <VerticalNav.Item
                         title="Actions"
                         iconClass="glyphicon glyphicon-filter"
                         initialActive={this.state.display.page === PAGE_STATE.filters_list}
                         onClick={this.onFiltersClick}
-                    />
-                    }
+                    />}
                     <VerticalNav.Item
                         title="History"
                         iconClass="glyphicon glyphicon-list"
@@ -436,7 +482,7 @@ class HuntApp extends Component {
                 <div className="container-fluid container-pf-nav-pf-vertical nav-pf-persistent-secondary">
                     <div className="row row-cards-pf">
                         <div className="col-xs-12 col-sm-12 col-md-12" id="app-content">
-                            {displayed_page}
+                            {displayedPage}
                         </div>
                     </div>
                 </div>
@@ -450,7 +496,7 @@ class HuntApp extends Component {
                     </Modal.Body>
                 </Modal>
             </div>
-        )
+        );
     }
 }
 
@@ -478,24 +524,37 @@ const REFRESH_INTERVAL = {
 };
 
 
+// eslint-disable-next-line react/no-multi-comp
 class ExternalLink extends Component {
     constructor(props) {
         super(props);
-        this.state = { onclick: props.onClick, icon: props.icon, title: props.title, tooltip: props.tooltip };
+        this.state = {
+            onclick: props.onClick,
+            icon: props.icon,
+            title: props.title,
+            tooltip: props.tooltip
+        };
     }
 
     render() {
         return (
             <li className="applauncher-pf-item" role="presentation">
-                <a className="applauncher-pf-link" onClick={this.state.onclick} role="menuitem" data-toggle="tooltip" title={this.state.tooltip} style={{ cursor: 'pointer' }}>
-                    <i className={this.state.icon} aria-hidden="true"></i>
+                <a className="applauncher-pf-link" onClick={() => this.state.onclick} role="menuitem" data-toggle="tooltip" title={this.state.tooltip} style={{ cursor: 'pointer' }} tabIndex={0}>
+                    <i className={this.state.icon} aria-hidden="true" />
                     <span className="applauncher-pf-link-title">{this.state.title}</span>
                 </a>
             </li>
-        )
+        );
     }
 }
+ExternalLink.propTypes = {
+    onClick: PropTypes.any,
+    icon: PropTypes.any,
+    title: PropTypes.any,
+    tooltip: PropTypes.any,
+};
 
+// eslint-disable-next-line react/no-multi-comp
 class OutsideAlerter extends Component {
     constructor(props) {
         super(props);
@@ -526,12 +585,13 @@ class OutsideAlerter extends Component {
         return <span ref={this.setWrapperRef}>{this.props.children}</span>;
     }
 }
-
 OutsideAlerter.propTypes = {
+    hide: PropTypes.func,
     children: PropTypes.element.isRequired,
 };
 
 
+// eslint-disable-next-line react/no-multi-comp
 class UserNavInfo extends Component {
     constructor(props) {
         super(props);
@@ -541,7 +601,7 @@ class UserNavInfo extends Component {
             showNotifications: false,
             user: undefined,
             isShown: false,
-        }
+        };
         this.AboutClick = this.AboutClick.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.toggleNotifications = this.toggleNotifications.bind(this);
@@ -557,22 +617,21 @@ class UserNavInfo extends Component {
     }
 
     componentDidMount() {
-        axios.get(config.API_URL + config.USER_PATH + 'current_user/')
-        .then(
-            current_user => {
-                this.setState({ user: current_user.data });
-            });
+        axios.get(`${config.API_URL}${config.USER_PATH}current_user/`)
+        .then((currentUser) => {
+            this.setState({ user: currentUser.data });
+        });
     }
 
-    AboutClick(e) {
+    AboutClick() {
         this.setState({ showModal: true });
     }
 
-    closeModal(e) {
+    closeModal() {
         this.setState({ showModal: false });
     }
 
-    toggleNotifications(e) {
+    toggleNotifications() {
         this.setState({ showNotifications: !this.state.showNotifications });
     }
 
@@ -586,22 +645,22 @@ class UserNavInfo extends Component {
 
     toggleHunt() {
         this.setState({ isShown: !this.state.isShown });
-        window.open("/rules/hunt", "_self");
+        window.open('/rules/hunt', '_self');
     }
 
     toggleHome() {
         this.setState({ isShown: !this.state.isShown });
-        window.open("/rules", "_self");
+        window.open('/rules', '_self');
     }
 
     toggleDashboards() {
         this.setState({ isShown: !this.state.isShown });
-        window.open(this.props.system_settings['kibana_url'], "_self");
+        window.open(this.props.systemSettings.kibana_url, '_self');
     }
 
     toggleEvebox() {
         this.setState({ isShown: !this.state.isShown });
-        window.open(this.props.system_settings['evebox_url'], "_self");
+        window.open(this.props.systemSettings.evebox_url, '_self');
     }
 
     showUpdateThreatDetection() {
@@ -613,16 +672,16 @@ class UserNavInfo extends Component {
     }
 
     submitUpdate() {
-        var url = config.UPDATE_PUSH_RULESET_PATH;
+        let url = config.UPDATE_PUSH_RULESET_PATH;
         if (process.env.REACT_APP_HAS_TAG === '1') {
-            url = "rest/appliances/appliance/update_push_all/";
+            url = 'rest/appliances/appliance/update_push_all/';
         }
         axios.post(config.API_URL + url, {});
         this.setState({ showUpdateModal: false });
     }
 
     render() {
-        var user = " ...";
+        let user = ' ...';
         if (this.state.user !== undefined) {
             user = this.state.user.username;
         }
@@ -630,42 +689,38 @@ class UserNavInfo extends Component {
             <React.Fragment>
 
                 <li className="dropdown">
-                    <div data-toggle="tooltip" title="Update threat detection" onClick={this.showUpdateThreatDetection} role="button" className="nav-item-iconic">
-                        <Icon type="fa" name="upload"/>
+                    <div tabIndex={0} data-toggle="tooltip" title="Update threat detection" onClick={this.showUpdateThreatDetection} role="button" className="nav-item-iconic">
+                        <Icon type="fa" name="upload" />
                     </div>
                 </li>
 
                 <Dropdown componentClass="li" id="timeinterval">
                     <Dropdown.Toggle useAnchor className="nav-item-iconic">
-                        <Icon type="fa" name="clock-o"/> Refresh Interval {REFRESH_INTERVAL[this.props.interval]}
+                        <Icon type="fa" name="clock-o" /> Refresh Interval {REFRESH_INTERVAL[this.props.interval]}
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                        {Object.keys(REFRESH_INTERVAL).map((interval) => {
-                            return (<MenuItem key={interval} onClick={this.props.ChangeRefreshInterval.bind(this, interval)}>{REFRESH_INTERVAL[interval]}</MenuItem>)
-                        }, this)}
+                        {Object.keys(REFRESH_INTERVAL).map((interval) => (
+                            <MenuItem key={interval} onClick={() => this.props.ChangeRefreshInterval(interval)}>{REFRESH_INTERVAL[interval]}</MenuItem>
+                        ), this)}
                     </Dropdown.Menu>
                 </Dropdown>
 
                 <li className="dropdown">
-                    <a id="refreshtime" role="button" className="nav-item-iconic" onClick={this.props.needReload}>
-                        <Icon type="fa" name="refresh"/>
+                    <a tabIndex={0} id="refreshtime" role="button" className="nav-item-iconic" onClick={this.props.needReload}>
+                        <Icon type="fa" name="refresh" />
                     </a>
                 </li>
 
                 <Dropdown componentClass="li" id="time">
                     <Dropdown.Toggle useAnchor className="nav-item-iconic">
-                        <Icon type="fa" name="clock-o"/> Last {USER_PERIODS[this.props.period]}
+                        <Icon type="fa" name="clock-o" /> Last {USER_PERIODS[this.props.period]}
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                        {Object.keys(USER_PERIODS).map((period) => {
-                            return (<MenuItem key={period} onClick={this.props.ChangeDuration.bind(this, period)}>Last {USER_PERIODS[period]}</MenuItem>)
-                        }, this)}
+                        {Object.keys(USER_PERIODS).map((period) => (<MenuItem key={period} onClick={() => this.props.ChangeDuration(period)}>Last {USER_PERIODS[period]}</MenuItem>), this)}
                     </Dropdown.Menu>
                 </Dropdown>
 
-                {this.state.showNotifications &&
-                <HuntNotificationArea/>
-                }
+                {this.state.showNotifications && <HuntNotificationArea />}
                 <OutsideAlerter hide={this.isShownFalse}>
                     <ApplicationLauncher grid open={this.state.isShown} toggleLauncher={this.toggleiSshown}>
                         <ApplicationLauncherItem
@@ -682,41 +737,39 @@ class UserNavInfo extends Component {
                             onClick={this.toggleHome}
                         />
 
-                        {this.props.system_settings && this.props.system_settings['kibana'] &&
-                        <ExternalLink
+                        {this.props.systemSettings && this.props.systemSettings.kibana && <ExternalLink
                             onClick={this.toggleDashboards}
                             icon="glyphicon glyphicon-stats"
                             title="Dashboards"
-                            tooltip="Kibana dashboards for ES"/>
-                        }
+                            tooltip="Kibana dashboards for ES"
+                        />}
 
-                        {this.props.system_settings && this.props.system_settings['evebox'] &&
-                        <ExternalLink
+                        {this.props.systemSettings && this.props.systemSettings.evebox && <ExternalLink
                             onClick={this.toggleEvebox}
                             icon="glyphicon glyphicon-th-list"
                             title="Events viewer"
-                            tooltip="Evebox alert and event management tool"/>
-                        }
+                            tooltip="Evebox alert and event management tool"
+                        />}
 
                     </ApplicationLauncher>
                 </OutsideAlerter>
                 <Dropdown componentClass="li" id="help">
                     <Dropdown.Toggle useAnchor className="nav-item-iconic">
-                        <Icon type="pf" name="help"/>
+                        <Icon type="pf" name="help" />
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                        <MenuItem href="/static/doc/hunt.html" target="_blank"><span className="glyphicon glyphicon-book"> </span> Help</MenuItem>
-                        <MenuItem onClick={this.AboutClick}><span className="glyphicon glyphicon-question-sign"> </span> About</MenuItem>
+                        <MenuItem href="/static/doc/hunt.html" target="_blank"><span className="glyphicon glyphicon-book" /> Help</MenuItem>
+                        <MenuItem onClick={this.AboutClick}><span className="glyphicon glyphicon-question-sign" /> About</MenuItem>
                     </Dropdown.Menu>
                 </Dropdown>
 
                 <Dropdown componentClass="li" id="user">
                     <Dropdown.Toggle useAnchor className="nav-item-iconic">
-                        <Icon type="pf" name="user"/> {user}
+                        <Icon type="pf" name="user" /> {user}
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                        <MenuItem href="/accounts/edit"><span className="glyphicon glyphicon-cog"> </span> Account settings</MenuItem>
-                        <MenuItem href="/accounts/logout"><span className="glyphicon glyphicon-log-out"> </span> Logout</MenuItem>
+                        <MenuItem href="/accounts/edit"><span className="glyphicon glyphicon-cog" /> Account settings</MenuItem>
+                        <MenuItem href="/accounts/logout"><span className="glyphicon glyphicon-log-out" /> Logout</MenuItem>
                     </Dropdown.Menu>
                 </Dropdown>
 
@@ -728,7 +781,7 @@ class UserNavInfo extends Component {
                             aria-hidden="true"
                             aria-label="Close"
                         >
-                            <Icon type="pf" name="close"/>
+                            <Icon type="pf" name="close" />
                         </button>
 
                         <Modal.Title> Update threat detection </Modal.Title>
@@ -736,18 +789,14 @@ class UserNavInfo extends Component {
                     </Modal.Header>
 
                     <Modal.Body>
-                        {process.env.REACT_APP_HAS_TAG &&
-                        <Form horizontal>
+                        {process.env.REACT_APP_HAS_TAG && <Form horizontal>
                             You are going to update threat detection (push ruleset and update post processing).
                             Do you want to continue ?
-                        </Form>
-                        }
-                        {!process.env.REACT_APP_HAS_TAG &&
-                        <Form horizontal>
+                        </Form>}
+                        {!process.env.REACT_APP_HAS_TAG && <Form horizontal>
                             You are going to update threat detection (update/push ruleset).
                             Do you want to continue ?
-                        </Form>
-                        }
+                        </Form>}
                     </Modal.Body>
 
                     <Modal.Footer>
@@ -770,40 +819,55 @@ class UserNavInfo extends Component {
                     show={this.state.showModal}
                     onHide={this.closeModal}
                     productTitle="Scirius Community Edition"
-                    logo={scirius_logo}
+                    logo={sciriusLogo}
                     altLogo="SEE Logo"
                     trademarkText="Copyright 2014-2018, Stamus Networks"
                 >
                     <AboutModal.Versions>
-                        <AboutModal.VersionItem label="Version" versionText="3.1.0"/>
+                        <AboutModal.VersionItem label="Version" versionText="3.1.0" />
                     </AboutModal.Versions>
                 </AboutModal>
             </React.Fragment>
-        )
+        );
     }
 }
+UserNavInfo.propTypes = {
+    interval: PropTypes.any,
+    systemSettings: PropTypes.any,
+    needReload: PropTypes.any,
+    ChangeRefreshInterval: PropTypes.any,
+    period: PropTypes.any,
+    ChangeDuration: PropTypes.any,
+};
 
-
+// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
 class SourcePage extends Component {
     render() {
-        var source = this.props.source;
+        const { source } = this.props;
         return (
             <h1>{source.name}</h1>
-        )
+        );
     }
 }
+SourcePage.propTypes = {
+    source: PropTypes.any
+};
 
+// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
 class RulesetPage extends Component {
     render() {
-        var ruleset = this.props.ruleset;
+        const { ruleset } = this.props;
         return (
             <h1>{ruleset.name}</h1>
-        )
+        );
     }
 }
+RulesetPage.propTypes = {
+    ruleset: PropTypes.any
+};
 
 export default HuntApp;
 
 HuntApp.childContextTypes = {
     shortcuts: PropTypes.object.isRequired
-}
+};

@@ -1,0 +1,87 @@
+{
+  "parser": "babel-eslint",
+  "extends": ["airbnb", "plugin:react/recommended"],
+  "env": {
+    "browser": true,
+    "node": true,
+    "jest": true,
+    "es6": true
+  },
+  "plugins": [
+    "react",
+    "jsx-a11y"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {
+    "no-param-reassign": "off",
+    "function-paren-newline": "off",
+    "arrow-parens": [
+      "error",
+      "always"
+    ],
+    "arrow-body-style": [
+      2,
+      "as-needed"
+    ],
+    "comma-dangle": [
+      "error",
+      "only-multiline"
+    ],
+    "import/no-extraneous-dependencies": 0,
+    "import/prefer-default-export": 0,
+    "indent": [
+      2,
+      4,
+      {
+        "SwitchCase": 1,
+        "MemberExpression": 0
+      }
+    ],
+    "max-len": 0,
+    "no-console": 1,
+    "react/forbid-prop-types": 0,
+    "react/jsx-curly-brace-presence": "off",
+    "react/jsx-indent": [1, 4],
+    "react/jsx-indent-props":[1,4],
+    "react/jsx-first-prop-new-line": [
+      0,
+      "multiline-multiprop"
+    ],
+    "react/jsx-filename-extension": 0,
+    "react/require-default-props": 0,
+    "react/destructuring-assignment": 0,
+    "react/self-closing-comp": 0,
+    "jsx-a11y/anchor-is-valid": 0,
+    "jsx-a11y/label-has-for": 0,
+    "newline-per-chained-call": 0,
+    "padding-line-between-statements": 0,
+    "react/no-access-state-in-setstate": 0,
+    "operator-linebreak": ["error", "none"],
+    "react/jsx-one-expression-per-line": 0,
+    "no-unused-expressions": 0,
+    "no-lone-blocks": 0,
+    "semi": 0,
+    "brace-style": [2, "1tbs", { "allowSingleLine": true }],
+    "react/button-has-type": 0,
+    "jsx-a11y/label-has-associated-control": 0,
+    "react/jsx-no-target-blank": 0,
+    "import/no-cycle": 0,
+    "react/jsx-wrap-multilines": 0,
+    "react/jsx-closing-tag-location": [0, "line-aligned"],
+    "jsx-a11y/interactive-supports-focus": 0,
+    "jsx-a11y/click-events-have-key-events": 0,
+    "object-curly-newline": [2, {
+        "ImportDeclaration": "never"
+      }
+    ]
+  },
+  "settings": {
+    "import/resolver": "webpack"
+  }
+}

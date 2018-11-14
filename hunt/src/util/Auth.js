@@ -1,8 +1,10 @@
+/* eslint-disable */
 // file: src/util/Auth.js
 import axios from 'axios';
 import _ from 'lodash';
+import Modal from 'patternfly-react/dist/esm/components/Modal/Modal';
 import store from '../store';
-import { setToken } from '../actions'
+import { setToken } from '../actions';
 import { URL, LOGIN } from '../config/Api';
 
 export function InvalidCredentialsException(message) {
@@ -16,10 +18,10 @@ export function login(username, password) {
         username,
         password
     })
-    .then(function (response) {
+    .then((response) => {
         store.dispatch(setToken(response.data.token));
     })
-    .catch(function (error) {
+    .catch((error) => {
         // raise different exception if due to invalid credentials
         if (_.get(error, 'response.status') === 400) {
             throw new InvalidCredentialsException(error);

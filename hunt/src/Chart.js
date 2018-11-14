@@ -20,20 +20,14 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import React from 'react';
-var c3 = require("c3");
+
+const c3 = require('c3');
 
 export class SciriusChart extends React.Component {
     constructor(props) {
         super(props);
         // Generate unique ID for the chart
-        this.chartId = 'chart' + Math.random().toString(36).substr(2, 9);
-    }
-
-    chartRender = (opts) => {
-        c3.generate({
-            bindto: '#' + this.chartId,
-            ...opts
-        });
+        this.chartId = `chart${Math.random().toString(36).substr(2, 9)}`;
     }
 
     componentDidMount() {
@@ -44,7 +38,14 @@ export class SciriusChart extends React.Component {
         this.chartRender(nextProps);
     }
 
+    chartRender = (opts) => {
+        c3.generate({
+            bindto: `#${this.chartId}`,
+            ...opts
+        });
+    }
+
     render() {
-        return (<div id={this.chartId}>loading</div>)
+        return (<div id={this.chartId}>loading</div>);
     }
 }

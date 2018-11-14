@@ -5,4 +5,4 @@ export default {
         SEE_RELEVANT: 'R',
         SEE_ALL: 'A'
     },
-}
+};

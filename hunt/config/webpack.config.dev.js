@@ -1,4 +1,4 @@
-'use strict';
+/* eslint-disable prefer-template,global-require,import/order */
 
 const autoprefixer = require('autoprefixer');
 const path = require('path');
@@ -15,11 +15,11 @@ const BundleTracker = require('webpack-bundle-tracker');
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.
-//const publicPath = '/';
+// const publicPath = '/';
 // `publicUrl` is just like `publicPath`, but we will provide it to our app
 // as %PUBLIC_URL% in `index.html` and `process.env.PUBLIC_URL` in JavaScript.
 // Omit trailing slash as %PUBLIC_PATH%/xyz looks better than %PUBLIC_PATH%xyz.
-//const publicUrl = '';
+// const publicUrl = '';
 //
 const publicPath = 'http://localhost:3000/';
 const publicUrl = 'http://localhost:3000/';
@@ -49,7 +49,7 @@ module.exports = {
         // the line below with these two lines if you prefer the stock client:
         require.resolve('webpack-dev-server/client') + '?http://localhost:3000',
         require.resolve('webpack/hot/dev-server'),
-        //require.resolve('react-dev-utils/webpackHotDevClient'),
+        // require.resolve('react-dev-utils/webpackHotDevClient'),
         // Finally, this is your app's code:
         paths.appIndexJs,
         // We include the app code last so that if there is a runtime error during
@@ -66,10 +66,9 @@ module.exports = {
         // There are also additional JS chunk files if you use code splitting.
         chunkFilename: 'static/js/[name].chunk.js',
         // This is the URL that app is served from. We use "/" in development.
-        publicPath: publicPath,
+        publicPath,
         // Point sourcemap entries to original disk location (format as URL on Windows)
-        devtoolModuleFilenameTemplate: info =>
-            path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+        devtoolModuleFilenameTemplate: (info) => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
     },
     resolve: {
         // This allows you to set a fallback for where Webpack should look for modules.

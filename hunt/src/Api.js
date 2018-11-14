@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this,react/sort-comp */
 /*
 Copyright(C) 2018 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
@@ -22,9 +23,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import * as config from './config/Api.js';
-import { PaginationRow, DropdownButton, MenuItem } from 'patternfly-react';
-import { PAGINATION_VIEW_TYPES } from 'patternfly-react';
+import { PaginationRow, DropdownButton, MenuItem, PAGINATION_VIEW_TYPES } from 'patternfly-react';
+import * as config from './config/Api';
 
 
 export class HuntPaginationRow extends React.Component {
@@ -32,61 +32,65 @@ export class HuntPaginationRow extends React.Component {
         super(props);
         this.onPageInput = this.onPageInput.bind(this);
         this.onPerPageSelect = this.onPerPageSelect.bind(this);
-    };
-
-    onPageInput = e => {
-        const val = parseInt(e.target.value, 10);
-        if (val > 0) {
-            const newPaginationState = Object.assign({}, this.props.pagination);
-            newPaginationState.page = val;
-            this.props.onPaginationChange(newPaginationState);
-        }
     }
 
-    onPerPageSelect = (eventKey, e) => {
-        const newPaginationState = Object.assign({}, this.props.pagination);
-        newPaginationState.perPage = eventKey;
-        this.props.onPaginationChange(newPaginationState);
-    }
+  onPageInput = (e) => {
+      const val = parseInt(e.target.value, 10);
+      if (val > 0) {
+          const newPaginationState = Object.assign({}, this.props.pagination);
+          newPaginationState.page = val;
+          this.props.onPaginationChange(newPaginationState);
+      }
+  }
 
-    render() {
-        const {
-            viewType,
-            pageInputValue,
-            amountOfPages,
-            pageSizeDropUp,
-            itemCount,
-            itemsStart,
-            itemsEnd,
-            onFirstPage,
-            onPreviousPage,
-            onNextPage,
-            onLastPage
-        } = this.props;
+  onPerPageSelect = (eventKey) => {
+      const newPaginationState = Object.assign({}, this.props.pagination);
+      newPaginationState.perPage = eventKey;
+      this.props.onPaginationChange(newPaginationState);
+  }
 
-        return (
-            <PaginationRow
-                viewType={viewType}
-                pageInputValue={pageInputValue}
-                pagination={this.props.pagination}
-                amountOfPages={amountOfPages}
-                pageSizeDropUp={pageSizeDropUp}
-                itemCount={itemCount}
-                itemsStart={itemsStart}
-                itemsEnd={itemsEnd}
-                onPerPageSelect={this.onPerPageSelect}
-                onFirstPage={onFirstPage}
-                onPreviousPage={onPreviousPage}
-                onPageInput={this.onPageInput}
-                onNextPage={onNextPage}
-                onLastPage={onLastPage}
-            />
-        );
-    }
+  render() {
+      const {
+          viewType,
+          pageInputValue,
+          amountOfPages,
+          pageSizeDropUp,
+          itemCount,
+          itemsStart,
+          itemsEnd,
+          onFirstPage,
+          onPreviousPage,
+          onNextPage,
+          onLastPage
+      } = this.props;
+
+      return (
+          <PaginationRow
+              viewType={viewType}
+              pageInputValue={pageInputValue}
+              pagination={this.props.pagination}
+              amountOfPages={amountOfPages}
+              pageSizeDropUp={pageSizeDropUp}
+              itemCount={itemCount}
+              itemsStart={itemsStart}
+              itemsEnd={itemsEnd}
+              onPerPageSelect={this.onPerPageSelect}
+              onFirstPage={onFirstPage}
+              onPreviousPage={onPreviousPage}
+              onPageInput={this.onPageInput}
+              onNextPage={onNextPage}
+              onLastPage={onLastPage}
+          />
+      );
+  }
 }
+HuntPaginationRow.propTypes = {
+    pagination: PropTypes.any,
+    onPaginationChange: PropTypes.func,
+};
 
 function noop() {
-    return;
+
 }
 
 HuntPaginationRow.propTypes = {
@@ -112,6 +116,7 @@ HuntPaginationRow.defaultProps = {
 };
 
 
+// eslint-disable-next-line react/no-multi-comp
 export class HuntList extends React.Component {
     constructor(props) {
         super(props);
@@ -137,81 +142,14 @@ export class HuntList extends React.Component {
         this.updateAlertTag = this.updateAlertTag.bind(this);
     }
 
-    buildFilter(filters) {
-        var l_filters = {};
-        for (var i = 0; i < filters.length; i++) {
-            if (filters[i].id in l_filters) {
-                l_filters[filters[i].id] += "," + filters[i].value;
-            } else {
-                l_filters[filters[i].id] = filters[i].value;
-            }
-        }
-        var string_filters = "";
-        for (var k in l_filters) {
-            string_filters += "&" + k + "=" + l_filters[k];
-        }
-
-        return string_filters;
+    componentDidMount() {
+        this.fetchData(this.props.config, this.props.filters);
     }
 
-    updateAlertTag(tfilters) {
-        /* Update the filters on alert.tag and send the update */
-        var activeFilters = Object.assign([], this.props.filters);
-        var tag_filters = { id: "alert.tag", value: tfilters };
-        if (activeFilters.length === 0) {
-            activeFilters.push(tag_filters);
-        } else {
-            var updated = false;
-            for (var i = 0; i < activeFilters.length; i++) {
-                if (activeFilters[i].id === 'alert.tag') {
-                    activeFilters[i] = tag_filters;
-                    updated = true;
-                    break;
-                }
-            }
-            if (updated === false) {
-                activeFilters.push(tag_filters);
-            }
+    componentDidUpdate(prevProps) {
+        if (prevProps.from_date !== this.props.from_date) {
+            this.fetchData(this.props.config, this.props.filters);
         }
-        this.UpdateFilter(activeFilters);
-    }
-
-    addFilter = (field, value, negated) => {
-        if (field !== "alert.tag") {
-            let filterText = '';
-            filterText = field;
-            filterText += ': ';
-            filterText += value;
-            let activeFilters = [...this.props.filters, {
-                label: filterText,
-                id: field,
-                value: value,
-                negated: negated
-            }];
-            this.UpdateFilter(activeFilters);
-        } else {
-            var tfilters = {};
-            if (negated) {
-                tfilters = { untagged: true, informational: true, relevant: true };
-                tfilters[value] = false;
-            } else {
-                tfilters = { untagged: false, informational: false, relevant: false };
-                tfilters[value] = true;
-            }
-            this.updateAlertTag(tfilters);
-        }
-    }
-
-    handlePaginationChange(pagin) {
-        var last_page = Math.ceil(this.state.count / pagin.perPage);
-        if (pagin.page > last_page) {
-            pagin.page = last_page;
-        }
-
-        const newListState = Object.assign({}, this.props.config);
-        newListState.pagination = pagin;
-        this.props.updateListState(newListState);
-        this.fetchData(newListState, this.props.filters);
     }
 
     onFirstPage() {
@@ -223,14 +161,14 @@ export class HuntList extends React.Component {
 
     onNextPage() {
         const newListState = Object.assign({}, this.props.config);
-        newListState.pagination.page = newListState.pagination.page + 1;
+        newListState.pagination.page += 1;
         this.props.updateListState(newListState);
         this.fetchData(newListState, this.props.filters);
     }
 
     onPrevPage() {
         const newListState = Object.assign({}, this.props.config);
-        newListState.pagination.page = newListState.pagination.page - 1;
+        newListState.pagination.page -= 1;
         this.props.updateListState(newListState);
         this.fetchData(newListState, this.props.filters);
     }
@@ -240,6 +178,152 @@ export class HuntList extends React.Component {
         newListState.pagination.page = Math.ceil(this.state.count / this.props.config.pagination.perPage);
         this.props.updateListState(newListState);
         this.fetchData(newListState, this.props.filters);
+    }
+
+    setViewType(type) {
+        const newListState = Object.assign({}, this.props.config);
+        newListState.view_type = type;
+        this.props.updateListState(newListState);
+    }
+
+    // eslint-disable-next-line no-unused-vars,class-methods-use-this
+    fetchData(state, filters) {}
+
+    loadActions(filtersIn) {
+        let { filters } = this.props;
+        if (typeof filtersIn !== 'undefined') {
+            filters = filtersIn;
+        }
+        filters = filters.map((f) => f.id);
+        const reqData = { fields: filters };
+        axios.post(`${config.API_URL}${config.PROCESSING_PATH}test_actions/`, reqData).then(
+            (res) => {
+                this.setState({ supported_actions: res.data.actions });
+            });
+    }
+
+    createAction(type) {
+        // eslint-disable-next-line react/no-unused-state
+        this.setState({ action: { view: true, type } });
+    }
+
+    closeAction() {
+        // eslint-disable-next-line react/no-unused-state
+        this.setState({ action: { view: false, type: null } });
+    }
+
+    actionsButtons() {
+        if (process.env.REACT_APP_HAS_ACTION === '1' || process.env.NODE_ENV === 'development') {
+            if (this.state.supported_actions.length === 0) {
+                return (
+                    <div className="form-group">
+                        <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions" disabled />
+                    </div>
+                );
+            }
+            const actions = [];
+            let eventKey = 1;
+            for (let i = 0; i < this.state.supported_actions.length; i += 1) {
+                const action = this.state.supported_actions[i];
+                if (action[0] === '-') {
+                    actions.push(<MenuItem key={`divider${i}`} divider />);
+                } else {
+                    actions.push(
+                        <MenuItem
+                            key={action[0]}
+                            eventKey={eventKey}
+                            onClick={() => {
+                                this.createAction(action[0]);
+                            }}
+                        >{action[1]}
+                        </MenuItem>);
+                    eventKey += 1;
+                }
+            }
+            return (
+                <div className="form-group">
+                    <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions">
+                        {actions}
+                    </DropdownButton>
+                </div>
+            );
+        }
+        return null;
+    }
+
+    handlePaginationChange(pagin) {
+        const lastPage = Math.ceil(this.state.count / pagin.perPage);
+        if (pagin.page > lastPage) {
+            pagin.page = lastPage;
+        }
+
+        const newListState = Object.assign({}, this.props.config);
+        newListState.pagination = pagin;
+        this.props.updateListState(newListState);
+        this.fetchData(newListState, this.props.filters);
+    }
+
+    addFilter = (field, value, negated) => {
+        if (field !== 'alert.tag') {
+            let filterText = '';
+            filterText = field;
+            filterText += ': ';
+            filterText += value;
+            const activeFilters = [...this.props.filters, {
+                label: filterText, id: field, value, negated
+            }];
+            this.UpdateFilter(activeFilters);
+        } else {
+            let tfilters = {};
+            if (negated) {
+                tfilters = { untagged: true, informational: true, relevant: true };
+                tfilters[value] = false;
+            } else {
+                tfilters = { untagged: false, informational: false, relevant: false };
+                tfilters[value] = true;
+            }
+            this.updateAlertTag(tfilters);
+        }
+    }
+
+    updateAlertTag(tfilters) {
+        /* Update the filters on alert.tag and send the update */
+        const activeFilters = Object.assign([], this.props.filters);
+        const tagFilters = { id: 'alert.tag', value: tfilters };
+        if (activeFilters.length === 0) {
+            activeFilters.push(tagFilters);
+        } else {
+            let updated = false;
+            for (let i = 0; i < activeFilters.length; i += 1) {
+                if (activeFilters[i].id === 'alert.tag') {
+                    activeFilters[i] = tagFilters;
+                    updated = true;
+                    break;
+                }
+            }
+            if (updated === false) {
+                activeFilters.push(tagFilters);
+            }
+        }
+        this.UpdateFilter(activeFilters);
+    }
+
+    buildFilter(filters) {
+        const lFilters = {};
+        for (let i = 0; i < filters.length; i += 1) {
+            if (filters[i].id in lFilters) {
+                lFilters[filters[i].id] += `,${filters[i].value}`;
+            } else {
+                lFilters[filters[i].id] = filters[i].value;
+            }
+        }
+        let stringFilters = '';
+        const keys = Object.keys(lFilters);
+        const values = Object.values(lFilters);
+        for (let k = 0; k < keys.length; k += 1) {
+            stringFilters += `&${keys[k]}=${values[k]}`;
+        }
+        return stringFilters;
     }
 
     UpdateFilter(filters, page = 1) {
@@ -261,93 +345,27 @@ export class HuntList extends React.Component {
         this.fetchData(newListState, this.props.filters);
     }
 
-    setViewType(type) {
-        const newListState = Object.assign({}, this.props.config);
-        newListState.view_type = type;
-        this.props.updateListState(newListState);
-    }
+    // eslint-disable-next-line class-methods-use-this
+    buildListUrlParams(pageParams) {
+        const { page, perPage } = pageParams.pagination;
+        const { sort } = pageParams;
+        let ordering = '';
 
 
-    fetchData(state, filters) {
-        return;
-    }
-
-    loadActions(filters) {
-        if (filters === undefined) {
-            filters = this.props.filters;
-        }
-        filters = filters.map(f => f['id']);
-        var req_data = { fields: filters };
-        axios.post(config.API_URL + config.PROCESSING_PATH + "test_actions/", req_data).then(
-            res => {
-                this.setState({ supported_actions: res.data.actions });
-            });
-    }
-
-    createAction(type) {
-        this.setState({ action: { view: true, type: type } });
-    }
-
-    closeAction() {
-        this.setState({ action: { view: false, type: null } });
-    }
-
-    actionsButtons() {
-        if (process.env.REACT_APP_HAS_ACTION === '1' || process.env.NODE_ENV === 'development') {
-            if (this.state.supported_actions.length === 0) {
-                return (
-                    <div className="form-group">
-                        <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions" disabled>
-                        </DropdownButton>
-                    </div>
-                );
-            }
-            var actions = []
-            let eventKey = 1;
-            for (let i = 0; i < this.state.supported_actions.length; i++) {
-                let action = this.state.supported_actions[i];
-                if (action[0] === '-') {
-                    actions.push(<MenuItem key={'divider' + i} divider/>)
-                } else {
-                    actions.push(<MenuItem key={action[0]} eventKey={eventKey} onClick={e => { this.createAction(action[0]) }}>{action[1]}</MenuItem>)
-                    eventKey++;
-                }
-            }
-            return (
-                <div className="form-group">
-                    <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions">
-                        {actions}
-                    </DropdownButton>
-                </div>
-            );
-        }
-    }
-
-
-    componentDidMount() {
-        this.fetchData(this.props.config, this.props.filters);
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if (prevProps.from_date !== this.props.from_date) {
-            this.fetchData(this.props.config, this.props.filters);
-        }
-    }
-
-    buildListUrlParams(page_params) {
-        var page = page_params.pagination.page;
-        var per_page = page_params.pagination.perPage;
-        var sort = page_params.sort;
-        var ordering = "";
-
-
-        if (sort['asc']) {
-            ordering = sort['id'];
+        if (sort.asc) {
+            ordering = sort.id;
         } else {
-            ordering = "-" + sort['id'];
+            ordering = `-${sort.id}`;
         }
 
-        return "ordering=" + ordering + "&page_size=" + per_page + "&page=" + page
-
+        return `ordering=${ordering}&page_size=${perPage}&page=${page}`;
     }
 }
+HuntList.propTypes = {
+    config: PropTypes.any,
+    filters: PropTypes.any,
+    from_date: PropTypes.any,
+    needReload: PropTypes.func,
+    updateListState: PropTypes.func,
+    updateFilterState: PropTypes.func,
+};

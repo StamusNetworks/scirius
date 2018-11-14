@@ -1,4 +1,5 @@
-'use strict';
+/* eslint-disable global-require,no-console,operator-linebreak,import/order */
+
 
 const autoprefixer = require('autoprefixer');
 const path = require('path');
@@ -16,8 +17,8 @@ const BundleTracker = require('webpack-bundle-tracker');
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
-//const publicPath = paths.servedPath;
-const publicPath = "/static/bundles/";
+// const publicPath = paths.servedPath;
+const publicPath = '/static/bundles/';
 // Some apps do not use client-side routing with pushState.
 // For these, "homepage" can be set to "." to enable relative asset paths.
 const shouldUseRelativeAssetPaths = publicPath === './';
@@ -46,9 +47,9 @@ const cssFilename = 'css/[name].[contenthash:8].css';
 // However, our output is structured with css, js and media folders.
 // To have this structure working with relative paths, we have to use custom options.
 const extractTextPluginOptions = shouldUseRelativeAssetPaths
-  ? // Making sure that the publicPath goes back to to build folder.
+    ? // Making sure that the publicPath goes back to to build folder.
     { publicPath: Array(cssFilename.split('/').length).join('../') }
-  : {};
+    : {};
 
 // This is the production configuration.
 // It compiles slowly and is focused on producing a fast and minimal bundle.
@@ -70,12 +71,11 @@ module.exports = {
         filename: 'js/[name].[chunkhash:8].js',
         chunkFilename: 'js/[name].[chunkhash:8].chunk.js',
         // We inferred the "public path" (such as / or /my-project) from homepage.
-        publicPath: publicPath,
+        publicPath,
         // Point sourcemap entries to original disk location (format as URL on Windows)
-        devtoolModuleFilenameTemplate: info =>
-            path
-            .relative(paths.appSrc, info.absoluteResourcePath)
-            .replace(/\\/g, '/'),
+        devtoolModuleFilenameTemplate: (info) => path
+        .relative(paths.appSrc, info.absoluteResourcePath)
+        .replace(/\\/g, '/'),
     },
     resolve: {
         // This allows you to set a fallback for where Webpack should look for modules.
@@ -320,7 +320,7 @@ module.exports = {
             },
             minify: true,
             // For unknown URLs, fallback to the index page
-            navigateFallback: publicUrl + '/index.html',
+            navigateFallback: `${publicUrl}/index.html`,
             // Ignores URLs starting from /__ (useful for Firebase):
             // https://github.com/facebookincubator/create-react-app/issues/2237#issuecomment-302693219
             navigateFallbackWhitelist: [/^(?!\/__).*/],

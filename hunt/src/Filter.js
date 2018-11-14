@@ -1,3 +1,4 @@
+/* eslint-disable react/sort-comp,no-else-return */
 /*
 Copyright(C) 2018 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
@@ -20,31 +21,33 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import React from 'react';
-import { Filter, FormControl, FormGroup, Toolbar, Button, Icon, Switch} from 'patternfly-react';
+import PropTypes from 'prop-types';
+import { Filter, FormControl, FormGroup, Toolbar, Button, Icon, Switch } from 'patternfly-react';
 import { Shortcuts } from 'react-shortcuts';
-import { HuntSort } from './Sort.js';
+import { HuntSort } from './Sort';
 
 export class HuntFilter extends React.Component {
     constructor(props) {
         super(props);
-        var tag_filters = { untagged: true, informational: true, relevant: true };
+        let tagFilters = { untagged: true, informational: true, relevant: true };
         const activeFilters = this.props.ActiveFilters;
-        for (var i = 0; i < activeFilters.length; i++) {
+        for (let i = 0; i < activeFilters.length; i += 1) {
             if (activeFilters[i].id === 'alert.tag') {
-                tag_filters = activeFilters[i].value;
+                tagFilters = activeFilters[i].value;
                 break;
             }
         }
-        var got_alert_tag = true;
+        let gotAlertTag = true;
         if (this.props.got_alert_tag === false) {
-            got_alert_tag = false;
+            gotAlertTag = false;
         }
         this.state = {
+            // eslint-disable-next-line react/no-unused-state
             filterFields: this.props.filterFields,
             currentFilterType: this.props.filterFields[0],
             currentValue: '',
-            tag_filters: tag_filters,
-            got_alert_tag: got_alert_tag
+            tagFilters,
+            gotAlertTag
         };
         this.toggleInformational = this.toggleInformational.bind(this);
         this.toggleRelevant = this.toggleRelevant.bind(this);
@@ -53,32 +56,88 @@ export class HuntFilter extends React.Component {
         this.updateAlertTag = this.updateAlertTag.bind(this);
     }
 
+    componentDidUpdate(prevProps) {
+        let i = 0;
+
+        const activeFilters = this.props.ActiveFilters;
+        for (i = 0; i < activeFilters.length; i += 1) {
+            if (activeFilters[i].id === 'alert.tag') {
+                if (activeFilters[i].value !== this.state.tagFilters) {
+                    // eslint-disable-next-line react/no-did-update-set-state
+                    this.setState({ tagFilters: activeFilters[i].value });
+                }
+                break;
+            }
+        }
+
+        if (prevProps.filterFields !== this.props.filterFields && this.state.currentFilterType === undefined) {
+            // eslint-disable-next-line react/no-did-update-set-state
+            this.setState({ currentFilterType: this.props.filterFields[0] });
+        }
+    }
+
+    onValueKeyPress = (keyEvent) => {
+        const { currentValue, currentFilterType } = this.state;
+
+        if (keyEvent.key === 'Enter') {
+            if (currentValue && currentValue.length > 0) {
+                if (currentFilterType.valueType === 'positiveint') {
+                    const val = parseInt(currentValue, 10);
+                    if (val >= 0) {
+                        this.setState({ currentValue: '' });
+                        this.filterAdded(currentFilterType, val);
+                    } else {
+                        // Propagate event to trigger validation error
+                        return;
+                    }
+                } else {
+                    this.setState({ currentValue: '' });
+                    this.filterAdded(currentFilterType, currentValue);
+                }
+            }
+            keyEvent.stopPropagation();
+            keyEvent.preventDefault();
+        }
+    }
+
+    getValidationState = () => {
+        const { currentFilterType, currentValue } = this.state;
+        if (currentFilterType.valueType === 'positiveint') {
+            const val = parseInt(currentValue, 10);
+            if (val >= 0) {
+                return 'success';
+            }
+            return 'error';
+        }
+        return null;
+    }
+
     updateAlertTag(tfilters) {
-        this.setState({ tag_filters: tfilters });
+        this.setState({ tagFilters: tfilters });
         /* Update the filters on alert.tag and send the update */
-        var activeFilters = this.props.ActiveFilters;
-        var tag_filters = { id: "alert.tag", value: tfilters };
+        const activeFilters = this.props.ActiveFilters;
+        const tagFilters = { id: 'alert.tag', value: tfilters };
         if (activeFilters.length === 0) {
-            activeFilters.push(tag_filters);
+            activeFilters.push(tagFilters);
         } else {
-            var updated = false;
-            for (var i = 0; i < activeFilters.length; i++) {
+            let updated = false;
+            for (let i = 0; i < activeFilters.length; i += 1) {
                 if (activeFilters[i].id === 'alert.tag') {
-                    activeFilters[i] = tag_filters;
+                    activeFilters[i] = tagFilters;
                     updated = true;
                     break;
                 }
             }
             if (updated === false) {
-                activeFilters.push(tag_filters);
+                activeFilters.push(tagFilters);
             }
         }
         this.props.UpdateFilter(activeFilters);
     }
 
     toggleSwitch(key) {
-        var tfilters = Object.assign({}, this.state.tag_filters);
-        tfilters[key] = !this.state.tag_filters[key];
+        const tfilters = Object.assign({}, this.state.tagFilters);
+        tfilters[key] = !this.state.tagFilters[key];
         this.updateAlertTag(tfilters);
     }
 
@@ -94,27 +153,9 @@ export class HuntFilter extends React.Component {
         this.toggleSwitch('relevant');
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        var i = 0;
-
-        const activeFilters = this.props.ActiveFilters;
-        for (i = 0; i < activeFilters.length; i++) {
-            if (activeFilters[i].id === 'alert.tag') {
-                if (activeFilters[i].value !== this.state.tag_filters) {
-                    this.setState({ tag_filters: activeFilters[i].value });
-                }
-                break;
-            }
-        }
-
-        if (prevProps.filterFields !== this.props.filterFields && this.state.currentFilterType === undefined) {
-            this.setState({ currentFilterType: this.props.filterFields[0] })
-        }
-    }
-
     filterAdded = (field, value) => {
         let filterText = '';
-        let field_id = field.id;
+        let fieldId = field.id;
 
         if (field.filterType !== 'complex-select-text') {
             if (field.title && field.queryType !== 'filter') {
@@ -123,25 +164,22 @@ export class HuntFilter extends React.Component {
                 filterText = field.id;
             }
         } else {
-            filterText = this.state.filterCategory.id + '.' + this.state.filterSubCategory.id;
-            field_id = filterText;
+            filterText = `${this.state.filterCategory.id}.${this.state.filterSubCategory.id}`;
+            fieldId = filterText;
         }
         filterText += ': ';
 
         if (value.filterCategory) {
-            filterText +=
-                (value.filterCategory.title || value.filterCategory) +
-                '-' +
-                (value.filterValue.title || value.filterValue);
+            filterText += `${value.filterCategory.title || value.filterCategory}-${value.filterValue.title || value.filterValue}`;
         } else if (value.title) {
             filterText += value.title;
         } else {
             filterText += value;
         }
 
-        var fvalue;
-        if (typeof(value) === "object") {
-            if (field.id !== "alert.tag") {
+        let fvalue;
+        if (typeof (value) === 'object') {
+            if (field.id !== 'alert.tag') {
                 fvalue = value.id;
             } else {
                 fvalue = value;
@@ -149,37 +187,27 @@ export class HuntFilter extends React.Component {
         } else {
             fvalue = value;
         }
-        let activeFilters = [...this.props.ActiveFilters, {
-            label: filterText,
-            id: field_id,
-            value: fvalue,
-            negated: false,
-            query: field.queryType
+        const activeFilters = [...this.props.ActiveFilters, {
+            label: filterText, id: fieldId, value: fvalue, negated: false, query: field.queryType
         }];
         this.props.UpdateFilter(activeFilters);
     };
 
-    selectFilterType = filterType => {
+    selectFilterType = (filterType) => {
         const { currentFilterType } = this.state;
         if (currentFilterType !== filterType) {
-            this.setState(prevState => {
-                return {
-                    currentValue: '',
-                    currentFilterType: filterType,
-                    filterCategory:
-                        filterType.filterType === 'complex-select'
-                            ? undefined
-                            : prevState.filterCategory,
-                    categoryValue:
-                        filterType.filterType === 'complex-select'
-                            ? ''
-                            : prevState.categoryValue
-                };
-            });
+            this.setState((prevState) => ({
+                currentValue: '',
+                currentFilterType: filterType,
+                filterCategory:
+                    filterType.filterType === 'complex-select' ? undefined : prevState.filterCategory,
+                categoryValue:
+                    filterType.filterType === 'complex-select' ? '' : prevState.categoryValue
+            }));
         }
     }
 
-    filterValueSelected = filterValue => {
+    filterValueSelected = (filterValue) => {
         const { currentFilterType, currentValue } = this.state;
 
         if (filterValue !== currentValue) {
@@ -190,28 +218,28 @@ export class HuntFilter extends React.Component {
         }
     }
 
-    filterCategorySelected = category => {
+    filterCategorySelected = (category) => {
         const { filterCategory } = this.state;
         if (filterCategory !== category) {
             this.setState({ filterCategory: category, filterSubCategory: undefined, currentValue: '' });
         }
     }
 
-    filterSubCategorySelected = category => {
+    filterSubCategorySelected = (category) => {
         const { filterSubCategory } = this.state;
         if (filterSubCategory !== category) {
             this.setState({ filterSubCategory: category, currentValue: '' });
         }
     }
 
-    categoryValueSelected = value => {
+    categoryValueSelected = (value) => {
         const { currentValue, currentFilterType, filterCategory } = this.state;
 
         if (filterCategory && currentValue !== value) {
             this.setState({ currentValue: value });
             if (value) {
-                let filterValue = {
-                    filterCategory: filterCategory,
+                const filterValue = {
+                    filterCategory,
                     filterValue: value
                 };
                 this.filterAdded(currentFilterType, filterValue);
@@ -219,99 +247,70 @@ export class HuntFilter extends React.Component {
         }
     }
 
-    updateCurrentValue = event => {
+    updateCurrentValue = (event) => {
         this.setState({ currentValue: event.target.value });
     }
 
-    onValueKeyPress = keyEvent => {
-        const { currentValue, currentFilterType } = this.state;
-
-        if (keyEvent.key === 'Enter') {
-            if (currentValue && currentValue.length > 0) {
-                if (currentFilterType.valueType === 'positiveint') {
-                    var val = parseInt(currentValue, 10);
-                    if (val >= 0) {
-                        this.setState({ currentValue: '' });
-                        this.filterAdded(currentFilterType, val);
-                    } else {
-                        // Propagate event to trigger validation error
-                        return
-                    }
-                } else {
-                    this.setState({ currentValue: '' });
-                    this.filterAdded(currentFilterType, currentValue);
-                }
-            }
-            keyEvent.stopPropagation();
-            keyEvent.preventDefault();
-        }
-    }
-
-    removeFilter = filter => {
+    removeFilter = (filter) => {
         const activeFilters = this.props.ActiveFilters;
 
-        let index = activeFilters.indexOf(filter);
+        const index = activeFilters.indexOf(filter);
         if (index > -1) {
-            let updated = [
+            const updated = [
                 ...activeFilters.slice(0, index),
                 ...activeFilters.slice(index + 1)
             ];
+            // eslint-disable-next-line react/no-unused-state
             this.setState({ activeFilters: updated });
             this.props.UpdateFilter(updated);
         }
     }
 
     clearFilters = () => {
-        var tag_filters = [];
+        let tagFilters = [];
         const activeFilters = this.props.ActiveFilters;
-        for (var i = 0; i < activeFilters.length; i++) {
+        for (let i = 0; i < activeFilters.length; i += 1) {
             if (activeFilters[i].id === 'alert.tag') {
-                tag_filters = [activeFilters[i],];
+                tagFilters = [activeFilters[i]];
                 break;
             }
         }
-        this.setState({ activeFilters: tag_filters });
-        this.props.UpdateFilter(tag_filters);
+        // eslint-disable-next-line react/no-unused-state
+        this.setState({ activeFilters: tagFilters });
+        this.props.UpdateFilter(tagFilters);
     }
 
-    getValidationState = () => {
-        const { currentFilterType, currentValue } = this.state;
-        if (currentFilterType.valueType === 'positiveint') {
-            var val = parseInt(currentValue, 10);
-            if (val >= 0) {
-                return 'success';
-            } else {
-                return 'error';
-            }
-        }
-        return null;
-    }
-
-    _handleShortcuts = (action, event) => {
+    handleShortcuts = (action) => {
         switch (action) {
-            case 'SEE_UNTAGGED':
-                var tfilters = { untagged: true, informational: false, relevant: false };
+            case 'SEE_UNTAGGED': {
+                const tfilters = { untagged: true, informational: false, relevant: false };
                 this.updateAlertTag(tfilters);
-                break
-            case 'SEE_INFORMATIONAL':
-                tfilters = { untagged: false, informational: true, relevant: false };
+                break;
+            }
+            case 'SEE_INFORMATIONAL': {
+                const tfilters = { untagged: false, informational: true, relevant: false };
                 this.updateAlertTag(tfilters);
-                break
-            case 'SEE_RELEVANT':
-                tfilters = { untagged: false, informational: false, relevant: true };
+                break;
+            }
+            case 'SEE_RELEVANT': {
+                const tfilters = { untagged: false, informational: false, relevant: true };
                 this.updateAlertTag(tfilters);
-                break
-            case 'SEE_ALL':
-                tfilters = { untagged: true, informational: true, relevant: true };
+                break;
+            }
+            case 'SEE_ALL': {
+                const tfilters = { untagged: true, informational: true, relevant: true };
                 this.updateAlertTag(tfilters);
-                break
+                break;
+            }
             default:
                 break;
         }
     }
 
     renderInput() {
-        const { currentFilterType, currentValue, filterCategory, filterSubCategory } = this.state;
+        const {
+            currentFilterType, currentValue, filterCategory, filterSubCategory
+        } = this.state;
         if (!currentFilterType) {
             return null;
         }
@@ -349,16 +348,13 @@ export class HuntFilter extends React.Component {
                     placeholder={currentFilterType.placeholder}
                     onFilterCategorySelected={this.filterCategorySelected}
                 >
-                    {filterCategory &&
-                    <Filter.CategorySelector
+                    {filterCategory && <Filter.CategorySelector
                         filterCategories={filterCategory && filterCategory.filterValues}
                         currentCategory={filterSubCategory}
                         placeholder={currentFilterType.filterCategoriesPlaceholder}
                         onFilterCategorySelected={this.filterSubCategorySelected}
-                    />
-                    }
-                    {filterCategory && filterSubCategory &&
-                    <FormGroup
+                    />}
+                    {filterCategory && filterSubCategory && <FormGroup
                         controlId="input-filter"
                         validationState={this.getValidationState()}
                     >
@@ -366,15 +362,13 @@ export class HuntFilter extends React.Component {
                             type={currentFilterType.filterType}
                             value={currentValue}
                             placeholder={filterSubCategory.placeholder}
-                            onChange={e => this.updateCurrentValue(e)}
-                            onKeyPress={e => this.onValueKeyPress(e)}
+                            onChange={(e) => this.updateCurrentValue(e)}
+                            onKeyPress={(e) => this.onValueKeyPress(e)}
                         />
-                    </FormGroup>
-                    }
+                    </FormGroup>}
                 </Filter.CategorySelector>
             );
-        }
-        else if (currentFilterType.valueType === 'positiveint') {
+        } else if (currentFilterType.valueType === 'positiveint') {
             return (
                 <FormGroup
                     controlId="input-filter"
@@ -385,35 +379,34 @@ export class HuntFilter extends React.Component {
                         value={currentValue}
                         min={0}
                         placeholder={currentFilterType.placeholder}
-                        onChange={e => this.updateCurrentValue(e)}
-                        onKeyPress={e => this.onValueKeyPress(e)}
-                    />
-                </FormGroup>
-            );
-        } else {
-            return (
-                <FormGroup
-                    controlId="input-filter"
-                    validationState={this.getValidationState()}
-                >
-                    <FormControl
-                        type={currentFilterType.filterType}
-                        value={currentValue}
-                        placeholder={currentFilterType.placeholder}
-                        onChange={e => this.updateCurrentValue(e)}
-                        onKeyPress={e => this.onValueKeyPress(e)}
+                        onChange={(e) => this.updateCurrentValue(e)}
+                        onKeyPress={(e) => this.onValueKeyPress(e)}
                     />
                 </FormGroup>
             );
         }
+        return (
+            <FormGroup
+                controlId="input-filter"
+                validationState={this.getValidationState()}
+            >
+                <FormControl
+                    type={currentFilterType.filterType}
+                    value={currentValue}
+                    placeholder={currentFilterType.placeholder}
+                    onChange={(e) => this.updateCurrentValue(e)}
+                    onKeyPress={(e) => this.onValueKeyPress(e)}
+                />
+            </FormGroup>
+        );
     }
 
     render() {
         const { currentFilterType } = this.state;
-        var activeFilters = []
-        this.props.ActiveFilters.forEach(item => {
+        const activeFilters = [];
+        this.props.ActiveFilters.forEach((item) => {
             if (item.query === undefined) {
-                /* remove alert.tag from display as it is handle by switches*/
+                /* remove alert.tag from display as it is handle by switches */
                 if (item.id !== 'alert.tag') {
                     activeFilters.push(item);
                 }
@@ -421,8 +414,8 @@ export class HuntFilter extends React.Component {
                 activeFilters.push(item);
             }
         });
-        var menuFilters = [];
-        this.props.filterFields.forEach(item => {
+        const menuFilters = [];
+        this.props.filterFields.forEach((item) => {
             if (item.filterType !== 'hunt') {
                 menuFilters.push(item);
             }
@@ -430,10 +423,10 @@ export class HuntFilter extends React.Component {
 
         return (
             <Shortcuts
-                name='HUNT_FILTER'
-                handler={this._handleShortcuts}
-                isolate={true}
-                targetNodeSelector='body'
+                name="HUNT_FILTER"
+                handler={this.handleShortcuts}
+                isolate
+                targetNodeSelector="body"
             >
                 <Toolbar>
                     <div>
@@ -445,25 +438,37 @@ export class HuntFilter extends React.Component {
                             />
                             {this.renderInput()}
                         </Filter>
-                        {this.props.sort_config &&
-                        <HuntSort config={this.props.sort_config} ActiveSort={this.props.ActiveSort}
-                                  UpdateSort={this.props.UpdateSort}/>
-                        }
-                        {this.state.got_alert_tag && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') &&
-                        <div className="form-group">
+                        {this.props.sort_config && <HuntSort config={this.props.sort_config}
+                            ActiveSort={this.props.ActiveSort}
+                            UpdateSort={this.props.UpdateSort}
+                        />}
+                        {this.state.gotAlertTag && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && <div className="form-group">
                             <ul className="list-inline">
-                                <li><Switch bsSize="small" onColor="info" value={this.state.tag_filters.informational} onChange={this.toggleInformational}/> Informational </li>
-                                <li><Switch bsSize="small" onColor="warning" value={this.state.tag_filters.relevant} onChange={this.toggleRelevant}/> Relevant </li>
-                                <li><Switch bsSize="small" onColor="primary" value={this.state.tag_filters.untagged} onChange={this.toggleUntagged}/> Untagged </li>
+                                <li><Switch bsSize="small"
+                                    onColor="info"
+                                    value={this.state.tagFilters.informational}
+                                    onChange={this.toggleInformational}
+                                /> Informational
+                                </li>
+                                <li><Switch bsSize="small"
+                                    onColor="warning"
+                                    value={this.state.tagFilters.relevant}
+                                    onChange={this.toggleRelevant}
+                                /> Relevant
+                                </li>
+                                <li><Switch bsSize="small"
+                                    onColor="primary"
+                                    value={this.state.tagFilters.untagged}
+                                    onChange={this.toggleUntagged}
+                                /> Untagged
+                                </li>
                             </ul>
-                        </div>
-                        }
+                        </div>}
                     </div>
 
                     <Toolbar.RightContent>
                         {this.props.actionsButtons && this.props.actionsButtons()}
-                        {this.props.displayToggle &&
-                        <Toolbar.ViewSelector>
+                        {this.props.displayToggle && <Toolbar.ViewSelector>
                             <Button
                                 title="List View"
                                 bsStyle="link"
@@ -472,7 +477,7 @@ export class HuntFilter extends React.Component {
                                     this.props.setViewType('list');
                                 }}
                             >
-                                <Icon type="fa" name="th-list"/>
+                                <Icon type="fa" name="th-list" />
                             </Button>
                             <Button
                                 title="Card View"
@@ -482,33 +487,30 @@ export class HuntFilter extends React.Component {
                                     this.props.setViewType('card');
                                 }}
                             >
-                                <Icon type="fa" name="th"/>
+                                <Icon type="fa" name="th" />
                             </Button>
-                        </Toolbar.ViewSelector>
-                        }
+                        </Toolbar.ViewSelector>}
                     </Toolbar.RightContent>
 
-                    {activeFilters &&
-                    activeFilters.length > 0 && (
+                    {activeFilters && activeFilters.length > 0 && (
                         <Toolbar.Results>
                             <Filter.ActiveLabel>{'Active Filters:'}</Filter.ActiveLabel>
                             <Filter.List>
-                                {activeFilters.map((item, index) => {
-                                    return (
-                                        <Filter.Item
-                                            key={index}
-                                            onRemove={this.removeFilter}
-                                            filterData={item}
-                                        >
-                                            {item.negated &&
-                                            <span className="badge badge-primary">Not</span>
-                                            } {item.label}
-                                        </Filter.Item>
-                                    );
-                                })}
+                                {activeFilters.map((item, index) => (
+                                    <Filter.Item
+                                        // eslint-disable-next-line react/no-array-index-key
+                                        key={index}
+                                        onRemove={this.removeFilter}
+                                        filterData={item}
+                                    >
+                                        {item.negated && <span className="badge badge-primary">Not</span>}
+                                        {item.label}
+                                    </Filter.Item>
+                                ))}
                             </Filter.List>
                             <a
-                                onClick={e => {
+                                role="button"
+                                onClick={(e) => {
                                     e.preventDefault();
                                     this.clearFilters();
                                 }}
@@ -524,3 +526,17 @@ export class HuntFilter extends React.Component {
         );
     }
 }
+HuntFilter.propTypes = {
+    filterFields: PropTypes.any,
+    ActiveFilters: PropTypes.any,
+    got_alert_tag: PropTypes.any,
+    setViewType: PropTypes.any,
+    queryType: PropTypes.any,
+    sort_config: PropTypes.any,
+    ActiveSort: PropTypes.any,
+    UpdateSort: PropTypes.any,
+    config: PropTypes.any,
+    actionsButtons: PropTypes.any,
+    displayToggle: PropTypes.any,
+    UpdateFilter: PropTypes.any,
+};

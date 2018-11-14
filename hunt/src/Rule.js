@@ -1,3 +1,4 @@
+/* eslint-disable react/no-danger,jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */
 /*
 Copyright(C) 2018 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
@@ -20,27 +21,26 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import React from 'react';
-import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
-import axios from 'axios';
-import { PAGINATION_VIEW } from 'patternfly-react';
-import { Modal, DropdownKebab, MenuItem, Icon, Button } from 'patternfly-react';
-import { Form, FormGroup, FormControl, Checkbox } from 'patternfly-react';
-import store from "store";
-import md5 from "md5";
-import { SciriusChart } from './Chart.js';
-import * as config from './config/Api.js';
+import PropTypes from 'prop-types';
+import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner, PAGINATION_VIEW, Modal, DropdownKebab, MenuItem, Icon, Button, Form, FormGroup, FormControl, Checkbox } from 'patternfly-react';
 import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
-import { HuntFilter } from './Filter.js';
-import { HuntRestError } from './Error.js';
-import { HuntList, HuntPaginationRow } from './Api.js';
-import { HuntDashboard } from './Dashboard.js';
-import { EventValue } from './Event.js';
+import axios from 'axios';
+import store from 'store';
+import md5 from 'md5';
+import { SciriusChart } from './Chart';
+import * as config from './config/Api';
+import { HuntFilter } from './Filter';
+import { HuntRestError } from './Error';
+import { HuntList, HuntPaginationRow } from './Api';
+import { HuntDashboard } from './Dashboard';
+import { EventValue } from './Event';
+import { buildQFilter } from './helpers/buildQFilter';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 
 
-let statsCache = {};
+const statsCache = {};
 export const RuleSortFields = [
     {
         id: 'created',
@@ -68,31 +68,31 @@ export const RuleSortFields = [
     }
 ];
 
+// eslint-disable-next-line react/prefer-stateless-function
 export class RuleInList extends React.Component {
     render() {
-        var category = this.props.data.category;
-        var source = this.props.state.sources[category.source];
-        var cat_tooltip = category.name;
+        const { category } = this.props.data;
+        const source = this.props.state.sources[category.source];
+        let catTooltip = category.name;
         if (source && source.name) {
-            cat_tooltip = source.name + ": " + category.name;
+            catTooltip = `${source.name}: ${category.name}`;
         }
-        var kebab_config = { rule: this.props.data };
+        const kebabConfig = { rule: this.props.data };
         return (
-            <ListViewItem key={this.props.data.sid}
-                actions={[<a key={"actions-" + this.props.data.sid} onClick={e => {
-                    this.props.SwitchPage(this.props.data)
-                }}>
-                    <Icon type="fa" name="search-plus"/> </a>,
-                    <RuleEditKebab key={"kebab-" + this.props.data.sid} config={kebab_config} rulesets={this.props.rulesets}/>]} leftContent={<ListViewIcon name="envelope"/>} additionalInfo={[<ListViewInfoItem key={"created-" + this.props.data.sid}><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
-                    <ListViewInfoItem key={"updated-" + this.props.data.sid}><p>Updated: {this.props.data.updated}</p> </ListViewInfoItem>,
-                    <ListViewInfoItem key={"category-" + this.props.data.sid}><p data-toggle="tooltip" title={cat_tooltip}>Category: {category.name}</p></ListViewInfoItem>,
-                    <ListViewInfoItem key={"hits-" + this.props.data.sid}><Spinner loading={this.props.data.hits === undefined} size="xs"><p>Alerts <span className="badge">{this.props.data.hits}</span></p></Spinner></ListViewInfoItem>
+            <ListViewItem
+                key={this.props.data.sid}
+                // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions,jsx-a11y/interactive-supports-focus
+                actions={[<a role="button" key={`actions-${this.props.data.sid}`} onClick={() => { this.props.SwitchPage(this.props.data); }}><Icon type="fa" name="search-plus" /> </a>, <RuleEditKebab key={`kebab-${this.props.data.sid}`} config={kebabConfig} rulesets={this.props.rulesets} />]}
+                leftContent={<ListViewIcon name="envelope" />}
+                additionalInfo={[<ListViewInfoItem key={`created-${this.props.data.sid}`}><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
+                    <ListViewInfoItem key={`updated-${this.props.data.sid}`}><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
+                    <ListViewInfoItem key={`category-${this.props.data.sid}`}><p data-toggle="tooltip" title={catTooltip}>Category: {category.name}</p></ListViewInfoItem>,
+                    <ListViewInfoItem key={`hits-${this.props.data.sid}`}><Spinner loading={this.props.data.hits === undefined} size="xs"><p>Alerts <span className="badge">{this.props.data.hits}</span></p></Spinner></ListViewInfoItem>
                 ]}
                 heading={this.props.data.sid}
                 description={this.props.data.msg}
             >
-                {this.props.data.timeline &&
-                <Row>
+                {this.props.data.timeline && <Row>
                     <Col sm={11}>
                         <div className="container-fluid">
                             <div className="row">
@@ -101,15 +101,15 @@ export class RuleInList extends React.Component {
                             <div className="row">
                                 <div className="col-md-12">
                                     <SciriusChart data={this.props.data.timeline}
-                                                  axis={{
-                                                      x: {
-                                                          type: 'timeseries',
-                                                          localtime: true,
-                                                          min: this.props.from_date,
-                                                          max: Date.now(),
-                                                          tick: { fit: false,  rotate: 15, format: '%Y-%m-%d %H:%M' }
-                                                      }
-                                                  } }
+                                        axis={{
+                                            x: {
+                                                type: 'timeseries',
+                                                localtime: true,
+                                                min: this.props.from_date,
+                                                max: Date.now(),
+                                                tick: { fit: false, rotate: 15, format: '%Y-%m-%d %H:%M' }
+                                            }
+                                        }}
                                     />
                                 </div>
                             </div>
@@ -117,37 +117,45 @@ export class RuleInList extends React.Component {
                                 <div className="col-md-4">
                                     <h4>Probes</h4>
                                     <ListGroup>
-                                        {this.props.data.probes.map(item => {
-                                            return (
-                                                <ListGroupItem key={item.probe}>
-                                                    <EventValue field={"host"} value={item.probe}
-                                                                addFilter={this.props.addFilter}
-                                                                right_info={<Badge>{item.hits}</Badge>}/>
-                                                </ListGroupItem>)
-                                        })}
+                                        {this.props.data.probes.map((item) => (
+                                            <ListGroupItem key={item.probe}>
+                                                <EventValue field={'host'}
+                                                    value={item.probe}
+                                                    addFilter={this.props.addFilter}
+                                                    right_info={<Badge>{item.hits}</Badge>}
+                                                />
+                                            </ListGroupItem>))}
                                     </ListGroup>
                                 </div>
                             </div>
                         </div>
                     </Col>
-                </Row>
-                }
+                </Row>}
             </ListViewItem>
-        )
+        );
     }
 }
+RuleInList.propTypes = {
+    data: PropTypes.any,
+    state: PropTypes.any,
+    rulesets: PropTypes.any,
+    from_date: PropTypes.any,
+    SwitchPage: PropTypes.any,
+    addFilter: PropTypes.any,
+};
 
+// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
 export class RuleCard extends React.Component {
     render() {
-        var category = this.props.data.category;
-        var source = this.props.state.sources[category.source];
-        var cat_tooltip = category.name;
+        const { category } = this.props.data;
+        const source = this.props.state.sources[category.source];
+        let catTooltip = category.name;
         if (source && source.name) {
-            cat_tooltip = source.name + ": " + category.name;
+            catTooltip = `${source.name}: ${category.name}`;
         }
-        var imported = undefined;
+        let imported;
         if (!this.props.data.created) {
-            imported = this.props.data.imported_date.split("T")[0];
+            [imported] = this.props.data.imported_date.split('T');
         }
         return (
             <div className="col-xs-6 col-sm-4 col-md-4">
@@ -158,14 +166,10 @@ export class RuleCard extends React.Component {
                     <div className="card-pf-body">
                         <div className="container-fluid">
                             <div className="row">
-                                <div className="col-md-5 truncate-overflow" data-toggle="tooltip" title={cat_tooltip}>Cat: {category.name}</div>
+                                <div className="col-md-5 truncate-overflow" data-toggle="tooltip" title={catTooltip}>Cat: {category.name}</div>
                                 <div className="col-md-4">
-                                    {this.props.data.created &&
-                                    <p>Created: {this.props.data.created}</p>
-                                    }
-                                    {!this.props.data.created &&
-                                    <p>Imported: {imported}</p>
-                                    }
+                                    {this.props.data.created && <p>Created: {this.props.data.created}</p>}
+                                    {!this.props.data.created && <p>Imported: {imported}</p>}
                                 </div>
                                 <div className="col-md-3">Alerts
                                     <Spinner loading={this.props.data.hits === undefined} size="xs">
@@ -175,439 +179,77 @@ export class RuleCard extends React.Component {
                             </div>
                         </div>
                         <Spinner loading={this.props.data.hits === undefined} size="xs">
-                            {this.props.data.timeline &&
-                            <div className="chart-pf-sparkline">
+                            {this.props.data.timeline && <div className="chart-pf-sparkline">
                                 <SciriusChart data={this.props.data.timeline}
-                                              axis={{
-                                                  x: {
-                                                      type: 'timeseries',
-                                                      localtime: true,
-                                                      min: this.props.from_date,
-                                                      max: Date.now(),
-                                                      show: false,
-                                                      tick: { fit: true, rotate: 15, format: '%Y-%m-%d %H:%M' }
-                                                  },
-                                                  y: { show: false }
-                                              }}
-                                              legend={{
-                                                  show: false
-                                              }}
-                                              size={{ height: 60 }}
-                                              point={{ show: false }}
+                                    axis={{
+                                        x: {
+                                            type: 'timeseries',
+                                            localtime: true,
+                                            min: this.props.from_date,
+                                            max: Date.now(),
+                                            show: false,
+                                            tick: { fit: true, rotate: 15, format: '%Y-%m-%d %H:%M' }
+                                        },
+                                        y: { show: false }
+                                    }}
+                                    legend={{
+                                        show: false
+                                    }}
+                                    size={{ height: 60 }}
+                                    point={{ show: false }}
                                 />
-                            </div>
-                            }
-                            {!this.props.data.timeline &&
-                            <div className="no-sparkline">
+                            </div>}
+                            {!this.props.data.timeline && <div className="no-sparkline">
                                 <p>No alert</p>
-                            </div>
-                            }
+                            </div>}
                         </Spinner>
                         <div>
-                            SID: <strong>{this.props.data.sid}</strong>
+            SID: <strong>{this.props.data.sid}</strong>
                             <span className="pull-right">
-                                <a onClick={e => {
-                                   this.props.SwitchPage(this.props.data)
-                                }}
-                                style={{ cursor: 'pointer' }}
+                                <a onClick={() => { this.props.SwitchPage(this.props.data); }}
+                                    style={{ cursor: 'pointer' }}
                                 >
-                                    <Icon type="fa" name="search-plus"/>
+                                    <Icon type="fa" name="search-plus" />
                                 </a>
                             </span>
                         </div>
                     </div>
                 </div>
             </div>
-        )
+        );
     }
 }
-
-export class RulePage extends React.Component {
-    constructor(props) {
-        super(props);
-        var rule = JSON.parse(JSON.stringify(this.props.rule));
-        if (typeof rule === 'number') {
-            this.state = {
-                rule: undefined,
-                rule_status: undefined,
-                sid: rule,
-                toggle: { show: false, action: "Disable" },
-                extinfo: { http: false, dns: false, tls: false },
-                moreResults: [],
-                moreModal: null
-            };
-        } else {
-            rule.timeline = undefined;
-            this.state = {
-                rule: rule,
-                rule_status: undefined,
-                sid: rule.sid,
-                toggle: { show: false, action: "Disable" },
-                extinfo: { http: false, dns: false, tls: false },
-                moreResults: [],
-                moreModal: null,
-            };
-        }
-        this.updateRuleState = this.updateRuleState.bind(this);
-        this.fetchRuleStatus = this.fetchRuleStatus.bind(this);
-        this.updateRuleStatus = this.updateRuleStatus.bind(this);
-        this.updateExtInfo = this.updateExtInfo.bind(this);
-    }
-
-    updateExtInfo(data) {
-        if (!data) {
-            return;
-        }
-        var extinfo = this.state.extinfo;
-        for (var i = 0; i < data.length; i++) {
-            if (data[i].key === "dns") {
-                extinfo.dns = true;
-            }
-            if (data[i].key === "http") {
-                extinfo.http = true;
-            }
-            if (data[i].key === "tls") {
-                extinfo.tls = true;
-            }
-        }
-        this.setState({ extinfo: extinfo });
-    }
-
-    updateRuleStatus() {
-        return this.fetchRuleStatus(this.state.rule.sid);
-    }
-
-    fetchRuleStatus(sid) {
-        axios.all([
-            axios.get(config.API_URL + config.RULE_PATH + sid + "/status/"),
-            axios.get(config.API_URL + config.RULE_PATH + sid + "/content/?highlight=1"),
-            axios.get(config.API_URL + config.RULE_PATH + sid + "/references/")
-        ]).then(
-            ([res, rescontent, references_content]) => {
-                var rstatus = [];
-                for (var key in res.data) {
-                    res.data[key]['pk'] = key;
-                    res.data[key].content = rescontent.data[key];
-                    rstatus.push(res.data[key]);
-                }
-                this.setState({ rule_status: rstatus });
-                this.setState({ rule_references: references_content.data });
-            }
-        )
-    }
-
-    componentDidMount() {
-        var rule = this.state.rule;
-        var sid = this.state.sid;
-        var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
-
-        if (rule !== undefined) {
-            updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
-            axios.get(config.API_URL + config.ES_BASE_PATH +
-                'field_stats&field=app_proto&from_date=' + this.props.from_date +
-                '&sid=' + this.props.rule.sid)
-            .then(res => {
-                this.updateExtInfo(res.data);
-            })
-            this.fetchRuleStatus(rule.sid);
-        } else {
-            axios.get(config.API_URL + config.RULE_PATH + sid + "/?highlight=true").then(
-                res => {
-                    updateHitsStats([res.data], this.props.from_date, this.updateRuleState, qfilter);
-                    axios.get(config.API_URL + config.ES_BASE_PATH +
-                        'field_stats&field=app_proto&from_date=' + this.props.from_date +
-                        '&sid=' + sid)
-                    .then(res => {
-                        this.updateExtInfo(res.data);
-                    })
-                }
-            ).catch(error => {
-                if (error.response.status === 404) {
-                    this.setState({ errors: { signature: ['Signature not found'] }, rule: null });
-                    return;
-                }
-                this.setState({ rule: null });
-            })
-            this.fetchRuleStatus(sid);
-        }
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
-        if ((prevProps.from_date !== this.props.from_date) ||
-            (prevProps.filters.length !== this.props.filters.length)) {
-            var rule = JSON.parse(JSON.stringify(this.state.rule));
-
-            if (rule) {
-                updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
-            }
-        }
-    }
-
-    updateRuleState(rule) {
-        this.setState({ rule: rule[0] });
-    }
-
-    loadMore = (item, url) => {
-        axios.get(url)
-        .then(json => {
-            this.setState({ ...this.state, moreModal: item, moreResults: json.data });
-        });
-    }
-    hideMoreModal = () => this.setState({ ...this.state, moreModal: null });
-
-    render() {
-        return (
-            <div>
-                <Spinner loading={this.state.rule === undefined}>
-                    {this.state.rule &&
-                    <div>
-                        <h1>{this.state.rule.msg}
-                            <span className="pull-right">
-                                {(this.state.rule && this.state.rule.hits !== undefined) &&
-                                    <span className="label label-primary">{this.state.rule.hits} hit{this.state.rule.hits > 1 && 's'}</span>
-                                }
-                                <RuleEditKebab config={this.state} rulesets={this.props.rulesets} refresh_callback={this.updateRuleStatus}/>
-                            </span>
-                        </h1>
-                        <div className='container-fluid container-cards-pf'>
-                            <div className='row'>
-                                <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.state.rule.content }}></div>
-                                {this.state.rule.timeline &&
-                                    <SciriusChart
-                                        data={this.state.rule.timeline}
-                                        axis={{
-                                            x: {
-                                                type: 'timeseries',
-                                                localtime: true,
-                                                min: this.props.from_date,
-                                                max: Date.now(),
-                                                tick: {
-                                                    fit: false,
-                                                    rotate: 15,
-                                                    format: '%Y-%m-%d %H:%M'
-                                                }
-                                            }
-                                        }}
-                                    />
-                                }
-                            </div>
-                            {this.state.rule_status !== undefined &&
-                            <Row>
-                                {
-                                    this.state.rule_status.map(rstatus => {
-                                        return (
-                                            <RuleStatus rule={this.state.rule} key={rstatus.pk} rule_status={rstatus}/>
-                                        );
-                                    })
-                                }
-                            </Row>
-                            }
-                            <div className='row'>
-                                <HuntStat system_settings={this.state.system_settings} title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='src_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat title="Probes" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='host' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                            </div>
-                            {this.state.extinfo.http &&
-                            <div className='row'>
-                                <HuntStat system_settings={this.state.system_settings} title="Hostname" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat system_settings={this.state.system_settings} title="URL" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='http.url' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat system_settings={this.state.system_settings} title="User agent" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                            </div>
-                            }
-                            {this.state.extinfo.dns &&
-                            <div className='row'>
-                                <HuntStat system_settings={this.state.system_settings} title="Name" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat system_settings={this.state.system_settings} title="Type" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                            </div>
-                            }
-                            {this.state.extinfo.tls &&
-                            <div className='row'>
-                                <HuntStat system_settings={this.state.system_settings} title="Subject DN" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat system_settings={this.state.system_settings} title="SNI" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat system_settings={this.state.system_settings} title="Fingerprint" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                            </div>
-                            }
-                            <Row>
-                                {this.state.rule_references && this.state.rule_references.length > 0 &&
-                                <div className="col-xs-6 col-sm-4 col-md-4">
-                                    <div className="card-pf card-pf-accented card-pf-aggregate-status">
-                                        {/* <div class="panel-heading">
-                                            <h2 class="panel-title">References</h2>
-                                        </div> */}
-                                        <h2 className="card-pf-title">
-                                            <span className="fa"></span>References
-                                        </h2>
-                                        <div className="card-pf-body">
-                                            {this.state.rule_references.map((reference, idx) => {
-                                                if (reference.url !== undefined) {
-                                                    return (
-                                                        <p key={idx}><a href={reference.url} target="_blank">{reference.key[0].toUpperCase() + reference.key.substring(1) + ': ' + reference.value}</a></p>
-                                                    );
-                                                }
-                                                return null;
-                                            })
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                                }
-                            </Row>
-                        </div>
-                    </div>
-                    }
-                </Spinner>
-
-                <Modal show={!(this.state.moreModal === null)} onHide={() => { this.hideMoreModal() }}>
-
-                    <Modal.Header>More results <Modal.CloseButton closeText={"Close"} onClick={() => { this.hideMoreModal() }}/> </Modal.Header>
-                    <Modal.Body>
-                        <div className="hunt-stat-body">
-                            <ListGroup>
-                                {this.state.moreResults.map(item => {
-                                    return (<ListGroupItem key={item.key}>
-                                        {this.state.moreModal && <EventValue field={this.state.moreModal.i} value={item.key}
-                                                                             addFilter={this.addFilter}
-                                                                             right_info={<Badge>{item.doc_count}</Badge>}
-                                        />}
-                                    </ListGroupItem>)
-                                })}
-                            </ListGroup>
-                        </div>
-                    </Modal.Body>
-                </Modal>
-
-            </div>
-        )
-    }
-}
-
-export class HuntStat extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = { data: [] };
-        this.url = '';
-        this.updateData = this.updateData.bind(this);
-        this.addFilter = this.addFilter.bind(this);
-    }
-
-    updateData() {
-        var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
-        if (qfilter) {
-            qfilter = '&qfilter=' + qfilter;
-        } else {
-            qfilter = "";
-        }
-
-        this.url = config.API_URL + config.ES_BASE_PATH + 'field_stats&field=' + this.props.item + '&from_date=' + this.props.from_date + '&page_size=30' + qfilter
-
-        axios.get(config.API_URL + config.ES_BASE_PATH +
-            'field_stats&field=' + this.props.item +
-            '&from_date=' + this.props.from_date +
-            '&page_size=5' +
-            qfilter)
-        .then(res => {
-            this.setState({ data: res.data });
-        })
-    }
-
-    componentDidMount() {
-        this.updateData();
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if (prevProps.from_date !== this.props.from_date) {
-            this.updateData();
-        }
-        if (prevProps.filters.length !== this.props.filters.length) {
-            this.updateData();
-        }
-    }
-
-    addFilter(key, value, negated) {
-        this.props.addFilter(key, value, negated);
-    }
-
-    render() {
-        var col_val = "col-md-3";
-        if (this.props.col) {
-            col_val = 'col-md-' + this.props.col;
-        }
-        if (this.state.data && this.state.data.length) {
-            return (
-                <div className={col_val}>
-                    <div className="card-pf rule-card">
-                        <div className="card-pf-heading">
-                            <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={this.props.title}>{this.props.title}</h2>
-                            {this.state.data.length === 5 &&
-                                <DropdownKebab id={"more-" + this.props.item} pullRight={true}>
-                                    <MenuItem onClick={(e) => this.props.loadMore(this.props.item, this.url)} data-toggle="modal">Load more results</MenuItem>
-                                </DropdownKebab>
-                            }
-                        </div>
-                        <div className="card-pf-body">
-                            <ListGroup>
-                                {this.state.data.map(item => {
-                                    return (<ListGroupItem key={item.key}>
-                                        <EventValue field={this.props.item} value={item.key}
-                                                    addFilter={this.addFilter}
-                                                    right_info={<Badge>{item.doc_count}</Badge>}
-                                        />
-                                    </ListGroupItem>)
-                                })}
-                            </ListGroup>
-                        </div>
-                    </div>
-                </div>
-            );
-        } else {
-            return null;
-        }
-    }
-}
-
-function buildProbesSet(data) {
-    var probes = [];
-    for (var probe in data) {
-        probes.push({ probe: data[probe].key, hits: data[probe].doc_count });
-    }
-    return probes;
-}
+RuleCard.propTypes = {
+    data: PropTypes.any,
+    state: PropTypes.any,
+    from_date: PropTypes.any,
+    SwitchPage: PropTypes.any,
+};
 
 function buildTimelineDataSet(tdata) {
-    var timeline = { x: 'x', type: 'area', columns: [['x'], ['alerts']] };
-    for (var key in tdata) {
+    const timeline = { x: 'x', type: 'area', columns: [['x'], ['alerts']] };
+    for (let key = 0; key < tdata.length; key += 1) {
         timeline.columns[0].push(tdata[key].key);
         timeline.columns[1].push(tdata[key].doc_count);
     }
     return timeline;
 }
 
-export function updateHitsStats(rules, p_from_date, updateCallback, qfilter) {
-    var sids = Array.from(rules, x => x.sid).join()
-    var from_date = "&from_date=" + p_from_date;
-    var url = config.API_URL + config.ES_SIGS_LIST_PATH + sids + from_date;
-    if (qfilter) {
-        url += "&filter=" + qfilter;
+function buildProbesSet(data) {
+    const probes = [];
+    for (let probe = 0; probe < data.length; probe += 1) {
+        probes.push({ probe: data[probe].key, hits: data[probe].doc_count });
     }
-    if (typeof statsCache[encodeURI(url)] !== 'undefined') {
-        processHitsStats(statsCache[encodeURI(url)], rules, updateCallback)
-        return;
-    }
-    axios.get(url).then(res => {
-        /* we are going O(n2), we should fix that */
-        statsCache[encodeURI(url)] = res;
-        processHitsStats(res, rules, updateCallback)
-    });
+    return probes;
 }
 
 function processHitsStats(res, rules, updateCallback) {
-    for (var rule in rules) {
-        var found = false;
-        for (var info in res.data) {
+    for (let rule = 0; rule < rules.length; rule += 1) {
+        let found = false;
+        for (let info = 1; info < res.data.length; info += 1) {
             if (res.data[info].key === rules[rule].sid) {
-                rules[rule].timeline = buildTimelineDataSet(res.data[info].timeline['buckets']);
-                rules[rule].probes = buildProbesSet(res.data[info].probes['buckets']);
+                rules[rule].timeline = buildTimelineDataSet(res.data[info].timeline.buckets);
+                rules[rule].probes = buildProbesSet(res.data[info].probes.buckets);
                 rules[rule].hits = res.data[info].doc_count;
                 found = true;
                 break;
@@ -624,16 +266,367 @@ function processHitsStats(res, rules, updateCallback) {
     }
 }
 
+export function updateHitsStats(rules, pFromDate, updateCallback, qfilter) {
+    const sids = Array.from(rules, (x) => x.sid).join();
+    const fromDate = `&from_date=${pFromDate}`;
+    let url = config.API_URL + config.ES_SIGS_LIST_PATH + sids + fromDate;
+    if (qfilter) {
+        url += `&filter=${qfilter}`;
+    }
+    if (typeof statsCache[encodeURI(url)] !== 'undefined') {
+        processHitsStats(statsCache[encodeURI(url)], rules, updateCallback);
+        return;
+    }
+    axios.get(url).then((res) => {
+        /* we are going O(n2), we should fix that */
+        statsCache[encodeURI(url)] = res;
+        processHitsStats(res, rules, updateCallback);
+    });
+}
+
+// eslint-disable-next-line react/no-multi-comp
+export class RulePage extends React.Component {
+    constructor(props) {
+        super(props);
+        const rule = JSON.parse(JSON.stringify(this.props.rule));
+        if (typeof rule === 'number') {
+            this.state = {
+                rule: undefined,
+                rule_status: undefined,
+                sid: rule,
+                toggle: { show: false, action: 'Disable' },
+                extinfo: { http: false, dns: false, tls: false },
+                moreResults: [],
+                moreModal: null
+            };
+        } else {
+            rule.timeline = undefined;
+            this.state = {
+                rule,
+                rule_status: undefined,
+                sid: rule.sid,
+                toggle: { show: false, action: 'Disable' },
+                extinfo: { http: false, dns: false, tls: false },
+                moreResults: [],
+                moreModal: null,
+            };
+        }
+        this.updateRuleState = this.updateRuleState.bind(this);
+        this.fetchRuleStatus = this.fetchRuleStatus.bind(this);
+        this.updateRuleStatus = this.updateRuleStatus.bind(this);
+        this.updateExtInfo = this.updateExtInfo.bind(this);
+    }
+
+    componentDidMount() {
+        const { rule, sid } = this.state;
+        const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
+
+        if (rule !== undefined) {
+            updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
+            axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats&field=app_proto&from_date=${this.props.from_date}&sid=${this.props.rule.sid}`)
+            .then((res) => {
+                this.updateExtInfo(res.data);
+            });
+            this.fetchRuleStatus(rule.sid);
+        } else {
+            axios.get(`${config.API_URL}${config.RULE_PATH}${sid}/?highlight=true`).then(
+                (res) => {
+                    updateHitsStats([res.data], this.props.from_date, this.updateRuleState, qfilter);
+                    axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats&field=app_proto&from_date=${this.props.from_date}&sid=${sid}`)
+                    .then((res2) => {
+                        this.updateExtInfo(res2.data);
+                    });
+                }
+            ).catch((error) => {
+                if (error.response.status === 404) {
+                    // eslint-disable-next-line react/no-unused-state
+                    this.setState({ errors: { signature: ['Signature not found'] }, rule: null });
+                    return;
+                }
+                this.setState({ rule: null });
+            });
+            this.fetchRuleStatus(sid);
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
+        if ((prevProps.from_date !== this.props.from_date) || (prevProps.filters.length !== this.props.filters.length)) {
+            const rule = JSON.parse(JSON.stringify(this.state.rule));
+
+            if (rule) {
+                updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
+            }
+        }
+    }
+
+    loadMore = (item, url) => {
+        axios.get(url)
+        .then((json) => {
+            this.setState({ ...this.state, moreModal: item, moreResults: json.data });
+        });
+    }
+
+    hideMoreModal = () => this.setState({ ...this.state, moreModal: null });
+
+    updateExtInfo(data) {
+        if (!data) {
+            return;
+        }
+        const { extinfo } = this.state;
+        for (let i = 0; i < data.length; i += 1) {
+            if (data[i].key === 'dns') {
+                extinfo.dns = true;
+            }
+            if (data[i].key === 'http') {
+                extinfo.http = true;
+            }
+            if (data[i].key === 'tls') {
+                extinfo.tls = true;
+            }
+        }
+        this.setState({ extinfo });
+    }
+
+    updateRuleStatus() {
+        return this.fetchRuleStatus(this.state.rule.sid);
+    }
+
+    fetchRuleStatus(sid) {
+        axios.all([
+            axios.get(`${config.API_URL + config.RULE_PATH + sid}/status/`),
+            axios.get(`${config.API_URL + config.RULE_PATH + sid}/content/?highlight=1`),
+            axios.get(`${config.API_URL + config.RULE_PATH + sid}/references/`)
+        ]).then(
+            ([res, rescontent, referencesContent]) => {
+                const rstatus = [];
+                for (let key = 0; key < res.data.length; key += 1) {
+                    res.data[key].pk = key;
+                    res.data[key].content = rescontent.data[key];
+                    rstatus.push(res.data[key]);
+                }
+                this.setState({ rule_status: rstatus });
+                this.setState({ rule_references: referencesContent.data });
+            }
+        );
+    }
+
+    updateRuleState(rule) {
+        this.setState({ rule: rule[0] });
+    }
+
+    render() {
+        return (
+            <div>
+                <Spinner loading={this.state.rule === undefined}>
+                    {this.state.rule && <div>
+                        <h1>{this.state.rule.msg}
+                            <span className="pull-right">
+                                { (this.state.rule && this.state.rule.hits !== undefined) && <span className="label label-primary">{this.state.rule.hits} hit{this.state.rule.hits > 1 && 's'}</span>}
+                                <RuleEditKebab config={this.state} rulesets={this.props.rulesets} refresh_callback={this.updateRuleStatus} />
+                            </span>
+                        </h1>
+                        <div className="container-fluid container-cards-pf">
+                            <div className="row">
+                                <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.state.rule.content }}></div>
+                                {this.state.rule.timeline && <SciriusChart
+                                    data={this.state.rule.timeline}
+                                    axis={{
+                                        x: {
+                                            type: 'timeseries',
+                                            localtime: true,
+                                            min: this.props.from_date,
+                                            max: Date.now(),
+                                            tick: {
+                                                fit: false,
+                                                rotate: 15,
+                                                format: '%Y-%m-%d %H:%M'
+                                            }
+                                        }
+                                    }}
+                                />}
+                            </div>
+                            {this.state.rule_status !== undefined && <Row>
+                                {
+                                    this.state.rule_status.map((rstatus) => (
+                                        <RuleStatus rule={this.state.rule} key={rstatus.pk} rule_status={rstatus} />
+                                    ))
+                                }
+                            </Row>}
+                            <div className="row">
+                                <HuntStat systemSettings={this.state.systemSettings} title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="src_ip" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dest_ip" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat title="Probes" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="host" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                            </div>
+                            {this.state.extinfo.http && <div className="row">
+                                <HuntStat systemSettings={this.state.systemSettings} title="Hostname" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.hostname" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat systemSettings={this.state.systemSettings} title="URL" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.url" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat systemSettings={this.state.systemSettings} title="User agent" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.http_user_agent" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                            </div>}
+                            {this.state.extinfo.dns && <div className="row">
+                                <HuntStat systemSettings={this.state.systemSettings} title="Name" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dns.query.rrname" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat systemSettings={this.state.systemSettings} title="Type" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dns.query.rrtype" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                            </div>}
+                            {this.state.extinfo.tls && <div className="row">
+                                <HuntStat systemSettings={this.state.systemSettings} title="Subject DN" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.subject" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat systemSettings={this.state.systemSettings} title="SNI" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.sni" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat systemSettings={this.state.systemSettings} title="Fingerprint" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.fingerprint" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                            </div>}
+                            <Row>
+                                {this.state.rule_references && this.state.rule_references.length > 0 && <div className="col-xs-6 col-sm-4 col-md-4">
+                                    <div className="card-pf card-pf-accented card-pf-aggregate-status">
+                                        {/* <div class="panel-heading">
+                                            <h2 class="panel-title">References</h2>
+                                        </div> */}
+                                        <h2 className="card-pf-title">
+                                            <span className="fa" />References
+                                        </h2>
+                                        <div className="card-pf-body">
+                                            {this.state.rule_references.map((reference) => {
+                                                if (reference.url !== undefined) {
+                                                    return (
+                                                        <p key={reference.url}><a href={reference.url} target="_blank">{`${reference.key[0].toUpperCase() + reference.key.substring(1)}: ${reference.value}`}</a></p>
+                                                    );
+                                                }
+                                                return null;
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>}
+                            </Row>
+                        </div>
+                    </div>}
+                </Spinner>
+
+                <Modal show={!(this.state.moreModal === null)} onHide={() => { this.hideMoreModal() }}>
+
+                    <Modal.Header>More results <Modal.CloseButton closeText={'Close'} onClick={() => { this.hideMoreModal() }} /> </Modal.Header>
+                    <Modal.Body>
+                        <div className="hunt-stat-body">
+                            <ListGroup>
+                                {this.state.moreResults.map((item) => (<ListGroupItem key={item.key}>
+                                    {this.state.moreModal && <EventValue field={this.state.moreModal.i} value={item.key} addFilter={this.addFilter} right_info={<Badge>{item.doc_count}</Badge>} />}
+                                </ListGroupItem>))}
+                            </ListGroup>
+                        </div>
+                    </Modal.Body>
+                </Modal>
+
+            </div>
+        );
+    }
+}
+RulePage.propTypes = {
+    rule: PropTypes.any,
+    systemSettings: PropTypes.any,
+    filters: PropTypes.any,
+    config: PropTypes.any,
+    UpdateFilter: PropTypes.any,
+    addFilter: PropTypes.any,
+    rulesets: PropTypes.any,
+    from_date: PropTypes.any,
+};
+
+// eslint-disable-next-line react/no-multi-comp
+export class HuntStat extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { data: [] };
+        this.url = '';
+        this.updateData = this.updateData.bind(this);
+        this.addFilter = this.addFilter.bind(this);
+    }
+
+    componentDidMount() {
+        this.updateData();
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.from_date !== this.props.from_date) {
+            this.updateData();
+        }
+        if (prevProps.filters.length !== this.props.filters.length) {
+            this.updateData();
+        }
+    }
+
+    updateData() {
+        let qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
+        if (qfilter) {
+            qfilter = `&qfilter=${qfilter}`;
+        } else {
+            qfilter = '';
+        }
+
+        this.url = `${config.API_URL}${config.ES_BASE_PATH}field_stats&field=${this.props.item}&from_date=${this.props.from_date}&page_size=30${qfilter}`;
+
+        axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats&field=${this.props.item}&from_date=${this.props.from_date}&page_size=5${qfilter}`)
+        .then((res) => {
+            this.setState({ data: res.data });
+        });
+    }
+
+    addFilter(key, value, negated) {
+        this.props.addFilter(key, value, negated);
+    }
+
+    render() {
+        let colVal = 'col-md-3';
+        if (this.props.col) {
+            colVal = `col-md-${this.props.col}`;
+        }
+        if (this.state.data && this.state.data.length) {
+            return (
+                <div className={colVal}>
+                    <div className="card-pf rule-card">
+                        <div className="card-pf-heading">
+                            <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={this.props.title}>{this.props.title}</h2>
+                            {this.state.data.length === 5 && <DropdownKebab id={`more-${this.props.item}`} pullRight={false}>
+                                <MenuItem onClick={() => this.props.loadMore(this.props.item, this.url)} data-toggle="modal">Load more results</MenuItem>
+                            </DropdownKebab>}
+                        </div>
+                        <div className="card-pf-body">
+                            <ListGroup>
+                                {this.state.data.map((item) => (
+                                    <ListGroupItem key={item.key}>
+                                        <EventValue field={this.props.item}
+                                            value={item.key}
+                                            addFilter={this.addFilter}
+                                            right_info={<Badge>{item.doc_count}</Badge>}
+                                        />
+                                    </ListGroupItem>)
+                                )}
+                            </ListGroup>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        return null;
+    }
+}
+HuntStat.propTypes = {
+    from_date: PropTypes.any,
+    title: PropTypes.any,
+    filters: PropTypes.any,
+    col: PropTypes.any,
+    item: PropTypes.any,
+    systemSettings: PropTypes.any,
+    loadMore: PropTypes.func,
+    addFilter: PropTypes.func,
+};
+
+// eslint-disable-next-line react/no-multi-comp
 export class RuleEditKebab extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { toggle: { show: false, action: "Disable" } };
+        this.state = { toggle: { show: false, action: 'Disable' } };
         this.displayToggle = this.displayToggle.bind(this);
         this.hideToggle = this.hideToggle.bind(this);
     }
 
     displayToggle(action) {
-        this.setState({ toggle: { show: true, action: action } });
+        this.setState({ toggle: { show: true, action } });
     }
 
     hideToggle() {
@@ -644,32 +637,30 @@ export class RuleEditKebab extends React.Component {
         return (
             <React.Fragment>
                 <DropdownKebab id="ruleActions" pullRight>
-                    <MenuItem onClick={e => {
-                        this.displayToggle("enable")
-                    }}>
-                        Enable Rule
-                    </MenuItem>
-                    <MenuItem onClick={e => {
-                        this.displayToggle("disable")
-                    }}>
-                        Disable Rule
-                    </MenuItem>
-                    <MenuItem divider/>
-                    <MenuItem href={'/rules/rule/pk/' + this.props.config.rule.pk + '/'}>
-                        Rule page in Scirius
-                    </MenuItem>
+                    <MenuItem onClick={() => { this.displayToggle('enable'); }}>Enable Rule</MenuItem>
+                    <MenuItem onClick={() => { this.displayToggle('disable'); }}>Disable Rule</MenuItem>
+                    <MenuItem divider />
+                    <MenuItem href={`/rules/rule/pk/${this.props.config.rule.pk}/`}>Rule page in Scirius</MenuItem>
                 </DropdownKebab>
-                <RuleToggleModal show={this.state.toggle.show} action={this.state.toggle.action} config={this.props.config} close={this.hideToggle} rulesets={this.props.rulesets} refresh_callback={this.props.refresh_callback}/>
+                <RuleToggleModal show={this.state.toggle.show} action={this.state.toggle.action} config={this.props.config} close={this.hideToggle} rulesets={this.props.rulesets} refresh_callback={this.props.refresh_callback} />
             </React.Fragment>
-        )
+        );
     }
 }
+RuleEditKebab.propTypes = {
+    config: PropTypes.any,
+    rulesets: PropTypes.any,
+    refresh_callback: PropTypes.any,
+};
 
+// eslint-disable-next-line react/no-multi-comp
 export class RuleToggleModal extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            selected: [], supported_filters: [], comment: "",
+            selected: [],
+            supported_filters: [],
+            comment: '',
             options: {},
             errors: undefined
         };
@@ -685,40 +676,75 @@ export class RuleToggleModal extends React.Component {
         this.toggleFilter = this.toggleFilter.bind(this);
     }
 
+
+    componentDidMount() {
+        this.updateActionDialog();
+        this.setDefaultOptions();
+    }
+
+    componentDidUpdate(prevProps) {
+        if ((prevProps.filters !== this.props.filters) || (prevProps.action !== this.props.action)) {
+            this.updateActionDialog();
+            this.setDefaultOptions();
+        }
+    }
+
+    onFieldKeyPress = (keyEvent) => {
+        if (keyEvent.key === 'Enter') {
+            keyEvent.stopPropagation();
+            keyEvent.preventDefault();
+        }
+    }
+
+    setDefaultOptions() {
+        let options = {};
+        switch (this.props.action) {
+            case 'threshold':
+                options = {
+                    type: 'both', count: 1, seconds: 60, track: 'by_src'
+                };
+                break;
+            case 'tag':
+            case 'tagkeep':
+                options = { tag: 'relevant' };
+                break;
+            default:
+                break;
+        }
+        this.setState({ options });
+    }
+
     updateActionDialog() {
         if (['enable', 'disable'].indexOf(this.props.action) !== -1) {
             this.setState({ supported_filters: [], noaction: false, errors: undefined });
             return;
         }
         if (this.props.filters && this.props.filters.length > 0) {
-            var wanted_filters = Array.from(this.props.filters, x => x.id);
-            var req_data = { fields: wanted_filters, action: this.props.action };
-            axios.post(config.API_URL + config.PROCESSING_PATH + "test/", req_data).then(res => {
-                var supp_filters = [];
-                var notfound = true;
-                for (var i = 0; i < this.props.filters.length; i++) {
+            const wantedFilters = Array.from(this.props.filters, (x) => x.id);
+            const reqData = { fields: wantedFilters, action: this.props.action };
+            axios.post(`${config.API_URL + config.PROCESSING_PATH}test/`, reqData).then((res) => {
+                const suppFilters = [];
+                let notfound = true;
+                for (let i = 0; i < this.props.filters.length; i += 1) {
                     if (res.data.fields.indexOf(this.props.filters[i].id) !== -1) {
                         if (this.props.filters[i].negated === false) {
-                            this.props.filters[i].operator = "equal";
-                        } else {
-                            if (res.data.operators.indexOf("different") === -1) {
-                                continue;
-                            }
-                            this.props.filters[i].operator = "different";
+                            this.props.filters[i].operator = 'equal';
+                        } else if (res.data.operators.indexOf('different') !== -1) {
+                            this.props.filters[i].operator = 'different';
                         }
                         this.props.filters[i].isChecked = true;
                         this.props.filters[i].key = this.props.filters[i].id;
-                        supp_filters.push(this.props.filters[i]);
+                        suppFilters.push(this.props.filters[i]);
                         notfound = false;
                     }
                 }
 
-                var errors = undefined;
+                let errors;
                 if (notfound) {
                     errors = { filters: ['No filters available'] };
                 }
-                this.setState({ supported_filters: supp_filters, noaction: notfound, errors: errors });
-            }).catch(error => {
+                this.setState({ supported_filters: suppFilters, noaction: notfound, errors });
+            }).catch((error) => {
                 if (error.response.status === 403) {
                     this.setState({ errors: { permission: ['Insufficient permissions'] }, noaction: true });
                 }
@@ -728,136 +754,91 @@ export class RuleToggleModal extends React.Component {
         }
     }
 
-    setDefaultOptions() {
-        var options = {};
-        switch (this.props.action) {
-            case 'threshold':
-                options = { type: "both", count: 1, seconds: 60, track: "by_src" };
-                break;
-            case 'tag':
-            case 'tagkeep':
-                options = { tag: "relevant" };
-                break;
-            default:
-                break;
-        }
-        this.setState({ options: options });
-    }
-
-    onFieldKeyPress(keyEvent) {
-        if (keyEvent.key === 'Enter') {
-            keyEvent.stopPropagation();
-            keyEvent.preventDefault();
-        }
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if ((prevProps.filters !== this.props.filters) || (prevProps.action !== this.props.action)) {
-            this.updateActionDialog();
-            this.setDefaultOptions();
-        }
-    }
-
-    componentDidMount() {
-
-        this.updateActionDialog();
-        this.setDefaultOptions();
-    }
-
     close() {
         this.setState({ errors: undefined });
         this.props.close();
     }
 
     submit() {
-        if (["enable", "disable"].indexOf(this.props.action) !== -1) {
+        if (['enable', 'disable'].indexOf(this.props.action) !== -1) {
             this.state.selected.map(
-                function (ruleset) {
-                    var data = { ruleset: ruleset };
+                (ruleset) => {
+                    const data = { ruleset };
                     if (this.state.comment.length > 0) {
-                        data['comment'] = this.state.comment
+                        data.comment = this.state.comment;
                     }
-                    var url = config.API_URL + config.RULE_PATH + this.props.config.rule.sid;
-                    if (this.props.action === "enable") {
-                        url = url + '/enable/';
+                    let url = config.API_URL + config.RULE_PATH + this.props.config.rule.sid;
+                    if (this.props.action === 'enable') {
+                        url = `${url}/enable/`;
                     } else {
-                        url = url + '/disable/';
+                        url = `${url}/disable/`;
                     }
                     axios.post(url, data).then(
-                        res => {
+                        () => {
                             // Fixme notification or something
-                            console.log("action on rule is a success");
                             if (this.props.refresh_callback) {
                                 this.props.refresh_callback();
                             }
                             this.close();
                         }
-                    ).catch(error => {
-                        console.log("action creation failure");
+                    ).catch((error) => {
                         this.setState({ errors: error.response.data });
                     });
                     return true;
                 }
-                , this);
-        } else if (["suppress", "threshold", "tag", "tagkeep"].indexOf(this.props.action) !== -1) {
-            //{"filter_defs": [{"key": "src_ip", "value": "192.168.0.1", "operator": "equal"}], "action": "suppress", "rulesets": [1]}
+            );
+        } else if (['suppress', 'threshold', 'tag', 'tagkeep'].indexOf(this.props.action) !== -1) {
+            // {"filter_defs": [{"key": "src_ip", "value": "192.168.0.1", "operator": "equal"}], "action": "suppress", "rulesets": [1]}
 
-            var filters = []
-            for (var filter of this.state.supported_filters) {
-                if (filter.isChecked) {
-                    filters.push(filter);
+            const filters = [];
+            for (let j = 0; j < this.state.supported_filters.length; j += 1) {
+                if (this.state.supported_filters[j].isChecked) {
+                    filters.push(this.state.supported_filters[j]);
                 }
             }
-            var data = {
-                filter_defs: filters,
-                action: this.props.action,
-                rulesets: this.state.selected,
-                comment: this.state.comment
+            const data = {
+                filter_defs: filters, action: this.props.action, rulesets: this.state.selected, comment: this.state.comment
             };
-            if (["threshold", "tag", "tagkeep"].indexOf(this.props.action) !== -1) {
+            if (['threshold', 'tag', 'tagkeep'].indexOf(this.props.action) !== -1) {
                 data.options = this.state.options;
             }
             axios.post(config.API_URL + config.PROCESSING_PATH, data).then(
-                res => {
-                    console.log("action creation is a success");
+                () => {
                     this.close();
                 }
             ).catch(
-                error => {
+                (error) => {
                     this.setState({ errors: error.response.data });
                 }
-            )
+            );
         }
     }
 
     handleChange(event) {
-        const target = event.target;
+        const { target } = event;
         const value = target.type === 'checkbox' ? target.checked : target.value;
-        const name = target.name;
-        var sel_list = this.state.selected;
+        const { name } = target;
+        const selList = this.state.selected;
         if (value === false) {
             // pop element
-            var index = sel_list.indexOf(name);
+            const index = selList.indexOf(name);
             if (index >= 0) {
-                sel_list.splice(index, 1);
-                this.setState({ selected: sel_list });
+                selList.splice(index, 1);
+                this.setState({ selected: selList });
             }
-        } else {
-            if (sel_list.indexOf(name) < 0) {
-                sel_list.push(name);
-                this.setState({ selected: sel_list });
-            }
+        } else if (selList.indexOf(name) < 0) {
+            selList.push(name);
+            this.setState({ selected: selList });
         }
     }
-
 
     handleCommentChange(event) {
         this.setState({ comment: event.target.value });
     }
 
     handleFieldChange(event) {
-        var sfilters = Object.assign([], this.state.supported_filters);
-        for (var filter in sfilters) {
+        const sfilters = Object.assign([], this.state.supported_filters);
+        for (let filter = 0; filter < sfilters.length; filter += 1) {
             if (sfilters[filter].id === event.target.id) {
                 sfilters[filter].value = event.target.value;
             }
@@ -866,22 +847,21 @@ export class RuleToggleModal extends React.Component {
     }
 
     handleOptionsChange(event) {
-        var options = Object.assign({}, this.state.options);
+        const options = Object.assign({}, this.state.options);
         options[event.target.id] = event.target.value;
-        this.setState({ options: options });
+        this.setState({ options });
     }
 
     toggleFilter(event, item) {
-        var sfilters = Object.assign([], this.state.supported_filters);
-        for (var filter in sfilters) {
-            if (sfilters[filter].id === item.id) {
-                sfilters[filter].isChecked = !item.isChecked;
+        const sfilters = Object.assign([], this.state.supported_filters);
+        for (let j = 0; j < sfilters.length; j += 1) {
+            if (sfilters[j].id === item.id) {
+                sfilters[j].isChecked = !item.isChecked;
                 break;
             }
         }
         this.setState({ supported_filters: sfilters });
     }
-
 
     render() {
         return (
@@ -893,46 +873,38 @@ export class RuleToggleModal extends React.Component {
                         aria-hidden="true"
                         aria-label="Close"
                     >
-                        <Icon type="pf" name="close"/>
+                        <Icon type="pf" name="close" />
                     </button>
-                    {this.props.config.rule &&
-                    <Modal.Title>{this.props.action} Rule {this.props.config.rule.sid}</Modal.Title>
-                    }
-                    {!this.props.config.rule &&
-                    <Modal.Title>Add a {this.props.action} action</Modal.Title>
-                    }
+                    {this.props.config.rule && <Modal.Title>{this.props.action} Rule {this.props.config.rule.sid}</Modal.Title>}
+                    {!this.props.config.rule && <Modal.Title>Add a {this.props.action} action</Modal.Title>}
                 </Modal.Header>
                 <Modal.Body>
-                    <HuntRestError errors={this.state.errors}/>
-                    {!this.state.noaction &&
-                    <Form horizontal>
-                        {this.state.supported_filters &&
-                        this.state.supported_filters.map((item, index) => {
-                                return (
-                                    <FormGroup key={item.id} controlId={item.id} disabled={false}>
-                                        <Col sm={4}>
-                                            <Checkbox disabled={false} defaultChecked={true} onChange={(e) => {
-                                                this.toggleFilter(e, item)
-                                            }}>
-                                                <strong>{item.negated && "Not "}{item.id}</strong>
-                                            </Checkbox>
-                                        </Col>
-                                        <Col sm={8}>
-                                            <FormControl type={item.id} disabled={!item.isChecked} defaultValue={item.value} onChange={this.handleFieldChange} onKeyPress={e => this.onFieldKeyPress(e)}/>
-                                        </Col>
-                                    </FormGroup>
-                                )
-                            }
-                        )
-                        }
-                        {this.props.action === 'threshold' &&
-                        <React.Fragment>
+                    <HuntRestError errors={this.state.errors} />
+                    {!this.state.noaction && <Form horizontal>
+                        {this.state.supported_filters && this.state.supported_filters.map((item) => (
+                            <FormGroup key={item.id} controlId={item.id} disabled={false}>
+                                <Col sm={4}>
+                                    <Checkbox
+                                        disabled={false}
+                                        defaultChecked
+                                        onChange={(e) => {
+                                            this.toggleFilter(e, item);
+                                        }}
+                                    ><strong>{item.negated && 'Not '}{item.id}</strong>
+                                    </Checkbox>
+                                </Col>
+                                <Col sm={8}>
+                                    <FormControl type={item.id} disabled={!item.isChecked} defaultValue={item.value} onChange={this.handleFieldChange} onKeyPress={(e) => this.onFieldKeyPress(e)} />
+                                </Col>
+                            </FormGroup>
+                        ))}
+                        {this.props.action === 'threshold' && <React.Fragment>
                             <FormGroup key="count" controlId="count" disabled={false}>
                                 <Col sm={4}>
                                     <strong>Count</strong>
                                 </Col>
                                 <Col sm={8}>
-                                    <FormControl type="integer" disabled={false} defaultValue={1} onChange={this.handleOptionsChange}/>
+                                    <FormControl type="integer" disabled={false} defaultValue={1} onChange={this.handleOptionsChange} />
                                 </Col>
                             </FormGroup>
                             <FormGroup key="seconds" controlId="seconds" disabled={false}>
@@ -940,7 +912,7 @@ export class RuleToggleModal extends React.Component {
                                     <strong>Seconds</strong>
                                 </Col>
                                 <Col sm={8}>
-                                    <FormControl type="integer" disabled={false} defaultValue={60} onChange={this.handleOptionsChange}/>
+                                    <FormControl type="integer" disabled={false} defaultValue={60} onChange={this.handleOptionsChange} />
                                 </Col>
                             </FormGroup>
                             <FormGroup key="track" controlId="track" disabled={false}>
@@ -954,11 +926,8 @@ export class RuleToggleModal extends React.Component {
                                     </FormControl>
                                 </Col>
                             </FormGroup>
-                        </React.Fragment>
-
-                        }
-                        {this.props.action === 'tag' &&
-                        <FormGroup key="tag" controlId="tag" disabled={false}>
+                        </React.Fragment>}
+                        {this.props.action === 'tag' && <FormGroup key="tag" controlId="tag" disabled={false}>
                             <Col sm={3}>
                                 <strong>Tag</strong>
                             </Col>
@@ -968,10 +937,8 @@ export class RuleToggleModal extends React.Component {
                                     <option value="informational">Informational</option>
                                 </FormControl>
                             </Col>
-                        </FormGroup>
-                        }
-                        {this.props.action === 'tagkeep' &&
-                        <FormGroup key="tag" controlId="tag" disabled={false}>
+                        </FormGroup>}
+                        {this.props.action === 'tagkeep' && <FormGroup key="tag" controlId="tag" disabled={false}>
                             <Col sm={3}>
                                 <strong>Tag and Keep</strong>
                             </Col>
@@ -981,34 +948,29 @@ export class RuleToggleModal extends React.Component {
                                     <option value="informational">Informational</option>
                                 </FormControl>
                             </Col>
-                        </FormGroup>
-                        }
+                        </FormGroup>}
                         <FormGroup controlId="ruleset" disabled={false}>
                             <Col sm={12}>
                                 <label>Choose Ruleset(s)</label>
-                                {this.props.rulesets && this.props.rulesets.map(function (ruleset) {
-                                    return (<div className="row" key={ruleset.pk}>
+                                {this.props.rulesets && this.props.rulesets.map((ruleset) => (
+                                    <div className="row" key={ruleset.pk}>
                                         <div className="col-sm-9">
-                                            <label htmlFor={ruleset.pk}><input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange}/> {ruleset.name} </label>
+                                            <label htmlFor={ruleset.pk}><input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange} />{ruleset.name}</label>
                                             {ruleset.warnings && <div>{ruleset.warnings}</div>}
                                         </div>
-                                    </div>);
-                                }, this)
-                                }
+                                    </div>
+                                ))}
                             </Col>
                         </FormGroup>
 
                         <div className="form-group">
                             <div className="col-sm-9">
                                 <strong>Optional comment</strong>
-                                <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange}/>
+                                <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange} />
                             </div>
                         </div>
-                    </Form>
-                    }
-                    {this.state.noaction &&
-                        <p>You need enough permissions and at least a filter supported by the ruleset backend to define an action</p>
-                    }
+                    </Form>}
+                    {this.state.noaction && <p>You need enough permissions and at least a filter supported by the ruleset backend to define an action</p>}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button
@@ -1018,107 +980,46 @@ export class RuleToggleModal extends React.Component {
                     >
                         Cancel
                     </Button>
-                    {!this.state.noaction &&
-                    <Button bsStyle="primary" onClick={this.submit}>
+                    {!this.state.noaction && <Button bsStyle="primary" onClick={this.submit}>
                         Submit
-                    </Button>
-                    }
+                    </Button>}
                 </Modal.Footer>
             </Modal>
-        )
+        );
     }
 }
-
-export function buildQFilter(filters, system_settings) {
-    var qfilter = [];
-    for (var i = 0; i < filters.length; i++) {
-        var f_prefix = '';
-        var f_suffix = '.raw';
-        if (system_settings) {
-            f_suffix = '.' + system_settings['es_keyword'];
-        }
-
-        if (filters[i].negated) {
-            f_prefix = 'NOT ';
-        }
-        if (filters[i].id === 'probe') {
-            qfilter.push(f_prefix + 'host.raw:' + filters[i].value);
-            continue;
-        } else if (filters[i].id === 'sprobe') {
-            qfilter.push(f_prefix + 'host.raw:' + filters[i].value.id);
-            continue;
-        }
-        else if (filters[i].id === 'alert.signature_id') {
-            qfilter.push(f_prefix + 'alert.signature_id:' + filters[i].value);
-            continue;
-        }
-        else if (filters[i].id === 'alert.tag') {
-            var tag_filters = [];
-            if (filters[i].value['untagged'] === true) {
-                tag_filters.push('(NOT alert.tag:*)');
-            }
-            if (filters[i].value['informational'] === true) {
-                tag_filters.push('alert.tag:"informational"');
-            }
-            if (filters[i].value['relevant'] === true) {
-                tag_filters.push('alert.tag:"relevant"');
-            }
-            if (tag_filters.length === 0) {
-                qfilter.push('alert.tag:"undefined"');
-            } else if (tag_filters.length < 3) {
-                qfilter.push("(" + tag_filters.join(" OR ") + ")");
-            }
-            continue;
-        }
-        else if (filters[i].id === 'msg') {
-            qfilter.push(f_prefix + 'alert.signature:"' + filters[i].value + '"');
-            continue;
-        }
-        else if ((filters[i].id === 'hits_min') || (filters[i].id === 'hits_max')) {
-            continue;
-        }
-        else if (typeof filters[i].value === 'string') {
-            qfilter.push(f_prefix + filters[i].id + f_suffix + ':"' + encodeURIComponent(filters[i].value) + '"');
-            continue;
-        }
-        else {
-            qfilter.push(f_prefix + filters[i].id + ':' + filters[i].value);
-            continue;
-        }
-    }
-    if (qfilter.length === 0) {
-        return null;
-    }
-    return qfilter.join(" AND ");
-}
+RuleToggleModal.propTypes = {
+    filters: PropTypes.any,
+    action: PropTypes.any,
+    rulesets: PropTypes.any,
+    refresh_callback: PropTypes.any,
+    show: PropTypes.any,
+    config: PropTypes.any,
+    close: PropTypes.func,
+};
 
 export class RulesList extends HuntList {
     constructor(props) {
         super(props);
 
-        let huntFilters = store.get('huntFilters');
-        let rules_filters = ( typeof huntFilters !== 'undefined' && typeof huntFilters.ruleslist !== 'undefined' ) ? huntFilters.ruleslist.data : [];
+        const huntFilters = store.get('huntFilters');
+        const rulesFilters = (typeof huntFilters !== 'undefined' && typeof huntFilters.ruleslist !== 'undefined') ? huntFilters.ruleslist.data : [];
         this.state = {
-            rules: [], sources: [], rulesets: [], count: 0,
+            rules: [],
+            sources: [],
+            rulesets: [],
+            count: 0,
             loading: true,
             refresh_data: false,
             view: 'rules_list',
             display_toggle: true,
             action: { view: false, type: 'suppress' },
             net_error: undefined,
-            rules_filters,
+            rulesFilters,
             supported_actions: []
         };
-        this.cache = {
-            page: 1,
-            perPage: null,
-            RuleRes: null,
-            SrcRes: null,
-            from_date: null,
-            filtersCount: null,
-            sortId: null,
-            sortAsc: null,
-        };
+        this.cache = {};
+        this.cachePage = 1;
         this.updateRulesState = this.updateRulesState.bind(this);
         this.fetchHitsStats = this.fetchHitsStats.bind(this);
         this.displayRule = this.displayRule.bind(this);
@@ -1126,34 +1027,35 @@ export class RulesList extends HuntList {
     }
 
     buildFilter(filters) {
-        var l_filters = {};
-        for (var i = 0; i < filters.length; i++) {
+        const lFilters = {};
+        for (let i = 0; i < filters.length; i += 1) {
             if (filters[i].id !== 'probe' && filters[i].id !== 'alert.tag') {
-                if (filters[i].id in l_filters) {
-                    l_filters[filters[i].id] += "," + filters[i].value;
+                if (filters[i].id in lFilters) {
+                    lFilters[filters[i].id] += `,${filters[i].value}`;
                 } else {
-                    l_filters[filters[i].id] = filters[i].value;
+                    lFilters[filters[i].id] = filters[i].value;
                 }
             }
         }
-        var string_filters = "";
-        for (var k in l_filters) {
-            string_filters += "&" + k + "=" + l_filters[k];
+        let stringFilters = '';
+        const objKeys = Object.keys(lFilters);
+        for (let k = 0; k < objKeys.length; k += 1) {
+            stringFilters += `&${objKeys[k]}=${lFilters[objKeys[k]]}`;
         }
-        var qfilter = buildQFilter(filters, this.props.system_settings);
+        const qfilter = buildQFilter(filters, this.props.systemSettings);
         if (qfilter) {
-            string_filters += '&qfilter=' + qfilter;
+            stringFilters += `&qfilter=${qfilter}`;
         }
-        return string_filters;
+        return stringFilters;
     }
 
     updateRulesState(rules) {
-        this.setState({ rules: rules });
+        this.setState({ rules });
     }
 
-    buildTimelineDataSet(tdata) {
-        var timeline = { x: 'x', type: 'area', columns: [['x'], ['alerts']] };
-        for (var key in tdata) {
+    buildTimelineDataSet = (tdata) => {
+        const timeline = { x: 'x', type: 'area', columns: [['x'], ['alerts']] };
+        for (let key = 0; key < tdata.length; key += 1) {
             timeline.columns[0].push(tdata[key].date);
             timeline.columns[1].push(tdata[key].hits);
         }
@@ -1161,7 +1063,7 @@ export class RulesList extends HuntList {
     }
 
     buildHitsStats(rules) {
-        for (var rule in rules) {
+        for (let rule = 0; rule < rules.length; rule += 1) {
             rules[rule].timeline = this.buildTimelineDataSet(rules[rule].timeline_data);
             // rules[rule].timeline_data = undefined;
         }
@@ -1169,90 +1071,85 @@ export class RulesList extends HuntList {
     }
 
     fetchHitsStats(rules, filters) {
-        var qfilter = buildQFilter(filters, this.props.system_settings);
+        const qfilter = buildQFilter(filters, this.props.systemSettings);
         updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
     }
 
     processRulesData(RuleRes, SrcRes, filters) {
-        var sources_array = SrcRes.data['results'];
-        var sources = {};
+        const sourcesArray = SrcRes.data.results;
+        const sources = {};
         this.setState({ net_error: undefined });
-        for (var i = 0; i < sources_array.length; i++) {
-            var src = sources_array[i];
+        for (let i = 0; i < sourcesArray.length; i += 1) {
+            const src = sourcesArray[i];
             sources[src.pk] = src;
         }
         this.setState({
-            count: RuleRes.data['count'],
-            rules: RuleRes.data['results'],
-            sources: sources,
+            count: RuleRes.data.count,
+            rules: RuleRes.data.results,
+            sources,
             loading: false,
             refresh_data: false
         });
         if (RuleRes.data.results.length > 0) {
             if (!RuleRes.data.results[0].timeline_data) {
-                this.fetchHitsStats(RuleRes.data['results'], filters);
+                this.fetchHitsStats(RuleRes.data.results, filters);
             } else {
-                this.buildHitsStats(RuleRes.data['results']);
+                this.buildHitsStats(RuleRes.data.results);
             }
         }
     }
 
     displayRule(rule) {
         this.setState({ display_rule: rule });
-        let activeFilters = [...this.props.filters, {
-            label: "alert.signature_id: " + rule.sid,
-            id: 'alert.signature_id',
-            value: rule.sid,
-            query: 'filter',
-            negated: false
+        const activeFilters = [...this.props.filters, {
+            label: `alert.signature_id: ${rule.sid}`, id: 'alert.signature_id', value: rule.sid, query: 'filter', negated: false
         }];
         this.RuleUpdateFilter(activeFilters);
     }
 
-    fetchData(rules_stat, filters) {
-        if (rules_stat.pagination.page === this.cache.page && rules_stat.pagination.perPage === this.cache.perPage && this.cache.RuleRes !== null && this.cache.SrcRes !== null && this.cache.from_date === this.props.from_date && this.cache.sortId === rules_stat.sort.id && this.cache.sortAsc === rules_stat.sort.asc && this.cache.filtersCount === filters.length) {
-            this.processRulesData(this.cache.RuleRes, this.cache.SrcRes, filters);
+    fetchData(rulesStat, filters) {
+        const stringFilters = this.buildFilter(filters);
+        const hash = md5(`${rulesStat.pagination.page}|${rulesStat.pagination.perPage}|${this.props.from_date}|${rulesStat.sort.id}|${rulesStat.sort.asc}|${stringFilters}`);
+        if (typeof this.cache[hash] !== 'undefined') {
+            this.processRulesData(this.cache[hash].RuleRes, this.cache[hash].SrcRes, this.cache[hash].filters);
             return;
         }
-        this.cache.filtersCount = filters.length;
-        this.cache.sortId = rules_stat.sort.id;
-        this.cache.sortAsc = rules_stat.sort.asc;
-        let string_filters = this.buildFilter(filters);
 
         this.setState({ refresh_data: true, loading: true });
         axios.all([
-            axios.get(config.API_URL + config.RULE_PATH + "?" + this.buildListUrlParams(rules_stat) + "&from_date=" + this.props.from_date + "&highlight=true" + string_filters),
-            axios.get(config.API_URL + config.SOURCE_PATH + "?page_size=100"),
+            axios.get(`${config.API_URL + config.RULE_PATH}?${this.buildListUrlParams(rulesStat)}&from_date=${this.props.from_date}&highlight=true${stringFilters}`),
+            axios.get(`${config.API_URL + config.SOURCE_PATH}?page_size=100`),
         ])
         .then(axios.spread((RuleRes, SrcRes) => {
-            this.cache.page = rules_stat.pagination.page;
-            this.cache.RuleRes = RuleRes;
-            this.cache.SrcRes = SrcRes;
-            this.cache.from_date = this.props.from_date;
-            this.cache.perPage = rules_stat.pagination.perPage;
+            this.cachePage = rulesStat.pagination.page;
+
+            this.cache[hash] = { RuleRes, SrcRes, filters };
             this.processRulesData(RuleRes, SrcRes, filters);
-        })).catch(e => {
+        })).catch((e) => {
             this.setState({ net_error: e, loading: false });
         });
     }
 
     componentDidMount() {
-        var sid = this.findSID(this.props.filters);
+        const sid = this.findSID(this.props.filters);
         if (this.state.rulesets.length === 0) {
-            axios.get(config.API_URL + config.RULESET_PATH).then(res => {
-                this.setState({ rulesets: res.data['results'] });
-            })
+            axios.get(config.API_URL + config.RULESET_PATH).then((res) => {
+                this.setState({ rulesets: res.data.results });
+            });
         }
         if (sid !== undefined) {
-            this.setState({ display_rule: sid, view: 'rule', display_toggle: false, loading: false });
+            // eslint-disable-next-line react/no-did-mount-set-state
+            this.setState({
+                display_rule: sid, view: 'rule', display_toggle: false, loading: false
+            });
         } else {
             this.fetchData(this.props.config, this.props.filters);
         }
-        let huntFilters = store.get('huntFilters');
+        const huntFilters = store.get('huntFilters');
         axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
-            res => {
-                var fdata = [];
-                for (var i in res.data) {
+            (res) => {
+                const fdata = [];
+                for (let i = 0; i < res.data.length; i += 1) {
                     /* Allow ES and rest filters */
                     if (['filter', 'rest'].indexOf(res.data[i].queryType) !== -1) {
                         if (res.data[i].filterType !== 'hunt') {
@@ -1260,8 +1157,8 @@ export class RulesList extends HuntList {
                         }
                     }
                 }
-                let currentCheckSum = md5(JSON.stringify(fdata));
-                if((typeof huntFilters === 'undefined' || typeof huntFilters.ruleslist === 'undefined') || huntFilters.ruleslist.checkSum !== currentCheckSum) {
+                const currentCheckSum = md5(JSON.stringify(fdata));
+                if ((typeof huntFilters === 'undefined' || typeof huntFilters.ruleslist === 'undefined') || huntFilters.ruleslist.checkSum !== currentCheckSum) {
                     store.set('huntFilters', {
                         ...huntFilters,
                         ruleslist: {
@@ -1269,84 +1166,70 @@ export class RulesList extends HuntList {
                             data: fdata
                         }
                     });
-                    this.setState({ rules_filters: fdata });
+                    this.setState({ rulesFilters: fdata });
                 }
             }
         );
         this.loadActions();
     }
 
-    findSID(filters) {
-        var found_sid = undefined;
-        for (var i = 0; i < filters.length; i++) {
+    findSID = (filters) => {
+        let foundSid;
+        for (let i = 0; i < filters.length; i += 1) {
             if (filters[i].id === 'alert.signature_id') {
-                found_sid = filters[i].value;
+                foundSid = filters[i].value;
                 break;
             }
         }
-        return found_sid;
+        return foundSid;
     }
 
     RuleUpdateFilter(filters) {
         // iterate on filter, if we have a sid we display the rule page
-        var found_sid = this.findSID(filters);
-        if (found_sid !== undefined) {
-            this.setState({ view: 'rule', display_toggle: false, display_rule: found_sid });
+        const foundSid = this.findSID(filters);
+        if (foundSid !== undefined) {
+            this.setState({ view: 'rule', display_toggle: false, display_rule: foundSid });
         } else {
             this.setState({ view: 'rules_list', display_toggle: true, display_rule: undefined });
         }
-        this.UpdateFilter(filters, this.cache.page);
+        this.UpdateFilter(filters, this.cachePage);
     }
 
 
     render() {
         return (
             <div className="RulesList HuntList">
-                {this.state.net_error !== undefined &&
-                <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>
-                }
+                {this.state.net_error !== undefined && <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>}
                 <HuntFilter ActiveFilters={this.props.filters}
-                            config={this.props.config}
-                            ActiveSort={this.props.config.sort}
-                            UpdateFilter={this.RuleUpdateFilter}
-                            UpdateSort={this.UpdateSort}
-                            setViewType={this.setViewType}
-                            filterFields={this.state.rules_filters}
-                            sort_config={RuleSortFields}
-                            displayToggle={this.state.display_toggle}
-                            actionsButtons={this.actionsButtons}
-                            queryType={['filter', 'rest']}
+                    config={this.props.config}
+                    ActiveSort={this.props.config.sort}
+                    UpdateFilter={this.RuleUpdateFilter}
+                    UpdateSort={this.UpdateSort}
+                    setViewType={this.setViewType}
+                    filterFields={this.state.rulesFilters}
+                    sort_config={RuleSortFields}
+                    displayToggle={this.state.display_toggle}
+                    actionsButtons={this.actionsButtons}
+                    queryType={['filter', 'rest']}
                 />
-                {this.state.view === 'rules_list' &&
-                this.props.config.view_type === 'list' &&
-
-                <React.Fragment>
+                {this.state.view === 'rules_list' && this.props.config.view_type === 'list' && <React.Fragment>
                     <Spinner loading={this.state.loading}>
                     </Spinner>
 
                     <ListView>
-                        {this.state.rules.map(function (rule) {
-                            return (
-                                <RuleInList key={rule.sid} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule} addFilter={this.addFilter} rulesets={this.state.rulesets}/>
-                            )
-                        }, this)}
+                        {this.state.rules.map((rule) => (
+                            <RuleInList key={rule.sid} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule} addFilter={this.addFilter} rulesets={this.state.rulesets} />
+                        ))}
                     </ListView>
-                </React.Fragment>
-                }
-                {this.state.view === 'rules_list' &&
-                this.props.config.view_type === 'card' &&
-                <div className='container-fluid container-cards-pf'>
-                    <div className='row row-cards-pf'>
-                        {this.state.rules.map(function (rule) {
-                            return (
-                                <RuleCard key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule} addFilter={this.addFilter}/>
-                            )
-                        }, this)}
+                </React.Fragment>}
+                {this.state.view === 'rules_list' && this.props.config.view_type === 'card' && <div className="container-fluid container-cards-pf">
+                    <div className="row row-cards-pf">
+                        {this.state.rules.map((rule) => (
+                            <RuleCard key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule} addFilter={this.addFilter} />
+                        ))}
                     </div>
-                </div>
-                }
-                {this.state.view === 'rules_list' &&
-                <HuntPaginationRow
+                </div>}
+                {this.state.view === 'rules_list' && <HuntPaginationRow
                     viewType={PAGINATION_VIEW.LIST}
                     pagination={this.props.config.pagination}
                     onPaginationChange={this.handlePaginationChange}
@@ -1354,40 +1237,22 @@ export class RulesList extends HuntList {
                     pageInputValue={this.props.config.pagination.page}
                     itemCount={this.state.count - 1} // used as last item
                     itemsStart={(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
-                    itemsEnd={Math.min(this.props.config.pagination.page * this.props.config.pagination.perPage - 1, this.state.count - 1)}
+                    itemsEnd={Math.min((this.props.config.pagination.page * this.props.config.pagination.perPage) - 1, this.state.count - 1)}
                     onFirstPage={this.onFirstPage}
                     onNextPage={this.onNextPage}
                     onPreviousPage={this.onPrevPage}
                     onLastPage={this.onLastPage}
+                />}
+                {this.state.view === 'rule' && <RulePage systemSettings={this.props.systemSettings} rule={this.state.display_rule} config={this.props.config} filters={this.props.filters} from_date={this.props.from_date} UpdateFilter={this.RuleUpdateFilter} addFilter={this.addFilter} rulesets={this.state.rulesets} />}
+                {this.state.view === 'dashboard' && <HuntDashboard />}
 
-                />
-                }
-                {this.state.view === 'rule' &&
-                    <RulePage
-                        system_settings={this.props.system_settings}
-                        rule={this.state.display_rule}
-                        config={this.props.config}
-                        filters={this.props.filters}
-                        from_date={this.props.from_date}
-                        UpdateFilter={this.RuleUpdateFilter}
-                        addFilter={this.addFilter}
-                        rulesets={this.state.rulesets}
-                    />
-                }
-                {this.state.view === 'dashboard' && <HuntDashboard/>}
-                <RuleToggleModal
-                    show={this.state.action.view}
-                    action={this.state.action.type}
-                    config={this.props.config}
-                    filters={this.props.filters}
-                    close={this.closeAction}
-                    rulesets={this.state.rulesets}
-                />
+                <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config} filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
             </div>
         );
     }
 }
 
+// eslint-disable-next-line react/no-multi-comp
 class RuleStatus extends React.Component {
     constructor(props) {
         super(props);
@@ -1403,36 +1268,36 @@ class RuleStatus extends React.Component {
         this.setState({ display_content: false });
     }
 
-
     render() {
-        const valid = this.props.rule_status.valid;
-        var validity = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok"></span>Valid</span>;
+        const { valid } = this.props.rule_status;
+        let validity = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok"></span>Valid</span>;
         if (valid.status !== true) {
             validity = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-error-circle-o"></span>Valid</span>;
         }
         const trans = this.props.rule_status.transformations;
-        var action = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok" title="Action transformation"></span>Action: {trans.action}</span>;
+        let action = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok" title="Action transformation"></span>Action: {trans.action}</span>;
         if (trans.action === null) {
             action = undefined;
         }
-        var target = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-import" title="Target transformation"></span>Target: {trans.target}</span>;
+        let target = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-import" title="Target transformation"></span>Target: {trans.target}</span>;
         if (trans.target == null) {
             target = undefined;
         }
-        var lateral = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-integration" title="Lateral transformation"></span>Lateral: {trans.lateral}</span>;
+        let lateral = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-integration" title="Lateral transformation"></span>Lateral: {trans.lateral}</span>;
         if (trans.lateral == null) {
             lateral = undefined;
         }
-        var active = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-on"></span>Active</span>;
+        let active = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-on"></span>Active</span>;
         if (!this.props.rule_status.active) {
             active = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-off"></span>Disabled</span>;
         }
 
         return (
             <div className="col-xs-6 col-sm-4 col-md-4">
+                {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
                 <div className="card-pf card-pf-accented card-pf-aggregate-status" onClick={this.showRuleContent} style={{ cursor: 'pointer' }}>
                     <h2 className="card-pf-title">
-                        <span className="fa fa-shield"></span>{this.props.rule_status.name}
+                        <span className="fa fa-shield" />{this.props.rule_status.name}
                     </h2>
                     <div className="card-pf-body">
                         <p className="card-pf-aggregate-status-notifications">
@@ -1445,19 +1310,25 @@ class RuleStatus extends React.Component {
                     </div>
                 </div>
 
-                <RuleContentModal display={this.state.display_content} rule={this.props.rule} close={this.hideRuleContent} rule_status={this.props.rule_status}/>
+                <RuleContentModal display={this.state.display_content} rule={this.props.rule} close={this.hideRuleContent} rule_status={this.props.rule_status} />
             </div>
         );
     }
 }
+RuleStatus.propTypes = {
+    rule_status: PropTypes.any,
+    rule: PropTypes.any,
+};
 
-
+// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
 class RuleContentModal extends React.Component {
     render() {
         return (
             <Modal
-                show={this.props.display} onHide={this.props.close}
-                bsSize="large" aria-labelledby="contained-modal-title-lg"
+                show={this.props.display}
+                onHide={this.props.close}
+                bsSize="large"
+                aria-labelledby="contained-modal-title-lg"
             >
                 <Modal.Header>
                     <button
@@ -1466,7 +1337,7 @@ class RuleContentModal extends React.Component {
                         aria-hidden="true"
                         aria-label="Close"
                     >
-                        <Icon type="pf" name="close"/>
+                        <Icon type="pf" name="close" />
                     </button>
                     <Modal.Title>Transformed rule content in {this.props.rule_status.name}</Modal.Title>
                 </Modal.Header>
@@ -1474,8 +1345,11 @@ class RuleContentModal extends React.Component {
                     <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.props.rule_status.content }}></div>
                 </Modal.Body>
             </Modal>
-        )
+        );
     }
 }
-
-
+RuleContentModal.propTypes = {
+    rule_status: PropTypes.any,
+    display: PropTypes.any,
+    close: PropTypes.any,
+};
