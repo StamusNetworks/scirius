@@ -19,13 +19,15 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django.contrib.auth.models import User
+from scirius.utils import SciriusTable
 import django_tables2 as tables
 
 class DefaultMeta:
     attrs = {"class": "paleblue"}
 
-class UserTable(tables.Table):
+class UserTable(SciriusTable):
     username = tables.LinkColumn('user', args=[tables.A('pk')])
+
     class Meta(DefaultMeta):
         model = User
         fields = ("username", "first_name", "last_name", "email", "is_staff", "is_superuser", "is_active")

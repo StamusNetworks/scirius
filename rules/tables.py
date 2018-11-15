@@ -18,36 +18,37 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from scirius.utils import SciriusTable
 from rules.models import Ruleset, Source, Category, Rule, SourceAtVersion, SourceUpdate, Threshold, UserAction
 import django_tables2 as tables
 
 class DefaultMeta:
     attrs = {"class": "paleblue"}
 
-class RuleTable(tables.Table):
+class RuleTable(SciriusTable):
     sid = tables.LinkColumn('rule', args=[tables.A('pk')])
     class Meta(DefaultMeta):
         model = Rule
         fields = ("sid", "msg", "updated_date")
 
-class ExtendedRuleTable(tables.Table):
+class ExtendedRuleTable(SciriusTable):
     sid = tables.LinkColumn('rule', args=[tables.A('pk')])
     class Meta(DefaultMeta):
         model = Rule
         fields = ("sid", "msg", "category", "hits")
 
-class UpdateRuleTable(tables.Table):
+class UpdateRuleTable(SciriusTable):
     sid = tables.LinkColumn('rule', args=[tables.A('pk')])
     class Meta(DefaultMeta):
         model = Rule
         fields = ("sid", "msg", "category")
 
-class DeletedRuleTable(tables.Table):
+class DeletedRuleTable(SciriusTable):
     class Meta(DefaultMeta):
         model = Rule
         fields = ("sid", "msg", "category")
 
-class EditSourceAtVersionTable(tables.Table):
+class EditSourceAtVersionTable(SciriusTable):
     source_selection = tables.CheckBoxColumn(accessor="pk", attrs = { "th__input":
                                         {"onclick": "tables2_toggle(this, 'source_selection')"},
                                         },
@@ -57,13 +58,13 @@ class EditSourceAtVersionTable(tables.Table):
         model = SourceAtVersion
         fields = ("source_selection", "name", "created_date")
 
-class CategoryTable(tables.Table):
+class CategoryTable(SciriusTable):
     name = tables.LinkColumn('category', args=[tables.A('pk')])
     class Meta(DefaultMeta):
         model = Category
         fields = ("name", "descr", "created_date")
 
-class EditCategoryTable(tables.Table):
+class EditCategoryTable(SciriusTable):
     category_selection = tables.CheckBoxColumn(accessor="pk", attrs = { "th__input":
                                         {"onclick": "tables2_toggle(this, 'category_selection')"},
                                         },
@@ -73,7 +74,7 @@ class EditCategoryTable(tables.Table):
         model = Category
         fields = ("category_selection", "name", "descr", "created_date")
 
-class EditRuleTable(tables.Table):
+class EditRuleTable(SciriusTable):
     rule_selection = tables.CheckBoxColumn(accessor="pk", attrs = { "th__input":
                                         {"onclick": "tables2_toggle(this, 'rule_selection')"}},
                                         orderable=False)
@@ -82,19 +83,19 @@ class EditRuleTable(tables.Table):
         model = Rule
         fields = ("rule_selection", "sid", "msg")
 
-class RulesetTable(tables.Table):
+class RulesetTable(SciriusTable):
     name = tables.LinkColumn('ruleset', args=[tables.A('pk')])
     class Meta(DefaultMeta):
         model = Ruleset
         fields = ("name", "created_date", "updated_date")
 
-class SourceUpdateTable(tables.Table):
+class SourceUpdateTable(SciriusTable):
     created_date = tables.LinkColumn('sourceupdate', args=[tables.A('pk')])
     class Meta(DefaultMeta):
         model = SourceUpdate
         fields = ("created_date", "changed")
 
-class StatusRulesetTable(tables.Table):
+class StatusRulesetTable(SciriusTable):
     name = tables.LinkColumn('ruleset', args=[tables.A('pk')])
     status = tables.Column(verbose_name='Status in ruleset')
     threshold = tables.Column(verbose_name='Threshold')
@@ -103,7 +104,7 @@ class StatusRulesetTable(tables.Table):
         fields = ("name", "status", "threshold", "validity")
         attrs = { 'id': 'rulesets', 'class': 'paleblue' }
 
-class CategoryRulesetTable(tables.Table):
+class CategoryRulesetTable(SciriusTable):
     name = tables.LinkColumn('ruleset', args=[tables.A('pk')])
     status = tables.Column(verbose_name='Status in ruleset')
     action = tables.Column(verbose_name='Action Transformation')
@@ -116,13 +117,13 @@ class CategoryRulesetTable(tables.Table):
         attrs = {'id': 'rulesets', 'class': 'paleblue'}
         order_by = ('name',)
 
-class RuleStatsTable(tables.Table):
+class RuleStatsTable(SciriusTable):
     host = tables.Column()
     count = tables.Column()
     class Meta(DefaultMeta):
         fields = ("host", "count")
 
-class RuleHostTable(tables.Table):
+class RuleHostTable(SciriusTable):
     host = tables.Column()
     count = tables.Column()
     actions = tables.Column()
@@ -130,14 +131,14 @@ class RuleHostTable(tables.Table):
         fields = ("host", "count", "actions")
         attrs = { 'id': 'hosts', 'class': 'paleblue' }
 
-class ESIndexessTable(tables.Table):
+class ESIndexessTable(SciriusTable):
     name = tables.Column()
     count = tables.Column()
     deleted = tables.Column()
     class Meta(DefaultMeta):
         fields = ("name", "count", "deleted")
 
-class ThresholdTable(tables.Table):
+class ThresholdTable(SciriusTable):
     pk = tables.LinkColumn('threshold', args=[tables.A('pk')] )
     threshold_type = tables.Column("Type")
     net = tables.Column("Network")
@@ -147,7 +148,7 @@ class ThresholdTable(tables.Table):
         model = Threshold
         exclude = ()
 
-class RuleSuppressTable(tables.Table):
+class RuleSuppressTable(SciriusTable):
     pk = tables.LinkColumn('threshold', args=[tables.A('pk')], verbose_name='ID')
     net = tables.Column("Network")
     ruleset = tables.Column("Ruleset")
@@ -155,27 +156,27 @@ class RuleSuppressTable(tables.Table):
         model = Threshold
         fields = ("pk", "track_by", "net", "ruleset")
 
-class RuleThresholdTable(tables.Table):
+class RuleThresholdTable(SciriusTable):
     pk = tables.LinkColumn('threshold', args=[tables.A('pk')], verbose_name='ID')
     ruleset = tables.Column("Ruleset")
     class Meta(DefaultMeta):
         model = Threshold
         fields = ("pk", "track_by", "type", "count", "seconds", "ruleset")
 
-class RulesetSuppressTable(tables.Table):
+class RulesetSuppressTable(SciriusTable):
     pk = tables.LinkColumn('threshold', args=[tables.A('pk')], verbose_name='ID')
     net = tables.Column("Network")
     class Meta(DefaultMeta):
         model = Threshold
         fields = ("pk", "rule", "track_by", "net")
 
-class RulesetThresholdTable(tables.Table):
+class RulesetThresholdTable(SciriusTable):
     pk = tables.LinkColumn('threshold', args=[tables.A('pk')], verbose_name='ID')
     class Meta(DefaultMeta):
         model = Threshold
         fields = ("pk", "rule", "track_by", "type", "count", "seconds")
 
-class HistoryTable(tables.Table):
+class HistoryTable(SciriusTable):
     class Meta(DefaultMeta):
         model = UserAction
         fields = ("username", "date", "action", "options", "userobject", "ruleset", "description", "comment")

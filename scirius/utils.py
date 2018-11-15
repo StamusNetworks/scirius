@@ -28,8 +28,6 @@ from django.contrib import messages
 
 import django_tables2 as tables
 
-from rules.tables import *
-from accounts.tables import UserTable
 from accounts.models import SciriusUser
 from rules.models import get_system_settings
 
@@ -149,6 +147,8 @@ def scirius_render(request, template, context):
 
 def scirius_listing(request, objectname, name, template = 'rules/object_list.html', table = None, adduri = None):
     # FIXME could be improved by generating function name
+    from accounts.tables import UserTable
+    from rules.tables import CategoryTable
     assocfn = { 'Categories': CategoryTable, 'Users': UserTable }
     olist = objectname.objects.all()
     if olist:
@@ -191,3 +191,11 @@ def help_links(djlink):
         return HELP_LINKS_TABLE[djlink]
     Probe = __import__(settings.RULESET_MIDDLEWARE)
     return Probe.common.help_links(djlink)
+
+
+# Based on https://github.com/jieter/django-tables2/blob/master/CHANGELOG.md#breaking-changes-200
+class SciriusTable(tables.Table):
+    def get_column_class_names(self, classes_set, bound_column):
+        classes_set = super(SciriusTable, self).get_column_class_names(classes_set, bound_column)
+        classes_set.add(bound_column.name)
+        return classes_set
