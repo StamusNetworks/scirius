@@ -40,188 +40,208 @@ axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 
 let statsCache = {};
 export const RuleSortFields = [
-  {
-    id: 'created',
-    title: 'Created',
-    isNumeric: true,
-    defaultAsc: false,
-  },
-  {
-    id: 'hits',
-    title: 'Alerts',
-    isNumeric: true,
-    defaultAsc: false,
-  },
-  {
-    id: 'msg',
-    title: 'Message',
-    isNumeric: false,
-    defaultAsc: true,
-  },
-  {
-    id: 'updated',
-    title: 'Updated',
-    isNumeric: true,
-    defaultAsc: false,
-  }
+    {
+        id: 'created',
+        title: 'Created',
+        isNumeric: true,
+        defaultAsc: false,
+    },
+    {
+        id: 'hits',
+        title: 'Alerts',
+        isNumeric: true,
+        defaultAsc: false,
+    },
+    {
+        id: 'msg',
+        title: 'Message',
+        isNumeric: false,
+        defaultAsc: true,
+    },
+    {
+        id: 'updated',
+        title: 'Updated',
+        isNumeric: true,
+        defaultAsc: false,
+    }
 ];
 
 export class RuleInList extends React.Component {
-  render() {
-    var category = this.props.data.category;
-    var source = this.props.state.sources[category.source];
-    var cat_tooltip = category.name;
-    if (source && source.name) {
-	    cat_tooltip = source.name + ": " + category.name;
+    render() {
+        var category = this.props.data.category;
+        var source = this.props.state.sources[category.source];
+        var cat_tooltip = category.name;
+        if (source && source.name) {
+            cat_tooltip = source.name + ": " + category.name;
+        }
+        var kebab_config = { rule: this.props.data };
+        return (
+            <ListViewItem key={this.props.data.sid}
+                actions={[<a key={"actions-" + this.props.data.sid} onClick={e => {
+                    this.props.SwitchPage(this.props.data)
+                }}>
+                    <Icon type="fa" name="search-plus"/> </a>,
+                    <RuleEditKebab key={"kebab-" + this.props.data.sid} config={kebab_config} rulesets={this.props.rulesets}/>]} leftContent={<ListViewIcon name="envelope"/>} additionalInfo={[<ListViewInfoItem key={"created-" + this.props.data.sid}><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
+                    <ListViewInfoItem key={"updated-" + this.props.data.sid}><p>Updated: {this.props.data.updated}</p> </ListViewInfoItem>,
+                    <ListViewInfoItem key={"category-" + this.props.data.sid}><p data-toggle="tooltip" title={cat_tooltip}>Category: {category.name}</p></ListViewInfoItem>,
+                    <ListViewInfoItem key={"hits-" + this.props.data.sid}><Spinner loading={this.props.data.hits === undefined} size="xs"><p>Alerts <span className="badge">{this.props.data.hits}</span></p></Spinner></ListViewInfoItem>
+                ]}
+                heading={this.props.data.sid}
+                description={this.props.data.msg}
+            >
+                {this.props.data.timeline &&
+                <Row>
+                    <Col sm={11}>
+                        <div className="container-fluid">
+                            <div className="row">
+                                <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.props.data.content }}></div>
+                            </div>
+                            <div className="row">
+                                <div className="col-md-12">
+                                    <SciriusChart data={this.props.data.timeline}
+                                                  axis={{
+                                                      x: {
+                                                          type: 'timeseries',
+                                                          localtime: true,
+                                                          min: this.props.from_date,
+                                                          max: Date.now(),
+                                                          tick: { fit: false, format: '%Y-%m-%d %H:%M' }
+                                                      }
+                                                  } }
+                                    />
+                                </div>
+                            </div>
+                            <div className="row">
+                                <div className="col-md-4">
+                                    <h4>Probes</h4>
+                                    <ListGroup>
+                                        {this.props.data.probes.map(item => {
+                                            return (
+                                                <ListGroupItem key={item.probe}>
+                                                    <EventValue field={"host"} value={item.probe}
+                                                                addFilter={this.props.addFilter}
+                                                                right_info={<Badge>{item.hits}</Badge>}/>
+                                                </ListGroupItem>)
+                                        })}
+                                    </ListGroup>
+                                </div>
+                            </div>
+                        </div>
+                    </Col>
+                </Row>
+                }
+            </ListViewItem>
+        )
     }
-    var kebab_config = { rule: this.props.data };
-    return (
-	<ListViewItem
-	   key={this.props.data.sid}
-  actions={[<a key={"actions-" + this.props.data.sid} onClick={e => {this.props.SwitchPage(this.props.data)}}><Icon type="fa" name="search-plus"/> </a>, <RuleEditKebab key={"kebab-" + this.props.data.sid} config={kebab_config} rulesets={this.props.rulesets} /> ]}
-  leftContent={<ListViewIcon name="envelope" />}
-  additionalInfo={[<ListViewInfoItem key={"created-" + this.props.data.sid} ><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
-                   <ListViewInfoItem key={"updated-" + this.props.data.sid}><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
-                   <ListViewInfoItem key={"category-" + this.props.data.sid}><p  data-toggle="tooltip" title={cat_tooltip}>Category: {category.name}</p></ListViewInfoItem>,
-                   <ListViewInfoItem key={"hits-" + this.props.data.sid}><Spinner loading={this.props.data.hits === undefined} size="xs"><p>Alerts <span className="badge">{this.props.data.hits}</span></p></Spinner></ListViewInfoItem>
-  ]}
-  heading={this.props.data.sid}
-  description={this.props.data.msg}
->
-      {this.props.data.timeline &&
-<Row>
-<Col sm={11}>
-<div className="container-fluid">
-   <div className="row">
-      <div className="SigContent" dangerouslySetInnerHTML={{__html: this.props.data.content}}></div>
-   </div>
-   <div className="row">
-      <div className="col-md-12">
-      <SciriusChart data={ this.props.data.timeline }
-               axis={{ x: { type: 'timeseries',
-                            localtime: true,
-                            min: this.props.from_date,
-                            max: Date.now(),
-                            tick: { fit: false, format: '%Y-%m-%d %H:%M'}
-                     } }
-                    }
-      />
-      </div>
-    </div>
-    <div className="row">
-        <div className="col-md-4">
-            <h4>Probes</h4>
-            <ListGroup>
-            {this.props.data.probes.map( item => {
-            return(
-            <ListGroupItem key={item.probe} >
-                <EventValue field={"host"} value={item.probe}
-                            addFilter={this.props.addFilter}
-                            right_info={<Badge>{item.hits}</Badge>} />
-            </ListGroupItem>)
-            })}
-            </ListGroup>
-        </div>
-    </div>
-</div>
-</Col>
-</Row>
-      }
-</ListViewItem>
-    )
-  }
 }
 
 export class RuleCard extends React.Component {
-  render() {
-    var category = this.props.data.category;
-    var source = this.props.state.sources[category.source];
-    var cat_tooltip = category.name;
-    if (source && source.name) {
-	    cat_tooltip = source.name + ": " + category.name;
-    }
-    var imported = undefined;
-    if (!this.props.data.created) {
-    	imported = this.props.data.imported_date.split("T")[0];
-    }
-    return (
-    <div className="col-xs-6 col-sm-4 col-md-4">
-	<div className="card-pf rule-card">
-       <div className="card-pf-heading">
-           <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={this.props.data.msg}>{this.props.data.msg}</h2>
-       </div>
-       <div className="card-pf-body">
-            <div className="container-fluid">
-               <div className="row">
-                  <div className="col-md-5 truncate-overflow"  data-toggle="tooltip" title={cat_tooltip}>Cat: {category.name}</div>
-                  <div className="col-md-4">
-                    {this.props.data.created &&
-                  <p>Created: {this.props.data.created}</p>
-                    }
-                    {!this.props.data.created &&
-                  <p>Imported: {imported}</p>
-                    }
-                  </div>
-                  <div className="col-md-3">Alerts 
-                     <Spinner loading={this.props.data.hits === undefined} size="xs">
-                         <span className="badge">{this.props.data.hits}</span>
-                     </Spinner>
-                  </div>
+    render() {
+        var category = this.props.data.category;
+        var source = this.props.state.sources[category.source];
+        var cat_tooltip = category.name;
+        if (source && source.name) {
+            cat_tooltip = source.name + ": " + category.name;
+        }
+        var imported = undefined;
+        if (!this.props.data.created) {
+            imported = this.props.data.imported_date.split("T")[0];
+        }
+        return (
+            <div className="col-xs-6 col-sm-4 col-md-4">
+                <div className="card-pf rule-card">
+                    <div className="card-pf-heading">
+                        <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={this.props.data.msg}>{this.props.data.msg}</h2>
+                    </div>
+                    <div className="card-pf-body">
+                        <div className="container-fluid">
+                            <div className="row">
+                                <div className="col-md-5 truncate-overflow" data-toggle="tooltip" title={cat_tooltip}>Cat: {category.name}</div>
+                                <div className="col-md-4">
+                                    {this.props.data.created &&
+                                    <p>Created: {this.props.data.created}</p>
+                                    }
+                                    {!this.props.data.created &&
+                                    <p>Imported: {imported}</p>
+                                    }
+                                </div>
+                                <div className="col-md-3">Alerts
+                                    <Spinner loading={this.props.data.hits === undefined} size="xs">
+                                        <span className="badge">{this.props.data.hits}</span>
+                                    </Spinner>
+                                </div>
+                            </div>
+                        </div>
+                        <Spinner loading={this.props.data.hits === undefined} size="xs">
+                            {this.props.data.timeline &&
+                            <div className="chart-pf-sparkline">
+                                <SciriusChart data={this.props.data.timeline}
+                                              axis={{
+                                                  x: {
+                                                      type: 'timeseries',
+                                                      localtime: true,
+                                                      min: this.props.from_date,
+                                                      max: Date.now(),
+                                                      show: false,
+                                                      tick: { fit: true, format: '%Y-%m-%d %H:%M' }
+                                                  },
+                                                  y: { show: false }
+                                              }}
+                                              legend={{
+                                                  show: false
+                                              }}
+                                              size={{ height: 50 }}
+                                              point={{ show: false }}
+                                />
+                            </div>
+                            }
+                            {!this.props.data.timeline &&
+                            <div className="no-sparkline">
+                                <p>No alert</p>
+                            </div>
+                            }
+                        </Spinner>
+                        <div>
+                            SID: <strong>{this.props.data.sid}</strong>
+                            <span className="pull-right">
+                                <a onClick={e => {
+                                   this.props.SwitchPage(this.props.data)
+                                }}
+                                style={{ cursor: 'pointer' }}
+                                >
+                                    <Icon type="fa" name="search-plus"/>
+                                </a>
+                            </span>
+                        </div>
+                    </div>
                 </div>
-           </div>
-           <Spinner loading={this.props.data.hits === undefined} size="xs">
-      {this.props.data.timeline &&
-      <div className="chart-pf-sparkline">
-      <SciriusChart data={ this.props.data.timeline }
-               axis={{ x: { type: 'timeseries',
-                            localtime: true,
-                            min: this.props.from_date,
-                            max: Date.now(),
-                            show: false,
-                            tick: { fit: true, format: '%Y-%m-%d %H:%M'}
-                     },
-                     y: { show: false }
-               }}
-               legend = {{
-                  show: false    
-               }}
-               size = {{ height: 50 }}
-               point = {{ show: false }}
-      />
-      </div>
-      }
-      {!this.props.data.timeline &&
-          <div className="no-sparkline">
-             <p>No alert</p>
-          </div>
-      }
-           </Spinner>
-         <div>
-            SID: <strong>{this.props.data.sid}</strong>
-            <span className="pull-right">
-               <a onClick={e => {this.props.SwitchPage(this.props.data)}}
-                  style={{cursor:'pointer'}}>
-                <Icon type="fa" name="search-plus"/>
-                </a>
-            </span>
-         </div>
-      </div>
-   </div>
-   </div>
-    )
-  }
+            </div>
+        )
+    }
 }
 
 export class RulePage extends React.Component {
     constructor(props) {
         super(props);
         var rule = JSON.parse(JSON.stringify(this.props.rule));
-	if (typeof rule === 'number') {
-            this.state = { rule: undefined, rule_status: undefined, sid: rule, toggle: { show: false, action: "Disable" }, extinfo: { http: false, dns: false, tls: false }};
-	} else {
-	    rule.timeline = undefined;
-            this.state = { rule: rule, rule_status: undefined, sid: rule.sid, toggle: { show: false, action: "Disable" }, extinfo: { http: false, dns: false, tls: false }};
-	}
+        if (typeof rule === 'number') {
+            this.state = {
+                rule: undefined,
+                rule_status: undefined,
+                sid: rule,
+                toggle: { show: false, action: "Disable" },
+                extinfo: { http: false, dns: false, tls: false }
+            };
+        } else {
+            rule.timeline = undefined;
+            this.state = {
+                rule: rule,
+                rule_status: undefined,
+                sid: rule.sid,
+                toggle: { show: false, action: "Disable" },
+                extinfo: { http: false, dns: false, tls: false }
+            };
+        }
         this.updateRuleState = this.updateRuleState.bind(this);
         this.fetchRuleStatus = this.fetchRuleStatus.bind(this);
         this.updateRuleStatus = this.updateRuleStatus.bind(this);
@@ -229,239 +249,244 @@ export class RulePage extends React.Component {
     }
 
     updateExtInfo(data) {
-	    if (!data) {
-		    return;
-	    }
-	       var extinfo = this.state.extinfo;
-	       for (var i=0; i < data.length; i++) {
-                    if (data[i].key === "dns") {
-                         extinfo.dns = true;
-		    }
-                    if (data[i].key === "http") {
-                         extinfo.http = true;
-		    }
-                    if (data[i].key === "tls") {
-                         extinfo.tls = true;
-		    }
-	       }
-	       this.setState({extinfo: extinfo});
+        if (!data) {
+            return;
+        }
+        var extinfo = this.state.extinfo;
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].key === "dns") {
+                extinfo.dns = true;
+            }
+            if (data[i].key === "http") {
+                extinfo.http = true;
+            }
+            if (data[i].key === "tls") {
+                extinfo.tls = true;
+            }
+        }
+        this.setState({ extinfo: extinfo });
     }
 
     updateRuleStatus() {
-	    return this.fetchRuleStatus(this.state.rule.sid);
+        return this.fetchRuleStatus(this.state.rule.sid);
     }
 
     fetchRuleStatus(sid) {
-           axios.all([
-                axios.get(config.API_URL + config.RULE_PATH + sid + "/status/"),
-                axios.get(config.API_URL + config.RULE_PATH + sid + "/content/?highlight=1"),
-                axios.get(config.API_URL + config.RULE_PATH + sid + "/references/")
-                ]).then(
-                    ([res, rescontent, references_content]) => {
-                        var rstatus = [];
-                        for (var key in res.data) {
-                            res.data[key]['pk'] = key;
-                            res.data[key].content = rescontent.data[key];
-                            rstatus.push(res.data[key]);
-                        }
-                        this.setState({rule_status: rstatus});
-                        this.setState({rule_references: references_content.data});
-	            }
-	   )
+        axios.all([
+            axios.get(config.API_URL + config.RULE_PATH + sid + "/status/"),
+            axios.get(config.API_URL + config.RULE_PATH + sid + "/content/?highlight=1"),
+            axios.get(config.API_URL + config.RULE_PATH + sid + "/references/")
+        ]).then(
+            ([res, rescontent, references_content]) => {
+                var rstatus = [];
+                for (var key in res.data) {
+                    res.data[key]['pk'] = key;
+                    res.data[key].content = rescontent.data[key];
+                    rstatus.push(res.data[key]);
+                }
+                this.setState({ rule_status: rstatus });
+                this.setState({ rule_references: references_content.data });
+            }
+        )
     }
 
     componentDidMount() {
-       var rule = this.state.rule;
-       var sid = this.state.sid;
-       var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
+        var rule = this.state.rule;
+        var sid = this.state.sid;
+        var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
 
-       if (rule !== undefined) {
-           updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
-	   axios.get(config.API_URL + config.ES_BASE_PATH +
-                    'field_stats&field=app_proto&from_date=' + this.props.from_date +
-                    '&sid=' + this.props.rule.sid)
-             .then(res => {
-		     this.updateExtInfo(res.data);
-            }) 
-	   this.fetchRuleStatus(rule.sid);
-       } else {
-           axios.get(config.API_URL + config.RULE_PATH + sid + "/?highlight=true").then(
-		res => { 
-                         updateHitsStats([res.data], this.props.from_date, this.updateRuleState, qfilter);
-	   axios.get(config.API_URL + config.ES_BASE_PATH +
-                    'field_stats&field=app_proto&from_date=' + this.props.from_date +
-                    '&sid=' + sid)
-             .then(res => {
-		     this.updateExtInfo(res.data);
-            }) 
-		}
-	   ).catch( error => {
-		if (error.response.status === 404) {
-			this.setState({errors: {signature: ['Signature not found']}, rule: null});
-			return;
-		}
-		this.setState({rule: null});
-	   })
-	   this.fetchRuleStatus(sid);
-       }
+        if (rule !== undefined) {
+            updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
+            axios.get(config.API_URL + config.ES_BASE_PATH +
+                'field_stats&field=app_proto&from_date=' + this.props.from_date +
+                '&sid=' + this.props.rule.sid)
+            .then(res => {
+                this.updateExtInfo(res.data);
+            })
+            this.fetchRuleStatus(rule.sid);
+        } else {
+            axios.get(config.API_URL + config.RULE_PATH + sid + "/?highlight=true").then(
+                res => {
+                    updateHitsStats([res.data], this.props.from_date, this.updateRuleState, qfilter);
+                    axios.get(config.API_URL + config.ES_BASE_PATH +
+                        'field_stats&field=app_proto&from_date=' + this.props.from_date +
+                        '&sid=' + sid)
+                    .then(res => {
+                        this.updateExtInfo(res.data);
+                    })
+                }
+            ).catch(error => {
+                if (error.response.status === 404) {
+                    this.setState({ errors: { signature: ['Signature not found'] }, rule: null });
+                    return;
+                }
+                this.setState({ rule: null });
+            })
+            this.fetchRuleStatus(sid);
+        }
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-       var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
-       if ((prevProps.from_date !==  this.props.from_date) ||
-           (prevProps.filters.length !==  this.props.filters.length)) {
+        var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
+        if ((prevProps.from_date !== this.props.from_date) ||
+            (prevProps.filters.length !== this.props.filters.length)) {
             var rule = JSON.parse(JSON.stringify(this.state.rule));
 
             if (rule) {
                 updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
             }
-       }
+        }
     }
 
     updateRuleState(rule) {
-        this.setState({rule: rule[0]});
+        this.setState({ rule: rule[0] });
     }
 
     render() {
         return (
             <div>
-	    <Spinner loading={this.state.rule === undefined}>
-	    {this.state.rule &&
-            <div>
-	    <h1>{this.state.rule.msg}
-            <span className="pull-right"> 
-		{ (this.state.rule && this.state.rule.hits !== undefined) &&
-	        <span className="label label-primary">{this.state.rule.hits} hit{this.state.rule.hits > 1 && 's'}</span>
-		}
-                <RuleEditKebab config={this.state} rulesets={this.props.rulesets} refresh_callback = {this.updateRuleStatus} />
-            </span>
-        </h1>
-            <div className='container-fluid container-cards-pf'>
-                <div className='row'>
-      		     <div className="SigContent" dangerouslySetInnerHTML={{__html: this.state.rule.content}}></div>
-                     {this.state.rule.timeline &&
-                        <SciriusChart data={ this.state.rule.timeline }
-                            axis={{ x: { type: 'timeseries',
-                                    localtime: true,
-                                    min: this.props.from_date,
-                                    max: Date.now(),
-                                    tick: { fit: false, format: '%Y-%m-%d %H:%M'}
-                                    }
-                                   }
-                                 }
-                         />
-                      }
-                </div>
-		{this.state.rule_status !== undefined &&
-		<Row>
-			{
-				this.state.rule_status.map( rstatus => {
-					return(
-					      <RuleStatus rule={this.state.rule} key={rstatus.pk} rule_status={rstatus}/>
-					);
-				})
-			}
-		</Row>
-		}
-                <div className='row'>
-                    <HuntStat system_settings={this.state.system_settings} title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters}  item='src_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                    <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                    <HuntStat title="Probes" rule={this.state.rule} config={this.props.config}  filters={this.props.filters}  item='host' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                </div>
-		{this.state.extinfo.http &&
-                <div className='row'>
-                    <HuntStat system_settings={this.state.system_settings} title="Hostname" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                    <HuntStat system_settings={this.state.system_settings} title="URL" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.url' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                    <HuntStat system_settings={this.state.system_settings} title="User agent" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                </div>
-		}
-		{this.state.extinfo.dns &&
-                <div className='row'>
-                    <HuntStat system_settings={this.state.system_settings} title="Name" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} />
-                    <HuntStat system_settings={this.state.system_settings} title="Type" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                </div>
-		}
-		{this.state.extinfo.tls &&
-                <div className='row'>
-                    <HuntStat system_settings={this.state.system_settings} title="Subject DN" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} />
-                    <HuntStat system_settings={this.state.system_settings} title="SNI" rule={this.state.rule}  config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date}  UpdateFilter={this.props.UpdateFilter}  addFilter={this.props.addFilter}/>
-                    <HuntStat system_settings={this.state.system_settings} title="Fingerprint" rule={this.state.rule}  config={this.props.config} filters={this.props.filters}  item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                </div>
-        }
-        <Row>
-        {this.state.rule_references && this.state.rule_references.length > 0 &&
-            <div className="col-xs-6 col-sm-4 col-md-4">
-                <div className="card-pf card-pf-accented card-pf-aggregate-status">
-                    {/* <div class="panel-heading">
-                        <h2 class="panel-title">References</h2>
-                    </div> */}
-                    <h2 className="card-pf-title">
-                        <span className="fa"></span>References
-                    </h2>
-                    <div className="card-pf-body">
-                        {this.state.rule_references.map( (reference, idx) => {
-                                if(reference.url !== undefined) {
-                                    return(
-                                        <p key={idx}><a href={reference.url} target="_blank">{reference.key[0].toUpperCase() + reference.key.substring(1) + ': ' + reference.value}</a></p>
-                                    );
+                <Spinner loading={this.state.rule === undefined}>
+                    {this.state.rule &&
+                    <div>
+                        <h1>{this.state.rule.msg}
+                            <span className="pull-right">
+                                {(this.state.rule && this.state.rule.hits !== undefined) &&
+                                    <span className="label label-primary">{this.state.rule.hits} hit{this.state.rule.hits > 1 && 's'}</span>
                                 }
-                                return null;
-                            })
-                        }
+                                <RuleEditKebab config={this.state} rulesets={this.props.rulesets} refresh_callback={this.updateRuleStatus}/>
+                            </span>
+                        </h1>
+                        <div className='container-fluid container-cards-pf'>
+                            <div className='row'>
+                                <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.state.rule.content }}></div>
+                                {this.state.rule.timeline &&
+                                    <SciriusChart
+                                        data={this.state.rule.timeline}
+                                        axis={{
+                                            x: {
+                                                type: 'timeseries',
+                                                localtime: true,
+                                                min: this.props.from_date,
+                                                max: Date.now(),
+                                                tick: {
+                                                    fit: false,
+                                                    format: '%Y-%m-%d %H:%M'
+                                                }
+                                            }
+                                        }}
+                                    />
+                                }
+                            </div>
+                            {this.state.rule_status !== undefined &&
+                            <Row>
+                                {
+                                    this.state.rule_status.map(rstatus => {
+                                        return (
+                                            <RuleStatus rule={this.state.rule} key={rstatus.pk} rule_status={rstatus}/>
+                                        );
+                                    })
+                                }
+                            </Row>
+                            }
+                            <div className='row'>
+                                <HuntStat system_settings={this.state.system_settings} title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='src_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                                <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                                <HuntStat title="Probes" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='host' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                            </div>
+                            {this.state.extinfo.http &&
+                            <div className='row'>
+                                <HuntStat system_settings={this.state.system_settings} title="Hostname" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                                <HuntStat system_settings={this.state.system_settings} title="URL" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='http.url' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                                <HuntStat system_settings={this.state.system_settings} title="User agent" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                            </div>
+                            }
+                            {this.state.extinfo.dns &&
+                            <div className='row'>
+                                <HuntStat system_settings={this.state.system_settings} title="Name" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                                <HuntStat system_settings={this.state.system_settings} title="Type" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                            </div>
+                            }
+                            {this.state.extinfo.tls &&
+                            <div className='row'>
+                                <HuntStat system_settings={this.state.system_settings} title="Subject DN" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                                <HuntStat system_settings={this.state.system_settings} title="SNI" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                                <HuntStat system_settings={this.state.system_settings} title="Fingerprint" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                            </div>
+                            }
+                            <Row>
+                                {this.state.rule_references && this.state.rule_references.length > 0 &&
+                                <div className="col-xs-6 col-sm-4 col-md-4">
+                                    <div className="card-pf card-pf-accented card-pf-aggregate-status">
+                                        {/* <div class="panel-heading">
+                                            <h2 class="panel-title">References</h2>
+                                        </div> */}
+                                        <h2 className="card-pf-title">
+                                            <span className="fa"></span>References
+                                        </h2>
+                                        <div className="card-pf-body">
+                                            {this.state.rule_references.map((reference, idx) => {
+                                                if (reference.url !== undefined) {
+                                                    return (
+                                                        <p key={idx}><a href={reference.url} target="_blank">{reference.key[0].toUpperCase() + reference.key.substring(1) + ': ' + reference.value}</a></p>
+                                                    );
+                                                }
+                                                return null;
+                                            })
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                }
+                            </Row>
+                        </div>
                     </div>
-                </div>
+                    }
+                </Spinner>
             </div>
-        }
-        </Row>
-            </div>
-	    </div>
-	    }
-	    </Spinner>
-            </div>
-	)
+        )
     }
 }
 
 export class HuntStat extends React.Component {
     constructor(props) {
-	    super(props);
-  	    this.state = {data: []};
-  	    this.url = '';
+        super(props);
+        this.state = { data: [] };
+        this.url = '';
         this.updateData = this.updateData.bind(this);
-	this.addFilter = this.addFilter.bind(this);
+        this.addFilter = this.addFilter.bind(this);
     }
 
     updateData() {
-          var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
-	  if (qfilter) {
-		qfilter = '&qfilter=' + qfilter;
-	  } else {
-		qfilter = "";
-	  }
+        var qfilter = buildQFilter(this.props.filters, this.props.system_settings);
+        if (qfilter) {
+            qfilter = '&qfilter=' + qfilter;
+        } else {
+            qfilter = "";
+        }
 
-        this.url = config.API_URL + config.ES_BASE_PATH + 'field_stats&field=' + this.props.item + '&from_date=' + this.props.from_date + '&page_size=30' +qfilter
+        this.url = config.API_URL + config.ES_BASE_PATH + 'field_stats&field=' + this.props.item + '&from_date=' + this.props.from_date + '&page_size=30' + qfilter
 
-          axios.get(config.API_URL + config.ES_BASE_PATH +
-                    'field_stats&field=' + this.props.item +
-		    '&from_date=' + this.props.from_date +
-		    '&page_size=5' +
-                    qfilter)
-             .then(res => {
-               this.setState({ data: res.data });
-            })
+        axios.get(config.API_URL + config.ES_BASE_PATH +
+            'field_stats&field=' + this.props.item +
+            '&from_date=' + this.props.from_date +
+            '&page_size=5' +
+            qfilter)
+        .then(res => {
+            this.setState({ data: res.data });
+        })
     }
 
     componentDidMount() {
-            this.updateData();
+        this.updateData();
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-       if (prevProps.from_date !==  this.props.from_date) {
-               this.updateData();
-       }
-       if (prevProps.filters.length !==  this.props.filters.length) {
-               this.updateData();
-       }
+        if (prevProps.from_date !== this.props.from_date) {
+            this.updateData();
+        }
+        if (prevProps.filters.length !== this.props.filters.length) {
+            this.updateData();
+        }
     }
 
     addFilter(key, value, negated) {
@@ -469,51 +494,53 @@ export class HuntStat extends React.Component {
     }
 
     render() {
-	    var col_val = "col-md-3";
-	    if (this.props.col) {
-		    col_val = 'col-md-' + this.props.col;
-	    }
-	    if (this.state.data && this.state.data.length) {
-        return (
-	    <div className={col_val}>
-	<div className="card-pf rule-card">
-       <div className="card-pf-heading">
-           <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={this.props.title}>{this.props.title}</h2>
-           {this.state.data.length === 5 && <DropdownKebab id={"more-"+this.props.item}  pullRight={false}>
-                <MenuItem onClick={(e) => this.props.loadMore(this.props.item, this.url) } data-toggle="modal" >Load more results</MenuItem>
-            </DropdownKebab>}
-       </div>
-       <div className="card-pf-body">
-	<ListGroup>
-	    {this.state.data.map( item => {
-		return(<ListGroupItem key={item.key}>
-		 <EventValue field={this.props.item} value={item.key}
-		             addFilter={this.addFilter}
-			     right_info={<Badge>{item.doc_count}</Badge>}
-		 />
-		 </ListGroupItem>)
-	    })}
-	</ListGroup>
-	</div>
-        </div>
-	</div>
-	);
-	    } else {
-		return null;
-	    }
+        var col_val = "col-md-3";
+        if (this.props.col) {
+            col_val = 'col-md-' + this.props.col;
+        }
+        if (this.state.data && this.state.data.length) {
+            return (
+                <div className={col_val}>
+                    <div className="card-pf rule-card">
+                        <div className="card-pf-heading">
+                            <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={this.props.title}>{this.props.title}</h2>
+                            {this.state.data.length === 5 &&
+                                <DropdownKebab id={"more-" + this.props.item} pullRight={false}>
+                                    <MenuItem onClick={(e) => this.props.loadMore(this.props.item, this.url)} data-toggle="modal">Load more results</MenuItem>
+                                </DropdownKebab>
+                            }
+                        </div>
+                        <div className="card-pf-body">
+                            <ListGroup>
+                                {this.state.data.map(item => {
+                                    return (<ListGroupItem key={item.key}>
+                                        <EventValue field={this.props.item} value={item.key}
+                                                    addFilter={this.addFilter}
+                                                    right_info={<Badge>{item.doc_count}</Badge>}
+                                        />
+                                    </ListGroupItem>)
+                                })}
+                            </ListGroup>
+                        </div>
+                    </div>
+                </div>
+            );
+        } else {
+            return null;
+        }
     }
 }
 
 function buildProbesSet(data) {
     var probes = [];
     for (var probe in data) {
-	probes.push({probe: data[probe].key, hits: data[probe].doc_count});
+        probes.push({ probe: data[probe].key, hits: data[probe].doc_count });
     }
     return probes;
 }
 
 function buildTimelineDataSet(tdata) {
-    var timeline = {x : 'x', type: 'area',  columns: [['x'], ['alerts']]};
+    var timeline = { x: 'x', type: 'area', columns: [['x'], ['alerts']] };
     for (var key in tdata) {
         timeline.columns[0].push(tdata[key].key);
         timeline.columns[1].push(tdata[key].doc_count);
@@ -522,78 +549,82 @@ function buildTimelineDataSet(tdata) {
 }
 
 export function updateHitsStats(rules, p_from_date, updateCallback, qfilter) {
-         var sids = Array.from(rules, x => x.sid).join()
-	     var from_date = "&from_date=" + p_from_date;
-         var url = config.API_URL + config.ES_SIGS_LIST_PATH + sids + from_date;
-	 if (qfilter) {
-	     url += "&filter=" + qfilter;
-	 }
-      if( typeof statsCache[encodeURI(url)] !== 'undefined') {
-            processHitsStats(statsCache[encodeURI(url)], rules, updateCallback)
-          return;
-        }
-         axios.get(url).then(res => {
-                 /* we are going O(n2), we should fix that */
-             statsCache[encodeURI(url)] = res;
-             processHitsStats(res, rules, updateCallback)
-         });
+    var sids = Array.from(rules, x => x.sid).join()
+    var from_date = "&from_date=" + p_from_date;
+    var url = config.API_URL + config.ES_SIGS_LIST_PATH + sids + from_date;
+    if (qfilter) {
+        url += "&filter=" + qfilter;
+    }
+    if (typeof statsCache[encodeURI(url)] !== 'undefined') {
+        processHitsStats(statsCache[encodeURI(url)], rules, updateCallback)
+        return;
+    }
+    axios.get(url).then(res => {
+        /* we are going O(n2), we should fix that */
+        statsCache[encodeURI(url)] = res;
+        processHitsStats(res, rules, updateCallback)
+    });
 }
 
 function processHitsStats(res, rules, updateCallback) {
-                 for (var rule in rules) {
-                    var found = false;
-                    for (var info in res.data) {
-                        if (res.data[info].key === rules[rule].sid) {
-                            rules[rule].timeline = buildTimelineDataSet(res.data[info].timeline['buckets']);
-                            rules[rule].probes = buildProbesSet(res.data[info].probes['buckets']);
-                            rules[rule].hits = res.data[info].doc_count;
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (found === false) {
-                        rules[rule].hits = 0;
-                        rules[rule].probes = [];
-                        rules[rule].timeline = undefined;
-                    }
-                 }
-                 if (updateCallback) {
-                    updateCallback(rules);
-                 }
+    for (var rule in rules) {
+        var found = false;
+        for (var info in res.data) {
+            if (res.data[info].key === rules[rule].sid) {
+                rules[rule].timeline = buildTimelineDataSet(res.data[info].timeline['buckets']);
+                rules[rule].probes = buildProbesSet(res.data[info].probes['buckets']);
+                rules[rule].hits = res.data[info].doc_count;
+                found = true;
+                break;
+            }
+        }
+        if (found === false) {
+            rules[rule].hits = 0;
+            rules[rule].probes = [];
+            rules[rule].timeline = undefined;
+        }
+    }
+    if (updateCallback) {
+        updateCallback(rules);
+    }
 }
 
 export class RuleEditKebab extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { toggle: { show: false, action: "Disable" }};
+        this.state = { toggle: { show: false, action: "Disable" } };
         this.displayToggle = this.displayToggle.bind(this);
         this.hideToggle = this.hideToggle.bind(this);
     }
 
     displayToggle(action) {
-        this.setState({toggle: {show: true, action: action}});
+        this.setState({ toggle: { show: true, action: action } });
     }
 
     hideToggle() {
-        this.setState({toggle: {show: false, action: this.state.toggle.action}});
+        this.setState({ toggle: { show: false, action: this.state.toggle.action } });
     }
 
     render() {
-        return(
+        return (
             <React.Fragment>
                 <DropdownKebab id="ruleActions" pullRight>
-                        <MenuItem onClick={ e => {this.displayToggle("enable") }}>
+                    <MenuItem onClick={e => {
+                        this.displayToggle("enable")
+                    }}>
                         Enable Rule
-                        </MenuItem>
-                        <MenuItem  onClick={ e => {this.displayToggle("disable") }}> 
+                    </MenuItem>
+                    <MenuItem onClick={e => {
+                        this.displayToggle("disable")
+                    }}>
                         Disable Rule
-                        </MenuItem>
-			<MenuItem divider />
-			<MenuItem href={'/rules/rule/pk/' + this.props.config.rule.pk + '/'}>
-			Rule page in Scirius
-			</MenuItem>
+                    </MenuItem>
+                    <MenuItem divider/>
+                    <MenuItem href={'/rules/rule/pk/' + this.props.config.rule.pk + '/'}>
+                        Rule page in Scirius
+                    </MenuItem>
                 </DropdownKebab>
-                <RuleToggleModal show={this.state.toggle.show} action={this.state.toggle.action} config={this.props.config} close={this.hideToggle} rulesets={this.props.rulesets} refresh_callback={this.props.refresh_callback} />
+                <RuleToggleModal show={this.state.toggle.show} action={this.state.toggle.action} config={this.props.config} close={this.hideToggle} rulesets={this.props.rulesets} refresh_callback={this.props.refresh_callback}/>
             </React.Fragment>
         )
     }
@@ -602,9 +633,11 @@ export class RuleEditKebab extends React.Component {
 export class RuleToggleModal extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {selected: [], supported_filters: [], comment: "",
-			options: {},
-            errors: undefined};
+        this.state = {
+            selected: [], supported_filters: [], comment: "",
+            options: {},
+            errors: undefined
+        };
         this.submit = this.submit.bind(this);
         this.close = this.close.bind(this);
         this.handleChange = this.handleChange.bind(this);
@@ -618,69 +651,69 @@ export class RuleToggleModal extends React.Component {
     }
 
     updateActionDialog() {
-      if (['enable', 'disable'].indexOf(this.props.action) !== -1) {
-          this.setState({supported_filters: [], noaction: false, errors: undefined});
-          return;
-      }
-      if (this.props.filters && this.props.filters.length > 0) {
-        var wanted_filters = Array.from(this.props.filters, x => x.id);
-        var req_data = {fields: wanted_filters, action: this.props.action};
-        axios.post(config.API_URL + config.PROCESSING_PATH + "test/", req_data).then( res => {
-          var supp_filters = [];
-	  var notfound = true;
-          for(var i = 0; i < this.props.filters.length; i++) {
-            if (res.data.fields.indexOf(this.props.filters[i].id) !== -1) {
-		if (this.props.filters[i].negated === false) {
-			this.props.filters[i].operator = "equal";
-		} else {
-			if (res.data.operators.indexOf("different") === -1) {
-				continue;
-			}
-			this.props.filters[i].operator = "different";
+        if (['enable', 'disable'].indexOf(this.props.action) !== -1) {
+            this.setState({ supported_filters: [], noaction: false, errors: undefined });
+            return;
         }
-        this.props.filters[i].isChecked = true;
-                this.props.filters[i].key = this.props.filters[i].id;
-                supp_filters.push(this.props.filters[i]);
-		notfound = false;
-            }
-          }
+        if (this.props.filters && this.props.filters.length > 0) {
+            var wanted_filters = Array.from(this.props.filters, x => x.id);
+            var req_data = { fields: wanted_filters, action: this.props.action };
+            axios.post(config.API_URL + config.PROCESSING_PATH + "test/", req_data).then(res => {
+                var supp_filters = [];
+                var notfound = true;
+                for (var i = 0; i < this.props.filters.length; i++) {
+                    if (res.data.fields.indexOf(this.props.filters[i].id) !== -1) {
+                        if (this.props.filters[i].negated === false) {
+                            this.props.filters[i].operator = "equal";
+                        } else {
+                            if (res.data.operators.indexOf("different") === -1) {
+                                continue;
+                            }
+                            this.props.filters[i].operator = "different";
+                        }
+                        this.props.filters[i].isChecked = true;
+                        this.props.filters[i].key = this.props.filters[i].id;
+                        supp_filters.push(this.props.filters[i]);
+                        notfound = false;
+                    }
+                }
 
-          var errors = undefined;
-	  if (notfound) {
-	      errors = {filters: ['No filters available']};
-	  }
-          this.setState({supported_filters: supp_filters, noaction: notfound, errors: errors});
-        }).catch( error => {
-		if (error.response.status === 403) {
-			this.setState({errors: {permission: ['Insufficient permissions']}, noaction: true});
-		}
-	});
-      } else {
-	  	this.setState({errors: {filters: ['No filters available']}, noaction: true});
-      }
+                var errors = undefined;
+                if (notfound) {
+                    errors = { filters: ['No filters available'] };
+                }
+                this.setState({ supported_filters: supp_filters, noaction: notfound, errors: errors });
+            }).catch(error => {
+                if (error.response.status === 403) {
+                    this.setState({ errors: { permission: ['Insufficient permissions'] }, noaction: true });
+                }
+            });
+        } else {
+            this.setState({ errors: { filters: ['No filters available'] }, noaction: true });
+        }
     }
 
     setDefaultOptions() {
-		var options = {};
-		switch (this.props.action) {
-			case 'threshold':
-				options = {type: "both", count: 1, seconds: 60, track: "by_src"};
-				break;
-			case 'tag':
-			case 'tagkeep':
-				options = {tag: "relevant"};
-				break;
-			default:
-				break;
-		}
-		this.setState({options: options});
+        var options = {};
+        switch (this.props.action) {
+            case 'threshold':
+                options = { type: "both", count: 1, seconds: 60, track: "by_src" };
+                break;
+            case 'tag':
+            case 'tagkeep':
+                options = { tag: "relevant" };
+                break;
+            default:
+                break;
+        }
+        this.setState({ options: options });
     }
 
     onFieldKeyPress(keyEvent) {
-      if (keyEvent.key === 'Enter') {
-        keyEvent.stopPropagation();
-        keyEvent.preventDefault();
-      }
+        if (keyEvent.key === 'Enter') {
+            keyEvent.stopPropagation();
+            keyEvent.preventDefault();
+        }
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -693,45 +726,45 @@ export class RuleToggleModal extends React.Component {
     componentDidMount() {
 
         this.updateActionDialog();
-	this.setDefaultOptions();
+        this.setDefaultOptions();
     }
 
     close() {
-        this.setState({errors: undefined});
+        this.setState({ errors: undefined });
         this.props.close();
     }
 
     submit() {
-         if (["enable", "disable"].indexOf(this.props.action) !== -1) {
-             this.state.selected.map(
-                 function(ruleset) {
-                     var data = {ruleset: ruleset};
-                     if (this.state.comment.length > 0) {
-                         data['comment'] = this.state.comment
-                     }
-                     var url = config.API_URL + config.RULE_PATH + this.props.config.rule.sid;
-                     if (this.props.action === "enable") {
-                         url = url + '/enable/';
-                     } else {
-                         url = url + '/disable/';
-                     }
-                     axios.post(url, data).then(
-                         res =>  {
-                             // Fixme notification or something
-                             console.log("action on rule is a success");
-			     if (this.props.refresh_callback) {
-				this.props.refresh_callback();
-			     }
-                             this.close();
-                         }
-                     ).catch (error => {
-                         console.log("action creation failure");
-                         this.setState({errors: error.response.data});
-                     });
-                     return true;
-                 }
-             , this);
-         } else if (["suppress", "threshold", "tag", "tagkeep"].indexOf(this.props.action) !== -1) {
+        if (["enable", "disable"].indexOf(this.props.action) !== -1) {
+            this.state.selected.map(
+                function (ruleset) {
+                    var data = { ruleset: ruleset };
+                    if (this.state.comment.length > 0) {
+                        data['comment'] = this.state.comment
+                    }
+                    var url = config.API_URL + config.RULE_PATH + this.props.config.rule.sid;
+                    if (this.props.action === "enable") {
+                        url = url + '/enable/';
+                    } else {
+                        url = url + '/disable/';
+                    }
+                    axios.post(url, data).then(
+                        res => {
+                            // Fixme notification or something
+                            console.log("action on rule is a success");
+                            if (this.props.refresh_callback) {
+                                this.props.refresh_callback();
+                            }
+                            this.close();
+                        }
+                    ).catch(error => {
+                        console.log("action creation failure");
+                        this.setState({ errors: error.response.data });
+                    });
+                    return true;
+                }
+                , this);
+        } else if (["suppress", "threshold", "tag", "tagkeep"].indexOf(this.props.action) !== -1) {
             //{"filter_defs": [{"key": "src_ip", "value": "192.168.0.1", "operator": "equal"}], "action": "suppress", "rulesets": [1]}
 
             var filters = []
@@ -740,9 +773,14 @@ export class RuleToggleModal extends React.Component {
                     filters.push(filter);
                 }
             }
-            var data = {filter_defs: filters, action: this.props.action, rulesets: this.state.selected, comment: this.state.comment};
+            var data = {
+                filter_defs: filters,
+                action: this.props.action,
+                rulesets: this.state.selected,
+                comment: this.state.comment
+            };
             if (["threshold", "tag", "tagkeep"].indexOf(this.props.action) !== -1) {
-                    data.options = this.state.options;
+                data.options = this.state.options;
             }
             axios.post(config.API_URL + config.PROCESSING_PATH, data).then(
                 res => {
@@ -751,10 +789,10 @@ export class RuleToggleModal extends React.Component {
                 }
             ).catch(
                 error => {
-                    this.setState({errors: error.response.data});
+                    this.setState({ errors: error.response.data });
                 }
             )
-         }
+        }
     }
 
     handleChange(event) {
@@ -763,39 +801,39 @@ export class RuleToggleModal extends React.Component {
         const name = target.name;
         var sel_list = this.state.selected;
         if (value === false) {
-             // pop element
-             var index = sel_list.indexOf(name);
-             if (index >= 0) {
-                 sel_list.splice(index, 1);
-                 this.setState({selected: sel_list});
-             }
+            // pop element
+            var index = sel_list.indexOf(name);
+            if (index >= 0) {
+                sel_list.splice(index, 1);
+                this.setState({ selected: sel_list });
+            }
         } else {
             if (sel_list.indexOf(name) < 0) {
-                 sel_list.push(name);
-                 this.setState({selected: sel_list});
+                sel_list.push(name);
+                this.setState({ selected: sel_list });
             }
         }
     }
 
 
     handleCommentChange(event) {
-        this.setState({comment: event.target.value});
+        this.setState({ comment: event.target.value });
     }
 
     handleFieldChange(event) {
-            var sfilters = Object.assign([], this.state.supported_filters);
-            for (var filter in sfilters) {
-                if (sfilters[filter].id === event.target.id) {
-                    sfilters[filter].value = event.target.value;
-                }
+        var sfilters = Object.assign([], this.state.supported_filters);
+        for (var filter in sfilters) {
+            if (sfilters[filter].id === event.target.id) {
+                sfilters[filter].value = event.target.value;
             }
-            this.setState({supported_filters: sfilters});
+        }
+        this.setState({ supported_filters: sfilters });
     }
 
     handleOptionsChange(event) {
-	    var options = Object.assign({}, this.state.options);
-	    options[event.target.id] = event.target.value;
-	    this.setState({options: options});
+        var options = Object.assign({}, this.state.options);
+        options[event.target.id] = event.target.value;
+        this.setState({ options: options });
     }
 
     toggleFilter(event, item) {
@@ -806,298 +844,302 @@ export class RuleToggleModal extends React.Component {
                 break;
             }
         }
-        this.setState({supported_filters: sfilters});
+        this.setState({ supported_filters: sfilters });
     }
 
 
     render() {
-       return(
+        return (
             <Modal show={this.props.show} onHide={this.close}>
-    <Modal.Header>
-      <button
-        className="close"
-        onClick={this.close}
-        aria-hidden="true"
-        aria-label="Close"
-      >
-        <Icon type="pf" name="close" />
-      </button>
-      {this.props.config.rule &&
-        <Modal.Title>{this.props.action} Rule {this.props.config.rule.sid}</Modal.Title>
-      }
-      {!this.props.config.rule &&
-	<Modal.Title>Add a {this.props.action} action</Modal.Title>
-      }
-    </Modal.Header>
-    <Modal.Body>
-       <HuntRestError errors={this.state.errors} />
-       {!this.state.noaction &&
-       <Form horizontal>
-       {this.state.supported_filters &&
-	   this.state.supported_filters.map((item, index) => {
-                  return (
-		  <FormGroup key={item.id} controlId={item.id} disabled={false}>
-			<Col sm={4}>
-			<Checkbox disabled={false} defaultChecked={true} onChange={(e) => {this.toggleFilter(e, item)}} > <strong>{item.negated && "Not " }{item.id}</strong> </Checkbox>
-			</Col>
-			<Col sm={8}>
-			<FormControl type={item.id} disabled={!item.isChecked} defaultValue={item.value} onChange={this.handleFieldChange} onKeyPress={e => this.onFieldKeyPress(e)} />
-			</Col>
-	          </FormGroup>
-		  )
-	       }
-	       )
-       }
-       {this.props.action === 'threshold' &&
-            <React.Fragment>
-		  <FormGroup key="count" controlId="count" disabled={false}>
-			<Col sm={4}>
-			<strong>Count</strong>
-			</Col>
-			<Col sm={8}>
-			<FormControl type="integer" disabled={false} defaultValue={1} onChange={this.handleOptionsChange} />
-			</Col>
-		   </FormGroup>
-		   <FormGroup key="seconds" controlId="seconds" disabled={false}>
-			<Col sm={4}>
-			<strong>Seconds</strong>
-			</Col>
-			<Col sm={8}>
-			<FormControl type="integer" disabled={false} defaultValue={60} onChange={this.handleOptionsChange} />
-			</Col>
-	          </FormGroup>
-		  <FormGroup key="track" controlId="track" disabled={false}>
-			<Col sm={4}>
-		       <strong>Track by</strong>
-			</Col>
-			<Col sm={8}>
-		  <FormControl componentClass="select" placeholder="by_src" onChange={this.handleOptionsChange}>
-        		<option value="by_src">By Source</option>
-        		<option value="by_dst">By Destination</option>
-      		  </FormControl>
-			</Col>
-		  </FormGroup>
-             </React.Fragment>
+                <Modal.Header>
+                    <button
+                        className="close"
+                        onClick={this.close}
+                        aria-hidden="true"
+                        aria-label="Close"
+                    >
+                        <Icon type="pf" name="close"/>
+                    </button>
+                    {this.props.config.rule &&
+                    <Modal.Title>{this.props.action} Rule {this.props.config.rule.sid}</Modal.Title>
+                    }
+                    {!this.props.config.rule &&
+                    <Modal.Title>Add a {this.props.action} action</Modal.Title>
+                    }
+                </Modal.Header>
+                <Modal.Body>
+                    <HuntRestError errors={this.state.errors}/>
+                    {!this.state.noaction &&
+                    <Form horizontal>
+                        {this.state.supported_filters &&
+                        this.state.supported_filters.map((item, index) => {
+                                return (
+                                    <FormGroup key={item.id} controlId={item.id} disabled={false}>
+                                        <Col sm={4}>
+                                            <Checkbox disabled={false} defaultChecked={true} onChange={(e) => {
+                                                this.toggleFilter(e, item)
+                                            }}>
+                                                <strong>{item.negated && "Not "}{item.id}</strong>
+                                            </Checkbox>
+                                        </Col>
+                                        <Col sm={8}>
+                                            <FormControl type={item.id} disabled={!item.isChecked} defaultValue={item.value} onChange={this.handleFieldChange} onKeyPress={e => this.onFieldKeyPress(e)}/>
+                                        </Col>
+                                    </FormGroup>
+                                )
+                            }
+                        )
+                        }
+                        {this.props.action === 'threshold' &&
+                        <React.Fragment>
+                            <FormGroup key="count" controlId="count" disabled={false}>
+                                <Col sm={4}>
+                                    <strong>Count</strong>
+                                </Col>
+                                <Col sm={8}>
+                                    <FormControl type="integer" disabled={false} defaultValue={1} onChange={this.handleOptionsChange}/>
+                                </Col>
+                            </FormGroup>
+                            <FormGroup key="seconds" controlId="seconds" disabled={false}>
+                                <Col sm={4}>
+                                    <strong>Seconds</strong>
+                                </Col>
+                                <Col sm={8}>
+                                    <FormControl type="integer" disabled={false} defaultValue={60} onChange={this.handleOptionsChange}/>
+                                </Col>
+                            </FormGroup>
+                            <FormGroup key="track" controlId="track" disabled={false}>
+                                <Col sm={4}>
+                                    <strong>Track by</strong>
+                                </Col>
+                                <Col sm={8}>
+                                    <FormControl componentClass="select" placeholder="by_src" onChange={this.handleOptionsChange}>
+                                        <option value="by_src">By Source</option>
+                                        <option value="by_dst">By Destination</option>
+                                    </FormControl>
+                                </Col>
+                            </FormGroup>
+                        </React.Fragment>
 
-       }
-       {this.props.action === 'tag' &&
-		  <FormGroup key="tag" controlId="tag" disabled={false}>
-			<Col sm={3}>
-		       <strong>Tag</strong>
-			</Col>
-			<Col sm={4}>
-		  <FormControl componentClass="select" placeholder="relevant" onChange={this.handleOptionsChange}>
-        		<option value="relevant">Relevant</option>
-        		<option value="informational">Informational</option>
-      		  </FormControl>
-		  </Col>
-		  </FormGroup>
-       }
-       {this.props.action === 'tagkeep' &&
-		  <FormGroup key="tag" controlId="tag" disabled={false}>
-			<Col sm={3}>
-		       <strong>Tag and Keep</strong>
-			</Col>
-			<Col sm={4}>
-		  <FormControl componentClass="select" placeholder="relevant" onChange={this.handleOptionsChange}>
-        		<option value="relevant">Relevant</option>
-        		<option value="informational">Informational</option>
-      		  </FormControl>
-		  </Col>
-		  </FormGroup>
-       }
-        <FormGroup controlId="ruleset" disabled={false}>
-            <Col sm={12}>
-	      <label>Choose Ruleset(s)</label>
-              {this.props.rulesets && this.props.rulesets.map(function(ruleset) {
-                      return(<div className="row"  key={ruleset.pk}>
-                           <div className="col-sm-9">
-                          <label htmlFor={ruleset.pk}><input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange}/> {ruleset.name}</label>
-                          {ruleset.warnings && <div>{ruleset.warnings}</div>}
-                         </div>
-                      </div>);
-                  }, this)
-              }
-	    </Col>
-        </FormGroup>
+                        }
+                        {this.props.action === 'tag' &&
+                        <FormGroup key="tag" controlId="tag" disabled={false}>
+                            <Col sm={3}>
+                                <strong>Tag</strong>
+                            </Col>
+                            <Col sm={4}>
+                                <FormControl componentClass="select" placeholder="relevant" onChange={this.handleOptionsChange}>
+                                    <option value="relevant">Relevant</option>
+                                    <option value="informational">Informational</option>
+                                </FormControl>
+                            </Col>
+                        </FormGroup>
+                        }
+                        {this.props.action === 'tagkeep' &&
+                        <FormGroup key="tag" controlId="tag" disabled={false}>
+                            <Col sm={3}>
+                                <strong>Tag and Keep</strong>
+                            </Col>
+                            <Col sm={4}>
+                                <FormControl componentClass="select" placeholder="relevant" onChange={this.handleOptionsChange}>
+                                    <option value="relevant">Relevant</option>
+                                    <option value="informational">Informational</option>
+                                </FormControl>
+                            </Col>
+                        </FormGroup>
+                        }
+                        <FormGroup controlId="ruleset" disabled={false}>
+                            <Col sm={12}>
+                                <label>Choose Ruleset(s)</label>
+                                {this.props.rulesets && this.props.rulesets.map(function (ruleset) {
+                                    return (<div className="row" key={ruleset.pk}>
+                                        <div className="col-sm-9">
+                                            <label htmlFor={ruleset.pk}><input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange}/> {ruleset.name} </label>
+                                            {ruleset.warnings && <div>{ruleset.warnings}</div>}
+                                        </div>
+                                    </div>);
+                                }, this)
+                                }
+                            </Col>
+                        </FormGroup>
 
-        <div className="form-group">
-            <div className="col-sm-9">
-	    <strong>Optional comment</strong>
-                <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange} />
-            </div>
-        </div>
-      </Form>
-       }
-       {this.state.noaction &&
-	<p>You need enough permissions and at least a filter supported by the ruleset backend to define an action</p>
-       }
-    </Modal.Body>
-    <Modal.Footer>
-      <Button
-        bsStyle="default"
-        className="btn-cancel"
-        onClick={this.close}
-      >
-        Cancel
-      </Button>
-      {!this.state.noaction &&
-      <Button bsStyle="primary" onClick={this.submit}>
-        Submit
-      </Button>
-      }
-    </Modal.Footer>
-  </Modal>
-       )
+                        <div className="form-group">
+                            <div className="col-sm-9">
+                                <strong>Optional comment</strong>
+                                <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange}/>
+                            </div>
+                        </div>
+                    </Form>
+                    }
+                    {this.state.noaction &&
+                        <p>You need enough permissions and at least a filter supported by the ruleset backend to define an action</p>
+                    }
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button
+                        bsStyle="default"
+                        className="btn-cancel"
+                        onClick={this.close}
+                    >
+                        Cancel
+                    </Button>
+                    {!this.state.noaction &&
+                    <Button bsStyle="primary" onClick={this.submit}>
+                        Submit
+                    </Button>
+                    }
+                </Modal.Footer>
+            </Modal>
+        )
     }
 }
 
 export function buildQFilter(filters, system_settings) {
-     var qfilter = [];
-     for (var i=0; i < filters.length; i++) {
+    var qfilter = [];
+    for (var i = 0; i < filters.length; i++) {
         var f_prefix = '';
         var f_suffix = '.raw';
         if (system_settings) {
             f_suffix = '.' + system_settings['es_keyword'];
         }
 
-	if (filters[i].negated) {
+        if (filters[i].negated) {
             f_prefix = 'NOT ';
-	}
-	if (filters[i].id === 'probe') {
+        }
+        if (filters[i].id === 'probe') {
             qfilter.push(f_prefix + 'host.raw:' + filters[i].value);
-	    continue;
-	} else if (filters[i].id === 'sprobe') {
+            continue;
+        } else if (filters[i].id === 'sprobe') {
             qfilter.push(f_prefix + 'host.raw:' + filters[i].value.id);
-	    continue;
-	}
-	else if (filters[i].id === 'alert.signature_id') {
-            qfilter.push(f_prefix + 'alert.signature_id:' + filters[i].value);
-	    continue;
-	}
-	else if (filters[i].id === 'alert.tag') {
-	    var tag_filters = [];
-	    if (filters[i].value['untagged'] === true) {
-		tag_filters.push('(NOT alert.tag:*)');
-	    }
-	    if (filters[i].value['informational'] === true) {
-            	tag_filters.push('alert.tag:"informational"');
-	    }
-	    if (filters[i].value['relevant'] === true) {
-            	tag_filters.push('alert.tag:"relevant"');
-	    }
-	    if (tag_filters.length === 0) {
- 		qfilter.push('alert.tag:"undefined"');
-	    } else if (tag_filters.length < 3) {
- 		qfilter.push("(" + tag_filters.join(" OR ") + ")");
-	    }
-	    continue;
-	}
-	else if (filters[i].id === 'msg') {
-            qfilter.push(f_prefix + 'alert.signature:"' + filters[i].value + '"');
-	    continue;
-	}
-	else if ((filters[i].id === 'hits_min') || (filters[i].id === 'hits_max')) {
             continue;
         }
-	else if (typeof filters[i].value === 'string') {
-	     qfilter.push(f_prefix + filters[i].id + f_suffix + ':"' + encodeURIComponent(filters[i].value) + '"');
-	    continue;
-	}
-	else {
+        else if (filters[i].id === 'alert.signature_id') {
+            qfilter.push(f_prefix + 'alert.signature_id:' + filters[i].value);
+            continue;
+        }
+        else if (filters[i].id === 'alert.tag') {
+            var tag_filters = [];
+            if (filters[i].value['untagged'] === true) {
+                tag_filters.push('(NOT alert.tag:*)');
+            }
+            if (filters[i].value['informational'] === true) {
+                tag_filters.push('alert.tag:"informational"');
+            }
+            if (filters[i].value['relevant'] === true) {
+                tag_filters.push('alert.tag:"relevant"');
+            }
+            if (tag_filters.length === 0) {
+                qfilter.push('alert.tag:"undefined"');
+            } else if (tag_filters.length < 3) {
+                qfilter.push("(" + tag_filters.join(" OR ") + ")");
+            }
+            continue;
+        }
+        else if (filters[i].id === 'msg') {
+            qfilter.push(f_prefix + 'alert.signature:"' + filters[i].value + '"');
+            continue;
+        }
+        else if ((filters[i].id === 'hits_min') || (filters[i].id === 'hits_max')) {
+            continue;
+        }
+        else if (typeof filters[i].value === 'string') {
+            qfilter.push(f_prefix + filters[i].id + f_suffix + ':"' + encodeURIComponent(filters[i].value) + '"');
+            continue;
+        }
+        else {
             qfilter.push(f_prefix + filters[i].id + ':' + filters[i].value);
-	    continue;
-	}
-     }
-     if (qfilter.length === 0) {
-	 return null;
-     }
-     return qfilter.join(" AND ");
+            continue;
+        }
+    }
+    if (qfilter.length === 0) {
+        return null;
+    }
+    return qfilter.join(" AND ");
 }
 
 export class RulesList extends HuntList {
-  constructor(props) {
-    super(props);
+    constructor(props) {
+        super(props);
 
-    this.state = {
-      rules: [], sources: [], rulesets: [], count: 0,
-      loading: true,
-      refresh_data: false,
-      view: 'rules_list',
-      display_toggle: true,
-      action: { view: false, type: 'suppress'},
-      net_error: undefined,
-      rules_filters: [],
-      supported_actions: []
-    };
-    this.cache = {
-        page: 1,
-        perPage: null,
-        RuleRes: null,
-        SrcRes: null,
-        from_date: null,
-        filtersCount: null,
-        sortId: null,
-        sortAsc: null,
-    };
-    this.updateRulesState = this.updateRulesState.bind(this);
-    this.fetchHitsStats = this.fetchHitsStats.bind(this);
-    this.displayRule = this.displayRule.bind(this);
-    this.RuleUpdateFilter = this.RuleUpdateFilter.bind(this);
-  }
-
-   buildFilter(filters) {
-     var l_filters = {};
-     for (var i=0; i < filters.length; i++) {
-	if (filters[i].id !== 'probe' && filters[i].id !== 'alert.tag') {
-            if (filters[i].id in l_filters) {
-               l_filters[filters[i].id] += "," + filters[i].value;
-            } else {
-               l_filters[filters[i].id] = filters[i].value;
-            }
-	}
-     }
-     var string_filters = "";
-     for (var k in l_filters) {
-         string_filters += "&" + k + "=" + l_filters[k];
-     }
-     var qfilter = buildQFilter(filters, this.props.system_settings);
-     if (qfilter) {
-	 string_filters += '&qfilter=' +  qfilter;
-     }
-     return string_filters;
-   }
-
-  updateRulesState(rules) {
-         this.setState({rules: rules});
-  }
-
-  buildTimelineDataSet(tdata) {
-    var timeline = {x : 'x', type: 'area',  columns: [['x'], ['alerts']]};
-    for (var key in tdata) {
-        timeline.columns[0].push(tdata[key].date);
-        timeline.columns[1].push(tdata[key].hits);
+        this.state = {
+            rules: [], sources: [], rulesets: [], count: 0,
+            loading: true,
+            refresh_data: false,
+            view: 'rules_list',
+            display_toggle: true,
+            action: { view: false, type: 'suppress' },
+            net_error: undefined,
+            rules_filters: [],
+            supported_actions: []
+        };
+        this.cache = {
+            page: 1,
+            perPage: null,
+            RuleRes: null,
+            SrcRes: null,
+            from_date: null,
+            filtersCount: null,
+            sortId: null,
+            sortAsc: null,
+        };
+        this.updateRulesState = this.updateRulesState.bind(this);
+        this.fetchHitsStats = this.fetchHitsStats.bind(this);
+        this.displayRule = this.displayRule.bind(this);
+        this.RuleUpdateFilter = this.RuleUpdateFilter.bind(this);
     }
-    return timeline;
-  }
 
-  buildHitsStats(rules) {
-       for (var rule in rules) {
-          rules[rule].timeline = this.buildTimelineDataSet(rules[rule].timeline_data);
-	  // rules[rule].timeline_data = undefined;
-       }
-       this.updateRulesState(rules);
-   }
+    buildFilter(filters) {
+        var l_filters = {};
+        for (var i = 0; i < filters.length; i++) {
+            if (filters[i].id !== 'probe' && filters[i].id !== 'alert.tag') {
+                if (filters[i].id in l_filters) {
+                    l_filters[filters[i].id] += "," + filters[i].value;
+                } else {
+                    l_filters[filters[i].id] = filters[i].value;
+                }
+            }
+        }
+        var string_filters = "";
+        for (var k in l_filters) {
+            string_filters += "&" + k + "=" + l_filters[k];
+        }
+        var qfilter = buildQFilter(filters, this.props.system_settings);
+        if (qfilter) {
+            string_filters += '&qfilter=' + qfilter;
+        }
+        return string_filters;
+    }
 
-  fetchHitsStats(rules, filters) {
-	 var qfilter = buildQFilter(filters, this.props.system_settings);
-     updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
-  }
+    updateRulesState(rules) {
+        this.setState({ rules: rules });
+    }
 
-    processRulesData( RuleRes, SrcRes, filters ){
+    buildTimelineDataSet(tdata) {
+        var timeline = { x: 'x', type: 'area', columns: [['x'], ['alerts']] };
+        for (var key in tdata) {
+            timeline.columns[0].push(tdata[key].date);
+            timeline.columns[1].push(tdata[key].hits);
+        }
+        return timeline;
+    }
+
+    buildHitsStats(rules) {
+        for (var rule in rules) {
+            rules[rule].timeline = this.buildTimelineDataSet(rules[rule].timeline_data);
+            // rules[rule].timeline_data = undefined;
+        }
+        this.updateRulesState(rules);
+    }
+
+    fetchHitsStats(rules, filters) {
+        var qfilter = buildQFilter(filters, this.props.system_settings);
+        updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
+    }
+
+    processRulesData(RuleRes, SrcRes, filters) {
         var sources_array = SrcRes.data['results'];
         var sources = {};
-        this.setState({net_error: undefined});
+        this.setState({ net_error: undefined });
         for (var i = 0; i < sources_array.length; i++) {
             var src = sources_array[i];
             sources[src.pk] = src;
@@ -1118,255 +1160,274 @@ export class RulesList extends HuntList {
         }
     }
 
-  displayRule(rule) {
-      this.setState({display_rule: rule});
-      let activeFilters = [...this.props.filters, {label:"alert.signature_id: " + rule.sid, id: 'alert.signature_id', value: rule.sid, query: 'filter', negated: false}];
-      this.RuleUpdateFilter(activeFilters);
-  }
+    displayRule(rule) {
+        this.setState({ display_rule: rule });
+        let activeFilters = [...this.props.filters, {
+            label: "alert.signature_id: " + rule.sid,
+            id: 'alert.signature_id',
+            value: rule.sid,
+            query: 'filter',
+            negated: false
+        }];
+        this.RuleUpdateFilter(activeFilters);
+    }
 
-  fetchData(rules_stat, filters) {
-      if( rules_stat.pagination.page === this.cache.page && rules_stat.pagination.perPage === this.cache.perPage && this.cache.RuleRes !== null && this.cache.SrcRes !== null && this.cache.from_date === this.props.from_date && this.cache.sortId === rules_stat.sort.id && this.cache.sortAsc === rules_stat.sort.asc && this.cache.filtersCount === filters.length) {
-          this.processRulesData(this.cache.RuleRes, this.cache.SrcRes, filters);
-          return;
-      }
-     this.cache.filtersCount = filters.length;
-     this.cache.sortId = rules_stat.sort.id;
-     this.cache.sortAsc = rules_stat.sort.asc;
-     let string_filters = this.buildFilter(filters);
+    fetchData(rules_stat, filters) {
+        if (rules_stat.pagination.page === this.cache.page && rules_stat.pagination.perPage === this.cache.perPage && this.cache.RuleRes !== null && this.cache.SrcRes !== null && this.cache.from_date === this.props.from_date && this.cache.sortId === rules_stat.sort.id && this.cache.sortAsc === rules_stat.sort.asc && this.cache.filtersCount === filters.length) {
+            this.processRulesData(this.cache.RuleRes, this.cache.SrcRes, filters);
+            return;
+        }
+        this.cache.filtersCount = filters.length;
+        this.cache.sortId = rules_stat.sort.id;
+        this.cache.sortAsc = rules_stat.sort.asc;
+        let string_filters = this.buildFilter(filters);
 
-     this.setState({refresh_data: true, loading: true});
-     axios.all([
-          axios.get(config.API_URL + config.RULE_PATH + "?" + this.buildListUrlParams(rules_stat) + "&from_date=" + this.props.from_date + "&highlight=true" + string_filters),
-          axios.get(config.API_URL + config.SOURCE_PATH + "?page_size=100"),
-	  ])
-      .then(axios.spread((RuleRes, SrcRes) => {
-          this.cache.page = rules_stat.pagination.page;
-          this.cache.RuleRes = RuleRes;
-          this.cache.SrcRes = SrcRes;
-          this.cache.from_date = this.props.from_date;
-          this.cache.perPage = rules_stat.pagination.perPage;
-          this.processRulesData(RuleRes, SrcRes, filters);
-      })).catch( e => {
-         this.setState({net_error: e, loading: false});
-     });
-  }
+        this.setState({ refresh_data: true, loading: true });
+        axios.all([
+            axios.get(config.API_URL + config.RULE_PATH + "?" + this.buildListUrlParams(rules_stat) + "&from_date=" + this.props.from_date + "&highlight=true" + string_filters),
+            axios.get(config.API_URL + config.SOURCE_PATH + "?page_size=100"),
+        ])
+        .then(axios.spread((RuleRes, SrcRes) => {
+            this.cache.page = rules_stat.pagination.page;
+            this.cache.RuleRes = RuleRes;
+            this.cache.SrcRes = SrcRes;
+            this.cache.from_date = this.props.from_date;
+            this.cache.perPage = rules_stat.pagination.perPage;
+            this.processRulesData(RuleRes, SrcRes, filters);
+        })).catch(e => {
+            this.setState({ net_error: e, loading: false });
+        });
+    }
 
-  componentDidMount() {
-      var sid = this.findSID(this.props.filters);
-       if (this.state.rulesets.length === 0) {
-             axios.get(config.API_URL + config.RULESET_PATH).then(res => {
-               this.setState({rulesets: res.data['results']});
-             })
-       }
-      if (sid !== undefined) {
-          this.setState({display_rule: sid, view: 'rule', display_toggle: false, loading: false});
-      } else {
-          this.fetchData(this.props.config, this.props.filters);
-      }
-      axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
-      	res => {
-		var fdata = [];
-		for (var i in res.data) {
-			/* Allow ES and rest filters */
-			if (['filter', 'rest'].indexOf(res.data[i].queryType) !== -1) {
-				if (res.data[i].filterType !== 'hunt') {
-					fdata.push(res.data[i]);
-				}
-			}
-		}
-		this.setState({rules_filters: fdata});
-	}
-      );
-      this.loadActions();
-  }
+    componentDidMount() {
+        var sid = this.findSID(this.props.filters);
+        if (this.state.rulesets.length === 0) {
+            axios.get(config.API_URL + config.RULESET_PATH).then(res => {
+                this.setState({ rulesets: res.data['results'] });
+            })
+        }
+        if (sid !== undefined) {
+            this.setState({ display_rule: sid, view: 'rule', display_toggle: false, loading: false });
+        } else {
+            this.fetchData(this.props.config, this.props.filters);
+        }
+        axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
+            res => {
+                var fdata = [];
+                for (var i in res.data) {
+                    /* Allow ES and rest filters */
+                    if (['filter', 'rest'].indexOf(res.data[i].queryType) !== -1) {
+                        if (res.data[i].filterType !== 'hunt') {
+                            fdata.push(res.data[i]);
+                        }
+                    }
+                }
+                this.setState({ rules_filters: fdata });
+            }
+        );
+        this.loadActions();
+    }
 
-  findSID(filters) {
-	var found_sid = undefined;
-	for (var i = 0; i < filters.length; i++) {
-	    if (filters[i].id === 'alert.signature_id') {
-		    found_sid = filters[i].value;
-		    break;
-	    }
-	}
-	return found_sid;
-  }
+    findSID(filters) {
+        var found_sid = undefined;
+        for (var i = 0; i < filters.length; i++) {
+            if (filters[i].id === 'alert.signature_id') {
+                found_sid = filters[i].value;
+                break;
+            }
+        }
+        return found_sid;
+    }
 
-  RuleUpdateFilter(filters) {
+    RuleUpdateFilter(filters) {
         // iterate on filter, if we have a sid we display the rule page
-	var found_sid = this.findSID(filters);
-	if (found_sid !== undefined) {
-		this.setState({view: 'rule', display_toggle: false, display_rule: found_sid});
-	} else {
-		this.setState({view: 'rules_list', display_toggle: true, display_rule: undefined});
-	}
-  	this.UpdateFilter(filters, this.cache.page);
-  }
+        var found_sid = this.findSID(filters);
+        if (found_sid !== undefined) {
+            this.setState({ view: 'rule', display_toggle: false, display_rule: found_sid });
+        } else {
+            this.setState({ view: 'rules_list', display_toggle: true, display_rule: undefined });
+        }
+        this.UpdateFilter(filters, this.cache.page);
+    }
 
-  
-  render() {
-    return (
-        <div className="RulesList HuntList">
-	    {this.state.net_error !== undefined &&
-	         <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>	
-	    }
-	    <HuntFilter ActiveFilters={this.props.filters}
-	          config={this.props.config}
-		  ActiveSort={this.props.config.sort}
-		  UpdateFilter={this.RuleUpdateFilter}
-		  UpdateSort={this.UpdateSort}
-		  setViewType={this.setViewType}
-		  filterFields={this.state.rules_filters}
-		  sort_config={RuleSortFields}
-		  displayToggle={this.state.display_toggle}
-		  actionsButtons={this.actionsButtons}
-		  queryType={['filter', 'rest']}
-            />
-	    {this.state.view === 'rules_list' &&
-            this.props.config.view_type === 'list' &&
 
-      <React.Fragment>
-      <Spinner loading={this.state.loading} >
-      </Spinner>
+    render() {
+        return (
+            <div className="RulesList HuntList">
+                {this.state.net_error !== undefined &&
+                <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>
+                }
+                <HuntFilter ActiveFilters={this.props.filters}
+                            config={this.props.config}
+                            ActiveSort={this.props.config.sort}
+                            UpdateFilter={this.RuleUpdateFilter}
+                            UpdateSort={this.UpdateSort}
+                            setViewType={this.setViewType}
+                            filterFields={this.state.rules_filters}
+                            sort_config={RuleSortFields}
+                            displayToggle={this.state.display_toggle}
+                            actionsButtons={this.actionsButtons}
+                            queryType={['filter', 'rest']}
+                />
+                {this.state.view === 'rules_list' &&
+                this.props.config.view_type === 'list' &&
 
-	    <ListView>
-            {this.state.rules.map(function(rule) {
-                return(
-                   <RuleInList key={rule.sid} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule}  addFilter={this.addFilter} rulesets = {this.state.rulesets} />
-                )
-             },this)}
-	    </ListView>
-      </React.Fragment>
-            }
-            {this.state.view === 'rules_list' &&
-	     this.props.config.view_type === 'card' &&
+                <React.Fragment>
+                    <Spinner loading={this.state.loading}>
+                    </Spinner>
+
+                    <ListView>
+                        {this.state.rules.map(function (rule) {
+                            return (
+                                <RuleInList key={rule.sid} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule} addFilter={this.addFilter} rulesets={this.state.rulesets}/>
+                            )
+                        }, this)}
+                    </ListView>
+                </React.Fragment>
+                }
+                {this.state.view === 'rules_list' &&
+                this.props.config.view_type === 'card' &&
                 <div className='container-fluid container-cards-pf'>
-                <div className='row row-cards-pf'>
-                {this.state.rules.map(function(rule) {
-                         return(
-                                <RuleCard key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule}  addFilter={this.addFilter}/>
-                         )
-             },this)}
+                    <div className='row row-cards-pf'>
+                        {this.state.rules.map(function (rule) {
+                            return (
+                                <RuleCard key={rule.pk} data={rule} state={this.state} from_date={this.props.from_date} SwitchPage={this.displayRule} addFilter={this.addFilter}/>
+                            )
+                        }, this)}
+                    </div>
                 </div>
-                </div>
-            }
-            {this.state.view === 'rules_list' &&
-	    <HuntPaginationRow
-	        viewType = {PAGINATION_VIEW.LIST}
-	        pagination={this.props.config.pagination}
-	        onPaginationChange={this.handlePaginationChange}
-		amountOfPages = {Math.ceil(this.state.count / this.props.config.pagination.perPage)}
-		pageInputValue = {this.props.config.pagination.page}
-		itemCount = {this.state.count - 1} // used as last item
-		itemsStart = {(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
-		itemsEnd = {Math.min(this.props.config.pagination.page * this.props.config.pagination.perPage - 1, this.state.count - 1) }
-		onFirstPage={this.onFirstPage}
-		onNextPage={this.onNextPage}
-		onPreviousPage={this.onPrevPage}
-		onLastPage={this.onLastPage}
+                }
+                {this.state.view === 'rules_list' &&
+                <HuntPaginationRow
+                    viewType={PAGINATION_VIEW.LIST}
+                    pagination={this.props.config.pagination}
+                    onPaginationChange={this.handlePaginationChange}
+                    amountOfPages={Math.ceil(this.state.count / this.props.config.pagination.perPage)}
+                    pageInputValue={this.props.config.pagination.page}
+                    itemCount={this.state.count - 1} // used as last item
+                    itemsStart={(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
+                    itemsEnd={Math.min(this.props.config.pagination.page * this.props.config.pagination.perPage - 1, this.state.count - 1)}
+                    onFirstPage={this.onFirstPage}
+                    onNextPage={this.onNextPage}
+                    onPreviousPage={this.onPrevPage}
+                    onLastPage={this.onLastPage}
 
-	    />
-	    }
-            {this.state.view === 'rule' &&
-	        <RulePage system_settings={this.props.system_settings} rule={this.state.display_rule} config={this.props.config} filters={this.props.filters} from_date={this.props.from_date} UpdateFilter={this.RuleUpdateFilter} addFilter={this.addFilter} rulesets={this.state.rulesets}/>
-	    }
-            {this.state.view === 'dashboard' &&
-	        <HuntDashboard />
-	    }
-
-	       <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config}  filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
-        </div>
-    );
-  }
+                />
+                }
+                {this.state.view === 'rule' &&
+                    <RulePage
+                        system_settings={this.props.system_settings}
+                        rule={this.state.display_rule}
+                        config={this.props.config}
+                        filters={this.props.filters}
+                        from_date={this.props.from_date}
+                        UpdateFilter={this.RuleUpdateFilter}
+                        addFilter={this.addFilter}
+                        rulesets={this.state.rulesets}
+                    />
+                }
+                {this.state.view === 'dashboard' && <HuntDashboard/>}
+                <RuleToggleModal
+                    show={this.state.action.view}
+                    action={this.state.action.type}
+                    config={this.props.config}
+                    filters={this.props.filters}
+                    close={this.closeAction}
+                    rulesets={this.state.rulesets}
+                />
+            </div>
+        );
+    }
 }
 
 class RuleStatus extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {display_content: false};
+        this.state = { display_content: false };
     }
 
     showRuleContent = () => {
-        this.setState({display_content: true}); 
+        this.setState({ display_content: true });
     }
 
     hideRuleContent = () => {
-        this.setState({display_content: false}); 
+        this.setState({ display_content: false });
     }
 
 
-	render() {
-		const valid = this.props.rule_status.valid;
-		var validity = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok"></span>Valid</span>;
-		if (valid.status !== true) {
-			validity = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-error-circle-o"></span>Valid</span>;
-		}
-		const trans = this.props.rule_status.transformations;
-		var action = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok" title="Action transformation"></span>Action: {trans.action}</span>;
-		if (trans.action === null) {
-			action = undefined;
-		}
-		var target = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-import" title="Target transformation"></span>Target: {trans.target}</span>;
-		if (trans.target == null) {
-			target = undefined;
-		}
-		var lateral = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-integration" title="Lateral transformation"></span>Lateral: {trans.lateral}</span>;
-		if (trans.lateral == null) {
-			lateral = undefined;
-		}
-		var active = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-on"></span>Active</span>;
-		if (!this.props.rule_status.active) {
-			active = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-off"></span>Disabled</span>;
-		}
+    render() {
+        const valid = this.props.rule_status.valid;
+        var validity = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok"></span>Valid</span>;
+        if (valid.status !== true) {
+            validity = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-error-circle-o"></span>Valid</span>;
+        }
+        const trans = this.props.rule_status.transformations;
+        var action = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-ok" title="Action transformation"></span>Action: {trans.action}</span>;
+        if (trans.action === null) {
+            action = undefined;
+        }
+        var target = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-import" title="Target transformation"></span>Target: {trans.target}</span>;
+        if (trans.target == null) {
+            target = undefined;
+        }
+        var lateral = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-integration" title="Lateral transformation"></span>Lateral: {trans.lateral}</span>;
+        if (trans.lateral == null) {
+            lateral = undefined;
+        }
+        var active = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-on"></span>Active</span>;
+        if (!this.props.rule_status.active) {
+            active = <span className="card-pf-aggregate-status-notification"><span className="pficon pficon-off"></span>Disabled</span>;
+        }
 
-		return(
-		     <div className="col-xs-6 col-sm-4 col-md-4">
-                        <div className="card-pf card-pf-accented card-pf-aggregate-status" onClick={this.showRuleContent} style={{cursor:'pointer'}}>
-                          <h2 className="card-pf-title">
-                                <span className="fa fa-shield"></span>{this.props.rule_status.name}
-                          </h2>
-                        <div className="card-pf-body">
-                            <p className="card-pf-aggregate-status-notifications">
-			      {active}
-			      {validity}
-			      {action}
-			      {target}
-			      {lateral}
-                            </p>
-                        </div>
-                        </div>
-
-                        <RuleContentModal display={this.state.display_content} rule={this.props.rule} close={this.hideRuleContent} rule_status={this.props.rule_status}/>
+        return (
+            <div className="col-xs-6 col-sm-4 col-md-4">
+                <div className="card-pf card-pf-accented card-pf-aggregate-status" onClick={this.showRuleContent} style={{ cursor: 'pointer' }}>
+                    <h2 className="card-pf-title">
+                        <span className="fa fa-shield"></span>{this.props.rule_status.name}
+                    </h2>
+                    <div className="card-pf-body">
+                        <p className="card-pf-aggregate-status-notifications">
+                            {active}
+                            {validity}
+                            {action}
+                            {target}
+                            {lateral}
+                        </p>
                     </div>
-		);
-	}
+                </div>
+
+                <RuleContentModal display={this.state.display_content} rule={this.props.rule} close={this.hideRuleContent} rule_status={this.props.rule_status}/>
+            </div>
+        );
+    }
 }
 
 
 class RuleContentModal extends React.Component {
-   render() {
-           return(
-                   <Modal
-                        show={this.props.display} onHide={this.props.close}
-                        bsSize="large" aria-labelledby="contained-modal-title-lg"
-                   >
-                           <Modal.Header>
-                                 <button
-                                   className="close"
-                                   onClick={this.props.close}
-                                   aria-hidden="true"
-                                   aria-label="Close"
-                                 >
-                                     <Icon type="pf" name="close" />
-                                 </button>
-                                 <Modal.Title>Transformed rule content in {this.props.rule_status.name}</Modal.Title>
-                           </Modal.Header>
-                           <Modal.Body>
-                                 <div className="SigContent" dangerouslySetInnerHTML={{__html: this.props.rule_status.content}}></div>
-                           </Modal.Body>
-                   </Modal>
-           )
-   }
+    render() {
+        return (
+            <Modal
+                show={this.props.display} onHide={this.props.close}
+                bsSize="large" aria-labelledby="contained-modal-title-lg"
+            >
+                <Modal.Header>
+                    <button
+                        className="close"
+                        onClick={this.props.close}
+                        aria-hidden="true"
+                        aria-label="Close"
+                    >
+                        <Icon type="pf" name="close"/>
+                    </button>
+                    <Modal.Title>Transformed rule content in {this.props.rule_status.name}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.props.rule_status.content }}></div>
+                </Modal.Body>
+            </Modal>
+        )
+    }
 }
 
 

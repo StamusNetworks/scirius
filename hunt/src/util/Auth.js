@@ -11,23 +11,23 @@ export function InvalidCredentialsException(message) {
 }
 
 export function login(username, password) {
-  return axios
+    return axios
     .post(URL + LOGIN, {
-      username,
-      password
+        username,
+        password
     })
     .then(function (response) {
-      store.dispatch(setToken(response.data.token));
+        store.dispatch(setToken(response.data.token));
     })
     .catch(function (error) {
-      // raise different exception if due to invalid credentials
-      if (_.get(error, 'response.status') === 400) {
-        throw new InvalidCredentialsException(error);
-      }
-      throw error;
+        // raise different exception if due to invalid credentials
+        if (_.get(error, 'response.status') === 400) {
+            throw new InvalidCredentialsException(error);
+        }
+        throw error;
     });
 }
 
 export function loggedIn() {
-  return store.getState().token == null;
+    return store.getState().token == null;
 }

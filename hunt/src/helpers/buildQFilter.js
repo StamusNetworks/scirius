@@ -1,6 +1,6 @@
 export function buildQFilter(filters, system_settings) {
     var qfilter = [];
-    for (var i=0; i < filters.length; i++) {
+    for (var i = 0; i < filters.length; i++) {
         var f_prefix = '';
         var f_suffix = '.raw';
         if (system_settings) {
