@@ -98,6 +98,8 @@ third party services.
 This can be used in particular to import signatures from a `MISP <http://www.misp-project.org/>`_ instance. See
 `MISP documentation <https://www.circl.lu/doc/misp/automation/#automation-api>`_ for more information.
 
+The usage of private Github repositories to host signatures is also supported through the usage of ``Optional auhtorization key``, as explained in the `Github documentation <https://developer.github.com/v3/auth/>`_. ``Optional auhtorization key`` should be filled with ``token TOKEN``, with the second TOKEN being the personal access token created under the user Github profile, Developer Settings page.
+
 Updating Source
 ---------------
 
