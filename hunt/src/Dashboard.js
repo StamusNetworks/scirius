@@ -149,8 +149,6 @@ export class HuntDashboard extends HuntList {
             }, 250);
         });
 
-        this.panelState.dashboard = { ...this.state.dashboard };
-
         if( this.props.filters.length ){
             this.loadActions(this.props.filters);
         }
@@ -185,6 +183,7 @@ export class HuntDashboard extends HuntList {
     bootPanels = () => {
         this.panelsLoaded = 0;
         this.panelsBooted = 'booting';
+        this.panelState.dashboard = { ...this.state.dashboard };
         map(this.state.load, panel => this.bootPanel(panel));
     }
 
