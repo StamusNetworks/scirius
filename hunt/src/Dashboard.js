@@ -149,7 +149,11 @@ export class HuntDashboard extends HuntList {
             }, 250);
         });
 
-        this.panelState = { ...this.state };
+        this.panelState.dashboard = { ...this.state.dashboard };
+
+        if( this.props.filters.length ){
+            this.loadActions(this.props.filters);
+        }
     }
 
     getBlockFromLS = (panel, block, breakPoint) => {
@@ -253,7 +257,6 @@ export class HuntDashboard extends HuntList {
 
                 newHeight = (newHeight < panelHeight) ? panelHeight : newHeight;
                 this.panelState = {
-                    ...this.panelState,
                     dashboard: {
                         ...this.panelState.dashboard,
                         [panel]: {
