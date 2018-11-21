@@ -161,6 +161,8 @@ class HuntApp extends Component {
             history: history_conf,
             history_filters: history_filters,
             filters_list: filters_list_conf,
+            hasConnectivity: true,
+            connectionProblem: 'Scirius is not currently available.',
         };
         this.displaySource = this.displaySource.bind(this);
         this.displayRuleset = this.displayRuleset.bind(this);
@@ -215,6 +217,7 @@ class HuntApp extends Component {
     }
 
     componentDidMount() {
+        setInterval(this.get_scirius_status, 10000);
         axios.all([
             axios.get(config.API_URL + config.SOURCE_PATH),
             axios.get(config.API_URL + config.RULESET_PATH),
@@ -315,6 +318,46 @@ class HuntApp extends Component {
         return { shortcuts: shortcutManager }
     }
 
+    get_scirius_status = () => {
+        axios({
+            method: 'get',
+            url: "/rules/info",
+            timeout: 15000,
+        }).then((data) => {
+            if (!data) {
+                if (this.state.hasConnectivity) {
+                    this.setState({
+                        ...this.state,
+                        hasConnectivity: false
+                    });
+                }
+            } else {
+                if (data.data['status'] === 'green') {
+                    this.setState({
+                        ...this.state,
+                        hasConnectivity: true
+                    });
+                } else {
+                    if (this.state.hasConnectivity) {
+                        this.setState({
+                            ...this.state,
+                            hasConnectivity: false,
+                            connectionProblem: 'Scirius does not feel comfortable',
+                        });
+                    }
+                }
+            }
+        }).catch(() => {
+            if (this.state.hasConnectivity) {
+                this.setState({
+                    ...this.state,
+                    hasConnectivity: false,
+                    connectionProblem: 'No connection with scirius. This pop-up will disappear if connection is restored.',
+                });
+            }
+        });
+    }
+
     render() {
         var displayed_page = undefined;
         switch (this.state.display.page) {
@@ -397,6 +440,15 @@ class HuntApp extends Component {
                         </div>
                     </div>
                 </div>
+
+                <Modal show={!this.state.hasConnectivity}>
+                    <Modal.Header>
+                        <Modal.Title>Scirius is down</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <div className="modal-body text-danger">{this.state.connectionProblem}</div>
+                    </Modal.Body>
+                </Modal>
             </div>
         )
     }
