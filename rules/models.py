@@ -2562,7 +2562,10 @@ class Ruleset(models.Model, Transformable):
         # TODO: manage other types
         S_SUPPRESSED = Transformation.S_SUPPRESSED
 
-        rules = Rule.objects.select_related('category').filter(category__in=self.categories.all(), state=True).exclude(ruletransformation__value=S_SUPPRESSED.value)
+        sources = self.sources.values_list('source', flat=True)
+        rules = Rule.objects.select_related('category')
+        rules = rules.filter(category__source__pk__in=sources, category__in=self.categories.all(), state=True)
+        rules = rules.exclude(ruletransformation__value=S_SUPPRESSED.value)
         return rules
 
     def generate_threshold(self, directory):
