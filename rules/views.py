@@ -1380,8 +1380,10 @@ def edit_source(request, source_id):
             )
 
             return redirect(source)
-        except ValueError:
-            pass
+        except Exception as e:
+            if isinstance(e, ValidationError):
+                e = e.message
+            return scirius_render(request, 'rules/add_source.html', {'form': form, 'source': source, 'error': e})
     else:
         form = SourceForm(instance = source)
 
