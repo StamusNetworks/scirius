@@ -1681,6 +1681,9 @@ class Category(models.Model, Transformable, Cache):
             rules_groups = self.build_sigs_group()
 
         with transaction.atomic():
+            duplicate_source = set()
+            duplicate_sids = set()
+
             for line in rfile.readlines():
                 line = line.decode('utf-8')
                 state = True
@@ -1713,7 +1716,12 @@ class Category(models.Model, Transformable, Cache):
                         # FIXME update references if needed
                         rule = existing_rules_hash[int(sid)]
                         if rule.category.source != source:
-                            raise ValidationError('Duplicate SID: %d' % (int(sid)))
+                            source_name = rule.category.source.name
+                            duplicate_source.add(source_name)
+                            duplicate_sids.add(sid)
+                            if len(duplicate_sids) == 20:
+                                break
+                            continue
                         if rev == None or rule.rev < rev or rule.group is True:
                             rule.content = line
                             if rev == None:
@@ -1739,6 +1747,16 @@ class Category(models.Model, Transformable, Cache):
                         rule.parse_metadata()
                         rules_update["added"].append(rule)
                         rule.parse_flowbits(source, flowbits, addition = True)
+
+            if len(duplicate_sids):
+                sids = sorted(duplicate_sids)
+                if len(sids) == 20:
+                    sids += '...'
+                sids = ', '.join(sids)
+                source_name = ', '.join(sorted(duplicate_source))
+
+                raise ValidationError('The source contains conflicting SID (%s) with other sources (%s)' % (sids, source_name))
+
             if len(rules_update["added"]):
                 Rule.objects.bulk_create(rules_update["added"])
             if len(rules_groups):
