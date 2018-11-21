@@ -1155,12 +1155,18 @@ def add_source(request):
                         cert_verif = form.cleaned_data['cert_verif'],
                         use_iprep=form.cleaned_data['use_iprep']
                         )
-                if src.method == 'local' and request.FILES.has_key('file'):
+                if src.method == 'local':
                     try:
+                        if not request.FILES.has_key('file'):
+                            form.add_error('file', 'This field is required.')
+                            raise Exception('A source file is required')
                         src.handle_uploaded_file(request.FILES['file'])
                     except Exception, error:
+                        if isinstance(error, ValidationError):
+                            error = error.message
                         src.delete()
                         return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
+
             except IntegrityError, error:
                 return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
             try:
