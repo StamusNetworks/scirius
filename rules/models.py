@@ -935,7 +935,7 @@ class Source(models.Model):
             resp.raise_for_status()
         except requests.exceptions.ConnectionError, e:
             if "Name or service not known" in str(e):
-                raise IOError("Connection error 'Name or service not known'")
+                raise IOError("Failure to resolve hostname, please check DNS configuration")
             elif "Connection timed out" in str(e):
                 raise IOError("Connection error 'Connection timed out'")
             else:
@@ -943,7 +943,7 @@ class Source(models.Model):
         except requests.exceptions.HTTPError:
             if resp.status_code == 404:
                 raise IOError("URL not found on server (error 404), please check URL")
-            raise IOError("HTTP error %d sent by server, please check URL or server" % (resp.status_code))
+            raise IOError("HTTP error %d (%s) sent by server, please check URL or server" % (resp.status_code, resp.reason))
         except requests.exceptions.Timeout:
             raise IOError("Request timeout, server may be down")
         except requests.exceptions.TooManyRedirects:
@@ -2569,12 +2569,23 @@ class Ruleset(models.Model, Transformable):
         return reverse('ruleset', args=[str(self.id)])
 
     def update(self):
+        update_errors = []
         sourcesatversion = self.sources.all()
         for sourcesat in sourcesatversion:
-            sourcesat.source.update()
+            try:
+                sourcesat.source.update()
+            except IOError as e:
+                update_errors.append('Source "%s" update failed:\n%s' % (sourcesat.source.name, e.message))
+
+        if len(sourcesatversion) == 1 and len(update_errors) == 1:
+            raise IOError(update_errors[0])
+
         self.updated_date = timezone.now()
         self.need_test = True
         self.save()
+
+        if len(update_errors):
+            raise IOError('\n'.join(update_errors))
 
     def generate(self):
         # TODO: manage other types
