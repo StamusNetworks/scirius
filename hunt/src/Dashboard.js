@@ -715,7 +715,7 @@ class HuntTimeline extends React.Component {
                                       localtime: true,
                                       min: this.props.from_date,
                                       max: Date.now(),
-                                      tick: { fit: false, format: '%Y-%m-%d %H:%M' },
+                                      tick: { fit: false, rotate: 15, format: '%Y-%m-%d %H:%M' },
                                       show: true
                                   },
                                   y: { show: true }
@@ -723,7 +723,7 @@ class HuntTimeline extends React.Component {
                               legend={{
                                   show: true
                               }}
-                              size={{ height: 190 }}
+                              size={{ height: 200 }}
                               point={{ show: true }}
                 />
                 }

@@ -105,7 +105,7 @@ export class RuleInList extends React.Component {
                                                           localtime: true,
                                                           min: this.props.from_date,
                                                           max: Date.now(),
-                                                          tick: { fit: false, format: '%Y-%m-%d %H:%M' }
+                                                          tick: { fit: false,  rotate: 15, format: '%Y-%m-%d %H:%M' }
                                                       }
                                                   } }
                                     />
@@ -183,14 +183,14 @@ export class RuleCard extends React.Component {
                                                       min: this.props.from_date,
                                                       max: Date.now(),
                                                       show: false,
-                                                      tick: { fit: true, format: '%Y-%m-%d %H:%M' }
+                                                      tick: { fit: true, rotate: 15, format: '%Y-%m-%d %H:%M' }
                                                   },
                                                   y: { show: false }
                                               }}
                                               legend={{
                                                   show: false
                                               }}
-                                              size={{ height: 50 }}
+                                              size={{ height: 60 }}
                                               point={{ show: false }}
                                 />
                             </div>
@@ -370,6 +370,7 @@ export class RulePage extends React.Component {
                                                 max: Date.now(),
                                                 tick: {
                                                     fit: false,
+                                                    rotate: 15,
                                                     format: '%Y-%m-%d %H:%M'
                                                 }
                                             }
