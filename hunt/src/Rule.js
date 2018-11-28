@@ -25,6 +25,8 @@ import axios from 'axios';
 import { PAGINATION_VIEW } from 'patternfly-react';
 import { Modal, DropdownKebab, MenuItem, Icon, Button } from 'patternfly-react';
 import { Form, FormGroup, FormControl, Checkbox } from 'patternfly-react';
+import store from "store";
+import md5 from "md5";
 import { SciriusChart } from './Chart.js';
 import * as config from './config/Api.js';
 import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
@@ -1062,6 +1064,8 @@ export class RulesList extends HuntList {
     constructor(props) {
         super(props);
 
+        let huntFilters = store.get('huntFilters');
+        let rules_filters = ( typeof huntFilters !== 'undefined' && typeof huntFilters.ruleslist !== 'undefined' ) ? huntFilters.ruleslist.data : [];
         this.state = {
             rules: [], sources: [], rulesets: [], count: 0,
             loading: true,
@@ -1070,7 +1074,7 @@ export class RulesList extends HuntList {
             display_toggle: true,
             action: { view: false, type: 'suppress' },
             net_error: undefined,
-            rules_filters: [],
+            rules_filters,
             supported_actions: []
         };
         this.cache = {
@@ -1212,6 +1216,7 @@ export class RulesList extends HuntList {
         } else {
             this.fetchData(this.props.config, this.props.filters);
         }
+        let huntFilters = store.get('huntFilters');
         axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
             res => {
                 var fdata = [];
@@ -1223,7 +1228,17 @@ export class RulesList extends HuntList {
                         }
                     }
                 }
-                this.setState({ rules_filters: fdata });
+                let currentCheckSum = md5(JSON.stringify(fdata));
+                if((typeof huntFilters === 'undefined' || typeof huntFilters.ruleslist === 'undefined') || huntFilters.ruleslist.checkSum !== currentCheckSum) {
+                    store.set('huntFilters', {
+                        ...huntFilters,
+                        ruleslist: {
+                            checkSum: currentCheckSum,
+                            data: fdata
+                        }
+                    });
+                    this.setState({ rules_filters: fdata });
+                }
             }
         );
         this.loadActions();

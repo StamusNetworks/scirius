@@ -24,6 +24,7 @@ import axios from 'axios';
 import { DonutChart } from 'patternfly-react';
 import { WidthProvider, Responsive } from "react-grid-layout";
 import store from 'store';
+import md5 from 'md5';
 import map from "lodash/map";
 import reject from "lodash/reject";
 import find from "lodash/find";
@@ -61,6 +62,8 @@ export class HuntDashboard extends HuntList {
         this.qFilter = "";
         this.filters = "";
 
+        let huntFilters = store.get('huntFilters');
+        let rules_filters = ( typeof huntFilters !== 'undefined' && typeof huntFilters.dashboard !== 'undefined' ) ? huntFilters.dashboard.data : [];
         this.state = {
             load: ['metadata', 'basic', 'organizational', 'ip', 'http', 'dns', 'tls', 'smtp', 'smb', 'ssh'],
             // load: ['basic'],
@@ -74,7 +77,7 @@ export class HuntDashboard extends HuntList {
             only_hits: only_hits,
             action: { view: false, type: 'suppress' },
             net_error: undefined,
-            rules_filters: [],
+            rules_filters,
             supported_actions: [],
             moreModal: null,
             moreResults: [],
@@ -117,6 +120,7 @@ export class HuntDashboard extends HuntList {
                 this.setState({ rulesets: res.data['results'] });
             })
         }
+        let huntFilters = store.get('huntFilters');
         axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
             res => {
                 var fdata = [];
@@ -128,7 +132,17 @@ export class HuntDashboard extends HuntList {
                         }
                     }
                 }
-                this.setState({ rules_filters: fdata });
+                let currentCheckSum = md5(JSON.stringify(fdata));
+                if((typeof huntFilters === 'undefined' || typeof huntFilters.dashboard === 'undefined') || huntFilters.dashboard.checkSum !== currentCheckSum) {
+                    store.set('huntFilters', {
+                        ...huntFilters,
+                        dashboard: {
+                            checkSum: currentCheckSum,
+                            data: fdata
+                        }
+                    });
+                    this.setState({ rules_filters: fdata });
+                }
             }
         );
 

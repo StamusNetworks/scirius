@@ -30,11 +30,16 @@ import ReactJson from 'react-json-view';
 import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
 import axios from 'axios';
 import moment from 'moment';
+import store from "store";
+import md5 from "md5";
 
 
 export class AlertsList extends HuntList {
     constructor(props) {
         super(props);
+
+        let huntFilters = store.get('huntFilters');
+        let rules_filters = ( typeof huntFilters !== 'undefined' && typeof huntFilters.alertslist !== 'undefined' ) ? huntFilters.alertslist.data : [];
         this.state = {
             alerts: [],
             rulesets: [],
@@ -42,7 +47,7 @@ export class AlertsList extends HuntList {
             refresh_data: false,
             action: { view: false, type: 'suppress' },
             net_error: undefined,
-            rules_filters: [],
+            rules_filters,
             supported_actions: []
         };
         this.fetchData = this.fetchData.bind(this);
@@ -56,6 +61,7 @@ export class AlertsList extends HuntList {
                 this.setState({ rulesets: res.data['results'] });
             })
         }
+        let huntFilters = store.get('huntFilters');
         axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
             res => {
                 var fdata = [];
@@ -67,7 +73,17 @@ export class AlertsList extends HuntList {
                         }
                     }
                 }
-                this.setState({ rules_filters: fdata });
+                let currentCheckSum = md5(JSON.stringify(fdata));
+                if((typeof huntFilters === 'undefined' || typeof huntFilters.alertslist === 'undefined') || huntFilters.alertslist.checkSum !== currentCheckSum) {
+                    store.set('huntFilters', {
+                        ...huntFilters,
+                        alertslist: {
+                            checkSum: currentCheckSum,
+                            data: fdata
+                        }
+                    });
+                    this.setState({ rules_filters: fdata });
+                }
             }
         );
         this.loadActions();
