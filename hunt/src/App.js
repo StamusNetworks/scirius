@@ -769,13 +769,13 @@ class UserNavInfo extends Component {
                 <AboutModal
                     show={this.state.showModal}
                     onHide={this.closeModal}
-                    productTitle="Scirius Enterprise Edition"
+                    productTitle="Scirius Community Edition"
                     logo={scirius_logo}
                     altLogo="SEE Logo"
                     trademarkText="Copyright 2014-2018, Stamus Networks"
                 >
                     <AboutModal.Versions>
-                        <AboutModal.VersionItem label="Version" versionText="32.0.0"/>
+                        <AboutModal.VersionItem label="Version" versionText="3.0.1"/>
                     </AboutModal.Versions>
                 </AboutModal>
             </React.Fragment>
