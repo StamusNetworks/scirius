@@ -2594,12 +2594,11 @@ class Ruleset(models.Model, Transformable):
             except IOError as e:
                 update_errors.append('Source "%s" update failed:\n%s' % (sourcesat.source.name, e.message))
 
-        if len(sourcesatversion) == 1 and len(update_errors) == 1:
-            raise IOError(update_errors[0])
-
-        self.updated_date = timezone.now()
-        self.need_test = True
-        self.save()
+        # Update timestamp if at least one source update was successful
+        if len(sourcesatversion) != 0 and len(sourcesatversion) != len(update_errors):
+            self.updated_date = timezone.now()
+            self.need_test = True
+            self.save()
 
         if len(update_errors):
             raise IOError('\n'.join(update_errors))
