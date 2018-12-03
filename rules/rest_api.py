@@ -1773,10 +1773,8 @@ class UserActionDateOrderingFilter(OrderingFilter):
         ordering = self.get_ordering(request, queryset, view)
 
         if 'date' not in ordering or '-date' not in ordering:
-            ordering += [u'-date']
-            return queryset.order_by(*ordering)
-
-        return queryset
+            ordering += (u'-date',) if isinstance(ordering, tuple) else [u'-date']
+        return queryset.order_by(*ordering)
 
 
 class UserActionViewSet(SciriusReadOnlyModelViewSet):
