@@ -1826,7 +1826,7 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
     ordering = ('-pk',)
     ordering_fields = ('pk', 'date', 'username', 'action_type')
     filter_class = UserActionFilter
-    filter_backends = (UserActionDateOrderingFilter,)
+    filter_backends = (filters.DjangoFilterBackend, UserActionDateOrderingFilter)
 
     @list_route(methods=['get'])
     def get_action_type_list(self, request):
