@@ -1669,7 +1669,7 @@ def es_get_poststats(from_date=0,  value = "poststats.rule_filter_1", hosts = No
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
-    return data['aggregations']['hosts']['buckets']
+    return data['aggregations']['hosts']['buckets'] if 'aggregations' in data else []
 
 def es_get_json(uri):
     headers = {'content-type': 'application/json'}
