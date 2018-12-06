@@ -425,11 +425,17 @@ class RuleFilter(filters.FilterSet):
     min_updated = filters.DateFilter(name="updated", lookup_expr='gte')
     max_updated = filters.DateFilter(name="updated", lookup_expr='lte')
     msg = ListFilter(name="msg", lookup_expr='icontains')
+    not_in_msg = ListFilter(name="msg", lookup_expr='icontains', exclude=True)
     content = ListFilter(name="content", lookup_expr='icontains')
+    not_in_content = ListFilter(name="content", lookup_expr='icontains', exclude=True)
 
     class Meta:
         model = Rule
-        fields = ['sid', 'category', 'msg', 'content', 'created', 'updated']
+        fields = ['sid', 'category', 'msg', 'not_in_msg', 'content', 'not_in_content', 'created', 'updated']
+        extra_kwargs = {
+            'not_in_msg': {'source': 'msg'},
+            'not_in_content': {'source': 'content'},
+        }
 
 
 class UserActionFilter(filters.FilterSet):

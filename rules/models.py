@@ -75,13 +75,30 @@ _HUNT_FILTERS = [
                       'queryType': 'filter'
                     },
                     {
+                      'id': 'not_in_msg',
+                      'title': 'Not in Message',
+                      'placeholder': 'Filter by not in Message',
+                      'filterType': 'text',
+                      'valueType': 'text',
+                      'queryType': 'filter'
+                    },
+                    {
                       'id': 'search',
                       'title': 'Content',
                       'placeholder': 'Filter by Content',
                       'filterType': 'text',
                       'valueType': 'text',
                       'queryType': 'rest'
-                    }, {
+                    },
+                    {
+                      'id': 'not_in_content',
+                      'title': 'Not in Content',
+                      'placeholder': 'Filter by not in Content',
+                      'filterType': 'text',
+                      'valueType': 'text',
+                      'queryType': 'rest'
+                    },
+                    {
                       'id': 'alert.signature_id',
                       'title': 'Signature ID',
                       'placeholder': 'Filter by Signature ID',
