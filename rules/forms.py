@@ -53,7 +53,7 @@ class RulesetChoiceForm(CommentForm):
                 self.errors[NON_FIELD_ERRORS] = ['Please create a ruleset first']
             self.fields.pop('rulesets')
 
-class SystemSettingsForm(forms.ModelForm):
+class SystemSettingsForm(forms.ModelForm, CommentForm):
     use_http_proxy = forms.BooleanField(label='Use a proxy', required=False)
     custom_elasticsearch = forms.BooleanField(label='Use a custom Elasticsearch server', required=False)
 

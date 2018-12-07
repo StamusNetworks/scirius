@@ -1825,6 +1825,7 @@ def system_settings(request):
 
     if request.method == 'POST':
         form_id = request.POST.get('form_id', None)
+        comment = {'comment': request.POST.get('comment', None)}
 
         if form_id == 'main':
             main_form = SystemSettingsForm(request.POST, instance = gsettings)
@@ -1888,8 +1889,11 @@ def system_settings(request):
         if form_id is not None:
             context['form_id'] = form_id
 
+        comment_form = CommentForm(comment)
+        comment_form.is_valid()
         UserAction.create(
                 action_type='system_settings',
+                comment=comment_form.cleaned_data['comment'],
                 user=request.user,
         )
     context['global_settings'] = get_system_settings()
