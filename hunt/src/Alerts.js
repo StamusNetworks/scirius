@@ -484,9 +484,11 @@ class AlertInList extends React.Component {
                                 <dl className="dl-horizontal">
                                     {
                                         Object.entries(data.alert.metadata).map(field => {
+                                            const value = ( field[1] === null ) ? '' : field[1].join(', ');
+                                            const key = ( field[0] === null ) ? '' : field[0];
                                             return (
-                                                <React.Fragment key={field[0]}>
-                                                    <EventField field_name={field[0]} field={'alert.metadata.' + field[0]} value={field[1].join(', ')} addFilter={this.addFilter}/>
+                                                <React.Fragment key={key}>
+                                                    <EventField field_name={key} field={'alert.metadata.' + key} value={value} addFilter={this.addFilter}/>
                                                 </React.Fragment>
                                             )
                                         })
