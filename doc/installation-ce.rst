@@ -42,6 +42,9 @@ you can do ::
  sudo apt-get install npm
  sudo npm install -g npm@latest webpack@3.11
  npm install
+ cd hunt
+ npm install
+ npm run build
 
 Running Scirius CE
 ~~~~~~~~~~~~~~~~~~
