@@ -28,6 +28,8 @@ from cStringIO import StringIO
 from shutil import rmtree
 from time import strftime, sleep
 
+import urllib2
+
 from django.conf import settings
 from elasticsearch import Elasticsearch, ConnectionError
 
@@ -40,7 +42,7 @@ es_logger.setLevel(logging.INFO)
 
 # Mapping
 def get_kibana_mappings():
-    if settings.KIBANA_VERSION < 6:
+    if get_es_major_version() < 6:
         return { "dashboard":
             { "properties":
                 {
@@ -487,13 +489,14 @@ class ESData(object):
                 self.client.update(index='.kibana', doc_type='doc', id=hit['_id'], body=content, refresh=True)
         else:
             if get_es_major_version() >= 6:
-                config = {
-                    'config': {
-                        'buildNum': 17999,
-                        'defaultIndex': 'logstash-*'
-                    }
+                headers = {
+                    'content-type': 'application/json',
+                    'kbn-xsrf': True
                 }
-                self.client.create(index='.kibana', doc_type='doc', id='config:%s' % settings.KIBANA_VERSION_FULL, body=config, refresh=True)
+                data = json.dumps({'value': 'logstash-*'})
+                kibana_url = settings.KIBANA_URL + '/api/kibana/settings/defaultIndex'
+                req = urllib2.Request(kibana_url, data, headers=headers)
+                urllib2.urlopen(req)
             else:
                 print >> sys.stderr, "Warning: unknown ES version, not setting Kibana's defaultIndex"
 

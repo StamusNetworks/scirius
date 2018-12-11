@@ -470,6 +470,7 @@ def rule(request, rule_id, key = 'pk'):
     except:
         pass
 
+    context['kibana_version'] = get_es_major_version()
     return scirius_render(request, 'rules/rule.html', context)
 
 def edit_rule(request, rule_id):
