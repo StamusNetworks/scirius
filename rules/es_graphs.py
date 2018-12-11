@@ -37,989 +37,521 @@ URL = "%s%s/_search?ignore_unavailable=true"
 # ES requests timeout (keep this below Scirius's ajax requests timeout)
 TIMEOUT = 13
 
-TOP_QUERY = """
-{
-  "facets": {
-    "table": {
-      "terms": {
-        "field": "{{ field }}",
-        "size": {{ count }},
-        "exclude": []
-      },
-      "facet_filter": {
-        "fquery": {
-          "query": {
-            "filtered": {
-              "query": {
-                "bool": {
-                  "should": [
-                    {
-                      "query_string": {
-                        "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ appliance_hostname }} {{ query_filter|safe }}"
-                      }
-                    }
-                  ]
-                }
-              },
-              "filter": {
-                "bool": {
-                  "must": [
-                    {
-                      "range": {
-                        "@timestamp": {
-                          "from": {{ from_date }},
-                          "to": "now"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "size": 0
-}
-"""
-
-if settings.ELASTICSEARCH_VERSION >= 2:
-    TOP_QUERY = """
-{
-  "size": 0,
-  "aggs": {
-    "table": {
-      "terms": {
-        "field": "{{ field }}",
-        "size": {{ count }},
-        "order": {
-          "_count": "desc"
-        }
-      }
-    }
-  },
-  "query": {
-    "bool": {
-      "must": [ {
-        "query_string": {
-          "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ appliance_hostname }} {{ query_filter|safe }}",
-          "analyze_wildcard": false
-        }
-      }, 
-            {
-              "range": {
-                 "@timestamp": {
-                    "from": {{ from_date }},
-                    "to": "now"
-                 }
-              }
-            }
-          ]
-        }
-      }
-}
-    """
-
-if settings.ELASTICSEARCH_VERSION >= 6:
-    TOP_QUERY = """
-{
-  "size": 0,
-  "aggs": {
-    "table": {
-      "terms": {
-        "field": "{{ field }}",
-        "size": {{ count }},
-        "order": {
-          "_count": "desc"
-        }
-      }
-    }
-  },
-  "query": {
-    "bool": {
-      "must": [ {
-        "query_string": {
-          "query": "event_type:alert AND {{ hostname }}:{{ appliance_hostname }} {{ query_filter|safe }}",
-          "analyze_wildcard": false
-        }
-      }, 
-            {
-              "range": {
-                 "@timestamp": {
-                    "from": {{ from_date }},
-                    "to": "now"
-                 }
-              }
-            }
-          ]
-        }
-      }
-}
-    """
-
-
-SID_BY_HOST_QUERY = """
-{
-  "facets": {
-    "terms": {
-      "terms": {
-        "field": "{{ hostname }}.{{ keyword }}",
-        "size": {{ alerts_number }},
-        "order": "count",
-        "exclude": []
-      },
-      "facet_filter": {
-        "fquery": {
-          "query": {
-            "filtered": {
-              "query": {
-                "bool": {
-                  "should": [
-                    {
-                      "query_string": {
-                        "query": "event_type:alert AND alert.signature_id:{{ rule_sid }}"
-                      }
-                    }
-                  ]
-                }
-              },
-              "filter": {
-                "bool": {
-                  "must": [
-                    {
-                      "range": {
-                        "@timestamp": {
-                          "from": {{ from_date }},
-                          "to": "now"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "size": 0
-}'
-"""
-
-if settings.ELASTICSEARCH_VERSION >= 2:
-    SID_BY_HOST_QUERY = """
-{
-  "size": 0,
-  "aggs": {
-    "host": {
-      "terms": {
-        "field": "{{ hostname }}.{{ keyword }}",
-        "size": {{ alerts_number }},
-        "order": {
-          "_count": "desc"
-        }
-      }
-    }
-  },
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                 "@timestamp": {
-                    "from": {{ from_date }},
-                    "to": "now"
-                 }
-              }
-            }
-            ,{
-            "query_string": {
-               "query": "event_type:alert AND alert.signature_id:{{ rule_sid }}",
-               "analyze_wildcard": false
-             }
-            }
-          ]
-        }
-      }
-}
-    """
-
-
-TIMELINE_QUERY = """
-{
-  "facets": {
-{% for host in hosts %}
-    "{{ host }}": {
-      "date_histogram": {
-        "field": "@timestamp",
-        "interval": "{{ interval }}"
-      },
-      "global": true,
-      "facet_filter": {
-        "fquery": {
-          "query": {
-            "filtered": {
-              "query": {
-                "query_string": {
-                  "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ host }} {{ query_filter|safe }}"
-                }
-              },
-              "filter": {
-                "bool": {
-                  "must": [
-                    {
-                      "range": {
-                        "@timestamp": {
-                          "from": {{ from_date }},
-                          "to": "now"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    }{% if not forloop.last %},{% endif %}{% endfor %}
-  },
-  "size": 0
-}
-"""
-
-if settings.ELASTICSEARCH_VERSION >= 2:
-    TIMELINE_QUERY = """
-{
-  "size": 0,
-  "query": {
-    "bool": {
-      "must": [ {
-        "query_string": {
-          "query": "event_type:alert {{ query_filter|safe }}",
-          "analyze_wildcard": false
-        }
-      },
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ from_date }},
-                  "lte": "now",
-                  "format": "epoch_millis"
-                }
-              }
-            }
-          ]
-        }
-  },
-  "aggs": {
-    "date": {
-      "date_histogram": {
-        "field": "@timestamp",
-        "interval": "{{ interval }}",
-        "time_zone": "Europe/Berlin",
-        "min_doc_count": 0
-      },
-      "aggs": {
-        "host": {
-          "terms": {
-            "field": "{{ hostname }}.{{ keyword }}",
-            "size": 5,
-            "order": {
-              "_count": "desc"
-            }
-          }
-        }
-      }
-    }
-  }
-}
-    """
-
-STATS_QUERY = """
-{
-  "facets": {
-{% if hosts %}
-{% for host in hosts %}
-    "{{ host }}": {
-      "date_histogram": {
-        "key_field": "@timestamp",
-        "value_field": "{{ value }}",
-        "interval": "{{ interval }}",
-        "min_doc_count": 0
-      },
-      "global": true,
-      "facet_filter": {
-        "fquery": {
-          "query": {
-            "filtered": {
-              "query": {
-                "query_string": {
-                  "query": "{{ hostname }}.{{ keyword }}:{{ host }} {{ query_filter|safe }}"
-                }
-              },
-              "filter": {
-                "bool": {
-                  "must": [
-                    {
-                      "range": {
-                        "@timestamp": {
-                          "from": {{ from_date }},
-                          "to": "now"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    }{% if not forloop.last %},{% endif %}{% endfor %}
-  {% else %}
-    "global": {
-      "date_histogram": {
-        "key_field": "@timestamp",
-        "value_field": "{{ value }}",
-        "interval": "{{ interval }}"
-      },
-      "global": true,
-      "facet_filter": {
-        "fquery": {
-          "query": {
-            "filtered": {
-              "query": {
-                "query_string": {
-                  "query": "*"
-                }
-              },
-              "filter": {
-                "bool": {
-                  "must": [
-                    {
-                      "range": {
-                        "@timestamp": {
-                          "from": {{ from_date }},
-                          "to": "now"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  {% endif %}
-  },
-  "size": 0
-}
-"""
-
-if settings.ELASTICSEARCH_VERSION >= 2:
-    STATS_QUERY = """
-{
-  "size": 0,
-  "aggs": {
-    "date": {
-      "date_histogram": {
-        "field": "@timestamp",
-        "interval": "{{ interval }}",
-        "time_zone": "Europe/Berlin",
-        "min_doc_count": 0
-      },
-      "aggs": {
-        "stat": {
-          "avg": {
-            "field": "{{ value }}"
-          }
-        }
-      }
-    }
-  },
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                  "@timestamp": {
-                    "from": {{ from_date }},
-                    "to": "now"
-                  }
-              }
-            },
+def get_top_query():
+    if settings.ELASTICSEARCH_VERSION < 2:
+        return """
         {
-        "query_string": {
-      {% if hosts %}
-          {% for host in hosts %}
-          "query": "{{ hostname }}.{{ keyword }}:{{ host }} {{ query_filter|safe }}",
-          {% endfor %}
-      {% else %}
-          "query": "tags:metric",
-      {% endif %}
-          "analyze_wildcard": false
-        }
-      }
-          ]
-        }
-      }
-}
-    """
-
-if settings.ELASTICSEARCH_VERSION >= 6:
-    STATS_QUERY = """
-{
-  "size": 0,
-  "aggs": {
-    "date": {
-      "date_histogram": {
-        "field": "@timestamp",
-        "interval": "{{ interval }}",
-        "time_zone": "Europe/Berlin",
-        "min_doc_count": 0
-      },
-      "aggs": {
-        "stat": {
-          "avg": {
-            "field": "{{ value }}"
-          }
-        }
-      }
-    }
-  },
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                  "@timestamp": {
-                    "from": {{ from_date }},
-                    "to": "now"
+          "facets": {
+            "table": {
+              "terms": {
+                "field": "{{ field }}",
+                "size": {{ count }},
+                "exclude": []
+              },
+              "facet_filter": {
+                "fquery": {
+                  "query": {
+                    "filtered": {
+                      "query": {
+                        "bool": {
+                          "should": [
+                            {
+                              "query_string": {
+                                "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ appliance_hostname }} {{ query_filter|safe }}"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "filter": {
+                        "bool": {
+                          "must": [
+                            {
+                              "range": {
+                                "@timestamp": {
+                                  "from": {{ from_date }},
+                                  "to": "now"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
                   }
+                }
               }
-            },
+            }
+          },
+          "size": 0
+        }
+        """
+    if settings.ELASTICSEARCH_VERSION < 6:
+        return """
         {
-        "query_string": {
-      {% if hosts %}
-          {% for host in hosts %}
-          "query": "{{ hostname }}:{{ host }} {{ query_filter|safe }}",
-          {% endfor %}
-      {% else %}
-          "query": "tags:metric",
-      {% endif %}
-          "analyze_wildcard": false
-        }
-      }
-          ]
-        }
-      }
-}
-    """
-
-RULES_PER_CATEGORY = """
-{
-  "size": 0,
-  "aggs": {
-    "category": {
-      "terms": {
-        "field": "alert.category.{{ keyword }}",
-        "size": 50,
-        "order": {
-          "_count": "desc"
-        }
-      },
-      "aggs": {
-        "rule": {
-          "terms": {
-            "field": "alert.signature_id",
-            "size": 50,
-            "order": {
-              "_count": "desc"
-            }
-          }, 
+          "size": 0,
           "aggs": {
-            "rule_info": {
+            "table": {
               "terms": {
-                "field": "alert.signature.{{ keyword }}",
-                "size": 1,
+                "field": "{{ field }}",
+                "size": {{ count }},
                 "order": {
                   "_count": "desc"
                 }
               }
             }
-          }
-        }
-      }
-    }
-  },
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ from_date }}
-                }
-              }
-            },
-            { "query_string": {
-              "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
-              "analyze_wildcard": true
-              }
-            }
-          ]
-       }
-  }
-}
-"""
-
-if settings.ELASTICSEARCH_VERSION >= 6:
-    RULES_PER_CATEGORY = """
-{
-  "size": 0,
-  "aggs": {
-    "category": {
-      "terms": {
-        "field": "alert.category.{{ keyword }}",
-        "size": 50,
-        "order": {
-          "_count": "desc"
-        }
-      },
-      "aggs": {
-        "rule": {
-          "terms": {
-            "field": "alert.signature_id",
-            "size": 50,
-            "order": {
-              "_count": "desc"
-            }
-          }, 
-          "aggs": {
-            "rule_info": {
-              "terms": {
-                "field": "alert.signature.{{ keyword }}",
-                "size": 1,
-                "order": {
-                  "_count": "desc"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ from_date }}
-                }
-              }
-            },
-            { "query_string": {
-              "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
-              "analyze_wildcard": true
-              }
-            }
-          ]
-       }
-  }
-}
-"""
-
-ALERTS_COUNT_PER_HOST = """
-{
-  "size": 0,
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ from_date }}
-                }
-              }
-            }
-            ,{
-        "query_string": {
-          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
-          "analyze_wildcard": true
-        }
-      }
-          ],
-          "must_not": []
-        }
-  },
-  "aggs": {}
-}
-"""
-
-if settings.ELASTICSEARCH_VERSION >= 6:
-    ALERTS_COUNT_PER_HOST = """
-{
-  "size": 0,
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ from_date }}
-                }
-              }
-            }
-            ,{
-        "query_string": {
-          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
-          "analyze_wildcard": true
-        }
-      }
-          ],
-          "must_not": []
-        }
-  },
-  "aggs": {}
-}
-"""
-
-ALERTS_TREND_PER_HOST = """
-{
-  "size": 0,
-  "aggs": {
-    "trend": {
-      "date_range": {
-        "field": "@timestamp",
-        "ranges": [
-          {
-            "from": {{ start_date }},
-            "to": {{ from_date }}
           },
-          {
-            "from": {{ from_date }}
-          }
-        ]
-      }
-    }
-  },
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ start_date }}
+          "query": {
+            "bool": {
+              "must": [ {
+                "query_string": {
+                  "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ appliance_hostname }} {{ query_filter|safe }}",
+                  "analyze_wildcard": false
                 }
-              }
-            }
-            ,{
-        "query_string": {
-          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
-          "analyze_wildcard": true
-        }
-      }
-          ]
-        }
-  }
-}
-"""
-
-if settings.ELASTICSEARCH_VERSION >= 6:
-    ALERTS_TREND_PER_HOST = """
-{
-  "size": 0,
-  "aggs": {
-    "trend": {
-      "date_range": {
-        "field": "@timestamp",
-        "ranges": [
-          {
-            "from": {{ start_date }},
-            "to": {{ from_date }}
-          },
-          {
-            "from": {{ from_date }}
-          }
-        ]
-      }
-    }
-  },
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ start_date }}
-                }
-              }
-            }
-            ,{
-        "query_string": {
-          "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
-          "analyze_wildcard": true
-        }
-      }
-          ]
-        }
-  }
-}
-"""
-
-LATEST_STATS_ENTRY = """
-{
-  "size": 1,
-  "sort": [
-    {
-      "@timestamp": {
-        "order": "desc",
-        "unmapped_type": "boolean"
-      }
-    }
-  ],
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ from_date }}
-                }
-              }
-            }
-        ,{
-            "query_string": {
-              "query": "event_type:stats AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
-              "analyze_wildcard": true
-            }
-        }
-          ]
-    }
-  }
-}
-"""
-
-if settings.ELASTICSEARCH_VERSION >= 6:
-    LATEST_STATS_ENTRY = """
-{
-  "size": 1,
-  "sort": [
-    {
-      "@timestamp": {
-        "order": "desc",
-        "unmapped_type": "boolean"
-      }
-    }
-  ],
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ from_date }}
-                }
-              }
-            }
-        ,{
-            "query_string": {
-              "query": "event_type:stats AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
-              "analyze_wildcard": true
-            }
-        }
-          ]
-    }
-  }
-}
-"""
-
-
-IPPAIR_ALERTS_COUNT = """
-{
-  "size": 0,
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ from_date }}
-                }
-              }
-            }, {
-              "query_string": {
-                "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
-                "analyze_wildcard": true
-              }
-            }
-          ]
-        }
-      },
-  "aggs": {
-        "src_ip": {
-          "terms": {
-            "field": "src_ip.{{ keyword }}",
-            "size": 20,
-            "order": {
-              "_count": "desc"
-            }
-          },
-          "aggs": {
-            "dest_ip": {
-              "terms": {
-                "field": "dest_ip.{{ keyword }}",
-                "size": 20,
-                "order": {
-                  "_count": "desc"
-                }
-            }, "aggs": {
-                "alerts": {
-                    "terms": {
-                        "field": "alert.signature.{{ keyword }}",
-                        "size": 20,
-                        "order": {
-                            "_count": "desc"
-                        }
+              },
+                    {
+                      "range": {
+                         "@timestamp": {
+                            "from": {{ from_date }},
+                            "to": "now"
+                         }
+                      }
                     }
-                }
-             }
-           }
-        }
-    }
-  }
-}
-"""
-
-
-if settings.ELASTICSEARCH_VERSION >= 6:
-    IPPAIR_ALERTS_COUNT = """
-{
-  "size": 0,
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ from_date }}
+                  ]
                 }
               }
-            }, {
-              "query_string": {
-                "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
-                "analyze_wildcard": true
-              }
-            }
-          ]
         }
-      },
-  "aggs": {
-        "src_ip": {
-          "terms": {
-            "field": "src_ip",
-            "size": 20,
-            "order": {
-              "_count": "desc"
-            }
-          },
+            """
+    else:
+        return """
+        {
+          "size": 0,
           "aggs": {
-            "dest_ip": {
+            "table": {
               "terms": {
-                "field": "dest_ip",
-                "size": 20,
+                "field": "{{ field }}",
+                "size": {{ count }},
                 "order": {
                   "_count": "desc"
                 }
-            }, "aggs": {
-                "alerts": {
-                    "terms": {
-                        "field": "alert.signature.{{ keyword }}",
-                        "size": 20,
-                        "order": {
-                            "_count": "desc"
-                        }
+              }
+            }
+          },
+          "query": {
+            "bool": {
+              "must": [ {
+                "query_string": {
+                  "query": "event_type:alert AND {{ hostname }}:{{ appliance_hostname }} {{ query_filter|safe }}",
+                  "analyze_wildcard": false
+                }
+              },
+                    {
+                      "range": {
+                         "@timestamp": {
+                            "from": {{ from_date }},
+                            "to": "now"
+                         }
+                      }
                     }
+                  ]
                 }
-             }
-           }
+              }
         }
-    }
-  }
-}
-"""
+            """
 
-IPPAIR_NETINFO_ALERTS_COUNT = """
-{
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ from_date }}
-                }
-              }
-            }, {
-              "query_string": {
-                "query": "event_type:alert AND alert.source.net_info:* AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
-                "analyze_wildcard": true
-              }
-            }
-          ]
-        }
-      },
-        "aggs": {
-        "src_ip": {
-          "terms": {
-            "field": "alert.source.ip.{{ keyword }}",
-            "size": 40,
-            "order": {
-              "_count": "desc"
-            }
-          },
-          "aggs": {
-            "net_src": {
+def get_sid_by_host_query():
+    if settings.ELASTICSEARCH_VERSION < 2:
+        return """
+        {
+          "facets": {
+            "terms": {
               "terms": {
-                "field": "alert.source.net_info_agg.{{ keyword }}",
-                "size": 1,
-                "order": {
-                  "_count": "desc"
-                }
-           },
-            "aggs": {
-              "dest_ip": {
-                "terms": {
-                  "field": "alert.target.ip.{{ keyword }}",
-                  "size": 40,
-                  "order": {
-                    "_count": "desc"
+                "field": "{{ hostname }}.{{ keyword }}",
+                "size": {{ alerts_number }},
+                "order": "count",
+                "exclude": []
+              },
+              "facet_filter": {
+                "fquery": {
+                  "query": {
+                    "filtered": {
+                      "query": {
+                        "bool": {
+                          "should": [
+                            {
+                              "query_string": {
+                                "query": "event_type:alert AND alert.signature_id:{{ rule_sid }}"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "filter": {
+                        "bool": {
+                          "must": [
+                            {
+                              "range": {
+                                "@timestamp": {
+                                  "from": {{ from_date }},
+                                  "to": "now"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
                   }
-                },
+                }
+              }
+            }
+          },
+          "size": 0
+        }'
+        """
+    else:
+        return """
+        {
+          "size": 0,
+          "aggs": {
+            "host": {
+              "terms": {
+                "field": "{{ hostname }}.{{ keyword }}",
+                "size": {{ alerts_number }},
+                "order": {
+                  "_count": "desc"
+                }
+              }
+            }
+          },
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                         "@timestamp": {
+                            "from": {{ from_date }},
+                            "to": "now"
+                         }
+                      }
+                    }
+                    ,{
+                    "query_string": {
+                       "query": "event_type:alert AND alert.signature_id:{{ rule_sid }}",
+                       "analyze_wildcard": false
+                     }
+                    }
+                  ]
+                }
+              }
+        }
+            """
+
+def get_timeline_quey():
+    if settings.ELASTICSEARCH_VERSION < 2:
+        return """
+        {
+          "facets": {
+        {% for host in hosts %}
+            "{{ host }}": {
+              "date_histogram": {
+                "field": "@timestamp",
+                "interval": "{{ interval }}"
+              },
+              "global": true,
+              "facet_filter": {
+                "fquery": {
+                  "query": {
+                    "filtered": {
+                      "query": {
+                        "query_string": {
+                          "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ host }} {{ query_filter|safe }}"
+                        }
+                      },
+                      "filter": {
+                        "bool": {
+                          "must": [
+                            {
+                              "range": {
+                                "@timestamp": {
+                                  "from": {{ from_date }},
+                                  "to": "now"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }{% if not forloop.last %},{% endif %}{% endfor %}
+          },
+          "size": 0
+        }
+        """
+    else:
+        return """
+        {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [ {
+                "query_string": {
+                  "query": "event_type:alert {{ query_filter|safe }}",
+                  "analyze_wildcard": false
+                }
+              },
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": {{ from_date }},
+                          "lte": "now",
+                          "format": "epoch_millis"
+                        }
+                      }
+                    }
+                  ]
+                }
+          },
+          "aggs": {
+            "date": {
+              "date_histogram": {
+                "field": "@timestamp",
+                "interval": "{{ interval }}",
+                "time_zone": "Europe/Berlin",
+                "min_doc_count": 0
+              },
               "aggs": {
-                "net_dest": {
+                "host": {
                   "terms": {
-                    "field": "alert.target.net_info_agg.{{ keyword }}",
-                    "size": 1,
+                    "field": "{{ hostname }}.{{ keyword }}",
+                    "size": 5,
+                    "order": {
+                      "_count": "desc"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+            """
+
+def get_stats_query():
+    if settings.ELASTICSEARCH_VERSION < 2:
+        return """
+        {
+          "facets": {
+        {% if hosts %}
+        {% for host in hosts %}
+            "{{ host }}": {
+              "date_histogram": {
+                "key_field": "@timestamp",
+                "value_field": "{{ value }}",
+                "interval": "{{ interval }}",
+                "min_doc_count": 0
+              },
+              "global": true,
+              "facet_filter": {
+                "fquery": {
+                  "query": {
+                    "filtered": {
+                      "query": {
+                        "query_string": {
+                          "query": "{{ hostname }}.{{ keyword }}:{{ host }} {{ query_filter|safe }}"
+                        }
+                      },
+                      "filter": {
+                        "bool": {
+                          "must": [
+                            {
+                              "range": {
+                                "@timestamp": {
+                                  "from": {{ from_date }},
+                                  "to": "now"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }{% if not forloop.last %},{% endif %}{% endfor %}
+          {% else %}
+            "global": {
+              "date_histogram": {
+                "key_field": "@timestamp",
+                "value_field": "{{ value }}",
+                "interval": "{{ interval }}"
+              },
+              "global": true,
+              "facet_filter": {
+                "fquery": {
+                  "query": {
+                    "filtered": {
+                      "query": {
+                        "query_string": {
+                          "query": "*"
+                        }
+                      },
+                      "filter": {
+                        "bool": {
+                          "must": [
+                            {
+                              "range": {
+                                "@timestamp": {
+                                  "from": {{ from_date }},
+                                  "to": "now"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          {% endif %}
+          },
+          "size": 0
+        }
+        """
+    elif settings.ELASTICSEARCH_VERSION < 6:
+        return """
+        {
+          "size": 0,
+          "aggs": {
+            "date": {
+              "date_histogram": {
+                "field": "@timestamp",
+                "interval": "{{ interval }}",
+                "time_zone": "Europe/Berlin",
+                "min_doc_count": 0
+              },
+              "aggs": {
+                "stat": {
+                  "avg": {
+                    "field": "{{ value }}"
+                  }
+                }
+              }
+            }
+          },
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                          "@timestamp": {
+                            "from": {{ from_date }},
+                            "to": "now"
+                          }
+                      }
+                    },
+                {
+                "query_string": {
+              {% if hosts %}
+                  {% for host in hosts %}
+                  "query": "{{ hostname }}.{{ keyword }}:{{ host }} {{ query_filter|safe }}",
+                  {% endfor %}
+              {% else %}
+                  "query": "tags:metric",
+              {% endif %}
+                  "analyze_wildcard": false
+                }
+              }
+                  ]
+                }
+              }
+        }
+            """
+    else:
+        return """
+        {
+          "size": 0,
+          "aggs": {
+            "date": {
+              "date_histogram": {
+                "field": "@timestamp",
+                "interval": "{{ interval }}",
+                "time_zone": "Europe/Berlin",
+                "min_doc_count": 0
+              },
+              "aggs": {
+                "stat": {
+                  "avg": {
+                    "field": "{{ value }}"
+                  }
+                }
+              }
+            }
+          },
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                          "@timestamp": {
+                            "from": {{ from_date }},
+                            "to": "now"
+                          }
+                      }
+                    },
+                {
+                "query_string": {
+              {% if hosts %}
+                  {% for host in hosts %}
+                  "query": "{{ hostname }}:{{ host }} {{ query_filter|safe }}",
+                  {% endfor %}
+              {% else %}
+                  "query": "tags:metric",
+              {% endif %}
+                  "analyze_wildcard": false
+                }
+              }
+                  ]
+                }
+              }
+        }
+            """
+
+def get_rules_per_category():
+    if settings.ELASTICSEARCH_VERSION < 6:
+        return """
+        {
+          "size": 0,
+          "aggs": {
+            "category": {
+              "terms": {
+                "field": "alert.category.{{ keyword }}",
+                "size": 50,
+                "order": {
+                  "_count": "desc"
+                }
+              },
+              "aggs": {
+                "rule": {
+                  "terms": {
+                    "field": "alert.signature_id",
+                    "size": 50,
                     "order": {
                       "_count": "desc"
                     }
                   },
                   "aggs": {
-                    "alerts": {
-                        "terms": {
+                    "rule_info": {
+                      "terms": {
                         "field": "alert.signature.{{ keyword }}",
-                        "size": 20,
+                        "size": 1,
                         "order": {
-                            "_count": "desc"
+                          "_count": "desc"
                         }
                       }
                     }
@@ -1027,78 +559,477 @@ IPPAIR_NETINFO_ALERTS_COUNT = """
                 }
               }
             }
+          },
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": {{ from_date }}
+                        }
+                      }
+                    },
+                    { "query_string": {
+                      "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                      "analyze_wildcard": true
+                      }
+                    }
+                  ]
+               }
           }
         }
-      }
-    }
-  }
-}
-"""
-
-if settings.ELASTICSEARCH_VERSION >= 6:
-    IPPAIR_NETINFO_ALERTS_COUNT = """
-{
-  "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ from_date }}
-                }
-              }
-            }, {
-              "query_string": {
-                "query": "event_type:alert AND alert.source.net_info:* AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
-                "analyze_wildcard": true
-              }
-            }
-          ]
-        }
-      },
-        "aggs": {
-        "src_ip": {
-          "terms": {
-            "field": "alert.source.ip.{{ keyword }}",
-            "size": 40,
-            "order": {
-              "_count": "desc"
-            }
-          },
+        """
+    else:
+        return """
+        {
+          "size": 0,
           "aggs": {
-            "net_src": {
+            "category": {
               "terms": {
-                "field": "alert.source.net_info_agg.{{ keyword }}",
-                "size": 1,
+                "field": "alert.category.{{ keyword }}",
+                "size": 50,
                 "order": {
                   "_count": "desc"
                 }
-           },
-            "aggs": {
-              "dest_ip": {
-                "terms": {
-                  "field": "alert.target.ip.{{ keyword }}",
-                  "size": 40,
-                  "order": {
-                    "_count": "desc"
-                  }
-                },
+              },
               "aggs": {
-                "net_dest": {
+                "rule": {
                   "terms": {
-                    "field": "alert.target.net_info_agg.{{ keyword }}",
-                    "size": 1,
+                    "field": "alert.signature_id",
+                    "size": 50,
                     "order": {
                       "_count": "desc"
                     }
                   },
                   "aggs": {
-                    "alerts": {
-                        "terms": {
+                    "rule_info": {
+                      "terms": {
                         "field": "alert.signature.{{ keyword }}",
+                        "size": 1,
+                        "order": {
+                          "_count": "desc"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": {{ from_date }}
+                        }
+                      }
+                    },
+                    { "query_string": {
+                      "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                      "analyze_wildcard": true
+                      }
+                    }
+                  ]
+               }
+          }
+        }
+        """
+
+def get_alerts_count_per_host():
+    if settings.ELASTICSEARCH_VERSION < 6:
+        return """
+        {
+          "size": 0,
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": {{ from_date }}
+                        }
+                      }
+                    }
+                    ,{
+                "query_string": {
+                  "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                  "analyze_wildcard": true
+                }
+              }
+                  ],
+                  "must_not": []
+                }
+          },
+          "aggs": {}
+        }
+        """
+    else:
+        return """
+        {
+          "size": 0,
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": {{ from_date }}
+                        }
+                      }
+                    }
+                    ,{
+                "query_string": {
+                  "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                  "analyze_wildcard": true
+                }
+              }
+                  ],
+                  "must_not": []
+                }
+          },
+          "aggs": {}
+        }
+        """
+
+def get_alerts_trend_per_host():
+    if settings.ELASTICSEARCH_VERSION < 6:
+        return """
+        {
+          "size": 0,
+          "aggs": {
+            "trend": {
+              "date_range": {
+                "field": "@timestamp",
+                "ranges": [
+                  {
+                    "from": {{ start_date }},
+                    "to": {{ from_date }}
+                  },
+                  {
+                    "from": {{ from_date }}
+                  }
+                ]
+              }
+            }
+          },
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": {{ start_date }}
+                        }
+                      }
+                    }
+                    ,{
+                "query_string": {
+                  "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                  "analyze_wildcard": true
+                }
+              }
+                  ]
+                }
+          }
+        }
+        """
+    else:
+        return """
+        {
+          "size": 0,
+          "aggs": {
+            "trend": {
+              "date_range": {
+                "field": "@timestamp",
+                "ranges": [
+                  {
+                    "from": {{ start_date }},
+                    "to": {{ from_date }}
+                  },
+                  {
+                    "from": {{ from_date }}
+                  }
+                ]
+              }
+            }
+          },
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": {{ start_date }}
+                        }
+                      }
+                    }
+                    ,{
+                "query_string": {
+                  "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                  "analyze_wildcard": true
+                }
+              }
+                  ]
+                }
+          }
+        }
+        """
+
+def get_latest_stats_entry():
+    if settings.ELASTICSEARCH_VERSION < 6:
+        return """
+        {
+          "size": 1,
+          "sort": [
+            {
+              "@timestamp": {
+                "order": "desc",
+                "unmapped_type": "boolean"
+              }
+            }
+          ],
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": {{ from_date }}
+                        }
+                      }
+                    }
+                ,{
+                    "query_string": {
+                      "query": "event_type:stats AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                      "analyze_wildcard": true
+                    }
+                }
+                  ]
+            }
+          }
+        }
+        """
+    else:
+        return """
+        {
+          "size": 1,
+          "sort": [
+            {
+              "@timestamp": {
+                "order": "desc",
+                "unmapped_type": "boolean"
+              }
+            }
+          ],
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": {{ from_date }}
+                        }
+                      }
+                    }
+                ,{
+                    "query_string": {
+                      "query": "event_type:stats AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                      "analyze_wildcard": true
+                    }
+                }
+                  ]
+            }
+          }
+        }
+        """
+
+
+def get_ippair_alerts_count():
+    if settings.ELASTICSEARCH_VERSION < 6:
+        return """
+        {
+          "size": 0,
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": {{ from_date }}
+                        }
+                      }
+                    }, {
+                      "query_string": {
+                        "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                        "analyze_wildcard": true
+                      }
+                    }
+                  ]
+                }
+              },
+          "aggs": {
+                "src_ip": {
+                  "terms": {
+                    "field": "src_ip.{{ keyword }}",
+                    "size": 20,
+                    "order": {
+                      "_count": "desc"
+                    }
+                  },
+                  "aggs": {
+                    "dest_ip": {
+                      "terms": {
+                        "field": "dest_ip.{{ keyword }}",
                         "size": 20,
                         "order": {
+                          "_count": "desc"
+                        }
+                    }, "aggs": {
+                        "alerts": {
+                            "terms": {
+                                "field": "alert.signature.{{ keyword }}",
+                                "size": 20,
+                                "order": {
+                                    "_count": "desc"
+                                }
+                            }
+                        }
+                     }
+                   }
+                }
+            }
+          }
+        }
+        """
+    else:
+        return """
+        {
+          "size": 0,
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": {{ from_date }}
+                        }
+                      }
+                    }, {
+                      "query_string": {
+                        "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                        "analyze_wildcard": true
+                      }
+                    }
+                  ]
+                }
+              },
+          "aggs": {
+                "src_ip": {
+                  "terms": {
+                    "field": "src_ip",
+                    "size": 20,
+                    "order": {
+                      "_count": "desc"
+                    }
+                  },
+                  "aggs": {
+                    "dest_ip": {
+                      "terms": {
+                        "field": "dest_ip",
+                        "size": 20,
+                        "order": {
+                          "_count": "desc"
+                        }
+                    }, "aggs": {
+                        "alerts": {
+                            "terms": {
+                                "field": "alert.signature.{{ keyword }}",
+                                "size": 20,
+                                "order": {
+                                    "_count": "desc"
+                                }
+                            }
+                        }
+                     }
+                   }
+                }
+            }
+          }
+        }
+        """
+
+def get_ippair_netinfo_alerts_count():
+    if settings.ELASTICSEARCH_VERSION < 6:
+        return """
+        {
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": {{ from_date }}
+                        }
+                      }
+                    }, {
+                      "query_string": {
+                        "query": "event_type:alert AND alert.source.net_info:* AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                        "analyze_wildcard": true
+                      }
+                    }
+                  ]
+                }
+              },
+                "aggs": {
+                "src_ip": {
+                  "terms": {
+                    "field": "alert.source.ip.{{ keyword }}",
+                    "size": 40,
+                    "order": {
+                      "_count": "desc"
+                    }
+                  },
+                  "aggs": {
+                    "net_src": {
+                      "terms": {
+                        "field": "alert.source.net_info_agg.{{ keyword }}",
+                        "size": 1,
+                        "order": {
+                          "_count": "desc"
+                        }
+                   },
+                    "aggs": {
+                      "dest_ip": {
+                        "terms": {
+                          "field": "alert.target.ip.{{ keyword }}",
+                          "size": 40,
+                          "order": {
                             "_count": "desc"
+                          }
+                        },
+                      "aggs": {
+                        "net_dest": {
+                          "terms": {
+                            "field": "alert.target.net_info_agg.{{ keyword }}",
+                            "size": 1,
+                            "order": {
+                              "_count": "desc"
+                            }
+                          },
+                          "aggs": {
+                            "alerts": {
+                                "terms": {
+                                "field": "alert.signature.{{ keyword }}",
+                                "size": 20,
+                                "order": {
+                                    "_count": "desc"
+                                }
+                              }
+                            }
+                          }
                         }
                       }
                     }
@@ -1108,11 +1039,85 @@ if settings.ELASTICSEARCH_VERSION >= 6:
             }
           }
         }
-      }
-    }
-  }
-}
-"""
+        """
+    else:
+        return """
+        {
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": {{ from_date }}
+                        }
+                      }
+                    }, {
+                      "query_string": {
+                        "query": "event_type:alert AND alert.source.net_info:* AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                        "analyze_wildcard": true
+                      }
+                    }
+                  ]
+                }
+              },
+                "aggs": {
+                "src_ip": {
+                  "terms": {
+                    "field": "alert.source.ip.{{ keyword }}",
+                    "size": 40,
+                    "order": {
+                      "_count": "desc"
+                    }
+                  },
+                  "aggs": {
+                    "net_src": {
+                      "terms": {
+                        "field": "alert.source.net_info_agg.{{ keyword }}",
+                        "size": 1,
+                        "order": {
+                          "_count": "desc"
+                        }
+                   },
+                    "aggs": {
+                      "dest_ip": {
+                        "terms": {
+                          "field": "alert.target.ip.{{ keyword }}",
+                          "size": 40,
+                          "order": {
+                            "_count": "desc"
+                          }
+                        },
+                      "aggs": {
+                        "net_dest": {
+                          "terms": {
+                            "field": "alert.target.net_info_agg.{{ keyword }}",
+                            "size": 1,
+                            "order": {
+                              "_count": "desc"
+                            }
+                          },
+                          "aggs": {
+                            "alerts": {
+                                "terms": {
+                                "field": "alert.signature.{{ keyword }}",
+                                "size": 20,
+                                "order": {
+                                    "_count": "desc"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
 
 ALERTS_TAIL = """
 {
@@ -1333,11 +1338,6 @@ POSTSTATS_SUMMARY = """
 }
 """
 
-if settings.ELASTICSEARCH_VERSION >= 6:
-    DASHBOARDS_QUERY_URL = "/%s/_search?q=type:dashboard&size=" % settings.KIBANA_INDEX
-else:
-    DASHBOARDS_QUERY_URL = "/%s/dashboard/_search?size=" % settings.KIBANA_INDEX
-
 HEALTH_URL = "/_cluster/health"
 STATS_URL = "/_cluster/stats"
 INDICES_STATS_URL = "/_stats/docs"
@@ -1412,7 +1412,7 @@ def render_template(tmpl, dictionary, qfilter = None):
     return bytearray(templ.render(context), encoding="utf-8")
 
 def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None, dict_format=False):
-    data = render_template(TOP_QUERY, {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': 'alert.signature_id'}, qfilter = qfilter)
+    data = render_template(get_top_query(), {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': 'alert.signature_id'}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
@@ -1465,7 +1465,7 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
     return rules
 
 def es_get_field_stats(request, field, hostname, key='host', count=20, from_date=0 , qfilter = None, dict_format=False):
-    data = render_template(TOP_QUERY, {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': field}, qfilter = qfilter)
+    data = render_template(get_top_query(), {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': field}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
@@ -1517,7 +1517,7 @@ def es_get_field_stats_as_table(request, field, FieldTable, hostname, key='host'
 
 
 def es_get_sid_by_hosts(request, sid, count=20, from_date=0, dict_format=False):
-    data = render_template(SID_BY_HOST_QUERY, {'rule_sid': sid, 'alerts_number': count, 'from_date': from_date})
+    data = render_template(get_sid_by_host_query(), {'rule_sid': sid, 'alerts_number': count, 'from_date': from_date})
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
@@ -1555,8 +1555,13 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0, dict_format=False):
     return stats
 
 def es_get_dashboard(count=20):
+    if settings.ELASTICSEARCH_VERSION >= 6:
+        dashboards_query_url = "/%s/_search?q=type:dashboard&size=" % settings.KIBANA_INDEX
+    else:
+        dashboards_query_url = "/%s/dashboard/_search?size=" % settings.KIBANA_INDEX
+
     headers = {'content-type': 'application/json'}
-    req = urllib2.Request(get_es_path(DASHBOARDS_QUERY_URL) + str(count), headers = headers)
+    req = urllib2.Request(get_es_path(dashboards_query_url) + str(count), headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
@@ -1587,7 +1592,7 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     # 100 points on graph per default
     if interval == None:
         interval = int((time() - (int(from_date) / 1000)) / 100)
-    data = render_template(TIMELINE_QUERY, {'from_date': from_date, 'interval': str(interval) + "s", 'hosts': hosts}, qfilter = qfilter)
+    data = render_template(get_timeline_quey(), {'from_date': from_date, 'interval': str(interval) + "s", 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
@@ -1624,7 +1629,7 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
     # 100 points on graph per default
     if interval == None:
         interval = int((time() - (int(from_date)/ 1000)) / 100)
-    data = render_template(STATS_QUERY, {'from_date': from_date, 'interval': str(interval) + "s", 'value': value, 'hosts': hosts}, qfilter = qfilter)
+    data = render_template(get_stats_query(), {'from_date': from_date, 'interval': str(interval) + "s", 'value': value, 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date, data = 'stats')
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
@@ -1715,7 +1720,7 @@ def compact_tree(tree):
     return cdata
 
 def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
-    data = render_template(RULES_PER_CATEGORY, {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
+    data = render_template(get_rules_per_category(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
@@ -1775,9 +1780,9 @@ def es_delete_alerts_by_sid(sid):
 
 def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
     if prev:
-        templ = ALERTS_TREND_PER_HOST
+        templ = get_alerts_trend_per_host()
     else:
-        templ = ALERTS_COUNT_PER_HOST
+        templ = get_alerts_count_per_host()
     context = {'from_date': from_date, 'hosts': hosts}
     if prev:
         # compute delta with now and from_date
@@ -1808,7 +1813,7 @@ def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
         return {"doc_count": data["hits"]["total"] };
 
 def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
-    data = render_template(LATEST_STATS_ENTRY, {'from_date': from_date, 'hosts': hosts})
+    data = render_template(get_latest_stats_entry(), {'from_date': from_date, 'hosts': hosts})
     es_url = get_es_url(from_date, data = 'stats')
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
@@ -1825,7 +1830,7 @@ def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
         return None
 
 def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
-    data = render_template(IPPAIR_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
+    data = render_template(get_ippair_alerts_count(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
@@ -1861,7 +1866,7 @@ def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
         return None
 
 def es_get_ippair_network_alerts(from_date=0, hosts = None, qfilter = None):
-    data = render_template(IPPAIR_NETINFO_ALERTS_COUNT, {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
+    data = render_template(get_ippair_netinfo_alerts_count(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
