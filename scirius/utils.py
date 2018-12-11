@@ -111,10 +111,6 @@ def scirius_render(request, template, context):
             else:
                 context['kibana_url'] = settings.KIBANA_URL
             context['kibana_version'] = settings.KIBANA_VERSION
-    if settings.ELASTICSEARCH_VERSION >= 2:
-        context['es2x'] = 1
-    else:
-        context['es2x'] = 0
     if settings.USE_EVEBOX:
         context['evebox'] = 1
         context['evebox_url'] = "/evebox"

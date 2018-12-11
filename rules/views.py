@@ -183,6 +183,8 @@ class Reference:
 def elasticsearch(request):
     data = None
     RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip', 'rule_probe': settings.ELASTICSEARCH_HOSTNAME, 'field_stats': None}
+    context = {'es2x': get_es_major_version() >= 2}
+
     if request.GET.__contains__('query'):
         query = request.GET.get('query', 'dashboards')
         if query == 'dashboards':
@@ -195,14 +197,14 @@ def elasticsearch(request):
                 rules = es_get_rules_stats(request, host, from_date = from_date, qfilter = qfilter)
                 if rules == None:
                     return HttpResponse(json.dumps(rules), content_type="application/json")
-                context = {'table': rules}
+                context['table'] = rules
                 return scirius_render(request, 'rules/table.html', context)
         elif query == 'rule':
             sid = request.GET.get('sid', None)
             from_date = request.GET.get('from_date', None)
             if from_date != None and sid != None:
                 hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
-                context = {'table': hosts}
+                context['table'] = hosts
                 return scirius_render(request, 'rules/table.html', context)
         elif query == 'top_rules':
             host = request.GET.get('host', None)
@@ -258,7 +260,7 @@ def elasticsearch(request):
                     hosts = es_get_field_stats_as_table(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, RuleHostTable, '*', from_date = from_date,
                         count = 10,
                         qfilter = qfilter)
-                    context = {'table': hosts}
+                    context['table'] = hosts
                     return scirius_render(request, 'rules/table.html', context)
         elif query == 'timeline':
             from_date = request.GET.get('from_date', None)
@@ -294,10 +296,9 @@ def elasticsearch(request):
             if request.is_ajax():
                 indices = ESIndexessTable(es_get_indices())
                 tables.RequestConfig(request).configure(indices)
-                context = { 'table': indices }
+                context['table'] = indices
                 return scirius_render(request, 'rules/table.html', context)
             else:
-                context = {}
                 return scirius_render(request, 'rules/elasticsearch.html', context)
         elif query == 'rules_per_category':
             from_date = request.GET.get('from_date', None)
@@ -369,7 +370,6 @@ def elasticsearch(request):
             data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
             return HttpResponse(json.dumps(data), content_type="application/json")
         else:
-            context = {}
             template = Probe.common.get_es_template()
             return scirius_render(request, template, context)
 
@@ -1830,6 +1830,7 @@ def system_settings(request):
             context['main_form'] = main_form
             if main_form.is_valid():
                 main_form.save()
+                reset_es_version()
                 context['success'] = "All changes saved."
             else:
                 context['error'] = "Invalid form."

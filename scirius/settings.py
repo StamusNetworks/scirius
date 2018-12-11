@@ -198,8 +198,6 @@ ELASTICSEARCH_LOGSTASH_INDEX = "logstash-"
 ELASTICSEARCH_LOGSTASH_ALERT_INDEX = ELASTICSEARCH_LOGSTASH_INDEX
 # use hourly, daily to indicate the logstash index building recurrence
 ELASTICSEARCH_LOGSTASH_TIMESTAMPING = "daily"
-# version of Elasticsearch
-ELASTICSEARCH_VERSION = 2
 # Extension used for complete field (usually "raw" or "keyword")
 ELASTICSEARCH_KEYWORD = "raw"
 # Hostname field (usually "hostname" or "host")
@@ -286,9 +284,3 @@ except:
 
 if KIBANA_PROXY:
     INSTALLED_APPS += ( 'revproxy',)
-
-if 'ELASTICSEARCH_2X' in globals():
-    if ELASTICSEARCH_2X == True: # pylint: disable=undefined-variable
-        ELASTICSEARCH_VERSION = 2
-    else:
-        ELASTICSEARCH_VERSION = 1

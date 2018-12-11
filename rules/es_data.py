@@ -32,6 +32,7 @@ from django.conf import settings
 from elasticsearch import Elasticsearch, ConnectionError
 
 from rules.models import get_es_address
+from rules.es_graphs import get_es_major_version
 
 # Avoid logging every request
 es_logger = logging.getLogger('elasticsearch')
@@ -354,7 +355,7 @@ class ESData(object):
         i = 0
         ids = []
 
-        if settings.ELASTICSEARCH_VERSION >= 6:
+        if get_es_major_version() >= 6:
             body['query']['query_string']['query'] += ' type:%s' % _type
             _type = 'doc'
 
@@ -378,7 +379,7 @@ class ESData(object):
         os.makedirs(dest)
 
         while True:
-            if settings.ELASTICSEARCH_VERSION < 6:
+            if get_es_major_version() < 6:
                 res = self.client.search(index='.kibana', from_=i, doc_type=_type, body=body)
             else:
                 res = self.client.search(index='.kibana', from_=i, body=body)
@@ -393,7 +394,7 @@ class ESData(object):
                 filename = os.path.join(dest, _id)
                 filename += '.json'
 
-                if settings.ELASTICSEARCH_VERSION < 6:
+                if get_es_major_version() < 6:
                     res = self.client.get(index='.kibana', doc_type=_type, id=_id)
                 else:
                     res = self.client.get(index='.kibana', doc_type='doc', id=_id)
@@ -409,7 +410,7 @@ class ESData(object):
             _types = _types + ('index-pattern',)
 
         for _type in _types:
-            if settings.ELASTICSEARCH_VERSION < 6:
+            if get_es_major_version() < 6:
                 if full:
                     body = {'query': {'match_all': {}}}
                 else:
@@ -463,14 +464,14 @@ class ESData(object):
             content = f.read()
         name = _file.rsplit('/', 1)[1]
         name = name.rsplit('.', 1)[0]
-        if settings.ELASTICSEARCH_VERSION < 6:
+        if get_es_major_version() < 6:
             doc_type = _type
         else:
             doc_type = 'doc'
         self.client.create(index='.kibana', doc_type=doc_type, id=name, body=content, refresh=True)
 
     def _kibana_set_default_index(self, idx):
-        if settings.ELASTICSEARCH_VERSION < 6:
+        if get_es_major_version() < 6:
             res = self.client.search(index='.kibana', doc_type='config', body={'query': {'match_all': {}}}, request_cache=False)
         else:
             body = {'query': {'query_string': {'query': 'type: config'}}}
@@ -480,12 +481,12 @@ class ESData(object):
             content = hit['_source']
             content['defaultIndex'] = idx
 
-            if settings.ELASTICSEARCH_VERSION < 6:
+            if get_es_major_version() < 6:
                 self.client.update(index='.kibana', doc_type='config', id=hit['_id'], body={'doc': content}, refresh=True)
             else:
                 self.client.update(index='.kibana', doc_type='doc', id=hit['_id'], body=content, refresh=True)
         else:
-            if settings.ELASTICSEARCH_VERSION >= 6:
+            if get_es_major_version() >= 6:
                 config = {
                     'config': {
                         'buildNum': 17999,

@@ -37,8 +37,26 @@ URL = "%s%s/_search?ignore_unavailable=true"
 # ES requests timeout (keep this below Scirius's ajax requests timeout)
 TIMEOUT = 13
 
+
+ES_VERSION = None
+def get_es_major_version():
+    global ES_VERSION
+    if ES_VERSION is not None:
+        return ES_VERSION[0]
+
+    es_stats = es_get_stats()
+    es_version = es_stats['nodes']['versions'][0].split('.')
+    ES_VERSION = [int(v) for v in es_version]
+    return ES_VERSION[0]
+
+
+def reset_es_version():
+    global ES_VERSION
+    ES_VERSION = None
+
+
 def get_top_query():
-    if settings.ELASTICSEARCH_VERSION < 2:
+    if get_es_major_version() < 2:
         return """
         {
           "facets": {
@@ -86,7 +104,7 @@ def get_top_query():
           "size": 0
         }
         """
-    if settings.ELASTICSEARCH_VERSION < 6:
+    if get_es_major_version() < 6:
         return """
         {
           "size": 0,
@@ -160,7 +178,7 @@ def get_top_query():
             """
 
 def get_sid_by_host_query():
-    if settings.ELASTICSEARCH_VERSION < 2:
+    if get_es_major_version() < 2:
         return """
         {
           "facets": {
@@ -248,7 +266,7 @@ def get_sid_by_host_query():
             """
 
 def get_timeline_quey():
-    if settings.ELASTICSEARCH_VERSION < 2:
+    if get_es_major_version() < 2:
         return """
         {
           "facets": {
@@ -340,7 +358,7 @@ def get_timeline_quey():
             """
 
 def get_stats_query():
-    if settings.ELASTICSEARCH_VERSION < 2:
+    if get_es_major_version() < 2:
         return """
         {
           "facets": {
@@ -423,7 +441,7 @@ def get_stats_query():
           "size": 0
         }
         """
-    elif settings.ELASTICSEARCH_VERSION < 6:
+    elif get_es_major_version() < 6:
         return """
         {
           "size": 0,
@@ -523,7 +541,7 @@ def get_stats_query():
             """
 
 def get_rules_per_category():
-    if settings.ELASTICSEARCH_VERSION < 6:
+    if get_es_major_version() < 6:
         return """
         {
           "size": 0,
@@ -639,7 +657,7 @@ def get_rules_per_category():
         """
 
 def get_alerts_count_per_host():
-    if settings.ELASTICSEARCH_VERSION < 6:
+    if get_es_major_version() < 6:
         return """
         {
           "size": 0,
@@ -695,7 +713,7 @@ def get_alerts_count_per_host():
         """
 
 def get_alerts_trend_per_host():
-    if settings.ELASTICSEARCH_VERSION < 6:
+    if get_es_major_version() < 6:
         return """
         {
           "size": 0,
@@ -779,7 +797,7 @@ def get_alerts_trend_per_host():
         """
 
 def get_latest_stats_entry():
-    if settings.ELASTICSEARCH_VERSION < 6:
+    if get_es_major_version() < 6:
         return """
         {
           "size": 1,
@@ -848,7 +866,7 @@ def get_latest_stats_entry():
 
 
 def get_ippair_alerts_count():
-    if settings.ELASTICSEARCH_VERSION < 6:
+    if get_es_major_version() < 6:
         return """
         {
           "size": 0,
@@ -962,7 +980,7 @@ def get_ippair_alerts_count():
         """
 
 def get_ippair_netinfo_alerts_count():
-    if settings.ELASTICSEARCH_VERSION < 6:
+    if get_es_major_version() < 6:
         return """
         {
           "query": {
@@ -1351,6 +1369,7 @@ import django_tables2 as tables
 class ESError(Exception):
     pass
 
+
 def build_es_timestamping(date, data = 'alert'):
     format_table = { 'daily': '%Y.%m.%d', 'hourly': '%Y.%m.%d.%H' }
     now = datetime.now()
@@ -1425,7 +1444,7 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
     data = json.loads(data)
     # total number of results
     try:
-        if settings.ELASTICSEARCH_VERSION >= 2:
+        if get_es_major_version() >= 2:
             data = data['aggregations']['table']['buckets']
         else:
             data = data['facets']['table']['terms']
@@ -1444,7 +1463,7 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
     if data != None:
         for elt in data:
             try:
-                if settings.ELASTICSEARCH_VERSION >= 2:
+                if get_es_major_version() >= 2:
                     sid=elt['key']
                 else:
                     sid=elt['term']
@@ -1452,7 +1471,7 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
             except:
                 print "Can not find rule with sid " + str(sid)
                 continue
-            if settings.ELASTICSEARCH_VERSION >= 2:
+            if get_es_major_version() >= 2:
                 rule.hits = elt['doc_count']
             else:
                 rule.hits = elt['count']
@@ -1478,7 +1497,7 @@ def es_get_field_stats(request, field, hostname, key='host', count=20, from_date
     data = json.loads(data)
     # total number of results
     try:
-        if settings.ELASTICSEARCH_VERSION >= 2:
+        if get_es_major_version() >= 2:
             data = data['aggregations']['table']['buckets']
         else:
             data = data['facets']['table']['terms']
@@ -1503,7 +1522,7 @@ def es_get_field_stats_as_table(request, field, FieldTable, hostname, key='host'
     objects = []
     if data != None:
         for elt in data:
-            if settings.ELASTICSEARCH_VERSION >= 2:
+            if get_es_major_version() >= 2:
                 fstat = {key: elt['key'], 'count': elt['doc_count'] }
             else:
                 fstat = {key: elt['term'], 'count': elt['count'] }
@@ -1530,7 +1549,7 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0, dict_format=False):
     data = json.loads(data)
     # total number of results
     try:
-        if settings.ELASTICSEARCH_VERSION >= 2:
+        if get_es_major_version() >= 2:
             data = data['aggregations']['host']['buckets']
         else:
             data = data['facets']['terms']['terms']
@@ -1543,7 +1562,7 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0, dict_format=False):
     stats = []
     if data != None:
         for elt in data:
-            if settings.ELASTICSEARCH_VERSION >= 2:
+            if get_es_major_version() >= 2:
                 hstat = {'host': elt['key'], 'count': elt['doc_count']}
             else:
                 hstat = {'host': elt['term'], 'count': elt['count']}
@@ -1555,7 +1574,7 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0, dict_format=False):
     return stats
 
 def es_get_dashboard(count=20):
-    if settings.ELASTICSEARCH_VERSION >= 6:
+    if get_es_major_version() >= 6:
         dashboards_query_url = "/%s/_search?q=type:dashboard&size=" % settings.KIBANA_INDEX
     else:
         dashboards_query_url = "/%s/dashboard/_search?size=" % settings.KIBANA_INDEX
@@ -1578,7 +1597,7 @@ def es_get_dashboard(count=20):
         dashboards = {}
         for elt in data:
             try:
-                if settings.ELASTICSEARCH_VERSION >= 6:
+                if get_es_major_version() >= 6:
                     dashboards[elt["_id"].split(':')[1]] = elt["_source"]["dashboard"]["title"]
                 else:
                     dashboards[elt["_id"]] = elt["_source"]["title"]
@@ -1605,7 +1624,7 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     data = json.loads(data)
     # total number of results
     try:
-        if settings.ELASTICSEARCH_VERSION >= 2:
+        if get_es_major_version() >= 2:
             data = data['aggregations']["date"]['buckets']
             rdata = {}
             for elt in data:
@@ -1644,7 +1663,7 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
     if hosts == None:
         hosts = ["global"]
     try:
-        if settings.ELASTICSEARCH_VERSION >= 2:
+        if get_es_major_version() >= 2:
             data = data['aggregations']["date"]['buckets']
             rdata = {}
             for elt in data:
@@ -1773,7 +1792,7 @@ def es_delete_alerts_by_sid_v5(sid):
         return {'msg': 'Unknown error', 'status': r.status_code }
 
 def es_delete_alerts_by_sid(sid):
-    if settings.ELASTICSEARCH_VERSION <= 2:
+    if get_es_major_version() <= 2:
         return es_delete_alerts_by_sid_v2(sid)
     else:
         return es_delete_alerts_by_sid_v5(sid)
