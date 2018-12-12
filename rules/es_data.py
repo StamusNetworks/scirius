@@ -348,10 +348,28 @@ def get_kibana_mappings():
             }
         }
 
+KIBANA6_NAMESPACE = {
+    "id": "default",
+    "name": "Default",
+    "description": "This is your default space!",
+    "color": "#00bfb3",
+}
+
 class ESData(object):
     def __init__(self):
         es_addr = get_es_address()
         self.client = Elasticsearch([es_addr])
+
+    def _kibana_request(self, url, data):
+        headers = {
+            'content-type': 'application/json',
+            'kbn-xsrf': True
+        }
+        data = json.dumps(data)
+        kibana_url = settings.KIBANA_URL + url
+        req = urllib2.Request(kibana_url, data, headers=headers)
+        urllib2.urlopen(req)
+        return req
 
     def _kibana_remove(self, _type, body):
         i = 0
@@ -489,14 +507,7 @@ class ESData(object):
                 self.client.update(index='.kibana', doc_type='doc', id=hit['_id'], body=content, refresh=True)
         else:
             if get_es_major_version() >= 6:
-                headers = {
-                    'content-type': 'application/json',
-                    'kbn-xsrf': True
-                }
-                data = json.dumps({'value': 'logstash-*'})
-                kibana_url = settings.KIBANA_URL + '/api/kibana/settings/defaultIndex'
-                req = urllib2.Request(kibana_url, data, headers=headers)
-                urllib2.urlopen(req)
+                self._kibana_request('/api/kibana/settings/defaultIndex', {'value': 'logstash-*'})
             else:
                 print >> sys.stderr, "Warning: unknown ES version, not setting Kibana's defaultIndex"
 
@@ -577,6 +588,9 @@ class ESData(object):
         for _type in ('index-pattern', 'search', 'visualization', 'dashboard'):
             for _file in self._get_kibana_subdirfiles(_type):
                 self._kibana_inject(_type, _file)
+
+        if get_es_major_version() >= 6:
+            self._kibana_request('/api/spaces/space', KIBANA6_NAMESPACE)
 
         self._kibana_set_default_index(u'logstash-*')
 
