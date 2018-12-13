@@ -511,6 +511,12 @@ class ESData(object):
             else:
                 print >> sys.stderr, "Warning: unknown ES version, not setting Kibana's defaultIndex"
 
+    def _get_dashboard_dir(self):
+        if get_es_major_version() < 6 or not hasattr(settings, 'KIBANA6_DASHBOARDS_PATH'):
+            # Use KIBANA_DASHBOARDS_PATH when using ES<6 or when KIBANA6_DASHBOARDS_PATH is not set
+            return settings.KIBANA_DASHBOARDS_PATH
+        return settings.KIBANA6_DASHBOARDS_PATH
+
     def _get_kibana_files(self, source, _type):
         files = []
         path = os.path.join(source, _type)
@@ -525,8 +531,8 @@ class ESData(object):
 
     def _get_kibana_subdirfiles(self, _type):
         files = []
-        for _dir in os.listdir(settings.KIBANA_DASHBOARDS_PATH):
-            src_path = os.path.join(settings.KIBANA_DASHBOARDS_PATH, _dir)
+        for _dir in os.listdir(self._get_dashboard_dir()):
+            src_path = os.path.join(self._get_dashboard_dir(), _dir)
             if os.path.isdir(src_path):
                 files += self._get_kibana_files(src_path, _type)
         return files
@@ -571,14 +577,13 @@ class ESData(object):
             self._kibana_remove(_type, body)
 
     def kibana_reset(self):
-
         self._create_kibana_mappings()
 
-        if not os.path.isdir(settings.KIBANA_DASHBOARDS_PATH):
-            raise Exception('Please make sure Kibana dashboards are installed at %s' % settings.KIBANA_DASHBOARDS_PATH)
+        if not os.path.isdir(self._get_dashboard_dir()):
+            raise Exception('Please make sure Kibana dashboards are installed at %s' % self._get_dashboard_dir())
 
         if self._get_kibana_subdirfiles('index-pattern') == []:
-            raise Exception('Please make sure Kibana dashboards are installed at %s: no index-pattern found' % settings.KIBANA_DASHBOARDS_PATH)
+            raise Exception('Please make sure Kibana dashboards are installed at %s: no index-pattern found' % self._get_dashboard_dir())
 
         self._kibana_remove('dashboard', {'query': {'query_string': {'query': 'SN*'}}})
         self._kibana_remove('visualization', {'query': {'query_string': {'query': 'SN*'}}})
