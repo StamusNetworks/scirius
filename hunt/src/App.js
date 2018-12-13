@@ -775,7 +775,7 @@ class UserNavInfo extends Component {
                     trademarkText="Copyright 2014-2018, Stamus Networks"
                 >
                     <AboutModal.Versions>
-                        <AboutModal.VersionItem label="Version" versionText="3.0.1"/>
+                        <AboutModal.VersionItem label="Version" versionText="3.1.0"/>
                     </AboutModal.Versions>
                 </AboutModal>
             </React.Fragment>
