@@ -44,8 +44,12 @@ def get_es_major_version():
     if ES_VERSION is not None:
         return ES_VERSION[0]
 
-    es_stats = es_get_stats()
-    es_version = es_stats['nodes']['versions'][0].split('.')
+    try:
+        es_stats = es_get_stats()
+        es_version = es_stats['nodes']['versions'][0].split('.')
+    except (TypeError, ValueError):
+        return 0
+
     ES_VERSION = [int(v) for v in es_version]
     return ES_VERSION[0]
 
