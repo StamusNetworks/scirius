@@ -67,6 +67,14 @@ _HUNT_FILTERS = [
                       'queryType': 'rest'
                     },
                     {
+                      'id': 'ip',
+                      'title': 'IP',
+                      'placeholder': 'Filter by IP',
+                      'filterType': 'text',
+                      'valueType': 'text',
+                      'queryType': 'filter'
+                    },
+                    {
                       'id': 'msg',
                       'title': 'Message',
                       'placeholder': 'Filter by Message',

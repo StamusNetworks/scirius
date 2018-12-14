@@ -23,6 +23,9 @@ export function buildQFilter(filters, systemSettings) {
             qfilter.push(`${fPrefix}alert.signature_id:${filters[i].value}`);
             // eslint-disable-next-line no-continue
             continue;
+        } else if (filters[i].id === 'ip') {
+            qfilter.push(filters[i].value);
+            continue;
         } else if (filters[i].id === 'alert.tag') {
             const tagFilters = [];
             if (filters[i].value.untagged === true) {
