@@ -48,7 +48,7 @@ def get_es_major_version():
         es_stats = es_get_stats()
         es_version = es_stats['nodes']['versions'][0].split('.')
     except (TypeError, ValueError):
-        return 0
+        return 6
 
     ES_VERSION = [int(v) for v in es_version]
     return ES_VERSION[0]
