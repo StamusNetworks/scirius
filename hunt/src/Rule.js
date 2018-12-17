@@ -232,7 +232,9 @@ export class RulePage extends React.Component {
                 rule_status: undefined,
                 sid: rule,
                 toggle: { show: false, action: "Disable" },
-                extinfo: { http: false, dns: false, tls: false }
+                extinfo: { http: false, dns: false, tls: false },
+                moreResults: [],
+                moreModal: null
             };
         } else {
             rule.timeline = undefined;
@@ -241,7 +243,9 @@ export class RulePage extends React.Component {
                 rule_status: undefined,
                 sid: rule.sid,
                 toggle: { show: false, action: "Disable" },
-                extinfo: { http: false, dns: false, tls: false }
+                extinfo: { http: false, dns: false, tls: false },
+                moreResults: [],
+                moreModal: null,
             };
         }
         this.updateRuleState = this.updateRuleState.bind(this);
@@ -344,6 +348,14 @@ export class RulePage extends React.Component {
         this.setState({ rule: rule[0] });
     }
 
+    loadMore = (item, url) => {
+        axios.get(url)
+        .then(json => {
+            this.setState({ ...this.state, moreModal: item, moreResults: json.data });
+        });
+    }
+    hideMoreModal = () => this.setState({ ...this.state, moreModal: null });
+
     render() {
         return (
             <div>
@@ -392,28 +404,28 @@ export class RulePage extends React.Component {
                             </Row>
                             }
                             <div className='row'>
-                                <HuntStat system_settings={this.state.system_settings} title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='src_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                                <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                                <HuntStat title="Probes" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='host' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                                <HuntStat system_settings={this.state.system_settings} title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='src_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='dest_ip' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat title="Probes" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='host' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
                             </div>
                             {this.state.extinfo.http &&
                             <div className='row'>
-                                <HuntStat system_settings={this.state.system_settings} title="Hostname" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                                <HuntStat system_settings={this.state.system_settings} title="URL" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='http.url' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                                <HuntStat system_settings={this.state.system_settings} title="User agent" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                                <HuntStat system_settings={this.state.system_settings} title="Hostname" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='http.hostname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat system_settings={this.state.system_settings} title="URL" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='http.url' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat system_settings={this.state.system_settings} title="User agent" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='http.http_user_agent' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
                             </div>
                             }
                             {this.state.extinfo.dns &&
                             <div className='row'>
-                                <HuntStat system_settings={this.state.system_settings} title="Name" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                                <HuntStat system_settings={this.state.system_settings} title="Type" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                                <HuntStat system_settings={this.state.system_settings} title="Name" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='dns.query.rrname' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat system_settings={this.state.system_settings} title="Type" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='dns.query.rrtype' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
                             </div>
                             }
                             {this.state.extinfo.tls &&
                             <div className='row'>
-                                <HuntStat system_settings={this.state.system_settings} title="Subject DN" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                                <HuntStat system_settings={this.state.system_settings} title="SNI" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
-                                <HuntStat system_settings={this.state.system_settings} title="Fingerprint" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter}/>
+                                <HuntStat system_settings={this.state.system_settings} title="Subject DN" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='tls.subject' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat system_settings={this.state.system_settings} title="SNI" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='tls.sni' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                <HuntStat system_settings={this.state.system_settings} title="Fingerprint" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item='tls.fingerprint' from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
                             </div>
                             }
                             <Row>
@@ -445,6 +457,26 @@ export class RulePage extends React.Component {
                     </div>
                     }
                 </Spinner>
+
+                <Modal show={!(this.state.moreModal === null)} onHide={() => { this.hideMoreModal() }}>
+
+                    <Modal.Header>More results <Modal.CloseButton closeText={"Close"} onClick={() => { this.hideMoreModal() }}/> </Modal.Header>
+                    <Modal.Body>
+                        <div className="hunt-stat-body">
+                            <ListGroup>
+                                {this.state.moreResults.map(item => {
+                                    return (<ListGroupItem key={item.key}>
+                                        {this.state.moreModal && <EventValue field={this.state.moreModal.i} value={item.key}
+                                                                             addFilter={this.addFilter}
+                                                                             right_info={<Badge>{item.doc_count}</Badge>}
+                                        />}
+                                    </ListGroupItem>)
+                                })}
+                            </ListGroup>
+                        </div>
+                    </Modal.Body>
+                </Modal>
+
             </div>
         )
     }
@@ -508,7 +540,7 @@ export class HuntStat extends React.Component {
                         <div className="card-pf-heading">
                             <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={this.props.title}>{this.props.title}</h2>
                             {this.state.data.length === 5 &&
-                                <DropdownKebab id={"more-" + this.props.item} pullRight={false}>
+                                <DropdownKebab id={"more-" + this.props.item} pullRight={true}>
                                     <MenuItem onClick={(e) => this.props.loadMore(this.props.item, this.url)} data-toggle="modal">Load more results</MenuItem>
                                 </DropdownKebab>
                             }
