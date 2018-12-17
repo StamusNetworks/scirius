@@ -24,7 +24,8 @@ export function buildQFilter(filters, systemSettings) {
             // eslint-disable-next-line no-continue
             continue;
         } else if (filters[i].id === 'ip') {
-            qfilter.push(filters[i].value);
+            qfilter.push(`"${filters[i].value}"`);
+            // eslint-disable-next-line no-continue
             continue;
         } else if (filters[i].id === 'alert.tag') {
             const tagFilters = [];

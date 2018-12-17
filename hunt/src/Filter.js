@@ -26,6 +26,9 @@ import { Filter, FormControl, FormGroup, Toolbar, Button, Icon, Switch } from 'p
 import { Shortcuts } from 'react-shortcuts';
 import { HuntSort } from './Sort';
 
+// https://www.regextester.com/104038
+const IP_REGEXP = /((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))/;
+
 export class HuntFilter extends React.Component {
     constructor(props) {
         super(props);
@@ -248,7 +251,51 @@ export class HuntFilter extends React.Component {
     }
 
     updateCurrentValue = (event) => {
-        this.setState({ currentValue: event.target.value });
+        const { currentFilterType } = this.state;
+        let error = false;
+        if (currentFilterType.valueType === 'ip') {
+            const numbers = event.target.value.split(/\.|:/);
+            const filteredNum = numbers.filter((item) => item !== '');
+
+            const UINT_REGEXP_V4 = /^\d*[0-9]\d*$/;
+            const UINT_REGEXP_V6 = /[0-9a-fA-F]{1,4}/;
+            for (let idx = 0; idx < filteredNum.length; idx += 1) {
+                if (!UINT_REGEXP_V4.test(filteredNum[idx]) && !UINT_REGEXP_V6.test(filteredNum[idx])) {
+                    error = true;
+                    break;
+                }
+            }
+        }
+        if (!error) this.setState({ currentValue: event.target.value });
+    }
+
+    onValueKeyPress = (keyEvent) => {
+        const { currentValue, currentFilterType } = this.state;
+
+        if (keyEvent.key === 'Enter') {
+            if (currentValue && currentValue.length > 0) {
+                if (currentFilterType.valueType === 'positiveint') {
+                    const val = parseInt(currentValue, 10);
+                    if (val >= 0) {
+                        this.setState({ currentValue: '' });
+                        this.filterAdded(currentFilterType, val);
+                    } else {
+                        // Propagate event to trigger validation error
+                        return
+                    }
+                } else if (currentFilterType.valueType === 'ip') {
+                    if (IP_REGEXP.test(currentValue)) {
+                        this.setState({ currentValue: '' });
+                        this.filterAdded(currentFilterType, currentValue);
+                    }
+                } else {
+                    this.setState({ currentValue: '' });
+                    this.filterAdded(currentFilterType, currentValue);
+                }
+            }
+            keyEvent.stopPropagation();
+            keyEvent.preventDefault();
+        }
     }
 
     removeFilter = (filter) => {
@@ -278,6 +325,24 @@ export class HuntFilter extends React.Component {
         // eslint-disable-next-line react/no-unused-state
         this.setState({ activeFilters: tagFilters });
         this.props.UpdateFilter(tagFilters);
+    }
+
+    getValidationState = () => {
+        const { currentFilterType, currentValue } = this.state;
+        if (currentFilterType.valueType === 'positiveint') {
+            const val = parseInt(currentValue, 10);
+            if (val >= 0) {
+                return 'success';
+            } else {
+                return 'error';
+            }
+        } else if (currentFilterType.valueType === 'ip') {
+            if (!IP_REGEXP.test(currentValue)) {
+                return 'error';
+            }
+            return 'success';
+        }
+        return null;
     }
 
     handleShortcuts = (action) => {

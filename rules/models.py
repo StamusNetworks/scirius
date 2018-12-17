@@ -71,7 +71,7 @@ _HUNT_FILTERS = [
                       'title': 'IP',
                       'placeholder': 'Filter by IP',
                       'filterType': 'text',
-                      'valueType': 'text',
+                      'valueType': 'ip',
                       'queryType': 'filter'
                     },
                     {
