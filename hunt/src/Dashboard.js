@@ -33,7 +33,7 @@ import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
 import HuntTimeline from './HuntTimeline';
 import HuntTrend from './HuntTrend';
 import { buildQFilter } from './helpers/buildQFilter';
-import { RuleToggleModal } from './Rule';
+import RuleToggleModal from './RuleToggleModal';
 import { HuntList } from './Api';
 import { HuntFilter } from './Filter';
 import * as config from './config/Api';

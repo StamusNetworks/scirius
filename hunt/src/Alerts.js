@@ -29,7 +29,7 @@ import store from 'store';
 import md5 from 'md5';
 import { HuntList } from './Api';
 import { buildQFilter } from './helpers/buildQFilter';
-import { RuleToggleModal } from './Rule';
+import RuleToggleModal from './RuleToggleModal';
 import { HuntFilter } from './Filter';
 import { EventField } from './Event';
 import * as config from './config/Api';
