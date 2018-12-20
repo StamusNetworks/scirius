@@ -24,7 +24,8 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { PAGINATION_VIEW, ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Modal, DropdownKebab, MenuItem, Icon, Button, Form, FormGroup, FormControl, Row, Col, Spinner } from 'patternfly-react';
 import * as config from './config/Api';
-import { HuntList, HuntPaginationRow } from './Api';
+import { HuntList } from './Api';
+import HuntPaginationRow from './HuntPaginationRow';
 import { HuntRestError } from './Error';
 
 export class FiltersList extends HuntList {

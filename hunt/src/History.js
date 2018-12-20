@@ -24,7 +24,8 @@ import PropTypes from 'prop-types';
 import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Icon, Spinner, PAGINATION_VIEW, Row, Col } from 'patternfly-react';
 import axios from 'axios';
 import { HuntFilter } from './Filter';
-import { HuntList, HuntPaginationRow } from './Api';
+import { HuntList } from './Api';
+import HuntPaginationRow from './HuntPaginationRow';
 import * as config from './config/Api';
 import { PAGE_STATE } from './Const';
 
