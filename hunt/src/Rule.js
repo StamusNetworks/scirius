@@ -34,6 +34,7 @@ import { HuntList } from './Api';
 import HuntPaginationRow from './HuntPaginationRow';
 import RuleStatus from './RuleStatus';
 import RuleToggleModal from './RuleToggleModal';
+import RuleEditKebab from './RuleEditKebab';
 import { HuntDashboard } from './Dashboard';
 import { EventValue } from './Event';
 import { buildQFilter } from './helpers/buildQFilter';
@@ -616,43 +617,6 @@ HuntStat.propTypes = {
     systemSettings: PropTypes.any,
     loadMore: PropTypes.func,
     addFilter: PropTypes.func,
-};
-
-// eslint-disable-next-line react/no-multi-comp
-export class RuleEditKebab extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = { toggle: { show: false, action: 'Disable' } };
-        this.displayToggle = this.displayToggle.bind(this);
-        this.hideToggle = this.hideToggle.bind(this);
-    }
-
-    displayToggle(action) {
-        this.setState({ toggle: { show: true, action } });
-    }
-
-    hideToggle() {
-        this.setState({ toggle: { show: false, action: this.state.toggle.action } });
-    }
-
-    render() {
-        return (
-            <React.Fragment>
-                <DropdownKebab id="ruleActions" pullRight>
-                    <MenuItem onClick={() => { this.displayToggle('enable'); }}>Enable Rule</MenuItem>
-                    <MenuItem onClick={() => { this.displayToggle('disable'); }}>Disable Rule</MenuItem>
-                    <MenuItem divider />
-                    <MenuItem href={`/rules/rule/pk/${this.props.config.rule.pk}/`}>Rule page in Scirius</MenuItem>
-                </DropdownKebab>
-                <RuleToggleModal show={this.state.toggle.show} action={this.state.toggle.action} config={this.props.config} close={this.hideToggle} rulesets={this.props.rulesets} refresh_callback={this.props.refresh_callback} />
-            </React.Fragment>
-        );
-    }
-}
-RuleEditKebab.propTypes = {
-    config: PropTypes.any,
-    rulesets: PropTypes.any,
-    refresh_callback: PropTypes.any,
 };
 
 export class RulesList extends HuntList {
