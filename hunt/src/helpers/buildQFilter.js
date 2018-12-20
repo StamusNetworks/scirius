@@ -3,6 +3,7 @@ export function buildQFilter(filters, systemSettings) {
     for (let i = 0; i < filters.length; i += 1) {
         let fPrefix = '';
         let fSuffix = '.raw';
+
         if (systemSettings) {
             fSuffix = `.${systemSettings.es_keyword}`;
         }
@@ -52,7 +53,11 @@ export function buildQFilter(filters, systemSettings) {
             // eslint-disable-next-line no-continue
             continue;
         } else if (typeof filters[i].value === 'string') {
-            qfilter.push(`${fPrefix}${filters[i].id}${fSuffix}:"${encodeURIComponent(filters[i].value)}"`);
+            let { value } = filters[i];
+            if (value.indexOf('\\') !== -1) {
+                value = value.replace(/\\/g, '\\\\\\\\');
+            }
+            qfilter.push(`${fPrefix}${filters[i].id}${fSuffix}:"${encodeURIComponent(value)}"`);
             // eslint-disable-next-line no-continue
             continue;
         } else {
