@@ -33,6 +33,7 @@ import { HuntFilter } from './Filter';
 import { HuntRestError } from './Error';
 import { HuntList } from './Api';
 import HuntPaginationRow from './HuntPaginationRow';
+import RuleContentModal from './RuleContentModal';
 import { HuntDashboard } from './Dashboard';
 import { EventValue } from './Event';
 import { buildQFilter } from './helpers/buildQFilter';
@@ -1319,38 +1320,4 @@ class RuleStatus extends React.Component {
 RuleStatus.propTypes = {
     rule_status: PropTypes.any,
     rule: PropTypes.any,
-};
-
-// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
-class RuleContentModal extends React.Component {
-    render() {
-        return (
-            <Modal
-                show={this.props.display}
-                onHide={this.props.close}
-                bsSize="large"
-                aria-labelledby="contained-modal-title-lg"
-            >
-                <Modal.Header>
-                    <button
-                        className="close"
-                        onClick={this.props.close}
-                        aria-hidden="true"
-                        aria-label="Close"
-                    >
-                        <Icon type="pf" name="close" />
-                    </button>
-                    <Modal.Title>Transformed rule content in {this.props.rule_status.name}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.props.rule_status.content }}></div>
-                </Modal.Body>
-            </Modal>
-        );
-    }
-}
-RuleContentModal.propTypes = {
-    rule_status: PropTypes.any,
-    display: PropTypes.any,
-    close: PropTypes.any,
 };
