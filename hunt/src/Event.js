@@ -27,6 +27,7 @@ import PropTypes from 'prop-types';
 import EventIPResolver from './EventIPResolver';
 import EventIPPastries from './EventIPPastries';
 import EventIPGeoloc from './EventIPGeoloc';
+import EventIPThreatlist from './EventIPThreatlist';
 
 // eslint-disable-next-line react/prefer-stateless-function
 export class EventField extends React.Component {
@@ -111,38 +112,6 @@ class EventIPSynscan extends React.Component {
     }
 }
 EventIPSynscan.propTypes = {
-    data: PropTypes.any,
-};
-
-// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
-class EventIPThreatlist extends React.Component {
-    render() {
-        return (
-            <Col md={6}>
-                <h4>Threat list info</h4>
-                <dl>
-                    {this.props.data['@type'] && <React.Fragment>
-                        <dt>Type</dt>
-                        <dd>{this.props.data['@type']}</dd>
-                    </React.Fragment>}
-                    {this.props.data.threatlist && <React.Fragment>
-                        <dt>Threat list</dt>
-                        <dd>{this.props.data.threatlist}</dd>
-                    </React.Fragment>}
-                    {this.props.data.subnet && <React.Fragment>
-                        <dt>Subnet</dt>
-                        <dd>{this.props.data.subnet}</dd>
-                    </React.Fragment>}
-                    {this.props.data.seen_date && <React.Fragment>
-                        <dt>Seen date</dt>
-                        <dd>{this.props.data.seen_date}</dd>
-                    </React.Fragment>}
-                </dl>
-            </Col>
-        );
-    }
-}
-EventIPThreatlist.propTypes = {
     data: PropTypes.any,
 };
 
