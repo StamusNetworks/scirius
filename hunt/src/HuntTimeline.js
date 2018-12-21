@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { buildQFilter } from './helpers/buildQFilter';
 import * as config from './config/Api';
-import { SciriusChart } from './Chart';
+import SciriusChart from './SciriusChart';
 
 export default class HuntTimeline extends React.Component {
     constructor(props) {

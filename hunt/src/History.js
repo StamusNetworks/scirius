@@ -23,11 +23,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Icon, Spinner, PAGINATION_VIEW, Row, Col } from 'patternfly-react';
 import axios from 'axios';
-import { HuntFilter } from './Filter';
-import { HuntList } from './Api';
+import { HuntFilter } from './HuntFilter';
+import { HuntList } from './HuntList';
 import HuntPaginationRow from './HuntPaginationRow';
 import * as config from './config/Api';
-import { PAGE_STATE } from './Const';
+import { PAGE_STATE } from './constants';
 
 const HistorySortFields = [
     {

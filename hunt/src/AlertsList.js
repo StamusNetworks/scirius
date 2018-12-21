@@ -27,10 +27,10 @@ import axios from 'axios';
 import moment from 'moment';
 import store from 'store';
 import md5 from 'md5';
-import { HuntList } from './Api';
+import { HuntList } from './HuntList';
 import { buildQFilter } from './helpers/buildQFilter';
 import RuleToggleModal from './RuleToggleModal';
-import { HuntFilter } from './Filter';
+import { HuntFilter } from './HuntFilter';
 import EventField from './EventField';
 import * as config from './config/Api';
 

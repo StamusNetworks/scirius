@@ -23,7 +23,7 @@ import React from 'react';
 
 const c3 = require('c3');
 
-export class SciriusChart extends React.Component {
+export default class SciriusChart extends React.Component {
     constructor(props) {
         super(props);
         // Generate unique ID for the chart
