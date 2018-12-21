@@ -22,13 +22,14 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import axios from 'axios';
-import { Icon, Modal, Button, Row, Col } from 'patternfly-react';
+import { Icon, Modal, Button, Row } from 'patternfly-react';
 import PropTypes from 'prop-types';
 import EventIPResolver from './EventIPResolver';
 import EventIPPastries from './EventIPPastries';
 import EventIPGeoloc from './EventIPGeoloc';
 import EventIPThreatlist from './EventIPThreatlist';
 import EventIPSynscan from './EventIPSynscan';
+import EventIPDatascan from './EventIPDatascan';
 
 // eslint-disable-next-line react/prefer-stateless-function
 export class EventField extends React.Component {
@@ -48,43 +49,6 @@ EventField.propTypes = {
     addFilter: PropTypes.any,
     field: PropTypes.any,
     value: PropTypes.any,
-};
-
-// eslint-disable-next-line react/no-multi-comp,react/no-multi-comp
-// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
-class EventIPDatascan extends React.Component {
-    render() {
-        return (
-            <Col md={6}>
-                <h4>Data scanner result</h4>
-                <dl>
-                    {this.props.data.product && <React.Fragment>
-                        <dt>Product</dt>
-                        <dd>{this.props.data.product}</dd>
-                    </React.Fragment>}
-                    {this.props.data.productversion && <React.Fragment>
-                        <dt>Version</dt>
-                        <dd>{this.props.data.productversion}</dd>
-                    </React.Fragment>}
-                    {this.props.data.port && <React.Fragment>
-                        <dt>Port</dt>
-                        <dd>{this.props.data.port}</dd>
-                    </React.Fragment>}
-                    {this.props.data.data && <React.Fragment>
-                        <dt>Data</dt>
-                        <dd>{this.props.data.data.substring(0, 200)}</dd>
-                    </React.Fragment>}
-                    {this.props.data.seen_date && <React.Fragment>
-                        <dt>Seen date</dt>
-                        <dd>{this.props.data.seen_date}</dd>
-                    </React.Fragment>}
-                </dl>
-            </Col>
-        );
-    }
-}
-EventIPDatascan.propTypes = {
-    data: PropTypes.any,
 };
 
 // eslint-disable-next-line react/no-multi-comp
