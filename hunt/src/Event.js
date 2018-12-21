@@ -24,6 +24,7 @@ import React from 'react';
 import axios from 'axios';
 import { Icon, Modal, Button, Row, Col } from 'patternfly-react';
 import PropTypes from 'prop-types';
+import EventIPResolver from './EventIPResolver';
 
 // eslint-disable-next-line react/prefer-stateless-function
 export class EventField extends React.Component {
@@ -169,39 +170,6 @@ class EventIPThreatlist extends React.Component {
     }
 }
 EventIPThreatlist.propTypes = {
-    data: PropTypes.any,
-};
-
-
-// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
-class EventIPResolver extends React.Component {
-    render() {
-        return (
-            <Col md={6}>
-                <h4>Resolver info</h4>
-                <dl>
-                    {this.props.data.map((item) => {
-                        let value = 'unknown';
-                        if (item['@type'] === 'forward') {
-                            value = item.forward;
-                        }
-                        if (item['@type'] === 'reverse') {
-                            value = item.reverse;
-                        }
-                        return (
-                            <React.Fragment key={`${value}-${item.seen_date}`}>
-                                <dt>{item['@type']}</dt>
-                                <dd>{value} ({item.seen_date})</dd>
-                            </React.Fragment>
-                        );
-                    })
-                    }
-                </dl>
-            </Col>
-        );
-    }
-}
-EventIPResolver.propTypes = {
     data: PropTypes.any,
 };
 
