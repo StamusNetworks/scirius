@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { ListViewItem, ListViewInfoItem, ListViewIcon, Row } from 'patternfly-react';
 import * as config from './config/Api';
-import FilterEditKebab from './FilterEditKebab';
+import FilterEditKebab from './components/FilterEditKebab';
 
 export default class FilterItem extends React.Component {
     constructor(props) {

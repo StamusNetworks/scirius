@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import RuleContentModal from './RuleContentModal';
+import RuleContentModal from './components/RuleContentModal';
 
 export default class RuleStatus extends React.Component {
     constructor(props) {

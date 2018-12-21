@@ -25,7 +25,7 @@ import { ShortcutManager } from 'react-shortcuts';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { HuntDashboard } from './Dashboard';
-import { HuntNotificationArea } from './HuntNotificationArea';
+import HuntNotificationArea from './HuntNotificationArea';
 import { HistoryPage } from './History';
 import { PAGE_STATE } from './constants';
 import { RulesList } from './RulesList';

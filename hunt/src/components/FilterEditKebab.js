@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { DropdownKebab, MenuItem } from 'patternfly-react';
-import FilterToggleModal from './FilterToggleModal';
+import FilterToggleModal from '../FilterToggleModal';
 
 export default class FilterEditKebab extends React.Component {
     constructor(props) {

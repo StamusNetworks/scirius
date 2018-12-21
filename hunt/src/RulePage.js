@@ -6,11 +6,11 @@ import { Modal, Row, Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
 import { Spinner } from 'patternfly-react';
 import * as config from './config/Api';
 import { buildQFilter } from './helpers/buildQFilter';
-import RuleEditKebab from './RuleEditKebab';
-import SciriusChart from './SciriusChart';
+import RuleEditKebab from './components/RuleEditKebab';
+import SciriusChart from './components/SciriusChart';
 import RuleStatus from './RuleStatus';
 import HuntStat from './HuntStat';
-import EventValue from './EventValue';
+import EventValue from './components/EventValue';
 import { updateHitsStats } from './RulesList';
 
 export default class RulePage extends React.Component {

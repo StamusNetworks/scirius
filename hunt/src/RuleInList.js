@@ -3,9 +3,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
 import { Col, Icon, Row, Spinner, ListViewIcon, ListViewInfoItem, ListViewItem } from 'patternfly-react';
-import RuleEditKebab from './RuleEditKebab';
-import SciriusChart from './SciriusChart';
-import EventValue from './EventValue';
+import RuleEditKebab from './components/RuleEditKebab';
+import SciriusChart from './components/SciriusChart';
+import EventValue from './components/EventValue';
 
 const RuleInList = (props) => {
     const { category } = props.data;

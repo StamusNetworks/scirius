@@ -2,7 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Icon, Spinner } from 'patternfly-react';
-import SciriusChart from './SciriusChart';
+import SciriusChart from './components/SciriusChart';
 
 const RuleCard = (props) => {
     const { category } = props.data;

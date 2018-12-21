@@ -5,7 +5,7 @@ import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
 import axios from 'axios';
 import { buildQFilter } from './helpers/buildQFilter';
 import * as config from './config/Api';
-import EventValue from './EventValue';
+import EventValue from './components/EventValue';
 
 export default class HuntStat extends React.Component {
     constructor(props) {
