@@ -25,6 +25,7 @@ import axios from 'axios';
 import { Icon, Modal, Button, Row, Col } from 'patternfly-react';
 import PropTypes from 'prop-types';
 import EventIPResolver from './EventIPResolver';
+import EventIPPastries from './EventIPPastries';
 
 // eslint-disable-next-line react/prefer-stateless-function
 export class EventField extends React.Component {
@@ -170,34 +171,6 @@ class EventIPThreatlist extends React.Component {
     }
 }
 EventIPThreatlist.propTypes = {
-    data: PropTypes.any,
-};
-
-// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
-class EventIPPastries extends React.Component {
-    render() {
-        const baseUrl = 'https://pastebin.com/';
-        return (
-            <Col md={6}>
-                <h4>Pastries info</h4>
-                <dl>
-                    {this.props.data.map((item) => {
-                        if (item['@type'] === 'pastebin') {
-                            return (
-                                <React.Fragment>
-                                    <dt><a href={`${baseUrl}item.key`} target="_blank">{`${baseUrl}item.key`}</a></dt><dd>{`${item.seen_date}`}</dd>
-                                </React.Fragment>
-                            );
-                        }
-                        return null;
-                    })
-                    }
-                </dl>
-            </Col>
-        );
-    }
-}
-EventIPPastries.propTypes = {
     data: PropTypes.any,
 };
 
