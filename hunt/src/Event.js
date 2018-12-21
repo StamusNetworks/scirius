@@ -26,6 +26,7 @@ import { Icon, Modal, Button, Row, Col } from 'patternfly-react';
 import PropTypes from 'prop-types';
 import EventIPResolver from './EventIPResolver';
 import EventIPPastries from './EventIPPastries';
+import EventIPGeoloc from './EventIPGeoloc';
 
 // eslint-disable-next-line react/prefer-stateless-function
 export class EventField extends React.Component {
@@ -45,35 +46,6 @@ EventField.propTypes = {
     addFilter: PropTypes.any,
     field: PropTypes.any,
     value: PropTypes.any,
-};
-
-// eslint-disable-next-line react/prefer-stateless-function
-// eslint-disable-next-line react/no-multi-comp,react/prefer-stateless-function
-class EventIPGeoloc extends React.Component {
-    render() {
-        return (
-            <Col md={6}>
-                <h4>Geo localization result</h4>
-                <dl>
-                    <dt>Country</dt>
-                    <dd>{this.props.data.country_name}</dd>
-                    {this.props.data.city && <React.Fragment>
-                        <dt>City</dt>
-                        <dd>{this.props.data.city}</dd>
-                    </React.Fragment>}
-                    <dt>Organization</dt>
-                    <dd>{this.props.data.organization}</dd>
-                    <dt>ASN</dt>
-                    <dd>{this.props.data.asn}</dd>
-                    <dt>Subnet</dt>
-                    <dd>{this.props.data.subnet}</dd>
-                </dl>
-            </Col>
-        );
-    }
-}
-EventIPGeoloc.propTypes = {
-    data: PropTypes.any,
 };
 
 // eslint-disable-next-line react/no-multi-comp,react/no-multi-comp

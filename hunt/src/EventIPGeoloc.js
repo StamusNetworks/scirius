@@ -1,0 +1,29 @@
+import React from 'react';
+import { Col } from 'patternfly-react';
+import PropTypes from 'prop-types';
+
+const EventIPGeoloc = (props) => (
+    <Col md={6}>
+        <h4>Geo localization result</h4>
+        <dl>
+            <dt>Country</dt>
+            <dd>{props.data.country_name}</dd>
+            {props.data.city && <React.Fragment>
+                <dt>City</dt>
+                <dd>{props.data.city}</dd>
+            </React.Fragment>}
+            <dt>Organization</dt>
+            <dd>{props.data.organization}</dd>
+            <dt>ASN</dt>
+            <dd>{props.data.asn}</dd>
+            <dt>Subnet</dt>
+            <dd>{props.data.subnet}</dd>
+        </dl>
+    </Col>
+);
+
+EventIPGeoloc.propTypes = {
+    data: PropTypes.any,
+};
+
+export default EventIPGeoloc;
