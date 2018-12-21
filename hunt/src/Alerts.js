@@ -31,7 +31,7 @@ import { HuntList } from './Api';
 import { buildQFilter } from './helpers/buildQFilter';
 import RuleToggleModal from './RuleToggleModal';
 import { HuntFilter } from './Filter';
-import { EventField } from './Event';
+import EventField from './EventField';
 import * as config from './config/Api';
 
 

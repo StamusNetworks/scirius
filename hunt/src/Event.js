@@ -25,26 +25,6 @@ import { Icon } from 'patternfly-react';
 import PropTypes from 'prop-types';
 import EventValueInfo from './EventValueInfo';
 
-// eslint-disable-next-line react/prefer-stateless-function
-export class EventField extends React.Component {
-    render() {
-        return (
-            <React.Fragment>
-                <dt>{this.props.field_name}</dt>
-                <dd>
-                    <EventValue field={this.props.field} value={this.props.value} addFilter={this.props.addFilter} />
-                </dd>
-            </React.Fragment>
-        );
-    }
-}
-EventField.propTypes = {
-    field_name: PropTypes.any,
-    addFilter: PropTypes.any,
-    field: PropTypes.any,
-    value: PropTypes.any,
-};
-
 // eslint-disable-next-line react/no-multi-comp
 export class EventValue extends React.Component {
     constructor(props) {
