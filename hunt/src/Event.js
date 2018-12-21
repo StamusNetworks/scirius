@@ -23,7 +23,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import { Icon } from 'patternfly-react';
 import PropTypes from 'prop-types';
-import EventIPInfo from './EventIPInfo';
+import EventValueInfo from './EventValueInfo';
 
 // eslint-disable-next-line react/prefer-stateless-function
 export class EventField extends React.Component {
@@ -43,25 +43,6 @@ EventField.propTypes = {
     addFilter: PropTypes.any,
     field: PropTypes.any,
     value: PropTypes.any,
-};
-
-// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
-class EventValueInfo extends React.Component {
-    render() {
-        if (['src_ip', 'dest_ip', 'alert.source.ip', 'alert.target.ip'].indexOf(this.props.field) > -1) {
-            if (process.env.REACT_APP_ONYPHE_API_KEY) {
-                return (<EventIPInfo value={this.props.value} />);
-            }
-            return (
-                <a href={`https://www.onyphe.io/search/?query=${this.props.value}`} target="_blank"> <Icon type="fa" name="info-circle" /></a>
-            );
-        }
-        return null;
-    }
-}
-EventValueInfo.propTypes = {
-    value: PropTypes.any,
-    field: PropTypes.any,
 };
 
 // eslint-disable-next-line react/no-multi-comp
