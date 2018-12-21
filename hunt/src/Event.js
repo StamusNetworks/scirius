@@ -28,6 +28,7 @@ import EventIPResolver from './EventIPResolver';
 import EventIPPastries from './EventIPPastries';
 import EventIPGeoloc from './EventIPGeoloc';
 import EventIPThreatlist from './EventIPThreatlist';
+import EventIPSynscan from './EventIPSynscan';
 
 // eslint-disable-next-line react/prefer-stateless-function
 export class EventField extends React.Component {
@@ -83,35 +84,6 @@ class EventIPDatascan extends React.Component {
     }
 }
 EventIPDatascan.propTypes = {
-    data: PropTypes.any,
-};
-
-// eslint-disable-next-line react/no-multi-comp,react/no-multi-comp
-// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
-class EventIPSynscan extends React.Component {
-    render() {
-        return (
-            <Col md={6}>
-                <h4>SYN scanner result</h4>
-                <dl>
-                    {this.props.data.os && <React.Fragment>
-                        <dt>Operating System</dt>
-                        <dd>{this.props.data.os}</dd>
-                    </React.Fragment>}
-                    {this.props.data.port && <React.Fragment>
-                        <dt>Port</dt>
-                        <dd>{this.props.data.port}</dd>
-                    </React.Fragment>}
-                    {this.props.data.seen_date && <React.Fragment>
-                        <dt>Seen date</dt>
-                        <dd>{this.props.data.seen_date}</dd>
-                    </React.Fragment>}
-                </dl>
-            </Col>
-        );
-    }
-}
-EventIPSynscan.propTypes = {
     data: PropTypes.any,
 };
 
