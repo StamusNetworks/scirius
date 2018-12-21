@@ -37,7 +37,7 @@ import RuleToggleModal from './RuleToggleModal';
 import { HuntList } from './Api';
 import { HuntFilter } from './Filter';
 import * as config from './config/Api';
-import { EventValue } from './Event';
+import EventValue from './EventValue';
 import '../node_modules/react-grid-layout/css/styles.css';
 import '../node_modules/react-resizable/css/styles.css';
 

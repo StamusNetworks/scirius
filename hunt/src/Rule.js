@@ -36,7 +36,7 @@ import RuleStatus from './RuleStatus';
 import RuleToggleModal from './RuleToggleModal';
 import RuleEditKebab from './RuleEditKebab';
 import { HuntDashboard } from './Dashboard';
-import { EventValue } from './Event';
+import EventValue from './EventValue';
 import { buildQFilter } from './helpers/buildQFilter';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
