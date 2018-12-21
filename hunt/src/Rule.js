@@ -36,6 +36,7 @@ import RuleStatus from './RuleStatus';
 import RuleToggleModal from './RuleToggleModal';
 import RuleEditKebab from './RuleEditKebab';
 import HuntStat from './HuntStat';
+import RuleCard from './RuleCard';
 import { HuntDashboard } from './Dashboard';
 import EventValue from './EventValue';
 import { buildQFilter } from './helpers/buildQFilter';
@@ -146,88 +147,6 @@ RuleInList.propTypes = {
     from_date: PropTypes.any,
     SwitchPage: PropTypes.any,
     addFilter: PropTypes.any,
-};
-
-// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
-export class RuleCard extends React.Component {
-    render() {
-        const { category } = this.props.data;
-        const source = this.props.state.sources[category.source];
-        let catTooltip = category.name;
-        if (source && source.name) {
-            catTooltip = `${source.name}: ${category.name}`;
-        }
-        let imported;
-        if (!this.props.data.created) {
-            [imported] = this.props.data.imported_date.split('T');
-        }
-        return (
-            <div className="col-xs-6 col-sm-4 col-md-4">
-                <div className="card-pf rule-card">
-                    <div className="card-pf-heading">
-                        <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={this.props.data.msg}>{this.props.data.msg}</h2>
-                    </div>
-                    <div className="card-pf-body">
-                        <div className="container-fluid">
-                            <div className="row">
-                                <div className="col-md-5 truncate-overflow" data-toggle="tooltip" title={catTooltip}>Cat: {category.name}</div>
-                                <div className="col-md-4">
-                                    {this.props.data.created && <p>Created: {this.props.data.created}</p>}
-                                    {!this.props.data.created && <p>Imported: {imported}</p>}
-                                </div>
-                                <div className="col-md-3">Alerts
-                                    <Spinner loading={this.props.data.hits === undefined} size="xs">
-                                        <span className="badge">{this.props.data.hits}</span>
-                                    </Spinner>
-                                </div>
-                            </div>
-                        </div>
-                        <Spinner loading={this.props.data.hits === undefined} size="xs">
-                            {this.props.data.timeline && <div className="chart-pf-sparkline">
-                                <SciriusChart data={this.props.data.timeline}
-                                    axis={{
-                                        x: {
-                                            type: 'timeseries',
-                                            localtime: true,
-                                            min: this.props.from_date,
-                                            max: Date.now(),
-                                            show: false,
-                                            tick: { fit: true, rotate: 15, format: '%Y-%m-%d %H:%M' }
-                                        },
-                                        y: { show: false }
-                                    }}
-                                    legend={{
-                                        show: false
-                                    }}
-                                    size={{ height: 60 }}
-                                    point={{ show: false }}
-                                />
-                            </div>}
-                            {!this.props.data.timeline && <div className="no-sparkline">
-                                <p>No alert</p>
-                            </div>}
-                        </Spinner>
-                        <div>
-            SID: <strong>{this.props.data.sid}</strong>
-                            <span className="pull-right">
-                                <a onClick={() => { this.props.SwitchPage(this.props.data); }}
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <Icon type="fa" name="search-plus" />
-                                </a>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-}
-RuleCard.propTypes = {
-    data: PropTypes.any,
-    state: PropTypes.any,
-    from_date: PropTypes.any,
-    SwitchPage: PropTypes.any,
 };
 
 function buildTimelineDataSet(tdata) {
