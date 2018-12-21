@@ -28,7 +28,7 @@ import { HuntDashboard } from './Dashboard';
 import { HuntNotificationArea } from './HuntNotificationArea';
 import { HistoryPage } from './History';
 import { PAGE_STATE } from './constants';
-import { RulesList } from './Rule';
+import { RulesList } from './RulesList';
 import { AlertsList } from './AlertsList';
 import { FiltersList } from './Filters';
 import * as config from './config/Api';

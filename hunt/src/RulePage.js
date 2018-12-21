@@ -11,7 +11,7 @@ import SciriusChart from './SciriusChart';
 import RuleStatus from './RuleStatus';
 import HuntStat from './HuntStat';
 import EventValue from './EventValue';
-import { updateHitsStats } from './Rule';
+import { updateHitsStats } from './RulesList';
 
 export default class RulePage extends React.Component {
     constructor(props) {
