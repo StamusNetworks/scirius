@@ -21,24 +21,20 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import React from 'react';
-import PropTypes from 'prop-types';
-import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner, PAGINATION_VIEW, Icon } from 'patternfly-react';
-import { ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
+import { ListView, Spinner, PAGINATION_VIEW } from 'patternfly-react';
 import axios from 'axios';
 import store from 'store';
 import md5 from 'md5';
-import SciriusChart from './SciriusChart';
 import * as config from './config/Api';
 import { HuntFilter } from './HuntFilter';
 import { HuntList } from './HuntList';
 import HuntPaginationRow from './HuntPaginationRow';
 import RuleToggleModal from './RuleToggleModal';
-import RuleEditKebab from './RuleEditKebab';
 import RuleCard from './RuleCard';
 import { HuntDashboard } from './Dashboard';
-import EventValue from './EventValue';
 import { buildQFilter } from './helpers/buildQFilter';
 import RulePage from './RulePage';
+import RuleInList from './RuleInList';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -71,82 +67,6 @@ export const RuleSortFields = [
         defaultAsc: false,
     }
 ];
-
-// eslint-disable-next-line react/prefer-stateless-function
-export class RuleInList extends React.Component {
-    render() {
-        const { category } = this.props.data;
-        const source = this.props.state.sources[category.source];
-        let catTooltip = category.name;
-        if (source && source.name) {
-            catTooltip = `${source.name}: ${category.name}`;
-        }
-        const kebabConfig = { rule: this.props.data };
-        return (
-            <ListViewItem
-                key={this.props.data.sid}
-                // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions,jsx-a11y/interactive-supports-focus
-                actions={[<a role="button" key={`actions-${this.props.data.sid}`} onClick={() => { this.props.SwitchPage(this.props.data); }}><Icon type="fa" name="search-plus" /> </a>, <RuleEditKebab key={`kebab-${this.props.data.sid}`} config={kebabConfig} rulesets={this.props.rulesets} />]}
-                leftContent={<ListViewIcon name="envelope" />}
-                additionalInfo={[<ListViewInfoItem key={`created-${this.props.data.sid}`}><p>Created: {this.props.data.created}</p></ListViewInfoItem>,
-                    <ListViewInfoItem key={`updated-${this.props.data.sid}`}><p>Updated: {this.props.data.updated}</p></ListViewInfoItem>,
-                    <ListViewInfoItem key={`category-${this.props.data.sid}`}><p data-toggle="tooltip" title={catTooltip}>Category: {category.name}</p></ListViewInfoItem>,
-                    <ListViewInfoItem key={`hits-${this.props.data.sid}`}><Spinner loading={this.props.data.hits === undefined} size="xs"><p>Alerts <span className="badge">{this.props.data.hits}</span></p></Spinner></ListViewInfoItem>
-                ]}
-                heading={this.props.data.sid}
-                description={this.props.data.msg}
-            >
-                {this.props.data.timeline && <Row>
-                    <Col sm={11}>
-                        <div className="container-fluid">
-                            <div className="row">
-                                <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.props.data.content }}></div>
-                            </div>
-                            <div className="row">
-                                <div className="col-md-12">
-                                    <SciriusChart data={this.props.data.timeline}
-                                        axis={{
-                                            x: {
-                                                type: 'timeseries',
-                                                localtime: true,
-                                                min: this.props.from_date,
-                                                max: Date.now(),
-                                                tick: { fit: false, rotate: 15, format: '%Y-%m-%d %H:%M' }
-                                            }
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                            <div className="row">
-                                <div className="col-md-4">
-                                    <h4>Probes</h4>
-                                    <ListGroup>
-                                        {this.props.data.probes.map((item) => (
-                                            <ListGroupItem key={item.probe}>
-                                                <EventValue field={'host'}
-                                                    value={item.probe}
-                                                    addFilter={this.props.addFilter}
-                                                    right_info={<Badge>{item.hits}</Badge>}
-                                                />
-                                            </ListGroupItem>))}
-                                    </ListGroup>
-                                </div>
-                            </div>
-                        </div>
-                    </Col>
-                </Row>}
-            </ListViewItem>
-        );
-    }
-}
-RuleInList.propTypes = {
-    data: PropTypes.any,
-    state: PropTypes.any,
-    rulesets: PropTypes.any,
-    from_date: PropTypes.any,
-    SwitchPage: PropTypes.any,
-    addFilter: PropTypes.any,
-};
 
 function buildTimelineDataSet(tdata) {
     const timeline = { x: 'x', type: 'area', columns: [['x'], ['alerts']] };
