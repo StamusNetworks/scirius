@@ -1,0 +1,12 @@
+language: generic
+install:
+  - npm install
+  - npm install -g webpack@3.11
+  - webpack
+  - cd hunt
+  - npm install
+
+script:
+  - node node_modules/eslint/bin/eslint.js -c .eslintrc .
+  - npm run build
+
