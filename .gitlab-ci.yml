@@ -1,0 +1,5 @@
+stages:
+  - build
+  - test
+
+include: .gitlab-ci-rules.yml

@@ -1,0 +1,24 @@
+image: $CI_REGISTRY/devel/scirius/iceweasel:latest
+
+npm:
+  image: node:8.9.4
+  stage: build
+  artifacts:
+    expire_in: 1 day
+    paths:
+    - rules/static/dist
+    - rules/static/bundles
+    - rules/static/webpack-stats.prod.json
+  script:
+  - npm install
+  - npm install -g webpack@3.11
+  - webpack
+  - cd hunt
+  - npm install
+  - node node_modules/eslint/bin/eslint.js -c .eslintrc .
+  - npm run build
+
+test-static:
+  stage: test
+  script:
+  - /home/admin/venv/bin/pylint --load-plugins pylint_django -E -d unexpected-keyword-arg,no-member,access-member-before-definition,no-name-in-module,import-error */*.py
