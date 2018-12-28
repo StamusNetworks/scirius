@@ -31,6 +31,7 @@ import { PAGE_STATE } from './constants';
 import { RulesList } from './RulesList';
 import { AlertsList } from './AlertsList';
 import { FiltersList } from './Filters';
+import SourcePage from './components/SourcePage';
 import * as config from './config/Api';
 import './pygments.css';
 // eslint-disable-next-line import/no-unresolved
@@ -837,19 +838,6 @@ UserNavInfo.propTypes = {
     ChangeRefreshInterval: PropTypes.any,
     period: PropTypes.any,
     ChangeDuration: PropTypes.any,
-};
-
-// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
-class SourcePage extends Component {
-    render() {
-        const { source } = this.props;
-        return (
-            <h1>{source.name}</h1>
-        );
-    }
-}
-SourcePage.propTypes = {
-    source: PropTypes.any
 };
 
 // eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
