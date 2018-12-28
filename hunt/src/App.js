@@ -332,19 +332,18 @@ class HuntApp extends Component {
                     });
                 }
             } else {
-                if (data.data.status === 'green') {
+                if (data.data.status === 'green' && !this.state.hasConnectivity) {
                     this.setState({
                         ...this.state,
                         hasConnectivity: true
                     });
-                } else {
-                    if (this.state.hasConnectivity) {
-                        this.setState({
-                            ...this.state,
-                            hasConnectivity: false,
-                            connectionProblem: 'Scirius does not feel comfortable',
-                        });
-                    }
+                }
+                if (data.data.status !== 'green' && this.state.hasConnectivity) {
+                    this.setState({
+                        ...this.state,
+                        hasConnectivity: false,
+                        connectionProblem: 'Scirius does not feel comfortable',
+                    });
                 }
             }
         }).catch(() => {
