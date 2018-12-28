@@ -33,6 +33,7 @@ import { AlertsList } from './AlertsList';
 import { FiltersList } from './Filters';
 import SourcePage from './components/SourcePage';
 import RulesetPage from './components/RuleSetPage';
+import ExternalLink from './components/ExternalLink';
 import OutsideAlerter from './components/OutsideAlerter';
 import * as config from './config/Api';
 import './pygments.css';
@@ -523,37 +524,6 @@ const REFRESH_INTERVAL = {
     900: '15m',
     1800: '30m',
     3600: '1h'
-};
-
-
-// eslint-disable-next-line react/no-multi-comp
-class ExternalLink extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            onclick: props.onClick,
-            icon: props.icon,
-            title: props.title,
-            tooltip: props.tooltip
-        };
-    }
-
-    render() {
-        return (
-            <li className="applauncher-pf-item" role="presentation">
-                <a className="applauncher-pf-link" onClick={() => this.state.onclick} role="menuitem" data-toggle="tooltip" title={this.state.tooltip} style={{ cursor: 'pointer' }} tabIndex={0}>
-                    <i className={this.state.icon} aria-hidden="true" />
-                    <span className="applauncher-pf-link-title">{this.state.title}</span>
-                </a>
-            </li>
-        );
-    }
-}
-ExternalLink.propTypes = {
-    onClick: PropTypes.any,
-    icon: PropTypes.any,
-    title: PropTypes.any,
-    tooltip: PropTypes.any,
 };
 
 // eslint-disable-next-line react/no-multi-comp
