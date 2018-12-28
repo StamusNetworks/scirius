@@ -32,6 +32,7 @@ import { RulesList } from './RulesList';
 import { AlertsList } from './AlertsList';
 import { FiltersList } from './Filters';
 import SourcePage from './components/SourcePage';
+import RulesetPage from './components/RuleSetPage';
 import * as config from './config/Api';
 import './pygments.css';
 // eslint-disable-next-line import/no-unresolved
@@ -838,19 +839,6 @@ UserNavInfo.propTypes = {
     ChangeRefreshInterval: PropTypes.any,
     period: PropTypes.any,
     ChangeDuration: PropTypes.any,
-};
-
-// eslint-disable-next-line react/prefer-stateless-function,react/no-multi-comp
-class RulesetPage extends Component {
-    render() {
-        const { ruleset } = this.props;
-        return (
-            <h1>{ruleset.name}</h1>
-        );
-    }
-}
-RulesetPage.propTypes = {
-    ruleset: PropTypes.any
 };
 
 export default HuntApp;
