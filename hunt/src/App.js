@@ -33,6 +33,7 @@ import { AlertsList } from './AlertsList';
 import { FiltersList } from './Filters';
 import SourcePage from './components/SourcePage';
 import RulesetPage from './components/RuleSetPage';
+import OutsideAlerter from './components/OutsideAlerter';
 import * as config from './config/Api';
 import './pygments.css';
 // eslint-disable-next-line import/no-unresolved
@@ -554,43 +555,6 @@ ExternalLink.propTypes = {
     title: PropTypes.any,
     tooltip: PropTypes.any,
 };
-
-// eslint-disable-next-line react/no-multi-comp
-class OutsideAlerter extends Component {
-    constructor(props) {
-        super(props);
-
-        this.setWrapperRef = this.setWrapperRef.bind(this);
-        this.handleClickOutside = this.handleClickOutside.bind(this);
-    }
-
-    componentDidMount() {
-        document.addEventListener('mousedown', this.handleClickOutside);
-    }
-
-    componentWillUnmount() {
-        document.removeEventListener('mousedown', this.handleClickOutside);
-    }
-
-    setWrapperRef(node) {
-        this.wrapperRef = node;
-    }
-
-    handleClickOutside(event) {
-        if (this.wrapperRef && !this.wrapperRef.contains(event.target)) {
-            this.props.hide();
-        }
-    }
-
-    render() {
-        return <span ref={this.setWrapperRef}>{this.props.children}</span>;
-    }
-}
-OutsideAlerter.propTypes = {
-    hide: PropTypes.func,
-    children: PropTypes.element.isRequired,
-};
-
 
 // eslint-disable-next-line react/no-multi-comp
 class UserNavInfo extends Component {
