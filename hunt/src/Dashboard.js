@@ -524,7 +524,7 @@ export class HuntDashboard extends HuntList {
                         <div className="clearfix" />
 
                         { this.panelsBooted !== 'no' && <ResponsiveReactGridLayout
-                            margin={[0, 0]}
+                            margin={[0, 0.01]}
                             compactType={'vertical'}
                             isResizable={false}
                             rowHeight={1}
@@ -548,7 +548,7 @@ export class HuntDashboard extends HuntList {
                                 <div className="hunt-row" key={panel} id={`panel-${panel}`}>
                                     <h2 className={`hunt-row-title ${(this.state.editMode) ? 'dashboard-editable-mode' : ''}`}>{this.state.dashboard[panel].title}</h2>
                                     <ResponsiveReactGridLayout
-                                        margin={[3, 3]}
+                                        margin={[5, 5]}
                                         compactType={'vertical'}
                                         layouts={{
                                             lg: this.getMicroLayouts(panel, 'lg'),
