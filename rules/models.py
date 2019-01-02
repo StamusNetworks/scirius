@@ -2844,8 +2844,36 @@ class RuleProcessingFilter(models.Model):
             return {}
         return json.loads(self.options)
 
-    def get_threshold_content(self):
-        sid = self.filter_defs.get(key='alert.signature_id').value
+    def get_threshold_content(self, ruleset=None):
+        sid_track_ip = {}
+        sids = []
+        try:
+            sid = self.filter_defs.get(key='alert.signature_id').value
+            sid_track_ip = {str(sid): []}
+            sids.append(sid)
+        except models.ObjectDoesNotExist:
+            pass
+
+        try:
+            msg = self.filter_defs.get(key='msg').value
+            sids = list(Rule.objects.filter(msg__icontains=msg).order_by('sid').values_list('sid', flat=True))
+            sid_track_ip = dict([(str(sid), []) for sid in sids]) if msg else None
+        except models.ObjectDoesNotExist:
+            pass
+
+        try:
+            content = self.filter_defs.get(key='content').value
+            sids = list(Rule.objects.filter(content__icontains=content).order_by('sid').values_list('sid', flat=True))
+            sid_track_ip = dict([(str(sid), []) for sid in sids]) if content else None
+        except models.ObjectDoesNotExist:
+            pass
+
+        try:
+            msg = self.filter_defs.get(key='alert.signature').value
+            sid = Rule.objects.get(msg=msg).sid
+            sid_track_ip = {str(sid): []}
+        except models.ObjectDoesNotExist:
+            pass
 
         if self.action == 'suppress':
             try:
@@ -2856,18 +2884,54 @@ class RuleProcessingFilter(models.Model):
                 dest_ip = self.filter_defs.get(key='dest_ip')
             except models.ObjectDoesNotExist:
                 dest_ip = None
+            try:
+                alert_target_ip = self.filter_defs.get(key='alert.target.ip')
+            except models.ObjectDoesNotExist:
+                alert_target_ip = None
+            try:
+                alert_source_ip = self.filter_defs.get(key='alert.source.ip')
+            except models.ObjectDoesNotExist:
+                alert_source_ip = None
 
-            if src_ip:
-                ip_str = src_ip.value
-                track_by = 'by_src'
+            if alert_source_ip or alert_target_ip:
+                rules = Rule.objects.filter(sid__in=sids)
+                alert_ip = alert_source_ip if alert_source_ip is not None else alert_target_ip
+
+                for rule in rules:
+                    content = rule.generate_content(ruleset)
+
+                    if 'target:src_ip;' in content:
+                        if alert_target_ip:
+                            sid_track_ip[str(rule.sid)] = ('by_src', alert_ip.value,)
+                        elif alert_source_ip:
+                            sid_track_ip[str(rule.sid)] = ('by_dst', alert_ip.value,)
+                    elif 'target:dest_ip;' in content:
+                        if alert_target_ip:
+                            sid_track_ip[str(rule.sid)] = ('by_dst', alert_ip.value,)
+                        elif alert_source_ip:
+                            sid_track_ip[str(rule.sid)] = ('by_src', alert_ip.value,)
+                    else:
+                        sid_track_ip.pop(rule.sid, None)
+
+            elif src_ip:
+                for sid in sids:
+                    sid_track_ip[str(sid)] = ('by_src', src_ip.value)
             else:
-                ip_str = dest_ip.value
-                track_by = 'by_dst'
+                for sid in sids:
+                    sid_track_ip[str(sid)] = ('by_dst', dest_ip.value)
 
-            return 'suppress gen_id 1, sid_id %s, track %s, ip %s\n' % (sid, track_by, ip_str)
+            res = []
+            for sid, val in sid_track_ip.iteritems():
+                res.append('suppress gen_id 1, sid_id %s, track %s, ip %s\n' % (sid, val[0], val[1]))
+            return res
+
         elif self.action == 'threshold':
             options = self.get_options()
-            return 'threshold gen_id 1, sig_id %s, type %s, track %s, count %s, seconds %s\n' % (sid, options['type'], options['track'], options['count'], options['seconds'])
+
+            res = []
+            for sid in sid_track_ip.iterkeys():
+                res.append('threshold gen_id 1, sig_id %s, type %s, track %s, count %s, seconds %s\n' % (sid, options['type'], options['track'], options['count'], options['seconds']))
+            return res
 
         raise Exception('Invalid processing filter action %s' % self.action)
 
