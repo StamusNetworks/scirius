@@ -27,7 +27,7 @@ import axios from 'axios';
 import { HuntDashboard } from './Dashboard';
 import { HistoryPage } from './History';
 import { PAGE_STATE } from './constants';
-import { RulesList } from './RulesList';
+import SignaturesPage from './containers/SignaturesPage';
 import { AlertsList } from './AlertsList';
 import { FiltersList } from './Filters';
 import SourcePage from './components/SourcePage';
@@ -364,9 +364,9 @@ class HuntApp extends Component {
         switch (this.state.display.page) {
             case PAGE_STATE.rules_list:
             default:
-                displayedPage = (<RulesList
+                displayedPage = (<SignaturesPage
                     systemSettings={this.state.systemSettings}
-                    config={this.state.rules_list}
+                    rules_list={this.state.rules_list}
                     filters={this.state.idsFilters}
                     from_date={this.state.from_date}
                     SwitchPage={this.switchPage}

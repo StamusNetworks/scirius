@@ -6,7 +6,7 @@ import SciriusChart from './components/SciriusChart';
 
 const RuleCard = (props) => {
     const { category } = props.data;
-    const source = props.state.sources[category.source];
+    const source = props.sources[category.source];
     let catTooltip = category.name;
     if (source && source.name) {
         catTooltip = `${source.name}: ${category.name}`;
@@ -77,7 +77,7 @@ const RuleCard = (props) => {
 
 RuleCard.propTypes = {
     data: PropTypes.any,
-    state: PropTypes.any,
+    sources: PropTypes.any,
     from_date: PropTypes.any,
     SwitchPage: PropTypes.any,
 };

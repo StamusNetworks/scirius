@@ -2,7 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Modal, Row, Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
+import { Modal, CloseButton, Row, Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
 import { Spinner } from 'patternfly-react';
 import * as config from './config/Api';
 import { buildQFilter } from './helpers/buildQFilter';
@@ -11,7 +11,7 @@ import SciriusChart from './components/SciriusChart';
 import RuleStatus from './RuleStatus';
 import HuntStat from './HuntStat';
 import EventValue from './components/EventValue';
-import { updateHitsStats } from './RulesList';
+import { updateHitsStats } from './containers/SignaturesPage/SignaturesPage';
 
 export default class RulePage extends React.Component {
     constructor(props) {
@@ -228,7 +228,7 @@ export default class RulePage extends React.Component {
 
                 <Modal show={!(this.state.moreModal === null)} onHide={() => { this.hideMoreModal() }}>
 
-                    <Modal.Header>More results <Modal.CloseButton closeText={'Close'} onClick={() => { this.hideMoreModal() }} /> </Modal.Header>
+                    <Modal.Header>More results <CloseButton closeText={'Close'} onClick={() => { this.hideMoreModal() }} /> </Modal.Header>
                     <Modal.Body>
                         <div className="hunt-stat-body">
                             <ListGroup>

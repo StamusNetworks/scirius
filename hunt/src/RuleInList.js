@@ -9,7 +9,7 @@ import EventValue from './components/EventValue';
 
 const RuleInList = (props) => {
     const { category } = props.data;
-    const source = props.state.sources[category.source];
+    const source = props.sources[category.source];
     let catTooltip = category.name;
     if (source && source.name) {
         catTooltip = `${source.name}: ${category.name}`;
@@ -70,7 +70,7 @@ const RuleInList = (props) => {
 
 RuleInList.propTypes = {
     data: PropTypes.any,
-    state: PropTypes.any,
+    sources: PropTypes.any,
     rulesets: PropTypes.any,
     from_date: PropTypes.any,
     SwitchPage: PropTypes.any,
