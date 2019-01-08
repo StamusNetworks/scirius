@@ -23,17 +23,19 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { PAGINATION_VIEW, ListView, Spinner } from 'patternfly-react';
-import * as config from './config/Api';
-import { HuntList } from './HuntList';
-import HuntPaginationRow from './HuntPaginationRow';
-import FilterItem from './FilterItem';
+import * as config from '../../config/Api';
+import { HuntList } from '../../HuntList';
+import HuntPaginationRow from '../../HuntPaginationRow';
+import FilterItem from '../../FilterItem';
+import { buildListUrlParams } from '../../helpers/common';
 
-export class FiltersList extends HuntList {
+export default class ActionsPage extends HuntList {
     constructor(props) {
         super(props);
         this.state = { data: [], count: 0, rulesets: [] };
         this.fetchData = this.fetchData.bind(this);
         this.needUpdate = this.needUpdate.bind(this);
+        this.buildListUrlParams = buildListUrlParams.bind(this);
     }
 
     componentDidMount() {
@@ -47,6 +49,12 @@ export class FiltersList extends HuntList {
             });
         }
         this.fetchData(this.props.config, this.props.filters);
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.from_date !== this.props.from_date) {
+            this.fetchData(this.props.config, this.props.filters);
+        }
     }
 
     // eslint-disable-next-line no-unused-vars
@@ -93,7 +101,7 @@ export class FiltersList extends HuntList {
         );
     }
 }
-FiltersList.propTypes = {
+ActionsPage.propTypes = {
     config: PropTypes.any,
     filters: PropTypes.any,
 };

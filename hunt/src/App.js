@@ -29,7 +29,7 @@ import { HistoryPage } from './History';
 import { PAGE_STATE } from './constants';
 import SignaturesPage from './containers/SignaturesPage';
 import AlertsPage from './containers/AlertsPage';
-import { FiltersList } from './Filters';
+import ActionsPage from './containers/ActionsPage';
 import SourcePage from './components/SourcePage';
 import RulesetPage from './components/RuleSetPage';
 import UserNavInfo from './components/UserNavInfo';
@@ -416,7 +416,7 @@ class HuntApp extends Component {
                 />);
                 break;
             case PAGE_STATE.filters_list:
-                displayedPage = (<FiltersList
+                displayedPage = (<ActionsPage
                     systemSettings={this.state.systemSettings}
                     config={this.state.filters_list}
                     filters={this.state.filters_filters}
