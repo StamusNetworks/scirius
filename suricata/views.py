@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from __future__ import unicode_literals
 from time import time
 import socket
 
@@ -64,7 +65,7 @@ def index(request, error = None):
             supp_rules = list(Rule.objects.filter(ruletransformation__ruleset=suri.ruleset, ruletransformation__key=Transformation.SUPPRESSED.value, ruletransformation__value=Transformation.S_SUPPRESSED.value))
 
             if len(supp_rules):
-                suppressed = ",".join([ str(x.sid) for x in supp_rules])
+                suppressed = ",".join([ unicode(x.sid) for x in supp_rules])
                 context['suppressed'] = suppressed
 
         if settings.USE_ELASTICSEARCH:
@@ -152,18 +153,18 @@ def update(request):
                 suri.ruleset.update()
             except IOError, errors:
                 return index(request, error="Can not fetch data: %s" % (errors))
-            message.append("Rule downloaded at %s. " % (suri.ruleset.updated_date) + ".")
+            message.append("Rule downloaded at %s." % unicode(suri.ruleset.updated_date))
         if form.cleaned_data['build']:
             suri.generate()
             suri.updated_date = timezone.now()
             suri.save()
-            message.append("Successful ruleset build at " + str(suri.updated_date) + ".")
+            message.append("Successful ruleset build at %s." % unicode(suri.updated_date))
         if form.cleaned_data['push']:
             ret = suri.push()
             suri.updated_date = timezone.now()
             suri.save()
             if ret:
-                message.append("Successful asked ruleset reload at " + str(suri.updated_date))
+                message.append("Successful asked ruleset reload at %s." % unicode(suri.updated_date))
             else:
                 message.append("Suricata restart already asked.")
 

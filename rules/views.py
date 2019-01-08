@@ -1056,7 +1056,7 @@ def update_source(request, source_id):
         if request.is_ajax():
             data = {}
             data['status'] = False
-            data['errors'] = str(errors)
+            data['errors'] = unicode(errors)
             return HttpResponse(json.dumps(data), content_type="application/json")
         if isinstance(errors, (IOError, OSError)):
             _msg = 'Can not fetch data'
@@ -1211,9 +1211,9 @@ def fetch_public_sources():
             resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL, headers = hdrs)
         resp.raise_for_status()
     except requests.exceptions.ConnectionError, e:
-        if "Name or service not known" in str(e):
+        if "Name or service not known" in unicode(e):
             raise IOError("Connection error 'Name or service not known'")
-        elif "Connection timed out" in str(e):
+        elif "Connection timed out" in unicode(e):
             raise IOError("Connection error 'Connection timed out'")
         else:
             raise IOError("Connection error '%s'" % (e))
@@ -1681,7 +1681,7 @@ def edit_ruleset(request, ruleset_id):
             src_cats = Category.objects.filter(source = sourceatversion.source)
             for pcats in src_cats:
                 if pcats in ruleset_cats:
-                    cats_selection.append(str(pcats.id))
+                    cats_selection.append(unicode(pcats.id))
             cats = EditCategoryTable(src_cats)
             tables.RequestConfig(request,paginate = False).configure(cats)
             categories_list[sourceatversion.source.name] = cats
@@ -1918,7 +1918,7 @@ def info(request):
 def threshold(request, threshold_id):
     threshold = get_object_or_404(Threshold, pk=threshold_id)
     threshold.rule.highlight_content = SuriHTMLFormat(threshold.rule.content)
-    threshold.highlight_content = SuriHTMLFormat(str(threshold))
+    threshold.highlight_content = SuriHTMLFormat(unicode(threshold))
     context = { 'threshold': threshold }
     return scirius_render(request, 'rules/threshold.html', context)
 

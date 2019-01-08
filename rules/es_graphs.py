@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from __future__ import unicode_literals
 from django.template import Context, Template
 from django.conf import settings
 from django.utils.html import format_html
@@ -1473,7 +1474,7 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
                     sid=elt['term']
                 rule = Rule.objects.get(sid=sid)
             except:
-                print "Can not find rule with sid " + str(sid)
+                print "Can not find rule with sid %s" % sid
                 continue
             if get_es_major_version() >= 2:
                 rule.hits = elt['doc_count']
@@ -1584,7 +1585,7 @@ def es_get_dashboard(count=20):
         dashboards_query_url = "/%s/dashboard/_search?size=" % settings.KIBANA_INDEX
 
     headers = {'content-type': 'application/json'}
-    req = urllib2.Request(get_es_path(dashboards_query_url) + str(count), headers = headers)
+    req = urllib2.Request(get_es_path(dashboards_query_url) + unicode(count), headers = headers)
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except:
@@ -1615,7 +1616,7 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     # 100 points on graph per default
     if interval == None:
         interval = int((time() - (int(from_date) / 1000)) / 100)
-    data = render_template(get_timeline_quey(), {'from_date': from_date, 'interval': str(interval) + "s", 'hosts': hosts}, qfilter = qfilter)
+    data = render_template(get_timeline_quey(), {'from_date': from_date, 'interval': unicode(interval) + "s", 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
@@ -1652,7 +1653,7 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
     # 100 points on graph per default
     if interval == None:
         interval = int((time() - (int(from_date)/ 1000)) / 100)
-    data = render_template(get_stats_query(), {'from_date': from_date, 'interval': str(interval) + "s", 'value': value, 'hosts': hosts}, qfilter = qfilter)
+    data = render_template(get_stats_query(), {'from_date': from_date, 'interval': unicode(interval) + "s", 'value': value, 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date, data = 'stats')
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
@@ -1769,7 +1770,7 @@ def es_delete_alerts_by_sid_v2(sid):
     try:
         r = requests.delete(delete_url)
     except Exception, err:
-        return {'msg': 'Elasticsearch error: %s' % str(err), 'status': 500 }
+        return {'msg': 'Elasticsearch error: %s' % err, 'status': 500 }
     if r.status_code == 200:
         data = json.loads(r.text)
         return data
@@ -1785,10 +1786,10 @@ def es_delete_alerts_by_sid_v5(sid):
         headers = {'content-type': 'application/json'}
         r = requests.post(delete_url, data = json.dumps(data), headers=headers)
     except Exception, err:
-        return {'msg': 'Elasticsearch error: %s' % str(err), 'status': 500 }
+        return {'msg': 'Elasticsearch error: %s' % err, 'status': 500 }
     if r.status_code == 200:
         data = json.loads(r.text)
-        data[u'status'] = 200
+        data['status'] = 200
         return data
     elif r.status_code == 400:
         return {'msg': r.text, 'status': r.status_code }
@@ -1822,7 +1823,7 @@ def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except Exception, e:
-        return "BAM: " + str(e)
+        return "BAM: %s" % e
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1843,7 +1844,7 @@ def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except Exception, e:
-        return "BAM: " + str(e)
+        return "BAM: %s" % e
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1860,7 +1861,7 @@ def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except Exception, e:
-        return "BAM: " + str(e)
+        return "BAM: %s" % e
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1896,7 +1897,7 @@ def es_get_ippair_network_alerts(from_date=0, hosts = None, qfilter = None):
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except Exception, e:
-        return "BAM: " + str(e)
+        return "BAM: %s" % e
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1945,7 +1946,7 @@ def es_get_alerts_tail(from_date=0, qfilter = None, search_target=True):
     try:
         out = urllib2.urlopen(req, timeout=TIMEOUT)
     except Exception, e:
-        return "BAM: " + str(e)
+        return "BAM: %s" % e
     data = out.read()
     # returned data is JSON
     data = json.loads(data)['hits']['hits']

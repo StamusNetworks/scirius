@@ -658,7 +658,7 @@ class Source(models.Model):
     def delete(self):
         self.needs_test()
         # delete git tree
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
         try:
             shutil.rmtree(source_git_dir)
         # Ignore error if not present
@@ -676,7 +676,7 @@ class Source(models.Model):
         self.updated_rules["updated"] = list(set(self.updated_rules["updated"]).union(set(update["updated"])))
 
     def get_categories(self):
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
         catname = re.compile("(.+)\.rules$")
         existing_rules_hash = {}
         for rule in Rule.objects.all().prefetch_related('category'):
@@ -700,7 +700,7 @@ class Source(models.Model):
 
     def get_git_repo(self, delete = False):
         # check if git tree is in place
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
         if not os.path.isdir(source_git_dir):
             if os.path.isfile(source_git_dir):
                 raise OSError("git-sources is not a directory")
@@ -768,7 +768,7 @@ class Source(models.Model):
         if rules_dir == None:
             raise SuspiciousOperation("Tar file does not contain a 'rules' directory")
 
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
         tfile.extractall(path=source_git_dir, members = dir_list)
         if "/" in rules_dir:
             shutil.move(os.path.join(source_git_dir, rules_dir), os.path.join(source_git_dir, 'rules'))
@@ -794,7 +794,7 @@ class Source(models.Model):
 
         repo = self.get_git_repo(delete = True)
 
-        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
+        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk), 'rules')
         # create rules dir if needed
         if not os.path.isdir(rules_dir):
             os.makedirs(rules_dir)
@@ -827,7 +827,7 @@ class Source(models.Model):
 
         repo = self.get_git_repo(delete = True)
 
-        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
+        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk), 'rules')
         # create rules dir if needed
         if not os.path.isdir(rules_dir):
             os.makedirs(rules_dir)
@@ -915,7 +915,7 @@ class Source(models.Model):
         self.needs_test()
 
     def diff(self):
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
         if not os.path.isdir(source_git_dir):
             raise IOError("You have to update source first")
         repo = git.Repo(source_git_dir)
@@ -923,7 +923,7 @@ class Source(models.Model):
         return hcommit.diff('HEAD~1', create_patch = True)
 
     def export_files(self, directory, version):
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
         repo = git.Repo(source_git_dir)
         with tempfile.TemporaryFile(dir=self.TMP_DIR) as f:
             repo.archive(f, treeish=version)
@@ -945,7 +945,7 @@ class Source(models.Model):
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
-        return reverse('source', args=[str(self.id)])
+        return reverse('source', args=[unicode(self.id)])
 
     def update_ruleset_http(self, f):
         proxy_params = get_system_settings().get_proxy_params()
@@ -959,9 +959,9 @@ class Source(models.Model):
                 resp = requests.get(self.uri, headers = hdrs, verify = self.cert_verif)
             resp.raise_for_status()
         except requests.exceptions.ConnectionError, e:
-            if "Name or service not known" in str(e):
+            if "Name or service not known" in unicode(e):
                 raise IOError("Failure to resolve hostname, please check DNS configuration")
-            elif "Connection timed out" in str(e):
+            elif "Connection timed out" in unicode(e):
                 raise IOError("Connection error 'Connection timed out'")
             else:
                 raise IOError("Connection error '%s'" % (e))
@@ -1063,7 +1063,7 @@ class SourceAtVersion(models.Model):
     def to_buffer(self):
         categories = Category.objects.filter(source = self.source)
         rules = Rule.objects.filter(category__in = categories)
-        file_content = "# Rules file for " + self.name + " generated by Scirius at " + unicode(timezone.now()) + "\n"
+        file_content = "# Rules file for %s generated by Scirius at %s\n" % (self.name, unicode(timezone.now()))
         rules_content = [ rule.content for rule in rules ]
         file_content += "\n".join(rules_content)
         return file_content
@@ -1107,7 +1107,7 @@ class SourceUpdate(models.Model):
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
-        return reverse('sourceupdate', args=[str(self.id)])
+        return reverse('sourceupdate', args=[unicode(self.id)])
 
 
 class TransfoType(Enum):
@@ -1674,7 +1674,7 @@ class Category(models.Model, Transformable, Cache):
         getsid = re.compile("sid *: *(\d+)")
         getrev = re.compile("rev *: *(\d+)")
         getmsg = re.compile("msg *: *\"(.*?)\"")
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.source.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.source.pk))
         rfile = open(os.path.join(source_git_dir, self.filename))
 
         rules_update = {"added": [], "deleted": [], "updated": []}
@@ -1806,7 +1806,7 @@ class Category(models.Model, Transformable, Cache):
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
-        return reverse('category', args=[str(self.id)])
+        return reverse('category', args=[unicode(self.id)])
 
     def enable(self, ruleset, user = None, comment = None):
         ruleset.categories.add(self)
@@ -1972,7 +1972,7 @@ class Rule(models.Model, Transformable, Cache):
     GROUPSNAMEREGEXP = re.compile('^(.*) +group +\d+$')
 
     def __unicode__(self):
-        return str(self.sid) + ":" + self.msg
+        return unicode(self.sid) + ":" + self.msg
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
@@ -1984,7 +1984,7 @@ class Rule(models.Model, Transformable, Cache):
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
-        return reverse('rule', args=[str(self.sid)])
+        return reverse('rule', args=[unicode(self.sid)])
 
     def parse_flowbits(self, source, flowbits, addition = False):
         for ftype in self.BITSREGEXP:
@@ -2591,7 +2591,7 @@ class Ruleset(models.Model, Transformable):
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
-        return reverse('ruleset', args=[str(self.id)])
+        return reverse('ruleset', args=[unicode(self.id)])
 
     def update(self):
         update_errors = []
@@ -2692,7 +2692,7 @@ class Ruleset(models.Model, Transformable):
     def to_buffer(self):
         rules = self.generate()
         self.rules_count = len(rules)
-        file_content = "# Rules file for " + self.name + " generated by Scirius at " + str(timezone.now()) + "\n"
+        file_content = "# Rules file for %s generated by Scirius at %s\n" % (self.name, unicode(timezone.now()))
 
         if len(rules) > 0:
             Rule.enable_cache()
@@ -2820,7 +2820,7 @@ class Threshold(models.Model):
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
-        return reverse('threshold', args=[str(self.id)])
+        return reverse('threshold', args=[unicode(self.id)])
 
     def contain(self, elt):
         if elt.threshold_type != self.threshold_type:
@@ -2857,7 +2857,7 @@ class RuleProcessingFilter(models.Model):
         sids = []
         try:
             sid = self.filter_defs.get(key='alert.signature_id').value
-            sid_track_ip = {str(sid): []}
+            sid_track_ip = {unicode(sid): []}
             sids.append(sid)
         except models.ObjectDoesNotExist:
             pass
@@ -2865,21 +2865,21 @@ class RuleProcessingFilter(models.Model):
         try:
             msg = self.filter_defs.get(key='msg').value
             sids = list(Rule.objects.filter(msg__icontains=msg).order_by('sid').values_list('sid', flat=True))
-            sid_track_ip = dict([(str(sid), []) for sid in sids]) if msg else None
+            sid_track_ip = dict([(unicode(sid), []) for sid in sids]) if msg else None
         except models.ObjectDoesNotExist:
             pass
 
         try:
             content = self.filter_defs.get(key='content').value
             sids = list(Rule.objects.filter(content__icontains=content).order_by('sid').values_list('sid', flat=True))
-            sid_track_ip = dict([(str(sid), []) for sid in sids]) if content else None
+            sid_track_ip = dict([(unicode(sid), []) for sid in sids]) if content else None
         except models.ObjectDoesNotExist:
             pass
 
         try:
             msg = self.filter_defs.get(key='alert.signature').value
             sid = Rule.objects.get(msg=msg).sid
-            sid_track_ip = {str(sid): []}
+            sid_track_ip = {unicode(sid): []}
         except models.ObjectDoesNotExist:
             pass
 
@@ -2910,23 +2910,23 @@ class RuleProcessingFilter(models.Model):
 
                     if 'target:src_ip;' in content:
                         if alert_target_ip:
-                            sid_track_ip[str(rule.sid)] = ('by_src', alert_ip.value,)
+                            sid_track_ip[unicode(rule.sid)] = ('by_src', alert_ip.value,)
                         elif alert_source_ip:
-                            sid_track_ip[str(rule.sid)] = ('by_dst', alert_ip.value,)
+                            sid_track_ip[unicode(rule.sid)] = ('by_dst', alert_ip.value,)
                     elif 'target:dest_ip;' in content:
                         if alert_target_ip:
-                            sid_track_ip[str(rule.sid)] = ('by_dst', alert_ip.value,)
+                            sid_track_ip[unicode(rule.sid)] = ('by_dst', alert_ip.value,)
                         elif alert_source_ip:
-                            sid_track_ip[str(rule.sid)] = ('by_src', alert_ip.value,)
+                            sid_track_ip[unicode(rule.sid)] = ('by_src', alert_ip.value,)
                     else:
                         sid_track_ip.pop(rule.sid, None)
 
             elif src_ip:
                 for sid in sids:
-                    sid_track_ip[str(sid)] = ('by_src', src_ip.value)
+                    sid_track_ip[unicode(sid)] = ('by_src', src_ip.value)
             else:
                 for sid in sids:
-                    sid_track_ip[str(sid)] = ('by_dst', dest_ip.value)
+                    sid_track_ip[unicode(sid)] = ('by_dst', dest_ip.value)
 
             res = []
             for sid, val in sid_track_ip.iteritems():

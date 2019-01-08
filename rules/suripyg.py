@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 This code is based on hogments by Rune Hammersland (https://github.com/yaunj/hogments)
 """
 
+from __future__ import unicode_literals
 from pygments.lexer import RegexLexer, include, bygroups
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
@@ -32,15 +33,15 @@ class SuriLexer(RegexLexer):
     filenames = ['*.rules']
 
     tokens = {
-        'root': [
+        str('root'): [
             (r'#.*$', t.Comment),
             (r'(\$\w+)', t.Name.Variable),
             (r'\b(any|(\d{1,3}\.){3}\d{1,3}(/\d+)?)', t.Name.Variable),
             (r'^\s*(log|pass|alert|activate|dynamic|drop|reject|sdrop|'
              r'ruletype|var|portvar|ipvar)',
                 t.Keyword.Type),
-            (r'\b(metadata)(?:\s*:)', t.Keyword, 'metadata'),
-            (r'\b(reference)(?:\s*:)', t.Keyword, 'reference'),
+            (r'\b(metadata)(?:\s*:)', t.Keyword, str('metadata')),
+            (r'\b(reference)(?:\s*:)', t.Keyword, str('reference')),
             (r'\b(sid|priority|rev|classtype|threshold|metadata|reference|'
              r'tag|msg|content|uricontent|pcre|ack|seq|depth|distance|'
              r'within|offset|replace|rawbytes|byte_test|'
@@ -78,45 +79,45 @@ class SuriLexer(RegexLexer):
              r'noalert|limit|treshold|count|str_offset|str_depth|tagged)',
                 t.Name.Attribute),
             (r'(<-|->|<>)', t.Operator),
-            (ur'”', t.String, 'fancy-string'),
-            (ur'“', t.String, 'fancy-string'),
-            (r'"', t.String, 'dq-string'),
-            (r'\'', t.String, 'sq-string'),
+            (r'”', t.String, str('fancy-string')),
+            (r'“', t.String, str('fancy-string')),
+            (r'"', t.String, str('dq-string')),
+            (r'\'', t.String, str('sq-string')),
             (r'(\d+)', t.Number),
             (r';', t.Punctuation),
             (r'\\', t.String.Escape),
             (r'\s+', t.Whitespace),
         ],
-        'hex': [
+        str('hex'): [
             (r'\|([a-fA-F0-9 ]+)\|', t.Number.Hex),
         ],
-        'dq-string': [
+        str('dq-string'): [
             include('hex'),
             (r'([^"])', t.String),
-            (r'"', t.String, '#pop')
+            (r'"', t.String, str('#pop'))
         ],
-        'sq-string': [
+        str('sq-string'): [
             include('hex'),
             (r'([^\'])', t.String),
-            (r'\'', t.String, '#pop')
+            (r'\'', t.String, str('#pop'))
         ],
-        'fancy-string': [
+        str('fancy-string'): [
             include('hex'),
-            (ur'([^”])', t.String),
-            (ur'”', t.String, '#pop')
+            (r'([^”])', t.String),
+            (r'”', t.String, str('#pop'))
         ],
-        'metadata': [
+        str('metadata'): [
             (r'\s', t.Whitespace),
             (r'([\w_-]+)(\s+)([\w_-]+)',
                 bygroups(t.Name.Variable, t.Whitespace, t.Name.Attribute)),
-            (r';', t.Punctuation, '#pop'),
+            (r';', t.Punctuation, str('#pop')),
         ],
-        'reference': [
+        str('reference'): [
             (r'(\w+)(,)(?:\s*)([^;]+)',
                 bygroups(t.Name.Variable, t.Punctuation, t.Name.Attribute)),
-            (r';', t.Punctuation, '#pop')
+            (r';', t.Punctuation, str('#pop'))
         ]
     }
 
 def SuriHTMLFormat(rule):
-    return highlight(rule, SuriLexer(), HtmlFormatter())
+    return highlight(rule, SuriLexer(encoding='utf-8'), HtmlFormatter())

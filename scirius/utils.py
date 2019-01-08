@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from __future__ import unicode_literals
 from importlib import import_module
 from time import time
 
@@ -69,9 +70,9 @@ def complete_context(request, context):
             duration = int(request.session.get('duration', '24'))
         from_date = int((time() - (duration * 3600)) * 1000)
         if duration <= 24:
-            date = str(duration) + "h"
+            date = '%sh' % unicode(duration)
         else:
-            date = str(duration / 24) + "d"
+            date = '%sd' % unicode(duration / 24)
         if request.GET.__contains__('graph'):
             graph = request.GET.get('graph', 'sunburst')
             if not graph in ['sunburst', 'circles']:

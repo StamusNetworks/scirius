@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from suripyg import SuriHTMLFormat
 from time import time
 
@@ -388,8 +389,8 @@ class RuleSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super(RuleSerializer, self).to_representation(instance)
         request = self.context['request']
-        highlight_str = request.query_params.get('highlight', u'false')
-        is_highlight = lambda value: bool(value) and value.lower() not in (u'false', u'0')
+        highlight_str = request.query_params.get('highlight', 'false')
+        is_highlight = lambda value: bool(value) and value.lower() not in ('false', '0')
         highlight = is_highlight(highlight_str)
 
         if highlight is True:
@@ -404,7 +405,7 @@ class ListFilter(filters.CharFilter):
         """
         remove empty items in case of ?number=1,,2
         """
-        return [v for v in value_list if v != u'']
+        return [v for v in value_list if v != '']
 
     def customize(self, value):
         return value
@@ -788,8 +789,8 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         rulesets = Ruleset.objects.filter(categories__rule=rule)
         res = {}
 
-        highlight_str = request.query_params.get('highlight', u'false')
-        is_highlight = lambda value: bool(value) and value.lower() not in (u'false', u'0')
+        highlight_str = request.query_params.get('highlight', 'false')
+        is_highlight = lambda value: bool(value) and value.lower() not in ('false', '0')
         highlight = is_highlight(highlight_str)
 
         for ruleset in rulesets:
@@ -908,7 +909,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         }
 
     def _add_hits(self, request, data):
-        sids = [str(rule['sid']) for rule in data]
+        sids = [unicode(rule['sid']) for rule in data]
 
         ## reformat ES's output
         es_params = es_hits_params(request)
@@ -1447,7 +1448,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         try:
             source.handle_uploaded_file(request.FILES['file'])
         except Exception as error:
-            raise serializers.ValidationError({'upload': [str(error)]})
+            raise serializers.ValidationError({'upload': [unicode(error)]})
 
         UserAction.create(
                 action_type='upload_source',
@@ -1463,8 +1464,8 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         # Do not need to copy 'request.data' and pop 'comment'
         # because we are not using serializer there
         comment = request.data.get('comment', None)
-        is_async_str = request.query_params.get('async', u'false')
-        is_async = lambda value: bool(value) and value.lower() not in (u'false', u'0')
+        is_async_str = request.query_params.get('async', 'false')
+        is_async = lambda value: bool(value) and value.lower() not in ('false', '0')
         async_ = is_async(is_async_str)
 
         source = self.get_object()
@@ -1505,7 +1506,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         try:
             public_sources = get_public_sources(False)
         except Exception as e:
-            raise serializers.ValidationError({'list': [str(e)]})
+            raise serializers.ValidationError({'list': [unicode(e)]})
         return Response(public_sources['sources'])
 
     @list_route(methods=['get'])
@@ -1513,7 +1514,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         try:
             fetch_public_sources()
         except Exception as e:
-            raise serializers.ValidationError({'fetch': [str(e)]})
+            raise serializers.ValidationError({'fetch': [unicode(e)]})
         return Response({'fetch': 'ok'})
 
     @detail_route(methods=['post'])
@@ -1554,7 +1555,7 @@ class PublicSourceSerializer(BaseSourceSerializer):
         try:
             public_sources = get_public_sources(False)
         except Exception as e:
-            raise serializers.ValidationError({'list': [str(e)]})
+            raise serializers.ValidationError({'list': [unicode(e)]})
 
         if source_name not in public_sources['sources']:
             raise exceptions.NotFound(detail='Unknown public source "%s"' % source_name)
@@ -1779,7 +1780,7 @@ class UserActionDateOrderingFilter(OrderingFilter):
         ordering = self.get_ordering(request, queryset, view)
 
         if 'date' not in ordering or '-date' not in ordering:
-            ordering += (u'-date',) if isinstance(ordering, tuple) else [u'-date']
+            ordering += ('-date',) if isinstance(ordering, tuple) else ['-date']
         return queryset.order_by(*ordering)
 
 
@@ -1931,7 +1932,7 @@ class ESRulesViewSet(APIView):
     def get(self, request, format=None):
         milli_sec = 3600 * 1000
         host = request.GET.get('host', None)
-        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         qfilter = request.GET.get('filter', None)
 
         errors = {}
@@ -1962,7 +1963,7 @@ class ESRuleViewSet(APIView):
     def get(self, request, format=None):
         milli_sec = 3600 * 1000
         sid = request.GET.get('sid', None)
-        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
 
         errors = {}
         if sid is None:
@@ -2008,7 +2009,7 @@ class ESFilterIPViewSet(APIView):
         errors = {}
         field = request.GET.get('field', None)
         sid = request.GET.get('sid', None)
-        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
 
         if sid is None:
             errors['sid'] = ['This field is required.']
@@ -2057,7 +2058,7 @@ class ESTimelineViewSet(APIView):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
 
         if chosts:
             chosts = chosts.split(',')
@@ -2138,7 +2139,7 @@ class ESLogstashEveViewSet(APIView):
         chosts = request.GET.get('hosts', None)
         value = request.GET.get('value', None)
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
 
         if chosts:
             chosts = chosts.split(',')
@@ -2247,7 +2248,7 @@ class ESRulesPerCategoryViewSet(APIView):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
 
         if chosts is None:
             raise serializers.ValidationError({'hosts': ['This field is required.']})
@@ -2282,7 +2283,7 @@ class ESAlertsCountViewSet(APIView):
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
         prev = request.GET.get('prev', None)
-        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
 
         if chosts:
             chosts = chosts.split(',')
@@ -2323,7 +2324,7 @@ class ESLatestStatsViewSet(APIView):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
 
         if chosts:
             chosts = chosts.split(',')
@@ -2358,7 +2359,7 @@ class ESIPPairAlertsViewSet(APIView):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
 
         if chosts:
             chosts = chosts.split(',')
@@ -2388,7 +2389,7 @@ class ESIPPairNetworkAlertsViewSet(APIView):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
 
         if chosts:
             chosts = chosts.split(',')
@@ -2417,7 +2418,7 @@ class ESAlertsTailViewSet(APIView):
     def get(self, request, format=None):
         milli_sec = 3600 * 1000
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         return Response({'alerts_tail': es_get_alerts_tail(from_date=from_date, qfilter=qfilter)})
 
@@ -2446,7 +2447,7 @@ class ESSuriLogTailViewSet(APIView):
     def get(self, request, format=None):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
-        from_date = int(request.GET.get('from_date', str(time() * 1000 - 24 * milli_sec)))
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
 
         if chosts:
             chosts = chosts.split(',')

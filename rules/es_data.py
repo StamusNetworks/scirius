@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from __future__ import unicode_literals
 import logging
 import json
 import os
@@ -474,7 +475,7 @@ class ESData(object):
         if not self.client.indices.exists('.kibana'):
             self.client.indices.create(index='.kibana',body={ "mappings": get_kibana_mappings() })
             self.client.indices.refresh(index='.kibana')
-        elif not "visualization" in str(self.client.indices.get_mapping(index='.kibana')):
+        elif not "visualization" in unicode(self.client.indices.get_mapping(index='.kibana')):
             self.client.indices.delete(index='.kibana')
             self.client.indices.create(index='.kibana',body={ "mappings": get_kibana_mappings() })
             self.client.indices.refresh(index='.kibana')
@@ -597,7 +598,7 @@ class ESData(object):
         if get_es_major_version() >= 6:
             self._kibana_request('/api/spaces/space', KIBANA6_NAMESPACE)
 
-        self._kibana_set_default_index(u'logstash-*')
+        self._kibana_set_default_index('logstash-*')
 
     def _get_indexes(self):
         res = self.client.indices.stats()

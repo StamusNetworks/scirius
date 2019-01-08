@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from django.core import exceptions
 from django.contrib.auth.models import User
 from django.contrib.auth import password_validation
@@ -128,7 +129,7 @@ class ChangePasswordSuperUserSerializer(serializers.Serializer):
         try:
             password_validation.validate_password(password=password, user=User)
         except exceptions.ValidationError as e:
-            raise serializers.ValidationError({'password': [str(e)]})
+            raise serializers.ValidationError({'password': [unicode(e)]})
         return password
 
 

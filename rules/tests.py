@@ -397,7 +397,7 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         self._create_custom_source('http', 'sigs', uri='http://localhost:1234/')
 
         response = self.http_post(reverse('source-update-source', args=(self.source.pk,)), status=status.HTTP_400_BAD_REQUEST)
-        msg = str(response.get('update', [''])[0])
+        msg = unicode(response.get('update', [''])[0])
         self.assertRegexpMatches(msg, 'Can not fetch data: .* Connection refused')
 
     def test_006_custom_source_delete(self):
@@ -826,7 +826,7 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
                        status=status.HTTP_201_CREATED)
 
         content = self.http_get(reverse('rule-content', args=(self.rule.pk,)))
-        self.assertEqual(u'drop' in content[self.ruleset.pk], True)
+        self.assertEqual('drop' in content[self.ruleset.pk], True)
 
         self.http_post(reverse('categorytransformation-list'),
                        {'category': self.category.pk, 'ruleset': self.ruleset.pk,
@@ -835,7 +835,7 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
                        status=status.HTTP_201_CREATED)
 
         content = self.http_get(reverse('rule-content', args=(self.rule.pk,)))
-        self.assertEqual(u'reject' in content[self.ruleset.pk], True)
+        self.assertEqual('reject' in content[self.ruleset.pk], True)
 
         self.http_post(reverse('ruletransformation-list'),
                        {'rule': self.rule.pk, 'ruleset': self.ruleset.pk,
@@ -844,7 +844,7 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
                        status=status.HTTP_201_CREATED)
 
         content = self.http_get(reverse('rule-content', args=(self.rule.pk,)))
-        self.assertEqual(u'drop' in content[self.ruleset.pk], True)
+        self.assertEqual('drop' in content[self.ruleset.pk], True)
 
     def test_006_rule_status(self):
         self.http_post(reverse('rulesettransformation-list'),
