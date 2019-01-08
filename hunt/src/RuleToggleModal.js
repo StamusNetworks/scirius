@@ -142,7 +142,7 @@ export default class RuleToggleModal extends React.Component {
                     return true;
                 }
             );
-        } else if (['suppress', 'threshold', 'tag', 'tagkeep'].indexOf(this.props.action) !== -1) {
+        } else if (['suppress', 'threshold', 'tag', 'tagkeep', 'send_mail'].indexOf(this.props.action) !== -1) {
             // {"filter_defs": [{"key": "src_ip", "value": "192.168.0.1", "operator": "equal"}], "action": "suppress", "rulesets": [1]}
 
             const filters = [];
@@ -157,7 +157,7 @@ export default class RuleToggleModal extends React.Component {
             const data = {
                 filter_defs: filters, action: this.props.action, rulesets: this.state.selected, comment: this.state.comment
             };
-            if (['threshold', 'tag', 'tagkeep'].indexOf(this.props.action) !== -1) {
+            if (['threshold', 'tag', 'tagkeep', 'send_mail'].indexOf(this.props.action) !== -1) {
                 data.options = this.state.options;
             }
             axios.post(config.API_URL + config.PROCESSING_PATH, data).then(
@@ -247,7 +247,7 @@ export default class RuleToggleModal extends React.Component {
                         {this.props.action === 'threshold' && <React.Fragment>
                             <FormGroup key="count" controlId="count" disabled={false}>
                                 <Col sm={4}>
-                                    <strong>Count</strong>
+                                    Count
                                 </Col>
                                 <Col sm={8}>
                                     <FormControl type="integer" disabled={false} defaultValue={1} onChange={this.handleOptionsChange} />
@@ -255,7 +255,7 @@ export default class RuleToggleModal extends React.Component {
                             </FormGroup>
                             <FormGroup key="seconds" controlId="seconds" disabled={false}>
                                 <Col sm={4}>
-                                    <strong>Seconds</strong>
+                                    Seconds
                                 </Col>
                                 <Col sm={8}>
                                     <FormControl type="integer" disabled={false} defaultValue={60} onChange={this.handleOptionsChange} />
@@ -263,7 +263,7 @@ export default class RuleToggleModal extends React.Component {
                             </FormGroup>
                             <FormGroup key="track" controlId="track" disabled={false}>
                                 <Col sm={4}>
-                                    <strong>Track by</strong>
+                                    Track by
                                 </Col>
                                 <Col sm={8}>
                                     <FormControl componentClass="select" placeholder="by_src" onChange={this.handleOptionsChange}>
@@ -275,7 +275,7 @@ export default class RuleToggleModal extends React.Component {
                         </React.Fragment>}
                         {this.props.action === 'tag' && <FormGroup key="tag" controlId="tag" disabled={false}>
                             <Col sm={3}>
-                                <strong>Tag</strong>
+                                Tag
                             </Col>
                             <Col sm={4}>
                                 <FormControl componentClass="select" placeholder="relevant" onChange={this.handleOptionsChange}>
@@ -286,7 +286,7 @@ export default class RuleToggleModal extends React.Component {
                         </FormGroup>}
                         {this.props.action === 'tagkeep' && <FormGroup key="tag" controlId="tag" disabled={false}>
                             <Col sm={3}>
-                                <strong>Tag and Keep</strong>
+                                Tag and Keep
                             </Col>
                             <Col sm={4}>
                                 <FormControl componentClass="select" placeholder="relevant" onChange={this.handleOptionsChange}>
@@ -295,9 +295,23 @@ export default class RuleToggleModal extends React.Component {
                                 </FormControl>
                             </Col>
                         </FormGroup>}
+                        {this.props.action === 'send_mail' && <FormGroup key="send_mail" controlId="send_mail" disabled={false}>
+                            <Col sm={3}>
+                                <Checkbox disabled defaultChecked>
+                                    Send email
+                                </Checkbox>
+                            </Col>
+                        </FormGroup>}
+                        {this.props.action === 'suppress' && <FormGroup key="suppress" controlId="suppress" disabled={false}>
+                            <Col sm={3}>
+                                <Checkbox disabled defaultChecked>
+                                    Suppress
+                                </Checkbox>
+                            </Col>
+                        </FormGroup>}
                         <FormGroup controlId="ruleset" disabled={false}>
                             <Col sm={12}>
-                                <label>Choose Ruleset(s)</label>
+                                <label><strong>Ruleset(s):</strong></label>
                                 {this.props.rulesets && this.props.rulesets.map((ruleset) => (
                                     <div className="row" key={ruleset.pk}>
                                         <div className="col-sm-9">

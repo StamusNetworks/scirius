@@ -115,7 +115,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                 data['options'] = options
         else:
             data['options'] = options
-        
+
         return super(RuleProcessingFilterSerializer, self).to_internal_value(data)
 
     def validate(self, data):
@@ -234,9 +234,10 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
 class RuleProcessingTestSerializer(serializers.Serializer):
     fields = serializers.ListField(child=serializers.CharField(max_length=256))
     action = serializers.ChoiceField((('suppress', 'Suppress'),
-                        ('threshold', 'Threshold'),
-                        ('tag', 'Tag'),
-                        ('tagkeep', 'Tag and Keep')), allow_null=True)
+                                      ('threshold', 'Threshold'),
+                                      ('tag', 'Tag'),
+                                      ('tagkeep', 'Tag and Keep'),
+                                      ('send_mail', 'Send email')), allow_null=True)
 
 
 class RuleProcessingTestActionsSerializer(serializers.Serializer):
