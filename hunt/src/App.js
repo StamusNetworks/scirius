@@ -28,7 +28,7 @@ import { HuntDashboard } from './Dashboard';
 import { HistoryPage } from './History';
 import { PAGE_STATE } from './constants';
 import SignaturesPage from './containers/SignaturesPage';
-import { AlertsList } from './AlertsList';
+import AlertsPage from './containers/AlertsPage';
 import { FiltersList } from './Filters';
 import SourcePage from './components/SourcePage';
 import RulesetPage from './components/RuleSetPage';
@@ -405,9 +405,9 @@ class HuntApp extends Component {
                 />);
                 break;
             case PAGE_STATE.alerts_list:
-                displayedPage = (<AlertsList
+                displayedPage = (<AlertsPage
                     systemSettings={this.state.systemSettings}
-                    config={this.state.alerts_list}
+                    rules_list={this.state.alerts_list}
                     filters={this.state.idsFilters}
                     from_date={this.state.from_date}
                     updateListState={this.updateAlertListState}

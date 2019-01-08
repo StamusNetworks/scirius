@@ -1,152 +1,11 @@
-/*
-Copyright(C) 2018 Stamus Networks
-Written by Eric Leblond <eleblond@stamus-networks.com>
-
-This file is part of Scirius.
-
-Scirius is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Scirius is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
 import React from 'react';
 import PropTypes from 'prop-types';
-import ReactJson from 'react-json-view';
-import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
-import axios from 'axios';
 import moment from 'moment';
-import store from 'store';
-import md5 from 'md5';
-import { HuntList } from './HuntList';
-import { buildQFilter } from './helpers/buildQFilter';
-import RuleToggleModal from './RuleToggleModal';
-import { HuntFilter } from './HuntFilter';
-import EventField from './components/EventField';
-import * as config from './config/Api';
+import { ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col } from 'patternfly-react';
+import ReactJson from 'react-json-view';
+import EventField from './EventField';
 
-
-export class AlertsList extends HuntList {
-    constructor(props) {
-        super(props);
-
-        const huntFilters = store.get('huntFilters');
-        const rulesFilters = (typeof huntFilters !== 'undefined' && typeof huntFilters.alertslist !== 'undefined') ? huntFilters.alertslist.data : [];
-        this.state = {
-            alerts: [],
-            rulesets: [],
-            loading: true,
-            refresh_data: false,
-            action: { view: false, type: 'suppress' },
-            net_error: undefined,
-            rulesFilters,
-            supported_actions: []
-        };
-        this.fetchData = this.fetchData.bind(this);
-    }
-
-    componentDidMount() {
-        this.fetchData(this.props.config, this.props.filters);
-        if (this.state.rulesets.length === 0) {
-            axios.get(config.API_URL + config.RULESET_PATH).then((res) => {
-                this.setState({ rulesets: res.data.results });
-            });
-        }
-        const huntFilters = store.get('huntFilters');
-        axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
-            (res) => {
-                const fdata = [];
-                const keys = Object.keys(res.data);
-                const values = Object.values(res.data);
-                for (let i = 0; i < keys.length; i += 1) {
-                    /* Only ES filter are allowed for Alert page */
-                    if (['filter'].indexOf(values[i].queryType) !== -1) {
-                        if (values[i].filterType !== 'hunt') {
-                            fdata.push(values[i]);
-                        }
-                    }
-                }
-                const currentCheckSum = md5(JSON.stringify(fdata));
-                if ((typeof huntFilters === 'undefined' || typeof huntFilters.alertslist === 'undefined') || huntFilters.alertslist.checkSum !== currentCheckSum) {
-                    store.set('huntFilters', {
-                        ...huntFilters,
-                        alertslist: {
-                            checkSum: currentCheckSum,
-                            data: fdata
-                        }
-                    });
-                    this.setState({ rulesFilters: fdata });
-                }
-            }
-        );
-        this.loadActions();
-    }
-
-    fetchData(state, filters) {
-        let stringFilters = buildQFilter(filters, this.props.systemSettings);
-        if (stringFilters === null) {
-            stringFilters = '';
-        } else {
-            stringFilters = `&filter=${stringFilters}`;
-        }
-        this.setState({ refresh_data: true, loading: true });
-        const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail&search_target=0&${this.buildListUrlParams(state)}&from_date=${this.props.from_date}${stringFilters}`;
-        axios.get(url).then((res) => {
-            if ((res.data !== null) && (typeof res.data !== 'string')) {
-                this.setState({ alerts: res.data, loading: false });
-            } else {
-                this.setState({ loading: false });
-            }
-        });
-    }
-
-    render() {
-        return (
-            <div className="AlertsList HuntList">
-                <HuntFilter
-                    ActiveFilters={this.props.filters}
-                    config={this.props.config}
-                    ActiveSort={this.props.config.sort}
-                    UpdateFilter={this.UpdateFilter}
-                    UpdateSort={this.UpdateSort}
-                    setViewType={this.setViewType}
-                    filterFields={this.state.rulesFilters}
-                    sort_config={undefined}
-                    displayToggle={this.state.display_toggle}
-                    actionsButtons={this.actionsButtons}
-                    queryType={['filter']}
-                />
-                <Spinner loading={this.state.loading}>
-                </Spinner>
-                <ListView>
-                    {this.state.alerts.map((rule) => (
-                        // eslint-disable-next-line no-underscore-dangle
-                        <AlertInList key={rule._id} id={rule._id} data={rule._source} from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} filters={this.props.filters} addFilter={this.addFilter} />
-                    ))}
-                </ListView>
-                <RuleToggleModal
-                    show={this.state.action.view}
-                    action={this.state.action.type}
-                    config={this.props.config}
-                    filters={this.props.filters}
-                    close={this.closeAction}
-                    rulesets={this.state.rulesets}
-                />
-            </div>
-        );
-    }
-}
-
-class AlertInList extends React.Component {
+export default class AlertInList extends React.Component {
     constructor(props) {
         super(props);
         this.addFilter = this.addFilter.bind(this);
@@ -366,27 +225,32 @@ class AlertInList extends React.Component {
                             </div>
                             <div className="card-pf-body">
                                 <dl className="dl-horizontal">
-                                    {data.smb.command !== undefined && <EventField field_name="Command"
+                                    {data.smb.command !== undefined && <EventField
+                                        field_name="Command"
                                         field="smb.command"
                                         value={data.smb.command}
                                         addFilter={this.addFilter}
                                     />}
-                                    {data.smb.status !== undefined && <EventField field_name="Status"
+                                    {data.smb.status !== undefined && <EventField
+                                        field_name="Status"
                                         field="smb.status"
                                         value={data.smb.status}
                                         addFilter={this.addFilter}
                                     />}
-                                    {data.smb.filename !== undefined && <EventField field_name="Filename"
+                                    {data.smb.filename !== undefined && <EventField
+                                        field_name="Filename"
                                         field="smb.filename"
                                         value={data.smb.filename}
                                         addFilter={this.addFilter}
                                     />}
-                                    {data.smb.share !== undefined && <EventField field_name="Share"
+                                    {data.smb.share !== undefined && <EventField
+                                        field_name="Share"
                                         field="smb.share"
                                         value={data.smb.share}
                                         addFilter={this.addFilter}
                                     />}
-                                    {data.smb.session_id !== undefined && <EventField field_name="Session ID"
+                                    {data.smb.session_id !== undefined && <EventField
+                                        field_name="Session ID"
                                         field="smb.session_id"
                                         value={data.smb.session_id}
                                         addFilter={this.addFilter}
@@ -402,12 +266,14 @@ class AlertInList extends React.Component {
                             </div>
                             <div className="card-pf-body">
                                 <dl className="dl-horizontal">
-                                    {dnsQuery.rrname !== undefined && <EventField field_name="Queried Name"
+                                    {dnsQuery.rrname !== undefined && <EventField
+                                        field_name="Queried Name"
                                         field="dns.query.rrname"
                                         value={dnsQuery.rrname}
                                         addFilter={this.addFilter}
                                     />}
-                                    {dnsQuery.rrtype !== undefined && <EventField field_name="Queried Type"
+                                    {dnsQuery.rrtype !== undefined && <EventField
+                                        field_name="Queried Type"
                                         field="dns.query.rrtype"
                                         value={dnsQuery.rrtype}
                                         addFilter={this.addFilter}
