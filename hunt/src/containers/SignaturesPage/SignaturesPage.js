@@ -31,7 +31,7 @@ import { HuntFilter } from '../../HuntFilter';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import RuleToggleModal from '../../RuleToggleModal';
 import RuleCard from '../../RuleCard';
-import { HuntDashboard } from '../../Dashboard';
+import DashboardPage from '../DashboardPage';
 import { buildQFilter } from '../../helpers/buildQFilter';
 import RulePage from '../../RulePage';
 import RuleInList from '../../RuleInList';
@@ -383,7 +383,7 @@ export default class SignaturesPage extends React.Component {
                     onLastPage={this.onLastPage}
                 /> }
                 {this.state.view === 'rule' && <RulePage systemSettings={this.props.systemSettings} rule={this.state.display_rule} config={this.props.rules_list} filters={this.props.filters} from_date={this.props.from_date} UpdateFilter={this.RuleUpdateFilter} addFilter={this.addFilter} rulesets={this.state.rulesets} />}
-                {this.state.view === 'dashboard' && <HuntDashboard />}
+                {this.state.view === 'dashboard' && <DashboardPage />}
 
                 <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.rules_list} filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
             </div>

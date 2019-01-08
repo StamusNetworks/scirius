@@ -24,7 +24,7 @@ import { VerticalNav, Modal } from 'patternfly-react';
 import { ShortcutManager } from 'react-shortcuts';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { HuntDashboard } from './Dashboard';
+import DashboardPage from './containers/DashboardPage';
 import { HistoryPage } from './History';
 import { PAGE_STATE } from './constants';
 import SignaturesPage from './containers/SignaturesPage';
@@ -382,9 +382,9 @@ class HuntApp extends Component {
                 break;
             case PAGE_STATE.dashboards:
                 // FIXME remove or change updateRuleListState
-                displayedPage = (<HuntDashboard
+                displayedPage = (<DashboardPage
                     systemSettings={this.state.systemSettings}
-                    config={this.state.rules_list}
+                    rules_list={this.state.rules_list}
                     filters={this.state.idsFilters}
                     from_date={this.state.from_date}
                     SwitchPage={this.switchPage}

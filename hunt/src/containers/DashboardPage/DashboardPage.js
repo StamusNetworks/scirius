@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 import { Modal, DropdownKebab, MenuItem } from 'patternfly-react';
 import { WidthProvider, Responsive } from 'react-grid-layout';
@@ -30,20 +31,20 @@ import map from 'lodash/map';
 import reject from 'lodash/reject';
 import find from 'lodash/find';
 import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
-import HuntTimeline from './HuntTimeline';
-import HuntTrend from './HuntTrend';
-import { buildQFilter } from './helpers/buildQFilter';
-import RuleToggleModal from './RuleToggleModal';
-import { HuntList } from './HuntList';
-import { HuntFilter } from './HuntFilter';
-import * as config from './config/Api';
-import EventValue from './components/EventValue';
-import '../node_modules/react-grid-layout/css/styles.css';
-import '../node_modules/react-resizable/css/styles.css';
+import HuntTimeline from '../../HuntTimeline';
+import HuntTrend from '../../HuntTrend';
+import { buildQFilter } from '../../helpers/buildQFilter';
+import RuleToggleModal from '../../RuleToggleModal';
+import { actionsButtons, UpdateFilter, loadActions } from '../../helpers/common';
+import { HuntFilter } from '../../HuntFilter';
+import * as config from '../../config/Api';
+import EventValue from '../../components/EventValue';
+import '../../../node_modules/react-grid-layout/css/styles.css';
+import '../../../node_modules/react-resizable/css/styles.css';
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
-export class HuntDashboard extends HuntList {
+export default class HuntDashboard extends React.Component {
     constructor(props) {
         super(props);
 
@@ -87,29 +88,11 @@ export class HuntDashboard extends HuntList {
             moreResults: [],
             editMode: false,
         };
-    }
-
-    componentDidUpdate(prevProps) {
-        // An adjustment of the panels height is needed for their first proper placement
-        if (this.panelsBooted === 'yes' && !this.panelsAdjusted) {
-            this.panelsAdjusted = true;
-            this.adjustPanelsHeight();
-        }
-
-        if (typeof this.props.systemSettings !== 'undefined') {
-            this.qFilter = this.generateQFilter();
-            this.storedMicroLayout = store.get('dashboardMicroLayout');
-            this.storedMacroLayout = store.get('dashboardMаcroLayout');
-            // Initial booting of panels were moved here instead of componentDidMount, because of the undefined systemSettings in componentDidMount
-            if (this.panelsBooted === 'no') {
-                this.bootPanels();
-            } else if (!this.filters.length) {
-                this.filters = JSON.stringify(this.props.filters);
-            } else if (this.panelsBooted !== 'booting' && (this.filters !== JSON.stringify(this.props.filters) || prevProps.from_date !== this.props.from_date)) {
-                this.filters = JSON.stringify(this.props.filters);
-                this.bootPanels();
-            }
-        }
+        this.actionsButtons = actionsButtons.bind(this);
+        this.UpdateFilter = UpdateFilter.bind(this);
+        this.loadActions = loadActions.bind(this);
+        this.updateRuleListState = props.updateListState.bind(this);
+        this.fetchData = () => {};
     }
 
     componentDidMount() {
@@ -163,6 +146,29 @@ export class HuntDashboard extends HuntList {
 
         if (this.props.filters.length) {
             this.loadActions(this.props.filters);
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        // An adjustment of the panels height is needed for their first proper placement
+        if (this.panelsBooted === 'yes' && !this.panelsAdjusted) {
+            this.panelsAdjusted = true;
+            this.adjustPanelsHeight();
+        }
+
+        if (typeof this.props.systemSettings !== 'undefined') {
+            this.qFilter = this.generateQFilter();
+            this.storedMicroLayout = store.get('dashboardMicroLayout');
+            this.storedMacroLayout = store.get('dashboardMаcroLayout');
+            // Initial booting of panels were moved here instead of componentDidMount, because of the undefined systemSettings in componentDidMount
+            if (this.panelsBooted === 'no') {
+                this.bootPanels();
+            } else if (!this.filters.length) {
+                this.filters = JSON.stringify(this.props.filters);
+            } else if (this.panelsBooted !== 'booting' && (this.filters !== JSON.stringify(this.props.filters) || prevProps.from_date !== this.props.from_date)) {
+                this.filters = JSON.stringify(this.props.filters);
+                this.bootPanels();
+            }
         }
     }
 
@@ -493,8 +499,8 @@ export class HuntDashboard extends HuntList {
 
                 <HuntFilter
                     ActiveFilters={this.props.filters}
-                    config={this.props.config}
-                    ActiveSort={this.props.config.sort}
+                    config={this.props.rules_list}
+                    ActiveSort={this.props.rules_list.sort}
                     UpdateFilter={this.UpdateFilter}
                     UpdateSort={this.UpdateSort}
                     setViewType={this.setViewType}
@@ -576,7 +582,7 @@ export class HuntDashboard extends HuntList {
                     </div>
                 </div>
 
-                <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.config} filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
+                <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.rules_list} filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
                 <Modal show={!(this.state.moreModal === null)} onHide={() => { this.hideMoreModal(); }}>
 
                     <Modal.Header>More results <Modal.CloseButton closeText={'Close'} onClick={() => { this.hideMoreModal(); }} /> </Modal.Header>
@@ -598,4 +604,14 @@ export class HuntDashboard extends HuntList {
             </div>
         );
     }
+}
+
+HuntDashboard.propTypes = {
+    systemSettings: PropTypes.any,
+    filters: PropTypes.any,
+    from_date: PropTypes.any,
+    children: PropTypes.any,
+    item: PropTypes.any,
+    rules_list: PropTypes.any,
+    updateListState: PropTypes.any,
 }
