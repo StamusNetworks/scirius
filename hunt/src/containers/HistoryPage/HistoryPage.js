@@ -21,13 +21,13 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { ListView, ListViewItem, ListViewInfoItem, ListViewIcon, Icon, Spinner, PAGINATION_VIEW, Row, Col } from 'patternfly-react';
+import { ListView, Spinner, PAGINATION_VIEW } from 'patternfly-react';
 import axios from 'axios';
-import { HuntFilter } from './HuntFilter';
-import { HuntList } from './HuntList';
-import HuntPaginationRow from './HuntPaginationRow';
-import * as config from './config/Api';
-import { PAGE_STATE } from './constants';
+import { HuntFilter } from '../../HuntFilter';
+import HistoryItem from '../../components/HistoryItem';
+import HuntPaginationRow from '../../HuntPaginationRow';
+import * as config from '../../config/Api';
+import { buildFilter, buildListUrlParams, UpdateFilter, loadActions, UpdateSort, onFirstPage, onNextPage, onPrevPage, onLastPage } from '../../helpers/common';
 
 const HistorySortFields = [
     {
@@ -45,7 +45,7 @@ const HistorySortFields = [
 ];
 
 
-export class HistoryPage extends HuntList {
+export default class HistoryPage extends React.Component {
     constructor(props) {
         super(props);
         const HistoryFilterFields = [
@@ -72,23 +72,19 @@ export class HistoryPage extends HuntList {
         ];
         this.state = { data: [], count: 0, filterFields: HistoryFilterFields };
         this.fetchData = this.fetchData.bind(this);
-    }
-
-    fetchData(historyStat, filters) {
-        const stringFilters = this.buildFilter(filters);
-        this.setState({ refresh_data: true, loading: true });
-        axios.get(`${config.API_URL}${config.HISTORY_PATH}?${this.buildListUrlParams(historyStat)}${stringFilters}`)
-        .then((res) => {
-            this.setState({
-                data: res.data, count: res.data.count, refresh_data: false, loading: false
-            });
-        }).catch(() => {
-            this.setState({ refresh_data: false, loading: false });
-        });
+        this.buildFilter = buildFilter.bind(this);
+        this.buildListUrlParams = buildListUrlParams.bind(this);
+        this.UpdateFilter = UpdateFilter.bind(this);
+        this.loadActions = loadActions.bind(this);
+        this.UpdateSort = UpdateSort.bind(this);
+        this.onFirstPage = onFirstPage.bind(this);
+        this.onNextPage = onNextPage.bind(this);
+        this.onPrevPage = onPrevPage.bind(this);
+        this.onLastPage = onLastPage.bind(this);
     }
 
     componentDidMount() {
-        this.fetchData(this.props.config, this.props.filters);
+        this.fetchData(this.props.rules_list, this.props.filters);
         axios.get(`${config.API_URL}${config.HISTORY_PATH}get_action_type_list/`).then(
             (res) => {
                 const filterFields = Object.assign([], this.state.filterFields);
@@ -112,6 +108,29 @@ export class HistoryPage extends HuntList {
         );
     }
 
+    componentDidUpdate(prevProps) {
+        if (prevProps.from_date !== this.props.from_date) {
+            this.fetchData(this.props.rules_list, this.props.filters);
+        }
+    }
+
+    fetchData(historyStat, filters) {
+        const stringFilters = this.buildFilter(filters);
+        this.setState({ refresh_data: true, loading: true });
+        axios.get(`${config.API_URL}${config.HISTORY_PATH}?${this.buildListUrlParams(historyStat)}${stringFilters}`)
+        .then((res) => {
+            this.setState({
+                data: res.data, count: res.data.count, refresh_data: false, loading: false
+            });
+        }).catch(() => {
+            this.setState({ refresh_data: false, loading: false });
+        });
+    }
+
+    updateRuleListState(rulesListState) {
+        this.props.updateListState(rulesListState);
+    }
+
     render() {
         let expand = false;
         for (let filter = 0; filter < this.props.filters; filter += 1) {
@@ -123,8 +142,8 @@ export class HistoryPage extends HuntList {
         return (
             <div className="HistoryList HuntList">
                 <HuntFilter ActiveFilters={this.props.filters}
-                    config={this.props.config}
-                    ActiveSort={this.props.config.sort}
+                    config={this.props.rules_list}
+                    ActiveSort={this.props.rules_list.sort}
                     UpdateFilter={this.UpdateFilter}
                     UpdateSort={this.UpdateSort}
                     setViewType={this.setViewType}
@@ -146,13 +165,13 @@ export class HistoryPage extends HuntList {
                 </ListView>
                 <HuntPaginationRow
                     viewType={PAGINATION_VIEW.LIST}
-                    pagination={this.props.config.pagination}
+                    pagination={this.props.rules_list.pagination}
                     onPaginationChange={this.handlePaginationChange}
-                    amountOfPages={Math.ceil(this.state.count / this.props.config.pagination.perPage)}
-                    pageInputValue={this.props.config.pagination.page}
+                    amountOfPages={Math.ceil(this.state.count / this.props.rules_list.pagination.perPage)}
+                    pageInputValue={this.props.rules_list.pagination.page}
                     itemCount={this.state.count - 1} // used as last item
-                    itemsStart={(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
-                    itemsEnd={Math.min((this.props.config.pagination.page * this.props.config.pagination.perPage) - 1, this.state.count - 1)}
+                    itemsStart={(this.props.rules_list.pagination.page - 1) * this.props.rules_list.pagination.perPage}
+                    itemsEnd={Math.min((this.props.rules_list.pagination.page * this.props.rules_list.pagination.perPage) - 1, this.state.count - 1)}
                     onFirstPage={this.onFirstPage}
                     onNextPage={this.onNextPage}
                     onPreviousPage={this.onPrevPage}
@@ -164,51 +183,11 @@ export class HistoryPage extends HuntList {
         );
     }
 }
+
 HistoryPage.propTypes = {
-    config: PropTypes.any,
+    rules_list: PropTypes.any,
     filters: PropTypes.any,
     switchPage: PropTypes.any,
-};
-
-// eslint-disable-next-line react/prefer-stateless-function
-class HistoryItem extends React.Component {
-    render() {
-        const date = new Date(Date.parse(this.props.data.date)).toLocaleString('en-GB', { timeZone: 'UTC' });
-        const info = [<ListViewInfoItem key="date"><p>Date: {date}</p></ListViewInfoItem>,
-            <ListViewInfoItem key="user"><p><Icon type="pf" name="user" /> {this.props.data.username}</p>
-            </ListViewInfoItem>
-        ];
-        if (this.props.data.ua_objects.ruleset && this.props.data.ua_objects.ruleset.pk) {
-            info.push(<ListViewInfoItem key="ruleset"><p><Icon type="fa" name="th" /> {this.props.data.ua_objects.ruleset.value}</p></ListViewInfoItem>);
-        }
-        if (this.props.data.ua_objects.rule && this.props.data.ua_objects.rule.sid) {
-            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-            info.push(<ListViewInfoItem key="rule"><p><a onClick={() => this.props.switchPage(PAGE_STATE.rules_list, this.props.data.ua_objects.rule.sid)}><Icon type="fa" name="bell" /> {this.props.data.ua_objects.rule.sid}</a></p></ListViewInfoItem>);
-        }
-        return (
-            <ListViewItem
-                leftContent={<ListViewIcon name="envelope" />}
-                additionalInfo={info}
-                heading={this.props.data.title}
-                description={this.props.data.description}
-                key={this.props.data.pk}
-                compoundExpand={this.props.expand_row}
-                compoundExpanded
-            >
-                {this.props.data.comment && <Row>
-                    <Col sm={11}>
-                        <div className="container-fluid">
-                            <strong>Comment</strong>
-                            <p>{this.props.data.comment}</p>
-                        </div>
-                    </Col>
-                </Row>}
-            </ListViewItem>
-        );
-    }
-}
-HistoryItem.propTypes = {
-    data: PropTypes.any,
-    switchPage: PropTypes.any,
-    expand_row: PropTypes.any,
+    from_date: PropTypes.any,
+    updateListState: PropTypes.any,
 };

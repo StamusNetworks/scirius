@@ -25,7 +25,7 @@ import { ShortcutManager } from 'react-shortcuts';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import DashboardPage from './containers/DashboardPage';
-import { HistoryPage } from './History';
+import HistoryPage from './containers/HistoryPage';
 import { PAGE_STATE } from './constants';
 import SignaturesPage from './containers/SignaturesPage';
 import AlertsPage from './containers/AlertsPage';
@@ -396,7 +396,7 @@ class HuntApp extends Component {
             case PAGE_STATE.history:
                 displayedPage = (<HistoryPage
                     systemSettings={this.state.systemSettings}
-                    config={this.state.history}
+                    rules_list={this.state.history}
                     filters={this.state.historyFilters}
                     from_date={this.state.from_date}
                     updateListState={this.updateHistoryListState}
