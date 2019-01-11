@@ -15,8 +15,8 @@ export default class ExternalLink extends Component {
     render() {
         return (
             <li className="applauncher-pf-item" role="presentation">
-                <a className="applauncher-pf-link" onClick={() => this.state.onclick} role="menuitem" data-toggle="tooltip" title={this.state.tooltip} style={{ cursor: 'pointer' }} tabIndex={0}>
-                    <i className={this.state.icon} aria-hidden="true" />
+                <a className="applauncher-pf-link" onClick={this.state.onclick} role="menuitem" data-toggle="tooltip" title={this.state.tooltip} style={{ cursor: 'pointer' }}>
+                    <i className={this.state.icon} aria-hidden="true"></i>
                     <span className="applauncher-pf-link-title">{this.state.title}</span>
                 </a>
             </li>
