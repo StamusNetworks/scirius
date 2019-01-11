@@ -1384,6 +1384,8 @@ def build_es_timestamping(date, data = 'alert'):
         end = now + timedelta(hours=1)
     if data == 'alert':
         base_index = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
+    elif data == 'host_id':
+        base_index = settings.ELASTICSEARCH_LOGSTASH_INDEX + 'host_id-'
     else:
         base_index = settings.ELASTICSEARCH_LOGSTASH_INDEX
     try:
@@ -1410,6 +1412,8 @@ def get_es_url(from_date, data = 'alert'):
         if from_date == 0:
             if data == 'alert':
                 indexes = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + "*"
+            elif data == 'host_id':
+                indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX + "host_id-*"
             else:
                 indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX + "*"
         else:
