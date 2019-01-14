@@ -72,7 +72,7 @@ export default class HistoryPage extends React.Component {
         ];
         this.state = { data: [], count: 0, filterFields: HistoryFilterFields };
         this.fetchData = this.fetchData.bind(this);
-        this.buildFilter = buildFilter.bind(this);
+        this.buildFilter = buildFilter;
         this.buildListUrlParams = buildListUrlParams.bind(this);
         this.UpdateFilter = UpdateFilter.bind(this);
         this.loadActions = loadActions.bind(this);
@@ -81,36 +81,26 @@ export default class HistoryPage extends React.Component {
         this.onNextPage = onNextPage.bind(this);
         this.onPrevPage = onPrevPage.bind(this);
         this.onLastPage = onLastPage.bind(this);
+
+        this.props.getActionTypes();
     }
 
     componentDidMount() {
         this.fetchData(this.props.rules_list, this.props.filters);
-        axios.get(`${config.API_URL}${config.HISTORY_PATH}get_action_type_list/`).then(
-            (res) => {
-                const filterFields = Object.assign([], this.state.filterFields);
-                let actions;
-                for (let field = 0; field < filterFields.length; field += 1) {
-                    if (filterFields[field].id !== 'action_type') {
-                        // eslint-disable-next-line no-continue
-                        continue;
-                    }
-                    actions = filterFields[field];
-                    break;
-                }
-                actions.filterValues = [];
-                const actionTypeList = Object.keys(res.data.action_type_list);
-                for (let i = 0; i < actionTypeList.length; i += 1) {
-                    const item = actionTypeList[i];
-                    actions.filterValues.push({ id: item, title: res.data.action_type_list[item] });
-                }
-                this.setState({ ...this.state, filterFields });
-            }
-        );
     }
 
     componentDidUpdate(prevProps) {
         if (prevProps.from_date !== this.props.from_date) {
             this.fetchData(this.props.rules_list, this.props.filters);
+        }
+        if (prevProps.actionTypesList.length !== this.props.actionTypesList.length) {
+            const filterFields = [...this.state.filterFields];
+            filterFields.find((field) => field.id === 'action_type').filterValues = this.props.actionTypesList;
+            // eslint-disable-next-line react/no-did-update-set-state
+            this.setState({
+                ...this.state,
+                filterFields
+            });
         }
     }
 
@@ -190,4 +180,6 @@ HistoryPage.propTypes = {
     switchPage: PropTypes.any,
     from_date: PropTypes.any,
     updateListState: PropTypes.any,
+    getActionTypes: PropTypes.func,
+    actionTypesList: PropTypes.array,
 };

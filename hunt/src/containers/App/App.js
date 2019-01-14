@@ -24,25 +24,25 @@ import { VerticalNav, Modal } from 'patternfly-react';
 import { ShortcutManager } from 'react-shortcuts';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import DashboardPage from './containers/DashboardPage';
-import HistoryPage from './containers/HistoryPage';
-import { PAGE_STATE } from './constants';
-import SignaturesPage from './containers/SignaturesPage';
-import AlertsPage from './containers/AlertsPage';
-import ActionsPage from './containers/ActionsPage';
-import SourcePage from './components/SourcePage';
-import RulesetPage from './components/RuleSetPage';
-import UserNavInfo from './components/UserNavInfo';
-import * as config from './config/Api';
-import './pygments.css';
+import DashboardPage from '../DashboardPage/index';
+import HistoryPage from '../HistoryPage/index';
+import { PAGE_STATE } from '../../constants';
+import SignaturesPage from '../SignaturesPage/index';
+import AlertsPage from '../AlertsPage/index';
+import ActionsPage from '../ActionsPage/index';
+import SourcePage from '../../components/SourcePage';
+import RulesetPage from '../../components/RuleSetPage';
+import UserNavInfo from '../../components/UserNavInfo';
+import * as config from '../../config/Api';
+import '../../pygments.css';
 // eslint-disable-next-line import/no-unresolved
-import './css/App.css';
-import sciriusLogo from './img/scirius-by-stamus.svg';
-import keymap from './Keymap';
+import '../../css/App.css';
+import sciriusLogo from '../../img/scirius-by-stamus.svg';
+import keymap from '../../Keymap';
 
 const shortcutManager = new ShortcutManager(keymap);
 
-class HuntApp extends Component {
+export default class App extends Component {
     constructor(props) {
         super(props);
         this.timer = null;
@@ -501,8 +501,6 @@ class HuntApp extends Component {
     }
 }
 
-export default HuntApp;
-
-HuntApp.childContextTypes = {
+App.childContextTypes = {
     shortcuts: PropTypes.object.isRequired
 };

@@ -41,7 +41,7 @@ $nav-pf-vertical-active-color:                                      $color-sn-pu
 $nav-pf-vertical-active-icon-color:                                 $color-sn-purple !default;
 $nav-pf-vertical-active-before-color:                               $color-sn-purple !default;
 
-@import '../../scss/_styles.scss';
+@import '../../../../scss/styles';
 
 @import 'patternfly';
 @import 'patternfly-react';
