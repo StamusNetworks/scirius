@@ -22,3 +22,4 @@ test-static:
   stage: test
   script:
   - /home/admin/venv/bin/pylint --load-plugins pylint_django -E -d unexpected-keyword-arg,no-member,access-member-before-definition,no-name-in-module,import-error */*.py
+  - for f in $(find .  -type f -name "*.py" ! -name "__init__.py" ! -name "manage.py" ! -name "setup.py" ! -name "yaml.py" ! -name "lineinfile.py" -not -path "./doc/*" -not -path "./rules/south_migrations/*" -not -path "./suricata/south_migrations/*" -not -path "./accounts/south_migrations/*" -not -path "./node_modules/*" -not -path "./tests/*" -not -path "./hunt/*"); do if ! grep -q 'from __future__ import unicode_literals' $f ; then echo "$f does not contain unicode_literals import"; exit 1;  fi; done
