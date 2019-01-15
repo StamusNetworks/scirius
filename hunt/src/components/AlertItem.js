@@ -178,6 +178,10 @@ export default class AlertInList extends React.Component {
                                     <EventField field_name="Not Before" field="tls.notbefore" value={data.tls.notbefore} addFilter={this.addFilter} />
                                     <EventField field_name="Not After" field="tls.notafter" value={data.tls.notafter} addFilter={this.addFilter} />
                                     {(data.tls.ja3 && data.tls.ja3.hash !== undefined) && <EventField field_name="JA3" field="tls.ja3.hash" value={data.tls.ja3.hash} addFilter={this.addFilter} />}
+                                    {(data.tls.ja3 && data.tls.ja3.agent !== undefined) && data.tls.ja3.agent.map((agent, idx) => (
+                                        // eslint-disable-next-line react/no-array-index-key
+                                        <EventField field_name="User-Agent" field="tls.ja3.agent" value={agent} addFilter={this.addFilter} key={`to-${idx}`} />
+                                    ))}
                                 </dl>
                             </div>
                         </div>

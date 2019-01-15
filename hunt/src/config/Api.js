@@ -590,6 +590,24 @@ export const dashboard = {
                             w: 8, h: 12, x: 0, y: 44
                         },
                     },
+                }, {
+                    i: 'tls.ja3.agent',
+                    title: 'JA3 User-Agent',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 11, h: 12, x: 10, y: 22
+                        },
+                        md: {
+                            w: 10, h: 12, x: 12, y: 22
+                        },
+                        sm: {
+                            w: 8, h: 12, x: 0, y: 44
+                        },
+                        xs: {
+                            w: 8, h: 12, x: 0, y: 44
+                        },
+                    },
                 }
             ],
             dimensions: find(storedMacroLayout, { i: 'tls' }) || {
