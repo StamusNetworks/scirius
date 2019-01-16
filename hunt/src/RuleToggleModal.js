@@ -206,7 +206,7 @@ export default class RuleToggleModal extends React.Component {
     toggleFilter(event, item) {
         const sfilters = Object.assign([], this.state.supported_filters);
         for (let j = 0; j < sfilters.length; j += 1) {
-            if (sfilters[j].id === item.id) {
+            if (sfilters[j].id === item.id && sfilters[j].value === item.value) {
                 sfilters[j].isChecked = !item.isChecked;
                 break;
             }
@@ -233,7 +233,7 @@ export default class RuleToggleModal extends React.Component {
                     <HuntRestError errors={this.state.errors} />
                     {!this.state.noaction && <Form horizontal>
                         {this.state.supported_filters && this.state.supported_filters.map((item) => (
-                            <FormGroup key={item.id} controlId={item.id} disabled={false}>
+                            <FormGroup key={`${item.id}/${item.value}`} controlId={`${item.id}/${item.value}`} disabled={false}>
                                 <Col sm={4}>
                                     <Checkbox
                                         disabled={false}
