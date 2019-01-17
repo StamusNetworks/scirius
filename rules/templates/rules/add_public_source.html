@@ -166,7 +166,12 @@ Add a Source
                     } else {
                         $("#secret_code_div").remove();
                     }
-                    $("input[name=name]").val(source['summary']);
+                    let max_size = 100 - len('...');
+                    let summary = source['summary'];
+                    if(summary.length > max_size) {
+                        summary = `${summary.substring(0, max_size)}...`;
+                    }
+                    $("input[name=name]").val(summary);
                     $("#add_modal").modal('show');
                 }
              }
