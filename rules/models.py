@@ -201,6 +201,18 @@ def validate_port(val):
         raise ValidationError('Invalid port')
 
 def validate_proxy(val):
+    if val.startswith('http://') or val.startswith('https://'):
+        val = val.rstrip('/')
+        if val.startswith('http://'):
+            val = val[len('http://'):]
+        else:
+            val = val[len('https://'):]
+
+        if '@' in val:
+            login, val = val.rsplit('@', 1)
+            if login.count(':') < 1:
+                raise ValidationError('Invalid login, no password found')
+
     if val.count(':') != 1:
         raise ValidationError('Invalid address')
 

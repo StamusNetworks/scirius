@@ -57,6 +57,7 @@ class RulesetChoiceForm(CommentForm):
 class SystemSettingsForm(forms.ModelForm, CommentForm):
     use_http_proxy = forms.BooleanField(label='Use a proxy', required=False)
     custom_elasticsearch = forms.BooleanField(label='Use a custom Elasticsearch server', required=False)
+    http_proxy = forms.CharField(max_length=200, required=False, help_text='Proxy address of the form "http://username:password@hostname:port/"')
 
     class Meta:
         model = SystemSettings
