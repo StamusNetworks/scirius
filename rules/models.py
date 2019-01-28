@@ -153,6 +153,16 @@ _HUNT_FILTERS = [
                                ]
                           },
                           {
+                              'id': 'smb',
+                              'title': 'SMB',
+                              'filterValues': [
+                                  {'id': 'command', 'title': 'Command', 'placeholder': 'Filter by Command'},
+                                  {'id': 'status', 'title': 'Status', 'placeholder': 'Filter by Status'},
+                                  {'id': 'filename', 'title': 'Filename', 'placeholder': 'Filter by Filename'},
+                                  {'id': 'share', 'title': 'Share', 'placeholder': 'Filter by Share'}
+                               ]
+                          },
+                          {
                               'id': 'ssh',
                               'title': 'SSH',
                               'filterValues': [
