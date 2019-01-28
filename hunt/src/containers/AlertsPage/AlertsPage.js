@@ -26,11 +26,11 @@ import { ListView, Spinner } from 'patternfly-react';
 import axios from 'axios';
 import store from 'store';
 import md5 from 'md5';
+import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from '../../helpers/buildQFilter';
 import RuleToggleModal from '../../RuleToggleModal';
 import { HuntFilter } from '../../HuntFilter';
 import AlertItem from '../../components/AlertItem';
-import * as config from '../../config/Api';
 import { actionsButtons, buildListUrlParams, loadActions, UpdateFilter, addFilter, createAction, closeAction } from '../../helpers/common';
 
 export default class AlertsPage extends React.Component {

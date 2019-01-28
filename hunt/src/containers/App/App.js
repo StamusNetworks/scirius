@@ -27,8 +27,8 @@ import axios from 'axios';
 import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
 import DisplayPage from 'hunt_common/components/DisplayPage';
 import { PAGE_STATE } from 'hunt_common/constants';
+import * as config from 'hunt_common/config/Api';
 import UserNavInfo from '../../components/UserNavInfo';
-import * as config from '../../config/Api';
 import '../../pygments.css';
 // eslint-disable-next-line import/no-unresolved
 import '../../css/App.css';

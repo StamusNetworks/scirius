@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { Modal, Icon, Button, Form, FormGroup, FormControl, Col } from 'patternfly-react'
-import * as config from './config/Api';
+import * as config from 'hunt_common/config/Api';
 import HuntRestError from './components/HuntRestError';
 
 export default class FilterToggleModal extends React.Component {

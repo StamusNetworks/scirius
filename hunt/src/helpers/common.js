@@ -2,7 +2,7 @@
 import React from 'react';
 import { DropdownButton, MenuItem } from 'patternfly-react';
 import axios from 'axios';
-import * as config from '../config/Api';
+import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from './buildQFilter';
 
 export function actionsButtons() {

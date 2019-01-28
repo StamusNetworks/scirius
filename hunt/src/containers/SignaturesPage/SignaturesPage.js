@@ -26,7 +26,7 @@ import { Spinner, PAGINATION_VIEW } from 'patternfly-react';
 import axios from 'axios';
 import store from 'store';
 import md5 from 'md5';
-import * as config from '../../config/Api';
+import * as config from 'hunt_common/config/Api';
 import { HuntFilter } from '../../HuntFilter';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import RuleToggleModal from '../../RuleToggleModal';

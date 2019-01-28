@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { Dropdown, Icon, MenuItem, ApplicationLauncher, ApplicationLauncherItem, AboutModal, Modal, Form, Button } from 'patternfly-react';
-import * as config from '../config/Api';
+import * as config from 'hunt_common/config/Api';
 import HuntNotificationArea from '../HuntNotificationArea';
 import ExternalLink from './ExternalLink';
 import OutsideAlerter from './OutsideAlerter';

@@ -31,13 +31,13 @@ import map from 'lodash/map';
 import reject from 'lodash/reject';
 import find from 'lodash/find';
 import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
+import * as config from 'hunt_common/config/Api';
 import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
 import { buildQFilter } from '../../helpers/buildQFilter';
 import RuleToggleModal from '../../RuleToggleModal';
 import { actionsButtons, addFilter, UpdateFilter, loadActions, createAction, closeAction } from '../../helpers/common';
 import { HuntFilter } from '../../HuntFilter';
-import * as config from '../../config/Api';
 import EventValue from '../../components/EventValue';
 import '../../../node_modules/react-grid-layout/css/styles.css';
 import '../../../node_modules/react-resizable/css/styles.css';
@@ -67,7 +67,7 @@ export default class HuntDashboard extends React.Component {
         const huntFilters = store.get('huntFilters');
         const rulesFilters = (typeof huntFilters !== 'undefined' && typeof huntFilters.dashboard !== 'undefined') ? huntFilters.dashboard.data : [];
         this.state = {
-            load: ['metadata', 'basic', 'organizational', 'ip', 'http', 'dns', 'tls', 'smtp', 'smb', 'ssh'],
+            load: Object.keys(config.dashboard.sections),
             // load: ['basic'],
             breakPoint: 'lg',
             dashboard: config.dashboard.sections,

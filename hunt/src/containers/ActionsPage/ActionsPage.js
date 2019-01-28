@@ -23,7 +23,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { PAGINATION_VIEW, ListView, Spinner } from 'patternfly-react';
-import * as config from '../../config/Api';
+import * as config from 'hunt_common/config/Api';
 import { HuntList } from '../../HuntList';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import FilterItem from '../../FilterItem';

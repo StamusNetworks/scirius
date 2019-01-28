@@ -5,7 +5,7 @@ import _ from 'lodash';
 import Modal from 'patternfly-react/dist/esm/components/Modal/Modal';
 import store from '../store';
 import { setToken } from '../actions';
-import { URL, LOGIN } from '../config/Api';
+import { URL, LOGIN } from 'hunt_common/config/Api';
 
 export function InvalidCredentialsException(message) {
     this.message = message;

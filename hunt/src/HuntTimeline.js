@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
+import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from './helpers/buildQFilter';
-import * as config from './config/Api';
 import SciriusChart from './components/SciriusChart';
 
 export default class HuntTimeline extends React.Component {

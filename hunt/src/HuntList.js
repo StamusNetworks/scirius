@@ -24,7 +24,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { DropdownButton, MenuItem } from 'patternfly-react';
-import * as config from './config/Api';
+import * as config from 'hunt_common/config/Api';
 
 export class HuntList extends React.Component {
     constructor(props) {
