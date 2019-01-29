@@ -36,7 +36,7 @@ from rules.models import get_es_address, get_es_path
 URL = "%s%s/_search?ignore_unavailable=true"
 
 # ES requests timeout (keep this below Scirius's ajax requests timeout)
-TIMEOUT = 13
+TIMEOUT = 30
 
 
 ES_VERSION = None
