@@ -20,18 +20,11 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 import React, { Component } from 'react';
-import { VerticalNav, Modal } from 'patternfly-react';
+import { VerticalNav, Modal, VerticalNavItem } from 'patternfly-react';
 import { ShortcutManager } from 'react-shortcuts';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import DashboardPage from '../DashboardPage/index';
-import HistoryPage from '../HistoryPage/index';
 import { PAGE_STATE } from '../../constants';
-import SignaturesPage from '../SignaturesPage/index';
-import AlertsPage from '../AlertsPage/index';
-import ActionsPage from '../ActionsPage/index';
-import SourcePage from '../../components/SourcePage';
-import RulesetPage from '../../components/RuleSetPage';
 import UserNavInfo from '../../components/UserNavInfo';
 import * as config from '../../config/Api';
 import '../../pygments.css';
@@ -39,6 +32,8 @@ import '../../pygments.css';
 import '../../css/App.css';
 import sciriusLogo from '../../img/scirius-by-stamus.svg';
 import keymap from '../../Keymap';
+import VerticalNavItems from '../../helpers/VerticalNavItems';
+import DisplayPage from '../../components/DisplayPage';
 
 const shortcutManager = new ShortcutManager(keymap);
 
@@ -175,11 +170,6 @@ export default class App extends Component {
 
         this.fromDate = this.fromDate.bind(this);
 
-        this.onHomeClick = this.onHomeClick.bind(this);
-        this.onDashboardClick = this.onDashboardClick.bind(this);
-        this.onHistoryClick = this.onHistoryClick.bind(this);
-        this.onFiltersClick = this.onFiltersClick.bind(this);
-        this.onAlertsClick = this.onAlertsClick.bind(this);
         this.switchPage = this.switchPage.bind(this);
         this.needReload = this.needReload.bind(this);
         this.updateRuleListState = this.updateRuleListState.bind(this);
@@ -212,26 +202,6 @@ export default class App extends Component {
         if (this.state.interval) {
             this.timer = setInterval(this.needReload, this.state.interval * 1000);
         }
-    }
-
-    onHomeClick() {
-        this.switchPage(PAGE_STATE.rules_list, undefined);
-    }
-
-    onAlertsClick() {
-        this.switchPage(PAGE_STATE.alerts_list, undefined);
-    }
-
-    onDashboardClick() {
-        this.switchPage(PAGE_STATE.dashboards, undefined);
-    }
-
-    onHistoryClick() {
-        this.switchPage(PAGE_STATE.history, undefined);
-    }
-
-    onFiltersClick() {
-        this.switchPage(PAGE_STATE.filters_list, undefined);
     }
 
     needReload() {
@@ -360,73 +330,6 @@ export default class App extends Component {
     }
 
     render() {
-        let displayedPage = null;
-        switch (this.state.display.page) {
-            case PAGE_STATE.rules_list:
-            default:
-                displayedPage = (<SignaturesPage
-                    systemSettings={this.state.systemSettings}
-                    rules_list={this.state.rules_list}
-                    filters={this.state.idsFilters}
-                    from_date={this.state.from_date}
-                    SwitchPage={this.switchPage}
-                    updateListState={this.updateRuleListState}
-                    updateFilterState={this.updateIDSFilterState}
-                />);
-                break;
-            case PAGE_STATE.source:
-                displayedPage = <SourcePage systemSettings={this.state.systemSettings} source={this.state.display.item} from_date={this.state.from_date} />;
-                break;
-            case PAGE_STATE.ruleset:
-                displayedPage = <RulesetPage systemSettings={this.state.systemSettings} ruleset={this.state.display.item} from_date={this.state.from_date} />;
-                break;
-            case PAGE_STATE.dashboards:
-                // FIXME remove or change updateRuleListState
-                displayedPage = (<DashboardPage
-                    systemSettings={this.state.systemSettings}
-                    rules_list={this.state.rules_list}
-                    filters={this.state.idsFilters}
-                    from_date={this.state.from_date}
-                    SwitchPage={this.switchPage}
-                    updateListState={this.updateRuleListState}
-                    updateFilterState={this.updateIDSFilterState}
-                    needReload={this.needReload}
-                />);
-                break;
-            case PAGE_STATE.history:
-                displayedPage = (<HistoryPage
-                    systemSettings={this.state.systemSettings}
-                    rules_list={this.state.history}
-                    filters={this.state.historyFilters}
-                    from_date={this.state.from_date}
-                    updateListState={this.updateHistoryListState}
-                    switchPage={this.switchPage}
-                    updateFilterState={this.updateHistoryFilterState}
-                />);
-                break;
-            case PAGE_STATE.alerts_list:
-                displayedPage = (<AlertsPage
-                    systemSettings={this.state.systemSettings}
-                    rules_list={this.state.alerts_list}
-                    filters={this.state.idsFilters}
-                    from_date={this.state.from_date}
-                    updateListState={this.updateAlertListState}
-                    switchPage={this.switchPage}
-                    updateFilterState={this.updateIDSFilterState}
-                />);
-                break;
-            case PAGE_STATE.filters_list:
-                displayedPage = (<ActionsPage
-                    systemSettings={this.state.systemSettings}
-                    config={this.state.filters_list}
-                    filters={this.state.filters_filters}
-                    from_date={this.state.from_date}
-                    updateListState={this.updateFilterListState}
-                    switchPage={this.switchPage}
-                    updateFilterState={this.updateFiltersFilterState}
-                />);
-                break;
-        }
         return (
             <div className="layout-pf layout-pf-fixed faux-layout">
                 <VerticalNav sessionKey="storybookItemsAsJsx" showBadges>
@@ -444,46 +347,43 @@ export default class App extends Component {
                             />
                         </VerticalNav.IconBar>
 
-
                     </VerticalNav.Masthead>
-                    <VerticalNav.Item
-                        title="Dashboard"
-                        iconClass="fa fa-tachometer"
-                        initialActive={this.state.display.page === PAGE_STATE.dashboards}
-                        onClick={this.onDashboardClick}
-                        className={null}
-                    />
-                    <VerticalNav.Item
-                        title="Signatures"
-                        iconClass="glyphicon glyphicon-eye-open"
-                        initialActive={[PAGE_STATE.rules_list, PAGE_STATE.rule, PAGE_STATE.source, PAGE_STATE.ruleset].indexOf(this.state.display.page) >= 0}
-                        onClick={this.onHomeClick}
-                        className={null}
-                    />
-                    <VerticalNav.Item
-                        title="Alerts"
-                        iconClass="pficon pficon-security"
-                        initialActive={this.state.display.page === PAGE_STATE.alerts_list}
-                        onClick={this.onAlertsClick}
-                    />
-                    { (process.env.REACT_APP_HAS_ACTION === '1' || process.env.NODE_ENV === 'development') && <VerticalNav.Item
-                        title="Actions"
-                        iconClass="glyphicon glyphicon-filter"
-                        initialActive={this.state.display.page === PAGE_STATE.filters_list}
-                        onClick={this.onFiltersClick}
-                    />}
-                    <VerticalNav.Item
-                        title="History"
-                        iconClass="glyphicon glyphicon-list"
-                        initialActive={this.state.display.page === PAGE_STATE.history}
-                        onClick={this.onHistoryClick}
-                    />
-
+                    {VerticalNavItems.map((v) => <VerticalNavItem
+                        title={v.title}
+                        iconClass={v.iconClass}
+                        key={Math.random()}
+                        initialActive={this.state.display.page === v.def}
+                        onClick={() => this.switchPage(v.def, undefined)}
+                    />)}
                 </VerticalNav>
                 <div className="container-fluid container-pf-nav-pf-vertical nav-pf-persistent-secondary">
                     <div className="row row-cards-pf">
                         <div className="col-xs-12 col-sm-12 col-md-12" id="app-content">
-                            {displayedPage}
+                            {/* {displayedPage} */}
+                            <DisplayPage
+                                page={this.state.display.page}
+                                systemSettings={this.state.systemSettings}
+                                rules_list={this.state.rules_list}
+                                idsFilters={this.state.idsFilters}
+                                from_date={this.state.from_date}
+                                SwitchPage={this.switchPage}
+                                updateRuleListState={this.updateRuleListState}
+                                updateIDSFilterState={this.updateIDSFilterState}
+                                item={this.state.display.item}
+                                needReload={this.needReload}
+                                history_list={this.state.history}
+                                historyFilters={this.state.historyFilters}
+                                updateHistoryListState={this.updateHistoryListState}
+                                updateHistoryFilterState={this.updateHistoryFilterState}
+                                alerts_list={this.state.alerts_list}
+                                updateAlertListState={this.updateAlertListState}
+                                filters_list={this.state.filters_list}
+                                filters_filters={this.state.filters_filters}
+                                updateFilterListState={this.updateFilterListState}
+                                updateFiltersFilterState={this.updateFiltersFilterState}
+                                updateHostListState={this.updateHostListState}
+                                hosts_list={this.state.hosts_list}
+                            />
                         </div>
                     </div>
                 </div>

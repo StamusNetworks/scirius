@@ -22,8 +22,8 @@ export default class EventValue extends React.Component {
                 <span className="value-field" title={valueText}>{valueText}</span>
                 <span className={this.state.display_actions ? 'eventFilters value-actions' : 'eventFiltersHidden value-actions'}>
                     <EventValueInfo field={this.props.field} value={this.props.value} />
-                    <a onClick={() => { this.props.addFilter(this.props.field, this.props.value, false); }}> <Icon type="fa" name="search-plus" /></a>
-                    <a onClick={() => { this.props.addFilter(this.props.field, this.props.value, true); }}> <Icon type="fa" name="search-minus" /></a>
+                    {this.props.magnifiers && <a onClick={() => { this.props.addFilter(this.props.field, this.props.value, false); }}> <Icon type="fa" name="search-plus" /></a>}
+                    {this.props.magnifiers && <a onClick={() => { this.props.addFilter(this.props.field, this.props.value, true); }}> <Icon type="fa" name="search-minus" /></a>}
                 </span>
                 {this.props.right_info && <span className="value-right-info">{this.props.right_info}</span>}
             </div>
@@ -31,9 +31,14 @@ export default class EventValue extends React.Component {
     }
 }
 
+EventValue.defaultProps = {
+    magnifiers: true,
+}
+
 EventValue.propTypes = {
     addFilter: PropTypes.any,
     right_info: PropTypes.any,
     field: PropTypes.any,
     value: PropTypes.any,
+    magnifiers: PropTypes.bool,
 };

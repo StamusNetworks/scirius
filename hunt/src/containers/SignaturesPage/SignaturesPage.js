@@ -130,7 +130,7 @@ export function updateHitsStats(rules, pFromDate, updateCallback, qfilter) {
     const fromDate = `&from_date=${pFromDate}`;
     let url = config.API_URL + config.ES_SIGS_LIST_PATH + sids + fromDate;
     if (qfilter) {
-        url += `&filter=${qfilter}`;
+        url += `&filter=${qfilter.replace('&qfilter=', '')}`;
     }
     if (typeof statsCache[encodeURI(url)] !== 'undefined') {
         processHitsStats(statsCache[encodeURI(url)], rules, updateCallback);

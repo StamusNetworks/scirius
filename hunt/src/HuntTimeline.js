@@ -26,7 +26,7 @@ export default class HuntTimeline extends React.Component {
         let stringFilters = '';
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
         if (qfilter) {
-            stringFilters += `&filter=${qfilter}`;
+            stringFilters += `&filter=${qfilter.replace('&qfilter=', '')}`;
         }
         axios.get(`${config.API_URL}${config.ES_BASE_PATH}timeline&hosts=*&from_date=${this.props.from_date}${stringFilters}`)
         .then((res) => {
