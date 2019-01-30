@@ -1420,6 +1420,8 @@ def sourceupdate(request, update_id):
 
 def rulesets(request):
     rulesets = Ruleset.objects.all().order_by('name')
+    for ruleset in rulesets:
+        ruleset.number_of_rules()
     context = { 'rulesets': rulesets }
     return scirius_render(request, 'rules/rulesets.html', context)
 
@@ -1583,6 +1585,7 @@ def changelog_ruleset(request, ruleset_id):
         build_source_diff(request, cdiff)
         diff[key] = cdiff
     return scirius_render(request, 'rules/ruleset.html', { 'ruleset': ruleset, 'diff': diff, 'mode': 'changelog'})
+
 
 def test_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)

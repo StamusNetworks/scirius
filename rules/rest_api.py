@@ -203,6 +203,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
         self._validate_categories(sources, categories)
 
         serializer.save()
+        serializer.instance.number_of_rules()
 
         comment_serializer = CommentSerializer(data={'comment': comment})
         comment_serializer.is_valid(raise_exception=True)
@@ -250,6 +251,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
         # This save is used to have the new name if user has edited ruleset name
         serializer.save()
+        instance.number_of_rules()
 
         comment_serializer = CommentSerializer(data={'comment': comment})
         comment_serializer.is_valid(raise_exception=True)
@@ -288,6 +290,11 @@ class RulesetViewSet(viewsets.ModelViewSet):
             )
 
         return Response({'copy': 'ok'})
+
+    @detail_route(methods=['get'])
+    def rules_count(self, request, pk):
+        ruleset = self.get_object()
+        return Response(ruleset.number_of_rules())
 
 
 class CategoryChangeSerializer(serializers.Serializer):

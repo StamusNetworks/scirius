@@ -25,11 +25,7 @@
        {% endif %}
        </span></li>
        <li><span class="type">Rules count:</span> <span id="ruleset_rules_count">
-       {% if ruleset.need_test %}
-       Counting
-       {% else %}
         {{ ruleset.rules_count }}
-       {% endif %}
        </span></li>
 </ul>
 {% if request.user.is_staff %}
@@ -273,6 +269,20 @@ Updated: {{ cdiff.stats.updated }}
 </div> <!-- container -->
 
 <script>
+function ruleset_rules_count(ruleset_pk)
+{
+    var url = "{% url 'ruleset-rules-count' ruleset.id %}"
+
+    $.ajax({
+       url: url,
+          success: function(data) {
+            if ((data['rules_count'] != {{ ruleset.rules_count }}) || {{ ruleset.rules_count }} == 0) {
+                fadeChange($("#ruleset_rules_count"), data['rules_count']);
+            }
+          }
+    });
+}
+
 function test_ruleset(ruleset_pk)
 {
     var tgturl = "{% url 'test_ruleset' ruleset.id %}?ajax=1";
@@ -322,7 +332,9 @@ function test_ruleset(ruleset_pk)
       timeout: 120 * 1000
     });
 }
-
+$( 'document' ).ready(function() {
+    ruleset_rules_count({{ ruleset.pk }})
+});
 {% if ruleset.need_test %}
 $( 'document' ).ready(function() {
     test_ruleset({{ ruleset.pk }})

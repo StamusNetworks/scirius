@@ -2731,6 +2731,13 @@ class Ruleset(models.Model, Transformable):
 
         return file_content
 
+    def number_of_rules(self):
+        rules = self.generate()
+        self.rules_count = len(rules)
+        self.save()
+        result = {'rules_count': self.rules_count}
+        return result
+
     def test_rule_buffer(self, rule_buffer, single = False):
         testor = TestRules()
         tmpdir = tempfile.mkdtemp()
