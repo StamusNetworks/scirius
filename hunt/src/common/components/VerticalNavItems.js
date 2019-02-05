@@ -1,5 +1,5 @@
 /* eslint-disable global-require */
-import { PAGE_STATE } from '../../constants';
+import { PAGE_STATE } from 'hunt_common/constants';
 
 const VerticalNavItems = [{
     title: 'Dashboard',

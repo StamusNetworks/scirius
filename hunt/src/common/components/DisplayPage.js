@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { PAGE_STATE } from '../../constants';
+import { PAGE_STATE } from 'hunt_common/constants';
 import SignaturesPage from '../../containers/SignaturesPage';
-import SourcePage from '../SourcePage';
-import RulesetPage from '../RuleSetPage';
+import SourcePage from '../../components/SourcePage';
+import RulesetPage from '../../components/RuleSetPage';
 import DashboardPage from '../../containers/DashboardPage';
 import HistoryPage from '../../containers/HistoryPage';
 import AlertsPage from '../../containers/AlertsPage';

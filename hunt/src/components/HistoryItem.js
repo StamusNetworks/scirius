@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Col, Icon, Row, ListViewItem, ListViewInfoItem, ListViewIcon } from 'patternfly-react';
-import { PAGE_STATE } from '../constants';
+import { PAGE_STATE } from 'hunt_common/constants';
 
 const HistoryItem = (props) => {
     const date = new Date(Date.parse(props.data.date)).toLocaleString('en-GB', { timeZone: 'UTC' });

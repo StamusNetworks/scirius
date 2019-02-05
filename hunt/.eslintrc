@@ -82,6 +82,10 @@
     ]
   },
   "settings": {
-    "import/resolver": "webpack"
+    "import/resolver": {
+      "webpack": {
+        "config": "config/webpack.config.eslint.js"
+      }
+    }
   }
 }

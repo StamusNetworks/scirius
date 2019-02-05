@@ -24,7 +24,9 @@ import { VerticalNav, Modal, VerticalNavItem } from 'patternfly-react';
 import { ShortcutManager } from 'react-shortcuts';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { PAGE_STATE } from '../../constants';
+import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
+import DisplayPage from 'hunt_common/components/DisplayPage';
+import { PAGE_STATE } from 'hunt_common/constants';
 import UserNavInfo from '../../components/UserNavInfo';
 import * as config from '../../config/Api';
 import '../../pygments.css';
@@ -32,8 +34,6 @@ import '../../pygments.css';
 import '../../css/App.css';
 import sciriusLogo from '../../img/scirius-by-stamus.svg';
 import keymap from '../../Keymap';
-import VerticalNavItems from '../../helpers/VerticalNavItems';
-import DisplayPage from '../../components/DisplayPage';
 
 const shortcutManager = new ShortcutManager(keymap);
 
