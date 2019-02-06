@@ -2,7 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from 'patternfly-react';
-import EventValueInfo from './EventValueInfo';
+import EventValueInfo from 'hunt_common/components/EventValueInfo';
 
 export default class EventValue extends React.Component {
     constructor(props) {
