@@ -51,7 +51,7 @@ export default class RulePage extends React.Component {
 
         if (typeof rule !== 'undefined') {
             updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
-            axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats&field=app_proto&from_date=${this.props.from_date}&sid=${this.props.rule.sid}`)
+            axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&from_date=${this.props.from_date}&sid=${this.props.rule.sid}`)
             .then((res) => {
                 this.updateExtInfo(res.data);
             });
@@ -60,7 +60,7 @@ export default class RulePage extends React.Component {
             axios.get(`${config.API_URL}${config.RULE_PATH}${sid}/?highlight=true`).then(
                 (res) => {
                     updateHitsStats([res.data], this.props.from_date, this.updateRuleState, qfilter);
-                    axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats&field=app_proto&from_date=${this.props.from_date}&sid=${sid}`)
+                    axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&from_date=${this.props.from_date}&sid=${sid}`)
                     .then((res2) => {
                         this.updateExtInfo(res2.data);
                     });

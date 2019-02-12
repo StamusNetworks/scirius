@@ -32,9 +32,9 @@ export default class HuntStat extends React.Component {
     updateData() {
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
 
-        this.url = `${config.API_URL}${config.ES_BASE_PATH}field_stats&field=${this.props.item}&from_date=${this.props.from_date}&page_size=30${qfilter}`;
+        this.url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&from_date=${this.props.from_date}&page_size=30${qfilter}`;
 
-        axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats&field=${this.props.item}&from_date=${this.props.from_date}&page_size=5${qfilter}`)
+        axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&from_date=${this.props.from_date}&page_size=5${qfilter}`)
         .then((res) => {
             this.setState({ data: res.data });
         });

@@ -111,7 +111,7 @@ export default class AlertsPage extends React.Component {
             stringFilters = `&filter=${stringFilters.replace('&qfilter=', '')}`;
         }
         this.setState({ refresh_data: true, loading: true });
-        const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail&search_target=0&${this.buildListUrlParams(state)}&from_date=${this.props.from_date}${stringFilters}`;
+        const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?search_target=0&${this.buildListUrlParams(state)}&from_date=${this.props.from_date}${stringFilters}`;
         axios.get(url).then((res) => {
             if ((res.data !== null) && (typeof res.data !== 'string')) {
                 this.setState({ alerts: res.data, loading: false });

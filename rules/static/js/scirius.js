@@ -94,7 +94,7 @@ window.load_rules = load_rules;
 
 function draw_timeline(from_date, hosts, filter, ylegend=undefined) {
 
-        var esurl = "/rules/es?query=timeline&from_date=" + from_date + "&hosts=" + hosts.join()
+        var esurl = "/rest/rules/es/timeline/?from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
             esurl = esurl + "&filter=" + filter;
         }
@@ -220,8 +220,7 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
             hosts_list = "";
             hosts = ['global'];
         }
-        var esurl = "/rules/es?query=logstash_eve&from_date=" + from_date + "&value=" + value + hosts_list
-
+        var esurl = "/rest/rules/es/logstash_eve/?from_date=" + from_date + "&value=" + value + hosts_list
         $.ajax(
                         {
                         type:"GET",
@@ -342,7 +341,7 @@ function build_path(d) {
 window.build_path = build_path;
 
 function draw_sunburst(from_date, hosts, filter, callback) {
-        var esurl = "/rules/es?query=rules_per_category&from_date=" + from_date + "&hosts=" + hosts.join()
+        var esurl = "/rest/rules/es/rules_per_category/?from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
             esurl = esurl + "&filter=" + filter;
         }
@@ -351,7 +350,7 @@ function draw_sunburst(from_date, hosts, filter, callback) {
          type:"GET",
          url:esurl,
          success: function(data) {
-         if (data == null) {
+         if (!data) {
               $("#circles").append("No data to build the graph");
               return;
          }
@@ -492,7 +491,7 @@ function arcTweenZoom(d) {
 window.draw_sunburst = draw_sunburst;
 
 function draw_circle(from_date, hosts, filter, callback) {
-        var esurl = "/rules/es?query=rules_per_category&from_date=" + from_date + "&hosts=" + hosts.join()
+        var esurl = "/rest/rules/es/rules_per_category/?from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
             esurl = esurl + "&filter=" + filter;
         }

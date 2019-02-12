@@ -26,7 +26,7 @@ export default class FilterItem extends React.Component {
     fetchData(filtersStat, filters) {
         // eslint-disable-next-line react/no-unused-state
         this.setState({ loading: true });
-        axios.get(`${config.API_URL + config.ES_BASE_PATH}poststats_summary&value=rule_filter_${this.props.data.pk}&from_date=${this.props.from_date}`)
+        axios.get(`${config.API_URL + config.ES_BASE_PATH}poststats_summary/?value=rule_filter_${this.props.data.pk}&from_date=${this.props.from_date}`)
         .then((res) => {
             // eslint-disable-next-line react/no-unused-state
             this.setState({ data: res.data, loading: false });

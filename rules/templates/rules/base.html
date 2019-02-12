@@ -269,7 +269,7 @@ function get_es_health() {
     $.ajax(
         {
                 type:"GET",
-                url:"{% url 'elasticsearch' %}?query=health",
+                url: "{% url 'es_health' %}",
                 success: function(data) {
                 if (!data) {
                         $("#health").removeClass("label-default");

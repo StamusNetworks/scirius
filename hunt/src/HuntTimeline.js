@@ -29,7 +29,7 @@ export default class HuntTimeline extends React.Component {
         if (qfilter) {
             stringFilters += `&filter=${qfilter.replace('&qfilter=', '')}`;
         }
-        axios.get(`${config.API_URL}${config.ES_BASE_PATH}timeline&hosts=*&from_date=${this.props.from_date}${stringFilters}`)
+        axios.get(`${config.API_URL}${config.ES_BASE_PATH}timeline/?hosts=*&from_date=${this.props.from_date}${stringFilters}`)
         .then((res) => {
             /* iterate on actual row: build x array, for each row build hash x -> value */
             /* sort x array */

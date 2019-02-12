@@ -479,7 +479,7 @@ function populate_topip_actions(pdiv, field, direction) {
 
 function load_ip_stats() {
     $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule_src&sid={{ rule.pk }}&from_date={{ from_date }}',
+       url: '{% url 'es_filter_ip' %}?field=rule_src&sid={{ rule.pk }}&from_date={{ from_date }}',
           success: function(data) {
              $('#src_ip_table').empty();
              $('#src_ip_table').append(data);
@@ -493,7 +493,7 @@ function load_ip_stats() {
     });
 
     $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule_dest&sid={{ rule.pk }}&from_date={{ from_date }}',
+       url: '{% url 'es_filter_ip' %}?field=rule_dest&sid={{ rule.pk }}&from_date={{ from_date }}',
           success: function(data) {
              $('#dest_ip_table').empty();
              $('#dest_ip_table').append(data);
@@ -507,7 +507,7 @@ function load_ip_stats() {
     });
 
     $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule_source&sid={{ rule.pk }}&from_date={{ from_date }}',
+       url: '{% url 'es_filter_ip' %}?field=rule_source&sid={{ rule.pk }}&from_date={{ from_date }}',
           success: function(data) {
              $('#source_ip_table').empty();
              $('#source_ip_table').append(data);
@@ -526,7 +526,7 @@ function load_ip_stats() {
     });
 
     $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule_target&sid={{ rule.pk }}&from_date={{ from_date }}',
+       url: '{% url 'es_filter_ip' %}?field=rule_target&sid={{ rule.pk }}&from_date={{ from_date }}',
           success: function(data) {
              $('#target_ip_table').empty();
              $('#target_ip_table').append(data);

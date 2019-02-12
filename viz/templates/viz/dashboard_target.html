@@ -138,7 +138,7 @@ $( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], null, differentiate_
 {% endif %}
 
 function draw_ippair_alerts(from_date, hosts, filter, callback) {
-    esurl = "/rules/es?query=ippair_network_alerts&from_date=" + from_date + "&hosts=" + hosts.join()
+    esurl = "/rest/rules/es/ip_pair_network_alerts/?from_date=" + from_date + "&hosts=" + hosts.join()
     if (filter) {
         esurl = esurl + "&filter=" + filter;
     }

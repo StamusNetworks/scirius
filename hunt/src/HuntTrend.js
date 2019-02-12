@@ -29,7 +29,7 @@ export default class HuntTrend extends React.Component {
         if (qfilter) {
             stringFilters += `&qfilter=${qfilter.replace('&qfilter=', '&filter=')}`;
         }
-        axios.get(`${config.API_URL}${config.ES_BASE_PATH}alerts_count&prev=1&hosts=*&from_date=${this.props.from_date}${stringFilters}`)
+        axios.get(`${config.API_URL}${config.ES_BASE_PATH}alerts_count/?prev=1&hosts=*&from_date=${this.props.from_date}${stringFilters}`)
         .then((res) => {
             if (typeof (res.data) !== 'string') {
                 this.setState({ data: res.data });

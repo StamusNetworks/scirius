@@ -27,7 +27,7 @@
 <body>
    <canvas id="renderCanvas"></canvas>
    <script type="text/javascript">
-            esurl = "/rules/es?query=alerts_tail&from_date=" + {{ from_date }}
+            esurl = "/rest/rules/es/alerts_tail/?from_date=" + {{ from_date }}
             $.ajax(
                 {
                         type:"GET",

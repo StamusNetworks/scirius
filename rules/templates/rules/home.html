@@ -218,7 +218,7 @@
     function get_alert_count() {
     $.ajax({
             type:"GET",
-            url: "{% url 'elasticsearch' %}?query=alerts_count&from_date={{ from_date }}&prev=1&hosts=*",
+            url: "{% url 'es_alerts_count' %}?from_date={{ from_date }}&prev=1&hosts=*",
             context: $(this),
             success: function(data) {
                     if (data && (typeof data !== 'string') && ('doc_count' in data)) {

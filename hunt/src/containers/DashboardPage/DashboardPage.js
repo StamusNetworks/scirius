@@ -277,7 +277,7 @@ export default class HuntDashboard extends React.Component {
         for (let j = 0; j < array.length; j += 1) {
             const block = array[j];
             axios.get(`${config.API_URL + config.ES_BASE_PATH
-            }field_stats&field=${block.i
+            }field_stats/?field=${block.i
             }&from_date=${this.props.from_date
             }&page_size=5${this.qFilter}`)
             .then((json) => {
@@ -381,7 +381,7 @@ export default class HuntDashboard extends React.Component {
 
     // eslint-disable-next-line react/display-name
     createElement = (block) => {
-        const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats&field=${block.i}&from_date=${this.props.from_date}&page_size=30${this.qFilter}`;
+        const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${block.i}&from_date=${this.props.from_date}&page_size=30${this.qFilter}`;
         return (
             <div key={block.i}
                 style={{ background: 'white' }}

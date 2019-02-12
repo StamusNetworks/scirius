@@ -206,92 +206,35 @@ def elasticsearch(request):
                 hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
                 context['table'] = hosts
                 return scirius_render(request, 'rules/table.html', context)
-        elif query == 'top_rules':
-            host = request.GET.get('host', None)
-            from_date = request.GET.get('from_date', None)
-            qfilter = request.GET.get('filter', None)
-            count = request.GET.get('count', 20)
-            order = request.GET.get('order', "desc")
-            if host != None and from_date != None:
-                rules = es_get_top_rules(request, host, from_date = from_date, qfilter = qfilter, count = count, order = order)
-                return HttpResponse(json.dumps(rules), content_type="application/json")
-        elif query == 'sigs_list':
-            host = request.GET.get('host', None)
-            from_date = request.GET.get('from_date', None)
-            qfilter = request.GET.get('filter', None)
-            sids = request.GET.get('sids', None)
-            if host != None and from_date != None and sids != None:
-                # FIXME sanitize that
-                sids = sids.split(',')
-                stats = es_get_sigs_list_hits(request, sids, host, from_date = from_date, qfilter = qfilter)
-                return HttpResponse(json.dumps(stats), content_type="application/json")
         elif query in RULE_FIELDS_MAPPING.keys():
+            ajax = request.GET.get('json', None)
+            if ajax:
+                raise ESError('Use REST API instead.')
+
             if query == 'field_stats':
                 filter_ip = request.GET.get('field', 'src_ip')
             else:
                 filter_ip = RULE_FIELDS_MAPPING[query]
+
             sid = request.GET.get('sid', None)
-            if sid != None:
-                sid = int(sid)
-                sid_filter = 'alert.signature_id:%d' % sid
-            else:
-                sid_filter = None
             from_date = request.GET.get('from_date', None)
             qfilter = request.GET.get('qfilter', None)
-            if qfilter:
-                if sid_filter != None:
-                    qfilter = '%s AND %s' % (sid_filter, qfilter)
-            else:
-                qfilter = sid_filter
-            ajax = request.GET.get('json', None)
             count = request.GET.get('page_size', 10)
-            if from_date != None:
-                if ajax:
-                    if filter_ip in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status', 'vlan']:
-                        data = es_get_field_stats(request, filter_ip, '*', from_date = from_date,
-                            count = count,
-                            qfilter = qfilter)
-                    else:
-                        data = es_get_field_stats(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, '*', from_date = from_date,
-                            count = count,
-                            qfilter = qfilter)
-                    return HttpResponse(json.dumps(data), content_type="application/json")
+
+            if sid is not None:
+                if qfilter is not None:
+                    qfilter = 'alert.signature_id:%s AND %s' % (sid, qfilter)
                 else:
-                    hosts = es_get_field_stats_as_table(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD, RuleHostTable, '*', from_date = from_date,
-                        count = 10,
-                        qfilter = qfilter)
-                    context['table'] = hosts
-                    return scirius_render(request, 'rules/table.html', context)
-        elif query == 'timeline':
-            from_date = request.GET.get('from_date', None)
-            cshosts = request.GET.get('hosts', None)
-            hosts = cshosts.split(',')
-            qfilter = request.GET.get('filter', None)
-            data = es_get_timeline(from_date = from_date, hosts = hosts, qfilter = qfilter)
-        elif query == 'logstash_eve':
-            from_date = request.GET.get('from_date', None)
-            value = request.GET.get('value', None)
-            cshosts = request.GET.get('hosts', None)
-            qfilter = request.GET.get('filter', None)
-            if cshosts:
-                hosts = cshosts.split(',')
-            else:
-                hosts = None
-            data = es_get_metrics_timeline(from_date = from_date, value = value, hosts = hosts, qfilter = qfilter)
-        elif query == 'poststats_summary':
-            from_date = request.GET.get('from_date', None)
-            value = request.GET.get('value', None)
-            cshosts = request.GET.get('hosts', None)
-            qfilter = request.GET.get('filter', None)
-            if cshosts:
-                hosts = cshosts.split(',')
-            else:
-                hosts = None
-            data = es_get_poststats(from_date = from_date, value = value, hosts = hosts, qfilter = qfilter)
-        elif query == 'health':
-            data = es_get_health()
-        elif query == 'stats':
-            data = es_get_stats()
+                    qfilter = 'alert.signature_id:%s' % sid
+
+            if from_date is not None:
+                hosts = es_get_field_stats_as_table(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
+                                                    RuleHostTable, '*',
+                                                    from_date=from_date,
+                                                    count=count,
+                                                    qfilter=qfilter)
+                context['table'] = hosts
+                return scirius_render(request, 'rules/table.html', context)
         elif query == 'indices':
             if request.is_ajax():
                 indices = ESIndexessTable(es_get_indices())
@@ -300,71 +243,6 @@ def elasticsearch(request):
                 return scirius_render(request, 'rules/table.html', context)
             else:
                 return scirius_render(request, 'rules/elasticsearch.html', context)
-        elif query == 'rules_per_category':
-            from_date = request.GET.get('from_date', None)
-            cshosts = request.GET.get('hosts', None)
-            if cshosts:
-                hosts = cshosts.split(',')
-            else:
-                hosts = None
-            qfilter = request.GET.get('filter', None)
-            data = es_get_rules_per_category(from_date = from_date, hosts = hosts, qfilter = qfilter)
-        elif query == 'alerts_count':
-            from_date = request.GET.get('from_date', None)
-            cshosts = request.GET.get('hosts', None)
-            if cshosts:
-                hosts = cshosts.split(',')
-            else:
-                hosts = None
-            qfilter = request.GET.get('filter', None)
-            prev = request.GET.get('prev', 0)
-            data = es_get_alerts_count(from_date = from_date, hosts = hosts, qfilter = qfilter, prev=prev)
-        elif query == 'latest_stats':
-            from_date = request.GET.get('from_date', None)
-            cshosts = request.GET.get('hosts', None)
-            if cshosts:
-                hosts = cshosts.split(',')
-            else:
-                hosts = None
-            qfilter = request.GET.get('filter', None)
-            data = es_get_latest_stats(from_date = from_date, hosts = hosts, qfilter = qfilter)
-        elif query == 'ippair_alerts':
-            from_date = request.GET.get('from_date', None)
-            cshosts = request.GET.get('hosts', None)
-            if cshosts:
-                hosts = cshosts.split(',')
-            else:
-                hosts = None
-            qfilter = request.GET.get('filter', None)
-            data = es_get_ippair_alerts(from_date = from_date, hosts = hosts, qfilter = qfilter)
-        elif query == 'ippair_network_alerts':
-            from_date = request.GET.get('from_date', None)
-            cshosts = request.GET.get('hosts', None)
-            if cshosts:
-                hosts = cshosts.split(',')
-            else:
-                hosts = None
-            qfilter = request.GET.get('filter', None)
-            data = es_get_ippair_network_alerts(from_date = from_date, hosts = hosts, qfilter = qfilter)
-        elif query == 'alerts_tail':
-            from_date = request.GET.get('from_date', None)
-            qfilter = request.GET.get('filter', None)
-            search_target = request.GET.get('search_target', True)
-            if search_target != True:
-                search_target = False
-            data = es_get_alerts_tail(from_date = from_date, qfilter = qfilter, search_target = search_target)
-        elif query == 'suri_log_tail':
-            from_date = request.GET.get('from_date', None)
-            qfilter = request.GET.get('filter', None)
-            cshosts = request.GET.get('hosts', None)
-            if cshosts:
-                hosts = cshosts.split(',')
-            else:
-                hosts = None
-            data = es_suri_log_tail(from_date=from_date, hosts=hosts)
-        else:
-            data = None
-        return HttpResponse(json.dumps(data), content_type="application/json")
     else:
         if request.is_ajax():
             data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)

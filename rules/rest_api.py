@@ -35,7 +35,7 @@ from rules.es_data import ESData
 
 from rules.es_graphs import es_get_stats, es_get_rules_stats, es_get_dashboard, es_get_sid_by_hosts, es_get_field_stats, \
         es_get_timeline, es_get_metrics_timeline, es_get_health, es_get_indices, es_get_rules_per_category, es_get_alerts_count, \
-        es_get_latest_stats, es_get_ippair_alerts, es_get_ippair_network_alerts, es_get_alerts_tail, es_suri_log_tail
+        es_get_latest_stats, es_get_ippair_alerts, es_get_ippair_network_alerts, es_get_alerts_tail, es_suri_log_tail, es_get_poststats
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD
@@ -1911,12 +1911,12 @@ class ESDashboardViewSet(APIView):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"stats":{"SN-FILE-Transactions":"SN FILE-Transactions","SN-VLAN":"SN VLAN","SN-OVERVIEW":"SN OVERVIEW","SN-SMTP":"SN SMTP","SN-HTTP":"SN HTTP","SN-ALERTS":"SN ALERTS","SN-TLS":"SN TLS","SN-IDS":"SN IDS","SN-STATS":"SN STATS","SN-FLOW":"SN FLOW","SN-SSH":"SN SSH","SN-DNS":"SN DNS","SN-ALL":"SN ALL"}}
+        {"SN-FILE-Transactions":"SN FILE-Transactions","SN-VLAN":"SN VLAN","SN-OVERVIEW":"SN OVERVIEW","SN-SMTP":"SN SMTP","SN-HTTP":"SN HTTP","SN-ALERTS":"SN ALERTS","SN-TLS":"SN TLS","SN-IDS":"SN IDS","SN-STATS":"SN STATS","SN-FLOW":"SN FLOW","SN-SSH":"SN SSH","SN-DNS":"SN DNS","SN-ALL":"SN ALL"}
 
     =============================================================================================================================================================
     """
     def get(self, request, format=None):
-        return Response({'stats': es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)})
+        return Response(es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT))
 
 
 class ESRulesViewSet(APIView):
@@ -1983,6 +1983,107 @@ class ESRuleViewSet(APIView):
         return Response({'rule': es_get_sid_by_hosts(request, sid, from_date=from_date, dict_format=True)})
 
 
+class ESTopRulesViewSet(APIView):
+    """
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        host = request.GET.get('host', None)
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
+        qfilter = request.GET.get('filter', None)
+        count = request.GET.get('count', 20)
+        order = request.GET.get('order', "desc")
+
+        if host is None:
+            errors = {'host': ['This field is required.']}
+            raise serializers.ValidationError(errors)
+
+        return Response(es_get_top_rules(request, host, from_date=from_date, qfilter=qfilter, count=count, order=order))
+
+
+class ESSigsListViewSet(APIView):
+    """
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        host = request.GET.get('host', None)
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
+        qfilter = request.GET.get('filter', None)
+        sids = request.GET.get('sids', 20)
+
+        errors = {}
+        if sids is None:
+            errors['sids'] = ['This field is required.']
+
+        if host is None:
+            errors['host'] = ['This field is required.']
+
+        if len(errors) > 0:
+            raise serializers.ValidationError(errors)
+
+        return Response(es_get_sigs_list_hits(request, sids, host, from_date=from_date, qfilter=qfilter))
+
+
+class ESPostStatsViewSet(APIView):
+    """
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        chosts = request.GET.get('hosts', None)
+        qfilter = request.GET.get('filter', None)
+        value = request.GET.get('value', None)
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
+
+        if chosts:
+            chosts = chosts.split(',')
+
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        return Response(es_get_poststats(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter))
+
+
+class ESFieldStatsViewSet(APIView):
+    """
+    """
+
+    def get(self, request, format=None):
+        milli_sec = 3600 * 1000
+        errors = {}
+        field = request.GET.get('field', None)
+        sid = request.GET.get('sid', None)
+        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
+        qfilter = request.GET.get('qfilter', None)
+
+        if sid is not None:
+            if qfilter is not None:
+                qfilter = 'alert.signature_id:%s AND %s' % (sid, qfilter)
+            else:
+                qfilter = 'alert.signature_id:%s' % sid
+
+        if field is None:
+            errors = {'field': ['This field is required.']}
+            raise serializers.ValidationError(errors)
+
+        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
+        filter_ip = request.GET.get('field', 'src_ip')
+        count = request.GET.get('page_size', 10)
+
+        if filter_ip not in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status', 'vlan']:
+            filter_ip = filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD
+
+        hosts = es_get_field_stats(request,
+                                   filter_ip,
+                                   '*',
+                                   from_date=from_date,
+                                   count=count,
+                                   qfilter=qfilter,
+                                   dict_format=True)
+
+        return Response(hosts)
+
+
 class ESFilterIPViewSet(APIView):
     """
     =============================================================================================================================================================
@@ -1997,14 +2098,14 @@ class ESFilterIPViewSet(APIView):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"hosts":[{"key":"212.47.239.163","doc_count":1}]}
+        [{"key":"212.47.239.163","doc_count":1}]
 
     Show a rule stats:\n
         curl -k https://x.x.x.x/rest/rules/es/filter_ip/\?field\=rule_dest\&sid\=2522628\&from_date\=1537264545477 -H 'Authorization: Token dba92b07973ba061f9a0d48a1afd98d1e7b717d6' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
-        {"hosts":[{"key":"192.168.0.14","doc_count":1}]}
+        [{"key":"192.168.0.14","doc_count":1}]
 
     =============================================================================================================================================================
     """
@@ -2017,31 +2118,34 @@ class ESFilterIPViewSet(APIView):
         field = request.GET.get('field', None)
         sid = request.GET.get('sid', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
+        qfilter = request.GET.get('qfilter', None)
 
-        if sid is None:
-            errors['sid'] = ['This field is required.']
+        if sid is not None:
+            if qfilter is not None:
+                qfilter = 'alert.signature_id:%s AND %s' % (sid, qfilter)
+            else:
+                qfilter = 'alert.signature_id:%s' % sid
 
         if field is None:
             errors['field'] = ['This field is required.']
-
-        if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
         if field not in self.RULE_FIELDS_MAPPING.keys():
             raise exceptions.NotFound(detail='"%s" is not a valid field' % field)
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-
         filter_ip = self.RULE_FIELDS_MAPPING[field]
+        count = request.GET.get('page_size', 10)
+
         hosts = es_get_field_stats(request,
                                    filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
                                    '*',
                                    from_date=from_date,
-                                   count=10,
-                                   qfilter='alert.signature_id:%s' % sid,
+                                   count=count,
+                                   qfilter=qfilter,
                                    dict_format=True)
 
-        return Response({'hosts': hosts})
+        return Response(hosts)
 
 
 class ESTimelineViewSet(APIView):
@@ -2056,7 +2160,7 @@ class ESTimelineViewSet(APIView):
 
     Return:\n
        HTTP/1.1 200 OK
-       {"hosts":{"ProbeMain":{"entries":[{"count":2,"time":1530620640000},{"count":17,"time":1530698400000},{"count":1,"time":1530750240000}]},"from_date":1528184544572,"interval":25920000}} 
+       {"ProbeMain":{"entries":[{"count":2,"time":1530620640000},{"count":17,"time":1530698400000},{"count":1,"time":1530750240000}]},"from_date":1528184544572,"interval":25920000}
 
     =============================================================================================================================================================
     """
@@ -2071,7 +2175,7 @@ class ESTimelineViewSet(APIView):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'hosts': es_get_timeline(from_date=from_date, hosts=chosts, qfilter=qfilter)})
+        return Response(es_get_timeline(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
 class ESLogstashEveViewSet(APIView):
@@ -2088,7 +2192,7 @@ class ESLogstashEveViewSet(APIView):
         5. curl -k "https://x.x.x.x/rest/rules/es/logstash_eve/?value=system.filesystem.used.pct&from_date=1540210439302&hosts=stamus&filter=system.filesystem.mount_point.raw:\"/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch\"" -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
-        1. {"logstash_eve":{"from_date":1540211796478,"interval":868000,"stamus":{"entries":[{"mean":0.2518125013448298,"time":1540213664000},{"mean":0.12792068951088806,"time":1540214532000},{"mean":0.2473448278575108,"time":1540215400000},
+        1. {"from_date":1540211796478,"interval":868000,"stamus":{"entries":[{"mean":0.2518125013448298,"time":1540213664000},{"mean":0.12792068951088806,"time":1540214532000},{"mean":0.2473448278575108,"time":1540215400000},
            {"mean":0.17718275841967812,"time":1540216268000},{"mean":0.26032413490887346,"time":1540217136000},{"mean":0.12027241340998945,"time":1540218004000},{"mean":0.11639655150216201,"time":1540218872000},
            {"mean":0.22578214348426887,"time":1540219740000},{"mean":0.2087103447009777,"time":1540220608000},{"mean":0.18898275957025332,"time":1540221476000},{"mean":0.33865516992478534,"time":1540222344000},
            {"mean":0.2423620681310522,"time":1540223212000},{"mean":0.15318965500798717,"time":1540224080000},{"mean":0.15162413772837868,"time":1540224948000},{"mean":0.25527407394515145,"time":1540225816000},
@@ -2107,17 +2211,17 @@ class ESLogstashEveViewSet(APIView):
            {"mean":0.15135862035997982,"time":1540285708000},{"mean":0.17907241320815578,"time":1540286576000},{"mean":0.19569310314696411,"time":1540287444000},{"mean":0.15246896651284447,"time":1540288312000},
            {"mean":0.1365241377518095,"time":1540289180000},{"mean":0.13442758676306954,"time":1540290048000},{"mean":0.1337482757095633,"time":1540290916000},{"mean":0.13650000069675775,"time":1540291784000},
            {"mean":0.13234137872169757,"time":1540292652000},{"mean":0.13395862050097565,"time":1540293520000},{"mean":0.1352275856610002,"time":1540294388000},{"mean":0.1356607140707118,"time":1540295256000},
-           {"mean":0.2512724152926741,"time":1540296124000},{"mean":0.2668586211471722,"time":1540296992000},{"mean":0.17512963049941593,"time":1540297860000}]}}}
+           {"mean":0.2512724152926741,"time":1540296124000},{"mean":0.2668586211471722,"time":1540296992000},{"mean":0.17512963049941593,"time":1540297860000}]}}
 
-        2. {"logstash_eve":{"ProbeMain":{"entries":[{"mean":0.3259543928641156,"time":1530620640000},{"mean":null,"time":1530646560000},{"mean":0.1408457946136733,"time":1530672480000},{"mean":0.21490591046354307,"time":1530698400000},{"mean":null,"time":1530724320000},
-           {"mean":0.3362637047414426,"time":1530750240000},{"mean":0.3794413974849127,"time":1530776160000}]},"from_date":1528189751975,"interval":25920000}}
+        2. {"ProbeMain":{"entries":[{"mean":0.3259543928641156,"time":1530620640000},{"mean":null,"time":1530646560000},{"mean":0.1408457946136733,"time":1530672480000},{"mean":0.21490591046354307,"time":1530698400000},{"mean":null,"time":1530724320000},
+           {"mean":0.3362637047414426,"time":1530750240000},{"mean":0.3794413974849127,"time":1530776160000}]},"from_date":1528189751975,"interval":25920000}
 
-        3. {"logstash_eve":{"ProbeMain":{"entries":[{"mean":279981525.3389121,"time":1530620640000},{"mean":null,"time":1530646560000},{"mean":150212918.69626167,"time":1530672480000},
-           {"mean":3426892519.905911,"time":1530698400000},{"mean":null,"time":1530724320000},{"mean":155888225.38518518,"time":1530750240000},{"mean":359010903.6592179,"time":1530776160000}]},"from_date":1528189528880,"interval":25920000}}
+        3. {"ProbeMain":{"entries":[{"mean":279981525.3389121,"time":1530620640000},{"mean":null,"time":1530646560000},{"mean":150212918.69626167,"time":1530672480000},
+           {"mean":3426892519.905911,"time":1530698400000},{"mean":null,"time":1530724320000},{"mean":155888225.38518518,"time":1530750240000},{"mean":359010903.6592179,"time":1530776160000}]},"from_date":1528189528880,"interval":25920000}
 
-        4. {"logstash_eve":{"from_date":1528189589850,"interval":25920000}}
+        4. {"from_date":1528189589850,"interval":25920000}
 
-        5. {"logstash_eve":{"from_date":1540210439302,"interval":880000,"stamus":{"entries":[{"mean":9.999999747378752e-05,"time":1540213680000},{"mean":9.999999747378752e-05,"time":1540214560000},{"mean":9.999999747378752e-05,"time":1540215440000},
+        5. {"from_date":1540210439302,"interval":880000,"stamus":{"entries":[{"mean":9.999999747378752e-05,"time":1540213680000},{"mean":9.999999747378752e-05,"time":1540214560000},{"mean":9.999999747378752e-05,"time":1540215440000},
            {"mean":9.999999747378752e-05,"time":1540216320000},{"mean":9.999999747378752e-05,"time":1540217200000},{"mean":9.999999747378752e-05,"time":1540218080000},{"mean":9.999999747378752e-05,"time":1540218960000},
            {"mean":9.999999747378752e-05,"time":1540219840000},{"mean":9.999999747378752e-05,"time":1540220720000},{"mean":9.999999747378752e-05,"time":1540221600000},{"mean":9.999999747378752e-05,"time":1540222480000},
            {"mean":9.999999747378752e-05,"time":1540223360000},{"mean":9.999999747378752e-05,"time":1540224240000},{"mean":0.00010344827324874571,"time":1540225120000},{"mean":0.0001142857113986143,"time":1540226000000},
@@ -2136,7 +2240,7 @@ class ESLogstashEveViewSet(APIView):
            {"mean":0.00011034482479866208,"time":1540285840000},{"mean":0.00013103447944841124,"time":1540286720000},{"mean":0.00019333332844932252,"time":1540287600000},{"mean":0.00019999999494757503,"time":1540288480000},
            {"mean":0.00019999999494757503,"time":1540289360000},{"mean":0.00019999999494757503,"time":1540290240000},{"mean":0.00019999999494757503,"time":1540291120000},{"mean":0.00019999999494757503,"time":1540292000000},
            {"mean":0.00019999999494757503,"time":1540292880000},{"mean":0.00019999999494757503,"time":1540293760000},{"mean":0.00019999999494757503,"time":1540294640000},{"mean":0.00019999999494757503,"time":1540295520000},
-           {"mean":0.00019999999494757503,"time":1540296400000},{"mean":0.00019999999494757503,"time":1540297280000},{"mean":0.00019999999494757503,"time":1540298160000}]}}}
+           {"mean":0.00019999999494757503,"time":1540296400000},{"mean":0.00019999999494757503,"time":1540297280000},{"mean":0.00019999999494757503,"time":1540298160000}]}}
 
     =============================================================================================================================================================
     """
@@ -2152,7 +2256,7 @@ class ESLogstashEveViewSet(APIView):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'logstash_eve': es_get_metrics_timeline(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter)})
+        return Response(es_get_metrics_timeline(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter))
 
 
 class ESHealthViewSet(APIView):
@@ -2163,14 +2267,14 @@ class ESHealthViewSet(APIView):
         curl -k https://x.x.x.x/rest/rules/es/health/ -H 'Authorization: Token dba92b07973ba061f9a0d48a1afd98d1e7b717d6' -H 'Content-Type: application/json' -X GET
 
     Return:\n
-        {"health":{"status":"green","number_of_nodes":1,"unassigned_shards":0,"number_of_pending_tasks":0,"number_of_in_flight_fetch":0,"timed_out":false,"active_primary_shards":90,"task_max_waiting_in_queue_millis":0,
-        "cluster_name":"elasticsearch","relocating_shards":0,"active_shards_percent_as_number":100.0,"active_shards":90,"initializing_shards":0,"number_of_data_nodes":1,"delayed_unassigned_shards":0}}
+        {"status":"green","number_of_nodes":1,"unassigned_shards":0,"number_of_pending_tasks":0,"number_of_in_flight_fetch":0,"timed_out":false,"active_primary_shards":90,"task_max_waiting_in_queue_millis":0,
+        "cluster_name":"elasticsearch","relocating_shards":0,"active_shards_percent_as_number":100.0,"active_shards":90,"initializing_shards":0,"number_of_data_nodes":1,"delayed_unassigned_shards":0}
 
     =============================================================================================================================================================
     """
 
     def get(self, request, format=None):
-        return Response({'health': es_get_health()})
+        return Response(es_get_health())
 
 
 class ESStatsViewSet(APIView):
@@ -2181,7 +2285,7 @@ class ESStatsViewSet(APIView):
         curl -k https://x.x.x.x/rest/rules/es/stats/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
-        {"stats":{"status":"green","cluster_name":"elasticsearch","timestamp":1530781977351,"_nodes":{"successful":1,"failed":0,"total":1},
+        {"status":"green","cluster_name":"elasticsearch","timestamp":1530781977351,"_nodes":{"successful":1,"failed":0,"total":1},
         "indices":{"count":18,"completion":{"size_in_bytes":0},"fielddata":{"evictions":0,"memory_size_in_bytes":6800},"docs":{"count":94039,"deleted":0},
         "segments":{"count":367,"max_unsafe_auto_id_timestamp":9223372036854775807,"term_vectors_memory_in_bytes":0,"version_map_memory_in_bytes":4283,
         "norms_memory_in_bytes":12608,"stored_fields_memory_in_bytes":127544,"file_sizes":{},"doc_values_memory_in_bytes":1683116,"fixed_bit_set_memory_in_bytes":0,
@@ -2199,7 +2303,7 @@ class ESStatsViewSet(APIView):
     =============================================================================================================================================================
     """
     def get(self, request, format=None):
-        return Response({'stats': es_get_stats()})
+        return Response(es_get_stats())
 
 
 class ESIndicesViewSet(APIView):
@@ -2239,14 +2343,14 @@ class ESRulesPerCategoryViewSet(APIView):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"rule_per_category":{"children":[{"children":[{"msg":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 520","key":2523038,"doc_count":17},
+        {"children":[{"children":[{"msg":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 520","key":2523038,"doc_count":17},
         {"msg":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 434","key":2522866,"doc_count":14},
         {"msg":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 346","key":2522690,"doc_count":13},
         {"msg":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 315","key":2522628,"doc_count":1},
         {"msg":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 459","key":2522916,"doc_count":1}],
         "key":"Misc Attack","doc_count":46},{"children":[{"msg":"GPL ATTACK_RESPONSE id check returned root","key":2100498,"doc_count":4}],
         "key":"Potentially Bad Traffic","doc_count":4},{"children":[{"msg":"ET POLICY curl User-Agent Outbound","key":2013028,"doc_count":2}],
-        "key":"Attempted Information Leak","doc_count":2}],"key":"categories"}}
+        "key":"Attempted Information Leak","doc_count":2}],"key":"categories"}
 
     =============================================================================================================================================================
     """
@@ -2263,7 +2367,7 @@ class ESRulesPerCategoryViewSet(APIView):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'rule_per_category': es_get_rules_per_category(from_date=from_date, hosts=chosts, qfilter=qfilter)})
+        return Response(es_get_rules_per_category(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
 class ESAlertsCountViewSet(APIView):
@@ -2279,8 +2383,8 @@ class ESAlertsCountViewSet(APIView):
 
     Return:\n
         HTTP/1.1 200 OK
-        1. {"alerts_count":{"doc_count":18}}
-        2. {"alerts_count":{"prev_doc_count":25,"doc_count":17}}
+        1. {"doc_count":18}
+        2. {"prev_doc_count":25,"doc_count":17}
 
     =============================================================================================================================================================
     """
@@ -2298,7 +2402,7 @@ class ESAlertsCountViewSet(APIView):
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         prev = 1 if prev is not None and prev != 'false' else None
 
-        return Response({'alerts_count': es_get_alerts_count(from_date=from_date, hosts=chosts, qfilter=qfilter, prev=prev)})
+        return Response(es_get_alerts_count(from_date=from_date, hosts=chosts, qfilter=qfilter, prev=prev))
 
 
 class ESLatestStatsViewSet(APIView):
@@ -2312,7 +2416,7 @@ class ESLatestStatsViewSet(APIView):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"latest_stats":{"stats":{"ftp":{"memcap":0,"memcap_delta":0,"memuse":0,"memuse_delta":0},"uptime":52161,"detect":{"alert_delta":0,"engines":[{"rules_loaded":20843,"id":0,"rules_failed":0,
+        {"stats":{"ftp":{"memcap":0,"memcap_delta":0,"memuse":0,"memuse_delta":0},"uptime":52161,"detect":{"alert_delta":0,"engines":[{"rules_loaded":20843,"id":0,"rules_failed":0,
         "last_reload":"2018-07-11T09:45:33.630288+0200"}],"alert":65},"http":{"memcap":0,"memcap_delta":0,"memuse":0,"memuse_delta":0},
         "flow_mgr":{"rows_checked_delta":0,"rows_skipped":65534,"closed_pruned_delta":0,"rows_maxlen_delta":1,"flows_notimeout":2,"rows_empty_delta":-1,"flows_removed":0,"est_pruned":6375,
         "flows_removed_delta":0,"flows_timeout_inuse":0,"est_pruned_delta":0,"rows_busy":0,"flows_timeout":0,"new_pruned":18776,"bypassed_pruned_delta":0,"flows_checked_delta":2,"rows_skipped_delta":-1,
@@ -2337,7 +2441,7 @@ class ESLatestStatsViewSet(APIView):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'latest_stats': es_get_latest_stats(from_date=from_date, hosts=chosts, qfilter=qfilter)})
+        return Response(es_get_latest_stats(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
 class ESIPPairAlertsViewSet(APIView):
@@ -2352,11 +2456,11 @@ class ESIPPairAlertsViewSet(APIView):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"ippair_alerts":{"nodes":[{"group":4,"id":"212.47.239.163"},{"group":4,"id":"192.168.0.14"},{"group":4,"id":"37.187.17.67"},
+        {"nodes":[{"group":4,"id":"212.47.239.163"},{"group":4,"id":"192.168.0.14"},{"group":4,"id":"37.187.17.67"},
         {"group":4,"id":"192.168.0.25"},{"group":4,"id":"62.210.244.146"}],"links":[{"source":0,"alerts":[{"key":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 346","doc_count":4}],
         "target":1,"value":4.772588722239782},{"source":2,"alerts":[{"key":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 434","doc_count":4}],
         "target":3,"value":4.772588722239782},{"source":4,"alerts":[{"key":"ET TOR Known Tor Relay/Router (Not Exit) Node Traffic group 520","doc_count":4}],
-        "target":3,"value":4.772588722239782}]}}
+        "target":3,"value":4.772588722239782}]}
 
     =============================================================================================================================================================
 
@@ -2372,7 +2476,7 @@ class ESIPPairAlertsViewSet(APIView):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'ippair_alerts': es_get_ippair_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter)})
+        return Response(es_get_ippair_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
 class ESIPPairNetworkAlertsViewSet(APIView):
@@ -2386,7 +2490,7 @@ class ESIPPairNetworkAlertsViewSet(APIView):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"ippair_network_alerts":{"nodes":[],"links":[]}}
+        {"nodes":[],"links":[]}
 
     =============================================================================================================================================================
 
@@ -2402,7 +2506,7 @@ class ESIPPairNetworkAlertsViewSet(APIView):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'ippair_network_alerts': es_get_ippair_network_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter)})
+        return Response(es_get_ippair_network_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
 class ESAlertsTailViewSet(APIView):
@@ -2416,7 +2520,7 @@ class ESAlertsTailViewSet(APIView):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"alerts_tail":[]}
+        []
 
     =============================================================================================================================================================
 
@@ -2427,7 +2531,9 @@ class ESAlertsTailViewSet(APIView):
         qfilter = request.GET.get('filter', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'alerts_tail': es_get_alerts_tail(from_date=from_date, qfilter=qfilter)})
+        search_target = request.GET.get('search_target', True)
+        search_target = False if search_target is not True else True
+        return Response(es_get_alerts_tail(from_date=from_date, qfilter=qfilter, search_target=search_target))
 
 
 class ESSuriLogTailViewSet(APIView):
@@ -2439,8 +2545,7 @@ class ESSuriLogTailViewSet(APIView):
 
     Return:\n
         HTTP/1.1 200 OK
-        {"suri_log_tail":[
-        {"sort":[1530779257071],"_type":"log","_source":{"engine":{"message":"This is Suricata version 4.1.0-dev (rev 2973ecd)"},"type":"log","event_type":"engine","timestamp":"2018-07-05T10:27:37.071716+0200","tags":["beats_input_codec_json_applied"],"beat":{"hostname":"ProbeMain","name":"ProbeMain","version":"5.6.9"},"input_type":"log","@timestamp":"2018-07-05T08:27:37.071Z","source":"/var/log/suricata/suricata.json","host":"ProbeMain","offset":56988,"@version":"1"},"_score":null,"_index":"logstash-2018.07.05","_id":"AWRpIvbZiu8Nj3hTWm5b"},
+        [{"sort":[1530779257071],"_type":"log","_source":{"engine":{"message":"This is Suricata version 4.1.0-dev (rev 2973ecd)"},"type":"log","event_type":"engine","timestamp":"2018-07-05T10:27:37.071716+0200","tags":["beats_input_codec_json_applied"],"beat":{"hostname":"ProbeMain","name":"ProbeMain","version":"5.6.9"},"input_type":"log","@timestamp":"2018-07-05T08:27:37.071Z","source":"/var/log/suricata/suricata.json","host":"ProbeMain","offset":56988,"@version":"1"},"_score":null,"_index":"logstash-2018.07.05","_id":"AWRpIvbZiu8Nj3hTWm5b"},
         {"sort":[1530779257229],"_type":"log","_source":{"engine":{"message":"CPUs/cores online: 1"},"type":"log","event_type":"engine","timestamp":"2018-07-05T10:27:37.229985+0200","tags":["beats_input_codec_json_applied"],"beat":{"hostname":"ProbeMain","name":"ProbeMain","version":"5.6.9"},"input_type":"log","@timestamp":"2018-07-05T08:27:37.229Z","source":"/var/log/suricata/suricata.json","host":"ProbeMain","offset":57103,"@version":"1"},"_score":null,"_index":"logstash-2018.07.05","_id":"AWRpIvbZiu8Nj3hTWm5c"},
         {"sort":[1530779257902],"_type":"log","_source":{"engine":{"message":"eve-log output device (regular) initialized: eve-alert.json"},"type":"log","event_type":"engine","timestamp":"2018-07-05T10:27:37.902961+0200","tags":["beats_input_codec_json_applied"],"beat":{"hostname":"ProbeMain","name":"ProbeMain","version":"5.6.9"},"input_type":"log","@timestamp":"2018-07-05T08:27:37.902Z","source":"/var/log/suricata/suricata.json","host":"ProbeMain","offset":57748,"@version":"1"},"_score":null,"_index":"logstash-2018.07.05","_id":"AWRpIvbZiu8Nj3hTWm5g"},
         {"sort":[1530779257902],"_type":"log","_source":{"engine":{"message":"eve-log output device (regular) initialized: eve.json"},"type":"log","event_type":"engine","timestamp":"2018-07-05T10:27:37.902882+0200","tags":["beats_input_codec_json_applied"],"beat":{"hostname":"ProbeMain","name":"ProbeMain","version":"5.6.9"},"input_type":"log","@timestamp":"2018-07-05T08:27:37.902Z","source":"/var/log/suricata/suricata.json","host":"ProbeMain","offset":57376,"@version":"1"},"_score":null,"_index":"logstash-2018.07.05","_id":"AWRpIvbZiu8Nj3hTWm5e"},
@@ -2460,7 +2565,7 @@ class ESSuriLogTailViewSet(APIView):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'suri_log_tail': es_suri_log_tail(from_date=from_date, hosts=chosts)})
+        return Response(es_suri_log_tail(from_date=from_date, hosts=chosts))
 
 
 class ESDeleteLogsViewSet(APIView):
@@ -2634,6 +2739,10 @@ def get_custom_urls():
     urls.append(url(r'rules/es/rules/$', ESRulesViewSet.as_view(), name='es_rules'))
     urls.append(url(r'rules/es/rule/$', ESRuleViewSet.as_view(), name='es_rule'))
     urls.append(url(r'rules/es/filter_ip/$', ESFilterIPViewSet.as_view(), name='es_filter_ip'))
+    urls.append(url(r'rules/es/field_stats/$', ESFieldStatsViewSet.as_view(), name='es_field_stats'))
+    urls.append(url(r'rules/es/poststats_summary/$', ESPostStatsViewSet.as_view(), name='es_poststats_summary'))
+    urls.append(url(r'rules/es/sigs_list/$', ESSigsListViewSet.as_view(), name='es_sigs_list'))
+    urls.append(url(r'rules/es/top_rules/$', ESTopRulesViewSet.as_view(), name='es_top_rules'))
     urls.append(url(r'rules/es/timeline/$', ESTimelineViewSet.as_view(), name='es_timeline'))
     urls.append(url(r'rules/es/logstash_eve/$', ESLogstashEveViewSet.as_view(), name='es_logstash_eve'))
     urls.append(url(r'rules/es/health/$', ESHealthViewSet.as_view(), name='es_health'))
