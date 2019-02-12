@@ -166,7 +166,7 @@ Add a Source
                     } else {
                         $("#secret_code_div").remove();
                     }
-                    let max_size = 100 - len('...');
+                    let max_size = 100 - '...'.length;
                     let summary = source['summary'];
                     if(summary.length > max_size) {
                         summary = `${summary.substring(0, max_size)}...`;
