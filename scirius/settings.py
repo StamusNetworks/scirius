@@ -137,6 +137,36 @@ CACHES = {
     }
 }
 
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'fileformat': {
+            'format': '%(asctime)s %(levelname)s %(message)s'
+        },
+        'raw': {
+            'format': '%(message)s'
+        },
+    },
+    'handlers': {
+        'elasticsearch': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/celery/elasticsearch.log',
+            'formatter': 'raw',
+        },
+    },
+    'loggers': {
+        'elasticsearch': {
+            'handlers': ['elasticsearch'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    }
+}
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
 

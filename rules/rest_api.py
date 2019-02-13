@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 from suripyg import SuriHTMLFormat
 from time import time
+import urllib2
+import socket
 
 from django.conf import settings
 from django.utils import timezone
@@ -1902,7 +1904,22 @@ class ChangelogViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ('pk', 'source', 'version',)
 
 
-class ESDashboardViewSet(APIView):
+class ESBaseViewSet(APIView):
+    """
+    ES Abstract Base class
+    """
+
+    def get(self, request, format=None):
+        try:
+            return self._get(request, format)
+        except ESError as e:
+            return Response({'error: ES request failed, %s' % unicode(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def _get(self, request, format):
+        raise NotImplementedError('This is an abstract class. ES sub classes must override this method')
+
+
+class ESDashboardViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -1915,11 +1932,11 @@ class ESDashboardViewSet(APIView):
 
     =============================================================================================================================================================
     """
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         return Response(es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT))
 
 
-class ESRulesViewSet(APIView):
+class ESRulesViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -1936,7 +1953,7 @@ class ESRulesViewSet(APIView):
     =============================================================================================================================================================
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         host = request.GET.get('host', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
@@ -1953,7 +1970,7 @@ class ESRulesViewSet(APIView):
         return Response({'rules': es_get_rules_stats(request, host, from_date=from_date, qfilter=qfilter, dict_format=True)})
 
 
-class ESRuleViewSet(APIView):
+class ESRuleViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -1967,7 +1984,7 @@ class ESRuleViewSet(APIView):
     =============================================================================================================================================================
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         sid = request.GET.get('sid', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
@@ -1983,11 +2000,11 @@ class ESRuleViewSet(APIView):
         return Response({'rule': es_get_sid_by_hosts(request, sid, from_date=from_date, dict_format=True)})
 
 
-class ESTopRulesViewSet(APIView):
+class ESTopRulesViewSet(ESBaseViewSet):
     """
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         host = request.GET.get('host', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
@@ -2002,11 +2019,11 @@ class ESTopRulesViewSet(APIView):
         return Response(es_get_top_rules(request, host, from_date=from_date, qfilter=qfilter, count=count, order=order))
 
 
-class ESSigsListViewSet(APIView):
+class ESSigsListViewSet(ESBaseViewSet):
     """
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         host = request.GET.get('host', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
@@ -2026,11 +2043,11 @@ class ESSigsListViewSet(APIView):
         return Response(es_get_sigs_list_hits(request, sids, host, from_date=from_date, qfilter=qfilter))
 
 
-class ESPostStatsViewSet(APIView):
+class ESPostStatsViewSet(ESBaseViewSet):
     """
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
@@ -2044,11 +2061,11 @@ class ESPostStatsViewSet(APIView):
         return Response(es_get_poststats(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter))
 
 
-class ESFieldStatsViewSet(APIView):
+class ESFieldStatsViewSet(ESBaseViewSet):
     """
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         errors = {}
         field = request.GET.get('field', None)
@@ -2084,7 +2101,7 @@ class ESFieldStatsViewSet(APIView):
         return Response(hosts)
 
 
-class ESFilterIPViewSet(APIView):
+class ESFilterIPViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2112,7 +2129,7 @@ class ESFilterIPViewSet(APIView):
 
     RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip'}
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         errors = {}
         field = request.GET.get('field', None)
@@ -2148,7 +2165,7 @@ class ESFilterIPViewSet(APIView):
         return Response(hosts)
 
 
-class ESTimelineViewSet(APIView):
+class ESTimelineViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2165,7 +2182,7 @@ class ESTimelineViewSet(APIView):
     =============================================================================================================================================================
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
@@ -2178,7 +2195,7 @@ class ESTimelineViewSet(APIView):
         return Response(es_get_timeline(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
-class ESLogstashEveViewSet(APIView):
+class ESLogstashEveViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2245,7 +2262,7 @@ class ESLogstashEveViewSet(APIView):
     =============================================================================================================================================================
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         value = request.GET.get('value', None)
@@ -2259,7 +2276,7 @@ class ESLogstashEveViewSet(APIView):
         return Response(es_get_metrics_timeline(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter))
 
 
-class ESHealthViewSet(APIView):
+class ESHealthViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2273,11 +2290,11 @@ class ESHealthViewSet(APIView):
     =============================================================================================================================================================
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         return Response(es_get_health())
 
 
-class ESStatsViewSet(APIView):
+class ESStatsViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2302,11 +2319,11 @@ class ESStatsViewSet(APIView):
 
     =============================================================================================================================================================
     """
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         return Response(es_get_stats())
 
 
-class ESIndicesViewSet(APIView):
+class ESIndicesViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2327,11 +2344,11 @@ class ESIndicesViewSet(APIView):
     =============================================================================================================================================================
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         return Response({'indices': es_get_indices()})
 
 
-class ESRulesPerCategoryViewSet(APIView):
+class ESRulesPerCategoryViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2355,7 +2372,7 @@ class ESRulesPerCategoryViewSet(APIView):
     =============================================================================================================================================================
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
@@ -2370,7 +2387,7 @@ class ESRulesPerCategoryViewSet(APIView):
         return Response(es_get_rules_per_category(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
-class ESAlertsCountViewSet(APIView):
+class ESAlertsCountViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2389,7 +2406,7 @@ class ESAlertsCountViewSet(APIView):
     =============================================================================================================================================================
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
@@ -2405,7 +2422,7 @@ class ESAlertsCountViewSet(APIView):
         return Response(es_get_alerts_count(from_date=from_date, hosts=chosts, qfilter=qfilter, prev=prev))
 
 
-class ESLatestStatsViewSet(APIView):
+class ESLatestStatsViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2431,7 +2448,7 @@ class ESLatestStatsViewSet(APIView):
     =============================================================================================================================================================
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
@@ -2444,7 +2461,7 @@ class ESLatestStatsViewSet(APIView):
         return Response(es_get_latest_stats(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
-class ESIPPairAlertsViewSet(APIView):
+class ESIPPairAlertsViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2466,7 +2483,7 @@ class ESIPPairAlertsViewSet(APIView):
 
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
@@ -2479,7 +2496,7 @@ class ESIPPairAlertsViewSet(APIView):
         return Response(es_get_ippair_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
-class ESIPPairNetworkAlertsViewSet(APIView):
+class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2496,7 +2513,7 @@ class ESIPPairNetworkAlertsViewSet(APIView):
 
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
@@ -2509,7 +2526,7 @@ class ESIPPairNetworkAlertsViewSet(APIView):
         return Response(es_get_ippair_network_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
-class ESAlertsTailViewSet(APIView):
+class ESAlertsTailViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2526,7 +2543,7 @@ class ESAlertsTailViewSet(APIView):
 
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         qfilter = request.GET.get('filter', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
@@ -2536,7 +2553,7 @@ class ESAlertsTailViewSet(APIView):
         return Response(es_get_alerts_tail(from_date=from_date, qfilter=qfilter, search_target=search_target))
 
 
-class ESSuriLogTailViewSet(APIView):
+class ESSuriLogTailViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2556,7 +2573,7 @@ class ESSuriLogTailViewSet(APIView):
 
     """
 
-    def get(self, request, format=None):
+    def _get(self, request, format=None):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))

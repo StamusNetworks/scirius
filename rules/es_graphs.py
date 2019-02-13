@@ -24,7 +24,9 @@ from django.conf import settings
 from django.utils.html import format_html
 from datetime import datetime, timedelta
 
+import logging
 import urllib2
+import socket
 import requests
 import json
 from time import time, mktime
@@ -37,6 +39,7 @@ URL = "%s%s/_search?ignore_unavailable=true"
 
 # ES requests timeout (keep this below Scirius's ajax requests timeout)
 TIMEOUT = 30
+es_logger = logging.getLogger('elasticsearch')
 
 
 ES_VERSION = None
@@ -48,7 +51,7 @@ def get_es_major_version():
     try:
         es_stats = es_get_stats()
         es_version = es_stats['nodes']['versions'][0].split('.')
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, ESError):
         return 6
 
     ES_VERSION = [int(v) for v in es_version]
@@ -1368,8 +1371,19 @@ from rules.models import Rule
 from rules.tables import ExtendedRuleTable, RuleStatsTable
 import django_tables2 as tables
 
+
 class ESError(Exception):
     pass
+
+
+def _urlopen(request):
+    try:
+        out = urllib2.urlopen(request, timeout=TIMEOUT)
+    except (urllib2.URLError, socket.timeout) as e:
+        msg = unicode(e)
+        es_logger.exception(msg)
+        raise ESError(msg)
+    return out
 
 
 def build_es_timestamping(date, data = 'alert'):
@@ -1441,10 +1455,7 @@ def es_get_rules_stats(request, hostname, count=20, from_date=0 , qfilter = None
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except:
-        return None
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1494,10 +1505,7 @@ def es_get_field_stats(request, field, hostname, key='host', count=20, from_date
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except:
-        return None
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1546,10 +1554,7 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0, dict_format=False):
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except:
-        return None
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1587,10 +1592,7 @@ def es_get_dashboard(count=20):
 
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(get_es_path(dashboards_query_url) + unicode(count), headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except:
-        return None
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1621,10 +1623,7 @@ def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except:
-        return None
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1658,10 +1657,7 @@ def es_get_metrics_timeline(from_date=0, interval=None, value = "eve.total.rate_
     es_url = get_es_url(from_date, data = 'stats')
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except:
-        return None
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1692,10 +1688,7 @@ def es_get_poststats(from_date=0,  value = "poststats.rule_filter_1", hosts = No
     es_url = get_es_url(from_date, data = 'poststats')
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except:
-        return None
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1704,10 +1697,7 @@ def es_get_poststats(from_date=0,  value = "poststats.rule_filter_1", hosts = No
 def es_get_json(uri):
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(get_es_path(uri), headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except:
-        return None
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1749,10 +1739,7 @@ def es_get_rules_per_category(from_date=0, hosts = None, qfilter = None):
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except:
-        return None
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1821,10 +1808,7 @@ def es_get_alerts_count(from_date=0, hosts = None, qfilter = None, prev = 0):
     data = render_template(templ, context, qfilter = qfilter)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except Exception, e:
-        return "BAM: %s" % e
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1842,10 +1826,7 @@ def es_get_latest_stats(from_date=0, hosts = None, qfilter = None):
     es_url = get_es_url(from_date, data = 'stats')
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except Exception, e:
-        return "BAM: %s" % e
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1859,10 +1840,7 @@ def es_get_ippair_alerts(from_date=0, hosts = None, qfilter = None):
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except Exception, e:
-        return "BAM: %s" % e
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1895,10 +1873,7 @@ def es_get_ippair_network_alerts(from_date=0, hosts = None, qfilter = None):
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except Exception, e:
-        return "BAM: %s" % e
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -1944,10 +1919,7 @@ def es_get_alerts_tail(from_date=0, qfilter = None, search_target=True):
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except Exception, e:
-        return "BAM: %s" % e
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)['hits']['hits']
@@ -1963,10 +1935,7 @@ def es_suri_log_tail(from_date, hosts):
     es_url = get_es_url(from_date, data='engine')
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except Exception, e:
-        raise
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)['hits']['hits']
@@ -1980,10 +1949,7 @@ def es_get_top_rules(request, hostname, count=20, from_date=0 , order="desc", in
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except urllib2.URLError as e:
-        raise ESError(e)
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
@@ -2001,11 +1967,7 @@ def es_get_sigs_list_hits(request, sids, host, from_date=0, order="desc", interv
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
-    try:
-        out = urllib2.urlopen(req, timeout=TIMEOUT)
-    except urllib2.URLError as e:
-        raise ESError(e)
-
+    out = _urlopen(req)
     data = out.read()
     # returned data is JSON
     data = json.loads(data)
