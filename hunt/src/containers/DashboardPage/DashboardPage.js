@@ -35,7 +35,7 @@ import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
 import { buildQFilter } from '../../helpers/buildQFilter';
 import RuleToggleModal from '../../RuleToggleModal';
-import { actionsButtons, addFilter, UpdateFilter, loadActions } from '../../helpers/common';
+import { actionsButtons, addFilter, UpdateFilter, loadActions, createAction, closeAction } from '../../helpers/common';
 import { HuntFilter } from '../../HuntFilter';
 import * as config from '../../config/Api';
 import EventValue from '../../components/EventValue';
@@ -90,6 +90,8 @@ export default class HuntDashboard extends React.Component {
         };
         this.actionsButtons = actionsButtons.bind(this);
         this.UpdateFilter = UpdateFilter.bind(this);
+        this.createAction = createAction.bind(this);
+        this.closeAction = closeAction.bind(this);
         this.loadActions = loadActions.bind(this);
         this.updateRuleListState = props.updateListState.bind(this);
         this.addFilter = addFilter.bind(this);
