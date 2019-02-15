@@ -343,6 +343,7 @@ export default class App extends Component {
                                 ChangeRefreshInterval={this.changeRefreshInterval}
                                 interval={this.state.interval}
                                 period={this.state.duration}
+                                switchPage={this.switchPage}
                                 needReload={this.needReload}
                             />
                         </VerticalNav.IconBar>

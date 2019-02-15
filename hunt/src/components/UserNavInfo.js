@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
+import { PAGE_STATE } from 'hunt_common/constants';
 import { Dropdown, Icon, MenuItem, ApplicationLauncher, ApplicationLauncherItem, AboutModal, Modal, Form, Button } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
 import HuntNotificationArea from '../HuntNotificationArea';
@@ -129,6 +130,13 @@ export default class UserNavInfo extends Component {
                 <li className="dropdown">
                     <div tabIndex={0} data-toggle="tooltip" title="Update threat detection" onClick={this.showUpdateThreatDetection} role="button" className="nav-item-iconic">
                         <Icon type="fa" name="upload" />
+                    </div>
+                </li>
+
+                <li className="dropdown">
+                    <div tabIndex={0} data-toggle="tooltip" title="History" onClick={() => this.props.switchPage(PAGE_STATE.history, undefined)} role="button" className="nav-item-iconic">
+                        <i className="glyphicon glyphicon-list" aria-hidden="true"></i>
+                        <span> History</span>
                     </div>
                 </li>
 
@@ -275,5 +283,6 @@ UserNavInfo.propTypes = {
     needReload: PropTypes.any,
     ChangeRefreshInterval: PropTypes.any,
     period: PropTypes.any,
+    switchPage: PropTypes.any,
     ChangeDuration: PropTypes.any,
 };

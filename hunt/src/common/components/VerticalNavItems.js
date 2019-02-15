@@ -19,10 +19,6 @@ const VerticalNavItems = [{
     title: 'Actions',
     iconClass: 'glyphicon glyphicon-filter',
     def: PAGE_STATE.filters_list,
-}, {
-    title: 'History',
-    iconClass: 'glyphicon glyphicon-list',
-    def: PAGE_STATE.history,
 }];
 
 export default VerticalNavItems;
