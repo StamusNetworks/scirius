@@ -871,10 +871,10 @@ class Source(models.Model):
         # or create it if needed
         self.create_sourceatversion()
         # category based on filename
-        category = Category.objects.filter(source = self, name = '%s Sigs' % (self.name))
+        category = Category.objects.filter(source = self, name = ('%s Sigs' % (self.name))[100])
         if not category:
             category = Category.objects.create(source = self,
-                                    name = '%s Sigs' % (self.name), created_date = timezone.now(),
+                                    name = ('%s Sigs' % (self.name))[:100], created_date = timezone.now(),
                                     filename = os.path.join('rules', 'sigs.rules'))
             category.get_rules(self)
         else:
