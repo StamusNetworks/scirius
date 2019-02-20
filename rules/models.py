@@ -45,6 +45,7 @@ import IPy
 from datetime import date as datetime_date
 
 from rules.tests_rules import TestRules
+from rules.validators import validate_address_or_network
 
 from django.contrib.auth.models import User
 
@@ -2827,7 +2828,7 @@ class Threshold(models.Model):
     rule = models.ForeignKey(Rule, default = None)
     ruleset = models.ForeignKey(Ruleset, default = None)
     track_by = models.CharField(max_length= 10, choices = TRACK_BY_CHOICES, default='by_src')
-    net = models.CharField(max_length=100, blank = True)
+    net = models.CharField(max_length=100, blank = True, validators=[validate_address_or_network])
     count = models.IntegerField(default=1)
     seconds = models.IntegerField(default=60)
 
