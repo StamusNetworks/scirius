@@ -366,7 +366,7 @@ export default class App extends Component {
                                 rules_list={this.state.rules_list}
                                 idsFilters={this.state.idsFilters}
                                 from_date={this.state.from_date}
-                                SwitchPage={this.switchPage}
+                                switchPage={this.switchPage}
                                 updateRuleListState={this.updateRuleListState}
                                 updateIDSFilterState={this.updateIDSFilterState}
                                 item={this.state.display.item}

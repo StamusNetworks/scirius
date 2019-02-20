@@ -19,7 +19,7 @@ const DisplayPage = (props) => {
                 rules_list={props.rules_list}
                 filters={props.idsFilters}
                 from_date={props.from_date}
-                SwitchPage={props.switchPage}
+                switchPage={props.switchPage}
                 updateListState={props.updateRuleListState}
                 updateFilterState={props.updateIDSFilterState}
             />);
@@ -37,7 +37,7 @@ const DisplayPage = (props) => {
                 rules_list={props.rules_list}
                 filters={props.idsFilters}
                 from_date={props.from_date}
-                SwitchPage={props.switchPage}
+                switchPage={props.switchPage}
                 updateListState={props.updateRuleListState}
                 updateFilterState={props.updateIDSFilterState}
                 needReload={props.needReload}
@@ -87,7 +87,7 @@ DisplayPage.propTypes = {
     rules_list: PropTypes.any,
     idsFilters: PropTypes.any,
     from_date: PropTypes.any,
-    SwitchPage: PropTypes.any,
+    switchPage: PropTypes.any,
     updateRuleListState: PropTypes.any,
     updateIDSFilterState: PropTypes.any,
     item: PropTypes.any,

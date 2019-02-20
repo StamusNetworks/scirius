@@ -64,7 +64,7 @@ const RuleCard = (props) => {
                     <div>
                         SID: <strong>{props.data.sid}</strong>
                         <span className="pull-right">
-                            <a onClick={() => { props.SwitchPage(props.data); }} style={{ cursor: 'pointer' }}>
+                            <a onClick={() => { props.switchPage(props.data); }} style={{ cursor: 'pointer' }}>
                                 <Icon type="fa" name="search-plus" />
                             </a>
                         </span>
@@ -79,7 +79,7 @@ RuleCard.propTypes = {
     data: PropTypes.any,
     sources: PropTypes.any,
     from_date: PropTypes.any,
-    SwitchPage: PropTypes.any,
+    switchPage: PropTypes.any,
 };
 
 export default RuleCard;

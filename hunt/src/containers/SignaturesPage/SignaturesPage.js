@@ -368,7 +368,7 @@ export default class SignaturesPage extends React.Component {
                     itemProps={{
                         sources: this.state.sources,
                         from_date: this.props.from_date,
-                        SwitchPage: this.displayRule,
+                        switchPage: this.displayRule,
                         addFilter: this.addFilter,
                         rulesets: this.state.rulesets,
                     }}

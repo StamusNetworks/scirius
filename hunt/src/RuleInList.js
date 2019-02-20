@@ -19,7 +19,7 @@ const RuleInList = (props) => {
         <ListViewItem
             key={props.data.sid}
             // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions,jsx-a11y/interactive-supports-focus
-            actions={[<a role="button" key={`actions-${props.data.sid}`} onClick={() => { props.SwitchPage(props.data); }}><Icon type="fa" name="search-plus" /> </a>, <RuleEditKebab key={`kebab-${props.data.sid}`} config={kebabConfig} rulesets={props.rulesets} />]}
+            actions={[<a role="button" key={`actions-${props.data.sid}`} onClick={() => { props.switchPage(props.data); }}><Icon type="fa" name="search-plus" /> </a>, <RuleEditKebab key={`kebab-${props.data.sid}`} config={kebabConfig} rulesets={props.rulesets} />]}
             leftContent={<ListViewIcon name="envelope" />}
             additionalInfo={[<ListViewInfoItem key={`created-${props.data.sid}`}><p>Created: {props.data.created}</p></ListViewInfoItem>,
                 <ListViewInfoItem key={`updated-${props.data.sid}`}><p>Updated: {props.data.updated}</p></ListViewInfoItem>,
@@ -73,7 +73,7 @@ RuleInList.propTypes = {
     sources: PropTypes.any,
     rulesets: PropTypes.any,
     from_date: PropTypes.any,
-    SwitchPage: PropTypes.any,
+    switchPage: PropTypes.any,
     addFilter: PropTypes.any,
 };
 
