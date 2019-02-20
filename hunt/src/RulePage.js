@@ -147,69 +147,73 @@ export default class RulePage extends React.Component {
         return (
             <div>
                 <Spinner loading={this.state.rule === undefined}>
-                    {this.state.rule && <div>
-                        <h1>{this.state.rule.msg}
-                            <span className="pull-right">
-                                { (this.state.rule && this.state.rule.hits !== undefined) && <span className="label label-primary">{this.state.rule.hits} hit{this.state.rule.hits > 1 && 's'}</span>}
-                                <RuleEditKebab config={this.state} rulesets={this.props.rulesets} refresh_callback={this.updateRuleStatus} />
-                            </span>
-                        </h1>
-                        <div className="container-fluid container-cards-pf">
-                            <div className="row">
-                                <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.state.rule.content }}></div>
-                                {this.state.rule.timeline && <SciriusChart
-                                    data={this.state.rule.timeline}
-                                    from_date={this.props.from_date}
-                                />}
+                    {this.state.rule && <div className="row">
+                        <div className="col-xs-12 col-sm-12 col-md-12">
+                            <h1>{this.state.rule.msg}
+                                <span className="pull-right">
+                                    { (this.state.rule && this.state.rule.hits !== undefined) && <span className="label label-primary">{this.state.rule.hits} hit{this.state.rule.hits > 1 && 's'}</span>}
+                                    <RuleEditKebab config={this.state} rulesets={this.props.rulesets} refresh_callback={this.updateRuleStatus} />
+                                </span>
+                            </h1>
+                        </div>
+                        <div className={(this.state.rule_references !== undefined && this.state.rule_references.length > 0) ? 'col-xs-9 col-sm-9 col-md-9' : 'col-xs-12 col-sm-12 col-md-12'}>
+                            <div className="container-fluid container-cards-pf">
+                                <div className="row">
+                                    <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.state.rule.content }}></div>
+                                    {this.state.rule.timeline && <SciriusChart
+                                        data={this.state.rule.timeline}
+                                        from_date={this.props.from_date}
+                                    />}
+                                </div>
+                                {this.state.rule_status !== undefined && <Row>
+                                    {
+                                        this.state.rule_status.map((rstatus) => (
+                                            <RuleStatus rule={this.state.rule} key={rstatus.pk} rule_status={rstatus} />
+                                        ))
+                                    }
+                                </Row>}
+                                <div className="row">
+                                    <HuntStat systemSettings={this.state.systemSettings} title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="src_ip" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dest_ip" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat title="Probes" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="host" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                </div>
+                                {this.state.extinfo.http && <div className="row">
+                                    <HuntStat systemSettings={this.state.systemSettings} title="Hostname" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.hostname" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="URL" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.url" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="User agent" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.http_user_agent" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                </div>}
+                                {this.state.extinfo.dns && <div className="row">
+                                    <HuntStat systemSettings={this.state.systemSettings} title="Name" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dns.query.rrname" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="Type" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dns.query.rrtype" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                </div>}
+                                {this.state.extinfo.tls && <div className="row">
+                                    <HuntStat systemSettings={this.state.systemSettings} title="Subject DN" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.subject" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="SNI" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.sni" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="Fingerprint" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.fingerprint" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                </div>}
                             </div>
-                            {this.state.rule_status !== undefined && <Row>
-                                {
-                                    this.state.rule_status.map((rstatus) => (
-                                        <RuleStatus rule={this.state.rule} key={rstatus.pk} rule_status={rstatus} />
-                                    ))
-                                }
-                            </Row>}
-                            <div className="row">
-                                <HuntStat systemSettings={this.state.systemSettings} title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="src_ip" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dest_ip" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat title="Probes" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="host" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                            </div>
-                            {this.state.extinfo.http && <div className="row">
-                                <HuntStat systemSettings={this.state.systemSettings} title="Hostname" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.hostname" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat systemSettings={this.state.systemSettings} title="URL" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.url" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat systemSettings={this.state.systemSettings} title="User agent" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.http_user_agent" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                            </div>}
-                            {this.state.extinfo.dns && <div className="row">
-                                <HuntStat systemSettings={this.state.systemSettings} title="Name" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dns.query.rrname" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat systemSettings={this.state.systemSettings} title="Type" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dns.query.rrtype" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                            </div>}
-                            {this.state.extinfo.tls && <div className="row">
-                                <HuntStat systemSettings={this.state.systemSettings} title="Subject DN" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.subject" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat systemSettings={this.state.systemSettings} title="SNI" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.sni" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                <HuntStat systemSettings={this.state.systemSettings} title="Fingerprint" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.fingerprint" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                            </div>}
-                            <Row>
-                                {this.state.rule_references && this.state.rule_references.length > 0 && <div className="col-xs-6 col-sm-4 col-md-4">
-                                    <div className="card-pf card-pf-accented card-pf-aggregate-status">
-                                        {/* <div class="panel-heading">
-                                            <h2 class="panel-title">References</h2>
-                                        </div> */}
-                                        <h2 className="card-pf-title">
-                                            <span className="fa" />References
-                                        </h2>
-                                        <div className="card-pf-body">
-                                            {this.state.rule_references.map((reference) => {
-                                                if (reference.url !== undefined) {
-                                                    return (
-                                                        <p key={reference.url}><a href={reference.url} target="_blank">{`${reference.key[0].toUpperCase() + reference.key.substring(1)}: ${reference.value}`}</a></p>
-                                                    );
-                                                }
-                                                return null;
-                                            })}
-                                        </div>
+                        </div>
+                        <div className="col-xs-3 col-sm-3 col-md-3">
+                            <div className="container-fluid container-cards-pf">
+                                {this.state.rule_references && this.state.rule_references.length > 0 && <div className="card-pf card-pf-accented card-pf-aggregate-status">
+                                    {/* <div class="panel-heading">
+                                        <h2 class="panel-title">References</h2>
+                                    </div> */}
+                                    <h2 className="card-pf-title">
+                                        <span className="fa" />References
+                                    </h2>
+                                    <div className="card-pf-body">
+                                        {this.state.rule_references.map((reference) => {
+                                            if (reference.url !== undefined) {
+                                                return (
+                                                    <p key={reference.url}><a href={reference.url} target="_blank">{`${reference.key[0].toUpperCase() + reference.key.substring(1)}: ${reference.value.substring(0, 45)}...`}</a></p>
+                                                );
+                                            }
+                                            return null;
+                                        })}
                                     </div>
                                 </div>}
-                            </Row>
+                            </div>
                         </div>
                     </div>}
                 </Spinner>
