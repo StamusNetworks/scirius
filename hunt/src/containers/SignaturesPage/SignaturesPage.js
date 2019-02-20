@@ -231,6 +231,12 @@ export default class SignaturesPage extends React.Component {
         this.loadActions();
     }
 
+    componentDidUpdate(prevProps) {
+        if (prevProps.from_date !== this.props.from_date) {
+            this.fetchData(this.props.rules_list, this.props.filters);
+        }
+    }
+
     buildTimelineDataSet = (tdata) => {
         const timeline = { x: 'x', type: 'area', columns: [['x'], ['alerts']] };
         for (let key = 0; key < tdata.length; key += 1) {
