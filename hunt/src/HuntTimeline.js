@@ -89,10 +89,13 @@ export default class HuntTimeline extends React.Component {
                             localtime: true,
                             min: this.props.from_date,
                             max: Date.now(),
-                            tick: { fit: false, rotate: 15, format: '%Y-%m-%d %H:%M' },
+                            tick: { fit: true, format: '%Y-%m-%d %H:%M', width: 60 },
                             show: true
                         },
                         y: { show: true }
+                    }}
+                    padding={{
+                        bottom: 15,
                     }}
                     legend={{
                         show: true
