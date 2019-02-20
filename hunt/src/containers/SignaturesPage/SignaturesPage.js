@@ -105,7 +105,7 @@ function buildProbesSet(data) {
 function processHitsStats(res, rules, updateCallback) {
     for (let rule = 0; rule < rules.length; rule += 1) {
         let found = false;
-        for (let info = 1; info < res.data.length; info += 1) {
+        for (let info = 0; info < res.data.length; info += 1) {
             if (res.data[info].key === rules[rule].sid) {
                 rules[rule].timeline = buildTimelineDataSet(res.data[info].timeline.buckets);
                 rules[rule].probes = buildProbesSet(res.data[info].probes.buckets);
