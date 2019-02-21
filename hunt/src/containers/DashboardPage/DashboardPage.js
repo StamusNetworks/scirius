@@ -232,6 +232,15 @@ export default class HuntDashboard extends React.Component {
                 const items = this.panelState.dashboard[panel].items.map((el) => {
                     if (el.i === block.i) {
                         const data = (json.data.length) ? json.data : null;
+
+                        if (data) {
+                            for (let idx = 0; idx < data.length; idx += 1) {
+                                if (!data[idx].key) {
+                                    data[idx].key = 'Unknown';
+                                }
+                            }
+                        }
+
                         const extended = {
                             data,
                             dimensions: {
