@@ -193,8 +193,8 @@ $.ajax(
                 var donutConfig = c3ChartDefaults.getDefaultDonutConfig('A');
                 donutConfig.bindto = '#chart-pf-donut-fs';
                 var data_size_percent = 1.0 * data_size / fs_total * 100;
-                var fs_free_percent = 1.0 * fs_free / fs_total * 100 - data_size_percent;
-                var fs_used_percent = 100.0 * ( 1 - 1.0 * fs_free / fs_total);
+                var fs_free_percent = 1.0 * fs_free / fs_total * 100;
+                var fs_used_percent = 100.0 * ( 1 - 1.0 * fs_free / fs_total) - data_size_percent;
                 donutConfig.color =  {
                       pattern: ["red", "#EC7A08","#D1D1D1"]
                                       };
