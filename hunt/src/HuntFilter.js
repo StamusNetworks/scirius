@@ -93,6 +93,11 @@ export class HuntFilter extends React.Component {
                         // Propagate event to trigger validation error
                         return;
                     }
+                } else if (currentFilterType.valueType === 'ip') {
+                    if (IP_REGEXP.test(currentValue)) {
+                        this.setState({ currentValue: '' });
+                        this.filterAdded(currentFilterType, currentValue);
+                    }
                 } else {
                     this.setState({ currentValue: '' });
                     this.filterAdded(currentFilterType, currentValue);
@@ -161,13 +166,17 @@ export class HuntFilter extends React.Component {
         let fieldId = field.id;
 
         if (field.filterType !== 'complex-select-text') {
-            if (field.title && field.queryType !== 'filter') {
+            if (field.title && field.queryType !== 'filter_host_id') {
                 filterText = field.title;
             } else {
                 filterText = field.id;
             }
         } else {
-            filterText = `${this.state.filterCategory.id}.${this.state.filterSubCategory.id}`;
+            if (this.state.filterSubCategory) {
+                filterText = `${this.state.filterCategory.id}.${this.state.filterSubCategory.id}`;
+            } else {
+                filterText = `${this.state.filterCategory.id}`;
+            }
             fieldId = filterText;
         }
         filterText += ': ';
@@ -267,35 +276,6 @@ export class HuntFilter extends React.Component {
             }
         }
         if (!error) this.setState({ currentValue: event.target.value });
-    }
-
-    onValueKeyPress = (keyEvent) => {
-        const { currentValue, currentFilterType } = this.state;
-
-        if (keyEvent.key === 'Enter') {
-            if (currentValue && currentValue.length > 0) {
-                if (currentFilterType.valueType === 'positiveint') {
-                    const val = parseInt(currentValue, 10);
-                    if (val >= 0) {
-                        this.setState({ currentValue: '' });
-                        this.filterAdded(currentFilterType, val);
-                    } else {
-                        // Propagate event to trigger validation error
-                        return
-                    }
-                } else if (currentFilterType.valueType === 'ip') {
-                    if (IP_REGEXP.test(currentValue)) {
-                        this.setState({ currentValue: '' });
-                        this.filterAdded(currentFilterType, currentValue);
-                    }
-                } else {
-                    this.setState({ currentValue: '' });
-                    this.filterAdded(currentFilterType, currentValue);
-                }
-            }
-            keyEvent.stopPropagation();
-            keyEvent.preventDefault();
-        }
     }
 
     removeFilter = (filter) => {
@@ -413,7 +393,7 @@ export class HuntFilter extends React.Component {
                     placeholder={currentFilterType.placeholder}
                     onFilterCategorySelected={this.filterCategorySelected}
                 >
-                    {filterCategory && <Filter.CategorySelector
+                    {filterCategory && filterCategory.valueType === undefined && <Filter.CategorySelector
                         filterCategories={filterCategory && filterCategory.filterValues}
                         currentCategory={filterSubCategory}
                         placeholder={currentFilterType.filterCategoriesPlaceholder}
@@ -427,6 +407,30 @@ export class HuntFilter extends React.Component {
                             type={currentFilterType.filterType}
                             value={currentValue}
                             placeholder={filterSubCategory.placeholder}
+                            onChange={(e) => this.updateCurrentValue(e)}
+                            onKeyPress={(e) => this.onValueKeyPress(e)}
+                        />
+                    </FormGroup>}
+                    {filterCategory && filterSubCategory && <FormGroup
+                        controlId="input-filter"
+                        validationState={this.getValidationState()}
+                    >
+                        <FormControl
+                            type={currentFilterType.filterType}
+                            value={currentValue}
+                            placeholder={filterSubCategory.placeholder}
+                            onChange={(e) => this.updateCurrentValue(e)}
+                            onKeyPress={(e) => this.onValueKeyPress(e)}
+                        />
+                    </FormGroup>}
+                    {filterCategory && filterCategory.valueType && <FormGroup
+                        controlId="input-filter"
+                        validationState={this.getValidationState()}
+                    >
+                        <FormControl
+                            type={currentFilterType.filterType}
+                            value={currentValue}
+                            placeholder={filterCategory.placeholder}
                             onChange={(e) => this.updateCurrentValue(e)}
                             onKeyPress={(e) => this.onValueKeyPress(e)}
                         />
