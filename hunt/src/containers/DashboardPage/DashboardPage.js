@@ -32,6 +32,7 @@ import reject from 'lodash/reject';
 import find from 'lodash/find';
 import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
 import * as config from 'hunt_common/config/Api';
+import { dashboard } from 'hunt_common/config/Dashboard';
 import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
 import { buildQFilter } from '../../helpers/buildQFilter';
@@ -67,10 +68,10 @@ export default class HuntDashboard extends React.Component {
         const huntFilters = store.get('huntFilters');
         const rulesFilters = (typeof huntFilters !== 'undefined' && typeof huntFilters.dashboard !== 'undefined') ? huntFilters.dashboard.data : [];
         this.state = {
-            load: Object.keys(config.dashboard.sections),
+            load: Object.keys(dashboard.sections),
             // load: ['basic'],
             breakPoint: 'lg',
-            dashboard: config.dashboard.sections,
+            dashboard: dashboard.sections,
             rules: [],
             sources: [],
             rulesets: [],
@@ -225,8 +226,8 @@ export default class HuntDashboard extends React.Component {
                     this.panelsLoaded += 1;
                 }
 
-                const height = Math.ceil(((json.data.length * config.dashboard.block.defaultItemHeight) + config.dashboard.block.defaultHeadHeight) / 13);
-                const panelHeight = (json.data.length) ? 10 + (json.data.length * config.dashboard.block.defaultItemHeight) + config.dashboard.block.defaultHeadHeight + config.dashboard.panel.defaultHeadHeight : config.dashboard.panel.defaultHeadHeight;
+                const height = Math.ceil(((json.data.length * dashboard.block.defaultItemHeight) + dashboard.block.defaultHeadHeight) / 13);
+                const panelHeight = (json.data.length) ? 10 + (json.data.length * dashboard.block.defaultItemHeight) + dashboard.block.defaultHeadHeight + dashboard.panel.defaultHeadHeight : dashboard.panel.defaultHeadHeight;
                 const isPanelLoaded = (!this.state.dashboard[panel].items.find((itm) => itm.data !== null && itm.data.length === 0));
 
                 const items = this.panelState.dashboard[panel].items.map((el) => {
@@ -380,7 +381,7 @@ export default class HuntDashboard extends React.Component {
         let stateChanged = false;
         for (let i = 0; i < panelsArray.length; i += 1) {
             const panelBodySize = this.getPanelBodySize(panelsArray[i]);
-            const panelRealSize = (parseInt(panelBodySize, 10) + parseInt(config.dashboard.panel.defaultHeadHeight, 10));
+            const panelRealSize = (parseInt(panelBodySize, 10) + parseInt(dashboard.panel.defaultHeadHeight, 10));
             if (this.getPanelSize(panelsArray[i]) !== panelRealSize) {
                 stateChanged = true;
                 tmpState = {
