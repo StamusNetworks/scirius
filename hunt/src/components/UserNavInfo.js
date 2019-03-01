@@ -40,6 +40,7 @@ export default class UserNavInfo extends Component {
             showNotifications: false,
             user: undefined,
             isShown: false,
+            context: undefined
         };
         this.AboutClick = this.AboutClick.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -59,6 +60,11 @@ export default class UserNavInfo extends Component {
         axios.get(`${config.API_URL}${config.USER_PATH}current_user/`)
         .then((currentUser) => {
             this.setState({ user: currentUser.data });
+        });
+
+        axios.get(`${config.API_URL}${config.SCIRIUS_CONTEXT}`)
+        .then((context) => {
+            this.setState({ context: context.data });
         });
     }
 
@@ -124,6 +130,8 @@ export default class UserNavInfo extends Component {
         if (this.state.user !== undefined) {
             user = this.state.user.username;
         }
+        const { title, version } = (this.state.context !== undefined) ? this.state.context : { title: '', version: '' };
+
         return (
             <React.Fragment>
 
@@ -264,13 +272,13 @@ export default class UserNavInfo extends Component {
                 <AboutModal
                     show={this.state.showModal}
                     onHide={this.closeModal}
-                    productTitle="Scirius Community Edition"
+                    productTitle={title}
                     logo={sciriusLogo}
                     altLogo="SEE Logo"
                     trademarkText="Copyright 2014-2018, Stamus Networks"
                 >
                     <AboutModal.Versions>
-                        <AboutModal.VersionItem label="Version" versionText="3.1.0" />
+                        <AboutModal.VersionItem label="Version" versionText={version} />
                     </AboutModal.Versions>
                 </AboutModal>
             </React.Fragment>

@@ -2573,6 +2573,13 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
         return super(SystemSettingsViewSet, self).update(request, partial=True, *args, **kwargs)
 
 
+class SciriusContextAPIView(APIView):
+    def get(self, request, format=None):
+        from scirius.utils import get_middleware_module
+        context = get_middleware_module('common').get_homepage_context()
+        return Response(context)
+
+
 class HuntFilterAPIView(APIView):
     """
     =============================================================================================================================================================
@@ -2630,6 +2637,7 @@ def get_custom_urls():
     urls.append(url(r'rules/es/alerts_tail/$', ESAlertsTailViewSet.as_view(), name='es_alerts_tail'))
     urls.append(url(r'rules/es/suri_log_tail/$', ESSuriLogTailViewSet.as_view(), name='es_suri_log_tail'))
     urls.append(url(r'rules/es/delete_logs/$', ESDeleteLogsViewSet.as_view(), name='es_delete_logs'))
+    urls.append(url(r'rules/scirius_context/$', SciriusContextAPIView.as_view(), name='scirius_context'))
 
     return urls
 
