@@ -164,6 +164,7 @@ export default class SignaturesPage extends React.Component {
             rulesFilters,
             // eslint-disable-next-line react/no-unused-state
             supported_actions: [],
+            updateCache: true
         };
         this.cache = {};
         this.cachePage = 1;
@@ -266,7 +267,14 @@ export default class SignaturesPage extends React.Component {
         } else {
             this.setState({ view: 'rules_list', display_toggle: true, display_rule: undefined });
         }
-        this.UpdateFilter(filters, this.cachePage);
+
+        let page = 1;
+        if (filters.length === 0) {
+            page = this.cachePage;
+        } else {
+            this.setState({ updateCache: false });
+        }
+        this.UpdateFilter(filters, page, false);
     }
 
     fetchData(rulesStat, filters) {
@@ -283,7 +291,11 @@ export default class SignaturesPage extends React.Component {
             axios.get(`${config.API_URL + config.SOURCE_PATH}?page_size=100`),
         ])
         .then(axios.spread((RuleRes, SrcRes) => {
-            this.cachePage = rulesStat.pagination.page;
+            if (this.state.updateCache) {
+                this.cachePage = rulesStat.pagination.page;
+            } else {
+                this.setState({ updateCache: true });
+            }
 
             this.cache[hash] = { RuleRes, SrcRes, filters };
             this.processRulesData(RuleRes, SrcRes, filters);
