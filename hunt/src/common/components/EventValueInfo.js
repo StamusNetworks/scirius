@@ -10,6 +10,9 @@ const EventValueInfo = (props) => {
         }
         return <a key="onyphe_link" href={`https://www.onyphe.io/search/?query=${props.value}`} target="_blank"> <Icon type="fa" name="info-circle" /></a>;
     }
+    if (['src_port', 'dest_port', 'host_id.services.port'].indexOf(props.field) > -1) {
+        return <a key="dshield_link" href={`https://www.dshield.org/port.html?port=${props.value}`} target="_blank"> <Icon type="fa" name="info-circle" /></a>;
+    }
     return null;
 };
 
