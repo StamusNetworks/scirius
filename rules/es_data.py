@@ -603,10 +603,12 @@ class ESData(object):
     def _get_indexes(self):
         res = self.client.indices.stats()
         indexes = res['indices'].keys()
-        try:
-            indexes.remove('.kibana')
-        except ValueError:
-            pass
+        idxs = list(indexes)
+
+        for idx in idxs:
+            if idx.startswith('.kibana'):
+                indexes.pop(indexes.index(idx))
+
         return indexes
 
     def es_clear(self):
