@@ -118,6 +118,7 @@ export default class AlertInList extends React.Component {
                                     {data.app_proto && <EventField field_name="Application protocol" field="app_proto" value={data.app_proto} addFilter={this.addFilter} />}
                                     {data.app_proto_orig && <EventField field_name="Original application protocol" field="app_proto_orig" value={data.app_proto_orig} addFilter={this.addFilter} />}
                                     <EventField field_name="Probe" field="host" value={data.host} addFilter={this.addFilter} />
+                                    {data.vlan && <EventField field_name="Vlan" field="vlan" value={data.vlan} addFilter={this.addFilter} />}
                                 </dl>
                             </div>
                         </div>

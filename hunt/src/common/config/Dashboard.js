@@ -345,6 +345,25 @@ export const dashboard = {
                             w: 4, h: 9, x: 0, y: 44
                         },
                     }
+                }, {
+                    i: 'vlan',
+                    title: 'Vlan',
+                    position: 5,
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 7, h: 22, x: 0, y: 0
+                        },
+                        md: {
+                            w: 6, h: 22, x: 0, y: 0
+                        },
+                        sm: {
+                            w: 5, h: 22, x: 0, y: 0
+                        },
+                        xs: {
+                            w: 4, h: 22, x: 0, y: 0
+                        },
+                    },
                 }
             ],
             dimensions: find(storedMacroLayout, { i: 'ip' }) || {
