@@ -38,15 +38,7 @@ const RuleInList = (props) => {
                         <div className="row">
                             <div className="col-md-12">
                                 <SciriusChart data={props.data.timeline}
-                                    axis={{
-                                        x: {
-                                            type: 'timeseries',
-                                            localtime: true,
-                                            min: props.from_date,
-                                            max: Date.now(),
-                                            tick: { fit: false, rotate: 15, format: '%Y-%m-%d %H:%M' }
-                                        }
-                                    }}
+                                    from_date={props.from_date}
                                 />
                             </div>
                         </div>

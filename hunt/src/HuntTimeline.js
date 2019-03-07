@@ -83,25 +83,9 @@ export default class HuntTimeline extends React.Component {
         return (
             <div>
                 {this.state.data && <SciriusChart data={this.state.data}
-                    axis={{
-                        x: {
-                            type: 'timeseries',
-                            localtime: true,
-                            min: this.props.from_date,
-                            max: Date.now(),
-                            tick: { fit: true, format: '%Y-%m-%d %H:%M', width: 60 },
-                            show: true
-                        },
-                        y: { show: true }
-                    }}
-                    padding={{
-                        bottom: 15,
-                    }}
-                    legend={{
-                        show: true
-                    }}
+                    from_date={this.props.from_date}
+                    padding={{ bottom: 15 }}
                     size={{ height: 200 }}
-                    point={{ show: true }}
                 />}
             </div>
         );

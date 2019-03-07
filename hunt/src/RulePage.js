@@ -159,19 +159,7 @@ export default class RulePage extends React.Component {
                                 <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.state.rule.content }}></div>
                                 {this.state.rule.timeline && <SciriusChart
                                     data={this.state.rule.timeline}
-                                    axis={{
-                                        x: {
-                                            type: 'timeseries',
-                                            localtime: true,
-                                            min: this.props.from_date,
-                                            max: Date.now(),
-                                            tick: {
-                                                fit: false,
-                                                rotate: 15,
-                                                format: '%Y-%m-%d %H:%M'
-                                            }
-                                        }
-                                    }}
+                                    from_date={this.props.from_date}
                                 />}
                             </div>
                             {this.state.rule_status !== undefined && <Row>

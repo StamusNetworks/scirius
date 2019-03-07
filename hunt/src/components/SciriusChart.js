@@ -39,9 +39,33 @@ export default class SciriusChart extends React.Component {
     }
 
     chartRender = (opts) => {
+        let _opts = {...opts};
+        let axis = {
+            x: {
+                type: 'timeseries',
+                localtime: true,
+                min: opts.from_date,
+                max: Date.now(),
+                tick: {
+                    fit: false,
+                    rotate: 15,
+                    format: '%Y-%m-%d %H:%M'
+                }
+            }
+        }
+        if (opts.axis) {
+            if (opts.axis.x) {
+                axis.x = {...axis.x, ...opts.axis.x};
+            }
+            if (opts.axis.y) {
+                axis.y = opts.axis.y;
+            }
+            delete _opts.axis;
+        }
         c3.generate({
             bindto: `#${this.chartId}`,
-            ...opts
+            axis: axis,
+            ..._opts
         });
     }
 

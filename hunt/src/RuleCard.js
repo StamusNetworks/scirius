@@ -39,20 +39,12 @@ const RuleCard = (props) => {
                     <Spinner loading={props.data.hits === undefined} size="xs">
                         {props.data.timeline && <div className="chart-pf-sparkline">
                             <SciriusChart data={props.data.timeline}
+                                from_date={props.from_date}
                                 axis={{
-                                    x: {
-                                        type: 'timeseries',
-                                        localtime: true,
-                                        min: props.from_date,
-                                        max: Date.now(),
-                                        show: false,
-                                        tick: { fit: true, rotate: 15, format: '%Y-%m-%d %H:%M' }
-                                    },
+                                    x: { show: false },
                                     y: { show: false }
                                 }}
-                                legend={{
-                                    show: false
-                                }}
+                                legend={{ show: false }}
                                 size={{ height: 60 }}
                                 point={{ show: false }}
                             />
