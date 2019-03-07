@@ -360,9 +360,9 @@ export default class SignaturesPage extends React.Component {
                     queryType={['filter', 'rest']}
                 />
 
-                <Spinner loading={this.state.loading} />
+                {this.state.view === 'rules_list' && <Spinner loading={this.state.loading} />}
 
-                <List type={this.props.rules_list.view_type}
+                {this.state.view === 'rules_list' && <List type={this.props.rules_list.view_type}
                     items={this.state.rules}
                     component={{ list: RuleInList, card: RuleCard }}
                     itemProps={{
@@ -372,7 +372,7 @@ export default class SignaturesPage extends React.Component {
                         addFilter: this.addFilter,
                         rulesets: this.state.rulesets,
                     }}
-                />
+                />}
 
                 { this.state.view === 'rules_list' && <HuntPaginationRow
                     viewType={PAGINATION_VIEW.LIST}
