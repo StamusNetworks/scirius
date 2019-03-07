@@ -132,19 +132,26 @@ export default class HuntDashboard extends React.Component {
         );
 
         let timeout = false;
-        window.addEventListener('resize', () => {
+        window.addEventListener('resize', (e) => {
+            // Trigger a second resize, to work-around panels not rearranging
+            if (e.huntEvent) {
+                // work-around to prevent infinite resize
+                return;
+            }
             clearTimeout(timeout);
             timeout = setTimeout(() => {
+                let evt;
                 if (typeof (Event) === 'function') {
                     // modern browsers
-                    window.dispatchEvent(new Event('resize'));
+                    evt = new Event('resize');
                 } else {
                     // for IE and other old browsers
                     // causes deprecation warning on modern browsers
-                    const evt = window.document.createEvent('UIEvents');
+                    evt = window.document.createEvent('UIEvents');
                     evt.initUIEvent('resize', true, false, window, 0);
-                    window.dispatchEvent(evt);
                 }
+                evt.huntEvent = true;
+                window.dispatchEvent(evt);
             }, 250);
         });
 
