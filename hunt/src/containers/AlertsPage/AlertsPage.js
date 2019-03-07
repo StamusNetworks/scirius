@@ -32,6 +32,7 @@ import RuleToggleModal from '../../RuleToggleModal';
 import { HuntFilter } from '../../HuntFilter';
 import AlertItem from '../../components/AlertItem';
 import { actionsButtons, buildListUrlParams, loadActions, UpdateFilter, addFilter, createAction, closeAction } from '../../helpers/common';
+import ErrorHandler from '../../components/Error';
 
 export default class AlertsPage extends React.Component {
     constructor(props) {
@@ -127,35 +128,42 @@ export default class AlertsPage extends React.Component {
     render() {
         return (
             <div className="AlertsList HuntList">
-                <HuntFilter
-                    ActiveFilters={this.props.filters}
-                    config={this.props.rules_list}
-                    ActiveSort={this.props.rules_list.sort}
-                    UpdateFilter={this.UpdateFilter}
-                    UpdateSort={this.UpdateSort}
-                    setViewType={this.setViewType}
-                    filterFields={this.state.rulesFilters}
-                    sort_config={undefined}
-                    displayToggle={this.state.display_toggle}
-                    actionsButtons={this.actionsButtons}
-                    queryType={['filter']}
-                />
+                <ErrorHandler>
+                    <HuntFilter
+                        ActiveFilters={this.props.filters}
+                        config={this.props.rules_list}
+                        ActiveSort={this.props.rules_list.sort}
+                        UpdateFilter={this.UpdateFilter}
+                        UpdateSort={this.UpdateSort}
+                        setViewType={this.setViewType}
+                        filterFields={this.state.rulesFilters}
+                        sort_config={undefined}
+                        displayToggle={this.state.display_toggle}
+                        actionsButtons={this.actionsButtons}
+                        queryType={['filter']}
+                    />
+                </ErrorHandler>
                 <Spinner loading={this.state.loading}>
                 </Spinner>
                 <ListView>
                     {this.state.alerts.map((rule) => (
                         // eslint-disable-next-line no-underscore-dangle
-                        <AlertItem key={rule._id} id={rule._id} data={rule._source} from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} filters={this.props.filters} addFilter={this.addFilter} />
+                        <ErrorHandler key={rule._id}>
+                            {/* eslint-disable-next-line no-underscore-dangle */}
+                            <AlertItem key={rule._id} id={rule._id} data={rule._source} from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} filters={this.props.filters} addFilter={this.addFilter} />
+                        </ErrorHandler>
                     ))}
                 </ListView>
-                <RuleToggleModal
-                    show={this.state.action.view}
-                    action={this.state.action.type}
-                    config={this.props.rules_list}
-                    filters={this.props.filters}
-                    close={this.closeAction}
-                    rulesets={this.state.rulesets}
-                />
+                <ErrorHandler>
+                    <RuleToggleModal
+                        show={this.state.action.view}
+                        action={this.state.action.type}
+                        config={this.props.rules_list}
+                        filters={this.props.filters}
+                        close={this.closeAction}
+                        rulesets={this.state.rulesets}
+                    />
+                </ErrorHandler>
             </div>
         );
     }

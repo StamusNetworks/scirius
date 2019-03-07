@@ -4,6 +4,7 @@ import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from './helpers/buildQFilter';
 import SciriusChart from './components/SciriusChart';
+import ErrorHandler from './components/Error';
 
 export default class HuntTimeline extends React.Component {
     constructor(props) {
@@ -82,11 +83,11 @@ export default class HuntTimeline extends React.Component {
     render() {
         return (
             <div>
-                {this.state.data && <SciriusChart data={this.state.data}
+                {this.state.data && <ErrorHandler><SciriusChart data={this.state.data}
                     from_date={this.props.from_date}
                     padding={{ bottom: 15 }}
                     size={{ height: 200 }}
-                />}
+                /></ErrorHandler>}
             </div>
         );
     }

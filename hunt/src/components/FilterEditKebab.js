@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { DropdownKebab, MenuItem } from 'patternfly-react';
 import FilterToggleModal from '../FilterToggleModal';
+import ErrorHandler from './Error';
 
 export default class FilterEditKebab extends React.Component {
     constructor(props) {
@@ -42,7 +43,9 @@ export default class FilterEditKebab extends React.Component {
                         Delete Filter
                     </MenuItem>
                 </DropdownKebab>
-                <FilterToggleModal show={this.state.toggle.show} action={this.state.toggle.action} data={this.props.data} close={this.closeAction} last_index={this.props.last_index} needUpdate={this.props.needUpdate} />
+                <ErrorHandler>
+                    <FilterToggleModal show={this.state.toggle.show} action={this.state.toggle.action} data={this.props.data} close={this.closeAction} last_index={this.props.last_index} needUpdate={this.props.needUpdate} />
+                </ErrorHandler>
             </React.Fragment>
         );
     }

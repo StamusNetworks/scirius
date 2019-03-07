@@ -4,6 +4,7 @@ import { DonutChart } from 'patternfly-react';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from './helpers/buildQFilter';
+import ErrorHandler from './components/Error';
 
 export default class HuntTrend extends React.Component {
     constructor(props) {
@@ -84,13 +85,15 @@ export default class HuntTrend extends React.Component {
         }
         return (
             <div>
-                <DonutChart
-                    data={gData}
-                    size={{ width: 190, height: 190 }}
-                    title={{ type: 'max' }}
-                    tooltip={{ show: true }}
-                    legend={{ show: true, position: 'bottom' }}
-                />
+                <ErrorHandler>
+                    <DonutChart
+                        data={gData}
+                        size={{ width: 190, height: 190 }}
+                        title={{ type: 'max' }}
+                        tooltip={{ show: true }}
+                        legend={{ show: true, position: 'bottom' }}
+                    />
+                </ErrorHandler>
             </div>
         );
     }

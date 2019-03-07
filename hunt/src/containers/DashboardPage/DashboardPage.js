@@ -42,6 +42,7 @@ import { HuntFilter } from '../../HuntFilter';
 import EventValue from '../../components/EventValue';
 import '../../../node_modules/react-grid-layout/css/styles.css';
 import '../../../node_modules/react-resizable/css/styles.css';
+import ErrorHandler from '../../components/Error';
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
@@ -337,11 +338,13 @@ export default class HuntDashboard extends React.Component {
                     <ListGroup>
                         {block.data.map((item) => (
                             <ListGroupItem key={item.key}>
-                                <EventValue field={block.i}
-                                    value={item.key}
-                                    addFilter={this.addFilter}
-                                    right_info={<Badge>{item.doc_count}</Badge>}
-                                />
+                                <ErrorHandler>
+                                    <EventValue field={block.i}
+                                        value={item.key}
+                                        addFilter={this.addFilter}
+                                        right_info={<Badge>{item.doc_count}</Badge>}
+                                    />
+                                </ErrorHandler>
                             </ListGroupItem>))}
                     </ListGroup>
                 </div>
@@ -514,20 +517,21 @@ export default class HuntDashboard extends React.Component {
     render() {
         return (
             <div className="HuntList">
-
-                <HuntFilter
-                    ActiveFilters={this.props.filters}
-                    config={this.props.rules_list}
-                    ActiveSort={this.props.rules_list.sort}
-                    UpdateFilter={this.UpdateFilter}
-                    UpdateSort={this.UpdateSort}
-                    setViewType={this.setViewType}
-                    filterFields={this.state.rulesFilters}
-                    sort_config={undefined}
-                    displayToggle={undefined}
-                    actionsButtons={this.actionsButtons}
-                    queryType={['filter']}
-                />
+                <ErrorHandler>
+                    <HuntFilter
+                        ActiveFilters={this.props.filters}
+                        config={this.props.rules_list}
+                        ActiveSort={this.props.rules_list.sort}
+                        UpdateFilter={this.UpdateFilter}
+                        UpdateSort={this.UpdateSort}
+                        setViewType={this.setViewType}
+                        filterFields={this.state.rulesFilters}
+                        sort_config={undefined}
+                        displayToggle={undefined}
+                        actionsButtons={this.actionsButtons}
+                        queryType={['filter']}
+                    />
+                </ErrorHandler>
 
                 <div className="row">
                     <div className="col-md-10">
@@ -599,8 +603,9 @@ export default class HuntDashboard extends React.Component {
                         </ResponsiveReactGridLayout>}
                     </div>
                 </div>
-
-                <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.rules_list} filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
+                <ErrorHandler>
+                    <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.rules_list} filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
+                </ErrorHandler>
                 <Modal show={!(this.state.moreModal === null)} onHide={() => { this.hideMoreModal(); }}>
 
                     <Modal.Header>More results <Modal.CloseButton closeText={'Close'} onClick={() => { this.hideMoreModal(); }} /> </Modal.Header>

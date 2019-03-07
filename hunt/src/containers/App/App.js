@@ -34,6 +34,7 @@ import '../../pygments.css';
 import '../../css/App.css';
 import sciriusLogo from '../../img/scirius-by-stamus.svg';
 import keymap from '../../Keymap';
+import ErrorHandler from '../../components/Error';
 
 const shortcutManager = new ShortcutManager(keymap);
 
@@ -337,15 +338,17 @@ export default class App extends Component {
                         <VerticalNav.Brand titleImg={sciriusLogo} />
 
                         <VerticalNav.IconBar>
-                            <UserNavInfo
-                                systemSettings={this.state.systemSettings}
-                                ChangeDuration={this.changeDuration}
-                                ChangeRefreshInterval={this.changeRefreshInterval}
-                                interval={this.state.interval}
-                                period={this.state.duration}
-                                switchPage={this.switchPage}
-                                needReload={this.needReload}
-                            />
+                            <ErrorHandler>
+                                <UserNavInfo
+                                    systemSettings={this.state.systemSettings}
+                                    ChangeDuration={this.changeDuration}
+                                    ChangeRefreshInterval={this.changeRefreshInterval}
+                                    interval={this.state.interval}
+                                    period={this.state.duration}
+                                    switchPage={this.switchPage}
+                                    needReload={this.needReload}
+                                />
+                            </ErrorHandler>
                         </VerticalNav.IconBar>
 
                     </VerticalNav.Masthead>
@@ -361,30 +364,32 @@ export default class App extends Component {
                     <div className="row row-cards-pf">
                         <div className="col-xs-12 col-sm-12 col-md-12" id="app-content">
                             {/* {displayedPage} */}
-                            <DisplayPage
-                                page={this.state.display.page}
-                                systemSettings={this.state.systemSettings}
-                                rules_list={this.state.rules_list}
-                                idsFilters={this.state.idsFilters}
-                                from_date={this.state.from_date}
-                                switchPage={this.switchPage}
-                                updateRuleListState={this.updateRuleListState}
-                                updateIDSFilterState={this.updateIDSFilterState}
-                                item={this.state.display.item}
-                                needReload={this.needReload}
-                                history_list={this.state.history}
-                                historyFilters={this.state.historyFilters}
-                                updateHistoryListState={this.updateHistoryListState}
-                                updateHistoryFilterState={this.updateHistoryFilterState}
-                                alerts_list={this.state.alerts_list}
-                                updateAlertListState={this.updateAlertListState}
-                                filters_list={this.state.filters_list}
-                                filters_filters={this.state.filters_filters}
-                                updateFilterListState={this.updateFilterListState}
-                                updateFiltersFilterState={this.updateFiltersFilterState}
-                                updateHostListState={this.updateHostListState}
-                                hosts_list={this.state.hosts_list}
-                            />
+                            <ErrorHandler>
+                                <DisplayPage
+                                    page={this.state.display.page}
+                                    systemSettings={this.state.systemSettings}
+                                    rules_list={this.state.rules_list}
+                                    idsFilters={this.state.idsFilters}
+                                    from_date={this.state.from_date}
+                                    switchPage={this.switchPage}
+                                    updateRuleListState={this.updateRuleListState}
+                                    updateIDSFilterState={this.updateIDSFilterState}
+                                    item={this.state.display.item}
+                                    needReload={this.needReload}
+                                    history_list={this.state.history}
+                                    historyFilters={this.state.historyFilters}
+                                    updateHistoryListState={this.updateHistoryListState}
+                                    updateHistoryFilterState={this.updateHistoryFilterState}
+                                    alerts_list={this.state.alerts_list}
+                                    updateAlertListState={this.updateAlertListState}
+                                    filters_list={this.state.filters_list}
+                                    filters_filters={this.state.filters_filters}
+                                    updateFilterListState={this.updateFilterListState}
+                                    updateFiltersFilterState={this.updateFiltersFilterState}
+                                    updateHostListState={this.updateHostListState}
+                                    hosts_list={this.state.hosts_list}
+                                />
+                            </ErrorHandler>
                         </div>
                     </div>
                 </div>

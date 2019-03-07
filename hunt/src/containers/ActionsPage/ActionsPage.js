@@ -28,6 +28,7 @@ import { HuntList } from '../../HuntList';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import FilterItem from '../../FilterItem';
 import { buildListUrlParams } from '../../helpers/common';
+import ErrorHandler from '../../components/Error';
 
 export default class ActionsPage extends HuntList {
     constructor(props) {
@@ -81,22 +82,23 @@ export default class ActionsPage extends HuntList {
                         <FilterItem key={item.pk} data={item} switchPage={this.props.switchPage} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} from_date={this.props.from_date} />
                     ))}
                 </ListView>
-                <HuntPaginationRow
-                    viewType={PAGINATION_VIEW.LIST}
-                    pagination={this.props.config.pagination}
-                    onPaginationChange={this.handlePaginationChange}
-                    amountOfPages={Math.ceil(this.state.count / this.props.config.pagination.perPage)}
-                    pageInputValue={this.props.config.pagination.page}
-                    itemCount={this.state.count - 1} // used as last item
-                    itemsStart={(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
-                    itemsEnd={Math.min((this.props.config.pagination.page * this.props.config.pagination.perPage) - 1, this.state.count - 1)}
-                    onFirstPage={this.onFirstPage}
-                    onNextPage={this.onNextPage}
-                    onPreviousPage={this.onPrevPage}
-                    onLastPage={this.onLastPage}
+                <ErrorHandler>
+                    <HuntPaginationRow
+                        viewType={PAGINATION_VIEW.LIST}
+                        pagination={this.props.config.pagination}
+                        onPaginationChange={this.handlePaginationChange}
+                        amountOfPages={Math.ceil(this.state.count / this.props.config.pagination.perPage)}
+                        pageInputValue={this.props.config.pagination.page}
+                        itemCount={this.state.count - 1} // used as last item
+                        itemsStart={(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
+                        itemsEnd={Math.min((this.props.config.pagination.page * this.props.config.pagination.perPage) - 1, this.state.count - 1)}
+                        onFirstPage={this.onFirstPage}
+                        onNextPage={this.onNextPage}
+                        onPreviousPage={this.onPrevPage}
+                        onLastPage={this.onLastPage}
 
-                />
-
+                    />
+                </ErrorHandler>
             </div>
         );
     }

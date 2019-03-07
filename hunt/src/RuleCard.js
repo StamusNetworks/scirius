@@ -3,6 +3,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Icon, Spinner } from 'patternfly-react';
 import SciriusChart from './components/SciriusChart';
+import ErrorHandler from './components/Error';
 
 const RuleCard = (props) => {
     const { category } = props.data;
@@ -38,16 +39,18 @@ const RuleCard = (props) => {
                     </div>
                     <Spinner loading={props.data.hits === undefined} size="xs">
                         {props.data.timeline && <div className="chart-pf-sparkline">
-                            <SciriusChart data={props.data.timeline}
-                                from_date={props.from_date}
-                                axis={{
-                                    x: { show: false },
-                                    y: { show: false }
-                                }}
-                                legend={{ show: false }}
-                                size={{ height: 60 }}
-                                point={{ show: false }}
-                            />
+                            <ErrorHandler>
+                                <SciriusChart data={props.data.timeline}
+                                    from_date={props.from_date}
+                                    axis={{
+                                        x: { show: false },
+                                        y: { show: false }
+                                    }}
+                                    legend={{ show: false }}
+                                    size={{ height: 60 }}
+                                    point={{ show: false }}
+                                />
+                            </ErrorHandler>
                         </div>}
                         {!props.data.timeline && <div className="no-sparkline">
                             <p>No alert</p>

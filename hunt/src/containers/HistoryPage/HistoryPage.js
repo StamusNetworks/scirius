@@ -27,6 +27,7 @@ import * as config from 'hunt_common/config/Api';
 import { HuntFilter } from '../../HuntFilter';
 import HistoryItem from '../../components/HistoryItem';
 import HuntPaginationRow from '../../HuntPaginationRow';
+import ErrorHandler from '../../components/Error';
 import { buildFilter, buildListUrlParams, UpdateFilter, loadActions, UpdateSort, onFirstPage, onNextPage, onPrevPage, onLastPage } from '../../helpers/common';
 
 const HistorySortFields = [
@@ -131,18 +132,20 @@ export default class HistoryPage extends React.Component {
         }
         return (
             <div className="HistoryList HuntList">
-                <HuntFilter ActiveFilters={this.props.filters}
-                    config={this.props.rules_list}
-                    ActiveSort={this.props.rules_list.sort}
-                    UpdateFilter={this.UpdateFilter}
-                    UpdateSort={this.UpdateSort}
-                    setViewType={this.setViewType}
-                    filterFields={this.state.filterFields}
-                    sort_config={HistorySortFields}
-                    displayToggle={false}
-                    queryType={['all']}
-                    got_alert_tag={false}
-                />
+                <ErrorHandler>
+                    <HuntFilter ActiveFilters={this.props.filters}
+                        config={this.props.rules_list}
+                        ActiveSort={this.props.rules_list.sort}
+                        UpdateFilter={this.UpdateFilter}
+                        UpdateSort={this.UpdateSort}
+                        setViewType={this.setViewType}
+                        filterFields={this.state.filterFields}
+                        sort_config={HistorySortFields}
+                        displayToggle={false}
+                        queryType={['all']}
+                        got_alert_tag={false}
+                    />
+                </ErrorHandler>
                 <Spinner loading={this.state.loading}>
                 </Spinner>
                 <ListView>
@@ -153,22 +156,22 @@ export default class HistoryPage extends React.Component {
                     />))
                     }
                 </ListView>
-                <HuntPaginationRow
-                    viewType={PAGINATION_VIEW.LIST}
-                    pagination={this.props.rules_list.pagination}
-                    onPaginationChange={this.handlePaginationChange}
-                    amountOfPages={Math.ceil(this.state.count / this.props.rules_list.pagination.perPage)}
-                    pageInputValue={this.props.rules_list.pagination.page}
-                    itemCount={this.state.count - 1} // used as last item
-                    itemsStart={(this.props.rules_list.pagination.page - 1) * this.props.rules_list.pagination.perPage}
-                    itemsEnd={Math.min((this.props.rules_list.pagination.page * this.props.rules_list.pagination.perPage) - 1, this.state.count - 1)}
-                    onFirstPage={this.onFirstPage}
-                    onNextPage={this.onNextPage}
-                    onPreviousPage={this.onPrevPage}
-                    onLastPage={this.onLastPage}
-
-                />
-
+                <ErrorHandler>
+                    <HuntPaginationRow
+                        viewType={PAGINATION_VIEW.LIST}
+                        pagination={this.props.rules_list.pagination}
+                        onPaginationChange={this.handlePaginationChange}
+                        amountOfPages={Math.ceil(this.state.count / this.props.rules_list.pagination.perPage)}
+                        pageInputValue={this.props.rules_list.pagination.page}
+                        itemCount={this.state.count - 1} // used as last item
+                        itemsStart={(this.props.rules_list.pagination.page - 1) * this.props.rules_list.pagination.perPage}
+                        itemsEnd={Math.min((this.props.rules_list.pagination.page * this.props.rules_list.pagination.perPage) - 1, this.state.count - 1)}
+                        onFirstPage={this.onFirstPage}
+                        onNextPage={this.onNextPage}
+                        onPreviousPage={this.onPrevPage}
+                        onLastPage={this.onLastPage}
+                    />
+                </ErrorHandler>
             </div>
         );
     }

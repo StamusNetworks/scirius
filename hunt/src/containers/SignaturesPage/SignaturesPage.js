@@ -36,6 +36,7 @@ import { buildQFilter } from '../../helpers/buildQFilter';
 import RulePage from '../../RulePage';
 import RuleInList from '../../RuleInList';
 import List from '../../components/List/index';
+import ErrorHandler from '../../components/Error';
 import { actionsButtons,
     buildListUrlParams,
     loadActions,
@@ -347,18 +348,20 @@ export default class SignaturesPage extends React.Component {
         return (
             <div className="RulesList HuntList">
                 {this.state.net_error !== undefined && <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>}
-                <HuntFilter ActiveFilters={this.props.filters}
-                    config={this.props.rules_list}
-                    ActiveSort={this.props.rules_list.sort}
-                    UpdateFilter={this.RuleUpdateFilter}
-                    UpdateSort={this.UpdateSort}
-                    setViewType={this.setViewType}
-                    filterFields={this.state.rulesFilters}
-                    sort_config={RuleSortFields}
-                    displayToggle={this.state.display_toggle}
-                    actionsButtons={this.actionsButtons}
-                    queryType={['filter', 'rest']}
-                />
+                <ErrorHandler>
+                    <HuntFilter ActiveFilters={this.props.filters}
+                        config={this.props.rules_list}
+                        ActiveSort={this.props.rules_list.sort}
+                        UpdateFilter={this.RuleUpdateFilter}
+                        UpdateSort={this.UpdateSort}
+                        setViewType={this.setViewType}
+                        filterFields={this.state.rulesFilters}
+                        sort_config={RuleSortFields}
+                        displayToggle={this.state.display_toggle}
+                        actionsButtons={this.actionsButtons}
+                        queryType={['filter', 'rest']}
+                    />
+                </ErrorHandler>
 
                 {this.state.view === 'rules_list' && <Spinner loading={this.state.loading} />}
 
@@ -373,25 +376,28 @@ export default class SignaturesPage extends React.Component {
                         rulesets: this.state.rulesets,
                     }}
                 />}
+                <ErrorHandler>
+                    { this.state.view === 'rules_list' && <HuntPaginationRow
+                        viewType={PAGINATION_VIEW.LIST}
+                        pagination={this.props.rules_list.pagination}
+                        onPaginationChange={this.handlePaginationChange}
+                        amountOfPages={Math.ceil(this.state.count / this.props.rules_list.pagination.perPage)}
+                        pageInputValue={this.props.rules_list.pagination.page}
+                        itemCount={this.state.count - 1} // used as last item
+                        itemsStart={(this.props.rules_list.pagination.page - 1) * this.props.rules_list.pagination.perPage}
+                        itemsEnd={Math.min((this.props.rules_list.pagination.page * this.props.rules_list.pagination.perPage) - 1, this.state.count - 1)}
+                        onFirstPage={this.onFirstPage}
+                        onNextPage={this.onNextPage}
+                        onPreviousPage={this.onPrevPage}
+                        onLastPage={this.onLastPage}
+                    /> }
+                    {this.state.view === 'rule' && <RulePage systemSettings={this.props.systemSettings} rule={this.state.display_rule} config={this.props.rules_list} filters={this.props.filters} from_date={this.props.from_date} UpdateFilter={this.RuleUpdateFilter} addFilter={this.addFilter} rulesets={this.state.rulesets} />}
+                    {this.state.view === 'dashboard' && <DashboardPage />}
+                </ErrorHandler>
 
-                { this.state.view === 'rules_list' && <HuntPaginationRow
-                    viewType={PAGINATION_VIEW.LIST}
-                    pagination={this.props.rules_list.pagination}
-                    onPaginationChange={this.handlePaginationChange}
-                    amountOfPages={Math.ceil(this.state.count / this.props.rules_list.pagination.perPage)}
-                    pageInputValue={this.props.rules_list.pagination.page}
-                    itemCount={this.state.count - 1} // used as last item
-                    itemsStart={(this.props.rules_list.pagination.page - 1) * this.props.rules_list.pagination.perPage}
-                    itemsEnd={Math.min((this.props.rules_list.pagination.page * this.props.rules_list.pagination.perPage) - 1, this.state.count - 1)}
-                    onFirstPage={this.onFirstPage}
-                    onNextPage={this.onNextPage}
-                    onPreviousPage={this.onPrevPage}
-                    onLastPage={this.onLastPage}
-                /> }
-                {this.state.view === 'rule' && <RulePage systemSettings={this.props.systemSettings} rule={this.state.display_rule} config={this.props.rules_list} filters={this.props.filters} from_date={this.props.from_date} UpdateFilter={this.RuleUpdateFilter} addFilter={this.addFilter} rulesets={this.state.rulesets} />}
-                {this.state.view === 'dashboard' && <DashboardPage />}
-
-                <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.rules_list} filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
+                <ErrorHandler>
+                    <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.rules_list} filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
+                </ErrorHandler>
             </div>
         );
     }

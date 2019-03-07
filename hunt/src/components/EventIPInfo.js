@@ -8,6 +8,7 @@ import EventIPSynscan from './EventIPSynscan';
 import EventIPThreatlist from './EventIPThreatlist';
 import EventIPResolver from './EventIPResolver';
 import EventIPPastries from './EventIPPastries';
+import ErrorHandler from './Error';
 
 export default class EventIPInfo extends React.Component {
     constructor(props) {
@@ -67,22 +68,22 @@ export default class EventIPInfo extends React.Component {
                         {this.state.ipinfo && <Row>
                             {this.state.ipinfo.map((item) => {
                                 if (item['@category'] === 'geoloc') {
-                                    return (<EventIPGeoloc data={item} />);
+                                    return (<ErrorHandler><EventIPGeoloc data={item} /></ErrorHandler>);
                                 }
                                 if (item['@category'] === 'datascan') {
-                                    return (<EventIPDatascan data={item} />);
+                                    return (<ErrorHandler><EventIPDatascan data={item} /></ErrorHandler>);
                                 }
                                 if (item['@category'] === 'synscan') {
-                                    return (<EventIPSynscan data={item} />);
+                                    return (<ErrorHandler><EventIPSynscan data={item} /></ErrorHandler>);
                                 }
                                 if (item['@category'] === 'threatlist') {
-                                    return (<EventIPThreatlist data={item} />);
+                                    return (<ErrorHandler><EventIPThreatlist data={item} /></ErrorHandler>);
                                 }
 
                                 return null;
                             })}
-                            {resolvers.length > 0 && <EventIPResolver data={resolvers} />}
-                            {pastries.length > 0 && <EventIPPastries data={pastries} />}
+                            {resolvers.length > 0 && <ErrorHandler><EventIPResolver data={resolvers} /></ErrorHandler>}
+                            {pastries.length > 0 && <ErrorHandler><EventIPPastries data={pastries} /></ErrorHandler>}
                         </Row>}
                         {this.state.ipinfo === null && <p>Fetching IP info</p>}
                     </Modal.Body>

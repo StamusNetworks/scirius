@@ -8,6 +8,7 @@ import HuntNotificationArea from '../HuntNotificationArea';
 import ExternalLink from './ExternalLink';
 import OutsideAlerter from './OutsideAlerter';
 import sciriusLogo from '../img/scirius-by-stamus.svg';
+import ErrorHandler from './Error';
 
 const USER_PERIODS = {
     1: '1h',
@@ -174,39 +175,41 @@ export default class UserNavInfo extends Component {
                     </Dropdown.Menu>
                 </Dropdown>
 
-                {this.state.showNotifications && <HuntNotificationArea />}
-                <OutsideAlerter hide={this.isShownFalse}>
-                    <ApplicationLauncher grid open={this.state.isShown} toggleLauncher={this.toggleiSshown}>
-                        <ApplicationLauncherItem
-                            icon="rebalance"
-                            title="Hunt"
-                            tooltip="Threat Hunting"
-                            onClick={this.toggleHunt}
-                        />
+                {this.state.showNotifications && <ErrorHandler><HuntNotificationArea /></ErrorHandler>}
+                <ErrorHandler>
+                    <OutsideAlerter hide={this.isShownFalse}>
+                        <ApplicationLauncher grid open={this.state.isShown} toggleLauncher={this.toggleiSshown}>
+                            <ApplicationLauncherItem
+                                icon="rebalance"
+                                title="Hunt"
+                                tooltip="Threat Hunting"
+                                onClick={this.toggleHunt}
+                            />
 
-                        <ApplicationLauncherItem
-                            icon="server"
-                            title="Administration"
-                            tooltip="Appliances Management"
-                            onClick={this.toggleHome}
-                        />
+                            <ApplicationLauncherItem
+                                icon="server"
+                                title="Administration"
+                                tooltip="Appliances Management"
+                                onClick={this.toggleHome}
+                            />
 
-                        {this.props.systemSettings && this.props.systemSettings.kibana && <ExternalLink
-                            onClick={this.toggleDashboards}
-                            icon="glyphicon glyphicon-stats"
-                            title="Dashboards"
-                            tooltip="Kibana dashboards for ES"
-                        />}
+                            {this.props.systemSettings && this.props.systemSettings.kibana && <ExternalLink
+                                onClick={this.toggleDashboards}
+                                icon="glyphicon glyphicon-stats"
+                                title="Dashboards"
+                                tooltip="Kibana dashboards for ES"
+                            />}
 
-                        {this.props.systemSettings && this.props.systemSettings.evebox && <ExternalLink
-                            onClick={this.toggleEvebox}
-                            icon="glyphicon glyphicon-th-list"
-                            title="Events viewer"
-                            tooltip="Evebox alert and event management tool"
-                        />}
+                            {this.props.systemSettings && this.props.systemSettings.evebox && <ExternalLink
+                                onClick={this.toggleEvebox}
+                                icon="glyphicon glyphicon-th-list"
+                                title="Events viewer"
+                                tooltip="Evebox alert and event management tool"
+                            />}
 
-                    </ApplicationLauncher>
-                </OutsideAlerter>
+                        </ApplicationLauncher>
+                    </OutsideAlerter>
+                </ErrorHandler>
                 <Dropdown componentClass="li" id="help">
                     <Dropdown.Toggle useAnchor className="nav-item-iconic">
                         <Icon type="pf" name="help" />
