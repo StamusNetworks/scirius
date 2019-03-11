@@ -233,7 +233,7 @@ export default class RulePage extends React.Component {
                         <div className="hunt-stat-body">
                             <ListGroup>
                                 {this.state.moreResults.map((item) => (<ListGroupItem key={item.key}>
-                                    {this.state.moreModal && <EventValue field={this.state.moreModal.i} value={item.key} addFilter={this.addFilter} right_info={<Badge>{item.doc_count}</Badge>} />}
+                                    {this.state.moreModal && <EventValue field={this.state.moreModal} value={item.key} addFilter={this.props.addFilter} right_info={<Badge>{item.doc_count}</Badge>} />}
                                 </ListGroupItem>))}
                             </ListGroup>
                         </div>
