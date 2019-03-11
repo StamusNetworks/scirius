@@ -49,7 +49,7 @@ export default class HuntTrend extends React.Component {
         let stringFilters = '';
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
         if (qfilter) {
-            stringFilters += `&qfilter=${qfilter.replace('&host_id_qfilter=', '')}`;
+            stringFilters += `&qfilter=${qfilter.replace('&qfilter=', '&filter=')}`;
         }
         axios.get(`${config.API_URL}${config.ES_BASE_PATH}alerts_count&prev=1&hosts=*&from_date=${this.props.from_date}${stringFilters}`)
         .then((res) => {
