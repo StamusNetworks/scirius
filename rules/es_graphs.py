@@ -343,7 +343,6 @@ def get_timeline_quey():
               "date_histogram": {
                 "field": "@timestamp",
                 "interval": "{{ interval }}",
-                "time_zone": "Europe/Berlin",
                 "min_doc_count": 0
               },
               "aggs": {
@@ -455,7 +454,6 @@ def get_stats_query():
               "date_histogram": {
                 "field": "@timestamp",
                 "interval": "{{ interval }}",
-                "time_zone": "Europe/Berlin",
                 "min_doc_count": 0
               },
               "aggs": {
@@ -504,7 +502,6 @@ def get_stats_query():
               "date_histogram": {
                 "field": "@timestamp",
                 "interval": "{{ interval }}",
-                "time_zone": "Europe/Berlin",
                 "min_doc_count": 0
               },
               "aggs": {
