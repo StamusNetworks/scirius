@@ -18,6 +18,7 @@ export default class EventValue extends React.Component {
                 onMouseOver={() => { this.setState({ display_actions: true }); }}
                 onMouseOut={() => { this.setState({ display_actions: false }); }}
                 className="value-field-complete"
+                style={{ ...this.props.style }}
             >
                 <span className="value-field" title={valueText}>{valueText}</span>
                 <span className={this.state.display_actions ? 'eventFilters value-actions' : 'eventFiltersHidden value-actions'}>
@@ -41,4 +42,5 @@ EventValue.propTypes = {
     field: PropTypes.any,
     value: PropTypes.any,
     magnifiers: PropTypes.bool,
+    style: PropTypes.object,
 };

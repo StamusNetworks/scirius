@@ -230,3 +230,9 @@ span.eventValue {
 .object-content {
   word-break: break-all;
 }
+.dl-item {
+  margin-bottom: 10px;
+}
+.dl-item:last-child {
+  margin-bottom: 0px;
+}

@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import EventValue from './EventValue';
 
 const EventField = (props) => (
-    <React.Fragment>
+    <div className={'dl-item'}>
         <dt>{props.field_name}</dt>
         <dd>
             <EventValue field={props.field} value={props.value} magnifiers={props.magnifiers} addFilter={props.addFilter} />
         </dd>
-    </React.Fragment>
+    </div>
 );
 
 EventField.defaultProps = {
