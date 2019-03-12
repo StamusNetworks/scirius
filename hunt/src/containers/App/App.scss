@@ -153,6 +153,12 @@ span.eventValue {
    margin-right: 0px;
    padding-right: 0px;
 }
+.value-field-complete .value-actions {
+  display: none;
+}
+.value-field-complete:hover .value-actions {
+  display: inline-block;
+}
 
 .value-field {
    overflow: hidden;
