@@ -18,7 +18,7 @@ ipy
 elasticsearch
 django-ipware
 gunicorn
-djangorestframework
+djangorestframework<3.9.2
 markdown<3.0
 django-filter<2.0
 idstools
