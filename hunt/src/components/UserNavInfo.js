@@ -136,15 +136,15 @@ export default class UserNavInfo extends Component {
         return (
             <React.Fragment>
 
-                <li className="dropdown">
+                <li>
                     <div tabIndex={0} data-toggle="tooltip" title="Update threat detection" onClick={this.showUpdateThreatDetection} role="button" className="nav-item-iconic">
                         <Icon type="fa" name="upload" />
                     </div>
                 </li>
 
-                <li className="dropdown">
-                    <div tabIndex={0} data-toggle="tooltip" title="History" onClick={() => this.props.switchPage(PAGE_STATE.history, undefined)} role="button" className="nav-item-iconic">
-                        <i className="glyphicon glyphicon-list" aria-hidden="true"></i>
+                <li>
+                    <div tabIndex={0} data-toggle="tooltip" title="History" onClick={() => this.props.switchPage(PAGE_STATE.history, undefined)} role="button" className="nav-item-iconic" style={{ paddingTop: '23px' }}>
+                        <i className="glyphicon glyphicon-list" aria-hidden="true" />
                         <span> History</span>
                     </div>
                 </li>
@@ -160,7 +160,7 @@ export default class UserNavInfo extends Component {
                     </Dropdown.Menu>
                 </Dropdown>
 
-                <li className="dropdown">
+                <li>
                     <a tabIndex={0} id="refreshtime" role="button" className="nav-item-iconic" onClick={this.props.needReload}>
                         <Icon type="fa" name="refresh" />
                     </a>
