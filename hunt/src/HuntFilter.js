@@ -411,18 +411,6 @@ export class HuntFilter extends React.Component {
                             onKeyPress={(e) => this.onValueKeyPress(e)}
                         />
                     </FormGroup>}
-                    {filterCategory && filterSubCategory && <FormGroup
-                        controlId="input-filter"
-                        validationState={this.getValidationState()}
-                    >
-                        <FormControl
-                            type={currentFilterType.filterType}
-                            value={currentValue}
-                            placeholder={filterSubCategory.placeholder}
-                            onChange={(e) => this.updateCurrentValue(e)}
-                            onKeyPress={(e) => this.onValueKeyPress(e)}
-                        />
-                    </FormGroup>}
                     {filterCategory && filterCategory.valueType && <FormGroup
                         controlId="input-filter"
                         validationState={this.getValidationState()}
