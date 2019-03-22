@@ -235,6 +235,7 @@ config classification: default-login-attempt,Attempt to login by a default usern
         cf = open(config_file, 'w')
         # write the config file in temp dir
         cf.write(config_buffer)
+        cf.write("mpm-algo: ac-bs\n")
         cf.write("default-rule-path: " + tmpdir + "\n")
         cf.write("reference-config-file: " + tmpdir + "/reference.config\n")
         cf.write("classification-file: " + tmpdir + "/classification.config\n")
