@@ -28,7 +28,7 @@ import { HuntFilter } from '../../HuntFilter';
 import HistoryItem from '../../components/HistoryItem';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ErrorHandler from '../../components/Error';
-import { buildFilter, buildListUrlParams, UpdateFilter, loadActions, UpdateSort, onFirstPage, onNextPage, onPrevPage, onLastPage } from '../../helpers/common';
+import { buildFilter, buildListUrlParams, UpdateFilter, loadActions, UpdateSort, onFirstPage, onNextPage, onPrevPage, onLastPage, handlePaginationChange } from '../../helpers/common';
 
 const HistorySortFields = [
     {
@@ -82,6 +82,7 @@ export default class HistoryPage extends React.Component {
         this.onNextPage = onNextPage.bind(this);
         this.onPrevPage = onPrevPage.bind(this);
         this.onLastPage = onLastPage.bind(this);
+        this.handlePaginationChange = handlePaginationChange.bind(this);
 
         this.props.getActionTypes();
     }
