@@ -177,8 +177,8 @@ _HUNT_FILTERS = [
                               'id': 'tls',
                               'title': 'TLS',
                               'filterValues': [
-                                  {'id': 'subject', 'title': 'Subject', 'placeholder': 'Filter by Subject'},
-                                  {'id': 'issuerdn', 'title': 'Issuer', 'placeholder': 'Filter by Issuer'},
+                                  {'id': 'subject', 'title': 'Subject DN', 'placeholder': 'Filter by Subject DN'},
+                                  {'id': 'issuerdn', 'title': 'Issuer DN', 'placeholder': 'Filter by Issuer DN'},
                                   {'id': 'sni', 'title': 'Server Name Indication', 'placeholder': 'Filter by Server Name Indication'},
                                   {'id': 'version', 'title': 'Version', 'placeholder': 'Filter by Version'},
                                   {'id': 'fingerprint', 'title': 'Fingerprint', 'placeholder': 'Filter by Fingerprint'},
