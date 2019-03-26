@@ -16,7 +16,7 @@ export const dashboard = {
             w: 3,
             h: 3,
         },
-        defaultItemHeight: 41,
+        defaultItemHeight: 33,
         defaultHeadHeight: 70,
     },
     sections: {
