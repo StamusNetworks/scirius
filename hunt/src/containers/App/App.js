@@ -29,6 +29,7 @@ import DisplayPage from 'hunt_common/components/DisplayPage';
 import { PAGE_STATE } from 'hunt_common/constants';
 import * as config from 'hunt_common/config/Api';
 import UserNavInfo from '../../components/UserNavInfo';
+import EmitEvent from '../../helpers/EmitEvent';
 import '../../pygments.css';
 // eslint-disable-next-line import/no-unresolved
 import '../../css/App.css';
@@ -330,10 +331,17 @@ export default class App extends Component {
         });
     }
 
+    adjustDashboardWidth = () => {
+        setTimeout(() => {
+            EmitEvent('resize');
+            EmitEvent('resize');
+        }, 150);
+    };
+
     render() {
         return (
             <div className="layout-pf layout-pf-fixed faux-layout">
-                <VerticalNav sessionKey="storybookItemsAsJsx" showBadges>
+                <VerticalNav sessionKey="storybookItemsAsJsx" showBadges onCollapse={this.adjustDashboardWidth} onExpand={this.adjustDashboardWidth}>
                     <VerticalNav.Masthead title="Scirius">
                         <VerticalNav.Brand titleImg={sciriusLogo} />
 
