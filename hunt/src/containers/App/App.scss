@@ -233,6 +233,9 @@ span.eventValue {
 .RulesList ul.list-inline span.label-info {
   white-space: inherit;
 }
+.RulesList .card-pf .card-pf-body {
+  word-break: break-word;
+}
 .object-content {
   word-break: break-all;
 }
