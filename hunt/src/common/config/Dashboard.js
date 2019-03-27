@@ -244,6 +244,42 @@ export const dashboard = {
                             w: 4, h: 22, x: 1, y: 0
                         },
                     },
+                }, {
+                    i: 'alert.source.net_info_agg',
+                    title: 'Sources Network',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 8, h: 22, x: 16, y: 0
+                        },
+                        md: {
+                            w: 7, h: 12, x: 14, y: 0
+                        },
+                        sm: {
+                            w: 8, h: 12, x: 16, y: 0
+                        },
+                        xs: {
+                            w: 4, h: 12, x: 8, y: 0
+                        },
+                    },
+                }, {
+                    i: 'alert.target.net_info_agg',
+                    title: 'Targets Network',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 8, h: 22, x: 24, y: 0
+                        },
+                        md: {
+                            w: 7, h: 12, x: 21, y: 0
+                        },
+                        sm: {
+                            w: 8, h: 12, x: 24, y: 0
+                        },
+                        xs: {
+                            w: 4, h: 12, x: 12, y: 0
+                        },
+                    },
                 }
             ],
             dimensions: find(storedMacroLayout, { i: 'organizational' }) || {
