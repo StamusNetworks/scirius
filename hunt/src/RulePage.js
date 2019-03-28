@@ -158,10 +158,35 @@ export default class RulePage extends React.Component {
                                 </span>
                             </h1>
                         </div>
-                        <div className={(this.state.rule_references !== undefined && this.state.rule_references.length > 0) ? 'col-xs-9 col-sm-9 col-md-9' : 'col-xs-12 col-sm-12 col-md-12'}>
+                        <div>
                             <div className="container-fluid container-cards-pf">
                                 <div className="row">
-                                    <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.state.rule.content }}></div>
+
+                                    <div className={(this.state.rule_references !== undefined && this.state.rule_references.length > 0) ? 'col-xs-9 col-sm-9 col-md-9' : 'col-xs-12 col-sm-12 col-md-12'}>
+                                        <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.state.rule.content }}></div>
+                                    </div>
+
+                                    <div className={(this.state.rule_references !== undefined && this.state.rule_references.length > 0) ? 'col-xs-3 col-sm-3 col-md-3' : 'col-xs-0 col-sm-0 col-md-0'}>
+                                        {this.state.rule_references && this.state.rule_references.length > 0 && <div className="card-pf card-pf-accented card-pf-aggregate-status">
+                                            <h2 className="card-pf-title">
+                                                <span className="fa" />References
+                                            </h2>
+                                            <div className="card-pf-body">
+                                                {this.state.rule_references.map((reference) => {
+                                                    if (reference.url !== undefined) {
+                                                        return (
+                                                            <p key={reference.url}><a href={reference.url} target="_blank">{`${reference.key[0].toUpperCase() + reference.key.substring(1)}: ${reference.value.substring(0, 45)}...`}</a></p>
+                                                        );
+                                                    }
+                                                    return null;
+                                                })}
+                                            </div>
+                                        </div>}
+                                    </div>
+
+                                </div>
+
+                                <div className="row">
                                     {this.state.rule.timeline && <SciriusChart
                                         data={this.state.rule.timeline}
                                         from_date={this.props.from_date}
@@ -192,28 +217,6 @@ export default class RulePage extends React.Component {
                                     <HuntStat systemSettings={this.state.systemSettings} title="Subject DN" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.subject" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
                                     <HuntStat systemSettings={this.state.systemSettings} title="SNI" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.sni" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
                                     <HuntStat systemSettings={this.state.systemSettings} title="Fingerprint" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.fingerprint" from_date={this.props.from_date} UpdateFilter={this.props.UpdateFilter} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                </div>}
-                            </div>
-                        </div>
-                        <div className="col-xs-3 col-sm-3 col-md-3">
-                            <div className="container-fluid container-cards-pf">
-                                {this.state.rule_references && this.state.rule_references.length > 0 && <div className="card-pf card-pf-accented card-pf-aggregate-status">
-                                    {/* <div class="panel-heading">
-                                        <h2 class="panel-title">References</h2>
-                                    </div> */}
-                                    <h2 className="card-pf-title">
-                                        <span className="fa" />References
-                                    </h2>
-                                    <div className="card-pf-body">
-                                        {this.state.rule_references.map((reference) => {
-                                            if (reference.url !== undefined) {
-                                                return (
-                                                    <p key={reference.url}><a href={reference.url} target="_blank">{`${reference.key[0].toUpperCase() + reference.key.substring(1)}: ${reference.value.substring(0, 45)}...`}</a></p>
-                                                );
-                                            }
-                                            return null;
-                                        })}
-                                    </div>
                                 </div>}
                             </div>
                         </div>
