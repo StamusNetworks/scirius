@@ -1282,7 +1282,10 @@ class Transformable:
             self._set_target(rule_ids, target="src_ip")
 
     def apply_lateral_target_transfo(self, content, key=Transformation.LATERAL, value=Transformation.L_YES):
-        rule_ids = rule_idstools.parse(content)
+        try:
+            rule_ids = rule_idstools.parse(content)
+        except:
+            return content
 
         # Workaround: ref #674
         # Cannot transform, idstools cannot parse it
@@ -1624,8 +1627,12 @@ class Category(models.Model, Transformable, Cache):
 
     def add_group_signature(self, sigs_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged):
         # parse the line with ids tools
-        # TODO hand idstools parsing errors
-        rule = rule_idstools.parse(line)
+        try:
+            rule = rule_idstools.parse(line)
+        except:
+            return
+        if rule is None:
+            return
         rule_base_msg = Rule.GROUPSNAMEREGEXP.findall(rule.msg)[0]
         # check if we already have a signature in the group signatures
         # that match
@@ -2053,7 +2060,10 @@ class Rule(models.Model, Transformable, Cache):
         return None
 
     def parse_metadata(self):
-        rule_ids = rule_idstools.parse(self.content)
+        try:
+            rule_ids = rule_idstools.parse(self.content)
+        except:
+            return
         if rule_ids is None:
             return
         for meta in rule_ids.metadata:
@@ -2175,8 +2185,10 @@ class Rule(models.Model, Transformable, Cache):
 
     def can_lateral(self, value):
         content = self.content.encode('utf8')
-        rule_ids = rule_idstools.parse(self.content)
-
+        try:
+            rule_ids = rule_idstools.parse(self.content)
+        except:
+            return False
         # Workaround: ref #674
         # Cannot transform, idstools cannot parse it
         # So remove this transformation from choices
@@ -2189,7 +2201,10 @@ class Rule(models.Model, Transformable, Cache):
         return False
 
     def can_target(self):
-        rule_ids = rule_idstools.parse(self.content)
+        try:
+            rule_ids = rule_idstools.parse(self.content)
+        except:
+            return False
         return (rule_ids is not None)
 
     def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
