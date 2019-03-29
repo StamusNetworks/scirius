@@ -128,11 +128,13 @@ export default class RulePage extends React.Component {
         ]).then(
             ([res, rescontent, referencesContent]) => {
                 const rstatus = [];
-                for (let key = 0; key < res.data.length; key += 1) {
+
+                Object.keys(res.data).forEach((key) => {
                     res.data[key].pk = key;
-                    res.data[key].content = rescontent.data[key];
+                    res.data[key].content = key in rescontent.data ? rescontent.data[key] : 'Rule not included in Ruleset';
                     rstatus.push(res.data[key]);
-                }
+                });
+
                 this.setState({ rule_status: rstatus });
                 this.setState({ rule_references: referencesContent.data });
             }
