@@ -69,11 +69,13 @@ export class HuntSort extends React.Component {
                     sortTypes={this.props.config}
                     currentSortType={currentSortType}
                     onSortTypeSelected={this.updateCurrentSortType}
+                    disabled={this.props.disabled}
                 />
                 <Sort.DirectionSelector
                     isNumeric={isSortNumeric}
                     isAscending={isSortAscending}
                     onClick={() => this.toggleCurrentSortDirection()}
+                    disabled={this.props.disabled}
                 />
             </Sort>
         );
@@ -83,4 +85,5 @@ HuntSort.propTypes = {
     config: PropTypes.any,
     ActiveSort: PropTypes.any,
     UpdateSort: PropTypes.any,
+    disabled: PropTypes.any,
 };

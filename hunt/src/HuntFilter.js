@@ -498,6 +498,7 @@ export class HuntFilter extends React.Component {
                         {this.props.sort_config && <HuntSort config={this.props.sort_config}
                             ActiveSort={this.props.ActiveSort}
                             UpdateSort={this.props.UpdateSort}
+                            disabled={this.props.disable_sort ? this.props.disable_sort : false}
                         />}
                         {this.state.gotAlertTag && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && <div className="form-group">
                             <ul className="list-inline">
@@ -590,6 +591,7 @@ HuntFilter.propTypes = {
     setViewType: PropTypes.any,
     queryType: PropTypes.any,
     sort_config: PropTypes.any,
+    disable_sort: PropTypes.any,
     ActiveSort: PropTypes.any,
     UpdateSort: PropTypes.any,
     config: PropTypes.any,
