@@ -1,49 +1,26 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { DonutChart } from 'patternfly-react';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from './helpers/buildQFilter';
 import ErrorHandler from './components/Error';
+import DonutChart from './components/DonutChart';
 
 export default class HuntTrend extends React.Component {
     constructor(props) {
         super(props);
         this.state = { data: undefined };
         this.fetchData = this.fetchData.bind(this);
-        this.bigNumFormatter = this.bigNumFormatter.bind(this);
-        this.formatDonutNumber = this.formatDonutNumber.bind(this);
     }
 
     componentDidMount() {
         this.fetchData();
-        this.formatDonutNumber();
     }
 
     componentDidUpdate(prevProps) {
         if ((prevProps.from_date !== this.props.from_date) || (prevProps.filters !== this.props.filters)) {
             this.fetchData();
         }
-        this.formatDonutNumber();
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    bigNumFormatter(number) {
-        let res = number.toString();
-        if (number > 999999999) {
-            res = `${(number / 1000000000).toFixed(1)}B`;
-        } else if (number > 999999) {
-            res = `${(number / 1000000).toFixed(1)}M`;
-        } else if (number > 999) {
-            res = `${(number / 1000).toFixed(1)}k`;
-        }
-        return res;
-    }
-
-    formatDonutNumber() {
-        let count = parseInt(document.querySelector('.donut-title-big-pf').innerHTML, 10);
-        count = this.bigNumFormatter(count);
-        document.querySelector('.donut-title-big-pf').innerHTML = count;
     }
 
     fetchData() {
@@ -87,11 +64,32 @@ export default class HuntTrend extends React.Component {
             <div>
                 <ErrorHandler>
                     <DonutChart
-                        data={gData}
-                        size={{ width: 190, height: 190 }}
-                        title={{ type: 'max' }}
-                        tooltip={{ show: true }}
-                        legend={{ show: true, position: 'bottom' }}
+                        data={{
+                            columns: gData.columns,
+                            groups: gData.groups,
+                            colors: {
+                                'previous count': '#0088ce',
+                                'current count': '#737373'
+                            },
+                        }}
+                        legend={{
+                            show: true,
+                            position: 'bottom',
+                        }}
+                        style={{
+                            width: '190px',
+                            height: '190px',
+                        }}
+                        donutWidth={12}
+                        title={{
+                            show: true,
+                            pretty: true,
+                            line1: 'max',
+                            line2: 'previous count'
+                        }}
+                        tooltip={{
+                            show: true
+                        }}
                     />
                 </ErrorHandler>
             </div>
