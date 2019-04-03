@@ -1,4 +1,4 @@
-/* eslint-disable react/no-this-in-sfc */
+/* eslint-disable react/no-this-in-sfc, no-loop-func */
 /*
 Copyright(C) 2018 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
@@ -28,7 +28,6 @@ import { WidthProvider, Responsive } from 'react-grid-layout';
 import store from 'store';
 import md5 from 'md5';
 import map from 'lodash/map';
-import reject from 'lodash/reject';
 import find from 'lodash/find';
 import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
 import * as config from 'hunt_common/config/Api';
@@ -219,7 +218,12 @@ export default class HuntDashboard extends React.Component {
         // Count the number of the blocks
         let blocksLoaded = 0;
         let newHeight = 0;
-        map(this.state.dashboard[panel].items, (block) => {
+        const array = this.state.dashboard[panel].items;
+        for (let j = 0; j < array.length; j += 1) {
+            const block = array[j];
+            if (typeof array.highestBlockHeight === 'undefined') {
+                array.highestBlockHeight = 0;
+            }
             axios.get(`${config.API_URL + config.ES_BASE_PATH
             }field_stats&field=${block.i
             }&from_date=${this.props.from_date
@@ -235,58 +239,61 @@ export default class HuntDashboard extends React.Component {
                 }
 
                 const height = Math.ceil(((json.data.length * dashboard.block.defaultItemHeight) + dashboard.block.defaultHeadHeight) / 13);
+                if (height > array.highestBlockHeight) {
+                    array.highestBlockHeight = height;
+                }
+
                 const panelHeight = (json.data.length) ? 10 + (json.data.length * dashboard.block.defaultItemHeight) + dashboard.block.defaultHeadHeight + dashboard.panel.defaultHeadHeight : dashboard.panel.defaultHeadHeight;
                 const isPanelLoaded = (!this.state.dashboard[panel].items.find((itm) => itm.data !== null && itm.data.length === 0));
 
                 const items = this.panelState.dashboard[panel].items.map((el) => {
-                    if (el.i === block.i) {
-                        const data = (json.data.length) ? json.data : null;
+                    const data = (json.data.length) ? json.data : null;
 
-                        if (data) {
-                            for (let idx = 0; idx < data.length; idx += 1) {
-                                if (!data[idx].key) {
-                                    data[idx].key = 'Unknown';
-                                }
+                    if (data) {
+                        for (let idx = 0; idx < data.length; idx += 1) {
+                            if (!data[idx].key) {
+                                data[idx].key = 'Unknown';
                             }
                         }
-
-                        const extended = {
-                            data,
-                            dimensions: {
-                                ...el.dimensions,
-                                lg: {
-                                    ...el.dimensions.lg,
-                                    ...this.getBlockFromLS(panel, block.i, 'lg'),
-                                    maxH: height,
-                                    minH: height,
-                                    h: height,
-                                },
-                                md: {
-                                    ...el.dimensions.md,
-                                    ...this.getBlockFromLS(panel, block.i, 'md'),
-                                    maxH: height,
-                                    minH: height,
-                                    h: height,
-                                },
-                                sm: {
-                                    ...el.dimensions.sm,
-                                    ...this.getBlockFromLS(panel, block.i, 'sm'),
-                                    maxH: height,
-                                    minH: height,
-                                    h: height,
-                                },
-                                xs: {
-                                    ...el.dimensions.xs,
-                                    ...this.getBlockFromLS(panel, block.i, 'xs'),
-                                    maxH: height,
-                                    minH: height,
-                                    h: height,
-                                },
-                            }
-                        };
-                        return Object.assign({}, el, extended);
                     }
-                    return el;
+
+                    let extended = {
+                        dimensions: {
+                            ...el.dimensions,
+                            lg: {
+                                ...el.dimensions.lg,
+                                ...this.getBlockFromLS(panel, block.i, 'lg'),
+                                maxH: array.highestBlockHeight,
+                                minH: array.highestBlockHeight,
+                                h: array.highestBlockHeight,
+                            },
+                            md: {
+                                ...el.dimensions.md,
+                                ...this.getBlockFromLS(panel, block.i, 'md'),
+                                maxH: array.highestBlockHeight,
+                                minH: array.highestBlockHeight,
+                                h: array.highestBlockHeight,
+                            },
+                            sm: {
+                                ...el.dimensions.sm,
+                                ...this.getBlockFromLS(panel, block.i, 'sm'),
+                                maxH: array.highestBlockHeight,
+                                minH: array.highestBlockHeight,
+                                h: array.highestBlockHeight,
+                            },
+                            xs: {
+                                ...el.dimensions.xs,
+                                ...this.getBlockFromLS(panel, block.i, 'xs'),
+                                maxH: array.highestBlockHeight,
+                                minH: array.highestBlockHeight,
+                                h: array.highestBlockHeight,
+                            },
+                        }
+                    };
+                    if (el.i === block.i) {
+                        extended = { ...extended, data };
+                    }
+                    return Object.assign({}, el, extended);
                 });
 
                 newHeight = (newHeight < panelHeight) ? panelHeight : newHeight;
@@ -318,7 +325,7 @@ export default class HuntDashboard extends React.Component {
                     });
                 }
             });
-        });
+        }
     };
 
     // eslint-disable-next-line react/display-name
@@ -331,12 +338,12 @@ export default class HuntDashboard extends React.Component {
             >
                 {this.props.children}
                 <h3 className={`hunt-stat-title ${(this.state.editMode) ? 'dashboard-editable-mode' : ''}`} data-toggle="tooltip" title={block.title}>{block.title}</h3>
-                {block.data.length === 5 && <DropdownKebab id={`more-${this.props.item}`} pullRight>
+                {block.data !== null && block.data.length === 5 && <DropdownKebab id={`more-${this.props.item}`} pullRight>
                     <MenuItem onClick={() => this.loadMore(block, url)} data-toggle="modal">Load more results</MenuItem>
                 </DropdownKebab>}
                 <div className="hunt-stat-body">
                     <ListGroup>
-                        {block.data.map((item) => (
+                        {block.data !== null && block.data.map((item) => (
                             <ListGroupItem key={item.key}>
                                 <ErrorHandler>
                                     <EventValue field={block.i}
@@ -596,7 +603,7 @@ export default class HuntDashboard extends React.Component {
                                             lg: 32, md: 24, sm: 16, xs: 8, xxs: 4
                                         }}
                                     >
-                                        { reject(this.state.dashboard[panel].items, ['data', null]).map((block) => this.createElement(block, panel)) }
+                                        { this.state.dashboard[panel].items.map((block) => this.createElement(block, panel)) }
                                     </ResponsiveReactGridLayout>
                                 </div>)
                             )}
