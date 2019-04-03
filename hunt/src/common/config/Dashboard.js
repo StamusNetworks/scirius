@@ -17,7 +17,7 @@ export const dashboard = {
             h: 3,
         },
         defaultItemHeight: 33,
-        defaultHeadHeight: 70,
+        defaultHeadHeight: 50,
     },
     sections: {
         metadata: {
