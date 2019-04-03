@@ -21,7 +21,7 @@ from rest_framework.routers import DefaultRouter, url
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.mixins import UpdateModelMixin, RetrieveModelMixin
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 from django_filters import rest_framework as filters
 from django_filters import fields as filters_fields
@@ -2518,14 +2518,24 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
 
     =============================================================================================================================================================
     """
-    permission_classes = (IsAdminUser,)
     serializer_class = SystemSettingsSerializer
     queryset = SystemSettings.objects.all()
 
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            permission_classes = [IsAuthenticated, ]
+        else:
+            permission_classes = [IsAdminUser, ]
+
+        return [permission() for permission in permission_classes]
+
     def retrieve(self, request, pk=None):
-        instance = self.get_object()
-        serializer = SystemSettingsSerializer(instance)
-        data = serializer.data.copy()
+        if request.user.is_superuser:
+            instance = self.get_object()
+            serializer = SystemSettingsSerializer(instance)
+            data = serializer.data.copy()
+        else:
+            data = {}
 
         data['kibana'] = USE_KIBANA
         data['evebox'] = USE_EVEBOX
