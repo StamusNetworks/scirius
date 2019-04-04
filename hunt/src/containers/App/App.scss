@@ -255,6 +255,15 @@ span.eventValue {
   .list-view-pf .list-group-item-heading {
     flex-basis: 36%;
   }
+  .list-view-pf .list-group-item-heading > div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Signatures title overlapping fix */
+  .list-view-pf .list-group-item-text {
+    width: calc(64% - 40px);
+  }
 }
 @media (min-width:1600px) and (max-width: 1800px) {
   .list-view-pf .list-group-item-heading {
