@@ -250,3 +250,9 @@ span.eventValue {
 .dl-item:last-child {
   margin-bottom: 0px;
 }
+/* patternfly override fixes */
+@media (min-width: 992px) {
+  .list-view-pf .list-group-item-heading {
+    flex-basis: calc(28% - 20px);
+  }
+}
