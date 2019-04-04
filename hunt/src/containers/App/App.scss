@@ -253,6 +253,32 @@ span.eventValue {
 /* patternfly override fixes */
 @media (min-width: 992px) {
   .list-view-pf .list-group-item-heading {
-    flex-basis: calc(28% - 20px);
+    flex-basis: 36%;
+  }
+}
+@media (min-width:1600px) and (max-width: 1800px) {
+  .list-view-pf .list-group-item-heading {
+    flex-basis: 34%;
+  }
+}
+@media (min-width:1500px) and (max-width: 1600px) {
+  .list-view-pf .list-group-item-heading {
+    flex-basis: 37%;
+  }
+}
+@media (min-width:992px) and (max-width: 1500px) {
+  .list-view-pf {
+    .list-view-pf-expand {
+      margin-top: 35px;
+    }
+    .list-group-item-heading {
+      flex-basis: 33%;
+
+      .glyphicon.glyphicon-arrow-right {
+        display: block;
+        top: 0;
+        left: 30px;
+      }
+    }
   }
 }
