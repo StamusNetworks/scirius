@@ -234,7 +234,7 @@ export default class SignaturesPage extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.from_date !== this.props.from_date) {
+        if (prevProps.from_date !== this.props.from_date || JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
             this.fetchData(this.props.rules_list, this.props.filters);
         }
     }

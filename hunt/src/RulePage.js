@@ -49,7 +49,7 @@ export default class RulePage extends React.Component {
         const { rule, sid } = this.state;
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
 
-        if (rule !== undefined) {
+        if (typeof rule !== 'undefined') {
             updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
             axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats&field=app_proto&from_date=${this.props.from_date}&sid=${this.props.rule.sid}`)
             .then((res) => {
@@ -79,10 +79,10 @@ export default class RulePage extends React.Component {
 
     componentDidUpdate(prevProps) {
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
-        if ((prevProps.from_date !== this.props.from_date) || (prevProps.filters.length !== this.props.filters.length)) {
+        if ((prevProps.from_date !== this.props.from_date) || (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters))) {
             const rule = JSON.parse(JSON.stringify(this.state.rule));
 
-            if (rule) {
+            if (typeof rule !== 'undefined') {
                 updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
             }
         }

@@ -24,7 +24,7 @@ export default class HuntStat extends React.Component {
         if (prevProps.from_date !== this.props.from_date) {
             this.updateData();
         }
-        if (prevProps.filters.length !== this.props.filters.length) {
+        if (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
             this.updateData();
         }
     }
