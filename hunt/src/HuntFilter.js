@@ -122,8 +122,8 @@ export class HuntFilter extends React.Component {
 
     updateAlertTag(tfilters) {
         this.setState({ tagFilters: tfilters });
-        /* Update the filters on alert.tag and send the update */
-        const activeFilters = this.props.ActiveFilters;
+        /* Make a copy of the ActiveFilters instead of mutating it. Update the filters on alert.tag and send the update */
+        const activeFilters = JSON.parse(JSON.stringify(this.props.ActiveFilters))
         const tagFilters = { id: 'alert.tag', value: tfilters };
         if (activeFilters.length === 0) {
             activeFilters.push(tagFilters);
