@@ -515,6 +515,16 @@ export default class HuntDashboard extends React.Component {
     loadMore = (item, url) => {
         axios.get(url)
         .then((json) => {
+            const data = (json.data.length) ? json.data : null;
+
+            if (data) {
+                for (let idx = 0; idx < data.length; idx += 1) {
+                    if (!data[idx].key) {
+                        data[idx].key = 'Unknown';
+                    }
+                }
+            }
+
             this.setState({ ...this.state, moreModal: item, moreResults: json.data });
         });
     }
