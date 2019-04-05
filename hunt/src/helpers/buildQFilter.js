@@ -56,6 +56,9 @@ export function buildQFilter(filters, systemSettings, advancedSettings) {
         } else if (filters[i].id === 'msg') {
             qfilter.push(`${fPrefix}alert.signature:"${filters[i].value}"`);
             continue;
+        } else if (filters[i].id === 'alert.category' && filters[i].value === 'Unknown') {
+            qfilter.push(`${fPrefix}alert.category${fSuffix}:""`);
+            continue;
         } else if (filters[i].id === 'not_in_msg') {
             qfilter.push(`${fPrefix}NOT alert.signature:"${filters[i].value}"`);
             continue;
