@@ -199,7 +199,7 @@ export const dashboard = {
                             w: 8, h: 222, x: 0, y: 0
                         },
                         md: {
-                            w: 8, h: 122, x: 8, y: 0
+                            w: 6, h: 122, x: 0, y: 0
                         },
                         sm: {
                             w: 8, h: 222, x: 0, y: 0
@@ -217,7 +217,7 @@ export const dashboard = {
                             w: 8, h: 22, x: 8, y: 0
                         },
                         md: {
-                            w: 7, h: 12, x: 7, y: 0
+                            w: 6, h: 8, x: 6, y: 0
                         },
                         sm: {
                             w: 8, h: 12, x: 8, y: 0
@@ -235,13 +235,13 @@ export const dashboard = {
                             w: 7, h: 22, x: 0, y: 0
                         },
                         md: {
-                            w: 6, h: 22, x: 0, y: 0
+                            w: 6, h: 22, x: 18, y: 0
                         },
                         sm: {
-                            w: 5, h: 22, x: 0, y: 0
+                            w: 8, h: 22, x: 0, y: 14
                         },
                         xs: {
-                            w: 4, h: 19, x: 4, y: 16
+                            w: 4, h: 19, x: 0, y: 14
                         },
                     },
                 }, {
@@ -253,10 +253,10 @@ export const dashboard = {
                             w: 8, h: 22, x: 16, y: 0
                         },
                         md: {
-                            w: 7, h: 12, x: 14, y: 0
+                            w: 6, h: 12, x: 12, y: 0
                         },
                         sm: {
-                            w: 8, h: 12, x: 16, y: 0
+                            w: 8, h: 12, x: 0, y: 7
                         },
                         xs: {
                             w: 4, h: 19, x: 0, y: 8
@@ -271,10 +271,10 @@ export const dashboard = {
                             w: 8, h: 22, x: 24, y: 0
                         },
                         md: {
-                            w: 7, h: 12, x: 21, y: 0
+                            w: 7, h: 12, x: 0, y: 7
                         },
                         sm: {
-                            w: 8, h: 12, x: 24, y: 0
+                            w: 8, h: 12, x: 8, y: 7
                         },
                         xs: {
                             w: 4, h: 19, x: 4, y: 8
@@ -356,7 +356,7 @@ export const dashboard = {
                             w: 6, h: 22, x: 18, y: 0
                         },
                         sm: {
-                            w: 5, h: 22, x: 0, y: 22
+                            w: 5, h: 22, x: 11, y: 17
                         },
                         xs: {
                             w: 4, h: 19, x: 4, y: 19
@@ -369,16 +369,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 4, h: 19, x: 22, y: 0
+                            w: 4, h: 17, x: 22, y: 0
                         },
                         md: {
-                            w: 6, h: 9, x: 0, y: 22
+                            w: 6, h: 17, x: 6, y: 17
                         },
                         sm: {
-                            w: 6, h: 9, x: 5, y: 22
+                            w: 6, h: 17, x: 5, y: 22
                         },
                         xs: {
-                            w: 4, h: 19, x: 0, y: 38
+                            w: 4, h: 17, x: 0, y: 38
                         },
                     }
                 }, {
@@ -458,7 +458,7 @@ export const dashboard = {
                             w: 6, h: 12, x: 12, y: 0
                         },
                         sm: {
-                            w: 12, h: 12, x: 0, y: 22
+                            w: 8, h: 12, x: 0, y: 51
                         },
                         xs: {
                             w: 4, h: 12, x: 0, y: 22
@@ -501,13 +501,13 @@ export const dashboard = {
                             w: 9, h: 12, x: 0, y: 0
                         },
                         md: {
-                            w: 10, h: 12, x: 0, y: 0
+                            w: 12, h: 12, x: 0, y: 0
                         },
                         sm: {
                             w: 8, h: 12, x: 0, y: 0
                         },
                         xs: {
-                            w: 5, h: 12, x: 0, y: 0
+                            w: 4, h: 12, x: 0, y: 0
                         },
                     },
                 }, {
@@ -519,13 +519,13 @@ export const dashboard = {
                             w: 9, h: 9, x: 9, y: 0
                         },
                         md: {
-                            w: 9, h: 9, x: 10, y: 0
+                            w: 12, h: 9, x: 12, y: 0
                         },
                         sm: {
                             w: 8, h: 9, x: 8, y: 0
                         },
                         xs: {
-                            w: 3, h: 9, x: 5, y: 0
+                            w: 4, h: 9, x: 4, y: 0
                         },
                     },
                 }
@@ -619,7 +619,7 @@ export const dashboard = {
                             w: 11, h: 12, x: 10, y: 22
                         },
                         md: {
-                            w: 10, h: 12, x: 12, y: 22
+                            w: 12, h: 12, x: 12, y: 4
                         },
                         sm: {
                             w: 8, h: 12, x: 0, y: 44
@@ -637,10 +637,10 @@ export const dashboard = {
                             w: 11, h: 12, x: 21, y: 6
                         },
                         md: {
-                            w: 10, h: 12, x: 12, y: 22
+                            w: 12, h: 12, x: 0, y: 8
                         },
                         sm: {
-                            w: 8, h: 12, x: 0, y: 44
+                            w: 8, h: 12, x: 8, y: 8
                         },
                         xs: {
                             w: 8, h: 12, x: 0, y: 44
