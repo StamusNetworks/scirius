@@ -95,6 +95,7 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
 class AddPublicSourceForm(forms.ModelForm, RulesetChoiceForm):
     source_id = forms.CharField(max_length=100)
     secret_code = forms.CharField(max_length=100, required = False)
+    use_iprep = forms.BooleanField(required=False)
 
     class Meta:
         model = Source

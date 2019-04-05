@@ -1310,6 +1310,7 @@ def add_public_source(request):
                         datatype = source['datatype'],
                         cert_verif = True,
                         public_source = source_id,
+                        use_iprep=form.cleaned_data['use_iprep']
                         )
             except IntegrityError, error:
                 return scirius_render(request, 'rules/add_public_source.html', { 'form': form, 'error': error })
