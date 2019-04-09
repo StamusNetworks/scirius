@@ -364,8 +364,8 @@ export default class App extends Component {
                         title={v.title}
                         iconClass={v.iconClass}
                         key={Math.random()}
-                        initialActive={this.state.display.page === v.def}
                         onClick={() => this.switchPage(v.def, undefined)}
+                        active={this.state.display.page === v.def}
                     />)}
                 </VerticalNav>
                 <div className="container-fluid container-pf-nav-pf-vertical nav-pf-persistent-secondary">
