@@ -20,6 +20,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import React from 'react';
+import PropTypes from 'prop-types';
+import DeepExtend from 'deep-extend';
 
 const c3 = require('c3');
 
@@ -28,101 +30,208 @@ export default class SciriusChart extends React.Component {
         super(props);
         // Generate unique ID for the chart
         this.chartId = `chart${Math.random().toString(36).substr(2, 9)}`;
+        this.chart = null;
+        const labelWidth = 54;
+        const labelPadding = 20 * 2;
+        this.state = {
+            labelsCount: 0,
+            labelWidth,
+            labelPadding,
+        }
+        this.deepProps = {
+            axis: {
+                x: {
+                    type: 'timeseries',
+                    localtime: true,
+                    max: Date.now(),
+                    show: true,
+                    tick: {
+                        outer: false,
+                        format: '%Y-%m-%d %H:%M',
+                        multiline: true,
+                        multilineMax: 5,
+                        width: labelWidth,
+                        fit: true,
+                        values: [],
+                    },
+                },
+                y: {
+                    tick: {
+                        count: 5
+                    },
+                    min: 0,
+                },
+            },
+            padding: {
+                right: 30
+            },
+            data: {},
+        };
+        this.mounted = false;
+        DeepExtend(this.deepProps, { ...props });
     }
 
     componentDidMount() {
-        this.chartRender(this.props);
+        this.mountChart();
     }
 
     componentWillReceiveProps(nextProps) {
-        this.chartRender(nextProps);
+        const labelsLimit = this.getLabelsLimit();
+        if (this.state.labelsCount !== labelsLimit) {
+            this.setState(({
+                ...this.state,
+                labelsCount: labelsLimit
+            }))
+        }
+        DeepExtend(this.deepProps, nextProps);
     }
 
-    chartRender = (opts) => {
-        const newOpts = { ...opts };
-        const now = Date.now();
-        const axis = {
-            x: {
-                type: 'timeseries',
-                localtime: true,
-                min: opts.from_date,
-                max: now,
-                show: true,
-                tick: { format: '%Y-%m-%d %H:%M' }
-            }
+    shouldComponentUpdate(nextProps, nextState) {
+        return !(JSON.stringify(nextProps) === JSON.stringify(this.props) && JSON.stringify(nextState) === JSON.stringify(this.state));
+    }
+
+    componentDidUpdate() {
+        this.mountChart();
+    }
+
+    componentWillUnmount() {
+        this.deepProps = {};
+        this.chart.destroy();
+    }
+
+    /* return width of the graph without X axis field */
+    getGraphWidth = () => {
+        const width = document.querySelector(`#${this.chartId}`);
+        return (typeof width !== 'undefined' && width !== null) ? width.clientWidth - 40 : 0;
+    }
+
+    getLabelsLimit = () => {
+        const graphWidth = this.getGraphWidth();
+        return (graphWidth > 0) ? Math.floor(graphWidth / (this.state.labelWidth + this.state.labelPadding)) : 0;
+    }
+
+    getChartProperties = () => {
+        if (this.deepProps.axis.x.show) {
+            DeepExtend(this.deepProps, this.formatXLabels())
         }
-        if (opts.axis) {
-            if (opts.axis.x) {
-                axis.x = { ...axis.x, ...opts.axis.x };
-            }
-            if (opts.axis.y) {
-                axis.y = opts.axis.y;
-            }
-            delete newOpts.axis;
-        }
+        return this.deepProps;
+    }
 
-        if (axis.x.show) {
-            const timespan = now - opts.from_date;
-            let interval = 0;
-            let tickMin = 0;
-            let tickMax = 0;
-
-            if (Math.floor(timespan / 1000 / 60) <= 2 * 24 * 60) {
-                let tickAlign = 0;
-                if (Math.floor(timespan / 1000 / 60) <= 60) {
-                    // 1 hour
-                    interval = 10 * 60 * 1000;
-                    tickAlign = 5 * 60 * 1000;
-                } else if (Math.floor(timespan / 1000 / 60) <= 6 * 60) {
-                    // 6 hour
-                    interval = 30 * 60 * 1000;
-                    tickAlign = 10 * 60 * 1000;
-                } else if (Math.floor(timespan / 1000 / 60) <= 24 * 60) {
-                    // 24 hour
-                    interval = 2 * 60 * 60 * 1000;
-                    tickAlign = 60 * 60 * 1000;
-                } else {
-                    // 2 days
-                    interval = 4 * 60 * 60 * 1000;
-                    tickAlign = 60 * 60 * 1000;
-                }
-                tickMin = Math.ceil(opts.from_date / tickAlign) * tickAlign;
-                tickMax = Math.floor(now / tickAlign) * tickAlign;
-            } else {
-                // Special case when aligning ticks on days, since formula above would aligns on UTC midnight
-                if (Math.floor(timespan / 1000 / 60) <= 7 * 24 * 60) {
-                    // 7 days
-                    interval = 24 * 60 * 60 * 1000;
-                } else {
-                    // 30 days
-                    interval = 3 * 24 * 60 * 60 * 1000;
-                }
-                const hourTruncate = (d) => {
-                    const newDate = new Date(d);
-                    newDate.setHours(0);
-                    newDate.setMinutes(0);
-                    newDate.setSeconds(0);
-                    newDate.setMilliseconds(0);
-                    return newDate.getTime();
-                }
-                tickMin = hourTruncate(opts.from_date) + (24 * 60 * 60 * 1000);
-                tickMax = hourTruncate(now);
-            }
-
-            const tickCount = Math.round((tickMax - tickMin) / interval) + 1;
-            let ticks = new Array(tickCount).fill(0);
-            ticks = ticks.map((v, i) => (i * interval) + tickMin);
-            axis.x.tick.values = ticks;
-        }
-
-        c3.generate({
+    mountChart = () => {
+        this.chart = c3.generate({
             bindto: `#${this.chartId}`,
-            axis,
-            ...newOpts
+            ...this.getChartProperties()
         });
+    }
+
+    formatXLabels = () => {
+        const allowedIntervals = [
+            60 * 1000, /* 1 min  */
+            5 * 60 * 1000, /* 5 mins  */
+            10 * 60 * 1000, /* 10 mins */
+            30 * 60 * 1000, /* 30 mins */
+            60 * 60 * 1000, /* 1 hour */
+            90 * 60 * 1000, /* 1.5 hours */
+            2 * 60 * 60 * 1000, /* 2 hours */
+            3 * 60 * 60 * 1000, /* 3 hours */
+            4 * 60 * 60 * 1000, /* 4 hours */
+            6 * 60 * 60 * 1000, /* 6 hours */
+            8 * 60 * 60 * 1000, /* 8 hours */
+            10 * 60 * 60 * 1000, /* 10 hours */
+            12 * 60 * 60 * 1000, /* 12 hours */
+            14 * 60 * 60 * 1000, /* 14 hours */
+            16 * 60 * 60 * 1000, /* 16 hours */
+            18 * 60 * 60 * 1000, /* 18 hours */
+            20 * 60 * 60 * 1000, /* 20 hours */
+            22 * 60 * 60 * 1000, /* 22 hours */
+            24 * 60 * 60 * 1000, /* 1 day */
+            36 * 60 * 60 * 1000, /* 1.5 days */
+            3 * 24 * 60 * 60 * 1000, /* 3  days */
+            5 * 24 * 60 * 60 * 1000, /* 5  days */
+            7 * 24 * 60 * 60 * 1000, /* 7  days */
+            14 * 24 * 60 * 60 * 1000, /* 14  days */
+            30 * 24 * 60 * 60 * 1000, /* 30  days */
+        ];
+        const ticks = [];
+        let yAxis = [];
+        if (this.deepProps.axis.x.show) {
+            let tickMin = this.deepProps.axis.x.min;
+            const tickMax = this.deepProps.axis.x.max;
+
+            let tickCount = 0;
+            let interval = 0;
+
+            const timespan = tickMax - tickMin;
+            const labelOuterWidth = this.state.labelWidth + this.state.labelPadding;
+            const getGraphWidth = this.getGraphWidth();
+            for (let g = 0; g < allowedIntervals.length; g += 1) {
+                if ((timespan / allowedIntervals[g]) * labelOuterWidth < getGraphWidth) {
+                    interval = allowedIntervals[g];
+                    break;
+                }
+            }
+
+            tickMin = (Math.ceil(this.deepProps.axis.x.min / interval) * interval);
+            while (tickMax > tickCount * interval + tickMin) {
+                ticks.push((tickCount * interval) + tickMin);
+                tickCount += 1;
+            }
+
+            // Display pretty Y axis
+            let xAxesMaxVal = 0;
+            const xAxesValues = JSON.parse(JSON.stringify(this.deepProps.data.columns));
+            for (let x = 0; x < xAxesValues.length; x += 1) {
+                if (xAxesValues[x][0] !== 'x') {
+                    xAxesValues[x].shift();
+                    const axisMaxVal = Math.max(...xAxesValues[x]);
+                    xAxesMaxVal = (xAxesMaxVal < axisMaxVal) ? axisMaxVal : xAxesMaxVal;
+                }
+            }
+            const yLabelsCount = 5;
+            const yInterval = Math.ceil(xAxesMaxVal / yLabelsCount);
+            yAxis = new Array(yLabelsCount).fill(0);
+            yAxis = yAxis.map((v, i) => (i + 1) * yInterval);
+            yAxis.unshift(0);
+        }
+
+        return {
+            axis: {
+                x: {
+                    tick: {
+                        values: ticks
+                    }
+                },
+                y: {
+                    tick: {
+                        values: yAxis
+                    }
+                },
+            }
+        };
     }
 
     render() {
         return (<div id={this.chartId}>loading</div>);
     }
+}
+
+SciriusChart.propTypes = {
+    axis: PropTypes.shape({
+        x: PropTypes.shape({
+            type: PropTypes.string,
+            localtime: PropTypes.bool,
+            min: PropTypes.number,
+            max: PropTypes.number,
+            show: PropTypes.bool,
+            tick: PropTypes.shape({
+                format: PropTypes.string,
+                multiline: PropTypes.bool,
+                multilineMax: PropTypes.number,
+                width: PropTypes.number,
+                fit: PropTypes.bool,
+                values: PropTypes.array,
+            }),
+        }),
+        y: PropTypes.object,
+    }),
 }

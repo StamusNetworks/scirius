@@ -317,3 +317,7 @@ span.badge.badge-primary {
     }
   }
 }
+/* fix c3 bug where sometimes the first x axis tick goes outside the chart */
+g.tick[transform^='translate(-']{
+  display: none;
+}

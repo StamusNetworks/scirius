@@ -41,9 +41,8 @@ const RuleCard = (props) => {
                         {props.data.timeline && <div className="chart-pf-sparkline">
                             <ErrorHandler>
                                 <SciriusChart data={props.data.timeline}
-                                    from_date={props.from_date}
                                     axis={{
-                                        x: { show: false },
+                                        x: { show: false, min: props.from_date },
                                         y: { show: false }
                                     }}
                                     legend={{ show: false }}

@@ -189,7 +189,7 @@ export default class RulePage extends React.Component {
                                 <div className="row">
                                     {this.state.rule.timeline && <SciriusChart
                                         data={this.state.rule.timeline}
-                                        from_date={this.props.from_date}
+                                        axis={{ x: { min: this.props.from_date } }}
                                     />}
                                 </div>
                                 {this.state.rule_status !== undefined && <Row>
