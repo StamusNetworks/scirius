@@ -320,9 +320,9 @@ function get_es_indices_stats() {
 $( 'document' ).ready(get_es_indices_stats());
 {% if logstash_stats %}
 {% if es2x %}
-$( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve_insert.rate_1m', '#logstash', 0, null));
+$( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve_insert.rate_1m', '#logstash', 0, null, 'Events insertion (ev/s)'));
 {% else %}
-$( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve.total.rate_1m', '#logstash', 0, null));
+$( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve.total.rate_1m', '#logstash', 0, null, 'Events insertion (ev/s)'));
 {% endif %}
 {% endif %}
 </script>

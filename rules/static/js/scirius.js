@@ -92,7 +92,7 @@ function load_rules(from_date, hosts, filter, callback) {
 window.load_rules = load_rules;
 
 
-function draw_timeline(from_date, hosts, filter) {
+function draw_timeline(from_date, hosts, filter, ylegend=undefined) {
 
         var esurl = "/rules/es?query=timeline&from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
@@ -152,6 +152,10 @@ function draw_timeline(from_date, hosts, filter) {
                                 chart.yAxis
                                 .tickFormat(d3.format(',.1f'));
 
+                                if (ylegend) {
+                                    chart.yAxis.axisLabel(ylegend)
+                                }
+
                                 var end_interval = new Date().getTime();
                                 var sdata = []
                                 for (var hi = 0; hi < hosts.length; hi++) {
@@ -208,7 +212,7 @@ function draw_timeline(from_date, hosts, filter) {
 }
 window.draw_timeline = draw_timeline;
 
-function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, autorange) {
+function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, autorange, ylegend=undefined) {
 
         if (hosts) {
             var hosts_list  = "&hosts=" + hosts.join();
@@ -249,6 +253,10 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
 
                                 chart.yAxis
                                 .tickFormat(d3.format(',.1f'));
+
+                                if (ylegend) {
+                                    chart.yAxis.axisLabel(ylegend)
+                                }
 
                                 if (!autorange) {
                                     chart.forceY([0, 1]);
@@ -313,8 +321,8 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
 }
 window.draw_stats_timeline_with_range = draw_stats_timeline_with_range;
 
-function draw_stats_timeline(from_date, value, tdiv, speed, hosts) {
-     draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, false);
+function draw_stats_timeline(from_date, value, tdiv, speed, hosts, ylegend=undefined) {
+     draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, false, ylegend);
 }
 window.draw_stats_timeline = draw_stats_timeline;
 
