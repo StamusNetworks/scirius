@@ -74,25 +74,16 @@ class DonutChart extends React.Component {
         return res;
     }
 
-    colIndexOfMaxValue = (columns) => columns.reduce((iMax, x, i, arr) => x[1] > arr[iMax][1] ? i : iMax, 0);
-
     setTitle = (title) => {
         d3.select('.donut-title-line1').text(title);
         d3.select('.donut-title-line2').text(this.props.title.line2);
     };
 
     makeTitle = (type) => {
-        const { columns } = this.props.data;
         let title = '';
-
         const sum = this.props.data.columns.reduce((acc, x) => acc + x[1], 0);
-        const iMax = this.colIndexOfMaxValue(columns);
 
         switch (type) {
-            // case 'percent': // Needs to be implemented
-            case 'max':
-                title = Math.round(columns[iMax][1]).toString();
-                break;
             case 'total':
                 title = Math.round(sum).toString();
                 break;
@@ -132,7 +123,10 @@ DonutChart.propTypes = {
     title: PropTypes.shape({
         show: PropTypes.bool,
         pretty: PropTypes.bool,
-        line1: PropTypes.string,
+        line1: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.number
+        ]),
         line2: PropTypes.string,
     }),
     tooltip: PropTypes.shape({

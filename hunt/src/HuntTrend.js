@@ -84,8 +84,8 @@ export default class HuntTrend extends React.Component {
                         title={{
                             show: true,
                             pretty: true,
-                            line1: 'max',
-                            line2: 'previous count'
+                            line1: this.state.data ? this.state.data.doc_count : 0,
+                            line2: 'current count'
                         }}
                         tooltip={{
                             show: true
