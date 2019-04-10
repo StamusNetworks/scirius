@@ -369,7 +369,7 @@ export default class App extends Component {
                     />)}
                 </VerticalNav>
                 <div className="container-fluid container-pf-nav-pf-vertical nav-pf-persistent-secondary">
-                    <div className="row row-cards-pf no-col-gutter-right">
+                    <div className="row row-cards-pf">
                         <div className="col-xs-12 col-sm-12 col-md-12 no-col-gutter-right" id="app-content">
                             {/* {displayedPage} */}
                             <ErrorHandler>
