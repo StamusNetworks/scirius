@@ -52,22 +52,19 @@ export default class HuntStat extends React.Component {
         if (this.state.data && this.state.data.length) {
             return (
                 <div className={colVal}>
-                    <div className="card-pf rule-card">
-                        <div className="card-pf-heading">
-                            <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={this.props.title}>{this.props.title}</h2>
-                            {this.state.data.length === 5 && <DropdownKebab id={`more-${this.props.item}`} pullRight={false}>
-                                <MenuItem onClick={() => this.props.loadMore(this.props.item, this.url)} data-toggle="modal">Load more results</MenuItem>
-                            </DropdownKebab>}
-                        </div>
-                        <div className="card-pf-body">
-                            <ListGroup>
-                                {this.state.data.map((item) => (
-                                    <ListGroupItem key={item.key}>
-                                        <EventValue field={this.props.item} value={item.key} addFilter={this.addFilter} right_info={<Badge>{item.doc_count}</Badge>} />
-                                    </ListGroupItem>)
-                                )}
-                            </ListGroup>
-                        </div>
+                    <h3 className="hunt-stat-title truncate-overflow" data-toggle="tooltip" title={this.props.title}>{this.props.title}
+                        {this.state.data.length === 5 && <DropdownKebab id={`more-${this.props.item}`} pullRight>
+                            <MenuItem onClick={() => this.props.loadMore(this.props.item, this.url)} data-toggle="modal">Load more results</MenuItem>
+                        </DropdownKebab>}
+                    </h3>
+                    <div className="hunt-stat-body">
+                        <ListGroup>
+                            {this.state.data.map((item) => (
+                                <ListGroupItem key={item.key}>
+                                    <EventValue field={this.props.item} value={item.key} addFilter={this.addFilter} right_info={<Badge>{item.doc_count}</Badge>} />
+                                </ListGroupItem>)
+                            )}
+                        </ListGroup>
                     </div>
                 </div>
             );
