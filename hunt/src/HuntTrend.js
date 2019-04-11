@@ -77,8 +77,9 @@ export default class HuntTrend extends React.Component {
                             position: 'bottom',
                         }}
                         style={{
-                            width: '190px',
+                            width: '130px',
                             height: '190px',
+                            margin: '0 auto',
                         }}
                         donutWidth={12}
                         title={{
