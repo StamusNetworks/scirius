@@ -247,53 +247,56 @@ export default class HuntDashboard extends React.Component {
                 const isPanelLoaded = (!this.state.dashboard[panel].items.find((itm) => itm.data !== null && itm.data.length === 0));
 
                 const items = this.panelState.dashboard[panel].items.map((el) => {
-                    const data = (json.data.length) ? json.data : null;
+                    if (el.i === block.i) {
+                        const data = (json.data.length) ? json.data : null;
 
-                    if (data) {
-                        for (let idx = 0; idx < data.length; idx += 1) {
-                            if (!data[idx].key) {
-                                data[idx].key = 'Unknown';
+                        if (data) {
+                            for (let idx = 0; idx < data.length; idx += 1) {
+                                if (!data[idx].key) {
+                                    data[idx].key = 'Unknown';
+                                }
                             }
                         }
-                    }
 
-                    let extended = {
-                        dimensions: {
-                            ...el.dimensions,
-                            lg: {
-                                ...el.dimensions.lg,
-                                ...this.getBlockFromLS(panel, block.i, 'lg'),
-                                maxH: array.highestBlockHeight,
-                                minH: array.highestBlockHeight,
-                                h: array.highestBlockHeight,
-                            },
-                            md: {
-                                ...el.dimensions.md,
-                                ...this.getBlockFromLS(panel, block.i, 'md'),
-                                maxH: array.highestBlockHeight,
-                                minH: array.highestBlockHeight,
-                                h: array.highestBlockHeight,
-                            },
-                            sm: {
-                                ...el.dimensions.sm,
-                                ...this.getBlockFromLS(panel, block.i, 'sm'),
-                                maxH: array.highestBlockHeight,
-                                minH: array.highestBlockHeight,
-                                h: array.highestBlockHeight,
-                            },
-                            xs: {
-                                ...el.dimensions.xs,
-                                ...this.getBlockFromLS(panel, block.i, 'xs'),
-                                maxH: array.highestBlockHeight,
-                                minH: array.highestBlockHeight,
-                                h: array.highestBlockHeight,
-                            },
+                        let extended = {
+                            dimensions: {
+                                ...el.dimensions,
+                                lg: {
+                                    ...el.dimensions.lg,
+                                    ...this.getBlockFromLS(panel, block.i, 'lg'),
+                                    maxH: array.highestBlockHeight,
+                                    minH: array.highestBlockHeight,
+                                    h: array.highestBlockHeight,
+                                },
+                                md: {
+                                    ...el.dimensions.md,
+                                    ...this.getBlockFromLS(panel, block.i, 'md'),
+                                    maxH: array.highestBlockHeight,
+                                    minH: array.highestBlockHeight,
+                                    h: array.highestBlockHeight,
+                                },
+                                sm: {
+                                    ...el.dimensions.sm,
+                                    ...this.getBlockFromLS(panel, block.i, 'sm'),
+                                    maxH: array.highestBlockHeight,
+                                    minH: array.highestBlockHeight,
+                                    h: array.highestBlockHeight,
+                                },
+                                xs: {
+                                    ...el.dimensions.xs,
+                                    ...this.getBlockFromLS(panel, block.i, 'xs'),
+                                    maxH: array.highestBlockHeight,
+                                    minH: array.highestBlockHeight,
+                                    h: array.highestBlockHeight,
+                                },
+                            }
+                        };
+                        if (el.i === block.i) {
+                            extended = { ...extended, data };
                         }
-                    };
-                    if (el.i === block.i) {
-                        extended = { ...extended, data };
+                        return Object.assign({}, el, extended);
                     }
-                    return Object.assign({}, el, extended);
+                    return el;
                 });
 
                 newHeight = (newHeight < panelHeight) ? panelHeight : newHeight;
