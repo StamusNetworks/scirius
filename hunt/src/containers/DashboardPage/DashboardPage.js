@@ -552,7 +552,7 @@ export default class HuntDashboard extends React.Component {
 
                 <div className="row">
                     <div className="col-lg-10 col-md-9 col-sm-12 col-xs-12">
-                        <HuntTimeline from_date={this.props.from_date} filters={this.props.filters} systemSettings={this.props.systemSettings} />
+                        <HuntTimeline style={{ marginTop: '15px' }} from_date={this.props.from_date} filters={this.props.filters} systemSettings={this.props.systemSettings} />
                     </div>
                     <div className="col-lg-2 col-md-3 col-sm-12 col-xs-12">
                         <HuntTrend from_date={this.props.from_date} filters={this.props.filters} />

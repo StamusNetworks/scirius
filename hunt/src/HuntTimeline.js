@@ -82,7 +82,7 @@ export default class HuntTimeline extends React.Component {
 
     render() {
         return (
-            <div>
+            <div style={{ ...this.props.style }}>
                 {this.state.data && <ErrorHandler><SciriusChart data={this.state.data}
                     from_date={this.props.from_date}
                     padding={{ bottom: 15 }}
@@ -92,8 +92,14 @@ export default class HuntTimeline extends React.Component {
         );
     }
 }
+
+HuntTimeline.defaultProps = {
+    style: {}
+}
+
 HuntTimeline.propTypes = {
     filters: PropTypes.any,
     systemSettings: PropTypes.any,
     from_date: PropTypes.any,
+    style: PropTypes.object,
 };
