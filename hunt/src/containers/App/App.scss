@@ -158,7 +158,9 @@ span.eventValue {
 }
 .value-field-complete:hover .value-actions {
   display: inline-block;
-  min-width: 26px;
+  padding-left: 5px;
+  min-width: -moz-max-content;
+  min-width: max-content;
 }
 
 .value-field {
