@@ -184,7 +184,8 @@ span.eventValue {
     right: 35px;
 }
 
-.dropdown-kebab-pf{
+.hunt-stat-title + .dropdown-kebab-pf,
+.hunt-stat-title > .dropdown-kebab-pf {
   position: absolute;
   top: 10px;
   right: 20px;
@@ -200,8 +201,10 @@ span.eventValue {
 .hunt-stat:last-child {
   border-right: 1px solid #e0e0e0;
 }
+.hunt-stat-title > .dropdown-kebab-pf.btn-group {
+  margin-right: 20px;
+}
 .hunt-stat-title {
-  position: relative;
   margin: 0px;
   padding: 12px 25px;
   font-size: 16px;
