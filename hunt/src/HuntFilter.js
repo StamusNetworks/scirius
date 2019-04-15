@@ -166,7 +166,10 @@ export class HuntFilter extends React.Component {
         let fieldId = field.id;
 
         if (field.filterType !== 'complex-select-text') {
-            if (field.title && field.queryType !== 'filter_host_id') {
+            if (field.filterType === 'select' || field.filterType === 'complex-select') {
+                filterText = field.id;
+                fieldId = filterText;
+            } else if (field.title && field.queryType !== 'filter_host_id') {
                 filterText = field.title;
             } else {
                 filterText = field.id;
@@ -377,12 +380,11 @@ export class HuntFilter extends React.Component {
                     placeholder={currentFilterType.placeholder}
                     onFilterCategorySelected={this.filterCategorySelected}
                 >
-                    <Filter.CategoryValueSelector
-                        categoryValues={filterCategory && filterCategory.filterValues}
+                    {filterCategory && <Filter.ValueSelector
+                        filterValues={filterCategory && filterCategory.filterValues}
                         currentValue={currentValue}
-                        placeholder={currentFilterType.filterCategoriesPlaceholder}
-                        onCategoryValueSelected={this.categoryValueSelected}
-                    />
+                        onFilterValueSelected={this.filterValueSelected}
+                    />}
                 </Filter.CategorySelector>
             );
         } else if (currentFilterType.filterType === 'complex-select-text') {
