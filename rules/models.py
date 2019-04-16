@@ -606,14 +606,29 @@ def get_system_settings():
         gsettings.save()
         return gsettings
 
+
+ES_ADDRESS = None
 def get_es_address():
+    global ES_ADDRESS
+    if ES_ADDRESS is not None:
+        return ES_ADDRESS
+
     gsettings = get_system_settings()
     if gsettings.custom_elasticsearch:
         addr = gsettings.elasticsearch_url
         if not addr.endswith('/'):
             addr += '/'
-        return addr
-    return 'http://%s/' % settings.ELASTICSEARCH_ADDRESS
+
+        ES_ADDRESS = addr
+    else:
+        ES_ADDRESS = 'http://%s/' % settings.ELASTICSEARCH_ADDRESS
+    return ES_ADDRESS
+
+
+def reset_es_address():
+    global ES_ADDRESS
+    ES_ADDRESS = None
+
 
 def get_es_path(path):
     return get_es_address() + path.lstrip('/')

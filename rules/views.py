@@ -30,7 +30,7 @@ from django.contrib import messages
 from scirius.utils import scirius_render, scirius_listing
 
 from rules.es_data import ESData
-from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation, CategoryTransformation, RulesetTransformation, UserAction, UserActionObject
+from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation, CategoryTransformation, RulesetTransformation, UserAction, UserActionObject, reset_es_address
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, HistoryTable
 
 from rules.es_graphs import *
@@ -1714,6 +1714,7 @@ def system_settings(request):
             context['main_form'] = main_form
             if main_form.is_valid():
                 main_form.save()
+                reset_es_address()
                 reset_es_version()
                 context['success'] = "All changes saved."
             else:
