@@ -639,18 +639,18 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         <span class=\"m\">2404000</span><span class=\"p\">;</span><span class=\"w\"> </span><span class=\"k\">rev:</span><span class=\"m\">5032</span><span class=\"p\">;</span>
         <span class=\"err\">)</span><span class=\"w\"></span>\\n</pre></div>\\n"}
 
-    Filter action/reject on all transformed rules:\n
+    Filter by action/reject on all transformed rules:\n
         curl -k https://x.x.x.x/rest/rules/rule/transformation/\?transfo_type\=action\&transfo_value\=reject -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     ==== POST ====\n
-    Disable a rule in a ruleset. Disabling a rule is equivalent to transform this rule to SUPPRESSED/SUPPRESSED:\n
+    Disable a rule in a ruleset.\n
         curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/disable/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>}'
 
     Return:\n
         HTTP/1.1 200 OK
         {"disable":"ok"}
 
-    Enable a rule in a ruleset. Enabling a rule is equivalent to remove SUPPRESSED/SUPPRESSED transformation on this rule. But it can't be done from transformation API :\n
+    Enable a rule in a ruleset.:\n
         curl -k https://x.x.x.x/rest/rules/rule/<sid-rule>/enable/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"ruleset": <pk-ruleset>}'
 
     Return:\n
