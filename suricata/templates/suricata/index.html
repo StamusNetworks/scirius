@@ -133,7 +133,7 @@ $(document).ready(function(){
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-12">
-<h2 class="title">Alerts activity</h2>
+<h2 class="title">Alerts activity</h2><p id="timeline_title"/>
 </div> <!-- col -->
 </div> <!-- row -->
 
@@ -165,7 +165,7 @@ $(document).ready(function(){
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-12">
-         <h2>kernel captured packets</h2>
+         <h2>kernel captured packets</h2><p id="suri_packet_title"/>
       </div>
     </div> <!-- row -->
 
@@ -181,7 +181,7 @@ $(document).ready(function(){
 
     <div class="row">
       <div class="col-md-12">
-         <h2>kernel dropped packets</h2>
+         <h2>kernel dropped packets</h2><p id="suri_drop_title"/>
       </div>
     </div> <!-- row -->
 
@@ -208,7 +208,7 @@ $(document).ready(function(){
 
     <div class="row">
       <div class="col-md-12">
-         <h2>Flow emergency mode</h2>
+         <h2>Flow emergency mode</h2><p id="flow_emergency_title"/>
       </div>
     </div> <!-- row -->
 
@@ -227,7 +227,7 @@ $(document).ready(function(){
 
 <div class="row">
   <div class="col-md-12">
-     <h2>TCP reassembly gaps</h2>
+     <h2>TCP reassembly gaps</h2><p id="tcp_gaps_title"/>
   </div>
 </div> <!-- row -->
 <div class="row">
@@ -245,7 +245,7 @@ $(document).ready(function(){
 
 <div class="row">
   <div class="col-md-12">
-     <h2>Decoder invalid</h2>
+     <h2>Decoder invalid</h2><p id="decoder_invalid_title"/>
   </div>
 </div> <!-- row -->
 <div class="row">
@@ -270,7 +270,7 @@ $(document).ready(function(){
   <div class="col-md-6">
 <div class="row">
   <div class="col-md-12">
-     <h2>TCP memory usage</h2>
+     <h2>TCP memory usage</h2><p id="tcp_memuse_title"/>
   </div>
 </div> <!-- row -->
 <div class="row">
@@ -287,7 +287,7 @@ $(document).ready(function(){
   <div class="col-md-6">
 <div class="row">
   <div class="col-md-12">
-     <h2>TCP reassembly memory usage</h2>
+     <h2>TCP reassembly memory usage</h2><p id="tcp_reassembly_memuse_title"/>
   </div>
 </div> <!-- row -->
 <div class="row">
@@ -307,7 +307,7 @@ $(document).ready(function(){
   <div class="col-md-6">
 <div class="row">
       <div class="col-md-12">
-         <h2>DNS memory usage</h2>
+         <h2>DNS memory usage</h2><p id="dns_memuse_title"/>
       </div>
     </div> <!-- row -->
 
@@ -326,7 +326,7 @@ $(document).ready(function(){
   <div class="col-md-6">
     <div class="row">
       <div class="col-md-12">
-         <h2>HTTP memory usage</h2>
+         <h2>HTTP memory usage</h2><p id="http_memuse_title"/>
       </div>
     </div> <!-- row -->
 
@@ -348,7 +348,7 @@ $(document).ready(function(){
   <div class="col-md-6">
 <div class="row">
   <div class="col-md-12">
-     <h2>Flow memory usage</h2>
+     <h2>Flow memory usage</h2><p id="flow_memuse_title"/>
   </div>
 </div> <!-- row -->
 <div class="row">
@@ -387,7 +387,7 @@ function differentiate_suppressed() {
 }
 
 $( 'document' ).ready(function () {
-    draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null);
+    draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null, 'Hits');
     load_rules({{ from_date }},  [ '{{ suricata.name }}'], null, differentiate_suppressed);
     {{ draw_func }}({{ from_date }}, [{% autoescape off %} "{{ suricata.name }}" {% endautoescape %}], null,
       function() {
@@ -410,23 +410,23 @@ $( 'document' ).ready(function () {
 
 $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     if (String(e.target).match('#stats')) {
-        draw_stats_timeline({{ from_date }}, 'stats.capture.kernel_packets', '#suri_packet', 1, [ '{{ suricata.name }}']);
-        draw_stats_timeline({{ from_date }}, 'stats.capture.kernel_drops', '#suri_drop', 1, [ '{{ suricata.name }}']);
+        draw_stats_timeline({{ from_date }}, 'stats.capture.kernel_packets', '#suri_packet', 1, [ '{{ suricata.name }}'], 'Packets count');
+        draw_stats_timeline({{ from_date }}, 'stats.capture.kernel_drops', '#suri_drop', 1, [ '{{ suricata.name }}'], 'Packets count');
     }
     if (String(e.target).match('#rules')) {
-        draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null);
+        draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null, 'Hits');
     }
     if (String(e.target).match('#indicators')) {
-        draw_stats_timeline({{ from_date }}, 'stats.flow.emerg_mode_entered', '#flow_emergency', 0, [ '{{ suricata.name }}']);
-        draw_stats_timeline({{ from_date }}, 'stats.tcp.reassembly_gap', '#tcp_gaps', 0, [ '{{ suricata.name }}']);
-        draw_stats_timeline({{ from_date }}, 'stats.decoder.invalid', '#decoder_invalid', 0, [ '{{ suricata.name }}']);
+        draw_stats_timeline({{ from_date }}, 'stats.flow.emerg_mode_entered', '#flow_emergency', 0, [ '{{ suricata.name }}'], 'Count');
+        draw_stats_timeline({{ from_date }}, 'stats.tcp.reassembly_gap', '#tcp_gaps', 0, [ '{{ suricata.name }}'], 'Count');
+        draw_stats_timeline({{ from_date }}, 'stats.decoder.invalid', '#decoder_invalid', 0, [ '{{ suricata.name }}'], 'Count');
     }
     if (String(e.target).match('#memory')) {
-        draw_stats_timeline({{ from_date }}, 'stats.flow.memuse', '#flow_memuse', 0, [ '{{ suricata.name }}']);
-        draw_stats_timeline({{ from_date }}, 'stats.tcp.memuse', '#tcp_memuse', 0, [ '{{ suricata.name }}'] );
-        draw_stats_timeline({{ from_date }}, 'stats.tcp.reassembly_memuse', '#tcp_reassembly_memuse', 0, [ '{{ suricata.name }}'] );
-        draw_stats_timeline({{ from_date }}, 'stats.http.memuse', '#http_memuse', 0, [ '{{ suricata.name }}']);
-        draw_stats_timeline({{ from_date }}, 'stats.dns.memuse', '#dns_memuse', 0, [ '{{ suricata.name }}']);
+        draw_stats_timeline({{ from_date }}, 'stats.flow.memuse', '#flow_memuse', 0, [ '{{ suricata.name }}'], 'Bytes');
+        draw_stats_timeline({{ from_date }}, 'stats.tcp.memuse', '#tcp_memuse', 0, [ '{{ suricata.name }}'], 'Bytes');
+        draw_stats_timeline({{ from_date }}, 'stats.tcp.reassembly_memuse', '#tcp_reassembly_memuse', 0, [ '{{ suricata.name }}'], 'Bytes');
+        draw_stats_timeline({{ from_date }}, 'stats.http.memuse', '#http_memuse', 0, [ '{{ suricata.name }}'], 'Bytes');
+        draw_stats_timeline({{ from_date }}, 'stats.dns.memuse', '#dns_memuse', 0, [ '{{ suricata.name }}'], 'Bytes');
     }
 });
 

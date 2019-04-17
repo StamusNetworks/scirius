@@ -127,7 +127,7 @@ $(document).ready(function(){
   <div role="tabpanel" class="tab-pane fade in" id="logstash-panel">
 <div class="row">
 <div class="col-md-12">
-<h2>Logstash event insertion speed</h2>
+<h2>Logstash event insertion speed</h2><p id="logstash_title"/>
 </div>
 </div>
 
@@ -320,9 +320,9 @@ function get_es_indices_stats() {
 $( 'document' ).ready(get_es_indices_stats());
 {% if logstash_stats %}
 {% if es2x %}
-$( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve_insert.rate_1m', '#logstash', 0, null, 'Events insertion (ev/s)'));
+$( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve_insert.rate_1m', '#logstash', 0, null, 'Events per second'));
 {% else %}
-$( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve.total.rate_1m', '#logstash', 0, null, 'Events insertion (ev/s)'));
+$( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve.total.rate_1m', '#logstash', 0, null, 'Events per second'));
 {% endif %}
 {% endif %}
 </script>

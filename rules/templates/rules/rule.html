@@ -433,7 +433,7 @@ No comment.
  <script>
 {% if suricata_stats and elasticsearch %}
 {% if probes %}
-$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "alert.signature_id:{{ rule.sid }}" ); });
+$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "alert.signature_id:{{ rule.sid }}", 'Hits' ); });
 {% endif %}
 
 

@@ -118,7 +118,7 @@ Time: {% now "H:i:s" %} | Reload every {{ reload }}s
 
 <script>
 
-$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "{{ filter }}"); });
+$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "{{ filter }}", 'Hits'); });
 
 function differentiate_suppressed() {
     var suppressed_rules = [{{ suppressed }}];

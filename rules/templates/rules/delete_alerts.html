@@ -47,7 +47,7 @@
 
 <script>
 {% if probes %}
-$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "alert.signature_id:{{ object.sid }}" ); });
+$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "alert.signature_id:{{ object.sid }}", 'Hits'); });
 {% endif %}
 </script>
 

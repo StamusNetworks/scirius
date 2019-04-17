@@ -153,7 +153,7 @@ function draw_timeline(from_date, hosts, filter, ylegend=undefined) {
                                 .tickFormat(d3.format(',.1f'));
 
                                 if (ylegend) {
-                                    chart.yAxis.axisLabel(ylegend)
+                                    $('#timeline_title').text(ylegend);
                                 }
 
                                 var end_interval = new Date().getTime();
@@ -255,7 +255,7 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
                                 .tickFormat(d3.format(',.1f'));
 
                                 if (ylegend) {
-                                    chart.yAxis.axisLabel(ylegend)
+                                    $(tdiv + '_title').text(ylegend);
                                 }
 
                                 if (!autorange) {
@@ -299,6 +299,7 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
                                         });
                                     }
                                 }
+
                                 d3.select(tdiv + ' svg')
                                         .datum(sdata)
                                         .call(chart);
