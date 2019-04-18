@@ -2010,7 +2010,7 @@ class Rule(models.Model, Transformable, Cache):
 
     @staticmethod
     def get_icon():
-        return 'fa-shield'
+        return 'pficon-security'
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
@@ -2519,7 +2519,7 @@ class Ruleset(models.Model, Transformable):
 
     @staticmethod
     def get_icon():
-        return 'fa-list-alt'
+        return 'fa-th'
 
     def remove_transformation(self, key):
         RulesetTransformation.objects.filter(

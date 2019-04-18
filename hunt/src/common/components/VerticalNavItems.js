@@ -8,12 +8,12 @@ const VerticalNavItems = [{
     className: null,
 }, {
     title: 'Signatures',
-    iconClass: 'glyphicon glyphicon-eye-open',
+    iconClass: 'pficon pficon-security',
     def: PAGE_STATE.rules_list,
     className: null,
 }, {
     title: 'Alerts',
-    iconClass: 'pficon pficon-security',
+    iconClass: 'fa fa-bell',
     def: PAGE_STATE.alerts_list,
 }, {
     title: 'Actions',
