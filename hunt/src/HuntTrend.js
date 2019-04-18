@@ -87,9 +87,6 @@ export default class HuntTrend extends React.Component {
                             line1: this.state.data ? this.state.data.doc_count : 0,
                             line2: 'current count'
                         }}
-                        tooltip={{
-                            show: true
-                        }}
                     />
                 </ErrorHandler>
             </div>
