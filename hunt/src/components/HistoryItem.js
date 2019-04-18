@@ -2,9 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Col, Icon, Row, ListViewItem, ListViewInfoItem, ListViewIcon } from 'patternfly-react';
 import { PAGE_STATE } from 'hunt_common/constants';
+import moment from 'moment';
 
 const HistoryItem = (props) => {
-    const date = new Date(Date.parse(props.data.date)).toLocaleString('en-GB', { timeZone: 'UTC' });
+    const date = moment(props.data.date).format('YYYY-MM-DD, hh:mm:ss a');
     const info = [<ListViewInfoItem key="date"><p>Date: {date}</p></ListViewInfoItem>,
         <ListViewInfoItem key="user"><p><Icon type="pf" name="user" /> {props.data.username}</p>
         </ListViewInfoItem>
