@@ -276,9 +276,6 @@ export default class HuntDashboard extends React.Component {
         const array = this.state.dashboard[panel].items;
         for (let j = 0; j < array.length; j += 1) {
             const block = array[j];
-            if (typeof array.highestBlockHeight === 'undefined') {
-                array.highestBlockHeight = 0;
-            }
             axios.get(`${config.API_URL + config.ES_BASE_PATH
             }field_stats&field=${block.i
             }&from_date=${this.props.from_date
@@ -294,10 +291,6 @@ export default class HuntDashboard extends React.Component {
                 }
 
                 const height = Math.ceil(((json.data.length * dashboard.block.defaultItemHeight) + dashboard.block.defaultHeadHeight) / 13);
-                if (height > array.highestBlockHeight) {
-                    array.highestBlockHeight = height;
-                }
-
                 const panelHeight = (json.data.length) ? 10 + (json.data.length * dashboard.block.defaultItemHeight) + dashboard.block.defaultHeadHeight + dashboard.panel.defaultHeadHeight : dashboard.panel.defaultHeadHeight;
                 const isPanelLoaded = (!this.state.dashboard[panel].items.find((itm) => itm.data !== null && itm.data.length === 0));
 
@@ -319,30 +312,30 @@ export default class HuntDashboard extends React.Component {
                                 lg: {
                                     ...el.dimensions.lg,
                                     ...this.getBlockFromLS(panel, block.i, 'lg'),
-                                    maxH: array.highestBlockHeight,
-                                    minH: array.highestBlockHeight,
-                                    h: array.highestBlockHeight,
+                                    maxH: height,
+                                    minH: height,
+                                    h: height,
                                 },
                                 md: {
                                     ...el.dimensions.md,
                                     ...this.getBlockFromLS(panel, block.i, 'md'),
-                                    maxH: array.highestBlockHeight,
-                                    minH: array.highestBlockHeight,
-                                    h: array.highestBlockHeight,
+                                    maxH: height,
+                                    minH: height,
+                                    h: height,
                                 },
                                 sm: {
                                     ...el.dimensions.sm,
                                     ...this.getBlockFromLS(panel, block.i, 'sm'),
-                                    maxH: array.highestBlockHeight,
-                                    minH: array.highestBlockHeight,
-                                    h: array.highestBlockHeight,
+                                    maxH: height,
+                                    minH: height,
+                                    h: height,
                                 },
                                 xs: {
                                     ...el.dimensions.xs,
                                     ...this.getBlockFromLS(panel, block.i, 'xs'),
-                                    maxH: array.highestBlockHeight,
-                                    minH: array.highestBlockHeight,
-                                    h: array.highestBlockHeight,
+                                    maxH: height,
+                                    minH: height,
+                                    h: height,
                                 },
                             }
                         };
@@ -421,8 +414,25 @@ export default class HuntDashboard extends React.Component {
         ...this.state.dashboard[panel].dimensions, isDraggable: this.state.editMode, i: panel.toString()
     }));
 
-    getMicroLayouts = (panel, bp) => this.state.dashboard[panel].items.map((item) => ({ ...item.dimensions[bp], i: item.i.toString() })
-    );
+    getMicroLayouts = (panel, bp) => {
+        const tallestBlock = this.makeHeightsEqual(panel, bp);
+        return this.state.dashboard[panel].items.map((item) => ({
+            ...item.dimensions[bp],
+            h: tallestBlock,
+            maxH: tallestBlock,
+            minH: tallestBlock,
+            i: item.i.toString()
+        }));
+    }
+
+    makeHeightsEqual = (panel, bp) => {
+        let h = 0;
+        const blocks = this.state.dashboard[panel].items;
+        for (let i = 0; i < blocks.length; i += 1) {
+            h = (h > blocks[i].dimensions[bp].h) ? h : blocks[i].dimensions[bp].h;
+        }
+        return h;
+    }
 
     resetDashboard = (e) => {
         e.preventDefault();
