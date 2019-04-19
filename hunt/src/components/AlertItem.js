@@ -80,7 +80,7 @@ export default class AlertInList extends React.Component {
         return (
             <ListViewItem
                 id={this.props.id}
-                leftContent={<ListViewIcon type="pf" name="security" className={iconclass} />}
+                leftContent={<ListViewIcon type="fa" name="bell" className={iconclass} />}
                 description={<span data-toggle="tooltip" title={data.alert.signature}>{data.alert.signature}</span>}
                 heading={ipParams}
                 additionalInfo={addInfo}
