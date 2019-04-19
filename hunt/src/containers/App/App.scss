@@ -256,6 +256,9 @@ span.eventValue {
 .dl-item:last-child {
   margin-bottom: 0px;
 }
+.drag-and-drop-container {
+  overflow: hidden;
+}
 /* patternfly override fixes */
 @media (min-width: 992px) {
   .list-view-pf .list-group-item-heading {

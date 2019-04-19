@@ -561,7 +561,7 @@ export default class HuntDashboard extends React.Component {
                         <HuntTrend from_date={this.props.from_date} filters={this.props.filters} />
                     </div>
                 </div>
-                <div className="row">
+                <div className="row drag-and-drop-container">
                     <div className="col-md-12">
 
                         <div className="pull-right">
