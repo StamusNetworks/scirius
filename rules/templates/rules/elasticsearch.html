@@ -9,6 +9,10 @@
 $(document).ready(function(){
     $('a[data-toggle="tab"]').on('show.bs.tab', function(e) {
         localStorage.setItem('esstatsactiveTab', $(e.target).attr('href'));
+
+        if ($(e.target).attr('href') === '#cluster') {
+            setTimeout(get_es_stats, 100);
+        }
     });
     var activeTab = localStorage.getItem('esstatsactiveTab');
     if(activeTab){
