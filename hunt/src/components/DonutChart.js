@@ -56,6 +56,9 @@ class DonutChart extends React.Component {
             this.chart.load({
                 columns: this.props.data.columns,
             });
+
+            // Work-around, force showing the legend since it's not displayed on 1st page load
+            this.chart.legend.show();
         }
         if (this.props.title.show) {
             this.setTitle(this.makeTitle(this.props.title.line1));
