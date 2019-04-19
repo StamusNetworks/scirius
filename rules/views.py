@@ -1914,6 +1914,8 @@ def info(request):
             data = info.disk()
         elif query == 'memory':
             data = info.memory()
+        elif query == 'used_memory':
+            data = info.used_memory()
         elif query == 'cpu':
             data = info.cpu()
     return HttpResponse(json.dumps(data),

@@ -384,7 +384,7 @@ function get_memory_health() {
     $.ajax(
         {
                 type:"GET",
-                url:"{% url 'info' %}?query=memory",
+                url:"{% url 'info' %}?query=used_memory",
                 success: function(data) {
                 $("#memory-status").removeClass("label-danger");
                 $("#memory-status").removeClass("label-default");
@@ -393,10 +393,10 @@ function get_memory_health() {
                 if (!data) {
                         $("#memory-status").addClass("label-danger");
                 } else {
-			set_info_card("#mem-status-card-bar", data[2]);
-                        if (data[2] > 95) {
+			set_info_card("#mem-status-card-bar", data);
+                        if (data > 95) {
                             $("#memory-status").addClass("label-danger");
-                        } else if (data[2] > 85) {
+                        } else if (data > 85) {
                             $("#memory-status").addClass("label-warning");
                         } else {
                             $("#memory-status").addClass("label-success");

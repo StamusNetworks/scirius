@@ -59,6 +59,11 @@ class Info():
         return psutil.disk_usage('/')
     def memory(self):
         return psutil.virtual_memory()
+
+    def used_memory(self):
+        mem = psutil.virtual_memory()
+        return round(mem.used * 100. / mem.total, 1)
+
     def cpu(self):
         return psutil.cpu_percent(interval=0.2)
 
