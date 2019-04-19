@@ -23,7 +23,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Modal, DropdownKebab, MenuItem } from 'patternfly-react';
+import { Modal, DropdownKebab, MenuItem, Spinner } from 'patternfly-react';
 import { WidthProvider, Responsive } from 'react-grid-layout';
 import store from 'store';
 import md5 from 'md5';
@@ -71,7 +71,7 @@ export default class HuntDashboard extends React.Component {
             load: Object.keys(dashboard.sections),
             // load: ['basic'],
             breakPoint: 'lg',
-            dashboard: dashboard.sections,
+            dashboard: this.extendDefaultPanels(),
             rules: [],
             sources: [],
             rulesets: [],
@@ -178,6 +178,7 @@ export default class HuntDashboard extends React.Component {
                 this.filters = JSON.stringify(this.props.filters);
             } else if (this.panelsBooted !== 'booting' && (this.filters !== JSON.stringify(this.props.filters) || prevProps.from_date !== this.props.from_date)) {
                 this.filters = JSON.stringify(this.props.filters);
+                this.resetPanelHeights();
                 this.bootPanels();
             }
         }
@@ -207,10 +208,64 @@ export default class HuntDashboard extends React.Component {
         return qfilter;
     }
 
+    /* default panel properties should be extended with the stored equivalent into the local storage */
+    extendDefaultPanels = () => {
+        const storedMacroLayout = store.get('dashboardMacroLayout');
+        return Object.assign({}, ...Object.keys(dashboard.sections).map((k) => {
+            const storedPanel = find(storedMacroLayout, { i: k });
+            if (typeof storedPanel === 'undefined') {
+                return {
+                    [k]: {
+                        ...dashboard.sections[k]
+                    }
+                }
+            }
+
+            return {
+                [k]: {
+                    ...dashboard.sections[k],
+                    dimensions: {
+                        ...dashboard.sections[k].dimensions,
+                        y: storedPanel.y
+                    }
+                }
+            }
+        }));
+    }
+
+    /* reset panel to it's initial state - no data into blocks and the default height for the panel with empty blocks */
+    resetPanelHeights = () => {
+        const reset = Object.assign({}, ...Object.keys(this.state.dashboard).map((k) => ({
+            [k]: {
+                ...this.state.dashboard[k],
+                items: [
+                    ...this.state.dashboard[k].items.map((z, i) => ({
+                        ...z,
+                        data: null,
+                        dimensions: {
+                            ...dashboard.sections[k].items[i].dimensions
+                        }
+                    }))
+                ],
+                dimensions: {
+                    ...this.state.dashboard[k].dimensions,
+                    h: dashboard.sections[k].dimensions.h,
+                    minH: dashboard.sections[k].dimensions.minH,
+                }
+            }
+        })));
+
+        this.setState({
+            ...this.state,
+            dashboard: reset
+        })
+    }
+
     bootPanels = () => {
         this.panelsLoaded = 0;
         this.panelsBooted = 'booting';
         this.panelState.dashboard = { ...this.state.dashboard };
+        this.resetPanelHeights();
         map(this.state.load, (panel) => this.bootPanel(panel));
     }
 
@@ -248,7 +303,7 @@ export default class HuntDashboard extends React.Component {
 
                 const items = this.panelState.dashboard[panel].items.map((el) => {
                     if (el.i === block.i) {
-                        const data = (json.data.length) ? json.data : null;
+                        const data = (json.data.length) ? json.data : [];
 
                         if (data) {
                             for (let idx = 0; idx < data.length; idx += 1) {
@@ -332,8 +387,7 @@ export default class HuntDashboard extends React.Component {
     };
 
     // eslint-disable-next-line react/display-name
-    createElement = (block, panel) => {
-        this.state.dashboard[panel].items.find((itm) => itm.i === block.i).loaded = true;
+    createElement = (block) => {
         const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats&field=${block.i}&from_date=${this.props.from_date}&page_size=30${this.qFilter}`;
         return (
             <div key={block.i}
@@ -346,6 +400,7 @@ export default class HuntDashboard extends React.Component {
                 </DropdownKebab>}
                 <div className="hunt-stat-body">
                     <ListGroup>
+                        {block.data === null && <Spinner loading />}
                         {block.data !== null && block.data.map((item) => (
                             <ListGroupItem key={item.key}>
                                 <ErrorHandler>
@@ -363,7 +418,7 @@ export default class HuntDashboard extends React.Component {
     };
 
     getMacroLayouts = () => this.state.load.map((panel) => ({
-        ...this.state.dashboard[panel].dimensions, ...this.getPanelFromLS(panel), isDraggable: this.state.editMode, i: panel.toString()
+        ...this.state.dashboard[panel].dimensions, isDraggable: this.state.editMode, i: panel.toString()
     }));
 
     getMicroLayouts = (panel, bp) => this.state.dashboard[panel].items.map((item) => ({ ...item.dimensions[bp], i: item.i.toString() })
@@ -616,7 +671,7 @@ export default class HuntDashboard extends React.Component {
                                             lg: 32, md: 24, sm: 16, xs: 8, xxs: 4
                                         }}
                                     >
-                                        { this.state.dashboard[panel].items.map((block) => this.createElement(block, panel)) }
+                                        { this.state.dashboard[panel].items.map((block) => this.createElement(block)) }
                                     </ResponsiveReactGridLayout>
                                 </div>)
                             )}

@@ -1,8 +1,3 @@
-import store from 'store';
-import find from 'lodash/find';
-
-const storedMacroLayout = store.get('dashboardMacroLayout');
-
 export const dashboard = {
     panel: {
         defaultHeadHeight: 67,
@@ -10,11 +5,11 @@ export const dashboard = {
     block: {
         defaultDimensions: {
             minW: 3,
-            minH: 3,
+            minH: 7,
             x: 0,
             y: 0,
             w: 3,
-            h: 3,
+            h: 7,
         },
         defaultItemHeight: 33,
         defaultHeadHeight: 50,
@@ -29,16 +24,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 9, h: 22, x: 15, y: 0
+                            w: 9, h: 7, x: 15, y: 0
                         },
                         md: {
-                            w: 9, h: 22, x: 15, y: 0
+                            w: 9, h: 7, x: 15, y: 0
                         },
                         sm: {
-                            w: 8, h: 22, x: 0, y: 0
+                            w: 8, h: 7, x: 0, y: 0
                         },
                         xs: {
-                            w: 4, h: 22, x: 0, y: 0
+                            w: 4, h: 7, x: 0, y: 0
                         },
                     },
                 }, {
@@ -47,16 +42,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 8, h: 15, x: 7, y: 0
+                            w: 8, h: 7, x: 7, y: 0
                         },
                         md: {
-                            w: 8, h: 15, x: 7, y: 0
+                            w: 8, h: 7, x: 7, y: 0
                         },
                         sm: {
-                            w: 8, h: 15, x: 0, y: 22
+                            w: 8, h: 7, x: 0, y: 22
                         },
                         xs: {
-                            w: 4, h: 15, x: 4, y: 0
+                            w: 4, h: 7, x: 4, y: 0
                         },
                     },
                 }, {
@@ -65,16 +60,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 8, h: 12, x: 24, y: 0
+                            w: 8, h: 7, x: 24, y: 0
                         },
                         md: {
-                            w: 7, h: 12, x: 0, y: 18
+                            w: 7, h: 7, x: 0, y: 18
                         },
                         sm: {
-                            w: 8, h: 12, x: 8, y: 18
+                            w: 8, h: 7, x: 8, y: 18
                         },
                         xs: {
-                            w: 4, h: 12, x: 4, y: 15
+                            w: 4, h: 7, x: 4, y: 15
                         },
                     },
                 }, {
@@ -83,24 +78,23 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 7, h: 18, x: 0, y: 0
+                            w: 7, h: 7, x: 0, y: 0
                         },
                         md: {
-                            w: 7, h: 18, x: 0, y: 0
+                            w: 7, h: 7, x: 0, y: 0
                         },
                         sm: {
-                            w: 8, h: 18, x: 8, y: 0
+                            w: 8, h: 7, x: 8, y: 0
                         },
                         xs: {
-                            w: 4, h: 18, x: 0, y: 22
+                            w: 4, h: 7, x: 0, y: 22
                         },
                     },
                 }
             ],
-            dimensions: find(storedMacroLayout, { i: 'metadata' }) || {
-                w: 1, h: 356, x: 0, y: 426
+            dimensions: {
+                w: 1, h: 170, x: 0, y: 426
             },
-            loaded: false
         },
         basic: {
             title: 'Basic Information',
@@ -111,16 +105,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 11, h: 22, x: 0, y: 0
+                            w: 11, h: 7, x: 0, y: 0
                         },
                         md: {
-                            w: 7, h: 22, x: 0, y: 0
+                            w: 7, h: 7, x: 0, y: 0
                         },
                         sm: {
-                            w: 6, h: 22, x: 0, y: 0
+                            w: 6, h: 7, x: 0, y: 0
                         },
                         xs: {
-                            w: 4, h: 22, x: 0, y: 0
+                            w: 4, h: 7, x: 0, y: 0
                         },
                     },
                 },
@@ -130,16 +124,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 9, h: 22, x: 11, y: 0
+                            w: 9, h: 7, x: 11, y: 0
                         },
                         md: {
-                            w: 7, h: 22, x: 7, y: 0
+                            w: 7, h: 7, x: 7, y: 0
                         },
                         sm: {
-                            w: 5, h: 22, x: 6, y: 0
+                            w: 5, h: 7, x: 6, y: 0
                         },
                         xs: {
-                            w: 4, h: 22, x: 4, y: 0
+                            w: 4, h: 7, x: 4, y: 0
                         },
                     },
                 },
@@ -149,16 +143,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 5, h: 15, x: 20, y: 0
+                            w: 5, h: 7, x: 20, y: 0
                         },
                         md: {
-                            w: 4, h: 15, x: 14, y: 0
+                            w: 4, h: 7, x: 14, y: 0
                         },
                         sm: {
-                            w: 3, h: 15, x: 0, y: 22
+                            w: 3, h: 7, x: 0, y: 22
                         },
                         xs: {
-                            w: 4, h: 15, x: 0, y: 22
+                            w: 4, h: 7, x: 0, y: 22
                         },
                     },
                 },
@@ -168,24 +162,23 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 7, h: 15, x: 25, y: 0
+                            w: 7, h: 7, x: 25, y: 0
                         },
                         md: {
-                            w: 6, h: 15, x: 18, y: 0
+                            w: 6, h: 7, x: 18, y: 0
                         },
                         sm: {
-                            w: 5, h: 15, x: 11, y: 0
+                            w: 5, h: 7, x: 11, y: 0
                         },
                         xs: {
-                            w: 4, h: 15, x: 4, y: 22
+                            w: 4, h: 7, x: 4, y: 22
                         },
                     },
                 }
             ],
-            dimensions: find(storedMacroLayout, { i: 'basic' }) || {
-                w: 1, h: 356, x: 0, y: 0
+            dimensions: {
+                w: 1, h: 170, x: 0, y: 0
             },
-            loaded: false
         },
         organizational: {
             title: 'Organizational Information',
@@ -196,16 +189,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 8, h: 222, x: 0, y: 0
+                            w: 8, h: 7, x: 0, y: 0
                         },
                         md: {
-                            w: 6, h: 122, x: 0, y: 0
+                            w: 6, h: 7, x: 0, y: 0
                         },
                         sm: {
-                            w: 8, h: 222, x: 0, y: 0
+                            w: 8, h: 7, x: 0, y: 0
                         },
                         xs: {
-                            w: 4, h: 19, x: 0, y: 0
+                            w: 4, h: 7, x: 0, y: 0
                         },
                     },
                 }, {
@@ -214,16 +207,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 8, h: 22, x: 8, y: 0
+                            w: 8, h: 7, x: 8, y: 0
                         },
                         md: {
-                            w: 6, h: 8, x: 6, y: 0
+                            w: 6, h: 7, x: 6, y: 0
                         },
                         sm: {
-                            w: 8, h: 12, x: 8, y: 0
+                            w: 8, h: 7, x: 8, y: 0
                         },
                         xs: {
-                            w: 4, h: 19, x: 4, y: 0
+                            w: 4, h: 7, x: 4, y: 0
                         },
                     },
                 }, {
@@ -232,16 +225,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 7, h: 22, x: 0, y: 0
+                            w: 7, h: 7, x: 0, y: 0
                         },
                         md: {
-                            w: 6, h: 22, x: 18, y: 0
+                            w: 6, h: 7, x: 18, y: 0
                         },
                         sm: {
-                            w: 8, h: 22, x: 0, y: 14
+                            w: 8, h: 7, x: 0, y: 14
                         },
                         xs: {
-                            w: 4, h: 19, x: 0, y: 14
+                            w: 4, h: 7, x: 0, y: 14
                         },
                     },
                 }, {
@@ -250,16 +243,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 8, h: 22, x: 16, y: 0
+                            w: 8, h: 7, x: 16, y: 0
                         },
                         md: {
-                            w: 6, h: 12, x: 12, y: 0
+                            w: 6, h: 7, x: 12, y: 0
                         },
                         sm: {
-                            w: 8, h: 12, x: 0, y: 7
+                            w: 8, h: 7, x: 0, y: 7
                         },
                         xs: {
-                            w: 4, h: 19, x: 0, y: 8
+                            w: 4, h: 7, x: 0, y: 8
                         },
                     },
                 }, {
@@ -268,24 +261,23 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 8, h: 22, x: 24, y: 0
+                            w: 8, h: 7, x: 24, y: 0
                         },
                         md: {
-                            w: 7, h: 12, x: 0, y: 7
+                            w: 7, h: 7, x: 0, y: 7
                         },
                         sm: {
-                            w: 8, h: 12, x: 8, y: 7
+                            w: 8, h: 7, x: 8, y: 7
                         },
                         xs: {
-                            w: 4, h: 19, x: 4, y: 8
+                            w: 4, h: 7, x: 4, y: 8
                         },
                     },
                 }
             ],
-            dimensions: find(storedMacroLayout, { i: 'organizational' }) || {
-                w: 1, h: 70, x: 0, y: 356
+            dimensions: {
+                w: 1, h: 270, x: 0, y: 356
             },
-            loaded: false
         },
         ip: {
             title: 'IP Information',
@@ -296,16 +288,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 6, h: 19, x: 0, y: 0
+                            w: 6, h: 7, x: 0, y: 0
                         },
                         md: {
-                            w: 6, h: 22, x: 0, y: 0
+                            w: 6, h: 7, x: 0, y: 0
                         },
                         sm: {
-                            w: 5, h: 22, x: 0, y: 0
+                            w: 5, h: 7, x: 0, y: 0
                         },
                         xs: {
-                            w: 4, h: 19, x: 0, y: 0
+                            w: 4, h: 7, x: 0, y: 0
                         },
                     },
                 }, {
@@ -314,16 +306,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 6, h: 19, x: 6, y: 0
+                            w: 6, h: 7, x: 6, y: 0
                         },
                         md: {
-                            w: 6, h: 22, x: 6, y: 0
+                            w: 6, h: 7, x: 6, y: 0
                         },
                         sm: {
-                            w: 6, h: 22, x: 5, y: 0
+                            w: 6, h: 7, x: 5, y: 0
                         },
                         xs: {
-                            w: 4, h: 19, x: 4, y: 0
+                            w: 4, h: 7, x: 4, y: 0
                         },
                     }
                 }, {
@@ -332,16 +324,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 5, h: 19, x: 12, y: 0
+                            w: 5, h: 7, x: 12, y: 0
                         },
                         md: {
-                            w: 6, h: 22, x: 12, y: 0
+                            w: 6, h: 7, x: 12, y: 0
                         },
                         sm: {
-                            w: 5, h: 22, x: 11, y: 0
+                            w: 5, h: 7, x: 11, y: 0
                         },
                         xs: {
-                            w: 4, h: 19, x: 0, y: 19
+                            w: 4, h: 7, x: 0, y: 19
                         },
                     }
                 }, {
@@ -350,16 +342,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 5, h: 19, x: 17, y: 0
+                            w: 5, h: 7, x: 17, y: 0
                         },
                         md: {
-                            w: 6, h: 22, x: 18, y: 0
+                            w: 6, h: 7, x: 18, y: 0
                         },
                         sm: {
-                            w: 5, h: 22, x: 11, y: 17
+                            w: 5, h: 7, x: 11, y: 17
                         },
                         xs: {
-                            w: 4, h: 19, x: 4, y: 19
+                            w: 4, h: 7, x: 4, y: 19
                         },
                     }
                 }, {
@@ -369,16 +361,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 4, h: 17, x: 22, y: 0
+                            w: 4, h: 7, x: 22, y: 0
                         },
                         md: {
-                            w: 6, h: 17, x: 6, y: 17
+                            w: 6, h: 7, x: 6, y: 17
                         },
                         sm: {
-                            w: 6, h: 17, x: 5, y: 22
+                            w: 6, h: 7, x: 5, y: 22
                         },
                         xs: {
-                            w: 4, h: 17, x: 0, y: 38
+                            w: 4, h: 7, x: 0, y: 38
                         },
                     }
                 }, {
@@ -388,24 +380,23 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 6, h: 19, x: 26, y: 0
+                            w: 6, h: 7, x: 26, y: 0
                         },
                         md: {
-                            w: 6, h: 22, x: 0, y: 0
+                            w: 6, h: 7, x: 0, y: 0
                         },
                         sm: {
-                            w: 5, h: 22, x: 0, y: 0
+                            w: 5, h: 7, x: 0, y: 0
                         },
                         xs: {
-                            w: 4, h: 19, x: 4, y: 38
+                            w: 4, h: 7, x: 4, y: 38
                         },
                     },
                 }
             ],
-            dimensions: find(storedMacroLayout, { i: 'ip' }) || {
-                w: 1, h: 356, x: 0, y: 782
+            dimensions: {
+                w: 1, h: 170, x: 0, y: 782
             },
-            loaded: false
         },
         http: {
             title: 'HTTP information',
@@ -416,16 +407,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 9, h: 22, x: 0, y: 0
+                            w: 9, h: 7, x: 0, y: 0
                         },
                         md: {
-                            w: 6, h: 22, x: 0, y: 0
+                            w: 6, h: 7, x: 0, y: 0
                         },
                         sm: {
-                            w: 6, h: 22, x: 0, y: 0
+                            w: 6, h: 7, x: 0, y: 0
                         },
                         xs: {
-                            w: 4, h: 22, x: 0, y: 0
+                            w: 4, h: 7, x: 0, y: 0
                         },
                     },
                 }, {
@@ -434,16 +425,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 9, h: 22, x: 9, y: 0
+                            w: 9, h: 7, x: 9, y: 0
                         },
                         md: {
-                            w: 6, h: 22, x: 6, y: 0
+                            w: 6, h: 7, x: 6, y: 0
                         },
                         sm: {
-                            w: 6, h: 22, x: 6, y: 0
+                            w: 6, h: 7, x: 6, y: 0
                         },
                         xs: {
-                            w: 4, h: 22, x: 4, y: 0
+                            w: 4, h: 7, x: 4, y: 0
                         },
                     },
                 }, {
@@ -452,16 +443,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 9, h: 12, x: 23, y: 0
+                            w: 9, h: 7, x: 23, y: 0
                         },
                         md: {
-                            w: 6, h: 12, x: 12, y: 0
+                            w: 6, h: 7, x: 12, y: 0
                         },
                         sm: {
-                            w: 8, h: 12, x: 0, y: 51
+                            w: 8, h: 7, x: 0, y: 51
                         },
                         xs: {
-                            w: 4, h: 12, x: 0, y: 22
+                            w: 4, h: 7, x: 0, y: 22
                         },
                     },
                 }, {
@@ -470,24 +461,23 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 5, h: 18, x: 18, y: 0
+                            w: 5, h: 7, x: 18, y: 0
                         },
                         md: {
-                            w: 6, h: 18, x: 18, y: 0
+                            w: 6, h: 7, x: 18, y: 0
                         },
                         sm: {
-                            w: 4, h: 18, x: 12, y: 0
+                            w: 4, h: 7, x: 12, y: 0
                         },
                         xs: {
-                            w: 4, h: 18, x: 4, y: 22
+                            w: 4, h: 7, x: 4, y: 22
                         },
                     },
                 }
             ],
-            dimensions: find(storedMacroLayout, { i: 'http' }) || {
-                w: 1, h: 356, x: 0, y: 1138
+            dimensions: {
+                w: 1, h: 370, x: 0, y: 1138
             },
-            loaded: false
         },
         dns: {
             title: 'DNS information',
@@ -498,16 +488,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 9, h: 12, x: 0, y: 0
+                            w: 9, h: 7, x: 0, y: 0
                         },
                         md: {
-                            w: 12, h: 12, x: 0, y: 0
+                            w: 12, h: 7, x: 0, y: 0
                         },
                         sm: {
-                            w: 8, h: 12, x: 0, y: 0
+                            w: 8, h: 7, x: 0, y: 0
                         },
                         xs: {
-                            w: 4, h: 12, x: 0, y: 0
+                            w: 4, h: 7, x: 0, y: 0
                         },
                     },
                 }, {
@@ -516,24 +506,23 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 9, h: 9, x: 9, y: 0
+                            w: 9, h: 7, x: 9, y: 0
                         },
                         md: {
-                            w: 12, h: 9, x: 12, y: 0
+                            w: 12, h: 7, x: 12, y: 0
                         },
                         sm: {
-                            w: 8, h: 9, x: 8, y: 0
+                            w: 8, h: 7, x: 8, y: 0
                         },
                         xs: {
-                            w: 4, h: 9, x: 4, y: 0
+                            w: 4, h: 7, x: 4, y: 0
                         },
                     },
                 }
             ],
-            dimensions: find(storedMacroLayout, { i: 'dns' }) || {
-                w: 1, h: 226, x: 0, y: 1494
+            dimensions: {
+                w: 1, h: 170, x: 0, y: 1494
             },
-            loaded: false
         },
         tls: {
             title: 'TLS information',
@@ -544,16 +533,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 10, h: 22, x: 0, y: 0
+                            w: 10, h: 7, x: 0, y: 0
                         },
                         md: {
-                            w: 7, h: 22, x: 0, y: 0
+                            w: 7, h: 7, x: 0, y: 0
                         },
                         sm: {
-                            w: 8, h: 22, x: 0, y: 0
+                            w: 8, h: 7, x: 0, y: 0
                         },
                         xs: {
-                            w: 4, h: 22, x: 0, y: 0
+                            w: 4, h: 7, x: 0, y: 0
                         },
                     },
                 }, {
@@ -562,16 +551,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 11, h: 22, x: 10, y: 0
+                            w: 11, h: 7, x: 10, y: 0
                         },
                         md: {
-                            w: 8, h: 22, x: 7, y: 0
+                            w: 8, h: 7, x: 7, y: 0
                         },
                         sm: {
-                            w: 8, h: 22, x: 8, y: 0
+                            w: 8, h: 7, x: 8, y: 0
                         },
                         xs: {
-                            w: 4, h: 22, x: 4, y: 0
+                            w: 4, h: 7, x: 4, y: 0
                         },
                     },
                 }, {
@@ -580,16 +569,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 11, h: 22, x: 21, y: 0
+                            w: 11, h: 7, x: 21, y: 0
                         },
                         md: {
-                            w: 9, h: 22, x: 15, y: 0
+                            w: 9, h: 7, x: 15, y: 0
                         },
                         sm: {
-                            w: 8, h: 22, x: 0, y: 22
+                            w: 8, h: 7, x: 0, y: 22
                         },
                         xs: {
-                            w: 4, h: 22, x: 0, y: 22
+                            w: 4, h: 7, x: 0, y: 22
                         },
                     },
                 }, {
@@ -598,16 +587,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 10, h: 22, x: 0, y: 22
+                            w: 10, h: 7, x: 0, y: 22
                         },
                         md: {
-                            w: 12, h: 22, x: 0, y: 22
+                            w: 12, h: 7, x: 0, y: 22
                         },
                         sm: {
-                            w: 8, h: 22, x: 8, y: 22
+                            w: 8, h: 7, x: 8, y: 22
                         },
                         xs: {
-                            w: 4, h: 22, x: 4, y: 22
+                            w: 4, h: 7, x: 4, y: 22
                         },
                     },
                 }, {
@@ -616,16 +605,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 11, h: 12, x: 10, y: 22
+                            w: 11, h: 7, x: 10, y: 22
                         },
                         md: {
-                            w: 12, h: 12, x: 12, y: 4
+                            w: 12, h: 7, x: 12, y: 4
                         },
                         sm: {
-                            w: 8, h: 12, x: 0, y: 44
+                            w: 8, h: 7, x: 0, y: 44
                         },
                         xs: {
-                            w: 8, h: 12, x: 0, y: 44
+                            w: 8, h: 7, x: 0, y: 44
                         },
                     },
                 }, {
@@ -634,24 +623,23 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 11, h: 12, x: 21, y: 6
+                            w: 11, h: 7, x: 21, y: 6
                         },
                         md: {
-                            w: 12, h: 12, x: 0, y: 8
+                            w: 12, h: 7, x: 0, y: 8
                         },
                         sm: {
-                            w: 8, h: 12, x: 8, y: 8
+                            w: 8, h: 7, x: 8, y: 8
                         },
                         xs: {
-                            w: 8, h: 12, x: 0, y: 44
+                            w: 8, h: 7, x: 0, y: 44
                         },
                     },
                 }
             ],
-            dimensions: find(storedMacroLayout, { i: 'tls' }) || {
-                w: 1, h: 642, x: 0, y: 1720
+            dimensions: {
+                w: 1, h: 270, x: 0, y: 1720
             },
-            loaded: false
         },
         smtp: {
             title: 'SMTP information',
@@ -662,16 +650,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 11, h: 9, x: 0, y: 0
+                            w: 11, h: 7, x: 0, y: 0
                         },
                         md: {
-                            w: 8, h: 9, x: 0, y: 0
+                            w: 8, h: 7, x: 0, y: 0
                         },
                         sm: {
-                            w: 6, h: 9, x: 0, y: 0
+                            w: 6, h: 7, x: 0, y: 0
                         },
                         xs: {
-                            w: 8, h: 9, x: 0, y: 0
+                            w: 8, h: 7, x: 0, y: 0
                         },
                     },
                 }, {
@@ -680,16 +668,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 10, h: 9, x: 11, y: 0
+                            w: 10, h: 7, x: 11, y: 0
                         },
                         md: {
-                            w: 8, h: 9, x: 8, y: 0
+                            w: 8, h: 7, x: 8, y: 0
                         },
                         sm: {
-                            w: 5, h: 9, x: 6, y: 0
+                            w: 5, h: 7, x: 6, y: 0
                         },
                         xs: {
-                            w: 8, h: 9, x: 0, y: 9
+                            w: 8, h: 7, x: 0, y: 9
                         },
                     },
                 }, {
@@ -698,24 +686,23 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 11, h: 9, x: 21, y: 0
+                            w: 11, h: 7, x: 21, y: 0
                         },
                         md: {
-                            w: 8, h: 9, x: 16, y: 0
+                            w: 8, h: 7, x: 16, y: 0
                         },
                         sm: {
-                            w: 5, h: 9, x: 11, y: 0
+                            w: 5, h: 7, x: 11, y: 0
                         },
                         xs: {
-                            w: 8, h: 9, x: 0, y: 18
+                            w: 8, h: 7, x: 0, y: 18
                         },
                     },
                 }
             ],
-            dimensions: find(storedMacroLayout, { i: 'smtp' }) || {
-                w: 1, h: 187, x: 0, y: 2362
+            dimensions: {
+                w: 1, h: 170, x: 0, y: 2362
             },
-            loaded: false
         },
         smb: {
             title: 'SMB information',
@@ -726,16 +713,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 8, h: 22, x: 0, y: 0
+                            w: 8, h: 7, x: 0, y: 0
                         },
                         md: {
-                            w: 8, h: 12, x: 0, y: 0
+                            w: 8, h: 7, x: 0, y: 0
                         },
                         sm: {
-                            w: 8, h: 22, x: 0, y: 0
+                            w: 8, h: 7, x: 0, y: 0
                         },
                         xs: {
-                            w: 8, h: 22, x: 0, y: 0
+                            w: 8, h: 7, x: 0, y: 0
                         },
                     },
                 }, {
@@ -744,16 +731,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 8, h: 22, x: 8, y: 0
+                            w: 8, h: 7, x: 8, y: 0
                         },
                         md: {
-                            w: 8, h: 12, x: 8, y: 0
+                            w: 8, h: 7, x: 8, y: 0
                         },
                         sm: {
-                            w: 8, h: 12, x: 8, y: 0
+                            w: 8, h: 7, x: 8, y: 0
                         },
                         xs: {
-                            w: 8, h: 12, x: 0, y: 1
+                            w: 8, h: 7, x: 0, y: 1
                         },
                     },
                 }, {
@@ -762,16 +749,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 8, h: 22, x: 16, y: 0
+                            w: 8, h: 7, x: 16, y: 0
                         },
                         md: {
-                            w: 8, h: 22, x: 16, y: 0
+                            w: 8, h: 7, x: 16, y: 0
                         },
                         sm: {
-                            w: 8, h: 22, x: 0, y: 1
+                            w: 8, h: 7, x: 0, y: 1
                         },
                         xs: {
-                            w: 8, h: 22, x: 0, y: 2
+                            w: 8, h: 7, x: 0, y: 2
                         },
                     },
                 }, {
@@ -780,24 +767,23 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 8, h: 22, x: 24, y: 0
+                            w: 8, h: 7, x: 24, y: 0
                         },
                         md: {
-                            w: 8, h: 22, x: 0, y: 1
+                            w: 8, h: 7, x: 0, y: 1
                         },
                         sm: {
-                            w: 8, h: 22, x: 8, y: 1
+                            w: 8, h: 7, x: 8, y: 1
                         },
                         xs: {
-                            w: 8, h: 22, x: 0, y: 3
+                            w: 8, h: 7, x: 0, y: 3
                         },
                     },
                 }
             ],
-            dimensions: find(storedMacroLayout, { i: 'smb' }) || {
-                w: 1, h: 70, x: 0, y: 2549
+            dimensions: {
+                w: 1, h: 170, x: 0, y: 2549
             },
-            loaded: false
         },
         ssh: {
             title: 'SSH information',
@@ -809,16 +795,16 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 14, h: 9, x: 0, y: 0
+                            w: 14, h: 7, x: 0, y: 0
                         },
                         md: {
-                            w: 12, h: 9, x: 0, y: 0
+                            w: 12, h: 7, x: 0, y: 0
                         },
                         sm: {
-                            w: 8, h: 9, x: 0, y: 0
+                            w: 8, h: 7, x: 0, y: 0
                         },
                         xs: {
-                            w: 4, h: 9, x: 0, y: 0
+                            w: 4, h: 7, x: 0, y: 0
                         },
                     },
                 }, {
@@ -827,24 +813,23 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 18, h: 15, x: 14, y: 0
+                            w: 18, h: 7, x: 14, y: 0
                         },
                         md: {
-                            w: 12, h: 15, x: 12, y: 0
+                            w: 12, h: 7, x: 12, y: 0
                         },
                         sm: {
-                            w: 8, h: 15, x: 8, y: 0
+                            w: 8, h: 7, x: 8, y: 0
                         },
                         xs: {
-                            w: 4, h: 15, x: 4, y: 0
+                            w: 4, h: 7, x: 4, y: 0
                         },
                     },
                 }
             ],
-            dimensions: find(storedMacroLayout, { i: 'ssh' }) || {
-                w: 1, h: 265, x: 0, y: 2619
+            dimensions: {
+                w: 1, h: 170, x: 0, y: 2619
             },
-            loaded: false
         },
     },
 };
