@@ -2181,7 +2181,7 @@ class Rule(models.Model, Transformable, Cache):
         return "noalert" not in self.content
 
     def can_filestore(self):
-        return self.content.split(' ')[1] in ('http', 'smtp', 'smb', 'nfs')
+        return self.content.split(' ')[1] in ('http', 'smtp', 'smb', 'nfs', 'ftp-data')
 
     def can_lateral(self, value):
         content = self.content.encode('utf8')
