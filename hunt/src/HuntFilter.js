@@ -24,6 +24,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Filter, FormControl, FormGroup, Toolbar, Button, Icon, Switch } from 'patternfly-react';
 import { Shortcuts } from 'react-shortcuts';
+import Select from 'react-select';
 import { HuntSort } from './Sort';
 
 // https://www.regextester.com/104038
@@ -223,6 +224,11 @@ export class HuntFilter extends React.Component {
     }
 
     filterValueSelected = (filterValue) => {
+        // used by Select component
+        if (filterValue.id) {
+            filterValue = filterValue.id;
+        }
+
         const { currentFilterType, currentValue } = this.state;
 
         if (filterValue !== currentValue) {
@@ -278,7 +284,7 @@ export class HuntFilter extends React.Component {
                 }
             }
         }
-        if (!error) this.setState({ currentValue: event.target.value });
+        if (!error) this.setState({ currentValue: event.target ? event.target.value : event /* used by Select component */ });
     }
 
     removeFilter = (filter) => {
@@ -373,20 +379,102 @@ export class HuntFilter extends React.Component {
                 />
             );
         } else if (currentFilterType.filterType === 'complex-select') {
-            return (
-                <Filter.CategorySelector
-                    filterCategories={currentFilterType.filterCategories}
-                    currentCategory={filterCategory}
-                    placeholder={currentFilterType.placeholder}
-                    onFilterCategorySelected={this.filterCategorySelected}
-                >
-                    {filterCategory && <Filter.ValueSelector
-                        filterValues={filterCategory && filterCategory.filterValues}
-                        currentValue={currentValue}
-                        onFilterValueSelected={this.filterValueSelected}
-                    />}
-                </Filter.CategorySelector>
-            );
+            const customStyles = {
+                option: (provided, state) => ({
+                    ...provided,
+                    color: state.isSelected ? null : 'black',
+                    backgroundColor: state.isFocused ? '#dcc6c5' : null,
+                    ':active': {
+                        backgroundColor: state.isSelected ? null : '#7b1244',
+                        color: state.isSelected ? null : 'white'
+                    }
+                }),
+                container: (provided) => ({
+                    ...provided,
+                    display: 'inline-block',
+                    width: '250px',
+                    minHeight: '1px',
+                    textAlign: 'left',
+                    border: 'none',
+                }),
+                control: (provided, state) => ({
+                    ...provided,
+                    border: state.isFocused ? '1px solid #9c9c9c' : '1px solid #bbb',
+                    boxShadow: state.isFocused ? null : null,
+                    '&:hover': {
+                        border: state.isFocused ? '1px solid #9c9c9c' : '1px solid #bbb',
+                        backgroundColor: '#e8e8e8',
+                        color: 'yellow'
+                    },
+                    borderRadius: '0',
+                    minHeight: '1px',
+                    height: '26px',
+                    cursor: 'pointer'
+                }),
+                input: (provided) => ({
+                    ...provided,
+                    minHeight: '1px',
+                }),
+                dropdownIndicator: (provided) => ({
+                    ...provided,
+                    minHeight: '1px',
+                    paddingTop: '0',
+                    paddingBottom: '5',
+                    color: '#8b8d8f',
+                }),
+                indicatorSeparator: (provided) => ({
+                    ...provided,
+                    minHeight: '1px',
+                    height: '12px',
+                }),
+                valueContainer: (provided) => ({
+                    ...provided,
+                    minHeight: '1px',
+                    height: '25px',
+                    paddingTop: '0',
+                    paddingBottom: '0',
+                    position: 'static !important',
+                    fontWeight: 600
+                }),
+                singleValue: (provided) => ({
+                    ...provided,
+                    minHeight: '1px',
+                    paddingBottom: '2px',
+                }),
+            };
+
+            if (currentFilterType.filterCategories) {
+                return (
+                    <Filter.CategorySelector
+                        filterCategories={currentFilterType.filterCategories}
+                        currentCategory={filterCategory}
+                        placeholder={currentFilterType.placeholder}
+                        onFilterCategorySelected={this.filterCategorySelected}
+                    >
+                        {filterCategory && <Select
+                            styles={customStyles}
+                            value={currentValue}
+                            options={filterCategory && filterCategory.filterValues}
+                            onChange={this.filterValueSelected}
+                            className="basic-single toolbar-pf-filter"
+                            classNamePrefix="select"
+                            placeholder={'Choose an Organization'}
+                        />}
+                    </Filter.CategorySelector>
+                );
+            } else {
+                return (
+                    <Select
+                        styles={customStyles}
+                        value={currentValue}
+                        options={currentFilterType && currentFilterType.filterValues}
+                        onChange={this.filterValueSelected}
+                        className="basic-single toolbar-pf-filter"
+                        classNamePrefix="select"
+                        placeholder={'Choose an Organization'}
+                    />
+                );
+            }
         } else if (currentFilterType.filterType === 'complex-select-text') {
             return (
                 <Filter.CategorySelector
