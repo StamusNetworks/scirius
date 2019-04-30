@@ -1,10 +1,5 @@
 /* eslint-disable no-continue,brace-style */
-export function buildQFilter(filters, systemSettings, advancedSettings) {
-    const settings = {
-        quoteQFilter: '"',
-        ...advancedSettings
-    };
-
+export function buildQFilter(filters, systemSettings) {
     const qfilter = [];
     let output = '';
 
@@ -69,7 +64,7 @@ export function buildQFilter(filters, systemSettings, advancedSettings) {
             if (value.indexOf('\\') !== -1) {
                 value = value.replace(/\\/g, '\\\\\\\\');
             }
-            qfilter.push(`${fPrefix}${filters[i].id}${fSuffix}:${settings.quoteQFilter}${encodeURIComponent(value)}${settings.quoteQFilter}`);
+            qfilter.push(`${fPrefix}${filters[i].id}${fSuffix}:"${encodeURIComponent(value)}"`);
             continue;
         } else {
             qfilter.push(`${fPrefix}${filters[i].id}:${filters[i].value}`);

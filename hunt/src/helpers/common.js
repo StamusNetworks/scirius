@@ -193,7 +193,7 @@ export function updateAlertTag(tfilters) {
     this.UpdateFilter(activeFilters);
 }
 
-export function buildFilter(filters, advancedSettings) {
+export function buildFilter(filters) {
     const lFilters = {};
     for (let i = 0; i < filters.length; i += 1) {
         if (filters[i].id !== 'probe' && filters[i].id !== 'alert.tag') {
@@ -209,7 +209,7 @@ export function buildFilter(filters, advancedSettings) {
     for (let k = 0; k < objKeys.length; k += 1) {
         stringFilters += `&${objKeys[k]}=${lFilters[objKeys[k]]}`;
     }
-    const qfilter = buildQFilter(filters, this.props.systemSettings, advancedSettings);
+    const qfilter = buildQFilter(filters, this.props.systemSettings);
     if (qfilter) {
         stringFilters += qfilter;
     }
