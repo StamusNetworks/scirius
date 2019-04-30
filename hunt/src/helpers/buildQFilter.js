@@ -1,3 +1,12 @@
+function esEscape(str) {
+    // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#_reserved_characters
+    // Can't search on < >
+    str = str.replace(/[<>]/g, '');
+
+    // Escape other reserved characters
+    return str.replace(/[+-=&|!(){}[\]^"~:\\/]/g, (c) => `\\${c}`);
+}
+
 export function buildQFilter(filters, systemSettings) {
     const qfilter = [];
     let output = '';
@@ -46,8 +55,13 @@ export function buildQFilter(filters, systemSettings) {
             } else if (filters[i].id === 'not_in_msg') {
                 qfilter.push(`${fPrefix}NOT alert.signature:"${filters[i].value}"`);
             } else if (typeof filters[i].value === 'string') {
-                const value = filters[i].value.replace(/\\/g, '\\\\');
-                qfilter.push(`${fPrefix}${filters[i].id}${fSuffix}:"${encodeURIComponent(value)}"`);
+                if (filters[i].fullString) {
+                    const value = filters[i].value.replace(/\\/g, '\\\\');
+                    qfilter.push(`${fPrefix}${filters[i].id}${fSuffix}:"${encodeURIComponent(value)}"`);
+                } else {
+                    const value = esEscape(filters[i].value);
+                    qfilter.push(`${fPrefix}${filters[i].id}:${encodeURIComponent(value)}`);
+                }
             } else {
                 qfilter.push(`${fPrefix}${filters[i].id}:${filters[i].value}`);
             }

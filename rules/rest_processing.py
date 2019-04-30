@@ -36,7 +36,7 @@ class RuleProcessingFilterDefSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RuleProcessingFilterDef
-        fields = ('pk', 'key', 'value', 'operator')
+        fields = ('pk', 'key', 'value', 'operator', 'full_string')
         read_only_fields = ('pk',)
 
     def validate(self, data):

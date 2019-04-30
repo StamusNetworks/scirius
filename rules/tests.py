@@ -985,7 +985,8 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
             'filter_defs': [{
                 'key': 'event_type',
                 'value': 'http',
-                'operator': 'equal'
+                'operator': 'equal',
+                'full_string': True
             }],
             'action': 'suppress',
             'index': 0,
@@ -995,7 +996,8 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
             'filter_defs': [{
                 'key': 'host',
                 'value': 'probe-test',
-                'operator': 'equal'
+                'operator': 'equal',
+                'full_string': True
             }],
             'action': 'suppress',
             'index': 0,
@@ -1065,7 +1067,8 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
         new_filter = {
             'key': 'host',
             'value': 'probe1',
-            'operator': 'equal'
+            'operator': 'equal',
+            'full_string': True
         }
         filters = deepcopy(self.DEFAULT_FILTER['filter_defs'])
         filters.append(new_filter)
@@ -1085,7 +1088,8 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
         f['filter_defs'].append({
             'key': 'host',
             'value': 'probe1',
-            'operator': 'equal'
+            'operator': 'equal',
+            'full_string': True
         })
 
         r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)
@@ -1211,7 +1215,7 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
 
     def test_014_threshold_create(self):
         f = {
-            'filter_defs': [{'key': 'alert.sid', 'value': '1', 'operator': 'equal'}],
+            'filter_defs': [{'key': 'alert.sid', 'value': '1', 'operator': 'equal', 'full_string': True}],
             'action': 'threshold',
             'options': {'type': 'both', 'count': 2, 'seconds': 30, 'track': 'by_src'},
             'rulesets': [self.ruleset.pk]
@@ -1223,7 +1227,7 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
 
     def test_015_threshold_create_invalid(self):
         r = self.http_post(self.list_url, {
-            'filter_defs': [{'key': 'alert.sid', 'value': '1', 'operator': 'equal'}],
+            'filter_defs': [{'key': 'alert.sid', 'value': '1', 'operator': 'equal', 'full_string': True}],
             'action': 'threshold',
             'options': {'count': 2, 'seconds': 30, 'track': 'by_src'},
             'rulesets': [self.ruleset.pk]
@@ -1249,7 +1253,7 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
     def test_018_suri_tag_create_invalid(self):
         self._force_suricata_middleware()
         r = self.http_post(self.list_url, {
-            'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal'}],
+            'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal', 'full_string': True}],
             'action': 'tag',
             'options': {'tag': 'test'},
             'rulesets': [self.ruleset.pk]
@@ -1259,7 +1263,7 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
     def test_019_suri_filter_defs_invalid(self):
         self._force_suricata_middleware()
         r = self.http_post(self.list_url, {
-            'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal'}],
+            'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal', 'full_string': True}],
             'action': 'suppress',
             'rulesets': [self.ruleset.pk]
         }, status=status.HTTP_400_BAD_REQUEST)
@@ -1279,8 +1283,8 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
 
     def test_021_suri_threshold_generate(self):
         self.http_post(self.list_url, {
-            'filter_defs': [{'key': 'dest_ip', 'value': '192.168.0.1', 'operator': 'equal'},
-                {'key': 'alert.signature_id', 'value': '1', 'operator': 'equal'}],
+            'filter_defs': [{'key': 'dest_ip', 'value': '192.168.0.1', 'operator': 'equal', 'full_string': True},
+                {'key': 'alert.signature_id', 'value': '1', 'operator': 'equal', 'full_string': True}],
             'action': 'threshold',
             'options': {'type': 'both', 'track': 'by_dst'},
             'rulesets': [self.ruleset.pk]
@@ -1390,11 +1394,13 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
         f['filter_defs'] = [{
             'key': 'event_type',
             'value': 'dns',
-            'operator': 'different'
+            'operator': 'different',
+            'full_string': True
         }, {
             'key': 'event_type',
             'value': 'http',
-            'operator': 'different'
+            'operator': 'different',
+            'full_string': True
         }]
 
         r = self.http_post(self.list_url, f, status=status.HTTP_201_CREATED)

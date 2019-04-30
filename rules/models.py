@@ -3010,6 +3010,7 @@ class RuleProcessingFilterDef(models.Model):
     value = models.CharField(max_length=512)
     operator = models.CharField(max_length=10, choices=OPERATOR)
     proc_filter = models.ForeignKey(RuleProcessingFilter, related_name='filter_defs')
+    full_string = models.BooleanField(default=True)
 
     class Meta:
         ordering = ('key', 'value')

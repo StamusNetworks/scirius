@@ -89,7 +89,7 @@ export class HuntFilter extends React.Component {
                     const val = parseInt(currentValue, 10);
                     if (val >= 0) {
                         this.setState({ currentValue: '' });
-                        this.filterAdded(currentFilterType, val);
+                        this.filterAdded(currentFilterType, val, true);
                     } else {
                         // Propagate event to trigger validation error
                         return;
@@ -97,11 +97,11 @@ export class HuntFilter extends React.Component {
                 } else if (currentFilterType.valueType === 'ip') {
                     if (IP_REGEXP.test(currentValue)) {
                         this.setState({ currentValue: '' });
-                        this.filterAdded(currentFilterType, currentValue);
+                        this.filterAdded(currentFilterType, currentValue, true);
                     }
                 } else {
                     this.setState({ currentValue: '' });
-                    this.filterAdded(currentFilterType, currentValue);
+                    this.filterAdded(currentFilterType, currentValue, false);
                 }
             }
             keyEvent.stopPropagation();
@@ -162,7 +162,7 @@ export class HuntFilter extends React.Component {
         this.toggleSwitch('relevant');
     }
 
-    filterAdded = (field, value) => {
+    filterAdded = (field, value, fullString) => {
         let filterText = '';
         let fieldId = field.id;
 
@@ -204,7 +204,7 @@ export class HuntFilter extends React.Component {
             fvalue = value;
         }
         const activeFilters = [...this.props.ActiveFilters, {
-            label: filterText, id: fieldId, value: fvalue, negated: false, query: field.queryType
+            label: filterText, id: fieldId, value: fvalue, negated: false, query: field.queryType, fullString
         }];
         this.props.UpdateFilter(activeFilters);
     };
@@ -234,7 +234,7 @@ export class HuntFilter extends React.Component {
         if (filterValue !== currentValue) {
             this.setState({ currentValue: filterValue });
             if (filterValue) {
-                this.filterAdded(currentFilterType, filterValue);
+                this.filterAdded(currentFilterType, filterValue, true);
             }
         }
     }
@@ -263,7 +263,7 @@ export class HuntFilter extends React.Component {
                     filterCategory,
                     filterValue: value
                 };
-                this.filterAdded(currentFilterType, filterValue);
+                this.filterAdded(currentFilterType, filterValue, true);
             }
         }
     }
@@ -283,6 +283,9 @@ export class HuntFilter extends React.Component {
                     break;
                 }
             }
+        } else if (['msg', 'not_in_msg', 'search'].indexOf(this.state.currentFilterType.id) === -1 && event.target.value.indexOf(' ') !== -1) {
+            // No space allowed to avoid breaking ES queries
+            error = true;
         }
         if (!error) this.setState({ currentValue: event.target ? event.target.value : event /* used by Select component */ });
     }

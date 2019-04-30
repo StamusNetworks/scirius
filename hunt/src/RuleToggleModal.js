@@ -148,7 +148,10 @@ export default class RuleToggleModal extends React.Component {
             const filters = [];
             for (let j = 0; j < this.state.supported_filters.length; j += 1) {
                 if (this.state.supported_filters[j].isChecked) {
-                    filters.push(this.state.supported_filters[j]);
+                    filters.push({
+                        ...this.state.supported_filters[j],
+                        full_string: this.state.supported_filters[j].fullString
+                    });
                 }
             }
             const data = {

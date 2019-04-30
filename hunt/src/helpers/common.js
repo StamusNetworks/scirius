@@ -97,7 +97,7 @@ export function addFilter(field, value, negated) {
         filterText += ': ';
         filterText += value;
         const activeFilters = [...this.props.filters, {
-            label: filterText, id: field, value, negated
+            label: filterText, id: field, value, negated, fullString: true
         }];
         this.UpdateFilter(activeFilters);
     } else {
