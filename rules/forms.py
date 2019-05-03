@@ -39,16 +39,18 @@ class CommentForm(forms.Form):
         self.fields['comment'] = comment
 
 class RulesetChoiceForm(CommentForm):
-    rulesets_label = "Set transformation to the following ruleset(s)"
     rulesets = forms.ModelMultipleChoiceField(None,
                         widget=forms.CheckboxSelectMultiple(),
-                        label = rulesets_label,
                         required=True)
 
     def __init__(self, *args, **kwargs):
         super(RulesetChoiceForm, self).__init__(*args, **kwargs)
         ruleset_list =  Ruleset.objects.all()
         self.fields['rulesets'].queryset = ruleset_list
+
+        if hasattr(self, 'rulesets_label'):
+            self.fields['rulesets'].label = self.rulesets_label
+
         if not len(ruleset_list):
             if not (isinstance(self, AddSourceForm) or isinstance(self, AddPublicSourceForm)):
                 self.errors[NON_FIELD_ERRORS] = ['Please create a ruleset first']
