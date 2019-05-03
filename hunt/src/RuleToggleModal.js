@@ -78,14 +78,18 @@ export default class RuleToggleModal extends React.Component {
                 let notfound = true;
                 for (let i = 0; i < this.props.filters.length; i += 1) {
                     if (res.data.fields.indexOf(this.props.filters[i].id) !== -1) {
+                        const filter = JSON.parse(JSON.stringify(this.props.filters[i]))
+
                         if (this.props.filters[i].negated === false) {
-                            this.props.filters[i].operator = 'equal';
+                            filter.operator = 'equal';
                         } else if (res.data.operators.indexOf('different') !== -1) {
-                            this.props.filters[i].operator = 'different';
+                            filter.operator = 'different';
                         }
-                        this.props.filters[i].isChecked = true;
-                        this.props.filters[i].key = this.props.filters[i].id;
-                        suppFilters.push(this.props.filters[i]);
+
+                        filter.isChecked = true;
+                        filter.key = filter.id;
+                        filter.id = `filter${i}`;
+                        suppFilters.push(filter);
                         notfound = false;
                     }
                 }
@@ -187,13 +191,9 @@ export default class RuleToggleModal extends React.Component {
         this.setState({ comment: event.target.value });
     }
 
-    handleFieldChange(event) {
+    handleFieldChange(event, i) {
         const sfilters = Object.assign([], this.state.supported_filters);
-        for (let filter = 0; filter < sfilters.length; filter += 1) {
-            if (sfilters[filter].id === event.target.id) {
-                sfilters[filter].value = event.target.value;
-            }
-        }
+        sfilters[i].value = event.target.value;
         this.setState({ supported_filters: sfilters });
     }
 
@@ -203,14 +203,9 @@ export default class RuleToggleModal extends React.Component {
         this.setState({ options });
     }
 
-    toggleFilter(event, item) {
+    toggleFilter(i) {
         const sfilters = Object.assign([], this.state.supported_filters);
-        for (let j = 0; j < sfilters.length; j += 1) {
-            if (sfilters[j].id === item.id && sfilters[j].value === item.value) {
-                sfilters[j].isChecked = !item.isChecked;
-                break;
-            }
-        }
+        sfilters[i].isChecked = !sfilters[i].isChecked;
         this.setState({ supported_filters: sfilters });
     }
 
@@ -232,20 +227,17 @@ export default class RuleToggleModal extends React.Component {
                 <Modal.Body>
                     <HuntRestError errors={this.state.errors} />
                     {!this.state.noaction && <Form horizontal>
-                        {this.state.supported_filters && this.state.supported_filters.map((item) => (
-                            <FormGroup key={`${item.id}/${item.value}`} controlId={`${item.id}/${item.value}`} disabled={false}>
+                        {this.state.supported_filters && this.state.supported_filters.map((item, i) => (
+                            <FormGroup key={item.id} controlId={item.id}>
                                 <Col sm={4}>
                                     <Checkbox
-                                        disabled={false}
                                         defaultChecked
-                                        onChange={(e) => {
-                                            this.toggleFilter(e, item);
-                                        }}
-                                    ><strong>{item.negated && 'Not '}{item.id}</strong>
+                                        onChange={() => this.toggleFilter(i)}
+                                    ><strong>{item.negated && 'Not '}{item.key}</strong>
                                     </Checkbox>
                                 </Col>
                                 <Col sm={8}>
-                                    <FormControl type={item.id} disabled={!item.isChecked} defaultValue={item.value} onChange={this.handleFieldChange} onKeyPress={(e) => this.onFieldKeyPress(e)} />
+                                    <FormControl type={item.id} disabled={!item.isChecked} defaultValue={item.value} onChange={(e) => this.handleFieldChange(e, i)} onKeyPress={(e) => this.onFieldKeyPress(e)} />
                                 </Col>
                             </FormGroup>
                         ))}
