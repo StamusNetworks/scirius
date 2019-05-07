@@ -324,3 +324,31 @@ span.badge.badge-primary {
 g.tick[transform^='translate(-']{
   display: none;
 }
+
+button.dashboard-list-item.list-group-item {
+  background: #FFF;
+  outline: none;
+  cursor: default;
+}
+button.dashboard-list-item.list-group-item.copy-mode:hover {
+  background: #e4e4e4;
+  cursor: pointer;
+}
+button.dashboard-list-item.list-group-item.copy-mode:active {
+  background: #e8dae1;
+}
+button.dashboard-list-item.list-group-item.copied:hover::before {
+  background: #FFF;
+}
+button.dashboard-list-item.list-group-item.copy-mode.copied:hover::before {
+  background: #e4e4e4;
+}
+button.dashboard-list-item.list-group-item.copied::before {
+  content: 'Copied!';
+  position: absolute;
+  right: 35px;
+  background: #FFF;
+  color: #7b1144;
+  font-weight: bold;
+  padding: 0 0 0 20px;
+}
