@@ -46,7 +46,7 @@ export function buildQFilter(filters, systemSettings) {
             } else if (filters[i].id === 'not_in_msg') {
                 qfilter.push(`${fPrefix}NOT alert.signature:"${filters[i].value}"`);
             } else if (typeof filters[i].value === 'string') {
-                const value = filters[i].value.replace(/\\/g, '\\\\\\\\');
+                const value = filters[i].value.replace(/\\/g, '\\\\');
                 qfilter.push(`${fPrefix}${filters[i].id}${fSuffix}:"${encodeURIComponent(value)}"`);
             } else {
                 qfilter.push(`${fPrefix}${filters[i].id}:${filters[i].value}`);

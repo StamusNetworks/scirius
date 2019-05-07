@@ -1445,7 +1445,8 @@ def render_template(tmpl, dictionary, qfilter = None):
     context = Context(dictionary)
     if qfilter != None:
         query_filter = " AND " + qfilter
-        context['query_filter'] = re.sub('"','\\"', query_filter)
+        # dump as json but remove quotes since the quotes are already set in templates
+        context['query_filter'] = json.dumps(query_filter)[1:-1]
     context['keyword'] = settings.ELASTICSEARCH_KEYWORD
     context['hostname'] = settings.ELASTICSEARCH_HOSTNAME
     return bytearray(templ.render(context), encoding="utf-8")
