@@ -55,6 +55,9 @@ export default class UserNavInfo extends Component {
         this.showUpdateThreatDetection = this.showUpdateThreatDetection.bind(this);
         this.closeShowUpdate = this.closeShowUpdate.bind(this);
         this.submitUpdate = this.submitUpdate.bind(this);
+
+        this.toggleHuntFilterSetsModal = this.toggleHuntFilterSetsModal.bind(this);
+        this.closeHuntFilterSetsModal = this.closeHuntFilterSetsModal.bind(this);
     }
 
     componentDidMount() {
@@ -86,7 +89,9 @@ export default class UserNavInfo extends Component {
     }
 
     isShownFalse() {
-        this.setState({ isShown: false });
+        if (this.state.isShown) {
+            this.setState({ isShown: false });
+        }
     }
 
     toggleHunt() {
@@ -126,6 +131,18 @@ export default class UserNavInfo extends Component {
         this.setState({ showUpdateModal: false });
     }
 
+    closeHuntFilterSetsModal() {
+        if (this.state.showNotifications) {
+            this.setState({ showNotifications: false });
+        }
+    }
+
+    toggleHuntFilterSetsModal() {
+        this.setState((prevState) => ({
+            showNotifications: !prevState.showNotifications
+        }));
+    }
+
     render() {
         let user = ' ...';
         if (this.state.user !== undefined) {
@@ -135,7 +152,6 @@ export default class UserNavInfo extends Component {
 
         return (
             <React.Fragment>
-
                 <li>
                     <div tabIndex={0} data-toggle="tooltip" title="Update threat detection" onClick={this.showUpdateThreatDetection} role="button" className="nav-item-iconic">
                         <Icon type="fa" name="upload" />
@@ -146,6 +162,13 @@ export default class UserNavInfo extends Component {
                     <div tabIndex={0} data-toggle="tooltip" title="History" onClick={() => this.props.switchPage(PAGE_STATE.history, undefined)} role="button" className="nav-item-iconic" style={{ paddingTop: '23px' }}>
                         <i className="glyphicon glyphicon-list" aria-hidden="true" />
                         <span> History</span>
+                    </div>
+                </li>
+
+                <li>
+                    <div tabIndex={0} data-toggle="tooltip" title="Filter Sets" onClick={(e) => { e.preventDefault(); this.toggleHuntFilterSetsModal() }} role="button" className="nav-item-iconic" style={{ paddingTop: '23px', cursor: 'pointer' }}>
+                        <i className="glyphicon glyphicon-filter" aria-hidden="true" />
+                        <span> Filter Sets</span>
                     </div>
                 </li>
 
@@ -175,7 +198,13 @@ export default class UserNavInfo extends Component {
                     </Dropdown.Menu>
                 </Dropdown>
 
-                {this.state.showNotifications && <ErrorHandler><HuntNotificationArea /></ErrorHandler>}
+                {this.state.showNotifications && <ErrorHandler><HuntNotificationArea
+                    switchPage={this.props.switchPage}
+                    updateAlertsPageFilters={this.props.updateAlertsPageFilters}
+                    close={this.closeHuntFilterSetsModal}
+                    reload={this.props.needReload}
+                /></ErrorHandler>}
+
                 <ErrorHandler>
                     <OutsideAlerter hide={this.isShownFalse}>
                         <ApplicationLauncher grid open={this.state.isShown} toggleLauncher={this.toggleiSshown}>
@@ -296,4 +325,5 @@ UserNavInfo.propTypes = {
     period: PropTypes.any,
     switchPage: PropTypes.any,
     ChangeDuration: PropTypes.any,
+    updateAlertsPageFilters: PropTypes.any
 };

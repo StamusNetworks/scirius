@@ -354,6 +354,7 @@ export default class App extends Component {
                                     period={this.state.duration}
                                     switchPage={this.switchPage}
                                     needReload={this.needReload}
+                                    updateAlertsPageFilters={this.updateIDSFilterState}
                                 />
                             </ErrorHandler>
                         </VerticalNav.IconBar>

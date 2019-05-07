@@ -247,6 +247,41 @@ def validate_url(val):
     validate_hostname(netloc)
 
 
+class FilterSet(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    content = models.TextField()
+    name = models.CharField(max_length=150)
+    page = models.CharField(max_length=25)
+
+    @staticmethod
+    def get_default_filter_sets():
+        return [
+            {
+                'content': [
+                    {
+                        'negated': False,
+                        'fullString': True,
+                        'label': 'Hits min: 1',
+                        'id': 'hits_min',
+                        'value': 1,
+                        'query': 'rest'
+                    },
+                    {
+                        'negated': False,
+                        'fullString': True,
+                        'label': 'Hits max: 10',
+                        'id': 'hits_max',
+                        'value': 10,
+                        'query': 'rest'
+                    }
+                ],
+                'name': 'Low noise signatures',
+                'page': 'RULES_LIST',
+                'share': 'static'
+            }
+        ]
+
+
 class UserAction(models.Model):
     ACTIONS = OrderedDict([
                # Login/Logout

@@ -370,6 +370,7 @@ export default class SignaturesPage extends React.Component {
                         displayToggle={this.state.display_toggle}
                         actionsButtons={this.actionsButtons}
                         queryType={['filter', 'rest']}
+                        page={this.props.page}
                     />
                 </ErrorHandler>
 
@@ -419,4 +420,5 @@ SignaturesPage.propTypes = {
     filters: PropTypes.any,
     updateListState: PropTypes.any, // should be removed when redux is implemented
     rules_list: PropTypes.any, // should be removed when redux is implemented
+    page: PropTypes.any
 }

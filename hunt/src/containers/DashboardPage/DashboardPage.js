@@ -614,6 +614,7 @@ export default class HuntDashboard extends React.Component {
                         displayToggle={undefined}
                         actionsButtons={this.actionsButtons}
                         queryType={['filter']}
+                        page={this.props.page}
                     />
                 </ErrorHandler>
 
@@ -721,4 +722,5 @@ HuntDashboard.propTypes = {
     item: PropTypes.any,
     rules_list: PropTypes.any,
     updateListState: PropTypes.any,
+    page: PropTypes.any
 }

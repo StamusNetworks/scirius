@@ -24,6 +24,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
+from django.http import HttpRequest
 from rest_framework import status, mixins
 from rest_framework.test import APITestCase
 
@@ -1426,7 +1427,12 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
         # Ordering must be set to prevent:
         # /usr/share/python/scirius-pro/local/lib/python2.7/site-packages/rest_framework/pagination.py:208: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'rules.models.RuleTransformation'> QuerySet
         for url, viewset, view_name in self.router.registry:
-            if viewset().get_queryset().ordered or not issubclass(viewset, mixins.ListModelMixin):
+            # Need to instanciate request and user because of FilterSetViewSet::get_queryset override that uses self.request.user
+            v = viewset()
+            v.request = HttpRequest()
+            v.request.user = None
+
+            if v.get_queryset().ordered or not issubclass(viewset, mixins.ListModelMixin):
                 continue
             ERR = 'Viewset "%s" must set an "ordering" attribute or have an ordered queryset' % viewset.__name__
             self.assertTrue(hasattr(viewset, 'ordering'), ERR)

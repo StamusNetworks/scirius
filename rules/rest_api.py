@@ -8,6 +8,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.db import models
 from collections import OrderedDict
+import json
 
 from django.core.exceptions import SuspiciousOperation, ValidationError
 
@@ -24,13 +25,16 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.mixins import UpdateModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rules.rest_permissions import IsOwnerOrReadOnly
 
 from django_filters import rest_framework as filters
 from django_filters import fields as filters_fields
 from elasticsearch.exceptions import ConnectionError
+from django.contrib.auth.models import User
 
 from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, \
-        Source, SourceAtVersion, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
+        Source, SourceAtVersion, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings, \
+        FilterSet
 from rules.views import get_public_sources, fetch_public_sources, extract_rule_references
 from rules.rest_processing import RuleProcessingFilterViewSet
 from rules.es_data import ESData
@@ -2715,6 +2719,83 @@ class SciriusContextAPIView(APIView):
         return Response(context)
 
 
+class FilterSetSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FilterSet
+        fields = '__all__'
+
+    def to_internal_value(self, data):
+        try:
+            data['content'] = json.dumps(data['content'])
+        except ValueError:
+            raise serializers.ValidationError({'content': 'Not a JSON format.'})
+
+        if not data['share']:
+            data['user'] = self.context['request'].user.pk
+
+        return super(FilterSetSerializer, self).to_internal_value(data)
+
+    def to_representation(self, instance):
+        data = super(FilterSetSerializer, self).to_representation(instance)
+        data['content'] = json.loads(data['content'])
+        data['share'] = 'global' if data['user'] is None else 'private'
+        data.pop('user')
+        return data
+
+
+class FilterSetViewSet(viewsets.ModelViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Get :\n
+    Show all filter sets (even static ones that have no pk):\n
+        curl -k https://x.x.x.x/rest/rules/hunt_filter_sets/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        [{"id":1,"content":[{"id":"alert.tag","value":{"untagged":true,"relevant":true,"informational":true}},{"negated":false,"query":"rest","id":"hits_min","value":1,"label":"Hits min: 1"},
+        {"negated":false,"query":"rest","id":"hits_max","value":10,"label":"Hits max: 10"},
+        {"value":2002025,"label":"alert.signature_id: 2002025","isChecked":true,"key":"alert.signature_id","negated":false,"query":"filter","id":"alert.signature_id"}],
+        "name":"aze","page":"RULES_LIST","share":"global"}]
+
+    ==== DELETE ====\n
+    Delete filter set (cannot delete static ones that have no pk):\n
+        curl -k https://x.x.x.x/rest/rules/hunt_filter_sets/<pk>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X DELETE
+
+    Return:\n
+        HTTP/1.1 204 No Content
+
+    =============================================================================================================================================================
+    """
+    permission_classes = (IsOwnerOrReadOnly, )
+    serializer_class = FilterSetSerializer
+    ordering = ('name',)
+
+    def get_queryset(self):
+        user = self.request.user
+        Q = models.Q
+        return FilterSet.objects.filter(Q(user=user) | Q(user=None))
+
+    def list(self, request):
+        from scirius.utils import get_middleware_module
+        filters = get_middleware_module('common').get_default_filter_sets()
+
+        queryset = self.get_queryset()
+        serializer = FilterSetSerializer(queryset, many=True)
+        return Response(serializer.data + filters)
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+
+        serializer = FilterSetSerializer(data=data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
 class HuntFilterAPIView(APIView):
     """
     =============================================================================================================================================================
@@ -2794,3 +2875,4 @@ router.register('rules/history', UserActionViewSet)
 router.register('rules/changelog/source', ChangelogViewSet)
 router.register('rules/system_settings', SystemSettingsViewSet)
 router.register('rules/processing-filter', RuleProcessingFilterViewSet)
+router.register('rules/hunt_filter_sets', FilterSetViewSet, base_name='hunt_filter_sets')

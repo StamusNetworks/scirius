@@ -79,7 +79,7 @@ export default class ActionsPage extends HuntList {
                 <Spinner loading={this.state.loading}></Spinner>
                 <ListView>
                     {this.state.data && this.state.data.map((item) => (
-                        <FilterItem key={item.pk} data={item} switchPage={this.props.switchPage} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} from_date={this.props.from_date} />
+                        <FilterItem key={item.pk} data={item} updateIDSFilterState={this.props.updateIDSFilterState} switchPage={this.props.switchPage} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} from_date={this.props.from_date} />
                     ))}
                 </ListView>
                 <ErrorHandler>
@@ -105,5 +105,5 @@ export default class ActionsPage extends HuntList {
 }
 ActionsPage.propTypes = {
     config: PropTypes.any,
-    filters: PropTypes.any,
+    filters: PropTypes.any
 };
