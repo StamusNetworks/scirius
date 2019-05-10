@@ -259,6 +259,15 @@ span.eventValue {
 .drag-and-drop-container {
   overflow: hidden;
 }
+span.label {
+  padding-left: 7px;
+}
+span.badge.badge-primary {
+  margin-left: -6px;
+  margin-right: 3px;
+  margin-bottom: 2px;
+  line-height: 12px;
+}
 /* patternfly override fixes */
 @media (min-width: 992px) {
   .list-view-pf .list-group-item-heading {
