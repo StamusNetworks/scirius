@@ -29,6 +29,7 @@ import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
 import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
 import { HuntSort } from './Sort';
+import FilterList from './components/FilterList/index';
 import FilterSetSave from './components/FilterSetSaveModal';
 
 // https://www.regextester.com/104038
@@ -293,10 +294,9 @@ export class HuntFilter extends React.Component {
         if (!error) this.setState({ currentValue: event.target ? event.target.value : event /* used by Select component */ });
     }
 
-    removeFilter = (filter) => {
+    removeFilter = (index) => {
         const activeFilters = this.props.ActiveFilters;
 
-        const index = activeFilters.indexOf(filter);
         if (index > -1) {
             const updated = [
                 ...activeFilters.slice(0, index),
@@ -732,19 +732,7 @@ export class HuntFilter extends React.Component {
                     {activeFilters && activeFilters.length > 0 && (
                         <Toolbar.Results>
                             <Filter.ActiveLabel>{'Active Filters:'}</Filter.ActiveLabel>
-                            <Filter.List>
-                                {activeFilters.map((item, index) => (
-                                    <Filter.Item
-                                        // eslint-disable-next-line react/no-array-index-key
-                                        key={index}
-                                        onRemove={this.removeFilter}
-                                        filterData={item}
-                                    >
-                                        {item.negated && <span className="badge badge-primary">Not</span>}
-                                        {item.label}
-                                    </Filter.Item>
-                                ))}
-                            </Filter.List>
+                            <FilterList onRemove={this.removeFilter} filters={activeFilters} updateFilter={this.props.UpdateFilter} />
                             <a
                                 data-toggle="tooltip"
                                 data-placement="top"
