@@ -2,6 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Icon, Spinner } from 'patternfly-react';
+import RuleEditKebab from './components/RuleEditKebab';
 import SciriusChart from './components/SciriusChart';
 import ErrorHandler from './components/Error';
 
@@ -16,11 +17,14 @@ const RuleCard = (props) => {
     if (!props.data.created) {
         [imported] = props.data.imported_date.split('T');
     }
+
+    const kebabConfig = { rule: props.data };
     return (
         <div className="col-xs-6 col-sm-4 col-md-4">
             <div className="card-pf rule-card">
                 <div className="card-pf-heading">
                     <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={props.data.msg}>{props.data.msg}</h2>
+                    <RuleEditKebab key={`kebab-${props.data.sid}`} config={kebabConfig} rulesets={props.rulesets} />
                 </div>
                 <div className="card-pf-body">
                     <div className="container-fluid">
@@ -74,6 +78,7 @@ RuleCard.propTypes = {
     sources: PropTypes.any,
     from_date: PropTypes.any,
     switchPage: PropTypes.any,
+    rulesets: PropTypes.any,
 };
 
 export default RuleCard;
