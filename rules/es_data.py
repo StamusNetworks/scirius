@@ -32,7 +32,7 @@ from time import strftime, sleep
 import urllib2
 
 from django.conf import settings
-from elasticsearch import Elasticsearch, ConnectionError
+from elasticsearch import Elasticsearch, ConnectionError, NotFoundError
 
 from rules.models import get_es_address
 from rules.es_graphs import get_es_major_version
@@ -455,7 +455,7 @@ class ESData(object):
                     body = {
                         'query': {
                             'query_string': {
-                                'query': 'type: %s AND NOT title: SN *' % _type
+                                'query': 'type: %s AND NOT %s.title: SN' % (_type, _type)
                             }
                         }
                     }
@@ -489,6 +489,12 @@ class ESData(object):
             doc_type = _type
         else:
             doc_type = 'doc'
+
+        try:
+            # Delete the document first, to prevent an error when it's already there
+            self.client.delete(index='.kibana', doc_type=doc_type, id=name, refresh=True)
+        except NotFoundError:
+            pass
         self.client.create(index='.kibana', doc_type=doc_type, id=name, body=content, refresh=True)
 
     def _kibana_set_default_index(self, idx):
@@ -565,16 +571,20 @@ class ESData(object):
         return count
 
     def kibana_clear(self):
-        body = {
-            'query': {
-                'query_string': {
-                    'query': 'NOT title: SN *'
-                }
-            }
-        }
-
         _types = ('search', 'visualization', 'dashboard')
         for _type in _types:
+            if get_es_major_version() >= 6:
+                query = 'NOT %s.title: SN' % _type
+            else:
+                query = 'NOT title: SN'
+
+            body = {
+                'query': {
+                    'query_string': {
+                        'query': query
+                    }
+                }
+            }
             self._kibana_remove(_type, body)
 
     def kibana_reset(self):
