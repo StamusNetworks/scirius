@@ -131,9 +131,17 @@ span.eventValue {
     /* border-color: $color-pf-orange-400; */
 }
 
+.list-view-pf-left .fa.list-view-pf-icon-sm.relevant {
+    color: $color-pf-orange-400;
+}
+
 .list-view-pf-left .pficon.list-view-pf-icon-sm.informational {
     color: #675d5c;
     /* border-color: #675d5c; */
+}
+
+.list-view-pf-left .fa.list-view-pf-icon-sm.informational {
+    color: #675d5c;
 }
 
 .list-view-pf-left .pficon.list-view-pf-icon-sm.primary {
