@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseServerError
 from django.db import IntegrityError
 from django.conf import settings
 from elasticsearch.exceptions import ConnectionError
@@ -186,63 +186,66 @@ def elasticsearch(request):
     context = {'es2x': get_es_major_version() >= 2}
 
     if request.GET.__contains__('query'):
-        query = request.GET.get('query', 'dashboards')
-        if query == 'dashboards':
-            data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
-        elif query == 'rules':
-            host = request.GET.get('host', None)
-            from_date = request.GET.get('from_date', None)
-            qfilter = request.GET.get('filter', None)
-            if host != None and from_date != None:
-                rules = es_get_rules_stats(request, host, from_date = from_date, qfilter = qfilter)
-                if rules == None:
-                    return HttpResponse(json.dumps(rules), content_type="application/json")
-                context['table'] = rules
-                return scirius_render(request, 'rules/table.html', context)
-        elif query == 'rule':
-            sid = request.GET.get('sid', None)
-            from_date = request.GET.get('from_date', None)
-            if from_date != None and sid != None:
-                hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
-                context['table'] = hosts
-                return scirius_render(request, 'rules/table.html', context)
-        elif query in RULE_FIELDS_MAPPING.keys():
-            ajax = request.GET.get('json', None)
-            if ajax:
-                raise ESError('Use REST API instead.')
+        try:
+            query = request.GET.get('query', 'dashboards')
+            if query == 'dashboards':
+                data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
+            elif query == 'rules':
+                host = request.GET.get('host', None)
+                from_date = request.GET.get('from_date', None)
+                qfilter = request.GET.get('filter', None)
+                if host != None and from_date != None:
+                    rules = es_get_rules_stats(request, host, from_date = from_date, qfilter = qfilter)
+                    if rules == None:
+                        return HttpResponse(json.dumps(rules), content_type="application/json")
+                    context['table'] = rules
+                    return scirius_render(request, 'rules/table.html', context)
+            elif query == 'rule':
+                sid = request.GET.get('sid', None)
+                from_date = request.GET.get('from_date', None)
+                if from_date != None and sid != None:
+                    hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
+                    context['table'] = hosts
+                    return scirius_render(request, 'rules/table.html', context)
+            elif query in RULE_FIELDS_MAPPING.keys():
+                ajax = request.GET.get('json', None)
+                if ajax:
+                    raise ESError('Use REST API instead.')
 
-            if query == 'field_stats':
-                filter_ip = request.GET.get('field', 'src_ip')
-            else:
-                filter_ip = RULE_FIELDS_MAPPING[query]
-
-            sid = request.GET.get('sid', None)
-            from_date = request.GET.get('from_date', None)
-            qfilter = request.GET.get('qfilter', None)
-            count = request.GET.get('page_size', 10)
-
-            if sid is not None:
-                if qfilter is not None:
-                    qfilter = 'alert.signature_id:%s AND %s' % (sid, qfilter)
+                if query == 'field_stats':
+                    filter_ip = request.GET.get('field', 'src_ip')
                 else:
-                    qfilter = 'alert.signature_id:%s' % sid
+                    filter_ip = RULE_FIELDS_MAPPING[query]
 
-            if from_date is not None:
-                hosts = es_get_field_stats_as_table(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
-                                                    RuleHostTable, '*',
-                                                    from_date=from_date,
-                                                    count=count,
-                                                    qfilter=qfilter)
-                context['table'] = hosts
-                return scirius_render(request, 'rules/table.html', context)
-        elif query == 'indices':
-            if request.is_ajax():
-                indices = ESIndexessTable(es_get_indices())
-                tables.RequestConfig(request).configure(indices)
-                context['table'] = indices
-                return scirius_render(request, 'rules/table.html', context)
-            else:
-                return scirius_render(request, 'rules/elasticsearch.html', context)
+                sid = request.GET.get('sid', None)
+                from_date = request.GET.get('from_date', None)
+                qfilter = request.GET.get('qfilter', None)
+                count = request.GET.get('page_size', 10)
+
+                if sid is not None:
+                    if qfilter is not None:
+                        qfilter = 'alert.signature_id:%s AND %s' % (sid, qfilter)
+                    else:
+                        qfilter = 'alert.signature_id:%s' % sid
+
+                if from_date is not None:
+                    hosts = es_get_field_stats_as_table(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
+                                                        RuleHostTable, '*',
+                                                        from_date=from_date,
+                                                        count=count,
+                                                        qfilter=qfilter)
+                    context['table'] = hosts
+                    return scirius_render(request, 'rules/table.html', context)
+            elif query == 'indices':
+                if request.is_ajax():
+                    indices = ESIndexessTable(es_get_indices())
+                    tables.RequestConfig(request).configure(indices)
+                    context['table'] = indices
+                    return scirius_render(request, 'rules/table.html', context)
+                else:
+                    return scirius_render(request, 'rules/elasticsearch.html', context)
+        except ESError as e:
+            return HttpResponseServerError(e.message)
     else:
         if request.is_ajax():
             data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
