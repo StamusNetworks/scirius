@@ -215,7 +215,7 @@ export default class UserNavInfo extends Component {
                         <Icon type="pf" name="help" />
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                        <MenuItem href="/static/doc/hunt.html" target="_blank"><span className="glyphicon glyphicon-book" /> Help</MenuItem>
+                        <MenuItem href={config.HUNT_DOC} target="_blank"><span className="glyphicon glyphicon-book" /> Help</MenuItem>
                         <MenuItem onClick={this.AboutClick}><span className="glyphicon glyphicon-question-sign" /> About</MenuItem>
                     </Dropdown.Menu>
                 </Dropdown>
