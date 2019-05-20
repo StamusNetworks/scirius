@@ -295,13 +295,23 @@ export default class RuleToggleModal extends React.Component {
                                 </FormControl>
                             </Col>
                         </FormGroup>}
-                        {this.props.action === 'send_mail' && <FormGroup key="send_mail" controlId="send_mail" disabled={false}>
-                            <Col sm={3}>
-                                <Checkbox disabled defaultChecked>
-                                    Send email
-                                </Checkbox>
-                            </Col>
-                        </FormGroup>}
+                        {this.props.action === 'send_mail' && <React.Fragment>
+                            <FormGroup key="send_mail" controlId="send_mail" disabled={false}>
+                                <Col sm={3}>
+                                    <Checkbox disabled defaultChecked>
+                                        Send email
+                                    </Checkbox>
+                                </Col>
+                            </FormGroup>
+                            <FormGroup key="max_mails_per_day" controlId="max_mails_per_day" disabled={false}>
+                                <Col sm={4}>
+                                    Maximum number of mail sent per day
+                                </Col>
+                                <Col sm={8}>
+                                    <FormControl type="integer" disabled={false} defaultValue={5} onChange={this.handleOptionsChange} />
+                                </Col>
+                            </FormGroup>
+                        </React.Fragment>}
                         {this.props.action === 'suppress' && <FormGroup key="suppress" controlId="suppress" disabled={false}>
                             <Col sm={3}>
                                 <Checkbox disabled defaultChecked>
@@ -316,7 +326,8 @@ export default class RuleToggleModal extends React.Component {
                                     <div className="row" key={ruleset.pk}>
                                         <div className="col-sm-9">
                                             <label htmlFor={ruleset.pk}><input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange} />{ruleset.name}</label>
-                                            {ruleset.warnings && <div>{ruleset.warnings}</div>}
+                                            {ruleset.warnings && <div style={{ marginLeft: '5%' }}>• {ruleset.warnings}</div>} {/* ignore_utf8_check 8226 */}
+                                            {ruleset[`warnings_${this.props.action}`] && <div style={{ marginLeft: '5%' }}>• {ruleset[`warnings_${this.props.action}`]}</div>} {/* ignore_utf8_check 8226 */}
                                         </div>
                                     </div>
                                 ))}

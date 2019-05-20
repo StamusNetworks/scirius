@@ -75,10 +75,15 @@ class TagOptionsSerializer(serializers.Serializer):
     tag = serializers.CharField(max_length=512)
 
 
+class SendMailOptionsSerializer(serializers.Serializer):
+    max_mails_per_day = serializers.IntegerField(default=5, min_value=0)
+
+
 ACTION_OPTIONS_SERIALIZER = {
     'threshold': ThresholdOptionsSerializer,
     'tag': TagOptionsSerializer,
     'tagkeep': TagOptionsSerializer,
+    'send_mail': SendMailOptionsSerializer,
 }
 
 
