@@ -273,7 +273,56 @@ def get_sid_by_host_query():
         }
             """
 
-def get_timeline_quey():
+
+def get_timeline_by_tags_query():
+    return """
+    {
+      "size": 0,
+      "query": {
+        "bool": {
+          "must": [ {
+            "query_string": {
+              "query": "event_type:alert {{ query_filter|safe }}",
+              "analyze_wildcard": false
+            }
+          },
+          {
+            "range": {
+              "@timestamp": {
+                "gte": {{ from_date }},
+                "lte": "now",
+                "format": "epoch_millis"
+              }
+            }
+          }]
+        }
+      },
+      "aggs": {
+        "date": {
+          "date_histogram": {
+            "field": "@timestamp",
+            "interval": "{{ interval }}",
+            "min_doc_count": 0
+          },
+          "aggs": {
+            "host": {
+              "terms": {
+                "field": "alert.tag.{{ keyword }}",
+                "missing": "untagged",
+                "size": 5,
+                "order": {
+                  "_count": "desc"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+        """
+
+
+def get_timeline_query():
     if get_es_major_version() < 2:
         return """
         {
@@ -1616,11 +1665,16 @@ def es_get_dashboard(count=20):
         return dashboards
     return None
 
-def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None):
+def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None, tags=False):
     # 100 points on graph per default
     if interval == None:
         interval = int((time() - (int(from_date) / 1000)) / 100)
-    data = render_template(get_timeline_quey(), {'from_date': from_date, 'interval': unicode(interval) + "s", 'hosts': hosts}, qfilter = qfilter)
+
+    if not tags:
+        func = get_timeline_query()
+    else:
+        func = get_timeline_by_tags_query()
+    data = render_template(func, {'from_date': from_date, 'interval': unicode(interval) + "s", 'hosts': hosts}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)

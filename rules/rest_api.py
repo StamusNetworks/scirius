@@ -2187,12 +2187,13 @@ class ESTimelineViewSet(ESBaseViewSet):
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
+        tags = False if request.GET.get('target', 'false') == 'false' else True
 
         if chosts:
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(es_get_timeline(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(es_get_timeline(from_date=from_date, hosts=chosts, qfilter=qfilter, tags=tags))
 
 
 class ESLogstashEveViewSet(ESBaseViewSet):
