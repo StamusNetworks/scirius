@@ -674,7 +674,7 @@ export class HuntFilter extends React.Component {
                             UpdateSort={this.props.UpdateSort}
                             disabled={this.props.disable_sort ? this.props.disable_sort : false}
                         />}
-                        {this.state.gotAlertTag && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && <div className="form-group">
+                        {this.state.gotAlertTag && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && <div className="form-group" style={{ paddingTop: '3px', height: '25px' }}>
                             <ul className="list-inline">
                                 <li><Switch bsSize="small"
                                     onColor="info"
@@ -699,6 +699,13 @@ export class HuntFilter extends React.Component {
                     </div>
 
                     <Toolbar.RightContent>
+                        {typeof this.props.chartTarget !== 'undefined' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && <div style={{ float: 'left', paddingTop: '3px', height: '25px' }}>
+                            Tags instead of probes <Switch bsSize="small"
+                                onColor="info"
+                                value={this.props.chartTarget}
+                                onChange={this.props.onChangeChartTarget}
+                            />
+                        </div>}
                         {this.props.actionsButtons && this.props.actionsButtons()}
                         {this.props.displayToggle && <Toolbar.ViewSelector>
                             <Button
@@ -791,4 +798,6 @@ HuntFilter.propTypes = {
     displayToggle: PropTypes.any,
     UpdateFilter: PropTypes.any,
     page: PropTypes.any,
+    onChangeChartTarget: PropTypes.func,
+    chartTarget: PropTypes.bool,
 };

@@ -88,6 +88,7 @@ export default class HuntDashboard extends React.Component {
             moreModal: null,
             moreResults: [],
             editMode: false,
+            chartTarget: false,
         };
         this.actionsButtons = actionsButtons.bind(this);
         this.UpdateFilter = UpdateFilter.bind(this);
@@ -598,6 +599,12 @@ export default class HuntDashboard extends React.Component {
 
     hideMoreModal = () => this.setState({ ...this.state, moreModal: null });
 
+    onChangeChartTarget = (switchElement, chartTarget) => {
+        this.setState({
+            chartTarget
+        });
+    }
+
     render() {
         return (
             <div className="HuntList">
@@ -615,12 +622,14 @@ export default class HuntDashboard extends React.Component {
                         actionsButtons={this.actionsButtons}
                         queryType={['filter', 'filter_host_id']}
                         page={this.props.page}
+                        onChangeChartTarget={this.onChangeChartTarget}
+                        chartTarget={this.state.chartTarget}
                     />
                 </ErrorHandler>
 
                 <div className="row">
                     <div className="col-lg-10 col-md-9 col-sm-12 col-xs-12" style={{ paddingRight: '0px' }}>
-                        <HuntTimeline style={{ marginTop: '15px' }} from_date={this.props.from_date} filters={this.props.filters} systemSettings={this.props.systemSettings} />
+                        <HuntTimeline style={{ marginTop: '15px' }} from_date={this.props.from_date} chartTarget={this.state.chartTarget} filters={this.props.filters} systemSettings={this.props.systemSettings} />
                     </div>
                     <div className="col-lg-2 col-md-3 col-sm-12 col-xs-12" style={{ paddingLeft: '0px' }}>
                         <HuntTrend from_date={this.props.from_date} filters={this.props.filters} />
