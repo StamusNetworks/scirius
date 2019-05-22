@@ -918,7 +918,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         }
 
     def _add_hits(self, request, data):
-        sids = [unicode(rule['sid']) for rule in data]
+        sids = ','.join([unicode(rule['sid']) for rule in data])
 
         ## reformat ES's output
         es_params = es_hits_params(request)

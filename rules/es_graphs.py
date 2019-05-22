@@ -2016,9 +2016,8 @@ def es_get_top_rules(request, hostname, count=20, from_date=0 , order="desc", in
 def es_get_sigs_list_hits(request, sids, host, from_date=0, order="desc", interval=None, qfilter = None):
     if interval == None:
         interval = int((time() - (int(from_date) / 1000)) / 100)
-    sids_list=', '.join(sids)
-    count = len(sids)
-    data = render_template(SIGS_LIST_HITS, {'sids': sids_list, 'interval': interval,'count': count, 'from_date': from_date}, qfilter = qfilter)
+    count = len(sids.split(','))
+    data = render_template(SIGS_LIST_HITS, {'sids': sids, 'interval': interval,'count': count, 'from_date': from_date}, qfilter = qfilter)
     es_url = get_es_url(from_date)
     headers = {'content-type': 'application/json'}
     req = urllib2.Request(es_url, data, headers = headers)
