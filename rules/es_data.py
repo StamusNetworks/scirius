@@ -610,7 +610,7 @@ class ESData(object):
 
         self._kibana_set_default_index('logstash-*')
 
-    def _get_indexes(self):
+    def get_indexes(self):
         res = self.client.indices.stats()
         indexes = res['indices'].keys()
         idxs = list(indexes)
@@ -622,7 +622,7 @@ class ESData(object):
         return indexes
 
     def es_clear(self):
-        indexes = self._get_indexes()
+        indexes = self.get_indexes()
         self.client.indices.delete(index=indexes)
         return len(indexes)
 
