@@ -292,7 +292,9 @@ function get_es_health() {
                 }
                 },
                 error: function(data) {
-                        start_down_check();
+                        // Wait before running the check, to avoid flooding
+                        // when ES is not available
+                        setTimeout(start_down_check, 5000);
                 },
                 timeout: 15000,
         }
