@@ -28,7 +28,7 @@ import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
 
-export default class HuntNotificationArea extends React.Component {
+export default class FilterSets extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -241,7 +241,7 @@ export default class HuntNotificationArea extends React.Component {
     }
 }
 
-HuntNotificationArea.propTypes = {
+FilterSets.propTypes = {
     switchPage: PropTypes.any,
     updateAlertsPageFilters: PropTypes.any,
     close: PropTypes.any,
