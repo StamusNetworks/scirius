@@ -732,64 +732,66 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
                 raise serializers.ValidationError({'filters': ['Wrong filter value "%s" for key "%s".' % (value_str, key_str)]})
 
         res = {}
-        Rule.enable_cache()
+        try:
+            Rule.enable_cache()
 
-        for ruleset in Ruleset.objects.all():
-            trans_rules = RuleTransformation.objects.filter(ruleset=ruleset, **params)
-            trans_cats = CategoryTransformation.objects.filter(ruleset=ruleset, **params)
-            trans_rulesets = RulesetTransformation.objects.filter(ruleset_transformation=ruleset, **params)
+            for ruleset in Ruleset.objects.all():
+                trans_rules = RuleTransformation.objects.filter(ruleset=ruleset, **params)
+                trans_cats = CategoryTransformation.objects.filter(ruleset=ruleset, **params)
+                trans_rulesets = RulesetTransformation.objects.filter(ruleset_transformation=ruleset, **params)
 
-            all_rules = set()
-            key = Transformation.Type(key_str)
-            value = None
+                all_rules = set()
+                key = Transformation.Type(key_str)
+                value = None
 
-            if key == Transformation.ACTION:
-                value = Transformation.ActionTransfoType(value_str)
-            elif key == Transformation.LATERAL:
-                value = Transformation.LateralTransfoType(value_str)
-            elif key == Transformation.TARGET:
-                value = Transformation.TargetTransfoType(value_str)
+                if key == Transformation.ACTION:
+                    value = Transformation.ActionTransfoType(value_str)
+                elif key == Transformation.LATERAL:
+                    value = Transformation.LateralTransfoType(value_str)
+                elif key == Transformation.TARGET:
+                    value = Transformation.TargetTransfoType(value_str)
 
-            if ruleset.pk not in res:
-                res[ruleset.pk] = {'name': ruleset.name,
-                                   'transformation': {'transfo_key': key_str, 'transfo_value': value_str},
-                                   'rules': []
-                                   }
+                if ruleset.pk not in res:
+                    res[ruleset.pk] = {'name': ruleset.name,
+                                       'transformation': {'transfo_key': key_str, 'transfo_value': value_str},
+                                       'rules': []
+                                       }
 
-            for trans in trans_rules:
-                all_rules.add(trans.rule_transformation.pk)
+                for trans in trans_rules:
+                    all_rules.add(trans.rule_transformation.pk)
 
-            for trans in trans_cats:
-                category = trans.category_transformation
-                for rule in category.rule_set.all():
-                    rule_trans_value = rule.get_transformation(ruleset, key=key)
-                    if rule_trans_value is None or rule_trans_value == value:
-                        all_rules.add(rule.sid)
+                for trans in trans_cats:
+                    category = trans.category_transformation
+                    for rule in category.rule_set.all():
+                        rule_trans_value = rule.get_transformation(ruleset, key=key)
+                        if rule_trans_value is None or rule_trans_value == value:
+                            all_rules.add(rule.sid)
 
-            if trans_rulesets:
-                for category in ruleset.categories.all():
-                    trans_cat = CategoryTransformation.objects.filter(ruleset=ruleset, category_transformation=category)
+                if trans_rulesets:
+                    for category in ruleset.categories.all():
+                        trans_cat = CategoryTransformation.objects.filter(ruleset=ruleset, category_transformation=category)
 
-                    if len(trans_cat) == 0:
-                        for rule in category.rule_set.all():
-                            rule_trans_value = rule.get_transformation(ruleset, key=key)
-                            if rule_trans_value is None or rule_trans_value == value:
-                                all_rules.add(rule.sid)
-                    else:
-                        for trans in trans_cat:
+                        if len(trans_cat) == 0:
                             for rule in category.rule_set.all():
                                 rule_trans_value = rule.get_transformation(ruleset, key=key)
-                                if trans.key == key and trans.value == value:
-                                    if rule_trans_value is None or rule_trans_value == value:
-                                        all_rules.add(rule.sid)
-                                else:
-                                    if rule_trans_value == value:
-                                        all_rules.add(rule.sid)
+                                if rule_trans_value is None or rule_trans_value == value:
+                                    all_rules.add(rule.sid)
+                        else:
+                            for trans in trans_cat:
+                                for rule in category.rule_set.all():
+                                    rule_trans_value = rule.get_transformation(ruleset, key=key)
+                                    if trans.key == key and trans.value == value:
+                                        if rule_trans_value is None or rule_trans_value == value:
+                                            all_rules.add(rule.sid)
+                                    else:
+                                        if rule_trans_value == value:
+                                            all_rules.add(rule.sid)
 
-            res[ruleset.pk]['rules'] = list(all_rules)
-            res[ruleset.pk]['rules_count'] = len(all_rules)
+                res[ruleset.pk]['rules'] = list(all_rules)
+                res[ruleset.pk]['rules_count'] = len(all_rules)
+        finally:
+            Rule.disable_cache()
 
-        Rule.disable_cache()
         return Response(res)
 
     @detail_route(methods=['get'])
