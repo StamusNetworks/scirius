@@ -170,7 +170,7 @@ export default class HuntDashboard extends React.Component {
         if (typeof this.props.systemSettings !== 'undefined') {
             this.qFilter = this.generateQFilter();
             this.storedMicroLayout = store.get('dashboardMicroLayout');
-            this.storedMacroLayout = store.get('dashboardMаcroLayout');
+            this.storedMacroLayout = store.get('dashboardMacroLayout');
             // Initial booting of panels were moved here instead of componentDidMount, because of the undefined systemSettings in componentDidMount
             if (this.panelsBooted === 'no') {
                 this.bootPanels();
@@ -631,7 +631,7 @@ export default class HuntDashboard extends React.Component {
 
                         <div className="pull-right">
                             <a href={'#edit'} onClick={this.switchEditMode}>{(this.state.editMode) ? 'switch off edit mode' : 'edit'}</a>
-                            <span> • </span>
+                            <span> • </span> {/* ignore_utf8_check: 8226 */}
                             <a href={'#reset'} onClick={this.resetDashboard}>reset</a>
                         </div>
                         <div className="clearfix" />

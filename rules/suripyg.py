@@ -79,8 +79,8 @@ class SuriLexer(RegexLexer):
              r'noalert|limit|treshold|count|str_offset|str_depth|tagged)',
                 t.Name.Attribute),
             (r'(<-|->|<>)', t.Operator),
-            (r'”', t.String, str('fancy-string')),
-            (r'“', t.String, str('fancy-string')),
+            (r'”', t.String, str('fancy-string')),  # ignore_utf8_check: 8221
+            (r'“', t.String, str('fancy-string')),  # ignore_utf8_check: 8220
             (r'"', t.String, str('dq-string')),
             (r'\'', t.String, str('sq-string')),
             (r'(\d+)', t.Number),
@@ -103,8 +103,8 @@ class SuriLexer(RegexLexer):
         ],
         str('fancy-string'): [
             include('hex'),
-            (r'([^”])', t.String),
-            (r'”', t.String, str('#pop'))
+            (r'([^”])', t.String),  # ignore_utf8_check: 8221
+            (r'”', t.String, str('#pop'))  # ignore_utf8_check: 8221
         ],
         str('metadata'): [
             (r'\s', t.Whitespace),
