@@ -33,7 +33,12 @@
     {% bootstrap_form form %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "ok" %} Add
+            {% bootstrap_icon "ok" %}
+            {% if current_action == 'Add user' %}
+                Add
+            {% else %}
+                Submit
+            {% endif %}
         </button>
     {% endbuttons %}
 </form>
