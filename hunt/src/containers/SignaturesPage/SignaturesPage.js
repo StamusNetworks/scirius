@@ -369,7 +369,7 @@ export default class SignaturesPage extends React.Component {
                         sort_config={RuleSortFields}
                         displayToggle={this.state.display_toggle}
                         actionsButtons={this.actionsButtons}
-                        queryType={['filter', 'rest']}
+                        queryType={['filter', 'rest', 'filter_host_id']}
                         page={this.props.page}
                     />
                 </ErrorHandler>

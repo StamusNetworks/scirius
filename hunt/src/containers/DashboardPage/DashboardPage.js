@@ -613,7 +613,7 @@ export default class HuntDashboard extends React.Component {
                         sort_config={undefined}
                         displayToggle={undefined}
                         actionsButtons={this.actionsButtons}
-                        queryType={['filter']}
+                        queryType={['filter', 'filter_host_id']}
                         page={this.props.page}
                     />
                 </ErrorHandler>
