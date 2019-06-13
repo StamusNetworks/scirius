@@ -1,4 +1,3 @@
-/* eslint-disable react/no-danger */
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, Icon } from 'patternfly-react';
@@ -22,6 +21,7 @@ const RuleContentModal = (props) => (
             <Modal.Title>Transformed rule content in {props.rule_status.name}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+            { /* eslint-disable-next-line react/no-danger */ }
             <div className="SigContent" dangerouslySetInnerHTML={{ __html: props.rule_status.content }}></div>
         </Modal.Body>
     </Modal>

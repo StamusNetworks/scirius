@@ -1,4 +1,4 @@
-/* eslint-disable react/no-this-in-sfc, no-loop-func */
+/* eslint-disable no-loop-func */
 /*
 Copyright(C) 2018 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
@@ -379,7 +379,6 @@ export default class HuntDashboard extends React.Component {
         }
     };
 
-    // eslint-disable-next-line react/display-name
     createElement = (block) => {
         const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${block.i}&from_date=${this.props.from_date}&page_size=30${this.qFilter}`;
         return (

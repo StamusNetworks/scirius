@@ -1,4 +1,3 @@
-/* eslint-disable react/no-danger,jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */
 /*
 Copyright(C) 2018 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
@@ -198,7 +197,6 @@ export default class SignaturesPage extends React.Component {
             });
         }
         if (sid !== undefined) {
-            // eslint-disable-next-line react/no-did-mount-set-state
             this.setState({
                 display_rule: sid, view: 'rule', display_toggle: false, loading: false
             });

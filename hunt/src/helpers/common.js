@@ -44,7 +44,6 @@ export function actionsButtons() {
     return null;
 }
 
-// eslint-disable-next-line class-methods-use-this
 export function buildListUrlParams(pageParams) {
     const { page, perPage } = pageParams.pagination;
     const { sort } = pageParams;
@@ -74,7 +73,6 @@ export function loadActions(filtersIn) {
 }
 
 export function createAction(type) {
-    // eslint-disable-next-line react/no-unused-state
     this.setState({ action: { view: true, type } });
 }
 
@@ -167,7 +165,6 @@ export function UpdateSort(sort) {
 }
 
 export function closeAction() {
-    // eslint-disable-next-line react/no-unused-state
     this.setState({ action: { view: false, type: null } });
 }
 

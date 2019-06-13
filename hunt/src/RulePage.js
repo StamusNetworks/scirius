@@ -1,4 +1,3 @@
-/* eslint-disable react/no-danger */
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
@@ -67,7 +66,6 @@ export default class RulePage extends React.Component {
                 }
             ).catch((error) => {
                 if (error.response.status === 404) {
-                    // eslint-disable-next-line react/no-unused-state
                     this.setState({ errors: { signature: ['Signature not found'] }, rule: null });
                     return;
                 }
@@ -163,6 +161,7 @@ export default class RulePage extends React.Component {
                                 <div className="row">
 
                                     <div className={(this.state.rule_references !== undefined && this.state.rule_references.length > 0) ? 'col-xs-9 col-sm-9 col-md-9' : 'col-xs-12 col-sm-12 col-md-12'}>
+                                        { /* eslint-disable-next-line react/no-danger */ }
                                         <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.state.rule.content }}></div>
                                     </div>
 

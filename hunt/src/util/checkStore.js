@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { conformsTo, isFunction, isObject } from 'lodash';
 import invariant from 'invariant';
 

@@ -1,4 +1,4 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events,camelcase,react/sort-comp,no-lonely-if */
+/* eslint-disable camelcase,react/sort-comp */
 /*
 Copyright(C) 2018 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
@@ -31,7 +31,6 @@ import * as config from 'hunt_common/config/Api';
 import UserNavInfo from '../../components/UserNavInfo';
 import EmitEvent from '../../helpers/EmitEvent';
 import '../../pygments.css';
-// eslint-disable-next-line import/no-unresolved
 import '../../css/App.css';
 import sciriusLogo from '../../img/scirius-by-stamus.svg';
 import keymap from '../../Keymap';

@@ -1,4 +1,3 @@
-/* eslint-disable no-confusing-arrow */
 import React from 'react';
 import PropTypes from 'prop-types';
 import './DonutChart.css';

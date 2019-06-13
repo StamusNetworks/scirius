@@ -254,7 +254,6 @@ export class HuntList extends React.Component {
         this.fetchData(newListState, this.props.filters);
     }
 
-    // eslint-disable-next-line class-methods-use-this
     buildListUrlParams(pageParams) {
         const { page, perPage } = pageParams.pagination;
         const { sort } = pageParams;
