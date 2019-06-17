@@ -278,6 +278,116 @@ class FilterSet(models.Model):
                 'name': 'Low noise signatures',
                 'page': 'RULES_LIST',
                 'share': 'static'
+            }, {
+                'content': [
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: firefox',
+                        'id': 'http.http_user_agent',
+                        'value': 'firefox',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: explorer',
+                        'id': 'http.http_user_agent',
+                        'value': 'explorer',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: opera',
+                        'id': 'http.http_user_agent',
+                        'value': 'opera',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: edge',
+                        'id': 'http.http_user_agent',
+                        'value': 'edge',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: wget',
+                        'id': 'http.http_user_agent',
+                        'value': 'wget',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: curl',
+                        'id': 'http.http_user_agent',
+                        'value': 'curl',
+                        'query': 'filter'
+                    },
+                ],
+                'name': 'Not common user agents',
+                'page': 'ALERTS_LIST',
+                'share': 'static'
+            }, {
+                'content': [
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: firefox',
+                        'id': 'http.http_user_agent',
+                        'value': 'firefox',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: explorer',
+                        'id': 'http.http_user_agent',
+                        'value': 'explorer',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: opera',
+                        'id': 'http.http_user_agent',
+                        'value': 'opera',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: edge',
+                        'id': 'http.http_user_agent',
+                        'value': 'edge',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: wget',
+                        'id': 'http.http_user_agent',
+                        'value': 'wget',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: curl',
+                        'id': 'http.http_user_agent',
+                        'value': 'curl',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: perl',
+                        'id': 'http.http_user_agent',
+                        'value': 'perl',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: python',
+                        'id': 'http.http_user_agent',
+                        'value': 'python',
+                        'query': 'filter'
+                    },
+                ],
+                'name': 'Suspicious user agents',
+                'page': 'ALERTS_LIST',
+                'share': 'static'
             }
         ]
 
