@@ -1,4 +1,4 @@
-function esEscape(str) {
+export function esEscape(str) {
     // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#_reserved_characters
     // Can't search on < >
     str = str.replace(/[<>]/g, '');
