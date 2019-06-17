@@ -164,6 +164,7 @@ export default class UserNavInfo extends Component {
                     </a>
                 </li>
 
+                {this.props.children}
                 <Dropdown componentClass="li" id="time">
                     <Dropdown.Toggle useAnchor className="nav-item-iconic">
                         <Icon type="fa" name="clock-o" /> Last {USER_PERIODS[this.props.period]}
@@ -299,6 +300,7 @@ export default class UserNavInfo extends Component {
     }
 }
 UserNavInfo.propTypes = {
+    children: PropTypes.any,
     interval: PropTypes.any,
     systemSettings: PropTypes.any,
     needReload: PropTypes.any,
