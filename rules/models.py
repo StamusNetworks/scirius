@@ -2305,6 +2305,8 @@ class Rule(models.Model, Transformable, Cache):
         try:
             self.enable_cache()
             test = ruleset.test_rule_buffer(self.generate_content(ruleset), single = True)
+        except:
+            return False
         finally:
             self.disable_cache()
         return test
