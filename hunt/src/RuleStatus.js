@@ -43,7 +43,7 @@ export default class RuleStatus extends React.Component {
 
         return (
             <div className="col-xs-6 col-sm-4 col-md-4">
-                {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
+                {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
                 <div className="card-pf card-pf-accented card-pf-aggregate-status" onClick={this.showRuleContent} style={{ cursor: 'pointer' }}>
                     <h2 className="card-pf-title">
                         <span className="fa fa-th" />{this.props.rule_status.name}
