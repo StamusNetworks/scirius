@@ -40,7 +40,7 @@ for _type in ('js', 'html', 'css', 'py',):
             continue
 
         filename = str(filename.resolve())
-        if '/node_modules/' not in filename and not filename.endswith('nv.d3.min.js') and 'rules/static/dist/styles.css' not in filename and 'rules/static/bundles' not in filename:
+        if '/node_modules/' not in filename and not filename.endswith('nv.d3.min.js') and 'rules/static/dist/styles.css' not in filename and 'rules/static/bundles' not in filename and 'rules/static/doc' not in filename:
             with open(filename, 'r', encoding='utf-8') as f:
                 for idx, line in enumerate(f.readlines(), 1):
                     try:
