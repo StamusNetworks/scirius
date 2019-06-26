@@ -320,15 +320,21 @@ export class HuntFilter extends React.Component {
     }
 
     getValidationState = () => {
-        const { currentFilterType, currentValue } = this.state;
-        if (currentFilterType.valueType === 'positiveint') {
+        const { currentFilterType, currentValue, filterSubCategory } = this.state;
+        let { valueType } = currentFilterType;
+
+        if (typeof filterSubCategory !== 'undefined' && filterSubCategory.valueType) {
+            ({ valueType } = filterSubCategory);
+        }
+
+        if (valueType === 'positiveint') {
             const val = parseInt(currentValue, 10);
             if (val >= 0) {
                 return 'success';
             } else {
                 return 'error';
             }
-        } else if (currentFilterType.valueType === 'ip') {
+        } else if (valueType === 'ip') {
             if (!IP_REGEXP.test(currentValue)) {
                 return 'error';
             }
@@ -509,7 +515,7 @@ export class HuntFilter extends React.Component {
                         validationState={this.getValidationState()}
                     >
                         <FormControl
-                            type={currentFilterType.filterType}
+                            type={filterSubCategory.filterType}
                             value={currentValue}
                             placeholder={filterSubCategory.placeholder}
                             onChange={(e) => this.updateCurrentValue(e)}
