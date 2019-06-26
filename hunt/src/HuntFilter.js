@@ -121,18 +121,6 @@ export class HuntFilter extends React.Component {
         }
     }
 
-    getValidationState = () => {
-        const { currentFilterType, currentValue } = this.state;
-        if (currentFilterType.valueType === 'positiveint') {
-            const val = parseInt(currentValue, 10);
-            if (val >= 0) {
-                return 'success';
-            }
-            return 'error';
-        }
-        return null;
-    }
-
     updateAlertTag(tfilters) {
         this.setState({ tagFilters: tfilters });
         /* Make a copy of the ActiveFilters instead of mutating it. Update the filters on alert.tag and send the update */
