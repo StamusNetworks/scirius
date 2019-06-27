@@ -417,6 +417,7 @@ export class HuntFilter extends React.Component {
                     minHeight: '1px',
                     textAlign: 'left',
                     border: 'none',
+                    zIndex: '1000'
                 }),
                 control: (provided, state) => ({
                     ...provided,
