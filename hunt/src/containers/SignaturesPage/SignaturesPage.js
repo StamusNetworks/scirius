@@ -233,7 +233,15 @@ export default class SignaturesPage extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (prevProps.from_date !== this.props.from_date || JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
-            this.fetchData(this.props.rules_list, this.props.filters);
+            const sid = this.findSID(this.props.filters);
+            if (sid !== undefined) {
+                // eslint-disable-next-line react/no-did-update-set-state
+                this.setState({
+                    display_rule: sid, view: 'rule', display_toggle: false, loading: false
+                });
+            } else {
+                this.fetchData(this.props.rules_list, this.props.filters);
+            }
         }
     }
 
