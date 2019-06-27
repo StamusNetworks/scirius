@@ -245,8 +245,6 @@ KIBANA_PROXY = False
 KIBANA_URL = "http://localhost:9292"
 # Kibana index name
 KIBANA_INDEX = "kibana-int"
-# Number of dashboards to display
-KIBANA_DASHBOARDS_COUNT = 20
 # Path to Kibana's dashboards installation
 KIBANA_DASHBOARDS_PATH = '/opt/kibana-dashboards/'
 KIBANA6_DASHBOARDS_PATH = '/opt/kibana6-dashboards/'

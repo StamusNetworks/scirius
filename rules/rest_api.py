@@ -39,7 +39,7 @@ from rules.views import get_public_sources, fetch_public_sources, extract_rule_r
 from rules.rest_processing import RuleProcessingFilterViewSet
 from rules.es_data import ESData
 
-from rules.es_graphs import es_get_stats, es_get_rules_stats, es_get_dashboard, es_get_sid_by_hosts, es_get_field_stats, \
+from rules.es_graphs import es_get_stats, es_get_rules_stats, es_get_sid_by_hosts, es_get_field_stats, \
         es_get_timeline, es_get_metrics_timeline, es_get_health, es_get_indices, es_get_rules_per_category, es_get_alerts_count, \
         es_get_latest_stats, es_get_ippair_alerts, es_get_ippair_network_alerts, es_get_alerts_tail, es_suri_log_tail, es_get_poststats
 
@@ -1925,23 +1925,6 @@ class ESBaseViewSet(APIView):
         raise NotImplementedError('This is an abstract class. ES sub classes must override this method')
 
 
-class ESDashboardViewSet(ESBaseViewSet):
-    """
-    =============================================================================================================================================================
-    ==== GET ====\n
-    Show dashboard :\n
-        curl -k https://x.x.x.x/rest/rules/es/dashboard/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
-
-    Return:\n
-        HTTP/1.1 200 OK
-        {"SN-FILE-Transactions":"SN FILE-Transactions","SN-VLAN":"SN VLAN","SN-OVERVIEW":"SN OVERVIEW","SN-SMTP":"SN SMTP","SN-HTTP":"SN HTTP","SN-ALERTS":"SN ALERTS","SN-TLS":"SN TLS","SN-IDS":"SN IDS","SN-STATS":"SN STATS","SN-FLOW":"SN FLOW","SN-SSH":"SN SSH","SN-DNS":"SN DNS","SN-ALL":"SN ALL"}
-
-    =============================================================================================================================================================
-    """
-    def _get(self, request, format=None):
-        return Response(es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT))
-
-
 class ESRulesViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
@@ -2836,7 +2819,6 @@ def get_custom_urls():
     url_ = url(r'rules/hunt-filter/$', HuntFilterAPIView.as_view(), name='hunt_filter')
     urls.append(url_)
 
-    urls.append(url(r'rules/es/dashboard/$', ESDashboardViewSet.as_view(), name='es_dashboard'))
     urls.append(url(r'rules/es/rules/$', ESRulesViewSet.as_view(), name='es_rules'))
     urls.append(url(r'rules/es/rule/$', ESRuleViewSet.as_view(), name='es_rule'))
     urls.append(url(r'rules/es/filter_ip/$', ESFilterIPViewSet.as_view(), name='es_filter_ip'))

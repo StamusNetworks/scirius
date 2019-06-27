@@ -1634,36 +1634,6 @@ def es_get_sid_by_hosts(request, sid, count=20, from_date=0, dict_format=False):
         return None
     return stats
 
-def es_get_dashboard(count=20):
-    if get_es_major_version() >= 6:
-        dashboards_query_url = "/%s/_search?q=type:dashboard&size=" % settings.KIBANA_INDEX
-    else:
-        dashboards_query_url = "/%s/dashboard/_search?size=" % settings.KIBANA_INDEX
-
-    headers = {'content-type': 'application/json'}
-    req = urllib2.Request(get_es_path(dashboards_query_url) + unicode(count), headers = headers)
-    out = _urlopen(req)
-    data = out.read()
-    # returned data is JSON
-    data = json.loads(data)
-    # total number of results
-    try:
-        data = data['hits']['hits']
-    except:
-        return None
-    if data != None:
-        dashboards = {}
-        for elt in data:
-            try:
-                if get_es_major_version() >= 6:
-                    dashboards[elt["_id"].split(':')[1]] = elt["_source"]["dashboard"]["title"]
-                else:
-                    dashboards[elt["_id"]] = elt["_source"]["title"]
-            except:
-                dashboards[elt["_id"]] = elt["_id"]
-                pass
-        return dashboards
-    return None
 
 def es_get_timeline(from_date=0, interval=None, hosts = None, qfilter = None, tags=False):
     # 100 points on graph per default

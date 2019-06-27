@@ -187,10 +187,8 @@ def elasticsearch(request):
 
     if request.GET.__contains__('query'):
         try:
-            query = request.GET.get('query', 'dashboards')
-            if query == 'dashboards':
-                data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
-            elif query == 'rules':
+            query = request.GET.get('query')
+            if query == 'rules':
                 host = request.GET.get('host', None)
                 from_date = request.GET.get('from_date', None)
                 qfilter = request.GET.get('filter', None)
@@ -244,15 +242,13 @@ def elasticsearch(request):
                     return scirius_render(request, 'rules/table.html', context)
                 else:
                     return scirius_render(request, 'rules/elasticsearch.html', context)
+            else:
+                raise Exception('Query parameter not supported: %s' % query)
         except ESError as e:
             return HttpResponseServerError(e.message)
     else:
-        if request.is_ajax():
-            data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
-            return HttpResponse(json.dumps(data), content_type="application/json")
-        else:
-            template = Probe.common.get_es_template()
-            return scirius_render(request, template, context)
+        template = Probe.common.get_es_template()
+        return scirius_render(request, template, context)
 
 
 def extract_rule_references(rule):
