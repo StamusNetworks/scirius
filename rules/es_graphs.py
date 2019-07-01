@@ -19,10 +19,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from __future__ import unicode_literals
-from django.template import Context, Template
 from django.conf import settings
-from django.utils.html import format_html
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import socket
 import requests
@@ -32,8 +30,6 @@ import math
 
 from rules.es_query import ESQuery
 from rules.models import get_es_address, get_es_path
-
-URL = "%s%s/_search?ignore_unavailable=true"
 
 
 ES_VERSION = None
@@ -1416,78 +1412,15 @@ import django_tables2 as tables
 
 
 class ESError(Exception):
-    pass
+    def __init__(self, msg, initial_exception=None):
+        super(ESError, self).__init__(msg)
+        self.initial_exception = initial_exception
 
-
-def build_es_timestamping(date, data = 'alert'):
-    format_table = { 'daily': '%Y.%m.%d', 'hourly': '%Y.%m.%d.%H' }
-    now = datetime.now()
-    if settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'daily':
-        end = now + timedelta(days=1)
-    elif settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'hourly':
-        end = now + timedelta(hours=1)
-    if data == 'alert':
-        base_index = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
-    elif data == 'host_id':
-        base_index = settings.ELASTICSEARCH_LOGSTASH_INDEX + 'host_id-'
-    else:
-        base_index = settings.ELASTICSEARCH_LOGSTASH_INDEX
-    try:
-        indexes = []
-        while date < end:
-            indexes.append("%s%s*" % (base_index, date.strftime(format_table[settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING])))
-            if settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'daily':
-                date += timedelta(days=1)
-            elif settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'hourly':
-                date += timedelta(hours=1)
-        if len(indexes) > 20:
-            return base_index + '2*'
-        return ','.join(indexes)
-    except:
-        return base_index + '2*'
-
-def get_es_url(from_date, data = 'alert'):
-    if (data == 'alert' and '*' in settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX) or (data != 'alert' and '*' in settings.ELASTICSEARCH_LOGSTASH_INDEX):
-        if data == 'alert':
-            indexes = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
-        else:
-            indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX
-    else:
-        if from_date == 0:
-            if data == 'alert':
-                indexes = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + "*"
-            elif data == 'host_id':
-                indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX + "host_id-*"
-            else:
-                indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX + "*"
-        else:
-            start = datetime.fromtimestamp(int(from_date)/1000)
-            indexes = build_es_timestamping(start, data = data)
-    return URL % (get_es_address(), indexes)
-
-def render_template(tmpl, dictionary, qfilter = None):
-    if dictionary.get('hosts'):
-        hosts = []
-        for host in dictionary['hosts']:
-            if host != '*':
-                host = format_html('\\"{}\\"', host)
-            hosts.append(host)
-        dictionary['hosts'] = hosts
-
-    templ = Template(tmpl)
-    context = Context(dictionary)
-    if qfilter != None:
-        query_filter = " AND " + qfilter
-        # dump as json but remove quotes since the quotes are already set in templates
-        context['query_filter'] = json.dumps(query_filter)[1:-1]
-    context['keyword'] = settings.ELASTICSEARCH_KEYWORD
-    context['hostname'] = settings.ELASTICSEARCH_HOSTNAME
-    return bytearray(templ.render(context), encoding="utf-8")
 
 class ESRulesStats(ESQuery):
     def get(self, hostname, count=20, from_date=0 , qfilter = None, dict_format=False):
-        data = render_template(get_top_query(), {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': 'alert.signature_id'}, qfilter = qfilter)
-        es_url = get_es_url(from_date)
+        data = self._render_template(get_top_query(), {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': 'alert.signature_id'}, qfilter = qfilter)
+        es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
 
         # total number of results
@@ -1533,8 +1466,8 @@ class ESRulesStats(ESQuery):
 
 class ESFieldStats(ESQuery):
     def get(self, field, hostname, key='host', count=20, from_date=0 , qfilter = None, dict_format=False):
-        data = render_template(get_top_query(), {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': field}, qfilter = qfilter)
-        es_url = get_es_url(from_date)
+        data = self._render_template(get_top_query(), {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': field}, qfilter = qfilter)
+        es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
 
         # total number of results
@@ -1580,8 +1513,8 @@ class ESFieldStatsAsTable(ESQuery):
 
 class ESSidByHosts(ESQuery):
     def get(self, sid, count=20, from_date=0, dict_format=False):
-        data = render_template(get_sid_by_host_query(), {'rule_sid': sid, 'alerts_number': count, 'from_date': from_date})
-        es_url = get_es_url(from_date)
+        data = self._render_template(get_sid_by_host_query(), {'rule_sid': sid, 'alerts_number': count, 'from_date': from_date})
+        es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
 
         # total number of results
@@ -1621,8 +1554,8 @@ class ESTimeline(ESQuery):
             func = get_timeline_query()
         else:
             func = get_timeline_by_tags_query()
-        data = render_template(func, {'from_date': from_date, 'interval': unicode(interval) + "s", 'hosts': hosts}, qfilter = qfilter)
-        es_url = get_es_url(from_date)
+        data = self._render_template(func, {'from_date': from_date, 'interval': unicode(interval) + "s", 'hosts': hosts}, qfilter = qfilter)
+        es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
 
         # total number of results
@@ -1653,8 +1586,8 @@ class ESMetricsTimeline(ESQuery):
         # 100 points on graph per default
         if interval == None:
             interval = int((time() - (int(from_date)/ 1000)) / 100)
-        data = render_template(get_stats_query(), {'from_date': from_date, 'interval': unicode(interval) + "s", 'value': value, 'hosts': hosts}, qfilter = qfilter)
-        es_url = get_es_url(from_date, data = 'stats')
+        data = self._render_template(get_stats_query(), {'from_date': from_date, 'interval': unicode(interval) + "s", 'value': value, 'hosts': hosts}, qfilter = qfilter)
+        es_url = self._get_es_url(from_date, data = 'stats')
         data = self._urlopen(es_url, data)
 
         # total number of results
@@ -1682,8 +1615,8 @@ class ESMetricsTimeline(ESQuery):
 
 class ESPoststats(ESQuery):
     def get(self, from_date=0,  value = "poststats.rule_filter_1", hosts = None, qfilter = None):
-        data = render_template(POSTSTATS_SUMMARY, {'from_date': from_date, 'filter': value, 'hosts': hosts}, qfilter = qfilter)
-        es_url = get_es_url(from_date, data = 'poststats')
+        data = self._render_template(POSTSTATS_SUMMARY, {'from_date': from_date, 'filter': value, 'hosts': hosts}, qfilter = qfilter)
+        es_url = self._get_es_url(from_date, data = 'poststats')
         data = self._urlopen(es_url, data)
         return data['aggregations']['hosts']['buckets'] if 'aggregations' in data else []
 
@@ -1730,8 +1663,8 @@ def compact_tree(tree):
 
 class ESRulesPerCategory(ESQuery):
     def get(self, from_date=0, hosts = None, qfilter = None):
-        data = render_template(get_rules_per_category(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
-        es_url = get_es_url(from_date)
+        data = self._render_template(get_rules_per_category(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
+        es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
         # clean the data: we need to compact the leaf and previous data
         if data["hits"]["total"] > 0:
@@ -1798,10 +1731,10 @@ class ESAlertsCount(ESQuery):
             start_datetime = from_datetime - (datetime.now() - from_datetime)
             start_date = int(mktime(start_datetime.timetuple()) * 1000)
             context['start_date'] = start_date
-            es_url = get_es_url(start_date)
+            es_url = self._get_es_url(start_date)
         else:
-            es_url = get_es_url(from_date)
-        data = render_template(templ, context, qfilter = qfilter)
+            es_url = self._get_es_url(from_date)
+        data = self._render_template(templ, context, qfilter = qfilter)
         data = self._urlopen(es_url, data)
         if prev:
             try:
@@ -1815,8 +1748,8 @@ class ESAlertsCount(ESQuery):
 
 class ESLatestStats(ESQuery):
     def get(self, from_date=0, hosts = None, qfilter = None):
-        data = render_template(get_latest_stats_entry(), {'from_date': from_date, 'hosts': hosts})
-        es_url = get_es_url(from_date, data = 'stats')
+        data = self._render_template(get_latest_stats_entry(), {'from_date': from_date, 'hosts': hosts})
+        es_url = self._get_es_url(from_date, data = 'stats')
         data = self._urlopen(es_url, data)
         try:
             return data['hits']['hits'][0]['_source']
@@ -1826,8 +1759,8 @@ class ESLatestStats(ESQuery):
 
 class ESIppairAlerts(ESQuery):
     def get(self, from_date=0, hosts = None, qfilter = None):
-        data = render_template(get_ippair_alerts_count(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
-        es_url = get_es_url(from_date)
+        data = self._render_template(get_ippair_alerts_count(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
+        es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
         raw_data = data['aggregations']['src_ip']['buckets']
         nodes = []
@@ -1856,8 +1789,8 @@ class ESIppairAlerts(ESQuery):
 
 class ESIppairNetworkAlerts(ESQuery):
     def get(self, from_date=0, hosts = None, qfilter = None):
-        data = render_template(get_ippair_netinfo_alerts_count(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
-        es_url = get_es_url(from_date)
+        data = self._render_template(get_ippair_netinfo_alerts_count(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
+        es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
         raw_data = data['aggregations']['src_ip']['buckets']
         nodes = []
@@ -1899,8 +1832,8 @@ class ESAlertsTail(ESQuery):
             context = {'from_date': from_date, 'target_only': 'AND alert.target.ip:*'}
         else:
             context = {'from_date': from_date, 'target_only': ''}
-        data = render_template(ALERTS_TAIL, context, qfilter = qfilter)
-        es_url = get_es_url(from_date)
+        data = self._render_template(ALERTS_TAIL, context, qfilter = qfilter)
+        es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
         return data['hits']['hits']
 
@@ -1912,8 +1845,8 @@ class ESSuriLogTail(ESQuery):
             'hosts': hosts,
             'hostname': settings.ELASTICSEARCH_HOSTNAME
         }
-        data = render_template(SURICATA_LOGS_TAIL, context)
-        es_url = get_es_url(from_date, data='engine')
+        data = self._render_template(SURICATA_LOGS_TAIL, context)
+        es_url = self._get_es_url(from_date, data='engine')
         data = self._urlopen(es_url, data)
         data = data['hits']['hits']
         data.reverse()
@@ -1924,8 +1857,8 @@ class ESTopRules(ESQuery):
     def get(self, hostname, count=20, from_date=0 , order="desc", interval=None, qfilter = None):
         if interval == None:
             interval = int((time() - (int(from_date) / 1000)) / 100)
-        data = render_template(TOP_ALERTS, {'interval': interval, 'count': count, 'from_date': from_date, 'order': order}, qfilter = qfilter)
-        es_url = get_es_url(from_date)
+        data = self._render_template(TOP_ALERTS, {'interval': interval, 'count': count, 'from_date': from_date, 'order': order}, qfilter = qfilter)
+        es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
         try:
             return data['aggregations']['alerts']['buckets']
@@ -1938,8 +1871,8 @@ class ESSigsListHits(ESQuery):
         if interval == None:
             interval = int((time() - (int(from_date) / 1000)) / 100)
         count = len(sids.split(','))
-        data = render_template(SIGS_LIST_HITS, {'sids': sids, 'interval': interval,'count': count, 'from_date': from_date}, qfilter = qfilter)
-        es_url = get_es_url(from_date)
+        data = self._render_template(SIGS_LIST_HITS, {'sids': sids, 'interval': interval,'count': count, 'from_date': from_date}, qfilter = qfilter)
+        es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
         try:
             return data['aggregations']['alerts']['buckets']
