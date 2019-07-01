@@ -39,13 +39,13 @@ from rules.views import get_public_sources, fetch_public_sources, extract_rule_r
 from rules.rest_processing import RuleProcessingFilterViewSet
 from rules.es_data import ESData
 
-from rules.es_graphs import es_get_stats, es_get_rules_stats, es_get_sid_by_hosts, es_get_field_stats, \
-        es_get_timeline, es_get_metrics_timeline, es_get_health, es_get_indices, es_get_rules_per_category, es_get_alerts_count, \
-        es_get_latest_stats, es_get_ippair_alerts, es_get_ippair_network_alerts, es_get_alerts_tail, es_suri_log_tail, es_get_poststats
+from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats, \
+        ESTimeline, ESMetricsTimeline, ESHealth, ESIndicesStats, ESRulesPerCategory, ESAlertsCount, \
+        ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESAlertsTail, ESSuriLogTail, ESPoststats, \
+        ESSigsListHits, ESTopRules, ESError
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD
-from rules.es_graphs import es_get_sigs_list_hits, es_get_top_rules, ESError
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
 
@@ -504,7 +504,7 @@ class RuleHitsOrderingFilter(OrderingFilter):
         }
         es_top_kwargs.update(es_hits_params(request))
         try:
-            result = es_get_top_rules(request, **es_top_kwargs)
+            result = ESTopRules(request).get(**es_top_kwargs)
         except ESError:
             queryset = Rule.objects.order_by('sid')
             queryset = queryset.annotate(hits=models.Value(0, output_field=models.IntegerField()))
@@ -930,7 +930,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         es_params = es_hits_params(request)
         es_params['host'] = es_params.pop('hostname')
         try:
-            result = es_get_sigs_list_hits(request, sids, **es_params)
+            result = ESSigsListHits(request).get(sids, **es_params)
         except ESError:
             return data
 
@@ -1956,7 +1956,7 @@ class ESRulesViewSet(ESBaseViewSet):
             raise serializers.ValidationError(errors)
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'rules': es_get_rules_stats(request, host, from_date=from_date, qfilter=qfilter, dict_format=True)})
+        return Response({'rules': ESRulesStats(request).get(host, from_date=from_date, qfilter=qfilter, dict_format=True)})
 
 
 class ESRuleViewSet(ESBaseViewSet):
@@ -1986,7 +1986,7 @@ class ESRuleViewSet(ESBaseViewSet):
             raise serializers.ValidationError(errors)
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'rule': es_get_sid_by_hosts(request, sid, from_date=from_date, dict_format=True)})
+        return Response({'rule': ESSidByHosts(request).get(sid, from_date=from_date, dict_format=True)})
 
 
 class ESTopRulesViewSet(ESBaseViewSet):
@@ -2005,7 +2005,7 @@ class ESTopRulesViewSet(ESBaseViewSet):
             errors = {'host': ['This field is required.']}
             raise serializers.ValidationError(errors)
 
-        return Response(es_get_top_rules(request, host, from_date=from_date, qfilter=qfilter, count=count, order=order))
+        return Response(ESTopRules(request).get(host, from_date=from_date, qfilter=qfilter, count=count, order=order))
 
 
 class ESSigsListViewSet(ESBaseViewSet):
@@ -2029,7 +2029,7 @@ class ESSigsListViewSet(ESBaseViewSet):
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        return Response(es_get_sigs_list_hits(request, sids, host, from_date=from_date, qfilter=qfilter))
+        return Response(ESSigsListHits(request).get(sids, host, from_date=from_date, qfilter=qfilter))
 
 
 class ESPostStatsViewSet(ESBaseViewSet):
@@ -2047,7 +2047,7 @@ class ESPostStatsViewSet(ESBaseViewSet):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(es_get_poststats(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter))
+        return Response(ESPoststats(request).get(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter))
 
 
 class ESFieldStatsViewSet(ESBaseViewSet):
@@ -2079,8 +2079,7 @@ class ESFieldStatsViewSet(ESBaseViewSet):
         if filter_ip not in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status', 'vlan']:
             filter_ip = filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD
 
-        hosts = es_get_field_stats(request,
-                                   filter_ip,
+        hosts = ESFieldStats(request).get(filter_ip,
                                    '*',
                                    from_date=from_date,
                                    count=count,
@@ -2143,8 +2142,7 @@ class ESFilterIPViewSet(ESBaseViewSet):
         filter_ip = self.RULE_FIELDS_MAPPING[field]
         count = request.GET.get('page_size', 10)
 
-        hosts = es_get_field_stats(request,
-                                   filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
+        hosts = ESFieldStats(request).get(filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
                                    '*',
                                    from_date=from_date,
                                    count=count,
@@ -2182,7 +2180,7 @@ class ESTimelineViewSet(ESBaseViewSet):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(es_get_timeline(from_date=from_date, hosts=chosts, qfilter=qfilter, tags=tags))
+        return Response(ESTimeline(request).get(from_date=from_date, hosts=chosts, qfilter=qfilter, tags=tags))
 
 
 class ESLogstashEveViewSet(ESBaseViewSet):
@@ -2263,7 +2261,7 @@ class ESLogstashEveViewSet(ESBaseViewSet):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(es_get_metrics_timeline(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter))
+        return Response(ESMetricsTimeline(request).get(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter))
 
 
 class ESHealthViewSet(ESBaseViewSet):
@@ -2281,7 +2279,7 @@ class ESHealthViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        return Response(es_get_health())
+        return Response(ESHealth(request).get())
 
 
 class ESStatsViewSet(ESBaseViewSet):
@@ -2310,7 +2308,7 @@ class ESStatsViewSet(ESBaseViewSet):
     =============================================================================================================================================================
     """
     def _get(self, request, format=None):
-        return Response(es_get_stats())
+        return Response(ESStats(request).get())
 
 
 class ESIndicesViewSet(ESBaseViewSet):
@@ -2335,7 +2333,7 @@ class ESIndicesViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        return Response({'indices': es_get_indices()})
+        return Response({'indices': ESIndicesStats(request).get()})
 
 
 class ESRulesPerCategoryViewSet(ESBaseViewSet):
@@ -2374,7 +2372,7 @@ class ESRulesPerCategoryViewSet(ESBaseViewSet):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(es_get_rules_per_category(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(ESRulesPerCategory(request).get(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
 class ESAlertsCountViewSet(ESBaseViewSet):
@@ -2409,7 +2407,7 @@ class ESAlertsCountViewSet(ESBaseViewSet):
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         prev = 1 if prev is not None and prev != 'false' else None
 
-        return Response(es_get_alerts_count(from_date=from_date, hosts=chosts, qfilter=qfilter, prev=prev))
+        return Response(ESAlertsCount(request).get(from_date=from_date, hosts=chosts, qfilter=qfilter, prev=prev))
 
 
 class ESLatestStatsViewSet(ESBaseViewSet):
@@ -2448,7 +2446,7 @@ class ESLatestStatsViewSet(ESBaseViewSet):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(es_get_latest_stats(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(ESLatestStats(request).get(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
 class ESIPPairAlertsViewSet(ESBaseViewSet):
@@ -2483,7 +2481,7 @@ class ESIPPairAlertsViewSet(ESBaseViewSet):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(es_get_ippair_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(ESIppairAlerts(request).get(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
 class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
@@ -2513,7 +2511,7 @@ class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(es_get_ippair_network_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(ESIppairNetworkAlerts(request).get(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
 class ESAlertsTailViewSet(ESBaseViewSet):
@@ -2540,7 +2538,7 @@ class ESAlertsTailViewSet(ESBaseViewSet):
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         search_target = request.GET.get('search_target', True)
         search_target = False if search_target is not True else True
-        return Response(es_get_alerts_tail(from_date=from_date, qfilter=qfilter, search_target=search_target))
+        return Response(ESAlertsTail(request).get(from_date=from_date, qfilter=qfilter, search_target=search_target))
 
 
 class ESSuriLogTailViewSet(ESBaseViewSet):
@@ -2572,7 +2570,7 @@ class ESSuriLogTailViewSet(ESBaseViewSet):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(es_suri_log_tail(from_date=from_date, hosts=chosts))
+        return Response(ESSuriLogTail(request).get(from_date=from_date, hosts=chosts))
 
 
 class ESDeleteLogsViewSet(APIView):

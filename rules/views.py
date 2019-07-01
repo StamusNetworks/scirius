@@ -26,6 +26,7 @@ from django.conf import settings
 from elasticsearch.exceptions import ConnectionError
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.contrib import messages
+import requests
 
 from scirius.utils import scirius_render, scirius_listing
 
@@ -33,7 +34,8 @@ from rules.es_data import ESData
 from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation, CategoryTransformation, RulesetTransformation, UserAction, UserActionObject, reset_es_address
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, HistoryTable
 
-from rules.es_graphs import *
+from rules.es_graphs import (ESError, ESRulesStats, ESFieldStatsAsTable, ESSidByHosts, ESIndices, ESDeleteAlertsBySid,
+        get_es_major_version, reset_es_version)
 
 import json
 import yaml
@@ -193,7 +195,7 @@ def elasticsearch(request):
                 from_date = request.GET.get('from_date', None)
                 qfilter = request.GET.get('filter', None)
                 if host != None and from_date != None:
-                    rules = es_get_rules_stats(request, host, from_date = from_date, qfilter = qfilter)
+                    rules = ESRulesStats(request).get(host, from_date = from_date, qfilter = qfilter)
                     if rules == None:
                         return HttpResponse(json.dumps(rules), content_type="application/json")
                     context['table'] = rules
@@ -202,7 +204,7 @@ def elasticsearch(request):
                 sid = request.GET.get('sid', None)
                 from_date = request.GET.get('from_date', None)
                 if from_date != None and sid != None:
-                    hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
+                    hosts = ESSidByHosts(request).get(sid, from_date = from_date)
                     context['table'] = hosts
                     return scirius_render(request, 'rules/table.html', context)
             elif query in RULE_FIELDS_MAPPING.keys():
@@ -227,7 +229,7 @@ def elasticsearch(request):
                         qfilter = 'alert.signature_id:%s' % sid
 
                 if from_date is not None:
-                    hosts = es_get_field_stats_as_table(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
+                    hosts = ESFieldStatsAsTable(request).get(filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
                                                         RuleHostTable, '*',
                                                         from_date=from_date,
                                                         count=count,
@@ -236,7 +238,7 @@ def elasticsearch(request):
                     return scirius_render(request, 'rules/table.html', context)
             elif query == 'indices':
                 if request.is_ajax():
-                    indices = ESIndexessTable(es_get_indices())
+                    indices = ESIndexessTable(ESIndices(request).get())
                     tables.RequestConfig(request).configure(indices)
                     context['table'] = indices
                     return scirius_render(request, 'rules/table.html', context)
@@ -727,7 +729,7 @@ def delete_alerts(request, rule_id):
             if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
                 Probe.common.es_delete_alerts_by_sid(rule_id, request=request)
             else:
-                result = es_delete_alerts_by_sid(rule_id)
+                result = ESDeleteAlertsBySid(request).get(rule_id)
                 if result.has_key('status') and result['status'] != 200:
                     context = { 'object': rule_object, 'error': result['msg'] }
                     try:
