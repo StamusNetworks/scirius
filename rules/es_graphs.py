@@ -24,8 +24,6 @@ from django.conf import settings
 from django.utils.html import format_html
 from datetime import datetime, timedelta
 
-import logging
-import urllib2
 import socket
 import requests
 import json
@@ -36,10 +34,6 @@ from rules.es_query import ESQuery
 from rules.models import get_es_address, get_es_path
 
 URL = "%s%s/_search?ignore_unavailable=true"
-
-# ES requests timeout (keep this below Scirius's ajax requests timeout)
-TIMEOUT = 30
-es_logger = logging.getLogger('elasticsearch')
 
 
 ES_VERSION = None
@@ -1425,16 +1419,6 @@ class ESError(Exception):
     pass
 
 
-def _urlopen(request):
-    try:
-        out = urllib2.urlopen(request, timeout=TIMEOUT)
-    except (urllib2.URLError, socket.timeout) as e:
-        msg = unicode(e)
-        es_logger.exception(msg)
-        raise ESError(msg)
-    return out
-
-
 def build_es_timestamping(date, data = 'alert'):
     format_table = { 'daily': '%Y.%m.%d', 'hourly': '%Y.%m.%d.%H' }
     now = datetime.now()
@@ -1504,12 +1488,8 @@ class ESRulesStats(ESQuery):
     def get(self, hostname, count=20, from_date=0 , qfilter = None, dict_format=False):
         data = render_template(get_top_query(), {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': 'alert.signature_id'}, qfilter = qfilter)
         es_url = get_es_url(from_date)
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)
+        data = self._urlopen(es_url, data)
+
         # total number of results
         try:
             if get_es_major_version() >= 2:
@@ -1555,12 +1535,8 @@ class ESFieldStats(ESQuery):
     def get(self, field, hostname, key='host', count=20, from_date=0 , qfilter = None, dict_format=False):
         data = render_template(get_top_query(), {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': field}, qfilter = qfilter)
         es_url = get_es_url(from_date)
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)
+        data = self._urlopen(es_url, data)
+
         # total number of results
         try:
             if get_es_major_version() >= 2:
@@ -1606,12 +1582,8 @@ class ESSidByHosts(ESQuery):
     def get(self, sid, count=20, from_date=0, dict_format=False):
         data = render_template(get_sid_by_host_query(), {'rule_sid': sid, 'alerts_number': count, 'from_date': from_date})
         es_url = get_es_url(from_date)
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)
+        data = self._urlopen(es_url, data)
+
         # total number of results
         try:
             if get_es_major_version() >= 2:
@@ -1651,12 +1623,8 @@ class ESTimeline(ESQuery):
             func = get_timeline_by_tags_query()
         data = render_template(func, {'from_date': from_date, 'interval': unicode(interval) + "s", 'hosts': hosts}, qfilter = qfilter)
         es_url = get_es_url(from_date)
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)
+        data = self._urlopen(es_url, data)
+
         # total number of results
         try:
             if get_es_major_version() >= 2:
@@ -1687,12 +1655,8 @@ class ESMetricsTimeline(ESQuery):
             interval = int((time() - (int(from_date)/ 1000)) / 100)
         data = render_template(get_stats_query(), {'from_date': from_date, 'interval': unicode(interval) + "s", 'value': value, 'hosts': hosts}, qfilter = qfilter)
         es_url = get_es_url(from_date, data = 'stats')
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)
+        data = self._urlopen(es_url, data)
+
         # total number of results
         if hosts == None:
             hosts = ["global"]
@@ -1720,42 +1684,28 @@ class ESPoststats(ESQuery):
     def get(self, from_date=0,  value = "poststats.rule_filter_1", hosts = None, qfilter = None):
         data = render_template(POSTSTATS_SUMMARY, {'from_date': from_date, 'filter': value, 'hosts': hosts}, qfilter = qfilter)
         es_url = get_es_url(from_date, data = 'poststats')
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)
+        data = self._urlopen(es_url, data)
         return data['aggregations']['hosts']['buckets'] if 'aggregations' in data else []
-
-
-def es_get_json(uri):
-    headers = {'content-type': 'application/json'}
-    req = urllib2.Request(get_es_path(uri), headers = headers)
-    out = _urlopen(req)
-    data = out.read()
-    # returned data is JSON
-    data = json.loads(data)
-    return data
 
 
 class ESHealth(ESQuery):
     def get(self):
-        return es_get_json(HEALTH_URL)
+        return self._urlopen(get_es_path(HEALTH_URL))
 
 
 class ESStats(ESQuery):
     def get(self):
-        return es_get_json(STATS_URL)
+        return self._urlopen(get_es_path(STATS_URL))
 
 
 class ESIndicesStats(ESQuery):
     def get(self):
-        return es_get_json(INDICES_STATS_URL)
+        return self._urlopen(get_es_path(INDICES_STATS_URL))
+
 
 class ESIndices(ESQuery):
     def get(self):
-        indices = es_get_json(INDICES_STATS_URL)
+        indices = self._urlopen(get_es_path(INDICES_STATS_URL))
         indexes_array = []
         if indices == None:
             return indexes_array
@@ -1764,6 +1714,7 @@ class ESIndices(ESQuery):
             docs['name'] = index
             indexes_array.append(docs)
         return indexes_array
+
 
 def compact_tree(tree):
     cdata = []
@@ -1776,16 +1727,12 @@ def compact_tree(tree):
         cdata.append(data)
     return cdata
 
+
 class ESRulesPerCategory(ESQuery):
     def get(self, from_date=0, hosts = None, qfilter = None):
         data = render_template(get_rules_per_category(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
         es_url = get_es_url(from_date)
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)
+        data = self._urlopen(es_url, data)
         # clean the data: we need to compact the leaf and previous data
         if data["hits"]["total"] > 0:
             cdata = compact_tree(data["aggregations"]["category"]["buckets"])
@@ -1855,12 +1802,7 @@ class ESAlertsCount(ESQuery):
         else:
             es_url = get_es_url(from_date)
         data = render_template(templ, context, qfilter = qfilter)
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)
+        data = self._urlopen(es_url, data)
         if prev:
             try:
                 countsdata = data["aggregations"]["trend"]["buckets"]
@@ -1875,12 +1817,7 @@ class ESLatestStats(ESQuery):
     def get(self, from_date=0, hosts = None, qfilter = None):
         data = render_template(get_latest_stats_entry(), {'from_date': from_date, 'hosts': hosts})
         es_url = get_es_url(from_date, data = 'stats')
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)
+        data = self._urlopen(es_url, data)
         try:
             return data['hits']['hits'][0]['_source']
         except:
@@ -1891,12 +1828,7 @@ class ESIppairAlerts(ESQuery):
     def get(self, from_date=0, hosts = None, qfilter = None):
         data = render_template(get_ippair_alerts_count(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
         es_url = get_es_url(from_date)
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)
+        data = self._urlopen(es_url, data)
         raw_data = data['aggregations']['src_ip']['buckets']
         nodes = []
         ip_list = []
@@ -1926,12 +1858,7 @@ class ESIppairNetworkAlerts(ESQuery):
     def get(self, from_date=0, hosts = None, qfilter = None):
         data = render_template(get_ippair_netinfo_alerts_count(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
         es_url = get_es_url(from_date)
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)
+        data = self._urlopen(es_url, data)
         raw_data = data['aggregations']['src_ip']['buckets']
         nodes = []
         ip_list = []
@@ -1974,13 +1901,8 @@ class ESAlertsTail(ESQuery):
             context = {'from_date': from_date, 'target_only': ''}
         data = render_template(ALERTS_TAIL, context, qfilter = qfilter)
         es_url = get_es_url(from_date)
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)['hits']['hits']
-        return data
+        data = self._urlopen(es_url, data)
+        return data['hits']['hits']
 
 
 class ESSuriLogTail(ESQuery):
@@ -1992,12 +1914,8 @@ class ESSuriLogTail(ESQuery):
         }
         data = render_template(SURICATA_LOGS_TAIL, context)
         es_url = get_es_url(from_date, data='engine')
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)['hits']['hits']
+        data = self._urlopen(es_url, data)
+        data = data['hits']['hits']
         data.reverse()
         return data
 
@@ -2008,12 +1926,7 @@ class ESTopRules(ESQuery):
             interval = int((time() - (int(from_date) / 1000)) / 100)
         data = render_template(TOP_ALERTS, {'interval': interval, 'count': count, 'from_date': from_date, 'order': order}, qfilter = qfilter)
         es_url = get_es_url(from_date)
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)
+        data = self._urlopen(es_url, data)
         try:
             return data['aggregations']['alerts']['buckets']
         except:
@@ -2027,12 +1940,7 @@ class ESSigsListHits(ESQuery):
         count = len(sids.split(','))
         data = render_template(SIGS_LIST_HITS, {'sids': sids, 'interval': interval,'count': count, 'from_date': from_date}, qfilter = qfilter)
         es_url = get_es_url(from_date)
-        headers = {'content-type': 'application/json'}
-        req = urllib2.Request(es_url, data, headers = headers)
-        out = _urlopen(req)
-        data = out.read()
-        # returned data is JSON
-        data = json.loads(data)
+        data = self._urlopen(es_url, data)
         try:
             return data['aggregations']['alerts']['buckets']
         except:
