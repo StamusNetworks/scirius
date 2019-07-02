@@ -165,6 +165,9 @@ export class HuntFilter extends React.Component {
     filterAdded = (field, value, fullString) => {
         let filterText = '';
         let fieldId = field.id;
+        if (['msg', 'not_in_msg', 'search'].indexOf(field.id) !== -1) {
+            value = value.trim();
+        }
 
         if (field.filterType !== 'complex-select-text') {
             if (field.filterType === 'select' || field.filterType === 'complex-select') {
