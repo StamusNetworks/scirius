@@ -58,9 +58,10 @@ account ::
 
  python manage.py createsuperuser
 
-Before starting the application you need to construct the bundles by running webpack ::
+Before starting the application you need to construct the bundles by running webpack and collect static files::
 
  webpack
+ python manage.py collectstatic
 
 This step as to be done after each code update.
 
