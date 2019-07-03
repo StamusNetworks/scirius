@@ -60,6 +60,7 @@ export default class FilterList extends React.Component {
     }
 
     render() {
+        const newFilterValue = this.state.newFilterValue.toString();
         return <React.Fragment>
             {/* eslint-disable react/no-array-index-key */}
             <ul className="list-inline">{this.props.filters.map((filter, idx) => <FilterItem key={idx} onRemove={() => this.props.onRemove(idx)} onEdit={() => this.editHandler(idx, filter.id, filter.value, filter.negated)} {...filter} />)}</ul>
@@ -84,10 +85,10 @@ export default class FilterList extends React.Component {
                             <Col sm={10}>
                                 <InputGroup>
                                     <InputGroupAddon>{this.state.filterId}</InputGroupAddon>
-                                    <FormGroup validationState={(this.state.newFilterValue.match(/ /g) ? 'error' : 'success')} className={'form-group-no-margins'}>
+                                    <FormGroup validationState={(newFilterValue.length && newFilterValue.match(/ /g) ? 'error' : 'success')} className={'form-group-no-margins'}>
                                         <FormControl
                                             type="text"
-                                            value={this.state.newFilterValue}
+                                            value={newFilterValue}
                                             onChange={(e) => this.setState({
                                                 newFilterValue: (isNumeric(e.target.value)) ? parseInt(e.target.value, 10) : e.target.value
                                             })}
@@ -112,7 +113,7 @@ export default class FilterList extends React.Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.closeHandler}>Cancel</Button>
-                    <Button bsStyle="primary" disabled={!!this.state.newFilterValue.match(/ /g)} onClick={this.saveHandler}>Save</Button>
+                    <Button bsStyle="primary" disabled={!!(newFilterValue.toString().length && newFilterValue.toString().match(/ /g))} onClick={this.saveHandler}>Save</Button>
                 </Modal.Footer>
             </Modal>
         </React.Fragment>
