@@ -18,16 +18,17 @@ export default class FilterEditKebab extends React.Component {
         this.saveActionToFilterSet = this.saveActionToFilterSet.bind(this);
         this.handleFieldChange = this.handleFieldChange.bind(this);
         this.handleComboChange = this.handleComboChange.bind(this);
+        this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
         this.setSharedFilter = this.setSharedFilter.bind(this);
         this.submitActionToFilterSet = this.submitActionToFilterSet.bind(this);
     }
 
     setSharedFilter(e) {
-        this.setState({ filterSets: { showModal: true, shared: e.target.checked, page: this.state.filterSets.page, name: this.state.filterSets.name } });
+        this.setState({ filterSets: { showModal: true, shared: e.target.checked, page: this.state.filterSets.page, name: this.state.filterSets.name, description: this.state.filterSets.description } });
     }
 
     closeActionToFilterSet = () => {
-        this.setState({ filterSets: { showModal: false, shared: true, page: '', name: '', errors: undefined } });
+        this.setState({ filterSets: { showModal: false, shared: true, page: '', name: '', errors: undefined, description: '' } });
     }
 
     generateFilterSet = () => {
@@ -69,7 +70,7 @@ export default class FilterEditKebab extends React.Component {
     }
 
     saveActionToFilterSet() {
-        this.setState({ filterSets: { showModal: true, page: '', shared: true, name: '' } });
+        this.setState({ filterSets: { showModal: true, page: '', shared: true, name: '', description: '' } });
     }
 
     convertActionToFilters() {
@@ -78,17 +79,21 @@ export default class FilterEditKebab extends React.Component {
     }
 
     handleComboChange(event) {
-        this.setState({ filterSets: { showModal: true, shared: this.state.filterSets.shared, page: event.target.value, name: this.state.filterSets.name } });
+        this.setState({ filterSets: { showModal: true, shared: this.state.filterSets.shared, page: event.target.value, name: this.state.filterSets.name, description: this.state.filterSets.description } });
     }
 
     handleFieldChange(event) {
-        this.setState({ filterSets: { showModal: true, shared: this.state.filterSets.shared, page: this.state.filterSets.page, name: event.target.value } });
+        this.setState({ filterSets: { showModal: true, shared: this.state.filterSets.shared, page: this.state.filterSets.page, name: event.target.value, description: this.state.filterSets.description } });
+    }
+
+    handleDescriptionChange(event) {
+        this.setState({ filterSets: { showModal: true, shared: this.state.filterSets.shared, page: this.state.filterSets.page, name: this.state.filterSets.name, description: event.target.value } });
     }
 
     submitActionToFilterSet() {
         const filters = this.generateFilterSet();
 
-        axios.post(config.API_URL + config.HUNT_FILTER_SETS, { name: this.state.filterSets.name, page: this.state.filterSets.page, content: filters, share: this.state.filterSets.shared })
+        axios.post(config.API_URL + config.HUNT_FILTER_SETS, { name: this.state.filterSets.name, page: this.state.filterSets.page, content: filters, share: this.state.filterSets.shared, description: this.state.filterSets.description })
         .then(() => {
             this.closeActionToFilterSet();
             this.setState({ errors: undefined });
@@ -107,6 +112,7 @@ export default class FilterEditKebab extends React.Component {
                     showModal={this.state.filterSets.showModal}
                     close={this.closeActionToFilterSet}
                     errors={this.state.errors}
+                    handleDescriptionChange={this.handleDescriptionChange}
                     handleComboChange={this.handleComboChange}
                     handleFieldChange={this.handleFieldChange}
                     setSharedFilter={this.setSharedFilter}

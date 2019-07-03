@@ -172,21 +172,23 @@ export default class FilterSets extends React.Component {
                                 {rowsGlobal && <NotificationDrawer.PanelBody key="containsNotifications">
 
                                     {rowsGlobal.map((item) => (
-                                        <Notification key={item.id} seen={false}>
-                                            <NotificationDrawer.Dropdown id="Dropdown1">
-                                                <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
-                                                <MenuItem key={'delete'} onClick={() => this.deleteFilterSets(item)}>Delete</MenuItem>
-                                            </NotificationDrawer.Dropdown>
-                                            <Icon className="pull-left" type="pf" name="filter" />
-                                            <Notification.Content onClick={() => this.loadFilterSets(item)}>
-                                                <Notification.Message>
-                                                    {item.name}
-                                                </Notification.Message>
-                                                <Notification.Info leftText={`${item.pageTitle} Page`} rightText={'Shared'} />
-                                            </Notification.Content>
-                                        </Notification>
+                                        <span key={item.name} data-toggle="tooltip" title={item.description}>
+                                            <Notification key={item.id} seen={false}>
+                                                <NotificationDrawer.Dropdown id="Dropdown1">
+                                                    <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
+                                                    <MenuItem key={'delete'} onClick={() => this.deleteFilterSets(item)}>Delete</MenuItem>
+                                                </NotificationDrawer.Dropdown>
+                                                {this.getIcon(item)}
+                                                <Notification.Content onClick={() => this.loadFilterSets(item)}>
+                                                    <Notification.Message>
+                                                        {item.name}
+                                                    </Notification.Message>
+                                                    <Notification.Info leftText={`${item.pageTitle} Page`} rightText={'Shared'} />
+                                                </Notification.Content>
+                                            </Notification>
+                                        </span>
                                     ))}
-                                    {this.state.loading && <Notification key="loading" type="loading" /> }
+                                    {this.state.loading && <Notification key="loading" type="loading" />}
                                 </NotificationDrawer.PanelBody>
                                 }
                                 {!rowsGlobal && <NotificationDrawer.EmptyState title={''} />}
@@ -208,21 +210,23 @@ export default class FilterSets extends React.Component {
                                 {rowsPrivate && <NotificationDrawer.PanelBody key="containsNotifications">
 
                                     {rowsPrivate.map((item) => (
-                                        <Notification key={item.id} seen={false}>
-                                            <NotificationDrawer.Dropdown id="Dropdown2">
-                                                <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
-                                                <MenuItem key={'delete'} onClick={() => this.deleteFilterSets(item)}>Delete</MenuItem>
-                                            </NotificationDrawer.Dropdown>
-                                            <Icon className="pull-left" type="pf" name="filter" />
-                                            <Notification.Content onClick={() => this.loadFilterSets(item)}>
-                                                <Notification.Message>
-                                                    {item.name}
-                                                </Notification.Message>
-                                                <Notification.Info leftText={`${item.pageTitle} Page`} rightText={'Private'} />
-                                            </Notification.Content>
-                                        </Notification>
+                                        <span key={item.name} data-toggle="tooltip" title={item.description}>
+                                            <Notification key={item.id} seen={false}>
+                                                <NotificationDrawer.Dropdown id="Dropdown2">
+                                                    <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
+                                                    <MenuItem key={'delete'} onClick={() => this.deleteFilterSets(item)}>Delete</MenuItem>
+                                                </NotificationDrawer.Dropdown>
+                                                {this.getIcon(item)}
+                                                <Notification.Content onClick={() => this.loadFilterSets(item)}>
+                                                    <Notification.Message>
+                                                        {item.name}
+                                                    </Notification.Message>
+                                                    <Notification.Info leftText={`${item.pageTitle} Page`} rightText={'Private'} />
+                                                </Notification.Content>
+                                            </Notification>
+                                        </span>
                                     ))}
-                                    {this.state.loading && <Notification key="loading" type="loading" /> }
+                                    {this.state.loading && <Notification key="loading" type="loading" />}
 
                                 </NotificationDrawer.PanelBody>
                                 }
@@ -246,18 +250,20 @@ export default class FilterSets extends React.Component {
                                 {rowsStatic && <NotificationDrawer.PanelBody key="containsNotifications">
 
                                     {rowsStatic.map((item) => (
-                                        <Notification key={item.id} seen={false}>
-                                            <NotificationDrawer.Dropdown id="Dropdown3">
-                                                <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
-                                            </NotificationDrawer.Dropdown>
-                                            <Icon className="pull-left" type="pf" name="filter" />
-                                            <Notification.Content onClick={() => this.loadFilterSets(item)}>
-                                                <Notification.Message>
-                                                    {item.name}
-                                                </Notification.Message>
-                                                <Notification.Info leftText={`${item.pageTitle} Page`} rightText={'Static'} />
-                                            </Notification.Content>
-                                        </Notification>
+                                        <span key={item.name} data-toggle="tooltip" title={item.description}>
+                                            <Notification key={item.id} seen={false}>
+                                                <NotificationDrawer.Dropdown id="Dropdown3">
+                                                    <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
+                                                </NotificationDrawer.Dropdown>
+                                                {this.getIcon(item)}
+                                                <Notification.Content onClick={() => this.loadFilterSets(item)}>
+                                                    <Notification.Message>
+                                                        {item.name}
+                                                    </Notification.Message>
+                                                    <Notification.Info leftText={`${item.pageTitle} Page`} rightText={'Static'} />
+                                                </Notification.Content>
+                                            </Notification>
+                                        </span>
                                     ))}
                                     {this.state.loading && <Notification key="loading" type="loading" />}
 

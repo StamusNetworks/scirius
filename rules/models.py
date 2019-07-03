@@ -252,6 +252,7 @@ class FilterSet(models.Model):
     content = models.TextField()
     name = models.CharField(max_length=150)
     page = models.CharField(max_length=25)
+    description = models.TextField(blank=True, null=True)
 
     @staticmethod
     def get_default_filter_sets():

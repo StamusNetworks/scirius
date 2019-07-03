@@ -57,7 +57,7 @@ export class HuntFilter extends React.Component {
             currentValue: '',
             tagFilters,
             gotAlertTag,
-            filterSets: { showModal: false, shared: true },
+            filterSets: { showModal: false, shared: true, description: '' },
             filterSetName: '',
             errors: undefined
         };
@@ -71,6 +71,7 @@ export class HuntFilter extends React.Component {
         this.closeHuntFilterSetsModal = this.closeHuntFilterSetsModal.bind(this);
         this.submitFilterSets = this.submitFilterSets.bind(this);
         this.handleFieldChange = this.handleFieldChange.bind(this);
+        this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
     }
 
     componentDidUpdate(prevProps) {
@@ -374,7 +375,7 @@ export class HuntFilter extends React.Component {
     }
 
     closeHuntFilterSetsModal() {
-        this.setState({ filterSets: { showModal: false, shared: true } });
+        this.setState({ filterSets: { showModal: false, shared: true, description: '' } });
     }
 
     loadHuntFilterSetsModal() {
@@ -382,7 +383,7 @@ export class HuntFilter extends React.Component {
     }
 
     setSharedFilter(e) {
-        this.setState({ filterSets: { showModal: true, shared: e.target.checked } });
+        this.setState({ filterSets: { showModal: true, shared: e.target.checked, description: this.state.filterSets.description } });
     }
 
     renderInput() {
@@ -574,7 +575,11 @@ export class HuntFilter extends React.Component {
     }
 
     handleFieldChange(event) {
-        this.setState({ filterSetName: event.target.value });
+        this.setState({ filterSetName: event.target.value, filterSets: { showModal: true, shared: this.state.filterSets.shared, description: this.state.filterSets.description } });
+    }
+
+    handleDescriptionChange(event) {
+        this.setState({ filterSetName: this.state.filterSetName, filterSets: { showModal: true, shared: this.state.filterSets.shared, description: event.target.value } });
     }
 
     submitFilterSets() {
@@ -594,7 +599,7 @@ export class HuntFilter extends React.Component {
             filters.push(tags);
         }
 
-        axios.post(config.API_URL + config.HUNT_FILTER_SETS, { name: this.state.filterSetName, page: this.props.page, content: filters, share: this.state.filterSets.shared })
+        axios.post(config.API_URL + config.HUNT_FILTER_SETS, { name: this.state.filterSetName, page: this.props.page, content: filters, share: this.state.filterSets.shared, description: this.state.filterSets.description })
         .then(() => {
             this.closeHuntFilterSetsModal();
             this.setState({ errors: undefined });
@@ -621,6 +626,7 @@ export class HuntFilter extends React.Component {
                 showModal={this.state.filterSets.showModal}
                 close={this.closeHuntFilterSetsModal}
                 errors={this.state.errors}
+                handleDescriptionChange={this.handleDescriptionChange}
                 handleComboChange={undefined}
                 handleFieldChange={this.handleFieldChange}
                 setSharedFilter={this.setSharedFilter}

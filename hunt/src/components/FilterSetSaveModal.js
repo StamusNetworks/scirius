@@ -60,6 +60,14 @@ const FilterSetSaveModal = (props) => (
                         />
                     </Col>
                 </FormGroup>
+                <FormGroup>
+                    <Col sm={4}>
+                        <strong>Description:</strong>
+                    </Col>
+                    <Col sm={8}>
+                        <textarea cols="49" rows="3" onChange={props.handleDescriptionChange} />
+                    </Col>
+                </FormGroup>
             </Form>
         </Modal.Body>
 
@@ -84,6 +92,7 @@ FilterSetSaveModal.propTypes = {
     showModal: PropTypes.any,
     close: PropTypes.any,
     errors: PropTypes.any,
+    handleDescriptionChange: PropTypes.any,
     handleComboChange: PropTypes.any,
     handleFieldChange: PropTypes.any,
     setSharedFilter: PropTypes.any,
