@@ -324,6 +324,9 @@ span.badge.badge-primary {
 g.tick[transform^='translate(-']{
   display: none;
 }
+.form-group-no-margins {
+  margin: 0 !important;
+}
 
 button.dashboard-list-item.list-group-item {
   background: #FFF;

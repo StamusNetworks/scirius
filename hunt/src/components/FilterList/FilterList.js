@@ -44,7 +44,8 @@ export default class FilterList extends React.Component {
                     ...v,
                     label: `${this.state.filterId}: ${this.state.newFilterValue}`,
                     value: this.state.newFilterValue,
-                    negated: this.state.newFilterNegated
+                    negated: this.state.newFilterNegated,
+                    fullString: false,
                 } : v;
             });
             this.props.updateFilter(activeFilters);
@@ -83,13 +84,16 @@ export default class FilterList extends React.Component {
                             <Col sm={10}>
                                 <InputGroup>
                                     <InputGroupAddon>{this.state.filterId}</InputGroupAddon>
-                                    <FormControl
-                                        type="text"
-                                        value={this.state.newFilterValue}
-                                        onChange={(e) => this.setState({
-                                            newFilterValue: (isNumeric(e.target.value)) ? parseInt(e.target.value, 10) : e.target.value
-                                        })}
-                                    />
+                                    <FormGroup validationState={(this.state.newFilterValue.match(/ /g) ? 'error' : 'success')} className={'form-group-no-margins'}>
+                                        <FormControl
+                                            type="text"
+                                            value={this.state.newFilterValue}
+                                            onChange={(e) => this.setState({
+                                                newFilterValue: (isNumeric(e.target.value)) ? parseInt(e.target.value, 10) : e.target.value
+                                            })}
+                                            className={'has-error'}
+                                        />
+                                    </FormGroup>
                                 </InputGroup>
                                 <HelpBlock>Enter your filter value</HelpBlock>
                             </Col>
@@ -108,7 +112,7 @@ export default class FilterList extends React.Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.closeHandler}>Cancel</Button>
-                    <Button bsStyle="primary" onClick={this.saveHandler}>Save</Button>
+                    <Button bsStyle="primary" disabled={!!this.state.newFilterValue.match(/ /g)} onClick={this.saveHandler}>Save</Button>
                 </Modal.Footer>
             </Modal>
         </React.Fragment>
