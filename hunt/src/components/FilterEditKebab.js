@@ -14,7 +14,7 @@ export default class FilterEditKebab extends React.Component {
         this.hideToggle = this.hideToggle.bind(this);
         this.state = { toggle: { show: false, action: 'delete' }, filterSets: { showModal: false, page: '', shared: true, name: '' }, errors: undefined };
         this.closeAction = this.closeAction.bind(this);
-        this.convertActionToFilterSet = this.convertActionToFilterSet.bind(this);
+        this.convertActionToFilters = this.convertActionToFilters.bind(this);
         this.saveActionToFilterSet = this.saveActionToFilterSet.bind(this);
         this.handleFieldChange = this.handleFieldChange.bind(this);
         this.handleComboChange = this.handleComboChange.bind(this);
@@ -72,7 +72,7 @@ export default class FilterEditKebab extends React.Component {
         this.setState({ filterSets: { showModal: true, page: '', shared: true, name: '' } });
     }
 
-    convertActionToFilterSet() {
+    convertActionToFilters() {
         const filters = this.generateFilterSet();
         this.props.updateIDSFilterState(filters);
     }
@@ -128,8 +128,8 @@ export default class FilterEditKebab extends React.Component {
                         Delete Action
                     </MenuItem>
                     <MenuItem divider />
-                    <MenuItem onClick={() => { this.convertActionToFilterSet(); }}>
-                        Convert Action to Filter set (not saved)
+                    <MenuItem onClick={() => { this.convertActionToFilters(); }}>
+                        Convert Action to Filters
                     </MenuItem>
                     <MenuItem onClick={() => { this.saveActionToFilterSet(); }}>
                         Save Action as Filter set

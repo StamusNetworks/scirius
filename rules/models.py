@@ -282,44 +282,58 @@ class FilterSet(models.Model):
                 'content': [
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: firefox',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: firefox*',
                         'id': 'http.http_user_agent',
-                        'value': 'firefox',
+                        'value': 'firefox*',
                         'query': 'filter'
                     },
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: explorer',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: explorer*',
                         'id': 'http.http_user_agent',
-                        'value': 'explorer',
+                        'value': 'explorer*',
                         'query': 'filter'
                     },
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: opera',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: opera*',
                         'id': 'http.http_user_agent',
-                        'value': 'opera',
+                        'value': 'opera*',
                         'query': 'filter'
                     },
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: edge',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: edge*',
                         'id': 'http.http_user_agent',
-                        'value': 'edge',
+                        'value': 'edge*',
                         'query': 'filter'
                     },
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: wget',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: wget*',
                         'id': 'http.http_user_agent',
-                        'value': 'wget',
+                        'value': 'wget*',
                         'query': 'filter'
                     },
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: curl',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: curl*',
                         'id': 'http.http_user_agent',
-                        'value': 'curl',
+                        'value': 'curl*',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': False,
+                        'full_string': True,
+                        'label': 'app_proto: http',
+                        'id': 'app_proto',
+                        'value': 'http',
                         'query': 'filter'
                     },
                 ],
@@ -330,58 +344,74 @@ class FilterSet(models.Model):
                 'content': [
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: firefox',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: firefox*',
                         'id': 'http.http_user_agent',
-                        'value': 'firefox',
+                        'value': 'firefox*',
                         'query': 'filter'
                     },
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: explorer',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: explorer*',
                         'id': 'http.http_user_agent',
-                        'value': 'explorer',
+                        'value': 'explorer*',
                         'query': 'filter'
                     },
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: opera',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: opera*',
                         'id': 'http.http_user_agent',
-                        'value': 'opera',
+                        'value': 'opera*',
                         'query': 'filter'
                     },
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: edge',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: edge*',
                         'id': 'http.http_user_agent',
-                        'value': 'edge',
+                        'value': 'edge*',
                         'query': 'filter'
                     },
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: wget',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: wget*',
                         'id': 'http.http_user_agent',
-                        'value': 'wget',
+                        'value': 'wget*',
                         'query': 'filter'
                     },
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: curl',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: curl*',
                         'id': 'http.http_user_agent',
-                        'value': 'curl',
+                        'value': 'curl*',
                         'query': 'filter'
                     },
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: perl',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: perl*',
                         'id': 'http.http_user_agent',
-                        'value': 'perl',
+                        'value': 'perl*',
                         'query': 'filter'
                     },
                     {
                         'negated': True,
-                        'label': 'http.http_user_agent: python',
+                        'full_string': False,
+                        'label': 'http.http_user_agent: python*',
                         'id': 'http.http_user_agent',
-                        'value': 'python',
+                        'value': 'python*',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': False,
+                        'full_string': True,
+                        'label': 'app_proto: http',
+                        'id': 'app_proto',
+                        'value': 'http',
                         'query': 'filter'
                     },
                 ],

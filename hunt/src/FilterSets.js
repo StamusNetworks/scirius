@@ -39,6 +39,7 @@ export default class FilterSets extends React.Component {
 
         this.loadFilterSets = this.loadFilterSets.bind(this);
         this.deleteFilterSets = this.deleteFilterSets.bind(this);
+        this.escFunction = this.escFunction.bind(this);
     }
 
     componentDidMount() {
@@ -67,6 +68,11 @@ export default class FilterSets extends React.Component {
             }
             this.setState({ rows, loading: false });
         });
+        document.addEventListener('keydown', this.escFunction, false);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('keydown', this.escFunction, false);
     }
 
     togglePanel = (key) => {
@@ -76,6 +82,35 @@ export default class FilterSets extends React.Component {
 
     handleSearchValue = (event) => {
         this.setState({ searchValue: event.target.value });
+    }
+
+    getIcon = (item) => {
+        if (item.page === 'DASHBOARDS') {
+            return <Icon className="pull-left" type="fa" name="tachometer" />;
+        }
+        if (item.page === 'RULES_LIST') {
+            return <Icon className="pull-left" type="pf" name="security" />;
+        }
+        if (item.page === 'ALERTS_LIST') {
+            return <Icon className="pull-left" type="fa" name="bell" />;
+        }
+        if (item.page === 'HOSTS_LIST') {
+            return <Icon className="pull-left" type="fa" name="id-card-o" />;
+        }
+        return undefined;
+    }
+
+    escFunction(event) {
+        const esc = 27;
+        const tab = 9;
+
+        if (event.keyCode === esc) {
+            this.props.close();
+        } else if (event.keyCode === tab) {
+            const panels = ['global', 'private', 'static'];
+            const idx = (panels.indexOf(this.state.expandedPanel) + 1) % 3;
+            this.togglePanel(panels[idx]);
+        }
     }
 
     loadFilterSets(row) {
