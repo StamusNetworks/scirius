@@ -99,7 +99,7 @@ export default class FilterList extends React.Component {
                                 <HelpBlock>Enter your filter value</HelpBlock>
                             </Col>
                         </FormGroup>
-                        {this.state.filterId !== 'host_id.ip' && this.state.filterId !== 'alert.signature_id' && <FormGroup controlId="checkbox">
+                        <FormGroup controlId="checkbox">
                             <Col componentClass={ControlLabel} sm={2}>
                                 <ControlLabel>Negated</ControlLabel>
                             </Col>
@@ -107,7 +107,7 @@ export default class FilterList extends React.Component {
                                 <Checkbox onChange={this.negateHandler} checked={this.state.newFilterNegated}>Filter is negated</Checkbox>
                                 <HelpBlock>Check it if you want to negate the filter</HelpBlock>
                             </Col>
-                        </FormGroup>}
+                        </FormGroup>
 
                     </Form>
                 </Modal.Body>

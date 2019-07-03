@@ -257,7 +257,7 @@ export default class SignaturesPage extends React.Component {
     findSID = (filters) => {
         let foundSid;
         for (let i = 0; i < filters.length; i += 1) {
-            if (filters[i].id === 'alert.signature_id') {
+            if (filters[i].id === 'alert.signature_id' && filters[i].negated === false) {
                 foundSid = filters[i].value;
                 break;
             }
