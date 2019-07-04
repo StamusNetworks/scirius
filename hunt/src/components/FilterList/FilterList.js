@@ -89,6 +89,12 @@ export default class FilterList extends React.Component {
                                         <FormControl
                                             type="text"
                                             value={newFilterValue}
+                                            onKeyDown={(e) => {
+                                                if (e.keyCode === 13) {
+                                                    e.preventDefault();
+                                                    this.saveHandler();
+                                                }
+                                            }}
                                             onChange={(e) => this.setState({
                                                 newFilterValue: (isNumeric(e.target.value)) ? parseInt(e.target.value, 10) : e.target.value
                                             })}
