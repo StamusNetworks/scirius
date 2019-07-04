@@ -4,7 +4,7 @@ export function esEscape(str) {
     str = str.replace(/[<>]/g, '');
 
     // Escape other reserved characters
-    return str.replace(/[+-=&|!(){}[\]^"~:\\/]/g, (c) => `\\${c}`);
+    return str.replace(/[=+\-&|!(){}[\]^"~:\\/]/g, (c) => `\\${c}`);
 }
 
 export function buildQFilter(filters, systemSettings) {
