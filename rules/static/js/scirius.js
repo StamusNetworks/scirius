@@ -119,7 +119,9 @@ function draw_timeline(from_date, hosts, filter, ylegend=undefined) {
                             $("#timeline p").addClass("svgcenter");
                             return null;
                         }
-			            $("#timeline p").hide();
+
+ 			            // FIX: Remove timeline before updating.
+ 			            d3.select("#timeline svg > *").remove();
                             nv.addGraph(function() {
 		            /* starting from 4 hosts multibar is unreadable */
                             if (hosts.length > 3) {
@@ -149,8 +151,10 @@ function draw_timeline(from_date, hosts, filter, ylegend=undefined) {
                                     return d3.time.format('%m/%d %H:%M')(new Date(d))
                                 });
 
+                                // FIX: Alerts are always integers. No need to
+                                // have fixed point of 1 decimal.
                                 chart.yAxis
-                                .tickFormat(d3.format(',.1f'));
+                                .tickFormat(d3.format(',d'));
 
                                 if (ylegend) {
                                     $('#timeline_title').text(ylegend);
