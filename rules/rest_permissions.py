@@ -45,14 +45,25 @@ class IsCurrentUserOrSuperUserOrReadOnly(permissions.BasePermission):
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        if 'share' in request.data and request.data['share']:
+            if request.user.is_active and not request.user.is_staff and not request.user.is_superuser:
+                return False
+
+        return True
+
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed to any request,
         # so we'll always allow GET, HEAD or OPTIONS requests.
         if request.method in permissions.SAFE_METHODS:
-            return True
+            if request.user.is_staff or request.user.is_superuser:
+                return True
+            elif request.user.is_active:
+                if request.user == obj.user or obj.id < 0 or obj.user is None:  # obj.id < 0 means static filter sets
+                    return True
+            return False
 
-        if request.method == 'DELETE':
-            return obj.user == request.user or request.user.is_superuser 
-
-        # Instance must have an attribute named `owner`.
-        return obj.user == request.user or obj.user is None or request.user.is_superuser
+        return obj.user == request.user or request.user.is_superuser or request.user.is_staff
