@@ -108,14 +108,9 @@ export default class FilterSets extends React.Component {
 
     escFunction(event) {
         const esc = 27;
-        const tab = 9;
 
         if (event.keyCode === esc) {
             this.props.close();
-        } else if (event.keyCode === tab) {
-            const panels = ['global', 'private', 'static'];
-            const idx = (panels.indexOf(this.state.expandedPanel) + 1) % 3;
-            this.togglePanel(panels[idx]);
         }
     }
 
