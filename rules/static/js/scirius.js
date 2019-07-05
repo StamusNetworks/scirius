@@ -61,10 +61,14 @@ $( 'document' ).ready(function() {
 });
 
 
-function load_rules(from_date, hosts, filter, callback) {
+function load_rules(from_date, hosts, filter, callback, sort_order) {
     var tgturl = "/rules/es?query=rules&host=" + hosts.join() + "&from_date=" + from_date;
-    if (filter != null) {
-       tgturl = tgturl + "&filter=" + filter;
+
+    // FIX: Sort the rules table.
+    tgturl = tgturl + "&sort=" + sort_order;
+
+    if (filter != null && filter != "None") {
+      tgturl = tgturl + "&filter=" + filter;
     }
     $.ajax({
        url: tgturl,
@@ -344,7 +348,7 @@ function build_path(d) {
 }
 window.build_path = build_path;
 
-function draw_sunburst(from_date, hosts, filter, callback) {
+function draw_sunburst(from_date, hosts, filter, callback, sort_order) {
         var esurl = "/rest/rules/es/rules_per_category/?from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
             esurl = esurl + "&filter=" + filter;
@@ -436,10 +440,10 @@ var arc = d3.svg.arc()
     }
     if (d.key == "categories") {
         draw_timeline(from_date, hosts, null);
-        load_rules(from_date, hosts, null);
+        load_rules(from_date, hosts, null, null, sort_order);
     } else {
         draw_timeline(from_date, hosts, 'alert.category.raw:"'+d.key+'"');
-        load_rules(from_date, hosts, 'alert.category.raw:"'+d.key+'"');
+        load_rules(from_date, hosts, 'alert.category.raw:"'+d.key+'"', null, sort_order);
     }
     path.transition()
       .duration(1000)

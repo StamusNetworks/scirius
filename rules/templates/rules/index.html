@@ -151,7 +151,7 @@
 $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null, 'Hits'); });
 
 $( 'document' ).ready(function() {
-	load_rules({{ from_date }},  [ '*' ], null);
+	load_rules({{ from_date }},  [ '*' ], null, undefined, '{{ sort_order }}');
         var canvas = document.createElement("canvas");
         // Get WebGLRenderingContext from canvas element.
         var gl = canvas.getContext("webgl")

@@ -58,6 +58,19 @@ def index(request):
         context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
     except:
         pass
+
+    # FIXME: This would seem to be redundant since humio_client._fix_sorting sets default
+    # values, but the default ordering is not passed back and thus not set as context
+    # variables. As a temporary fix, this makes it so that the correct sorting used
+    # is shown at the table column 'hits' (descending).
+    if request.GET.has_key('sort'):
+        context['sort_order'] = request.GET.get('sort')
+        context['sort_param'] = context['sort_order']
+    else:
+        # This only works at index.html for now
+        context['sort_order'] = '-hits'
+        context['sort_param'] = '-hits'
+
     return scirius_render(request, 'rules/index.html', context)
 
 def about(request):
