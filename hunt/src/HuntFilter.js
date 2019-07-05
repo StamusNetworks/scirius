@@ -57,9 +57,10 @@ export class HuntFilter extends React.Component {
             currentValue: '',
             tagFilters,
             gotAlertTag,
-            filterSets: { showModal: false, shared: true, description: '' },
+            filterSets: { showModal: false, shared: false, description: '' },
             filterSetName: '',
-            errors: undefined
+            errors: undefined,
+            user: undefined
         };
         this.toggleInformational = this.toggleInformational.bind(this);
         this.toggleRelevant = this.toggleRelevant.bind(this);
@@ -72,6 +73,13 @@ export class HuntFilter extends React.Component {
         this.submitFilterSets = this.submitFilterSets.bind(this);
         this.handleFieldChange = this.handleFieldChange.bind(this);
         this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
+    }
+
+    componentDidMount() {
+        axios.get(`${config.API_URL}${config.USER_PATH}current_user/`)
+        .then((currentUser) => {
+            this.setState({ user: currentUser.data });
+        });
     }
 
     componentDidUpdate(prevProps) {
@@ -375,11 +383,11 @@ export class HuntFilter extends React.Component {
     }
 
     closeHuntFilterSetsModal() {
-        this.setState({ filterSets: { showModal: false, shared: true, description: '' } });
+        this.setState({ filterSets: { showModal: false, shared: false, description: '' } });
     }
 
     loadHuntFilterSetsModal() {
-        this.setState({ filterSets: { showModal: true, shared: true } });
+        this.setState({ filterSets: { showModal: true, shared: false } });
     }
 
     setSharedFilter(e) {
@@ -605,7 +613,15 @@ export class HuntFilter extends React.Component {
             this.setState({ errors: undefined });
         })
         .catch((error) => {
-            this.setState({ errors: error.response.data });
+            let errors = error.response.data;
+
+            if (error.response.status === 403) {
+                const noRights = this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser && this.state.filterSets.shared;
+                if (noRights) {
+                    errors = { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
+                }
+            }
+            this.setState({ errors });
         });
     }
 
@@ -620,6 +636,7 @@ export class HuntFilter extends React.Component {
             }
         }
 
+        const noRights = this.state.user !== undefined && this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser;
         return (
             <FilterSetSave
                 title={'Create new Filter Set'}
@@ -632,6 +649,7 @@ export class HuntFilter extends React.Component {
                 setSharedFilter={this.setSharedFilter}
                 submit={this.submitFilterSets}
                 page={page}
+                noRights={noRights}
             />
         );
     }

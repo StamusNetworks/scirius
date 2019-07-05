@@ -12,7 +12,7 @@ export default class FilterEditKebab extends React.Component {
         super(props);
         this.displayToggle = this.displayToggle.bind(this);
         this.hideToggle = this.hideToggle.bind(this);
-        this.state = { toggle: { show: false, action: 'delete' }, filterSets: { showModal: false, page: '', shared: true, name: '' }, errors: undefined };
+        this.state = { toggle: { show: false, action: 'delete' }, filterSets: { showModal: false, page: '', shared: false, name: '' }, errors: undefined, user: undefined };
         this.closeAction = this.closeAction.bind(this);
         this.convertActionToFilters = this.convertActionToFilters.bind(this);
         this.saveActionToFilterSet = this.saveActionToFilterSet.bind(this);
@@ -23,12 +23,19 @@ export default class FilterEditKebab extends React.Component {
         this.submitActionToFilterSet = this.submitActionToFilterSet.bind(this);
     }
 
+    componentDidMount() {
+        axios.get(`${config.API_URL}${config.USER_PATH}current_user/`)
+        .then((currentUser) => {
+            this.setState({ user: currentUser.data });
+        });
+    }
+
     setSharedFilter(e) {
         this.setState({ filterSets: { showModal: true, shared: e.target.checked, page: this.state.filterSets.page, name: this.state.filterSets.name, description: this.state.filterSets.description } });
     }
 
     closeActionToFilterSet = () => {
-        this.setState({ filterSets: { showModal: false, shared: true, page: '', name: '', errors: undefined, description: '' } });
+        this.setState({ filterSets: { showModal: false, shared: false, page: '', name: '', errors: undefined, description: '' } });
     }
 
     generateFilterSet = () => {
@@ -70,7 +77,7 @@ export default class FilterEditKebab extends React.Component {
     }
 
     saveActionToFilterSet() {
-        this.setState({ filterSets: { showModal: true, page: '', shared: true, name: '', description: '' } });
+        this.setState({ filterSets: { showModal: true, page: '', shared: false, name: '', description: '' } });
     }
 
     convertActionToFilters() {
@@ -99,11 +106,20 @@ export default class FilterEditKebab extends React.Component {
             this.setState({ errors: undefined });
         })
         .catch((error) => {
-            this.setState({ errors: error.response.data });
+            let errors = error.response.data;
+
+            if (error.response.status === 403) {
+                const noRights = this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser && this.state.filterSets.shared;
+                if (noRights) {
+                    errors = { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
+                }
+            }
+            this.setState({ errors });
         });
     }
 
     render() {
+        const noRights = this.state.user !== undefined && this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser;
         return (
             <React.Fragment>
 
@@ -117,6 +133,7 @@ export default class FilterEditKebab extends React.Component {
                     handleFieldChange={this.handleFieldChange}
                     setSharedFilter={this.setSharedFilter}
                     submit={this.submitActionToFilterSet}
+                    noRights={noRights}
                 />
 
                 <DropdownKebab id="filterActions" pullRight>

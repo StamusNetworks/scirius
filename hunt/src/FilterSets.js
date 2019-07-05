@@ -34,7 +34,8 @@ export default class FilterSets extends React.Component {
             loading: false,
             rows: { global: [], private: [], static: [] },
             expandedPanel: 'static',
-            searchValue: ''
+            searchValue: '',
+            user: undefined
         };
 
         this.loadFilterSets = this.loadFilterSets.bind(this);
@@ -43,6 +44,11 @@ export default class FilterSets extends React.Component {
     }
 
     componentDidMount() {
+        axios.get(`${config.API_URL}${config.USER_PATH}current_user/`)
+        .then((currentUser) => {
+            this.setState({ user: currentUser.data });
+        });
+
         this.setState({ loading: true });
         axios.get(config.API_URL + config.HUNT_FILTER_SETS).then((res) => {
             const rows = { global: [], private: [], static: [] };
@@ -141,6 +147,7 @@ export default class FilterSets extends React.Component {
         const rowsGlobal = this.state.rows.global ? this.state.rows.global.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase())) : [];
         const rowsPrivate = this.state.rows.private ? this.state.rows.private.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase())) : [];
         const rowsStatic = this.state.rows.static ? this.state.rows.static.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase())) : [];
+        const noRights = this.state.user !== undefined && this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser;
 
         return (
             <NotificationDrawer>
@@ -176,7 +183,7 @@ export default class FilterSets extends React.Component {
                                             <Notification key={item.id} seen={false}>
                                                 <NotificationDrawer.Dropdown id="Dropdown1">
                                                     <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
-                                                    <MenuItem key={'delete'} onClick={() => this.deleteFilterSets(item)}>Delete</MenuItem>
+                                                    {!noRights && <MenuItem key={'delete'} onClick={() => this.deleteFilterSets(item)}>Delete</MenuItem>}
                                                 </NotificationDrawer.Dropdown>
                                                 {this.getIcon(item)}
                                                 <Notification.Content onClick={() => this.loadFilterSets(item)}>
