@@ -7,7 +7,7 @@ import socket
 
 from django.conf import settings
 from django.template import Context, Template
-from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 import urllib2
 
 from rules.models import get_es_address
@@ -72,22 +72,42 @@ class ESQuery(object):
         return self.URL % (get_es_address(), indexes)
 
     def _render_template(self, tmpl, dictionary, qfilter=None):
-        if dictionary.get('hosts'):
-            hosts = []
-            for host in dictionary['hosts']:
-                if host != '*':
-                    host = format_html('\\"{}\\"', host)
-                hosts.append(host)
-            dictionary['hosts'] = hosts
+        hosts_list = ['*']
+        if self.request:
+            if 'hosts' in self.request.GET:
+                hosts_list = self.request.GET['hosts'].split(',')
+
+        hosts = None
+        hosts_filter = None
+
+        hosts = []
+        for host in hosts_list:
+            if host != '*':
+                host = json.dumps(host).replace('"', '\\"')
+                host = mark_safe(host)
+            hosts.append(host)
+
+        if hosts == ['*']:
+            # use _exists_ in case analyze_wildcard is false
+            hosts_filter = '_exists_:%s' % settings.ELASTICSEARCH_HOSTNAME
+        else:
+            hosts_filter = ['%s.%s:%s' % (settings.ELASTICSEARCH_HOSTNAME, settings.ELASTICSEARCH_KEYWORD, h) for h in hosts]
+            hosts_filter = mark_safe('(%s)' % ' '.join(hosts_filter))
 
         templ = Template(tmpl)
         context = Context(dictionary)
+
         if qfilter != None:
             query_filter = " AND " + qfilter
             # dump as json but remove quotes since the quotes are already set in templates
             context['query_filter'] = json.dumps(query_filter)[1:-1]
-        context['keyword'] = settings.ELASTICSEARCH_KEYWORD
-        context['hostname'] = settings.ELASTICSEARCH_HOSTNAME
+
+        context.update({
+            'hosts': hosts,
+            'hosts_filter': hosts_filter,
+            'keyword': settings.ELASTICSEARCH_KEYWORD,
+            'hostname': settings.ELASTICSEARCH_HOSTNAME
+        })
         return bytearray(templ.render(context), encoding="utf-8")
 
     def _urlopen(self, url, data=None, method=None, contenttype='application/json'):

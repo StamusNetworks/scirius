@@ -73,7 +73,7 @@ def get_top_query():
                           "should": [
                             {
                               "query_string": {
-                                "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ appliance_hostname }} {{ query_filter|safe }}"
+                                "query": "event_type:alert AND {{ hosts_filter }} {{ query_filter|safe }}"
                               }
                             }
                           ]
@@ -121,7 +121,7 @@ def get_top_query():
             "bool": {
               "must": [ {
                 "query_string": {
-                  "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ appliance_hostname }} {{ query_filter|safe }}",
+                  "query": "event_type:alert AND {{ hosts_filter }} {{ query_filter|safe }}",
                   "analyze_wildcard": false
                 }
               },
@@ -157,7 +157,7 @@ def get_top_query():
             "bool": {
               "must": [ {
                 "query_string": {
-                  "query": "event_type:alert AND {{ hostname }}:{{ appliance_hostname }} {{ query_filter|safe }}",
+                  "query": "event_type:alert AND {{ hosts_filter }} {{ query_filter|safe }}",
                   "analyze_wildcard": false
                 }
               },
@@ -330,7 +330,7 @@ def get_timeline_query():
                     "filtered": {
                       "query": {
                         "query_string": {
-                          "query": "event_type:alert AND {{ hostname }}.{{ keyword }}:{{ host }} {{ query_filter|safe }}"
+                          "query": "event_type:alert AND {{ hosts_filter }} {{ query_filter|safe }}"
                         }
                       },
                       "filter": {
@@ -424,7 +424,7 @@ def get_stats_query():
                     "filtered": {
                       "query": {
                         "query_string": {
-                          "query": "{{ hostname }}.{{ keyword }}:{{ host }} {{ query_filter|safe }}"
+                          "query": "{{ hosts_filter }} {{ query_filter|safe }}"
                         }
                       },
                       "filter": {
@@ -520,10 +520,8 @@ def get_stats_query():
                     },
                 {
                 "query_string": {
-              {% if hosts %}
-                  {% for host in hosts %}
-                  "query": "{{ hostname }}.{{ keyword }}:{{ host }} {{ query_filter|safe }}",
-                  {% endfor %}
+              {% if hosts_filter %}
+                  "query": "{{ hosts_filter }} {{ query_filter|safe }}",
               {% else %}
                   "query": "tags:metric",
               {% endif %}
@@ -568,10 +566,8 @@ def get_stats_query():
                     },
                 {
                 "query_string": {
-              {% if hosts %}
-                  {% for host in hosts %}
-                  "query": "{{ hostname }}:{{ host }} {{ query_filter|safe }}",
-                  {% endfor %}
+              {% if hosts_filter %}
+                  "query": "{{ hosts_filter }} {{ query_filter|safe }}",
               {% else %}
                   "query": "tags:metric",
               {% endif %}
@@ -633,7 +629,7 @@ def get_rules_per_category():
                       }
                     },
                     { "query_string": {
-                      "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                      "query": "event_type:alert AND {{ hosts_filter }} {{ query_filter|safe }}",
                       "analyze_wildcard": true
                       }
                     }
@@ -690,7 +686,7 @@ def get_rules_per_category():
                       }
                     },
                     { "query_string": {
-                      "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                      "query": "event_type:alert AND {{ hosts_filter }} {{ query_filter|safe }}",
                       "analyze_wildcard": true
                       }
                     }
@@ -717,7 +713,7 @@ def get_alerts_count_per_host():
                     }
                     ,{
                 "query_string": {
-                  "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                  "query": "event_type:alert AND {{ hosts_filter }} {{ query_filter|safe }}",
                   "analyze_wildcard": true
                 }
               }
@@ -744,7 +740,7 @@ def get_alerts_count_per_host():
                     }
                     ,{
                 "query_string": {
-                  "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                  "query": "event_type:alert AND {{ hosts_filter }} {{ query_filter|safe }}",
                   "analyze_wildcard": true
                 }
               }
@@ -789,7 +785,7 @@ def get_alerts_trend_per_host():
                     }
                     ,{
                 "query_string": {
-                  "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                  "query": "event_type:alert AND {{ hosts_filter }} {{ query_filter|safe }}",
                   "analyze_wildcard": true
                 }
               }
@@ -830,7 +826,7 @@ def get_alerts_trend_per_host():
                     }
                     ,{
                 "query_string": {
-                  "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                  "query": "event_type:alert AND {{ hosts_filter }} {{ query_filter|safe }}",
                   "analyze_wildcard": true
                 }
               }
@@ -865,7 +861,7 @@ def get_latest_stats_entry():
                     }
                 ,{
                     "query_string": {
-                      "query": "event_type:stats AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                      "query": "event_type:stats AND {{ hosts_filter }} {{ query_filter|safe }}",
                       "analyze_wildcard": true
                     }
                 }
@@ -898,7 +894,7 @@ def get_latest_stats_entry():
                     }
                 ,{
                     "query_string": {
-                      "query": "event_type:stats AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                      "query": "event_type:stats AND {{ hosts_filter }} {{ query_filter|safe }}",
                       "analyze_wildcard": true
                     }
                 }
@@ -925,7 +921,7 @@ def get_ippair_alerts_count():
                       }
                     }, {
                       "query_string": {
-                        "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                        "query": "event_type:alert AND {{ hosts_filter }} {{ query_filter|safe }}",
                         "analyze_wildcard": true
                       }
                     }
@@ -981,7 +977,7 @@ def get_ippair_alerts_count():
                       }
                     }, {
                       "query_string": {
-                        "query": "event_type:alert AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                        "query": "event_type:alert AND {{ hosts_filter }} {{ query_filter|safe }}",
                         "analyze_wildcard": true
                       }
                     }
@@ -1038,7 +1034,7 @@ def get_ippair_netinfo_alerts_count():
                       }
                     }, {
                       "query_string": {
-                        "query": "event_type:alert AND alert.source.net_info:* AND ({% for host in hosts %}{{ hostname }}.{{ keyword }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                        "query": "event_type:alert AND alert.source.net_info:* AND {{ hosts_filter }} {{ query_filter|safe }}",
                         "analyze_wildcard": true
                       }
                     }
@@ -1116,7 +1112,7 @@ def get_ippair_netinfo_alerts_count():
                       }
                     }, {
                       "query_string": {
-                        "query": "event_type:alert AND alert.source.net_info:* AND ({% for host in hosts %}{{ hostname }}:{{ host }} {% endfor %}) {{ query_filter|safe }}",
+                        "query": "event_type:alert AND alert.source.net_info:* AND {{ hosts_filter }} {{ query_filter|safe }}",
                         "analyze_wildcard": true
                       }
                     }
@@ -1233,14 +1229,7 @@ SURICATA_LOGS_TAIL = """
         }
       }, {
         "query_string": {
-      {% if hosts %}
-          {% for host in hosts|slice:":-1" %}
-          "query": "{{ hostname }}:{{ host }} AND event_type:engine",
-          {% endfor %}
-          "query": "{{ hostname }}:{{ hosts|last }} AND event_type:engine"
-      {% else %}
-          "query": "event_type:engine",
-      {% endif %}
+          "query": "{{ hosts_filter }} AND event_type:engine"
         }
       }]
     }
@@ -1418,8 +1407,8 @@ class ESError(Exception):
 
 
 class ESRulesStats(ESQuery):
-    def get(self, hostname, count=20, from_date=0 , qfilter = None, dict_format=False):
-        data = self._render_template(get_top_query(), {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': 'alert.signature_id'}, qfilter = qfilter)
+    def get(self, count=20, from_date=0 , qfilter = None, dict_format=False):
+        data = self._render_template(get_top_query(), {'count': count, 'from_date': from_date, 'field': 'alert.signature_id'}, qfilter = qfilter)
         es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
 
@@ -1465,8 +1454,8 @@ class ESRulesStats(ESQuery):
         return rules
 
 class ESFieldStats(ESQuery):
-    def get(self, field, hostname, key='host', count=20, from_date=0 , qfilter = None, dict_format=False):
-        data = self._render_template(get_top_query(), {'appliance_hostname': hostname, 'count': count, 'from_date': from_date, 'field': field}, qfilter = qfilter)
+    def get(self, field, count=20, from_date=0 , qfilter = None, dict_format=False):
+        data = self._render_template(get_top_query(), {'count': count, 'from_date': from_date, 'field': field}, qfilter = qfilter)
         es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
 
@@ -1488,10 +1477,9 @@ class ESFieldStats(ESQuery):
 
 
 class ESFieldStatsAsTable(ESQuery):
-    def get(self, field, FieldTable, hostname, key='host', count=20, from_date=0 , qfilter = None):
-        data = ESFieldStats(self.request).get(field, hostname,
-                                  key=key, count=count, from_date=from_date, qfilter=qfilter)
-        if data == None:
+    def get(self, field, FieldTable, count=20, from_date=0 , qfilter = None):
+        data = ESFieldStats(self.request).get(field, count=count, from_date=from_date, qfilter=qfilter)
+        if data == []:
             objects = FieldTable([])
             tables.RequestConfig(self.request).configure(objects)
             return objects
@@ -1499,9 +1487,9 @@ class ESFieldStatsAsTable(ESQuery):
         if data != None:
             for elt in data:
                 if get_es_major_version() >= 2:
-                    fstat = {key: elt['key'], 'count': elt['doc_count'] }
+                    fstat = {'host': elt['key'], 'count': elt['doc_count'] }
                 else:
-                    fstat = {key: elt['term'], 'count': elt['count'] }
+                    fstat = {'host': elt['term'], 'count': elt['count'] }
                 objects.append(fstat)
             objects = FieldTable(objects)
             tables.RequestConfig(self.request).configure(objects)
@@ -1545,7 +1533,7 @@ class ESSidByHosts(ESQuery):
 
 
 class ESTimeline(ESQuery):
-    def get(self, from_date=0, interval=None, hosts = None, qfilter = None, tags=False):
+    def get(self, from_date=0, interval=None, qfilter = None, tags=False):
         # 100 points on graph per default
         if interval == None:
             interval = int((time() - (int(from_date) / 1000)) / 100)
@@ -1554,7 +1542,7 @@ class ESTimeline(ESQuery):
             func = get_timeline_query()
         else:
             func = get_timeline_by_tags_query()
-        data = self._render_template(func, {'from_date': from_date, 'interval': unicode(interval) + "s", 'hosts': hosts}, qfilter = qfilter)
+        data = self._render_template(func, {'from_date': from_date, 'interval': unicode(interval) + "s"}, qfilter = qfilter)
         es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
 
@@ -1582,17 +1570,21 @@ class ESTimeline(ESQuery):
 
 
 class ESMetricsTimeline(ESQuery):
-    def get(self, from_date=0, interval=None, value = "eve.total.rate_1m", hosts = None, qfilter = None):
+    def get(self, from_date=0, interval=None, value = "eve.total.rate_1m", qfilter = None):
         # 100 points on graph per default
         if interval == None:
             interval = int((time() - (int(from_date)/ 1000)) / 100)
-        data = self._render_template(get_stats_query(), {'from_date': from_date, 'interval': unicode(interval) + "s", 'value': value, 'hosts': hosts}, qfilter = qfilter)
+        data = self._render_template(get_stats_query(), {'from_date': from_date, 'interval': unicode(interval) + "s", 'value': value}, qfilter = qfilter)
         es_url = self._get_es_url(from_date, data = 'stats')
         data = self._urlopen(es_url, data)
 
         # total number of results
-        if hosts == None:
+        hosts = self.request.GET.get('hosts')
+        if hosts is None:
             hosts = ["global"]
+        else:
+            hosts = hosts.split(',')
+
         try:
             if get_es_major_version() >= 2:
                 data = data['aggregations']["date"]['buckets']
@@ -1614,8 +1606,8 @@ class ESMetricsTimeline(ESQuery):
 
 
 class ESPoststats(ESQuery):
-    def get(self, from_date=0,  value = "poststats.rule_filter_1", hosts = None, qfilter = None):
-        data = self._render_template(POSTSTATS_SUMMARY, {'from_date': from_date, 'filter': value, 'hosts': hosts}, qfilter = qfilter)
+    def get(self, from_date=0,  value = "poststats.rule_filter_1", qfilter = None):
+        data = self._render_template(POSTSTATS_SUMMARY, {'from_date': from_date, 'filter': value}, qfilter = qfilter)
         es_url = self._get_es_url(from_date, data = 'poststats')
         data = self._urlopen(es_url, data)
         return data['aggregations']['hosts']['buckets'] if 'aggregations' in data else []
@@ -1662,8 +1654,8 @@ def compact_tree(tree):
 
 
 class ESRulesPerCategory(ESQuery):
-    def get(self, from_date=0, hosts = None, qfilter = None):
-        data = self._render_template(get_rules_per_category(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
+    def get(self, from_date=0, qfilter = None):
+        data = self._render_template(get_rules_per_category(), {'from_date': from_date}, qfilter = qfilter)
         es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
         # clean the data: we need to compact the leaf and previous data
@@ -1719,12 +1711,12 @@ class ESDeleteAlertsBySid(ESQuery):
 
 
 class ESAlertsCount(ESQuery):
-    def get(self, from_date=0, hosts = None, qfilter = None, prev = 0):
+    def get(self, from_date=0, qfilter = None, prev = 0):
         if prev:
             templ = get_alerts_trend_per_host()
         else:
             templ = get_alerts_count_per_host()
-        context = {'from_date': from_date, 'hosts': hosts}
+        context = {'from_date': from_date}
         if prev:
             # compute delta with now and from_date
             from_datetime = datetime.fromtimestamp(int(from_date)/1000)
@@ -1747,8 +1739,8 @@ class ESAlertsCount(ESQuery):
 
 
 class ESLatestStats(ESQuery):
-    def get(self, from_date=0, hosts = None, qfilter = None):
-        data = self._render_template(get_latest_stats_entry(), {'from_date': from_date, 'hosts': hosts})
+    def get(self, from_date=0, qfilter = None):
+        data = self._render_template(get_latest_stats_entry(), {'from_date': from_date})
         es_url = self._get_es_url(from_date, data = 'stats')
         data = self._urlopen(es_url, data)
         try:
@@ -1758,8 +1750,8 @@ class ESLatestStats(ESQuery):
 
 
 class ESIppairAlerts(ESQuery):
-    def get(self, from_date=0, hosts = None, qfilter = None):
-        data = self._render_template(get_ippair_alerts_count(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
+    def get(self, from_date=0, qfilter = None):
+        data = self._render_template(get_ippair_alerts_count(), {'from_date': from_date}, qfilter = qfilter)
         es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
         raw_data = data['aggregations']['src_ip']['buckets']
@@ -1788,8 +1780,8 @@ class ESIppairAlerts(ESQuery):
 
 
 class ESIppairNetworkAlerts(ESQuery):
-    def get(self, from_date=0, hosts = None, qfilter = None):
-        data = self._render_template(get_ippair_netinfo_alerts_count(), {'from_date': from_date, 'hosts': hosts}, qfilter = qfilter)
+    def get(self, from_date=0, qfilter = None):
+        data = self._render_template(get_ippair_netinfo_alerts_count(), {'from_date': from_date}, qfilter = qfilter)
         es_url = self._get_es_url(from_date)
         data = self._urlopen(es_url, data)
         raw_data = data['aggregations']['src_ip']['buckets']
@@ -1839,10 +1831,9 @@ class ESAlertsTail(ESQuery):
 
 
 class ESSuriLogTail(ESQuery):
-    def get(self, from_date, hosts):
+    def get(self, from_date):
         context = {
             'from_date': from_date,
-            'hosts': hosts,
             'hostname': settings.ELASTICSEARCH_HOSTNAME
         }
         data = self._render_template(SURICATA_LOGS_TAIL, context)
@@ -1854,7 +1845,7 @@ class ESSuriLogTail(ESQuery):
 
 
 class ESTopRules(ESQuery):
-    def get(self, hostname, count=20, from_date=0 , order="desc", interval=None, qfilter = None):
+    def get(self, count=20, from_date=0 , order="desc", interval=None, qfilter = None):
         if interval == None:
             interval = int((time() - (int(from_date) / 1000)) / 100)
         data = self._render_template(TOP_ALERTS, {'interval': interval, 'count': count, 'from_date': from_date, 'order': order}, qfilter = qfilter)
@@ -1867,7 +1858,7 @@ class ESTopRules(ESQuery):
 
 
 class ESSigsListHits(ESQuery):
-    def get(self, sids, host, from_date=0, order="desc", interval=None, qfilter = None):
+    def get(self, sids, from_date=0, order="desc", interval=None, qfilter = None):
         if interval == None:
             interval = int((time() - (int(from_date) / 1000)) / 100)
         count = len(sids.split(','))

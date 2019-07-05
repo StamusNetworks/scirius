@@ -191,15 +191,13 @@ def elasticsearch(request):
         try:
             query = request.GET.get('query')
             if query == 'rules':
-                host = request.GET.get('host', None)
                 from_date = request.GET.get('from_date', None)
                 qfilter = request.GET.get('filter', None)
-                if host != None and from_date != None:
-                    rules = ESRulesStats(request).get(host, from_date = from_date, qfilter = qfilter)
-                    if rules == None:
-                        return HttpResponse(json.dumps(rules), content_type="application/json")
-                    context['table'] = rules
-                    return scirius_render(request, 'rules/table.html', context)
+                rules = ESRulesStats(request).get(from_date = from_date, qfilter = qfilter)
+                if rules == None:
+                    return HttpResponse(json.dumps(rules), content_type="application/json")
+                context['table'] = rules
+                return scirius_render(request, 'rules/table.html', context)
             elif query == 'rule':
                 sid = request.GET.get('sid', None)
                 from_date = request.GET.get('from_date', None)
@@ -230,7 +228,7 @@ def elasticsearch(request):
 
                 if from_date is not None:
                     hosts = ESFieldStatsAsTable(request).get(filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
-                                                        RuleHostTable, '*',
+                                                        RuleHostTable,
                                                         from_date=from_date,
                                                         count=count,
                                                         qfilter=qfilter)

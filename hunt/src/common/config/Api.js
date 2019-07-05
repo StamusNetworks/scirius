@@ -12,7 +12,7 @@ export const USER_PATH = 'rest/accounts/sciriususer/';
 export const API_LOGIN = '/auth';
 
 export const ES_BASE_PATH = 'rest/rules/es/';
-export const ES_SIGS_LIST_PATH = `${ES_BASE_PATH}sigs_list/?host=*&offset=0&sids=`;
+export const ES_SIGS_LIST_PATH = `${ES_BASE_PATH}sigs_list/?hosts=*&offset=0&sids=`;
 export const UPDATE_PUSH_RULESET_PATH = 'rest/suricata/update_push_all/';
 export const SCIRIUS_CONTEXT = 'rest/rules/scirius_context/';
 export const HUNT_DOC = '/static/doc/hunt.html';

@@ -62,7 +62,7 @@ $( 'document' ).ready(function() {
 
 
 function load_rules(from_date, hosts, filter, callback) {
-    var tgturl = "/rules/es?query=rules&host=" + hosts.join() + "&from_date=" + from_date;
+    var tgturl = "/rules/es?query=rules&hosts=" + hosts.join() + "&from_date=" + from_date;
     if (filter != null) {
        tgturl = tgturl + "&filter=" + filter;
     }

@@ -466,7 +466,7 @@ def es_hits_params(request):
     es_params = {}
 
     # string args
-    for arg in ('hostname', 'qfilter'):
+    for arg in ('qfilter',):
         if arg in request.query_params:
             es_params[arg] = request.query_params[arg]
 
@@ -474,9 +474,6 @@ def es_hits_params(request):
     for arg in ('from_date', 'interval'):
         if arg in request.query_params:
             es_params[arg] = int(request.query_params[arg])
-
-    if 'hostname' not in es_params:
-        es_params['hostname'] = '*'
     return es_params
 
 
@@ -928,7 +925,6 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
 
         ## reformat ES's output
         es_params = es_hits_params(request)
-        es_params['host'] = es_params.pop('hostname')
         try:
             result = ESSigsListHits(request).get(sids, **es_params)
         except ESError:
@@ -1932,8 +1928,8 @@ class ESRulesViewSet(ESBaseViewSet):
     qfilter: "filter in Elasticsearch Query String Query format"
 
     Show rules stats:\n
-        curl -k https://x.x.x.x/rest/rules/es/rules/\?host\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
-        curl -k https://x.x.x.x/rest/rules/es/rules/\?host\=ProbeMain\&from_date\=1537264545477\&filter=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+        curl -k https://x.x.x.x/rest/rules/es/rules/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+        curl -k https://x.x.x.x/rest/rules/es/rules/\?hosts\=ProbeMain\&from_date\=1537264545477\&filter=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -1944,19 +1940,18 @@ class ESRulesViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         milli_sec = 3600 * 1000
-        host = request.GET.get('host', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         qfilter = request.GET.get('filter', None)
 
         errors = {}
-        if host is None:
-            errors['host'] = ['This field is required.']
+        if 'hosts' not in request.GET:
+            errors['hosts'] = ['This field is required.']
 
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'rules': ESRulesStats(request).get(host, from_date=from_date, qfilter=qfilter, dict_format=True)})
+        return Response({'rules': ESRulesStats(request).get(from_date=from_date, qfilter=qfilter, dict_format=True)})
 
 
 class ESRuleViewSet(ESBaseViewSet):
@@ -1995,17 +1990,16 @@ class ESTopRulesViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         milli_sec = 3600 * 1000
-        host = request.GET.get('host', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         qfilter = request.GET.get('filter', None)
         count = request.GET.get('count', 20)
         order = request.GET.get('order', "desc")
 
-        if host is None:
-            errors = {'host': ['This field is required.']}
+        if 'hosts' not in request.GET:
+            errors = {'hosts': ['This field is required.']}
             raise serializers.ValidationError(errors)
 
-        return Response(ESTopRules(request).get(host, from_date=from_date, qfilter=qfilter, count=count, order=order))
+        return Response(ESTopRules(request).get(from_date=from_date, qfilter=qfilter, count=count, order=order))
 
 
 class ESSigsListViewSet(ESBaseViewSet):
@@ -2014,7 +2008,6 @@ class ESSigsListViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         milli_sec = 3600 * 1000
-        host = request.GET.get('host', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         qfilter = request.GET.get('filter', None)
         sids = request.GET.get('sids', 20)
@@ -2023,13 +2016,13 @@ class ESSigsListViewSet(ESBaseViewSet):
         if sids is None:
             errors['sids'] = ['This field is required.']
 
-        if host is None:
-            errors['host'] = ['This field is required.']
+        if 'hosts' not in request.GET:
+            errors['hosts'] = ['This field is required.']
 
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        return Response(ESSigsListHits(request).get(sids, host, from_date=from_date, qfilter=qfilter))
+        return Response(ESSigsListHits(request).get(sids, from_date=from_date, qfilter=qfilter))
 
 
 class ESPostStatsViewSet(ESBaseViewSet):
@@ -2038,16 +2031,11 @@ class ESPostStatsViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
         value = request.GET.get('value', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESPoststats(request).get(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter))
+        return Response(ESPoststats(request).get(from_date=from_date, value=value, qfilter=qfilter))
 
 
 class ESFieldStatsViewSet(ESBaseViewSet):
@@ -2080,7 +2068,6 @@ class ESFieldStatsViewSet(ESBaseViewSet):
             filter_ip = filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD
 
         hosts = ESFieldStats(request).get(filter_ip,
-                                   '*',
                                    from_date=from_date,
                                    count=count,
                                    qfilter=qfilter,
@@ -2143,7 +2130,6 @@ class ESFilterIPViewSet(ESBaseViewSet):
         count = request.GET.get('page_size', 10)
 
         hosts = ESFieldStats(request).get(filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
-                                   '*',
                                    from_date=from_date,
                                    count=count,
                                    qfilter=qfilter,
@@ -2171,16 +2157,11 @@ class ESTimelineViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         tags = False if request.GET.get('target', 'false') == 'false' else True
-
-        if chosts:
-            chosts = chosts.split(',')
-
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESTimeline(request).get(from_date=from_date, hosts=chosts, qfilter=qfilter, tags=tags))
+        return Response(ESTimeline(request).get(from_date=from_date, qfilter=qfilter, tags=tags))
 
 
 class ESLogstashEveViewSet(ESBaseViewSet):
@@ -2252,16 +2233,11 @@ class ESLogstashEveViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
         value = request.GET.get('value', None)
         qfilter = request.GET.get('filter', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESMetricsTimeline(request).get(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter))
+        return Response(ESMetricsTimeline(request).get(from_date=from_date, value=value, qfilter=qfilter))
 
 
 class ESHealthViewSet(ESBaseViewSet):
@@ -2362,17 +2338,10 @@ class ESRulesPerCategoryViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts is None:
-            raise serializers.ValidationError({'hosts': ['This field is required.']})
-        else:
-            chosts = chosts.split(',')
-
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESRulesPerCategory(request).get(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(ESRulesPerCategory(request).get(from_date=from_date, qfilter=qfilter))
 
 
 class ESAlertsCountViewSet(ESBaseViewSet):
@@ -2396,18 +2365,13 @@ class ESAlertsCountViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
         prev = request.GET.get('prev', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         prev = 1 if prev is not None and prev != 'false' else None
 
-        return Response(ESAlertsCount(request).get(from_date=from_date, hosts=chosts, qfilter=qfilter, prev=prev))
+        return Response(ESAlertsCount(request).get(from_date=from_date, qfilter=qfilter, prev=prev))
 
 
 class ESLatestStatsViewSet(ESBaseViewSet):
@@ -2438,15 +2402,10 @@ class ESLatestStatsViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESLatestStats(request).get(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(ESLatestStats(request).get(from_date=from_date, qfilter=qfilter))
 
 
 class ESIPPairAlertsViewSet(ESBaseViewSet):
@@ -2473,15 +2432,10 @@ class ESIPPairAlertsViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESIppairAlerts(request).get(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(ESIppairAlerts(request).get(from_date=from_date, qfilter=qfilter))
 
 
 class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
@@ -2503,15 +2457,10 @@ class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESIppairNetworkAlerts(request).get(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(ESIppairNetworkAlerts(request).get(from_date=from_date, qfilter=qfilter))
 
 
 class ESAlertsTailViewSet(ESBaseViewSet):
@@ -2563,14 +2512,9 @@ class ESSuriLogTailViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESSuriLogTail(request).get(from_date=from_date, hosts=chosts))
+        return Response(ESSuriLogTail(request).get(from_date=from_date))
 
 
 class ESDeleteLogsViewSet(APIView):
