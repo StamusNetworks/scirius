@@ -783,7 +783,7 @@ export class HuntFilter extends React.Component {
                                 }}
                                 style={{ cursor: 'pointer' }}
                             >
-                                ,&nbsp;&nbsp;Save
+                                |&nbsp;&nbsp;Save
                             </a>}
                         </Toolbar.Results>
                     )}
