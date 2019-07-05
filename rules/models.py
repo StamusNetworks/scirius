@@ -2132,6 +2132,19 @@ class Category(models.Model, Transformable, Cache):
 
         return tuple(sorted(allowed_choices))
 
+    def __lt__(self, other):
+        """
+        Compares one category to another by using the category name.
+        If the other object is not a category, comparing the strings will not yield an error.
+
+        A comparator is necessary in order to sort by category,
+        otherwise the default comparator is used, yielding inconsistent results.
+
+        :param other: another category
+        :return: self < other
+        """
+        return str(self) < str(other)
+
 
 class Rule(models.Model, Transformable, Cache):
     GROUP_BY_CHOICES= (('by_src', 'by_src'),('by_dst', 'by_dst'))
