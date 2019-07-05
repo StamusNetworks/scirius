@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { ControlLabel, Icon, Modal } from 'patternfly-react';
 import { Button, Checkbox, Col, Form, FormControl, FormGroup, HelpBlock, InputGroup } from 'react-bootstrap';
 import InputGroupAddon from 'react-bootstrap/es/InputGroupAddon';
-import FilterItem from '../FilterItem/index';
+import FilterItem from 'hunt_common/components/FilterItem/index';
 import isNumeric from '../../helpers/isNumeric';
 import './style.css';
 
@@ -63,7 +63,13 @@ export default class FilterList extends React.Component {
         const newFilterValue = this.state.newFilterValue.toString();
         return <React.Fragment>
             {/* eslint-disable react/no-array-index-key */}
-            <ul className="list-inline">{this.props.filters.map((filter, idx) => <FilterItem key={idx} onRemove={() => this.props.onRemove(idx)} onEdit={() => this.editHandler(idx, filter.id, filter.value, filter.negated)} {...filter} />)}</ul>
+            <ul className="list-inline">{this.props.filters.map((filter, idx) => <FilterItem key={idx}
+                onRemove={() => this.props.onRemove(idx)}
+                onEdit={() => this.editHandler(idx, filter.id, filter.value, filter.negated)}
+                updateFilter={this.props.updateFilter}
+                filters={this.props.filters}
+                {...filter}
+            />)}</ul>
             <Modal show={this.state.editForm} className={'modal-hunt-filter'} backdrop keyboard>
                 <Modal.Header>
                     <button
