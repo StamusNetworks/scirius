@@ -22,13 +22,14 @@ const DisplayPage = (props) => {
                 switchPage={props.switchPage}
                 updateListState={props.updateRuleListState}
                 updateFilterState={props.updateIDSFilterState}
+                page={props.page}
             />);
             break;
         case PAGE_STATE.source:
-            displayedPage = <SourcePage systemSettings={props.systemSettings} source={props.item} from_date={props.from_date} />;
+            displayedPage = <SourcePage systemSettings={props.systemSettings} source={props.item} from_date={props.from_date} page={props.page} />;
             break;
         case PAGE_STATE.ruleset:
-            displayedPage = <RulesetPage systemSettings={props.systemSettings} ruleset={props.item} from_date={props.from_date} />;
+            displayedPage = <RulesetPage systemSettings={props.systemSettings} ruleset={props.item} from_date={props.from_date} page={props.page} />;
             break;
         case PAGE_STATE.dashboards:
             // FIXME remove or change updateRuleListState
@@ -41,6 +42,7 @@ const DisplayPage = (props) => {
                 updateListState={props.updateRuleListState}
                 updateFilterState={props.updateIDSFilterState}
                 needReload={props.needReload}
+                page={props.page}
             />);
             break;
         case PAGE_STATE.history:
@@ -52,6 +54,7 @@ const DisplayPage = (props) => {
                 updateListState={props.updateHistoryListState}
                 switchPage={props.switchPage}
                 updateFilterState={props.updateHistoryFilterState}
+                page={props.page}
             />);
             break;
         case PAGE_STATE.alerts_list:
@@ -63,6 +66,7 @@ const DisplayPage = (props) => {
                 updateListState={props.updateAlertListState}
                 switchPage={props.switchPage}
                 updateFilterState={props.updateIDSFilterState}
+                page={props.page}
             />);
             break;
         case PAGE_STATE.filters_list:
@@ -74,6 +78,7 @@ const DisplayPage = (props) => {
                 updateListState={props.updateFilterListState}
                 switchPage={props.switchPage}
                 updateFilterState={props.updateFiltersFilterState}
+                updateIDSFilterState={props.updateIDSFilterState}
             />);
             break;
     }

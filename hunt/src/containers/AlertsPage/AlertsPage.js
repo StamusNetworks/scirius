@@ -140,7 +140,8 @@ export default class AlertsPage extends React.Component {
                         sort_config={undefined}
                         displayToggle={this.state.display_toggle}
                         actionsButtons={this.actionsButtons}
-                        queryType={['filter']}
+                        queryType={['filter', 'filter_host_id']}
+                        page={this.props.page}
                     />
                 </ErrorHandler>
                 <Spinner loading={this.state.loading}>
@@ -175,4 +176,5 @@ AlertsPage.propTypes = {
     from_date: PropTypes.any,
     systemSettings: PropTypes.any,
     updateListState: PropTypes.any,
+    page: PropTypes.any
 };

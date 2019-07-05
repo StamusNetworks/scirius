@@ -88,6 +88,7 @@ export default class HuntDashboard extends React.Component {
             moreModal: null,
             moreResults: [],
             editMode: false,
+            chartTarget: false,
         };
         this.actionsButtons = actionsButtons.bind(this);
         this.UpdateFilter = UpdateFilter.bind(this);
@@ -170,7 +171,7 @@ export default class HuntDashboard extends React.Component {
         if (typeof this.props.systemSettings !== 'undefined') {
             this.qFilter = this.generateQFilter();
             this.storedMicroLayout = store.get('dashboardMicroLayout');
-            this.storedMacroLayout = store.get('dashboardMаcroLayout');
+            this.storedMacroLayout = store.get('dashboardMacroLayout');
             // Initial booting of panels were moved here instead of componentDidMount, because of the undefined systemSettings in componentDidMount
             if (this.panelsBooted === 'no') {
                 this.bootPanels();
@@ -598,6 +599,12 @@ export default class HuntDashboard extends React.Component {
 
     hideMoreModal = () => this.setState({ ...this.state, moreModal: null });
 
+    onChangeChartTarget = (switchElement, chartTarget) => {
+        this.setState({
+            chartTarget
+        });
+    }
+
     render() {
         return (
             <div className="HuntList">
@@ -613,13 +620,16 @@ export default class HuntDashboard extends React.Component {
                         sort_config={undefined}
                         displayToggle={undefined}
                         actionsButtons={this.actionsButtons}
-                        queryType={['filter']}
+                        queryType={['filter', 'filter_host_id']}
+                        page={this.props.page}
+                        onChangeChartTarget={this.onChangeChartTarget}
+                        chartTarget={this.state.chartTarget}
                     />
                 </ErrorHandler>
 
                 <div className="row">
                     <div className="col-lg-10 col-md-9 col-sm-12 col-xs-12" style={{ paddingRight: '0px' }}>
-                        <HuntTimeline style={{ marginTop: '15px' }} from_date={this.props.from_date} filters={this.props.filters} systemSettings={this.props.systemSettings} />
+                        <HuntTimeline style={{ marginTop: '15px' }} from_date={this.props.from_date} chartTarget={this.state.chartTarget} filters={this.props.filters} systemSettings={this.props.systemSettings} />
                     </div>
                     <div className="col-lg-2 col-md-3 col-sm-12 col-xs-12" style={{ paddingLeft: '0px' }}>
                         <HuntTrend from_date={this.props.from_date} filters={this.props.filters} />
@@ -630,7 +640,7 @@ export default class HuntDashboard extends React.Component {
 
                         <div className="pull-right">
                             <a href={'#edit'} onClick={this.switchEditMode}>{(this.state.editMode) ? 'switch off edit mode' : 'edit'}</a>
-                            <span> • </span>
+                            <span> • </span> {/* ignore_utf8_check: 8226 */}
                             <a href={'#reset'} onClick={this.resetDashboard}>reset</a>
                         </div>
                         <div className="clearfix" />
@@ -721,4 +731,5 @@ HuntDashboard.propTypes = {
     item: PropTypes.any,
     rules_list: PropTypes.any,
     updateListState: PropTypes.any,
+    page: PropTypes.any
 }

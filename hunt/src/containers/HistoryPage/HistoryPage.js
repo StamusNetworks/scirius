@@ -145,6 +145,7 @@ export default class HistoryPage extends React.Component {
                         displayToggle={false}
                         queryType={['all']}
                         got_alert_tag={false}
+                        page={this.props.page}
                     />
                 </ErrorHandler>
                 <Spinner loading={this.state.loading}>
@@ -186,4 +187,5 @@ HistoryPage.propTypes = {
     updateListState: PropTypes.any,
     getActionTypes: PropTypes.func,
     actionTypesList: PropTypes.array,
+    page: PropTypes.any
 };

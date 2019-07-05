@@ -42,3 +42,17 @@ class IsCurrentUserOrSuperUserOrReadOnly(permissions.BasePermission):
         This is a second validation.
         '''
         return obj.user.pk == request.user.pk or request.user.is_superuser
+
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request,
+        # so we'll always allow GET, HEAD or OPTIONS requests.
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        if request.method == 'DELETE':
+            return obj.user == request.user or request.user.is_superuser 
+
+        # Instance must have an attribute named `owner`.
+        return obj.user == request.user or obj.user is None or request.user.is_superuser

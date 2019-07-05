@@ -247,6 +247,151 @@ def validate_url(val):
     validate_hostname(netloc)
 
 
+class FilterSet(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    content = models.TextField()
+    name = models.CharField(max_length=150)
+    page = models.CharField(max_length=25)
+
+    @staticmethod
+    def get_default_filter_sets():
+        return [
+            {
+                'content': [
+                    {
+                        'negated': False,
+                        'fullString': True,
+                        'label': 'Hits min: 1',
+                        'id': 'hits_min',
+                        'value': 1,
+                        'query': 'rest'
+                    },
+                    {
+                        'negated': False,
+                        'fullString': True,
+                        'label': 'Hits max: 10',
+                        'id': 'hits_max',
+                        'value': 10,
+                        'query': 'rest'
+                    }
+                ],
+                'name': 'Low noise signatures',
+                'page': 'RULES_LIST',
+                'share': 'static'
+            }, {
+                'content': [
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: firefox',
+                        'id': 'http.http_user_agent',
+                        'value': 'firefox',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: explorer',
+                        'id': 'http.http_user_agent',
+                        'value': 'explorer',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: opera',
+                        'id': 'http.http_user_agent',
+                        'value': 'opera',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: edge',
+                        'id': 'http.http_user_agent',
+                        'value': 'edge',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: wget',
+                        'id': 'http.http_user_agent',
+                        'value': 'wget',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: curl',
+                        'id': 'http.http_user_agent',
+                        'value': 'curl',
+                        'query': 'filter'
+                    },
+                ],
+                'name': 'Not common user agents',
+                'page': 'ALERTS_LIST',
+                'share': 'static'
+            }, {
+                'content': [
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: firefox',
+                        'id': 'http.http_user_agent',
+                        'value': 'firefox',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: explorer',
+                        'id': 'http.http_user_agent',
+                        'value': 'explorer',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: opera',
+                        'id': 'http.http_user_agent',
+                        'value': 'opera',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: edge',
+                        'id': 'http.http_user_agent',
+                        'value': 'edge',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: wget',
+                        'id': 'http.http_user_agent',
+                        'value': 'wget',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: curl',
+                        'id': 'http.http_user_agent',
+                        'value': 'curl',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: perl',
+                        'id': 'http.http_user_agent',
+                        'value': 'perl',
+                        'query': 'filter'
+                    },
+                    {
+                        'negated': True,
+                        'label': 'http.http_user_agent: python',
+                        'id': 'http.http_user_agent',
+                        'value': 'python',
+                        'query': 'filter'
+                    },
+                ],
+                'name': 'Suspicious user agents',
+                'page': 'ALERTS_LIST',
+                'share': 'static'
+            }
+        ]
+
+
 class UserAction(models.Model):
     ACTIONS = OrderedDict([
                # Login/Logout
@@ -2160,6 +2305,8 @@ class Rule(models.Model, Transformable, Cache):
         try:
             self.enable_cache()
             test = ruleset.test_rule_buffer(self.generate_content(ruleset), single = True)
+        except:
+            return False
         finally:
             self.disable_cache()
         return test
@@ -2894,7 +3041,7 @@ class Threshold(models.Model):
 
 class RuleProcessingFilter(models.Model):
     ACTIONS = (('suppress', 'Suppress'), ('threshold', 'Threshold'),
-                ('tag', 'Tag'), ('tagkeep', 'Tag and keep'))
+                ('tag', 'Tag'), ('tagkeep', 'Tag and keep'), ('send_mail', 'Send email'))
 
     action = models.CharField(max_length=10, choices=ACTIONS)
     options = models.CharField(max_length=512, null=True, blank=True)

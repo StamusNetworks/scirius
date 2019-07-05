@@ -24,6 +24,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
+from django.http import HttpRequest
 from rest_framework import status, mixins
 from rest_framework.test import APITestCase
 
@@ -41,7 +42,7 @@ from importlib import import_module
 
 ET_URL = 'https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz'
 
-RULE_CONTENT = 'alert ip any any -> any any (msg:"Unicode test rule éàç"; content:"uid=0|28|root|29|"; classtype:bad-unknown; sid:2100498; rev:7; metadata:created_at 2010_09_23, updated_at 2010_09_23;)\n'
+RULE_CONTENT = 'alert ip any any -> any any (msg:"Unicode test rule éàç"; content:"uid=0|28|root|29|"; classtype:bad-unknown; sid:2100498; rev:7; metadata:created_at 2010_09_23, updated_at 2010_09_23;)\n'  # ignore_utf8_check: 233 224 231
 
 
 class SourceCreationTestCase(TestCase):
@@ -369,7 +370,7 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
 
         self.assertDictContainsSubset({
             'sid': 2100498,
-            'msg': 'Unicode test rule éàç',
+            'msg': 'Unicode test rule éàç',  # ignore_utf8_check: 233 224 231
             'state': True,
             'state_in_source': True,
             'content': RULE_CONTENT,
@@ -411,7 +412,7 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
     def test_007_source_name_unicode(self):
         self._create_public_source()
 
-        unic = 'é&"_è-àç'
+        unic = 'é&"_è-àç'  # ignore_utf8_check: 233 232 231 224
         response = self.http_patch(reverse('publicsource-detail', args=(self.public_source.pk,)), {'name': unic})
         self.assertEqual(response['name'], unic)
 
@@ -687,7 +688,7 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
         self.assertEqual(len(ruleset.categories.all()), len(ruleset_copy.categories.all()))
 
     def test_009_ruleset_name_unicode(self):
-        name = "Rulesetàççé'-(è&_èç&àç\"ééè-"
+        name = "Rulesetàççé'-(è&_èç&àç\"ééè-"  # ignore_utf8_check: 224 231 233 232
         params = {"name": name,
                   "comment": "My custom ruleset comment",
                   "sources": [self.source.pk, self.source2.pk],
@@ -1426,7 +1427,12 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
         # Ordering must be set to prevent:
         # /usr/share/python/scirius-pro/local/lib/python2.7/site-packages/rest_framework/pagination.py:208: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'rules.models.RuleTransformation'> QuerySet
         for url, viewset, view_name in self.router.registry:
-            if viewset().get_queryset().ordered or not issubclass(viewset, mixins.ListModelMixin):
+            # Need to instanciate request and user because of FilterSetViewSet::get_queryset override that uses self.request.user
+            v = viewset()
+            v.request = HttpRequest()
+            v.request.user = None
+
+            if v.get_queryset().ordered or not issubclass(viewset, mixins.ListModelMixin):
                 continue
             ERR = 'Viewset "%s" must set an "ordering" attribute or have an ordered queryset' % viewset.__name__
             self.assertTrue(hasattr(viewset, 'ordering'), ERR)

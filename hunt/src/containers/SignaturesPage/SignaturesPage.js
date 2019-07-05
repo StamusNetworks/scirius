@@ -233,7 +233,15 @@ export default class SignaturesPage extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (prevProps.from_date !== this.props.from_date || JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
-            this.fetchData(this.props.rules_list, this.props.filters);
+            const sid = this.findSID(this.props.filters);
+            if (sid !== undefined) {
+                // eslint-disable-next-line react/no-did-update-set-state
+                this.setState({
+                    display_rule: sid, view: 'rule', display_toggle: false, loading: false
+                });
+            } else {
+                this.fetchData(this.props.rules_list, this.props.filters);
+            }
         }
     }
 
@@ -369,7 +377,8 @@ export default class SignaturesPage extends React.Component {
                         sort_config={RuleSortFields}
                         displayToggle={this.state.display_toggle}
                         actionsButtons={this.actionsButtons}
-                        queryType={['filter', 'rest']}
+                        queryType={['filter', 'rest', 'filter_host_id']}
+                        page={this.props.page}
                     />
                 </ErrorHandler>
 
@@ -419,4 +428,5 @@ SignaturesPage.propTypes = {
     filters: PropTypes.any,
     updateListState: PropTypes.any, // should be removed when redux is implemented
     rules_list: PropTypes.any, // should be removed when redux is implemented
+    page: PropTypes.any
 }

@@ -183,3 +183,13 @@ def get_homepage_context():
         'nb_probes': 1
     }
     return context
+
+
+def get_default_filter_sets():
+    from rules.models import FilterSet
+
+    fsets = FilterSet.get_default_filter_sets()
+    for idx, fset in enumerate(fsets):
+        fset['id'] = -idx
+
+    return fsets

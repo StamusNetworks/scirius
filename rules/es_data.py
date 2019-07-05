@@ -623,7 +623,8 @@ class ESData(object):
 
     def es_clear(self):
         indexes = self.get_indexes()
-        self.client.indices.delete(index=indexes)
+        for idx in indexes:
+            self.client.indices.delete(index=idx)
         return len(indexes)
 
     def wait_until_up(self):

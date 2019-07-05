@@ -18,7 +18,7 @@ export default class HuntTimeline extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if ((prevProps.from_date !== this.props.from_date) || (prevProps.filters !== this.props.filters)) {
+        if ((prevProps.from_date !== this.props.from_date) || (JSON.stringify(prevProps) !== JSON.stringify(this.props))) {
             this.fetchData();
         }
     }
@@ -29,7 +29,7 @@ export default class HuntTimeline extends React.Component {
         if (qfilter) {
             stringFilters += `&filter=${qfilter.replace('&qfilter=', '')}`;
         }
-        axios.get(`${config.API_URL}${config.ES_BASE_PATH}timeline/?hosts=*&from_date=${this.props.from_date}${stringFilters}`)
+        axios.get(`${config.API_URL}${config.ES_BASE_PATH}timeline/?hosts=*&target=${this.props.chartTarget}&from_date=${this.props.from_date}${stringFilters}`)
         .then((res) => {
             /* iterate on actual row: build x array, for each row build hash x -> value */
             /* sort x array */
@@ -102,4 +102,5 @@ HuntTimeline.propTypes = {
     systemSettings: PropTypes.any,
     from_date: PropTypes.any,
     style: PropTypes.object,
+    chartTarget: PropTypes.bool,
 };

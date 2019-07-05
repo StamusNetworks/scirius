@@ -14,7 +14,7 @@ const HistoryItem = (props) => {
         info.push(<ListViewInfoItem key="ruleset"><p><Icon type="fa" name="th" /> {props.data.ua_objects.ruleset.value}</p></ListViewInfoItem>);
     }
     if (props.data.ua_objects.rule && props.data.ua_objects.rule.sid) {
-        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events
         info.push(<ListViewInfoItem key="rule"><p><a onClick={() => props.switchPage(PAGE_STATE.rules_list, props.data.ua_objects.rule.sid)}><i className={'pficon-security'} /> {props.data.ua_objects.rule.sid}</a></p></ListViewInfoItem>);
     }
     return (
