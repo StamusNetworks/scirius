@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 from importlib import import_module
 from time import time
+from multiprocessing.pool import ThreadPool
 
 from django.shortcuts import render
 from django.conf import settings
@@ -201,6 +202,18 @@ class SciriusTable(tables.Table):
         classes_set = super(SciriusTable, self).get_column_class_names(classes_set, bound_column)
         classes_set.add(bound_column.name)
         return classes_set
+
+
+PARALLEL_MAP_POOL_SIZE = 4
+
+# Utility function for using ThreadPool
+def parallel_map(*args, **kwargs):
+    """Wrapper for ThreadPool.map"""
+    pool_size = kwargs.pop('pool_size', PARALLEL_MAP_POOL_SIZE)
+    pool = ThreadPool(pool_size)
+    res = pool.map(*args, **kwargs)
+    pool.close()
+    return res
 
 
 class QueryBuilder:

@@ -39,13 +39,16 @@ from rules.views import get_public_sources, fetch_public_sources, extract_rule_r
 from rules.rest_processing import RuleProcessingFilterViewSet
 from rules.es_data import ESData
 
-from rules.es_graphs import es_get_stats, es_get_rules_stats, es_get_dashboard, es_get_sid_by_hosts, es_get_field_stats, \
+from rules.es_graphs import es_get_stats, es_get_dashboard, es_get_sid_by_hosts, \
         es_get_timeline, es_get_metrics_timeline, es_get_health, es_get_indices, es_get_rules_per_category, es_get_alerts_count, \
         es_get_latest_stats, es_get_ippair_alerts, es_get_ippair_network_alerts, es_get_alerts_tail, es_suri_log_tail, es_get_poststats
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD
 from rules.es_graphs import es_get_sigs_list_hits, es_get_top_rules, ESError
+
+import backends
+_es_backend = backends.get_es_backend()
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
 
@@ -504,7 +507,7 @@ class RuleHitsOrderingFilter(OrderingFilter):
         }
         es_top_kwargs.update(es_hits_params(request))
         try:
-            result = es_get_top_rules(request, **es_top_kwargs)
+            result = _es_backend.get_top_rules(request, **es_top_kwargs)
         except ESError:
             queryset = Rule.objects.order_by('sid')
             queryset = queryset.annotate(hits=models.Value(0, output_field=models.IntegerField()))
@@ -1959,7 +1962,11 @@ class ESRulesViewSet(ESBaseViewSet):
     =============================================================================================================================================================
     """
 
-    def _get(self, request, format=None):
+    def __init__(self, **kwargs):
+        super(ESRulesViewSet, self).__init__(**kwargs)
+        self._es_backend = backends.get_es_backend()
+
+    def get(self, request, format=None):
         milli_sec = 3600 * 1000
         host = request.GET.get('host', None)
         from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
@@ -1973,8 +1980,7 @@ class ESRulesViewSet(ESBaseViewSet):
             raise serializers.ValidationError(errors)
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'rules': es_get_rules_stats(request, host, from_date=from_date, qfilter=qfilter, dict_format=True)})
-
+        return Response({'rules': self._es_backend.get_rules_stats_dict(request, hosts=[host], from_date=from_date, qfilter=qfilter)})
 
 class ESRuleViewSet(ESBaseViewSet):
     """
@@ -2003,7 +2009,7 @@ class ESRuleViewSet(ESBaseViewSet):
             raise serializers.ValidationError(errors)
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'rule': es_get_sid_by_hosts(request, sid, from_date=from_date, dict_format=True)})
+        return Response({'rule': _es_backend.get_sid_by_hosts(request, sid, from_date=from_date, dict_format=True)})
 
 
 class ESTopRulesViewSet(ESBaseViewSet):
@@ -2096,13 +2102,12 @@ class ESFieldStatsViewSet(ESBaseViewSet):
         if filter_ip not in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status', 'vlan']:
             filter_ip = filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD
 
-        hosts = es_get_field_stats(request,
-                                   filter_ip,
-                                   '*',
-                                   from_date=from_date,
-                                   count=count,
-                                   qfilter=qfilter,
-                                   dict_format=True)
+        hosts = _es_backend.get_field_stats_dict(request,
+                                                 filter_ip,
+                                                 hosts=None,
+                                                 from_date=from_date,
+                                                 count=count,
+                                                 qfilter=qfilter)
 
         return Response(hosts)
 
@@ -2135,7 +2140,11 @@ class ESFilterIPViewSet(ESBaseViewSet):
 
     RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip'}
 
-    def _get(self, request, format=None):
+    def __init__(self, **kwargs):
+        super(ESFilterIPViewSet, self).__init__(**kwargs)
+        self._es_backend = backends.get_es_backend()
+
+    def get(self, request, format=None):
         milli_sec = 3600 * 1000
         errors = {}
         field = request.GET.get('field', None)
@@ -2159,15 +2168,12 @@ class ESFilterIPViewSet(ESBaseViewSet):
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         filter_ip = self.RULE_FIELDS_MAPPING[field]
         count = request.GET.get('page_size', 10)
-
-        hosts = es_get_field_stats(request,
-                                   filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
-                                   '*',
-                                   from_date=from_date,
-                                   count=count,
-                                   qfilter=qfilter,
-                                   dict_format=True)
-
+        hosts = self._es_backend.get_field_stats_dict(request,
+                                                      filter_ip,
+                                                      hosts=None,
+                                                      from_date=from_date,
+                                                      count=count,
+                                                      qfilter=qfilter)
         return Response(hosts)
 
 
@@ -2199,7 +2205,7 @@ class ESTimelineViewSet(ESBaseViewSet):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(es_get_timeline(from_date=from_date, hosts=chosts, qfilter=qfilter, tags=tags))
+        return Response(_es_backend.get_timeline(from_date=from_date, hosts=chosts, qfilter=qfilter, tags=tags))
 
 
 class ESLogstashEveViewSet(ESBaseViewSet):
@@ -2391,7 +2397,7 @@ class ESRulesPerCategoryViewSet(ESBaseViewSet):
             chosts = chosts.split(',')
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(es_get_rules_per_category(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(_es_backend.get_rules_per_category(from_date=from_date, hosts=chosts, qfilter=qfilter))
 
 
 class ESAlertsCountViewSet(ESBaseViewSet):
@@ -2413,7 +2419,11 @@ class ESAlertsCountViewSet(ESBaseViewSet):
     =============================================================================================================================================================
     """
 
-    def _get(self, request, format=None):
+    def __init__(self, **kwargs):
+        super(ESAlertsCountViewSet, self).__init__(**kwargs)
+        self._es_backend = backends.get_es_backend()
+
+    def get(self, request, format=None):
         milli_sec = 3600 * 1000
         chosts = request.GET.get('hosts', None)
         qfilter = request.GET.get('filter', None)
@@ -2426,7 +2436,7 @@ class ESAlertsCountViewSet(ESBaseViewSet):
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         prev = 1 if prev is not None and prev != 'false' else None
 
-        return Response(es_get_alerts_count(from_date=from_date, hosts=chosts, qfilter=qfilter, prev=prev))
+        return Response(self._es_backend.get_alerts_count(from_date=from_date, hosts=chosts, qfilter=qfilter, prev=prev))
 
 
 class ESLatestStatsViewSet(ESBaseViewSet):

@@ -48,6 +48,10 @@ from suripyg import SuriHTMLFormat
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
 
+import backends
+_es_backend = backends.get_es_backend()
+
+
 # Create your views here.
 def index(request):
     ruleset_list = Ruleset.objects.all().order_by('-created_date')[:5]
@@ -193,12 +197,35 @@ class Reference:
         self.key = key
         self.url = None
 
+# FIXME: This does not belong here
+def _parse_sort(req):
+    # Parse sort field: [-](hits|sid|msg|category|*)
+    sort_param = req.GET.get('sort', None)
+    if sort_param:
+        if sort_param[0] == '-':
+            sort_order = 'desc'
+            sort_key = sort_param[1:]
+        else:
+            sort_order = 'asc'
+            sort_key = sort_param
+    else:
+        sort_order = 'asc'
+        sort_key = None
+    kwargs = {'sort_key': sort_key, 'sort_order': sort_order}
+    print('PARSE_SORT', kwargs)
+    return sort_param, kwargs
+
 def elasticsearch(request):
     data = None
     RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip', 'rule_probe': settings.ELASTICSEARCH_HOSTNAME, 'field_stats': None}
-    context = {'es2x': get_es_major_version() >= 2}
     FIELD_TO_TABLE_ID_MAPPING = {'src_ip': '#src_ip_table', 'dest_ip': '#dest_ip_table', 'alert.source.ip': '#source_ip_table', 'alert.target.ip': '#target_ip_table'}
     FIELD_TO_IP_DIRECTION_MAPPING = {'src_ip': 'src', 'dest_ip': 'dest', 'alert.source.ip': 'src', 'alert.target.ip': 'dest'}
+    context = {'es2x': _es_backend.get_es_major_version() >= 2}
+
+    # FIXME: Replace context variable sort_order with sort_param
+    sort_param, sort_kwargs = _parse_sort(request)
+    context['sort_param'] = sort_param
+    context['sort_order'] = sort_param
 
     if request.GET.__contains__('query'):
         try:
@@ -206,11 +233,20 @@ def elasticsearch(request):
             if query == 'dashboards':
                 data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
             elif query == 'rules':
-                host = request.GET.get('host', None)
+                hosts = request.GET.get('host', None)
+                if hosts:
+                    hosts = hosts.split(',')
+                else:
+                    hosts = []
                 from_date = request.GET.get('from_date', None)
                 qfilter = request.GET.get('filter', None)
-                if host != None and from_date != None:
-                    rules = es_get_rules_stats(request, host, from_date = from_date, qfilter = qfilter)
+
+
+                if hosts != None and from_date != None:
+                    rules = _es_backend.get_rules_stats_table(request, hosts=hosts,
+                                                              from_date=from_date,
+                                                              qfilter=qfilter,
+                                                              **sort_kwargs)
                     if rules == None:
                         return HttpResponse(json.dumps(rules), content_type="application/json")
                     rules.source_query.set_parameter('query', 'rules')
@@ -220,8 +256,9 @@ def elasticsearch(request):
             elif query == 'rule':
                 sid = request.GET.get('sid', None)
                 from_date = request.GET.get('from_date', None)
+
                 if from_date != None and sid != None:
-                    hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
+                    hosts = _es_backend.get_sid_by_hosts_table(request, sid, from_date=from_date, **sort_kwargs)
                     hosts.source_query.add_parameter("sid", sid)\
                         .set_parameter("query", "rule")
                     context['table'] = hosts
@@ -239,7 +276,7 @@ def elasticsearch(request):
                 sid = request.GET.get('sid', None)
                 from_date = request.GET.get('from_date', None)
                 qfilter = request.GET.get('qfilter', None)
-                count = request.GET.get('page_size', 10)
+                count = int(request.GET.get('page_size', 10))
 
                 if sid is not None:
                     if qfilter is not None:
@@ -248,11 +285,16 @@ def elasticsearch(request):
                         qfilter = 'alert.signature_id:%s' % sid
 
                 if from_date is not None:
-                    hosts = es_get_field_stats_as_table(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
-                                                        RuleHostTable, '*',
-                                                        from_date=from_date,
-                                                        count=count,
-                                                        qfilter=qfilter)
+                    # FIXME
+                    hosts = _es_backend.get_field_stats_table(request,
+                                                              filter_ip,
+                                                              RuleHostTable,
+                                                              hosts=None,
+                                                              from_date=from_date,
+                                                              count=count,
+                                                              qfilter=qfilter,
+                                                              raw=True)
+
                     hosts.table_id = FIELD_TO_TABLE_ID_MAPPING[filter_ip]
                     hosts.source_query.set_parameter("query", "field_stats")\
                         .add_parameter("field", filter_ip)\
@@ -362,6 +404,11 @@ def rule(request, rule_id, key = 'pk'):
     context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status,
                'rule_transformations': rule_transformations, 'comment_form': comment_form}
 
+    # FIXME: Replace context variable sort_order with sort_param
+    sort_param, sort_kwargs = _parse_sort(request)
+    context['sort_order'] = sort_param
+    context['sort_param'] = sort_param
+
     thresholds = Threshold.objects.filter(rule = rule, threshold_type = 'threshold')
     if thresholds:
         thresholds = RuleThresholdTable(thresholds)
@@ -377,7 +424,7 @@ def rule(request, rule_id, key = 'pk'):
     except:
         pass
 
-    context['kibana_version'] = get_es_major_version()
+    context['kibana_version'] = _es_backend.get_es_major_version()
     return scirius_render(request, 'rules/rule.html', context)
 
 def edit_rule(request, rule_id):
