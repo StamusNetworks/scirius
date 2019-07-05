@@ -231,7 +231,7 @@ def elasticsearch(request):
         try:
             query = request.GET.get('query', 'dashboards')
             if query == 'dashboards':
-                data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
+                data = _es_backend.get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
             elif query == 'rules':
                 hosts = request.GET.get('host', None)
                 if hosts:
@@ -306,7 +306,7 @@ def elasticsearch(request):
                     return scirius_render(request, 'rules/table.html', context)
             elif query == 'indices':
                 if request.is_ajax():
-                    indices = ESIndexessTable(es_get_indices())
+                    indices = ESIndexessTable(_es_backend.get_indices())
                     tables.RequestConfig(request).configure(indices)
                     context['table'] = indices
                     return scirius_render(request, 'rules/table.html', context)
@@ -316,7 +316,7 @@ def elasticsearch(request):
             return HttpResponseServerError(e.message)
     else:
         if request.is_ajax():
-            data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
+            data = _es_backend.get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
             return HttpResponse(json.dumps(data), content_type="application/json")
         else:
             template = Probe.common.get_es_template()
@@ -804,7 +804,7 @@ def delete_alerts(request, rule_id):
             if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
                 Probe.common.es_delete_alerts_by_sid(rule_id, request=request)
             else:
-                result = es_delete_alerts_by_sid(rule_id)
+                result = _es_backend.delete_alerts_by_sid(rule_id)
                 if result.has_key('status') and result['status'] != 200:
                     context = { 'object': rule_object, 'error': result['msg'] }
                     try:

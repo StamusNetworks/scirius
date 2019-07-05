@@ -3,6 +3,7 @@ class ESBackend:
 
     Currently implemented by ESClient and HumioClient.
     """
+
     def __init__(self):
         pass
 
@@ -53,6 +54,52 @@ class ESBackend:
         raise NotImplementedError()
 
     def get_es_major_version(self):
+        raise NotImplementedError()
+
+    def get_dashboard(self, count=20):
+        raise NotImplementedError()
+
+    def get_metrics_timeline(self, from_date=0, interval=None,
+                             value="eve.total.rate_1m",
+                             hosts=None, qfilter=None):
+        raise NotImplementedError()
+
+    def get_poststats(self, from_date=0, value="poststats.rule_filter_1",
+                      hosts=None, qfilter=None):
+        raise NotImplementedError()
+
+    def get_health(self):
+        raise NotImplementedError()
+
+    def get_stats(self):
+        raise NotImplementedError()
+
+    def get_indices_stats(self):
+        raise NotImplementedError()
+
+    def get_indices(self):
+        raise NotImplementedError()
+
+    def delete_alerts_by_sid(self, sid):
+        raise NotImplementedError()
+
+    def get_latest_stats(self, from_date=0, hosts=None, qfilter=None):
+        raise NotImplementedError()
+
+    def get_ippair_alerts(self, from_date=0, hosts=None, qfilter=None):
+        raise NotImplementedError()
+
+    def get_ippair_network_alerts(self, from_date=0, hosts=None, qfilter=None):
+        raise NotImplementedError()
+
+    def get_alerts_tail(self, from_date=0, qfilter=None, search_target=True):
+        raise NotImplementedError()
+
+    def suri_log_tail(self, from_date=0, hosts=None):
+        raise NotImplementedError()
+
+    def get_sigs_list_hits(self, request, sids, host, from_date=0,
+                           order="desc", interval=None, qfilter=None):
         raise NotImplementedError()
 
     # NOTE: There are several es_* functions that are not implemented.
