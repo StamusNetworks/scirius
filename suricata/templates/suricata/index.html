@@ -387,9 +387,13 @@ function differentiate_suppressed() {
 }
 
 $( 'document' ).ready(function () {
-    draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null, 'Hits');
-    load_rules({{ from_date }},  [ '{{ suricata.name }}'], null, differentiate_suppressed);
-    {{ draw_func }}({{ from_date }}, [{% autoescape off %} "{{ suricata.name }}" {% endautoescape %}], null,
+
+    // FIX: Include all probes in rules table, timeline and draw_func explicitly
+    draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null, 'Hits');
+    load_rules({{ from_date }},  [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null, differentiate_suppressed, '{{ sort_order }}');
+
+
+    {{ draw_func }}({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null,
       function() {
         $('{{ draw_elt }}').mouseover(function(){
             var d = this.__data__;
@@ -403,7 +407,9 @@ $( 'document' ).ready(function () {
                 $( "#rules_table a:contains('" +d.key +"')" ).parent().parent().removeClass('overed');
             }
         });
-      }
+      },
+      // FIX: sort order of table
+     '{{ sort_order }}'
     );
 });
 

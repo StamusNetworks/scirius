@@ -45,6 +45,8 @@ from django.conf import settings
 if settings.USE_ELASTICSEARCH:
     from rules.es_graphs import *
 
+Probe = __import__(settings.RULESET_MIDDLEWARE)
+
 def get_suri():
     suri = Suricata.objects.all()
     if suri:
@@ -59,6 +61,12 @@ def index(request, error = None):
 
     if suri:
         context = {'suricata': suri}
+
+        if request.GET.has_key('sort'):
+            context['sort_order'] = request.GET.get('sort')
+        else:
+            context['sort_order'] = '-hits'
+
         if error:
             context['error'] = error
         if suri.ruleset:

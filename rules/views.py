@@ -197,6 +197,8 @@ def elasticsearch(request):
     data = None
     RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip', 'rule_probe': settings.ELASTICSEARCH_HOSTNAME, 'field_stats': None}
     context = {'es2x': get_es_major_version() >= 2}
+    FIELD_TO_TABLE_ID_MAPPING = {'src_ip': '#src_ip_table', 'dest_ip': '#dest_ip_table', 'alert.source.ip': '#source_ip_table', 'alert.target.ip': '#target_ip_table'}
+    FIELD_TO_IP_DIRECTION_MAPPING = {'src_ip': 'src', 'dest_ip': 'dest', 'alert.source.ip': 'src', 'alert.target.ip': 'dest'}
 
     if request.GET.__contains__('query'):
         try:
@@ -211,13 +213,17 @@ def elasticsearch(request):
                     rules = es_get_rules_stats(request, host, from_date = from_date, qfilter = qfilter)
                     if rules == None:
                         return HttpResponse(json.dumps(rules), content_type="application/json")
+                    rules.source_query.set_parameter('query', 'rules')
                     context['table'] = rules
+                    context['qfilter'] = qfilter
                     return scirius_render(request, 'rules/table.html', context)
             elif query == 'rule':
                 sid = request.GET.get('sid', None)
                 from_date = request.GET.get('from_date', None)
                 if from_date != None and sid != None:
                     hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
+                    hosts.source_query.add_parameter("sid", sid)\
+                        .set_parameter("query", "rule")
                     context['table'] = hosts
                     return scirius_render(request, 'rules/table.html', context)
             elif query in RULE_FIELDS_MAPPING.keys():
@@ -247,6 +253,13 @@ def elasticsearch(request):
                                                         from_date=from_date,
                                                         count=count,
                                                         qfilter=qfilter)
+                    hosts.table_id = FIELD_TO_TABLE_ID_MAPPING[filter_ip]
+                    hosts.source_query.set_parameter("query", "field_stats")\
+                        .add_parameter("field", filter_ip)\
+                        .add_parameter("sid", sid)
+                    hosts.update_callback = "() => populate_topip_actions($('%s'), '%s', '%s')" % (
+                        hosts.table_id, filter_ip,
+                        FIELD_TO_IP_DIRECTION_MAPPING[filter_ip])
                     context['table'] = hosts
                     return scirius_render(request, 'rules/table.html', context)
             elif query == 'indices':

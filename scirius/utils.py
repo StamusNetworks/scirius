@@ -32,6 +32,8 @@ import django_tables2 as tables
 from accounts.models import SciriusUser
 from rules.models import get_system_settings
 
+Probe = __import__(settings.RULESET_MIDDLEWARE)
+
 def build_path_info(request):
     splval = request.path_info.strip('/ ').split('/')
     if splval[0] == 'rules':
@@ -91,6 +93,10 @@ def complete_context(request, context):
         context['time_range'] = duration * 3600
 
 def scirius_render(request, template, context):
+    try:
+        context['probes'] = map(lambda x: "'" + x + "'", Probe.models.get_probe_hostnames())
+    except:
+        pass
     context['generator'] = settings.RULESET_MIDDLEWARE
     context['path_info'] = build_path_info(request)
     context['scirius_release'] = settings.SCIRIUS_FLAVOR + " v" + settings.SCIRIUS_VERSION
@@ -195,3 +201,25 @@ class SciriusTable(tables.Table):
         classes_set = super(SciriusTable, self).get_column_class_names(classes_set, bound_column)
         classes_set.add(bound_column.name)
         return classes_set
+
+
+class QueryBuilder:
+    def __init__(self, query_string):
+        self._query_string = query_string
+
+    def set_parameter(self, parameter, value):
+        self._query_string = self._query_string.replace(":%s:" % parameter, value)
+        return self
+
+    def add_parameter(self, parameter, value=None):
+        if value:
+            self._query_string += "&%s=%s" % (parameter, value)
+        else:
+            self._query_string += "&%s=:%s:" % (parameter, parameter)
+        return self
+
+    def get_query_string(self):
+        return self._query_string
+
+    def __str__(self):
+        return self.get_query_string()

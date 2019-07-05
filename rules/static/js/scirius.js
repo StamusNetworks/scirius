@@ -60,6 +60,44 @@ $( 'document' ).ready(function() {
         prepare_rule_details();
 });
 
+function load_table(from_date, table_id, query_url, callback, hosts, filter, sort_param) {
+    console.log("loading table ...");
+    query_url += "&from_date=" + from_date;
+    if (sort_param != null && sort_param != "None") {
+        query_url += "&sort=" + sort_param;
+    }
+    if (filter != null && filter != "None") {
+        query_url += "&filter=" + filter;
+    }
+    if (hosts && hosts.length) {
+        query_url += "&hosts=" + hosts.join();
+    }
+    console.log("query_url: " + query_url);
+
+    $.ajax({
+        url: query_url,
+        success: function(data) {
+            if (data == null) {
+                $(table_id).text("Unable to get data.");
+                $("#error").text("Unable to get data from Elasticsearch");
+                $("#error").parent().toggle();
+                return;
+            }
+            $(table_id).empty();
+            $(table_id).append(data);
+            prepare_rule_details();
+            if (callback) {
+                callback();
+            }
+        },
+        error: function(data) {
+            $(table_id).text("Unable to get data.");
+            $("#error").text("Unable to get data from Elasticsearch");
+            $("#error").parent().toggle();
+        }
+    });
+}
+window.load_table = load_table
 
 function load_rules(from_date, hosts, filter, callback, sort_order) {
     var tgturl = "/rules/es?query=rules&host=" + hosts.join() + "&from_date=" + from_date;
