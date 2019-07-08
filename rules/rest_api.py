@@ -471,7 +471,7 @@ def es_hits_params(request):
             es_params[arg] = request.query_params[arg]
 
     # numeric args
-    for arg in ('from_date', 'interval'):
+    for arg in ('interval',):
         if arg in request.query_params:
             es_params[arg] = int(request.query_params[arg])
     return es_params
@@ -1939,8 +1939,6 @@ class ESRulesViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         qfilter = request.GET.get('filter', None)
 
         errors = {}
@@ -1950,8 +1948,7 @@ class ESRulesViewSet(ESBaseViewSet):
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'rules': ESRulesStats(request).get(from_date=from_date, qfilter=qfilter, dict_format=True)})
+        return Response({'rules': ESRulesStats(request).get(qfilter=qfilter, dict_format=True)})
 
 
 class ESRuleViewSet(ESBaseViewSet):
@@ -1969,9 +1966,7 @@ class ESRuleViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         sid = request.GET.get('sid', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
 
         errors = {}
         if sid is None:
@@ -1980,8 +1975,7 @@ class ESRuleViewSet(ESBaseViewSet):
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'rule': ESSidByHosts(request).get(sid, from_date=from_date, dict_format=True)})
+        return Response({'rule': ESSidByHosts(request).get(sid, dict_format=True)})
 
 
 class ESTopRulesViewSet(ESBaseViewSet):
@@ -1989,8 +1983,6 @@ class ESTopRulesViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         qfilter = request.GET.get('filter', None)
         count = request.GET.get('count', 20)
         order = request.GET.get('order', "desc")
@@ -1999,7 +1991,7 @@ class ESTopRulesViewSet(ESBaseViewSet):
             errors = {'hosts': ['This field is required.']}
             raise serializers.ValidationError(errors)
 
-        return Response(ESTopRules(request).get(from_date=from_date, qfilter=qfilter, count=count, order=order))
+        return Response(ESTopRules(request).get(qfilter=qfilter, count=count, order=order))
 
 
 class ESSigsListViewSet(ESBaseViewSet):
@@ -2007,8 +1999,6 @@ class ESSigsListViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         qfilter = request.GET.get('filter', None)
         sids = request.GET.get('sids', 20)
 
@@ -2022,7 +2012,7 @@ class ESSigsListViewSet(ESBaseViewSet):
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        return Response(ESSigsListHits(request).get(sids, from_date=from_date, qfilter=qfilter))
+        return Response(ESSigsListHits(request).get(sids, qfilter=qfilter))
 
 
 class ESPostStatsViewSet(ESBaseViewSet):
@@ -2030,12 +2020,9 @@ class ESPostStatsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         qfilter = request.GET.get('filter', None)
         value = request.GET.get('value', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESPoststats(request).get(from_date=from_date, value=value, qfilter=qfilter))
+        return Response(ESPoststats(request).get(value=value, qfilter=qfilter))
 
 
 class ESFieldStatsViewSet(ESBaseViewSet):
@@ -2043,11 +2030,9 @@ class ESFieldStatsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         errors = {}
         field = request.GET.get('field', None)
         sid = request.GET.get('sid', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         qfilter = request.GET.get('qfilter', None)
 
         if sid is not None:
@@ -2060,7 +2045,6 @@ class ESFieldStatsViewSet(ESBaseViewSet):
             errors = {'field': ['This field is required.']}
             raise serializers.ValidationError(errors)
 
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         filter_ip = request.GET.get('field', 'src_ip')
         count = request.GET.get('page_size', 10)
 
@@ -2068,7 +2052,6 @@ class ESFieldStatsViewSet(ESBaseViewSet):
             filter_ip = filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD
 
         hosts = ESFieldStats(request).get(filter_ip,
-                                   from_date=from_date,
                                    count=count,
                                    qfilter=qfilter,
                                    dict_format=True)
@@ -2105,11 +2088,9 @@ class ESFilterIPViewSet(ESBaseViewSet):
     RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip'}
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         errors = {}
         field = request.GET.get('field', None)
         sid = request.GET.get('sid', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         qfilter = request.GET.get('qfilter', None)
 
         if sid is not None:
@@ -2125,12 +2106,10 @@ class ESFilterIPViewSet(ESBaseViewSet):
         if field not in self.RULE_FIELDS_MAPPING.keys():
             raise exceptions.NotFound(detail='"%s" is not a valid field' % field)
 
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         filter_ip = self.RULE_FIELDS_MAPPING[field]
         count = request.GET.get('page_size', 10)
 
         hosts = ESFieldStats(request).get(filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
-                                   from_date=from_date,
                                    count=count,
                                    qfilter=qfilter,
                                    dict_format=True)
@@ -2156,12 +2135,9 @@ class ESTimelineViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         tags = False if request.GET.get('target', 'false') == 'false' else True
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESTimeline(request).get(from_date=from_date, qfilter=qfilter, tags=tags))
+        return Response(ESTimeline(request).get(qfilter=qfilter, tags=tags))
 
 
 class ESLogstashEveViewSet(ESBaseViewSet):
@@ -2232,12 +2208,9 @@ class ESLogstashEveViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         value = request.GET.get('value', None)
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESMetricsTimeline(request).get(from_date=from_date, value=value, qfilter=qfilter))
+        return Response(ESMetricsTimeline(request).get(value=value, qfilter=qfilter))
 
 
 class ESHealthViewSet(ESBaseViewSet):
@@ -2337,11 +2310,8 @@ class ESRulesPerCategoryViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESRulesPerCategory(request).get(from_date=from_date, qfilter=qfilter))
+        return Response(ESRulesPerCategory(request).get(qfilter=qfilter))
 
 
 class ESAlertsCountViewSet(ESBaseViewSet):
@@ -2364,14 +2334,11 @@ class ESAlertsCountViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         qfilter = request.GET.get('filter', None)
         prev = request.GET.get('prev', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         prev = 1 if prev is not None and prev != 'false' else None
 
-        return Response(ESAlertsCount(request).get(from_date=from_date, qfilter=qfilter, prev=prev))
+        return Response(ESAlertsCount(request).get(qfilter=qfilter, prev=prev))
 
 
 class ESLatestStatsViewSet(ESBaseViewSet):
@@ -2401,11 +2368,8 @@ class ESLatestStatsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESLatestStats(request).get(from_date=from_date, qfilter=qfilter))
+        return Response(ESLatestStats(request).get(qfilter=qfilter))
 
 
 class ESIPPairAlertsViewSet(ESBaseViewSet):
@@ -2431,11 +2395,8 @@ class ESIPPairAlertsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESIppairAlerts(request).get(from_date=from_date, qfilter=qfilter))
+        return Response(ESIppairAlerts(request).get(qfilter=qfilter))
 
 
 class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
@@ -2456,11 +2417,8 @@ class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESIppairNetworkAlerts(request).get(from_date=from_date, qfilter=qfilter))
+        return Response(ESIppairNetworkAlerts(request).get(qfilter=qfilter))
 
 
 class ESAlertsTailViewSet(ESBaseViewSet):
@@ -2481,13 +2439,10 @@ class ESAlertsTailViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         search_target = request.GET.get('search_target', True)
         search_target = False if search_target is not True else True
-        return Response(ESAlertsTail(request).get(from_date=from_date, qfilter=qfilter, search_target=search_target))
+        return Response(ESAlertsTail(request).get(qfilter=qfilter, search_target=search_target))
 
 
 class ESSuriLogTailViewSet(ESBaseViewSet):
@@ -2511,10 +2466,7 @@ class ESSuriLogTailViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(ESSuriLogTail(request).get(from_date=from_date))
+        return Response(ESSuriLogTail(request).get())
 
 
 class ESDeleteLogsViewSet(APIView):

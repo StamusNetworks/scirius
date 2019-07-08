@@ -191,20 +191,17 @@ def elasticsearch(request):
         try:
             query = request.GET.get('query')
             if query == 'rules':
-                from_date = request.GET.get('from_date', None)
                 qfilter = request.GET.get('filter', None)
-                rules = ESRulesStats(request).get(from_date = from_date, qfilter = qfilter)
+                rules = ESRulesStats(request).get(qfilter = qfilter)
                 if rules == None:
                     return HttpResponse(json.dumps(rules), content_type="application/json")
                 context['table'] = rules
                 return scirius_render(request, 'rules/table.html', context)
             elif query == 'rule':
                 sid = request.GET.get('sid', None)
-                from_date = request.GET.get('from_date', None)
-                if from_date != None and sid != None:
-                    hosts = ESSidByHosts(request).get(sid, from_date = from_date)
-                    context['table'] = hosts
-                    return scirius_render(request, 'rules/table.html', context)
+                hosts = ESSidByHosts(request).get(sid)
+                context['table'] = hosts
+                return scirius_render(request, 'rules/table.html', context)
             elif query in RULE_FIELDS_MAPPING.keys():
                 ajax = request.GET.get('json', None)
                 if ajax:
@@ -216,7 +213,6 @@ def elasticsearch(request):
                     filter_ip = RULE_FIELDS_MAPPING[query]
 
                 sid = request.GET.get('sid', None)
-                from_date = request.GET.get('from_date', None)
                 qfilter = request.GET.get('qfilter', None)
                 count = request.GET.get('page_size', 10)
 
@@ -226,14 +222,12 @@ def elasticsearch(request):
                     else:
                         qfilter = 'alert.signature_id:%s' % sid
 
-                if from_date is not None:
-                    hosts = ESFieldStatsAsTable(request).get(filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
+                hosts = ESFieldStatsAsTable(request).get(filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
                                                         RuleHostTable,
-                                                        from_date=from_date,
                                                         count=count,
                                                         qfilter=qfilter)
-                    context['table'] = hosts
-                    return scirius_render(request, 'rules/table.html', context)
+                context['table'] = hosts
+                return scirius_render(request, 'rules/table.html', context)
             elif query == 'indices':
                 if request.is_ajax():
                     indices = ESIndexessTable(ESIndices(request).get())

@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from datetime import datetime, timedelta
+from time import time
 import json
 import logging
 import socket
@@ -52,7 +53,12 @@ class ESQuery(object):
         except:
             return base_index + '2*'
 
-    def _get_es_url(self, from_date, data='alert'):
+    def _get_es_url(self, data='alert', from_date=None):
+        if from_date is None:
+            from_date = 0
+            if self.request and 'from_date' in self.request.GET:
+                from_date = int(self.request.GET['from_date'])
+
         if (data == 'alert' and '*' in settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX) or (data != 'alert' and '*' in settings.ELASTICSEARCH_LOGSTASH_INDEX):
             if data == 'alert':
                 indexes = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
@@ -70,6 +76,17 @@ class ESQuery(object):
                 start = datetime.fromtimestamp(int(from_date)/1000)
                 indexes = self._build_es_timestamping(start, data = data)
         return self.URL % (get_es_address(), indexes)
+
+    def _from_date(self, params=None):
+        if params and 'from_date' in params:
+            return params['from_date']
+
+        if self.request and 'from_date' in self.request.GET:
+            return int(self.request.GET['from_date'])
+
+        # 30 days ago
+        return (time() - (30 * 24 * 60 * 60)) * 1000
+
 
     def _render_template(self, tmpl, dictionary, qfilter=None):
         hosts_list = ['*']
@@ -106,7 +123,8 @@ class ESQuery(object):
             'hosts': hosts,
             'hosts_filter': hosts_filter,
             'keyword': settings.ELASTICSEARCH_KEYWORD,
-            'hostname': settings.ELASTICSEARCH_HOSTNAME
+            'hostname': settings.ELASTICSEARCH_HOSTNAME,
+            'from_date': self._from_date(dictionary)
         })
         return bytearray(templ.render(context), encoding="utf-8")
 
