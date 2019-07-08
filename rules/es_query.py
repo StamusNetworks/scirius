@@ -109,6 +109,18 @@ class ESQuery(object):
                 msg += repr(e)
             es_logger.exception(msg)
             raise ESError(msg, e)
+        else:
+            if settings.DEBUG:
+                if method is None:
+                    if data:
+                        method = 'POST'
+                    else:
+                        method = 'GET'
+                if data:
+                    data = '-- ' + data.decode('utf-8').replace('\n', '\n-- ')
+                else:
+                    data = '-- No data'
+                es_logger.info('%s %s\n%s' % (method, url, data))
 
         out = out.read()
         out = json.loads(out)
