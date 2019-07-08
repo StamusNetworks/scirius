@@ -9,7 +9,6 @@ export function esEscape(str) {
 
 export function buildQFilter(filters, systemSettings) {
     const qfilter = [];
-    let output = '';
     let fSuffix = '.raw';
 
     if (systemSettings) {
@@ -68,10 +67,5 @@ export function buildQFilter(filters, systemSettings) {
         }
     }
 
-    if (qfilter.length === 0) {
-        return null;
-    }
-
-    output += (qfilter.length) ? `&qfilter=${qfilter.join(' AND ')}` : '';
-    return (output.length) ? output : null;
+    return qfilter.length ? `&qfilter=${qfilter.join(' AND ')}` : '';
 }

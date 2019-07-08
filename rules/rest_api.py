@@ -465,11 +465,6 @@ class UserActionFilter(filters.FilterSet):
 def es_hits_params(request):
     es_params = {}
 
-    # string args
-    for arg in ('qfilter',):
-        if arg in request.query_params:
-            es_params[arg] = request.query_params[arg]
-
     # numeric args
     for arg in ('interval',):
         if arg in request.query_params:
@@ -1929,7 +1924,7 @@ class ESRulesViewSet(ESBaseViewSet):
 
     Show rules stats:\n
         curl -k https://x.x.x.x/rest/rules/es/rules/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
-        curl -k https://x.x.x.x/rest/rules/es/rules/\?hosts\=ProbeMain\&from_date\=1537264545477\&filter=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+        curl -k https://x.x.x.x/rest/rules/es/rules/\?hosts\=ProbeMain\&from_date\=1537264545477\&qfilter=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -1939,8 +1934,6 @@ class ESRulesViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        qfilter = request.GET.get('filter', None)
-
         errors = {}
         if 'hosts' not in request.GET:
             errors['hosts'] = ['This field is required.']
@@ -1948,7 +1941,7 @@ class ESRulesViewSet(ESBaseViewSet):
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        return Response({'rules': ESRulesStats(request).get(qfilter=qfilter, dict_format=True)})
+        return Response({'rules': ESRulesStats(request).get(dict_format=True)})
 
 
 class ESRuleViewSet(ESBaseViewSet):
@@ -1983,7 +1976,6 @@ class ESTopRulesViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        qfilter = request.GET.get('filter', None)
         count = request.GET.get('count', 20)
         order = request.GET.get('order', "desc")
 
@@ -1991,7 +1983,7 @@ class ESTopRulesViewSet(ESBaseViewSet):
             errors = {'hosts': ['This field is required.']}
             raise serializers.ValidationError(errors)
 
-        return Response(ESTopRules(request).get(qfilter=qfilter, count=count, order=order))
+        return Response(ESTopRules(request).get(count=count, order=order))
 
 
 class ESSigsListViewSet(ESBaseViewSet):
@@ -1999,7 +1991,6 @@ class ESSigsListViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        qfilter = request.GET.get('filter', None)
         sids = request.GET.get('sids', 20)
 
         errors = {}
@@ -2012,7 +2003,7 @@ class ESSigsListViewSet(ESBaseViewSet):
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        return Response(ESSigsListHits(request).get(sids, qfilter=qfilter))
+        return Response(ESSigsListHits(request).get(sids))
 
 
 class ESPostStatsViewSet(ESBaseViewSet):
@@ -2020,9 +2011,8 @@ class ESPostStatsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        qfilter = request.GET.get('filter', None)
         value = request.GET.get('value', None)
-        return Response(ESPoststats(request).get(value=value, qfilter=qfilter))
+        return Response(ESPoststats(request).get(value=value))
 
 
 class ESFieldStatsViewSet(ESBaseViewSet):
@@ -2033,13 +2023,6 @@ class ESFieldStatsViewSet(ESBaseViewSet):
         errors = {}
         field = request.GET.get('field', None)
         sid = request.GET.get('sid', None)
-        qfilter = request.GET.get('qfilter', None)
-
-        if sid is not None:
-            if qfilter is not None:
-                qfilter = 'alert.signature_id:%s AND %s' % (sid, qfilter)
-            else:
-                qfilter = 'alert.signature_id:%s' % sid
 
         if field is None:
             errors = {'field': ['This field is required.']}
@@ -2051,9 +2034,8 @@ class ESFieldStatsViewSet(ESBaseViewSet):
         if filter_ip not in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status', 'vlan']:
             filter_ip = filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD
 
-        hosts = ESFieldStats(request).get(filter_ip,
+        hosts = ESFieldStats(request).get(sid, filter_ip,
                                    count=count,
-                                   qfilter=qfilter,
                                    dict_format=True)
 
         return Response(hosts)
@@ -2091,13 +2073,6 @@ class ESFilterIPViewSet(ESBaseViewSet):
         errors = {}
         field = request.GET.get('field', None)
         sid = request.GET.get('sid', None)
-        qfilter = request.GET.get('qfilter', None)
-
-        if sid is not None:
-            if qfilter is not None:
-                qfilter = 'alert.signature_id:%s AND %s' % (sid, qfilter)
-            else:
-                qfilter = 'alert.signature_id:%s' % sid
 
         if field is None:
             errors['field'] = ['This field is required.']
@@ -2109,9 +2084,9 @@ class ESFilterIPViewSet(ESBaseViewSet):
         filter_ip = self.RULE_FIELDS_MAPPING[field]
         count = request.GET.get('page_size', 10)
 
-        hosts = ESFieldStats(request).get(filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
+        hosts = ESFieldStats(request).get(sid,
+                                   filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
                                    count=count,
-                                   qfilter=qfilter,
                                    dict_format=True)
 
         return Response(hosts)
@@ -2125,7 +2100,7 @@ class ESTimelineViewSet(ESBaseViewSet):
 
     Show timeline:\n
         curl -k https://x.x.x.x/rest/rules/es/timeline/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        curl -k https://x.x.x.x/rest/rules/es/timeline/\?hosts\=ProbeMain\&from_date\=1537264545477\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/es/timeline/\?hosts\=ProbeMain\&from_date\=1537264545477\&qfilter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
        HTTP/1.1 200 OK
@@ -2135,9 +2110,8 @@ class ESTimelineViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        qfilter = request.GET.get('filter', None)
         tags = False if request.GET.get('target', 'false') == 'false' else True
-        return Response(ESTimeline(request).get(qfilter=qfilter, tags=tags))
+        return Response(ESTimeline(request).get(tags=tags))
 
 
 class ESLogstashEveViewSet(ESBaseViewSet):
@@ -2149,9 +2123,9 @@ class ESLogstashEveViewSet(ESBaseViewSet):
     Logstash Events examples:\n
         1. curl -k "https://x.x.x.x/rest/rules/es/logstash_eve/?value=system.cpu.user.pct&from_date=1540211796478&hosts=stamus"  -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
         2. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.memory.actual.used.pct\&from_date\=1537264545477\&hosts\=ProbeMain -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        3. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.network.in.bytes\&from_date\=1537264545477\&hosts\=ProbeMain\&filter\=system.network.name:eth0 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        4. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.filesystem.used.pct\&from_date\=1537264545477\&hosts\=ProbeMain\&filter\=system.filesystem.mount_point.raw:/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        5. curl -k "https://x.x.x.x/rest/rules/es/logstash_eve/?value=system.filesystem.used.pct&from_date=1540210439302&hosts=stamus&filter=system.filesystem.mount_point.raw:\"/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch\"" -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+        3. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.network.in.bytes\&from_date\=1537264545477\&hosts\=ProbeMain\&qfilter\=system.network.name:eth0 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        4. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.filesystem.used.pct\&from_date\=1537264545477\&hosts\=ProbeMain\&qfilter\=system.filesystem.mount_point.raw:/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        5. curl -k "https://x.x.x.x/rest/rules/es/logstash_eve/?value=system.filesystem.used.pct&from_date=1540210439302&hosts=stamus&qfilter=system.filesystem.mount_point.raw:\"/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch\"" -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
         1. {"from_date":1540211796478,"interval":868000,"stamus":{"entries":[{"mean":0.2518125013448298,"time":1540213664000},{"mean":0.12792068951088806,"time":1540214532000},{"mean":0.2473448278575108,"time":1540215400000},
@@ -2209,8 +2183,7 @@ class ESLogstashEveViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         value = request.GET.get('value', None)
-        qfilter = request.GET.get('filter', None)
-        return Response(ESMetricsTimeline(request).get(value=value, qfilter=qfilter))
+        return Response(ESMetricsTimeline(request).get(value=value))
 
 
 class ESHealthViewSet(ESBaseViewSet):
@@ -2293,7 +2266,7 @@ class ESRulesPerCategoryViewSet(ESBaseViewSet):
 
     Show rules per category:\n
         curl -k https://x.x.x.x/rest/rules/es/rules_per_category/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        curl -k https://x.x.x.x/rest/rules/es/rules_per_category/\?hosts\=ProbeMain\&from_date\=1537264545477\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/es/rules_per_category/\?hosts\=ProbeMain\&from_date\=1537264545477\&qfilter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -2310,8 +2283,7 @@ class ESRulesPerCategoryViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        qfilter = request.GET.get('filter', None)
-        return Response(ESRulesPerCategory(request).get(qfilter=qfilter))
+        return Response(ESRulesPerCategory(request).get())
 
 
 class ESAlertsCountViewSet(ESBaseViewSet):
@@ -2323,7 +2295,7 @@ class ESAlertsCountViewSet(ESBaseViewSet):
     Show alerts count:\n
         1. curl -k https://x.x.x.x/rest/rules/es/alerts_count/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
         2. curl -k https://x.x.x.x/rest/rules/es/alerts_count/\?hosts\=ProbeMain\&from_date\=1537264545477&prev=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        3. curl -k https://x.x.x.x/rest/rules/es/alerts_count/\?hosts\=ProbeMain\&from_date\=1537264545477&prev=true\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        3. curl -k https://x.x.x.x/rest/rules/es/alerts_count/\?hosts\=ProbeMain\&from_date\=1537264545477&prev=true\&qfilter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -2334,11 +2306,9 @@ class ESAlertsCountViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        qfilter = request.GET.get('filter', None)
         prev = request.GET.get('prev', None)
         prev = 1 if prev is not None and prev != 'false' else None
-
-        return Response(ESAlertsCount(request).get(qfilter=qfilter, prev=prev))
+        return Response(ESAlertsCount(request).get(prev=prev))
 
 
 class ESLatestStatsViewSet(ESBaseViewSet):
@@ -2368,8 +2338,7 @@ class ESLatestStatsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        qfilter = request.GET.get('filter', None)
-        return Response(ESLatestStats(request).get(qfilter=qfilter))
+        return Response(ESLatestStats(request).get())
 
 
 class ESIPPairAlertsViewSet(ESBaseViewSet):
@@ -2380,7 +2349,7 @@ class ESIPPairAlertsViewSet(ESBaseViewSet):
 
     Show ip pair alerts:\n
         curl -k https://x.x.x.x/rest/rules/es/ip_pair_alerts/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        curl -k https://x.x.x.x/rest/rules/es/ip_pair_alerts/\?hosts\=ProbeMain\&from_date\=1537264545477\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/es/ip_pair_alerts/\?hosts\=ProbeMain\&from_date\=1537264545477\&qfilter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -2395,8 +2364,7 @@ class ESIPPairAlertsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        qfilter = request.GET.get('filter', None)
-        return Response(ESIppairAlerts(request).get(qfilter=qfilter))
+        return Response(ESIppairAlerts(request).get())
 
 
 class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
@@ -2417,8 +2385,7 @@ class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        qfilter = request.GET.get('filter', None)
-        return Response(ESIppairNetworkAlerts(request).get(qfilter=qfilter))
+        return Response(ESIppairNetworkAlerts(request).get())
 
 
 class ESAlertsTailViewSet(ESBaseViewSet):
@@ -2439,10 +2406,9 @@ class ESAlertsTailViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        qfilter = request.GET.get('filter', None)
         search_target = request.GET.get('search_target', True)
         search_target = False if search_target is not True else True
-        return Response(ESAlertsTail(request).get(qfilter=qfilter, search_target=search_target))
+        return Response(ESAlertsTail(request).get(search_target=search_target))
 
 
 class ESSuriLogTailViewSet(ESBaseViewSet):

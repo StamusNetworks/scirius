@@ -88,11 +88,15 @@ class ESQuery(object):
         return (time() - (30 * 24 * 60 * 60)) * 1000
 
 
-    def _render_template(self, tmpl, dictionary, qfilter=None):
+    def _render_template(self, tmpl, dictionary):
         hosts_list = ['*']
+        qfilter = None
+
         if self.request:
             if 'hosts' in self.request.GET:
                 hosts_list = self.request.GET['hosts'].split(',')
+            if 'qfilter' in self.request.GET:
+                qfilter = self.request.GET['qfilter']
 
         hosts = None
         hosts_filter = None
@@ -111,20 +115,22 @@ class ESQuery(object):
             hosts_filter = ['%s.%s:%s' % (settings.ELASTICSEARCH_HOSTNAME, settings.ELASTICSEARCH_KEYWORD, h) for h in hosts]
             hosts_filter = mark_safe('(%s)' % ' '.join(hosts_filter))
 
-        templ = Template(tmpl)
-        context = Context(dictionary)
-
-        if qfilter != None:
+        if qfilter is not None:
             query_filter = " AND " + qfilter
             # dump as json but remove quotes since the quotes are already set in templates
-            context['query_filter'] = json.dumps(query_filter)[1:-1]
+            query_filter = mark_safe(json.dumps(query_filter)[1:-1])
+        else:
+            query_filter = ''
 
+        templ = Template(tmpl)
+        context = Context(dictionary)
         context.update({
             'hosts': hosts,
             'hosts_filter': hosts_filter,
             'keyword': settings.ELASTICSEARCH_KEYWORD,
             'hostname': settings.ELASTICSEARCH_HOSTNAME,
-            'from_date': self._from_date(dictionary)
+            'from_date': self._from_date(dictionary),
+            'query_filter': query_filter
         })
         return bytearray(templ.render(context), encoding="utf-8")
 

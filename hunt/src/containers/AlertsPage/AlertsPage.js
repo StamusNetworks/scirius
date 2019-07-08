@@ -104,12 +104,7 @@ export default class AlertsPage extends React.Component {
     }
 
     fetchData(state, filters) {
-        let stringFilters = buildQFilter(filters, this.props.systemSettings);
-        if (stringFilters === null) {
-            stringFilters = '';
-        } else {
-            stringFilters = `&filter=${stringFilters.replace('&qfilter=', '')}`;
-        }
+        const stringFilters = buildQFilter(filters, this.props.systemSettings);
         this.setState({ refresh_data: true, loading: true });
         const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?search_target=0&${this.buildListUrlParams(state)}&from_date=${this.props.from_date}${stringFilters}`;
         axios.get(url).then((res) => {

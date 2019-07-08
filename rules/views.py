@@ -191,8 +191,7 @@ def elasticsearch(request):
         try:
             query = request.GET.get('query')
             if query == 'rules':
-                qfilter = request.GET.get('filter', None)
-                rules = ESRulesStats(request).get(qfilter = qfilter)
+                rules = ESRulesStats(request).get()
                 if rules == None:
                     return HttpResponse(json.dumps(rules), content_type="application/json")
                 context['table'] = rules
@@ -213,19 +212,12 @@ def elasticsearch(request):
                     filter_ip = RULE_FIELDS_MAPPING[query]
 
                 sid = request.GET.get('sid', None)
-                qfilter = request.GET.get('qfilter', None)
                 count = request.GET.get('page_size', 10)
 
-                if sid is not None:
-                    if qfilter is not None:
-                        qfilter = 'alert.signature_id:%s AND %s' % (sid, qfilter)
-                    else:
-                        qfilter = 'alert.signature_id:%s' % sid
-
-                hosts = ESFieldStatsAsTable(request).get(filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
+                hosts = ESFieldStatsAsTable(request).get(sid,
+                                                        filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
                                                         RuleHostTable,
-                                                        count=count,
-                                                        qfilter=qfilter)
+                                                        count=count)
                 context['table'] = hosts
                 return scirius_render(request, 'rules/table.html', context)
             elif query == 'indices':
