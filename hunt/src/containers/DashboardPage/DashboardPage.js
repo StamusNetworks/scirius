@@ -650,7 +650,7 @@ export default class HuntDashboard extends React.Component {
 
     hideMoreModal = () => this.setState({ ...this.state, moreModal: null });
 
-    onChangeChartTarget = (switchElement, chartTarget) => {
+    onChangeChartTarget = (chartTarget) => {
         this.setState({
             chartTarget
         });
@@ -673,8 +673,6 @@ export default class HuntDashboard extends React.Component {
                         actionsButtons={this.actionsButtons}
                         queryType={['filter', 'filter_host_id']}
                         page={this.props.page}
-                        onChangeChartTarget={this.onChangeChartTarget}
-                        chartTarget={this.state.chartTarget}
                     />
                 </ErrorHandler>
 
@@ -684,6 +682,9 @@ export default class HuntDashboard extends React.Component {
                     </div>
                     <div className="col-lg-2 col-md-3 col-sm-12 col-xs-12" style={{ paddingLeft: '0px' }}>
                         <HuntTrend from_date={this.props.from_date} filters={this.props.filters} />
+                        {typeof this.state.chartTarget !== 'undefined' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && <div style={{ position: 'absolute', zIndex: 10, top: 0, right: '30px' }}>
+                            <DropdownKebab id={'more-actions'} pullRight><MenuItem onClick={() => this.onChangeChartTarget(!this.state.chartTarget)} data-toggle="modal">Switch timeline by probes/tags</MenuItem></DropdownKebab>
+                        </div>}
                     </div>
                 </div>
                 <div className="row drag-and-drop-container">
