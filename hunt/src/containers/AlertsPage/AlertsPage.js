@@ -27,7 +27,7 @@ import axios from 'axios';
 import store from 'store';
 import md5 from 'md5';
 import * as config from 'hunt_common/config/Api';
-import { buildQFilter } from '../../helpers/buildQFilter';
+import { buildQFilter } from 'hunt_common/buildQFilter';
 import RuleToggleModal from '../../RuleToggleModal';
 import { HuntFilter } from '../../HuntFilter';
 import AlertItem from '../../components/AlertItem';

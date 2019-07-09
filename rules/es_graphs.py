@@ -77,6 +77,7 @@ def get_top_query():
                               }
                             }
                           ]
+{{ bool_clauses }}
                         }
                       },
                       "filter": {
@@ -134,6 +135,7 @@ def get_top_query():
                       }
                     }
                   ]
+{{ bool_clauses }}
                 }
               }
         }
@@ -170,6 +172,7 @@ def get_top_query():
                       }
                     }
                   ]
+{{ bool_clauses }}
                 }
               }
         }
@@ -200,6 +203,7 @@ def get_sid_by_host_query():
                               }
                             }
                           ]
+{{ bool_clauses }}
                         }
                       },
                       "filter": {
@@ -258,6 +262,7 @@ def get_sid_by_host_query():
                      }
                     }
                   ]
+{{ bool_clauses }}
                 }
               }
         }
@@ -285,6 +290,7 @@ def get_timeline_by_tags_query():
               }
             }
           }]
+{{ bool_clauses }}
         }
       },
       "aggs": {
@@ -345,6 +351,7 @@ def get_timeline_query():
                               }
                             }
                           ]
+{{ bool_clauses }}
                         }
                       }
                     }
@@ -378,6 +385,7 @@ def get_timeline_query():
                       }
                     }
                   ]
+{{ bool_clauses }}
                 }
           },
           "aggs": {
@@ -439,6 +447,7 @@ def get_stats_query():
                               }
                             }
                           ]
+{{ bool_clauses }}
                         }
                       }
                     }
@@ -529,6 +538,7 @@ def get_stats_query():
                 }
               }
                   ]
+{{ bool_clauses }}
                 }
               }
         }
@@ -575,6 +585,7 @@ def get_stats_query():
                 }
               }
                   ]
+{{ bool_clauses }}
                 }
               }
         }
@@ -634,6 +645,7 @@ def get_rules_per_category():
                       }
                     }
                   ]
+{{ bool_clauses }}
                }
           }
         }
@@ -691,6 +703,7 @@ def get_rules_per_category():
                       }
                     }
                   ]
+{{ bool_clauses }}
                }
           }
         }
@@ -719,6 +732,7 @@ def get_alerts_count_per_host():
               }
                   ],
                   "must_not": []
+{{ bool_clauses }}
                 }
           },
           "aggs": {}
@@ -746,6 +760,7 @@ def get_alerts_count_per_host():
               }
                   ],
                   "must_not": []
+{{ bool_clauses }}
                 }
           },
           "aggs": {}
@@ -790,6 +805,7 @@ def get_alerts_trend_per_host():
                 }
               }
                   ]
+{{ bool_clauses }}
                 }
           }
         }
@@ -831,6 +847,7 @@ def get_alerts_trend_per_host():
                 }
               }
                   ]
+{{ bool_clauses }}
                 }
           }
         }
@@ -866,6 +883,7 @@ def get_latest_stats_entry():
                     }
                 }
                   ]
+{{ bool_clauses }}
             }
           }
         }
@@ -899,6 +917,7 @@ def get_latest_stats_entry():
                     }
                 }
                   ]
+{{ bool_clauses }}
             }
           }
         }
@@ -926,6 +945,7 @@ def get_ippair_alerts_count():
                       }
                     }
                   ]
+{{ bool_clauses }}
                 }
               },
           "aggs": {
@@ -982,6 +1002,7 @@ def get_ippair_alerts_count():
                       }
                     }
                   ]
+{{ bool_clauses }}
                 }
               },
           "aggs": {
@@ -1039,6 +1060,7 @@ def get_ippair_netinfo_alerts_count():
                       }
                     }
                   ]
+{{ bool_clauses }}
                 }
               },
                 "aggs": {
@@ -1117,6 +1139,7 @@ def get_ippair_netinfo_alerts_count():
                       }
                     }
                   ]
+{{ bool_clauses }}
                 }
               },
                 "aggs": {
@@ -1189,22 +1212,20 @@ ALERTS_TAIL = """
     }
   ],
   "query": {
-        "bool": {
-          "must": [
-            {
-              "range": {
-                "@timestamp": {
-                  "gte": {{ from_date }}
-                }
-              }
+    "bool": {
+      "must": [{
+          "range": {
+            "@timestamp": {
+              "gte": {{ from_date }}
             }
-        ,{
-            "query_string": {
-              "query": "event_type:alert {{ target_only }} {{ query_filter }}",
-              "analyze_wildcard": true
-            }
+          }
+      }, {
+        "query_string": {
+          "query": "event_type:alert {{ target_only }} {{ query_filter }}",
+          "analyze_wildcard": true
         }
-          ]
+      }]
+{{ bool_clauses }}
     }
   }
 }
@@ -1257,6 +1278,7 @@ TOP_ALERTS = """
            }
         }
       ]
+{{ bool_clauses }}
     }
   },
   "aggs": {
@@ -1309,6 +1331,7 @@ SIGS_LIST_HITS = """
             }
         }
       ]
+{{ bool_clauses }}
     }
   },
   "aggs": {
@@ -1384,6 +1407,7 @@ POSTSTATS_SUMMARY = """
            }
         }
       ]
+{{ bool_clauses }}
     }
   }
 }

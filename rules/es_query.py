@@ -12,6 +12,7 @@ from django.utils.safestring import mark_safe
 import urllib2
 
 from rules.models import get_es_address
+from scirius.utils import get_middleware_module
 
 
 # ES requests timeout (keep this below Scirius's ajax requests timeout)
@@ -88,7 +89,7 @@ class ESQuery(object):
         return (time() - (30 * 24 * 60 * 60)) * 1000
 
 
-    def _render_template(self, tmpl, dictionary):
+    def _render_template(self, tmpl, dictionary, ignore_middleware=False):
         hosts_list = ['*']
         qfilter = None
 
@@ -122,6 +123,11 @@ class ESQuery(object):
         else:
             query_filter = ''
 
+        if ignore_middleware:
+            bool_clauses = ''
+        else:
+            bool_clauses = get_middleware_module('common').es_bool_clauses(self.request)
+
         templ = Template(tmpl)
         context = Context(dictionary)
         context.update({
@@ -130,7 +136,8 @@ class ESQuery(object):
             'keyword': settings.ELASTICSEARCH_KEYWORD,
             'hostname': settings.ELASTICSEARCH_HOSTNAME,
             'from_date': self._from_date(dictionary),
-            'query_filter': query_filter
+            'query_filter': query_filter,
+            'bool_clauses': bool_clauses
         })
         return bytearray(templ.render(context), encoding="utf-8")
 

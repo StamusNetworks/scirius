@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
-import { buildQFilter } from './helpers/buildQFilter';
+import { buildQFilter } from 'hunt_common/buildQFilter';
 import SciriusChart from './components/SciriusChart';
 import ErrorHandler from './components/Error';
 
