@@ -76,6 +76,14 @@ _HUNT_FILTERS = [
                       'queryType': 'filter'
                     },
                     {
+                      'id': 'host',
+                      'title': 'Probe',
+                      'placeholder': 'Filter by Probes',
+                      'filterType': 'text',
+                      'valueType': 'text',
+                      'queryType': 'filter'
+                    },
+                    {
                       'id': 'msg',
                       'title': 'Message',
                       'placeholder': 'Filter by Message',
