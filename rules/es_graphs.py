@@ -89,7 +89,7 @@ def get_top_query():
                               "range": {
                                 "@timestamp": {
                                   "from": {{ from_date }},
-                                  "to": "now"
+                                  "to": {{ to_date }}
                                 }
                               }
                             }
@@ -132,7 +132,7 @@ def get_top_query():
                       "range": {
                          "@timestamp": {
                             "from": {{ from_date }},
-                            "to": "now"
+                            "to": {{ to_date }}
                          }
                       }
                     }
@@ -169,7 +169,7 @@ def get_top_query():
                       "range": {
                          "@timestamp": {
                             "from": {{ from_date }},
-                            "to": "now"
+                            "to": {{ to_date }}
                          }
                       }
                     }
@@ -215,7 +215,7 @@ def get_sid_by_host_query():
                               "range": {
                                 "@timestamp": {
                                   "from": {{ from_date }},
-                                  "to": "now"
+                                  "to": {{ to_date }}
                                 }
                               }
                             }
@@ -253,7 +253,7 @@ def get_sid_by_host_query():
                       "range": {
                          "@timestamp": {
                             "from": {{ from_date }},
-                            "to": "now"
+                            "to": {{ to_date }}
                          }
                       }
                     }
@@ -287,7 +287,7 @@ def get_timeline_by_tags_query():
             "range": {
               "@timestamp": {
                 "gte": {{ from_date }},
-                "lte": "now",
+                "lte": {{ to_date }},
                 "format": "epoch_millis"
               }
             }
@@ -348,7 +348,7 @@ def get_timeline_query():
                               "range": {
                                 "@timestamp": {
                                   "from": {{ from_date }},
-                                  "to": "now"
+                                  "to": {{ to_date }}
                                 }
                               }
                             }
@@ -381,7 +381,7 @@ def get_timeline_query():
                       "range": {
                         "@timestamp": {
                           "gte": {{ from_date }},
-                          "lte": "now",
+                          "lte": {{ to_date }},
                           "format": "epoch_millis"
                         }
                       }
@@ -444,7 +444,7 @@ def get_stats_query():
                               "range": {
                                 "@timestamp": {
                                   "from": {{ from_date }},
-                                  "to": "now"
+                                  "to": {{ to_date }}
                                 }
                               }
                             }
@@ -481,7 +481,7 @@ def get_stats_query():
                               "range": {
                                 "@timestamp": {
                                   "from": {{ from_date }},
-                                  "to": "now"
+                                  "to": {{ to_date }}
                                 }
                               }
                             }
@@ -525,7 +525,7 @@ def get_stats_query():
                       "range": {
                           "@timestamp": {
                             "from": {{ from_date }},
-                            "to": "now"
+                            "to": {{ to_date }}
                           }
                       }
                     },
@@ -572,7 +572,7 @@ def get_stats_query():
                       "range": {
                           "@timestamp": {
                             "from": {{ from_date }},
-                            "to": "now"
+                            "to": {{ to_date }}
                           }
                       }
                     },
@@ -1404,7 +1404,7 @@ POSTSTATS_SUMMARY = """
            "range": {
              "@timestamp": {
                "from": {{ from_date }},
-               "to": "now"
+               "to": {{ to_date }}
              }
            }
         }

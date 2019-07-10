@@ -59,7 +59,7 @@ class ESQuery(object):
         if from_date is None:
             from_date = 0
             if self.request and 'from_date' in self.request.GET:
-                from_date = int(self.request.GET['from_date'])
+                from_date = self._from_date()
 
         if (data == 'alert' and '*' in settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX) or (data != 'alert' and '*' in settings.ELASTICSEARCH_LOGSTASH_INDEX):
             if data == 'alert':
@@ -89,11 +89,26 @@ class ESQuery(object):
         # 30 days ago
         return (time() - (30 * 24 * 60 * 60)) * 1000
 
+    def _to_date(self, params=None, es_format=False):
+        to_date = 'now'
+        if params and 'to_date' in params:
+            return params['to_date']
+        elif self.request and 'to_date' in self.request.GET:
+            if self.request.GET['to_date'] != 'now':
+                to_date = int(self.request.GET['to_date'])
+
+        if to_date == 'now':
+            if es_format:
+                return '"now"'
+            else:
+                return time() * 1000
+        return to_date
+
     def _interval(self):
         if self.request and 'interval' in self.request.GET:
             interval = int(self.request['interval']) * 1000
         else:
-            interval = int((time() * 1000) - self._from_date()) / self.INTERVAL_POINTS)
+            interval = int((self._to_date() - self._from_date()) / self.INTERVAL_POINTS)
 
         if interval < 1:
             return 1
@@ -147,6 +162,7 @@ class ESQuery(object):
             'keyword': settings.ELASTICSEARCH_KEYWORD,
             'hostname': settings.ELASTICSEARCH_HOSTNAME,
             'from_date': self._from_date(dictionary),
+            'to_date': mark_safe(self._to_date(dictionary, es_format=True)), # mark quotes around "now" as safe
             'query_filter': query_filter,
             'bool_clauses': bool_clauses,
             'interval': unicode(self._interval()) + 'ms'
