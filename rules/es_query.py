@@ -82,12 +82,17 @@ class ESQuery(object):
     def _from_date(self, params=None):
         if params and 'from_date' in params:
             return params['from_date']
+        elif self.request and 'from_date' in self.request.GET:
+            from_date = int(self.request.GET['from_date'])
+        else:
+            # 30 days ago
+            from_date = (time() - (30 * 24 * 60 * 60)) * 1000
 
-        if self.request and 'from_date' in self.request.GET:
-            return int(self.request.GET['from_date'])
+        if from_date >= self._to_date():
+            # Asking for a date in the future (browser of the user has clock out of sync), return last hour
+            from_date = (self._to_date() - 60 * 60) * 1000
 
-        # 30 days ago
-        return (time() - (30 * 24 * 60 * 60)) * 1000
+        return from_date
 
     def _to_date(self, params=None, es_format=False):
         to_date = 'now'
