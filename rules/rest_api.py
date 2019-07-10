@@ -462,16 +462,6 @@ class UserActionFilter(filters.FilterSet):
         fields = ['username', 'date', 'action_type', 'comment', 'user_action_objects__action_key', 'user_action_objects__action_value']
 
 
-def es_hits_params(request):
-    es_params = {}
-
-    # numeric args
-    for arg in ('interval',):
-        if arg in request.query_params:
-            es_params[arg] = int(request.query_params[arg])
-    return es_params
-
-
 class RuleHitsOrderingFilter(OrderingFilter):
     def get_query_param(self, request, param):
         value = request.query_params.get(param)
@@ -490,13 +480,8 @@ class RuleHitsOrderingFilter(OrderingFilter):
         return value
 
     def _get_hits_order(self, request, order):
-        es_top_kwargs = {
-            'count': Rule.objects.count(),
-            'order': order
-        }
-        es_top_kwargs.update(es_hits_params(request))
         try:
-            result = ESTopRules(request).get(**es_top_kwargs)
+            result = ESTopRules(request).get(count=Rule.objects.count(), order=order)
         except ESError:
             queryset = Rule.objects.order_by('sid')
             queryset = queryset.annotate(hits=models.Value(0, output_field=models.IntegerField()))
@@ -918,13 +903,12 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
     def _add_hits(self, request, data):
         sids = ','.join([unicode(rule['sid']) for rule in data])
 
-        ## reformat ES's output
-        es_params = es_hits_params(request)
         try:
-            result = ESSigsListHits(request).get(sids, **es_params)
+            result = ESSigsListHits(request).get(sids)
         except ESError:
             return data
 
+        ## reformat ES's output
         hits = {}
         for r in result:
             hits[r['key']] = self._scirius_hit(r)

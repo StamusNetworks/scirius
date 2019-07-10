@@ -23,6 +23,7 @@ class ESQuery(object):
     TIMEOUT = 30
     MAX_RESULT_WINDOW = 10000
     URL = "%s%s/_search?ignore_unavailable=true"
+    INTERVAL_POINTS = 100
 
     def __init__(self, request):
         self.request = request
@@ -88,6 +89,16 @@ class ESQuery(object):
         # 30 days ago
         return (time() - (30 * 24 * 60 * 60)) * 1000
 
+    def _interval(self):
+        if self.request and 'interval' in self.request.GET:
+            interval = int(self.request['interval']) * 1000
+        else:
+            interval = int((time() * 1000) - self._from_date()) / self.INTERVAL_POINTS)
+
+        if interval < 1:
+            return 1
+
+        return interval
 
     def _render_template(self, tmpl, dictionary, ignore_middleware=False):
         hosts_list = ['*']
@@ -137,7 +148,8 @@ class ESQuery(object):
             'hostname': settings.ELASTICSEARCH_HOSTNAME,
             'from_date': self._from_date(dictionary),
             'query_filter': query_filter,
-            'bool_clauses': bool_clauses
+            'bool_clauses': bool_clauses,
+            'interval': unicode(self._interval()) + 'ms'
         })
         return bytearray(templ.render(context), encoding="utf-8")
 

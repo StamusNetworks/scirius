@@ -1296,7 +1296,7 @@ TOP_ALERTS = """
         "timeline": {
           "date_histogram": {
             "field": "@timestamp",
-            "interval": "{{ interval }}s",
+            "interval": "{{ interval }}",
             "min_doc_count": 0
           }
         }
@@ -1347,7 +1347,7 @@ SIGS_LIST_HITS = """
         "timeline": {
           "date_histogram": {
             "field": "@timestamp",
-            "interval": "{{ interval }}s",
+            "interval": "{{ interval }}",
             "min_doc_count": 0
           }
         },
@@ -1560,16 +1560,13 @@ class ESSidByHosts(ESQuery):
 
 
 class ESTimeline(ESQuery):
-    def get(self, interval=None, tags=False):
+    def get(self, tags=False):
         # 100 points on graph per default
-        if interval == None:
-            interval = int((time() - (self._from_date() / 1000)) / 100)
-
         if not tags:
             func = get_timeline_query()
         else:
             func = get_timeline_by_tags_query()
-        data = self._render_template(func, {'interval': unicode(interval) + "s"})
+        data = self._render_template(func, {})
         es_url = self._get_es_url()
         data = self._urlopen(es_url, data)
 
@@ -1592,16 +1589,14 @@ class ESTimeline(ESQuery):
             return {}
         if data != {}:
             data['from_date'] = self._from_date()
-            data['interval'] = int(interval) * 1000
+            data['interval'] = self._interval()
         return data
 
 
 class ESMetricsTimeline(ESQuery):
-    def get(self, interval=None, value = "eve.total.rate_1m"):
+    def get(self, value="eve.total.rate_1m"):
         # 100 points on graph per default
-        if interval == None:
-            interval = int((time() - (self._from_date() / 1000)) / 100)
-        data = self._render_template(get_stats_query(), {'interval': unicode(interval) + "s", 'value': value})
+        data = self._render_template(get_stats_query(), {'value': value})
         es_url = self._get_es_url(data='stats')
         data = self._urlopen(es_url, data)
 
@@ -1628,7 +1623,7 @@ class ESMetricsTimeline(ESQuery):
         except:
             return {}
         data['from_date'] = self._from_date()
-        data['interval'] = int(interval) * 1000
+        data['interval'] = self._interval()
         return data
 
 
@@ -1872,10 +1867,8 @@ class ESSuriLogTail(ESQuery):
 
 
 class ESTopRules(ESQuery):
-    def get(self, count=20, order="desc", interval=None):
-        if interval == None:
-            interval = int((time() - (self._from_date() / 1000)) / 100)
-        data = self._render_template(TOP_ALERTS, {'interval': interval, 'count': count, 'order': order})
+    def get(self, count=20, order="desc"):
+        data = self._render_template(TOP_ALERTS, {'count': count, 'order': order})
         es_url = self._get_es_url()
         data = self._urlopen(es_url, data)
         try:
@@ -1885,11 +1878,9 @@ class ESTopRules(ESQuery):
 
 
 class ESSigsListHits(ESQuery):
-    def get(self, sids, order="desc", interval=None):
-        if interval == None:
-            interval = int((time() - (self._from_date() / 1000)) / 100)
+    def get(self, sids, order="desc"):
         count = len(sids.split(','))
-        data = self._render_template(SIGS_LIST_HITS, {'sids': sids, 'interval': interval,'count': count})
+        data = self._render_template(SIGS_LIST_HITS, {'sids': sids, 'count': count})
         es_url = self._get_es_url()
         data = self._urlopen(es_url, data)
         try:
