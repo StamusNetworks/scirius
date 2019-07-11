@@ -136,8 +136,9 @@ class ESIndexessTable(SciriusTable):
     name = tables.Column()
     count = tables.Column()
     deleted = tables.Column()
+    size = tables.Column()
     class Meta(DefaultMeta):
-        fields = ("name", "count", "deleted")
+        fields = ("name", "count", "deleted", 'size')
 
 class ThresholdTable(SciriusTable):
     pk = tables.LinkColumn('threshold', args=[tables.A('pk')] )

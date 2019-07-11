@@ -20,6 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from django.conf import settings
+from django.template.defaultfilters import filesizeformat
 from datetime import datetime
 
 import socket
@@ -30,6 +31,7 @@ import math
 
 from rules.es_query import ESQuery
 from rules.models import get_es_address, get_es_path
+from scirius.utils import merge_dict_deeply
 
 
 ES_VERSION = None
@@ -1415,7 +1417,8 @@ POSTSTATS_SUMMARY = """
 
 HEALTH_URL = "/_cluster/health"
 STATS_URL = "/_cluster/stats"
-INDICES_STATS_URL = "/_stats/docs"
+INDICES_STATS_DOCS_URL = "/_stats/docs"
+INDICES_STATS_SIZE_URL = "/_stats/store"
 DELETE_ALERTS_URL = "/%s*/_query?q=alert.signature_id:%%d" % settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
 DELETE_ALERTS_URL_V5 = "%s*/_delete_by_query" % settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
 
@@ -1649,18 +1652,21 @@ class ESStats(ESQuery):
 
 class ESIndicesStats(ESQuery):
     def get(self):
-        return self._urlopen(get_es_path(INDICES_STATS_URL))
+        return self._urlopen(get_es_path(INDICES_STATS_DOCS_URL))
 
 
 class ESIndices(ESQuery):
     def get(self):
-        indices = self._urlopen(get_es_path(INDICES_STATS_URL))
+        docs = self._urlopen(get_es_path(INDICES_STATS_DOCS_URL))
+        size = self._urlopen(get_es_path(INDICES_STATS_SIZE_URL))
+        indices = merge_dict_deeply(docs, size)
         indexes_array = []
         if indices == None:
             return indexes_array
         for index in indices['indices']:
             docs = indices['indices'][index]['total']['docs']
             docs['name'] = index
+            docs['size'] = filesizeformat(indices['indices'][index]['total']['store']['size_in_bytes'])
             indexes_array.append(docs)
         return indexes_array
 
