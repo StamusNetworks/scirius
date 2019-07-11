@@ -473,6 +473,10 @@ class UserAction(models.Model):
     username = models.CharField(max_length=150)
     ua_objects = GenericRelation('UserActionObject', related_query_name='ua_objects')
 
+    content_type = models.ForeignKey(ContentType, default=None, blank=True, null=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
+
     # Compatibilty
     description = models.CharField(max_length=1512, null=True)
 
