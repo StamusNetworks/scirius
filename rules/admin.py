@@ -22,12 +22,3 @@ from __future__ import unicode_literals
 from django.contrib import admin
 
 # Register your models here.
-from rules.models import Source
-from rules.models import Ruleset
-from rules.models import Category
-from rules.models import Rule
-
-admin.site.register(Source)
-admin.site.register(Ruleset)
-admin.site.register(Category)
-admin.site.register(Rule)

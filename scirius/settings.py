@@ -32,7 +32,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -50,6 +49,9 @@ INSTALLED_APPS = (
     'django_filters',
     'webpack_loader',
 )
+
+if DEBUG:
+    INSTALLED_APPS += ('django.contrib.admin',)
 
 if LooseVersion(get_version()) < LooseVersion('1.7'):
     INSTALLED_APPS += ('south', )
