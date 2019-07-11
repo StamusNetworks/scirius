@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 from importlib import import_module
 from time import time
+import math
 
 from django.shortcuts import render
 from django.conf import settings
@@ -195,3 +196,14 @@ class SciriusTable(tables.Table):
         classes_set = super(SciriusTable, self).get_column_class_names(classes_set, bound_column)
         classes_set.add(bound_column.name)
         return classes_set
+
+
+# https://stackoverflow.com/questions/20656135/python-deep-merge-dictionary-data
+def merge_dict_deeply(src, dest):
+    for key, value in src.items():
+        if isinstance(value, dict):
+            node = dest.setdefault(key, {})
+            merge_dict_deeply(value, node)
+        else:
+            dest[key] = value
+    return dest
