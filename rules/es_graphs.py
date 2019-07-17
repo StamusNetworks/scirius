@@ -531,8 +531,9 @@ def get_stats_query():
                     },
                 {
                 "query_string": {
-              {% if hosts_filter %}
-                  "query": "{{ hosts_filter }} {{ query_filter }}",
+              {% if value|slice:":11" != 'eve_insert.' %}{# eve_insert has no host field #}
+                  {# hosts_filter can't be used since metricbeat store the keyword hostname in `host` #}
+                  "query": "{% for host in hosts %}host:{{ host }} {% endfor %} {{ query_filter }}",
               {% else %}
                   "query": "tags:metric",
               {% endif %}
@@ -578,8 +579,9 @@ def get_stats_query():
                     },
                 {
                 "query_string": {
-              {% if hosts_filter %}
-                  "query": "{{ hosts_filter }} {{ query_filter }}",
+              {% if value|slice:":11" != 'eve_insert.' %}{# eve_insert has no host field #}
+                  {# hosts_filter can't be used since metricbeat store the keyword hostname in `host` #}
+                  "query": "{% for host in hosts %}host:{{ host }} {% endfor %} {{ query_filter }}",
               {% else %}
                   "query": "tags:metric",
               {% endif %}
@@ -1597,7 +1599,8 @@ class ESMetricsTimeline(ESQuery):
     def get(self, value="eve.total.rate_1m"):
         # 100 points on graph per default
         data = self._render_template(get_stats_query(), {'value': value})
-        es_url = self._get_es_url(data='stats')
+        index = 'metricbeat' if not value.startswith('stats.') else None
+        es_url = self._get_es_url(data=index)
         data = self._urlopen(es_url, data)
 
         # total number of results

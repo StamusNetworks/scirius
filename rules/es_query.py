@@ -39,6 +39,8 @@ class ESQuery(object):
             base_index = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
         elif data == 'host_id':
             base_index = settings.ELASTICSEARCH_LOGSTASH_INDEX + 'host_id-'
+        elif data == 'metricbeat':
+            base_index = 'metricbeat-'
         else:
             base_index = settings.ELASTICSEARCH_LOGSTASH_INDEX
         try:
@@ -72,6 +74,8 @@ class ESQuery(object):
                     indexes = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + "*"
                 elif data == 'host_id':
                     indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX + "host_id-*"
+                elif data == 'metricbeat':
+                    indexes = 'metricbeat-*'
                 else:
                     indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX + "*"
             else:
