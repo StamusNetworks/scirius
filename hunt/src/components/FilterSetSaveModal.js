@@ -34,7 +34,6 @@ const FilterSetSaveModal = (props) => (
                     </Col>
                     <Col sm={8}>
                         {!props.page && <FormControl componentClass="select" placeholder="relevant" onChange={props.handleComboChange}>
-                            <option key={'empty'} value={''} defaultValue></option>
                             {VerticalNavItems.filter((item) => (
                                 item.title !== 'Actions')).map((item) => (
                                     <option key={item.title} value={item.def}>{item.title}</option> // eslint-disable-line indent
