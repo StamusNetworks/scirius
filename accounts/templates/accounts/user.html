@@ -29,54 +29,70 @@
 <h2>{{ current_action }}</h2>
 {% endif %}
 {% if form %}
-<form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
-    {% bootstrap_form form %}
-    {% buttons %}
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "ok" %}
-            {% if current_action == 'Add user' %}
-                Add
-            {% else %}
-                Submit
-            {% endif %}
-        </button>
-    {% endbuttons %}
-</form>
-{% else %}
-{% if action == 'delete' %}
-<h2>Delete user {{user.username}}</h2>
-{% else %}
-<h2>User {{user.username}}</h2>
-{% endif %}
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-4">
-<ul class="list-group">
-<li class="list-group-item"><strong>First name:</strong> <span class="pull-right">{{ user.first_name }}</span></li>
-<li class="list-group-item"><strong>Last name:</strong> <span class="pull-right">{{ user.last_name }}</span></li>
-<li class="list-group-item"><strong>Email:</strong> <span class="pull-right">{{ user.email }}</span></li>
-{% if user.sciriususer %}
-<li class="list-group-item"><strong>Timezone:</strong> <span class="pull-right">{{ user.sciriususer.timezone }}</span></li>
-{% endif %}
-<li class="list-group-item"><strong>Active:</strong> <span class="pull-right">{{ user.is_active }}</span></li>
-<li class="list-group-item"><strong>Staff user:</strong> <span class="pull-right">{{ user.is_staff }}</span></li>
-<li class="list-group-item"><strong>Super user:</strong> <span class="pull-right">{{ user.is_superuser }}</span></li>
-</ul>
+    {% if action == 'delete' %}
+        <h2>Delete user {{user.username}}</h2>
+        <div class="container-fluid">
+        <div class="row">
+        <div class="col-md-4">
+        <ul class="list-group">
+            <li class="list-group-item"><strong>First name:</strong> <span class="pull-right">{{ user.first_name }}</span></li>
+            <li class="list-group-item"><strong>Last name:</strong> <span class="pull-right">{{ user.last_name }}</span></li>
+            <li class="list-group-item"><strong>Email:</strong> <span class="pull-right">{{ user.email }}</span></li>
+    {% if user.sciriususer %}
+            <li class="list-group-item"><strong>Timezone:</strong> <span class="pull-right">{{ user.sciriususer.timezone }}</span></li>
+    {% endif %}
+            <li class="list-group-item"><strong>Active:</strong> <span class="pull-right">{{ user.is_active }}</span></li>
+            <li class="list-group-item"><strong>Staff user:</strong> <span class="pull-right">{{ user.is_staff }}</span></li>
+            <li class="list-group-item"><strong>Super user:</strong> <span class="pull-right">{{ user.is_superuser }}</span></li>
+        </ul>
+        </div>
+        </div>
+        </div>
+    {% endif %}
 
-{% if action == 'delete' %}
-<form action="{% url 'accounts_useraction' user.pk 'delete' %}" method="post" class="form">
-{% csrf_token %}
-<input type="hidden" name="confirm" value="1">
-    {% buttons %}
-<button type="submit" class="btn btn-primary">
-Confirm user deletion
-</button>
-    {% endbuttons %}
-</form>
-{% endif %}
-</div>
-</div>
-</div>
+    <form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
+        {% bootstrap_form form %}
+        {% if action != 'delete' %}
+            {% buttons %}
+                <button type="submit" class="btn btn-primary">
+                    {% bootstrap_icon "ok" %}
+                    {% if current_action == 'Add user' %}
+                        Add
+                    {% else %}
+                        Submit
+                    {% endif %}
+                </button>
+            {% endbuttons %}
+        {% else %}
+            <input type="hidden" name="confirm" value="1">
+            {% buttons %}
+                <button type="submit" class="btn btn-primary">
+                    Confirm user deletion
+                </button>
+            {% endbuttons %}
+        {% endif %}
+    </form>
+{% else %}
+    {% if action != 'delete' %}
+        <h2>User {{user.username}}</h2>
+        <div class="container-fluid">
+        <div class="row">
+        <div class="col-md-4">
+        <ul class="list-group">
+            <li class="list-group-item"><strong>First name:</strong> <span class="pull-right">{{ user.first_name }}</span></li>
+            <li class="list-group-item"><strong>Last name:</strong> <span class="pull-right">{{ user.last_name }}</span></li>
+            <li class="list-group-item"><strong>Email:</strong> <span class="pull-right">{{ user.email }}</span></li>
+        {% if user.sciriususer %}
+            <li class="list-group-item"><strong>Timezone:</strong> <span class="pull-right">{{ user.sciriususer.timezone }}</span></li>
+        {% endif %}
+            <li class="list-group-item"><strong>Active:</strong> <span class="pull-right">{{ user.is_active }}</span></li>
+            <li class="list-group-item"><strong>Staff user:</strong> <span class="pull-right">{{ user.is_staff }}</span></li>
+            <li class="list-group-item"><strong>Super user:</strong> <span class="pull-right">{{ user.is_superuser }}</span></li>
+        </ul>
+        </div>
+        </div>
+        </div>
+    {% endif %}
 {% endif %}
 
 </div>
