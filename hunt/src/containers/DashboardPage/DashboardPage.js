@@ -497,10 +497,7 @@ export default class HuntDashboard extends React.Component {
     };
 
     switchEditMode = (e) => {
-        this.setState({
-            ...this.state,
-            editMode: !this.state.editMode
-        });
+        this.setState({ editMode: !this.state.editMode });
         e.preventDefault();
     }
 
@@ -557,10 +554,7 @@ export default class HuntDashboard extends React.Component {
                 }
             };
         }
-        this.setState({
-            ...this.state,
-            dashboard: tmpState
-        });
+        this.setState({ dashboard: tmpState });
     };
 
     onDragStartMicro = () => {
@@ -624,10 +618,7 @@ export default class HuntDashboard extends React.Component {
     onBreakPointChange = (breakpoint) => {
         if (this.state.breakPoint !== breakpoint) {
             this.breakPointChanged = true;
-            this.setState({
-                ...this.state,
-                breakPoint: breakpoint
-            });
+            this.setState({ breakPoint: breakpoint });
         }
     };
 
@@ -644,7 +635,7 @@ export default class HuntDashboard extends React.Component {
                 }
             }
 
-            this.setState({ ...this.state, moreModal: item, moreResults: json.data });
+            this.setState({ moreModal: item, moreResults: json.data });
         });
     }
 
