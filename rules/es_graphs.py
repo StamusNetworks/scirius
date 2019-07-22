@@ -1664,7 +1664,7 @@ class ESIndices(ESQuery):
         for index in indices['indices']:
             docs = indices['indices'][index]['total']['docs']
             docs['name'] = index
-            docs['size'] = filesizeformat(indices['indices'][index]['total']['store']['size_in_bytes'])
+            docs['size'] = indices['indices'][index]['total']['store']['size_in_bytes']
             indexes_array.append(docs)
         return indexes_array
 
