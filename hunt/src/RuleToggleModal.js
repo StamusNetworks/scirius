@@ -296,13 +296,6 @@ export default class RuleToggleModal extends React.Component {
                             </Col>
                         </FormGroup>}
                         {this.props.action === 'send_mail' && <React.Fragment>
-                            <FormGroup key="send_mail" controlId="send_mail" disabled={false}>
-                                <Col sm={3}>
-                                    <Checkbox disabled defaultChecked>
-                                        <strong>Send email</strong>
-                                    </Checkbox>
-                                </Col>
-                            </FormGroup>
                             <FormGroup key="max_mails_per_day" controlId="max_mails_per_day" disabled={false}>
                                 <Col sm={4}>
                                     <strong>Maximum number of mail sent per day</strong>
@@ -312,20 +305,6 @@ export default class RuleToggleModal extends React.Component {
                                 </Col>
                             </FormGroup>
                         </React.Fragment>}
-                        {this.props.action === 'suppress' && <FormGroup key="suppress" controlId="suppress" disabled={false}>
-                            <Col sm={3}>
-                                <Checkbox disabled defaultChecked>
-                                    <strong>Suppress</strong>
-                                </Checkbox>
-                            </Col>
-                        </FormGroup>}
-                        {this.props.action === 'threshold' && <FormGroup key="threshold" controlId="threshold" disabled={false}>
-                            <Col sm={3}>
-                                <Checkbox disabled defaultChecked>
-                                    <strong>Threshold</strong>
-                                </Checkbox>
-                            </Col>
-                        </FormGroup>}
                         <hr />
                         <FormGroup controlId="ruleset" disabled={false}>
                             <Col sm={12}>
