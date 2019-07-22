@@ -91,6 +91,7 @@ export default class HuntDashboard extends React.Component {
             editMode: false,
             chartTarget: false,
             copyMode: false,
+            hoveredItem: null,
             copiedItem: '',
         };
         this.actionsButtons = actionsButtons.bind(this);
@@ -163,22 +164,16 @@ export default class HuntDashboard extends React.Component {
             this.loadActions(this.props.filters);
         }
 
-        const detectspecialkeys = (e) => {
+        const detectspecialkeys = (e, keyDown) => {
             if (e.keyCode === 17) {
-                if (!this.state.copyMode) {
-                    this.setState({
-                        copyMode: true
-                    })
-                } else {
-                    this.setState({
-                        copyMode: false
-                    })
+                if (this.state.copyMode !== keyDown) {
+                    this.setState({ copyMode: keyDown });
                 }
             }
         };
 
-        document.onkeydown = detectspecialkeys;
-        document.onkeyup = detectspecialkeys;
+        document.onkeydown = (e) => detectspecialkeys(e, true);
+        document.onkeyup = (e) => detectspecialkeys(e, false);
     }
 
     componentDidUpdate(prevProps) {
@@ -400,21 +395,33 @@ export default class HuntDashboard extends React.Component {
         }
     };
 
+    itemCopyModeOnClick = (event, itemPath, key) => {
+        if (event.ctrlKey) {
+            this.setState({ copiedItem: itemPath });
+            setTimeout(() => {
+                this.setState({ copiedItem: '' });
+            }, 1500);
+            copyTextToClipboard(key);
+        }
+    }
+
+    onMouseMove = (event, itemPath) => {
+        if (this.state.hoveredItem !== itemPath) {
+            this.setState({ hoveredItem: itemPath });
+        }
+        if (this.state.copyMode !== event.ctrlKey) {
+            this.setState({ copyMode: event.ctrlKey });
+        }
+    }
+
+    onMouseLeave = (event, itemPath) => {
+        if (this.state.hoveredItem === itemPath) {
+            this.setState({ hoveredItem: null });
+        }
+    }
+
     createElement = (block) => {
         const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${block.i}&from_date=${this.props.from_date}&page_size=30${this.qFilter}`;
-        const itemCopyModeOnClick = (itemPath, key) => {
-            this.setState({
-                ...this.state,
-                copiedItem: itemPath
-            });
-            setTimeout(() => {
-                this.setState({
-                    ...this.state,
-                    copiedItem: ''
-                });
-            }, 1500)
-            copyTextToClipboard(key)
-        }
         return (
             <div key={block.i}
                 style={{ background: 'white' }}
@@ -430,26 +437,28 @@ export default class HuntDashboard extends React.Component {
                         {block.data !== null && block.data.map((item) => {
                             const itemPath = `${block.title}-${block.i}-${item.key}`;
                             let classes = 'dashboard-list-item';
-                            classes += (this.state.copyMode) ? ' copy-mode' : '';
+                            let clickHandler = null;
                             classes += (this.state.copiedItem === itemPath) ? ' copied' : '';
-                            return (this.state.copyMode) ? <ListGroupItem
+
+                            if (this.state.copyMode && this.state.hoveredItem === itemPath) {
+                                // Only set clickHandler during copy mode to let click events reach the magnifiers in EventValue
+                                // otherwise hover and click on magnifiers breaks on Firefox
+                                clickHandler = (event) => this.itemCopyModeOnClick(event, itemPath, item.key);
+                                classes += ' copy-mode';
+                            }
+
+                            return <ListGroupItem
                                 key={item.key}
-                                onClick={() => itemCopyModeOnClick(itemPath, item.key)}
+                                onClick={clickHandler}
+                                onMouseMove={(event) => this.onMouseMove(event, itemPath)}
+                                onMouseLeave={(event) => this.onMouseLeave(event, itemPath)}
                                 className={classes}
                             >
                                 <ErrorHandler>
                                     <EventValue field={block.i}
                                         value={item.key}
                                         addFilter={this.addFilter}
-                                        magnifiers={false}
-                                        right_info={<Badge>{item.doc_count}</Badge>}
-                                    />
-                                </ErrorHandler>
-                            </ListGroupItem> : <ListGroupItem key={item.key} className={classes}>
-                                <ErrorHandler>
-                                    <EventValue field={block.i}
-                                        value={item.key}
-                                        addFilter={this.addFilter}
+                                        magnifiers={!this.state.copyMode || this.state.hoveredItem !== itemPath}
                                         right_info={<Badge>{item.doc_count}</Badge>}
                                     />
                                 </ErrorHandler>
