@@ -44,6 +44,13 @@ export default class FilterToggleModal extends React.Component {
         }
     }
 
+    // eslint-disable-next-line class-methods-use-this
+    onModalClick(e) {
+        // Stopping event propagation is required since the modal is the children of a list item that
+        // will also react to clicks
+        e.stopPropagation();
+    }
+
     handleChange(event) {
         const val = parseInt(event.target.value, 10);
         if (val >= 0) {
@@ -108,49 +115,51 @@ export default class FilterToggleModal extends React.Component {
         }
         return (
             <Modal show={this.props.show} onHide={this.close}>
-                <Modal.Header>
-                    <button
-                        className="close"
-                        onClick={this.close}
-                        aria-hidden="true"
-                        aria-label="Close"
-                    >
-                        <Icon type="pf" name="close" />
-                    </button>
-                    {this.props.data && <Modal.Title>{action} {this.props.data.action} at current position {this.props.data.index}</Modal.Title>}
-                </Modal.Header>
-                <Modal.Body>
-                    <HuntRestError errors={this.state.errors} />
-                    <Form horizontal>
-                        {this.props.action === 'move' && <FormGroup key="index" controlId="index" disabled={false}>
-                            <Col sm={3}>
-                                <strong>New index</strong>
-                            </Col>
-                            <Col sm={9}>
-                                <FormControl type="number" min={0} max={50000} disabled={false} defaultValue={0} onChange={this.handleChange} onKeyPress={(e) => this.onFieldKeyPress(e)} />
-                            </Col>
-                        </FormGroup>
-                        }
-                        <div className="form-group">
-                            <div className="col-sm-9">
-                                <strong>Optional comment</strong>
-                                <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange} />
+                <div onClick={this.onModalClick}>
+                    <Modal.Header>
+                        <button
+                            className="close"
+                            onClick={this.close}
+                            aria-hidden="true"
+                            aria-label="Close"
+                        >
+                            <Icon type="pf" name="close" />
+                        </button>
+                        {this.props.data && <Modal.Title>{action} {this.props.data.action} at current position {this.props.data.index}</Modal.Title>}
+                    </Modal.Header>
+                    <Modal.Body>
+                        <HuntRestError errors={this.state.errors} />
+                        <Form horizontal>
+                            {this.props.action === 'move' && <FormGroup key="index" controlId="index" disabled={false}>
+                                <Col sm={3}>
+                                    <strong>New index</strong>
+                                </Col>
+                                <Col sm={9}>
+                                    <FormControl type="number" min={0} max={50000} disabled={false} defaultValue={0} onChange={this.handleChange} onKeyPress={(e) => this.onFieldKeyPress(e)} />
+                                </Col>
+                            </FormGroup>
+                            }
+                            <div className="form-group">
+                                <div className="col-sm-9">
+                                    <strong>Optional comment</strong>
+                                    <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange} />
+                                </div>
                             </div>
-                        </div>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button
-                        bsStyle="default"
-                        className="btn-cancel"
-                        onClick={this.close}
-                    >
-                        Cancel
-                    </Button>
-                    <Button bsStyle="primary" onClick={this.submit}>
-                        Submit
-                    </Button>
-                </Modal.Footer>
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button
+                            bsStyle="default"
+                            className="btn-cancel"
+                            onClick={this.close}
+                        >
+                            Cancel
+                        </Button>
+                        <Button bsStyle="primary" onClick={this.submit}>
+                            Submit
+                        </Button>
+                    </Modal.Footer>
+                </div>
             </Modal>
         );
     }
