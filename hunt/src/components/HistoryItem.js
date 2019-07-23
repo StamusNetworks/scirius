@@ -1,8 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import moment from 'moment';
+import { connect } from 'react-redux';
 import { Col, Icon, Row, ListViewItem, ListViewInfoItem, ListViewIcon } from 'patternfly-react';
 import { PAGE_STATE } from 'hunt_common/constants';
-import moment from 'moment';
+import { sections, addFilter } from '../containers/App/stores/global';
 
 const HistoryItem = (props) => {
     const date = moment(props.data.date).format('YYYY-MM-DD, hh:mm:ss a');
@@ -15,7 +17,16 @@ const HistoryItem = (props) => {
     }
     if (props.data.ua_objects.rule && props.data.ua_objects.rule.sid) {
         // eslint-disable-next-line jsx-a11y/click-events-have-key-events
-        info.push(<ListViewInfoItem key="rule"><p><a onClick={() => props.switchPage(PAGE_STATE.rules_list, props.data.ua_objects.rule.sid)}><i className={'pficon-security'} /> {props.data.ua_objects.rule.sid}</a></p></ListViewInfoItem>);
+        info.push(<ListViewInfoItem key="rule">
+            <p>
+                <a
+                    onClick={() => {
+                        props.addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: props.data.ua_objects.rule.sid, negated: false });
+                        props.switchPage(PAGE_STATE.rules_list, props.data.ua_objects.rule.sid);
+                    }}
+                ><i className={'pficon-security'} /> {props.data.ua_objects.rule.sid}</a>
+            </p>
+        </ListViewInfoItem>);
     }
     return (
         <ListViewItem
@@ -43,6 +54,11 @@ HistoryItem.propTypes = {
     data: PropTypes.any,
     switchPage: PropTypes.any,
     expand_row: PropTypes.any,
+    addFilter: PropTypes.func,
 };
 
-export default HistoryItem;
+const mapDispatchToProps = {
+    addFilter,
+};
+
+export default connect(null, mapDispatchToProps)(HistoryItem);

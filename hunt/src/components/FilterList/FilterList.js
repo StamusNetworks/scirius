@@ -1,13 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import { ControlLabel, Icon, Modal } from 'patternfly-react';
 import { Button, Checkbox, Col, Form, FormControl, FormGroup, HelpBlock, InputGroup } from 'react-bootstrap';
 import InputGroupAddon from 'react-bootstrap/es/InputGroupAddon';
 import FilterItem from 'hunt_common/components/FilterItem/index';
 import isNumeric from '../../helpers/isNumeric';
 import './style.css';
+import { editFilter, removeFilter } from '../../containers/App/stores/global';
 
-export default class FilterList extends React.Component {
+class FilterList extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -36,20 +38,16 @@ export default class FilterList extends React.Component {
     }
 
     saveHandler = () => {
-        const index = this.state.filterIdx;
-        if (index > -1) {
-            /* eslint-disable-next-line */
-            const activeFilters = this.props.filters.map((v, i) => {
-                return (i === index) ? {
-                    ...v,
-                    label: `${this.state.filterId}: ${this.state.newFilterValue}`,
-                    value: this.state.newFilterValue,
-                    negated: this.state.newFilterNegated,
-                    fullString: false,
-                } : v;
-            });
-            this.props.updateFilter(activeFilters);
-        }
+        this.props.editFilter(
+            this.props.filterType,
+            this.state.filterIdx,
+            {
+                label: `${this.state.filterId}: ${this.state.newFilterValue}`,
+                value: this.state.newFilterValue,
+                negated: this.state.newFilterNegated,
+                fullString: false,
+            }
+        );
         this.closeHandler();
     }
 
@@ -64,9 +62,9 @@ export default class FilterList extends React.Component {
         return <React.Fragment>
             {/* eslint-disable react/no-array-index-key */}
             <ul className="list-inline">{this.props.filters.map((filter, idx) => <FilterItem key={idx}
-                onRemove={() => this.props.onRemove(idx)}
+                onRemove={() => this.props.removeFilter(this.props.filterType, idx)}
                 onEdit={() => this.editHandler(idx, filter.id, filter.value, filter.negated)}
-                updateFilter={this.props.updateFilter}
+                updateFilter={() => false}
                 filters={this.props.filters}
                 {...filter}
             />)}</ul>
@@ -125,7 +123,11 @@ export default class FilterList extends React.Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.closeHandler}>Cancel</Button>
-                    <Button bsStyle="primary" disabled={!!(newFilterValue.toString().length && newFilterValue.toString().match(/ /g))} onClick={this.saveHandler}>Save</Button>
+                    <Button
+                        bsStyle="primary"
+                        disabled={!!(newFilterValue.toString().length && newFilterValue.toString().match(/ /g))}
+                        onClick={this.saveHandler}
+                    >Save</Button>
                 </Modal.Footer>
             </Modal>
         </React.Fragment>
@@ -134,6 +136,14 @@ export default class FilterList extends React.Component {
 
 FilterList.propTypes = {
     filters: PropTypes.array,
-    onRemove: PropTypes.func,
-    updateFilter: PropTypes.func,
+    editFilter: PropTypes.func,
+    removeFilter: PropTypes.func,
+    filterTyoe: PropTypes.string,
 }
+
+const mapDispatchToProps = {
+    editFilter,
+    removeFilter,
+};
+
+export default connect(null, mapDispatchToProps)(FilterList);

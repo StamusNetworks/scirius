@@ -4,10 +4,10 @@ import './style.css';
 
 const FilterItem = (props) => {
     const negated = (props.negated) ? 'label-not' : '';
-
+    const displayValue = (props.label) ? props.label : `${props.id}:${props.value}`;
     return <li>
         <span className={`hunt-filter label label-info ${negated}`}>
-            <div className={'label-content'}>{props.id}:{props.value}</div>
+            <div className={'label-content'}>{displayValue}</div>
             <a
                 href="#"
                 className="pf-edit-button filter-action edit"
@@ -41,9 +41,10 @@ FilterItem.propTypes = {
         PropTypes.number
     ]).isRequired,
     id: PropTypes.string.isRequired,
+    label: PropTypes.string,
     negated: PropTypes.bool.isRequired,
-    onRemove: PropTypes.func.isRequired,
     onEdit: PropTypes.func.isRequired,
+    onRemove: PropTypes.func.isRequired,
     children: PropTypes.any,
 }
 

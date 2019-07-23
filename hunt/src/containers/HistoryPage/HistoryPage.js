@@ -24,11 +24,12 @@ import PropTypes from 'prop-types';
 import { ListView, Spinner, PAGINATION_VIEW } from 'patternfly-react';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
-import { HuntFilter } from '../../HuntFilter';
+import HuntFilter from '../../HuntFilter';
 import HistoryItem from '../../components/HistoryItem';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ErrorHandler from '../../components/Error';
 import { buildFilter, buildListUrlParams, UpdateFilter, loadActions, UpdateSort, onFirstPage, onNextPage, onPrevPage, onLastPage, handlePaginationChange } from '../../helpers/common';
+import { sections } from '../App/stores/global';
 
 const HistorySortFields = [
     {
@@ -92,7 +93,7 @@ export default class HistoryPage extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.from_date !== this.props.from_date) {
+        if (prevProps.from_date !== this.props.from_date || JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
             this.fetchData(this.props.rules_list, this.props.filters);
         }
         if (prevProps.actionTypesList.length !== this.props.actionTypesList.length) {
@@ -146,6 +147,7 @@ export default class HistoryPage extends React.Component {
                         queryType={['all']}
                         got_alert_tag={false}
                         page={this.props.page}
+                        filterType={sections.HISTORY}
                     />
                 </ErrorHandler>
                 <Spinner loading={this.state.loading}>
@@ -187,5 +189,5 @@ HistoryPage.propTypes = {
     updateListState: PropTypes.any,
     getActionTypes: PropTypes.func,
     actionTypesList: PropTypes.array,
-    page: PropTypes.any
+    page: PropTypes.any,
 };

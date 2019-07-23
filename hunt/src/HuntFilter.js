@@ -22,6 +22,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
 import { Filter, FormControl, FormGroup, Toolbar, Button, Icon, Switch } from 'patternfly-react';
 import { Shortcuts } from 'react-shortcuts';
 import Select from 'react-select';
@@ -31,21 +33,14 @@ import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
 import { HuntSort } from './Sort';
 import FilterList from './components/FilterList/index';
 import FilterSetSave from './components/FilterSetSaveModal';
+import { makeSelectAlertTag, sections, addFilter, clearFilters, setTag, enableOnly } from './containers/App/stores/global';
 
 // https://www.regextester.com/104038
 const IP_REGEXP = /((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))/;
 
-export class HuntFilter extends React.Component {
+class HuntFilter extends React.Component {
     constructor(props) {
         super(props);
-        let tagFilters = { untagged: true, informational: true, relevant: true };
-        const activeFilters = this.props.ActiveFilters;
-        for (let i = 0; i < activeFilters.length; i += 1) {
-            if (activeFilters[i].id === 'alert.tag') {
-                tagFilters = activeFilters[i].value;
-                break;
-            }
-        }
         let gotAlertTag = true;
         if (this.props.got_alert_tag === false) {
             gotAlertTag = false;
@@ -55,18 +50,12 @@ export class HuntFilter extends React.Component {
             filterFields: this.props.filterFields,
             currentFilterType: this.props.filterFields[0],
             currentValue: '',
-            tagFilters,
             gotAlertTag,
             filterSets: { showModal: false, shared: false, description: '' },
             filterSetName: '',
             errors: undefined,
             user: undefined
         };
-        this.toggleInformational = this.toggleInformational.bind(this);
-        this.toggleRelevant = this.toggleRelevant.bind(this);
-        this.toggleUntagged = this.toggleUntagged.bind(this);
-        this.toggleSwitch = this.toggleSwitch.bind(this);
-        this.updateAlertTag = this.updateAlertTag.bind(this);
         this.loadHuntFilterSetsModal = this.loadHuntFilterSetsModal.bind(this);
         this.setSharedFilter = this.setSharedFilter.bind(this);
         this.closeHuntFilterSetsModal = this.closeHuntFilterSetsModal.bind(this);
@@ -83,19 +72,6 @@ export class HuntFilter extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        let i = 0;
-
-        const activeFilters = this.props.ActiveFilters;
-        for (i = 0; i < activeFilters.length; i += 1) {
-            if (activeFilters[i].id === 'alert.tag') {
-                if (activeFilters[i].value !== this.state.tagFilters) {
-                    // eslint-disable-next-line react/no-did-update-set-state
-                    this.setState({ tagFilters: activeFilters[i].value });
-                }
-                break;
-            }
-        }
-
         if (prevProps.filterFields !== this.props.filterFields && this.state.currentFilterType === undefined) {
             // eslint-disable-next-line react/no-did-update-set-state
             this.setState({ currentFilterType: this.props.filterFields[0] });
@@ -131,54 +107,12 @@ export class HuntFilter extends React.Component {
         }
     }
 
-    updateAlertTag(tfilters) {
-        this.setState({ tagFilters: tfilters });
-        /* Make a copy of the ActiveFilters instead of mutating it. Update the filters on alert.tag and send the update */
-        const activeFilters = JSON.parse(JSON.stringify(this.props.ActiveFilters))
-        const tagFilters = { id: 'alert.tag', value: tfilters };
-        if (activeFilters.length === 0) {
-            activeFilters.push(tagFilters);
-        } else {
-            let updated = false;
-            for (let i = 0; i < activeFilters.length; i += 1) {
-                if (activeFilters[i].id === 'alert.tag') {
-                    activeFilters[i] = tagFilters;
-                    updated = true;
-                    break;
-                }
-            }
-            if (updated === false) {
-                activeFilters.push(tagFilters);
-            }
-        }
-        this.props.UpdateFilter(activeFilters);
-    }
-
-    toggleSwitch(key) {
-        const tfilters = Object.assign({}, this.state.tagFilters);
-        tfilters[key] = !this.state.tagFilters[key];
-        this.updateAlertTag(tfilters);
-    }
-
-    toggleInformational() {
-        this.toggleSwitch('informational');
-    }
-
-    toggleUntagged() {
-        this.toggleSwitch('untagged');
-    }
-
-    toggleRelevant() {
-        this.toggleSwitch('relevant');
-    }
-
     filterAdded = (field, value, fullString) => {
         let filterText = '';
         let fieldId = field.id;
         if (['msg', 'not_in_msg', 'search'].indexOf(field.id) !== -1) {
             value = value.trim();
         }
-
         if (field.filterType !== 'complex-select-text') {
             if (field.filterType === 'select' || field.filterType === 'complex-select') {
                 filterText = field.id;
@@ -216,10 +150,17 @@ export class HuntFilter extends React.Component {
         } else {
             fvalue = value;
         }
-        const activeFilters = [...this.props.ActiveFilters, {
-            label: filterText, id: fieldId, value: fvalue, negated: false, query: field.queryType, fullString
-        }];
-        this.props.UpdateFilter(activeFilters);
+        this.props.addFilter(
+            this.props.filterType,
+            {
+                label: filterText,
+                id: fieldId,
+                value: fvalue,
+                negated: false,
+                query: field.queryType,
+                fullString
+            }
+        );
     };
 
     selectFilterType = (filterType) => {
@@ -303,34 +244,6 @@ export class HuntFilter extends React.Component {
         if (!error) this.setState({ currentValue: event.target ? event.target.value : event /* used by Select component */ });
     }
 
-    removeFilter = (index) => {
-        const activeFilters = this.props.ActiveFilters;
-
-        if (index > -1) {
-            const updated = [
-                ...activeFilters.slice(0, index),
-                ...activeFilters.slice(index + 1)
-            ];
-            // eslint-disable-next-line react/no-unused-state
-            this.setState({ activeFilters: updated });
-            this.props.UpdateFilter(updated);
-        }
-    }
-
-    clearFilters = () => {
-        let tagFilters = [];
-        const activeFilters = this.props.ActiveFilters;
-        for (let i = 0; i < activeFilters.length; i += 1) {
-            if (activeFilters[i].id === 'alert.tag') {
-                tagFilters = [activeFilters[i]];
-                break;
-            }
-        }
-        // eslint-disable-next-line react/no-unused-state
-        this.setState({ activeFilters: tagFilters });
-        this.props.UpdateFilter(tagFilters);
-    }
-
     getValidationState = () => {
         const { currentFilterType, currentValue, filterSubCategory } = this.state;
         let { valueType } = currentFilterType;
@@ -358,23 +271,19 @@ export class HuntFilter extends React.Component {
     handleShortcuts = (action) => {
         switch (action) {
             case 'SEE_UNTAGGED': {
-                const tfilters = { untagged: true, informational: false, relevant: false };
-                this.updateAlertTag(tfilters);
+                this.props.enableOnly('untagged');
                 break;
             }
             case 'SEE_INFORMATIONAL': {
-                const tfilters = { untagged: false, informational: true, relevant: false };
-                this.updateAlertTag(tfilters);
+                this.props.enableOnly('informational');
                 break;
             }
             case 'SEE_RELEVANT': {
-                const tfilters = { untagged: false, informational: false, relevant: true };
-                this.updateAlertTag(tfilters);
+                this.props.enableOnly('relevant');
                 break;
             }
             case 'SEE_ALL': {
-                const tfilters = { untagged: true, informational: true, relevant: true };
-                this.updateAlertTag(tfilters);
+                this.props.enableOnly('all');
                 break;
             }
             default:
@@ -700,20 +609,20 @@ export class HuntFilter extends React.Component {
                             <ul className="list-inline">
                                 <li><Switch bsSize="small"
                                     onColor="info"
-                                    value={this.state.tagFilters.informational}
-                                    onChange={this.toggleInformational}
+                                    value={this.props.alertTag.value.informational}
+                                    onChange={() => this.props.setTag('informational', !this.props.alertTag.value.informational)}
                                 /> Informational
                                 </li>
                                 <li><Switch bsSize="small"
                                     onColor="warning"
-                                    value={this.state.tagFilters.relevant}
-                                    onChange={this.toggleRelevant}
+                                    value={this.props.alertTag.value.relevant}
+                                    onChange={() => this.props.setTag('relevant', !this.props.alertTag.value.relevant)}
                                 /> Relevant
                                 </li>
                                 <li><Switch bsSize="small"
                                     onColor="primary"
-                                    value={this.state.tagFilters.untagged}
-                                    onChange={this.toggleUntagged}
+                                    value={this.props.alertTag.value.untagged}
+                                    onChange={() => this.props.setTag('untagged', !this.props.alertTag.value.untagged)}
                                 /> Untagged
                                 </li>
                             </ul>
@@ -749,7 +658,7 @@ export class HuntFilter extends React.Component {
                     {activeFilters && activeFilters.length > 0 && (
                         <Toolbar.Results>
                             <Filter.ActiveLabel>{'Active Filters:'}</Filter.ActiveLabel>
-                            <FilterList onRemove={this.removeFilter} filters={activeFilters} updateFilter={this.props.UpdateFilter} />
+                            <FilterList filters={activeFilters} filterType={this.props.filterType} />
                             <a
                                 data-toggle="tooltip"
                                 data-placement="top"
@@ -758,7 +667,7 @@ export class HuntFilter extends React.Component {
                                 role="button"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    this.clearFilters();
+                                    this.props.clearFilters(this.props.filterType);
                                 }}
                                 style={{ cursor: 'pointer' }}
                             >
@@ -786,6 +695,11 @@ export class HuntFilter extends React.Component {
         );
     }
 }
+
+HuntFilter.defaultProps = {
+    filterType: sections.GLOBAL,
+}
+
 HuntFilter.propTypes = {
     filterFields: PropTypes.any,
     ActiveFilters: PropTypes.any,
@@ -799,6 +713,30 @@ HuntFilter.propTypes = {
     config: PropTypes.any,
     actionsButtons: PropTypes.any,
     displayToggle: PropTypes.any,
-    UpdateFilter: PropTypes.any,
-    page: PropTypes.any
+    page: PropTypes.any,
+    setTag: PropTypes.func,
+    enableOnly: PropTypes.func,
+    clearFilters: PropTypes.func,
+    addFilter: PropTypes.func,
+    filterType: PropTypes.string,
+    alertTag: PropTypes.shape({
+        value: PropTypes.shape({
+            informational: PropTypes.bool,
+            relevant: PropTypes.bool,
+            untagged: PropTypes.bool,
+        })
+    })
 };
+
+const mapStateToProps = createStructuredSelector({
+    alertTag: makeSelectAlertTag(),
+});
+
+const mapDispatchToProps = {
+    clearFilters,
+    addFilter,
+    setTag,
+    enableOnly,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(HuntFilter);

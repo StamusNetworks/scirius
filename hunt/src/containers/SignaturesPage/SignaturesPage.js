@@ -21,13 +21,15 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
 import { Spinner, PAGINATION_VIEW } from 'patternfly-react';
 import axios from 'axios';
 import store from 'store';
 import md5 from 'md5';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from 'hunt_common/buildQFilter';
-import { HuntFilter } from '../../HuntFilter';
+import HuntFilter from '../../HuntFilter';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import RuleToggleModal from '../../RuleToggleModal';
 import RuleCard from '../../RuleCard';
@@ -40,8 +42,6 @@ import { actionsButtons,
     buildListUrlParams,
     loadActions,
     createAction,
-    UpdateFilter,
-    addFilter,
     handlePaginationChange,
     onFirstPage,
     onNextPage,
@@ -52,6 +52,7 @@ import { actionsButtons,
     closeAction,
     updateAlertTag,
     buildFilter } from '../../helpers/common';
+import { addFilter, clearFilters, editFilter, removeFilter, makeSelectGlobalFilters } from '../App/stores/global';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -140,7 +141,7 @@ export function updateHitsStats(rules, pFromDate, updateCallback, qfilter) {
     });
 }
 
-export default class SignaturesPage extends React.Component {
+class SignaturesPage extends React.Component {
 // export class RulesList extends HuntList {
     constructor(props) {
         super(props);
@@ -153,7 +154,6 @@ export default class SignaturesPage extends React.Component {
             rulesets: [],
             count: 0,
             loading: true,
-            view: 'rules_list',
             display_toggle: true,
             action: { view: false, type: 'suppress' },
             net_error: undefined,
@@ -167,13 +167,10 @@ export default class SignaturesPage extends React.Component {
         this.updateRulesState = this.updateRulesState.bind(this);
         this.fetchHitsStats = this.fetchHitsStats.bind(this);
         this.displayRule = this.displayRule.bind(this);
-        this.RuleUpdateFilter = this.RuleUpdateFilter.bind(this);
         this.actionsButtons = actionsButtons.bind(this);
         this.buildListUrlParams = buildListUrlParams.bind(this);
         this.loadActions = loadActions.bind(this);
         this.createAction = createAction.bind(this);
-        this.UpdateFilter = UpdateFilter.bind(this);
-        this.addFilter = addFilter.bind(this);
         this.handlePaginationChange = handlePaginationChange.bind(this);
         this.onFirstPage = onFirstPage.bind(this);
         this.onNextPage = onNextPage.bind(this);
@@ -195,7 +192,7 @@ export default class SignaturesPage extends React.Component {
         }
         if (sid !== undefined) {
             this.setState({
-                display_rule: sid, view: 'rule', display_toggle: false, loading: false
+                display_toggle: false, loading: false
             });
         } else {
             this.fetchData(this.props.rules_list, this.props.filters);
@@ -234,7 +231,7 @@ export default class SignaturesPage extends React.Component {
             if (sid !== undefined) {
                 // eslint-disable-next-line react/no-did-update-set-state
                 this.setState({
-                    display_rule: sid, view: 'rule', display_toggle: false, loading: false
+                    display_toggle: false, loading: false
                 });
             } else {
                 this.fetchData(this.props.rules_list, this.props.filters);
@@ -262,24 +259,6 @@ export default class SignaturesPage extends React.Component {
         return foundSid;
     }
 
-    RuleUpdateFilter(filters) {
-        // iterate on filter, if we have a sid we display the rule page
-        const foundSid = this.findSID(filters);
-        if (foundSid !== undefined) {
-            this.setState({ view: 'rule', display_toggle: false, display_rule: foundSid });
-        } else {
-            this.setState({ view: 'rules_list', display_toggle: true, display_rule: undefined });
-        }
-
-        let page = 1;
-        if (filters.length === 0) {
-            page = this.cachePage;
-        } else {
-            this.setState({ updateCache: false });
-        }
-        this.UpdateFilter(filters, page, false);
-    }
-
     fetchData(rulesStat, filters) {
         const stringFilters = this.buildFilter(filters);
         const hash = md5(`${rulesStat.pagination.page}|${rulesStat.pagination.perPage}|${this.props.from_date}|${rulesStat.sort.id}|${rulesStat.sort.asc}|${stringFilters}`);
@@ -305,14 +284,6 @@ export default class SignaturesPage extends React.Component {
         })).catch((e) => {
             this.setState({ net_error: e, loading: false });
         });
-    }
-
-    displayRule(rule) {
-        this.setState({ display_rule: rule });
-        const activeFilters = [...this.props.filters, {
-            label: `alert.signature_id: ${rule.sid}`, id: 'alert.signature_id', value: rule.sid, query: 'filter', negated: false
-        }];
-        this.RuleUpdateFilter(activeFilters);
     }
 
     processRulesData(RuleRes, SrcRes, filters) {
@@ -360,6 +331,8 @@ export default class SignaturesPage extends React.Component {
     }
 
     render() {
+        const displayRule = this.findSID(this.props.filters);
+        const view = (displayRule) ? 'rule' : 'rules_list';
         return (
             <div className="RulesList HuntList">
                 {this.state.net_error !== undefined && <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>}
@@ -367,7 +340,6 @@ export default class SignaturesPage extends React.Component {
                     <HuntFilter ActiveFilters={this.props.filters}
                         config={this.props.rules_list}
                         ActiveSort={this.props.rules_list.sort}
-                        UpdateFilter={this.RuleUpdateFilter}
                         UpdateSort={this.UpdateSort}
                         setViewType={this.setViewType}
                         filterFields={this.state.rulesFilters}
@@ -379,21 +351,20 @@ export default class SignaturesPage extends React.Component {
                     />
                 </ErrorHandler>
 
-                {this.state.view === 'rules_list' && <Spinner loading={this.state.loading} />}
+                {view === 'rules_list' && <Spinner loading={this.state.loading} />}
 
-                {this.state.view === 'rules_list' && <List type={this.props.rules_list.view_type}
+                {view === 'rules_list' && <List type={this.props.rules_list.view_type}
                     items={this.state.rules}
                     component={{ list: RuleInList, card: RuleCard }}
                     itemProps={{
                         sources: this.state.sources,
                         from_date: this.props.from_date,
                         switchPage: this.displayRule,
-                        addFilter: this.addFilter,
                         rulesets: this.state.rulesets,
                     }}
                 />}
                 <ErrorHandler>
-                    { this.state.view === 'rules_list' && <HuntPaginationRow
+                    { view === 'rules_list' && <HuntPaginationRow
                         viewType={PAGINATION_VIEW.LIST}
                         pagination={this.props.rules_list.pagination}
                         onPaginationChange={this.handlePaginationChange}
@@ -407,8 +378,8 @@ export default class SignaturesPage extends React.Component {
                         onPreviousPage={this.onPrevPage}
                         onLastPage={this.onLastPage}
                     /> }
-                    {this.state.view === 'rule' && <RulePage systemSettings={this.props.systemSettings} rule={this.state.display_rule} config={this.props.rules_list} filters={this.props.filters} from_date={this.props.from_date} UpdateFilter={this.RuleUpdateFilter} addFilter={this.addFilter} rulesets={this.state.rulesets} />}
-                    {this.state.view === 'dashboard' && <DashboardPage />}
+                    {view === 'rule' && <RulePage systemSettings={this.props.systemSettings} rule={displayRule} config={this.props.rules_list} filters={this.props.filters} from_date={this.props.from_date} rulesets={this.state.rulesets} />}
+                    {view === 'dashboard' && <DashboardPage />}
                 </ErrorHandler>
 
                 <ErrorHandler>
@@ -425,5 +396,18 @@ SignaturesPage.propTypes = {
     filters: PropTypes.any,
     updateListState: PropTypes.any, // should be removed when redux is implemented
     rules_list: PropTypes.any, // should be removed when redux is implemented
-    page: PropTypes.any
+    page: PropTypes.any,
 }
+
+const mapStateToProps = createStructuredSelector({
+    filters: makeSelectGlobalFilters()
+});
+
+const mapDispatchToProps = {
+    removeFilter,
+    editFilter,
+    addFilter,
+    clearFilters,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(SignaturesPage);

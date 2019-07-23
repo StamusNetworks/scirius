@@ -88,29 +88,6 @@ export function UpdateFilter(filters, page = 1) {
     this.loadActions(filters);
 }
 
-export function addFilter(field, value, negated) {
-    if (field !== 'alert.tag') {
-        let filterText = '';
-        filterText = field;
-        filterText += ': ';
-        filterText += value;
-        const activeFilters = [...this.props.filters, {
-            label: filterText, id: field, value, negated, fullString: true
-        }];
-        this.UpdateFilter(activeFilters);
-    } else {
-        let tfilters = {};
-        if (negated) {
-            tfilters = { untagged: true, informational: true, relevant: true };
-            tfilters[value] = false;
-        } else {
-            tfilters = { untagged: false, informational: false, relevant: false };
-            tfilters[value] = true;
-        }
-        this.updateAlertTag(tfilters);
-    }
-}
-
 export function handlePaginationChange(pagin) {
     const lastPage = Math.ceil(this.state.count / pagin.perPage);
     if (pagin.page > lastPage) {

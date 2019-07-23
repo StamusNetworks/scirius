@@ -1,5 +1,4 @@
 import { fromJS } from 'immutable';
-
 import { ACTION_TYPES_LOADING, ACTION_TYPES_SUCCESS, ACTION_TYPES_FAIL } from './constants';
 
 export const initialState = fromJS({
@@ -17,6 +16,7 @@ function historyReducer(state = initialState, action) {
             .set('actionTypesLoading', true)
             .set('actionTypesStatus', false)
             .set('actionTypesMessage', 'loading...');
+
         case ACTION_TYPES_SUCCESS: {
             const actionTypeList = Object.keys(action.actionTypesList);
             const actions = [];
@@ -36,6 +36,7 @@ function historyReducer(state = initialState, action) {
             .set('actionTypesLoading', false)
             .set('actionTypesStatus', false)
             .set('actionTypesMessage', ''); // @TODO: Set proper fail message
+
         default:
             return state;
     }

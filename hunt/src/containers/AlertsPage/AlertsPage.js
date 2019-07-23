@@ -26,15 +26,18 @@ import { ListView, Spinner } from 'patternfly-react';
 import axios from 'axios';
 import store from 'store';
 import md5 from 'md5';
+import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from 'hunt_common/buildQFilter';
 import RuleToggleModal from '../../RuleToggleModal';
-import { HuntFilter } from '../../HuntFilter';
+import HuntFilter from '../../HuntFilter';
 import AlertItem from '../../components/AlertItem';
-import { actionsButtons, buildListUrlParams, loadActions, UpdateFilter, addFilter, createAction, closeAction } from '../../helpers/common';
+import { actionsButtons, buildListUrlParams, loadActions, UpdateFilter, createAction, closeAction } from '../../helpers/common';
 import ErrorHandler from '../../components/Error';
+import { editFilter, removeFilter, addFilter, clearFilters, makeSelectGlobalFilters } from '../App/stores/global';
 
-export default class AlertsPage extends React.Component {
+class AlertsPage extends React.Component {
     constructor(props) {
         super(props);
 
@@ -98,8 +101,9 @@ export default class AlertsPage extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.from_date !== this.props.from_date) {
+        if (prevProps.from_date !== this.props.from_date || JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
             this.fetchData(this.props.rules_list, this.props.filters);
+            this.loadActions();
         }
     }
 
@@ -137,6 +141,10 @@ export default class AlertsPage extends React.Component {
                         actionsButtons={this.actionsButtons}
                         queryType={['filter', 'filter_host_id']}
                         page={this.props.page}
+                        addFilter={this.props.addFilter}
+                        editFilter={this.props.editFilter}
+                        removeFilter={this.props.removeFilter}
+                        clearFilters={this.props.clearFilters}
                     />
                 </ErrorHandler>
                 <Spinner loading={this.state.loading}>
@@ -171,5 +179,22 @@ AlertsPage.propTypes = {
     from_date: PropTypes.any,
     systemSettings: PropTypes.any,
     updateListState: PropTypes.any,
-    page: PropTypes.any
+    page: PropTypes.any,
+    addFilter: PropTypes.func,
+    editFilter: PropTypes.func,
+    removeFilter: PropTypes.func,
+    clearFilters: PropTypes.func,
 };
+
+const mapStateToProps = createStructuredSelector({
+    filters: makeSelectGlobalFilters()
+});
+
+const mapDispatchToProps = {
+    addFilter,
+    editFilter,
+    removeFilter,
+    clearFilters
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(AlertsPage);

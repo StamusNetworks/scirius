@@ -6,7 +6,7 @@ import { combineReducers } from 'redux-immutable';
 import { connectRouter } from 'connected-react-router/immutable';
 
 import history from './util/history';
-import globalReducer from './containers/App/reducer';
+import { reducer as globalReducer } from './containers/App/stores/global';
 
 /**
  * Merges the main reducer with the router state and dynamically injected reducers

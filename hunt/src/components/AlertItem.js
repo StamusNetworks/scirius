@@ -12,8 +12,8 @@ export default class AlertInList extends React.Component {
         this.addFilter = this.addFilter.bind(this);
     }
 
-    addFilter(key, value, negated) {
-        this.props.addFilter(key, value, negated);
+    addFilter(id, value, negated) {
+        this.props.addFilter({ id, value, negated });
     }
 
     render() {

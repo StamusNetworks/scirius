@@ -32,7 +32,6 @@ import { actionsButtons,
     loadActions,
     createAction,
     UpdateFilter,
-    addFilter,
     handlePaginationChange,
     onFirstPage,
     onNextPage,
@@ -54,7 +53,6 @@ export default class ActionsPage extends React.Component {
         this.onLastPage = onLastPage.bind(this);
         this.UpdateFilter = UpdateFilter.bind(this);
         this.UpdateSort = UpdateSort.bind(this);
-        this.addFilter = addFilter.bind(this);
 
         this.buildFilter = buildFilter.bind(this);
 
@@ -86,7 +84,7 @@ export default class ActionsPage extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.from_date !== this.props.from_date) {
+        if (prevProps.from_date !== this.props.from_date || JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
             this.fetchData(this.props.rules_list, this.props.filters);
         }
     }
@@ -116,7 +114,7 @@ export default class ActionsPage extends React.Component {
                 <Spinner loading={this.state.loading}></Spinner>
                 <ListView>
                     {this.state.data && this.state.data.map((item) => (
-                        <FilterItem key={item.pk} data={item} updateIDSFilterState={this.props.updateIDSFilterState} switchPage={this.props.switchPage} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} from_date={this.props.from_date} />
+                        <FilterItem key={item.pk} data={item} updateIDSFilterState={this.props.updateIDSFilterState} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} from_date={this.props.from_date} />
                     ))}
                 </ListView>
                 <ErrorHandler>
@@ -145,6 +143,5 @@ ActionsPage.propTypes = {
     filters: PropTypes.any,
     updateListState: PropTypes.func,
     updateIDSFilterState: PropTypes.func,
-    switchPage: PropTypes.func,
     from_date: PropTypes.any,
 };

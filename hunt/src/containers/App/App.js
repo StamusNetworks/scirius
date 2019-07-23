@@ -49,7 +49,6 @@ export default class App extends Component {
         let historyConf = localStorage.getItem('history');
         let filtersListConf = localStorage.getItem('filters_list');
         let pageDisplay = localStorage.getItem('page_display');
-        let idsFilters = localStorage.getItem('ids_filters');
         let historyFilters = localStorage.getItem('history_filters');
         if (!duration) {
             duration = 24;
@@ -128,13 +127,6 @@ export default class App extends Component {
             historyConf = JSON.parse(historyConf);
         }
 
-        if (!idsFilters) {
-            idsFilters = [];
-            localStorage.setItem('ids_filters', JSON.stringify(idsFilters));
-        } else {
-            idsFilters = JSON.parse(idsFilters);
-        }
-
         if (!historyFilters) {
             historyFilters = [];
             localStorage.setItem('history_filters', JSON.stringify(historyFilters));
@@ -157,15 +149,12 @@ export default class App extends Component {
             display: pageDisplay,
             rules_list: rulesListConf,
             alerts_list: alertsListConf,
-            idsFilters,
             history: historyConf,
             historyFilters,
             filters_list: filtersListConf,
             hasConnectivity: true,
             connectionProblem: 'Scirius is not currently available.',
         };
-        this.displaySource = this.displaySource.bind(this);
-        this.displayRuleset = this.displayRuleset.bind(this);
         this.changeDuration = this.changeDuration.bind(this);
         this.changeRefreshInterval = this.changeRefreshInterval.bind(this);
 
@@ -175,7 +164,6 @@ export default class App extends Component {
         this.needReload = this.needReload.bind(this);
         this.updateRuleListState = this.updateRuleListState.bind(this);
         this.updateAlertListState = this.updateAlertListState.bind(this);
-        this.updateIDSFilterState = this.updateIDSFilterState.bind(this);
         this.updateHistoryListState = this.updateHistoryListState.bind(this);
         this.updateHistoryFilterState = this.updateHistoryFilterState.bind(this);
         this.updateFilterListState = this.updateFilterListState.bind(this);
@@ -214,14 +202,6 @@ export default class App extends Component {
         return Date.now() - duration;
     }
 
-    displayRuleset(ruleset) {
-        this.switchPage(PAGE_STATE.ruleset, ruleset);
-    }
-
-    displaySource(source) {
-        this.switchPage(PAGE_STATE.source, source);
-    }
-
     changeDuration(period) {
         this.setState({ duration: period, from_date: this.fromDate(period) });
         localStorage.setItem('duration', period);
@@ -247,15 +227,6 @@ export default class App extends Component {
         if (!page) {
             return;
         }
-        if (page === PAGE_STATE.rules_list && item !== undefined) {
-            this.updateIDSFilterState([{
-                label: `Signature ID: ${item}`,
-                id: 'alert.signature_id',
-                value: item,
-                negated: false,
-                query: 'filter'
-            }]);
-        }
         const pageDisplay = { page, item };
         this.setState({ display: pageDisplay });
         localStorage.setItem('page_display', JSON.stringify(pageDisplay));
@@ -274,11 +245,6 @@ export default class App extends Component {
     updateFilterListState(filtersListState) {
         this.setState({ filters_list: filtersListState });
         localStorage.setItem('filters_list', JSON.stringify(filtersListState));
-    }
-
-    updateIDSFilterState(filters) {
-        this.setState({ idsFilters: filters });
-        localStorage.setItem('ids_filters', JSON.stringify(filters));
     }
 
     updateHistoryFilterState(filters) {
@@ -354,7 +320,6 @@ export default class App extends Component {
                                     period={this.state.duration}
                                     switchPage={this.switchPage}
                                     needReload={this.needReload}
-                                    updateAlertsPageFilters={this.updateIDSFilterState}
                                 />
                             </ErrorHandler>
                         </VerticalNav.IconBar>
@@ -381,7 +346,6 @@ export default class App extends Component {
                                     from_date={this.state.from_date}
                                     switchPage={this.switchPage}
                                     updateRuleListState={this.updateRuleListState}
-                                    updateIDSFilterState={this.updateIDSFilterState}
                                     item={this.state.display.item}
                                     needReload={this.needReload}
                                     history_list={this.state.history}

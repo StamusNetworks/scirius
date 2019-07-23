@@ -17,11 +17,8 @@ const DisplayPage = (props) => {
             displayedPage = (<SignaturesPage
                 systemSettings={props.systemSettings}
                 rules_list={props.rules_list}
-                filters={props.idsFilters}
                 from_date={props.from_date}
-                switchPage={props.switchPage}
                 updateListState={props.updateRuleListState}
-                updateFilterState={props.updateIDSFilterState}
                 page={props.page}
             />);
             break;
@@ -36,11 +33,8 @@ const DisplayPage = (props) => {
             displayedPage = (<DashboardPage
                 systemSettings={props.systemSettings}
                 rules_list={props.rules_list}
-                filters={props.idsFilters}
                 from_date={props.from_date}
-                switchPage={props.switchPage}
                 updateListState={props.updateRuleListState}
-                updateFilterState={props.updateIDSFilterState}
                 needReload={props.needReload}
                 page={props.page}
             />);
@@ -61,11 +55,8 @@ const DisplayPage = (props) => {
             displayedPage = (<AlertsPage
                 systemSettings={props.systemSettings}
                 rules_list={props.alerts_list}
-                filters={props.idsFilters}
                 from_date={props.from_date}
                 updateListState={props.updateAlertListState}
-                switchPage={props.switchPage}
-                updateFilterState={props.updateIDSFilterState}
                 page={props.page}
             />);
             break;
@@ -76,9 +67,7 @@ const DisplayPage = (props) => {
                 filters={props.filters_filters}
                 from_date={props.from_date}
                 updateListState={props.updateFilterListState}
-                switchPage={props.switchPage}
                 updateFilterState={props.updateFiltersFilterState}
-                updateIDSFilterState={props.updateIDSFilterState}
             />);
             break;
     }
@@ -90,11 +79,9 @@ DisplayPage.propTypes = {
     page: PropTypes.any,
     systemSettings: PropTypes.any,
     rules_list: PropTypes.any,
-    idsFilters: PropTypes.any,
     from_date: PropTypes.any,
     switchPage: PropTypes.any,
     updateRuleListState: PropTypes.any,
-    updateIDSFilterState: PropTypes.any,
     item: PropTypes.any,
     needReload: PropTypes.any,
     history_list: PropTypes.any,

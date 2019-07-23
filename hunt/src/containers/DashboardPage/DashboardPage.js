@@ -30,23 +30,26 @@ import md5 from 'md5';
 import map from 'lodash/map';
 import find from 'lodash/find';
 import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
+import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
 import * as config from 'hunt_common/config/Api';
 import { dashboard } from 'hunt_common/config/Dashboard';
 import { buildQFilter } from 'hunt_common/buildQFilter';
 import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
 import RuleToggleModal from '../../RuleToggleModal';
-import { actionsButtons, addFilter, UpdateFilter, loadActions, createAction, closeAction } from '../../helpers/common';
-import { HuntFilter } from '../../HuntFilter';
+import { actionsButtons, UpdateFilter, loadActions, createAction, closeAction } from '../../helpers/common';
+import HuntFilter from '../../HuntFilter';
 import EventValue from '../../components/EventValue';
 import '../../../node_modules/react-grid-layout/css/styles.css';
 import '../../../node_modules/react-resizable/css/styles.css';
 import ErrorHandler from '../../components/Error';
 import copyTextToClipboard from '../../helpers/copyTextToClipboard';
+import { makeSelectAlertTag, makeSelectGlobalFilters, sections } from '../App/stores/global';
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
-export default class HuntDashboard extends React.Component {
+class HuntDashboard extends React.Component {
     constructor(props) {
         super(props);
 
@@ -100,7 +103,6 @@ export default class HuntDashboard extends React.Component {
         this.closeAction = closeAction.bind(this);
         this.loadActions = loadActions.bind(this);
         this.updateRuleListState = props.updateListState.bind(this);
-        this.addFilter = addFilter.bind(this);
         this.fetchData = () => {};
     }
 
@@ -192,7 +194,7 @@ export default class HuntDashboard extends React.Component {
                 this.bootPanels();
             } else if (!this.filters.length) {
                 this.filters = JSON.stringify(this.props.filters);
-            } else if (this.panelsBooted !== 'booting' && (this.filters !== JSON.stringify(this.props.filters) || prevProps.from_date !== this.props.from_date)) {
+            } else if (this.panelsBooted !== 'booting' && (this.filters !== JSON.stringify(this.props.filters) || JSON.stringify(prevProps.filtersWithAlert) !== JSON.stringify(this.props.filtersWithAlert) || prevProps.from_date !== this.props.from_date)) {
                 this.filters = JSON.stringify(this.props.filters);
                 this.resetPanelHeights();
                 this.bootPanels();
@@ -217,7 +219,7 @@ export default class HuntDashboard extends React.Component {
     };
 
     generateQFilter = () => {
-        let qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
+        let qfilter = buildQFilter([...this.props.filtersWithAlert, this.props.alertTag], this.props.systemSettings);
         if (!qfilter) {
             qfilter = '';
         }
@@ -457,7 +459,6 @@ export default class HuntDashboard extends React.Component {
                                 <ErrorHandler>
                                     <EventValue field={block.i}
                                         value={item.key}
-                                        addFilter={this.addFilter}
                                         magnifiers={!this.state.copyMode || this.state.hoveredItem !== itemPath}
                                         right_info={<Badge>{item.doc_count}</Badge>}
                                     />
@@ -673,6 +674,7 @@ export default class HuntDashboard extends React.Component {
                         actionsButtons={this.actionsButtons}
                         queryType={['filter', 'filter_host_id']}
                         page={this.props.page}
+                        filterType={sections.GLOBAL}
                     />
                 </ErrorHandler>
 
@@ -782,7 +784,6 @@ export default class HuntDashboard extends React.Component {
                                         {this.state.moreModal && <ErrorHandler>
                                             <EventValue field={this.state.moreModal.i}
                                                 value={item.key}
-                                                addFilter={this.addFilter}
                                                 magnifiers={!this.state.copyMode || this.state.hoveredItem !== itemPath}
                                                 right_info={<Badge>{item.doc_count}</Badge>}
                                             />
@@ -806,5 +807,15 @@ HuntDashboard.propTypes = {
     item: PropTypes.any,
     rules_list: PropTypes.any,
     updateListState: PropTypes.any,
-    page: PropTypes.any
+    page: PropTypes.any,
+    alertTag: PropTypes.object,
+    filtersWithAlert: PropTypes.array,
 }
+
+const mapStateToProps = createStructuredSelector({
+    filters: makeSelectGlobalFilters(),
+    filtersWithAlert: makeSelectGlobalFilters(true),
+    alertTag: makeSelectAlertTag(),
+});
+
+export default connect(mapStateToProps)(HuntDashboard);

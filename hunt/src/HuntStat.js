@@ -40,8 +40,8 @@ export default class HuntStat extends React.Component {
         });
     }
 
-    addFilter(key, value, negated) {
-        this.props.addFilter(key, value, negated);
+    addFilter(id, value, negated) {
+        this.props.addFilter({ id, value, negated });
     }
 
     render() {
