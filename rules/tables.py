@@ -38,6 +38,7 @@ class ExtendedRuleTable(SciriusTable):
     class Meta(DefaultMeta):
         model = Rule
         fields = ("sid", "msg", "category", "hits")
+        orderable = False
 
 class UpdateRuleTable(SciriusTable):
     sid = tables.LinkColumn('rule', args=[tables.A('pk')])
