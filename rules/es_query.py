@@ -94,7 +94,7 @@ class ESQuery(object):
 
         if from_date >= self._to_date():
             # Asking for a date in the future (browser of the user has clock out of sync), return last hour
-            from_date = (self._to_date() - 60 * 60) * 1000
+            from_date = self._to_date() - (60 * 60 * 1000)
 
         return from_date
 
