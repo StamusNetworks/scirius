@@ -395,13 +395,13 @@ export default class HuntDashboard extends React.Component {
         }
     };
 
-    itemCopyModeOnClick = (event, itemPath, key) => {
+    itemCopyModeOnClick = (event, itemPath, key, parentElem) => {
         if (event.ctrlKey) {
             this.setState({ copiedItem: itemPath });
             setTimeout(() => {
                 this.setState({ copiedItem: '' });
             }, 1500);
-            copyTextToClipboard(key);
+            copyTextToClipboard(key, parentElem);
         }
     }
 
@@ -756,16 +756,39 @@ export default class HuntDashboard extends React.Component {
 
                     <Modal.Header>More results <Modal.CloseButton closeText={'Close'} onClick={() => { this.hideMoreModal(); }} /> </Modal.Header>
                     <Modal.Body>
-                        <div className="hunt-stat-body">
+                        <div className="hunt-stat-body" id="more-result-modal">
                             <ListGroup>
-                                {this.state.moreResults.map((item) => (
-                                    <ListGroupItem key={item.key}>
-                                        {this.state.moreModal && <EventValue field={this.state.moreModal.i}
-                                            value={item.key}
-                                            addFilter={this.addFilter}
-                                            right_info={<Badge>{item.doc_count}</Badge>}
-                                        />}
-                                    </ListGroupItem>))}
+                                {this.state.moreModal && this.state.moreResults.map((item) => {
+                                    const itemPath = `modal-${this.state.moreModal.title}-${this.state.moreModal.i}-${item.key}`;
+                                    let classes = 'dashboard-list-item';
+                                    let clickHandler = null;
+                                    classes += (this.state.copiedItem === itemPath) ? ' copied' : '';
+
+                                    if (this.state.copyMode && this.state.hoveredItem === itemPath) {
+                                        // Only set clickHandler during copy mode to let click events reach the magnifiers in EventValue
+                                        // otherwise hover and click on magnifiers breaks on Firefox
+                                        const moreResultModal = document.getElementById('more-result-modal');
+                                        clickHandler = (event) => this.itemCopyModeOnClick(event, itemPath, item.key, moreResultModal);
+                                        classes += ' copy-mode';
+                                    }
+
+                                    return <ListGroupItem
+                                        key={item.key}
+                                        onClick={clickHandler}
+                                        onMouseMove={(event) => this.onMouseMove(event, itemPath)}
+                                        onMouseLeave={(event) => this.onMouseLeave(event, itemPath)}
+                                        className={classes}
+                                    >
+                                        {this.state.moreModal && <ErrorHandler>
+                                            <EventValue field={this.state.moreModal.i}
+                                                value={item.key}
+                                                addFilter={this.addFilter}
+                                                magnifiers={!this.state.copyMode || this.state.hoveredItem !== itemPath}
+                                                right_info={<Badge>{item.doc_count}</Badge>}
+                                            />
+                                        </ErrorHandler>}
+                                    </ListGroupItem>;
+                                })}
                             </ListGroup>
                         </div>
                     </Modal.Body>

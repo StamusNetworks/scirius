@@ -1,5 +1,4 @@
-/* eslint-disable no-console */
-const copyTextToClipboard = (text) => {
+const copyTextToClipboard = (text, parentElem = document.body) => {
     const textArea = document.createElement('textarea');
     textArea.style.position = 'fixed';
     textArea.style.top = 0;
@@ -13,15 +12,16 @@ const copyTextToClipboard = (text) => {
     textArea.style.background = 'transparent';
     textArea.value = text;
     textArea.id = 'ta';
-    document.body.appendChild(textArea);
+    parentElem.appendChild(textArea);
     textArea.select();
     let successful = false;
     try {
         successful = document.execCommand('copy');
     } catch (err) {
+        // eslint-disable-next-line no-console
         console.warn('Unable to copy');
     }
-    document.body.removeChild(textArea);
+    parentElem.removeChild(textArea);
     return successful;
 };
 
