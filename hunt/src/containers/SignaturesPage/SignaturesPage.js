@@ -26,12 +26,12 @@ import axios from 'axios';
 import store from 'store';
 import md5 from 'md5';
 import * as config from 'hunt_common/config/Api';
+import { buildQFilter } from 'hunt_common/buildQFilter';
 import { HuntFilter } from '../../HuntFilter';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import RuleToggleModal from '../../RuleToggleModal';
 import RuleCard from '../../RuleCard';
 import DashboardPage from '../DashboardPage';
-import { buildQFilter } from '../../helpers/buildQFilter';
 import RulePage from '../../RulePage';
 import RuleInList from '../../RuleInList';
 import List from '../../components/List/index';
@@ -128,10 +128,7 @@ function processHitsStats(res, rules, updateCallback) {
 export function updateHitsStats(rules, pFromDate, updateCallback, qfilter) {
     const sids = Array.from(rules, (x) => x.sid).join();
     const fromDate = `&from_date=${pFromDate}`;
-    let url = config.API_URL + config.ES_SIGS_LIST_PATH + sids + fromDate;
-    if (qfilter) {
-        url += `&filter=${qfilter.replace('&qfilter=', '')}`;
-    }
+    const url = config.API_URL + config.ES_SIGS_LIST_PATH + sids + fromDate + qfilter;
     if (typeof statsCache[encodeURI(url)] !== 'undefined') {
         processHitsStats(statsCache[encodeURI(url)], rules, updateCallback);
         return;
@@ -257,7 +254,7 @@ export default class SignaturesPage extends React.Component {
     findSID = (filters) => {
         let foundSid;
         for (let i = 0; i < filters.length; i += 1) {
-            if (filters[i].id === 'alert.signature_id') {
+            if (filters[i].id === 'alert.signature_id' && filters[i].negated === false) {
                 foundSid = filters[i].value;
                 break;
             }

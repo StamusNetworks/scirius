@@ -193,3 +193,6 @@ def get_default_filter_sets():
         fset['id'] = -idx
 
     return fsets
+
+def es_bool_clauses(request):
+    return ''

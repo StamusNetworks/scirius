@@ -32,9 +32,9 @@ import find from 'lodash/find';
 import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
 import * as config from 'hunt_common/config/Api';
 import { dashboard } from 'hunt_common/config/Dashboard';
+import { buildQFilter } from 'hunt_common/buildQFilter';
 import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
-import { buildQFilter } from '../../helpers/buildQFilter';
 import RuleToggleModal from '../../RuleToggleModal';
 import { actionsButtons, addFilter, UpdateFilter, loadActions, createAction, closeAction } from '../../helpers/common';
 import { HuntFilter } from '../../HuntFilter';
@@ -42,6 +42,7 @@ import EventValue from '../../components/EventValue';
 import '../../../node_modules/react-grid-layout/css/styles.css';
 import '../../../node_modules/react-resizable/css/styles.css';
 import ErrorHandler from '../../components/Error';
+import copyTextToClipboard from '../../helpers/copyTextToClipboard';
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
@@ -89,6 +90,8 @@ export default class HuntDashboard extends React.Component {
             moreResults: [],
             editMode: false,
             chartTarget: false,
+            copyMode: false,
+            copiedItem: '',
         };
         this.actionsButtons = actionsButtons.bind(this);
         this.UpdateFilter = UpdateFilter.bind(this);
@@ -159,6 +162,23 @@ export default class HuntDashboard extends React.Component {
         if (this.props.filters.length) {
             this.loadActions(this.props.filters);
         }
+
+        const detectspecialkeys = (e) => {
+            if (e.keyCode === 17) {
+                if (!this.state.copyMode) {
+                    this.setState({
+                        copyMode: true
+                    })
+                } else {
+                    this.setState({
+                        copyMode: false
+                    })
+                }
+            }
+        };
+
+        document.onkeydown = detectspecialkeys;
+        document.onkeyup = detectspecialkeys;
     }
 
     componentDidUpdate(prevProps) {
@@ -382,6 +402,19 @@ export default class HuntDashboard extends React.Component {
 
     createElement = (block) => {
         const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${block.i}&from_date=${this.props.from_date}&page_size=30${this.qFilter}`;
+        const itemCopyModeOnClick = (itemPath, key) => {
+            this.setState({
+                ...this.state,
+                copiedItem: itemPath
+            });
+            setTimeout(() => {
+                this.setState({
+                    ...this.state,
+                    copiedItem: ''
+                });
+            }, 1500)
+            copyTextToClipboard(key)
+        }
         return (
             <div key={block.i}
                 style={{ background: 'white' }}
@@ -394,8 +427,25 @@ export default class HuntDashboard extends React.Component {
                 <div className="hunt-stat-body">
                     <ListGroup>
                         {block.data === null && <Spinner loading />}
-                        {block.data !== null && block.data.map((item) => (
-                            <ListGroupItem key={item.key}>
+                        {block.data !== null && block.data.map((item) => {
+                            const itemPath = `${block.title}-${block.i}-${item.key}`;
+                            let classes = 'dashboard-list-item';
+                            classes += (this.state.copyMode) ? ' copy-mode' : '';
+                            classes += (this.state.copiedItem === itemPath) ? ' copied' : '';
+                            return (this.state.copyMode) ? <ListGroupItem
+                                key={item.key}
+                                onClick={() => itemCopyModeOnClick(itemPath, item.key)}
+                                className={classes}
+                            >
+                                <ErrorHandler>
+                                    <EventValue field={block.i}
+                                        value={item.key}
+                                        addFilter={this.addFilter}
+                                        magnifiers={false}
+                                        right_info={<Badge>{item.doc_count}</Badge>}
+                                    />
+                                </ErrorHandler>
+                            </ListGroupItem> : <ListGroupItem key={item.key} className={classes}>
                                 <ErrorHandler>
                                     <EventValue field={block.i}
                                         value={item.key}
@@ -403,7 +453,8 @@ export default class HuntDashboard extends React.Component {
                                         right_info={<Badge>{item.doc_count}</Badge>}
                                     />
                                 </ErrorHandler>
-                            </ListGroupItem>))}
+                            </ListGroupItem>;
+                        })}
                     </ListGroup>
                 </div>
             </div>
@@ -599,7 +650,7 @@ export default class HuntDashboard extends React.Component {
 
     hideMoreModal = () => this.setState({ ...this.state, moreModal: null });
 
-    onChangeChartTarget = (switchElement, chartTarget) => {
+    onChangeChartTarget = (chartTarget) => {
         this.setState({
             chartTarget
         });
@@ -622,8 +673,6 @@ export default class HuntDashboard extends React.Component {
                         actionsButtons={this.actionsButtons}
                         queryType={['filter', 'filter_host_id']}
                         page={this.props.page}
-                        onChangeChartTarget={this.onChangeChartTarget}
-                        chartTarget={this.state.chartTarget}
                     />
                 </ErrorHandler>
 
@@ -633,6 +682,9 @@ export default class HuntDashboard extends React.Component {
                     </div>
                     <div className="col-lg-2 col-md-3 col-sm-12 col-xs-12" style={{ paddingLeft: '0px' }}>
                         <HuntTrend from_date={this.props.from_date} filters={this.props.filters} />
+                        {typeof this.state.chartTarget !== 'undefined' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && <div style={{ position: 'absolute', zIndex: 10, top: 0, right: '30px' }}>
+                            <DropdownKebab id={'more-actions'} pullRight><MenuItem onClick={() => this.onChangeChartTarget(!this.state.chartTarget)} data-toggle="modal">Switch timeline by probes/tags</MenuItem></DropdownKebab>
+                        </div>}
                     </div>
                 </div>
                 <div className="row drag-and-drop-container">

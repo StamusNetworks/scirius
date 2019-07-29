@@ -15,7 +15,7 @@ six
 smmap
 urllib3
 ipy
-elasticsearch
+elasticsearch<7
 django-ipware
 gunicorn
 djangorestframework<3.9.2

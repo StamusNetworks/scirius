@@ -247,7 +247,7 @@ export default class RuleToggleModal extends React.Component {
                         {this.props.action === 'threshold' && <React.Fragment>
                             <FormGroup key="count" controlId="count" disabled={false}>
                                 <Col sm={4}>
-                                    Count
+                                    <strong>Count</strong>
                                 </Col>
                                 <Col sm={8}>
                                     <FormControl type="integer" disabled={false} defaultValue={1} onChange={this.handleOptionsChange} />
@@ -255,7 +255,7 @@ export default class RuleToggleModal extends React.Component {
                             </FormGroup>
                             <FormGroup key="seconds" controlId="seconds" disabled={false}>
                                 <Col sm={4}>
-                                    Seconds
+                                    <strong>Seconds</strong>
                                 </Col>
                                 <Col sm={8}>
                                     <FormControl type="integer" disabled={false} defaultValue={60} onChange={this.handleOptionsChange} />
@@ -263,7 +263,7 @@ export default class RuleToggleModal extends React.Component {
                             </FormGroup>
                             <FormGroup key="track" controlId="track" disabled={false}>
                                 <Col sm={4}>
-                                    Track by
+                                    <strong>Track by</strong>
                                 </Col>
                                 <Col sm={8}>
                                     <FormControl componentClass="select" placeholder="by_src" onChange={this.handleOptionsChange}>
@@ -274,10 +274,10 @@ export default class RuleToggleModal extends React.Component {
                             </FormGroup>
                         </React.Fragment>}
                         {this.props.action === 'tag' && <FormGroup key="tag" controlId="tag" disabled={false}>
-                            <Col sm={3}>
-                                Tag
-                            </Col>
                             <Col sm={4}>
+                                <strong>Tag</strong>
+                            </Col>
+                            <Col sm={8}>
                                 <FormControl componentClass="select" placeholder="relevant" onChange={this.handleOptionsChange}>
                                     <option value="relevant">Relevant</option>
                                     <option value="informational">Informational</option>
@@ -285,10 +285,10 @@ export default class RuleToggleModal extends React.Component {
                             </Col>
                         </FormGroup>}
                         {this.props.action === 'tagkeep' && <FormGroup key="tag" controlId="tag" disabled={false}>
-                            <Col sm={3}>
-                                Tag and Keep
-                            </Col>
                             <Col sm={4}>
+                                <strong>Tag and Keep</strong>
+                            </Col>
+                            <Col sm={8}>
                                 <FormControl componentClass="select" placeholder="relevant" onChange={this.handleOptionsChange}>
                                     <option value="relevant">Relevant</option>
                                     <option value="informational">Informational</option>
@@ -299,13 +299,13 @@ export default class RuleToggleModal extends React.Component {
                             <FormGroup key="send_mail" controlId="send_mail" disabled={false}>
                                 <Col sm={3}>
                                     <Checkbox disabled defaultChecked>
-                                        Send email
+                                        <strong>Send email</strong>
                                     </Checkbox>
                                 </Col>
                             </FormGroup>
                             <FormGroup key="max_mails_per_day" controlId="max_mails_per_day" disabled={false}>
                                 <Col sm={4}>
-                                    Maximum number of mail sent per day
+                                    <strong>Maximum number of mail sent per day</strong>
                                 </Col>
                                 <Col sm={8}>
                                     <FormControl type="integer" disabled={false} defaultValue={5} onChange={this.handleOptionsChange} />
@@ -315,17 +315,25 @@ export default class RuleToggleModal extends React.Component {
                         {this.props.action === 'suppress' && <FormGroup key="suppress" controlId="suppress" disabled={false}>
                             <Col sm={3}>
                                 <Checkbox disabled defaultChecked>
-                                    Suppress
+                                    <strong>Suppress</strong>
                                 </Checkbox>
                             </Col>
                         </FormGroup>}
+                        {this.props.action === 'threshold' && <FormGroup key="threshold" controlId="threshold" disabled={false}>
+                            <Col sm={3}>
+                                <Checkbox disabled defaultChecked>
+                                    <strong>Threshold</strong>
+                                </Checkbox>
+                            </Col>
+                        </FormGroup>}
+                        <hr />
                         <FormGroup controlId="ruleset" disabled={false}>
                             <Col sm={12}>
-                                <label><strong>Ruleset(s):</strong></label>
+                                <label><strong>Ruleset{this.props.rulesets.length > 1 && 's'}:</strong></label>
                                 {this.props.rulesets && this.props.rulesets.map((ruleset) => (
                                     <div className="row" key={ruleset.pk}>
                                         <div className="col-sm-9">
-                                            <label htmlFor={ruleset.pk}><input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange} />{ruleset.name}</label>
+                                            <label htmlFor={ruleset.pk}><input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange} />  {ruleset.name}</label>
                                             {ruleset.warnings && <div style={{ marginLeft: '5%' }}>• {ruleset.warnings}</div>} {/* ignore_utf8_check 8226 */}
                                             {ruleset[`warnings_${this.props.action}`] && <div style={{ marginLeft: '5%' }}>• {ruleset[`warnings_${this.props.action}`]}</div>} {/* ignore_utf8_check 8226 */}
                                         </div>
@@ -333,6 +341,7 @@ export default class RuleToggleModal extends React.Component {
                                 ))}
                             </Col>
                         </FormGroup>
+                        <hr />
 
                         <div className="form-group">
                             <div className="col-sm-9">

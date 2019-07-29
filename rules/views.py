@@ -26,6 +26,7 @@ from django.conf import settings
 from elasticsearch.exceptions import ConnectionError
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.contrib import messages
+import requests
 
 from scirius.utils import scirius_render, scirius_listing
 
@@ -33,7 +34,8 @@ from rules.es_data import ESData
 from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation, CategoryTransformation, RulesetTransformation, UserAction, UserActionObject, reset_es_address
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, HistoryTable
 
-from rules.es_graphs import *
+from rules.es_graphs import (ESError, ESRulesStats, ESFieldStatsAsTable, ESSidByHosts, ESIndices, ESDeleteAlertsBySid,
+        get_es_major_version, reset_es_version)
 
 import json
 import yaml
@@ -229,40 +231,26 @@ def elasticsearch(request):
 
     if request.GET.__contains__('query'):
         try:
-            query = request.GET.get('query', 'dashboards')
-            if query == 'dashboards':
-                data = _es_backend.get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
-            elif query == 'rules':
-                hosts = request.GET.get('host', None)
-                if hosts:
-                    hosts = hosts.split(',')
-                else:
-                    hosts = []
-                from_date = request.GET.get('from_date', None)
+            query = request.GET.get('query')
+            if query == 'rules':
+                #rules = ESRulesStats(request).get()
+                rules = _es_backend.get_rules_stats_table(request)
+                if rules == None:
+                    return HttpResponse(json.dumps(rules), content_type="application/json")
+                context['table'] = rules
+                # Set the context value of qfilter
+                # This is required for rendering correct js
                 qfilter = request.GET.get('filter', None)
-
-
-                if hosts != None and from_date != None:
-                    rules = _es_backend.get_rules_stats_table(request, hosts=hosts,
-                                                              from_date=from_date,
-                                                              qfilter=qfilter,
-                                                              **sort_kwargs)
-                    if rules == None:
-                        return HttpResponse(json.dumps(rules), content_type="application/json")
-                    rules.source_query.set_parameter('query', 'rules')
-                    context['table'] = rules
-                    context['qfilter'] = qfilter
-                    return scirius_render(request, 'rules/table.html', context)
+                context['qfilter'] = qfilter
+                return scirius_render(request, 'rules/table.html', context)
             elif query == 'rule':
                 sid = request.GET.get('sid', None)
-                from_date = request.GET.get('from_date', None)
-
-                if from_date != None and sid != None:
-                    hosts = _es_backend.get_sid_by_hosts_table(request, sid, from_date=from_date, **sort_kwargs)
+                #hosts = ESSidByHosts(request).get(sid)
+                hosts = _es_backend.get_sid_by_hosts_table(request, sid)
                     hosts.source_query.add_parameter("sid", sid)\
                         .set_parameter("query", "rule")
-                    context['table'] = hosts
-                    return scirius_render(request, 'rules/table.html', context)
+                context['table'] = hosts
+                return scirius_render(request, 'rules/table.html', context)
             elif query in RULE_FIELDS_MAPPING.keys():
                 ajax = request.GET.get('json', None)
                 if ajax:
@@ -274,53 +262,37 @@ def elasticsearch(request):
                     filter_ip = RULE_FIELDS_MAPPING[query]
 
                 sid = request.GET.get('sid', None)
-                from_date = request.GET.get('from_date', None)
-                qfilter = request.GET.get('qfilter', None)
                 count = int(request.GET.get('page_size', 10))
 
-                if sid is not None:
-                    if qfilter is not None:
-                        qfilter = 'alert.signature_id:%s AND %s' % (sid, qfilter)
-                    else:
-                        qfilter = 'alert.signature_id:%s' % sid
-
-                if from_date is not None:
-                    # FIXME
-                    hosts = _es_backend.get_field_stats_table(request,
-                                                              filter_ip,
-                                                              RuleHostTable,
-                                                              hosts=None,
-                                                              from_date=from_date,
-                                                              count=count,
-                                                              qfilter=qfilter,
-                                                              raw=True)
-
-                    hosts.table_id = FIELD_TO_TABLE_ID_MAPPING[filter_ip]
-                    hosts.source_query.set_parameter("query", "field_stats")\
-                        .add_parameter("field", filter_ip)\
-                        .add_parameter("sid", sid)
-                    hosts.update_callback = "() => populate_topip_actions($('%s'), '%s', '%s')" % (
-                        hosts.table_id, filter_ip,
-                        FIELD_TO_IP_DIRECTION_MAPPING[filter_ip])
-                    context['table'] = hosts
-                    return scirius_render(request, 'rules/table.html', context)
+                #hosts = ESFieldStatsAsTable(request).get(sid,
+                #                                        filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
+                #                                        RuleHostTable,
+                #                                        count=count)
+                hosts = _es_backend.get_field_stats_table(request, sid, filter_ip, RuleHostTable, count=count)
+                hosts.table_id = FIELD_TO_TABLE_ID_MAPPING[filter_ip]
+                hosts.source_query.set_parameter("query", "field_stats")\
+                    .add_parameter("field", filter_ip)\
+                    .add_parameter("sid", sid)
+                hosts.update_callback = "() => populate_topip_actions($('%s'), '%s', '%s')" % (
+                    hosts.table_id, filter_ip,
+                    FIELD_TO_IP_DIRECTION_MAPPING[filter_ip])
+                context['table'] = hosts
+                return scirius_render(request, 'rules/table.html', context)
             elif query == 'indices':
                 if request.is_ajax():
-                    indices = ESIndexessTable(_es_backend.get_indices())
+                    indices = ESIndexessTable(ESIndices(request).get())
                     tables.RequestConfig(request).configure(indices)
                     context['table'] = indices
                     return scirius_render(request, 'rules/table.html', context)
                 else:
                     return scirius_render(request, 'rules/elasticsearch.html', context)
+            else:
+                raise Exception('Query parameter not supported: %s' % query)
         except ESError as e:
             return HttpResponseServerError(e.message)
     else:
-        if request.is_ajax():
-            data = _es_backend.get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
-            return HttpResponse(json.dumps(data), content_type="application/json")
-        else:
-            template = Probe.common.get_es_template()
-            return scirius_render(request, template, context)
+        template = Probe.common.get_es_template()
+        return scirius_render(request, template, context)
 
 
 def extract_rule_references(rule):
@@ -804,7 +776,9 @@ def delete_alerts(request, rule_id):
             if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
                 Probe.common.es_delete_alerts_by_sid(rule_id, request=request)
             else:
-                result = _es_backend.delete_alerts_by_sid(rule_id)
+                result = _es_backend.delete_alerts_by_sid(request, rule_id)
+                #result = ESDeleteAlertsBySid(request).get(rule_id)
+
                 if result.has_key('status') and result['status'] != 200:
                     context = { 'object': rule_object, 'error': result['msg'] }
                     try:

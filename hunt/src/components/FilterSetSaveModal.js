@@ -43,10 +43,10 @@ const FilterSetSaveModal = (props) => (
                         {props.page && <FormControl disabled defaultValue={props.page} />}
                     </Col>
                 </FormGroup>
-                <FormGroup>
+                {!props.noRights && <FormGroup>
                     <Col sm={2}>
                         <Checkbox
-                            defaultChecked
+                            defaultChecked={false}
                             onChange={(e) => {
                                 props.setSharedFilter(e);
                             }}
@@ -58,6 +58,14 @@ const FilterSetSaveModal = (props) => (
                             data-toggle="tooltip"
                             title="Enable: Create Filter Set with All Users&#10;Disable: Create Filter Set only for you"
                         />
+                    </Col>
+                </FormGroup>}
+                <FormGroup>
+                    <Col sm={4}>
+                        <strong>Description:</strong>
+                    </Col>
+                    <Col sm={8}>
+                        <textarea cols="49" rows="3" onChange={props.handleDescriptionChange} />
                     </Col>
                 </FormGroup>
             </Form>
@@ -84,11 +92,13 @@ FilterSetSaveModal.propTypes = {
     showModal: PropTypes.any,
     close: PropTypes.any,
     errors: PropTypes.any,
+    handleDescriptionChange: PropTypes.any,
     handleComboChange: PropTypes.any,
     handleFieldChange: PropTypes.any,
     setSharedFilter: PropTypes.any,
     submit: PropTypes.any,
-    page: PropTypes.any
+    page: PropTypes.any,
+    noRights: PropTypes.bool.isRequired
 };
 
 export default FilterSetSaveModal;

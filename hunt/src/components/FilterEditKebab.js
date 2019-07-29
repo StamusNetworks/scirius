@@ -12,22 +12,30 @@ export default class FilterEditKebab extends React.Component {
         super(props);
         this.displayToggle = this.displayToggle.bind(this);
         this.hideToggle = this.hideToggle.bind(this);
-        this.state = { toggle: { show: false, action: 'delete' }, filterSets: { showModal: false, page: '', shared: true, name: '' }, errors: undefined };
+        this.state = { toggle: { show: false, action: 'delete' }, filterSets: { showModal: false, page: '', shared: false, name: '' }, errors: undefined, user: undefined };
         this.closeAction = this.closeAction.bind(this);
-        this.convertActionToFilterSet = this.convertActionToFilterSet.bind(this);
+        this.convertActionToFilters = this.convertActionToFilters.bind(this);
         this.saveActionToFilterSet = this.saveActionToFilterSet.bind(this);
         this.handleFieldChange = this.handleFieldChange.bind(this);
         this.handleComboChange = this.handleComboChange.bind(this);
+        this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
         this.setSharedFilter = this.setSharedFilter.bind(this);
         this.submitActionToFilterSet = this.submitActionToFilterSet.bind(this);
     }
 
+    componentDidMount() {
+        axios.get(`${config.API_URL}${config.USER_PATH}current_user/`)
+        .then((currentUser) => {
+            this.setState({ user: currentUser.data });
+        });
+    }
+
     setSharedFilter(e) {
-        this.setState({ filterSets: { showModal: true, shared: e.target.checked, page: this.state.filterSets.page, name: this.state.filterSets.name } });
+        this.setState({ filterSets: { showModal: true, shared: e.target.checked, page: this.state.filterSets.page, name: this.state.filterSets.name, description: this.state.filterSets.description } });
     }
 
     closeActionToFilterSet = () => {
-        this.setState({ filterSets: { showModal: false, shared: true, page: '', name: '', errors: undefined } });
+        this.setState({ filterSets: { showModal: false, shared: false, page: '', name: '', errors: undefined, description: '' } });
     }
 
     generateFilterSet = () => {
@@ -69,36 +77,49 @@ export default class FilterEditKebab extends React.Component {
     }
 
     saveActionToFilterSet() {
-        this.setState({ filterSets: { showModal: true, page: '', shared: true, name: '' } });
+        this.setState({ filterSets: { showModal: true, page: '', shared: false, name: '', description: '' } });
     }
 
-    convertActionToFilterSet() {
+    convertActionToFilters() {
         const filters = this.generateFilterSet();
         this.props.updateIDSFilterState(filters);
     }
 
     handleComboChange(event) {
-        this.setState({ filterSets: { showModal: true, shared: this.state.filterSets.shared, page: event.target.value, name: this.state.filterSets.name } });
+        this.setState({ filterSets: { showModal: true, shared: this.state.filterSets.shared, page: event.target.value, name: this.state.filterSets.name, description: this.state.filterSets.description } });
     }
 
     handleFieldChange(event) {
-        this.setState({ filterSets: { showModal: true, shared: this.state.filterSets.shared, page: this.state.filterSets.page, name: event.target.value } });
+        this.setState({ filterSets: { showModal: true, shared: this.state.filterSets.shared, page: this.state.filterSets.page, name: event.target.value, description: this.state.filterSets.description } });
+    }
+
+    handleDescriptionChange(event) {
+        this.setState({ filterSets: { showModal: true, shared: this.state.filterSets.shared, page: this.state.filterSets.page, name: this.state.filterSets.name, description: event.target.value } });
     }
 
     submitActionToFilterSet() {
         const filters = this.generateFilterSet();
 
-        axios.post(config.API_URL + config.HUNT_FILTER_SETS, { name: this.state.filterSets.name, page: this.state.filterSets.page, content: filters, share: this.state.filterSets.shared })
+        axios.post(config.API_URL + config.HUNT_FILTER_SETS, { name: this.state.filterSets.name, page: this.state.filterSets.page, content: filters, share: this.state.filterSets.shared, description: this.state.filterSets.description })
         .then(() => {
             this.closeActionToFilterSet();
             this.setState({ errors: undefined });
         })
         .catch((error) => {
-            this.setState({ errors: error.response.data });
+            let errors = error.response.data;
+
+            if (error.response.status === 403) {
+                const noRights = this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser && this.state.filterSets.shared;
+                if (noRights) {
+                    errors = { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
+                }
+            }
+            this.setState({ errors });
         });
     }
 
     render() {
+        const noRights = this.state.user !== undefined && this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser;
         return (
             <React.Fragment>
 
@@ -107,10 +128,12 @@ export default class FilterEditKebab extends React.Component {
                     showModal={this.state.filterSets.showModal}
                     close={this.closeActionToFilterSet}
                     errors={this.state.errors}
+                    handleDescriptionChange={this.handleDescriptionChange}
                     handleComboChange={this.handleComboChange}
                     handleFieldChange={this.handleFieldChange}
                     setSharedFilter={this.setSharedFilter}
                     submit={this.submitActionToFilterSet}
+                    noRights={noRights}
                 />
 
                 <DropdownKebab id="filterActions" pullRight>
@@ -128,8 +151,8 @@ export default class FilterEditKebab extends React.Component {
                         Delete Action
                     </MenuItem>
                     <MenuItem divider />
-                    <MenuItem onClick={() => { this.convertActionToFilterSet(); }}>
-                        Convert Action to Filter set (not saved)
+                    <MenuItem onClick={() => { this.convertActionToFilters(); }}>
+                        Convert Action to Filters
                     </MenuItem>
                     <MenuItem onClick={() => { this.saveActionToFilterSet(); }}>
                         Save Action as Filter set

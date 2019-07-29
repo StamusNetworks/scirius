@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
-import { buildQFilter } from './helpers/buildQFilter';
+import { buildQFilter } from 'hunt_common/buildQFilter';
 import ErrorHandler from './components/Error';
 import DonutChart from './components/DonutChart';
 
@@ -24,12 +24,8 @@ export default class HuntTrend extends React.Component {
     }
 
     fetchData() {
-        let stringFilters = '';
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
-        if (qfilter) {
-            stringFilters += `&qfilter=${qfilter.replace('&qfilter=', '&filter=')}`;
-        }
-        axios.get(`${config.API_URL}${config.ES_BASE_PATH}alerts_count/?prev=1&hosts=*&from_date=${this.props.from_date}${stringFilters}`)
+        axios.get(`${config.API_URL}${config.ES_BASE_PATH}alerts_count/?prev=1&hosts=*&from_date=${this.props.from_date}${qfilter}`)
         .then((res) => {
             if (typeof (res.data) !== 'string') {
                 this.setState({ data: res.data });

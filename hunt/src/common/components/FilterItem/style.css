@@ -1,0 +1,29 @@
+.hunt-filter {
+    display: inline-block !important;
+    height: auto !important;
+    padding: 0px !important;
+}
+.hunt-filter .filter-action {
+    padding: 5px !important;
+    margin: 0 !important;
+}
+.hunt-filter .filter-action.edit:hover {
+    background: #8a8382;
+}
+.hunt-filter .filter-action.delete:hover {
+    background: #b70505;
+}
+.hunt-filter.label-not::before {
+    content: 'Not';
+    background: #9c9c9c;
+    display: block;
+    float: left;
+    padding: 4px 8px;
+    margin: 1px 0 1px 1px;
+    font-weight: bold;
+}
+.hunt-filter .label-content {
+    float: left;
+    padding: 4px 8px;
+    height: 21px;
+}

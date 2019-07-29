@@ -41,7 +41,10 @@ from rules.es_data import ESData
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD
-from rules.es_graphs import ESError
+from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats, \
+        ESTimeline, ESMetricsTimeline, ESHealth, ESIndicesStats, ESRulesPerCategory, ESAlertsCount, \
+        ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESAlertsTail, ESSuriLogTail, ESPoststats, \
+        ESSigsListHits, ESTopRules, ESError
 
 import backends
 _es_backend = backends.get_es_backend()
@@ -461,24 +464,6 @@ class UserActionFilter(filters.FilterSet):
         fields = ['username', 'date', 'action_type', 'comment', 'user_action_objects__action_key', 'user_action_objects__action_value']
 
 
-def es_hits_params(request):
-    es_params = {}
-
-    # string args
-    for arg in ('hostname', 'qfilter'):
-        if arg in request.query_params:
-            es_params[arg] = request.query_params[arg]
-
-    # numeric args
-    for arg in ('from_date', 'interval'):
-        if arg in request.query_params:
-            es_params[arg] = int(request.query_params[arg])
-
-    if 'hostname' not in es_params:
-        es_params['hostname'] = '*'
-    return es_params
-
-
 class RuleHitsOrderingFilter(OrderingFilter):
     def get_query_param(self, request, param):
         value = request.query_params.get(param)
@@ -497,13 +482,9 @@ class RuleHitsOrderingFilter(OrderingFilter):
         return value
 
     def _get_hits_order(self, request, order):
-        es_top_kwargs = {
-            'count': Rule.objects.count(),
-            'order': order
-        }
-        es_top_kwargs.update(es_hits_params(request))
         try:
-            result = _es_backend.get_top_rules(request, **es_top_kwargs)
+            result = _es_backend.get_top_rules(request, count=Rule.objects.count(), order=order)
+            #result = ESTopRules(request).get(count=Rule.objects.count(), order=order)
         except ESError:
             queryset = Rule.objects.order_by('sid')
             queryset = queryset.annotate(hits=models.Value(0, output_field=models.IntegerField()))
@@ -925,14 +906,13 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
     def _add_hits(self, request, data):
         sids = ','.join([unicode(rule['sid']) for rule in data])
 
-        ## reformat ES's output
-        es_params = es_hits_params(request)
-        es_params['host'] = es_params.pop('hostname')
         try:
-            result = _es_backend.get_sigs_list_hits(request, sids, **es_params)
+            result = _es_backend.get_sigs_list_hits(request, sids)
+            #result = ESSigsListHits(request).get(sids)
         except ESError:
             return data
 
+        ## reformat ES's output
         hits = {}
         for r in result:
             hits[r['key']] = self._scirius_hit(r)
@@ -1924,23 +1904,6 @@ class ESBaseViewSet(APIView):
         raise NotImplementedError('This is an abstract class. ES sub classes must override this method')
 
 
-class ESDashboardViewSet(ESBaseViewSet):
-    """
-    =============================================================================================================================================================
-    ==== GET ====\n
-    Show dashboard :\n
-        curl -k https://x.x.x.x/rest/rules/es/dashboard/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
-
-    Return:\n
-        HTTP/1.1 200 OK
-        {"SN-FILE-Transactions":"SN FILE-Transactions","SN-VLAN":"SN VLAN","SN-OVERVIEW":"SN OVERVIEW","SN-SMTP":"SN SMTP","SN-HTTP":"SN HTTP","SN-ALERTS":"SN ALERTS","SN-TLS":"SN TLS","SN-IDS":"SN IDS","SN-STATS":"SN STATS","SN-FLOW":"SN FLOW","SN-SSH":"SN SSH","SN-DNS":"SN DNS","SN-ALL":"SN ALL"}
-
-    =============================================================================================================================================================
-    """
-    def _get(self, request, format=None):
-        return Response(_es_backend.get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT))
-
-
 class ESRulesViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
@@ -1948,8 +1911,8 @@ class ESRulesViewSet(ESBaseViewSet):
     qfilter: "filter in Elasticsearch Query String Query format"
 
     Show rules stats:\n
-        curl -k https://x.x.x.x/rest/rules/es/rules/\?host\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
-        curl -k https://x.x.x.x/rest/rules/es/rules/\?host\=ProbeMain\&from_date\=1537264545477\&filter=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+        curl -k https://x.x.x.x/rest/rules/es/rules/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+        curl -k https://x.x.x.x/rest/rules/es/rules/\?hosts\=ProbeMain\&from_date\=1537264545477\&qfilter=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -1958,21 +1921,18 @@ class ESRulesViewSet(ESBaseViewSet):
     =============================================================================================================================================================
     """
 
-    def get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        host = request.GET.get('host', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        qfilter = request.GET.get('filter', None)
-
+    def _get(self, request, format=None):
         errors = {}
-        if host is None:
-            errors['host'] = ['This field is required.']
+        if 'hosts' not in request.GET:
+            errors['hosts'] = ['This field is required.']
 
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
         from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'rules': _es_backend.get_rules_stats_dict(request, hosts=[host], from_date=from_date, qfilter=qfilter)})
+        return Response({'rules': _es_backend.get_rules_stats_dict(request)})
+        #return Response({'rules': ESRulesStats(request).get(dict_format=True)})
+
 
 class ESRuleViewSet(ESBaseViewSet):
     """
@@ -1989,9 +1949,7 @@ class ESRuleViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         sid = request.GET.get('sid', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
 
         errors = {}
         if sid is None:
@@ -2000,8 +1958,8 @@ class ESRuleViewSet(ESBaseViewSet):
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response({'rule': _es_backend.get_sid_by_hosts(request, sid, from_date=from_date, dict_format=True)})
+        return Response({'rule': _es_backend.get_sid_by_hosts_dict(request, sid)})
+        #return Response({'rule': ESSidByHosts(request).get(sid, dict_format=True)})
 
 
 class ESTopRulesViewSet(ESBaseViewSet):
@@ -2009,18 +1967,15 @@ class ESTopRulesViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        host = request.GET.get('host', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        qfilter = request.GET.get('filter', None)
         count = request.GET.get('count', 20)
         order = request.GET.get('order', "desc")
 
-        if host is None:
-            errors = {'host': ['This field is required.']}
+        if 'hosts' not in request.GET:
+            errors = {'hosts': ['This field is required.']}
             raise serializers.ValidationError(errors)
 
-        return Response(_es_backend.get_top_rules(request, host, from_date=from_date, qfilter=qfilter, count=count, order=order))
+        return Response(_es_backend.get_top_rules(request, count=count, order=order))
+        #return Response(ESTopRules(request).get(count=count, order=order))
 
 
 class ESSigsListViewSet(ESBaseViewSet):
@@ -2028,23 +1983,20 @@ class ESSigsListViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        host = request.GET.get('host', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        qfilter = request.GET.get('filter', None)
         sids = request.GET.get('sids', 20)
 
         errors = {}
         if sids is None:
             errors['sids'] = ['This field is required.']
 
-        if host is None:
-            errors['host'] = ['This field is required.']
+        if 'hosts' not in request.GET:
+            errors['hosts'] = ['This field is required.']
 
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        return Response(_es_backend.get_sigs_list_hits(request, sids, host, from_date=from_date, qfilter=qfilter))
+        return Response(_es_backend.get_sigs_list_hits(request, sids))
+        #return Response(ESSigsListHits(request).get(sids))
 
 
 class ESPostStatsViewSet(ESBaseViewSet):
@@ -2052,17 +2004,9 @@ class ESPostStatsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
-        qfilter = request.GET.get('filter', None)
         value = request.GET.get('value', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(_es_backend.get_poststats(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter))
+        return Response(_es_backend.get_poststats(request, value=value))
+        #return Response(ESPoststats(request).get(value=value))
 
 
 class ESFieldStatsViewSet(ESBaseViewSet):
@@ -2070,36 +2014,24 @@ class ESFieldStatsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
         errors = {}
         field = request.GET.get('field', None)
         sid = request.GET.get('sid', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        qfilter = request.GET.get('qfilter', None)
-
-        if sid is not None:
-            if qfilter is not None:
-                qfilter = 'alert.signature_id:%s AND %s' % (sid, qfilter)
-            else:
-                qfilter = 'alert.signature_id:%s' % sid
 
         if field is None:
             errors = {'field': ['This field is required.']}
             raise serializers.ValidationError(errors)
 
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         filter_ip = request.GET.get('field', 'src_ip')
         count = request.GET.get('page_size', 10)
 
         if filter_ip not in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status', 'vlan']:
             filter_ip = filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD
 
-        hosts = _es_backend.get_field_stats_dict(request,
-                                                 filter_ip,
-                                                 hosts=None,
-                                                 from_date=from_date,
-                                                 count=count,
-                                                 qfilter=qfilter)
+        hosts = _es_backend.get_field_stats_dict(request, sid, filter_ip, count=count)
+#        hosts = ESFieldStats(request).get(sid, filter_ip,
+#                                   count=count,
+#                                   dict_format=True)
 
         return Response(hosts)
 
@@ -2132,19 +2064,10 @@ class ESFilterIPViewSet(ESBaseViewSet):
 
     RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip'}
 
-    def get(self, request, format=None):
-        milli_sec = 3600 * 1000
+    def _get(self, request, format=None):
         errors = {}
         field = request.GET.get('field', None)
         sid = request.GET.get('sid', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        qfilter = request.GET.get('qfilter', None)
-
-        if sid is not None:
-            if qfilter is not None:
-                qfilter = 'alert.signature_id:%s AND %s' % (sid, qfilter)
-            else:
-                qfilter = 'alert.signature_id:%s' % sid
 
         if field is None:
             errors['field'] = ['This field is required.']
@@ -2153,15 +2076,13 @@ class ESFilterIPViewSet(ESBaseViewSet):
         if field not in self.RULE_FIELDS_MAPPING.keys():
             raise exceptions.NotFound(detail='"%s" is not a valid field' % field)
 
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         filter_ip = self.RULE_FIELDS_MAPPING[field]
         count = request.GET.get('page_size', 10)
-        hosts = _es_backend.get_field_stats_dict(request,
-                                                      filter_ip,
-                                                      hosts=None,
-                                                      from_date=from_date,
-                                                      count=count,
-                                                      qfilter=qfilter)
+        hosts = _es_backend.get_field_stats_dict(request, sid, filter_ip, count=count)
+#        hosts = ESFieldStats(request).get(sid,
+#                                   filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
+#                                   count=count,
+#                                   dict_format=True)
         return Response(hosts)
 
 
@@ -2173,7 +2094,7 @@ class ESTimelineViewSet(ESBaseViewSet):
 
     Show timeline:\n
         curl -k https://x.x.x.x/rest/rules/es/timeline/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        curl -k https://x.x.x.x/rest/rules/es/timeline/\?hosts\=ProbeMain\&from_date\=1537264545477\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/es/timeline/\?hosts\=ProbeMain\&from_date\=1537264545477\&qfilter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
        HTTP/1.1 200 OK
@@ -2183,17 +2104,10 @@ class ESTimelineViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
-        qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
         tags = False if request.GET.get('target', 'false') == 'false' else True
 
-        if chosts:
-            chosts = chosts.split(',')
-
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(_es_backend.get_timeline(from_date=from_date, hosts=chosts, qfilter=qfilter, tags=tags))
+        return Response(_es_backend.get_timeline(request, tags=tags))
+        #return Response(ESTimeline(request).get(tags=tags))
 
 
 class ESLogstashEveViewSet(ESBaseViewSet):
@@ -2205,9 +2119,9 @@ class ESLogstashEveViewSet(ESBaseViewSet):
     Logstash Events examples:\n
         1. curl -k "https://x.x.x.x/rest/rules/es/logstash_eve/?value=system.cpu.user.pct&from_date=1540211796478&hosts=stamus"  -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
         2. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.memory.actual.used.pct\&from_date\=1537264545477\&hosts\=ProbeMain -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        3. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.network.in.bytes\&from_date\=1537264545477\&hosts\=ProbeMain\&filter\=system.network.name:eth0 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        4. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.filesystem.used.pct\&from_date\=1537264545477\&hosts\=ProbeMain\&filter\=system.filesystem.mount_point.raw:/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        5. curl -k "https://x.x.x.x/rest/rules/es/logstash_eve/?value=system.filesystem.used.pct&from_date=1540210439302&hosts=stamus&filter=system.filesystem.mount_point.raw:\"/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch\"" -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
+        3. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.network.in.bytes\&from_date\=1537264545477\&hosts\=ProbeMain\&qfilter\=system.network.name:eth0 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        4. curl -k https://x.x.x.x/rest/rules/es/logstash_eve/\?value\=system.filesystem.used.pct\&from_date\=1537264545477\&hosts\=ProbeMain\&qfilter\=system.filesystem.mount_point.raw:/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        5. curl -k "https://x.x.x.x/rest/rules/es/logstash_eve/?value=system.filesystem.used.pct&from_date=1540210439302&hosts=stamus&qfilter=system.filesystem.mount_point.raw:\"/var/lib/lxc/elasticsearch/rootfs/var/lib/elasticsearch\"" -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
         1. {"from_date":1540211796478,"interval":868000,"stamus":{"entries":[{"mean":0.2518125013448298,"time":1540213664000},{"mean":0.12792068951088806,"time":1540214532000},{"mean":0.2473448278575108,"time":1540215400000},
@@ -2264,17 +2178,9 @@ class ESLogstashEveViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
         value = request.GET.get('value', None)
-        qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(_es_backend.get_metrics_timeline(from_date=from_date, value=value, hosts=chosts, qfilter=qfilter))
+        return Response(_es_backend.get_metrics_timeline(request, value=value))
+        #return Response(ESMetricsTimeline(request).get(value=value))
 
 
 class ESHealthViewSet(ESBaseViewSet):
@@ -2292,7 +2198,8 @@ class ESHealthViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        return Response(_es_backend.get_health())
+        return Response(_es_backend.get_health(request))
+        #return Response(ESHealth(request).get())
 
 
 class ESStatsViewSet(ESBaseViewSet):
@@ -2321,7 +2228,8 @@ class ESStatsViewSet(ESBaseViewSet):
     =============================================================================================================================================================
     """
     def _get(self, request, format=None):
-        return Response(_es_backend.get_stats())
+        return Response(_es_backend.get_stats(request))
+        #return Response(ESStats(request).get())
 
 
 class ESIndicesViewSet(ESBaseViewSet):
@@ -2346,7 +2254,8 @@ class ESIndicesViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        return Response({'indices': _es_backend.get_indices()})
+        return Response({'indices': _es_backend.get_indices(request)})
+        #return Response({'indices': ESIndicesStats(request).get()})
 
 
 class ESRulesPerCategoryViewSet(ESBaseViewSet):
@@ -2357,7 +2266,7 @@ class ESRulesPerCategoryViewSet(ESBaseViewSet):
 
     Show rules per category:\n
         curl -k https://x.x.x.x/rest/rules/es/rules_per_category/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        curl -k https://x.x.x.x/rest/rules/es/rules_per_category/\?hosts\=ProbeMain\&from_date\=1537264545477\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/es/rules_per_category/\?hosts\=ProbeMain\&from_date\=1537264545477\&qfilter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -2374,18 +2283,8 @@ class ESRulesPerCategoryViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
-        qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts is None:
-            raise serializers.ValidationError({'hosts': ['This field is required.']})
-        else:
-            chosts = chosts.split(',')
-
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(_es_backend.get_rules_per_category(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(_es_backend.get_rules_per_category(request))
+        #return Response(ESRulesPerCategory(request).get())
 
 
 class ESAlertsCountViewSet(ESBaseViewSet):
@@ -2397,7 +2296,7 @@ class ESAlertsCountViewSet(ESBaseViewSet):
     Show alerts count:\n
         1. curl -k https://x.x.x.x/rest/rules/es/alerts_count/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
         2. curl -k https://x.x.x.x/rest/rules/es/alerts_count/\?hosts\=ProbeMain\&from_date\=1537264545477&prev=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        3. curl -k https://x.x.x.x/rest/rules/es/alerts_count/\?hosts\=ProbeMain\&from_date\=1537264545477&prev=true\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        3. curl -k https://x.x.x.x/rest/rules/es/alerts_count/\?hosts\=ProbeMain\&from_date\=1537264545477&prev=true\&qfilter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -2407,20 +2306,12 @@ class ESAlertsCountViewSet(ESBaseViewSet):
     =============================================================================================================================================================
     """
 
-    def get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
-        qfilter = request.GET.get('filter', None)
+    def _get(self, request, format=None):
         prev = request.GET.get('prev', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         prev = 1 if prev is not None and prev != 'false' else None
 
-        return Response(_es_backend.get_alerts_count(from_date=from_date, hosts=chosts, qfilter=qfilter, prev=prev))
+        return Response(_es_backend.get_alerts_count(request, prev=prev))
+        #return Response(ESAlertsCount(request).get(prev=prev))
 
 
 class ESLatestStatsViewSet(ESBaseViewSet):
@@ -2450,16 +2341,8 @@ class ESLatestStatsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
-        qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(_es_backend.es_get_latest_stats(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(_es_backend.es_get_latest_stats(request))
+        #return Response(ESLatestStats(request).get())
 
 
 class ESIPPairAlertsViewSet(ESBaseViewSet):
@@ -2470,7 +2353,7 @@ class ESIPPairAlertsViewSet(ESBaseViewSet):
 
     Show ip pair alerts:\n
         curl -k https://x.x.x.x/rest/rules/es/ip_pair_alerts/\?hosts\=ProbeMain\&from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-        curl -k https://x.x.x.x/rest/rules/es/ip_pair_alerts/\?hosts\=ProbeMain\&from_date\=1537264545477\&filter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        curl -k https://x.x.x.x/rest/rules/es/ip_pair_alerts/\?hosts\=ProbeMain\&from_date\=1537264545477\&qfilter\=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
@@ -2485,16 +2368,8 @@ class ESIPPairAlertsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
-        qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(_es_backend.get_ippair_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(_es_backend.get_ippair_alerts(request))
+        return Response(ESIppairAlerts(request).get())
 
 
 class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
@@ -2515,16 +2390,8 @@ class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
-        qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(_es_backend.get_ippair_network_alerts(from_date=from_date, hosts=chosts, qfilter=qfilter))
+        return Response(_es_backend.get_ippair_network_alerts(request))
+        #return Response(ESIppairNetworkAlerts(request).get())
 
 
 class ESAlertsTailViewSet(ESBaseViewSet):
@@ -2545,13 +2412,10 @@ class ESAlertsTailViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        qfilter = request.GET.get('filter', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         search_target = request.GET.get('search_target', True)
         search_target = False if search_target is not True else True
-        return Response(_es_backend.get_alerts_tail(from_date=from_date, qfilter=qfilter, search_target=search_target))
+        return Response(_es_backend.get_alerts_tail(request, search_target=search_target))
+        #return Response(ESAlertsTail(request).get(search_target=search_target))
 
 
 class ESSuriLogTailViewSet(ESBaseViewSet):
@@ -2575,15 +2439,8 @@ class ESSuriLogTailViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        milli_sec = 3600 * 1000
-        chosts = request.GET.get('hosts', None)
-        from_date = int(request.GET.get('from_date', unicode(time() * 1000 - 24 * milli_sec)))
-
-        if chosts:
-            chosts = chosts.split(',')
-
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
-        return Response(_es_backend.suri_log_tail(from_date=from_date, hosts=chosts))
+        return Response(_es_backend.suri_log_tail(request))
+        #return Response(ESSuriLogTail(request).get())
 
 
 class ESDeleteLogsViewSet(APIView):
@@ -2830,7 +2687,6 @@ def get_custom_urls():
     url_ = url(r'rules/hunt-filter/$', HuntFilterAPIView.as_view(), name='hunt_filter')
     urls.append(url_)
 
-    urls.append(url(r'rules/es/dashboard/$', ESDashboardViewSet.as_view(), name='es_dashboard'))
     urls.append(url(r'rules/es/rules/$', ESRulesViewSet.as_view(), name='es_rules'))
     urls.append(url(r'rules/es/rule/$', ESRuleViewSet.as_view(), name='es_rule'))
     urls.append(url(r'rules/es/filter_ip/$', ESFilterIPViewSet.as_view(), name='es_filter_ip'))

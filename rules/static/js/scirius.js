@@ -100,13 +100,13 @@ function load_table(from_date, table_id, query_url, callback, hosts, filter, sor
 window.load_table = load_table
 
 function load_rules(from_date, hosts, filter, callback, sort_order) {
-    var tgturl = "/rules/es?query=rules&host=" + hosts.join() + "&from_date=" + from_date;
+    var tgturl = "/rules/es?query=rules&hosts=" + hosts.join() + "&from_date=" + from_date;
 
     // FIX: Sort the rules table.
     tgturl = tgturl + "&sort=" + sort_order;
 
     if (filter != null && filter != "None") {
-      tgturl = tgturl + "&filter=" + filter;
+      tgturl = tgturl + "&qfilter=" + filter;
     }
     $.ajax({
        url: tgturl,
@@ -138,7 +138,7 @@ function draw_timeline(from_date, hosts, filter, ylegend=undefined) {
 
         var esurl = "/rest/rules/es/timeline/?from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
-            esurl = esurl + "&filter=" + filter;
+            esurl = esurl + "&qfilter=" + filter;
         }
         $.ajax(
                         {
@@ -389,7 +389,7 @@ window.build_path = build_path;
 function draw_sunburst(from_date, hosts, filter, callback, sort_order) {
         var esurl = "/rest/rules/es/rules_per_category/?from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
-            esurl = esurl + "&filter=" + filter;
+            esurl = esurl + "&qfilter=" + filter;
         }
         $.ajax(
          {
@@ -539,7 +539,7 @@ window.draw_sunburst = draw_sunburst;
 function draw_circle(from_date, hosts, filter, callback) {
         var esurl = "/rest/rules/es/rules_per_category/?from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
-            esurl = esurl + "&filter=" + filter;
+            esurl = esurl + "&qfilter=" + filter;
         }
         $.ajax(
          {

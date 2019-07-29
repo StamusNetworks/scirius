@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Modal, CloseButton, Row, Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
 import { Spinner } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
-import { buildQFilter } from './helpers/buildQFilter';
+import { buildQFilter } from 'hunt_common/buildQFilter';
 import RuleEditKebab from './components/RuleEditKebab';
 import SciriusChart from './components/SciriusChart';
 import RuleStatus from './RuleStatus';

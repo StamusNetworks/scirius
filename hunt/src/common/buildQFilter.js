@@ -4,12 +4,11 @@ export function esEscape(str) {
     str = str.replace(/[<>]/g, '');
 
     // Escape other reserved characters
-    return str.replace(/[+-=&|!(){}[\]^"~:\\/]/g, (c) => `\\${c}`);
+    return str.replace(/[=+\-&|!(){}[\]^"~:\\/]/g, (c) => `\\${c}`);
 }
 
 export function buildQFilter(filters, systemSettings) {
     const qfilter = [];
-    let output = '';
     let fSuffix = '.raw';
 
     if (systemSettings) {
@@ -31,7 +30,7 @@ export function buildQFilter(filters, systemSettings) {
             } else if (filters[i].id === 'alert.signature_id') {
                 qfilter.push(`${fPrefix}alert.signature_id:${filters[i].value}`);
             } else if (filters[i].id === 'ip') {
-                qfilter.push(`"${filters[i].value}"`);
+                qfilter.push(`${fPrefix}"${filters[i].value}"`);
             } else if (filters[i].id === 'alert.tag') {
                 const tagFilters = [];
                 if (filters[i].value.untagged === true) {
@@ -68,10 +67,5 @@ export function buildQFilter(filters, systemSettings) {
         }
     }
 
-    if (qfilter.length === 0) {
-        return null;
-    }
-
-    output += (qfilter.length) ? `&qfilter=${qfilter.join(' AND ')}` : '';
-    return (output.length) ? output : null;
+    return qfilter.length ? `&qfilter=${qfilter.join(' AND ')}` : '';
 }
