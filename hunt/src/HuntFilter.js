@@ -29,6 +29,7 @@ import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
 import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
 import { HuntSort } from './Sort';
+import FilterList from './components/FilterList/index';
 import FilterSetSave from './components/FilterSetSaveModal';
 
 // https://www.regextester.com/104038
@@ -56,9 +57,10 @@ export class HuntFilter extends React.Component {
             currentValue: '',
             tagFilters,
             gotAlertTag,
-            filterSets: { showModal: false, shared: true },
+            filterSets: { showModal: false, shared: false, description: '' },
             filterSetName: '',
-            errors: undefined
+            errors: undefined,
+            user: undefined
         };
         this.toggleInformational = this.toggleInformational.bind(this);
         this.toggleRelevant = this.toggleRelevant.bind(this);
@@ -70,6 +72,14 @@ export class HuntFilter extends React.Component {
         this.closeHuntFilterSetsModal = this.closeHuntFilterSetsModal.bind(this);
         this.submitFilterSets = this.submitFilterSets.bind(this);
         this.handleFieldChange = this.handleFieldChange.bind(this);
+        this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
+    }
+
+    componentDidMount() {
+        axios.get(`${config.API_URL}${config.USER_PATH}current_user/`)
+        .then((currentUser) => {
+            this.setState({ user: currentUser.data });
+        });
     }
 
     componentDidUpdate(prevProps) {
@@ -293,10 +303,9 @@ export class HuntFilter extends React.Component {
         if (!error) this.setState({ currentValue: event.target ? event.target.value : event /* used by Select component */ });
     }
 
-    removeFilter = (filter) => {
+    removeFilter = (index) => {
         const activeFilters = this.props.ActiveFilters;
 
-        const index = activeFilters.indexOf(filter);
         if (index > -1) {
             const updated = [
                 ...activeFilters.slice(0, index),
@@ -374,15 +383,15 @@ export class HuntFilter extends React.Component {
     }
 
     closeHuntFilterSetsModal() {
-        this.setState({ filterSets: { showModal: false, shared: true } });
+        this.setState({ filterSets: { showModal: false, shared: false, description: '' } });
     }
 
     loadHuntFilterSetsModal() {
-        this.setState({ filterSets: { showModal: true, shared: true } });
+        this.setState({ filterSets: { showModal: true, shared: false } });
     }
 
     setSharedFilter(e) {
-        this.setState({ filterSets: { showModal: true, shared: e.target.checked } });
+        this.setState({ filterSets: { showModal: true, shared: e.target.checked, description: this.state.filterSets.description } });
     }
 
     renderInput() {
@@ -574,7 +583,11 @@ export class HuntFilter extends React.Component {
     }
 
     handleFieldChange(event) {
-        this.setState({ filterSetName: event.target.value });
+        this.setState({ filterSetName: event.target.value, filterSets: { showModal: true, shared: this.state.filterSets.shared, description: this.state.filterSets.description } });
+    }
+
+    handleDescriptionChange(event) {
+        this.setState({ filterSetName: this.state.filterSetName, filterSets: { showModal: true, shared: this.state.filterSets.shared, description: event.target.value } });
     }
 
     submitFilterSets() {
@@ -594,13 +607,21 @@ export class HuntFilter extends React.Component {
             filters.push(tags);
         }
 
-        axios.post(config.API_URL + config.HUNT_FILTER_SETS, { name: this.state.filterSetName, page: this.props.page, content: filters, share: this.state.filterSets.shared })
+        axios.post(config.API_URL + config.HUNT_FILTER_SETS, { name: this.state.filterSetName, page: this.props.page, content: filters, share: this.state.filterSets.shared, description: this.state.filterSets.description })
         .then(() => {
             this.closeHuntFilterSetsModal();
             this.setState({ errors: undefined });
         })
         .catch((error) => {
-            this.setState({ errors: error.response.data });
+            let errors = error.response.data;
+
+            if (error.response.status === 403) {
+                const noRights = this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser && this.state.filterSets.shared;
+                if (noRights) {
+                    errors = { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
+                }
+            }
+            this.setState({ errors });
         });
     }
 
@@ -615,17 +636,20 @@ export class HuntFilter extends React.Component {
             }
         }
 
+        const noRights = this.state.user !== undefined && this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser;
         return (
             <FilterSetSave
                 title={'Create new Filter Set'}
                 showModal={this.state.filterSets.showModal}
                 close={this.closeHuntFilterSetsModal}
                 errors={this.state.errors}
+                handleDescriptionChange={this.handleDescriptionChange}
                 handleComboChange={undefined}
                 handleFieldChange={this.handleFieldChange}
                 setSharedFilter={this.setSharedFilter}
                 submit={this.submitFilterSets}
                 page={page}
+                noRights={noRights}
             />
         );
     }
@@ -697,13 +721,6 @@ export class HuntFilter extends React.Component {
                     </div>
 
                     <Toolbar.RightContent>
-                        {typeof this.props.chartTarget !== 'undefined' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && <div style={{ float: 'left', paddingTop: '3px', height: '25px' }}>
-                            Tags instead of probes <Switch bsSize="small"
-                                onColor="info"
-                                value={this.props.chartTarget}
-                                onChange={this.props.onChangeChartTarget}
-                            />
-                        </div>}
                         {this.props.actionsButtons && this.props.actionsButtons()}
                         {this.props.displayToggle && <Toolbar.ViewSelector>
                             <Button
@@ -732,19 +749,7 @@ export class HuntFilter extends React.Component {
                     {activeFilters && activeFilters.length > 0 && (
                         <Toolbar.Results>
                             <Filter.ActiveLabel>{'Active Filters:'}</Filter.ActiveLabel>
-                            <Filter.List>
-                                {activeFilters.map((item, index) => (
-                                    <Filter.Item
-                                        // eslint-disable-next-line react/no-array-index-key
-                                        key={index}
-                                        onRemove={this.removeFilter}
-                                        filterData={item}
-                                    >
-                                        {item.negated && <span className="badge badge-primary">Not</span>}
-                                        {item.label}
-                                    </Filter.Item>
-                                ))}
-                            </Filter.List>
+                            <FilterList onRemove={this.removeFilter} filters={activeFilters} updateFilter={this.props.UpdateFilter} />
                             <a
                                 data-toggle="tooltip"
                                 data-placement="top"
@@ -771,7 +776,7 @@ export class HuntFilter extends React.Component {
                                 }}
                                 style={{ cursor: 'pointer' }}
                             >
-                                ,&nbsp;&nbsp;Save
+                                |&nbsp;&nbsp;Save
                             </a>}
                         </Toolbar.Results>
                     )}
@@ -795,7 +800,5 @@ HuntFilter.propTypes = {
     actionsButtons: PropTypes.any,
     displayToggle: PropTypes.any,
     UpdateFilter: PropTypes.any,
-    page: PropTypes.any,
-    onChangeChartTarget: PropTypes.func,
-    chartTarget: PropTypes.bool,
+    page: PropTypes.any
 };

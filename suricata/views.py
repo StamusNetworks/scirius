@@ -39,8 +39,6 @@ from rules.models import UserAction, Transformation, Rule
 from forms import *
 from rules.forms import CommentForm
 
-from rules.es_graphs import es_get_ippair_alerts
-
 from django.conf import settings
 if settings.USE_ELASTICSEARCH:
     from rules.es_graphs import *

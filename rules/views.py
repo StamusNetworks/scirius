@@ -26,6 +26,7 @@ from django.conf import settings
 from elasticsearch.exceptions import ConnectionError
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.contrib import messages
+import requests
 
 from scirius.utils import scirius_render, scirius_listing
 
@@ -33,7 +34,8 @@ from rules.es_data import ESData
 from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation, CategoryTransformation, RulesetTransformation, UserAction, UserActionObject, reset_es_address
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, HistoryTable
 
-from rules.es_graphs import *
+from rules.es_graphs import (ESError, ESRulesStats, ESFieldStatsAsTable, ESSidByHosts, ESIndices, ESDeleteAlertsBySid,
+        get_es_major_version, reset_es_version)
 
 import json
 import yaml
@@ -187,26 +189,18 @@ def elasticsearch(request):
 
     if request.GET.__contains__('query'):
         try:
-            query = request.GET.get('query', 'dashboards')
-            if query == 'dashboards':
-                data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
-            elif query == 'rules':
-                host = request.GET.get('host', None)
-                from_date = request.GET.get('from_date', None)
-                qfilter = request.GET.get('filter', None)
-                if host != None and from_date != None:
-                    rules = es_get_rules_stats(request, host, from_date = from_date, qfilter = qfilter)
-                    if rules == None:
-                        return HttpResponse(json.dumps(rules), content_type="application/json")
-                    context['table'] = rules
-                    return scirius_render(request, 'rules/table.html', context)
+            query = request.GET.get('query')
+            if query == 'rules':
+                rules = ESRulesStats(request).get()
+                if rules == None:
+                    return HttpResponse(json.dumps(rules), content_type="application/json")
+                context['table'] = rules
+                return scirius_render(request, 'rules/table.html', context)
             elif query == 'rule':
                 sid = request.GET.get('sid', None)
-                from_date = request.GET.get('from_date', None)
-                if from_date != None and sid != None:
-                    hosts = es_get_sid_by_hosts(request, sid, from_date = from_date)
-                    context['table'] = hosts
-                    return scirius_render(request, 'rules/table.html', context)
+                hosts = ESSidByHosts(request).get(sid)
+                context['table'] = hosts
+                return scirius_render(request, 'rules/table.html', context)
             elif query in RULE_FIELDS_MAPPING.keys():
                 ajax = request.GET.get('json', None)
                 if ajax:
@@ -218,41 +212,29 @@ def elasticsearch(request):
                     filter_ip = RULE_FIELDS_MAPPING[query]
 
                 sid = request.GET.get('sid', None)
-                from_date = request.GET.get('from_date', None)
-                qfilter = request.GET.get('qfilter', None)
                 count = request.GET.get('page_size', 10)
 
-                if sid is not None:
-                    if qfilter is not None:
-                        qfilter = 'alert.signature_id:%s AND %s' % (sid, qfilter)
-                    else:
-                        qfilter = 'alert.signature_id:%s' % sid
-
-                if from_date is not None:
-                    hosts = es_get_field_stats_as_table(request, filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
-                                                        RuleHostTable, '*',
-                                                        from_date=from_date,
-                                                        count=count,
-                                                        qfilter=qfilter)
-                    context['table'] = hosts
-                    return scirius_render(request, 'rules/table.html', context)
+                hosts = ESFieldStatsAsTable(request).get(sid,
+                                                        filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
+                                                        RuleHostTable,
+                                                        count=count)
+                context['table'] = hosts
+                return scirius_render(request, 'rules/table.html', context)
             elif query == 'indices':
                 if request.is_ajax():
-                    indices = ESIndexessTable(es_get_indices())
+                    indices = ESIndexessTable(ESIndices(request).get())
                     tables.RequestConfig(request).configure(indices)
                     context['table'] = indices
                     return scirius_render(request, 'rules/table.html', context)
                 else:
                     return scirius_render(request, 'rules/elasticsearch.html', context)
+            else:
+                raise Exception('Query parameter not supported: %s' % query)
         except ESError as e:
             return HttpResponseServerError(e.message)
     else:
-        if request.is_ajax():
-            data = es_get_dashboard(count=settings.KIBANA_DASHBOARDS_COUNT)
-            return HttpResponse(json.dumps(data), content_type="application/json")
-        else:
-            template = Probe.common.get_es_template()
-            return scirius_render(request, template, context)
+        template = Probe.common.get_es_template()
+        return scirius_render(request, template, context)
 
 
 def extract_rule_references(rule):
@@ -731,7 +713,7 @@ def delete_alerts(request, rule_id):
             if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
                 Probe.common.es_delete_alerts_by_sid(rule_id, request=request)
             else:
-                result = es_delete_alerts_by_sid(rule_id)
+                result = ESDeleteAlertsBySid(request).get(rule_id)
                 if result.has_key('status') and result['status'] != 200:
                     context = { 'object': rule_object, 'error': result['msg'] }
                     try:

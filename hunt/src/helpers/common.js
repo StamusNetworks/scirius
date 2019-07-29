@@ -3,7 +3,7 @@ import React from 'react';
 import { DropdownButton, MenuItem } from 'patternfly-react';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
-import { buildQFilter } from './buildQFilter';
+import { buildQFilter } from 'hunt_common/buildQFilter';
 
 export function actionsButtons() {
     if (process.env.REACT_APP_HAS_ACTION === '1' || process.env.NODE_ENV === 'development') {

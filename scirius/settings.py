@@ -16,7 +16,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 SCIRIUS_FLAVOR="Scirius CE"
-SCIRIUS_VERSION="3.2.0"
+SCIRIUS_VERSION="3.3.0"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
@@ -245,8 +245,6 @@ KIBANA_PROXY = False
 KIBANA_URL = "http://localhost:9292"
 # Kibana index name
 KIBANA_INDEX = "kibana-int"
-# Number of dashboards to display
-KIBANA_DASHBOARDS_COUNT = 20
 # Path to Kibana's dashboards installation
 KIBANA_DASHBOARDS_PATH = '/opt/kibana-dashboards/'
 KIBANA6_DASHBOARDS_PATH = '/opt/kibana6-dashboards/'

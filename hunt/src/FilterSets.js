@@ -34,14 +34,21 @@ export default class FilterSets extends React.Component {
             loading: false,
             rows: { global: [], private: [], static: [] },
             expandedPanel: 'static',
-            searchValue: ''
+            searchValue: '',
+            user: undefined
         };
 
         this.loadFilterSets = this.loadFilterSets.bind(this);
         this.deleteFilterSets = this.deleteFilterSets.bind(this);
+        this.escFunction = this.escFunction.bind(this);
     }
 
     componentDidMount() {
+        axios.get(`${config.API_URL}${config.USER_PATH}current_user/`)
+        .then((currentUser) => {
+            this.setState({ user: currentUser.data });
+        });
+
         this.setState({ loading: true });
         axios.get(config.API_URL + config.HUNT_FILTER_SETS).then((res) => {
             const rows = { global: [], private: [], static: [] };
@@ -67,6 +74,11 @@ export default class FilterSets extends React.Component {
             }
             this.setState({ rows, loading: false });
         });
+        document.addEventListener('keydown', this.escFunction, false);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('keydown', this.escFunction, false);
     }
 
     togglePanel = (key) => {
@@ -76,6 +88,30 @@ export default class FilterSets extends React.Component {
 
     handleSearchValue = (event) => {
         this.setState({ searchValue: event.target.value });
+    }
+
+    getIcon = (item) => {
+        if (item.page === 'DASHBOARDS') {
+            return <Icon className="pull-left" type="fa" name="tachometer" />;
+        }
+        if (item.page === 'RULES_LIST') {
+            return <Icon className="pull-left" type="pf" name="security" />;
+        }
+        if (item.page === 'ALERTS_LIST') {
+            return <Icon className="pull-left" type="fa" name="bell" />;
+        }
+        if (item.page === 'HOSTS_LIST') {
+            return <Icon className="pull-left" type="fa" name="id-card-o" />;
+        }
+        return undefined;
+    }
+
+    escFunction(event) {
+        const esc = 27;
+
+        if (event.keyCode === esc) {
+            this.props.close();
+        }
     }
 
     loadFilterSets(row) {
@@ -106,6 +142,7 @@ export default class FilterSets extends React.Component {
         const rowsGlobal = this.state.rows.global ? this.state.rows.global.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase())) : [];
         const rowsPrivate = this.state.rows.private ? this.state.rows.private.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase())) : [];
         const rowsStatic = this.state.rows.static ? this.state.rows.static.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase())) : [];
+        const noRights = this.state.user !== undefined && this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser;
 
         return (
             <NotificationDrawer>
@@ -137,21 +174,23 @@ export default class FilterSets extends React.Component {
                                 {rowsGlobal && <NotificationDrawer.PanelBody key="containsNotifications">
 
                                     {rowsGlobal.map((item) => (
-                                        <Notification key={item.id} seen={false}>
-                                            <NotificationDrawer.Dropdown id="Dropdown1">
-                                                <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
-                                                <MenuItem key={'delete'} onClick={() => this.deleteFilterSets(item)}>Delete</MenuItem>
-                                            </NotificationDrawer.Dropdown>
-                                            <Icon className="pull-left" type="pf" name="filter" />
-                                            <Notification.Content onClick={() => this.loadFilterSets(item)}>
-                                                <Notification.Message>
-                                                    {item.name}
-                                                </Notification.Message>
-                                                <Notification.Info leftText={`${item.pageTitle} Page`} rightText={'Shared'} />
-                                            </Notification.Content>
-                                        </Notification>
+                                        <span key={item.name} data-toggle="tooltip" title={item.description}>
+                                            <Notification key={item.id} seen={false}>
+                                                <NotificationDrawer.Dropdown id="Dropdown1">
+                                                    <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
+                                                    {!noRights && <MenuItem key={'delete'} onClick={() => this.deleteFilterSets(item)}>Delete</MenuItem>}
+                                                </NotificationDrawer.Dropdown>
+                                                {this.getIcon(item)}
+                                                <Notification.Content onClick={() => this.loadFilterSets(item)}>
+                                                    <Notification.Message>
+                                                        {item.name}
+                                                    </Notification.Message>
+                                                    <Notification.Info leftText={`${item.pageTitle} Page`} rightText={'Shared'} />
+                                                </Notification.Content>
+                                            </Notification>
+                                        </span>
                                     ))}
-                                    {this.state.loading && <Notification key="loading" type="loading" /> }
+                                    {this.state.loading && <Notification key="loading" type="loading" />}
                                 </NotificationDrawer.PanelBody>
                                 }
                                 {!rowsGlobal && <NotificationDrawer.EmptyState title={''} />}
@@ -173,21 +212,23 @@ export default class FilterSets extends React.Component {
                                 {rowsPrivate && <NotificationDrawer.PanelBody key="containsNotifications">
 
                                     {rowsPrivate.map((item) => (
-                                        <Notification key={item.id} seen={false}>
-                                            <NotificationDrawer.Dropdown id="Dropdown2">
-                                                <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
-                                                <MenuItem key={'delete'} onClick={() => this.deleteFilterSets(item)}>Delete</MenuItem>
-                                            </NotificationDrawer.Dropdown>
-                                            <Icon className="pull-left" type="pf" name="filter" />
-                                            <Notification.Content onClick={() => this.loadFilterSets(item)}>
-                                                <Notification.Message>
-                                                    {item.name}
-                                                </Notification.Message>
-                                                <Notification.Info leftText={`${item.pageTitle} Page`} rightText={'Private'} />
-                                            </Notification.Content>
-                                        </Notification>
+                                        <span key={item.name} data-toggle="tooltip" title={item.description}>
+                                            <Notification key={item.id} seen={false}>
+                                                <NotificationDrawer.Dropdown id="Dropdown2">
+                                                    <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
+                                                    <MenuItem key={'delete'} onClick={() => this.deleteFilterSets(item)}>Delete</MenuItem>
+                                                </NotificationDrawer.Dropdown>
+                                                {this.getIcon(item)}
+                                                <Notification.Content onClick={() => this.loadFilterSets(item)}>
+                                                    <Notification.Message>
+                                                        {item.name}
+                                                    </Notification.Message>
+                                                    <Notification.Info leftText={`${item.pageTitle} Page`} rightText={'Private'} />
+                                                </Notification.Content>
+                                            </Notification>
+                                        </span>
                                     ))}
-                                    {this.state.loading && <Notification key="loading" type="loading" /> }
+                                    {this.state.loading && <Notification key="loading" type="loading" />}
 
                                 </NotificationDrawer.PanelBody>
                                 }
@@ -211,18 +252,20 @@ export default class FilterSets extends React.Component {
                                 {rowsStatic && <NotificationDrawer.PanelBody key="containsNotifications">
 
                                     {rowsStatic.map((item) => (
-                                        <Notification key={item.id} seen={false}>
-                                            <NotificationDrawer.Dropdown id="Dropdown3">
-                                                <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
-                                            </NotificationDrawer.Dropdown>
-                                            <Icon className="pull-left" type="pf" name="filter" />
-                                            <Notification.Content onClick={() => this.loadFilterSets(item)}>
-                                                <Notification.Message>
-                                                    {item.name}
-                                                </Notification.Message>
-                                                <Notification.Info leftText={`${item.pageTitle} Page`} rightText={'Static'} />
-                                            </Notification.Content>
-                                        </Notification>
+                                        <span key={item.name} data-toggle="tooltip" title={item.description}>
+                                            <Notification key={item.id} seen={false}>
+                                                <NotificationDrawer.Dropdown id="Dropdown3">
+                                                    <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
+                                                </NotificationDrawer.Dropdown>
+                                                {this.getIcon(item)}
+                                                <Notification.Content onClick={() => this.loadFilterSets(item)}>
+                                                    <Notification.Message>
+                                                        {item.name}
+                                                    </Notification.Message>
+                                                    <Notification.Info leftText={`${item.pageTitle} Page`} rightText={'Static'} />
+                                                </Notification.Content>
+                                            </Notification>
+                                        </span>
                                     ))}
                                     {this.state.loading && <Notification key="loading" type="loading" />}
 

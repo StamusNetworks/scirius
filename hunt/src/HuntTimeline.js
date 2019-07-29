@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
-import { buildQFilter } from './helpers/buildQFilter';
+import { buildQFilter } from 'hunt_common/buildQFilter';
 import SciriusChart from './components/SciriusChart';
 import ErrorHandler from './components/Error';
 
@@ -24,12 +24,8 @@ export default class HuntTimeline extends React.Component {
     }
 
     fetchData() {
-        let stringFilters = '';
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
-        if (qfilter) {
-            stringFilters += `&filter=${qfilter.replace('&qfilter=', '')}`;
-        }
-        axios.get(`${config.API_URL}${config.ES_BASE_PATH}timeline/?hosts=*&target=${this.props.chartTarget}&from_date=${this.props.from_date}${stringFilters}`)
+        axios.get(`${config.API_URL}${config.ES_BASE_PATH}timeline/?hosts=*&target=${this.props.chartTarget}&from_date=${this.props.from_date}${qfilter}`)
         .then((res) => {
             /* iterate on actual row: build x array, for each row build hash x -> value */
             /* sort x array */
