@@ -237,6 +237,7 @@ def elasticsearch(request):
                 rules = _es_backend.get_rules_stats_table(request)
                 if rules == None:
                     return HttpResponse(json.dumps(rules), content_type="application/json")
+                rules.source_query.set_parameter("query", "rules")
                 context['table'] = rules
                 # Set the context value of qfilter
                 # This is required for rendering correct js
@@ -247,7 +248,7 @@ def elasticsearch(request):
                 sid = request.GET.get('sid', None)
                 #hosts = ESSidByHosts(request).get(sid)
                 hosts = _es_backend.get_sid_by_hosts_table(request, sid)
-                    hosts.source_query.add_parameter("sid", sid)\
+                hosts.source_query.add_parameter("sid", sid)\
                         .set_parameter("query", "rule")
                 context['table'] = hosts
                 return scirius_render(request, 'rules/table.html', context)
@@ -271,7 +272,6 @@ def elasticsearch(request):
                 hosts = _es_backend.get_field_stats_table(request, sid, filter_ip, RuleHostTable, count=count)
                 hosts.table_id = FIELD_TO_TABLE_ID_MAPPING[filter_ip]
                 hosts.source_query.set_parameter("query", "field_stats")\
-                    .add_parameter("field", filter_ip)\
                     .add_parameter("sid", sid)
                 hosts.update_callback = "() => populate_topip_actions($('%s'), '%s', '%s')" % (
                     hosts.table_id, filter_ip,

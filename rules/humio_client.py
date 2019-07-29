@@ -7,7 +7,7 @@ import ssl
 import models
 import tables
 import django_tables2
-import es_backend
+#import es_backend
 import time
 import itertools
 import operator
@@ -133,9 +133,9 @@ def _urlopen(request):
     return out
 
 
-class HumioClient(es_backend.ESBackend):
+class HumioClient:
     def __init__(self):
-        es_backend.ESBackend.__init__(self)
+        #es_backend.ESBackend.__init__(self) # XXX - What is this?
         self._api_token = settings.HUMIO_API_TOKEN
         self._host = settings.HUMIO_HOST
         self._repository = settings.HUMIO_REPOSITORY
@@ -339,7 +339,7 @@ class HumioClient(es_backend.ESBackend):
             results = parallel_query(from_date, interval, hosts, qfilter, tags, buckets=100/(2*n_queries))
             #results = parallel_query(from_date, interval, hosts, qfilter, tags)
         else:
-            results = self.get_timeline_sp(from_date, interval, hosts, qfilter, tags, buckets=100/(2*n_queries))
+            results = self.get_timeline_sp(from_date, interval, hosts, qfilter, tags, buckets=100)
         return results
 
     def get_timeline_sp(self, from_date=0, interval=None, hosts=None, qfilter=None, tags=False, end_date=None, buckets=None):

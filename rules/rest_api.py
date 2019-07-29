@@ -2106,7 +2106,8 @@ class ESTimelineViewSet(ESBaseViewSet):
     def _get(self, request, format=None):
         tags = False if request.GET.get('target', 'false') == 'false' else True
 
-        return Response(_es_backend.get_timeline(request, tags=tags))
+        #return Response(_es_backend.get_timeline(request, tags=tags))
+        return Response(_es_backend.get_timeline(request))
         #return Response(ESTimeline(request).get(tags=tags))
 
 
@@ -2254,7 +2255,7 @@ class ESIndicesViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        return Response({'indices': _es_backend.get_indices(request)})
+        return Response({'indices': _es_backend.get_indices_stats(request)})
         #return Response({'indices': ESIndicesStats(request).get()})
 
 
