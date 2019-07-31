@@ -134,6 +134,7 @@ class HumioClientRequestWrapper(ESBackend):
     def get_indices(self, request):
         raise NotImplementedError()
 
+    @wraps_client([], ['from_date', 'hosts', 'qfilter'])
     def get_rules_per_category(self, request):
         raise NotImplementedError()
 
