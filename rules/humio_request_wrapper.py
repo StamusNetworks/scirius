@@ -5,8 +5,9 @@ from es_backend import ESBackend, DEFAULT_COUNT, DEFAULT_ORDER
 import json
 from django.utils.safestring import mark_safe
 
+from functools import wraps, partial
 
-def create_context_dict(request, keys=None):
+def create_args_kwargs(request, args_keys, kwargs_keys):
     print("======= CREATECONTEXTDICT HUMIOCLIENTWRAPPER")
     hosts_list = []
     qfilter = None
@@ -20,8 +21,6 @@ def create_context_dict(request, keys=None):
     hosts = []
     for host in hosts_list:
         if host != '*':
-            host = json.dumps(host).replace('"', '\\"')
-            host = mark_safe(host)
             hosts.append(host)
 
     context = {
@@ -33,10 +32,6 @@ def create_context_dict(request, keys=None):
         'count': request.GET.get('count', DEFAULT_COUNT),
     }
 
-    # FIXME: This would seem to be redundant since humio_client._fix_sorting sets default
-    # values, but the default ordering is not passed back and thus not set as context
-    # variables. As a temporary fix, this makes it so that the correct sorting used
-    # is shown at the table column 'hits' (descending).
     if request.GET.has_key('sort'):
         context['sort_order'] = request.GET.get('sort')
         context['sort_param'] = context['sort_order']
@@ -45,15 +40,38 @@ def create_context_dict(request, keys=None):
         context['sort_order'] = '-hits'
         context['sort_param'] = '-hits'
 
-    if keys:
-        c = {}
-        for k, v in context.items():
-            if k in keys:
-                c[k] = v
-        print(c)
-        return c
+    args = []
+    for k in args_keys:
+        if k == 'request':
+            args.append(request)
+            continue
+        args.append(context[k])
 
-    return context
+    kwargs = {}
+    for k in kwargs_keys:
+        if k in context:
+            kwargs[k] = context[k]
+    print('CREATE_ARGS_KWARGS', args_keys, kwargs_keys, args, kwargs)
+    return (args, kwargs)
+
+def wraps_client(args_keys, kwargs_keys):
+    def decorator(f):
+        @wraps(f)
+        def callee(self_, request, *args, **kwargs):
+            args_, kwargs_ = create_args_kwargs(request, args_keys, kwargs_keys)
+            client_func = getattr(self_.client, f.__name__)
+
+            # Keep provided positional arguments (overwrite)
+            for i in range(len(args)):
+                args_[i] = args[i]
+
+            # Keep provided keyword arguments
+            kwargs_.update(kwargs)
+
+            print('calling with', args_, kwargs_)
+            return client_func(*args_, **kwargs_)
+        return callee
+    return decorator
 
 
 class HumioClientRequestWrapper(ESBackend):
@@ -62,34 +80,45 @@ class HumioClientRequestWrapper(ESBackend):
         self.client = HumioClient()
         print("======= INIT HUMIOCLIENTWRAPPER")
 
+    @wraps_client(['request'], ['hosts', 'count', 'from_date', 'qfilter', 'sort_order', 'sort_key'])
     def get_rules_stats_table(self, request, count=DEFAULT_COUNT):
-        c = create_context_dict(request, keys=['hosts', 'count', 'from_date', 'qfilter', 'sort_order', 'sort_key'])
-        return self.client.get_rules_stats_table(request, **c)
+        pass
 
+    @wraps_client(['request'], ['hosts', 'count', 'from_date', 'qfilter', 'sort_order', 'sort_key'])
     def get_rules_stats_dict(self, request, count=DEFAULT_COUNT):
-        raise NotImplementedError()
+        pass
 
+    @wraps_client(['request', 'field', 'field_table_class'], ['hosts', 'key', 'count', 'from_date', 'qfilter', 'raw'])
     def get_field_stats_table(self, request, ksid, field, field_table_class, count=DEFAULT_COUNT, raw=False):
-        raise NotImplementedError()
+        pass
 
+    @wraps_client(['request', 'field'], ['hosts', 'key', 'count', 'from_date', 'qfilter', 'raw'])
     def get_field_stats_dict(self, request, sid, field, field_table_class, count=DEFAULT_COUNT, raw=False):
-        raise NotImplementedError()
+        pass
 
+    @wraps_client(['request', 'sid'], ['count', 'from_date', 'dict_format', 'sort_key', 'sort_order'])
     def get_sid_by_hosts(self, request, sid, count=DEFAULT_COUNT, dict_format=False):
-        raise NotImplementedError()
+        pass
 
+    @wraps_client(['request', 'sid'], ['count', 'from_date', 'sort_key', 'sort_order'])
     def get_sid_by_hosts_dict(self, request, sid, count=DEFAULT_COUNT):
-        raise NotImplementedError()
+        pass
 
+    @wraps_client(['request', 'sid'], ['count', 'from_date', 'sort_key', 'sort_order'])
     def get_sid_by_hosts_table(self, request, sid, count=DEFAULT_COUNT):
-        raise NotImplementedError()
+        pass
 
+    @wraps_client([], ['from_date', 'interval', 'hosts', 'qfilter', 'tags'])
     def get_timeline(self, request, tags=False):
-        raise NotImplementedError()
+        pass
 
+    # NOT IMPLEMENTED
+    # TODO: Set default 'value' in implementation
     def get_metrics_timeline(self, request, value=None):
         raise NotImplementedError()
 
+    # NOT IMPLEMENTED
+    # TODO: Set default 'value' in implementation
     def get_poststats(self, request, value=None):
         raise NotImplementedError()
 
@@ -111,10 +140,9 @@ class HumioClientRequestWrapper(ESBackend):
     def delete_alerts_by_sid(self, request, sid):
         raise NotImplementedError()
 
+    @wraps_client([], ['from_date', 'hosts', 'qfilter', 'prev'])
     def get_alerts_count(self, request, prev=0):
-        c = create_context_dict(request, keys=['from_date', 'hosts', 'qfilter'])
-        c['prev'] = prev
-        return self.client.get_alerts_count(**c)
+        raise NotImplementedError()
 
     def get_latest_stats(self, request):
         raise NotImplementedError()
@@ -128,6 +156,7 @@ class HumioClientRequestWrapper(ESBackend):
     def get_alerts_tail(self, request, search_target=True):
         raise NotImplementedError()
 
+    # NOTE: Renamed from suri_log_tail => get_suri_log_tail
     def get_suri_log_tail(self, request):
         raise NotImplementedError()
 
@@ -139,3 +168,5 @@ class HumioClientRequestWrapper(ESBackend):
 
     def get_es_major_version(self):
         return self.client.get_es_major_version()
+
+    # NOTE: There are several es_* functions that are not implemented.
