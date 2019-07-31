@@ -10,6 +10,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.validators import UniqueValidator
+from rest_framework import status
 
 from accounts.models import SciriusUser
 from rules.rest_permissions import IsCurrentUserOrSuperUserOrReadOnly
@@ -199,7 +200,7 @@ class AccountViewSet(viewsets.ModelViewSet):
             new_user=serializer.instance.user
         )
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, headers=headers)
+        return Response(serializer.data, headers=headers, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, *args, **kwargs):
         old_user = self.get_object()
