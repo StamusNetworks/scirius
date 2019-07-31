@@ -8,7 +8,7 @@ const EventValue = (props) => <div className="value-field-complete">
     <span className="value-field" title={`${props.value}\n"Ctrl + left click" to copy`}>{props.value}</span>
     <span className={'value-actions'}>
         <ErrorHandler>
-            <EventValueInfo field={props.field} value={props.value} />
+            <EventValueInfo field={props.field} value={props.value} magnifiers={props.magnifiers} />
             {props.magnifiers && <a onClick={() => { props.addFilter(props.field, props.value, false); }}> <Icon type="fa" name="search-plus" /></a>}
             {props.magnifiers && <a onClick={() => { props.addFilter(props.field, props.value, true); }}> <Icon type="fa" name="search-minus" /></a>}
         </ErrorHandler>
