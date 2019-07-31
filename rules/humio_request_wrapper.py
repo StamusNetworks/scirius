@@ -59,7 +59,6 @@ def wraps_client(args_keys, kwargs_keys):
         @wraps(f)
         def callee(self_, request, *args, **kwargs):
             args_, kwargs_ = create_args_kwargs(request, args_keys, kwargs_keys)
-            client_func = getattr(self_.client, f.__name__)
 
             # Keep provided positional arguments (overwrite)
             for i in range(len(args)):
@@ -69,6 +68,7 @@ def wraps_client(args_keys, kwargs_keys):
             kwargs_.update(kwargs)
 
             print('calling with', args_, kwargs_)
+            client_func = getattr(self_.client, f.__name__)
             return client_func(*args_, **kwargs_)
         return callee
     return decorator

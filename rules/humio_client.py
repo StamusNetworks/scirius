@@ -11,6 +11,7 @@ import django_tables2
 import time
 import itertools
 import operator
+from es_backend import ESBackend, DEFAULT_COUNT, DEFAULT_ORDER
 
 import functools
 from scirius.utils import parallel_map
@@ -89,8 +90,22 @@ def _fix_qfilter(qfilter):
             qfilter = '='.join(split)
     return qfilter
 
+def _parse_sort(sort_param):
+    # Parse sort field: [-](hits|sid|msg|category|*)
+    if sort_param:
+        if sort_param[0] == '-':
+            sort_order = 'desc'
+            sort_key = sort_param[1:]
+        else:
+            sort_order = 'asc'
+            sort_key = sort_param
+    else:
+        sort_order = 'asc'
+        sort_key = None
+    return (sort_key, sort_order)
 
-def _fix_sorting(sort_key, sort_order, sort_key_field_map, limit=HUMIO_DEFAULT_SORT_LIMIT,
+
+def _create_sort_filter(sort_param, sort_key_field_map, limit=HUMIO_DEFAULT_SORT_LIMIT,
                default_sort_key=None, default_sort_order='desc'):
     """Fixes elasticsearch based sorting to work as humio filters
 
@@ -103,6 +118,9 @@ def _fix_sorting(sort_key, sort_order, sort_key_field_map, limit=HUMIO_DEFAULT_S
                                to a dict {'groupby_fields' <list of fields>, 'field': <humio field>}
     :return: tuple: (<list of groupby fields>, <sort_filter>)
     """
+
+    sort_key, sort_order = _parse_sort(sort_param)
+
     if not sort_key:
         if not default_sort_key:
             humio_logger.error('_fix_sorting: sort key was None and default_sort_key was None')
@@ -132,6 +150,22 @@ def _urlopen(request):
         raise RuntimeError(msg)
     return out
 
+def _get_interval(request):
+    return request.GET.get('interval', None)
+
+def _get_hosts(request):
+    if 'hosts' in request.GET:
+        return request.GET['hosts'].split(',')
+    return []
+
+def _get_qfilter(request):
+    return _fix_qfilter(request.GET.get('qfilter', None))
+
+def _get_from_date(request):
+    return int(request.GET.get('from_date', 0))
+
+def _get_sort_param(request):
+    return request.GET.get('sort', None)
 
 class HumioClient:
     def __init__(self):
@@ -189,10 +223,9 @@ class HumioClient:
 
         return '|'.join(['%s := %s' % (v, k) for k, v in from_to_dict.items()]) + drop_filter
 
-
     def _get_rule_stats(self, count, from_date, qfilter=None,
                         extra_fields=None, extra_filters=[], hosts=None,
-                        sort_key=None, sort_order=None):
+                        sort_param=None):
         """Get the top <count> rules sorted by key <sort_key> and ordered by <sort_order>"""
 
         if not extra_fields:
@@ -205,9 +238,8 @@ class HumioClient:
             'category':  {'groupby_fields': ['alert.category'],   'field': 'alert.category'},
         }
 
-        groupby_fields, sort_filter = _fix_sorting(sort_key, sort_order,
-                                                   RULE_STATS_SORTING_FIELD_MAP, limit=count,
-                                                   default_sort_key='hits')
+        groupby_fields, sort_filter = _create_sort_filter(sort_param, RULE_STATS_SORTING_FIELD_MAP,
+                                                          limit=count, default_sort_key='hits')
         print('GET_RULE_STATS_SORT_FILTER', sort_filter)
 
         fields = extra_fields + ['alert.signature_id'] + groupby_fields
@@ -219,11 +251,15 @@ class HumioClient:
         return self._humio_query(filters=[ALERTS_FILTER, qfilter, query_str, sort_filter] + extra_filters,
                                  start=from_date, hosts=hosts)
 
-    def get_rules_stats_table(self, request, hosts=None,
-                              count=20, from_date=0, qfilter=None,
-                              sort_order=None, sort_key=None):
-        dict_data = self._get_rule_stats(count, from_date, qfilter, hosts=hosts,
-                                           sort_key=sort_key, sort_order=sort_order)
+#### START OF INTERFACE
+    def get_rules_stats_table(self, request, count=DEFAULT_COUNT):
+        print('=========> GET_RULES_STATS_TABLE')
+        hosts = _get_hosts(request)
+        from_date = _get_from_date(request)
+        qfilter = _get_qfilter(request)
+        sort_param = _get_sort_param(request)
+
+        dict_data = self._get_rule_stats(count, from_date, qfilter, hosts=hosts, sort_param=sort_param)
 
         def rule_from_entry(entry):
             sid = int(entry['alert.signature_id'])
@@ -241,35 +277,43 @@ class HumioClient:
         django_tables2.RequestConfig(request).configure(rules_table)
         return rules_table
 
-    def get_rules_stats_dict(self, request, hosts=None,
-                             count=20, from_date=0, qfilter=None,
-                             sort_order=None, sort_key=None):
+    def get_rules_stats_dict(self, request, count=DEFAULT_COUNT):
+        hosts = _get_hosts(request)
+        from_date = _get_from_date(request)
+        sort_param = _get_sort_param(request)
+
         field_names_filter =\
             self._create_custom_field_names_filter({'alert.signature_id': 'key',
                                                     '_count': 'doc_count'})
 
         return self._get_rule_stats(count, from_date, extra_filters=[field_names_filter], hosts=hosts,
-                               sort_key=sort_key, sort_order=sort_order)
+                               sort_param=sort_param)
 
-    def get_field_stats_table(self, request, field, FieldTable,
-                              hosts=None, key='host', count=20,
-                              from_date=0, qfilter=None, raw=False):
-        data = self.get_field_stats_dict(request, field, hosts=hosts, key=key, count=count,
-                                         from_date=from_date, qfilter=qfilter)
+######### NOT SURE IF WORKING
+
+    def get_field_stats_table(self, request, sid, field, field_table_class, count=DEFAULT_COUNT, raw=False):
+        hosts = _get_hosts(request)
+        from_date = _get_from_date(request)
+        qfilter = _get_qfilter(request)
+
+        data = self.get_field_stats_dict(request, field)
         if data is None:
-            objects = FieldTable([])
+            objects = field_table_class([])
             django_tables2.RequestConfig(request).configure(objects)
             return objects
         objects = []
         for elt in data:
-            fstat = {key: elt['key'], 'count': int(elt['doc_count'])}
+            fstat = {'host': elt['key'], 'count': int(elt['doc_count'])}
             objects.append(fstat)
-        objects = FieldTable(objects)
+        objects = field_table_class(objects)
         django_tables2.RequestConfig(request).configure(objects)
         return objects
 
-    def get_field_stats_dict(self, request, field, hosts=None, key='host',
-                             count=20, from_date=0, qfilter=None, raw=False):
+    def get_field_stats_dict(self, request, field, count=DEFAULT_COUNT, raw=False):
+        hosts = _get_hosts(request)
+        from_date = _get_from_date(request)
+        qfilter = _get_qfilter(request)
+
         if field in FIELD_REPLACEMENTS:
             field = FIELD_REPLACEMENTS[field]
         if field:
@@ -280,43 +324,62 @@ class HumioClient:
             field_names_filter = self._create_custom_field_names_filter({
                 'alert.signature_id': 'key',
                 '_count': 'doc_count'})
-
-
-        return self._es_get_field_stats_json(request, field, hosts=hosts, key=key, count=count,
+        return self._es_get_field_stats_json(request, field, hosts=hosts, count=count,
                                                   from_date=from_date, qfilter=qfilter, filters=[field_names_filter])
 
-    def _es_get_field_stats_json(self, request, field, hosts=None, key='host', count=20,
-                                 from_date=0, qfilter=None, raw=False, filters=[]):
+    def _es_get_field_stats_json(self, request, field, hosts=None, count=20,
+                                 from_date=0, qfilter=None, filters=[]):
         query_str = 'groupBy(field=%s, function=count(), limit=%d)' % (field, count)
         return self._humio_query(filters=[ALERTS_FILTER, qfilter, query_str] + filters, start=from_date, hosts=hosts)
 
-    def get_alerts_count(self, from_date=0, hosts=None, qfilter=None, prev=0):
-        """Gets the previous alert count and the current alert count.
+    def get_sid_by_hosts(self, request, sid, count=DEFAULT_COUNT, dict_format=False):
+        if dict_format:
+            return self.get_sid_by_hosts_dict(request, sid, count=count)
+        return self.get_sid_by_hosts_table(request, sid, count=count)
 
-        :return: {'prev_doc_count': <previous>, 'doc_count' <current>}
+    def get_sid_by_hosts_dict(self, request, sid, count=DEFAULT_COUNT):
         """
+        :return dict on the format {"rule":[{"key":"<host>","doc_count":<alerts on rule with given sid>}]}:
+        """
+        from_date = _get_from_date(request)
+        sort_param = _get_sort_param(request)
 
-        # FIXME: Currently does two queries, one for doc_count and one for prev_doc_count.
-        from_date_ms = int(int(from_date)//1000)*1000
-        current_time_ms = int(time.time())*1000
-        diff_ms = (current_time_ms - from_date_ms)
-        prev_start_ms = (from_date_ms - diff_ms)
-        query_str = 'count()'
+        HITS_BY_HOSTS_SORTING_FIELD_MAP = {
+            'host':  {'groupby_fields': ['host'], 'field': 'host'},
+            'count': {'groupby_fields': ['host'], 'field': '_count'},
+        }
 
-        filters=[ALERTS_FILTER, qfilter, query_str]
-        data = self._humio_query(filters=filters, start=from_date_ms, hosts=hosts)
-        cur_count = data[0]['_count']
+        groupby_fields, sort_filter = _create_sort_filter(sort_param, HITS_BY_HOSTS_SORTING_FIELD_MAP,
+                                                          limit=count, default_sort_key='count')
 
-        if prev:
-            prev_data = self._humio_query(filters=filters, start=prev_start_ms, end=from_date_ms, hosts=hosts)
-            return {'doc_count': int(cur_count), 'prev_doc_count': int(prev_data[0]['_count'])}
+        groupby_field = 'host'
+        query_str = 'alert.signature_id = %s | groupBy(%s, function=count())' % (sid, groupby_field)
+        data = self._humio_query(filters=[ALERTS_FILTER, query_str, sort_filter], start=from_date)
 
-        return {'doc_count': cur_count}
+        # transform from the format:
+        # [{host: <host>, _count: <count>}, ...]
+        # to {'rule': ['key': <host>, 'doc_count': <count>}, ...]}
+        rdata = {'rule': []}
+        for b in data:
+            entry = {'key': b['host'], 'doc_count': int(b['_count'])}
+            rdata['rule'].append(entry)
+        return rdata
 
-    def get_timeline(self, from_date=0, interval=None, hosts=None, qfilter=None, tags=False):
-        if not hosts:
-            hosts = []
+    def get_sid_by_hosts_table(self, request, sid, count=DEFAULT_COUNT):
+        data = self.get_sid_by_hosts_dict(request, sid, count=count)
+        rdata = [{'host': e['key'], 'count': e['doc_count']} for e in data['rule']]
+        stats = tables.RuleStatsTable(rdata)
+        django_tables2.RequestConfig(request).configure(stats)
+        return stats
+
+    def get_timeline(self, request, tags=False):
+        hosts = _get_hosts(request)
+        from_date = _get_from_date(request)
+        interval = _get_interval(request)
+        qfilter = _get_qfilter(request)
+
         n_queries = len(hosts)/10
+        # FIXME: Proper integer rounding (round up) and integer division
 
         def parallel_query(from_date, interval, hosts, qfilter, tags, buckets=None):
             chunk_size = 10
@@ -336,7 +399,8 @@ class HumioClient:
             return result
 
         if n_queries > 2:
-            results = parallel_query(from_date, interval, hosts, qfilter, tags, buckets=100/(2*n_queries))
+            #results = parallel_query(from_date, interval, hosts, qfilter, tags, buckets=100/(2*n_queries))
+            results = parallel_query(from_date, interval, hosts, qfilter, tags, buckets=100/(n_queries))
             #results = parallel_query(from_date, interval, hosts, qfilter, tags)
         else:
             results = self.get_timeline_sp(from_date, interval, hosts, qfilter, tags, buckets=100)
@@ -384,7 +448,7 @@ class HumioClient:
         rdata['interval'] = int(interval)
         return rdata
 
-    def get_rules_per_category(self, from_date=0, hosts=None, qfilter=None):
+    def get_rules_per_category(self, request):
         """Gets a list of alerted rules grouped into categories from humio.
 
         :param from_date:
@@ -412,6 +476,9 @@ class HumioClient:
              }
                     :
         """
+        hosts = _get_hosts(request)
+        from_date = _get_from_date(request)
+        qfilter = _get_qfilter(request)
 
         # This query groups alert signatures, counts them, and then
         # groups the result by category, collecting the alerts into
@@ -458,51 +525,37 @@ class HumioClient:
                 for entry in cdata
             ]))
         }
-
         return rdata
 
-    def get_sid_by_hosts(self, request, sid, count=20, from_date=0, dict_format=False,
-                         sort_key=None, sort_order=None):
-        args = [request, sid]
-        kwargs = {'count': count, 'from_date': from_date, 'sort_key': sort_key, 'sort_order': sort_order}
-        if dict_format:
-            return self.get_sid_by_hosts_dict(*args, **kwargs)
-        return self.get_sid_by_hosts_table(*args, **kwargs)
+    def get_alerts_count(self, request, prev=0):
+        """Gets the previous alert count and the current alert count.
 
-    def get_sid_by_hosts_dict(self, request, sid, count=20, from_date=0,
-                              sort_key=None, sort_order=None):
-        """
-        :return dict on the format {"rule":[{"key":"<host>","doc_count":<alerts on rule with given sid>}]}:
+        :return: {'prev_doc_count': <previous>, 'doc_count' <current>}
         """
 
-        HITS_BY_HOSTS_SORTING_FIELD_MAP = {
-            'host':  {'groupby_fields': ['host'], 'field': 'host'},
-            'count': {'groupby_fields': ['host'], 'field': '_count'},
-        }
+        hosts = _get_hosts(request)
+        from_date = _get_from_date(request)
+        qfilter = _get_qfilter(request)
 
-        groupby_fields, sort_filter = _fix_sorting(sort_key, sort_order,
-                                                   HITS_BY_HOSTS_SORTING_FIELD_MAP, limit=count,
-                                                   default_sort_key='count')
+        # FIXME: Currently does two queries, one for doc_count and one for prev_doc_count.
+        from_date_ms = int(int(from_date)//1000)*1000
+        current_time_ms = int(time.time())*1000
+        diff_ms = (current_time_ms - from_date_ms)
+        prev_start_ms = (from_date_ms - diff_ms)
+        query_str = 'count()'
 
-        groupby_field = 'host'
-        query_str = 'alert.signature_id = %s | groupBy(%s, function=count())' % (sid, groupby_field)
-        data = self._humio_query(filters=[ALERTS_FILTER, query_str, sort_filter], start=from_date)
+        filters=[ALERTS_FILTER, qfilter, query_str]
+        data = self._humio_query(filters=filters, start=from_date_ms, hosts=hosts)
+        cur_count = data[0]['_count']
 
-        # transform from the format:
-        # [{host: <host>, _count: <count>}, ...]
-        # to {'rule': ['key': <host>, 'doc_count': <count>}, ...]}
-        rdata = {'rule': []}
-        for b in data:
-            entry = {'key': b['host'], 'doc_count': int(b['_count'])}
-            rdata['rule'].append(entry)
-        return rdata
-
-    def get_sid_by_hosts_table(self, request, sid, count=20, from_date=0, sort_key=None, sort_order=None):
-        data = self.get_sid_by_hosts_dict(request, sid, count, from_date, sort_key, sort_order)
-        rdata = [{'host': e['key'], 'count': e['doc_count']} for e in data['rule']]
-        stats = tables.RuleStatsTable(rdata)
-        django_tables2.RequestConfig(request).configure(stats)
-        return stats
+        # FIXME: Revert changes here back to the 'fully working one'
+        prev = None
+        if prev:
+            prev_data = self._humio_query(filters=filters, start=prev_start_ms, end=from_date_ms, hosts=hosts)
+            return {'doc_count': int(cur_count), 'prev_doc_count': int(prev_data[0]['_count'])}
+        else:
+            return {'doc_count': cur_count, 'prev_doc_count': 0}
+#        return {'doc_count': cur_count}
 
     def get_es_major_version(self):
         return settings.HUMIO_SPOOF_ES_VERSION

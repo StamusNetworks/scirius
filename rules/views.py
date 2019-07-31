@@ -199,23 +199,6 @@ class Reference:
         self.key = key
         self.url = None
 
-# FIXME: This does not belong here
-def _parse_sort(req):
-    # Parse sort field: [-](hits|sid|msg|category|*)
-    sort_param = req.GET.get('sort', None)
-    if sort_param:
-        if sort_param[0] == '-':
-            sort_order = 'desc'
-            sort_key = sort_param[1:]
-        else:
-            sort_order = 'asc'
-            sort_key = sort_param
-    else:
-        sort_order = 'asc'
-        sort_key = None
-    kwargs = {'sort_key': sort_key, 'sort_order': sort_order}
-    print('PARSE_SORT', kwargs)
-    return sort_param, kwargs
 
 def elasticsearch(request):
     data = None
@@ -223,11 +206,6 @@ def elasticsearch(request):
     FIELD_TO_TABLE_ID_MAPPING = {'src_ip': '#src_ip_table', 'dest_ip': '#dest_ip_table', 'alert.source.ip': '#source_ip_table', 'alert.target.ip': '#target_ip_table'}
     FIELD_TO_IP_DIRECTION_MAPPING = {'src_ip': 'src', 'dest_ip': 'dest', 'alert.source.ip': 'src', 'alert.target.ip': 'dest'}
     context = {'es2x': _es_backend.get_es_major_version() >= 2}
-
-    # FIXME: Replace context variable sort_order with sort_param
-    sort_param, sort_kwargs = _parse_sort(request)
-    context['sort_param'] = sort_param
-    context['sort_order'] = sort_param
 
     if request.GET.__contains__('query'):
         try:
@@ -377,9 +355,9 @@ def rule(request, rule_id, key = 'pk'):
                'rule_transformations': rule_transformations, 'comment_form': comment_form}
 
     # FIXME: Replace context variable sort_order with sort_param
-    sort_param, sort_kwargs = _parse_sort(request)
-    context['sort_order'] = sort_param
-    context['sort_param'] = sort_param
+    #sort_param, sort_kwargs = _parse_sort(request)
+    #context['sort_order'] = sort_param
+    #context['sort_param'] = sort_param
 
     thresholds = Threshold.objects.filter(rule = rule, threshold_type = 'threshold')
     if thresholds:
