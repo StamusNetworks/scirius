@@ -5,7 +5,7 @@ import EventValueInfo from 'hunt_common/components/EventValueInfo';
 import ErrorHandler from './Error';
 
 const EventValue = (props) => <div className="value-field-complete">
-    <span className="value-field" title={props.value}>{props.value}</span>
+    <span className="value-field" title={`${props.value}\n"Ctrl + left click" to copy`}>{props.value}</span>
     <span className={'value-actions'}>
         <ErrorHandler>
             <EventValueInfo field={props.field} value={props.value} />
