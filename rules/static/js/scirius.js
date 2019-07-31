@@ -134,127 +134,135 @@ function load_rules(from_date, hosts, filter, callback, sort_order) {
 window.load_rules = load_rules;
 
 
-function draw_timeline(from_date, hosts, filter, ylegend=undefined) {
+function draw_timeline(from_date, hosts, filter, ylegend = undefined, on_update_callback=undefined) {
+    console.log("drawing timeline...");
+    console.log(on_update_callback);
+    var esurl = "/rest/rules/es/timeline/?from_date=" + from_date + "&hosts=" + hosts.join()
+    if (filter) {
+        esurl = esurl + "&qfilter=" + filter;
+    }
+    $.ajax({
+        type: "GET",
+        url: esurl,
+        success: function (data) {
+            if (data == null) {
+                $("#timeline p").text("Unable to get data.");
+                $("#error").text("Unable to get data from Elasticsearch");
+                $("#error").parent().toggle();
+                return null;
+            }
+            if (!data.hasOwnProperty("from_date")) {
+                $("#timeline").height(300);
+                $("#timeline svg").hide();
+                $("#timeline").addClass("panel panel-default");
+                $("#timeline p").text("No data for period.");
+                $("#timeline p").addClass("text-center");
+                $("#timeline p").addClass("text-muted");
+                $("#timeline p").addClass("svgcenter");
+                return null;
+            }
 
-        var esurl = "/rest/rules/es/timeline/?from_date=" + from_date + "&hosts=" + hosts.join()
-        if (filter) {
-            esurl = esurl + "&qfilter=" + filter;
-        }
-        $.ajax(
-                        {
-                        type:"GET",
-                        url:esurl,
-                        success: function(data) {
-                        if (data == null) {
-                            $("#timeline p").text("Unable to get data.");
-                            $("#error").text("Unable to get data from Elasticsearch");
-                            $("#error").parent().toggle();
-                            return null;
-                        }
-                        if (!data.hasOwnProperty("from_date")) {
-                            $("#timeline").height(300);
-                            $("#timeline svg").hide();
-                            $("#timeline").addClass("panel panel-default");
-                            $("#timeline p").text("No data for period.");
-                            $("#timeline p").addClass("text-center");
-                            $("#timeline p").addClass("text-muted");
-                            $("#timeline p").addClass("svgcenter");
-                            return null;
-                        }
+            // FIX: Remove timeline before updating.
+            d3.select("#timeline svg > *").remove();
+            nv.addGraph(function () {
+                /* starting from 4 hosts multibar is unreadable */
+                if (hosts.length > 3) {
+                    var chart = nv.models.lineChart()
+                        .margin({ left: 100 })  //Adjust chart margins to give the x-axis some breathing room.
+                        .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+                        .duration(350)  //how fast do you want the lines to transition?
+                        .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                        .showYAxis(true)        //Show the y-axis
+                        .showXAxis(true)        //Show the x-axis
+                        ;
+                } else {
+                    var multigraph = false;
+                    if (hosts.length > 1) {
+                        multigraph = true;
+                    }
+                    var chart = nv.models.multiBarChart()
+                        .duration(350)
+                        .reduceXTicks(true)   //If 'false', every single x-axis tick label will be rendered.
+                        .rotateLabels(0)      //Angle to rotate x-axis labels.
+                        .showControls(multigraph)   //Allow user to switch between 'Grouped' and 'Stacked' mode.
+                        .groupSpacing(0.1)    //Distance between each group of bars.
+                        ;
+                    chart.stacked(true);
+                }
 
- 			            // FIX: Remove timeline before updating.
- 			            d3.select("#timeline svg > *").remove();
-                            nv.addGraph(function() {
-		            /* starting from 4 hosts multibar is unreadable */
-                            if (hosts.length > 3) {
-                              var chart = nv.models.lineChart()
-                                            .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
-                                            .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
-                                            .duration(350)  //how fast do you want the lines to transition?
-                                            .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
-                                            .showYAxis(true)        //Show the y-axis
-                                            .showXAxis(true)        //Show the x-axis
-                              ;
-                              } else {
-                            var multigraph = false;
-                            if (hosts.length > 1) {
-                                    multigraph = true;
+
+                chart.xAxis.tickFormat(function (d) {
+                    return d3.time.format('%m/%d %H:%M')(new Date(d))
+                });
+
+                // FIX: Alerts are always integers. No need to
+                // have fixed point of 1 decimal.
+                chart.yAxis
+                    .tickFormat(d3.format(',d'));
+
+                if (ylegend) {
+                    $('#timeline_title').text(ylegend);
+                }
+
+                var end_interval = new Date().getTime();
+                var sdata = []
+                for (var hi = 0; hi < hosts.length; hi++) {
+                    var gdata = []
+                    var starti = 0;
+                    var iter = 0;
+                    if (!data[hosts[hi]]) {
+                        continue;
+                    }
+                    var entries = data[hosts[hi]]['entries']
+                    var interval = parseInt(data['interval']);
+                    for (var inter = parseInt(data['from_date']); inter < end_interval; inter = inter + interval) {
+                        var found = false;
+                        for (var i = starti; i < entries.length; i++) {
+                            if (Math.abs(entries[i]["time"] - inter) <= interval / 2) {
+                                gdata.push({ x: inter, y: entries[i]["count"] });
+                                found = true;
+                                starti = i + 1;
+                                break;
                             }
-                            var chart = nv.models.multiBarChart()
-                                .duration(350)
-                                .reduceXTicks(true)   //If 'false', every single x-axis tick label will be rendered.
-                                .rotateLabels(0)      //Angle to rotate x-axis labels.
-                                .showControls(multigraph)   //Allow user to switch between 'Grouped' and 'Stacked' mode.
-                                .groupSpacing(0.1)    //Distance between each group of bars.
-                                ;
-                                chart.stacked(true);
-                               }
-                                chart.xAxis.tickFormat(function(d) {
-                                    return d3.time.format('%m/%d %H:%M')(new Date(d))
-                                });
+                        }
+                        if (found == false) {
+                            gdata.push({ x: inter, y: 0 });
+                        }
+                    }
+                    sdata.push(
+                        {
+                            values: gdata,
+                            key: hosts[hi],
+                            //color: '#AD9C9B',  //color - optional: choose your own line color.
+                            //area: true
+                        }
+                    );
+                }
 
-                                // FIX: Alerts are always integers. No need to
-                                // have fixed point of 1 decimal.
-                                chart.yAxis
-                                .tickFormat(d3.format(',d'));
+                if (on_update_callback !== undefined) {
+                    chart.dispatch.on('stateChange', (s) => {on_update_callback(s, filter)});
+                }
 
-                                if (ylegend) {
-                                    $('#timeline_title').text(ylegend);
-                                }
+                d3.select('#timeline svg')
+                    .datum(sdata)
+                    .call(chart);
 
-                                var end_interval = new Date().getTime();
-                                var sdata = []
-                                for (var hi = 0; hi < hosts.length; hi++) {
-                                        var gdata = []
-                                        var starti = 0;
-                                        var iter = 0;
-                                        if (!data[hosts[hi]]) {
-                                            continue;
-                                        }
-                                        var entries = data[hosts[hi]]['entries']
-                                        var interval = parseInt(data['interval']);
-                                        for (var inter = parseInt(data['from_date']); inter < end_interval; inter = inter + interval) {
-                                            var found = false;
-                                            for (var i = starti; i < entries.length; i++) {
-                                                if (Math.abs(entries[i]["time"] - inter) <= interval/2) {
-                                                    gdata.push({x: inter, y: entries[i]["count"]});
-                                                    found = true;
-                                                    starti = i + 1;
-                                                    break;
-                                                }
-                                            }
-                                            if (found == false) {
-                                                    gdata.push({x: inter, y: 0});
-                                            }
-                                        }
-                                        sdata.push(
-                                        {
-                                            values: gdata,
-                                            key: hosts[hi],
-                                            //color: '#AD9C9B',  //color - optional: choose your own line color.
-                                            //area: true
-                                        }
-                                        );
-                                }
-                                d3.select('#timeline svg')
-                                        .datum(sdata)
-                                        .call(chart);
-
-                                nv.utils.windowResize(function() { chart.update(); });
-                                $("[role='tab']").on('shown.bs.tab', function() {
-                                    chart.duration(0);
-                                    chart.update();
-                                    chart.duration(350);
-                                });
-                                return chart;
-                        });
-                },
-	    error: function(data) {
-             $('#timeline').text("Unable to get data.");
-             $("#error").text("Unable to get data from Elasticsearch");
-             $("#error").parent().toggle();
-	    }
-        });
+                nv.utils.windowResize(function () { chart.update(); });
+                $("[role='tab']").on('shown.bs.tab', function () {
+                    chart.duration(0);
+                    chart.update();
+                    chart.duration(350);
+                });
+                return chart;
+            });
+        },
+        error: function (data) {
+            $('#timeline').text("Unable to get data.");
+            $("#error").text("Unable to get data from Elasticsearch");
+            $("#error").parent().toggle();
+        }
+    }
+    );
 }
 window.draw_timeline = draw_timeline;
 
@@ -386,7 +394,7 @@ function build_path(d) {
 }
 window.build_path = build_path;
 
-function draw_sunburst(from_date, hosts, filter, callback, sort_order) {
+function draw_sunburst(from_date, hosts, filter, callback, sort_order, timeline_callback=undefined) {
         var esurl = "/rest/rules/es/rules_per_category/?from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
             esurl = esurl + "&qfilter=" + filter;
@@ -412,6 +420,7 @@ var y = d3.scale.sqrt()
 
 var color = d3.scale.category20b();
 
+d3.select("#circles > *").remove();
 var svg = d3.select("#circles").append("svg")
     .attr("width", width)
     .attr("height", height)
@@ -477,10 +486,14 @@ var arc = d3.svg.arc()
         $("#filter").append("Filter: " + tooltip);
     }
     if (d.key == "categories") {
-        draw_timeline(from_date, hosts, null);
+        console.log("preparing to draw timeline");
+        console.log(timeline_callback);
+        draw_timeline(from_date, hosts, null, null, timeline_callback);
         load_rules(from_date, hosts, null, null, sort_order);
     } else {
-        draw_timeline(from_date, hosts, 'alert.category.raw:"'+d.key+'"');
+        console.log("preparing to draw timeline");
+        console.log(timeline_callback);
+        draw_timeline(from_date, hosts, 'alert.category.raw:"'+d.key+'"', null, timeline_callback);
         load_rules(from_date, hosts, 'alert.category.raw:"'+d.key+'"', null, sort_order);
     }
     path.transition()
@@ -536,7 +549,7 @@ function arcTweenZoom(d) {
 }
 window.draw_sunburst = draw_sunburst;
 
-function draw_circle(from_date, hosts, filter, callback) {
+function draw_circle(from_date, hosts, filter, callback, timeline_callback) {
         var esurl = "/rest/rules/es/rules_per_category/?from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
             esurl = esurl + "&qfilter=" + filter;
@@ -611,10 +624,10 @@ function draw_circle(from_date, hosts, filter, callback) {
                      $("#filter").append("Filter: " + tooltip);
                  }
                  if (d.key == "categories") {
-                     draw_timeline(from_date, hosts, null);
+                     draw_timeline(from_date, hosts, null, null, timeline_callback);
                      load_rules(from_date, hosts, null);
                  } else {
-                     draw_timeline(from_date, hosts, 'alert.category.raw:"'+d.key+'"');
+                     draw_timeline(from_date, hosts, 'alert.category.raw:"'+d.key+'"', null, timeline_callback);
                      load_rules(from_date, hosts, 'alert.category.raw:"'+d.key+'"');
                  }
                  var transition = d3.transition()

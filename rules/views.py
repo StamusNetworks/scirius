@@ -28,6 +28,7 @@ from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.contrib import messages
 import requests
 
+from rules import humio_client
 from scirius.utils import scirius_render, scirius_listing
 
 from rules.es_data import ESData
@@ -47,6 +48,7 @@ import django_tables2 as tables
 from tables import *
 from forms import *
 from suripyg import SuriHTMLFormat
+from scirius.utils import get_quoted_hosts_list
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
 
@@ -210,6 +212,7 @@ def elasticsearch(request):
     if request.GET.__contains__('query'):
         try:
             query = request.GET.get('query')
+            context['enabled_probes'] = get_quoted_hosts_list(request)
             if query == 'rules':
                 #rules = ESRulesStats(request).get()
                 rules = _es_backend.get_rules_stats_table(request)
@@ -219,7 +222,9 @@ def elasticsearch(request):
                 context['table'] = rules
                 # Set the context value of qfilter
                 # This is required for rendering correct js
-                qfilter = request.GET.get('filter', None)
+                qfilter = request.GET.get('qfilter', None)
+                if qfilter:
+                    rules.source_query.add_parameter("qfilter", qfilter)
                 context['qfilter'] = qfilter
                 return scirius_render(request, 'rules/table.html', context)
             elif query == 'rule':
@@ -228,7 +233,11 @@ def elasticsearch(request):
                 hosts = _es_backend.get_sid_by_hosts_table(request, sid)
                 hosts.source_query.add_parameter("sid", sid)\
                         .set_parameter("query", "rule")
+                qfilter = request.GET.get('qfilter', None)
+                if qfilter:
+                    hosts.source_query.add_parameter("qfilter", qfilter)
                 context['table'] = hosts
+
                 return scirius_render(request, 'rules/table.html', context)
             elif query in RULE_FIELDS_MAPPING.keys():
                 ajax = request.GET.get('json', None)
@@ -251,6 +260,9 @@ def elasticsearch(request):
                 hosts.table_id = FIELD_TO_TABLE_ID_MAPPING[filter_ip]
                 hosts.source_query.set_parameter("query", "field_stats")\
                     .add_parameter("sid", sid)
+                qfilter = request.GET.get('qfilter', None)
+                if qfilter:
+                    hosts.source_query.add_parameter("qfilter", qfilter)
                 hosts.update_callback = "() => populate_topip_actions($('%s'), '%s', '%s')" % (
                     hosts.table_id, filter_ip,
                     FIELD_TO_IP_DIRECTION_MAPPING[filter_ip])

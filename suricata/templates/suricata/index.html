@@ -386,31 +386,55 @@ function differentiate_suppressed() {
     );
 }
 
+function on_timeline_update(status, filter) {
+    const hosts = [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}];
+    let enabled_hosts = [];
+    for (let i = 0; i < hosts.length; i++) {
+        if (!status.disabled[i]) {
+            enabled_hosts.push(hosts[i]);
+        }
+    }
+    console.log("enabled hosts:");
+    console.log(enabled_hosts);
+    load_rules({{ from_date }},  enabled_hosts, null, undefined, '{{ sort_order }}');
+    do_draw_sunburst(enabled_hosts, filter);
+}
+
+function do_draw_sunburst(hosts, filter) {
+    {{ draw_func }}({{ from_date }}, hosts, filter,
+        function() {
+            $('{{ draw_elt }}').mouseover(function(){
+                var d = this.__data__;
+                if (d.children == undefined) {
+                    $( "#rules_table a:contains('" +d.key +"')" ).parent().parent().addClass('overed');
+                }
+            });
+            $('{{ draw_elt }}').mouseout(function(){
+                var d = this.__data__;
+                if (d.children == undefined) {
+                    $( "#rules_table a:contains('" +d.key +"')" ).parent().parent().removeClass('overed');
+                }
+            });
+        },
+        // FIX: sort order of table
+        '{{ sort_order }}',
+        on_timeline_update
+    );
+}
+
 $( 'document' ).ready(function () {
 
     // FIX: Include all probes in rules table, timeline and draw_func explicitly
-    draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null, 'Hits');
-    load_rules({{ from_date }},  [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null, differentiate_suppressed, '{{ sort_order }}');
-
-
-    {{ draw_func }}({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null,
-      function() {
-        $('{{ draw_elt }}').mouseover(function(){
-            var d = this.__data__;
-            if (d.children == undefined) {
-                $( "#rules_table a:contains('" +d.key +"')" ).parent().parent().addClass('overed');
-            }
-        });
-        $('{{ draw_elt }}').mouseout(function(){
-            var d = this.__data__;
-            if (d.children == undefined) {
-                $( "#rules_table a:contains('" +d.key +"')" ).parent().parent().removeClass('overed');
-            }
-        });
-      },
-      // FIX: sort order of table
-     '{{ sort_order }}'
+    draw_timeline(
+        {{ from_date }},
+        [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}],
+        null,
+        'Hits',
+        on_timeline_update
     );
+    const hosts = [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}];
+    load_rules({{ from_date }},  hosts, null, differentiate_suppressed, '{{ sort_order }}');
+    do_draw_sunburst(hosts, null);
 });
 
 

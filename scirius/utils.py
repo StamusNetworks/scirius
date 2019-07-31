@@ -247,3 +247,7 @@ def merge_dict_deeply(src, dest):
         else:
             dest[key] = value
     return dest
+
+
+def get_quoted_hosts_list(request):
+    return list(map(lambda h: "'%s'" % h, request.GET.get('hosts', '').split(',')))
