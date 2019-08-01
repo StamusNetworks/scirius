@@ -455,6 +455,12 @@ class HumioClient(object, ESBackend):
         } for v in values]}
             for key, values in itertools.groupby(data, key=key_function)}
 
+        empty_series = [{'time': from_date, 'count': 0}, {'time': int(time.time() * 1000), 'count': 0}]
+
+        for host in hosts:
+            if host not in rdata:
+                rdata[host] = {'entries': empty_series}
+
         rdata['from_date'] = int(from_date)
         rdata['interval'] = int(interval)
         return rdata
