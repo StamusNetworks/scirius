@@ -1,12 +1,12 @@
 import es_graphs
 import es_backend
 from django.conf import settings
+from es_backend import DEFAULT_COUNT, DEFAULT_ORDER
 
 
 def create_backend():
     return ESClient()
 
-from es_backend import DEFAULT_COUNT, DEFAULT_ORDER
 
 class ESClient(es_backend.ESBackend):
     def __init__(self):
@@ -15,7 +15,7 @@ class ESClient(es_backend.ESBackend):
     def get_rules_stats_table(self, request, count=DEFAULT_COUNT):
         return es_graphs.ESRulesStats(request).get(count=count, dict_format=False)
 
-    def get_rules_stats_dict(self, request, count):
+    def get_rules_stats_dict(self, request, count=DEFAULT_COUNT):
         return es_graphs.ESRulesStats(request).get(count=count, dict_format=True)
 
     def get_field_stats_table(self, request, sid, field, field_table_class, count=DEFAULT_COUNT, raw=True):
@@ -25,12 +25,11 @@ class ESClient(es_backend.ESBackend):
 
         return es_graphs.ESFieldStatsAsTable(request).get(sid, field, field_table_class, count=count)
 
-    def get_field_stats_dict(self, request, sid, field, field_table_class, count=DEFAULT_COUNT, raw=True):
+    def get_field_stats_dict(self, request, sid, field, count=DEFAULT_COUNT, raw=True):
         if raw:
             field += '.' + settings.ELASTICSEARCH_KEYWORD
 
-        return es_graphs.ESFieldStats(request).get(sid, field, field_table_class, count=count)
-
+        return es_graphs.ESFieldStats(request).get(sid, field, count=count)
 
     def get_sid_by_hosts(self, request, sid, count=DEFAULT_COUNT, dict_format=False):
         return es_graphs.ESSidByHosts(request).get(sid, count=count, dict_format=dict_format)
@@ -54,14 +53,13 @@ class ESClient(es_backend.ESBackend):
         return es_graphs.ESHealth(request).get()
 
     def get_stats(self, request):
-       return es_graphs.ESStats(request).get()
+        return es_graphs.ESStats(request).get()
 
     def get_indices_stats(self, request):
         return es_graphs.ESIndicesStats(request).get()
 
-    # FIXME
     def get_indices(self, request):
-        pass
+        return es_graphs.ESIndices(request).get()
 
     def get_rules_per_category(self, request):
         return es_graphs.ESRulesPerCategory(request).get()

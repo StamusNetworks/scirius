@@ -35,8 +35,7 @@ from rules.es_data import ESData
 from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation, CategoryTransformation, RulesetTransformation, UserAction, UserActionObject, reset_es_address
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, HistoryTable
 
-from rules.es_graphs import (ESError, ESRulesStats, ESFieldStatsAsTable, ESSidByHosts, ESIndices, ESDeleteAlertsBySid,
-        get_es_major_version, reset_es_version)
+from rules.es_graphs import (ESError, ESIndices, reset_es_version)
 
 import json
 import yaml
@@ -67,17 +66,11 @@ def index(request):
     except:
         pass
 
-    # FIXME: This would seem to be redundant since humio_client._fix_sorting sets default
-    # values, but the default ordering is not passed back and thus not set as context
-    # variables. As a temporary fix, this makes it so that the correct sorting used
-    # is shown at the table column 'hits' (descending).
     if request.GET.has_key('sort'):
         context['sort_order'] = request.GET.get('sort')
-        context['sort_param'] = context['sort_order']
     else:
         # This only works at index.html for now
         context['sort_order'] = '-hits'
-        context['sort_param'] = '-hits'
 
     return scirius_render(request, 'rules/index.html', context)
 
@@ -214,7 +207,6 @@ def elasticsearch(request):
             query = request.GET.get('query')
             context['enabled_probes'] = get_quoted_hosts_list(request)
             if query == 'rules':
-                #rules = ESRulesStats(request).get()
                 rules = _es_backend.get_rules_stats_table(request)
                 if rules == None:
                     return HttpResponse(json.dumps(rules), content_type="application/json")
@@ -229,7 +221,6 @@ def elasticsearch(request):
                 return scirius_render(request, 'rules/table.html', context)
             elif query == 'rule':
                 sid = request.GET.get('sid', None)
-                #hosts = ESSidByHosts(request).get(sid)
                 hosts = _es_backend.get_sid_by_hosts_table(request, sid)
                 hosts.source_query.add_parameter("sid", sid)\
                         .set_parameter("query", "rule")
@@ -252,10 +243,6 @@ def elasticsearch(request):
                 sid = request.GET.get('sid', None)
                 count = int(request.GET.get('page_size', 10))
 
-                #hosts = ESFieldStatsAsTable(request).get(sid,
-                #                                        filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
-                #                                        RuleHostTable,
-                #                                        count=count)
                 hosts = _es_backend.get_field_stats_table(request, sid, filter_ip, RuleHostTable, count=count)
                 hosts.table_id = FIELD_TO_TABLE_ID_MAPPING[filter_ip]
                 hosts.source_query.set_parameter("query", "field_stats")\
@@ -374,11 +361,6 @@ def rule(request, rule_id, key = 'pk'):
     comment_form = RuleCommentForm()
     context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status,
                'rule_transformations': rule_transformations, 'comment_form': comment_form}
-
-    # FIXME: Replace context variable sort_order with sort_param
-    #sort_param, sort_kwargs = _parse_sort(request)
-    #context['sort_order'] = sort_param
-    #context['sort_param'] = sort_param
 
     thresholds = Threshold.objects.filter(rule = rule, threshold_type = 'threshold')
     if thresholds:
@@ -776,7 +758,6 @@ def delete_alerts(request, rule_id):
                 Probe.common.es_delete_alerts_by_sid(rule_id, request=request)
             else:
                 result = _es_backend.delete_alerts_by_sid(request, rule_id)
-                #result = ESDeleteAlertsBySid(request).get(rule_id)
 
                 if result.has_key('status') and result['status'] != 200:
                     context = { 'object': rule_object, 'error': result['msg'] }

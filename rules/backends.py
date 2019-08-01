@@ -7,7 +7,6 @@ _backend = None
 ES_BACKENDS = {
     'ELASTICSEARCH':   ('rules.es_client', 'ESClient'),
     'HUMIO':           ('rules.humio_client', 'HumioClient')
-    #'HUMIO':           ('rules.humio_request_wrapper', 'HumioClientRequestWrapper')
 }
 
 

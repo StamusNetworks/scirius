@@ -28,11 +28,6 @@ humio_logger = logging.getLogger('humio')
 HUMIO_TIMELINE_HOST = 'suricata'
 
 ALERTS_FILTER = '"event_type" = "alert"'
-#ALERTS_FILTER = ''
-
-#HUMIO_REPLACE_SURICATA_HOSTNAME = True
-HUMIO_REPLACE_SURICATA_HOSTNAME = False
-HUMIO_LOG_SURICATA_HOSTNAME = 'taro'
 
 HUMIO_ENDPOINT_REPO_QUERY = "/api/v1/repositories/%s/query"
 HUMIO_ENDPOINT_STATUS = "/api/v1/status"
@@ -50,23 +45,19 @@ FIELD_REPLACEMENTS = {
 
 
 def _build_query(filters, hosts=None):
-    """Build a humio query from a list of filters.
+    """
+    Build a humio query from a list of filters.
 
     Filters will be applied according to their order in the filters list.
 
     :param filters: list of filters (strings)
     :param hosts: list of hosts that we want the query to target
-    :return: 
+    :return:
     """
 
     filters = filter(lambda f: f is not None, filters)
     filter_query = '|'.join(filters)
     if hosts:
-        # FIXME: Testing only
-        # Replace occurences of 'suricata' with HUMIO_LOG_SURICATA_HOSTNAME
-        if HUMIO_REPLACE_SURICATA_HOSTNAME:
-            hosts = [HUMIO_LOG_SURICATA_HOSTNAME if h == 'suricata' else h for h in hosts]
-
         hosts_query = ' or '.join(map(lambda h: 'host = "%s"' % h.replace('\\', '\\\\').replace('"', '\\"'), hosts))
         return hosts_query + '|' + filter_query
     else:
@@ -74,7 +65,8 @@ def _build_query(filters, hosts=None):
 
 
 def _fix_qfilter(qfilter):
-    """Fixes elasticsearch based filters to work as humio filters.
+    """
+    Fixes elasticsearch based filters to work as humio filters.
 
     Apply replacements on qfilter to convert filters from the elasticsearch query language to the humio query language.
 
@@ -84,8 +76,7 @@ def _fix_qfilter(qfilter):
 
     if qfilter:
         split = qfilter.split(':', 1)
-        print('SPLIT', split)
-        if FIELD_REPLACEMENTS.has_key(split[0]):
+        if split[0] in FIELD_REPLACEMENTS:
             split[0] = FIELD_REPLACEMENTS[split[0]]
             qfilter = '='.join(split)
     return qfilter
@@ -103,12 +94,13 @@ def _parse_sort(sort_param):
     else:
         sort_order = 'asc'
         sort_key = None
-    return (sort_key, sort_order)
+    return sort_key, sort_order
 
 
 def _create_sort_filter(sort_param, sort_key_field_map, limit=HUMIO_DEFAULT_SORT_LIMIT,
-               default_sort_key=None, default_sort_order='desc'):
-    """Fixes elasticsearch based sorting to work as humio filters
+                        default_sort_key=None, default_sort_order='desc'):
+    """
+    Fixes elasticsearch based sorting to work as humio filters
 
     Map table columns to the humio query field to sort by and a list of humio fields
     to add to a groupBy statement.
@@ -195,7 +187,8 @@ class HumioClient(object, ESBackend):
         return data
 
     def _humio_query(self, filters, start=0, end=None, is_live=False, fix_filters=True, hosts=None):
-        """ Does a humio query with the given parameters.
+        """
+        Does a humio query with the given parameters.
 
         :param start: time since epoch in milliseconds
         :param end: time since epoch in milliseconds, string or None
@@ -213,15 +206,14 @@ class HumioClient(object, ESBackend):
             'isLive': is_live
         }
 
-        print('QUERYTSTRING', query['queryString'])
-
         query_data = json.dumps(query)
         api_endpoint = HUMIO_ENDPOINT_REPO_QUERY % self._repository
         res = self._humio_request(api_endpoint, query_data)
         return json.loads(res)
 
     def _create_custom_field_names_filter(self, from_to_dict, drop_old=True):
-        """Create a humio filter to convert output keys to the ones specified in from_to_dict.
+        """
+        Create a humio filter to convert output keys to the ones specified in from_to_dict.
 
         :param drop_old: drop 'from' keys
         """
@@ -239,29 +231,24 @@ class HumioClient(object, ESBackend):
         if not extra_fields:
             extra_fields = []
 
-        RULE_STATS_SORTING_FIELD_MAP = {
+        rule_stats_sorting_field_map = {
             'hits':      {'groupby_fields': [],                   'field': '_count'},
             'sid':       {'groupby_fields': [],                   'field': 'alert.signature_id'},
             'msg':       {'groupby_fields': ['alert.signature'],  'field': 'alert.signature'},
             'category':  {'groupby_fields': ['alert.category'],   'field': 'alert.category'},
         }
 
-        groupby_fields, sort_filter = _create_sort_filter(sort_param, RULE_STATS_SORTING_FIELD_MAP,
+        groupby_fields, sort_filter = _create_sort_filter(sort_param, rule_stats_sorting_field_map,
                                                           limit=count, default_sort_key='hits')
-        print('GET_RULE_STATS_SORT_FILTER', sort_filter)
-
         fields = extra_fields + ['alert.signature_id'] + groupby_fields
 
         fields_str = 'field=[' + ','.join(fields) + ']'
-        # FIXME: It is not necessary to count alerts if not sorting by key 'hits'
         query_str = 'groupBy(%s, function=count())' % fields_str
 
         return self._humio_query(filters=[ALERTS_FILTER, qfilter, query_str, sort_filter] + extra_filters,
                                  start=from_date, hosts=hosts)
 
-#### START OF INTERFACE
     def get_rules_stats_table(self, request, count=DEFAULT_COUNT):
-        print('=========> GET_RULES_STATS_TABLE')
         hosts = _get_hosts(request)
         from_date = _get_from_date(request)
         qfilter = _get_qfilter(request)
@@ -272,11 +259,10 @@ class HumioClient(object, ESBackend):
         def rule_from_entry(entry):
             sid = int(entry['alert.signature_id'])
             try:
-                #print('GETTING ENTRY', entry)
                 rule = models.Rule.objects.get(sid=sid)
                 rule.hits = int(entry['_count'])
             except:
-                print('Can not find rule with sid {}'.format(sid))
+                humio_logger.error('Can not find rule with sid {}'.format(sid))
                 return None
             return rule
 
@@ -290,20 +276,13 @@ class HumioClient(object, ESBackend):
         from_date = _get_from_date(request)
         sort_param = _get_sort_param(request)
 
-        field_names_filter =\
-            self._create_custom_field_names_filter({'alert.signature_id': 'key',
-                                                    '_count': 'doc_count'})
+        field_names = {'alert.signature_id': 'key', '_count': 'doc_count'}
+        field_names_filter = self._create_custom_field_names_filter(field_names)
 
-        return self._get_rule_stats(count, from_date, extra_filters=[field_names_filter], hosts=hosts,
-                               sort_param=sort_param)
-
-######### NOT SURE IF WORKING
+        return self._get_rule_stats(count, from_date, extra_filters=[field_names_filter],
+                                    hosts=hosts, sort_param=sort_param)
 
     def get_field_stats_table(self, request, sid, field, field_table_class, count=DEFAULT_COUNT, raw=False):
-        hosts = _get_hosts(request)
-        from_date = _get_from_date(request)
-        qfilter = _get_qfilter(request)
-
         data = self.get_field_stats_dict(request, sid, field)
         if data is None:
             objects = field_table_class([])
@@ -324,18 +303,17 @@ class HumioClient(object, ESBackend):
 
         if field in FIELD_REPLACEMENTS:
             field = FIELD_REPLACEMENTS[field]
-        if field:
-            field_names_filter = self._create_custom_field_names_filter({
-                field: 'key',
-                '_count': 'doc_count'})
-        else:
-            field_names_filter = self._create_custom_field_names_filter({
-                'alert.signature_id': 'key',
-                '_count': 'doc_count'})
-        return self._es_get_field_stats_json(request, sid, field, hosts=hosts, count=count,
-                                                  from_date=from_date, qfilter=qfilter, filters=[field_names_filter])
 
-    def _es_get_field_stats_json(self, request, sid, field, hosts=None, count=20,
+        if field:
+            field_names = {field: 'key', '_count': 'doc_count'}
+        else:
+            field_names = {'alert.signature_id': 'key', '_count': 'doc_count'}
+        field_names_filter = self._create_custom_field_names_filter(field_names)
+
+        return self._es_get_field_stats_json(sid, field, hosts=hosts, count=count,
+                                             from_date=from_date, qfilter=qfilter, filters=[field_names_filter])
+
+    def _es_get_field_stats_json(self, sid, field, hosts=None, count=20,
                                  from_date=0, qfilter=None, filters=[]):
         if sid:
             query_str = 'alert.signature_id = %s | ' % sid
@@ -356,12 +334,12 @@ class HumioClient(object, ESBackend):
         from_date = _get_from_date(request)
         sort_param = _get_sort_param(request)
 
-        HITS_BY_HOSTS_SORTING_FIELD_MAP = {
+        hits_by_hosts_sorting_field_map = {
             'host':  {'groupby_fields': ['host'], 'field': 'host'},
             'count': {'groupby_fields': ['host'], 'field': '_count'},
         }
 
-        groupby_fields, sort_filter = _create_sort_filter(sort_param, HITS_BY_HOSTS_SORTING_FIELD_MAP,
+        groupby_fields, sort_filter = _create_sort_filter(sort_param, hits_by_hosts_sorting_field_map,
                                                           limit=count, default_sort_key='count')
 
         groupby_field = 'host'
@@ -370,7 +348,8 @@ class HumioClient(object, ESBackend):
 
         # transform from the format:
         # [{host: <host>, _count: <count>}, ...]
-        # to {'rule': ['key': <host>, 'doc_count': <count>}, ...]}
+        # to
+        # {'rule': ['key': <host>, 'doc_count': <count>}, ...]}
         rdata = {'rule': []}
         for b in data:
             entry = {'key': b['host'], 'doc_count': int(b['_count'])}
@@ -390,13 +369,10 @@ class HumioClient(object, ESBackend):
         interval = _get_interval(request)
         qfilter = _get_qfilter(request)
 
-        # FIXME: Proper integer rounding (round up) and integer division
-        #n_queries = len(hosts)/10
-        n_queries = len(hosts)//10
+        chunk_size = 1
+        n_queries = len(hosts)//chunk_size
 
         def parallel_query(from_date, interval, hosts, qfilter, tags, buckets=None):
-            chunk_size = 10
-            n_chunks = len(hosts)//chunk_size
             chunks = [hosts[s:s+chunk_size] for s in range(0, len(hosts), chunk_size)]
 
             end_date = int(time.time()) * 1000
@@ -405,16 +381,20 @@ class HumioClient(object, ESBackend):
                              'qfilter': qfilter, 'tags': tags, 'end_date': end_date,
                              'buckets': buckets}
 
-            wrapper = lambda i, h, **kwargs: i.get_timeline_sp(hosts=h, **kwargs)
+            def wrapper(i, h, **kwargs):
+                return i.get_timeline_sp(hosts=h, **kwargs)
+
             f = functools.partial(wrapper, self, **common_kwargs)
-            mergedict = lambda x,y: (x if x.update(y) else x)
+
+            def mergedict(x, y):
+                x.update(y)
+                return x
+
             result = functools.reduce(mergedict, parallel_map(f, chunks))
             return result
 
         if n_queries > 2:
-            #results = parallel_query(from_date, interval, hosts, qfilter, tags, buckets=100/(2*n_queries))
             results = parallel_query(from_date, interval, hosts, qfilter, tags, buckets=100//(n_queries))
-            #results = parallel_query(from_date, interval, hosts, qfilter, tags)
         else:
             results = self.get_timeline_sp(from_date, interval, hosts, qfilter, tags, buckets=100)
         return results
@@ -443,19 +423,15 @@ class HumioClient(object, ESBackend):
 
         data = self._humio_query(filters=[ALERTS_FILTER, qfilter, query_str], start=from_date, hosts=hosts, end=end_date)
 
-        if HUMIO_REPLACE_SURICATA_HOSTNAME:
-            key_function = lambda x: HUMIO_TIMELINE_HOST
-        else:
-            key_function = operator.itemgetter('host')
-
         # transform from the format:
         # [{host: <host>, _count: <count>, _bucket: <bucket>}, ...]
-        # to {<host>: {entries: {time: <bucket>, count: <count>}}
+        # to
+        # {<host>: {entries: {time: <bucket>, count: <count>}}
         rdata = {key: {'entries': [{
             'time': int(v['_bucket']),
             'count': int(v['_count'])
         } for v in values]}
-            for key, values in itertools.groupby(data, key=key_function)}
+            for key, values in itertools.groupby(data, key=operator.itemgetter('host'))}
 
         empty_series = [{'time': from_date, 'count': 0}, {'time': int(time.time() * 1000), 'count': 0}]
 
@@ -563,15 +539,16 @@ class HumioClient(object, ESBackend):
         prev_start_ms = (from_date_ms - diff_ms)
         query_str = 'count()'
 
-        filters=[ALERTS_FILTER, qfilter, query_str]
+        filters = [ALERTS_FILTER, qfilter, query_str]
         data = self._humio_query(filters=filters, start=from_date_ms, hosts=hosts)
         cur_count = data[0]['_count']
 
-        # FIXME: Revert changes here back to the 'fully working one'
-        prev = None
         if prev:
-            prev_data = self._humio_query(filters=filters, start=prev_start_ms, end=from_date_ms, hosts=hosts)
-            return {'doc_count': int(cur_count), 'prev_doc_count': int(prev_data[0]['_count'])}
+            try:
+                prev_data = self._humio_query(filters=filters, start=prev_start_ms, end=from_date_ms, hosts=hosts)
+                return {'doc_count': int(cur_count), 'prev_doc_count': int(prev_data[0]['_count'])}
+            except:
+                return {'doc_count': cur_count, 'prev_doc_count': 0}
         else:
             return {'doc_count': cur_count, 'prev_doc_count': 0}
 

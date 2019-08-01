@@ -43,8 +43,6 @@ from django.conf import settings
 if settings.USE_ELASTICSEARCH:
     from rules.es_graphs import *
 
-Probe = __import__(settings.RULESET_MIDDLEWARE)
-
 def get_suri():
     suri = Suricata.objects.all()
     if suri:

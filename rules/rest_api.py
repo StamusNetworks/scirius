@@ -484,7 +484,6 @@ class RuleHitsOrderingFilter(OrderingFilter):
     def _get_hits_order(self, request, order):
         try:
             result = _es_backend.get_top_rules(request, count=Rule.objects.count(), order=order)
-            #result = ESTopRules(request).get(count=Rule.objects.count(), order=order)
         except ESError:
             queryset = Rule.objects.order_by('sid')
             queryset = queryset.annotate(hits=models.Value(0, output_field=models.IntegerField()))
@@ -908,7 +907,6 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
 
         try:
             result = _es_backend.get_sigs_list_hits(request, sids)
-            #result = ESSigsListHits(request).get(sids)
         except ESError:
             return data
 
@@ -1929,9 +1927,7 @@ class ESRulesViewSet(ESBaseViewSet):
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        from_date = max(int(time() * 1000 - 24 * milli_sec * 30), from_date)
         return Response({'rules': _es_backend.get_rules_stats_dict(request)})
-        #return Response({'rules': ESRulesStats(request).get(dict_format=True)})
 
 
 class ESRuleViewSet(ESBaseViewSet):
@@ -1959,7 +1955,6 @@ class ESRuleViewSet(ESBaseViewSet):
             raise serializers.ValidationError(errors)
 
         return Response({'rule': _es_backend.get_sid_by_hosts_dict(request, sid)})
-        #return Response({'rule': ESSidByHosts(request).get(sid, dict_format=True)})
 
 
 class ESTopRulesViewSet(ESBaseViewSet):
@@ -1975,7 +1970,6 @@ class ESTopRulesViewSet(ESBaseViewSet):
             raise serializers.ValidationError(errors)
 
         return Response(_es_backend.get_top_rules(request, count=count, order=order))
-        #return Response(ESTopRules(request).get(count=count, order=order))
 
 
 class ESSigsListViewSet(ESBaseViewSet):
@@ -1996,7 +1990,6 @@ class ESSigsListViewSet(ESBaseViewSet):
             raise serializers.ValidationError(errors)
 
         return Response(_es_backend.get_sigs_list_hits(request, sids))
-        #return Response(ESSigsListHits(request).get(sids))
 
 
 class ESPostStatsViewSet(ESBaseViewSet):
@@ -2006,7 +1999,6 @@ class ESPostStatsViewSet(ESBaseViewSet):
     def _get(self, request, format=None):
         value = request.GET.get('value', None)
         return Response(_es_backend.get_poststats(request, value=value))
-        #return Response(ESPoststats(request).get(value=value))
 
 
 class ESFieldStatsViewSet(ESBaseViewSet):
@@ -2029,9 +2021,6 @@ class ESFieldStatsViewSet(ESBaseViewSet):
             filter_ip = filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD
 
         hosts = _es_backend.get_field_stats_dict(request, sid, filter_ip, count=count)
-#        hosts = ESFieldStats(request).get(sid, filter_ip,
-#                                   count=count,
-#                                   dict_format=True)
 
         return Response(hosts)
 
@@ -2079,10 +2068,6 @@ class ESFilterIPViewSet(ESBaseViewSet):
         filter_ip = self.RULE_FIELDS_MAPPING[field]
         count = request.GET.get('page_size', 10)
         hosts = _es_backend.get_field_stats_dict(request, sid, filter_ip, count=count)
-#        hosts = ESFieldStats(request).get(sid,
-#                                   filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
-#                                   count=count,
-#                                   dict_format=True)
         return Response(hosts)
 
 
@@ -2105,10 +2090,7 @@ class ESTimelineViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         tags = False if request.GET.get('target', 'false') == 'false' else True
-
-        #return Response(_es_backend.get_timeline(request, tags=tags))
-        return Response(_es_backend.get_timeline(request))
-        #return Response(ESTimeline(request).get(tags=tags))
+        return Response(_es_backend.get_timeline(request, tags=tags))
 
 
 class ESLogstashEveViewSet(ESBaseViewSet):
@@ -2181,7 +2163,6 @@ class ESLogstashEveViewSet(ESBaseViewSet):
     def _get(self, request, format=None):
         value = request.GET.get('value', None)
         return Response(_es_backend.get_metrics_timeline(request, value=value))
-        #return Response(ESMetricsTimeline(request).get(value=value))
 
 
 class ESHealthViewSet(ESBaseViewSet):
@@ -2200,7 +2181,6 @@ class ESHealthViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         return Response(_es_backend.get_health(request))
-        #return Response(ESHealth(request).get())
 
 
 class ESStatsViewSet(ESBaseViewSet):
@@ -2230,7 +2210,6 @@ class ESStatsViewSet(ESBaseViewSet):
     """
     def _get(self, request, format=None):
         return Response(_es_backend.get_stats(request))
-        #return Response(ESStats(request).get())
 
 
 class ESIndicesViewSet(ESBaseViewSet):
@@ -2256,7 +2235,6 @@ class ESIndicesViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         return Response({'indices': _es_backend.get_indices_stats(request)})
-        #return Response({'indices': ESIndicesStats(request).get()})
 
 
 class ESRulesPerCategoryViewSet(ESBaseViewSet):
@@ -2285,7 +2263,6 @@ class ESRulesPerCategoryViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         return Response(_es_backend.get_rules_per_category(request))
-        #return Response(ESRulesPerCategory(request).get())
 
 
 class ESAlertsCountViewSet(ESBaseViewSet):
@@ -2312,7 +2289,6 @@ class ESAlertsCountViewSet(ESBaseViewSet):
         prev = 1 if prev is not None and prev != 'false' else None
 
         return Response(_es_backend.get_alerts_count(request, prev=prev))
-        #return Response(ESAlertsCount(request).get(prev=prev))
 
 
 class ESLatestStatsViewSet(ESBaseViewSet):
@@ -2343,7 +2319,6 @@ class ESLatestStatsViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         return Response(_es_backend.es_get_latest_stats(request))
-        #return Response(ESLatestStats(request).get())
 
 
 class ESIPPairAlertsViewSet(ESBaseViewSet):
@@ -2370,7 +2345,6 @@ class ESIPPairAlertsViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         return Response(_es_backend.get_ippair_alerts(request))
-        return Response(ESIppairAlerts(request).get())
 
 
 class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
@@ -2392,7 +2366,6 @@ class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         return Response(_es_backend.get_ippair_network_alerts(request))
-        #return Response(ESIppairNetworkAlerts(request).get())
 
 
 class ESAlertsTailViewSet(ESBaseViewSet):
@@ -2416,7 +2389,6 @@ class ESAlertsTailViewSet(ESBaseViewSet):
         search_target = request.GET.get('search_target', True)
         search_target = False if search_target is not True else True
         return Response(_es_backend.get_alerts_tail(request, search_target=search_target))
-        #return Response(ESAlertsTail(request).get(search_target=search_target))
 
 
 class ESSuriLogTailViewSet(ESBaseViewSet):
@@ -2441,7 +2413,6 @@ class ESSuriLogTailViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         return Response(_es_backend.suri_log_tail(request))
-        #return Response(ESSuriLogTail(request).get())
 
 
 class ESDeleteLogsViewSet(APIView):

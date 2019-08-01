@@ -61,7 +61,6 @@ $( 'document' ).ready(function() {
 });
 
 function load_table(from_date, table_id, query_url, callback, hosts, filter, sort_param) {
-    // console.log("loading table ...");
     query_url += "&from_date=" + from_date;
     if (sort_param != null && sort_param != "None") {
         query_url += "&sort=" + sort_param;
@@ -72,7 +71,6 @@ function load_table(from_date, table_id, query_url, callback, hosts, filter, sor
     if (hosts && hosts.length) {
         query_url += "&hosts=" + hosts.join();
     }
-    // console.log("query_url: " + query_url);
 
     $.ajax({
         url: query_url,
@@ -102,7 +100,6 @@ window.load_table = load_table
 function load_rules(from_date, hosts, filter, callback, sort_order) {
     var tgturl = "/rules/es?query=rules&hosts=" + hosts.join() + "&from_date=" + from_date;
 
-    // FIX: Sort the rules table.
     tgturl = tgturl + "&sort=" + sort_order;
 
     if (filter != null && filter != "None") {
@@ -174,8 +171,9 @@ function draw_timeline(from_date, hosts, filter, ylegend = undefined, on_update_
                 return null;
             }
 
-            // FIX: Remove timeline before updating.
+            // Hide the text paragraph
             $("#timeline p").hide();
+            // Remove any old timelines
             d3.select("#timeline svg > *").remove();
             nv.addGraph(function () {
                 /* starting from 4 hosts multibar is unreadable */
@@ -208,7 +206,7 @@ function draw_timeline(from_date, hosts, filter, ylegend = undefined, on_update_
                     return d3.time.format('%m/%d %H:%M')(new Date(d))
                 });
 
-                // FIX: Alerts are always integers. No need to
+                // Alerts are always integers. No need to
                 // have fixed point of 1 decimal.
                 chart.yAxis
                     .tickFormat(d3.format(',d'));

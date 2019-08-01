@@ -3,8 +3,8 @@ DEFAULT_ORDER = 'desc'
 
 
 class ESBackend:
-    """ESBackend defines the common interface for ElasticSearch like functionality.
-
+    """
+    ESBackend defines the common interface for ElasticSearch like functionality.
     Currently implemented by ESClient and HumioClient.
     """
 
@@ -35,13 +35,9 @@ class ESBackend:
     def get_timeline(self, request, tags=False):
         raise NotImplementedError()
 
-    # NOT IMPLEMENTED
-    # TODO: Set default 'value' in implementation
     def get_metrics_timeline(self, request, value=None):
         raise NotImplementedError()
 
-    # NOT IMPLEMENTED
-    # TODO: Set default 'value' in implementation
     def get_poststats(self, request, value=None):
         raise NotImplementedError()
 
@@ -78,7 +74,6 @@ class ESBackend:
     def get_alerts_tail(self, request, search_target=True):
         raise NotImplementedError()
 
-    # NOTE: Renamed from suri_log_tail => get_suri_log_tail
     def get_suri_log_tail(self, request):
         raise NotImplementedError()
 
@@ -93,5 +88,3 @@ class ESBackend:
 
     def get_status(self):
         raise NotImplementedError()
-
-    # NOTE: There are several es_* functions that are not implemented.
