@@ -61,7 +61,7 @@ $( 'document' ).ready(function() {
 });
 
 function load_table(from_date, table_id, query_url, callback, hosts, filter, sort_param) {
-    console.log("loading table ...");
+    // console.log("loading table ...");
     query_url += "&from_date=" + from_date;
     if (sort_param != null && sort_param != "None") {
         query_url += "&sort=" + sort_param;
@@ -72,7 +72,7 @@ function load_table(from_date, table_id, query_url, callback, hosts, filter, sor
     if (hosts && hosts.length) {
         query_url += "&hosts=" + hosts.join();
     }
-    console.log("query_url: " + query_url);
+    // console.log("query_url: " + query_url);
 
     $.ajax({
         url: query_url,
@@ -135,8 +135,7 @@ window.load_rules = load_rules;
 
 
 function draw_timeline(from_date, hosts, filter, ylegend = undefined, on_update_callback=undefined) {
-    console.log("drawing timeline...");
-    console.log(on_update_callback);
+    $("#timeline p").show();
     var esurl = "/rest/rules/es/timeline/?from_date=" + from_date + "&hosts=" + hosts.join()
     if (filter) {
         esurl = esurl + "&qfilter=" + filter;
@@ -163,6 +162,7 @@ function draw_timeline(from_date, hosts, filter, ylegend = undefined, on_update_
             }
 
             // FIX: Remove timeline before updating.
+            $("#timeline p").hide();
             d3.select("#timeline svg > *").remove();
             nv.addGraph(function () {
                 /* starting from 4 hosts multibar is unreadable */
@@ -486,13 +486,9 @@ var arc = d3.svg.arc()
         $("#filter").append("Filter: " + tooltip);
     }
     if (d.key == "categories") {
-        console.log("preparing to draw timeline");
-        console.log(timeline_callback);
         draw_timeline(from_date, hosts, null, null, timeline_callback);
         load_rules(from_date, hosts, null, null, sort_order);
     } else {
-        console.log("preparing to draw timeline");
-        console.log(timeline_callback);
         draw_timeline(from_date, hosts, 'alert.category.raw:"'+d.key+'"', null, timeline_callback);
         load_rules(from_date, hosts, 'alert.category.raw:"'+d.key+'"', null, sort_order);
     }
