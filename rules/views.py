@@ -259,7 +259,8 @@ def elasticsearch(request):
                 hosts = _es_backend.get_field_stats_table(request, sid, filter_ip, RuleHostTable, count=count)
                 hosts.table_id = FIELD_TO_TABLE_ID_MAPPING[filter_ip]
                 hosts.source_query.set_parameter("query", "field_stats")\
-                    .add_parameter("sid", sid)
+                    .add_parameter("sid", sid)\
+                    .add_parameter("field", filter_ip)
                 qfilter = request.GET.get('qfilter', None)
                 if qfilter:
                     hosts.source_query.add_parameter("qfilter", qfilter)
