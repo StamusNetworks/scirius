@@ -285,7 +285,12 @@ def elasticsearch(request):
         return scirius_render(request, template, context)
 
 def humio(request):
-    context = {}
+    data = _es_backend.get_status()
+    context = {
+        'version': data['version'],
+        'status': data['status'],
+        'status_type': 'success' if data['status'] == 'ok' else 'danger'
+    }
     return scirius_render(request, 'rules/humio.html', context)
 
 def extract_rule_references(rule):

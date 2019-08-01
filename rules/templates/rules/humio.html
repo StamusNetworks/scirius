@@ -11,8 +11,8 @@
 </div>
 <div class="panel-body">
     <ul>
-        <li><span class="type">Status:</span> <span class="pull-right label label-default" id="humio_status" >Checking</span></li>
-        <li><span class="type">Version:</span> <span class="pull-right text-info" id="humio_version">N/A</span></li>
+        <li><span class="type">Status:</span> <span class="pull-right label label-{{ status_type }}" id="humio_status" >{{ status }}</span></li>
+        <li><span class="type">Version:</span> <span class="pull-right text-info" id="humio_version">{{ version }}</span></li>
     </ul>
 </div>
 
