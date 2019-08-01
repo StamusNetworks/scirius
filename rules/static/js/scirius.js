@@ -134,7 +134,20 @@ function load_rules(from_date, hosts, filter, callback, sort_order) {
 window.load_rules = load_rules;
 
 
-function draw_timeline(from_date, hosts, filter, ylegend = undefined, on_update_callback=undefined) {
+function draw_timeline(from_date, hosts, filter, ylegend = undefined, on_update_callback=undefined, state=undefined) {
+    /*
+     * Draws a timeline graph
+     * from_date: from date in epoch ms
+     * hosts: list of hosts/probes to show data from
+     * filter: a query filter for the data
+     * ylegend: title of the y axis
+     * on_update_callback:
+     *    function: (state, filter) => {...}
+     *    called after a timeline update (i.e. clicking one
+     *    of the probes in the legend). The state is the
+     *    state of the nvd3.js chart object after the update.
+     */
+
     $("#timeline p").show();
     var esurl = "/rest/rules/es/timeline/?from_date=" + from_date + "&hosts=" + hosts.join()
     if (filter) {
@@ -253,6 +266,21 @@ function draw_timeline(from_date, hosts, filter, ylegend = undefined, on_update_
                     chart.update();
                     chart.duration(350);
                 });
+
+                if (state !== undefined) {
+                    /*
+                     * If a timeline state is provided, update the
+                     * state of the chart and enable/disable the
+                     * different probe series according to the state.
+                     */
+                    let legend_series = d3.select("g.nv-legendWrap").selectAll("g.nv-series");
+                    for (var i = 0; i < state.disabled.length; i++) {
+                        chart.state.disabled[i] = state.disabled[i];
+                        legend_series.data()[i].disabled = state.disabled[i];
+                    }
+                    chart.update();
+                }
+
                 return chart;
             });
         },
@@ -394,7 +422,21 @@ function build_path(d) {
 }
 window.build_path = build_path;
 
-function draw_sunburst(from_date, hosts, filter, callback, sort_order, timeline_callback=undefined) {
+function draw_sunburst(from_date, hosts, filter, callback, sort_order, category=undefined, draw_timeline_function=undefined) {
+    /*
+     * Draws the sunburst graph on the suricata/index page.
+     * from_date: from date in epoch ms
+     * hosts: list of hosts/probes to show data from
+     * filter: a query filter for the data
+     * callback: callback when finished
+     * sort_order: sort order for the rules table
+     * category: category to automatically zoom to
+     * draw_timeline_function:
+     *    function: (filter, category) => {...}
+     *    called after a category is selected in order to
+     *    update the timeline.
+     */
+
         var esurl = "/rest/rules/es/rules_per_category/?from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
             esurl = esurl + "&qfilter=" + filter;
@@ -486,15 +528,36 @@ var arc = d3.svg.arc()
         $("#filter").append("Filter: " + tooltip);
     }
     if (d.key == "categories") {
-        draw_timeline(from_date, hosts, null, null, timeline_callback);
+        if (draw_timeline_function !== undefined) {
+            draw_timeline_function(null, d);
+        } else {
+            draw_timeline(from_date, hosts, null, null);
+        }
         load_rules(from_date, hosts, null, null, sort_order);
     } else {
-        draw_timeline(from_date, hosts, 'alert.category.raw:"'+d.key+'"', null, timeline_callback);
+        if (draw_timeline_function !== undefined) {
+            draw_timeline_function('alert.category.raw:"'+d.key+'"', d);
+        } else {
+            draw_timeline(from_date, hosts, 'alert.category.raw:"'+d.key+'"', null);
+        }
         load_rules(from_date, hosts, 'alert.category.raw:"'+d.key+'"', null, sort_order);
     }
     path.transition()
       .duration(1000)
       .attrTween("d", arcTweenZoom(d));
+  }
+
+  if (category !== undefined) {
+      for (var c in path.data()) {
+        c = path.data()[c];
+        if (c.key == category.key) {
+          category = c;
+          break;
+        }
+      }
+      path.transition()
+          .duration(500)
+          .attrTween("d", arcTweenZoom(category));
   }
 
 d3.select(self.frameElement).style("height", height + "px");

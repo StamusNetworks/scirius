@@ -386,7 +386,13 @@ function differentiate_suppressed() {
     );
 }
 
-function on_timeline_update(status, filter) {
+function on_timeline_update(status, filter, category=undefined) {
+    /*
+     * This function will be called after a timeline update,
+     * i.e. when enabling/disabling a probe from the chart.
+     * We then want to update the table and sunburst with
+     * data only from the enabled hosts.
+     */
     const hosts = [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}];
     let enabled_hosts = [];
     for (let i = 0; i < hosts.length; i++) {
@@ -394,13 +400,22 @@ function on_timeline_update(status, filter) {
             enabled_hosts.push(hosts[i]);
         }
     }
-    console.log("enabled hosts:");
-    console.log(enabled_hosts);
-    load_rules({{ from_date }},  enabled_hosts, null, undefined, '{{ sort_order }}');
-    do_draw_sunburst(enabled_hosts, filter);
+    load_rules({{ from_date }}, enabled_hosts, filter, undefined, '{{ sort_order }}');
+
+    // The filter is set to null because we don't wish
+    // to filter the sunburst data on the category,
+    // instead set the category parameter to
+    // automatically zoom into the selected category.
+    // Without this, it would not be possible to zoom out
+    // on the sunburst after an update.
+    do_draw_sunburst(enabled_hosts, null, hosts, status, category);
 }
 
-function do_draw_sunburst(hosts, filter) {
+function do_draw_sunburst(hosts, filter, all_hosts, timeline_state, category=undefined) {
+    /*
+     * This function draws the sunburst and sets up the correct
+     * callbacks using the correct data.
+     */
     {{ draw_func }}({{ from_date }}, hosts, filter,
         function() {
             $('{{ draw_elt }}').mouseover(function(){
@@ -416,25 +431,38 @@ function do_draw_sunburst(hosts, filter) {
                 }
             });
         },
-        // FIX: sort order of table
         '{{ sort_order }}',
-        on_timeline_update
+        category, // zoom to this category
+        (new_filter, selected_category) => {
+            /*
+             * This function is run when a new category
+             * is selected in the sunburst.
+             * We then want to redraw the timeline using
+             * only events from the selected category.
+             */
+            draw_timeline(
+                {{ from_date }},
+                all_hosts,
+                new_filter,
+                'Hits',
+                (status, filter) => {on_timeline_update(status, filter, selected_category);},
+                timeline_state
+            );
+        }
     );
 }
 
 $( 'document' ).ready(function () {
-
-    // FIX: Include all probes in rules table, timeline and draw_func explicitly
+    const hosts = [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}];
     draw_timeline(
         {{ from_date }},
-        [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}],
+        hosts,
         null,
         'Hits',
         on_timeline_update
     );
-    const hosts = [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}];
     load_rules({{ from_date }},  hosts, null, differentiate_suppressed, '{{ sort_order }}');
-    do_draw_sunburst(hosts, null);
+    do_draw_sunburst(hosts, null, hosts);
 });
 
 
