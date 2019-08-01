@@ -284,6 +284,9 @@ def elasticsearch(request):
         template = Probe.common.get_es_template()
         return scirius_render(request, template, context)
 
+def humio(request):
+    context = {}
+    return scirius_render(request, 'rules/humio.html', context)
 
 def extract_rule_references(rule):
     references = []

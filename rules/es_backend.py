@@ -91,4 +91,7 @@ class ESBackend:
     def get_es_major_version(self):
         raise NotImplementedError()
 
+    def get_status(self):
+        raise NotImplementedError()
+
     # NOTE: There are several es_* functions that are not implemented.

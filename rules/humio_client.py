@@ -35,6 +35,7 @@ HUMIO_REPLACE_SURICATA_HOSTNAME = False
 HUMIO_LOG_SURICATA_HOSTNAME = 'taro'
 
 HUMIO_ENDPOINT_REPO_QUERY = "/api/v1/repositories/%s/query"
+HUMIO_ENDPOINT_STATUS = "/api/v1/status"
 
 HUMIO_DEFAULT_SORT_LIMIT = 20000
 
@@ -584,7 +585,10 @@ class HumioClient(object, ESBackend):
         raise NotImplementedError()
 
     def get_health(self, request):
-        raise NotImplementedError()
+        status_data = self.get_status()
+        if status_data['status'] == 'ok':
+            return {'status': 'green'}
+        return {'status': 'red'}
 
     def get_stats(self, request):
         raise NotImplementedError()
@@ -618,3 +622,10 @@ class HumioClient(object, ESBackend):
 
     def get_sigs_list_hits(self, request, sids, order=DEFAULT_ORDER):
         raise NotImplementedError()
+
+    def get_status(self):
+        url = self._host + HUMIO_ENDPOINT_STATUS
+        req = urllib2.Request(url)
+        res = _urlopen(req)
+        data = json.loads(res.read())
+        return data
