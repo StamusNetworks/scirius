@@ -1,6 +1,7 @@
 DEFAULT_COUNT = 20
 DEFAULT_ORDER = 'desc'
 
+
 class ESBackend:
     """ESBackend defines the common interface for ElasticSearch like functionality.
 
@@ -19,7 +20,7 @@ class ESBackend:
     def get_field_stats_table(self, request, sid, field, field_table_class, count=DEFAULT_COUNT, raw=False):
         raise NotImplementedError()
 
-    def get_field_stats_dict(self, request, sid, field, field_table_class, count=DEFAULT_COUNT, raw=False):
+    def get_field_stats_dict(self, request, sid, field, count=DEFAULT_COUNT, raw=False):
         raise NotImplementedError()
 
     def get_sid_by_hosts(self, request, sid, count=DEFAULT_COUNT, dict_format=False):

@@ -7,7 +7,6 @@ import ssl
 import models
 import tables
 import django_tables2
-#import es_backend
 import time
 import itertools
 import operator
@@ -90,6 +89,7 @@ def _fix_qfilter(qfilter):
             qfilter = '='.join(split)
     return qfilter
 
+
 def _parse_sort(sort_param):
     # Parse sort field: [-](hits|sid|msg|category|*)
     if sort_param:
@@ -141,6 +141,7 @@ def _create_sort_filter(sort_param, sort_key_field_map, limit=HUMIO_DEFAULT_SORT
 
     return groupby_fields, sort_filter
 
+
 def _urlopen(request):
     try:
         out = urllib2.urlopen(request, timeout=settings.HUMIO_TIMEOUT, context=ctx)
@@ -150,26 +151,32 @@ def _urlopen(request):
         raise RuntimeError(msg)
     return out
 
+
 def _get_interval(request):
     return request.GET.get('interval', None)
+
 
 def _get_hosts(request):
     if 'hosts' in request.GET:
         return request.GET['hosts'].split(',')
     return []
 
+
 def _get_qfilter(request):
     return _fix_qfilter(request.GET.get('qfilter', None))
+
 
 def _get_from_date(request):
     return int(request.GET.get('from_date', 0))
 
+
 def _get_sort_param(request):
     return request.GET.get('sort', None)
 
-class HumioClient:
+
+class HumioClient(object, ESBackend):
     def __init__(self):
-        #es_backend.ESBackend.__init__(self) # XXX - What is this?
+        super(HumioClient, self).__init__()
         self._api_token = settings.HUMIO_API_TOKEN
         self._host = settings.HUMIO_HOST
         self._repository = settings.HUMIO_REPOSITORY
@@ -559,9 +566,48 @@ class HumioClient:
             return {'doc_count': int(cur_count), 'prev_doc_count': int(prev_data[0]['_count'])}
         else:
             return {'doc_count': cur_count, 'prev_doc_count': 0}
-#        return {'doc_count': cur_count}
 
     def get_es_major_version(self):
         return settings.HUMIO_SPOOF_ES_VERSION
 
-    # NOTE: There are several es_* functions that are not implemented.
+    def get_metrics_timeline(self, request, value=None):
+        raise NotImplementedError()
+
+    def get_poststats(self, request, value=None):
+        raise NotImplementedError()
+
+    def get_health(self, request):
+        raise NotImplementedError()
+
+    def get_stats(self, request):
+        raise NotImplementedError()
+
+    def get_indices_stats(self, request):
+        raise NotImplementedError()
+
+    def get_indices(self, request):
+        raise NotImplementedError()
+
+    def delete_alerts_by_sid(self, request, sid):
+        raise NotImplementedError()
+
+    def get_latest_stats(self, request):
+        raise NotImplementedError()
+
+    def get_ippair_alerts(self, request):
+        raise NotImplementedError()
+
+    def get_ippair_network_alerts(self, request):
+        raise NotImplementedError()
+
+    def get_alerts_tail(self, request, search_target=True):
+        raise NotImplementedError()
+
+    def get_suri_log_tail(self, request):
+        raise NotImplementedError()
+
+    def get_top_rules(self, request, count=DEFAULT_COUNT, order=DEFAULT_ORDER):
+        raise NotImplementedError()
+
+    def get_sigs_list_hits(self, request, sids, order=DEFAULT_ORDER):
+        raise NotImplementedError()
