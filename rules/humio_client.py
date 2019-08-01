@@ -389,8 +389,9 @@ class HumioClient(object, ESBackend):
         interval = _get_interval(request)
         qfilter = _get_qfilter(request)
 
-        n_queries = len(hosts)/10
         # FIXME: Proper integer rounding (round up) and integer division
+        #n_queries = len(hosts)/10
+        n_queries = len(hosts)//10
 
         def parallel_query(from_date, interval, hosts, qfilter, tags, buckets=None):
             chunk_size = 10
@@ -411,7 +412,7 @@ class HumioClient(object, ESBackend):
 
         if n_queries > 2:
             #results = parallel_query(from_date, interval, hosts, qfilter, tags, buckets=100/(2*n_queries))
-            results = parallel_query(from_date, interval, hosts, qfilter, tags, buckets=100/(n_queries))
+            results = parallel_query(from_date, interval, hosts, qfilter, tags, buckets=100//(n_queries))
             #results = parallel_query(from_date, interval, hosts, qfilter, tags)
         else:
             results = self.get_timeline_sp(from_date, interval, hosts, qfilter, tags, buckets=100)
