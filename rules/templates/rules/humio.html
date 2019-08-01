@@ -1,0 +1,19 @@
+{% extends "rules/base.html" %}
+
+{% block sidebar %}
+<script>
+ /* TODO: Fetch humio status from REST API at a fixed interval and
+          humio_status and humio_version accordingly */
+</script>
+
+<div class="panel-heading">
+    <h2 class="panel-title">Humio</h2>
+</div>
+<div class="panel-body">
+    <ul>
+        <li><span class="type">Status:</span> <span class="pull-right label label-default" id="humio_status" >Checking</span></li>
+        <li><span class="type">Version:</span> <span class="pull-right text-info" id="humio_version">N/A</span></li>
+    </ul>
+</div>
+
+{% endblock %}
