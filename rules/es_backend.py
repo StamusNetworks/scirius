@@ -16,7 +16,7 @@ class ESBackend:
     def get_rules_stats_dict(self, request, count=DEFAULT_COUNT):
         raise NotImplementedError()
 
-    def get_field_stats_table(self, request, ksid, field, field_table_class, count=DEFAULT_COUNT, raw=False):
+    def get_field_stats_table(self, request, sid, field, field_table_class, count=DEFAULT_COUNT, raw=False):
         raise NotImplementedError()
 
     def get_field_stats_dict(self, request, sid, field, field_table_class, count=DEFAULT_COUNT, raw=False):

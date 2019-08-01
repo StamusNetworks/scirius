@@ -296,7 +296,7 @@ class HumioClient:
         from_date = _get_from_date(request)
         qfilter = _get_qfilter(request)
 
-        data = self.get_field_stats_dict(request, field)
+        data = self.get_field_stats_dict(request, sid, field)
         if data is None:
             objects = field_table_class([])
             django_tables2.RequestConfig(request).configure(objects)
@@ -309,7 +309,7 @@ class HumioClient:
         django_tables2.RequestConfig(request).configure(objects)
         return objects
 
-    def get_field_stats_dict(self, request, field, count=DEFAULT_COUNT, raw=False):
+    def get_field_stats_dict(self, request, sid, field, count=DEFAULT_COUNT, raw=False):
         hosts = _get_hosts(request)
         from_date = _get_from_date(request)
         qfilter = _get_qfilter(request)
@@ -324,12 +324,16 @@ class HumioClient:
             field_names_filter = self._create_custom_field_names_filter({
                 'alert.signature_id': 'key',
                 '_count': 'doc_count'})
-        return self._es_get_field_stats_json(request, field, hosts=hosts, count=count,
+        return self._es_get_field_stats_json(request, sid, field, hosts=hosts, count=count,
                                                   from_date=from_date, qfilter=qfilter, filters=[field_names_filter])
 
-    def _es_get_field_stats_json(self, request, field, hosts=None, count=20,
+    def _es_get_field_stats_json(self, request, sid, field, hosts=None, count=20,
                                  from_date=0, qfilter=None, filters=[]):
-        query_str = 'groupBy(field=%s, function=count(), limit=%d)' % (field, count)
+        if sid:
+            query_str = 'alert.signature_id = %s | ' % sid
+        else:
+            query_str = ''
+        query_str += 'groupBy(field=%s, function=count(), limit=%d)' % (field, count)
         return self._humio_query(filters=[ALERTS_FILTER, qfilter, query_str] + filters, start=from_date, hosts=hosts)
 
     def get_sid_by_hosts(self, request, sid, count=DEFAULT_COUNT, dict_format=False):
