@@ -110,7 +110,7 @@ export default class RuleToggleModal extends React.Component {
     }
 
     close() {
-        this.setState({ errors: undefined });
+        this.setState({ errors: undefined, selected: [] });
         this.props.close();
     }
 
