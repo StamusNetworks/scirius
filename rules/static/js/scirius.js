@@ -350,8 +350,8 @@ function draw_sunburst(from_date, hosts, filter, callback) {
          type:"GET",
          url:esurl,
          success: function(data) {
-         if (!data) {
-              $("#circles").append("No data to build the graph");
+         if (!data || Object.keys(data).length === 0) {
+              $("#circles").text("No data to build the graph");
               return;
          }
 var height = 300;

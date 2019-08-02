@@ -1690,7 +1690,7 @@ class ESRulesPerCategory(ESQuery):
         if data["hits"]["total"] > 0:
             cdata = compact_tree(data["aggregations"]["category"]["buckets"])
         else:
-            return None
+            return {}
         rdata = {}
         rdata["key"] = "categories"
         rdata["children"] = cdata
