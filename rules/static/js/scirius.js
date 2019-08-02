@@ -331,7 +331,7 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
                                 });
 
                                 chart.yAxis
-                                .tickFormat(d3.format(',.1f'));
+                                .tickFormat(d3.format(',d'));
 
                                 if (ylegend) {
                                     $(tdiv + '_title').text(ylegend);
@@ -344,10 +344,10 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
                                 var end_interval = new Date().getTime();
                                 chart.forceX([from_date, end_interval]);
                                 var sdata = []
-                                var gdata = []
                                 var starti = 0;
                                 var iter = 0;
                                 for (var hi = 0; hi < hosts.length; hi++) {
+                                    var gdata = []
                                     if (!data[hosts[hi]]) {
                                         continue;
                                     }

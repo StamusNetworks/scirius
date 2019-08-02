@@ -468,23 +468,23 @@ $( 'document' ).ready(function () {
 
 $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     if (String(e.target).match('#stats')) {
-        draw_stats_timeline({{ from_date }}, 'stats.capture.kernel_packets', '#suri_packet', 1, [ '{{ suricata.name }}'], 'Packets count');
-        draw_stats_timeline({{ from_date }}, 'stats.capture.kernel_drops', '#suri_drop', 1, [ '{{ suricata.name }}'], 'Packets count');
+        draw_stats_timeline({{ from_date }}, 'stats.capture.kernel_packets', '#suri_packet', 1, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], 'Packets count');
+        draw_stats_timeline({{ from_date }}, 'stats.capture.kernel_drops', '#suri_drop', 1, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], 'Packets count');
     }
     if (String(e.target).match('#rules')) {
         draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null, 'Hits');
     }
     if (String(e.target).match('#indicators')) {
-        draw_stats_timeline({{ from_date }}, 'stats.flow.emerg_mode_entered', '#flow_emergency', 0, [ '{{ suricata.name }}'], 'Count');
-        draw_stats_timeline({{ from_date }}, 'stats.tcp.reassembly_gap', '#tcp_gaps', 0, [ '{{ suricata.name }}'], 'Count');
-        draw_stats_timeline({{ from_date }}, 'stats.decoder.invalid', '#decoder_invalid', 0, [ '{{ suricata.name }}'], 'Count');
+        draw_stats_timeline({{ from_date }}, 'stats.flow.emerg_mode_entered', '#flow_emergency', 0, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], 'Count');
+        draw_stats_timeline({{ from_date }}, 'stats.tcp.reassembly_gap', '#tcp_gaps', 0, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], 'Count');
+        draw_stats_timeline({{ from_date }}, 'stats.decoder.invalid', '#decoder_invalid', 0, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], 'Count');
     }
     if (String(e.target).match('#memory')) {
-        draw_stats_timeline({{ from_date }}, 'stats.flow.memuse', '#flow_memuse', 0, [ '{{ suricata.name }}'], 'Bytes');
-        draw_stats_timeline({{ from_date }}, 'stats.tcp.memuse', '#tcp_memuse', 0, [ '{{ suricata.name }}'], 'Bytes');
-        draw_stats_timeline({{ from_date }}, 'stats.tcp.reassembly_memuse', '#tcp_reassembly_memuse', 0, [ '{{ suricata.name }}'], 'Bytes');
-        draw_stats_timeline({{ from_date }}, 'stats.http.memuse', '#http_memuse', 0, [ '{{ suricata.name }}'], 'Bytes');
-        draw_stats_timeline({{ from_date }}, 'stats.dns.memuse', '#dns_memuse', 0, [ '{{ suricata.name }}'], 'Bytes');
+        draw_stats_timeline({{ from_date }}, 'stats.flow.memuse', '#flow_memuse', 0, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], 'Bytes');
+        draw_stats_timeline({{ from_date }}, 'stats.tcp.memuse', '#tcp_memuse', 0, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], 'Bytes');
+        draw_stats_timeline({{ from_date }}, 'stats.tcp.reassembly_memuse', '#tcp_reassembly_memuse', 0, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], 'Bytes');
+        draw_stats_timeline({{ from_date }}, 'stats.http.memuse', '#http_memuse', 0, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], 'Bytes');
+        draw_stats_timeline({{ from_date }}, 'stats.dns.memuse', '#dns_memuse', 0, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], 'Bytes');
     }
 });
 

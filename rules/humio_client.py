@@ -159,6 +159,16 @@ def _get_sort_param(request):
     return request.GET.get('sort', None)
 
 
+def _get_int(val):
+    try:
+        return int(val)
+    except ValueError:
+        try:
+            return int(float(val))
+        except ValueError:
+            return 0
+
+
 class HumioClient(object, ESBackend):
     def __init__(self):
         super(HumioClient, self).__init__()
@@ -548,7 +558,35 @@ class HumioClient(object, ESBackend):
         return settings.HUMIO_SPOOF_ES_VERSION
 
     def get_metrics_timeline(self, request, value=None):
-        raise NotImplementedError()
+        hosts = _get_hosts(request)
+        from_date = _get_from_date(request)
+        buckets = 50
+        from_date = int(from_date)
+        interval = int((time.time() - (int(from_date) / 1000)) / buckets) * 1000
+
+        query_str = """event_type = stats
+        | bucket(field=[host], span=%sms, function=stats(function=avg(field="%s")))""" % (interval, value)
+        data = self._humio_query(filters=[query_str], start=from_date, hosts=hosts)
+
+        # transform from the format:
+        # [{host: <host>, _avg: <avg>, _bucket: <bucket>}, ...]
+        # to
+        # {<host>: {entries: {time: <bucket>, mean: <mean>}}
+        rdata = {key: {'entries': [{
+            'time': int(v['_bucket']),
+            'mean': _get_int(v['_avg'] if '_avg' in v else 0)
+        } for v in values]}
+            for key, values in itertools.groupby(data, key=operator.itemgetter('host'))}
+
+        empty_series = [{'time': from_date, 'mean': 0}, {'time': int(time.time() * 1000), 'mean': 0}]
+
+        for host in hosts:
+            if host not in rdata:
+                rdata[host] = {'entries': empty_series}
+
+        rdata['from_date'] = int(from_date)
+        rdata['interval'] = int(interval)
+        return rdata
 
     def get_poststats(self, request, value=None):
         raise NotImplementedError()
