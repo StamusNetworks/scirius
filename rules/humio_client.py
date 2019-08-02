@@ -136,7 +136,6 @@ def _urlopen(request):
         raise RuntimeError(msg)
     return out
 
-
 def _get_interval(request):
     return request.GET.get('interval', None)
 
@@ -210,6 +209,17 @@ class HumioClient(object, ESBackend):
 
         query_data = json.dumps(query)
         api_endpoint = HUMIO_ENDPOINT_REPO_QUERY % self._repository
+        res = self._humio_request(api_endpoint, query_data)
+        return json.loads(res)
+
+    def _graphql_query(self, query, variables=None):
+        data = {
+            'query': query,
+        }
+
+        query_data = json.dumps(data)
+        api_endpoint = '/graphql'
+
         res = self._humio_request(api_endpoint, query_data)
         return json.loads(res)
 
@@ -593,9 +603,96 @@ class HumioClient(object, ESBackend):
 
     def get_health(self, request):
         status_data = self.get_status()
-        if status_data['status'] == 'ok':
-            return {'status': 'green'}
-        return {'status': 'red'}
+        graphql_query = """
+        {
+            cluster {
+                nodes {id}
+            }
+            runningQueries {
+                id
+                totalWork
+                workDone
+            }
+            meta {
+                version clusterId
+            }
+            repositories {
+                id
+                name
+                description
+                uncompressedByteSize
+                compressedByteSize
+            }
+        }
+        """
+        res = self._graphql_query(graphql_query)
+        data = res['data']
+
+        repo = None
+        cluster_compressed_size = 0
+        cluster_uncompressed_size = 0
+
+        cluster_total_work = 0
+        cluster_work_done = 0
+
+        for r in data['repositories']:
+            print(r['name'])
+            cluster_compressed_size += r['compressedByteSize']
+            cluster_uncompressed_size += r['uncompressedByteSize']
+
+            if r['name'] == self._repository:
+                repo = r
+
+        for r in data['runningQueries']:
+            cluster_total_work += r['totalWork']
+            cluster_work_done += r['workDone']
+
+        if repo:
+            repo_description = repo['description']
+            repo_uncompressed_size = repo['uncompressedByteSize']
+            repo_compressed_size = repo['compressedByteSize']
+            repo_id = repo['id']
+        else:
+            repo_description = None
+            repo_uncompressed_size = None
+            repo_compressed_size = None
+            repo_id = None
+
+        cluster_id = data['meta']['clusterId']
+        num_nodes = len(data['cluster']['nodes'])
+        num_tasks = len(data['runningQueries'])
+
+        health_res = {
+            # Part of elasticsearch result
+            'cluster_name': cluster_id,
+            'status': 'green' if status_data['status'] == 'ok' else 'red',
+            'timed_out': False,
+            'number_of_nodes': num_nodes,
+            'number_of_data_nodes': 0,
+            'active_primary_shards': 0,
+            'active_shards': 0,
+            'relocating_shards': 0,
+            'initializing_shards': 0,
+            'unassigned_shards': 0,
+            'delayed_unassigned_shards': 0,
+            'number_of_pending_tasks': num_tasks,
+            'number_of_in_flight_fetch': 0,
+            'task_max_waiting_in_queue_millis': 0,
+            'active_shards_percent_as_number': 0,
+
+            # Additional humio details
+            'repository_name': self._repository,
+            'repository_description': repo_description,
+            'repository_uncompressed_size': repo_uncompressed_size,
+            'repository_compressed_size': repo_compressed_size,
+            'repository_id': repo_id,
+
+            'cluster_compressed_size': cluster_compressed_size,
+            'cluster_uncompressed_size': cluster_uncompressed_size,
+            'cluster_total_work': cluster_total_work,
+            'cluster_work_done': cluster_work_done,
+        }
+        return health_res
 
     def get_stats(self, request):
         raise NotImplementedError()
