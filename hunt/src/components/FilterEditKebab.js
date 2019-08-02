@@ -37,7 +37,7 @@ class FilterEditKebab extends React.Component {
     }
 
     closeActionToFilterSet = () => {
-        this.setState({ filterSets: { showModal: false, shared: false, page: '', name: '', errors: undefined, description: '' } });
+        this.setState({ filterSets: { showModal: false, shared: false, page: 'DASHBOARDS', name: '', errors: undefined, description: '' } });
     }
 
     generateFilterSet = () => {
@@ -79,7 +79,7 @@ class FilterEditKebab extends React.Component {
     }
 
     saveActionToFilterSet() {
-        this.setState({ filterSets: { showModal: true, page: '', shared: false, name: '', description: '' } });
+        this.setState({ filterSets: { showModal: true, page: 'DASHBOARDS', shared: false, name: '', description: '' } });
     }
 
     convertActionToFilters() {
