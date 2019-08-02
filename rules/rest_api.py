@@ -677,6 +677,8 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
 
     @detail_route(methods=['post'])
     def delete_alerts(self, request, pk):
+        # return 404 error if pk does not exist
+        self.get_object()
 
         if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
             result = Probe.common.es_delete_alerts_by_sid(pk, request=request)
