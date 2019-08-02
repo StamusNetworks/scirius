@@ -1,4 +1,5 @@
-from __future__ import print_function, division
+from __future__ import unicode_literals, print_function, division
+
 import json
 import logging
 import socket

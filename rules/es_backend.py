@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 DEFAULT_COUNT = 20
 DEFAULT_ORDER = 'desc'
 

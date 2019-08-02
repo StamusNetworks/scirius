@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import es_graphs
 import es_backend
 from django.conf import settings
