@@ -18,21 +18,12 @@ from scirius.utils import parallel_map
 
 from django.conf import settings
 
-# Create a context to ignore ssl errors
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
-
-TIMEOUT = 30
 humio_logger = logging.getLogger('humio')
-
-HUMIO_TIMELINE_HOST = 'suricata'
 
 ALERTS_FILTER = '"event_type" = "alert"'
 
 HUMIO_ENDPOINT_REPO_QUERY = "/api/v1/repositories/%s/query"
 HUMIO_ENDPOINT_STATUS = "/api/v1/status"
-
 HUMIO_DEFAULT_SORT_LIMIT = 20000
 
 FIELD_REPLACEMENTS = {
@@ -138,7 +129,7 @@ def _create_sort_filter(sort_param, sort_key_field_map, limit=HUMIO_DEFAULT_SORT
 
 def _urlopen(request):
     try:
-        out = urllib2.urlopen(request, timeout=settings.HUMIO_TIMEOUT, context=ctx)
+        out = urllib2.urlopen(request, timeout=settings.HUMIO_TIMEOUT)
     except (urllib2.URLError, socket.timeout) as e:
         msg = unicode(e)
         humio_logger.exception(msg)
