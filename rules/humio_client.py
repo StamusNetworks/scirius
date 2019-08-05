@@ -625,42 +625,32 @@ class HumioClient(object, ESBackend):
             }
         }
         """
-        res = self._graphql_query(graphql_query)
-        data = res['data']
+        try:
+            res = self._graphql_query(graphql_query)
+            data = res['data']
+        except:
+            data = {}
 
-        repo = None
-        cluster_compressed_size = 0
-        cluster_uncompressed_size = 0
+        def sum_by_key(lst, key):
+            return sum([e.get(key, 0) for e in lst])
 
-        cluster_total_work = 0
-        cluster_work_done = 0
-
-        for r in data['repositories']:
-            print(r['name'])
-            cluster_compressed_size += r['compressedByteSize']
-            cluster_uncompressed_size += r['uncompressedByteSize']
-
+        repositories = data.get('repositories', [])
+        repo = {}
+        for r in repositories:
             if r['name'] == self._repository:
                 repo = r
+                break
 
-        for r in data['runningQueries']:
-            cluster_total_work += r['totalWork']
-            cluster_work_done += r['workDone']
+        cluster_id = 'unknown'
+        if 'meta' in data:
+            cluster_id = data['meta'].get('clusterId', 'unknown')
 
-        if repo:
-            repo_description = repo['description']
-            repo_uncompressed_size = repo['uncompressedByteSize']
-            repo_compressed_size = repo['compressedByteSize']
-            repo_id = repo['id']
-        else:
-            repo_description = None
-            repo_uncompressed_size = None
-            repo_compressed_size = None
-            repo_id = None
+        num_nodes = 0
+        if 'cluster' in data:
+            num_nodes = len(data['cluster'].get('nodes', []))
 
-        cluster_id = data['meta']['clusterId']
-        num_nodes = len(data['cluster']['nodes'])
-        num_tasks = len(data['runningQueries'])
+        running_queries = data.get('runningQueries', [])
+        num_tasks = len(data.get('runningQueries', []))
 
         health_res = {
             # Part of elasticsearch result
@@ -682,15 +672,15 @@ class HumioClient(object, ESBackend):
 
             # Additional humio details
             'repository_name': self._repository,
-            'repository_description': repo_description,
-            'repository_uncompressed_size': repo_uncompressed_size,
-            'repository_compressed_size': repo_compressed_size,
-            'repository_id': repo_id,
+            'repository_description': repo.get('description', ''),
+            'repository_uncompressed_size': repo.get('uncompressedByteSize', 0),
+            'repository_compressed_size': repo.get('compressedByteSize', 0),
+            'repository_id': repo.get('id', 'unknown'),
 
-            'cluster_compressed_size': cluster_compressed_size,
-            'cluster_uncompressed_size': cluster_uncompressed_size,
-            'cluster_total_work': cluster_total_work,
-            'cluster_work_done': cluster_work_done,
+            'cluster_compressed_size': sum_by_key(repositories, 'compressedByteSize'),
+            'cluster_uncompressed_size': sum_by_key(repositories, 'uncompressedByteSize'),
+            'cluster_total_work': sum_by_key(running_queries, 'totalWork'),
+            'cluster_work_done': sum_by_key(running_queries, 'workDone'),
         }
         return health_res
 
@@ -728,8 +718,11 @@ class HumioClient(object, ESBackend):
         raise NotImplementedError()
 
     def get_status(self):
-        url = self._host + HUMIO_ENDPOINT_STATUS
-        req = urllib2.Request(url)
-        res = _urlopen(req)
-        data = json.loads(res.read())
+        try:
+            url = self._host + HUMIO_ENDPOINT_STATUS
+            req = urllib2.Request(url)
+            res = _urlopen(req)
+            data = json.loads(res.read())
+        except:
+            data = {'status': 'not ok', 'version': 'unknown'}
         return data
