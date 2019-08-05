@@ -331,7 +331,7 @@ class HumioClient(object, ESBackend):
             query_str = 'alert.signature_id = %s | ' % sid
         else:
             query_str = ''
-        query_str += 'groupBy(field=%s, function=count(), limit=%d)' % (field, count)
+        query_str += 'groupBy(field=%s, function=count(), limit=%d)' % (field, int(count))
         return self._humio_query(filters=[ALERTS_FILTER, qfilter, query_str] + filters, start=from_date, hosts=hosts)
 
     def get_sid_by_hosts(self, request, sid, count=DEFAULT_COUNT, dict_format=False):
