@@ -472,7 +472,7 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
         draw_stats_timeline({{ from_date }}, 'stats.capture.kernel_drops', '#suri_drop', 1, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], 'Packets count');
     }
     if (String(e.target).match('#rules')) {
-        draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null, 'Hits');
+        draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null, 'Hits');
     }
     if (String(e.target).match('#indicators')) {
         draw_stats_timeline({{ from_date }}, 'stats.flow.emerg_mode_entered', '#flow_emergency', 0, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], 'Count');
