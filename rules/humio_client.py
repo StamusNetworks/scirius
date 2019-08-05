@@ -376,12 +376,18 @@ class HumioClient(object, ESBackend):
         return stats
 
     def get_timeline(self, request, tags=False):
+        """Gets timeline data for use in frontend.
+        Will use one thread and one query for every chunk of hosts.
+        The chunk size is set by settings.HUMIO_TIMELINE_CHUNK_SIZE.
+        The precision (buckets) of the timeline is inverse proportional to
+        the number of queries needed to complete the timeline.
+        """
         hosts = _get_hosts(request)
         from_date = _get_from_date(request)
         interval = _get_interval(request)
         qfilter = _get_qfilter(request)
 
-        chunk_size = 1
+        chunk_size = settings.HUMIO_TIMELINE_CHUNK_SIZE
         n_queries = len(hosts)//chunk_size
 
         def parallel_query(from_date, interval, hosts, qfilter, tags, buckets=None):
