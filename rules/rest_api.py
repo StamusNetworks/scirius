@@ -528,14 +528,12 @@ class RuleHitsOrderingFilter(OrderingFilter):
 
             # Index rules by sid
             rules = OrderedDict([(r.sid, r) for r in queryset])
-
             queryset = []
             for sid, count in hits_order:
                 try:
-                    queryset.append(rules.pop(sid))
+                    queryset.append(rules.pop(int(sid)))
                 except KeyError:
                     pass
-
             if order == 'desc':
                 queryset += rules.values()
             else:

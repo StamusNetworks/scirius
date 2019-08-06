@@ -737,10 +737,35 @@ class HumioClient(object, ESBackend):
         raise NotImplementedError()
 
     def get_top_rules(self, request, count=DEFAULT_COUNT, order=DEFAULT_ORDER):
-        raise NotImplementedError()
+        hosts = _get_hosts(request)
+        from_date = _get_from_date(request)
+        qfilter = _get_qfilter(request)
+        count = min(20000, count)
+
+        query_str = "groupBy(alert.signature_id, limit=%d) | sort(_count, limit=%d, order=%s)" % (count, count, order)
+
+        field_names = {'alert.signature_id': 'key', '_count': 'doc_count'}
+        field_names_filter = self._create_custom_field_names_filter(field_names)
+
+        data = self._humio_query(filters=[ALERTS_FILTER, query_str, qfilter, field_names_filter],
+                                 hosts=hosts, start=from_date)
+        return data
 
     def get_sigs_list_hits(self, request, sids, order=DEFAULT_ORDER):
-        raise NotImplementedError()
+        hosts = _get_hosts(request)
+        from_date = _get_from_date(request)
+        qfilter = _get_qfilter(request)
+
+        sid_filter = " or ".join(["alert.signature_id = %s" % sid for sid in sids.split(',')])
+
+        field_names = {'alert.signature_id': 'key', '_count': 'doc_count'}
+        field_names_filter = self._create_custom_field_names_filter(field_names)
+
+        query_str = "groupBy(alert.signature_id) | sort(alert.signature_id, order=%s)" % order
+
+        data = self._humio_query(filters=[ALERTS_FILTER, sid_filter, query_str, qfilter, field_names_filter],
+                                 hosts=hosts, start=from_date)
+        return data
 
     def get_status(self):
         try:
