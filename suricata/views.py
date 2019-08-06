@@ -57,6 +57,12 @@ def index(request, error = None):
 
     if suri:
         context = {'suricata': suri}
+
+        if request.GET.has_key('sort'):
+            context['sort_order'] = request.GET.get('sort')
+        else:
+            context['sort_order'] = '-hits'
+
         if error:
             context['error'] = error
         if suri.ruleset:

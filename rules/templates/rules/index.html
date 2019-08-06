@@ -148,10 +148,27 @@
 </div> <!-- row -->
 
 <script>
-$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null, 'Hits'); });
+$( 'document' ).ready(function () {
+    draw_timeline(
+        {{ from_date }},
+        [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}],
+        null,
+        'Hits',
+        function(status) {
+            const hosts = [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}];
+            let enabled_hosts = [];
+            for (let i = 0; i < hosts.length; i++) {
+                if (!status.disabled[i]) {
+                    enabled_hosts.push(hosts[i]);
+                }
+            }
+            load_rules({{ from_date }},  enabled_hosts, null, undefined, '{{ sort_order }}');
+        }
+    );
+});
 
 $( 'document' ).ready(function() {
-	load_rules({{ from_date }},  [ '*' ], null);
+	load_rules({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null, undefined, '{{ sort_order }}');
         var canvas = document.createElement("canvas");
         // Get WebGLRenderingContext from canvas element.
         var gl = canvas.getContext("webgl")

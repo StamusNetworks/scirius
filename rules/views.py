@@ -28,14 +28,14 @@ from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.contrib import messages
 import requests
 
+from rules import humio_client
 from scirius.utils import scirius_render, scirius_listing
 
 from rules.es_data import ESData
 from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation, CategoryTransformation, RulesetTransformation, UserAction, UserActionObject, reset_es_address
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, HistoryTable
 
-from rules.es_graphs import (ESError, ESRulesStats, ESFieldStatsAsTable, ESSidByHosts, ESIndices, ESDeleteAlertsBySid,
-        get_es_major_version, reset_es_version)
+from rules.es_graphs import (ESError, ESIndices, reset_es_version)
 
 import json
 import yaml
@@ -47,8 +47,13 @@ import django_tables2 as tables
 from tables import *
 from forms import *
 from suripyg import SuriHTMLFormat
+from scirius.utils import get_quoted_hosts_list
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
+
+import backends
+_es_backend = backends.get_es_backend()
+
 
 # Create your views here.
 def index(request):
@@ -60,6 +65,13 @@ def index(request):
         context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
     except:
         pass
+
+    if request.GET.has_key('sort'):
+        context['sort_order'] = request.GET.get('sort')
+    else:
+        # This only works at index.html for now
+        context['sort_order'] = '-hits'
+
     return scirius_render(request, 'rules/index.html', context)
 
 def about(request):
@@ -182,24 +194,41 @@ class Reference:
         self.key = key
         self.url = None
 
+
 def elasticsearch(request):
     data = None
     RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip', 'rule_probe': settings.ELASTICSEARCH_HOSTNAME, 'field_stats': None}
-    context = {'es2x': get_es_major_version() >= 2}
+    FIELD_TO_TABLE_ID_MAPPING = {'src_ip': '#src_ip_table', 'dest_ip': '#dest_ip_table', 'alert.source.ip': '#source_ip_table', 'alert.target.ip': '#target_ip_table'}
+    FIELD_TO_IP_DIRECTION_MAPPING = {'src_ip': 'src', 'dest_ip': 'dest', 'alert.source.ip': 'src', 'alert.target.ip': 'dest'}
+    context = {'es2x': _es_backend.get_es_major_version() >= 2}
 
     if request.GET.__contains__('query'):
         try:
             query = request.GET.get('query')
+            context['enabled_probes'] = get_quoted_hosts_list(request)
             if query == 'rules':
-                rules = ESRulesStats(request).get()
+                rules = _es_backend.get_rules_stats_table(request)
                 if rules == None:
                     return HttpResponse(json.dumps(rules), content_type="application/json")
+                rules.source_query.set_parameter("query", "rules")
                 context['table'] = rules
+                # Set the context value of qfilter
+                # This is required for rendering correct js
+                qfilter = request.GET.get('qfilter', None)
+                if qfilter:
+                    rules.source_query.add_parameter("qfilter", qfilter)
+                context['qfilter'] = qfilter
                 return scirius_render(request, 'rules/table.html', context)
             elif query == 'rule':
                 sid = request.GET.get('sid', None)
-                hosts = ESSidByHosts(request).get(sid)
+                hosts = _es_backend.get_sid_by_hosts_table(request, sid)
+                hosts.source_query.add_parameter("sid", sid)\
+                        .set_parameter("query", "rule")
+                qfilter = request.GET.get('qfilter', None)
+                if qfilter:
+                    hosts.source_query.add_parameter("qfilter", qfilter)
                 context['table'] = hosts
+
                 return scirius_render(request, 'rules/table.html', context)
             elif query in RULE_FIELDS_MAPPING.keys():
                 ajax = request.GET.get('json', None)
@@ -212,12 +241,19 @@ def elasticsearch(request):
                     filter_ip = RULE_FIELDS_MAPPING[query]
 
                 sid = request.GET.get('sid', None)
-                count = request.GET.get('page_size', 10)
+                count = int(request.GET.get('page_size', 10))
 
-                hosts = ESFieldStatsAsTable(request).get(sid,
-                                                        filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
-                                                        RuleHostTable,
-                                                        count=count)
+                hosts = _es_backend.get_field_stats_table(request, sid, filter_ip, RuleHostTable, count=count)
+                hosts.table_id = FIELD_TO_TABLE_ID_MAPPING[filter_ip]
+                hosts.source_query.set_parameter("query", "field_stats")\
+                    .add_parameter("sid", sid)\
+                    .add_parameter("field", filter_ip)
+                qfilter = request.GET.get('qfilter', None)
+                if qfilter:
+                    hosts.source_query.add_parameter("qfilter", qfilter)
+                hosts.update_callback = "() => populate_topip_actions($('%s'), '%s', '%s')" % (
+                    hosts.table_id, filter_ip,
+                    FIELD_TO_IP_DIRECTION_MAPPING[filter_ip])
                 context['table'] = hosts
                 return scirius_render(request, 'rules/table.html', context)
             elif query == 'indices':
@@ -236,6 +272,14 @@ def elasticsearch(request):
         template = Probe.common.get_es_template()
         return scirius_render(request, template, context)
 
+def humio(request):
+    data = _es_backend.get_status()
+    context = {
+        'version': data['version'],
+        'status': data['status'],
+        'status_type': 'success' if data['status'] == 'ok' else 'danger'
+    }
+    return scirius_render(request, 'rules/humio.html', context)
 
 def extract_rule_references(rule):
     references = []
@@ -333,7 +377,7 @@ def rule(request, rule_id, key = 'pk'):
     except:
         pass
 
-    context['kibana_version'] = get_es_major_version()
+    context['kibana_version'] = _es_backend.get_es_major_version()
     return scirius_render(request, 'rules/rule.html', context)
 
 def edit_rule(request, rule_id):
@@ -713,7 +757,8 @@ def delete_alerts(request, rule_id):
             if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
                 Probe.common.es_delete_alerts_by_sid(rule_id, request=request)
             else:
-                result = ESDeleteAlertsBySid(request).get(rule_id)
+                result = _es_backend.delete_alerts_by_sid(request, rule_id)
+
                 if result.has_key('status') and result['status'] != 200:
                     context = { 'object': rule_object, 'error': result['msg'] }
                     try:
