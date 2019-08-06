@@ -59,6 +59,7 @@
     "react/self-closing-comp": 0,
     "jsx-a11y/anchor-is-valid": 0,
     "jsx-a11y/label-has-for": 0,
+    "jsx-a11y/mouse-events-have-key-events": 0,
     "newline-per-chained-call": 0,
     "padding-line-between-statements": 0,
     "react/no-access-state-in-setstate": 0,

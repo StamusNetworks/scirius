@@ -72,7 +72,7 @@ const DisplayPage = (props) => {
         case PAGE_STATE.filters_list:
             displayedPage = (<ActionsPage
                 systemSettings={props.systemSettings}
-                config={props.filters_list}
+                rules_list={props.filters_list}
                 filters={props.filters_filters}
                 from_date={props.from_date}
                 updateListState={props.updateFilterListState}

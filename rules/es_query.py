@@ -39,6 +39,8 @@ class ESQuery(object):
             base_index = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
         elif data == 'host_id':
             base_index = settings.ELASTICSEARCH_LOGSTASH_INDEX + 'host_id-'
+        elif data == 'metricbeat':
+            base_index = 'metricbeat-'
         else:
             base_index = settings.ELASTICSEARCH_LOGSTASH_INDEX
         try:
@@ -72,6 +74,8 @@ class ESQuery(object):
                     indexes = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + "*"
                 elif data == 'host_id':
                     indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX + "host_id-*"
+                elif data == 'metricbeat':
+                    indexes = 'metricbeat-*'
                 else:
                     indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX + "*"
             else:
@@ -90,7 +94,7 @@ class ESQuery(object):
 
         if from_date >= self._to_date():
             # Asking for a date in the future (browser of the user has clock out of sync), return last hour
-            from_date = (self._to_date() - 60 * 60) * 1000
+            from_date = self._to_date() - (60 * 60 * 1000)
 
         return from_date
 

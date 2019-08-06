@@ -34,3 +34,11 @@ eslint_check:
   - npm install
   - cd ..
   - python tests/eslint_check.py $(find hunt -name \*.js |grep -v /node_modules/)
+
+test-dlint:
+    image: python
+    before_script:
+        - python -m pip install dlint
+    script:
+        - python -m flake8 --select=DUO rules
+        - python -m flake8 --select=DUO suricata
