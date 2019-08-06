@@ -51,7 +51,6 @@ class ExtendedRuleTable(JSTable):
     class Meta(JSTableMeta):
         model = Rule
         fields = ("sid", "msg", "category", "hits")
-        orderable = False
 
 class UpdateRuleTable(SciriusTable):
     sid = tables.LinkColumn('rule', args=[tables.A('pk')])
