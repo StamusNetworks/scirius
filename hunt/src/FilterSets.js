@@ -242,7 +242,7 @@ export default class FilterSets extends React.Component {
 
                         <NotificationDrawer.PanelHeading onClick={() => this.togglePanel(statiC)}>
                             <NotificationDrawer.PanelTitle>
-                                <a className={this.state.expandedPanel === statiC ? '' : 'collapsed'}>Static Filter Sets</a>
+                                <a className={this.state.expandedPanel === statiC ? '' : 'collapsed'}>Stamus Predefined Filter Sets</a>
                             </NotificationDrawer.PanelTitle>
                             <NotificationDrawer.PanelCounter text={`${rowsStatic ? rowsStatic.length : 0} Filter Sets`} />
                         </NotificationDrawer.PanelHeading>

@@ -271,6 +271,26 @@ class FilterSet(models.Model):
 class UserAction(models.Model):
     ACTIONS = OrderedDict([
                # Login/Logout
+               ('create_user', {
+                    'description': '{user} has created new user {new_user}',
+                    'title': 'Create User'
+                }),
+               ('edit_user', {
+                    'description': '{user} has edited user {other_user}',
+                    'title': 'Edit User'
+                }),
+               ('edit_user_token', {
+                    'description': '{user} has edited {other_user} token',
+                    'title': 'Edit User Token'
+                }),
+               ('edit_user_password', {
+                    'description': '{user} has edited {other_user} password',
+                    'title': 'Edit User Password'
+                }),
+               ('delete_user', {
+                    'description': '{user} has deleted user {old_user}',
+                    'title': 'Delete User'
+                }),
                ('login', {
                     'description': 'Logged in as {user}',
                     'title': 'Login'

@@ -322,10 +322,11 @@ FILTER_SETS = [
             }
         ],
         'share': 'static',
-        'name': 'Not common user agents',
+        'name': 'Non common user agents',
+        'description': 'This filter set contains results of non common/traditionally seen in a network user agents generating alert/events. Thus making it a good starting point for a Threat Hunting initiative.',
         'page': 'ALERTS_LIST'
     },
-        {
+    {
         'content': [
             {
                 'value': 'python*',

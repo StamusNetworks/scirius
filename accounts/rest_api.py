@@ -10,9 +10,12 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.validators import UniqueValidator
+from rest_framework import status
 
 from accounts.models import SciriusUser
 from rules.rest_permissions import IsCurrentUserOrSuperUserOrReadOnly
+from rules.rest_api import CommentSerializer
+from rules.models import UserAction
 
 import pytz
 
@@ -180,12 +183,62 @@ class AccountViewSet(viewsets.ModelViewSet):
     serializer_class = AccountSerializer
     permission_classes = (IsCurrentUserOrSuperUserOrReadOnly, )
 
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        comment = data.pop('comment', None)
+
+        serializer = AccountSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+        UserAction.create(
+            action_type='create_user',
+            comment=comment_serializer.validated_data['comment'],
+            user=request.user,
+            new_user=serializer.instance.user
+        )
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, headers=headers, status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, *args, **kwargs):
+        old_user = self.get_object()
+        # Do not need to copy 'request.data' and pop 'comment'
+        # because we are not using serializer there
+        comment = request.data.get('comment', None)
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+
+        UserAction.create(
+            action_type='delete_user',
+            user=request.user,
+            old_user=old_user.user,
+            comment=comment_serializer.validated_data['comment']
+        )
+        return super(AccountViewSet, self).destroy(request, *args, **kwargs)
+
     def update(self, request, pk, *args, **kwargs):
         if request.user.is_superuser is False:
             for right in ('is_active', 'is_staff', 'is_superuser',):
                 if right in request.data:
                     raise PermissionDenied({right: 'You do not have permission to perform this action.'})
 
+        data = request.data.copy()
+        comment = data.pop('comment', None)
+
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+        UserAction.create(
+            action_type='edit_user',
+            comment=comment_serializer.validated_data['comment'],
+            user=request.user,
+            other_user=serializer.instance.user
+        )
         return super(AccountViewSet, self).update(request, pk, *args, **kwargs)
 
     def partial_update(self, request, pk, *args, **kwargs):
@@ -194,6 +247,21 @@ class AccountViewSet(viewsets.ModelViewSet):
                 if right in request.data:
                     raise PermissionDenied({right: 'You do not have permission to perform this action.'})
 
+        data = request.data.copy()
+        comment = data.pop('comment', None)
+
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+        UserAction.create(
+            action_type='edit_user',
+            comment=comment_serializer.validated_data['comment'],
+            user=request.user,
+            other_user=serializer.instance.user
+        )
         return super(AccountViewSet, self).update(request, pk, partial=True, *args, **kwargs)
 
     @detail_route(methods=['get', 'post'])
@@ -210,6 +278,18 @@ class AccountViewSet(viewsets.ModelViewSet):
                 tokens[0].delete()
 
             token = Token.objects.create(user=scirius_user.user).key
+
+            data = request.data.copy()
+            comment = data.pop('comment', None)
+
+            comment_serializer = CommentSerializer(data={'comment': comment})
+            comment_serializer.is_valid(raise_exception=True)
+            UserAction.create(
+                action_type='edit_user_token',
+                comment=comment_serializer.validated_data['comment'],
+                user=request.user,
+                other_user=scirius_user.user
+            )
 
         return Response({'token': token})
 
@@ -232,6 +312,16 @@ class AccountViewSet(viewsets.ModelViewSet):
         scirius_user.user.set_password(pass_serializer.validated_data.get('new_password'))
         scirius_user.user.save()
         scirius_user.save()
+
+        comment = data.pop('comment', None)
+        comment_serializer = CommentSerializer(data={'comment': comment})
+        comment_serializer.is_valid(raise_exception=True)
+        UserAction.create(
+            action_type='edit_user_password',
+            comment=comment_serializer.validated_data['comment'],
+            user=request.user,
+            other_user=scirius_user.user
+        )
         return Response({'password': 'updated'})
 
     @list_route(methods=['get'])

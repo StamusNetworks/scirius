@@ -24,15 +24,48 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { PAGINATION_VIEW, ListView, Spinner } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
-import { HuntList } from '../../HuntList';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import FilterItem from '../../FilterItem';
-import { buildListUrlParams } from '../../helpers/common';
 import ErrorHandler from '../../components/Error';
+import { actionsButtons,
+    buildListUrlParams,
+    loadActions,
+    createAction,
+    UpdateFilter,
+    addFilter,
+    handlePaginationChange,
+    onFirstPage,
+    onNextPage,
+    onPrevPage,
+    onLastPage,
+    setViewType,
+    UpdateSort,
+    closeAction,
+    updateAlertTag,
+    buildFilter } from '../../helpers/common';
 
-export default class ActionsPage extends HuntList {
+export default class ActionsPage extends React.Component {
     constructor(props) {
         super(props);
+        this.handlePaginationChange = handlePaginationChange.bind(this);
+        this.onFirstPage = onFirstPage.bind(this);
+        this.onNextPage = onNextPage.bind(this);
+        this.onPrevPage = onPrevPage.bind(this);
+        this.onLastPage = onLastPage.bind(this);
+        this.UpdateFilter = UpdateFilter.bind(this);
+        this.UpdateSort = UpdateSort.bind(this);
+        this.addFilter = addFilter.bind(this);
+
+        this.buildFilter = buildFilter.bind(this);
+
+        this.setViewType = setViewType.bind(this);
+
+        this.actionsButtons = actionsButtons.bind(this);
+        this.createAction = createAction.bind(this);
+        this.closeAction = closeAction.bind(this);
+        this.loadActions = loadActions.bind(this);
+
+        this.updateAlertTag = updateAlertTag.bind(this);
         this.state = { data: [], count: 0, rulesets: [] };
         this.fetchData = this.fetchData.bind(this);
         this.needUpdate = this.needUpdate.bind(this);
@@ -49,13 +82,17 @@ export default class ActionsPage extends HuntList {
                 this.setState({ rulesets });
             });
         }
-        this.fetchData(this.props.config, this.props.filters);
+        this.fetchData(this.props.rules_list, this.props.filters);
     }
 
     componentDidUpdate(prevProps) {
         if (prevProps.from_date !== this.props.from_date) {
-            this.fetchData(this.props.config, this.props.filters);
+            this.fetchData(this.props.rules_list, this.props.filters);
         }
+    }
+
+    updateRuleListState(rulesListState) {
+        this.props.updateListState(rulesListState);
     }
 
     // eslint-disable-next-line no-unused-vars
@@ -70,7 +107,7 @@ export default class ActionsPage extends HuntList {
     }
 
     needUpdate() {
-        this.fetchData(this.props.config, this.props.filters);
+        this.fetchData(this.props.rules_list, this.props.filters);
     }
 
     render() {
@@ -85,13 +122,13 @@ export default class ActionsPage extends HuntList {
                 <ErrorHandler>
                     <HuntPaginationRow
                         viewType={PAGINATION_VIEW.LIST}
-                        pagination={this.props.config.pagination}
+                        pagination={this.props.rules_list.pagination}
                         onPaginationChange={this.handlePaginationChange}
-                        amountOfPages={Math.ceil(this.state.count / this.props.config.pagination.perPage)}
-                        pageInputValue={this.props.config.pagination.page}
+                        amountOfPages={Math.ceil(this.state.count / this.props.rules_list.pagination.perPage)}
+                        pageInputValue={this.props.rules_list.pagination.page}
                         itemCount={this.state.count - 1} // used as last item
-                        itemsStart={(this.props.config.pagination.page - 1) * this.props.config.pagination.perPage}
-                        itemsEnd={Math.min((this.props.config.pagination.page * this.props.config.pagination.perPage) - 1, this.state.count - 1)}
+                        itemsStart={(this.props.rules_list.pagination.page - 1) * this.props.rules_list.pagination.perPage}
+                        itemsEnd={Math.min((this.props.rules_list.pagination.page * this.props.rules_list.pagination.perPage) - 1, this.state.count - 1)}
                         onFirstPage={this.onFirstPage}
                         onNextPage={this.onNextPage}
                         onPreviousPage={this.onPrevPage}
@@ -104,6 +141,10 @@ export default class ActionsPage extends HuntList {
     }
 }
 ActionsPage.propTypes = {
-    config: PropTypes.any,
-    filters: PropTypes.any
+    rules_list: PropTypes.any,
+    filters: PropTypes.any,
+    updateListState: PropTypes.func,
+    updateIDSFilterState: PropTypes.func,
+    switchPage: PropTypes.func,
+    from_date: PropTypes.any,
 };

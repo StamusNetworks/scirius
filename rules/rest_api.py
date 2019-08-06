@@ -44,7 +44,7 @@ from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, E
 from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats, \
         ESTimeline, ESMetricsTimeline, ESHealth, ESIndicesStats, ESRulesPerCategory, ESAlertsCount, \
         ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESAlertsTail, ESSuriLogTail, ESPoststats, \
-        ESSigsListHits, ESTopRules, ESError
+        ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid
 
 import backends
 _es_backend = backends.get_es_backend()
@@ -676,6 +676,18 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
             res.append({'url': reference.url, 'key': reference.key, 'value': reference.value})
 
         return Response(res)
+
+    @detail_route(methods=['post'])
+    def delete_alerts(self, request, pk):
+
+        if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
+            result = Probe.common.es_delete_alerts_by_sid(pk, request=request)
+        else:
+            result = ESDeleteAlertsBySid(request).get(pk)
+            if 'status' in result and result['status'] != 200:
+                return Response({'error: ES request failed, %s' % result['msg']}, status=result['status'])
+            return Response({'delete_alerts': 'ok'})
+        return Response(result)
 
     @list_route(methods=['get'])
     def transformation(self, request):

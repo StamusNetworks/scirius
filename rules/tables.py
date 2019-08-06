@@ -20,6 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from scirius.utils import SciriusTable, QueryBuilder
+from django.template.defaultfilters import filesizeformat
 from rules.models import Ruleset, Source, Category, Rule, SourceAtVersion, SourceUpdate, Threshold, UserAction
 import django_tables2 as tables
 
@@ -50,6 +51,7 @@ class ExtendedRuleTable(JSTable):
     class Meta(JSTableMeta):
         model = Rule
         fields = ("sid", "msg", "category", "hits")
+        orderable = False
 
 class UpdateRuleTable(SciriusTable):
     sid = tables.LinkColumn('rule', args=[tables.A('pk')])
@@ -153,8 +155,12 @@ class ESIndexessTable(SciriusTable):
     count = tables.Column()
     deleted = tables.Column()
     size = tables.Column()
+
     class Meta(DefaultMeta):
         fields = ("name", "count", "deleted", 'size')
+
+    def render_size(self, value):
+        return filesizeformat(value)
 
 class ThresholdTable(SciriusTable):
     pk = tables.LinkColumn('threshold', args=[tables.A('pk')] )

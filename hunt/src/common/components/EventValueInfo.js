@@ -4,6 +4,10 @@ import { Icon } from 'patternfly-react';
 import EventIPInfo from '../../components/EventIPInfo';
 
 const EventValueInfo = (props) => {
+    if (!props.magnifiers) {
+        return null;
+    }
+
     if (['src_ip', 'dest_ip', 'alert.source.ip', 'alert.target.ip'].indexOf(props.field) > -1) {
         if (process.env.REACT_APP_ONYPHE_API_KEY) {
             return <EventIPInfo key="event_ip_info" value={props.value} />;
@@ -19,6 +23,7 @@ const EventValueInfo = (props) => {
 EventValueInfo.propTypes = {
     value: PropTypes.any,
     field: PropTypes.any,
+    magnifiers: PropTypes.any
 };
 
 export default EventValueInfo;
