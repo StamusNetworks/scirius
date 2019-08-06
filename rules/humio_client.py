@@ -29,6 +29,7 @@ HUMIO_DEFAULT_SORT_LIMIT = 20000
 FIELD_REPLACEMENTS = {
     'alert.source.ip': 'src_ip',
     'alert.target.ip': 'dest_ip',
+    'vlan': 'vlan[0]',  # This is due to problems with lists in Humio
 }
 
 
@@ -58,7 +59,6 @@ def _replace_field_name(field_name):
         res = field_name[:-4]
     if res in FIELD_REPLACEMENTS:
         res = FIELD_REPLACEMENTS[res]
-    print(res)
     return res
 
 
