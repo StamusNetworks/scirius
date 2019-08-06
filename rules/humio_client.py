@@ -27,11 +27,7 @@ HUMIO_ENDPOINT_STATUS = "/api/v1/status"
 HUMIO_DEFAULT_SORT_LIMIT = 20000
 
 FIELD_REPLACEMENTS = {
-    'alert.category.raw': 'alert.category',
-    'alert.signature_id': 'alert.signature_id',
-    'src_ip': 'src_ip',
     'alert.source.ip': 'src_ip',
-    'dest_ip': 'dest_ip',
     'alert.target.ip': 'dest_ip',
 }
 
@@ -56,6 +52,16 @@ def _build_query(filters, hosts=None):
         return filter_query
 
 
+def _replace_field_name(field_name):
+    res = field_name
+    if field_name.endswith('.raw'):
+        res = field_name[:-4]
+    if res in FIELD_REPLACEMENTS:
+        res = FIELD_REPLACEMENTS[res]
+    print(res)
+    return res
+
+
 def _fix_qfilter(qfilter):
     """
     Fixes elasticsearch based filters to work as humio filters.
@@ -68,9 +74,9 @@ def _fix_qfilter(qfilter):
 
     if qfilter:
         split = qfilter.split(':', 1)
-        if split[0] in FIELD_REPLACEMENTS:
-            split[0] = FIELD_REPLACEMENTS[split[0]]
-            qfilter = '='.join(split)
+        split[0] = _replace_field_name(split[0])
+        qfilter = '='.join(split)
+
     return qfilter
 
 
@@ -136,6 +142,7 @@ def _urlopen(request):
         raise RuntimeError(msg)
     return out
 
+
 def _get_interval(request):
     return request.GET.get('interval', None)
 
@@ -194,9 +201,6 @@ class HumioClient(object, ESBackend):
         :param start: time since epoch in milliseconds
         :param end: time since epoch in milliseconds, string or None
         """
-        if fix_filters:
-            filters = list(map(_fix_qfilter, filters))
-
         if not end:
             end = 'now'
 
@@ -312,9 +316,7 @@ class HumioClient(object, ESBackend):
         hosts = _get_hosts(request)
         from_date = _get_from_date(request)
         qfilter = _get_qfilter(request)
-
-        if field in FIELD_REPLACEMENTS:
-            field = FIELD_REPLACEMENTS[field]
+        field = _replace_field_name(field)
 
         if field:
             field_names = {field: 'key', '_count': 'doc_count'}
