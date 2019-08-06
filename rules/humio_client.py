@@ -114,13 +114,13 @@ def _create_sort_filter(sort_param, sort_key_field_map, limit=HUMIO_DEFAULT_SORT
 
     if not sort_key:
         if not default_sort_key:
-            humio_logger.error('_fix_sorting: sort key was None and default_sort_key was None')
+            humio_logger.error('Sort key was None and default_sort_key was None')
             return None
         sort_key = default_sort_key
         sort_order = default_sort_order
 
     if sort_key not in sort_key_field_map.keys():
-        humio_logger.error('_fix_sorting: unexpected sort key: %s, not in field_map' % sort_key)
+        humio_logger.error('Unexpected sort key: %s, not in field_map' % sort_key)
         return None
 
     sort_order = sort_order or default_sort_order
@@ -189,6 +189,7 @@ class HumioClient(object, ESBackend):
             'Authorization': 'Bearer ' + self._api_token
         }
         url = self._host + endpoint
+        humio_logger.info("Request to %s with data: %s" % (url, query_data))
         req = urllib2.Request(url, query_data, headers=headers)
         res = _urlopen(req)
         data = res.read()
@@ -568,6 +569,7 @@ class HumioClient(object, ESBackend):
                 prev_data = self._humio_query(filters=filters, start=prev_start_ms, end=from_date_ms, hosts=hosts)
                 return {'doc_count': int(cur_count), 'prev_doc_count': int(prev_data[0]['_count'])}
             except:
+                humio_logger.error("Unable to get alerts for previous period")
                 return {'doc_count': cur_count, 'prev_doc_count': 0}
         else:
             return {'doc_count': cur_count, 'prev_doc_count': 0}
