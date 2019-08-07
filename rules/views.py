@@ -243,7 +243,7 @@ def elasticsearch(request):
                 sid = request.GET.get('sid', None)
                 count = int(request.GET.get('page_size', 10))
 
-                hosts = _es_backend.get_field_stats_table(request, sid, filter_ip, RuleHostTable, count=count)
+                hosts = _es_backend.get_field_stats_table(request, sid, filter_ip, count=count)
                 hosts.table_id = FIELD_TO_TABLE_ID_MAPPING[filter_ip]
                 hosts.source_query.set_parameter("query", "field_stats")\
                     .add_parameter("sid", sid)\

@@ -144,7 +144,7 @@ def _urlopen(request):
 
 
 def _get_interval(request):
-    return request.GET.get('interval', None)
+    return int(request.GET['interval']) * 1000 if 'interval' in request.GET else None
 
 
 def _get_hosts(request):
@@ -299,21 +299,21 @@ class HumioClient(object, ESBackend):
         return self._get_rule_stats(count, from_date, extra_filters=[field_names_filter],
                                     hosts=hosts, sort_param=sort_param)
 
-    def get_field_stats_table(self, request, sid, field, field_table_class, count=DEFAULT_COUNT, raw=False):
+    def get_field_stats_table(self, request, sid, field, count=DEFAULT_COUNT):
         data = self.get_field_stats_dict(request, sid, field)
         if data is None:
-            objects = field_table_class([])
+            objects = tables.RuleHostTable([])
             django_tables2.RequestConfig(request).configure(objects)
             return objects
         objects = []
         for elt in data:
             fstat = {'host': elt['key'], 'count': int(elt['doc_count'])}
             objects.append(fstat)
-        objects = field_table_class(objects)
+        objects = tables.RuleHostTable(objects)
         django_tables2.RequestConfig(request).configure(objects)
         return objects
 
-    def get_field_stats_dict(self, request, sid, field, count=DEFAULT_COUNT, raw=False):
+    def get_field_stats_dict(self, request, sid, field, count=DEFAULT_COUNT):
         hosts = _get_hosts(request)
         from_date = _get_from_date(request)
         qfilter = _get_qfilter(request)
@@ -336,11 +336,6 @@ class HumioClient(object, ESBackend):
             query_str = ''
         query_str += 'groupBy(field=%s, function=count(), limit=%d)' % (field, int(count))
         return self._humio_query(filters=[ALERTS_FILTER, qfilter, query_str] + filters, start=from_date, hosts=hosts)
-
-    def get_sid_by_hosts(self, request, sid, count=DEFAULT_COUNT, dict_format=False):
-        if dict_format:
-            return self.get_sid_by_hosts_dict(request, sid, count=count)
-        return self.get_sid_by_hosts_table(request, sid, count=count)
 
     def get_sid_by_hosts_dict(self, request, sid, count=DEFAULT_COUNT):
         """
@@ -403,7 +398,7 @@ class HumioClient(object, ESBackend):
                              'buckets': buckets}
 
             def wrapper(i, h, **kwargs):
-                return i.get_timeline_sp(hosts=h, **kwargs)
+                return i._get_timeline_sp(hosts=h, **kwargs)
 
             f = functools.partial(wrapper, self, **common_kwargs)
 
@@ -417,10 +412,10 @@ class HumioClient(object, ESBackend):
         if n_queries > 2:
             results = parallel_query(from_date, interval, hosts, qfilter, tags, buckets=100//(n_queries))
         else:
-            results = self.get_timeline_sp(from_date, interval, hosts, qfilter, tags, buckets=100)
+            results = self._get_timeline_sp(from_date, interval, hosts, qfilter, tags, buckets=100)
         return results
 
-    def get_timeline_sp(self, from_date=0, interval=None, hosts=None, qfilter=None, tags=False, end_date=None, buckets=None):
+    def _get_timeline_sp(self, from_date=0, interval=None, hosts=None, qfilter=None, tags=False, end_date=None, buckets=None):
         """Gets a list of alert counts at a given interval from the given from date.
         :param buckets: the amount of alert count points per host to have on the timeline
         :return dict on the form:
@@ -580,9 +575,11 @@ class HumioClient(object, ESBackend):
     def get_metrics_timeline(self, request, value=None):
         hosts = _get_hosts(request)
         from_date = _get_from_date(request)
-        buckets = 50
         from_date = int(from_date)
-        interval = int((time.time() - (int(from_date) / 1000)) / buckets) * 1000
+        interval = _get_interval(request)
+        if not interval:
+            buckets = 50
+            interval = int((time.time() - (int(from_date) / 1000)) / buckets) * 1000
 
         query_str = """event_type = stats
         | bucket(field=[host], span=%sms, function=stats(function=avg(field="%s")))""" % (interval, value)

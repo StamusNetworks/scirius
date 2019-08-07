@@ -4,6 +4,7 @@ import es_graphs
 import es_backend
 from django.conf import settings
 from es_backend import DEFAULT_COUNT, DEFAULT_ORDER
+from rules import tables
 
 
 def create_backend():
@@ -20,21 +21,18 @@ class ESClient(es_backend.ESBackend):
     def get_rules_stats_dict(self, request, count=DEFAULT_COUNT):
         return es_graphs.ESRulesStats(request).get(count=count, dict_format=True)
 
-    def get_field_stats_table(self, request, sid, field, field_table_class, count=DEFAULT_COUNT, raw=True):
-        if raw:
+    def get_field_stats_table(self, request, sid, field, count=DEFAULT_COUNT):
+        if not field.endswith('.' + settings.ELASTICSEARCH_KEYWORD):
             # This is some weird elastic stuff
             field += '.' + settings.ELASTICSEARCH_KEYWORD
 
-        return es_graphs.ESFieldStatsAsTable(request).get(sid, field, field_table_class, count=count)
+        return es_graphs.ESFieldStatsAsTable(request).get(sid, field, tables.RuleHostTable, count=count)
 
-    def get_field_stats_dict(self, request, sid, field, count=DEFAULT_COUNT, raw=True):
-        if raw:
+    def get_field_stats_dict(self, request, sid, field, count=DEFAULT_COUNT):
+        if not field.endswith('.' + settings.ELASTICSEARCH_KEYWORD):
             field += '.' + settings.ELASTICSEARCH_KEYWORD
 
         return es_graphs.ESFieldStats(request).get(sid, field, count=count)
-
-    def get_sid_by_hosts(self, request, sid, count=DEFAULT_COUNT, dict_format=False):
-        return es_graphs.ESSidByHosts(request).get(sid, count=count, dict_format=dict_format)
 
     def get_sid_by_hosts_dict(self, request, sid, count=DEFAULT_COUNT):
         return es_graphs.ESSidByHosts(request).get(sid, count=count, dict_format=True)
