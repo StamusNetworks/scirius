@@ -731,7 +731,21 @@ class HumioClient(object, ESBackend):
         raise NotImplementedError()
 
     def get_alerts_tail(self, request, search_target=True):
-        raise NotImplementedError()
+        """Gets and returns the raw alert data for the last 100 alerts
+        Filters are applied to the last 100 alerts."""
+
+        hosts = _get_hosts(request)
+        from_date = _get_from_date(request)
+        qfilter = _get_qfilter(request)
+        count = 100
+        query_str = "tail(limit=%d) | select(@rawstring)" % count
+
+        # NOTE: qfilter is applied before query_str because we want to filter
+        # on the last 100 alerts matching that filter.
+        data = self._humio_query(filters=[ALERTS_FILTER, qfilter, query_str],
+                                 hosts=hosts, start=from_date)
+        rdata = [{'_id': i, '_source': json.loads(d['@rawstring'])} for i, d in enumerate(data)]
+        return rdata
 
     def get_suri_log_tail(self, request):
         raise NotImplementedError()

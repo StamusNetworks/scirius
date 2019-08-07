@@ -2384,12 +2384,14 @@ class ESAlertsTailViewSet(ESBaseViewSet):
     ==== GET ====\n
     qfilter: "filter in Elasticsearch Query String Query format"
 
+    Returns a json encoded list of raw alert data for the last 100 alerts
+
     Show alert tail:\n
         curl -k https://x.x.x.x/rest/rules/es/alerts_tail/\?from_date\=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
 
     Return:\n
         HTTP/1.1 200 OK
-        []
+        [{{"proto":"006","tls":{"notafter":"202", ...}, ...}, ...] 
 
     =============================================================================================================================================================
 
