@@ -318,6 +318,16 @@ class HumioClient(object, ESBackend):
         from_date = _get_from_date(request)
         qfilter = _get_qfilter(request)
         field = _replace_field_name(field)
+        sort_param = _get_sort_param(request)
+
+        sort_parameter_field_mapping = {
+            'count':     {'groupby_fields': [], 'field': 'doc_count'},
+            'doc_count': {'groupby_fields': [], 'field': 'doc_count'},
+            'host':      {'groupby_fields': [], 'field': 'key'},
+            'key':       {'groupby_fields': [], 'field': 'key'}
+        }
+        _, sort_filter = _create_sort_filter(sort_param, sort_parameter_field_mapping,
+                                             limit=count, default_sort_key='count')
 
         if field:
             field_names = {field: 'key', '_count': 'doc_count'}
@@ -326,7 +336,8 @@ class HumioClient(object, ESBackend):
         field_names_filter = self._create_custom_field_names_filter(field_names)
 
         return self._es_get_field_stats_json(sid, field, hosts=hosts, count=count,
-                                             from_date=from_date, qfilter=qfilter, filters=[field_names_filter])
+                                             from_date=from_date, qfilter=qfilter,
+                                             filters=[field_names_filter, sort_filter])
 
     def _es_get_field_stats_json(self, sid, field, hosts=None, count=20,
                                  from_date=0, qfilter=None, filters=[]):

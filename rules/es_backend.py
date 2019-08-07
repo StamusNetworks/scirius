@@ -55,6 +55,7 @@ class ESBackend:
             - hosts: list of comma separated probe names (optional)
             - from_date: epoch ms of start time for alert counting
             - qfilter: query filter for the search (optional)
+            - sort: field to sort on, e.g '-count' for descending on alert count (optional)
         :param sid: signature id to filter on a rule (optional).
                     If None, results from all rules are included.
         :param field: field to show the values for
@@ -74,6 +75,7 @@ class ESBackend:
         :param request: request object with get parameters
             - hosts: list of comma separated probe names (optional)
             - from_date: epoch ms of start time for alert counting
+            - sort: field to sort on, e.g '-count' for descending on alert count (optional)
             - qfilter: query filter for the search (optional)
         :param sid: signature id to filter on a rule (optional).
                     If None, results from all rules are included.
