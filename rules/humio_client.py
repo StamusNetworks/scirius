@@ -72,12 +72,19 @@ def _fix_qfilter(qfilter):
     :return: updated qfilter
     """
 
-    if qfilter:
-        split = qfilter.split(':', 1)
+    def fix_single_filter(s):
+        split = s.split(':', 1)
         split[0] = _replace_field_name(split[0])
-        qfilter = '='.join(split)
+        return '='.join(split)
 
-    return qfilter
+    if qfilter:
+        # Splitting by whitespace and fix all strings of non-whitespace
+        # individually is needed to correctly apply boolean functions
+        # like NOT, AND, and OR. This is not a very good solution, but
+        # since the qfilters used in the scirius codebase is of such
+        # simplicity, this shouldn't be a problem. Humio supports
+        # NOT, AND and OR.
+        return ' '.join(list(map(fix_single_filter, qfilter.split(' '))))
 
 
 def _parse_sort(sort_param):
