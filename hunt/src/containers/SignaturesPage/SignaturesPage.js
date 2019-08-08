@@ -166,7 +166,6 @@ class SignaturesPage extends React.Component {
         this.cachePage = 1;
         this.updateRulesState = this.updateRulesState.bind(this);
         this.fetchHitsStats = this.fetchHitsStats.bind(this);
-        this.displayRule = this.displayRule.bind(this);
         this.actionsButtons = actionsButtons.bind(this);
         this.buildListUrlParams = buildListUrlParams.bind(this);
         this.loadActions = loadActions.bind(this);
