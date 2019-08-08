@@ -100,9 +100,19 @@ const initialState = fromJS({
 export const reducer = (state = initialState, action) => {
     switch (action.type) {
         case ADD_FILTER: {
-            if (!validateFilter(action.filter)) { return state }
+            const { filter } = action;
             const globalFilters = state.getIn(['filters', action.filterType]).toJS();
-            globalFilters.push(action.filter);
+            // When an array of filters is passed
+            if (Array.isArray(filter)) {
+                for (let i = 0; i < filter.length; i += 1) {
+                    if (validateFilter(filter[i])) {
+                        globalFilters.push(filter[i]);
+                    }
+                }
+            // When a single filter is passed
+            } else {
+                globalFilters.push(action.filter);
+            }
             updateStorage(action.filterType, globalFilters);
             return state.setIn(['filters', action.filterType], fromJS(globalFilters));
         }

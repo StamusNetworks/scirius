@@ -200,7 +200,6 @@ export default class UserNavInfo extends Component {
 
                 {this.state.showNotifications && <ErrorHandler><FilterSets
                     switchPage={this.props.switchPage}
-                    updateAlertsPageFilters={this.props.updateAlertsPageFilters}
                     close={this.closeHuntFilterSetsModal}
                     reload={this.props.needReload}
                 /></ErrorHandler>}
@@ -326,5 +325,4 @@ UserNavInfo.propTypes = {
     period: PropTypes.any,
     switchPage: PropTypes.any,
     ChangeDuration: PropTypes.any,
-    updateAlertsPageFilters: PropTypes.any
 };

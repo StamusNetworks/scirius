@@ -21,13 +21,15 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import { FormGroup, FormControl, Notification, NotificationDrawer, MenuItem, Icon } from 'patternfly-react';
 import { Collapse } from 'react-bootstrap';
 import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
+import { addFilter, sections } from './containers/App/stores/global';
 
-export default class FilterSets extends React.Component {
+class FilterSets extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -115,7 +117,7 @@ export default class FilterSets extends React.Component {
     }
 
     loadFilterSets(row) {
-        this.props.updateAlertsPageFilters(row.content);
+        this.props.addFilter(sections.GLOBAL, row.content);
         this.props.switchPage(row.page);
         this.props.reload();
     }
@@ -285,7 +287,13 @@ export default class FilterSets extends React.Component {
 
 FilterSets.propTypes = {
     switchPage: PropTypes.any,
-    updateAlertsPageFilters: PropTypes.any,
     close: PropTypes.any,
-    reload: PropTypes.any
+    reload: PropTypes.any,
+    addFilter: PropTypes.func,
 };
+
+const mapDispatchToProps = {
+    addFilter
+};
+
+export default connect(null, mapDispatchToProps)(FilterSets);
