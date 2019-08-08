@@ -891,57 +891,16 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
 
         return Response(res)
 
-    def _scirius_hit(self, r):
-        timeline = []
-        for entry in r['timeline']['buckets']:
-            timeline.append({
-                'date': entry['key'],
-                'hits': entry['doc_count']
-            })
-
-        probes = []
-        for entry in r['probes']['buckets']:
-            probes.append({
-                'probe': entry['key'],
-                'hits': entry['doc_count']
-            })
-
-        return {
-            'hits': r['doc_count'],
-            'timeline_data': timeline,
-            'probes': probes
-        }
-
-    def _add_hits(self, request, data):
-        sids = ','.join([unicode(rule['sid']) for rule in data])
-
-        try:
-            result = _es_backend.get_sigs_list_hits(request, sids)
-        except ESError:
-            return data
-
-        ## reformat ES's output
-        hits = {}
-        for r in result:
-            hits[r['key']] = self._scirius_hit(r)
-
+    def _add_hits_and_timeline_data(self, request, data):
         for rule in data:
-            sid = rule['sid']
-            if sid in hits:
-                rule.update(hits[sid])
-            else:
-                rule.update({
-                    'hits': 0,
-                    'timeline_data': [],
-                    'probes': []
-                })
-        return data
+            timeline_and_probe_hits = _es_backend.get_signature_timeline_and_probe_hits(request, rule['sid'])
+            rule.update(timeline_and_probe_hits)
 
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(page, many=True)
-        data = self._add_hits(request, serializer.data)
+        self._add_hits_and_timeline_data(request, serializer.data)
         return self.get_paginated_response(serializer.data)
 
 

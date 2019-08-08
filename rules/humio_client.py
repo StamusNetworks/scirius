@@ -469,20 +469,63 @@ class HumioClient(object, ESBackend):
 
         empty_series = [{'time': from_date, 'count': 0}, {'time': int(time.time() * 1000), 'count': 0}]
 
-        for host in hosts:
-            if host not in rdata:
-                rdata[host] = {'entries': empty_series}
+        if hosts:
+            for host in hosts:
+                if host not in rdata:
+                    rdata[host] = {'entries': empty_series}
 
         rdata['from_date'] = int(from_date)
         rdata['interval'] = int(interval)
         return rdata
 
+    def get_signature_timeline_and_probe_hits(self, request, sid):
+        from_date = _get_from_date(request)
+        interval = _get_interval(request)
+        qfilter = _get_qfilter(request)
+        sid_filter = "alert.signature_id = %s" % sid
+        if not qfilter:
+            qfilter = sid_filter
+        else:
+            qfilter = sid_filter + " | " + qfilter
+
+        data = self._get_timeline_sp(from_date=from_date, interval=interval, qfilter=qfilter)
+        timeline_data = []
+        indices = {}
+        index = 0
+        probe_data = []
+        total_hits = 0
+        for key, value in data.items():
+            if key in ['from_date', 'interval']:
+                # skip the key if its not a series for a host
+                continue
+            host = key
+            series = value
+            sum_host = 0
+            for bucket in series['entries']:
+                sum_host += bucket['count']
+                if bucket['time'] in indices:
+                    i = indices[bucket['time']]
+                    timeline_data[i]['hits'] += bucket['count']
+                else:
+                    timeline_data.append({'date': bucket['time'], 'hits': bucket['count']})
+                    indices[bucket['time']] = index
+                    index += 1
+            probe_data.append({
+                'probe': host,
+                'hits': sum_host
+            })
+            total_hits += sum_host
+
+        return {
+            'timeline_data': timeline_data,
+            'probes': probe_data,
+            'hits': total_hits
+        }
+
     def get_rules_per_category(self, request):
         """Gets a list of alerted rules grouped into categories from humio.
 
-        :param from_date:
-        :param hosts:
-        :param qfilter:
+        :param request: request object with get parameters
         :return dict on the form:
             {'key': 'categories',
                  'children': [

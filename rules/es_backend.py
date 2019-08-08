@@ -250,3 +250,29 @@ class ESBackend:
 
     def get_status(self):
         raise NotImplementedError()
+
+    def get_signature_timeline_and_probe_hits(self, request, sid):
+        """
+        Get the total hit count, hit count by probe, and timeline data
+        for alerts on a given signature id.
+        The result is on the form:
+        {
+          'hits': <total alert count>,
+          'probes': [
+            {'probe': <probe name>, 'hits': <hits on this probe>},
+            ...
+          ],
+          'timeline_data': [
+            {'date': <bucket time epoch ms>, 'hits': <alert count>},
+            ...
+          ]
+        }
+
+        :param request: request object with get parameters:
+            - from_date: from date in epoch ms
+            - interval: interval size in seconds
+            - qfilter: query filter for the data
+        :param sid: signature id of the rule
+        :return: dictionary with hits, probe hits and timeline data
+        """
+        raise NotImplementedError()

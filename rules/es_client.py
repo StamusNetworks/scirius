@@ -11,6 +11,27 @@ def create_backend():
     return ESClient()
 
 
+def _scirius_hit(r):
+    timeline = []
+    for entry in r['timeline']['buckets']:
+        timeline.append({
+            'date': entry['key'],
+            'hits': entry['doc_count']
+        })
+
+    probes = []
+    for entry in r['probes']['buckets']:
+        probes.append({
+            'probe': entry['key'],
+            'hits': entry['doc_count']
+        })
+    return {
+        'timeline_data': timeline,
+        'probes': probes,
+        'hits': r['doc_count']
+    }
+
+
 class ESClient(es_backend.ESBackend):
     def __init__(self):
         es_backend.ESBackend.__init__(self)
@@ -93,3 +114,10 @@ class ESClient(es_backend.ESBackend):
 
     def get_es_major_version(self):
         return es_graphs.get_es_major_version()
+
+    def get_signature_timeline_and_probe_hits(self, request, sid):
+        data = self.get_sigs_list_hits(request, sid)
+        for r in data:
+            if r['key'] == sid:
+                return _scirius_hit(r)
+        return {'hits': 0, 'timeline_data': [],'probes': []}
