@@ -11,6 +11,7 @@ from collections import OrderedDict
 import json
 
 from django.core.exceptions import SuspiciousOperation, ValidationError
+from django.db.models import Case, When
 
 from rest_framework.views import APIView
 from rest_framework.validators import UniqueValidator
@@ -526,19 +527,18 @@ class RuleHitsOrderingFilter(OrderingFilter):
 
             queryset = self._filter_min_max(request, queryset, hits_order)
 
-            # Index rules by sid
-            rules = OrderedDict([(r.sid, r) for r in queryset])
-            queryset = []
-            for sid, count in hits_order:
-                try:
-                    queryset.append(rules.pop(int(sid)))
-                except KeyError:
-                    pass
-            if order == 'desc':
-                queryset += rules.values()
-            else:
-                queryset = rules.values() + queryset
+            sid_order = map(lambda x: x[0], hits_order)
 
+            preserved = Case(*[When(sid=sid, then=models.Value(pos, models.IntegerField())) for pos, sid in enumerate(sid_order)])
+            top_rules_queryset_2 = Rule.objects.filter(sid__in=sid_order)
+            top_rules_queryset = top_rules_queryset_2.annotate(qs_order=preserved)
+
+            order_value = len(sid_order)
+            queryset = queryset.exclude(sid__in=sid_order)
+            queryset = queryset.annotate(qs_order=models.Value(order_value, models.IntegerField()))
+            queryset = top_rules_queryset.union(queryset).order_by('qs_order')
+            if order == 'asc':
+                queryset = queryset.reverse()
         else:
             if ordering:
                 ordering = tuple(list(ordering) + ['sid'])
