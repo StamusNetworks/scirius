@@ -115,9 +115,7 @@ class ESClient(es_backend.ESBackend):
     def get_es_major_version(self):
         return es_graphs.get_es_major_version()
 
-    def get_signature_timeline_and_probe_hits(self, request, sid):
-        data = self.get_sigs_list_hits(request, sid)
-        for r in data:
-            if r['key'] == sid:
-                return _scirius_hit(r)
-        return {'hits': 0, 'timeline_data': [],'probes': []}
+    def get_signature_timeline_and_probe_hits(self, request, sids):
+        sids = ",".join(sids)
+        data = self.get_sigs_list_hits(request, sids)
+        return {r['key']: _scirius_hit(r) for r in data}

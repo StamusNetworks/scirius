@@ -485,11 +485,11 @@ class RuleHitsOrderingFilter(OrderingFilter):
     def _filter_min_max(self, request, queryset):
         min_hits = self.get_query_param(request, 'hits_min')
         if min_hits is not None:
-            queryset = queryset.filter(hits__gt=int(min_hits))
+            queryset = queryset.filter(hits__gte=int(min_hits))
 
         max_hits = self.get_query_param(request, 'hits_max')
         if max_hits is not None:
-            queryset = queryset.filter(hits__lt=int(max_hits))
+            queryset = queryset.filter(hits__lte=int(max_hits))
 
         return queryset
 
@@ -849,9 +849,10 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         return Response(res)
 
     def _add_hits_and_timeline_data(self, request, data):
+        sids = [r['sid'] for r in data]
+        timeline_and_probe_hits = _es_backend.get_signature_timeline_and_probe_hits(request, sids)
         for rule in data:
-            timeline_and_probe_hits = _es_backend.get_signature_timeline_and_probe_hits(request, rule['sid'])
-            rule.update(timeline_and_probe_hits)
+            rule.update(timeline_and_probe_hits[unicode(rule['sid'])])
 
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())

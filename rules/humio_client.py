@@ -182,6 +182,11 @@ def _get_int(val):
             return 0
 
 
+def _chunks(l, n):
+    n = max(1, n)
+    return (l[i:i+n] for i in xrange(0, len(l), n))
+
+
 class HumioClient(object, ESBackend):
     def __init__(self):
         super(HumioClient, self).__init__()
@@ -478,49 +483,58 @@ class HumioClient(object, ESBackend):
         rdata['interval'] = int(interval)
         return rdata
 
-    def get_signature_timeline_and_probe_hits(self, request, sid):
+    def get_signature_timeline_and_probe_hits(self, request, sids):
+        sids = map(unicode, sids)
         from_date = _get_from_date(request)
         interval = _get_interval(request)
         qfilter = _get_qfilter(request)
-        sid_filter = "alert.signature_id = %s" % sid
-        if not qfilter:
-            qfilter = sid_filter
-        else:
-            qfilter = sid_filter + " | " + qfilter
 
-        data = self._get_timeline_sp(from_date=from_date, interval=interval, qfilter=qfilter)
-        timeline_data = []
-        indices = {}
-        index = 0
-        probe_data = []
-        total_hits = 0
-        for key, value in data.items():
-            if key in ['from_date', 'interval']:
-                # skip the key if its not a series for a host
-                continue
-            host = key
-            series = value
-            sum_host = 0
-            for bucket in series['entries']:
-                sum_host += bucket['count']
-                if bucket['time'] in indices:
-                    i = indices[bucket['time']]
-                    timeline_data[i]['hits'] += bucket['count']
-                else:
-                    timeline_data.append({'date': bucket['time'], 'hits': bucket['count']})
-                    indices[bucket['time']] = index
-                    index += 1
-            probe_data.append({
-                'probe': host,
-                'hits': sum_host
+        if not interval:
+            buckets = 100
+            interval = int((time.time() - (int(from_date) / 1000)) / buckets) * 1000
+
+        # First get the timeline for each signature
+        r_data = {}
+        max_bucket_series = 50  # Humio can only generate so many bucket series in a query
+
+        query_str = 'bucket(field=alert.signature_id, span=%sms, limit=%d)' \
+                    '| sort(alert.signature_id, limit=%d)' % (interval, max_bucket_series, HUMIO_DEFAULT_SORT_LIMIT)
+
+        # Divide the list of sids into chunks of size max_bucket_series
+        for sids_chunk in _chunks(sids, max_bucket_series):
+            sid_filter = " or ".join(["alert.signature_id = %s" % sid for sid in sids_chunk])
+            timeline_data = self._humio_query(filters=[ALERTS_FILTER, sid_filter, qfilter, query_str], start=from_date)
+            r_data.update({
+                sid: {
+                    'timeline_data': [
+                        {'date': int(bucket['_bucket']), 'hits': int(bucket['_count'])} for bucket in buckets_for_sid
+                    ]
+                } for sid, buckets_for_sid in itertools.groupby(timeline_data,
+                                                                key=operator.itemgetter('alert.signature_id'))
             })
-            total_hits += sum_host
 
-        return {
-            'timeline_data': timeline_data,
-            'probes': probe_data,
-            'hits': total_hits
-        }
+        # Then get the hits per probe per signature
+        sid_filter = " or ".join(["alert.signature_id = %s" % sid for sid in sids])
+        query_str = 'groupby(field=[host, alert.signature_id], limit=%d)' \
+                    '| sort(field=[alert.signature_id, host], limit=%d)' % (HUMIO_DEFAULT_SORT_LIMIT,
+                                                                            HUMIO_DEFAULT_SORT_LIMIT)
+        probe_data = self._humio_query(filters=[ALERTS_FILTER, sid_filter, qfilter, query_str], start=from_date)
+        for sid, probe_entries in itertools.groupby(probe_data, key=operator.itemgetter('alert.signature_id')):
+            r_data[sid]['probes'] = [{
+                'probe': probe['host'],
+                'hits': int(probe['_count'])
+            } for probe in probe_entries]
+            r_data[sid]['hits'] = sum(map(lambda x: x['hits'], r_data[sid]['probes']))
+
+        # If a signature had no alerts, make sure to include the empty entry.
+        for sid in sids:
+            if sid not in r_data:
+                r_data[sid] = {
+                    'hits': 0,
+                    'probes': [],
+                    'timeline_data': []
+                }
+        return r_data
 
     def get_rules_per_category(self, request):
         """Gets a list of alerted rules grouped into categories from humio.
