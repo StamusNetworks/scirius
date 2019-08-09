@@ -116,6 +116,17 @@ class ESClient(es_backend.ESBackend):
         return es_graphs.get_es_major_version()
 
     def get_signature_timeline_and_probe_hits(self, request, sids):
-        sids = ",".join(sids)
-        data = self.get_sigs_list_hits(request, sids)
-        return {r['key']: _scirius_hit(r) for r in data}
+        sids = map(unicode, sids)
+        sids_joined = ",".join(sids)
+        data = self.get_sigs_list_hits(request, sids_joined)
+        r_data = {unicode(r['key']): _scirius_hit(r) for r in data}
+
+        # If a signature had no alerts, make sure to include the empty entry.
+        for sid in sids:
+            if sid not in r_data:
+                r_data[sid] = {
+                    'hits': 0,
+                    'probes': [],
+                    'timeline_data': []
+                }
+        return r_data
