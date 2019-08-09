@@ -482,72 +482,29 @@ class RuleHitsOrderingFilter(OrderingFilter):
                 value = None
         return value
 
-    def _get_hits_order(self, request, order):
-        try:
-            result = _es_backend.get_top_rules(request, count=Rule.objects.count(), order=order)
-        except ESError:
-            queryset = Rule.objects.order_by('sid')
-            queryset = queryset.annotate(hits=models.Value(0, output_field=models.IntegerField()))
-            queryset = queryset.annotate(hits=models.ExpressionWrapper(models.Value(0), output_field=models.IntegerField()))
-            return queryset.values_list('sid', 'hits')
-
-        result = map(lambda x: (x['key'], x['doc_count']), result)
-        return result
-
-    def _filter_min_max(self, request, queryset, hits_order):
-        hits_by_sid = dict(hits_order)
-
+    def _filter_min_max(self, request, queryset):
         min_hits = self.get_query_param(request, 'hits_min')
         if min_hits is not None:
-            queryset = filter(lambda x: hits_by_sid.get(x.sid, 0) >= min_hits, queryset)
+            queryset = queryset.filter(hits__gt=int(min_hits))
 
         max_hits = self.get_query_param(request, 'hits_max')
         if max_hits is not None:
-            queryset = filter(lambda x: hits_by_sid.get(x.sid, 0) <= max_hits, queryset)
+            queryset = queryset.filter(hits__lt=int(max_hits))
 
         return queryset
 
     def filter_queryset(self, request, queryset, view):
         ordering = self.get_ordering(request, queryset, view)
 
-        if 'hits' in ordering or '-hits' in ordering:
-            if ordering[0] not in ('hits', '-hits'):
-                raise ParseError('hits ordering can only be the first ordering term')
-
-            hits_order = ordering[0]
-            ordering = ordering[1:]
-
-            if ordering:
-                ordering = tuple(list(ordering) + ['sid'])
-                queryset = queryset.order_by(*ordering)
-
-            # Sorting
-            order = 'asc' if hits_order == 'hits' else 'desc'
-            hits_order = self._get_hits_order(request, order)
-
-            queryset = self._filter_min_max(request, queryset, hits_order)
-
-            sid_order = map(lambda x: x[0], hits_order)
-
-            preserved = Case(*[When(sid=sid, then=models.Value(pos, models.IntegerField())) for pos, sid in enumerate(sid_order)])
-            top_rules_queryset_2 = Rule.objects.filter(sid__in=sid_order)
-            top_rules_queryset = top_rules_queryset_2.annotate(qs_order=preserved)
-
-            order_value = len(sid_order)
-            queryset = queryset.exclude(sid__in=sid_order)
-            queryset = queryset.annotate(qs_order=models.Value(order_value, models.IntegerField()))
-            queryset = top_rules_queryset.union(queryset).order_by('qs_order')
-            if order == 'asc':
-                queryset = queryset.reverse()
-        else:
-            if ordering:
-                ordering = tuple(list(ordering) + ['sid'])
-                queryset = queryset.order_by(*ordering)
-
-            if self.get_query_param(request, 'hits_min') is not None \
-                    or self.get_query_param(request, 'hits_max') is not None:
-                hits_order = self._get_hits_order(request, 'asc')
-                queryset = self._filter_min_max(request, queryset, hits_order)
+        if any(x in ordering for x in ['hits', '-hits']) or any(x in request.GET for x in ['hits_min', 'hits_max']):
+            hits_order = _es_backend.get_top_rules(request, count=Rule.objects.count(), order='desc')
+            hits_by_sid = {x['key']: x['doc_count'] for x in hits_order}
+            hits_case = Case(
+                *[When(sid=int(sid), then=models.Value(hits, models.IntegerField())) for sid, hits in hits_by_sid.items()],
+                default=models.Value(0, models.IntegerField()))
+            queryset = queryset.annotate(hits=hits_case)
+            queryset = self._filter_min_max(request, queryset)
+        queryset = queryset.order_by(*ordering)
 
         return queryset
 
