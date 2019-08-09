@@ -4,7 +4,7 @@ import axios from 'axios';
 import { PAGE_STATE } from 'hunt_common/constants';
 import { Dropdown, Icon, MenuItem, ApplicationLauncher, ApplicationLauncherItem, AboutModal, Modal, Form, Button } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
-import FilterSets from '../FilterSets';
+import FilterSets from './FilterSets';
 import ExternalLink from './ExternalLink';
 import OutsideAlerter from './OutsideAlerter';
 import sciriusLogo from '../img/scirius-by-stamus.svg';

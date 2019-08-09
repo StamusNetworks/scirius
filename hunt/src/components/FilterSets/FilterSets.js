@@ -21,27 +21,21 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import { FormGroup, FormControl, Notification, NotificationDrawer, MenuItem, Icon } from 'patternfly-react';
 import { Collapse } from 'react-bootstrap';
-import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
-import { addFilter, sections } from './containers/App/stores/global';
+import { sections } from '../../containers/App/stores/global';
 
-class FilterSets extends React.Component {
+export default class FilterSets extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            loading: false,
-            rows: { global: [], private: [], static: [] },
             expandedPanel: 'static',
             searchValue: '',
             user: undefined
         };
 
-        this.loadFilterSets = this.loadFilterSets.bind(this);
-        this.deleteFilterSets = this.deleteFilterSets.bind(this);
         this.escFunction = this.escFunction.bind(this);
     }
 
@@ -51,31 +45,7 @@ class FilterSets extends React.Component {
             this.setState({ user: currentUser.data });
         });
 
-        this.setState({ loading: true });
-        axios.get(config.API_URL + config.HUNT_FILTER_SETS).then((res) => {
-            const rows = { global: [], private: [], static: [] };
-            for (let idx = 0; idx < res.data.length; idx += 1) {
-                const row = res.data[idx];
-
-                for (let idxPages = 0; idxPages < VerticalNavItems.length; idxPages += 1) {
-                    const item = VerticalNavItems[idxPages];
-
-                    if (item.def === row.page) {
-                        row.pageTitle = item.title;
-                        break;
-                    }
-                }
-
-                if (row.share === 'global') {
-                    rows.global.push(row);
-                } else if (row.share === 'private') {
-                    rows.private.push(row);
-                } else {
-                    rows.static.push(row);
-                }
-            }
-            this.setState({ rows, loading: false });
-        });
+        this.props.loadFilterSets();
         document.addEventListener('keydown', this.escFunction, false);
     }
 
@@ -122,28 +92,13 @@ class FilterSets extends React.Component {
         this.props.reload();
     }
 
-    deleteFilterSets(row) {
-        axios.delete(config.API_URL + config.HUNT_FILTER_SETS + row.id).then(() => {
-            const { rows } = this.state;
-            let idx = rows.global.indexOf(row);
-            idx > -1 ? rows.global.splice(idx, 1) : undefined;
-
-            idx = rows.private.indexOf(row);
-            if (idx > -1) {
-                rows.private.splice(idx, 1);
-            }
-
-            this.setState({ rows });
-        });
-    }
-
     render() {
         const globaL = 'global';
         const privatE = 'private';
         const statiC = 'static';
-        const rowsGlobal = this.state.rows.global ? this.state.rows.global.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase())) : [];
-        const rowsPrivate = this.state.rows.private ? this.state.rows.private.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase())) : [];
-        const rowsStatic = this.state.rows.static ? this.state.rows.static.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase())) : [];
+        const rowsGlobal = this.props.globalSet ? this.props.globalSet.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase())) : [];
+        const rowsPrivate = this.props.privateSet ? this.props.privateSet.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase())) : [];
+        const rowsStatic = this.props.staticSet ? this.props.staticSet.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase())) : [];
         const noRights = this.state.user !== undefined && this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser;
 
         return (
@@ -180,7 +135,7 @@ class FilterSets extends React.Component {
                                             <Notification key={item.id} seen={false}>
                                                 <NotificationDrawer.Dropdown id="Dropdown1">
                                                     <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
-                                                    {!noRights && <MenuItem key={'delete'} onClick={() => this.deleteFilterSets(item)}>Delete</MenuItem>}
+                                                    {!noRights && <MenuItem key={'delete'} onClick={() => this.props.deleteFilterSet('global', item)}>Delete</MenuItem>}
                                                 </NotificationDrawer.Dropdown>
                                                 {this.getIcon(item)}
                                                 <Notification.Content onClick={() => this.loadFilterSets(item)}>
@@ -192,7 +147,7 @@ class FilterSets extends React.Component {
                                             </Notification>
                                         </span>
                                     ))}
-                                    {this.state.loading && <Notification key="loading" type="loading" />}
+                                    {this.props.loading && <Notification key="loading" type="loading" />}
                                 </NotificationDrawer.PanelBody>
                                 }
                                 {!rowsGlobal && <NotificationDrawer.EmptyState title={''} />}
@@ -218,7 +173,7 @@ class FilterSets extends React.Component {
                                             <Notification key={item.id} seen={false}>
                                                 <NotificationDrawer.Dropdown id="Dropdown2">
                                                     <MenuItem key={'load'} onClick={() => this.loadFilterSets(item)}>Load</MenuItem>
-                                                    <MenuItem key={'delete'} onClick={() => this.deleteFilterSets(item)}>Delete</MenuItem>
+                                                    <MenuItem key={'delete'} onClick={() => this.props.deleteFilterSet('private', item)}>Delete</MenuItem>
                                                 </NotificationDrawer.Dropdown>
                                                 {this.getIcon(item)}
                                                 <Notification.Content onClick={() => this.loadFilterSets(item)}>
@@ -230,7 +185,7 @@ class FilterSets extends React.Component {
                                             </Notification>
                                         </span>
                                     ))}
-                                    {this.state.loading && <Notification key="loading" type="loading" />}
+                                    {this.props.loading && <Notification key="loading" type="loading" />}
 
                                 </NotificationDrawer.PanelBody>
                                 }
@@ -269,7 +224,7 @@ class FilterSets extends React.Component {
                                             </Notification>
                                         </span>
                                     ))}
-                                    {this.state.loading && <Notification key="loading" type="loading" />}
+                                    {this.props.loading && <Notification key="loading" type="loading" />}
 
                                 </NotificationDrawer.PanelBody>
                                 }
@@ -290,10 +245,10 @@ FilterSets.propTypes = {
     close: PropTypes.any,
     reload: PropTypes.any,
     addFilter: PropTypes.func,
+    loading: PropTypes.bool,
+    loadFilterSets: PropTypes.func,
+    deleteFilterSet: PropTypes.func,
+    globalSet: PropTypes.array,
+    privateSet: PropTypes.array,
+    staticSet: PropTypes.array,
 };
-
-const mapDispatchToProps = {
-    addFilter
-};
-
-export default connect(null, mapDispatchToProps)(FilterSets);

@@ -1,13 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import { DropdownKebab, MenuItem } from 'patternfly-react';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
 import FilterToggleModal from '../FilterToggleModal';
 import ErrorHandler from './Error';
 import FilterSetSave from './FilterSetSaveModal';
+import { loadFilterSets } from './FilterSets/store';
 
-export default class FilterEditKebab extends React.Component {
+class FilterEditKebab extends React.Component {
     constructor(props) {
         super(props);
         this.displayToggle = this.displayToggle.bind(this);
@@ -102,6 +104,7 @@ export default class FilterEditKebab extends React.Component {
 
         axios.post(config.API_URL + config.HUNT_FILTER_SETS, { name: this.state.filterSets.name, page: this.state.filterSets.page, content: filters, share: this.state.filterSets.shared, description: this.state.filterSets.description })
         .then(() => {
+            this.props.loadFilterSets();
             this.closeActionToFilterSet();
             this.setState({ errors: undefined });
         })
@@ -169,5 +172,12 @@ FilterEditKebab.propTypes = {
     data: PropTypes.any,
     last_index: PropTypes.any,
     needUpdate: PropTypes.any,
-    updateIDSFilterState: PropTypes.any
+    updateIDSFilterState: PropTypes.any,
+    loadFilterSets: PropTypes.func,
 };
+
+const mapDispatchToProps = {
+    loadFilterSets,
+};
+
+export default connect(null, mapDispatchToProps)(FilterEditKebab);
