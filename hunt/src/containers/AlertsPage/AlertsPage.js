@@ -64,7 +64,7 @@ class AlertsPage extends React.Component {
     }
 
     componentDidMount() {
-        this.fetchData(this.props.rules_list, this.props.filters);
+        this.fetchData(this.props.rules_list, this.props.filtersWithAlert);
         if (this.state.rulesets.length === 0) {
             axios.get(config.API_URL + config.RULESET_PATH).then((res) => {
                 this.setState({ rulesets: res.data.results });
@@ -101,9 +101,9 @@ class AlertsPage extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        const filtersChanged = (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters));
+        const filtersChanged = (JSON.stringify(prevProps.filtersWithAlert) !== JSON.stringify(this.props.filtersWithAlert));
         if (prevProps.from_date !== this.props.from_date || filtersChanged) {
-            this.fetchData(this.props.rules_list, this.props.filters);
+            this.fetchData(this.props.rules_list, this.props.filtersWithAlert);
             if (filtersChanged) {
                 this.loadActions();
             }
@@ -179,6 +179,7 @@ class AlertsPage extends React.Component {
 AlertsPage.propTypes = {
     rules_list: PropTypes.any,
     filters: PropTypes.any,
+    filtersWithAlert: PropTypes.any,
     from_date: PropTypes.any,
     systemSettings: PropTypes.any,
     updateListState: PropTypes.any,
@@ -190,7 +191,8 @@ AlertsPage.propTypes = {
 };
 
 const mapStateToProps = createStructuredSelector({
-    filters: makeSelectGlobalFilters()
+    filters: makeSelectGlobalFilters(),
+    filtersWithAlert: makeSelectGlobalFilters(true),
 });
 
 const mapDispatchToProps = {

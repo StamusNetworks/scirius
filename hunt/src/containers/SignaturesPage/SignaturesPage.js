@@ -194,7 +194,7 @@ class SignaturesPage extends React.Component {
                 display_toggle: false, loading: false
             });
         } else {
-            this.fetchData(this.props.rules_list, this.props.filters);
+            this.fetchData(this.props.rules_list, this.props.filtersWithAlert);
         }
         const huntFilters = store.get('huntFilters');
         axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
@@ -225,19 +225,19 @@ class SignaturesPage extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        const filtersChanged = (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters));
+        const filtersChanged = (JSON.stringify(prevProps.filtersWithAlert) !== JSON.stringify(this.props.filtersWithAlert));
         if (prevProps.from_date !== this.props.from_date || filtersChanged) {
-            const sid = this.findSID(this.props.filters);
+            const sid = this.findSID(this.props.filtersWithAlert);
             if (sid !== undefined) {
                 // eslint-disable-next-line react/no-did-update-set-state
                 this.setState({
                     display_toggle: false, loading: false
                 });
             } else {
-                this.fetchData(this.props.rules_list, this.props.filters);
+                this.fetchData(this.props.rules_list, this.props.filtersWithAlert);
             }
             if (filtersChanged) {
-                this.loadActions(this.props.filters);
+                this.loadActions(this.props.filtersWithAlert);
             }
         }
     }
@@ -397,13 +397,15 @@ SignaturesPage.propTypes = {
     systemSettings: PropTypes.any,
     from_date: PropTypes.any,
     filters: PropTypes.any,
+    filtersWithAlert: PropTypes.any,
     updateListState: PropTypes.any, // should be removed when redux is implemented
     rules_list: PropTypes.any, // should be removed when redux is implemented
     page: PropTypes.any,
 }
 
 const mapStateToProps = createStructuredSelector({
-    filters: makeSelectGlobalFilters()
+    filters: makeSelectGlobalFilters(),
+    filtersWithAlert: makeSelectGlobalFilters(true)
 });
 
 const mapDispatchToProps = {
