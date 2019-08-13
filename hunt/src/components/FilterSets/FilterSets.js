@@ -87,6 +87,7 @@ export default class FilterSets extends React.Component {
     }
 
     loadFilterSets(row) {
+        this.props.clearFilters(sections.GLOBAL);
         this.props.addFilter(sections.GLOBAL, row.content);
         this.props.switchPage(row.page);
         this.props.reload();
@@ -245,6 +246,7 @@ FilterSets.propTypes = {
     close: PropTypes.any,
     reload: PropTypes.any,
     addFilter: PropTypes.func,
+    clearFilters: PropTypes.func,
     loading: PropTypes.bool,
     loadFilterSets: PropTypes.func,
     deleteFilterSet: PropTypes.func,

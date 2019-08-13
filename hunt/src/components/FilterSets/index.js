@@ -14,10 +14,11 @@ import { filterSetsReducer as reducer,
     makeSelectGlobalFilterSets } from './store';
 
 import FilterSets from './FilterSets';
-import { addFilter } from '../../containers/App/stores/global';
+import { addFilter, clearFilters } from '../../containers/App/stores/global';
 
 const mapDispatchToProps = (dispatch) => ({
     addFilter: (filterType, filter) => dispatch(addFilter(filterType, filter)),
+    clearFilters: (filterType) => dispatch(clearFilters(filterType)),
     loadFilterSets: () => dispatch(loadFilterSets()),
     deleteFilterSet: (filterType, filter) => dispatch(deleteFilterSet(filterType, filter)),
 });
