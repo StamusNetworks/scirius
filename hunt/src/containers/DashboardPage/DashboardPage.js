@@ -219,7 +219,7 @@ class HuntDashboard extends React.Component {
     };
 
     generateQFilter = () => {
-        let qfilter = buildQFilter([...this.props.filtersWithAlert, this.props.alertTag], this.props.systemSettings);
+        let qfilter = buildQFilter(this.props.filtersWithAlert, this.props.systemSettings);
         if (!qfilter) {
             qfilter = '';
         }
@@ -808,7 +808,6 @@ HuntDashboard.propTypes = {
     rules_list: PropTypes.any,
     updateListState: PropTypes.any,
     page: PropTypes.any,
-    alertTag: PropTypes.object,
     filtersWithAlert: PropTypes.array,
 }
 
