@@ -133,6 +133,7 @@ class ESQuery(object):
                 hosts_list = self.request.GET['hosts'].split(',')
             if 'qfilter' in self.request.GET:
                 qfilter = self.request.GET['qfilter']
+                qfilter = qfilter.replace('.raw:', '.%s:' % settings.ELASTICSEARCH_KEYWORD)
 
         hosts = None
         hosts_filter = None

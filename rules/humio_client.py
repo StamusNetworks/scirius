@@ -57,6 +57,8 @@ def _replace_field_name(field_name):
     res = field_name
     if field_name.endswith('.raw'):
         res = field_name[:-4]
+    if field_name.endswith('.keyword'):
+        res = field_name[:-8]
     if res in FIELD_REPLACEMENTS:
         res = FIELD_REPLACEMENTS[res]
     return res
