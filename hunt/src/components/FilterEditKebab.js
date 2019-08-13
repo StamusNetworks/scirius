@@ -8,6 +8,7 @@ import FilterToggleModal from '../FilterToggleModal';
 import ErrorHandler from './Error';
 import FilterSetSave from './FilterSetSaveModal';
 import { loadFilterSets } from './FilterSets/store';
+import { addFilter, sections } from '../containers/App/stores/global';
 
 class FilterEditKebab extends React.Component {
     constructor(props) {
@@ -84,7 +85,7 @@ class FilterEditKebab extends React.Component {
 
     convertActionToFilters() {
         const filters = this.generateFilterSet();
-        this.props.updateIDSFilterState(filters);
+        this.props.addFilter(sections.GLOBAL, filters);
     }
 
     handleComboChange(event) {
@@ -172,12 +173,13 @@ FilterEditKebab.propTypes = {
     data: PropTypes.any,
     last_index: PropTypes.any,
     needUpdate: PropTypes.any,
-    updateIDSFilterState: PropTypes.any,
+    addFilter: PropTypes.any,
     loadFilterSets: PropTypes.func,
 };
 
 const mapDispatchToProps = {
     loadFilterSets,
+    addFilter,
 };
 
 export default connect(null, mapDispatchToProps)(FilterEditKebab);
