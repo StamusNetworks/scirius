@@ -485,21 +485,21 @@ class HumioClient(object, ESBackend):
         rdata['interval'] = int(interval)
         return rdata
 
-    def get_signature_timeline_and_probe_hits(self, request, sids):
-        sids = map(unicode, sids)
+    def _get_timeline_data_for_signatures(self, request, sids):
         from_date = _get_from_date(request)
         interval = _get_interval(request)
         qfilter = _get_qfilter(request)
+        end = int(time.time()) * 1000
 
         if not interval:
             buckets = 100
             interval = int((time.time() - (int(from_date) / 1000)) / buckets) * 1000
 
-        # First get the timeline for each signature
         r_data = {}
         max_bucket_series = 50  # Humio can only generate so many bucket series in a query
 
         query_str = 'bucket(field=alert.signature_id, span=%sms, limit=%d)' \
+                    '| not _count = 0' \
                     '| sort(alert.signature_id, limit=%d)' % (interval, max_bucket_series, HUMIO_DEFAULT_SORT_LIMIT)
 
         # Divide the list of sids into chunks of size max_bucket_series
@@ -514,6 +514,26 @@ class HumioClient(object, ESBackend):
                 } for sid, buckets_for_sid in itertools.groupby(timeline_data,
                                                                 key=operator.itemgetter('alert.signature_id'))
             })
+
+        def fill_series(series_entry):
+            dates = set(map(operator.itemgetter('date'), series_entry['timeline_data']))
+            for t in range(from_date, end, interval):
+                if t not in dates:
+                    series_entry['timeline_data'].append({
+                        'date': t,
+                        'hits': 0
+                    })
+            return series_entry
+
+        return {k: fill_series(v) for k, v in r_data.iteritems()}
+
+    def get_signature_timeline_and_probe_hits(self, request, sids):
+        sids = map(unicode, sids)
+        from_date = _get_from_date(request)
+        qfilter = _get_qfilter(request)
+
+        # First get the timeline for each signature
+        r_data = self._get_timeline_data_for_signatures(request, sids)
 
         # Then get the hits per probe per signature
         sid_filter = " or ".join(["alert.signature_id = %s" % sid for sid in sids])
