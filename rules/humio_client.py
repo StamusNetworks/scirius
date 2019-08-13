@@ -505,7 +505,7 @@ class HumioClient(object, ESBackend):
         # Divide the list of sids into chunks of size max_bucket_series
         for sids_chunk in _chunks(sids, max_bucket_series):
             sid_filter = " or ".join(["alert.signature_id = %s" % sid for sid in sids_chunk])
-            timeline_data = self._humio_query(filters=[ALERTS_FILTER, sid_filter, qfilter, query_str], start=from_date)
+            timeline_data = self._humio_query(filters=[ALERTS_FILTER, qfilter, sid_filter, query_str], start=from_date)
             r_data.update({
                 sid: {
                     'timeline_data': [
@@ -840,7 +840,7 @@ class HumioClient(object, ESBackend):
         field_names = {'alert.signature_id': 'key', '_count': 'doc_count'}
         field_names_filter = self._create_custom_field_names_filter(field_names)
 
-        data = self._humio_query(filters=[ALERTS_FILTER, query_str, qfilter, field_names_filter],
+        data = self._humio_query(filters=[ALERTS_FILTER, qfilter, query_str, field_names_filter],
                                  hosts=hosts, start=from_date)
         return data
 
@@ -856,7 +856,7 @@ class HumioClient(object, ESBackend):
 
         query_str = "groupBy(alert.signature_id) | sort(alert.signature_id, order=%s)" % order
 
-        data = self._humio_query(filters=[ALERTS_FILTER, sid_filter, query_str, qfilter, field_names_filter],
+        data = self._humio_query(filters=[ALERTS_FILTER, sid_filter, qfilter, query_str, field_names_filter],
                                  hosts=hosts, start=from_date)
         return data
 
