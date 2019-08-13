@@ -101,9 +101,12 @@ class AlertsPage extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.from_date !== this.props.from_date || JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
+        const filtersChanged = (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters));
+        if (prevProps.from_date !== this.props.from_date || filtersChanged) {
             this.fetchData(this.props.rules_list, this.props.filters);
-            this.loadActions();
+            if (filtersChanged) {
+                this.loadActions();
+            }
         }
     }
 

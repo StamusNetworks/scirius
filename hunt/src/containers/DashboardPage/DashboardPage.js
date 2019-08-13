@@ -198,6 +198,7 @@ class HuntDashboard extends React.Component {
                 this.filters = JSON.stringify(this.props.filters);
                 this.resetPanelHeights();
                 this.bootPanels();
+                this.loadActions(this.props.filters);
             }
         }
     }

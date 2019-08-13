@@ -225,7 +225,8 @@ class SignaturesPage extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.from_date !== this.props.from_date || JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
+        const filtersChanged = (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters));
+        if (prevProps.from_date !== this.props.from_date || filtersChanged) {
             const sid = this.findSID(this.props.filters);
             if (sid !== undefined) {
                 // eslint-disable-next-line react/no-did-update-set-state
@@ -234,6 +235,9 @@ class SignaturesPage extends React.Component {
                 });
             } else {
                 this.fetchData(this.props.rules_list, this.props.filters);
+            }
+            if (filtersChanged) {
+                this.loadActions(this.props.filters);
             }
         }
     }
