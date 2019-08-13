@@ -62,9 +62,10 @@ class FilterList extends React.Component {
         return <React.Fragment>
             {/* eslint-disable react/no-array-index-key */}
             <ul className="list-inline">{this.props.filters.map((filter, idx) => <FilterItem key={idx}
+                addFilter={this.props.addFilter}
                 onRemove={() => this.props.removeFilter(this.props.filterType, idx)}
                 onEdit={() => this.editHandler(idx, filter.id, filter.value, filter.negated)}
-                updateFilter={() => false}
+                editFilter={this.props.editFilter}
                 filters={this.props.filters}
                 {...filter}
             />)}</ul>
