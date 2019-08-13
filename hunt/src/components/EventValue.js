@@ -11,8 +11,8 @@ const EventValue = (props) => <div className="value-field-complete">
     <span className={'value-actions'}>
         <ErrorHandler>
             <EventValueInfo field={props.field} value={props.value} magnifiers={props.magnifiers} />
-            {props.magnifiers && <a onClick={() => props.addFilter(sections.GLOBAL, { id: props.field, value: props.value, negated: false })}> <Icon type="fa" name="search-plus" /></a>}
-            {props.magnifiers && <a onClick={() => props.addFilter(sections.GLOBAL, { id: props.field, value: props.value, negated: true })}> <Icon type="fa" name="search-minus" /></a>}
+            {props.magnifiers && <a onClick={() => props.addFilter(sections.GLOBAL, { id: props.field, value: props.value, label: `${props.field}: ${props.value}`, fullString: true, negated: false })}> <Icon type="fa" name="search-plus" /></a>}
+            {props.magnifiers && <a onClick={() => props.addFilter(sections.GLOBAL, { id: props.field, value: props.value, label: `${props.field}: ${props.value}`, fullString: true, negated: true })}> <Icon type="fa" name="search-minus" /></a>}
         </ErrorHandler>
     </span>
     {props.right_info && <span className="value-right-info">{props.right_info}</span>}
