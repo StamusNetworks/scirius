@@ -1904,7 +1904,7 @@ class ESSigsListViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        sids = request.GET.get('sids', 20)
+        sids = request.GET.get('sids', None)
 
         errors = {}
         if sids is None:
@@ -1916,6 +1916,7 @@ class ESSigsListViewSet(ESBaseViewSet):
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
+        sids = sids.split(',')
         return Response(_es_backend.get_sigs_list_hits(request, sids))
 
 

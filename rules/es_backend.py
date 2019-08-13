@@ -234,15 +234,66 @@ class ESBackend:
         raise NotImplementedError()
 
     def get_alerts_tail(self, request, search_target=True):
+        """
+        Get the raw alert json data for the last 100 alerts.
+        If a query filter is set, the 100 last alerts from
+        the set of filtered alerts is returned.
+        The resulting list may have less than 100 entries
+        if the number of alerts in the result set is less than 100.
+        The result is on the format:
+        [
+          {'_id': 0, '_source': <raw alert json>},
+          {'_id': 1, '_source': <raw alert json>},
+          ...
+          {'_id': 99, '_source': <raw alert json>}
+        ]
+
+        :param request: request object with get parameters
+            - hosts: comma separated hosts to filter on
+            - from_date: search begin date in epoch ms
+            - qfilter: query filter for the search
+        :param search_target:
+        :return: list of the last 100 alerts
+        """
         raise NotImplementedError()
 
     def get_suri_log_tail(self, request):
         raise NotImplementedError()
 
     def get_top_rules(self, request, count=DEFAULT_COUNT, order=DEFAULT_ORDER):
+        """
+        Get the signature ids and hits of the top n rules, ordered by hits.
+        The result is on the format
+        [
+          {'key': <signature id>, 'doc_count': <number of hits>},
+          ...
+        ]
+        :param request: request object with get parameters:
+            - hosts: comma separated hosts to filter on
+            - from_date: search begin date in epoch ms
+            - qfilter: query filter for the search
+        :param count: number of signatures to retrieve
+        :param order: sort order for the hits (default descending)
+        :return: list of signature ids and hits
+        """
         raise NotImplementedError()
 
     def get_sigs_list_hits(self, request, sids, order=DEFAULT_ORDER):
+        """
+        Get the number of alerts for a list of signature ids
+        The result is on the form
+        [
+          {'key': <signature id>, 'doc_count': <number of hits>},
+          ...
+        ]
+        :param request: request object with get parameters:
+            - hosts: comma separated hosts to filter on
+            - from_date: search begin date in epoch ms
+            - qfilter: query filter for the search
+        :param sids: list of signature ids
+        :param order: sort order, either 'desc', 'descending', 'asc' or 'ascending'
+        :return: list of signature ids and hit counts
+        """
         raise NotImplementedError()
 
     def get_es_major_version(self):

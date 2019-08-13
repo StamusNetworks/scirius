@@ -110,6 +110,7 @@ class ESClient(es_backend.ESBackend):
         return es_graphs.ESTopRules(request).get(count=count, order=order)
 
     def get_sigs_list_hits(self, request, sids, order=DEFAULT_ORDER):
+        sids = ','.join(sids)
         return es_graphs.ESSigsListHits(request).get(sids, order=order)
 
     def get_es_major_version(self):
@@ -117,8 +118,7 @@ class ESClient(es_backend.ESBackend):
 
     def get_signature_timeline_and_probe_hits(self, request, sids):
         sids = map(unicode, sids)
-        sids_joined = ",".join(sids)
-        data = self.get_sigs_list_hits(request, sids_joined)
+        data = self.get_sigs_list_hits(request, sids)
         r_data = {unicode(r['key']): _scirius_hit(r) for r in data}
 
         # If a signature had no alerts, make sure to include the empty entry.

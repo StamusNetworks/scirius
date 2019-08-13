@@ -810,8 +810,7 @@ class HumioClient(object, ESBackend):
         raise NotImplementedError()
 
     def get_alerts_tail(self, request, search_target=True):
-        """Gets and returns the raw alert data for the last 100 alerts
-        Filters are applied to the last 100 alerts."""
+        """Gets and returns the raw alert data for the last 100 alerts"""
 
         hosts = _get_hosts(request)
         from_date = _get_from_date(request)
@@ -849,7 +848,7 @@ class HumioClient(object, ESBackend):
         from_date = _get_from_date(request)
         qfilter = _get_qfilter(request)
 
-        sid_filter = " or ".join(["alert.signature_id = %s" % sid for sid in sids.split(',')])
+        sid_filter = " or ".join(map(lambda s: "alert.signature_id = %s" % s, sids))
 
         field_names = {'alert.signature_id': 'key', '_count': 'doc_count'}
         field_names_filter = self._create_custom_field_names_filter(field_names)
