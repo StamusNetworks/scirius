@@ -616,7 +616,7 @@ class HumioClient(object, ESBackend):
             for index, field, value in map(lambda (i, f, v): (int(i), f, v),
                                        map(lambda (k, v): (k[8:k.index(']')], k[k.index(']') + 2:], v),
                                        filter(lambda (k, v): k.startswith('_events'), e.items()))):
-                children[index][field] = value
+                children[index][field] = int(value) if field in ['key', 'doc_count'] else value
             return children
 
         def sum_total(entry):
