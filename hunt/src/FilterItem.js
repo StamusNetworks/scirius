@@ -70,7 +70,7 @@ export default class FilterItem extends React.Component {
                 break;
         }
         const actionsMenu = [<span key={`${item.pk}-index`} className="badge badge-default">{item.index}</span>];
-        actionsMenu.push(<FilterEditKebab key={`${item.pk}-kebab`} data={item} updateIDSFilterState={this.props.updateIDSFilterState} last_index={this.props.last_index} needUpdate={this.props.needUpdate} />);
+        actionsMenu.push(<FilterEditKebab key={`${item.pk}-kebab`} data={item} last_index={this.props.last_index} needUpdate={this.props.needUpdate} />);
         return (
             <ListViewItem
                 key={`${item.pk}-listitem`}
@@ -110,5 +110,4 @@ FilterItem.propTypes = {
     rulesets: PropTypes.any,
     needUpdate: PropTypes.any,
     last_index: PropTypes.any,
-    updateIDSFilterState: PropTypes.any,
 };

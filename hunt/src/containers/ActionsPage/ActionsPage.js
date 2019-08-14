@@ -114,7 +114,7 @@ export default class ActionsPage extends React.Component {
                 <Spinner loading={this.state.loading}></Spinner>
                 <ListView>
                     {this.state.data && this.state.data.map((item) => (
-                        <FilterItem key={item.pk} data={item} updateIDSFilterState={this.props.updateIDSFilterState} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} from_date={this.props.from_date} />
+                        <FilterItem key={item.pk} data={item} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} from_date={this.props.from_date} />
                     ))}
                 </ListView>
                 <ErrorHandler>
@@ -142,6 +142,5 @@ ActionsPage.propTypes = {
     rules_list: PropTypes.any,
     filters: PropTypes.any,
     updateListState: PropTypes.func,
-    updateIDSFilterState: PropTypes.func,
     from_date: PropTypes.any,
 };

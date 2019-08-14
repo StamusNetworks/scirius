@@ -8,7 +8,7 @@ import FilterToggleModal from '../FilterToggleModal';
 import ErrorHandler from './Error';
 import FilterSetSave from './FilterSetSaveModal';
 import { loadFilterSets } from './FilterSets/store';
-import { addFilter, sections } from '../containers/App/stores/global';
+import { addFilter, generateAlert, setTag, sections, clearFilters } from '../containers/App/stores/global';
 
 class FilterEditKebab extends React.Component {
     constructor(props) {
@@ -41,18 +41,14 @@ class FilterEditKebab extends React.Component {
         this.setState({ filterSets: { showModal: false, shared: false, page: 'DASHBOARDS', name: '', errors: undefined, description: '' } });
     }
 
+    generateAlertTag = () => {
+        const { tag } = this.props.data.options;
+        const { action } = this.props.data;
+        return (process.env.REACT_APP_HAS_TAG === '1' && (action === 'tag' || action === 'tagkeep')) ? generateAlert(tag === 'informational', tag === 'relevant', tag === 'untagged') : {};
+    }
+
     generateFilterSet = () => {
-        const self = this.props.data;
-        const tags = { untagged: true, relevant: true, informational: true };
-        const keys = Object.keys(tags);
-
-        if (self.action === 'tag' || self.action === 'tagkeep') {
-            for (let idx = 0; idx < keys.length; idx += 1) {
-                tags[keys[idx]] = keys[idx] === self.options.tag;
-            }
-        }
-
-        const filters = process.env.REACT_APP_HAS_TAG === '1' ? [{ id: 'alert.tag', value: tags }] : [];
+        const filters = [];
         for (let idx = 0; idx < this.props.data.filter_defs.length; idx += 1) {
             const val = Number(this.props.data.filter_defs[idx].value) ? Number(this.props.data.filter_defs[idx].value) : this.props.data.filter_defs[idx].value;
             const filter = { id: this.props.data.filter_defs[idx].key,
@@ -84,8 +80,11 @@ class FilterEditKebab extends React.Component {
     }
 
     convertActionToFilters() {
-        const filters = this.generateFilterSet();
-        this.props.addFilter(sections.GLOBAL, filters);
+        this.props.clearFilters(sections.GLOBAL);
+        this.props.addFilter(sections.GLOBAL, this.generateFilterSet());
+        if (process.env.REACT_APP_HAS_TAG === '1') {
+            this.props.setTag(this.generateAlertTag());
+        }
     }
 
     handleComboChange(event) {
@@ -101,7 +100,7 @@ class FilterEditKebab extends React.Component {
     }
 
     submitActionToFilterSet() {
-        const filters = this.generateFilterSet();
+        const filters = (process.env.REACT_APP_HAS_TAG === '1') ? [...this.generateFilterSet(), this.generateAlertTag()] : this.generateFilterSet();
 
         axios.post(config.API_URL + config.HUNT_FILTER_SETS, { name: this.state.filterSets.name, page: this.state.filterSets.page, content: filters, share: this.state.filterSets.shared, description: this.state.filterSets.description })
         .then(() => {
@@ -175,11 +174,15 @@ FilterEditKebab.propTypes = {
     needUpdate: PropTypes.any,
     addFilter: PropTypes.any,
     loadFilterSets: PropTypes.func,
+    setTag: PropTypes.func,
+    clearFilters: PropTypes.func,
 };
 
 const mapDispatchToProps = {
     loadFilterSets,
     addFilter,
+    clearFilters,
+    setTag,
 };
 
 export default connect(null, mapDispatchToProps)(FilterEditKebab);

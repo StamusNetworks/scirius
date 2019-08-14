@@ -25,7 +25,7 @@ export const validateFilter = (filter) => {
     return true;
 }
 
-const generateAlert = (informational = true, relevant = true, untagged = true) => ({
+export const generateAlert = (informational = true, relevant = true, untagged = true) => ({
     id: 'alert.tag',
     value: { informational, relevant, untagged }
 });
@@ -140,7 +140,14 @@ export const reducer = (state = initialState, action) => {
             return state.setIn(['filters', action.filterType], fromJS([]));
         }
         case SET_ALERT: {
-            const updatedAlert = state.setIn(['filters', sections.ALERT, 'value', action.tagType], action.tagState);
+            let updatedAlert;
+            // If an entire object is passed
+            if (typeof action.tagType === 'object' && action.tagType !== null) {
+                updatedAlert = state.setIn(['filters', sections.ALERT], fromJS(action.tagType));
+            // Or a single alert tag value
+            } else {
+                updatedAlert = state.setIn(['filters', sections.ALERT, 'value', action.tagType], action.tagState);
+            }
             updateStorage(sections.ALERT, updatedAlert.getIn(['filters', sections.ALERT]).toJS());
             return updatedAlert;
         }
