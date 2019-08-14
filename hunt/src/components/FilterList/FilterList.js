@@ -21,6 +21,14 @@ class FilterList extends React.Component {
         }
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        if (this.state.editForm === true && !prevState.editForm) {
+            setTimeout(() => {
+                document.querySelector('#input-value-filter').select();
+            }, 100);
+        }
+    }
+
     editHandler = (filterIdx, filterId, filterValue, filterNegated) => {
         this.setState({
             editForm: true,
@@ -57,8 +65,20 @@ class FilterList extends React.Component {
         })
     }
 
+    keyListener = (e) => {
+        const newFilterValue = this.state.newFilterValue.toString();
+        // Enter key handler
+        if (e.keyCode === 13) {
+            e.preventDefault();
+            if (newFilterValue.length && !newFilterValue.match(/ /g)) {
+                this.saveHandler();
+            }
+        }
+    }
+
     render() {
         const newFilterValue = this.state.newFilterValue.toString();
+        const valid = (!newFilterValue.toString().length || newFilterValue.match(/ /g) ? 'error' : 'success');
         return <React.Fragment>
             {/* eslint-disable react/no-array-index-key */}
             <ul className="list-inline">{this.props.filters.map((filter, idx) => <FilterItem key={idx}
@@ -90,16 +110,12 @@ class FilterList extends React.Component {
                             <Col sm={10}>
                                 <InputGroup>
                                     <InputGroupAddon>{this.state.filterId}</InputGroupAddon>
-                                    <FormGroup validationState={(newFilterValue.length && newFilterValue.match(/ /g) ? 'error' : 'success')} className={'form-group-no-margins'}>
+                                    <FormGroup validationState={valid} className={'form-group-no-margins'}>
                                         <FormControl
+                                            id={'input-value-filter'}
                                             type="text"
                                             value={newFilterValue}
-                                            onKeyDown={(e) => {
-                                                if (e.keyCode === 13) {
-                                                    e.preventDefault();
-                                                    this.saveHandler();
-                                                }
-                                            }}
+                                            onKeyDown={this.keyListener}
                                             onChange={(e) => this.setState({
                                                 newFilterValue: (isNumeric(e.target.value)) ? parseInt(e.target.value, 10) : e.target.value
                                             })}
@@ -107,7 +123,7 @@ class FilterList extends React.Component {
                                         />
                                     </FormGroup>
                                 </InputGroup>
-                                <HelpBlock>Enter your filter value</HelpBlock>
+                                <HelpBlock>Wildcard characters (&lt;li&gt;*&lt;/li&gt; and &lt;li&gt;?&lt;/li&gt;) can match on word boundaries.<br />No spaces allowed.</HelpBlock>
                             </Col>
                         </FormGroup>
                         <FormGroup controlId="checkbox">
@@ -115,8 +131,7 @@ class FilterList extends React.Component {
                                 <ControlLabel>Negated</ControlLabel>
                             </Col>
                             <Col sm={10}>
-                                <Checkbox onChange={this.negateHandler} checked={this.state.newFilterNegated}>Filter is negated</Checkbox>
-                                <HelpBlock>Check it if you want to negate the filter</HelpBlock>
+                                <Checkbox onChange={this.negateHandler} onKeyDown={this.keyListener} checked={this.state.newFilterNegated} />
                             </Col>
                         </FormGroup>
 
@@ -126,7 +141,7 @@ class FilterList extends React.Component {
                     <Button onClick={this.closeHandler}>Cancel</Button>
                     <Button
                         bsStyle="primary"
-                        disabled={!!(newFilterValue.toString().length && newFilterValue.toString().match(/ /g))}
+                        disabled={(valid === 'error')}
                         onClick={this.saveHandler}
                     >Save</Button>
                 </Modal.Footer>
