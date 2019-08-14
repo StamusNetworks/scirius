@@ -602,7 +602,7 @@ class HumioClient(object, ESBackend):
                 alert.category,
                 function=[
                         count(as="total_count"),
-                        collect([key, msg, doc_count], multival=false)])
+                        collect([key, msg, doc_count], multival=false, maxlen=200000)])
         | drop(@rawstring)
         """
 
