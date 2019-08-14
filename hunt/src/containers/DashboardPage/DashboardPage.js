@@ -71,6 +71,7 @@ class HuntDashboard extends React.Component {
 
         const huntFilters = store.get('huntFilters');
         const rulesFilters = (typeof huntFilters !== 'undefined' && typeof huntFilters.dashboard !== 'undefined') ? huntFilters.dashboard.data : [];
+        const chartTarget = (store.get('chartTarget') === true);
         this.state = {
             load: Object.keys(dashboard.sections),
             // load: ['basic'],
@@ -92,7 +93,7 @@ class HuntDashboard extends React.Component {
             moreModal: null,
             moreResults: [],
             editMode: false,
-            chartTarget: false,
+            chartTarget,
             copyMode: false,
             hoveredItem: null,
             copiedItem: '',
@@ -656,6 +657,8 @@ class HuntDashboard extends React.Component {
         this.setState({
             chartTarget
         });
+
+        store.set('chartTarget', chartTarget);
     }
 
     render() {
