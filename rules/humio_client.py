@@ -307,11 +307,8 @@ class HumioClient(object, ESBackend):
         from_date = _get_from_date(request)
         sort_param = _get_sort_param(request)
 
-        field_names = {'alert.signature_id': 'key', '_count': 'doc_count'}
-        field_names_filter = self._create_custom_field_names_filter(field_names)
-
-        return self._get_rule_stats(count, from_date, extra_filters=[field_names_filter],
-                                    hosts=hosts, sort_param=sort_param)
+        r = self._get_rule_stats(count, from_date, hosts=hosts, sort_param=sort_param)
+        return list(map(lambda x: {'doc_count': int(x['_count']), 'key': int(x['alert.signature_id'])}, r))
 
     def get_field_stats_table(self, request, sid, field, count=DEFAULT_COUNT):
         data = self.get_field_stats_dict(request, sid, field)
@@ -654,17 +651,17 @@ class HumioClient(object, ESBackend):
 
         filters = [ALERTS_FILTER, qfilter, query_str]
         data = self._humio_query(filters=filters, start=from_date_ms, hosts=hosts)
-        cur_count = data[0]['_count']
+        cur_count = int(data[0]['_count'])
 
-        if prev:
+        if prev and from_date > 0:
             try:
                 prev_data = self._humio_query(filters=filters, start=prev_start_ms, end=from_date_ms, hosts=hosts)
-                return {'doc_count': int(cur_count), 'prev_doc_count': int(prev_data[0]['_count'])}
+                return {'doc_count': cur_count, 'prev_doc_count': int(prev_data[0]['_count'])}
             except:
                 humio_logger.error("Unable to get alerts for previous period")
                 return {'doc_count': cur_count, 'prev_doc_count': 0}
         else:
-            return {'doc_count': cur_count, 'prev_doc_count': 0}
+            return {'doc_count': cur_count}
 
     def get_es_major_version(self):
         return settings.HUMIO_SPOOF_ES_VERSION
