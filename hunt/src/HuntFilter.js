@@ -116,8 +116,8 @@ class HuntFilter extends React.Component {
         }
         if (field.filterType !== 'complex-select-text') {
             if (field.filterType === 'select' || field.filterType === 'complex-select') {
-                filterText = field.id;
-                fieldId = filterText;
+                filterText = field.title;
+                fieldId = field.id;
             } else if (field.title && field.queryType !== 'filter_host_id') {
                 filterText = field.title;
             } else {
@@ -178,12 +178,7 @@ class HuntFilter extends React.Component {
         }
     }
 
-    filterValueSelected = (filterValue) => {
-        // used by Select component
-        if (filterValue.id) {
-            filterValue = filterValue.id;
-        }
-
+    selectFilterValue = (filterValue) => {
         const { currentFilterType, currentValue } = this.state;
 
         if (filterValue !== currentValue) {
@@ -318,7 +313,7 @@ class HuntFilter extends React.Component {
                     filterValues={currentFilterType.filterValues}
                     placeholder={currentFilterType.placeholder}
                     currentValue={currentValue}
-                    onFilterValueSelected={this.filterValueSelected}
+                    onFilterValueSelected={this.selectFilterValue}
                 />
             );
         } else if (currentFilterType.filterType === 'complex-select') {
@@ -399,7 +394,7 @@ class HuntFilter extends React.Component {
                             styles={customStyles}
                             value={currentValue}
                             options={filterCategory && filterCategory.filterValues}
-                            onChange={this.filterValueSelected}
+                            onChange={this.selectFilterValue}
                             className="basic-single toolbar-pf-filter"
                             classNamePrefix="select"
                             placeholder={'Choose an Organization'}
@@ -412,7 +407,7 @@ class HuntFilter extends React.Component {
                         styles={customStyles}
                         value={currentValue}
                         options={currentFilterType && currentFilterType.filterValues}
-                        onChange={this.filterValueSelected}
+                        onChange={this.selectFilterValue}
                         className="basic-single toolbar-pf-filter"
                         classNamePrefix="select"
                         placeholder={'Choose an Organization'}

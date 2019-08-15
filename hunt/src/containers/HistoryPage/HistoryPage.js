@@ -138,7 +138,6 @@ export default class HistoryPage extends React.Component {
                     <HuntFilter ActiveFilters={this.props.filters}
                         config={this.props.rules_list}
                         ActiveSort={this.props.rules_list.sort}
-                        UpdateFilter={this.UpdateFilter}
                         UpdateSort={this.UpdateSort}
                         setViewType={this.setViewType}
                         filterFields={this.state.filterFields}
