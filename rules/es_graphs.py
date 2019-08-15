@@ -1293,15 +1293,6 @@ TOP_ALERTS = """
         "order": {
           "_count": "{{ order }}"
         }
-      },
-      "aggs": {
-        "timeline": {
-          "date_histogram": {
-            "field": "@timestamp",
-            "interval": "{{ interval }}",
-            "min_doc_count": 0
-          }
-        }
       }
     }
   }

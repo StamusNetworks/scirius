@@ -19,13 +19,24 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from __future__ import unicode_literals
+from scirius.utils import SciriusTable, QueryBuilder
 from django.template.defaultfilters import filesizeformat
-from scirius.utils import SciriusTable
 from rules.models import Ruleset, Source, Category, Rule, SourceAtVersion, SourceUpdate, Threshold, UserAction
 import django_tables2 as tables
 
 class DefaultMeta:
     attrs = {"class": "paleblue"}
+
+class JSTableMeta(DefaultMeta):
+    template = "rules/django_tables2/js_sortable_table.html"
+
+class JSTable(SciriusTable):
+    update_callback = "null"
+
+    def __init__(self, *args, **kwargs):
+        super(JSTable, self).__init__(*args, **kwargs)
+        self.source_query = QueryBuilder("/rules/es?query=:query:")
+
 
 class RuleTable(SciriusTable):
     sid = tables.LinkColumn('rule', args=[tables.A('pk')])
@@ -33,12 +44,13 @@ class RuleTable(SciriusTable):
         model = Rule
         fields = ("sid", "msg", "updated_date")
 
-class ExtendedRuleTable(SciriusTable):
+class ExtendedRuleTable(JSTable):
     sid = tables.LinkColumn('rule', args=[tables.A('pk')])
-    class Meta(DefaultMeta):
+    table_id = "#rules_table"
+
+    class Meta(JSTableMeta):
         model = Rule
         fields = ("sid", "msg", "category", "hits")
-        orderable = False
 
 class UpdateRuleTable(SciriusTable):
     sid = tables.LinkColumn('rule', args=[tables.A('pk')])
@@ -120,17 +132,20 @@ class CategoryRulesetTable(SciriusTable):
         attrs = {'id': 'rulesets', 'class': 'paleblue'}
         order_by = ('name',)
 
-class RuleStatsTable(SciriusTable):
+class RuleStatsTable(JSTable):
     host = tables.Column()
     count = tables.Column()
-    class Meta(DefaultMeta):
+    table_id = "#stats_table"
+
+    class Meta(JSTableMeta):
         fields = ("host", "count")
 
-class RuleHostTable(SciriusTable):
+class RuleHostTable(JSTable):
     host = tables.Column()
     count = tables.Column()
     actions = tables.Column()
-    class Meta(DefaultMeta):
+
+    class Meta(JSTableMeta):
         fields = ("host", "count", "actions")
         attrs = { 'id': 'hosts', 'class': 'paleblue' }
 

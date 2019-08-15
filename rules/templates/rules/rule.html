@@ -438,19 +438,14 @@ $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescap
 
 
 function load_stats() {
-    $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule&sid={{ rule.pk }}&from_date={{ from_date }}',
-          success: function(data) {
-             $('#stats_table').empty();
-             $('#stats_table').append(data);
-          },
-	  error: function(data) {
-             $('#stats_table').text("Unable to get data.");
-             $("#error").text("Unable to get data from Elasticsearch");
-             $("#error").parent().toggle();
-	  }
-    });
-
+    load_table(
+            {{ from_date }},
+            '#stats_table',
+            '{% url 'elasticsearch' %}?query=rule&sid={{ rule.pk }}',
+            null,
+            [ {% autoescape off %} {{ probes|join:',' }} {% endautoescape %}],
+            null,
+            '{{ sort_param }}');
 }
 
 $( 'document' ).ready(load_stats());
@@ -478,71 +473,29 @@ function populate_topip_actions(pdiv, field, direction) {
 }
 
 function load_ip_stats() {
-    $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule_src&sid={{ rule.pk }}&from_date={{ from_date }}',
-          success: function(data) {
-             $('#src_ip_table').empty();
-             $('#src_ip_table').append(data);
-             populate_topip_actions($('#src_ip_table'), 'src_ip', 'src');
-          },
-	  error: function(data) {
-             $('#src_ip_table').text("Unable to get data.");
-             $("#error").text("Unable to get data from Elasticsearch");
-             $("#error").parent().toggle();
-	  }
-    });
+    load_table({{ from_date }}, '#src_ip_table',
+            '{% url 'elasticsearch' %}?query=rule_src&sid={{ rule.pk }}',
+            () => { populate_topip_actions($('#src_ip_table'), 'src_ip', 'src'); },
+            [ {% autoescape off %} {{ probes|join:',' }} {% endautoescape %} ],
+            null, '{{ sort_param }}');
 
-    $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule_dest&sid={{ rule.pk }}&from_date={{ from_date }}',
-          success: function(data) {
-             $('#dest_ip_table').empty();
-             $('#dest_ip_table').append(data);
-             populate_topip_actions($('#dest_ip_table'), 'dest_ip', 'dest');
-          },
-	  error: function(data) {
-             $('#dest_ip_table').text("Unable to get data.");
-             $("#error").text("Unable to get data from Elasticsearch");
-             $("#error").parent().toggle();
-	  }
-    });
+    load_table({{ from_date }}, '#dest_ip_table',
+            '{% url 'elasticsearch' %}?query=rule_dest&sid={{ rule.pk }}',
+            () => { populate_topip_actions($('#dest_ip_table'), 'dest_ip', 'dest'); },
+            [ {% autoescape off %} {{ probes|join:',' }} {% endautoescape %} ],
+            null, '{{ sort_param }}');
 
-    $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule_source&sid={{ rule.pk }}&from_date={{ from_date }}',
-          success: function(data) {
-             $('#source_ip_table').empty();
-             $('#source_ip_table').append(data);
-             /* FIXME use real method */
-             {% if "dest_ip" in rule.content %}
-                populate_topip_actions($('#source_ip_table'), 'alert.source.ip', 'src');
-             {% else %}
-                populate_topip_actions($('#source_ip_table'), 'alert.source.ip', 'dest');
-             {% endif %}
-          },
-	  error: function(data) {
-             $('#source_ip_table').text("Unable to get data.");
-             $("#error").text("Unable to get data from Elasticsearch");
-             $("#error").parent().toggle();
-	  }
-    });
+    load_table({{ from_date }}, '#source_ip_table',
+            '{% url 'elasticsearch' %}?query=rule_source&sid={{ rule.pk }}',
+            () => { populate_topip_actions($('#source_ip_table'), 'alert.source.ip', 'src'); },
+            [ {% autoescape off %} {{ probes|join:',' }} {% endautoescape %} ],
+            null, '{{ sort_param }}');
 
-    $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule_target&sid={{ rule.pk }}&from_date={{ from_date }}',
-          success: function(data) {
-             $('#target_ip_table').empty();
-             $('#target_ip_table').append(data);
-             /* FIXME use real method */
-             {% if "dest_ip" in rule.content %}
-                populate_topip_actions($('#target_ip_table'), 'alert.target.ip', 'dest');
-             {% else %}
-                populate_topip_actions($('#target_ip_table'), 'alert.target.ip', 'src');
-             {% endif %}
-          },
-	  error: function(data) {
-             $('#target_ip_table').text("Unable to get data.");
-             $("#error").text("Unable to get data from Elasticsearch");
-             $("#error").parent().toggle();
-	  }
-    });
+    load_table({{ from_date }}, '#target_ip_table',
+            '{% url 'elasticsearch' %}?query=rule_target&sid={{ rule.pk }}',
+            () => { populate_topip_actions($('#target_ip_table'), 'alert.target.ip', 'dest'); },
+            [ {% autoescape off %} {{ probes|join:',' }} {% endautoescape %} ],
+            null, '{{ sort_param }}');
 }
 
 $( 'document' ).ready(load_ip_stats());

@@ -1,0 +1,128 @@
+{% extends "rules/base.html" %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="panel panel-default" id="docs">
+            <div class="panel-heading">
+                <h2 class="panel-title">Repository</h2>
+            </div>
+            <div class="panel-body">
+                <ul>
+                    <li><span class="type">Repository name</span> <span class="pull-right label label-default" id="humio_repository">N/A</span></li>
+                    <li><span class="type">Compressed size:</span> <span class="pull-right label label-default" id="humio_repository_compressed">N/A</span></li>
+                    <li><span class="type">Uncompressed size:</span> <span class="pull-right label label-default" id="humio_repository_uncompressed">N/A</span></li>
+                    <li><span class="type">Description:</span> <span class="pull-right label label-default" id="humio_repository_description">N/A</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="panel panel-default" id="nodes">
+            <div class="panel-heading">
+                <h2 class="panel-title">Cluster info</h2>
+            </div>
+            <div class="panel-body">
+                <ul>
+                    <li><span class="type">Number of nodes:</span> <span class="pull-right label label-default" id="nb_nodes">N/A</span></li>
+                    <li><span class="type">Cluster compressed size:</span> <span class="pull-right label label-default" id="humio_cluster_compressed">N/A</span></li>
+                    <li><span class="type">Cluster uncompressed size:</span> <span class="pull-right label label-default" id="humio_cluster_uncompressed">N/A</span></li>
+                    <li><span class="type">Cluster compression factor:</span> <span class="pull-right label label-default" id="humio_cluster_compression_factor">N/A</span></li>
+                    <li><span class="type">Pending tasks:</span> <span class="pull-right label label-default" id="humio_cluster_number_of_pending_tasks">N/A</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block sidebar %}
+<script>
+ /* TODO: Fetch humio status from REST API at a fixed interval and
+    humio_status and humio_version accordingly */
+
+ /* From elasticsearch.html */
+ function bytesToSize(bytes) {
+     var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+     if (bytes == 0) return '0 Byte';
+     //var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+     //return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+     var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1000)));
+     return Math.round(bytes / Math.pow(1000, i), 2) + ' ' + sizes[i];
+ };
+
+ function set_success_or_danger(b, id) {
+     if (b) {
+         $(id).removeClass("label-default");
+         $(id).removeClass("label-danger");
+         $(id).addClass("label-success");
+     } else {
+         $(id).removeClass("label-default");
+         $(id).removeClass("label-success");
+         $(id).addClass("label-danger");
+     }
+ }
+
+ /* Modified from get_es_detailed_health() in elasticsearch.html */
+ function get_humio_detailed_health() {
+     $.ajax(
+         {
+             type:"GET",
+             url: "{% url 'es_health' %}",
+             success: function(data) {
+                 if (!data) {
+                     $("#humio_status").removeClass("label-default");
+                     $("#humio_status").addClass("label-danger");
+                 } else {
+                     $("#nb_nodes").text(data['number_of_nodes']);
+                     $("#nb_data_nodes").text(data['number_of_data_nodes']);
+                     $("#es_cluster_name").text(data['cluster_name']);
+                     $("#humio_repository").text(data['repository_name']);
+                     $("#humio_repository_compressed").text(bytesToSize(data['repository_compressed_size']));
+                     $("#humio_repository_uncompressed").text(bytesToSize(data['repository_uncompressed_size']));
+                     $("#humio_cluster_compressed").text(bytesToSize(data['cluster_compressed_size']));
+                     $("#humio_cluster_uncompressed").text(bytesToSize(data['cluster_uncompressed_size']));
+
+                     let compression = Math.round(10*(data['cluster_uncompressed_size'] / data['cluster_compressed_size']))/10;
+                     set_success_or_danger(compression > 2, "#humio_cluster_compression_factor");
+                     $("#humio_cluster_compression_factor").text(compression + "x");
+                     if (data['repository_description']) $("#humio_repository_description").text(data['repository_description']);
+
+                     $("#humio_cluster_number_of_pending_tasks").text(data['number_of_pending_tasks']);
+
+                     /*
+                        let work_perc = 100 - data['cluster_work_done']/data['cluster_total_work'] * 100;
+                        console.log(work_perc);
+                        set_info_card("#humio-work-card-bar", work_perc)
+                      */
+                 }
+             },
+             error: function(data) {
+                 $("#humio_status").removeClass("label-default");
+                 $("#humio_status").addClass("label-danger");
+             },
+             complete: function() {
+                 setTimeout(get_humio_detailed_health, 30000);
+             },
+             timeout: 15000,
+         }
+     );
+ }
+
+ $( 'document' ).ready(get_humio_detailed_health());
+</script>
+
+<div class="panel-heading">
+    <h2 class="panel-title">Humio</h2>
+</div>
+<div class="panel-body">
+    <ul>
+        <li><span class="type">Status:</span> <span class="pull-right label label-{{ status_type }}" id="humio_status" >{{ status }}</span></li>
+        <li><span class="type">Version:</span> <span class="pull-right text-info" id="humio_version">{{ version }}</span></li>
+    </ul>
+</div>
+
+{% endblock %}

@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 from importlib import import_module
 from time import time
+from multiprocessing.pool import ThreadPool
 import math
 
 from django.shortcuts import render
@@ -32,6 +33,8 @@ import django_tables2 as tables
 
 from accounts.models import SciriusUser
 from rules.models import get_system_settings
+
+Probe = __import__(settings.RULESET_MIDDLEWARE)
 
 def build_path_info(request):
     splval = request.path_info.strip('/ ').split('/')
@@ -92,6 +95,10 @@ def complete_context(request, context):
         context['time_range'] = duration * 3600
 
 def scirius_render(request, template, context):
+    try:
+        context['probes'] = map(lambda x: "'" + x + "'", Probe.models.get_probe_hostnames())
+    except:
+        pass
     context['generator'] = settings.RULESET_MIDDLEWARE
     context['path_info'] = build_path_info(request)
     context['scirius_release'] = settings.SCIRIUS_FLAVOR + " v" + settings.SCIRIUS_VERSION
@@ -112,6 +119,7 @@ def scirius_render(request, template, context):
                 context['kibana_url'] = "/kibana"
             else:
                 context['kibana_url'] = settings.KIBANA_URL
+    context['es_backend'] = settings.ES_BACKEND
     if settings.USE_EVEBOX:
         context['evebox'] = 1
         context['evebox_url'] = "/evebox"
@@ -197,6 +205,39 @@ class SciriusTable(tables.Table):
         classes_set.add(bound_column.name)
         return classes_set
 
+      
+PARALLEL_MAP_POOL_SIZE = 4
+
+# Utility function for using ThreadPool
+def parallel_map(*args, **kwargs):
+    """Wrapper for ThreadPool.map"""
+    pool_size = kwargs.pop('pool_size', PARALLEL_MAP_POOL_SIZE)
+    pool = ThreadPool(pool_size)
+    res = pool.map(*args, **kwargs)
+    pool.close()
+    return res
+
+
+class QueryBuilder:
+    def __init__(self, query_string):
+        self._query_string = query_string
+
+    def set_parameter(self, parameter, value):
+        self._query_string = self._query_string.replace(":%s:" % parameter, value)
+        return self
+
+    def add_parameter(self, parameter, value=None):
+        if value:
+            self._query_string += "&%s=%s" % (parameter, value)
+        else:
+            self._query_string += "&%s=:%s:" % (parameter, parameter)
+        return self
+
+    def get_query_string(self):
+        return self._query_string
+
+    def __str__(self):
+        return self.get_query_string()
 
 # https://stackoverflow.com/questions/20656135/python-deep-merge-dictionary-data
 def merge_dict_deeply(src, dest):
@@ -207,3 +248,7 @@ def merge_dict_deeply(src, dest):
         else:
             dest[key] = value
     return dest
+
+
+def get_quoted_hosts_list(request):
+    return list(map(lambda h: "'%s'" % h, request.GET.get('hosts', '').split(',')))

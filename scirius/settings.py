@@ -219,6 +219,9 @@ SCIRIUS_HAS_DOC = True
 # Sources update
 DEFAULT_SOURCE_INDEX_URL = "https://www.openinfosecfoundation.org/rules/index.yaml"
 
+# Elastic search backend: one of ['HUMIO', 'ELASTICSEARCH']
+ES_BACKEND = 'ELASTICSEARCH'
+
 # Elastic search
 
 USE_ELASTICSEARCH = True
@@ -269,6 +272,14 @@ INFLUXDB_PORT = 8086
 INFLUXDB_USER = "grafana"
 INFLUXDB_PASSWORD = "grafana"
 INFLUXDB_DATABASE = "scirius"
+
+# Humio
+HUMIO_API_TOKEN = ''
+HUMIO_HOST = ''
+HUMIO_REPOSITORY = 'suricata'
+HUMIO_TIMEOUT = 30 # seconds
+HUMIO_SPOOF_ES_VERSION = 7
+HUMIO_TIMELINE_CHUNK_SIZE = 10
 
 # Moloch
 USE_MOLOCH = True

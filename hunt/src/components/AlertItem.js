@@ -74,7 +74,11 @@ export default class AlertInList extends React.Component {
 
         let dnsQuery;
         if (data.dns && data.dns.query) {
-            [dnsQuery] = data.dns.query;
+            if (Array.isArray(data.dns.query)) {
+                [dnsQuery] = data.dns.query;
+            } else {
+                dnsQuery = data.dns.query;
+            }
         }
 
         return (

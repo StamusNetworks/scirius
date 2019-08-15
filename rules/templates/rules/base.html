@@ -89,7 +89,12 @@
                     <div class="panel-body">
                     <div id="suri-status" class="label label-default"><a href="/{{ generator }}/">Suricata</a></div>
 {% if elasticsearch %}
+    {% if es_backend == "HUMIO" %}
+                    <div id="health" class="label label-default"><a href="{% url 'humio' %}">Humio</a></div>
+    {% endif %}
+    {% if es_backend == "ELASTICSEARCH" %}
                     <div id="health" class="label label-default"><a href="{% url 'elasticsearch' %}">Elasticsearch</a></div>
+    {% endif %}
 {% endif %}
                     <div id="disk-status" class="label label-default"><a href="{% url monitoring_url %}">Disk</a></div>
                     <div id="memory-status" class="label label-default"><a href="{% url monitoring_url %}">Memory</a></div>

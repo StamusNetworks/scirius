@@ -60,11 +60,50 @@ $( 'document' ).ready(function() {
         prepare_rule_details();
 });
 
+function load_table(from_date, table_id, query_url, callback, hosts, filter, sort_param) {
+    query_url += "&from_date=" + from_date;
+    if (sort_param != null && sort_param != "None") {
+        query_url += "&sort=" + sort_param;
+    }
+    if (filter != null && filter != "None") {
+        query_url += "&filter=" + filter;
+    }
+    if (hosts && hosts.length) {
+        query_url += "&hosts=" + hosts.join();
+    }
 
-function load_rules(from_date, hosts, filter, callback) {
+    $.ajax({
+        url: query_url,
+        success: function(data) {
+            if (data == null) {
+                $(table_id).text("Unable to get data.");
+                $("#error").text("Unable to get data from Elasticsearch");
+                $("#error").parent().toggle();
+                return;
+            }
+            $(table_id).empty();
+            $(table_id).append(data);
+            prepare_rule_details();
+            if (callback) {
+                callback();
+            }
+        },
+        error: function(data) {
+            $(table_id).text("Unable to get data.");
+            $("#error").text("Unable to get data from Elasticsearch");
+            $("#error").parent().toggle();
+        }
+    });
+}
+window.load_table = load_table
+
+function load_rules(from_date, hosts, filter, callback, sort_order) {
     var tgturl = "/rules/es?query=rules&hosts=" + hosts.join() + "&from_date=" + from_date;
-    if (filter != null) {
-       tgturl = tgturl + "&qfilter=" + filter;
+
+    tgturl = tgturl + "&sort=" + sort_order;
+
+    if (filter != null && filter != "None") {
+      tgturl = tgturl + "&qfilter=" + filter;
     }
     $.ajax({
        url: tgturl,
@@ -92,123 +131,164 @@ function load_rules(from_date, hosts, filter, callback) {
 window.load_rules = load_rules;
 
 
-function draw_timeline(from_date, hosts, filter, ylegend=undefined) {
+function draw_timeline(from_date, hosts, filter, ylegend = undefined, on_update_callback=undefined, state=undefined) {
+    /*
+     * Draws a timeline graph
+     * from_date: from date in epoch ms
+     * hosts: list of hosts/probes to show data from
+     * filter: a query filter for the data
+     * ylegend: title of the y axis
+     * on_update_callback:
+     *    function: (state, filter) => {...}
+     *    called after a timeline update (i.e. clicking one
+     *    of the probes in the legend). The state is the
+     *    state of the nvd3.js chart object after the update.
+     */
 
-        var esurl = "/rest/rules/es/timeline/?from_date=" + from_date + "&hosts=" + hosts.join()
-        if (filter) {
-            esurl = esurl + "&qfilter=" + filter;
-        }
-        $.ajax(
-                        {
-                        type:"GET",
-                        url:esurl,
-                        success: function(data) {
-                        if (data == null) {
-                            $("#timeline p").text("Unable to get data.");
-                            $("#error").text("Unable to get data from Elasticsearch");
-                            $("#error").parent().toggle();
-                            return null;
-                        }
-                        if (!data.hasOwnProperty("from_date")) {
-                            $("#timeline").height(300);
-                            $("#timeline svg").hide();
-                            $("#timeline").addClass("panel panel-default");
-                            $("#timeline p").text("No data for period.");
-                            $("#timeline p").addClass("text-center");
-                            $("#timeline p").addClass("text-muted");
-                            $("#timeline p").addClass("svgcenter");
-                            return null;
-                        }
-			            $("#timeline p").hide();
-                            nv.addGraph(function() {
-		            /* starting from 4 hosts multibar is unreadable */
-                            if (hosts.length > 3) {
-                              var chart = nv.models.lineChart()
-                                            .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
-                                            .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
-                                            .duration(350)  //how fast do you want the lines to transition?
-                                            .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
-                                            .showYAxis(true)        //Show the y-axis
-                                            .showXAxis(true)        //Show the x-axis
-                              ;
-                              } else {
-                            var multigraph = false;
-                            if (hosts.length > 1) {
-                                    multigraph = true;
+    $("#timeline p").show();
+    var esurl = "/rest/rules/es/timeline/?from_date=" + from_date + "&hosts=" + hosts.join()
+    if (filter) {
+        esurl = esurl + "&qfilter=" + filter;
+    }
+    $.ajax({
+        type: "GET",
+        url: esurl,
+        success: function (data) {
+            if (data == null) {
+                $("#timeline p").text("Unable to get data.");
+                $("#error").text("Unable to get data from Elasticsearch");
+                $("#error").parent().toggle();
+                return null;
+            }
+            if (!data.hasOwnProperty("from_date")) {
+                $("#timeline").height(300);
+                $("#timeline svg").hide();
+                $("#timeline").addClass("panel panel-default");
+                $("#timeline p").text("No data for period.");
+                $("#timeline p").addClass("text-center");
+                $("#timeline p").addClass("text-muted");
+                $("#timeline p").addClass("svgcenter");
+                return null;
+            }
+
+            // Hide the text paragraph
+            $("#timeline p").hide();
+            // Remove any old timelines
+            d3.select("#timeline svg > *").remove();
+            nv.addGraph(function () {
+                /* starting from 4 hosts multibar is unreadable */
+                if (hosts.length > 3) {
+                    var chart = nv.models.lineChart()
+                        .margin({ left: 100 })  //Adjust chart margins to give the x-axis some breathing room.
+                        .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+                        .duration(350)  //how fast do you want the lines to transition?
+                        .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                        .showYAxis(true)        //Show the y-axis
+                        .showXAxis(true)        //Show the x-axis
+                        ;
+                } else {
+                    var multigraph = false;
+                    if (hosts.length > 1) {
+                        multigraph = true;
+                    }
+                    var chart = nv.models.multiBarChart()
+                        .duration(350)
+                        .reduceXTicks(true)   //If 'false', every single x-axis tick label will be rendered.
+                        .rotateLabels(0)      //Angle to rotate x-axis labels.
+                        .showControls(multigraph)   //Allow user to switch between 'Grouped' and 'Stacked' mode.
+                        .groupSpacing(0.1)    //Distance between each group of bars.
+                        ;
+                    chart.stacked(true);
+                }
+
+
+                chart.xAxis.tickFormat(function (d) {
+                    return d3.time.format('%m/%d %H:%M')(new Date(d))
+                });
+
+                // Alerts are always integers. No need to
+                // have fixed point of 1 decimal.
+                chart.yAxis
+                    .tickFormat(d3.format(',d'));
+
+                if (ylegend) {
+                    $('#timeline_title').text(ylegend);
+                }
+
+                var end_interval = new Date().getTime();
+                var sdata = []
+                for (var hi = 0; hi < hosts.length; hi++) {
+                    var gdata = []
+                    var starti = 0;
+                    var iter = 0;
+                    if (!data[hosts[hi]]) {
+                        continue;
+                    }
+                    var entries = data[hosts[hi]]['entries']
+                    var interval = parseInt(data['interval']);
+                    for (var inter = parseInt(data['from_date']); inter < end_interval; inter = inter + interval) {
+                        var found = false;
+                        for (var i = starti; i < entries.length; i++) {
+                            if (Math.abs(entries[i]["time"] - inter) <= interval / 2) {
+                                gdata.push({ x: inter, y: entries[i]["count"] });
+                                found = true;
+                                starti = i + 1;
+                                break;
                             }
-                            var chart = nv.models.multiBarChart()
-                                .duration(350)
-                                .reduceXTicks(true)   //If 'false', every single x-axis tick label will be rendered.
-                                .rotateLabels(0)      //Angle to rotate x-axis labels.
-                                .showControls(multigraph)   //Allow user to switch between 'Grouped' and 'Stacked' mode.
-                                .groupSpacing(0.1)    //Distance between each group of bars.
-                                ;
-                                chart.stacked(true);
-                               }
-                                chart.xAxis.tickFormat(function(d) {
-                                    return d3.time.format('%m/%d %H:%M')(new Date(d))
-                                });
+                        }
+                        if (found == false) {
+                            gdata.push({ x: inter, y: 0 });
+                        }
+                    }
+                    sdata.push(
+                        {
+                            values: gdata,
+                            key: hosts[hi],
+                            //color: '#AD9C9B',  //color - optional: choose your own line color.
+                            //area: true
+                        }
+                    );
+                }
 
-                                chart.yAxis
-                                .tickFormat(d3.format(',.1f'));
+                if (on_update_callback !== undefined) {
+                    chart.dispatch.on('stateChange', (s) => {on_update_callback(s, filter)});
+                }
 
-                                if (ylegend) {
-                                    $('#timeline_title').text(ylegend);
-                                }
+                d3.select('#timeline svg')
+                    .datum(sdata)
+                    .call(chart);
 
-                                var end_interval = new Date().getTime();
-                                var sdata = []
-                                for (var hi = 0; hi < hosts.length; hi++) {
-                                        var gdata = []
-                                        var starti = 0;
-                                        var iter = 0;
-                                        if (!data[hosts[hi]]) {
-                                            continue;
-                                        }
-                                        var entries = data[hosts[hi]]['entries']
-                                        var interval = parseInt(data['interval']);
-                                        for (var inter = parseInt(data['from_date']); inter < end_interval; inter = inter + interval) {
-                                            var found = false;
-                                            for (var i = starti; i < entries.length; i++) {
-                                                if (Math.abs(entries[i]["time"] - inter) <= interval/2) {
-                                                    gdata.push({x: inter, y: entries[i]["count"]});
-                                                    found = true;
-                                                    starti = i + 1;
-                                                    break;
-                                                }
-                                            }
-                                            if (found == false) {
-                                                    gdata.push({x: inter, y: 0});
-                                            }
-                                        }
-                                        sdata.push(
-                                        {
-                                            values: gdata,
-                                            key: hosts[hi],
-                                            //color: '#AD9C9B',  //color - optional: choose your own line color.
-                                            //area: true
-                                        }
-                                        );
-                                }
-                                d3.select('#timeline svg')
-                                        .datum(sdata)
-                                        .call(chart);
+                nv.utils.windowResize(function () { chart.update(); });
+                $("[role='tab']").on('shown.bs.tab', function () {
+                    chart.duration(0);
+                    chart.update();
+                    chart.duration(350);
+                });
 
-                                nv.utils.windowResize(function() { chart.update(); });
-                                $("[role='tab']").on('shown.bs.tab', function() {
-                                    chart.duration(0);
-                                    chart.update();
-                                    chart.duration(350);
-                                });
-                                return chart;
-                        });
-                },
-	    error: function(data) {
-             $('#timeline').text("Unable to get data.");
-             $("#error").text("Unable to get data from Elasticsearch");
-             $("#error").parent().toggle();
-	    }
-        });
+                if (state !== undefined) {
+                    /*
+                     * If a timeline state is provided, update the
+                     * state of the chart and enable/disable the
+                     * different probe series according to the state.
+                     */
+                    let legend_series = d3.select("g.nv-legendWrap").selectAll("g.nv-series");
+                    for (var i = 0; i < state.disabled.length; i++) {
+                        chart.state.disabled[i] = state.disabled[i];
+                        legend_series.data()[i].disabled = state.disabled[i];
+                    }
+                    chart.update();
+                }
+
+                return chart;
+            });
+        },
+        error: function (data) {
+            $('#timeline').text("Unable to get data.");
+            $("#error").text("Unable to get data from Elasticsearch");
+            $("#error").parent().toggle();
+        }
+    }
+    );
 }
 window.draw_timeline = draw_timeline;
 
@@ -251,7 +331,7 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
                                 });
 
                                 chart.yAxis
-                                .tickFormat(d3.format(',.1f'));
+                                .tickFormat(d3.format(',d'));
 
                                 if (ylegend) {
                                     $(tdiv + '_title').text(ylegend);
@@ -264,10 +344,10 @@ function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, au
                                 var end_interval = new Date().getTime();
                                 chart.forceX([from_date, end_interval]);
                                 var sdata = []
-                                var gdata = []
                                 var starti = 0;
                                 var iter = 0;
                                 for (var hi = 0; hi < hosts.length; hi++) {
+                                    var gdata = []
                                     if (!data[hosts[hi]]) {
                                         continue;
                                     }
@@ -340,157 +420,191 @@ function build_path(d) {
 }
 window.build_path = build_path;
 
-function draw_sunburst(from_date, hosts, filter, callback) {
-        var esurl = "/rest/rules/es/rules_per_category/?from_date=" + from_date + "&hosts=" + hosts.join()
-        if (filter) {
-            esurl = esurl + "&qfilter=" + filter;
-        }
-        $.ajax(
-         {
-         type:"GET",
-         url:esurl,
-         success: function(data) {
-         if (!data) {
-              $("#circles").append("No data to build the graph");
-              return;
-         }
-var height = 300;
-var width = 300;
-var radius = Math.min(width, height) / 2;
+function draw_sunburst(from_date, hosts, filter, callback, sort_order,
+                       category = undefined, draw_timeline_function = undefined) {
+    /*
+     * Draws the sunburst graph on the suricata/index page.
+     * from_date: from date in epoch ms
+     * hosts: list of hosts/probes to show data from
+     * filter: a query filter for the data
+     * callback: callback when finished
+     * sort_order: sort order for the rules table
+     * category: category to automatically zoom to
+     * draw_timeline_function:
+     *    function: (filter, category) => {...}
+     *    called after a category is selected in order to
+     *    update the timeline.
+     */
 
-var x = d3.scale.linear()
-    .range([0, 2 * Math.PI]);
-
-var y = d3.scale.sqrt()
-    .range([0, radius]);
-
-var color = d3.scale.category20b();
-
-var svg = d3.select("#circles").append("svg")
-    .attr("width", width)
-    .attr("height", height)
-  .append("g")
-    .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")");
-
-var partition = d3.layout.partition()
-    .sort(null)
-    .value(function(d) { return d.doc_count; })
-    .children(function(d) { return d.children; })
-
-var arc = d3.svg.arc()
-    .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
-    .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
-    .innerRadius(function(d) { return Math.max(0, y(d.y)); })
-    .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
-
-  // Keep track of the node that is currently being displayed as the root.
-  var node;
-  var data_root = data;
-  node = data_root;
-  var path = svg.datum(data_root).selectAll("path")
-      .data(partition.nodes)
-    .enter().append("path")
-      .attr("d", arc)
-      //.style("fill", function(d) { return color(d.value); })
-      .style("fill", function(d) { return color(d.key); })
-      .on("click", click)
-      .each(stash);
-
-
-
-  $('path').mouseover(function(){
-      var d = this.__data__;
-      var tooltip = build_path(d);
-      $( "#circles").append("<div id='circles_tooltip'>" + tooltip + "</div>");
-  });
-  $('path').mouseout(function(){
-      var d = this.__data__;
-      $( "#circles_tooltip").remove();
-  });
-
-  d3.selectAll("input").on("change", function change() {
-    var value = this.value === "count"
-        ? function() { return 1; }
-        : function(d) { return d.size; };
-
-    path
-        .data(partition.value(value).nodes)
-      .transition()
-        .duration(1000)
-        .attrTween("d", arcTweenData);
-  });
-
-  function click(d) {
-    node = d;
-    if (d.children == undefined) {
-         window.open("/rules/rule/pk/" + d.key,"_self");
+    var esurl = "/rest/rules/es/rules_per_category/?from_date=" + from_date + "&hosts=" + hosts.join()
+    if (filter) {
+        esurl = esurl + "&qfilter=" + filter;
     }
-    var tooltip = build_path(d);
-    $("#filter").empty();
-    if (tooltip.length) {
-        $("#filter").append("Filter: " + tooltip);
-    }
-    if (d.key == "categories") {
-        draw_timeline(from_date, hosts, null);
-        load_rules(from_date, hosts, null);
-    } else {
-        draw_timeline(from_date, hosts, 'alert.category.raw:"'+d.key+'"');
-        load_rules(from_date, hosts, 'alert.category.raw:"'+d.key+'"');
-    }
-    path.transition()
-      .duration(1000)
-      .attrTween("d", arcTweenZoom(d));
-  }
+    $.ajax({
+            type: "GET",
+            url: esurl,
+            success: function (data) {
+                if (!data) {
+                    $("#circles").append("No data to build the graph");
+                    return;
+                }
+                var height = 300;
+                var width = 300;
+                var radius = Math.min(width, height) / 2;
 
-d3.select(self.frameElement).style("height", height + "px");
+                var x = d3.scale.linear()
+                    .range([0, 2 * Math.PI]);
 
-// Setup for switching data: stash the old values for transition.
-function stash(d) {
-  d.x0 = d.x;
-  d.dx0 = d.dx;
-}
+                var y = d3.scale.sqrt()
+                    .range([0, radius]);
 
-// When switching data: interpolate the arcs in data space.
-function arcTweenData(a, i) {
-  var oi = d3.interpolate({x: a.x0, dx: a.dx0}, a);
-  function tween(t) {
-    var b = oi(t);
-    a.x0 = b.x;
-    a.dx0 = b.dx;
-    return arc(b);
-  }
-  if (i == 0) {
-   // If we are on the first arc, adjust the x domain to match the root node
-   // at the current zoom level. (We only need to do this once.)
-    var xd = d3.interpolate(x.domain(), [node.x, node.x + node.dx]);
-    return function(t) {
-      x.domain(xd(t));
-      return tween(t);
-    };
-  } else {
-    return tween;
-  }
-}
+                var color = d3.scale.category20b();
 
-// When zooming: interpolate the scales.
-function arcTweenZoom(d) {
-  var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
-      yd = d3.interpolate(y.domain(), [d.y, 1]),
-      yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
-  return function(d, i) {
-    return i
-        ? function(t) { return arc(d); }
-        : function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
-  };
-}
+                d3.select("#circles > *").remove();
+                var svg = d3.select("#circles").append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .append("g")
+                    .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")");
 
-     callback();
-        },
-        });
+                var partition = d3.layout.partition()
+                    .sort(null)
+                    .value(function (d) { return d.doc_count; })
+                    .children(function (d) { return d.children; })
+
+                var arc = d3.svg.arc()
+                    .startAngle(function (d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
+                    .endAngle(function (d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
+                    .innerRadius(function (d) { return Math.max(0, y(d.y)); })
+                    .outerRadius(function (d) { return Math.max(0, y(d.y + d.dy)); });
+
+                // Keep track of the node that is currently being displayed as the root.
+                var node;
+                var data_root = data;
+                node = data_root;
+                var path = svg.datum(data_root).selectAll("path")
+                    .data(partition.nodes)
+                    .enter().append("path")
+                    .attr("d", arc)
+                    //.style("fill", function(d) { return color(d.value); })
+                    .style("fill", function (d) { return color(d.key); })
+                    .on("click", click)
+                    .each(stash);
+
+                $('path').mouseover(function () {
+                    var d = this.__data__;
+                    var tooltip = build_path(d);
+                    $("#circles").append("<div id='circles_tooltip'>" + tooltip + "</div>");
+                });
+                $('path').mouseout(function () {
+                    var d = this.__data__;
+                    $("#circles_tooltip").remove();
+                });
+
+                d3.selectAll("input").on("change", function change() {
+                    var value = this.value === "count"
+                        ? function () { return 1; }
+                        : function (d) { return d.size; };
+
+                    path
+                        .data(partition.value(value).nodes)
+                        .transition()
+                        .duration(1000)
+                        .attrTween("d", arcTweenData);
+                });
+
+                function click(d) {
+                    node = d;
+                    if (d.children == undefined) {
+                        window.open("/rules/rule/pk/" + d.key, "_self");
+                    }
+                    var tooltip = build_path(d);
+                    $("#filter").empty();
+                    if (tooltip.length) {
+                        $("#filter").append("Filter: " + tooltip);
+                    }
+                    if (d.key == "categories") {
+                        if (draw_timeline_function !== undefined) {
+                            draw_timeline_function(null, d);
+                        } else {
+                            draw_timeline(from_date, hosts, null, null);
+                        }
+                        load_rules(from_date, hosts, null, null, sort_order);
+                    } else {
+                        if (draw_timeline_function !== undefined) {
+                            draw_timeline_function('alert.category.raw:"' + d.key + '"', d);
+                        } else {
+                            draw_timeline(from_date, hosts, 'alert.category.raw:"' + d.key + '"', null);
+                        }
+                        load_rules(from_date, hosts, 'alert.category.raw:"' + d.key + '"', null, sort_order);
+                    }
+                    path.transition()
+                        .duration(1000)
+                        .attrTween("d", arcTweenZoom(d));
+                }
+
+                if (category !== undefined) {
+                    for (var c in path.data()) {
+                        c = path.data()[c];
+                        if (c.key == category.key) {
+                            category = c;
+                            break;
+                        }
+                    }
+                    path.transition()
+                        .duration(500)
+                        .attrTween("d", arcTweenZoom(category));
+                }
+
+                d3.select(self.frameElement).style("height", height + "px");
+
+                // Setup for switching data: stash the old values for transition.
+                function stash(d) {
+                    d.x0 = d.x;
+                    d.dx0 = d.dx;
+                }
+
+                // When switching data: interpolate the arcs in data space.
+                function arcTweenData(a, i) {
+                    var oi = d3.interpolate({ x: a.x0, dx: a.dx0 }, a);
+                    function tween(t) {
+                        var b = oi(t);
+                        a.x0 = b.x;
+                        a.dx0 = b.dx;
+                        return arc(b);
+                    }
+                    if (i == 0) {
+                        // If we are on the first arc, adjust the x domain to match the root node
+                        // at the current zoom level. (We only need to do this once.)
+                        var xd = d3.interpolate(x.domain(), [node.x, node.x + node.dx]);
+                        return function (t) {
+                            x.domain(xd(t));
+                            return tween(t);
+                        };
+                    } else {
+                        return tween;
+                    }
+                }
+
+                // When zooming: interpolate the scales.
+                function arcTweenZoom(d) {
+                    var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+                        yd = d3.interpolate(y.domain(), [d.y, 1]),
+                        yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
+                    return function (d, i) {
+                        return i
+                            ? function (t) { return arc(d); }
+                            : function (t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
+                    };
+                }
+
+                callback();
+            }
+    });
 }
 window.draw_sunburst = draw_sunburst;
 
-function draw_circle(from_date, hosts, filter, callback) {
+function draw_circle(from_date, hosts, filter, callback, timeline_callback) {
         var esurl = "/rest/rules/es/rules_per_category/?from_date=" + from_date + "&hosts=" + hosts.join()
         if (filter) {
             esurl = esurl + "&qfilter=" + filter;
@@ -565,10 +679,10 @@ function draw_circle(from_date, hosts, filter, callback) {
                      $("#filter").append("Filter: " + tooltip);
                  }
                  if (d.key == "categories") {
-                     draw_timeline(from_date, hosts, null);
+                     draw_timeline(from_date, hosts, null, null, timeline_callback);
                      load_rules(from_date, hosts, null);
                  } else {
-                     draw_timeline(from_date, hosts, 'alert.category.raw:"'+d.key+'"');
+                     draw_timeline(from_date, hosts, 'alert.category.raw:"'+d.key+'"', null, timeline_callback);
                      load_rules(from_date, hosts, 'alert.category.raw:"'+d.key+'"');
                  }
                  var transition = d3.transition()
