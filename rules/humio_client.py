@@ -44,7 +44,7 @@ def _build_query(filters, hosts=None):
     :return:
     """
 
-    filters = filter(lambda f: f is not None, filters)
+    filters = filter(bool, filters)
     filter_query = '|'.join(filters)
     if hosts:
         hosts_query = ' or '.join(map(lambda h: 'host = "%s"' % h.replace('\\', '\\\\').replace('"', '\\"'), hosts))
