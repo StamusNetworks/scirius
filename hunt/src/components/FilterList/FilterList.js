@@ -79,6 +79,8 @@ class FilterList extends React.Component {
     render() {
         const newFilterValue = this.state.newFilterValue.toString();
         const valid = (!newFilterValue.toString().length || newFilterValue.match(/ /g) ? 'error' : 'success');
+        let helperText = (!['msg', 'not_in_msg', 'search', 'not_in_content'].includes(this.state.filterId)) ? <React.Fragment>Wildcard characters (&lt;li&gt;*&lt;/li&gt; and &lt;li&gt;?&lt;/li&gt;) can match on word boundaries.<br />No spaces allowed.</React.Fragment> : 'Wildcards for this filter type are not allowed but spaces are.';
+        helperText = (!['hits_min', 'hits_max'].includes(this.state.filterId)) ? helperText : '';
         return <React.Fragment>
             {/* eslint-disable react/no-array-index-key */}
             <ul className="list-inline">{this.props.filters.map((filter, idx) => <FilterItem key={idx}
@@ -123,18 +125,17 @@ class FilterList extends React.Component {
                                         />
                                     </FormGroup>
                                 </InputGroup>
-                                <HelpBlock>Wildcard characters (&lt;li&gt;*&lt;/li&gt; and &lt;li&gt;?&lt;/li&gt;) can match on word boundaries.<br />No spaces allowed.</HelpBlock>
+                                <HelpBlock>{helperText}</HelpBlock>
                             </Col>
                         </FormGroup>
-                        <FormGroup controlId="checkbox">
+                        {!['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filterId) && <FormGroup controlId="checkbox">
                             <Col componentClass={ControlLabel} sm={2}>
                                 <ControlLabel>Negated</ControlLabel>
                             </Col>
                             <Col sm={10}>
                                 <Checkbox onChange={this.negateHandler} onKeyDown={this.keyListener} checked={this.state.newFilterNegated} />
                             </Col>
-                        </FormGroup>
-
+                        </FormGroup>}
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
