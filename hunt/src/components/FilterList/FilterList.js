@@ -89,7 +89,7 @@ class FilterList extends React.Component {
                 filters={this.props.filters}
                 {...filter}
             />)}</ul>
-            <Modal show={this.state.editForm} className={'modal-hunt-filter'} backdrop keyboard>
+            <Modal show={this.state.editForm} onHide={() => this.setState({ editForm: false })} className={'modal-hunt-filter'} backdrop keyboard>
                 <Modal.Header>
                     <button
                         className="close"
@@ -102,7 +102,7 @@ class FilterList extends React.Component {
                     <Modal.Title>Edit filter</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Form horizontal>
+                    <Form>
                         <FormGroup controlId="name">
                             <Col componentClass={ControlLabel} sm={2}>
                                 <ControlLabel>Filter</ControlLabel>
