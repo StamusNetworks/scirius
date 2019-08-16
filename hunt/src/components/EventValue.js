@@ -7,7 +7,7 @@ import ErrorHandler from './Error';
 import { addFilter, sections } from '../containers/App/stores/global';
 
 const EventValue = (props) => <div className="value-field-complete">
-    <span className="value-field" title={`${props.value}\n"Ctrl + left click" to copy`}>{props.value}</span>
+    <span className="value-field" title={props.value + (props.hasCopyShortcut ? '\nCtrl + left click to copy' : '')}>{props.value}</span>
     <span className={'value-actions'}>
         <ErrorHandler>
             <EventValueInfo field={props.field} value={props.value} magnifiers={props.magnifiers} />
@@ -20,6 +20,7 @@ const EventValue = (props) => <div className="value-field-complete">
 
 EventValue.defaultProps = {
     magnifiers: true,
+    hasCopyShortcut: false
 }
 
 EventValue.propTypes = {
@@ -28,6 +29,7 @@ EventValue.propTypes = {
     field: PropTypes.any,
     value: PropTypes.any,
     magnifiers: PropTypes.bool,
+    hasCopyShortcut: PropTypes.bool
 };
 
 const mapDispatchToProps = (dispatch) => ({

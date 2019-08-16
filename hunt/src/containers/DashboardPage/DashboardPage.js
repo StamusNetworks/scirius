@@ -463,6 +463,7 @@ class HuntDashboard extends React.Component {
                                         value={item.key}
                                         magnifiers={!this.state.copyMode || this.state.hoveredItem !== itemPath}
                                         right_info={<Badge>{item.doc_count}</Badge>}
+                                        hasCopyShortcut
                                     />
                                 </ErrorHandler>
                             </ListGroupItem>;
@@ -790,6 +791,7 @@ class HuntDashboard extends React.Component {
                                                 value={item.key}
                                                 magnifiers={!this.state.copyMode || this.state.hoveredItem !== itemPath}
                                                 right_info={<Badge>{item.doc_count}</Badge>}
+                                                hasCopyShortcut
                                             />
                                         </ErrorHandler>}
                                     </ListGroupItem>;
