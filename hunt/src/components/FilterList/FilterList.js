@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { ControlLabel, Icon, Modal } from 'patternfly-react';
-import { Button, Checkbox, Col, Form, FormControl, FormGroup, HelpBlock, InputGroup } from 'react-bootstrap';
+import { Button, Checkbox, Col, Form, FormControl, FormGroup, HelpBlock, InputGroup, Row } from 'react-bootstrap';
 import InputGroupAddon from 'react-bootstrap/es/InputGroupAddon';
 import FilterItem from 'hunt_common/components/FilterItem/index';
 import isNumeric from '../../helpers/isNumeric';
@@ -18,6 +18,7 @@ class FilterList extends React.Component {
             filterId: '',
             newFilterValue: '',
             newFilterNegated: false,
+            wildcardMode: false,
         }
     }
 
@@ -29,13 +30,14 @@ class FilterList extends React.Component {
         }
     }
 
-    editHandler = (filterIdx, filterId, filterValue, filterNegated) => {
+    editHandler = (filterIdx, filterId, filterValue, filterNegated, wildcardMode) => {
         this.setState({
             editForm: true,
             filterIdx,
             filterId,
             newFilterValue: filterValue,
             newFilterNegated: filterNegated,
+            wildcardMode,
         })
     }
 
@@ -53,7 +55,7 @@ class FilterList extends React.Component {
                 label: `${this.state.filterId}: ${this.state.newFilterValue}`,
                 value: this.state.newFilterValue,
                 negated: this.state.newFilterNegated,
-                fullString: false,
+                fullString: !this.state.wildcardMode,
             }
         );
         this.closeHandler();
@@ -62,6 +64,12 @@ class FilterList extends React.Component {
     negateHandler = (e) => {
         this.setState({
             newFilterNegated: e.target.checked
+        })
+    }
+
+    wildcardHandler = (e) => {
+        this.setState({
+            wildcardMode: e.target.checked
         })
     }
 
@@ -78,15 +86,23 @@ class FilterList extends React.Component {
 
     render() {
         const newFilterValue = this.state.newFilterValue.toString();
-        const valid = (!newFilterValue.toString().length || newFilterValue.match(/ /g) ? 'error' : 'success');
-        let helperText = (!['msg', 'not_in_msg', 'search', 'not_in_content'].includes(this.state.filterId)) ? <React.Fragment>Wildcard characters (&lt;li&gt;*&lt;/li&gt; and &lt;li&gt;?&lt;/li&gt;) can match on word boundaries.<br />No spaces allowed.</React.Fragment> : 'Wildcards for this filter type are not allowed but spaces are.';
+        const valid = (!newFilterValue.toString().length || (this.state.wildcardMode && newFilterValue.match(/[\s]+/g)) ? 'error' : 'success');
+        let helperText = '';
+        if (['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filterId)) {
+            helperText = 'Case insensitive substring match.';
+        } else if (this.state.wildcardMode) {
+            helperText = <React.Fragment>Wildcard characters (<i style={{ padding: '0px 5px', background: '#e0e0e0', margin: '0 2px' }}>*</i> and <i style={{ padding: '0px 5px', background: '#e0e0e0', margin: '0 2px' }}>?</i>) can match on word boundaries.<br />No spaces allowed.</React.Fragment>;
+        } else {
+            helperText = 'Exact match'
+        }
         helperText = (!['hits_min', 'hits_max'].includes(this.state.filterId)) ? helperText : '';
+
         return <React.Fragment>
             {/* eslint-disable react/no-array-index-key */}
             <ul className="list-inline">{this.props.filters.map((filter, idx) => <FilterItem key={idx}
                 addFilter={this.props.addFilter}
                 onRemove={() => this.props.removeFilter(this.props.filterType, idx)}
-                onEdit={() => this.editHandler(idx, filter.id, filter.value, filter.negated)}
+                onEdit={() => this.editHandler(idx, filter.id, filter.value, filter.negated, !filter.fullString)}
                 editFilter={this.props.editFilter}
                 filters={this.props.filters}
                 {...filter}
@@ -128,14 +144,26 @@ class FilterList extends React.Component {
                                 <HelpBlock>{helperText}</HelpBlock>
                             </Col>
                         </FormGroup>
-                        {!['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filterId) && <FormGroup controlId="checkbox">
-                            <Col componentClass={ControlLabel} sm={2}>
-                                <ControlLabel>Negated</ControlLabel>
-                            </Col>
-                            <Col sm={10}>
-                                <Checkbox onChange={this.negateHandler} onKeyDown={this.keyListener} checked={this.state.newFilterNegated} />
-                            </Col>
-                        </FormGroup>}
+                        <Row>
+                            <FormGroup controlId="checkbox">
+                                <Col componentClass={ControlLabel} sm={3}>
+                                    <ControlLabel>Wildcard view</ControlLabel>
+                                </Col>
+                                <Col sm={9}>
+                                    <Checkbox onChange={this.wildcardHandler} onKeyDown={this.keyListener} checked={this.state.wildcardMode} disabled={(['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filterId))} />
+                                </Col>
+                            </FormGroup>
+                        </Row>
+                        {!['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filterId) && <Row>
+                            <FormGroup controlId="checkbox">
+                                <Col componentClass={ControlLabel} sm={3}>
+                                    <ControlLabel>Negated</ControlLabel>
+                                </Col>
+                                <Col sm={9}>
+                                    <Checkbox onChange={this.negateHandler} onKeyDown={this.keyListener} checked={this.state.newFilterNegated} disabled={(['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filterId))} />
+                                </Col>
+                            </FormGroup>
+                        </Row>}
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
