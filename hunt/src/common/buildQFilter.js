@@ -55,17 +55,16 @@ export function buildQFilter(filters, systemSettings) {
                 qfilter.push(`${fPrefix}NOT alert.signature:"${filters[i].value}"`);
             } else if (typeof filters[i].value === 'string') {
                 if (filters[i].fullString) {
-                    const value = filters[i].value.replace(/\\/g, '\\\\');
-                    qfilter.push(`${fPrefix}${filters[i].id}${fSuffix}:"${encodeURIComponent(value)}"`);
+                    const value = filters[i].value.toString().replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+                    qfilter.push(`${fPrefix}${filters[i].id}${fSuffix}:"${value}"`);
                 } else {
-                    const value = esEscape(filters[i].value);
-                    qfilter.push(`${fPrefix}${filters[i].id}:${encodeURIComponent(value)}`);
+                    const value = esEscape(filters[i].value.toString());
+                    qfilter.push(`${fPrefix}${filters[i].id}:${value}`);
                 }
             } else {
                 qfilter.push(`${fPrefix}${filters[i].id}:${filters[i].value}`);
             }
         }
     }
-
-    return qfilter.length ? `&qfilter=${qfilter.join(' AND ')}` : '';
+    return qfilter.length ? `&qfilter=${encodeURIComponent(qfilter.join(' AND '))}` : '';
 }
