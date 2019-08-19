@@ -105,6 +105,7 @@ class FilterList extends React.Component {
                 onEdit={() => this.editHandler(idx, filter.id, filter.value, filter.negated, !filter.fullString)}
                 editFilter={this.props.editFilter}
                 filters={this.props.filters}
+                filterType={this.props.filterType}
                 {...filter}
             />)}</ul>
             <Modal show={this.state.editForm} onHide={() => this.setState({ editForm: false })} className={'modal-hunt-filter'} backdrop keyboard>
@@ -183,7 +184,7 @@ FilterList.propTypes = {
     filters: PropTypes.array,
     editFilter: PropTypes.func,
     removeFilter: PropTypes.func,
-    filterTyoe: PropTypes.string,
+    filterType: PropTypes.string,
 }
 
 const mapDispatchToProps = {

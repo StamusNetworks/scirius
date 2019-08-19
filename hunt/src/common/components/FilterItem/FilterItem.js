@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './style.css';
+import { sections } from '../../../containers/App/stores/global';
 
 const FilterItem = (props) => {
     const negated = (props.negated) ? 'label-not' : '';
@@ -8,7 +9,7 @@ const FilterItem = (props) => {
     return <li>
         <span className={`hunt-filter label label-info ${negated}`}>
             <div className={'label-content'}>{displayValue}</div>
-            <a
+            {props.filterType !== sections.HISTORY && <a
                 href="#"
                 className="pf-edit-button filter-action edit"
                 onClick={(e) => {
@@ -18,7 +19,7 @@ const FilterItem = (props) => {
             >
                 <span className="pficon pficon-edit" aria-hidden="true" />
                 <span className="sr-only">Edit</span>
-            </a>
+            </a>}
             { props.children }
             <a
                 href="#"
@@ -35,6 +36,10 @@ const FilterItem = (props) => {
     </li>
 }
 
+FilterItem.defaultProps = {
+    filterType: sections.GLOBAL
+}
+
 FilterItem.propTypes = {
     value: PropTypes.oneOfType([
         PropTypes.string,
@@ -46,6 +51,7 @@ FilterItem.propTypes = {
     onEdit: PropTypes.func.isRequired,
     onRemove: PropTypes.func.isRequired,
     children: PropTypes.any,
+    filterType: PropTypes.string,
 }
 
 export default FilterItem;
