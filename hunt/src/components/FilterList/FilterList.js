@@ -106,6 +106,7 @@ class FilterList extends React.Component {
                 editFilter={this.props.editFilter}
                 filters={this.props.filters}
                 filterType={this.props.filterType}
+                idx={idx}
                 {...filter}
             />)}</ul>
             <Modal show={this.state.editForm} onHide={() => this.setState({ editForm: false })} className={'modal-hunt-filter'} backdrop keyboard>
