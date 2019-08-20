@@ -31,7 +31,16 @@ const FilterSetSaveModal = (props) => (
                             <strong>Name</strong>
                         </Col>
                         <Col sm={8}>
-                            <FormControl defaultValue={''} onChange={props.handleFieldChange} />
+                            <FormControl
+                                defaultValue={''}
+                                onChange={props.handleFieldChange}
+                                onKeyDown={(e) => {
+                                    if (e.keyCode === 13) {
+                                        e.preventDefault();
+                                        props.submit();
+                                    }
+                                }}
+                            />
                         </Col>
                     </FormGroup>
                     <FormGroup key={'page'} controlId={'page'}>
