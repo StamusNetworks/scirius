@@ -80,6 +80,7 @@ $nav-pf-vertical-active-before-color:                               $color-sn-pu
 }
 
 .list-view-pf .list-group-item {
+  position: initial !important;
   display: block;
 }
 
