@@ -3,12 +3,13 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { DropdownKebab, MenuItem } from 'patternfly-react';
 import axios from 'axios';
+import { createStructuredSelector } from 'reselect';
 import * as config from 'hunt_common/config/Api';
 import FilterToggleModal from '../FilterToggleModal';
 import ErrorHandler from './Error';
 import FilterSetSave from './FilterSetSaveModal';
 import { loadFilterSets } from './FilterSets/store';
-import { addFilter, generateAlert, setTag, sections, clearFilters } from '../containers/App/stores/global';
+import { addFilter, generateAlert, setTag, sections, clearFilters, makeSelectAlertTag } from '../containers/App/stores/global';
 
 class FilterEditKebab extends React.Component {
     constructor(props) {
@@ -44,7 +45,7 @@ class FilterEditKebab extends React.Component {
     generateAlertTag = () => {
         const { tag } = this.props.data.options;
         const { action } = this.props.data;
-        return (process.env.REACT_APP_HAS_TAG === '1' && (action === 'tag' || action === 'tagkeep')) ? generateAlert(tag === 'informational', tag === 'relevant', tag === 'untagged') : {};
+        return (process.env.REACT_APP_HAS_TAG === '1' && (action === 'tag' || action === 'tagkeep')) ? generateAlert(tag === 'informational', tag === 'relevant', tag === 'untagged') : this.props.alertTag;
     }
 
     generateFilterSet = () => {
@@ -176,7 +177,12 @@ FilterEditKebab.propTypes = {
     loadFilterSets: PropTypes.func,
     setTag: PropTypes.func,
     clearFilters: PropTypes.func,
+    alertTag: PropTypes.object,
 };
+
+const mapStateToProps = createStructuredSelector({
+    alertTag: makeSelectAlertTag(),
+});
 
 const mapDispatchToProps = {
     loadFilterSets,
@@ -185,4 +191,4 @@ const mapDispatchToProps = {
     setTag,
 };
 
-export default connect(null, mapDispatchToProps)(FilterEditKebab);
+export default connect(mapStateToProps, mapDispatchToProps)(FilterEditKebab);
