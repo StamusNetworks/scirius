@@ -1,3 +1,4 @@
-const isNumeric = (n) => !Number.isNaN(parseFloat(n)) && Number.isFinite(n);
+/* eslint-disable no-restricted-globals */
+const isNumeric = (n) => !isNaN(parseFloat(n)) && isFinite(n);
 
 export default isNumeric;
