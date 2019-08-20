@@ -124,7 +124,7 @@ export const reducer = (state = initialState, action) => {
                 ...filter,
                 ...action.filterUpdated
             } : filter);
-            updateStorage(updatedGlobalFilters);
+            updateStorage(action.filterType, updatedGlobalFilters);
             return state.setIn(['filters', action.filterType], fromJS(updatedGlobalFilters));
         }
         case REMOVE_FILTER: {
