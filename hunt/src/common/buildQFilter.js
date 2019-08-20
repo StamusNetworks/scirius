@@ -30,7 +30,7 @@ export function buildQFilter(filters, systemSettings) {
             } else if (filters[i].id === 'alert.signature_id') {
                 qfilter.push(`${fPrefix}alert.signature_id:${filters[i].value}`);
             } else if (filters[i].id === 'ip') {
-                qfilter.push(`${fPrefix}"${filters[i].value}"`);
+                qfilter.push(`${fPrefix}(src_ip${fSuffix}:"${filters[i].value}" OR dest_ip${fSuffix}:"${filters[i].value}")`);
             } else if (filters[i].id === 'alert.tag') {
                 const tagFilters = [];
                 if (filters[i].value.untagged === true) {
