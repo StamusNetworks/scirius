@@ -25,7 +25,7 @@ import axios from 'axios';
 import { PAGINATION_VIEW, ListView, Spinner } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
 import HuntPaginationRow from '../../HuntPaginationRow';
-import FilterItem from '../../FilterItem';
+import ActionItem from '../../ActionItem';
 import ErrorHandler from '../../components/Error';
 import { actionsButtons,
     buildListUrlParams,
@@ -114,7 +114,7 @@ export default class ActionsPage extends React.Component {
                 <Spinner loading={this.state.loading}></Spinner>
                 <ListView>
                     {this.state.data && this.state.data.map((item) => (
-                        <FilterItem key={item.pk} data={item} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} from_date={this.props.from_date} />
+                        <ActionItem key={item.pk} data={item} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} from_date={this.props.from_date} />
                     ))}
                 </ListView>
                 <ErrorHandler>
