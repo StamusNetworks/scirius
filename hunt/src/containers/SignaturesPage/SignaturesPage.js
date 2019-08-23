@@ -154,7 +154,6 @@ class SignaturesPage extends React.Component {
             rulesets: [],
             count: 0,
             loading: true,
-            display_toggle: true,
             action: { view: false, type: 'suppress' },
             net_error: undefined,
             rulesFilters,
@@ -190,9 +189,7 @@ class SignaturesPage extends React.Component {
             });
         }
         if (sid !== undefined) {
-            this.setState({
-                display_toggle: false, loading: false
-            });
+            this.setState({ loading: false });
         } else {
             this.fetchData(this.props.rules_list, this.props.filtersWithAlert);
         }
@@ -231,7 +228,7 @@ class SignaturesPage extends React.Component {
             if (sid !== undefined) {
                 // eslint-disable-next-line react/no-did-update-set-state
                 this.setState({
-                    display_toggle: false, loading: false
+                    loading: false
                 });
             } else {
                 this.fetchData(this.props.rules_list, this.props.filtersWithAlert);
@@ -347,7 +344,7 @@ class SignaturesPage extends React.Component {
                         setViewType={this.setViewType}
                         filterFields={this.state.rulesFilters}
                         sort_config={RuleSortFields}
-                        displayToggle={this.state.display_toggle}
+                        displayToggle={view === 'rules_list'}
                         actionsButtons={this.actionsButtons}
                         queryType={['filter', 'rest', 'filter_host_id']}
                         page={this.props.page}

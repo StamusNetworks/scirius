@@ -142,7 +142,6 @@ export default class HistoryPage extends React.Component {
                         setViewType={this.setViewType}
                         filterFields={this.state.filterFields}
                         sort_config={HistorySortFields}
-                        displayToggle={false}
                         queryType={['all']}
                         got_alert_tag={false}
                         page={this.props.page}

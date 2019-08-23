@@ -140,7 +140,6 @@ class AlertsPage extends React.Component {
                         setViewType={this.setViewType}
                         filterFields={this.state.rulesFilters}
                         sort_config={undefined}
-                        displayToggle={this.state.display_toggle}
                         actionsButtons={this.actionsButtons}
                         queryType={['filter', 'filter_host_id']}
                         page={this.props.page}

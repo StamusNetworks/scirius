@@ -697,6 +697,7 @@ class HuntFilter extends React.Component {
 
 HuntFilter.defaultProps = {
     filterType: sections.GLOBAL,
+    displayToggle: false,
 }
 
 HuntFilter.propTypes = {
@@ -711,7 +712,7 @@ HuntFilter.propTypes = {
     UpdateSort: PropTypes.any,
     config: PropTypes.any,
     actionsButtons: PropTypes.any,
-    displayToggle: PropTypes.any,
+    displayToggle: PropTypes.bool,
     page: PropTypes.any,
     setTag: PropTypes.func,
     enableOnly: PropTypes.func,

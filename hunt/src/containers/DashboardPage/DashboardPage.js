@@ -84,7 +84,6 @@ class HuntDashboard extends React.Component {
             loading: true,
             refresh_data: false,
             view: 'rules_list',
-            display_toggle: true,
             onlyHits,
             action: { view: false, type: 'suppress' },
             net_error: undefined,
@@ -675,7 +674,6 @@ class HuntDashboard extends React.Component {
                         setViewType={this.setViewType}
                         filterFields={this.state.rulesFilters}
                         sort_config={undefined}
-                        displayToggle={undefined}
                         actionsButtons={this.actionsButtons}
                         queryType={['filter', 'filter_host_id']}
                         page={this.props.page}
