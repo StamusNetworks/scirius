@@ -31,6 +31,7 @@ class FilterList extends React.Component {
     }
 
     editHandler = (filterIdx, filterId, filterValue, filterNegated, wildcardMode) => {
+        wildcardMode = (filterId === 'host_id.ip') ? false : wildcardMode;
         this.setState({
             editForm: true,
             filterIdx,
