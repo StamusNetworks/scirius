@@ -1,9 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import { Icon, Spinner } from 'patternfly-react';
 import RuleEditKebab from './components/RuleEditKebab';
 import SciriusChart from './components/SciriusChart';
 import ErrorHandler from './components/Error';
+import { addFilter, sections } from './containers/App/stores/global';
 
 const RuleCard = (props) => {
     const { category } = props.data;
@@ -61,7 +63,7 @@ const RuleCard = (props) => {
                     <div>
                         SID: <strong>{props.data.sid}</strong>
                         <span className="pull-right">
-                            <a onClick={() => { props.switchPage(props.data); }} style={{ cursor: 'pointer' }}>
+                            <a onClick={() => props.addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: props.data.sid, negated: false })} style={{ cursor: 'pointer' }}>
                                 <Icon type="fa" name="search-plus" />
                             </a>
                         </span>
@@ -76,8 +78,12 @@ RuleCard.propTypes = {
     data: PropTypes.any,
     sources: PropTypes.any,
     from_date: PropTypes.any,
-    switchPage: PropTypes.any,
     rulesets: PropTypes.any,
+    addFilter: PropTypes.func,
 };
 
-export default RuleCard;
+const mapDispatchToProps = {
+    addFilter
+};
+
+export default connect(null, mapDispatchToProps)(RuleCard);

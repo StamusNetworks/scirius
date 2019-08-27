@@ -362,7 +362,6 @@ class SignaturesPage extends React.Component {
                     itemProps={{
                         sources: this.state.sources,
                         from_date: this.props.from_date,
-                        switchPage: this.displayRule,
                         rulesets: this.state.rulesets,
                     }}
                 />}
