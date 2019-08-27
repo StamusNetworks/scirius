@@ -1,4 +1,4 @@
-image: $CI_REGISTRY/devel/scirius/iceweasel:latest
+image: stamus/stamus-docker-qa:iceweasel
 
 npm:
   image: node:8.9.4
