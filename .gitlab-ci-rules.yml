@@ -9,6 +9,8 @@ npm:
     - rules/static/dist
     - rules/static/bundles
     - rules/static/webpack-stats.prod.json
+  before_script:
+  - echo "skip"
   script:
   - npm install
   - npm install -g webpack@3.11
@@ -29,6 +31,8 @@ eslint_check:
   image: node:8.9.4
   stage: custom
   when: manual
+  before_script:
+  - echo "skip"
   script:
   - cd hunt
   - npm install
