@@ -148,6 +148,14 @@ FILTER_SETS = [
                 'id': 'http.http_user_agent'
             },
             {
+                'value': 'mozilla*',
+                'label': 'http.http_user_agent: mozilla*',
+                'full_string': False,
+                'query': 'filter',
+                'negated': True,
+                'id': 'http.http_user_agent'
+            },
+            {
                 'value': 'wget*',
                 'label': 'http.http_user_agent: wget*',
                 'full_string': False,
