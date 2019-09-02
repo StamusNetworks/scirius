@@ -196,9 +196,33 @@ FILTER_SETS = [
                 'id': 'app_proto'
             }
         ],
-        'name': 'Hunt: Suspicious HTTP User Agents',
+        'name': 'Hunt: Suspicious HTTP User Agents - 1',
         'page': 'DASHBOARDS',
         'description': 'The filter set returns events that have HTTP user agents that are not usually seen too much. Hence making it a good candidate for further investigations.',
+        'share': 'static'
+    },
+    {
+        'content': [
+            {
+                'value': '*(*',
+                'label': 'http.http_user_agent: *(*',
+                'full_string': False,
+                'query': 'filter',
+                'negated': True,
+                'id': 'http.http_user_agent'
+            },
+            {
+                'value': 'http',
+                'label': 'app_proto: http',
+                'full_string': True,
+                'query': 'filter',
+                'negated': False,
+                'id': 'app_proto'
+            }
+        ],
+        'name': 'Hunt: Suspicious HTTP User Agents -2',
+        'page': 'DASHBOARDS',
+        'description': 'The filter set returns events that have HTTP user agents that are not usually seen too much. Hence making it a good candidate for further investigations. This is second hunt variant of the filter.',
         'share': 'static'
     },
     {
