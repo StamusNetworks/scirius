@@ -35,7 +35,7 @@ import HuntFilter from '../../HuntFilter';
 import AlertItem from '../../components/AlertItem';
 import { actionsButtons, buildListUrlParams, loadActions, UpdateFilter, createAction, closeAction } from '../../helpers/common';
 import ErrorHandler from '../../components/Error';
-import { editFilter, removeFilter, addFilter, clearFilters, makeSelectGlobalFilters } from '../App/stores/global';
+import { addFilter, makeSelectGlobalFilters } from '../App/stores/global';
 
 class AlertsPage extends React.Component {
     constructor(props) {
@@ -58,7 +58,6 @@ class AlertsPage extends React.Component {
         this.buildListUrlParams = buildListUrlParams.bind(this);
         this.loadActions = loadActions.bind(this);
         this.UpdateFilter = UpdateFilter.bind(this);
-        this.addFilter = addFilter.bind(this);
         this.createAction = createAction.bind(this);
         this.closeAction = closeAction.bind(this);
     }
@@ -135,7 +134,6 @@ class AlertsPage extends React.Component {
                         ActiveFilters={this.props.filters}
                         config={this.props.rules_list}
                         ActiveSort={this.props.rules_list.sort}
-                        UpdateFilter={this.UpdateFilter}
                         UpdateSort={this.UpdateSort}
                         setViewType={this.setViewType}
                         filterFields={this.state.rulesFilters}
@@ -143,10 +141,6 @@ class AlertsPage extends React.Component {
                         actionsButtons={this.actionsButtons}
                         queryType={['filter', 'filter_host_id']}
                         page={this.props.page}
-                        addFilter={this.props.addFilter}
-                        editFilter={this.props.editFilter}
-                        removeFilter={this.props.removeFilter}
-                        clearFilters={this.props.clearFilters}
                     />
                 </ErrorHandler>
                 <Spinner loading={this.state.loading}>
@@ -156,7 +150,7 @@ class AlertsPage extends React.Component {
                         // eslint-disable-next-line no-underscore-dangle
                         <ErrorHandler key={rule._id}>
                             {/* eslint-disable-next-line no-underscore-dangle */}
-                            <AlertItem key={rule._id} id={rule._id} data={rule._source} from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} filters={this.props.filters} addFilter={this.addFilter} />
+                            <AlertItem key={rule._id} id={rule._id} data={rule._source} from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} filters={this.props.filters} addFilter={this.props.addFilter} />
                         </ErrorHandler>
                     ))}
                 </ListView>
@@ -184,9 +178,6 @@ AlertsPage.propTypes = {
     updateListState: PropTypes.any,
     page: PropTypes.any,
     addFilter: PropTypes.func,
-    editFilter: PropTypes.func,
-    removeFilter: PropTypes.func,
-    clearFilters: PropTypes.func,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -196,9 +187,6 @@ const mapStateToProps = createStructuredSelector({
 
 const mapDispatchToProps = {
     addFilter,
-    editFilter,
-    removeFilter,
-    clearFilters
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlertsPage);

@@ -51,7 +51,7 @@ import { actionsButtons,
     UpdateSort,
     closeAction,
     buildFilter } from '../../helpers/common';
-import { addFilter, clearFilters, editFilter, removeFilter, makeSelectGlobalFilters } from '../App/stores/global';
+import { makeSelectGlobalFilters } from '../App/stores/global';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -402,11 +402,4 @@ const mapStateToProps = createStructuredSelector({
     filtersWithAlert: makeSelectGlobalFilters(true)
 });
 
-const mapDispatchToProps = {
-    removeFilter,
-    editFilter,
-    addFilter,
-    clearFilters,
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(SignaturesPage);
+export default connect(mapStateToProps)(SignaturesPage);

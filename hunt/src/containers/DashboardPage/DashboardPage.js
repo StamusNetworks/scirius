@@ -45,7 +45,7 @@ import '../../../node_modules/react-grid-layout/css/styles.css';
 import '../../../node_modules/react-resizable/css/styles.css';
 import ErrorHandler from '../../components/Error';
 import copyTextToClipboard from '../../helpers/copyTextToClipboard';
-import { makeSelectAlertTag, makeSelectGlobalFilters, sections } from '../App/stores/global';
+import { makeSelectGlobalFilters, sections } from '../App/stores/global';
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
@@ -818,7 +818,6 @@ HuntDashboard.propTypes = {
 const mapStateToProps = createStructuredSelector({
     filters: makeSelectGlobalFilters(),
     filtersWithAlert: makeSelectGlobalFilters(true),
-    alertTag: makeSelectAlertTag(),
 });
 
 export default connect(mapStateToProps)(HuntDashboard);
