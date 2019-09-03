@@ -16,6 +16,12 @@ export const sections = {
 };
 
 export const validateFilter = (filter) => {
+    if (filter.id === 'alert.tag') {
+        // eslint-disable-next-line no-console
+        console.error('Tags must go in a separate store');
+        return false;
+    }
+
     const filterProps = ['id', 'value', 'negated', 'label', 'fullString', 'query'];
 
     const filterKeys = Object.keys(filter);
@@ -110,8 +116,8 @@ export const reducer = (state = initialState, action) => {
                     }
                 }
             // When a single filter is passed
-            } else {
-                globalFilters.push(action.filter);
+            } else if (validateFilter(filter)) {
+                globalFilters.push(filter);
             }
             updateStorage(action.filterType, globalFilters);
             return state.setIn(['filters', action.filterType], fromJS(globalFilters));
