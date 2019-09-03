@@ -335,7 +335,7 @@ class SignaturesPage extends React.Component {
             <div className="RulesList HuntList">
                 {this.state.net_error !== undefined && <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>}
                 <ErrorHandler>
-                    <HuntFilter ActiveFilters={this.props.filters}
+                    <HuntFilter
                         config={this.props.rules_list}
                         ActiveSort={this.props.rules_list.sort}
                         UpdateSort={this.UpdateSort}

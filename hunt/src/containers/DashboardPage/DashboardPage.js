@@ -666,7 +666,6 @@ class HuntDashboard extends React.Component {
             <div className="HuntList">
                 <ErrorHandler>
                     <HuntFilter
-                        ActiveFilters={this.props.filters}
                         config={this.props.rules_list}
                         ActiveSort={this.props.rules_list.sort}
                         UpdateFilter={this.UpdateFilter}

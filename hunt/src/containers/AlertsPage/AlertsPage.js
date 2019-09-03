@@ -131,7 +131,6 @@ class AlertsPage extends React.Component {
             <div className="AlertsList HuntList">
                 <ErrorHandler>
                     <HuntFilter
-                        ActiveFilters={this.props.filters}
                         config={this.props.rules_list}
                         ActiveSort={this.props.rules_list.sort}
                         UpdateSort={this.UpdateSort}

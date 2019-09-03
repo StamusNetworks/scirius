@@ -135,7 +135,7 @@ export default class HistoryPage extends React.Component {
         return (
             <div className="HistoryList HuntList">
                 <ErrorHandler>
-                    <HuntFilter ActiveFilters={this.props.filters}
+                    <HuntFilter
                         config={this.props.rules_list}
                         ActiveSort={this.props.rules_list.sort}
                         UpdateSort={this.UpdateSort}

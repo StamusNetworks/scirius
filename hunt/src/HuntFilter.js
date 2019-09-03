@@ -33,7 +33,7 @@ import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
 import { HuntSort } from './Sort';
 import FilterList from './components/FilterList/index';
 import FilterSetSave from './components/FilterSetSaveModal';
-import { makeSelectAlertTag, sections, addFilter, clearFilters, setTag, enableOnly } from './containers/App/stores/global';
+import { makeSelectGlobalFilters, makeSelectAlertTag, makeSelectHistoryFilters, sections, addFilter, clearFilters, setTag, enableOnly } from './containers/App/stores/global';
 import { loadFilterSets } from './components/FilterSets/store';
 
 // https://www.regextester.com/104038
@@ -493,20 +493,12 @@ class HuntFilter extends React.Component {
     }
 
     submitFilterSets() {
-        const filters = this.props.ActiveFilters;
         this.setState({ errors: undefined });
 
-        // Check and add tags if not already here
-        let found = false;
-        for (let idx = 0; idx < this.props.ActiveFilters.length; idx += 1) {
-            if (this.props.ActiveFilters[idx].id === 'alert.tag') {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            const tags = { id: 'alert.tag', value: { untagged: true, informational: true, relevant: true } };
-            filters.push(tags);
+        const filters = [...this.props.filters];
+
+        if (process.env.REACT_APP_HAS_TAG === '1') {
+            filters.push(this.props.alertTag);
         }
 
         axios.post(config.API_URL + config.HUNT_FILTER_SETS, { name: this.state.filterSetName, page: this.props.page, content: filters, share: this.state.filterSets.shared, description: this.state.filterSets.description })
@@ -560,13 +552,9 @@ class HuntFilter extends React.Component {
     render() {
         const { currentFilterType } = this.state;
         const activeFilters = [];
-        this.props.ActiveFilters.forEach((item) => {
-            if (item.query === undefined) {
-                /* remove alert.tag from display as it is handle by switches */
-                if (item.id !== 'alert.tag') {
-                    activeFilters.push(item);
-                }
-            } else if (this.props.queryType.indexOf(item.query) !== -1) {
+        const filters = this.props.filterType === sections.HISTORY ? this.props.historyFilters : this.props.filters;
+        filters.forEach((item) => {
+            if (item.query === undefined || this.props.queryType.indexOf(item.query) !== -1) {
                 activeFilters.push(item);
             }
         });
@@ -698,7 +686,6 @@ HuntFilter.defaultProps = {
 
 HuntFilter.propTypes = {
     filterFields: PropTypes.any,
-    ActiveFilters: PropTypes.any,
     gotAlertTag: PropTypes.bool,
     setViewType: PropTypes.any,
     queryType: PropTypes.any,
@@ -723,10 +710,14 @@ HuntFilter.propTypes = {
         })
     }),
     loadFilterSets: PropTypes.func,
+    filters: PropTypes.array,
+    historyFilters: PropTypes.array,
 };
 
 const mapStateToProps = createStructuredSelector({
     alertTag: makeSelectAlertTag(),
+    filters: makeSelectGlobalFilters(),
+    historyFilters: makeSelectHistoryFilters(),
 });
 
 const mapDispatchToProps = {
