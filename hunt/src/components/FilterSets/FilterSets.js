@@ -88,7 +88,15 @@ export default class FilterSets extends React.Component {
 
     loadFilterSets(row) {
         this.props.clearFilters(sections.GLOBAL);
-        this.props.addFilter(sections.GLOBAL, row.content);
+
+        const filters = row.content.filter((f) => f.id !== 'alert.tag');
+        this.props.addFilter(sections.GLOBAL, filters);
+
+        if (process.env.REACT_APP_HAS_TAG) {
+            const alertTag = row.content.filter((f) => f.id === 'alert.tag')[0];
+            this.props.setTag(alertTag);
+        }
+
         this.props.switchPage(row.page);
         this.props.reload();
     }
@@ -253,4 +261,5 @@ FilterSets.propTypes = {
     globalSet: PropTypes.array,
     privateSet: PropTypes.array,
     staticSet: PropTypes.array,
+    setTag: PropTypes.func,
 };
