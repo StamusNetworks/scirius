@@ -145,28 +145,6 @@ export function closeAction() {
     this.setState({ action: { view: false, type: null } });
 }
 
-export function updateAlertTag(tfilters) {
-    /* Update the filters on alert.tag and send the update */
-    const activeFilters = Object.assign([], this.props.filters);
-    const tagFilters = { id: 'alert.tag', value: tfilters };
-    if (activeFilters.length === 0) {
-        activeFilters.push(tagFilters);
-    } else {
-        let updated = false;
-        for (let i = 0; i < activeFilters.length; i += 1) {
-            if (activeFilters[i].id === 'alert.tag') {
-                activeFilters[i] = tagFilters;
-                updated = true;
-                break;
-            }
-        }
-        if (updated === false) {
-            activeFilters.push(tagFilters);
-        }
-    }
-    this.UpdateFilter(activeFilters);
-}
-
 export function buildFilter(filters) {
     const lFilters = {};
     for (let i = 0; i < filters.length; i += 1) {

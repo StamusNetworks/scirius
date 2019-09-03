@@ -50,7 +50,6 @@ import { actionsButtons,
     setViewType,
     UpdateSort,
     closeAction,
-    updateAlertTag,
     buildFilter } from '../../helpers/common';
 import { addFilter, clearFilters, editFilter, removeFilter, makeSelectGlobalFilters } from '../App/stores/global';
 
@@ -177,7 +176,6 @@ class SignaturesPage extends React.Component {
         this.setViewType = setViewType.bind(this);
         this.UpdateSort = UpdateSort.bind(this);
         this.closeAction = closeAction.bind(this);
-        this.updateAlertTag = updateAlertTag.bind(this);
         this.buildFilter = buildFilter.bind(this);
     }
 

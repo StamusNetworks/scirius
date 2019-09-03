@@ -40,7 +40,6 @@ import { actionsButtons,
     setViewType,
     UpdateSort,
     closeAction,
-    updateAlertTag,
     buildFilter } from '../../helpers/common';
 
 export default class ActionsPage extends React.Component {
@@ -63,7 +62,6 @@ export default class ActionsPage extends React.Component {
         this.closeAction = closeAction.bind(this);
         this.loadActions = loadActions.bind(this);
 
-        this.updateAlertTag = updateAlertTag.bind(this);
         this.state = { data: [], count: 0, rulesets: [] };
         this.fetchData = this.fetchData.bind(this);
         this.needUpdate = this.needUpdate.bind(this);
