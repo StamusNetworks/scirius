@@ -42,16 +42,11 @@ const IP_REGEXP = /((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3
 class HuntFilter extends React.Component {
     constructor(props) {
         super(props);
-        let gotAlertTag = true;
-        if (this.props.got_alert_tag === false) {
-            gotAlertTag = false;
-        }
         this.state = {
             // eslint-disable-next-line react/no-unused-state
             filterFields: this.props.filterFields,
             currentFilterType: this.props.filterFields[0],
             currentValue: '',
-            gotAlertTag,
             filterSets: { showModal: false, shared: false, description: '' },
             filterSetName: '',
             errors: undefined,
@@ -604,7 +599,7 @@ class HuntFilter extends React.Component {
                             UpdateSort={this.props.UpdateSort}
                             disabled={this.props.disable_sort ? this.props.disable_sort : false}
                         />}
-                        {this.state.gotAlertTag && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && <div className="form-group" style={{ paddingTop: '3px', height: '25px' }}>
+                        {this.props.gotAlertTag && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && <div className="form-group" style={{ paddingTop: '3px', height: '25px' }}>
                             <ul className="list-inline">
                                 <li><Switch bsSize="small"
                                     onColor="info"
@@ -698,12 +693,13 @@ class HuntFilter extends React.Component {
 HuntFilter.defaultProps = {
     filterType: sections.GLOBAL,
     displayToggle: false,
+    gotAlertTag: true,
 }
 
 HuntFilter.propTypes = {
     filterFields: PropTypes.any,
     ActiveFilters: PropTypes.any,
-    got_alert_tag: PropTypes.any,
+    gotAlertTag: PropTypes.bool,
     setViewType: PropTypes.any,
     queryType: PropTypes.any,
     sort_config: PropTypes.any,
