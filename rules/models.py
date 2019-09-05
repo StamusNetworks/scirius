@@ -117,6 +117,14 @@ _HUNT_FILTERS = [
                       'queryType': 'rest'
                     },
                     {
+                      'id': 'port',
+                      'title': 'Port',
+                      'placeholder': 'Filter by Port (src/dest)',
+                      'filterType': 'number',
+                      'valueType': 'positiveint',
+                      'queryType': 'filter'
+                    },
+                    {
                       'id': 'alert.signature_id',
                       'title': 'Signature ID',
                       'placeholder': 'Filter by Signature ID',

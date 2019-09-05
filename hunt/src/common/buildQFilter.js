@@ -49,6 +49,8 @@ export function buildQFilter(filters, systemSettings) {
                 }
             } else if (filters[i].id === 'msg') {
                 qfilter.push(`${fPrefix}alert.signature:"${filters[i].value}"`);
+            } else if (filters[i].id === 'port') {
+                qfilter.push(`${fPrefix}(src_port:${filters[i].value} OR dest_port:${filters[i].value})`);
             } else if (filters[i].id === 'alert.category' && filters[i].value === 'Unknown') {
                 qfilter.push(`${fPrefix}alert.category${fSuffix}:""`);
             } else if (filters[i].id === 'not_in_msg') {
