@@ -148,7 +148,7 @@ class ESQuery(object):
             # use _exists_ in case analyze_wildcard is false
             hosts_filter = '_exists_:%s' % settings.ELASTICSEARCH_HOSTNAME
         else:
-            hosts_filter = ['%s.%s:%s' % (settings.ELASTICSEARCH_HOSTNAME, settings.ELASTICSEARCH_KEYWORD, h) for h in hosts]
+            hosts_filter = ['%s:%s' % (settings.ELASTICSEARCH_HOSTNAME, h) for h in hosts]
             hosts_filter = mark_safe('(%s)' % ' '.join(hosts_filter))
 
         if qfilter is not None:
