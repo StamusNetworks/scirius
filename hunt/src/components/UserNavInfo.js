@@ -2,10 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { PAGE_STATE } from 'hunt_common/constants';
-import { Dropdown, Icon, MenuItem, ApplicationLauncher, ApplicationLauncherItem, AboutModal, Modal, Form, Button } from 'patternfly-react';
+import { Dropdown, Icon, MenuItem, ApplicationLauncher, AboutModal, Modal, Form, Button } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
 import FilterSets from './FilterSets';
-import ExternalLink from './ExternalLink';
 import OutsideAlerter from './OutsideAlerter';
 import sciriusLogo from '../img/scirius-by-stamus.svg';
 import ErrorHandler from './Error';
@@ -48,10 +47,6 @@ export default class UserNavInfo extends Component {
         this.toggleNotifications = this.toggleNotifications.bind(this);
         this.toggleiSshown = this.toggleiSshown.bind(this);
         this.isShownFalse = this.isShownFalse.bind(this);
-        this.toggleHunt = this.toggleHunt.bind(this);
-        this.toggleHome = this.toggleHome.bind(this);
-        this.toggleDashboards = this.toggleDashboards.bind(this);
-        this.toggleEvebox = this.toggleEvebox.bind(this);
         this.showUpdateThreatDetection = this.showUpdateThreatDetection.bind(this);
         this.closeShowUpdate = this.closeShowUpdate.bind(this);
         this.submitUpdate = this.submitUpdate.bind(this);
@@ -92,26 +87,6 @@ export default class UserNavInfo extends Component {
         if (this.state.isShown) {
             this.setState({ isShown: false });
         }
-    }
-
-    toggleHunt() {
-        this.setState({ isShown: !this.state.isShown });
-        window.open('/rules/hunt', '_self');
-    }
-
-    toggleHome() {
-        this.setState({ isShown: !this.state.isShown });
-        window.open('/rules', '_self');
-    }
-
-    toggleDashboards() {
-        this.setState({ isShown: !this.state.isShown });
-        window.open(this.props.systemSettings.kibana_url, '_self');
-    }
-
-    toggleEvebox() {
-        this.setState({ isShown: !this.state.isShown });
-        window.open(this.props.systemSettings.evebox_url, '_self');
     }
 
     showUpdateThreatDetection() {
@@ -207,33 +182,39 @@ export default class UserNavInfo extends Component {
                 <ErrorHandler>
                     <OutsideAlerter hide={this.isShownFalse}>
                         <ApplicationLauncher grid open={this.state.isShown} toggleLauncher={this.toggleiSshown}>
-                            <ApplicationLauncherItem
-                                icon="rebalance"
-                                title="Hunt"
-                                tooltip="Threat Hunting"
-                                onClick={this.toggleHunt}
-                            />
 
-                            <ApplicationLauncherItem
-                                icon="server"
-                                title="Administration"
-                                tooltip="Appliances Management"
-                                onClick={this.toggleHome}
-                            />
+                            <li className="applauncher-pf-item" role="presentation">
+                                <a className="applauncher-pf-link" href="/rules/hunt" role="menuitem" data-toggle="tooltip" title={'Threat Hunting'} style={{ cursor: 'pointer' }}>
 
-                            {this.props.systemSettings && this.props.systemSettings.kibana && <ExternalLink
-                                onClick={this.toggleDashboards}
-                                icon="glyphicon glyphicon-stats"
-                                title="Dashboards"
-                                tooltip="Kibana dashboards for ES"
-                            />}
+                                    <i style={{ fontSize: '2em' }} className="pficon-rebalance" aria-hidden="true"></i>
+                                    <span className="applauncher-pf-link-title">{'Hunt'}</span>
+                                </a>
+                            </li>
 
-                            {this.props.systemSettings && this.props.systemSettings.evebox && <ExternalLink
-                                onClick={this.toggleEvebox}
-                                icon="glyphicon glyphicon-th-list"
-                                title="Events viewer"
-                                tooltip="Evebox alert and event management tool"
-                            />}
+
+                            <li className="applauncher-pf-item" role="presentation">
+                                <a className="applauncher-pf-link" href="/rules" role="menuitem" data-toggle="tooltip" title={'Appliances Management'} style={{ cursor: 'pointer' }}>
+
+                                    <i style={{ fontSize: '2em' }} className="pficon-server" aria-hidden="true"></i>
+                                    <span className="applauncher-pf-link-title">{'Administration'}</span>
+                                </a>
+                            </li>
+
+                            {this.props.systemSettings && this.props.systemSettings.kibana && <li className="applauncher-pf-item" role="presentation">
+                                <a className="applauncher-pf-link" href={this.props.systemSettings.kibana_url} role="menuitem" data-toggle="tooltip" title={'Kibana dashboards for ES'} style={{ cursor: 'pointer' }}>
+
+                                    <i style={{ fontSize: '2em' }} className="glyphicon glyphicon-stats" aria-hidden="true"></i>
+                                    <span className="applauncher-pf-link-title">{'Dashboards'}</span>
+                                </a>
+                            </li>}
+
+                            {this.props.systemSettings && this.props.systemSettings.evebox && <li className="applauncher-pf-item" role="presentation">
+                                <a className="applauncher-pf-link" href={this.props.systemSettings.evebox_url} role="menuitem" data-toggle="tooltip" title={'Evebox alert and event management tool'} style={{ cursor: 'pointer' }}>
+
+                                    <i style={{ fontSize: '2em' }} className="glyphicon glyphicon-th-list" aria-hidden="true"></i>
+                                    <span className="applauncher-pf-link-title">{'Events viewer'}</span>
+                                </a>
+                            </li>}
 
                         </ApplicationLauncher>
                     </OutsideAlerter>
