@@ -2706,7 +2706,7 @@ class Ruleset(models.Model, Transformable):
             try:
                 sourcesat.source.update()
             except IOError as e:
-                update_errors.append('Source "%s" update failed:\n%s' % (sourcesat.source.name, e.message))
+                update_errors.append('Source "%s" update failed:\n\t%s' % (sourcesat.source.name, e.message))
 
         # Update timestamp if at least one source update was successful
         if len(sourcesatversion) != 0 and len(sourcesatversion) != len(update_errors):
@@ -2715,7 +2715,7 @@ class Ruleset(models.Model, Transformable):
             self.save()
 
         if len(update_errors):
-            raise IOError('\n'.join(update_errors))
+            raise IOError(len(update_errors), '\n'.join(update_errors))
 
     def generate(self):
         # TODO: manage other types
