@@ -45,7 +45,7 @@ import IPy
 from datetime import date as datetime_date
 
 from rules.tests_rules import TestRules
-from rules.validators import validate_address_or_network
+from rules.validators import validate_addresses_or_networks
 from rules.filter_sets import FILTER_SETS
 
 from django.contrib.auth.models import User
@@ -2919,15 +2919,18 @@ class Threshold(models.Model):
     rule = models.ForeignKey(Rule, default = None)
     ruleset = models.ForeignKey(Ruleset, default = None)
     track_by = models.CharField(max_length= 10, choices = TRACK_BY_CHOICES, default='by_src')
-    net = models.CharField(max_length=100, blank = True, validators=[validate_address_or_network])
+    net = models.CharField(max_length=100, blank = True, validators=[validate_addresses_or_networks])
     count = models.IntegerField(default=1)
     seconds = models.IntegerField(default=60)
 
     def __unicode__(self):
         rep = ""
         if self.threshold_type == "suppress":
+            net = self.net
+            if ',' in self.net:
+                net = '[%s]' % self.net
             rep = "suppress gen_id %d, sig_id %d" % (self.gid, self.rule.sid)
-            rep += ", track %s, ip %s" % (self.track_by, self.net)
+            rep += ", track %s, ip %s" % (self.track_by, net)
         else:
             rep = "%s gen_id %d, sig_id %d, type %s, track %s, count %d, seconds %d" % (self.threshold_type, self.gid, self.rule.sid, self.type, self.track_by, self.count, self.seconds)
         return rep

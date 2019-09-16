@@ -181,6 +181,12 @@ class AddRuleSuppressForm(forms.ModelForm, RulesetChoiceForm):
         model = Threshold
         exclude = ['ruleset', 'rule', 'gid', 'descr', 'type', 'count', 'seconds']
 
+    def clean(self):
+        cleaned_data = super(AddRuleSuppressForm, self).clean()
+        if 'net' in cleaned_data and ',' in cleaned_data['net']:
+            cleaned_data['net'] = ','.join([item.strip() for item in cleaned_data['net'].split(',')])
+
+
 class EditThresholdForm(forms.ModelForm, CommentForm):
     class Meta:
         model = Threshold
