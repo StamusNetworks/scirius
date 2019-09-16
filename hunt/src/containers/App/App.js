@@ -28,7 +28,7 @@ import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
 import DisplayPage from 'hunt_common/components/DisplayPage';
 import { PAGE_STATE } from 'hunt_common/constants';
 import * as config from 'hunt_common/config/Api';
-import UserNavInfo from '../../components/UserNavInfo';
+import UserNavInfo from 'hunt_common/containers/UserNavInfo';
 import EmitEvent from '../../helpers/EmitEvent';
 import '../../pygments.css';
 import '../../css/App.css';

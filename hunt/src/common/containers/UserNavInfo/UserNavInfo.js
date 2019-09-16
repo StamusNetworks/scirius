@@ -4,10 +4,10 @@ import axios from 'axios';
 import { PAGE_STATE } from 'hunt_common/constants';
 import { Dropdown, Icon, MenuItem, ApplicationLauncher, AboutModal, Modal, Form, Button } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
-import FilterSets from './FilterSets';
-import OutsideAlerter from './OutsideAlerter';
-import sciriusLogo from '../img/scirius-by-stamus.svg';
-import ErrorHandler from './Error';
+import FilterSets from '../../../components/FilterSets';
+import OutsideAlerter from '../../../components/OutsideAlerter';
+import sciriusLogo from '../../../img/scirius-by-stamus.svg';
+import ErrorHandler from '../../../components/Error';
 
 const USER_PERIODS = {
     1: '1h',
