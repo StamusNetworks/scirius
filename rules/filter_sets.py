@@ -118,7 +118,7 @@ FILTER_SETS = [
             {
                 'value': 'firefox*',
                 'label': 'http.http_user_agent: firefox*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -126,7 +126,7 @@ FILTER_SETS = [
             {
                 'value': 'explorer*',
                 'label': 'http.http_user_agent: explorer*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -134,7 +134,7 @@ FILTER_SETS = [
             {
                 'value': 'opera*',
                 'label': 'http.http_user_agent: opera*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -142,7 +142,7 @@ FILTER_SETS = [
             {
                 'value': 'edge*',
                 'label': 'http.http_user_agent: edge*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -150,7 +150,7 @@ FILTER_SETS = [
             {
                 'value': 'mozilla*',
                 'label': 'http.http_user_agent: mozilla*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -158,7 +158,7 @@ FILTER_SETS = [
             {
                 'value': 'wget*',
                 'label': 'http.http_user_agent: wget*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -166,7 +166,7 @@ FILTER_SETS = [
             {
                 'value': 'curl*',
                 'label': 'http.http_user_agent: curl*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -174,7 +174,7 @@ FILTER_SETS = [
             {
                 'value': 'perl*',
                 'label': 'http.http_user_agent: perl*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -182,7 +182,7 @@ FILTER_SETS = [
             {
                 'value': 'python*',
                 'label': 'http.http_user_agent: python*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -190,7 +190,7 @@ FILTER_SETS = [
             {
                 'value': 'http',
                 'label': 'app_proto: http',
-                'full_string': True,
+                'fullString': True,
                 'query': 'filter',
                 'negated': False,
                 'id': 'app_proto'
@@ -206,7 +206,7 @@ FILTER_SETS = [
             {
                 'value': '*(*',
                 'label': 'http.http_user_agent: *(*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -214,7 +214,7 @@ FILTER_SETS = [
             {
                 'value': 'http',
                 'label': 'app_proto: http',
-                'full_string': True,
+                'fullString': True,
                 'query': 'filter',
                 'negated': False,
                 'id': 'app_proto'
@@ -299,7 +299,7 @@ FILTER_SETS = [
             {
                 'value': 'firefox*',
                 'label': 'http.http_user_agent: firefox*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -307,7 +307,7 @@ FILTER_SETS = [
             {
                 'value': 'explorer*',
                 'label': 'http.http_user_agent: explorer*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -315,7 +315,7 @@ FILTER_SETS = [
             {
                 'value': 'opera*',
                 'label': 'http.http_user_agent: opera*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -323,7 +323,7 @@ FILTER_SETS = [
             {
                 'value': 'edge*',
                 'label': 'http.http_user_agent: edge*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -331,7 +331,7 @@ FILTER_SETS = [
             {
                 'value': 'wget*',
                 'label': 'http.http_user_agent: wget*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -339,7 +339,7 @@ FILTER_SETS = [
             {
                 'value': 'curl*',
                 'label': 'http.http_user_agent: curl*',
-                'full_string': False,
+                'fullString': False,
                 'query': 'filter',
                 'negated': True,
                 'id': 'http.http_user_agent'
@@ -347,7 +347,7 @@ FILTER_SETS = [
             {
                 'value': 'http',
                 'label': 'app_proto: http',
-                'full_string': True,
+                'fullString': True,
                 'query': 'filter',
                 'negated': False,
                 'id': 'app_proto'
