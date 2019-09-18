@@ -631,7 +631,7 @@ class SystemSettings(models.Model):
     https_proxy = models.CharField(max_length=200, validators=[validate_proxy], default="", blank=True)
     use_elasticsearch = models.BooleanField(default=True)
     custom_elasticsearch = models.BooleanField(default=False)
-    elasticsearch_url = models.CharField(max_length=200, validators=[validate_url], blank=True,
+    elasticsearch_url = models.CharField(max_length=200, validators=[validate_url], blank=False, null=False,
                                     default='http://elasticsearch:9200/')
 
     def get_proxy_params(self):
