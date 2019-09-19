@@ -143,6 +143,9 @@ export default class AlertInList extends React.Component {
                                     <ErrorHandler>
                                         <EventField field_name="Probe" field="host" value={data.host} addFilter={this.addFilter} />
                                     </ErrorHandler>
+                                    <ErrorHandler>
+                                        <EventField field_name="Network interface" field="in_iface" value={data.in_iface} addFilter={this.addFilter} />
+                                    </ErrorHandler>
                                     {data.vlan && <ErrorHandler><EventField field_name="Vlan" field="vlan" value={data.vlan} addFilter={this.addFilter} /></ErrorHandler>}
                                 </dl>
                             </div>
@@ -370,6 +373,9 @@ export default class AlertInList extends React.Component {
                             </div>
                             <div className="card-pf-body">
                                 <dl className="dl-horizontal">
+                                    <ErrorHandler>
+                                        <EventField field_name="Flow ID" field="flow_id" value={data.flow_id} addFilter={this.addFilter} />
+                                    </ErrorHandler>
                                     <ErrorHandler>
                                         <EventField field_name="Flow start" field="flow.start" value={data.flow.start} addFilter={this.addFilter} />
                                     </ErrorHandler>
