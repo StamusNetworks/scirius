@@ -377,7 +377,7 @@ export default class AlertInList extends React.Component {
                                         <EventField field_name="Flow ID" field="flow_id" value={data.flow_id} addFilter={this.addFilter} />
                                     </ErrorHandler>
                                     <ErrorHandler>
-                                        <EventField field_name="Flow start" field="flow.start" value={data.flow.start} addFilter={this.addFilter} />
+                                        <EventField field_name="Flow start" field="flow.start" value={data.flow.start} addFilter={this.addFilter} magnifiers={false} />
                                     </ErrorHandler>
                                     <ErrorHandler>
                                         <EventField field_name="Pkts to server" field="flow.pkts_toserver" value={data.flow.pkts_toserver} addFilter={this.addFilter} />
