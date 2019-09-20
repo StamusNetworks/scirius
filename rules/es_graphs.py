@@ -1235,6 +1235,38 @@ ALERTS_TAIL = """
 }
 """
 
+
+EVENTS_FROM_FLOW_ID = """
+{
+  "size": 100,
+  "sort": [
+    {
+      "@timestamp": {
+        "order": "desc",
+        "unmapped_type": "boolean"
+      }
+    }
+  ],
+  "query": {
+    "bool": {
+      "must": [{
+          "range": {
+            "@timestamp": {
+              "gte": {{ from_date }}
+            }
+          }
+      }, {
+        "query_string": {
+          "query": "event_type:* {{ query_filter }}",
+          "analyze_wildcard": true
+        }
+      }]
+{{ bool_clauses }}
+    }
+  }
+}
+"""
+
 SURICATA_LOGS_TAIL = """
 {
   "size": 100,
@@ -1856,6 +1888,20 @@ class ESAlertsTail(ESQuery):
         es_url = self._get_es_url()
         data = self._urlopen(es_url, data)
         return data['hits']['hits']
+
+
+class ESEventsFromFlowID(ESQuery):
+    def get(self):
+        data = self._render_template(EVENTS_FROM_FLOW_ID, {})
+        es_url = self._get_es_url(data='all')
+        data = self._urlopen(es_url, data)
+
+        res = {}
+        for item in data['hits']['hits']:
+            if item['_source']['event_type'] not in res:
+                res[item['_source']['event_type'].title()] = []
+            res[item['_source']['event_type'].title()].append(item['_source'])
+        return res
 
 
 class ESSuriLogTail(ESQuery):

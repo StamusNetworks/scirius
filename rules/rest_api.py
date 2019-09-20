@@ -42,7 +42,7 @@ from rules.es_data import ESData
 from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats, \
         ESTimeline, ESMetricsTimeline, ESHealth, ESIndicesStats, ESRulesPerCategory, ESAlertsCount, \
         ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESAlertsTail, ESSuriLogTail, ESPoststats, \
-        ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid
+        ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD
@@ -2409,6 +2409,25 @@ class ESAlertsTailViewSet(ESBaseViewSet):
         return Response(ESAlertsTail(request).get(search_target=search_target))
 
 
+class ESEventsFromFlowIDViewSet(ESBaseViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show events from an alert.flow_id:\n
+        curl -k https://x.x.x.x/rest/rules/es/events_from_flow_id/\?from_date\=1537264545477\&qfilter=flow_id:1259054449405574 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        []
+
+    =============================================================================================================================================================
+
+    """
+
+    def _get(self, request, format=None):
+        return Response(ESEventsFromFlowID(request).get())
+
+
 class ESSuriLogTailViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
@@ -2695,6 +2714,7 @@ def get_custom_urls():
     urls.append(url(r'rules/es/ip_pair_alerts/$', ESIPPairAlertsViewSet.as_view(), name='es_ip_pair_alerts'))
     urls.append(url(r'rules/es/ip_pair_network_alerts/$', ESIPPairNetworkAlertsViewSet.as_view(), name='es_ip_pair_network_alerts'))
     urls.append(url(r'rules/es/alerts_tail/$', ESAlertsTailViewSet.as_view(), name='es_alerts_tail'))
+    urls.append(url(r'rules/es/events_from_flow_id/$', ESEventsFromFlowIDViewSet.as_view(), name='es_events_from_flow_id'))
     urls.append(url(r'rules/es/suri_log_tail/$', ESSuriLogTailViewSet.as_view(), name='es_suri_log_tail'))
     urls.append(url(r'rules/es/delete_logs/$', ESDeleteLogsViewSet.as_view(), name='es_delete_logs'))
     urls.append(url(r'rules/scirius_context/$', SciriusContextAPIView.as_view(), name='scirius_context'))

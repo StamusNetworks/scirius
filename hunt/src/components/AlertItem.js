@@ -2,22 +2,58 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col } from 'patternfly-react';
+import * as config from 'hunt_common/config/Api';
+import axios from 'axios';
 import ReactJson from 'react-json-view';
+import { Tabs, Tab } from 'react-bootstrap';
 import EventField from './EventField';
 import ErrorHandler from './Error';
 
 export default class AlertInList extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            events: undefined,
+            showTabs: false
+        };
+
         this.addFilter = this.addFilter.bind(this);
+        this.fetchData = this.fetchData.bind(this);
     }
 
     addFilter(id, value, negated) {
         this.props.addFilter({ id, value, negated });
     }
 
+    fetchData(flowId) {
+        if (!this.state.showTabs) {
+            const url = `${config.API_URL + config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId}&from_date=${this.props.from_date}`;
+            axios.get(url).then((res) => {
+                if ((res.data !== null)) {
+                    if ('Alert' in res.data) {
+                        for (let idx = 0; idx < Object.keys(res.data.Alert).length; idx += 1) {
+                            const item = res.data.Alert[idx];
+
+                            if (JSON.stringify(item) === JSON.stringify(this.props.data)) {
+                                res.data.Alert.splice(idx, 1);
+
+                                if (res.data.Alert.length === 0) {
+                                    delete res.data.Alert;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    this.setState({ events: res.data });
+                }
+            });
+        }
+        this.setState({ showTabs: !this.state.showTabs });
+    }
+
     render() {
         const data = { ...this.props.data };
+        const { events, showTabs } = this.state;
         const ipParams = (<div> {data.src_ip} <span className="glyphicon glyphicon-arrow-right"></span> {data.dest_ip}</div>);
         let sourceNetwork;
         let targetNetwork;
@@ -84,6 +120,8 @@ export default class AlertInList extends React.Component {
                 description={<span data-toggle="tooltip" title={data.alert.signature}>{data.alert.signature}</span>}
                 heading={ipParams}
                 additionalInfo={addInfo}
+                // onExpand={() => this.fetchData(data.flow_id)}
+                onExpandClose={() => this.setState({ showTabs: false })}
             >
                 <Row>
                     <Col sm={4}>
@@ -455,15 +493,31 @@ export default class AlertInList extends React.Component {
                 </Row>}
                 <Row>
                     <Col sm={12}>
-                        <strong>Full JSON event</strong>
-                        <ReactJson
-                            name={false}
-                            src={data}
-                            displayDataTypes={false}
-                            displayObjectSize={false}
-                            collapseStringsAfterLength={150}
-                            collapsed
-                        />
+                        <a style={{ cursor: 'pointer' }} onClick={() => this.fetchData(data.flow_id)}>Full JSON alert/events</a>
+                        {showTabs && <Tabs id="json-tabs">
+                            <Tab eventKey="alert" title="Alert">
+                                <ReactJson
+                                    name={false}
+                                    src={data}
+                                    displayDataTypes={false}
+                                    displayObjectSize={false}
+                                    collapseStringsAfterLength={150}
+                                    collapsed={false}
+                                />
+                            </Tab>
+                            {events && Object.keys(events).sort().map((key) => (
+                                <Tab eventKey={`events-${key}`} title={`Related ${key}`} key={`events-${key}`}>
+                                    <ReactJson
+                                        name={false}
+                                        src={events[key]}
+                                        displayDataTypes={false}
+                                        displayObjectSize={false}
+                                        collapseStringsAfterLength={150}
+                                        collapsed={false}
+                                    />
+                                </Tab>))}
+                            {events && Object.keys(events).length === 0 && <strong>No related events</strong> }
+                        </Tabs>}
                     </Col>
                 </Row>
             </ListViewItem>
@@ -473,5 +527,6 @@ export default class AlertInList extends React.Component {
 AlertInList.propTypes = {
     id: PropTypes.any,
     data: PropTypes.any,
+    from_date: PropTypes.any,
     addFilter: PropTypes.func,
 };
