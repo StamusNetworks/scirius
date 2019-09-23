@@ -87,6 +87,7 @@ class FilterList extends React.Component {
 
     render() {
         const newFilterValue = this.state.newFilterValue.toString();
+        const enableWildcard = !['msg', 'not_in_msg', 'search'].includes(this.state.filterId);
         const valid = (!newFilterValue.toString().length || (this.state.wildcardMode && newFilterValue.match(/[\s]+/g)) ? 'error' : 'success');
         let helperText = '';
         if (['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filterId)) {
@@ -153,7 +154,7 @@ class FilterList extends React.Component {
                                     <ControlLabel>Wildcard view</ControlLabel>
                                 </Col>
                                 <Col sm={9}>
-                                    <Checkbox onChange={this.wildcardHandler} onKeyDown={this.keyListener} checked={this.state.wildcardMode} disabled={(['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max', 'src_ip', 'dest_ip', 'alert.source.ip', 'alert.target.ip', 'host_id.ip', 'ip'].includes(this.state.filterId))} />
+                                    <Checkbox onChange={this.wildcardHandler} onKeyDown={this.keyListener} checked={this.state.wildcardMode && enableWildcard} disabled={(['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max', 'src_ip', 'dest_ip', 'alert.source.ip', 'alert.target.ip', 'host_id.ip', 'ip'].includes(this.state.filterId))} />
                                 </Col>
                             </FormGroup>
                         </Row>
