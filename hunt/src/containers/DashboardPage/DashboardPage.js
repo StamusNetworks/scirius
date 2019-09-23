@@ -30,8 +30,6 @@ import md5 from 'md5';
 import map from 'lodash/map';
 import find from 'lodash/find';
 import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
-import { connect } from 'react-redux';
-import { createStructuredSelector } from 'reselect';
 import * as config from 'hunt_common/config/Api';
 import { dashboard } from 'hunt_common/config/Dashboard';
 import { buildQFilter } from 'hunt_common/buildQFilter';
@@ -45,11 +43,11 @@ import '../../../node_modules/react-grid-layout/css/styles.css';
 import '../../../node_modules/react-resizable/css/styles.css';
 import ErrorHandler from '../../components/Error';
 import copyTextToClipboard from '../../helpers/copyTextToClipboard';
-import { makeSelectGlobalFilters, sections } from '../App/stores/global';
+import { sections } from '../App/stores/global';
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
-class HuntDashboard extends React.Component {
+export class HuntDashboard extends React.Component {
     constructor(props) {
         super(props);
 
@@ -194,7 +192,7 @@ class HuntDashboard extends React.Component {
                 this.bootPanels();
             } else if (!this.filters.length) {
                 this.filters = JSON.stringify(this.props.filters);
-            } else if (this.panelsBooted !== 'booting' && (this.filters !== JSON.stringify(this.props.filters) || JSON.stringify(prevProps.filtersWithAlert) !== JSON.stringify(this.props.filtersWithAlert) || prevProps.from_date !== this.props.from_date)) {
+            } else if (this.panelsBooted !== 'booting' && (this.filters !== JSON.stringify(this.props.filters) || JSON.stringify(prevProps.filtersWithAlert) !== JSON.stringify(this.props.filtersWithAlert) || JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams))) {
                 this.filters = JSON.stringify(this.props.filters);
                 this.resetPanelHeights();
                 this.bootPanels();
@@ -297,7 +295,7 @@ class HuntDashboard extends React.Component {
             const block = array[j];
             axios.get(`${config.API_URL + config.ES_BASE_PATH
             }field_stats/?field=${block.i
-            }&from_date=${this.props.from_date
+            }&from_date=${this.props.filterParams.fromDate
             }&page_size=5${this.qFilter}`)
             .then((json) => {
                 // Validation of the data property
@@ -424,7 +422,7 @@ class HuntDashboard extends React.Component {
     }
 
     createElement = (block) => {
-        const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${block.i}&from_date=${this.props.from_date}&page_size=30${this.qFilter}`;
+        const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${block.i}&from_date=${this.props.filterParams.fromDate}&page_size=30${this.qFilter}`;
         return (
             <div key={block.i}
                 style={{ background: 'white' }}
@@ -682,10 +680,10 @@ class HuntDashboard extends React.Component {
 
                 <div className="row">
                     <div className="col-lg-10 col-md-9 col-sm-12 col-xs-12" style={{ paddingRight: '0px' }}>
-                        <HuntTimeline style={{ marginTop: '15px' }} from_date={this.props.from_date} chartTarget={this.state.chartTarget} filters={this.props.filtersWithAlert} systemSettings={this.props.systemSettings} />
+                        <HuntTimeline style={{ marginTop: '15px' }} filterParams={this.props.filterParams} chartTarget={this.state.chartTarget} filters={this.props.filtersWithAlert} systemSettings={this.props.systemSettings} />
                     </div>
                     <div className="col-lg-2 col-md-3 col-sm-12 col-xs-12" style={{ paddingLeft: '0px' }}>
-                        <HuntTrend from_date={this.props.from_date} filters={this.props.filtersWithAlert} />
+                        <HuntTrend filterParams={this.props.filterParams} filters={this.props.filtersWithAlert} />
                         {typeof this.state.chartTarget !== 'undefined' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && <div style={{ position: 'absolute', zIndex: 10, top: 0, right: '30px' }}>
                             <DropdownKebab id={'more-actions'} pullRight><MenuItem onClick={() => this.onChangeChartTarget(!this.state.chartTarget)} data-toggle="modal">Switch timeline by probes/tags</MenuItem></DropdownKebab>
                         </div>}
@@ -805,18 +803,11 @@ class HuntDashboard extends React.Component {
 HuntDashboard.propTypes = {
     systemSettings: PropTypes.any,
     filters: PropTypes.any,
-    from_date: PropTypes.any,
     children: PropTypes.any,
     item: PropTypes.any,
     rules_list: PropTypes.any,
     updateListState: PropTypes.any,
     page: PropTypes.any,
     filtersWithAlert: PropTypes.array,
+    filterParams: PropTypes.object.isRequired
 }
-
-const mapStateToProps = createStructuredSelector({
-    filters: makeSelectGlobalFilters(),
-    filtersWithAlert: makeSelectGlobalFilters(true),
-});
-
-export default connect(mapStateToProps)(HuntDashboard);

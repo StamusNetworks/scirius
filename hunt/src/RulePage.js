@@ -47,10 +47,9 @@ export default class RulePage extends React.Component {
     componentDidMount() {
         const { rule, sid } = this.state;
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
-
         if (typeof rule !== 'undefined') {
-            updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
-            axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&from_date=${this.props.from_date}&sid=${this.props.rule.sid}`)
+            updateHitsStats([rule], this.props.filterParams.fromDate, this.updateRuleState, qfilter);
+            axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&from_date=${this.props.filterParams.fromDate}&sid=${this.props.rule.sid}`)
             .then((res) => {
                 this.updateExtInfo(res.data);
             });
@@ -58,8 +57,8 @@ export default class RulePage extends React.Component {
         } else {
             axios.get(`${config.API_URL}${config.RULE_PATH}${sid}/?highlight=true`).then(
                 (res) => {
-                    updateHitsStats([res.data], this.props.from_date, this.updateRuleState, qfilter);
-                    axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&from_date=${this.props.from_date}&sid=${sid}`)
+                    updateHitsStats([res.data], this.props.filterParams.fromDate, this.updateRuleState, qfilter);
+                    axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&from_date=${this.props.filterParams.fromDate}&sid=${sid}`)
                     .then((res2) => {
                         this.updateExtInfo(res2.data);
                     });
@@ -77,11 +76,11 @@ export default class RulePage extends React.Component {
 
     componentDidUpdate(prevProps) {
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
-        if ((prevProps.from_date !== this.props.from_date) || (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters))) {
+        if ((JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams)) || (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters))) {
             const rule = JSON.parse(JSON.stringify(this.state.rule));
 
             if (typeof rule !== 'undefined') {
-                updateHitsStats([rule], this.props.from_date, this.updateRuleState, qfilter);
+                updateHitsStats([rule], this.props.filterParams.fromDate, this.updateRuleState, qfilter);
             }
         }
     }
@@ -188,7 +187,7 @@ export default class RulePage extends React.Component {
                                 <div className="row">
                                     {this.state.rule.timeline && <SciriusChart
                                         data={this.state.rule.timeline}
-                                        axis={{ x: { min: this.props.from_date } }}
+                                        axis={{ x: { min: this.props.filterParams.fromDate } }}
                                     />}
                                 </div>
                                 {this.state.rule_status !== undefined && <Row>
@@ -199,23 +198,23 @@ export default class RulePage extends React.Component {
                                     }
                                 </Row>}
                                 <div className="row">
-                                    <HuntStat systemSettings={this.state.systemSettings} title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="src_ip" from_date={this.props.from_date} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                    <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dest_ip" from_date={this.props.from_date} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                    <HuntStat title="Probes" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="host" from_date={this.props.from_date} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="Sources" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="src_ip" filterParams={this.props.filterParams} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat title="Destinations" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dest_ip" filterParams={this.props.filterParams} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat title="Probes" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="host" filterParams={this.props.filterParams} addFilter={this.props.addFilter} loadMore={this.loadMore} />
                                 </div>
                                 {this.state.extinfo.http && <div className="row">
-                                    <HuntStat systemSettings={this.state.systemSettings} title="Hostname" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.hostname" from_date={this.props.from_date} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                    <HuntStat systemSettings={this.state.systemSettings} title="URL" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.url" from_date={this.props.from_date} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                    <HuntStat systemSettings={this.state.systemSettings} title="User agent" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.http_user_agent" from_date={this.props.from_date} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="Hostname" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.hostname" filterParams={this.props.filterParams} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="URL" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.url" filterParams={this.props.filterParams} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="User agent" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="http.http_user_agent" filterParams={this.props.filterParams} addFilter={this.props.addFilter} loadMore={this.loadMore} />
                                 </div>}
                                 {this.state.extinfo.dns && <div className="row">
-                                    <HuntStat systemSettings={this.state.systemSettings} title="Name" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dns.query.rrname" from_date={this.props.from_date} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                    <HuntStat systemSettings={this.state.systemSettings} title="Type" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dns.query.rrtype" from_date={this.props.from_date} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="Name" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dns.query.rrname" filterParams={this.props.filterParams} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="Type" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="dns.query.rrtype" filterParams={this.props.filterParams} addFilter={this.props.addFilter} loadMore={this.loadMore} />
                                 </div>}
                                 {this.state.extinfo.tls && <div className="row">
-                                    <HuntStat systemSettings={this.state.systemSettings} title="Subject DN" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.subject" from_date={this.props.from_date} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                    <HuntStat systemSettings={this.state.systemSettings} title="SNI" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.sni" from_date={this.props.from_date} addFilter={this.props.addFilter} loadMore={this.loadMore} />
-                                    <HuntStat systemSettings={this.state.systemSettings} title="Fingerprint" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.fingerprint" from_date={this.props.from_date} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="Subject DN" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.subject" filterParams={this.props.filterParams} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="SNI" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.sni" filterParams={this.props.filterParams} addFilter={this.props.addFilter} loadMore={this.loadMore} />
+                                    <HuntStat systemSettings={this.state.systemSettings} title="Fingerprint" rule={this.state.rule} config={this.props.config} filters={this.props.filters} item="tls.fingerprint" filterParams={this.props.filterParams} addFilter={this.props.addFilter} loadMore={this.loadMore} />
                                 </div>}
                             </div>
                         </div>
@@ -247,5 +246,5 @@ RulePage.propTypes = {
     config: PropTypes.any,
     addFilter: PropTypes.any,
     rulesets: PropTypes.any,
-    from_date: PropTypes.any,
+    filterParams: PropTypes.object.isRequired,
 };

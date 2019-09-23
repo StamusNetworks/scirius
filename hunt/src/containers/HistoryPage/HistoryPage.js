@@ -93,7 +93,7 @@ export default class HistoryPage extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.from_date !== this.props.from_date || JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
+        if (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
             this.fetchData(this.props.rules_list, this.props.filters);
         }
         if (prevProps.actionTypesList.length !== this.props.actionTypesList.length) {
@@ -183,7 +183,6 @@ HistoryPage.propTypes = {
     rules_list: PropTypes.any,
     filters: PropTypes.any,
     switchPage: PropTypes.any,
-    from_date: PropTypes.any,
     updateListState: PropTypes.any,
     getActionTypes: PropTypes.func,
     actionTypesList: PropTypes.array,

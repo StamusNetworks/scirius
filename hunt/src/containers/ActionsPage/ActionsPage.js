@@ -42,7 +42,7 @@ import { actionsButtons,
     closeAction,
     buildFilter } from '../../helpers/common';
 
-export default class ActionsPage extends React.Component {
+export class ActionsPage extends React.Component {
     constructor(props) {
         super(props);
         this.handlePaginationChange = handlePaginationChange.bind(this);
@@ -82,7 +82,7 @@ export default class ActionsPage extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.from_date !== this.props.from_date || JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
+        if (JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams) || JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
             this.fetchData(this.props.rules_list, this.props.filters);
         }
     }
@@ -112,7 +112,7 @@ export default class ActionsPage extends React.Component {
                 <Spinner loading={this.state.loading}></Spinner>
                 <ListView>
                     {this.state.data && this.state.data.map((item) => (
-                        <ActionItem key={item.pk} data={item} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} from_date={this.props.from_date} />
+                        <ActionItem key={item.pk} data={item} last_index={this.state.count} needUpdate={this.needUpdate} rulesets={this.state.rulesets} filterParams={this.props.filterParams} />
                     ))}
                 </ListView>
                 <ErrorHandler>
@@ -136,9 +136,10 @@ export default class ActionsPage extends React.Component {
         );
     }
 }
+
 ActionsPage.propTypes = {
     rules_list: PropTypes.any,
     filters: PropTypes.any,
     updateListState: PropTypes.func,
-    from_date: PropTypes.any,
+    filterParams: PropTypes.object.isRequired
 };

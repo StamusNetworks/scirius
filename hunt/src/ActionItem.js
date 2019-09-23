@@ -17,7 +17,7 @@ export default class FilterItem extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.from_date !== this.props.from_date) {
+        if (JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams)) {
             this.fetchData(this.props.config, this.props.filters);
         }
     }
@@ -26,7 +26,7 @@ export default class FilterItem extends React.Component {
     fetchData(filtersStat, filters) {
         // eslint-disable-next-line react/no-unused-state
         this.setState({ loading: true });
-        axios.get(`${config.API_URL + config.ES_BASE_PATH}poststats_summary/?value=rule_filter_${this.props.data.pk}&from_date=${this.props.from_date}`)
+        axios.get(`${config.API_URL + config.ES_BASE_PATH}poststats_summary/?value=rule_filter_${this.props.data.pk}&from_date=${this.props.filterParams.fromDate}`)
         .then((res) => {
             // eslint-disable-next-line react/no-unused-state
             this.setState({ data: res.data, loading: false });
@@ -106,8 +106,8 @@ FilterItem.propTypes = {
     config: PropTypes.any,
     data: PropTypes.any,
     filters: PropTypes.any,
-    from_date: PropTypes.any,
     rulesets: PropTypes.any,
     needUpdate: PropTypes.any,
     last_index: PropTypes.any,
+    filterParams: PropTypes.object.isRequired
 };

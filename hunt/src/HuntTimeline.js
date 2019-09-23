@@ -18,14 +18,14 @@ export default class HuntTimeline extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if ((prevProps.from_date !== this.props.from_date) || (JSON.stringify(prevProps) !== JSON.stringify(this.props))) {
+        if (JSON.stringify(prevProps) !== JSON.stringify(this.props)) {
             this.fetchData();
         }
     }
 
     fetchData() {
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
-        axios.get(`${config.API_URL}${config.ES_BASE_PATH}timeline/?hosts=*&target=${this.props.chartTarget}&from_date=${this.props.from_date}${qfilter}`)
+        axios.get(`${config.API_URL}${config.ES_BASE_PATH}timeline/?hosts=*&target=${this.props.chartTarget}&from_date=${this.props.filterParams.fromDate}${qfilter}`)
         .then((res) => {
             /* iterate on actual row: build x array, for each row build hash x -> value */
             /* sort x array */
@@ -80,7 +80,7 @@ export default class HuntTimeline extends React.Component {
         return (
             <div style={{ ...this.props.style }}>
                 {this.state.data && <ErrorHandler><SciriusChart data={this.state.data}
-                    axis={{ x: { min: this.props.from_date } }}
+                    axis={{ x: { min: this.props.filterParams.fromDate } }}
                     padding={{ bottom: 15 }}
                     size={{ height: 200 }}
                 /></ErrorHandler>}
@@ -96,7 +96,7 @@ HuntTimeline.defaultProps = {
 HuntTimeline.propTypes = {
     filters: PropTypes.any,
     systemSettings: PropTypes.any,
-    from_date: PropTypes.any,
     style: PropTypes.object,
     chartTarget: PropTypes.bool,
+    filterParams: PropTypes.object.isRequired
 };

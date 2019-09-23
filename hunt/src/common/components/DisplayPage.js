@@ -15,7 +15,6 @@ const DisplayPage = (props) => {
             displayedPage = (<SignaturesPage
                 systemSettings={props.systemSettings}
                 rules_list={props.rules_list}
-                from_date={props.from_date}
                 updateListState={props.updateRuleListState}
                 page={props.page}
             />);
@@ -25,7 +24,6 @@ const DisplayPage = (props) => {
             displayedPage = (<DashboardPage
                 systemSettings={props.systemSettings}
                 rules_list={props.rules_list}
-                from_date={props.from_date}
                 updateListState={props.updateRuleListState}
                 needReload={props.needReload}
                 page={props.page}
@@ -36,7 +34,6 @@ const DisplayPage = (props) => {
                 systemSettings={props.systemSettings}
                 rules_list={props.history_list}
                 filters={props.historyFilters}
-                from_date={props.from_date}
                 updateListState={props.updateHistoryListState}
                 switchPage={props.switchPage}
                 updateFilterState={props.updateHistoryFilterState}
@@ -47,7 +44,6 @@ const DisplayPage = (props) => {
             displayedPage = (<AlertsPage
                 systemSettings={props.systemSettings}
                 rules_list={props.alerts_list}
-                from_date={props.from_date}
                 updateListState={props.updateAlertListState}
                 page={props.page}
             />);
@@ -57,7 +53,6 @@ const DisplayPage = (props) => {
                 systemSettings={props.systemSettings}
                 rules_list={props.filters_list}
                 filters={props.filters_filters}
-                from_date={props.from_date}
                 updateListState={props.updateFilterListState}
                 updateFilterState={props.updateFiltersFilterState}
             />);
@@ -71,7 +66,6 @@ DisplayPage.propTypes = {
     page: PropTypes.any,
     systemSettings: PropTypes.any,
     rules_list: PropTypes.any,
-    from_date: PropTypes.any,
     switchPage: PropTypes.any,
     updateRuleListState: PropTypes.any,
     item: PropTypes.any,

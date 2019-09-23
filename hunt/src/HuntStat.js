@@ -21,10 +21,7 @@ export default class HuntStat extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.from_date !== this.props.from_date) {
-            this.updateData();
-        }
-        if (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
+        if (JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams) || JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
             this.updateData();
         }
     }
@@ -32,9 +29,9 @@ export default class HuntStat extends React.Component {
     updateData() {
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
 
-        this.url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&from_date=${this.props.from_date}&page_size=30${qfilter}`;
+        this.url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&from_date=${this.props.filterParams.fromDate}&page_size=30${qfilter}`;
 
-        axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&from_date=${this.props.from_date}&page_size=5${qfilter}`)
+        axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&from_date=${this.props.filterParams.fromDate}&page_size=5${qfilter}`)
         .then((res) => {
             this.setState({ data: res.data });
         });
@@ -73,7 +70,6 @@ export default class HuntStat extends React.Component {
     }
 }
 HuntStat.propTypes = {
-    from_date: PropTypes.any,
     title: PropTypes.any,
     filters: PropTypes.any,
     col: PropTypes.any,
@@ -81,4 +77,5 @@ HuntStat.propTypes = {
     systemSettings: PropTypes.any,
     loadMore: PropTypes.func,
     addFilter: PropTypes.func,
+    filterParams: PropTypes.object.isRequired
 };

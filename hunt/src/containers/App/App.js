@@ -343,7 +343,6 @@ export default class App extends Component {
                                     systemSettings={this.state.systemSettings}
                                     rules_list={this.state.rules_list}
                                     idsFilters={this.state.idsFilters}
-                                    from_date={this.props.filterParams.fromDate}
                                     switchPage={this.switchPage}
                                     updateRuleListState={this.updateRuleListState}
                                     item={this.state.display.item}
@@ -384,6 +383,5 @@ App.childContextTypes = {
 };
 
 App.propTypes = {
-    filterParams: PropTypes.object.isRequired,
     filterParamsSet: PropTypes.func.isRequired
 }

@@ -40,7 +40,7 @@ const RuleInList = (props) => {
                         <div className="row">
                             <div className="col-md-12">
                                 <SciriusChart data={props.data.timeline}
-                                    axis={{ x: { min: props.from_date } }}
+                                    axis={{ x: { min: props.filterParams.fromDate } }}
                                 />
                             </div>
                         </div>
@@ -66,7 +66,7 @@ RuleInList.propTypes = {
     data: PropTypes.any,
     sources: PropTypes.any,
     rulesets: PropTypes.any,
-    from_date: PropTypes.any,
+    filterParams: PropTypes.object.isRequired,
     addFilter: PropTypes.any,
 };
 

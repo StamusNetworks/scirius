@@ -21,8 +21,6 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { createStructuredSelector } from 'reselect';
 import { Spinner, PAGINATION_VIEW } from 'patternfly-react';
 import axios from 'axios';
 import store from 'store';
@@ -51,7 +49,6 @@ import { actionsButtons,
     UpdateSort,
     closeAction,
     buildFilter } from '../../helpers/common';
-import { makeSelectGlobalFilters } from '../App/stores/global';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -140,7 +137,7 @@ export function updateHitsStats(rules, pFromDate, updateCallback, qfilter) {
     });
 }
 
-class SignaturesPage extends React.Component {
+export class SignaturesPage extends React.Component {
 // export class RulesList extends HuntList {
     constructor(props) {
         super(props);
@@ -221,7 +218,7 @@ class SignaturesPage extends React.Component {
 
     componentDidUpdate(prevProps) {
         const filtersChanged = (JSON.stringify(prevProps.filtersWithAlert) !== JSON.stringify(this.props.filtersWithAlert));
-        if (prevProps.from_date !== this.props.from_date || filtersChanged) {
+        if (JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams) || filtersChanged) {
             const sid = this.findSID(this.props.filtersWithAlert);
             if (sid !== undefined) {
                 // eslint-disable-next-line react/no-did-update-set-state
@@ -259,7 +256,7 @@ class SignaturesPage extends React.Component {
 
     fetchData(rulesStat, filters) {
         const stringFilters = this.buildFilter(filters);
-        const hash = md5(`${rulesStat.pagination.page}|${rulesStat.pagination.perPage}|${this.props.from_date}|${rulesStat.sort.id}|${rulesStat.sort.asc}|${stringFilters}`);
+        const hash = md5(`${rulesStat.pagination.page}|${rulesStat.pagination.perPage}|${JSON.stringify(this.props.filterParams)}|${rulesStat.sort.id}|${rulesStat.sort.asc}|${stringFilters}`);
         if (typeof this.cache[hash] !== 'undefined') {
             this.processRulesData(this.cache[hash].RuleRes, this.cache[hash].SrcRes, this.cache[hash].filters);
             return;
@@ -267,7 +264,7 @@ class SignaturesPage extends React.Component {
 
         this.setState({ loading: true });
         axios.all([
-            axios.get(`${config.API_URL + config.RULE_PATH}?${this.buildListUrlParams(rulesStat)}&from_date=${this.props.from_date}&highlight=true${stringFilters}`),
+            axios.get(`${config.API_URL + config.RULE_PATH}?${this.buildListUrlParams(rulesStat)}&from_date=${this.props.filterParams.fromDate}&highlight=true${stringFilters}`),
             axios.get(`${config.API_URL + config.SOURCE_PATH}?page_size=100`),
         ])
         .then(axios.spread((RuleRes, SrcRes) => {
@@ -309,7 +306,7 @@ class SignaturesPage extends React.Component {
 
     fetchHitsStats(rules, filters) {
         const qfilter = buildQFilter(filters, this.props.systemSettings);
-        updateHitsStats(rules, this.props.from_date, this.updateRulesState, qfilter);
+        updateHitsStats(rules, this.props.filterParams.fromDate, this.updateRulesState, qfilter);
     }
 
     buildHitsStats(rules) {
@@ -356,7 +353,7 @@ class SignaturesPage extends React.Component {
                     component={{ list: RuleInList, card: RuleCard }}
                     itemProps={{
                         sources: this.state.sources,
-                        from_date: this.props.from_date,
+                        filterParams: this.props.filterParams,
                         rulesets: this.state.rulesets,
                     }}
                 />}
@@ -375,7 +372,7 @@ class SignaturesPage extends React.Component {
                         onPreviousPage={this.onPrevPage}
                         onLastPage={this.onLastPage}
                     /> }
-                    {view === 'rule' && <RulePage systemSettings={this.props.systemSettings} rule={displayRule} config={this.props.rules_list} filters={this.props.filters} from_date={this.props.from_date} rulesets={this.state.rulesets} />}
+                    {view === 'rule' && <RulePage systemSettings={this.props.systemSettings} rule={displayRule} config={this.props.rules_list} filters={this.props.filters} filterParams={this.props.filterParams} rulesets={this.state.rulesets} />}
                     {view === 'dashboard' && <DashboardPage />}
                 </ErrorHandler>
 
@@ -389,17 +386,10 @@ class SignaturesPage extends React.Component {
 
 SignaturesPage.propTypes = {
     systemSettings: PropTypes.any,
-    from_date: PropTypes.any,
     filters: PropTypes.any,
     filtersWithAlert: PropTypes.any,
     updateListState: PropTypes.any, // should be removed when redux is implemented
     rules_list: PropTypes.any, // should be removed when redux is implemented
     page: PropTypes.any,
+    filterParams: PropTypes.object.isRequired,
 }
-
-const mapStateToProps = createStructuredSelector({
-    filters: makeSelectGlobalFilters(),
-    filtersWithAlert: makeSelectGlobalFilters(true)
-});
-
-export default connect(mapStateToProps)(SignaturesPage);

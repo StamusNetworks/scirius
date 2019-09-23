@@ -27,7 +27,7 @@ export default class AlertItem extends React.Component {
 
     fetchData(flowId) {
         if (!this.state.showTabs) {
-            const url = `${config.API_URL + config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId}&from_date=${this.props.from_date}`;
+            const url = `${config.API_URL + config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId}&from_date=${this.props.filterParams.fromDate}`;
             axios.get(url).then((res) => {
                 if ((res.data !== null)) {
                     if ('Alert' in res.data) {
@@ -527,6 +527,6 @@ export default class AlertItem extends React.Component {
 AlertItem.propTypes = {
     id: PropTypes.any,
     data: PropTypes.any,
-    from_date: PropTypes.any,
     addFilter: PropTypes.func,
+    filterParams: PropTypes.object.isRequired
 };

@@ -26,8 +26,6 @@ import { ListView, Spinner } from 'patternfly-react';
 import axios from 'axios';
 import store from 'store';
 import md5 from 'md5';
-import { connect } from 'react-redux';
-import { createStructuredSelector } from 'reselect';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from 'hunt_common/buildQFilter';
 import RuleToggleModal from '../../RuleToggleModal';
@@ -35,9 +33,8 @@ import HuntFilter from '../../HuntFilter';
 import AlertItem from '../../components/AlertItem';
 import { actionsButtons, buildListUrlParams, loadActions, UpdateFilter, createAction, closeAction } from '../../helpers/common';
 import ErrorHandler from '../../components/Error';
-import { addFilter, makeSelectGlobalFilters } from '../App/stores/global';
 
-class AlertsPage extends React.Component {
+export class AlertsPage extends React.Component {
     constructor(props) {
         super(props);
 
@@ -101,7 +98,7 @@ class AlertsPage extends React.Component {
 
     componentDidUpdate(prevProps) {
         const filtersChanged = (JSON.stringify(prevProps.filtersWithAlert) !== JSON.stringify(this.props.filtersWithAlert));
-        if (prevProps.from_date !== this.props.from_date || filtersChanged) {
+        if (JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams) || filtersChanged) {
             this.fetchData(this.props.rules_list, this.props.filtersWithAlert);
             if (filtersChanged) {
                 this.loadActions();
@@ -112,7 +109,7 @@ class AlertsPage extends React.Component {
     fetchData(state, filters) {
         const stringFilters = buildQFilter(filters, this.props.systemSettings);
         this.setState({ refresh_data: true, loading: true });
-        const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?search_target=0&${this.buildListUrlParams(state)}&from_date=${this.props.from_date}${stringFilters}`;
+        const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?search_target=0&${this.buildListUrlParams(state)}&from_date=${this.props.filterParams.fromDate}${stringFilters}`;
         axios.get(url).then((res) => {
             if ((res.data !== null) && (typeof res.data !== 'string')) {
                 this.setState({ alerts: res.data, loading: false });
@@ -149,7 +146,7 @@ class AlertsPage extends React.Component {
                         // eslint-disable-next-line no-underscore-dangle
                         <ErrorHandler key={rule._id}>
                             {/* eslint-disable-next-line no-underscore-dangle */}
-                            <AlertItem key={rule._id} id={rule._id} data={rule._source} from_date={this.props.from_date} UpdateFilter={this.UpdateFilter} filters={this.props.filters} addFilter={this.props.addFilter} />
+                            <AlertItem key={rule._id} id={rule._id} data={rule._source} filterParams={this.props.filterParams} UpdateFilter={this.UpdateFilter} filters={this.props.filters} addFilter={this.props.addFilter} />
                         </ErrorHandler>
                     ))}
                 </ListView>
@@ -172,20 +169,9 @@ AlertsPage.propTypes = {
     rules_list: PropTypes.any,
     filters: PropTypes.any,
     filtersWithAlert: PropTypes.any,
-    from_date: PropTypes.any,
     systemSettings: PropTypes.any,
     updateListState: PropTypes.any,
     page: PropTypes.any,
     addFilter: PropTypes.func,
+    filterParams: PropTypes.object.isRequired
 };
-
-const mapStateToProps = createStructuredSelector({
-    filters: makeSelectGlobalFilters(),
-    filtersWithAlert: makeSelectGlobalFilters(true),
-});
-
-const mapDispatchToProps = {
-    addFilter,
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(AlertsPage);
