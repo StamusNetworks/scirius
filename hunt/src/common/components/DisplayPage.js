@@ -2,8 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { PAGE_STATE } from 'hunt_common/constants';
 import SignaturesPage from '../../containers/SignaturesPage';
-import SourcePage from '../../components/SourcePage';
-import RulesetPage from '../../components/RuleSetPage';
 import DashboardPage from '../../containers/DashboardPage';
 import HistoryPage from '../../containers/HistoryPage';
 import AlertsPage from '../../containers/AlertsPage';
@@ -21,12 +19,6 @@ const DisplayPage = (props) => {
                 updateListState={props.updateRuleListState}
                 page={props.page}
             />);
-            break;
-        case PAGE_STATE.source:
-            displayedPage = <SourcePage systemSettings={props.systemSettings} source={props.item} from_date={props.from_date} page={props.page} />;
-            break;
-        case PAGE_STATE.ruleset:
-            displayedPage = <RulesetPage systemSettings={props.systemSettings} ruleset={props.item} from_date={props.from_date} page={props.page} />;
             break;
         case PAGE_STATE.dashboards:
             // FIXME remove or change updateRuleListState
