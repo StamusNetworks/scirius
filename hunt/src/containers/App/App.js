@@ -144,7 +144,6 @@ export default class App extends Component {
             sources: [],
             rulesets: [],
             duration,
-            from_date: (Date.now() - (duration * 3600 * 1000)),
             interval,
             display: pageDisplay,
             rules_list: rulesListConf,
@@ -194,7 +193,7 @@ export default class App extends Component {
     }
 
     needReload() {
-        this.setState({ from_date: (Date.now() - (this.state.duration * 3600 * 1000)) });
+        this.props.filterParamsSet('fromDate', Date.now() - this.fromDate(this.state.duration));
     }
 
     fromDate = (period) => {
@@ -203,7 +202,8 @@ export default class App extends Component {
     }
 
     changeDuration(period) {
-        this.setState({ duration: period, from_date: this.fromDate(period) });
+        this.setState({ duration: period });
+        this.props.filterParamsSet('fromDate', this.fromDate(period));
         localStorage.setItem('duration', period);
     }
 
@@ -343,7 +343,7 @@ export default class App extends Component {
                                     systemSettings={this.state.systemSettings}
                                     rules_list={this.state.rules_list}
                                     idsFilters={this.state.idsFilters}
-                                    from_date={this.state.from_date}
+                                    from_date={this.props.filterParams.fromDate}
                                     switchPage={this.switchPage}
                                     updateRuleListState={this.updateRuleListState}
                                     item={this.state.display.item}
@@ -382,3 +382,8 @@ export default class App extends Component {
 App.childContextTypes = {
     shortcuts: PropTypes.object.isRequired
 };
+
+App.propTypes = {
+    filterParams: PropTypes.object.isRequired,
+    filterParamsSet: PropTypes.func.isRequired
+}
