@@ -196,3 +196,14 @@ def get_default_filter_sets():
 
 def es_bool_clauses(request):
     return ''
+
+
+def check_es_version(request):
+    from rules.es_graphs import ESVersion, ESError
+
+    try:
+        es_version = ESVersion(request).get()
+    except ESError as e:
+        return {'error': e.args[0]}
+
+    return {'es_is_good_version': True, 'es_version': es_version}

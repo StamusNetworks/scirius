@@ -1711,6 +1711,16 @@ class ESStats(ESQuery):
         return self._urlopen(get_es_path(STATS_URL))
 
 
+class ESVersion(ESQuery):
+    def get(self):
+        es_url = self.request.data.get('es_url', '')
+        if es_url.endswith('/'):
+            es_url = es_url[:-1]
+        url = '%s%s' % (es_url, STATS_URL)
+        data = self._urlopen(url)
+        return data['nodes']['versions'][0]
+
+
 class ESIndicesStats(ESQuery):
     def get(self):
         return self._urlopen(get_es_path(INDICES_STATS_DOCS_URL))

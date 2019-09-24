@@ -40,6 +40,8 @@
       {% bootstrap_field main_form.custom_elasticsearch %}
       <div id="es_custom_fields">
         {% bootstrap_field main_form.elasticsearch_url %}
+        <div id="es_msg_version"></div>
+        <button class="btn btn-secondary" type="button" id="es_button_lb" onclick="es_check_version(); return false;">Check</button>
       </div>
     </div>
     {% bootstrap_field  main_form.comment %}
@@ -205,7 +207,7 @@ Select a file to import dashboards from.
             {% bootstrap_icon "refresh" %} Reset
 	</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-</form>	
+</form>
       </div>
     </div>
   </div>
@@ -238,6 +240,27 @@ $("#reset_dashboards").click(function() {
 checkbox_toggle_div('#id_use_http_proxy', '#proxy_fields');
 checkbox_toggle_div('#id_use_elasticsearch', '#es_fields');
 checkbox_toggle_div('#id_custom_elasticsearch', '#es_custom_fields');
+
+function es_check_version() {
+$.ajax(
+{
+    url: "{% url 'es_check_version'%}",
+    type: 'POST',
+    data: {"es_url": $('#id_elasticsearch_url').val()},
+    success: function(data) {
+        if (!data.error) {
+            var msg = "<strong>Connected to ES " + data.es_version + "</strong>";
+            if (!data.es_is_good_version) {
+                msg = "<strong style=\"color: #d5ab81\">Warning: this ES version " + data.es_version + " is not supported. Please install ES version " + data.es_good_version + ".x</strong>";
+            }
+            $("#es_msg_version").html(msg);
+        } else {
+          $("#es_msg_version").html("<strong style=\"color: #cb4a62\">Error: " + data.error + "</strong>");
+        }
+    },
+});
+}
+
 </script>
 
 

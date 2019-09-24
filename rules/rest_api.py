@@ -2231,6 +2231,17 @@ class ESStatsViewSet(ESBaseViewSet):
         return Response(ESStats(request).get())
 
 
+class ESCheckVersionViewSet(APIView):
+    """
+    """
+    permission_classes = (IsAdminUser,)
+
+    def post(self, request, format=None):
+        from scirius.utils import get_middleware_module
+        res = get_middleware_module('common').check_es_version(request)
+        return Response(res)
+
+
 class ESIndicesViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
@@ -2707,6 +2718,7 @@ def get_custom_urls():
     urls.append(url(r'rules/es/logstash_eve/$', ESLogstashEveViewSet.as_view(), name='es_logstash_eve'))
     urls.append(url(r'rules/es/health/$', ESHealthViewSet.as_view(), name='es_health'))
     urls.append(url(r'rules/es/stats/$', ESStatsViewSet.as_view(), name='es_stats'))
+    urls.append(url(r'rules/es/check_version/$', ESCheckVersionViewSet.as_view(), name='es_check_version'))
     urls.append(url(r'rules/es/indices/$', ESIndicesViewSet.as_view(), name='es_indices'))
     urls.append(url(r'rules/es/rules_per_category/$', ESRulesPerCategoryViewSet.as_view(), name='es_rules_per_category'))
     urls.append(url(r'rules/es/alerts_count/$', ESAlertsCountViewSet.as_view(), name='es_alerts_count'))
