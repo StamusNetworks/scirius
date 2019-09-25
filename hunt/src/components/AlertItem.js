@@ -9,7 +9,7 @@ import { Tabs, Tab } from 'react-bootstrap';
 import EventField from './EventField';
 import ErrorHandler from './Error';
 
-export default class AlertInList extends React.Component {
+export default class AlertItem extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -524,7 +524,7 @@ export default class AlertInList extends React.Component {
         );
     }
 }
-AlertInList.propTypes = {
+AlertItem.propTypes = {
     id: PropTypes.any,
     data: PropTypes.any,
     from_date: PropTypes.any,
