@@ -27,6 +27,7 @@ import store from 'store';
 import md5 from 'md5';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from 'hunt_common/buildQFilter';
+import { buildFilterParams } from 'hunt_common/buildFilterParams';
 import HuntFilter from '../../HuntFilter';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import RuleToggleModal from '../../RuleToggleModal';
@@ -122,10 +123,9 @@ function processHitsStats(res, rules, updateCallback) {
     }
 }
 
-export function updateHitsStats(rules, pFromDate, updateCallback, qfilter) {
+export function updateHitsStats(rules, filterParams, updateCallback, qfilter) {
     const sids = Array.from(rules, (x) => x.sid).join();
-    const fromDate = `&from_date=${pFromDate}`;
-    const url = config.API_URL + config.ES_SIGS_LIST_PATH + sids + fromDate + qfilter;
+    const url = `${config.API_URL + config.ES_SIGS_LIST_PATH + sids}&${filterParams + qfilter}`;
     if (typeof statsCache[encodeURI(url)] !== 'undefined') {
         processHitsStats(statsCache[encodeURI(url)], rules, updateCallback);
         return;
@@ -263,8 +263,9 @@ export class SignaturesPage extends React.Component {
         }
 
         this.setState({ loading: true });
+        const filterParams = buildFilterParams(this.props.filterParams);
         axios.all([
-            axios.get(`${config.API_URL + config.RULE_PATH}?${this.buildListUrlParams(rulesStat)}&from_date=${this.props.filterParams.fromDate}&highlight=true${stringFilters}`),
+            axios.get(`${config.API_URL + config.RULE_PATH}?${this.buildListUrlParams(rulesStat)}&${filterParams}&highlight=true${stringFilters}`),
             axios.get(`${config.API_URL + config.SOURCE_PATH}?page_size=100`),
         ])
         .then(axios.spread((RuleRes, SrcRes) => {
@@ -306,7 +307,8 @@ export class SignaturesPage extends React.Component {
 
     fetchHitsStats(rules, filters) {
         const qfilter = buildQFilter(filters, this.props.systemSettings);
-        updateHitsStats(rules, this.props.filterParams.fromDate, this.updateRulesState, qfilter);
+        const filterParams = buildFilterParams(this.props.filterParams);
+        updateHitsStats(rules, filterParams, this.updateRulesState, qfilter);
     }
 
     buildHitsStats(rules) {

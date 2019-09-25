@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import { ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
+import { buildFilterParams } from 'hunt_common/buildFilterParams';
 import axios from 'axios';
 import ReactJson from 'react-json-view';
 import { Tabs, Tab } from 'react-bootstrap';
@@ -27,7 +28,8 @@ export default class AlertItem extends React.Component {
 
     fetchData(flowId) {
         if (!this.state.showTabs) {
-            const url = `${config.API_URL + config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId}&from_date=${this.props.filterParams.fromDate}`;
+            const filterParams = buildFilterParams(this.props.filterParams);
+            const url = `${config.API_URL + config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId}&${filterParams}`;
             axios.get(url).then((res) => {
                 if ((res.data !== null)) {
                     if ('Alert' in res.data) {

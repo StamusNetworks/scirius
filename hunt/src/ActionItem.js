@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { ListViewItem, ListViewInfoItem, ListViewIcon, Row } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
+import { buildFilterParams } from 'hunt_common/buildFilterParams';
 import FilterEditKebab from './components/FilterEditKebab';
 
 export default class FilterItem extends React.Component {
@@ -26,7 +27,8 @@ export default class FilterItem extends React.Component {
     fetchData(filtersStat, filters) {
         // eslint-disable-next-line react/no-unused-state
         this.setState({ loading: true });
-        axios.get(`${config.API_URL + config.ES_BASE_PATH}poststats_summary/?value=rule_filter_${this.props.data.pk}&from_date=${this.props.filterParams.fromDate}`)
+        const filterParams = buildFilterParams(this.props.filterParams);
+        axios.get(`${config.API_URL + config.ES_BASE_PATH}poststats_summary/?value=rule_filter_${this.props.data.pk}&${filterParams}`)
         .then((res) => {
             // eslint-disable-next-line react/no-unused-state
             this.setState({ data: res.data, loading: false });

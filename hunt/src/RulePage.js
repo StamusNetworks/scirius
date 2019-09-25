@@ -5,6 +5,7 @@ import { Modal, CloseButton, Row, Badge, ListGroup, ListGroupItem } from 'react-
 import { Spinner } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from 'hunt_common/buildQFilter';
+import { buildFilterParams } from 'hunt_common/buildFilterParams';
 import RuleEditKebab from './components/RuleEditKebab';
 import SciriusChart from './components/SciriusChart';
 import RuleStatus from './RuleStatus';
@@ -47,9 +48,10 @@ export default class RulePage extends React.Component {
     componentDidMount() {
         const { rule, sid } = this.state;
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
+        const filterParams = buildFilterParams(this.props.filterParams);
         if (typeof rule !== 'undefined') {
-            updateHitsStats([rule], this.props.filterParams.fromDate, this.updateRuleState, qfilter);
-            axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&from_date=${this.props.filterParams.fromDate}&sid=${this.props.rule.sid}`)
+            updateHitsStats([rule], filterParams, this.updateRuleState, qfilter);
+            axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${this.props.rule.sid}`)
             .then((res) => {
                 this.updateExtInfo(res.data);
             });
@@ -57,8 +59,8 @@ export default class RulePage extends React.Component {
         } else {
             axios.get(`${config.API_URL}${config.RULE_PATH}${sid}/?highlight=true`).then(
                 (res) => {
-                    updateHitsStats([res.data], this.props.filterParams.fromDate, this.updateRuleState, qfilter);
-                    axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&from_date=${this.props.filterParams.fromDate}&sid=${sid}`)
+                    updateHitsStats([res.data], filterParams, this.updateRuleState, qfilter);
+                    axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${sid}`)
                     .then((res2) => {
                         this.updateExtInfo(res2.data);
                     });
@@ -78,9 +80,10 @@ export default class RulePage extends React.Component {
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
         if ((JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams)) || (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters))) {
             const rule = JSON.parse(JSON.stringify(this.state.rule));
+            const filterParams = buildFilterParams(this.props.filterParams);
 
             if (typeof rule !== 'undefined') {
-                updateHitsStats([rule], this.props.filterParams.fromDate, this.updateRuleState, qfilter);
+                updateHitsStats([rule], filterParams, this.updateRuleState, qfilter);
             }
         }
     }

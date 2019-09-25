@@ -5,6 +5,7 @@ import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from 'hunt_common/buildQFilter';
+import { buildFilterParams } from 'hunt_common/buildFilterParams';
 import EventValue from './components/EventValue';
 
 export default class HuntStat extends React.Component {
@@ -28,10 +29,11 @@ export default class HuntStat extends React.Component {
 
     updateData() {
         const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
+        const filterParams = buildFilterParams(this.props.filterParams);
 
-        this.url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&from_date=${this.props.filterParams.fromDate}&page_size=30${qfilter}`;
+        this.url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&${filterParams}&page_size=30${qfilter}`;
 
-        axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&from_date=${this.props.filterParams.fromDate}&page_size=5${qfilter}`)
+        axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&${filterParams}&page_size=5${qfilter}`)
         .then((res) => {
             this.setState({ data: res.data });
         });

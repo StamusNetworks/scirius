@@ -33,6 +33,7 @@ import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
 import * as config from 'hunt_common/config/Api';
 import { dashboard } from 'hunt_common/config/Dashboard';
 import { buildQFilter } from 'hunt_common/buildQFilter';
+import { buildFilterParams } from 'hunt_common/buildFilterParams';
 import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
 import RuleToggleModal from '../../RuleToggleModal';
@@ -291,11 +292,12 @@ export class HuntDashboard extends React.Component {
         let blocksLoaded = 0;
         let newHeight = 0;
         const array = this.state.dashboard[panel].items;
+        const filterParams = buildFilterParams(this.props.filterParams);
         for (let j = 0; j < array.length; j += 1) {
             const block = array[j];
             axios.get(`${config.API_URL + config.ES_BASE_PATH
             }field_stats/?field=${block.i
-            }&from_date=${this.props.filterParams.fromDate
+            }&${filterParams
             }&page_size=5${this.qFilter}`)
             .then((json) => {
                 // Validation of the data property
@@ -422,7 +424,8 @@ export class HuntDashboard extends React.Component {
     }
 
     createElement = (block) => {
-        const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${block.i}&from_date=${this.props.filterParams.fromDate}&page_size=30${this.qFilter}`;
+        const filterParams = buildFilterParams(this.props.filterParams);
+        const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${block.i}&${filterParams}&page_size=30${this.qFilter}`;
         return (
             <div key={block.i}
                 style={{ background: 'white' }}

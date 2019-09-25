@@ -28,6 +28,7 @@ import store from 'store';
 import md5 from 'md5';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from 'hunt_common/buildQFilter';
+import { buildFilterParams } from 'hunt_common/buildFilterParams';
 import RuleToggleModal from '../../RuleToggleModal';
 import HuntFilter from '../../HuntFilter';
 import AlertItem from '../../components/AlertItem';
@@ -108,8 +109,9 @@ export class AlertsPage extends React.Component {
 
     fetchData(state, filters) {
         const stringFilters = buildQFilter(filters, this.props.systemSettings);
+        const filterParams = buildFilterParams(this.props.filterParams);
         this.setState({ refresh_data: true, loading: true });
-        const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?search_target=0&${this.buildListUrlParams(state)}&from_date=${this.props.filterParams.fromDate}${stringFilters}`;
+        const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?search_target=0&${this.buildListUrlParams(state)}&${filterParams}${stringFilters}`;
         axios.get(url).then((res) => {
             if ((res.data !== null) && (typeof res.data !== 'string')) {
                 this.setState({ alerts: res.data, loading: false });
