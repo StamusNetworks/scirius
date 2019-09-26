@@ -225,7 +225,7 @@ export const dashboard = {
                     data: null,
                     dimensions: {
                         lg: {
-                            w: 7, h: 7, x: 0, y: 0
+                            w: 8, h: 7, x: 0, y: 0
                         },
                         md: {
                             w: 6, h: 7, x: 18, y: 0
@@ -271,6 +271,114 @@ export const dashboard = {
                         },
                         xs: {
                             w: 4, h: 7, x: 4, y: 8
+                        },
+                    },
+                }, {
+                    i: 'fqdn.src',
+                    title: 'FQDN Source',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 8, h: 7, x: 8, y: 0
+                        },
+                        md: {
+                            w: 6, h: 7, x: 6, y: 0
+                        },
+                        sm: {
+                            w: 8, h: 7, x: 8, y: 0
+                        },
+                        xs: {
+                            w: 4, h: 7, x: 4, y: 0
+                        },
+                    },
+                }, {
+                    i: 'fqdn.dest',
+                    title: 'FQDN Destination',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 8, h: 7, x: 16, y: 0
+                        },
+                        md: {
+                            w: 6, h: 7, x: 12, y: 0
+                        },
+                        sm: {
+                            w: 8, h: 7, x: 0, y: 7
+                        },
+                        xs: {
+                            w: 4, h: 7, x: 0, y: 8
+                        },
+                    },
+                }, {
+                    i: 'geoip.provider.autonomous_system_number',
+                    title: 'AS Number',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 8, h: 7, x: 24, y: 0
+                        },
+                        md: {
+                            w: 7, h: 7, x: 0, y: 7
+                        },
+                        sm: {
+                            w: 8, h: 7, x: 8, y: 7
+                        },
+                        xs: {
+                            w: 4, h: 7, x: 4, y: 8
+                        },
+                    },
+                }, {
+                    i: 'geoip.provider.autonomous_system_organization',
+                    title: 'AS Organization',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 8, h: 7, x: 0, y: 0
+                        },
+                        md: {
+                            w: 6, h: 7, x: 18, y: 0
+                        },
+                        sm: {
+                            w: 8, h: 7, x: 0, y: 14
+                        },
+                        xs: {
+                            w: 4, h: 7, x: 0, y: 14
+                        },
+                    },
+                }, {
+                    i: 'geoip.country_name',
+                    title: 'Country Name',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 8, h: 7, x: 8, y: 0
+                        },
+                        md: {
+                            w: 6, h: 7, x: 6, y: 0
+                        },
+                        sm: {
+                            w: 8, h: 7, x: 8, y: 0
+                        },
+                        xs: {
+                            w: 4, h: 7, x: 4, y: 0
+                        },
+                    },
+                }, {
+                    i: 'geoip.city_name',
+                    title: 'City Name',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 8, h: 7, x: 16, y: 0
+                        },
+                        md: {
+                            w: 6, h: 7, x: 12, y: 0
+                        },
+                        sm: {
+                            w: 8, h: 7, x: 0, y: 7
+                        },
+                        xs: {
+                            w: 4, h: 7, x: 0, y: 8
                         },
                     },
                 }

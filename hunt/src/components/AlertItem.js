@@ -95,7 +95,6 @@ export default class AlertItem extends React.Component {
 
         const hasTarget = data.alert.target !== undefined;
         const hasLateral = data.alert.lateral !== undefined;
-        const hasLateralOrTarget = hasTarget || hasLateral;
 
         const addInfo = [
             <ListViewInfoItem key="timestamp"><p>{moment(data.timestamp).format('YYYY-MM-DD, hh:mm:ss a')}</p>
@@ -192,10 +191,10 @@ export default class AlertItem extends React.Component {
                         </div>
                     </Col>
 
-                    {hasLateralOrTarget && <Col sm={4}>
+                    <Col sm={4}>
                         <div className="card-pf">
                             <div className="card-pf-heading">
-                                <h5>Attack vector and lateral movement</h5>
+                                <h5>Enrichement</h5>
                             </div>
                             <div className="card-pf-body">
                                 <dl className="dl-horizontal">
@@ -216,10 +215,29 @@ export default class AlertItem extends React.Component {
                                         </ErrorHandler>
                                     </React.Fragment>}
                                     {hasLateral && <ErrorHandler><EventField field_name="Lateral movement" field="alert.lateral" value={data.alert.lateral} addFilter={this.addFilter} /></ErrorHandler>}
+                                    {data.fqdn && data.fqdn.src && <ErrorHandler><EventField field_name="FQDN Source" field="fqdn.src" value={data.fqdn.src} addFilter={this.addFilter} /></ErrorHandler>}
+                                    {data.fqdn && data.fqdn.dest && <ErrorHandler><EventField field_name="FQDN Destination" field="fqdn.dest" value={data.fqdn.dest} addFilter={this.addFilter} /></ErrorHandler>}
                                 </dl>
                             </div>
                         </div>
-                    </Col>}
+                    </Col>
+
+                    <Col sm={4}>
+                        <div className="card-pf">
+                            <div className="card-pf-heading">
+                                <h5>Geoip</h5>
+                            </div>
+                            <div className="card-pf-body">
+                                <dl className="dl-horizontal">
+                                    {data.geoip && data.geoip.country_name && <ErrorHandler><EventField field_name="Country" field="geoip.country_name" value={data.geoip.country_name} addFilter={this.addFilter} /></ErrorHandler>}
+                                    {data.geoip && data.geoip.city_name && <ErrorHandler><EventField field_name="Country Code" field="geoip.country_code2" value={data.geoip.country_code2} addFilter={this.addFilter} /></ErrorHandler>}
+                                    {data.geoip && data.geoip.provider && data.geoip.provider.autonomous_system_number && <ErrorHandler><EventField field_name="AS Number" field="geoip.provider.autonomous_system_number" value={data.geoip.provider.autonomous_system_number} addFilter={this.addFilter} /></ErrorHandler>}
+                                    {data.geoip && data.geoip.provider && data.geoip.provider.autonomous_system_organization && <ErrorHandler><EventField field_name="AS Organization" field="geoip.provider.autonomous_system_organization" value={data.geoip.provider.autonomous_system_organization} addFilter={this.addFilter} /></ErrorHandler>}
+
+                                </dl>
+                            </div>
+                        </div>
+                    </Col>
                 </Row>
                 <Row>
                     {data.http !== undefined && <Col sm={4}>
