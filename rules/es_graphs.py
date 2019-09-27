@@ -1405,7 +1405,7 @@ POSTSTATS_SUMMARY = """
     "hosts": {
       "terms": {
         "field": "host.keyword",
-        "size": 5,
+        "size": 1000,
         "order": {
           "_term": "desc"
         }
