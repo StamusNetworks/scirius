@@ -193,7 +193,7 @@ export default class App extends Component {
     }
 
     needReload() {
-        this.props.filterParamsSet('fromDate', Date.now() - this.fromDate(this.state.duration));
+        this.props.filterParamsSet('fromDate', this.fromDate(this.state.duration));
     }
 
     fromDate = (period) => {
