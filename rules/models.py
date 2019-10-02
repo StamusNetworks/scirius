@@ -480,11 +480,6 @@ class UserAction(models.Model):
     user = models.ForeignKey(User, default=None, on_delete=models.SET_NULL, null=True, blank=True)
     username = models.CharField(max_length=150)
     ua_objects = GenericRelation('UserActionObject', related_query_name='ua_objects')
-
-    content_type = models.ForeignKey(ContentType, default=None, blank=True, null=True)
-    object_id = models.PositiveIntegerField(null=True, blank=True)
-    content_object = GenericForeignKey('content_type', 'object_id')
-
     # Compatibilty
     description = models.CharField(max_length=1512, null=True)
 
@@ -591,7 +586,9 @@ class UserAction(models.Model):
             # ==== Coner cases
             # transformation is str type
             # or workaround for UserAction which can contains no instance but str (ex: create a source without a ruleset)
-            if action.action_key == 'transformation' or (action.action_key == 'ruleset' and action.action_value == 'No Ruleset'):
+            if action.action_key == 'transformation' or \
+                    (action.action_key == 'ruleset' and action.action_value == 'No Ruleset') or \
+                    action.action_key == 'threat_status':
                 continue
 
             ct = action.content_type
