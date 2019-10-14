@@ -140,6 +140,16 @@ config classification: icmp-event,Generic ICMP event,3
 config classification: kickass-porn,SCORE! Get the lotion!,1
 config classification: policy-violation,Potential Corporate Privacy Violation,1
 config classification: default-login-attempt,Attempt to login by a default username and password,2
+
+config classification: targeted-activity,Targeted Malicious Activity was Detected,1
+config classification: exploit-kit,Exploit Kit Activity Detected,1
+config classification: external-ip-check,Device Retrieving External IP Address Detected,2
+config classification: domain-c2,Domain Observed Used for C2 Detected,1
+config classification: pup-activity,Possibly Unwanted Program Detected,2
+config classification: credential-theft,Successful Credential Theft Detected,1
+config classification: social-engineering,Possible Social Engineering Attempted,2
+config classification: coin-mining,Crypto Currency Mining Activity Detected,2
+config classification: command-and-control,Malware Command and Control Activity Detected,1
 """
 
     def parse_suricata_error(self, error, single = False):
