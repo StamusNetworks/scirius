@@ -36,11 +36,11 @@ export const generateAlert = (informational = true, relevant = true, untagged = 
     value: { informational, relevant, untagged }
 });
 
-const updateStorage = (filterType, filters) => {
+export const updateStorage = (filterType, filters) => {
     localStorage.setItem(filterType, JSON.stringify(filters));
 }
 
-const loadStorage = (filtersType) => {
+export const loadStorage = (filtersType) => {
     const initialFilterSet = undefined;
     let result;
     try {

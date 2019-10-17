@@ -35,7 +35,7 @@ import configureStore from './configureStore';
 import registerServiceWorker from './registerServiceWorker';
 
 const initialState = {};
-const store = configureStore(initialState, history);
+export const store = configureStore(initialState, history);
 const MOUNT_NODE = document.getElementById('root');
 
 const render = () => {
