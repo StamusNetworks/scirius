@@ -198,6 +198,10 @@ def es_bool_clauses(request):
     return ''
 
 
+def es_query_string(request):
+    return ''
+
+
 def check_es_version(request):
     from rules.es_graphs import ESVersion, ESError
 

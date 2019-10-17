@@ -153,12 +153,14 @@ class ESQuery(object):
             hosts_filter = ['%s:%s' % (settings.ELASTICSEARCH_HOSTNAME, h) for h in hosts]
             hosts_filter = mark_safe('(%s)' % ' '.join(hosts_filter))
 
+        query_filter = get_middleware_module('common').es_query_string(self.request)
+
         if qfilter is not None:
-            query_filter = " AND " + qfilter
+            query_filter += ' AND ' + qfilter
+
+        if query_filter:
             # dump as json but remove quotes since the quotes are already set in templates
             query_filter = mark_safe(json.dumps(query_filter)[1:-1])
-        else:
-            query_filter = ''
 
         if ignore_middleware:
             bool_clauses = ''
