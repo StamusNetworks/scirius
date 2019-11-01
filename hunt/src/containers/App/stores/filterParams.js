@@ -1,5 +1,6 @@
 import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
+import moment from "moment";
 import { defaultFilterParams } from 'hunt_common/stores/filterParamsDefault';
 
 export const FILTER_PARAMS_SET = 'Hunt/App/FILTER_PARAM_SET';
@@ -53,5 +54,5 @@ export const reducer = (state = initialState, action) => {
 }
 
 export const selectFilterParamsStore = (state) => state.get('filterParams', initialState);
-export const makeSelectFilterParam = (paramName) => createSelector(selectFilterParamsStore, (globalState) => globalState.getIn([paramName]));
+export const makeSelectFilterParam = (paramName) => createSelector(selectFilterParamsStore, (globalState) => ((paramName === 'fromDate' || paramName === 'toDate') && globalState.getIn([paramName]) === 0) ? moment() : globalState.getIn([paramName]));
 export const makeSelectFilterParams = () => createSelector(selectFilterParamsStore, (globalState) => globalState.toJS());

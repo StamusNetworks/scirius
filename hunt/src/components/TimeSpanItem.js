@@ -1,6 +1,7 @@
 import React from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
 import { Col,
     DropdownButton,
     FormControl,
@@ -15,30 +16,21 @@ import OutsideClickHandler from 'react-outside-click-handler';
 import DateRangePicker from './DateRangePicker';
 import { filterTimeSpanSet, filterDurationSet, reducer } from '../containers/App/stores/filterParams';
 import injectReducer from '../util/injectReducer';
-
-// seconds in labels
-const USER_PERIODS = {
-    3600: '1h',
-    21600: '6h',
-    86400: '24h',
-    172800: '2d',
-    604800: '7d',
-    2592000: '30d'
-};
+import { periodShortener, USER_PERIODS } from '../helpers/PeriodShortener';
 
 const moments = [
     { label: 'Please select' },
     { label: 'Seconds ago', get: (val) => moment().second(moment().second() - val) },
     { label: 'Minutes ago', get: (val) => moment().minute(moment().minute() - val) },
     { label: 'Hours ago', get: (val) => moment().hour(moment().hour() - val) },
-    { label: 'Days ago', get: (val) => moment().day(moment().day() - val) },
+    { label: 'Days ago', get: (val) => moment().date(moment().date() - val) },
     { label: 'Weeks ago', get: (val) => moment().week(moment().week() - val) },
     { label: 'Months ago', get: (val) => moment().month(moment().month() - val) },
     { label: 'Years ago', get: (val) => moment().year(moment().year() - val) },
     { label: 'Seconds from now', get: (val) => moment().second(moment().second() + val) },
     { label: 'Minutes from now', get: (val) => moment().minute(moment().minute() + val) },
     { label: 'Hours from now', get: (val) => moment().hour(moment().hour() + val) },
-    { label: 'Days from now', get: (val) => moment().day(moment().day() + val) },
+    { label: 'Days from now', get: (val) => moment().date(moment().date() + val) },
     { label: 'Weeks from now', get: (val) => moment().week(moment().week() + val) },
     { label: 'Months from now', get: (val) => moment().month(moment().month() + val) },
     { label: 'Years from now', get: (val) => moment().year(moment().year() + val) },
@@ -145,10 +137,10 @@ class TimeSpanItem extends React.Component {
 
     toggleRound = (checked) => {
         if (checked) {
-            return moment().minutes(0).seconds(0).format(this.format)
+            return moment().minutes(0).seconds(0)
         }
-        return moment().format(this.format);
-    }
+        return moment();
+    };
 
     render() {
         return (
@@ -167,7 +159,7 @@ class TimeSpanItem extends React.Component {
                     className="nav-item-iconic"
                     style={{ paddingTop: '23px', cursor: 'pointer' }}
                 >
-                    <Icon type="fa" name="clock-o" /> Last {USER_PERIODS[this.props.period]}
+                    <Icon type="fa" name="clock-o" />&nbsp;{periodShortener(this.props.fromDate, this.props.toDate, this.props.duration)}
                 </div>
 
                 {this.state.timeSpanPicker && <div className="timespan-picker">
@@ -272,15 +264,23 @@ class TimeSpanItem extends React.Component {
 TimeSpanItem.propTypes = {
     setTimeSpan: PropTypes.func,
     setDuration: PropTypes.func,
-    period: PropTypes.any,
+    fromDate: PropTypes.any,
+    toDate: PropTypes.any,
+    duration: PropTypes.any,
 };
+
+const mapStateToProps = createStructuredSelector({
+    fromDate: makeSelectFilterParam('fromDate'),
+    toDate: makeSelectFilterParam('toDate'),
+    duration: makeSelectFilterParam('duration'),
+});
 
 const mapDispatchToProps = (dispatch) => ({
     setTimeSpan: (timespan) => dispatch(filterTimeSpanSet(timespan)),
     setDuration: (duration) => dispatch(filterDurationSet(duration)),
 });
 
-const withConnect = connect(null, mapDispatchToProps);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 const withReducer = injectReducer({ key: 'filterParams', reducer });
 
 export default compose(withReducer, withConnect)(TimeSpanItem);
