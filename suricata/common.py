@@ -211,3 +211,7 @@ def check_es_version(request):
         return {'error': e.args[0]}
 
     return {'es_is_good_version': True, 'es_version': es_version}
+
+
+def update_context(request):
+    return {}

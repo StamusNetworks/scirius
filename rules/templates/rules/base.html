@@ -158,7 +158,12 @@
             <div id="scirius_down_label" style="display:none;" >
                 <div class="alert alert-danger">Scirius is down. Don't leave page.</div>
             </div>
-
+            {% block extra_message %}
+                {% if additional_error %}
+                    <div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <span id="error">{{ additional_error|safe }}</span></div>
+                {% endif %}
+            {% endblock %}
                     {% block error %}
 
 			{% if messages %}
@@ -169,7 +174,6 @@
 			    </div>
 			    {% endfor %}
 			{% endif %}
-
                       {% if error %}
                        <div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
  <span id="error">{{ error }}</span></div>

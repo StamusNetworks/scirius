@@ -126,18 +126,8 @@ def scirius_render(request, template, context):
         'label': 'Suricata'
     }]
     context['monitoring_url'] = 'suricata_index'
-    try:
-        links = get_middleware_module('links')
-        context['toplinks'] = links.TOPLINKS
-        context['links'] = links.links(request)
-        context['monitoring_url'] = links.MONITORING_URL
-    except:
-        pass
-    try:
-        context['middleware_status'] = get_middleware_module('common').block_status(request)
-    except:
-        pass
 
+    context.update(get_middleware_module('common').update_context(request))
     context['messages'] = messages.get_messages(request)
     complete_context(request, context)
     return render(request, template, context)
