@@ -83,6 +83,7 @@ class FilterEditKebab extends React.Component {
     convertActionToFilters() {
         this.props.clearFilters(sections.GLOBAL);
         this.props.addFilter(sections.GLOBAL, this.generateFilterSet());
+        this.props.switchPage('DASHBOARDS');
         if (process.env.REACT_APP_HAS_TAG === '1') {
             this.props.setTag(this.generateAlertTag());
         }
@@ -178,6 +179,7 @@ FilterEditKebab.propTypes = {
     setTag: PropTypes.func,
     clearFilters: PropTypes.func,
     alertTag: PropTypes.object,
+    switchPage: PropTypes.any,
 };
 
 const mapStateToProps = createStructuredSelector({

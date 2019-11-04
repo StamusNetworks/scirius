@@ -55,6 +55,7 @@ const DisplayPage = (props) => {
                 filters={props.filters_filters}
                 updateListState={props.updateFilterListState}
                 updateFilterState={props.updateFiltersFilterState}
+                switchPage={props.switchPage}
             />);
             break;
     }
