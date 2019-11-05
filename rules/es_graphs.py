@@ -908,7 +908,7 @@ def get_latest_stats_entry():
     else:
         return """
         {
-          "size": 1,
+          "size": 2,
           "sort": [
             {
               "@timestamp": {
@@ -1845,8 +1845,11 @@ class ESLatestStats(ESQuery):
         es_url = self._get_es_url(data='stats')
         data = self._urlopen(es_url, data)
         try:
-            return data['hits']['hits'][0]['_source']
-        except:
+            res = data['hits']['hits'][0]['_source']
+            if len(data['hits']['hits']) > 1:
+                res['previous'] = data['hits']['hits'][1]['_source']
+            return res
+        except (KeyError, IndexError):
             return None
 
 
