@@ -639,7 +639,8 @@ def get_rules_per_category():
                     {
                       "range": {
                         "@timestamp": {
-                          "gte": {{ from_date }}
+                          "gte": {{ from_date }},
+                          "lte": {{ to_date }}
                         }
                       }
                     },
@@ -697,7 +698,9 @@ def get_rules_per_category():
                     {
                       "range": {
                         "@timestamp": {
-                          "gte": {{ from_date }}
+                          "gte": {{ from_date }},
+                          "lte": {{ to_date }}
+
                         }
                       }
                     },
@@ -724,7 +727,9 @@ def get_alerts_count_per_host():
                     {
                       "range": {
                         "@timestamp": {
-                          "gte": {{ from_date }}
+                          "gte": {{ from_date }},
+                          "lte": {{ to_date }}
+
                         }
                       }
                     }
@@ -752,7 +757,9 @@ def get_alerts_count_per_host():
                     {
                       "range": {
                         "@timestamp": {
-                          "gte": {{ from_date }}
+                          "gte": {{ from_date }},
+                          "lte": {{ to_date }}
+
                         }
                       }
                     }
@@ -798,7 +805,9 @@ def get_alerts_trend_per_host():
                     {
                       "range": {
                         "@timestamp": {
-                          "gte": {{ start_date }}
+                          "gte": {{ start_date }},
+                          "lte": {{ to_date }}
+
                         }
                       }
                     }
@@ -840,7 +849,9 @@ def get_alerts_trend_per_host():
                     {
                       "range": {
                         "@timestamp": {
-                          "gte": {{ start_date }}
+                          "gte": {{ start_date }},
+                          "lte": {{ to_date }}
+
                         }
                       }
                     }
@@ -876,7 +887,9 @@ def get_latest_stats_entry():
                     {
                       "range": {
                         "@timestamp": {
-                          "gte": {{ from_date }}
+                          "gte": {{ from_date }},
+                          "lte": {{ to_date }}
+
                         }
                       }
                     }
@@ -910,7 +923,9 @@ def get_latest_stats_entry():
                     {
                       "range": {
                         "@timestamp": {
-                          "gte": {{ from_date }}
+                          "gte": {{ from_date }},
+                          "lte": {{ to_date }}
+
                         }
                       }
                     }
@@ -939,7 +954,9 @@ def get_ippair_alerts_count():
                     {
                       "range": {
                         "@timestamp": {
-                          "gte": {{ from_date }}
+                          "gte": {{ from_date }},
+                          "lte": {{ to_date }}
+
                         }
                       }
                     }, {
@@ -996,7 +1013,9 @@ def get_ippair_alerts_count():
                     {
                       "range": {
                         "@timestamp": {
-                          "gte": {{ from_date }}
+                          "gte": {{ from_date }},
+                          "lte": {{ to_date }}
+
                         }
                       }
                     }, {
@@ -1054,7 +1073,9 @@ def get_ippair_netinfo_alerts_count():
                     {
                       "range": {
                         "@timestamp": {
-                          "gte": {{ from_date }}
+                          "gte": {{ from_date }},
+                          "lte": {{ to_date }}
+
                         }
                       }
                     }, {
@@ -1133,7 +1154,9 @@ def get_ippair_netinfo_alerts_count():
                     {
                       "range": {
                         "@timestamp": {
-                          "gte": {{ from_date }}
+                          "gte": {{ from_date }},
+                          "lte": {{ to_date }}
+
                         }
                       }
                     }, {
@@ -1220,7 +1243,9 @@ ALERTS_TAIL = """
       "must": [{
           "range": {
             "@timestamp": {
-              "gte": {{ from_date }}
+              "gte": {{ from_date }},
+              "lte": {{ to_date }}
+
             }
           }
       }, {
@@ -1252,7 +1277,9 @@ EVENTS_FROM_FLOW_ID = """
       "must": [{
           "range": {
             "@timestamp": {
-              "gte": {{ from_date }}
+              "gte": {{ from_date }},
+              "lte": {{ to_date }}
+
             }
           }
       }, {
@@ -1281,7 +1308,9 @@ SURICATA_LOGS_TAIL = """
       "must": [{
         "range": {
           "@timestamp": {
-            "gte": {{ from_date }}
+            "gte": {{ from_date }},
+            "lte": {{ to_date }}
+
           }
         }
       }, {
@@ -1304,7 +1333,9 @@ TOP_ALERTS = """
         {
           "range": {
             "@timestamp": {
-              "gte": {{ from_date }}
+              "gte": {{ from_date }},
+              "lte": {{ to_date }}
+
             }
           }
         }, {
