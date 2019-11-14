@@ -24,7 +24,7 @@
     "babel-eslint": "^7.2.3",
     "babel-loader": "^8.0.0-beta.0",
     "css-loader": "^0.28.8",
-    "eslint": "^3.19.0",
+    "eslint": "^4.18.2",
     "eslint-loader": "^2.0.0",
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^1.1.6",
