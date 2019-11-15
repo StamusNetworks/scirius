@@ -356,3 +356,327 @@ button.dashboard-list-item.list-group-item.copied::before {
   font-weight: bold;
   padding: 0 0 0 20px;
 }
+
+.timespan-picker {
+  position: absolute;
+  right: 0px;
+  background: #FFF;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  background-clip: padding-box;
+  border-radius: 1px;
+  border: 1px solid #bbb;
+  padding: 5px 0;
+  z-index: 1000;
+
+  .time-pickers {
+    margin: 0;
+    padding: 0;
+    display: block;
+    border-bottom: 1px solid #7b1244;
+    li {
+      display: inline-block;
+      list-style-type: none;
+      a {
+          display: block;
+          padding: 5px 10px;
+          position: relative;
+        }
+      a:hover, .active {
+        background: #7b1244;
+        color: #FFF;
+        text-decoration: none;
+      }
+      a:hover::after, .active::after {
+        content: '';
+        position: absolute;
+        top: 30px;
+        left: 37%;
+        right: 0;
+        width: 0;
+        height: 0;
+        border-top: solid 6px #7b1244;
+        border-left: solid 10px transparent;
+        border-right: solid 10px transparent;
+      }
+    }
+  }
+  .pickers-content {
+    width: 530px;
+    min-height: 100px;
+    padding: 10px;
+    .picker {
+      display: none;
+
+      // out of calendar containers
+      .submit-date {
+        position: absolute;
+        left: 50%;
+        bottom: 14px;
+      }
+      .submit-date a {
+        display: block;
+        position: relative;
+        left: -50%;
+      }
+
+      // differences between two calendars
+      // footers
+      .calendar-start-date .rc-calendar-footer {
+        text-align: left;
+      }
+      .calendar-end-date .rc-calendar-footer {
+        text-align: right;
+      }
+
+      // common styles for both of the callendars
+      .rc-calendar {
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
+
+        .rc-calendar-footer {
+          padding-bottom: 0;
+          padding-top: 15px;
+        }
+
+        .rc-calendar-input {
+          font-family: Courier, monospace;
+          font-weight: bold;
+        }
+
+        .rc-calendar-disabled-cell {
+          .rc-calendar-date {
+            background: transparent;
+          }
+        }
+
+        .rc-calendar-year-select:hover,
+        .rc-calendar-month-select:hover,
+        .rc-calendar-day-select:hover,
+        .rc-calendar-year-panel-header > a:hover{
+          color: #7b1244;
+        }
+
+        .rc-calendar-year-panel-cell {
+          .rc-calendar-year-panel-year:hover {
+            background: #ffe7f2;
+            text-decoration: none;
+            color: #666;
+          }
+        }
+
+        // Normal cells
+        // day cell
+        .rc-calendar-cell {
+          .rc-calendar-date:hover {
+            background: #ffe7f2;
+            text-decoration: none;
+          }
+        }
+        // Decade cell {
+        .rc-calendar-decade-panel-cell {
+          .rc-calendar-decade-panel-decade:hover {
+            background: #ffe7f2;
+            text-decoration: none;
+            color: #666;
+          }
+        }
+
+
+        // Special cases
+        // today cell
+        .rc-calendar-today {
+          .rc-calendar-date {
+            border: 0px solid #7b1244;
+            border-radius: 3px;
+          }
+        }
+        .rc-calendar-selected-date {
+          .rc-calendar-date {
+            background: #7b1244;
+          }
+          .rc-calendar-date:hover {
+            background: #7b1244;
+          }
+        }
+        // selected cell
+        .rc-calendar-selected-day {
+          .rc-calendar-date,
+          .rc-calendar-date:hover {
+            background: #7b1244;
+            color: #FFF;
+          }
+        }
+        // in range cell
+        .rc-calendar-in-range-cell {
+          background: #fff3f9;
+          .rc-calendar-date {
+            background: #fff3f9;
+          }
+        }
+
+
+        // Month
+        // normal month cell
+        .rc-calendar-month-panel-cell {
+          .rc-calendar-month-panel-month:hover {
+            background: #ffe7f2;
+            text-decoration: none;
+          }
+        }
+
+        // prev / next
+        // day
+        .rc-calendar-last-month-cell {
+          .rc-calendar-date:hover {
+            background: #f1f1f1;
+            color: #afafaf;
+            text-decoration: none;
+          }
+        }
+        // year
+        .rc-calendar-year-panel-last-decade-cell,
+        .rc-calendar-year-panel-next-decade-cell {
+          .rc-calendar-year-panel-year:hover {
+            background: #f1f1f1;
+            color: #afafaf;
+            text-decoration: none;
+          }
+        }
+        // decade
+        .rc-calendar-decade-panel-last-century-cell,
+        .rc-calendar-decade-panel-next-century-cell {
+          .rc-calendar-decade-panel-decade:hover {
+            background: #f1f1f1;
+            color: #afafaf;
+            text-decoration: none;
+          }
+        }
+
+
+        // Selected cell
+        // Month
+        .rc-calendar-month-panel-selected-cell {
+          .rc-calendar-month-panel-month {
+            background: #7b1244;
+          }
+          .rc-calendar-month-panel-month:hover {
+            background: #942259;
+            text-decoration: none;
+          }
+        }
+
+        // Year
+        .rc-calendar-year-panel-selected-cell {
+          .rc-calendar-year-panel-year {
+            background: #7b1244;
+          }
+          .rc-calendar-year-panel-year:hover {
+            color: #FFF;
+            background: #942259;
+            text-decoration: none;
+          }
+        }
+
+        // Decade
+        .rc-calendar-decade-panel-selected-cell {
+          .rc-calendar-decade-panel-decade {
+            background: #7b1244;
+          }
+          .rc-calendar-decade-panel-decade:hover {
+            color: #FFF;
+            background: #942259;
+            text-decoration: none;
+          }
+        }
+
+
+        .rc-calendar-ok-btn,
+        .rc-calendar-time-picker-btn,
+        .rc-calendar-today-btn {
+          color: #7b1244;
+          text-transform: lowercase;
+        }
+        .rc-calendar-time-picker-btn-disabled,
+        .rc-calendar-ok-btn-disabled,
+        .rc-calendar-today-btn-disabled {
+          color: #8c8c8c;
+        }
+
+        .rc-calendar-range-bottom {
+          .rc-calendar-footer-btn {
+            padding: 17px 12px 5px 0;
+            .rc-calendar-ok-btn {
+              background: #7b1244;
+              color: #FFF;
+              padding: 5px 20px;
+              border-radius: 3px;
+            }
+            .rc-calendar-ok-btn:hover {
+              text-decoration: none;
+              background: #942259;
+            }
+            .rc-calendar-time-picker-btn-disabled,
+            .rc-calendar-time-picker-btn-disabled:hover,
+            .rc-calendar-today-btn-disabled,
+            .rc-calendar-today-btn-disabled:hover{
+              cursor: default;
+              text-decoration: none;
+            }
+            .rc-calendar-ok-btn-disabled,
+            .rc-calendar-ok-btn-disabled:hover {
+              cursor: default;
+              background: #dadada;
+              color: #888;
+            }
+          }
+        }
+
+        /*
+        .rc-calendar-in-range-cell {
+          background: #fff3f9;
+        }
+        .rc-calendar-panel {
+          // header
+          .rc-calendar-month-panel-header > a:hover {
+            color: #7b1244;
+          }
+          // calendar footer
+        }
+        */
+      }
+    }
+    .active {
+      display: block;
+    }
+    .hardcoded-stamps {
+      margin: 0;
+      display: block;
+      padding: 30px 65px;
+      li {
+        display: inline-block;
+        list-style-type: none;
+        a {
+          display: block;
+          padding: 3px 10px;
+
+        }
+      }
+    }
+    .relative-stamps {
+      padding-top: 10px;
+      .from {
+        float: left;
+      }
+      .to {
+        float: right;
+      }
+      .set-to-now {
+        text-align: right;
+      }
+      .time-label {
+        color: #737373;
+      }
+    }
+  }
+}

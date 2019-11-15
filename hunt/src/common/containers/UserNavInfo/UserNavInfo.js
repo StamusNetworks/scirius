@@ -8,16 +8,7 @@ import FilterSets from '../../../components/FilterSets';
 import OutsideAlerter from '../../../components/OutsideAlerter';
 import sciriusLogo from '../../../img/scirius-by-stamus.svg';
 import ErrorHandler from '../../../components/Error';
-
-const USER_PERIODS = {
-    1: '1h',
-    6: '6h',
-    24: '24h',
-    48: '2d',
-    168: '7d',
-    720: '30d'
-};
-
+import TimeSpanItem from '../../../components/TimeSpanItem';
 
 const REFRESH_INTERVAL = {
     '': 'Off',
@@ -165,15 +156,7 @@ export default class UserNavInfo extends Component {
                 </li>
 
                 {this.props.children}
-                <Dropdown componentClass="li" id="time">
-                    <Dropdown.Toggle useAnchor className="nav-item-iconic">
-                        <Icon type="fa" name="clock-o" /> Last {USER_PERIODS[this.props.period]}
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                        {Object.keys(USER_PERIODS).map((period) => (<MenuItem key={period} onClick={() => this.props.ChangeDuration(period)}>Last {USER_PERIODS[period]}</MenuItem>), this)}
-                    </Dropdown.Menu>
-                </Dropdown>
-
+                <TimeSpanItem changeDuration={this.props.ChangeDuration} />
                 {this.state.showNotifications && <ErrorHandler><FilterSets
                     switchPage={this.props.switchPage}
                     close={this.closeHuntFilterSetsModal}
@@ -305,7 +288,6 @@ UserNavInfo.propTypes = {
     systemSettings: PropTypes.any,
     needReload: PropTypes.any,
     ChangeRefreshInterval: PropTypes.any,
-    period: PropTypes.any,
     switchPage: PropTypes.any,
     ChangeDuration: PropTypes.any,
 };
