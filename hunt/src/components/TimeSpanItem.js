@@ -14,7 +14,10 @@ import moment from 'moment';
 import * as PropTypes from 'prop-types';
 import OutsideClickHandler from 'react-outside-click-handler';
 import DateRangePicker from './DateRangePicker';
-import { filterTimeSpanSet, filterDurationSet, reducer } from '../containers/App/stores/filterParams';
+import { filterTimeSpanSet,
+    filterDurationSet,
+    reducer,
+    makeSelectFilterParam } from '../containers/App/stores/filterParams';
 import injectReducer from '../util/injectReducer';
 import { periodShortener, USER_PERIODS } from '../helpers/PeriodShortener';
 
@@ -36,13 +39,18 @@ const moments = [
     { label: 'Years from now', get: (val) => moment().year(moment().year() + val) },
 ];
 
+const PICKERS = {
+    PREDEFINED: 1,
+    ABSOLUTE: 2,
+    RELATIVE: 3,
+}
 class TimeSpanItem extends React.Component {
     constructor(props) {
         super(props);
         this.format = 'MMMM Do YYYY, HH:mm:ss';
 
         this.state = {
-            picker: 1,
+            picker: PICKERS.PREDEFINED,
             timeSpanPicker: false,
             from: {
                 id: 0,
@@ -165,26 +173,26 @@ class TimeSpanItem extends React.Component {
                 {this.state.timeSpanPicker && <div className="timespan-picker">
                     <OutsideClickHandler onOutsideClick={() => this.setState((prevState) => ({ timeSpanPicker: !prevState.timeSpanPicker }))}>
                         <ul className="time-pickers">
-                            <li><a href="#" className={`picker ${this.state.picker === 1 ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: 1 })}>Predefined</a></li>
-                            <li><a href="#" className={`picker ${this.state.picker === 2 ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: 2 })}>Absolute</a></li>
-                            <li><a href="#" className={`picker ${this.state.picker === 3 ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: 3 })}>Relative</a></li>
+                            <li><a href="#" className={`picker ${this.state.picker === PICKERS.PREDEFINED ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: PICKERS.PREDEFINED })}>Predefined</a></li>
+                            <li><a href="#" className={`picker ${this.state.picker === PICKERS.ABSOLUTE ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: PICKERS.ABSOLUTE })}>Absolute</a></li>
+                            <li><a href="#" className={`picker ${this.state.picker === PICKERS.RELATIVE ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: PICKERS.RELATIVE })}>Relative</a></li>
                         </ul>
                         <div style={{ clear: 'both' }} />
                         <div className="pickers-content">
-                            <div className={`picker ${this.state.picker === 1 ? 'active' : ''}`}>
+                            <div className={`picker ${this.state.picker === PICKERS.PREDEFINED ? 'active' : ''}`}>
                                 <ul className="hardcoded-stamps">
                                     {Object.keys(USER_PERIODS).map((period) => (<li key={period}>
                                         <a
+                                            className={this.props.fromDate === period * 1000 ? 'active' : ''}
                                             href="#"
                                             onClick={() => this.props.setDuration(period)}
                                         >Last {USER_PERIODS[period]}</a></li>))
                                     }
                                 </ul>
                             </div>
-                            <div className={`picker ${this.state.picker === 2 ? 'active' : ''}`}>
+                            <div className={`picker ${this.state.picker === PICKERS.ABSOLUTE ? 'active' : ''}`}>
                                 <DateRangePicker
-                                    onOk={(times) => {
-                                        const [from, to] = times;
+                                    onOk={(from, to) => {
                                         this.props.setTimeSpan({
                                             fromDate: from.unix() * 1000,
                                             toDate: to.unix() * 1000,
@@ -192,7 +200,7 @@ class TimeSpanItem extends React.Component {
                                     }}
                                 />
                             </div>
-                            <div className={`picker ${this.state.picker === 3 ? 'active' : ''}`}>
+                            <div className={`picker ${this.state.picker === PICKERS.RELATIVE ? 'active' : ''}`}>
                                 <Row className="relative-stamps ">
                                     <Col md={6} className="from">
                                         <Row className="no-row">

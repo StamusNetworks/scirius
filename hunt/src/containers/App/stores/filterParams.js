@@ -1,6 +1,7 @@
 import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
-import moment from "moment";
+import moment from 'moment';
+import store from 'store';
 import { defaultFilterParams } from 'hunt_common/stores/filterParamsDefault';
 
 export const FILTER_PARAMS_SET = 'Hunt/App/FILTER_PARAM_SET';
@@ -36,17 +37,23 @@ export const reducer = (state = initialState, action) => {
         case FILTER_PARAMS_SET:
             return state.setIn([action.paramName], action.paramValue);
 
-        case FILTER_TIMESPAN_SET:
-            return state
+        case FILTER_TIMESPAN_SET: {
+            const timespan = state
             .set('fromDate', action.timeSpan.fromDate)
             .set('toDate', action.timeSpan.toDate)
             .set('duration', action.timeSpan.duration);
+            store.set('timespan', timespan.toJS());
+            return timespan;
+        }
 
-        case FILTER_DURATION_SET:
-            return state
+        case FILTER_DURATION_SET: {
+            const timespan = state
             .set('duration', action.duration)
             .set('fromDate', null)
             .set('toDate', null);
+            store.set('timespan', timespan.toJS());
+            return timespan;
+        }
 
         default:
             return state;
@@ -54,5 +61,6 @@ export const reducer = (state = initialState, action) => {
 }
 
 export const selectFilterParamsStore = (state) => state.get('filterParams', initialState);
+/* eslint-disable no-confusing-arrow */
 export const makeSelectFilterParam = (paramName) => createSelector(selectFilterParamsStore, (globalState) => ((paramName === 'fromDate' || paramName === 'toDate') && globalState.getIn([paramName]) === 0) ? moment() : globalState.getIn([paramName]));
 export const makeSelectFilterParams = () => createSelector(selectFilterParamsStore, (globalState) => globalState.toJS());

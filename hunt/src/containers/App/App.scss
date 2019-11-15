@@ -659,7 +659,12 @@ button.dashboard-list-item.list-group-item.copied::before {
         a {
           display: block;
           padding: 3px 10px;
-
+        }
+        a:hover, .active {
+          background: #7b1244;
+          border-radius: 4px;
+          color: #FFF;
+          text-decoration: none;
         }
       }
     }
