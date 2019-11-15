@@ -9,6 +9,7 @@ import { Col,
     Row } from 'patternfly-react';
 import moment from 'moment';
 import * as PropTypes from 'prop-types';
+import OutsideClickHandler from 'react-outside-click-handler';
 import DateRangePicker from './DateRangePicker';
 
 const USER_PERIODS = {
@@ -164,6 +165,7 @@ export default class TimeSpanItem extends React.Component {
                 </div>
 
                 {this.state.timeSpanPicker && <div className="timespan-picker">
+                    <OutsideClickHandler onOutsideClick={() => this.setState((prevState) => ({ timeSpanPicker: !prevState.timeSpanPicker }))}>
                     <ul className="time-pickers">
                         <li><a href="#" className={`picker ${this.state.picker === 1 ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: 1 })}>Predefined</a></li>
                         <li><a href="#" className={`picker ${this.state.picker === 2 ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: 2 })}>Absolute</a></li>
@@ -231,6 +233,7 @@ export default class TimeSpanItem extends React.Component {
                             </Row>
                         </div>
                     </div>
+                    </OutsideClickHandler>
                 </div>}
             </li>
         )
