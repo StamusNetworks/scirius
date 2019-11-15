@@ -156,7 +156,7 @@ export default class UserNavInfo extends Component {
                 </li>
 
                 {this.props.children}
-                <TimeSpanItem changeDuration={this.props.ChangeDuration} />
+                <TimeSpanItem />
                 {this.state.showNotifications && <ErrorHandler><FilterSets
                     switchPage={this.props.switchPage}
                     close={this.closeHuntFilterSetsModal}
@@ -289,5 +289,4 @@ UserNavInfo.propTypes = {
     needReload: PropTypes.any,
     ChangeRefreshInterval: PropTypes.any,
     switchPage: PropTypes.any,
-    ChangeDuration: PropTypes.any,
 };

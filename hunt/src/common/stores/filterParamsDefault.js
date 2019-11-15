@@ -1,5 +1,8 @@
-const duration = localStorage.getItem('duration') || 24;
+const timespan = localStorage.getItem('timespan') || { fromDate: Date.now() - (24 * 3600 * 1000), toDate: Date.now(), duration: 24 * 3600 * 1000 };
 
 export const defaultFilterParams = {
-    fromDate: Date.now() - (duration * 3600 * 1000)
+    hash: '',
+    duration: timespan.duration,
+    fromDate: timespan.fromDate,
+    toDate: timespan.toDate,
 };

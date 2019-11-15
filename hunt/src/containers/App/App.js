@@ -43,16 +43,12 @@ export default class App extends Component {
         super(props);
         this.timer = null;
         const interval = localStorage.getItem('interval');
-        let duration = localStorage.getItem('duration');
         let rulesListConf = localStorage.getItem('rules_list');
         let alertsListConf = localStorage.getItem('alerts_list');
         let historyConf = localStorage.getItem('history');
         let filtersListConf = localStorage.getItem('filters_list');
         let pageDisplay = localStorage.getItem('page_display');
         let historyFilters = localStorage.getItem('history_filters');
-        if (!duration) {
-            duration = 24;
-        }
 
         if (!rulesListConf) {
             rulesListConf = {
@@ -143,7 +139,6 @@ export default class App extends Component {
         this.state = {
             sources: [],
             rulesets: [],
-            duration,
             interval,
             display: pageDisplay,
             rules_list: rulesListConf,
@@ -154,11 +149,7 @@ export default class App extends Component {
             hasConnectivity: true,
             connectionProblem: 'Scirius is not currently available.',
         };
-        this.changeDuration = this.changeDuration.bind(this);
         this.changeRefreshInterval = this.changeRefreshInterval.bind(this);
-
-        this.fromDate = this.fromDate.bind(this);
-
         this.switchPage = this.switchPage.bind(this);
         this.needReload = this.needReload.bind(this);
         this.updateRuleListState = this.updateRuleListState.bind(this);
@@ -193,18 +184,12 @@ export default class App extends Component {
     }
 
     needReload() {
-        this.props.filterParamsSet('fromDate', this.fromDate(this.state.duration));
+        this.props.filterParamsSet('hash', Math.random());
     }
 
     fromDate = (period) => {
         const duration = period * 3600 * 1000;
         return Date.now() - duration;
-    }
-
-    changeDuration(period) {
-        this.setState({ duration: period });
-        this.props.filterParamsSet('fromDate', this.fromDate(period));
-        localStorage.setItem('duration', period);
     }
 
     changeRefreshInterval(interval) {
@@ -314,10 +299,8 @@ export default class App extends Component {
                             <ErrorHandler>
                                 <UserNavInfo
                                     systemSettings={this.state.systemSettings}
-                                    ChangeDuration={this.changeDuration}
                                     ChangeRefreshInterval={this.changeRefreshInterval}
                                     interval={this.state.interval}
-                                    period={this.state.duration}
                                     switchPage={this.switchPage}
                                     needReload={this.needReload}
                                 />

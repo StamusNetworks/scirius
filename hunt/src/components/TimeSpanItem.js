@@ -1,4 +1,6 @@
 import React from 'react';
+import { compose } from 'redux';
+import { connect } from 'react-redux';
 import { Col,
     DropdownButton,
     FormControl,
@@ -11,7 +13,10 @@ import moment from 'moment';
 import * as PropTypes from 'prop-types';
 import OutsideClickHandler from 'react-outside-click-handler';
 import DateRangePicker from './DateRangePicker';
+import { filterTimeSpanSet, filterDurationSet, reducer } from '../containers/App/stores/filterParams';
+import injectReducer from '../util/injectReducer';
 
+// seconds in labels
 const USER_PERIODS = {
     3600: '1h',
     21600: '6h',
@@ -39,13 +44,14 @@ const moments = [
     { label: 'Years from now', get: (val) => moment().year(moment().year() + val) },
 ];
 
-export default class TimeSpanItem extends React.Component {
+class TimeSpanItem extends React.Component {
     constructor(props) {
         super(props);
         this.format = 'MMMM Do YYYY, HH:mm:ss';
 
         this.state = {
             picker: 1,
+            timeSpanPicker: false,
             from: {
                 id: 0,
                 value: 0,
@@ -175,62 +181,85 @@ export default class TimeSpanItem extends React.Component {
                         <div className="pickers-content">
                             <div className={`picker ${this.state.picker === 1 ? 'active' : ''}`}>
                                 <ul className="hardcoded-stamps">
-                                {Object.keys(USER_PERIODS).map((period) => (<li key={period}>
-                                    <a
-                                        href="#"
-                                    >Last {USER_PERIODS[period]}</a></li>))
-                                }
+                                    {Object.keys(USER_PERIODS).map((period) => (<li key={period}>
+                                        <a
+                                            href="#"
+                                            onClick={() => this.props.setDuration(period)}
+                                        >Last {USER_PERIODS[period]}</a></li>))
+                                    }
                                 </ul>
                             </div>
                             <div className={`picker ${this.state.picker === 2 ? 'active' : ''}`}>
-                                <DateRangePicker />
+                                <DateRangePicker
+                                    onOk={(times) => {
+                                        const [from, to] = times;
+                                        this.props.setTimeSpan({
+                                            fromDate: from.unix() * 1000,
+                                            toDate: to.unix() * 1000,
+                                        });
+                                    }}
+                                />
                             </div>
                             <div className={`picker ${this.state.picker === 3 ? 'active' : ''}`}>
                                 <Row className="relative-stamps ">
                                     <Col md={6} className="from">
                                         <Row className="no-row">
                                             <Col md={6}>From</Col>
-                                        <Col md={6} className="set-to-now">
-                                            {this.renderSetToNow('from')}
-                                        </Col>
+                                            <Col md={6} className="set-to-now">
+                                                {this.renderSetToNow('from')}
+                                            </Col>
                                         </Row>
                                         <div style={{ clear: 'both' }} />
-                                    <div className="time-label">{(this.state.from.now) ? 'Now' : this.state.from.time.format(this.format)}</div>
-                                    <FormGroup controlId="control-6">
+                                        <div className="time-label">{(this.state.from.now) ? 'Now' : this.state.from.time.format(this.format)}</div>
+                                        <FormGroup controlId="control-6">
                                             <InputGroup>
-                                            {this.renderInputField('from')}
-                                            {this.renderDropDownField('from')}
+                                                {this.renderInputField('from')}
+                                                {this.renderDropDownField('from')}
                                             </InputGroup>
                                         </FormGroup>
-                                    {!this.state.from.now && this.renderRounder('from')}
+                                        {!this.state.from.now && this.renderRounder('from')}
                                     </Col>
                                     <Col md={6} className="to">
                                         <Row className="no-gutter">
                                             <Col md={6}>To</Col>
                                             <Col md={6} className="set-to-now">
-                                            {this.renderSetToNow('to')}
+                                                {this.renderSetToNow('to')}
                                             </Col>
                                         </Row>
                                         <div style={{ clear: 'both' }} />
-                                    <div className="time-label">{(this.state.to.now) ? 'Now' : this.state.to.time.format(this.format)}</div>
-                                    <FormGroup controlId="control-7">
+                                        <div className="time-label">{(this.state.to.now) ? 'Now' : this.state.to.time.format(this.format)}</div>
+                                        <FormGroup controlId="control-7">
                                             <InputGroup>
-                                            {this.renderInputField('to')}
-                                            {this.renderDropDownField('to')}
+                                                {this.renderInputField('to')}
+                                                {this.renderDropDownField('to')}
                                             </InputGroup>
                                         </FormGroup>
-                                    {!this.state.to.now && this.renderRounder('to')}
+                                        {!this.state.to.now && this.renderRounder('to')}
                                     </Col>
                                 </Row>
-                            <Row>
-                                <div style={{ textAlign: 'center', padding: '15px 15px 0px', borderTop: '1px solid #e9e9e9', marginTop: '8px' }}>
-                                    <a
-                                        href="#"
-                                    >
-                                        Submit
-                                    </a>
-                                </div>
-                            </Row>
+                                <Row>
+                                    <div style={{ textAlign: 'center', padding: '15px 15px 0px', borderTop: '1px solid #e9e9e9', marginTop: '8px' }}>
+                                        <a
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                const from = (this.state.from.now) ? moment() : this.state.from.time;
+                                                const to = (this.state.to.now) ? moment() : this.state.to.time;
+                                                if (from.unix() > to.unix()) {
+                                                    /* eslint-disable-next-line no-alert */
+                                                    alert(`From cannot be greater than To! \nCurrent selected dates: \nFrom: ${from.format(this.format)} \nTo: ${to.format(this.format)}`);
+                                                } else {
+                                                    this.props.setTimeSpan({
+                                                        fromDate: (this.state.from.now) ? 0 : from.unix() * 1000,
+                                                        toDate: (this.state.to.now) ? 0 : to.unix() * 1000,
+                                                    });
+                                                }
+                                            }}
+                                        >
+                                            Submit
+                                        </a>
+                                    </div>
+                                </Row>
                             </div>
                         </div>
                     </OutsideClickHandler>
@@ -241,5 +270,17 @@ export default class TimeSpanItem extends React.Component {
 }
 
 TimeSpanItem.propTypes = {
+    setTimeSpan: PropTypes.func,
+    setDuration: PropTypes.func,
     period: PropTypes.any,
 };
+
+const mapDispatchToProps = (dispatch) => ({
+    setTimeSpan: (timespan) => dispatch(filterTimeSpanSet(timespan)),
+    setDuration: (duration) => dispatch(filterDurationSet(duration)),
+});
+
+const withConnect = connect(null, mapDispatchToProps);
+const withReducer = injectReducer({ key: 'filterParams', reducer });
+
+export default compose(withReducer, withConnect)(TimeSpanItem);
