@@ -166,62 +166,62 @@ export default class TimeSpanItem extends React.Component {
 
                 {this.state.timeSpanPicker && <div className="timespan-picker">
                     <OutsideClickHandler onOutsideClick={() => this.setState((prevState) => ({ timeSpanPicker: !prevState.timeSpanPicker }))}>
-                    <ul className="time-pickers">
-                        <li><a href="#" className={`picker ${this.state.picker === 1 ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: 1 })}>Predefined</a></li>
-                        <li><a href="#" className={`picker ${this.state.picker === 2 ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: 2 })}>Absolute</a></li>
-                        <li><a href="#" className={`picker ${this.state.picker === 3 ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: 3 })}>Relative</a></li>
-                    </ul>
-                    <div style={{ clear: 'both' }} />
-                    <div className="pickers-content">
-                        <div className={`picker ${this.state.picker === 1 ? 'active' : ''}`}>
-                            <ul className="hardcoded-stamps">
+                        <ul className="time-pickers">
+                            <li><a href="#" className={`picker ${this.state.picker === 1 ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: 1 })}>Predefined</a></li>
+                            <li><a href="#" className={`picker ${this.state.picker === 2 ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: 2 })}>Absolute</a></li>
+                            <li><a href="#" className={`picker ${this.state.picker === 3 ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: 3 })}>Relative</a></li>
+                        </ul>
+                        <div style={{ clear: 'both' }} />
+                        <div className="pickers-content">
+                            <div className={`picker ${this.state.picker === 1 ? 'active' : ''}`}>
+                                <ul className="hardcoded-stamps">
                                 {Object.keys(USER_PERIODS).map((period) => (<li key={period}>
                                     <a
                                         href="#"
                                     >Last {USER_PERIODS[period]}</a></li>))
                                 }
-                            </ul>
-                        </div>
-                        <div className={`picker ${this.state.picker === 2 ? 'active' : ''}`}>
-                            <DateRangePicker />
-                        </div>
-                        <div className={`picker ${this.state.picker === 3 ? 'active' : ''}`}>
-                            <Row className="relative-stamps ">
-                                <Col md={6} className="from">
-                                    <Row className="no-row">
-                                        <Col md={6}>From</Col>
+                                </ul>
+                            </div>
+                            <div className={`picker ${this.state.picker === 2 ? 'active' : ''}`}>
+                                <DateRangePicker />
+                            </div>
+                            <div className={`picker ${this.state.picker === 3 ? 'active' : ''}`}>
+                                <Row className="relative-stamps ">
+                                    <Col md={6} className="from">
+                                        <Row className="no-row">
+                                            <Col md={6}>From</Col>
                                         <Col md={6} className="set-to-now">
                                             {this.renderSetToNow('from')}
                                         </Col>
-                                    </Row>
-                                    <div style={{ clear: 'both' }} />
+                                        </Row>
+                                        <div style={{ clear: 'both' }} />
                                     <div className="time-label">{(this.state.from.now) ? 'Now' : this.state.from.time.format(this.format)}</div>
                                     <FormGroup controlId="control-6">
-                                        <InputGroup>
+                                            <InputGroup>
                                             {this.renderInputField('from')}
                                             {this.renderDropDownField('from')}
-                                        </InputGroup>
-                                    </FormGroup>
+                                            </InputGroup>
+                                        </FormGroup>
                                     {!this.state.from.now && this.renderRounder('from')}
-                                </Col>
-                                <Col md={6} className="to">
-                                    <Row className="no-gutter">
-                                        <Col md={6}>To</Col>
-                                        <Col md={6} className="set-to-now">
+                                    </Col>
+                                    <Col md={6} className="to">
+                                        <Row className="no-gutter">
+                                            <Col md={6}>To</Col>
+                                            <Col md={6} className="set-to-now">
                                             {this.renderSetToNow('to')}
-                                        </Col>
-                                    </Row>
-                                    <div style={{ clear: 'both' }} />
+                                            </Col>
+                                        </Row>
+                                        <div style={{ clear: 'both' }} />
                                     <div className="time-label">{(this.state.to.now) ? 'Now' : this.state.to.time.format(this.format)}</div>
                                     <FormGroup controlId="control-7">
-                                        <InputGroup>
+                                            <InputGroup>
                                             {this.renderInputField('to')}
                                             {this.renderDropDownField('to')}
-                                        </InputGroup>
-                                    </FormGroup>
+                                            </InputGroup>
+                                        </FormGroup>
                                     {!this.state.to.now && this.renderRounder('to')}
-                                </Col>
-                            </Row>
+                                    </Col>
+                                </Row>
                             <Row>
                                 <div style={{ textAlign: 'center', padding: '15px 15px 0px', borderTop: '1px solid #e9e9e9', marginTop: '8px' }}>
                                     <a
@@ -231,8 +231,8 @@ export default class TimeSpanItem extends React.Component {
                                     </a>
                                 </div>
                             </Row>
+                            </div>
                         </div>
-                    </div>
                     </OutsideClickHandler>
                 </div>}
             </li>
