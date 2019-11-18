@@ -1,9 +1,32 @@
 import store from 'store';
+import moment from 'moment';
 
-const timespan = store.get('timespan') || { fromDate: Date.now() - (24 * 3600 * 1000), toDate: Date.now(), duration: 24 * 3600 * 1000 };
+const storedStamp = store.get('timespan');
+const timespan = storedStamp || {
+    duration: 0,
+    fromDate: Date.now() - (24 * 3600 * 1000),
+    toDate: Date.now(),
+    absolute: {
+        from: {
+            id: 0,
+            value: 0,
+            time: moment(),
+            now: false,
+        },
+        to: {
+            id: 0,
+            value: 0,
+            time: moment(),
+            now: false,
+        },
+    }
+};
+if (storedStamp) {
+    timespan.absolute.from.time = moment(timespan.absolute.from.time);
+    timespan.absolute.to.time = moment(timespan.absolute.to.time);
+}
+
 export const defaultFilterParams = {
     hash: '',
-    duration: timespan.duration,
-    fromDate: timespan.fromDate,
-    toDate: timespan.toDate,
+    ...timespan,
 };

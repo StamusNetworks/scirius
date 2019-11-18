@@ -17,8 +17,8 @@ class DateRangePicker extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            startDate: null,
-            endDate: null,
+            startDate: (props.selectedFromDate === null) ? moment() : moment(props.selectedFromDate),
+            endDate: (props.selectedToDate === null) ? moment() : moment(props.selectedToDate),
         }
     }
 
@@ -28,7 +28,7 @@ class DateRangePicker extends React.Component {
         });
     }
 
-    disabledStartDate = (type, current) => {
+    disabledDate = (type, current) => {
         const { endDate, startDate } = this.state;
         if (!current) {
             return false;
@@ -48,21 +48,21 @@ class DateRangePicker extends React.Component {
                 <Calendar
                     className="calendar-start-date"
                     showWeekNumber={false}
-                    showToday
                     format={getFormat(true)}
                     showOk={false}
                     timePicker={timePickerElement}
-                    disabledDate={(value) => this.disabledStartDate('startDate', value)}
+                    value={this.state.startDate}
+                    disabledDate={(value) => this.disabledDate('startDate', value)}
                     onSelect={(value) => this.onStandaloneSelect('startDate', value)}
                 />
                 <Calendar
                     className="calendar-end-date"
                     showWeekNumber={false}
                     format={getFormat(true)}
-                    showToday
                     showOk={false}
                     timePicker={timePickerElement}
-                    disabledDate={(value) => this.disabledStartDate('endDate', value)}
+                    value={this.state.endDate}
+                    disabledDate={(value) => this.disabledDate('endDate', value)}
                     onSelect={(value) => this.onStandaloneSelect('endDate', value)}
                 />
             </div>
@@ -75,6 +75,12 @@ class DateRangePicker extends React.Component {
 
 DateRangePicker.propTypes = {
     onOk: PropTypes.any,
+    selectedFromDate: PropTypes.any,
+    selectedToDate: PropTypes.any,
 }
 
+DateRangePicker.defaultProps = {
+    selectedFromDate: null,
+    selectedToDate: null,
+}
 export default DateRangePicker;

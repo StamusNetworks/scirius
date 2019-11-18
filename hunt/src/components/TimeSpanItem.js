@@ -17,7 +17,8 @@ import DateRangePicker from './DateRangePicker';
 import { filterTimeSpanSet,
     filterDurationSet,
     reducer,
-    makeSelectFilterParam } from '../containers/App/stores/filterParams';
+    makeSelectFilterParam,
+    makeSelectFilterAbsolute } from '../containers/App/stores/filterParams';
 import injectReducer from '../util/injectReducer';
 import { periodShortener, USER_PERIODS } from '../helpers/PeriodShortener';
 
@@ -52,18 +53,7 @@ class TimeSpanItem extends React.Component {
         this.state = {
             picker: PICKERS.PREDEFINED,
             timeSpanPicker: false,
-            from: {
-                id: 0,
-                value: 0,
-                time: moment(),
-                now: false,
-            },
-            to: {
-                id: 0,
-                value: 0,
-                time: moment(),
-                now: false,
-            }
+            ...props.absolute,
         }
     }
 
@@ -183,7 +173,7 @@ class TimeSpanItem extends React.Component {
                                 <ul className="hardcoded-stamps">
                                     {Object.keys(USER_PERIODS).map((period) => (<li key={period}>
                                         <a
-                                            className={this.props.fromDate === period * 1000 ? 'active' : ''}
+                                            className={this.props.duration === period ? 'active' : ''}
                                             href="#"
                                             onClick={() => this.props.setDuration(period)}
                                         >Last {USER_PERIODS[period]}</a></li>))
@@ -192,6 +182,8 @@ class TimeSpanItem extends React.Component {
                             </div>
                             <div className={`picker ${this.state.picker === PICKERS.ABSOLUTE ? 'active' : ''}`}>
                                 <DateRangePicker
+                                    selectedFromDate={this.props.fromDate}
+                                    selectedToDate={this.props.toDate}
                                     onOk={(from, to) => {
                                         this.props.setTimeSpan({
                                             fromDate: from.unix() * 1000,
@@ -252,6 +244,10 @@ class TimeSpanItem extends React.Component {
                                                     this.props.setTimeSpan({
                                                         fromDate: (this.state.from.now) ? 0 : from.unix() * 1000,
                                                         toDate: (this.state.to.now) ? 0 : to.unix() * 1000,
+                                                        absolute: {
+                                                            from: { ...this.state.from },
+                                                            to: { ...this.state.to },
+                                                        }
                                                     });
                                                 }
                                             }}
@@ -275,12 +271,14 @@ TimeSpanItem.propTypes = {
     fromDate: PropTypes.any,
     toDate: PropTypes.any,
     duration: PropTypes.any,
+    absolute: PropTypes.object,
 };
 
 const mapStateToProps = createStructuredSelector({
     fromDate: makeSelectFilterParam('fromDate'),
     toDate: makeSelectFilterParam('toDate'),
     duration: makeSelectFilterParam('duration'),
+    absolute: makeSelectFilterAbsolute(),
 });
 
 const mapDispatchToProps = (dispatch) => ({

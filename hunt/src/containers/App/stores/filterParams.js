@@ -41,7 +41,8 @@ export const reducer = (state = initialState, action) => {
             const timespan = state
             .set('fromDate', action.timeSpan.fromDate)
             .set('toDate', action.timeSpan.toDate)
-            .set('duration', action.timeSpan.duration);
+            .set('absolute', (typeof action.timeSpan.absolute !== 'undefined') ? fromJS(action.timeSpan.absolute) : state.get('absolute'))
+            .set('duration', null);
             store.set('timespan', timespan.toJS());
             return timespan;
         }
@@ -63,4 +64,5 @@ export const reducer = (state = initialState, action) => {
 export const selectFilterParamsStore = (state) => state.get('filterParams', initialState);
 /* eslint-disable no-confusing-arrow */
 export const makeSelectFilterParam = (paramName) => createSelector(selectFilterParamsStore, (globalState) => ((paramName === 'fromDate' || paramName === 'toDate') && globalState.getIn([paramName]) === 0) ? moment() : globalState.getIn([paramName]));
+export const makeSelectFilterAbsolute = () => createSelector(selectFilterParamsStore, (globalState) => globalState.get('absolute').toJS());
 export const makeSelectFilterParams = () => createSelector(selectFilterParamsStore, (globalState) => globalState.toJS());
