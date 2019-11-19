@@ -49,12 +49,14 @@ class FilterList extends React.Component {
     }
 
     saveHandler = () => {
+        const newFilterValue = isNumeric(this.state.newFilterValue) ? parseInt(this.state.newFilterValue, 10) : this.state.newFilterValue;
+
         this.props.editFilter(
             this.props.filterType,
             this.state.filterIdx,
             {
                 label: `${this.state.filterId}: ${this.state.newFilterValue}`,
-                value: this.state.newFilterValue,
+                value: newFilterValue,
                 negated: this.state.newFilterNegated,
                 fullString: !this.state.wildcardMode,
             }
@@ -141,9 +143,7 @@ class FilterList extends React.Component {
                                             type="text"
                                             value={newFilterValue}
                                             onKeyDown={this.keyListener}
-                                            onChange={(e) => this.setState({
-                                                newFilterValue: (isNumeric(e.target.value)) ? parseInt(e.target.value, 10) : e.target.value
-                                            })}
+                                            onChange={(e) => this.setState({ newFilterValue: e.target.value })}
                                             className={'has-error'}
                                         />
                                     </FormGroup>
