@@ -1,1 +1,1 @@
-export { default } from './FilterList'
+export { default, IP_FIELDS } from './FilterList'

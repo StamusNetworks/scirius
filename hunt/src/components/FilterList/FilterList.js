@@ -9,6 +9,10 @@ import isNumeric from '../../helpers/isNumeric';
 import './style.css';
 import { editFilter, removeFilter } from '../../containers/App/stores/global';
 
+
+export const IP_FIELDS = ['src_ip', 'dest_ip', 'alert.source.ip', 'alert.target.ip', 'host_id.ip', 'ip'];
+
+
 class FilterList extends React.Component {
     constructor(props) {
         super(props);
@@ -89,8 +93,8 @@ class FilterList extends React.Component {
 
     render() {
         const newFilterValue = this.state.newFilterValue.toString();
-        const enableWildcard = !['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max',
-            'src_ip', 'dest_ip', 'alert.source.ip', 'alert.target.ip', 'host_id.ip', 'ip'].includes(this.state.filterId);
+        let enableWildcard = !['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filterId);
+        enableWildcard = enableWildcard && !IP_FIELDS.includes(this.state.filterId);
 
         const valid = (!newFilterValue.toString().length || (this.state.wildcardMode && newFilterValue.match(/[\s]+/g)) ? 'error' : 'success');
         let helperText = '';
