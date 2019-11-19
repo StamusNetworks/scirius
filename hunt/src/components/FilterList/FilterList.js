@@ -87,17 +87,20 @@ class FilterList extends React.Component {
 
     render() {
         const newFilterValue = this.state.newFilterValue.toString();
-        const enableWildcard = !['msg', 'not_in_msg', 'search'].includes(this.state.filterId);
-        const valid = !newFilterValue || (this.state.wildcardMode && enableWildcard && newFilterValue.match(/[\s]+/g)) ? 'error' : 'success';
+        const enableWildcard = !['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max',
+            'src_ip', 'dest_ip', 'alert.source.ip', 'alert.target.ip', 'host_id.ip', 'ip'].includes(this.state.filterId);
+
+        const valid = (!newFilterValue.toString().length || (this.state.wildcardMode && newFilterValue.match(/[\s]+/g)) ? 'error' : 'success');
         let helperText = '';
-        if (['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filterId)) {
+        if (['msg', 'not_in_msg', 'search', 'not_in_content'].includes(this.state.filterId)) {
             helperText = 'Case insensitive substring match.';
+        } else if (['hits_min', 'hits_max'].includes(this.state.filterId)) {
+            helperText = '';
         } else if (this.state.wildcardMode) {
             helperText = <React.Fragment>Wildcard characters (<i style={{ padding: '0px 5px', background: '#e0e0e0', margin: '0 2px' }}>*</i> and <i style={{ padding: '0px 5px', background: '#e0e0e0', margin: '0 2px' }}>?</i>) can match on word boundaries.<br />No spaces allowed.</React.Fragment>;
         } else {
             helperText = 'Exact match'
         }
-        helperText = (!['hits_min', 'hits_max'].includes(this.state.filterId)) ? helperText : '';
 
         return <React.Fragment>
             {/* eslint-disable react/no-array-index-key */}
@@ -154,7 +157,7 @@ class FilterList extends React.Component {
                                     <ControlLabel>Wildcard view</ControlLabel>
                                 </Col>
                                 <Col sm={9}>
-                                    <Checkbox onChange={this.wildcardHandler} onKeyDown={this.keyListener} checked={this.state.wildcardMode && enableWildcard} disabled={(['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max', 'src_ip', 'dest_ip', 'alert.source.ip', 'alert.target.ip', 'host_id.ip', 'ip'].includes(this.state.filterId))} />
+                                    <Checkbox onChange={this.wildcardHandler} onKeyDown={this.keyListener} checked={this.state.wildcardMode && enableWildcard} disabled={!enableWildcard} />
                                 </Col>
                             </FormGroup>
                         </Row>
@@ -164,7 +167,7 @@ class FilterList extends React.Component {
                                     <ControlLabel>Negated</ControlLabel>
                                 </Col>
                                 <Col sm={9}>
-                                    <Checkbox onChange={this.negateHandler} onKeyDown={this.keyListener} checked={this.state.newFilterNegated} disabled={(['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filterId))} />
+                                    <Checkbox onChange={this.negateHandler} onKeyDown={this.keyListener} checked={this.state.newFilterNegated} />
                                 </Col>
                             </FormGroup>
                         </Row>}
