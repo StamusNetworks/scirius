@@ -20,7 +20,7 @@ const getYear = (fromDate, toDate) => (fromDate.year() === toDate.year()) ? [fro
 
 const omitZeroes = (hour, minute, second) => (hour.filter((v) => v !== '00').length === 0 && minute.filter((v) => v !== '00').length === 0 && second.filter((v) => v !== '00').length === 0);
 const dayName = (d) => {
-    switch (parseInt(d, 10)) {
+    switch (parseInt(d, 10) % 10) {
         case 1:
             return `${d}st`;
         case 2:
@@ -38,7 +38,7 @@ export const periodShortener = (fromDate, toDate, duration) => {
 
     let resultFinal = '';
     if (duration !== null) {
-        resultFinal = `Last ${USER_PERIODS[from.unix()]}`;
+        resultFinal = `Last ${USER_PERIODS[duration]}`;
     } else {
         const year = getYear(from, to);
         const month = getMonth(from, to);

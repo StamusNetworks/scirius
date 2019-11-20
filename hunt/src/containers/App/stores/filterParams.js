@@ -2,7 +2,7 @@ import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
 import moment from 'moment';
 import store from 'store';
-import { defaultFilterParams } from 'hunt_common/stores/filterParamsDefault';
+import { absolute, defaultFilterParams } from 'hunt_common/stores/filterParamsDefault';
 
 export const FILTER_PARAMS_SET = 'Hunt/App/FILTER_PARAM_SET';
 export const FILTER_TIMESPAN_SET = 'Hunt/App/FILTER_TIMESPAN_SET';
@@ -41,7 +41,7 @@ export const reducer = (state = initialState, action) => {
             const timespan = state
             .set('fromDate', action.timeSpan.fromDate)
             .set('toDate', action.timeSpan.toDate)
-            .set('absolute', (typeof action.timeSpan.absolute !== 'undefined') ? fromJS(action.timeSpan.absolute) : state.get('absolute'))
+            .set('absolute', fromJS((typeof action.timeSpan.absolute !== 'undefined') ? action.timeSpan.absolute : absolute))
             .set('duration', null);
             store.set('timespan', timespan.toJS());
             return timespan;
@@ -51,7 +51,8 @@ export const reducer = (state = initialState, action) => {
             const timespan = state
             .set('duration', action.duration)
             .set('fromDate', null)
-            .set('toDate', null);
+            .set('toDate', null)
+            .set('absolute', fromJS(absolute));
             store.set('timespan', timespan.toJS());
             return timespan;
         }

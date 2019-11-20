@@ -57,6 +57,19 @@ class TimeSpanItem extends React.Component {
         }
     }
 
+    componentDidUpdate(prevProps) {
+        if (JSON.stringify(prevProps.absolute) !== JSON.stringify(this.props.absolute) && JSON.stringify(this.props.absolute) !== JSON.stringify({ from: this.state.from, to: this.state.to })) {
+            this.updateState();
+        }
+    }
+
+    updateState = () => {
+        this.setState({
+            from: this.props.absolute.from,
+            to: this.props.absolute.to,
+        })
+    }
+
     renderInputField = (type) => (
         <FormControl
             type="number"
@@ -163,7 +176,7 @@ class TimeSpanItem extends React.Component {
                 {this.state.timeSpanPicker && <div className="timespan-picker">
                     <OutsideClickHandler onOutsideClick={() => this.setState((prevState) => ({ timeSpanPicker: !prevState.timeSpanPicker }))}>
                         <ul className="time-pickers">
-                            <li><a href="#" className={`picker ${this.state.picker === PICKERS.PREDEFINED ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: PICKERS.PREDEFINED })}>Predefined</a></li>
+                            <li><a href="#" className={`picker ${this.state.picker === PICKERS.PREDEFINED ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: PICKERS.PREDEFINED })}>Quick</a></li>
                             <li><a href="#" className={`picker ${this.state.picker === PICKERS.ABSOLUTE ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: PICKERS.ABSOLUTE })}>Absolute</a></li>
                             <li><a href="#" className={`picker ${this.state.picker === PICKERS.RELATIVE ? 'active' : ''}`} onMouseOver={() => this.setState({ picker: PICKERS.RELATIVE })}>Relative</a></li>
                         </ul>
