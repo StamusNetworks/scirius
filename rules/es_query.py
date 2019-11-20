@@ -258,7 +258,7 @@ class ESQuery(object):
             if after:
                 _query['aggregations'].values()[0]['composite']['after'] = after
 
-            _query['aggregations'].values()[0]['composite']['size'] = 1000
+            _query['aggregations'].values()[0]['composite']['size'] = 10000
             query = bytearray(json.dumps(_query), encoding='utf-8')
 
             data = self._urlopen(es_url, query)
