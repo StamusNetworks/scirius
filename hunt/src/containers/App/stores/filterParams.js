@@ -1,6 +1,5 @@
 import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
-import moment from 'moment';
 import store from 'store';
 import { absolute, defaultFilterParams } from 'hunt_common/stores/filterParamsDefault';
 
@@ -50,8 +49,8 @@ export const reducer = (state = initialState, action) => {
         case FILTER_DURATION_SET: {
             const timespan = state
             .set('duration', action.duration)
-            .set('fromDate', null)
-            .set('toDate', null)
+            .set('fromDate', Math.round(Date.now() / 1000) - action.duration)
+            .set('toDate', Math.round(Date.now() / 1000))
             .set('absolute', fromJS(absolute));
             store.set('timespan', timespan.toJS());
             return timespan;
@@ -64,6 +63,6 @@ export const reducer = (state = initialState, action) => {
 
 export const selectFilterParamsStore = (state) => state.get('filterParams', initialState);
 /* eslint-disable no-confusing-arrow */
-export const makeSelectFilterParam = (paramName) => createSelector(selectFilterParamsStore, (globalState) => ((paramName === 'fromDate' || paramName === 'toDate') && globalState.getIn([paramName]) === 0) ? moment() : globalState.getIn([paramName]));
+export const makeSelectFilterParam = (paramName) => createSelector(selectFilterParamsStore, (globalState) => globalState.getIn([paramName]));
 export const makeSelectFilterAbsolute = () => createSelector(selectFilterParamsStore, (globalState) => globalState.get('absolute').toJS());
 export const makeSelectFilterParams = () => createSelector(selectFilterParamsStore, (globalState) => globalState.toJS());

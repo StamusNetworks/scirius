@@ -19,22 +19,11 @@ const getMonth = (fromDate, toDate) => (fromDate.year() === toDate.year() && fro
 const getYear = (fromDate, toDate) => (fromDate.year() === toDate.year()) ? [fromDate.format('YYYY')] : [fromDate.format('YYYY'), toDate.format('YYYY')];
 
 const omitZeroes = (hour, minute, second) => (hour.filter((v) => v !== '00').length === 0 && minute.filter((v) => v !== '00').length === 0 && second.filter((v) => v !== '00').length === 0);
-const dayName = (d) => {
-    switch (parseInt(d, 10) % 10) {
-        case 1:
-            return `${d}st`;
-        case 2:
-            return `${d}nd`;
-        case 3:
-            return `${d}rd`;
-        default:
-            return `${d}th`;
-    }
-}
+const dayName = (n) => `${n}${['st', 'nd', 'rd'][((((parseInt(n, 10) + 90) % 100) - 10) % 10) - 1] || 'th'}`;
 
 export const periodShortener = (fromDate, toDate, duration) => {
-    const from = moment(fromDate);
-    const to = moment(toDate);
+    const from = moment(fromDate * 1000);
+    const to = moment(toDate * 1000);
 
     let resultFinal = '';
     if (duration !== null) {

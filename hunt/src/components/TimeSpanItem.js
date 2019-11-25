@@ -199,8 +199,8 @@ class TimeSpanItem extends React.Component {
                                     selectedToDate={this.props.toDate}
                                     onOk={(from, to) => {
                                         this.props.setTimeSpan({
-                                            fromDate: from.unix() * 1000,
-                                            toDate: to.unix() * 1000,
+                                            fromDate: from.unix(),
+                                            toDate: to.unix(),
                                         });
                                     }}
                                 />
@@ -255,8 +255,8 @@ class TimeSpanItem extends React.Component {
                                                     alert(`From cannot be greater than To! \nCurrent selected dates: \nFrom: ${from.format(this.format)} \nTo: ${to.format(this.format)}`);
                                                 } else {
                                                     this.props.setTimeSpan({
-                                                        fromDate: (this.state.from.now) ? 0 : from.unix() * 1000,
-                                                        toDate: (this.state.to.now) ? 0 : to.unix() * 1000,
+                                                        fromDate: (this.state.from.now) ? 0 : from.unix(),
+                                                        toDate: (this.state.to.now) ? 0 : to.unix(),
                                                         absolute: {
                                                             from: { ...this.state.from },
                                                             to: { ...this.state.to },

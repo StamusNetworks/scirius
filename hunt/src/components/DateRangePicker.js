@@ -17,8 +17,8 @@ class DateRangePicker extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            startDate: (props.selectedFromDate === null) ? moment() : moment(props.selectedFromDate),
-            endDate: (props.selectedToDate === null) ? moment() : moment(props.selectedToDate),
+            startDate: (props.selectedFromDate === null) ? moment() : moment(props.selectedFromDate * 1000),
+            endDate: (props.selectedToDate === null) ? moment() : moment(props.selectedToDate * 1000),
         }
     }
 
@@ -34,10 +34,10 @@ class DateRangePicker extends React.Component {
             return false;
         }
         if (type === 'startDate' && endDate !== null) {
-            return current.valueOf() > endDate.valueOf(); // can not select days before today
+            return current.valueOf() * 1000 > endDate.valueOf() * 1000; // can not select days before today
         }
         if (type === 'endDate' && startDate !== null) {
-            return current.valueOf() < startDate.valueOf(); // can not select days before today
+            return current.valueOf() * 1000 < startDate.valueOf() * 1000; // can not select days before today
         }
         return false;
     }
