@@ -184,7 +184,7 @@ export default class App extends Component {
     }
 
     needReload() {
-        this.props.filterParamsSet('hash', Math.random());
+        this.props.reload();
     }
 
     fromDate = (period) => {
@@ -303,6 +303,7 @@ export default class App extends Component {
                                     interval={this.state.interval}
                                     switchPage={this.switchPage}
                                     needReload={this.needReload}
+                                    duration={this.props.duration}
                                 />
                             </ErrorHandler>
                         </VerticalNav.IconBar>
@@ -366,5 +367,6 @@ App.childContextTypes = {
 };
 
 App.propTypes = {
-    filterParamsSet: PropTypes.func.isRequired
+    reload: PropTypes.func.isRequired,
+    duration: PropTypes.any,
 }

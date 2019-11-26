@@ -6,6 +6,7 @@ import { absolute, defaultFilterParams } from 'hunt_common/stores/filterParamsDe
 export const FILTER_PARAMS_SET = 'Hunt/App/FILTER_PARAM_SET';
 export const FILTER_TIMESPAN_SET = 'Hunt/App/FILTER_TIMESPAN_SET';
 export const FILTER_DURATION_SET = 'Hunt/App/FILTER_DURATION_SET';
+export const TIMESTAMP_RELOAD = 'Hunt/App/TIMESTAMP_RELOAD';
 
 export function filterParamsSet(paramName, paramValue) {
     return {
@@ -26,6 +27,11 @@ export function filterDurationSet(duration) {
     return {
         type: FILTER_DURATION_SET,
         duration
+    };
+}
+export function reload() {
+    return {
+        type: TIMESTAMP_RELOAD,
     };
 }
 
@@ -52,6 +58,14 @@ export const reducer = (state = initialState, action) => {
             .set('fromDate', Math.round(Date.now() / 1000) - action.duration)
             .set('toDate', Math.round(Date.now() / 1000))
             .set('absolute', fromJS(absolute));
+            store.set('timespan', timespan.toJS());
+            return timespan;
+        }
+
+        case TIMESTAMP_RELOAD: {
+            const timespan = state
+            .set('fromDate', Math.round(Date.now() / 1000) - state.get('duration'))
+            .set('toDate', Math.round(Date.now() / 1000))
             store.set('timespan', timespan.toJS());
             return timespan;
         }

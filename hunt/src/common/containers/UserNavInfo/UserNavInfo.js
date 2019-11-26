@@ -138,7 +138,7 @@ export default class UserNavInfo extends Component {
                     </div>
                 </li>
 
-                <Dropdown componentClass="li" id="timeinterval">
+                {parseInt(this.props.duration, 10) > 0 && <Dropdown componentClass="li" id="timeinterval">
                     <Dropdown.Toggle useAnchor className="nav-item-iconic">
                         <Icon type="fa" name="clock-o" /> Refresh Interval {REFRESH_INTERVAL[this.props.interval]}
                     </Dropdown.Toggle>
@@ -147,7 +147,7 @@ export default class UserNavInfo extends Component {
                             <MenuItem key={interval} onClick={() => this.props.ChangeRefreshInterval(interval)}>{REFRESH_INTERVAL[interval]}</MenuItem>
                         ), this)}
                     </Dropdown.Menu>
-                </Dropdown>
+                </Dropdown>}
 
                 <li>
                     <a tabIndex={0} id="refreshtime" role="button" className="nav-item-iconic" onClick={this.props.needReload}>
@@ -289,4 +289,5 @@ UserNavInfo.propTypes = {
     needReload: PropTypes.any,
     ChangeRefreshInterval: PropTypes.any,
     switchPage: PropTypes.any,
+    duration: PropTypes.any,
 };

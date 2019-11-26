@@ -19,7 +19,7 @@ export const absolute = {
 };
 
 const timespan = storedStamp || {
-    duration: 0,
+    duration: '86400',
     fromDate: parseInt((Date.now() - (24 * 3600 * 1000)) / 1000, 10),
     toDate: parseInt(Date.now() / 1000, 10),
     absolute,
