@@ -76,7 +76,6 @@ export const reducer = (state = initialState, action) => {
 }
 
 export const selectFilterParamsStore = (state) => state.get('filterParams', initialState);
-/* eslint-disable no-confusing-arrow */
 export const makeSelectFilterParam = (paramName) => createSelector(selectFilterParamsStore, (globalState) => globalState.getIn([paramName]));
 export const makeSelectFilterAbsolute = () => createSelector(selectFilterParamsStore, (globalState) => globalState.get('absolute').toJS());
 export const makeSelectFilterParams = () => createSelector(selectFilterParamsStore, (globalState) => globalState.toJS());

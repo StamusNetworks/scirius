@@ -40,7 +40,7 @@ const RuleInList = (props) => {
                         <div className="row">
                             <div className="col-md-12">
                                 <SciriusChart data={props.data.timeline}
-                                    axis={{ x: { min: props.filterParams.fromDate } }}
+                                    axis={{ x: { min: props.filterParams.fromDate, max: props.filterParams.toDate } }}
                                 />
                             </div>
                         </div>

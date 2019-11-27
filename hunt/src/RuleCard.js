@@ -47,7 +47,7 @@ const RuleCard = (props) => {
                             <ErrorHandler>
                                 <SciriusChart data={props.data.timeline}
                                     axis={{
-                                        x: { show: false, min: props.filterParams.fromDate },
+                                        x: { show: false, min: props.filterParams.fromDate, max: props.filterParams.toDate },
                                         y: { show: false }
                                     }}
                                     legend={{ show: false }}

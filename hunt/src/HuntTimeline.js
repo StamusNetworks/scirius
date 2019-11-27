@@ -82,7 +82,7 @@ export default class HuntTimeline extends React.Component {
         return (
             <div style={{ ...this.props.style }}>
                 {this.state.data && <ErrorHandler><SciriusChart data={this.state.data}
-                    axis={{ x: { min: this.props.filterParams.fromDate } }}
+                    axis={{ x: { min: this.props.filterParams.fromDate, max: this.props.filterParams.toDate } }}
                     padding={{ bottom: 15 }}
                     size={{ height: 200 }}
                 /></ErrorHandler>}

@@ -43,7 +43,6 @@ export default class SciriusChart extends React.Component {
                 x: {
                     type: 'timeseries',
                     localtime: true,
-                    max: Date.now(),
                     show: true,
                     tick: {
                         outer: false,

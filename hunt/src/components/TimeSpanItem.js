@@ -126,7 +126,7 @@ class TimeSpanItem extends React.Component {
                     }
                 })
             }}
-        >{(this.state[type].now) ? '×' : 'Set to now'}</a>
+        >{(this.state[type].now) ? 'x' : 'Set to now'}</a>
     );
 
     renderRounder = (type) => (
