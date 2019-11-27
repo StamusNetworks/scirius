@@ -10,7 +10,8 @@ import './style.css';
 import { editFilter, removeFilter } from '../../containers/App/stores/global';
 
 
-export const IP_FIELDS = ['src_ip', 'dest_ip', 'alert.source.ip', 'alert.target.ip', 'host_id.ip', 'ip'];
+export const IP_FIELDS = ['src_ip', 'dest_ip', 'alert.source.ip', 'alert.target.ip', 'host_id.ip', 'ip', 'dns.rdata', 'dns.answers.rdata', 'dns.grouped.A',
+    'dns.grouped.AAAA'];
 
 
 class FilterList extends React.Component {
