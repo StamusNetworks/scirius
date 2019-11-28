@@ -3,12 +3,12 @@ import moment from 'moment';
 
 // seconds in labels
 export const USER_PERIODS = {
-    3600: '1h',
-    21600: '6h',
-    86400: '24h',
-    172800: '2d',
-    604800: '7d',
-    2592000: '30d'
+    3600000: '1h',
+    21600000: '6h',
+    86400000: '24h',
+    172800000: '2d',
+    604800000: '7d',
+    2592000000: '30d'
 };
 
 const getSecond = (fromDate, toDate) => [fromDate.format('ss'), toDate.format('ss')];
@@ -22,8 +22,8 @@ const omitZeroes = (hour, minute, second) => (hour.filter((v) => v !== '00').len
 const dayName = (n) => `${n}${['st', 'nd', 'rd'][((((parseInt(n, 10) + 90) % 100) - 10) % 10) - 1] || 'th'}`;
 
 export const periodShortener = (fromDate, toDate, duration) => {
-    const from = moment(fromDate * 1000);
-    const to = moment(toDate * 1000);
+    const from = moment(fromDate);
+    const to = moment(toDate);
 
     let resultFinal = '';
     if (duration !== null) {

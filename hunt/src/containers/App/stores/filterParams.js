@@ -55,8 +55,8 @@ export const reducer = (state = initialState, action) => {
         case FILTER_DURATION_SET: {
             const timespan = state
             .set('duration', action.duration)
-            .set('fromDate', Math.round(Date.now() / 1000) - action.duration)
-            .set('toDate', Math.round(Date.now() / 1000))
+            .set('fromDate', Date.now() - action.duration)
+            .set('toDate', Date.now())
             .set('absolute', fromJS(absolute));
             store.set('timespan', timespan.toJS());
             return timespan;
@@ -64,8 +64,8 @@ export const reducer = (state = initialState, action) => {
 
         case TIMESTAMP_RELOAD: {
             const timespan = state
-            .set('fromDate', Math.round(Date.now() / 1000) - state.get('duration'))
-            .set('toDate', Math.round(Date.now() / 1000))
+            .set('fromDate', Math.round(Date.now() - state.get('duration') * 1000))
+            .set('toDate', Date.now());
             store.set('timespan', timespan.toJS());
             return timespan;
         }
