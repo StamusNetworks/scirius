@@ -88,7 +88,7 @@ class FilterList extends React.Component {
     render() {
         const newFilterValue = this.state.newFilterValue.toString();
         const enableWildcard = !['msg', 'not_in_msg', 'search'].includes(this.state.filterId);
-        const valid = (!newFilterValue.toString().length || (this.state.wildcardMode && newFilterValue.match(/[\s]+/g)) ? 'error' : 'success');
+        const valid = !newFilterValue || (this.state.wildcardMode && enableWildcard && newFilterValue.match(/[\s]+/g)) ? 'error' : 'success';
         let helperText = '';
         if (['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filterId)) {
             helperText = 'Case insensitive substring match.';
