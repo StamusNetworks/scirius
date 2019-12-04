@@ -461,7 +461,7 @@ export class HuntDashboard extends React.Component {
                                 <ErrorHandler>
                                     <EventValue field={block.i}
                                         value={item.key}
-                                        magnifiers={!this.state.copyMode || this.state.hoveredItem !== itemPath}
+                                        magnifiers={(!this.state.copyMode || this.state.hoveredItem !== itemPath) && item.key !== 'Unknown'}
                                         right_info={<Badge>{item.doc_count}</Badge>}
                                         hasCopyShortcut
                                     />
