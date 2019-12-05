@@ -133,6 +133,9 @@ class ESQuery(object):
         if self.request:
             if 'hosts' in self.request.GET:
                 hosts_list = self.request.GET['hosts'].split(',')
+            else:
+                if 'hosts' in dictionary:
+                    hosts_list = dictionary['hosts'].split(',')
             if 'qfilter' in self.request.GET:
                 qfilter = self.request.GET['qfilter']
 
@@ -180,6 +183,7 @@ class ESQuery(object):
             'bool_clauses': bool_clauses,
             'interval': unicode(self._interval()) + 'ms'
         })
+
         return bytearray(templ.render(context), encoding="utf-8")
 
     def _urlopen(self, url, data=None, method=None, contenttype='application/json'):
