@@ -822,6 +822,22 @@ class Source(models.Model):
             sversion = SourceAtVersion.objects.create(source = self, version = version,
                                                     updated_date = self.updated_date, git_version = version)
 
+    def _check_category_ids(self, f, filename, field_no):
+        # Check the file object in argument does not contain category ids < 20
+        for line_no, line in enumerate(f.readlines()):
+            try:
+                line = line.strip()
+
+                if not line or line.startswith('#'):
+                    continue
+                fields = line.split(',')
+
+                cat_no = int(fields[field_no])
+                if cat_no < 20:
+                    raise Exception('Invalid category %i in %s (line %i): category < 20 are reserved to Scirius' % (cat_no, filename, line_no + 1))
+            except (IndexError, ValueError):
+                raise Exception('Invalid syntax in file %s (line %i)' % (filename, line_no + 1))
+
     def handle_rules_in_tar(self, f):
         f.seek(0)
         if (not tarfile.is_tarfile(f.name)):
@@ -852,6 +868,14 @@ class Source(models.Model):
                 dir_list.append(member)
                 rules_dir = member.name
             if member.isfile() and member.name.split('/')[-2] == 'rules':
+                dir_list.append(member)
+            if member.isfile() and member.name.endswith('categories.txt'):
+                f = tfile.extractfile(member.name)
+                self._check_category_ids(f, member.name, 0)
+                dir_list.append(member)
+            if member.isfile() and member.name.endswith('.list'):
+                f = tfile.extractfile(member.name)
+                self._check_category_ids(f, member.name, 1)
                 dir_list.append(member)
         if rules_dir == None:
             raise SuspiciousOperation("Tar file does not contain a 'rules' directory")
@@ -1013,6 +1037,8 @@ class Source(models.Model):
     def export_files(self, directory, version):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
         repo = git.Repo(source_git_dir)
+        cats_content = ''
+        iprep_content = ''
         with tempfile.TemporaryFile(dir=self.TMP_DIR) as f:
             repo.archive(f, treeish=version)
             f.seek(0)
@@ -1027,9 +1053,16 @@ class Source(models.Model):
                 # don't copy original rules file to dest
                 if member.name.endswith('.rules') and not self.datatype == 'other':
                     continue
+                if member.name.endswith('categories.txt') and not self.datatype == 'other':
+                    cats_content = tfile.extractfile(member).read()
+                    continue
+                if member.name.endswith('.list') and not self.datatype == 'other':
+                    iprep_content = tfile.extractfile(member).read()
+                    continue
                 if member.isfile():
                     member.name = os.path.join(*member.name.split("/", 2)[1:])
                     mfile = tfile.extract(member, path=directory)
+        return cats_content, iprep_content
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
@@ -1146,7 +1179,7 @@ class SourceAtVersion(models.Model):
             )
 
     def export_files(self, directory):
-        self.source.export_files(directory, self.version)
+        return self.source.export_files(directory, self.version)
 
     def to_buffer(self):
         categories = Category.objects.filter(source = self.source)
@@ -1160,7 +1193,7 @@ class SourceAtVersion(models.Model):
     def test_rule_buffer(self, rule_buffer, single = False):
         testor = TestRules()
         tmpdir = tempfile.mkdtemp()
-        self.export_files(tmpdir)
+        cats_content, iprep_content = self.export_files(tmpdir)
         related_files = {}
         for root, _, files in os.walk(tmpdir):
             for f in files:
@@ -1169,7 +1202,7 @@ class SourceAtVersion(models.Model):
                     with open(fullpath, 'r') as cf:
                         related_files[f] = cf.read()
         shutil.rmtree(tmpdir)
-	return testor.check_rule_buffer(rule_buffer, related_files=related_files, single=single)
+	return testor.check_rule_buffer(rule_buffer, related_files=related_files, single=single, cats_content=cats_content, iprep_content=iprep_content)
 
     def test(self):
         rule_buffer = self.to_buffer()
@@ -2767,10 +2800,21 @@ class Ruleset(models.Model, Transformable):
         return self
 
     def export_files(self, directory):
+        cats_content = ''
+        iprep_content = ''
         for src in self.sources.all():
-            src.export_files(directory)
+            cats, iprep = src.export_files(directory)
+            if cats_content and cats:
+                cats_content += '\n'
+            cats_content += cats
+
+            if iprep_content and iprep:
+                iprep_content += '\n'
+            iprep_content += iprep
+
         # generate threshold.config
         self.generate_threshold(directory)
+        return cats_content, iprep_content
 
     def diff(self, mode='long'):
         sourcesatversion = self.sources.all()
@@ -2819,7 +2863,7 @@ class Ruleset(models.Model, Transformable):
     def test_rule_buffer(self, rule_buffer, single = False):
         testor = TestRules()
         tmpdir = tempfile.mkdtemp()
-        self.export_files(tmpdir)
+        cats_content, iprep_content = self.export_files(tmpdir)
         related_files = {}
         for root, _, files in os.walk(tmpdir):
             for f in files:
@@ -2827,7 +2871,7 @@ class Ruleset(models.Model, Transformable):
                 with open(fullpath, 'r') as cf:
                     related_files[f] = cf.read( 50 * 1024)
         shutil.rmtree(tmpdir)
-        return testor.check_rule_buffer(rule_buffer, related_files=related_files, single=single)
+        return testor.check_rule_buffer(rule_buffer, related_files=related_files, single=single, cats_content=cats_content, iprep_content=iprep_content)
 
     def test(self):
         self.need_test = False
@@ -3099,7 +3143,7 @@ def dependencies_check(obj):
     if len(Ruleset.objects.all()) == 0:
             return "You need first to create a ruleset."
 
-def export_iprep_files(target_dir):
+def export_iprep_files(target_dir, cats_content, iprep_content):
     group_rules = Rule.objects.filter(group = True)
     cat_map = {}
     with open(target_dir + "/" + "scirius-categories.txt", 'w') as rfile:
@@ -3108,8 +3152,12 @@ def export_iprep_files(target_dir):
             rfile.write('%s,%d,%s\n' % (index, rule.sid, rule.msg))
             cat_map[index] = rule
             index = index + 1
+        if cats_content:
+            rfile.write(cats_content)
     with open(target_dir + "/" + "scirius-iprep.list", 'w') as rfile:
         for cate in cat_map:
             iprep_group = cat_map[cate].sid
             for IP in cat_map[cate].group_ips_list.split(','):
                 rfile.write('%s,%d,100\n' % (IP, cate))
+        if iprep_content:
+            rfile.write(iprep_content)

@@ -58,14 +58,14 @@ class Suricata(models.Model):
         with open(self.output_directory + "/" + "scirius.rules", 'w') as rfile:
             rfile.write(rules.encode('utf-8'))
         # export files at version
-        self.ruleset.export_files(self.output_directory)
+        cats_content, iprep_content = self.ruleset.export_files(self.output_directory)
         # FIXME gruick
         with open(self.output_directory + "/" + "rules.json", 'w') as rfile:
             for rule in Rule.objects.all():
                 dic = {'sid': rule.pk, 'created': unicode(rule.created), 'updated': unicode(rule.updated)}
                 rfile.write(json.dumps(dic) + '\n')
         # Export IPrep
-        export_iprep_files(self.output_directory)
+        export_iprep_files(self.output_directory, cats_content, iprep_content)
 
     def push(self):
         # For now we just create a file asking for reload

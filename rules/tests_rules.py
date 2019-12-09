@@ -213,7 +213,7 @@ config classification: command-and-control,Malware Command and Control Activity 
                     ret['errors'].append(s_err['engine'])
         return ret
 
-    def rule_buffer(self, rule_buffer, config_buffer = None, related_files = None, reference_config = None, classification_config = None):
+    def rule_buffer(self, rule_buffer, config_buffer=None, related_files=None, reference_config=None, classification_config=None, cats_content='', iprep_content=''):
         # create temp directory
         tmpdir = tempfile.mkdtemp()
         # write the rule file in temp dir
@@ -264,7 +264,7 @@ config classification: command-and-control,Malware Command and Control Activity 
             rf.close()
 
         from rules.models import export_iprep_files
-        export_iprep_files(tmpdir)
+        export_iprep_files(tmpdir, cats_content, iprep_content)
             
         suri_cmd = ['suricata', '-T', '-l', tmpdir, '-S', rule_file, '-c', config_file]
         # start suricata in test mode
@@ -284,9 +284,9 @@ config classification: command-and-control,Malware Command and Control Activity 
                 msg['message'] = escape(msg['message'])
         return res
 
-    def check_rule_buffer(self, rule_buffer, config_buffer=None, related_files=None, single=False):
+    def check_rule_buffer(self, rule_buffer, config_buffer=None, related_files=None, single=False, cats_content='', iprep_content=''):
         related_files = related_files or {}
-        prov_result = self.rule_buffer(rule_buffer, config_buffer = config_buffer, related_files = related_files)
+        prov_result = self.rule_buffer(rule_buffer, config_buffer=config_buffer, related_files=related_files, cats_content=cats_content, iprep_content=iprep_content)
         if prov_result['status'] and not prov_result.has_key('warnings'):
             return self._escape_result(prov_result)
         res = self.parse_suricata_error(prov_result['errors'], single = single)
@@ -305,7 +305,7 @@ config classification: command-and-control,Malware Command and Control Activity 
                     modified = True
             if modified == False:
                 break
-            result = self.rule_buffer(rule_buffer, config_buffer = config_buffer, related_files = related_files)
+            result = self.rule_buffer(rule_buffer, config_buffer=config_buffer, related_files=related_files, cats_content=cats_content, iprep_content=iprep_content)
             res = self.parse_suricata_error(result['errors'], single = single)
             prov_result['errors'] = res['errors']
             if len(res['warnings']):
