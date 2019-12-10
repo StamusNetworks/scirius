@@ -63,11 +63,14 @@ export const reducer = (state = initialState, action) => {
         }
 
         case TIMESTAMP_RELOAD: {
-            const timespan = state
-            .set('fromDate', Math.round(Date.now() - state.get('duration') * 1000))
-            .set('toDate', Date.now());
-            store.set('timespan', timespan.toJS());
-            return timespan;
+            if (state.get('duration')) {
+                const timespan = state
+                .set('fromDate', Math.round(Date.now() - state.get('duration')))
+                .set('toDate', Date.now());
+                store.set('timespan', timespan.toJS());
+                return timespan;
+            } // else absolute/relative no refresh
+            return state;
         }
 
         default:
