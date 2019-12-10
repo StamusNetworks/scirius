@@ -2238,7 +2238,11 @@ class ESCheckVersionViewSet(APIView):
 
     def post(self, request, format=None):
         from scirius.utils import get_middleware_module
-        res = get_middleware_module('common').check_es_version(request)
+        res = {}
+        try:
+            res = get_middleware_module('common').check_es_version(request)
+        except (ValueError, ValidationError) as error:
+            res['error'] = 'Invalid hostname or IP, %s' % error
         return Response(res)
 
 
