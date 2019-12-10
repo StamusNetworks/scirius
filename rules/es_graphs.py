@@ -1823,7 +1823,7 @@ class ESAlertsCount(ESQuery):
             from_datetime = datetime.fromtimestamp(self._from_date() / 1000)
             start_datetime = from_datetime - (datetime.now() - from_datetime)
             start_date = mktime(start_datetime.timetuple()) * 1000
-            context['start_date'] = start_date
+            context['start_date'] = int(start_date)
             es_url = self._get_es_url(from_date=start_date)
         else:
             es_url = self._get_es_url()
