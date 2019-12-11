@@ -177,6 +177,7 @@ class ESQuery(object):
             'hosts_filter': hosts_filter,
             'keyword': settings.ELASTICSEARCH_KEYWORD,
             'hostname': settings.ELASTICSEARCH_HOSTNAME,
+            'timestamp': settings.ELASTICSEARCH_TIMESTAMP,
             'from_date': self._from_date(dictionary),
             'to_date': mark_safe(self._to_date(dictionary, es_format=True)), # mark quotes around "now" as safe
             'query_filter': query_filter,

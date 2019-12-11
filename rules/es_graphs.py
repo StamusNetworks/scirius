@@ -87,7 +87,7 @@ def get_top_query():
                           "must": [
                             {
                               "range": {
-                                "@timestamp": {
+                                "{{ timestamp }}": {
                                   "from": {{ from_date }},
                                   "to": {{ to_date }}
                                 }
@@ -130,7 +130,7 @@ def get_top_query():
               },
                     {
                       "range": {
-                         "@timestamp": {
+                         "{{ timestamp }}": {
                             "from": {{ from_date }},
                             "to": {{ to_date }}
                          }
@@ -167,7 +167,7 @@ def get_top_query():
               },
                     {
                       "range": {
-                         "@timestamp": {
+                         "{{ timestamp }}": {
                             "from": {{ from_date }},
                             "to": {{ to_date }}
                          }
@@ -213,7 +213,7 @@ def get_sid_by_host_query():
                           "must": [
                             {
                               "range": {
-                                "@timestamp": {
+                                "{{ timestamp }}": {
                                   "from": {{ from_date }},
                                   "to": {{ to_date }}
                                 }
@@ -251,7 +251,7 @@ def get_sid_by_host_query():
                   "must": [
                     {
                       "range": {
-                         "@timestamp": {
+                         "{{ timestamp }}": {
                             "from": {{ from_date }},
                             "to": {{ to_date }}
                          }
@@ -285,7 +285,7 @@ def get_timeline_by_tags_query():
           },
           {
             "range": {
-              "@timestamp": {
+              "{{ timestamp }}": {
                 "gte": {{ from_date }},
                 "lte": {{ to_date }},
                 "format": "epoch_millis"
@@ -298,7 +298,7 @@ def get_timeline_by_tags_query():
       "aggs": {
         "date": {
           "date_histogram": {
-            "field": "@timestamp",
+            "field": "{{ timestamp }}",
             "interval": "{{ interval }}",
             "min_doc_count": 0
           },
@@ -328,7 +328,7 @@ def get_timeline_query():
         {% for host in hosts %}
             "{{ host }}": {
               "date_histogram": {
-                "field": "@timestamp",
+                "field": "{{ timestamp }}",
                 "interval": "{{ interval }}"
               },
               "global": true,
@@ -346,7 +346,7 @@ def get_timeline_query():
                           "must": [
                             {
                               "range": {
-                                "@timestamp": {
+                                "{{ timestamp }}": {
                                   "from": {{ from_date }},
                                   "to": {{ to_date }}
                                 }
@@ -379,7 +379,7 @@ def get_timeline_query():
               },
                     {
                       "range": {
-                        "@timestamp": {
+                        "{{ timestamp }}": {
                           "gte": {{ from_date }},
                           "lte": {{ to_date }},
                           "format": "epoch_millis"
@@ -393,7 +393,7 @@ def get_timeline_query():
           "aggs": {
             "date": {
               "date_histogram": {
-                "field": "@timestamp",
+                "field": "{{ timestamp }}",
                 "interval": "{{ interval }}",
                 "min_doc_count": 0
               },
@@ -422,7 +422,7 @@ def get_stats_query():
         {% for host in hosts %}
             "{{ host }}": {
               "date_histogram": {
-                "key_field": "@timestamp",
+                "key_field": "{{ timestamp }}",
                 "value_field": "{{ value }}",
                 "interval": "{{ interval }}",
                 "min_doc_count": 0
@@ -442,7 +442,7 @@ def get_stats_query():
                           "must": [
                             {
                               "range": {
-                                "@timestamp": {
+                                "{{ timestamp }}": {
                                   "from": {{ from_date }},
                                   "to": {{ to_date }}
                                 }
@@ -460,7 +460,7 @@ def get_stats_query():
           {% else %}
             "global": {
               "date_histogram": {
-                "key_field": "@timestamp",
+                "key_field": "{{ timestamp }}",
                 "value_field": "{{ value }}",
                 "interval": "{{ interval }}"
               },
@@ -479,7 +479,7 @@ def get_stats_query():
                           "must": [
                             {
                               "range": {
-                                "@timestamp": {
+                                "{{ timestamp }}": {
                                   "from": {{ from_date }},
                                   "to": {{ to_date }}
                                 }
@@ -505,7 +505,7 @@ def get_stats_query():
           "aggs": {
             "date": {
               "date_histogram": {
-                "field": "@timestamp",
+                "field": "{{ timestamp }}",
                 "interval": "{{ interval }}",
                 "min_doc_count": 0
               },
@@ -523,7 +523,7 @@ def get_stats_query():
                   "must": [
                     {
                       "range": {
-                          "@timestamp": {
+                          "{{ timestamp }}": {
                             "from": {{ from_date }},
                             "to": {{ to_date }}
                           }
@@ -553,7 +553,7 @@ def get_stats_query():
           "aggs": {
             "date": {
               "date_histogram": {
-                "field": "@timestamp",
+                "field": "{{ timestamp }}",
                 "interval": "{{ interval }}",
                 "min_doc_count": 0
               },
@@ -571,7 +571,7 @@ def get_stats_query():
                   "must": [
                     {
                       "range": {
-                          "@timestamp": {
+                          "{{ timestamp }}": {
                             "from": {{ from_date }},
                             "to": {{ to_date }}
                           }
@@ -638,7 +638,7 @@ def get_rules_per_category():
                   "must": [
                     {
                       "range": {
-                        "@timestamp": {
+                        "{{ timestamp }}": {
                           "gte": {{ from_date }},
                           "lte": {{ to_date }}
                         }
@@ -697,7 +697,7 @@ def get_rules_per_category():
                   "must": [
                     {
                       "range": {
-                        "@timestamp": {
+                        "{{ timestamp }}": {
                           "gte": {{ from_date }},
                           "lte": {{ to_date }}
 
@@ -726,7 +726,7 @@ def get_alerts_count_per_host():
                   "must": [
                     {
                       "range": {
-                        "@timestamp": {
+                        "{{ timestamp }}": {
                           "gte": {{ from_date }},
                           "lte": {{ to_date }}
 
@@ -756,7 +756,7 @@ def get_alerts_count_per_host():
                   "must": [
                     {
                       "range": {
-                        "@timestamp": {
+                        "{{ timestamp }}": {
                           "gte": {{ from_date }},
                           "lte": {{ to_date }}
 
@@ -786,7 +786,7 @@ def get_alerts_trend_per_host():
           "aggs": {
             "trend": {
               "date_range": {
-                "field": "@timestamp",
+                "field": "{{ timestamp }}",
                 "ranges": [
                   {
                     "from": {{ start_date }},
@@ -804,7 +804,7 @@ def get_alerts_trend_per_host():
                   "must": [
                     {
                       "range": {
-                        "@timestamp": {
+                        "{{ timestamp }}": {
                           "gte": {{ start_date }},
                           "lte": {{ to_date }}
 
@@ -830,7 +830,7 @@ def get_alerts_trend_per_host():
           "aggs": {
             "trend": {
               "date_range": {
-                "field": "@timestamp",
+                "field": "{{ timestamp }}",
                 "ranges": [
                   {
                     "from": {{ start_date }},
@@ -848,7 +848,7 @@ def get_alerts_trend_per_host():
                   "must": [
                     {
                       "range": {
-                        "@timestamp": {
+                        "{{ timestamp }}": {
                           "gte": {{ start_date }},
                           "lte": {{ to_date }}
 
@@ -875,7 +875,7 @@ def get_latest_stats_entry():
           "size": 1,
           "sort": [
             {
-              "@timestamp": {
+              "{{ timestamp }}": {
                 "order": "desc",
                 "unmapped_type": "boolean"
               }
@@ -886,7 +886,7 @@ def get_latest_stats_entry():
                   "must": [
                     {
                       "range": {
-                        "@timestamp": {
+                        "{{ timestamp }}": {
                           "gte": {{ from_date }},
                           "lte": {{ to_date }}
 
@@ -911,7 +911,7 @@ def get_latest_stats_entry():
           "size": 2,
           "sort": [
             {
-              "@timestamp": {
+              "{{ timestamp }}": {
                 "order": "desc",
                 "unmapped_type": "boolean"
               }
@@ -922,7 +922,7 @@ def get_latest_stats_entry():
                   "must": [
                     {
                       "range": {
-                        "@timestamp": {
+                        "{{ timestamp }}": {
                           "gte": {{ from_date }},
                           "lte": {{ to_date }}
 
@@ -953,7 +953,7 @@ def get_ippair_alerts_count():
                   "must": [
                     {
                       "range": {
-                        "@timestamp": {
+                        "{{ timestamp }}": {
                           "gte": {{ from_date }},
                           "lte": {{ to_date }}
 
@@ -1012,7 +1012,7 @@ def get_ippair_alerts_count():
                   "must": [
                     {
                       "range": {
-                        "@timestamp": {
+                        "{{ timestamp }}": {
                           "gte": {{ from_date }},
                           "lte": {{ to_date }}
 
@@ -1072,7 +1072,7 @@ def get_ippair_netinfo_alerts_count():
                   "must": [
                     {
                       "range": {
-                        "@timestamp": {
+                        "{{ timestamp }}": {
                           "gte": {{ from_date }},
                           "lte": {{ to_date }}
 
@@ -1153,7 +1153,7 @@ def get_ippair_netinfo_alerts_count():
                   "must": [
                     {
                       "range": {
-                        "@timestamp": {
+                        "{{ timestamp }}": {
                           "gte": {{ from_date }},
                           "lte": {{ to_date }}
 
@@ -1232,7 +1232,7 @@ ALERTS_TAIL = """
   "size": 100,
   "sort": [
     {
-      "@timestamp": {
+      "{{ timestamp }}": {
         "order": "desc",
         "unmapped_type": "boolean"
       }
@@ -1242,7 +1242,7 @@ ALERTS_TAIL = """
     "bool": {
       "must": [{
           "range": {
-            "@timestamp": {
+            "{{ timestamp }}": {
               "gte": {{ from_date }},
               "lte": {{ to_date }}
 
@@ -1266,7 +1266,7 @@ EVENTS_FROM_FLOW_ID = """
   "size": 100,
   "sort": [
     {
-      "@timestamp": {
+      "{{ timestamp }}": {
         "order": "desc",
         "unmapped_type": "boolean"
       }
@@ -1276,7 +1276,7 @@ EVENTS_FROM_FLOW_ID = """
     "bool": {
       "must": [{
           "range": {
-            "@timestamp": {
+            "{{ timestamp }}": {
               "gte": {{ from_date }},
               "lte": {{ to_date }}
 
@@ -1298,7 +1298,7 @@ SURICATA_LOGS_TAIL = """
 {
   "size": 100,
   "sort": [{
-    "@timestamp": {
+    "{{ timestamp }}": {
       "order": "desc",
       "unmapped_type": "boolean"
     }
@@ -1307,7 +1307,7 @@ SURICATA_LOGS_TAIL = """
     "bool": {
       "must": [{
         "range": {
-          "@timestamp": {
+          "{{ timestamp }}": {
             "gte": {{ from_date }},
             "lte": {{ to_date }}
 
@@ -1332,7 +1332,7 @@ TOP_ALERTS = """
       "must": [
         {
           "range": {
-            "@timestamp": {
+            "{{ timestamp }}": {
               "gte": {{ from_date }},
               "lte": {{ to_date }}
 
@@ -1360,7 +1360,7 @@ TOP_ALERTS = """
       "aggs": {
         "timeline": {
           "date_histogram": {
-            "field": "@timestamp",
+            "field": "{{ timestamp }}",
             "interval": "{{ interval }}",
             "min_doc_count": 0
           }
@@ -1379,7 +1379,7 @@ SIGS_LIST_HITS = """
       "must": [
         {
           "range": {
-            "@timestamp": {
+            "{{ timestamp }}": {
               "gte": {{ from_date }}
             }
           }
@@ -1411,7 +1411,7 @@ SIGS_LIST_HITS = """
       "aggs": {
         "timeline": {
           "date_histogram": {
-            "field": "@timestamp",
+            "field": "{{ timestamp }}",
             "interval": "{{ interval }}",
             "min_doc_count": 0
           }
@@ -1467,7 +1467,7 @@ POSTSTATS_SUMMARY = """
         },
         {
            "range": {
-             "@timestamp": {
+             "{{ timestamp }}": {
                "from": {{ from_date }},
                "to": {{ to_date }}
              }

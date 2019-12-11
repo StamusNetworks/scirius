@@ -236,6 +236,8 @@ ELASTICSEARCH_LOGSTASH_TIMESTAMPING = "daily"
 ELASTICSEARCH_KEYWORD = "raw"
 # Hostname field (usually "hostname" or "host")
 ELASTICSEARCH_HOSTNAME = "host"
+# Timestamp field (usually "@timestamp" or "timestamp")
+ELASTICSEARCH_TIMESTAMP = "@timestamp"
 
 # Kibana
 USE_KIBANA = False
