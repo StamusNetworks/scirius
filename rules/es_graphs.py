@@ -272,52 +272,100 @@ def get_sid_by_host_query():
 
 
 def get_timeline_by_tags_query():
-    return """
-    {
-      "size": 0,
-      "query": {
-        "bool": {
-          "must": [ {
-            "query_string": {
-              "query": "event_type:alert {{ query_filter }}",
-              "analyze_wildcard": false
+    if get_es_major_version() < 7:
+        return """
+        {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [ {
+                "query_string": {
+                  "query": "event_type:alert {{ query_filter }}",
+                  "analyze_wildcard": false
+                }
+              },
+              {
+                "range": {
+                  "{{ timestamp }}": {
+                    "gte": {{ from_date }},
+                    "lte": {{ to_date }},
+                    "format": "epoch_millis"
+                  }
+                }
+              }]
+    {{ bool_clauses }}
             }
-          },
-          {
-            "range": {
-              "{{ timestamp }}": {
-                "gte": {{ from_date }},
-                "lte": {{ to_date }},
-                "format": "epoch_millis"
-              }
-            }
-          }]
-{{ bool_clauses }}
-        }
-      },
-      "aggs": {
-        "date": {
-          "date_histogram": {
-            "field": "{{ timestamp }}",
-            "interval": "{{ interval }}",
-            "min_doc_count": 0
           },
           "aggs": {
-            "host": {
-              "terms": {
-                "field": "alert.tag.{{ keyword }}",
-                "missing": "untagged",
-                "size": 5,
-                "order": {
-                  "_count": "desc"
+            "date": {
+              "date_histogram": {
+                "field": "{{ timestamp }}",
+                "interval": "{{ interval }}",
+                "min_doc_count": 0
+              },
+              "aggs": {
+                "host": {
+                  "terms": {
+                    "field": "alert.tag.{{ keyword }}",
+                    "missing": "untagged",
+                    "size": 5,
+                    "order": {
+                      "_count": "desc"
+                    }
+                  }
                 }
               }
             }
           }
         }
-      }
-    }
-        """
+            """
+    else:
+        return """
+        {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [ {
+                "query_string": {
+                  "query": "event_type:alert {{ query_filter }}",
+                  "analyze_wildcard": false
+                }
+              },
+              {
+                "range": {
+                  "{{ timestamp }}": {
+                    "gte": {{ from_date }},
+                    "lte": {{ to_date }},
+                    "format": "epoch_millis"
+                  }
+                }
+              }]
+    {{ bool_clauses }}
+            }
+          },
+          "aggs": {
+            "date": {
+              "date_histogram": {
+                "field": "{{ timestamp }}",
+                "fixed_interval": "{{ interval }}",
+                "min_doc_count": 0
+              },
+              "aggs": {
+                "host": {
+                  "terms": {
+                    "field": "alert.tag.{{ keyword }}",
+                    "missing": "untagged",
+                    "size": 5,
+                    "order": {
+                      "_count": "desc"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+            """
 
 
 def get_timeline_query():
@@ -365,7 +413,7 @@ def get_timeline_query():
           "size": 0
         }
         """
-    else:
+    elif get_es_major_version() < 7:
         return """
         {
           "size": 0,
@@ -395,6 +443,53 @@ def get_timeline_query():
               "date_histogram": {
                 "field": "{{ timestamp }}",
                 "interval": "{{ interval }}",
+                "min_doc_count": 0
+              },
+              "aggs": {
+                "host": {
+                  "terms": {
+                    "field": "{{ hostname }}.{{ keyword }}",
+                    "size": 5,
+                    "order": {
+                      "_count": "desc"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+            """
+    else:
+        return """
+        {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [ {
+                "query_string": {
+                  "query": "event_type:alert {{ query_filter }}",
+                  "analyze_wildcard": false
+                }
+              },
+                    {
+                      "range": {
+                        "{{ timestamp }}": {
+                          "gte": {{ from_date }},
+                          "lte": {{ to_date }},
+                          "format": "epoch_millis"
+                        }
+                      }
+                    }
+                  ]
+{{ bool_clauses }}
+                }
+          },
+          "aggs": {
+            "date": {
+              "date_histogram": {
+                "field": "{{ timestamp }}",
+                "fixed_interval": "{{ interval }}",
                 "min_doc_count": 0
               },
               "aggs": {
@@ -546,7 +641,7 @@ def get_stats_query():
               }
         }
             """
-    else:
+    elif get_es_major_version() < 7:
         return """
         {
           "size": 0,
@@ -555,6 +650,54 @@ def get_stats_query():
               "date_histogram": {
                 "field": "{{ timestamp }}",
                 "interval": "{{ interval }}",
+                "min_doc_count": 0
+              },
+              "aggs": {
+                "stat": {
+                  "avg": {
+                    "field": "{{ value }}"
+                  }
+                }
+              }
+            }
+          },
+          "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                          "{{ timestamp }}": {
+                            "from": {{ from_date }},
+                            "to": {{ to_date }}
+                          }
+                      }
+                    },
+                {
+                "query_string": {
+              {% if value|slice:":11" != 'eve_insert.' %}{# eve_insert has no host field #}
+                  {# hosts_filter can't be used since metricbeat store the keyword hostname in `host` #}
+                  "query": "{% for host in hosts %}host:{{ host }} {% endfor %} {{ query_filter }}",
+              {% else %}
+                  "query": "tags:metric",
+              {% endif %}
+                  "analyze_wildcard": false
+                }
+              }
+                  ]
+{{ bool_clauses }}
+                }
+              }
+        }
+            """
+    else:
+        return """
+        {
+          "size": 0,
+          "aggs": {
+            "date": {
+              "date_histogram": {
+                "field": "{{ timestamp }}",
+                "fixed_interval": "{{ interval }}",
                 "min_doc_count": 0
               },
               "aggs": {
@@ -1324,110 +1467,220 @@ SURICATA_LOGS_TAIL = """
 """
 
 
-TOP_ALERTS = """
-{
-  "size": 0,
-  "query": {
-    "bool": {
-      "must": [
+def get_top_alerts():
+    if get_es_major_version() < 7:
+        return """
         {
-          "range": {
-            "{{ timestamp }}": {
-              "gte": {{ from_date }},
-              "lte": {{ to_date }}
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "range": {
+                    "{{ timestamp }}": {
+                      "gte": {{ from_date }},
+                      "lte": {{ to_date }}
 
-            }
-          }
-        }, {
-              "query_string": {
-                "query": "event_type:alert {{ query_filter }}",
-                "analyze_wildcard": true
-           }
-        }
-      ]
-{{ bool_clauses }}
-    }
-  },
-  "aggs": {
-    "alerts": {
-      "terms": {
-        "field": "alert.signature_id",
-        "size": {{ count }},
-        "order": {
-          "_count": "{{ order }}"
-        }
-      },
-      "aggs": {
-        "timeline": {
-          "date_histogram": {
-            "field": "{{ timestamp }}",
-            "interval": "{{ interval }}",
-            "min_doc_count": 0
-          }
-        }
-      }
-    }
-  }
-}
-"""
-
-SIGS_LIST_HITS = """
-{
-  "size": 0,
-  "query": {
-    "bool": {
-      "must": [
-        {
-          "range": {
-            "{{ timestamp }}": {
-              "gte": {{ from_date }}
-            }
-          }
-        }, {
-              "query_string": {
-                "query": "event_type:alert {{ query_filter }}",
-                "analyze_wildcard": true
-           }
-        } , {
-            "constant_score" : {
-                "filter" : {
-                    "terms" : { 
-                        "alert.signature_id" : [{{ sids }}]
-                     }
+                    }
+                  }
+                }, {
+                      "query_string": {
+                        "query": "event_type:alert {{ query_filter }}",
+                        "analyze_wildcard": true
+                   }
                 }
+              ]
+        {{ bool_clauses }}
             }
-        }
-      ]
-{{ bool_clauses }}
-    }
-  },
-  "aggs": {
-    "alerts": {
-      "terms": {
-        "field": "alert.signature_id",
-        "size": {{ count }},
-        "min_doc_count": 1
-      },
-      "aggs": {
-        "timeline": {
-          "date_histogram": {
-            "field": "{{ timestamp }}",
-            "interval": "{{ interval }}",
-            "min_doc_count": 0
+          },
+          "aggs": {
+            "alerts": {
+              "terms": {
+                "field": "alert.signature_id",
+                "size": {{ count }},
+                "order": {
+                  "_count": "{{ order }}"
+                }
+              },
+              "aggs": {
+                "timeline": {
+                  "date_histogram": {
+                    "field": "{{ timestamp }}",
+                    "interval": "{{ interval }}",
+                    "min_doc_count": 0
+                  }
+                }
+              }
+            }
           }
-        },
-        "probes": {
-           "terms": {
-               "field": "{{ hostname }}.{{ keyword }}",
-               "size": 10,
-               "min_doc_count": 1
-           }
         }
-      }
-    }
-  }
-}
-"""
+        """
+    else:
+        return """
+        {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "range": {
+                    "{{ timestamp }}": {
+                      "gte": {{ from_date }},
+                      "lte": {{ to_date }}
+
+                    }
+                  }
+                }, {
+                      "query_string": {
+                        "query": "event_type:alert {{ query_filter }}",
+                        "analyze_wildcard": true
+                   }
+                }
+              ]
+        {{ bool_clauses }}
+            }
+          },
+          "aggs": {
+            "alerts": {
+              "terms": {
+                "field": "alert.signature_id",
+                "size": {{ count }},
+                "order": {
+                  "_count": "{{ order }}"
+                }
+              },
+              "aggs": {
+                "timeline": {
+                  "date_histogram": {
+                    "field": "{{ timestamp }}",
+                    "fixed_interval": "{{ interval }}",
+                    "min_doc_count": 0
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
+
+
+def get_sigs_list_hits():
+    if get_es_major_version() < 7:
+        return """
+            {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "{{ timestamp }}": {
+                          "gte": {{ from_date }}
+                        }
+                      }
+                    }, {
+                          "query_string": {
+                            "query": "event_type:alert {{ query_filter }}",
+                            "analyze_wildcard": true
+                       }
+                    } , {
+                        "constant_score" : {
+                            "filter" : {
+                                "terms" : {
+                                    "alert.signature_id" : [{{ sids }}]
+                                 }
+                            }
+                        }
+                    }
+                  ]
+            {{ bool_clauses }}
+                }
+              },
+              "aggs": {
+                "alerts": {
+                  "terms": {
+                    "field": "alert.signature_id",
+                    "size": {{ count }},
+                    "min_doc_count": 1
+                  },
+                  "aggs": {
+                    "timeline": {
+                      "date_histogram": {
+                        "field": "{{ timestamp }}",
+                        "interval": "{{ interval }}",
+                        "min_doc_count": 0
+                      }
+                    },
+                    "probes": {
+                       "terms": {
+                           "field": "{{ hostname }}.{{ keyword }}",
+                           "size": 10,
+                           "min_doc_count": 1
+                       }
+                    }
+                  }
+                }
+              }
+            }
+            """
+    else:
+        return """
+            {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "{{ timestamp }}": {
+                          "gte": {{ from_date }}
+                        }
+                      }
+                    }, {
+                          "query_string": {
+                            "query": "event_type:alert {{ query_filter }}",
+                            "analyze_wildcard": true
+                       }
+                    } , {
+                        "constant_score" : {
+                            "filter" : {
+                                "terms" : {
+                                    "alert.signature_id" : [{{ sids }}]
+                                 }
+                            }
+                        }
+                    }
+                  ]
+            {{ bool_clauses }}
+                }
+              },
+              "aggs": {
+                "alerts": {
+                  "terms": {
+                    "field": "alert.signature_id",
+                    "size": {{ count }},
+                    "min_doc_count": 1
+                  },
+                  "aggs": {
+                    "timeline": {
+                      "date_histogram": {
+                        "field": "{{ timestamp }}",
+                        "fixed_interval": "{{ interval }}",
+                        "min_doc_count": 0
+                      }
+                    },
+                    "probes": {
+                       "terms": {
+                           "field": "{{ hostname }}.{{ keyword }}",
+                           "size": 10,
+                           "min_doc_count": 1
+                       }
+                    }
+                  }
+                }
+              }
+            }
+            """
 
 POSTSTATS_SUMMARY = """
 {
@@ -1961,7 +2214,7 @@ class ESSuriLogTail(ESQuery):
 
 class ESTopRules(ESQuery):
     def get(self, count=20, order="desc"):
-        data = self._render_template(TOP_ALERTS, {'count': count, 'order': order})
+        data = self._render_template(get_top_alerts(), {'count': count, 'order': order})
         es_url = self._get_es_url()
         data = self._urlopen(es_url, data)
         try:
@@ -1973,7 +2226,7 @@ class ESTopRules(ESQuery):
 class ESSigsListHits(ESQuery):
     def get(self, sids, order="desc"):
         count = len(sids.split(','))
-        data = self._render_template(SIGS_LIST_HITS, {'sids': sids, 'count': count})
+        data = self._render_template(get_sigs_list_hits(), {'sids': sids, 'count': count})
         es_url = self._get_es_url()
         data = self._urlopen(es_url, data)
         try:
