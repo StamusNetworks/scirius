@@ -58,52 +58,10 @@
 
 <div role="tabpanel" class="tab-pane fade{% if form_id == 'es' %} in active{% endif %}" id="es">
 <div class="container-fluid">
-<div class="row">
+  <div class="row">
 <div class="col-md-6">
 {% if main_form.use_elasticsearch.value %}
-<form class="form" enctype="multipart/form-data" action="{% url 'system_settings' %}" method="post">
-    {% csrf_token %}
-    <input type='hidden' name='form_id' value='es'>
-    {% bootstrap_label "Erase Elasticsearch data" %}
-    <p class="help-block">
-Clicking on the button will erase all Elasticsearch data except Kibana dashboards.
-</p>
-    {% buttons %}
-        <span id="es_clear">
-	<button type="button" name="clear" class="btn btn-danger">
-            {% bootstrap_icon "trash" %} Clear
-        </button>
-	</span>
-    {% endbuttons %}
-</form>
-<!-- Modal -->
-<div class="modal fade bs-example-modal-sm" id="es_clear_modal" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="UpdateModalLabel">Delete all data</h4>
-      </div>
-      <div class="modal-body" id="update_text">
-        {% if global_settings.custom_elasticsearch %}
-		<div class="alert alert-danger">This will delete all the indexes including data not related to Scirius. Are you sure you want to proceed ?</div>
-        {% endif %}
-        Clicking on <code>Clear</code> will delete all saved data. Click on <code>Cancel</code> to abort.
-      </div>
-      <div class="modal-footer">
-
-<form class="form" enctype="multipart/form-data" action="{% url 'system_settings' %}" method="post">
-    {% csrf_token %}
-    <input type='hidden' name='form_id' value='es'>
-        <button type="submit" name="clear" class="btn btn-danger">
-            {% bootstrap_icon "trash" %} Clear
-	</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-</form>
-      </div>
-    </div>
-  </div>
-</div>
-
+  {% include 'rules/es_clear_all.html' %}
 {% else %}
 Please enable Elasticsearch first.
 {% endif %}
@@ -224,10 +182,6 @@ Please enable Elasticsearch first.
 </div> <!-- tab-content -->
 
 <script type="text/javascript">
-
-$("#es_clear").click(function() {
-	$("#es_clear_modal").modal('show');
-});
 
 $("#clear_dashboards").click(function() {
 	$("#clear_modal").modal('show');
