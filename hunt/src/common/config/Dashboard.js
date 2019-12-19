@@ -500,6 +500,78 @@ export const dashboard = {
                             w: 4, h: 7, x: 4, y: 38
                         },
                     },
+                }, {
+                    i: 'tunnel.src_ip',
+                    title: 'Tunnel Sources IP',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 6, h: 7, x: 0, y: 0
+                        },
+                        md: {
+                            w: 6, h: 7, x: 0, y: 0
+                        },
+                        sm: {
+                            w: 5, h: 7, x: 0, y: 0
+                        },
+                        xs: {
+                            w: 4, h: 7, x: 0, y: 0
+                        },
+                    },
+                }, {
+                    i: 'tunnel.dest_ip',
+                    title: 'Tunnel Destinations IP',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 6, h: 7, x: 6, y: 0
+                        },
+                        md: {
+                            w: 6, h: 7, x: 6, y: 0
+                        },
+                        sm: {
+                            w: 6, h: 7, x: 5, y: 0
+                        },
+                        xs: {
+                            w: 4, h: 7, x: 4, y: 0
+                        },
+                    }
+                }, {
+                    i: 'tunnel.proto',
+                    title: 'Tunnel Protocols',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 5, h: 7, x: 12, y: 0
+                        },
+                        md: {
+                            w: 6, h: 7, x: 12, y: 0
+                        },
+                        sm: {
+                            w: 5, h: 7, x: 11, y: 0
+                        },
+                        xs: {
+                            w: 4, h: 7, x: 0, y: 19
+                        },
+                    }
+                }, {
+                    i: 'tunnel.depth',
+                    title: 'Tunnel Depths',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 5, h: 7, x: 17, y: 0
+                        },
+                        md: {
+                            w: 6, h: 7, x: 18, y: 0
+                        },
+                        sm: {
+                            w: 5, h: 7, x: 11, y: 17
+                        },
+                        xs: {
+                            w: 4, h: 7, x: 4, y: 19
+                        },
+                    }
                 }
             ],
             dimensions: {

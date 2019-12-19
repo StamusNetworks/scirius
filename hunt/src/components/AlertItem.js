@@ -293,6 +293,10 @@ export default class AlertItem extends React.Component {
                                                 <EventField field_name="Network interface" field="in_iface" value={data.in_iface} addFilter={this.addFilter} />
                                             </ErrorHandler>
                                             {data.vlan && <ErrorHandler><EventField field_name="Vlan" field="vlan" value={data.vlan} addFilter={this.addFilter} /></ErrorHandler>}
+                                            {data.tunnel && data.tunnel.src_ip && <ErrorHandler><EventField field_name="Tunnel Source IP" field="tunnel.src_ip" value={data.tunnel.src_ip} addFilter={this.addFilter} /></ErrorHandler>}
+                                            {data.tunnel && data.tunnel.dest_ip && <ErrorHandler><EventField field_name="Tunnel Destination IP" field="tunnel.dest_ip" value={data.tunnel.dest_ip} addFilter={this.addFilter} /></ErrorHandler>}
+                                            {data.tunnel && data.tunnel.proto && <ErrorHandler><EventField field_name="Tunnel Protocol" field="tunnel.proto" value={data.tunnel.proto} addFilter={this.addFilter} /></ErrorHandler>}
+                                            {data.tunnel && data.tunnel.depth && <ErrorHandler><EventField field_name="Tunnel Depth" field="tunnel.depth" value={data.tunnel.depth} addFilter={this.addFilter} /></ErrorHandler>}
                                         </dl>
                                     </div>
                                 </div>

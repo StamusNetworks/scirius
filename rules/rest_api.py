@@ -2029,7 +2029,7 @@ class ESFieldStatsViewSet(ESBaseViewSet):
         filter_ip = request.GET.get('field', 'src_ip')
         count = request.GET.get('page_size', 10)
 
-        if filter_ip not in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status', 'vlan', 'geoip.provider.autonomous_system_number']:
+        if filter_ip not in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status', 'vlan', 'geoip.provider.autonomous_system_number', 'tunnel.depth']:
             filter_ip = filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD
 
         hosts = ESFieldStats(request).get(sid, filter_ip,
