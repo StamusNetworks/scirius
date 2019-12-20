@@ -1169,10 +1169,7 @@ class SourceAtVersion(models.Model):
                     with open(fullpath, 'r') as cf:
                         related_files[f] = cf.read()
         shutil.rmtree(tmpdir)
-        if single:
-            return testor.rule(rule_buffer, related_files = related_files)
-        else:
-            return testor.rules(rule_buffer, related_files = related_files)
+	return testor.check_rule_buffer(rule_buffer, related_files=related_files, single=single)
 
     def test(self):
         rule_buffer = self.to_buffer()
@@ -2830,10 +2827,7 @@ class Ruleset(models.Model, Transformable):
                 with open(fullpath, 'r') as cf:
                     related_files[f] = cf.read( 50 * 1024)
         shutil.rmtree(tmpdir)
-        if single:
-            return testor.rule(rule_buffer, related_files = related_files)
-        else:
-            return testor.rules(rule_buffer, related_files = related_files)
+        return testor.check_rule_buffer(rule_buffer, related_files=related_files, single=single)
 
     def test(self):
         self.need_test = False

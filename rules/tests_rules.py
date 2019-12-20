@@ -284,7 +284,7 @@ config classification: command-and-control,Malware Command and Control Activity 
                 msg['message'] = escape(msg['message'])
         return res
 
-    def check_rule_buffer(self, rule_buffer, config_buffer = None, related_files = None, single = False):
+    def check_rule_buffer(self, rule_buffer, config_buffer=None, related_files=None, single=False):
         related_files = related_files or {}
         prov_result = self.rule_buffer(rule_buffer, config_buffer = config_buffer, related_files = related_files)
         if prov_result['status'] and not prov_result.has_key('warnings'):
@@ -315,12 +315,3 @@ config classification: command-and-control,Malware Command and Control Activity 
         if len(prov_result['errors']) == 0:
             prov_result['status'] = True
         return self._escape_result(prov_result)
-
-    def rule(self, rule_buffer, config_buffer = None, related_files = None):
-        related_files = related_files or {}
-        return self.check_rule_buffer(rule_buffer, config_buffer = config_buffer, related_files = related_files, single = True)
-
-    def rules(self, rule_buffer, config_buffer = None, related_files = None):
-        related_files = related_files or {}
-        return self.check_rule_buffer(rule_buffer, config_buffer = config_buffer, related_files = related_files, single = False)
-
