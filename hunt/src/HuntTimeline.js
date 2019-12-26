@@ -74,7 +74,17 @@ export default class HuntTimeline extends React.Component {
             if (putindrows.length === 1) {
                 putindrows = [];
             }
-            this.setState({ data: { x: 'x', columns: putindrows } });
+
+            const data = { data: { x: 'x', columns: putindrows } };
+
+            if (this.props.chartTarget) {
+                data.data.colors = {
+                    relevant: '#ec7a08',
+                    informational: '#675d5c',
+                    untagged: '#7b1244'
+                };
+            }
+            this.setState(data);
         });
     }
 
