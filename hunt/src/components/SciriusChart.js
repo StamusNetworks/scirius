@@ -59,6 +59,7 @@ export default class SciriusChart extends React.Component {
                         count: 5
                     },
                     min: 0,
+                    padding: { bottom: 0 },
                 },
             },
             padding: {
