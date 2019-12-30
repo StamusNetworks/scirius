@@ -19,7 +19,7 @@ export const absolute = {
 };
 
 const timespan = storedStamp || {
-    duration: '86400',
+    duration: '86400000',
     fromDate: Math.round(Date.now() - (24 * 3600 * 1000)),
     toDate: Date.now(),
     absolute,
