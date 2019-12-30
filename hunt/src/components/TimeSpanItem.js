@@ -120,6 +120,7 @@ class TimeSpanItem extends React.Component {
                     [type]: {
                         ...this.state[type],
                         now: !this.state[type].now,
+                        time: moment(),
                         disabled: true,
                         id: 0,
                         value: 0,
@@ -215,7 +216,7 @@ class TimeSpanItem extends React.Component {
                                             </Col>
                                         </Row>
                                         <div style={{ clear: 'both' }} />
-                                        <div className="time-label">{(this.state.from.now) ? 'Now' : this.state.from.time.format(this.format)}</div>
+                                        <div className="time-label">{this.state.from.time.format(this.format)}</div>
                                         <FormGroup controlId="control-6">
                                             <InputGroup>
                                                 {this.renderInputField('from')}
@@ -232,7 +233,7 @@ class TimeSpanItem extends React.Component {
                                             </Col>
                                         </Row>
                                         <div style={{ clear: 'both' }} />
-                                        <div className="time-label">{(this.state.to.now) ? 'Now' : this.state.to.time.format(this.format)}</div>
+                                        <div className="time-label">{this.state.to.time.format(this.format)}</div>
                                         <FormGroup controlId="control-7">
                                             <InputGroup>
                                                 {this.renderInputField('to')}
@@ -248,16 +249,15 @@ class TimeSpanItem extends React.Component {
                                             href="#"
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                const from = (this.state.from.now) ? moment() : this.state.from.time;
-                                                const to = (this.state.to.now) ? moment() : this.state.to.time;
+                                                const from = this.state.from.time;
+                                                const to = this.state.to.time;
                                                 if (from.unix() > to.unix()) {
                                                     /* eslint-disable-next-line no-alert */
                                                     alert(`From cannot be greater than To! \nCurrent selected dates: \nFrom: ${from.format(this.format)} \nTo: ${to.format(this.format)}`);
                                                 } else {
-                                                    const now = moment().unix() * 1000;
                                                     this.props.setTimeSpan({
-                                                        fromDate: (this.state.from.now) ? now : Math.round(from.unix() * 1000),
-                                                        toDate: (this.state.to.now) ? now : Math.round(to.unix() * 1000),
+                                                        fromDate: Math.round(from.unix() * 1000),
+                                                        toDate: Math.round(to.unix() * 1000),
                                                         absolute: {
                                                             from: { ...this.state.from },
                                                             to: { ...this.state.to },
