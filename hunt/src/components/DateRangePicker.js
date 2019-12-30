@@ -11,8 +11,6 @@ function getFormat(time) {
     return time ? format : 'YYYY-MM-DD';
 }
 
-const timePickerElement = <TimePickerPanel defaultValue={moment('00:00:00', 'HH:mm:ss')} />;
-
 class DateRangePicker extends React.Component {
     constructor(props) {
         super(props);
@@ -42,7 +40,25 @@ class DateRangePicker extends React.Component {
         return false;
     }
 
+    getDisabled = (type) => {
+        const { startDate, endDate } = this.state;
+        if (startDate.isSameOrAfter(endDate, 'day')) {
+            switch (type) {
+                case 'hours':
+                    return new Array(startDate.hour()).fill(0).map((v, i) => i);
+                case 'minutes':
+                    return new Array(startDate.minute()).fill(0).map((v, i) => i);
+                case 'seconds':
+                    return new Array(startDate.second()).fill(0).map((v, i) => i);
+                default:
+                    return [];
+            }
+        }
+        return [];
+    }
+
     render() {
+        const { startDate, endDate } = this.state;
         return <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', flexDirection: 'row' }}>
                 <Calendar
@@ -50,8 +66,13 @@ class DateRangePicker extends React.Component {
                     showWeekNumber={false}
                     format={getFormat(true)}
                     showOk={false}
-                    timePicker={timePickerElement}
-                    defaultValue={this.state.startDate}
+                    timePicker={
+                        <TimePickerPanel
+                            defaultValue={moment('00:00:00', 'HH:mm:ss')}
+                        />
+                    }
+                    defaultValue={moment(startDate)}
+                    selectedValue={moment(startDate)}
                     disabledDate={(value) => this.disabledDate('startDate', value)}
                     onSelect={(value) => this.onStandaloneSelect('startDate', value)}
                 />
@@ -60,14 +81,22 @@ class DateRangePicker extends React.Component {
                     showWeekNumber={false}
                     format={getFormat(true)}
                     showOk={false}
-                    timePicker={timePickerElement}
-                    defaultValue={this.state.endDate}
+                    timePicker={
+                        <TimePickerPanel
+                            defaultValue={moment('00:00:00', 'HH:mm:ss')}
+                            disabledHours={() => this.getDisabled('hours')}
+                            disabledMinutes={() => this.getDisabled('minutes')}
+                            disabledSeconds={() => this.getDisabled('seconds')}
+                        />
+                    }
+                    defaultValue={moment(endDate)}
+                    selectedValue={moment(endDate)}
                     disabledDate={(value) => this.disabledDate('endDate', value)}
                     onSelect={(value) => this.onStandaloneSelect('endDate', value)}
                 />
             </div>
             <div className="submit-date">
-                <a href="#" onClick={() => this.props.onOk(this.state.startDate, this.state.endDate)}>Submit</a>
+                <a href="#" onClick={() => this.props.onOk(startDate, endDate)}>Submit</a>
             </div>
         </div>
     }
