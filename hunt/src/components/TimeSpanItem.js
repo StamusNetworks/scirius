@@ -139,20 +139,13 @@ class TimeSpanItem extends React.Component {
                     this.setState({
                         [type]: {
                             ...this.state[type],
-                            time: this.toggleRound(e.target.checked)
+                            time: (e.target.checked) ? this.state[type].time.seconds(0) : moment(this.state[type].time).seconds(moment().seconds()),
                         }
                     });
                 }}
             /> <label htmlFor={`${type}-RoundToSecs`}>Round to seconds</label>
         </React.Fragment>
     );
-
-    toggleRound = (checked) => {
-        if (checked) {
-            return moment().minutes(0).seconds(0)
-        }
-        return moment();
-    };
 
     render() {
         return (
