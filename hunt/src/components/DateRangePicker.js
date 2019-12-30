@@ -51,7 +51,7 @@ class DateRangePicker extends React.Component {
                     format={getFormat(true)}
                     showOk={false}
                     timePicker={timePickerElement}
-                    value={this.state.startDate}
+                    defaultValue={this.state.startDate}
                     disabledDate={(value) => this.disabledDate('startDate', value)}
                     onSelect={(value) => this.onStandaloneSelect('startDate', value)}
                 />
@@ -61,7 +61,7 @@ class DateRangePicker extends React.Component {
                     format={getFormat(true)}
                     showOk={false}
                     timePicker={timePickerElement}
-                    value={this.state.endDate}
+                    defaultValue={this.state.endDate}
                     disabledDate={(value) => this.disabledDate('endDate', value)}
                     onSelect={(value) => this.onStandaloneSelect('endDate', value)}
                 />
