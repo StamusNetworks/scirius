@@ -27,7 +27,7 @@ from rest_framework import serializers, viewsets, exceptions
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
 
-from rules.models import RuleProcessingFilter, RuleProcessingFilterDef, Threshold, UserAction
+from rules.models import RuleProcessingFilter, RuleProcessingFilterDef, Threshold, UserAction, Rule
 from scirius.rest_utils import SciriusModelViewSet
 
 
@@ -38,6 +38,15 @@ class RuleProcessingFilterDefSerializer(serializers.ModelSerializer):
         model = RuleProcessingFilterDef
         fields = ('pk', 'key', 'value', 'operator', 'full_string')
         read_only_fields = ('pk',)
+
+    def to_representation(self, instance):
+        data = super(RuleProcessingFilterDefSerializer, self).to_representation(instance)
+        if instance.key == 'alert.signature_id':
+            try:
+                data['msg'] = Rule.objects.get(sid=instance.value).msg
+            except Rule.DoesNotExist:
+                pass
+        return data
 
     def validate(self, data):
         if data['key'] in self.IP_FIELDS:

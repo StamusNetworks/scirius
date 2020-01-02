@@ -42,7 +42,10 @@ export default class FilterItem extends React.Component {
         const item = this.props.data;
         const addinfo = [];
         for (let i = 0; i < item.filter_defs.length; i += 1) {
-            const info = <ListViewInfoItem key={`filter-${i}`}><p>{item.filter_defs[i].operator === 'different' && 'Not '}{item.filter_defs[i].key}: {item.filter_defs[i].value}</p></ListViewInfoItem>;
+            let info = <ListViewInfoItem key={`filter-${i}`}><p>{item.filter_defs[i].operator === 'different' && 'Not '}{item.filter_defs[i].key}: {item.filter_defs[i].value}</p></ListViewInfoItem>;
+            if (item.filter_defs[i].key === 'alert.signature_id' && item.filter_defs[i].msg) {
+                info = <ListViewInfoItem key={`filter-${i}`}><p>{item.filter_defs[i].operator === 'different' && 'Not '}{item.filter_defs[i].key}: {item.filter_defs[i].value} ({item.filter_defs[i].msg})</p></ListViewInfoItem>;
+            }
             addinfo.push(info);
         }
         if (Object.keys(this.props.rulesets).length > 0) {
