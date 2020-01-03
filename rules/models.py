@@ -133,6 +133,14 @@ _HUNT_FILTERS = [
                       'queryType': 'filter'
                     },
                     {
+                      'id': 'es_filter',
+                      'title': 'ES Filter',
+                      'placeholder': 'Free ES Filter',
+                      'filterType': 'text',
+                      'valueType': 'text',
+                      'queryType': 'filter'
+                    },
+                    {
                       'id': 'protocol',
                       'title': 'Protocol',
                       'placeholder': 'Filter by Protocol',

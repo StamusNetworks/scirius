@@ -244,7 +244,7 @@ class HuntFilter extends React.Component {
                     break;
                 }
             }
-        } else if (['msg', 'not_in_msg', 'search'].indexOf(this.state.currentFilterType.id) === -1 && event.target.value.indexOf(' ') !== -1) {
+        } else if (['msg', 'not_in_msg', 'search', 'es_filter'].indexOf(this.state.currentFilterType.id) === -1 && event.target.value.indexOf(' ') !== -1) {
             // No space allowed to avoid breaking ES queries
             error = true;
         }

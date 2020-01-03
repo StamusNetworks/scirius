@@ -94,7 +94,7 @@ class FilterList extends React.Component {
 
     render() {
         const newFilterValue = this.state.newFilterValue.toString();
-        let enableWildcard = !['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filterId);
+        let enableWildcard = !['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max', 'es_filter'].includes(this.state.filterId);
         enableWildcard = enableWildcard && !IP_FIELDS.includes(this.state.filterId);
 
         const valid = (!newFilterValue.toString().length || (this.state.wildcardMode && newFilterValue.match(/[\s]+/g)) ? 'error' : 'success');

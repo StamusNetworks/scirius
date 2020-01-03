@@ -34,6 +34,7 @@ import HuntFilter from '../../HuntFilter';
 import AlertItem from '../../components/AlertItem';
 import { actionsButtons, buildListUrlParams, loadActions, UpdateFilter, createAction, closeAction } from '../../helpers/common';
 import ErrorHandler from '../../components/Error';
+import HuntRestError from '../../components/HuntRestError';
 
 export class AlertsPage extends React.Component {
     constructor(props) {
@@ -49,7 +50,8 @@ export class AlertsPage extends React.Component {
             action: { view: false, type: 'suppress' },
             net_error: undefined,
             rulesFilters,
-            supported_actions: []
+            supported_actions: [],
+            errors: null
         };
         this.fetchData = this.fetchData.bind(this);
         this.actionsButtons = actionsButtons.bind(this);
@@ -112,12 +114,20 @@ export class AlertsPage extends React.Component {
         const filterParams = buildFilterParams(this.props.filterParams);
         this.setState({ refresh_data: true, loading: true });
         const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?search_target=0&${this.buildListUrlParams(state)}&${filterParams}${stringFilters}`;
-        axios.get(url).then((res) => {
+        axios.get(url)
+        .then((res) => {
             if ((res.data !== null) && (typeof res.data !== 'string')) {
-                this.setState({ alerts: res.data, loading: false });
+                this.setState({ alerts: res.data, loading: false, error: null });
             } else {
                 this.setState({ loading: false });
             }
+        })
+        .catch((error) => {
+            if (error.response.status === 500) {
+                this.setState({ errors: [`${error.response.data[0].slice(0, 160)}...`], loading: false });
+                return;
+            }
+            this.setState({ errors: null, loading: false });
         });
     }
 
@@ -128,6 +138,7 @@ export class AlertsPage extends React.Component {
     render() {
         return (
             <div className="AlertsList HuntList">
+                {this.state.errors && <HuntRestError errors={this.state.errors} />}
                 <ErrorHandler>
                     <HuntFilter
                         config={this.props.rules_list}
