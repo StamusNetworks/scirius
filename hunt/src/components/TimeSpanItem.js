@@ -244,9 +244,9 @@ class TimeSpanItem extends React.Component {
                                                 e.preventDefault();
                                                 const from = this.state.from.time;
                                                 const to = this.state.to.time;
-                                                if (from.unix() > to.unix()) {
+                                                if (from.unix() >= to.unix()) {
                                                     /* eslint-disable-next-line no-alert */
-                                                    alert(`From cannot be greater than To! \nCurrent selected dates: \nFrom: ${from.format(this.format)} \nTo: ${to.format(this.format)}`);
+                                                    alert(`From cannot be greater or equal to To! \nCurrent selected dates: \nFrom: ${from.format(this.format)} \nTo: ${to.format(this.format)}`);
                                                 } else {
                                                     this.props.setTimeSpan({
                                                         fromDate: Math.round(from.unix() * 1000),
