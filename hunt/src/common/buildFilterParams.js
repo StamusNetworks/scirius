@@ -1,5 +1,5 @@
 export function buildFilterParams(filterParams) {
-    const fromDate = `from_date=${filterParams.fromDate}`;
-    const toDate = `&to_date=${filterParams.toDate}`;
+    const fromDate = (filterParams.duration > 0) ? `from_date=${(Date.now() - parseInt(filterParams.duration, 10))}` : `from_date=${filterParams.fromDate}`;
+    const toDate = (filterParams.duration > 0) ? `&to_date=${Date.now()}` : `&to_date=${filterParams.toDate}`;
     return `${fromDate}${toDate}`;
 }
