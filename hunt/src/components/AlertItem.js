@@ -526,8 +526,8 @@ export default class AlertItem extends React.Component {
                                 />
                             </Tab>
                             {events && Object.keys(events).sort().map((key) => (
-                                <Tab eventKey={`events-${key}`} title={`Related ${key}`} key={`events-${key}`}>
-                                    <ReactJson
+                                <Tab eventKey={`events-${key}`} title={`Related ${key}${key === 'Alert' ? '(s)' : ''}`} key={`events-${key}`}>
+                                    {key !== 'Alert' && <ReactJson
                                         name={false}
                                         src={events[key]}
                                         displayDataTypes={false}
@@ -535,6 +535,19 @@ export default class AlertItem extends React.Component {
                                         collapseStringsAfterLength={150}
                                         collapsed={false}
                                     />
+                                    }
+                                    {key === 'Alert' && Object.keys(events[key]).sort().map((key2) => (
+                                        <div key={key2}><strong>{events[key][key2].alert.signature}</strong>
+                                            <ReactJson
+                                                name={false}
+                                                src={events[key][key2]}
+                                                displayDataTypes={false}
+                                                displayObjectSize={false}
+                                                collapseStringsAfterLength={150}
+                                                collapsed
+                                            />
+                                        </div>
+                                    ))}
                                 </Tab>))}
                             {events && Object.keys(events).length === 0 && <strong>No related events</strong> }
                         </Tabs>}
