@@ -2197,7 +2197,7 @@ class ESEventsFromFlowID(ESQuery):
 
         res = {}
         for item in data['hits']['hits']:
-            if item['_source']['event_type'] not in res:
+            if item['_source']['event_type'].title() not in res:
                 res[item['_source']['event_type'].title()] = []
             res[item['_source']['event_type'].title()].append(item['_source'])
         return res
