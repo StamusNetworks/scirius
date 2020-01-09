@@ -300,8 +300,8 @@ config classification: command-and-control,Malware Command and Control Activity 
                 if warning['error_code'] == self.VARIABLE_ERROR:
                     var = warning['message'].split("\"")[1]
                     # transform rule_buffer to remove the faulty variable
-                    rule_buffer = rule_buffer.replace("!" + var, "any");
-                    rule_buffer = rule_buffer.replace(var, "any");
+                    rule_buffer = rule_buffer.replace("!" + var, "192.0.2.0/24")
+                    rule_buffer = rule_buffer.replace(var, "192.0.2.0/24")
                     modified = True
             if modified == False:
                 break
