@@ -39,8 +39,11 @@ const initialState = fromJS(defaultFilterParams);
 
 export const reducer = (state = initialState, action) => {
     switch (action.type) {
-        case FILTER_PARAMS_SET:
-            return state.setIn([action.paramName], action.paramValue);
+        case FILTER_PARAMS_SET: {
+            const param = state.setIn([action.paramName], action.paramValue);
+            store.set(`filterParams.${action.paramName}`, action.paramValue);
+            return param;
+        }
 
         case FILTER_TIMESPAN_SET: {
             const timespan = state
