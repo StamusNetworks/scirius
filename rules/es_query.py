@@ -201,7 +201,7 @@ class ESQuery(object):
             if isinstance(e, socket.timeout):
                 msg += 'Request timeout'
             elif isinstance(e, urllib2.HTTPError):
-                msg += '%s %s\n%s\n\n%s' % (e.code, e.reason, e, data)
+                msg += '%s %s\n%s\n\n%s\n%s' % (e.code, e.reason, e, data, e.read())
             else:
                 msg += repr(e)
             es_logger.exception(msg)
