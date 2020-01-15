@@ -277,19 +277,19 @@ class HuntFilter extends React.Component {
 
     handleShortcuts = (action) => {
         switch (action) {
-            case 'SEE_UNTAGGED': {
+            case 'SSP_UNTAGGED': {
                 this.props.enableOnly('untagged');
                 break;
             }
-            case 'SEE_INFORMATIONAL': {
+            case 'SSP_INFORMATIONAL': {
                 this.props.enableOnly('informational');
                 break;
             }
-            case 'SEE_RELEVANT': {
+            case 'SSP_RELEVANT': {
                 this.props.enableOnly('relevant');
                 break;
             }
-            case 'SEE_ALL': {
+            case 'SSP_ALL': {
                 this.props.enableOnly('all');
                 break;
             }

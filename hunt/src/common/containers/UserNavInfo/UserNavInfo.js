@@ -278,7 +278,7 @@ export default class UserNavInfo extends Component {
                     onHide={this.closeModal}
                     productTitle={title}
                     logo={sciriusLogo}
-                    altLogo="SEE Logo"
+                    altLogo="SSP Logo"
                     trademarkText="Copyright 2014-2020, Stamus Networks"
                 >
                     <AboutModal.Versions>
