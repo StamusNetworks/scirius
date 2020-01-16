@@ -101,8 +101,10 @@ export default class AlertItem extends React.Component {
             Object.keys(events).forEach((key) => {
                 nb += Object.keys(events[key]).length;
             });
+
+            return `(${nb})`;
         }
-        return nb;
+        return '';
     }
 
     formatString = (str, ...params) => {
@@ -627,7 +629,7 @@ export default class AlertItem extends React.Component {
                             collapsed={false}
                         />
                     </Tab>}
-                    {showTabs && <Tab eventKey="json-related" title={this.formatString('Related events ({0})', this.nbEvents(events))}>
+                    {showTabs && <Tab eventKey="json-related" title={this.formatString('Related events {0}', this.nbEvents(events))}>
                         <div style={{ paddingTop: '10px' }}>
                             <Spinner loading={events === undefined} size="xs">
                                 {events && <Tabs id="related-tabs">
