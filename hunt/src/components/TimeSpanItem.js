@@ -70,6 +70,19 @@ class TimeSpanItem extends React.Component {
         })
     }
 
+    updateRelativeTime = (type, typeState) => {
+        let time = typeState.value ? moments[typeState.id].get(typeState.value) : moment();
+        if (typeState.roundChecked) {
+            time = time.seconds(0);
+        }
+        this.setState({
+            [type]: {
+                ...typeState,
+                time
+            }
+        });
+    }
+
     renderInputField = (type) => (
         <FormControl
             type="number"
@@ -77,13 +90,13 @@ class TimeSpanItem extends React.Component {
             style={{ width: '100px' }}
             min={1}
             value={(this.state[type].value === 0) ? '' : this.state[type].value}
-            onChange={(e) => this.setState({
-                [type]: {
+            onChange={(e) => {
+                const typeState = {
                     ...this.state[type],
                     value: e.target.value === '' ? 0 : Math.abs(parseInt(e.target.value, 10)),
-                    time: e.target.value.length ? moments[this.state[type].id].get(parseInt(e.target.value, 10)) : moment(),
-                }
-            })}
+                };
+                this.updateRelativeTime(type, typeState);
+            }}
         />
     );
 
@@ -97,14 +110,12 @@ class TimeSpanItem extends React.Component {
                 Object.keys(moments).map((i) => <MenuItem
                     key={`${type}-${moments[i].label}`}
                     onClick={() => {
-                        this.setState({
-                            [type]: {
-                                ...this.state[type],
-                                id: parseInt(i, 10),
-                                time: this.state[type].value > 0 ? moments[i].get(this.state[type].value) : moment(),
-                                now: false,
-                            }
-                        })
+                        const typeState = {
+                            ...this.state[type],
+                            id: parseInt(i, 10),
+                            now: false,
+                        }
+                        this.updateRelativeTime(type, typeState);
                     }}
                 >{moments[i].label}</MenuItem>)
             }
@@ -136,12 +147,11 @@ class TimeSpanItem extends React.Component {
                 type="checkbox"
                 id={`${type}-RoundToSecs`}
                 onClick={(e) => {
-                    this.setState({
-                        [type]: {
-                            ...this.state[type],
-                            time: (e.target.checked) ? this.state[type].time.seconds(0) : moment(this.state[type].time).seconds(moment().seconds()),
-                        }
-                    });
+                    const typeState = {
+                        ...this.state[type],
+                        roundChecked: e.target.checked
+                    };
+                    this.updateRelativeTime(type, typeState);
                 }}
             /> <label htmlFor={`${type}-RoundToSecs`}>Round to seconds</label>
         </React.Fragment>
