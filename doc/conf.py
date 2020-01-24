@@ -47,7 +47,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Scirius'
-copyright = u'2019, Stamus Networks'
+copyright = u'2014-2020, Stamus Networks'
 author = u'Stamus Networks'
 
 # The version info for the project you're documenting, acts as replacement for

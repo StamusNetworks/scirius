@@ -272,7 +272,7 @@ export default class UserNavInfo extends Component {
                     productTitle={title}
                     logo={sciriusLogo}
                     altLogo="SEE Logo"
-                    trademarkText="Copyright 2014-2019, Stamus Networks"
+                    trademarkText="Copyright 2014-2020, Stamus Networks"
                 >
                     <AboutModal.Versions>
                         <AboutModal.VersionItem label="Version" versionText={version} />
