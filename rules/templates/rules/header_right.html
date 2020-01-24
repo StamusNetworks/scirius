@@ -84,6 +84,15 @@ $( 'document' ).ready(
         </a>
       </li>
 
+      {% if generator and generator == 'appliances' %}
+      <li class="applauncher-pf-item" role="presentation">
+        <a class="applauncher-pf-link" style="color: inherit" href="/appliances/str" role="menuitem">
+          <i style="font-size: 2em;" class="pficon-process-automation" aria-hidden="true"></i>
+          <span class="applauncher-pf-link-title">Threat Radar</span>
+        </a>
+      </li>
+      {% endif %}
+
       {% if kibana %}
       <li class="applauncher-pf-item" role="presentation">
         <a class="applauncher-pf-link" style="color: inherit" href="{{kibana_url}}" role="menuitem">
