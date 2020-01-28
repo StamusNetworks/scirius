@@ -2070,6 +2070,62 @@ class ESDeleteAlertsBySid(ESQuery):
             return es_delete_alerts_by_sid_v5(sid)
 
 
+class ESEventsCount(ESQuery):
+    QUERY_TMPL = """
+    {
+        "size": 0,
+        "query": {
+            "bool": {
+                "must": [
+                {
+                    "query_string": {
+                        "query": "_exists_:event_type",
+                        "analyze_wildcard": true
+                    }
+                },
+                {
+                    "range": {
+                        "@timestamp": {
+                            "gte": {{ from_date }},
+                            "lte": {{ to_date }},
+                            "format": "epoch_millis"
+                        }
+                    }
+                }
+                ]
+            }
+        },
+        "aggs": {
+            "date": {
+              "date_histogram": {
+                "field": "@timestamp",
+                "interval": "{{ interval }}",
+                "min_doc_count": 0,
+                "offset": "+{{ offset }}ms",
+                "extended_bounds": {
+                  "min": {{ from_date }},
+                  "max": {{ to_date }}
+                }
+              }
+            }
+        }
+    }
+    """
+
+    def get(self, from_date, to_date, interval):
+        es_url = self._get_es_url(data='logstash')
+        date_modulo = from_date % int(interval * 1000)
+        params = {
+            'from_date': from_date,
+            'to_date': to_date,
+            'interval': interval,
+            'offset': date_modulo
+        }
+        data = self._render_template(self.QUERY_TMPL, params)
+        data = self._urlopen(es_url, data)
+        return data
+
+
 class ESAlertsCount(ESQuery):
     def get(self, prev = 0):
         if prev:

@@ -119,8 +119,10 @@ class ESQuery(object):
                 return time() * 1000
         return to_date
 
-    def _interval(self):
-        if self.request and 'interval' in self.request.GET:
+    def _interval(self, dictionary=None):
+        if dictionary and 'interval' in dictionary:
+            interval = int(dictionary['interval']) * 1000
+        elif self.request and 'interval' in self.request.GET:
             interval = int(self.request['interval']) * 1000
         else:
             interval = int((self._to_date() - self._from_date()) / self.INTERVAL_POINTS)
@@ -186,7 +188,7 @@ class ESQuery(object):
             'to_date': mark_safe(self._to_date(dictionary, es_format=True)), # mark quotes around "now" as safe
             'query_filter': query_filter,
             'bool_clauses': bool_clauses,
-            'interval': unicode(self._interval()) + 'ms'
+            'interval': unicode(self._interval(dictionary)) + 'ms'
         })
 
         return bytearray(templ.render(context), encoding="utf-8")
