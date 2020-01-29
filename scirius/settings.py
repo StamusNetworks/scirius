@@ -66,6 +66,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'scirius.loginrequired.LoginRequiredMiddleware',
     'scirius.utils.TimezoneMiddleware',
+    'django_cprofile_middleware.middleware.ProfilerMiddleware'
 ]
 
 TEMPLATES = [

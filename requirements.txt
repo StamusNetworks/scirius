@@ -24,3 +24,4 @@ django-filter<2.0
 idstools
 enum34
 django-webpack-loader
+django-cprofile-middleware
