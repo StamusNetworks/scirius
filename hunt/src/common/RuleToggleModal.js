@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { Modal, Button, Checkbox, Col, Form, FormControl, FormGroup, Icon } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
-import HuntRestError from './components/HuntRestError';
+import { supportedActions, setDefaultOptions } from 'hunt_common/supportedActions';
+import HuntRestError from '../components/HuntRestError';
 
 export default class RuleToggleModal extends React.Component {
     constructor(props) {
@@ -22,7 +23,7 @@ export default class RuleToggleModal extends React.Component {
         this.handleFieldChange = this.handleFieldChange.bind(this);
         this.handleOptionsChange = this.handleOptionsChange.bind(this);
         this.updateActionDialog = this.updateActionDialog.bind(this);
-        this.setDefaultOptions = this.setDefaultOptions.bind(this);
+        this.setDefaultOptions = setDefaultOptions.bind(this);
         this.onFieldKeyPress = this.onFieldKeyPress.bind(this);
         this.toggleFilter = this.toggleFilter.bind(this);
     }
@@ -142,7 +143,7 @@ export default class RuleToggleModal extends React.Component {
                     return true;
                 }
             );
-        } else if (['suppress', 'threshold', 'tag', 'tagkeep', 'send_mail'].indexOf(this.props.action) !== -1) {
+        } else if (supportedActions.concat(['suppress']).indexOf(this.props.action) !== -1) {
             // {"filter_defs": [{"key": "src_ip", "value": "192.168.0.1", "operator": "equal"}], "action": "suppress", "rulesets": [1]}
 
             const filters = [];
@@ -157,7 +158,7 @@ export default class RuleToggleModal extends React.Component {
             const data = {
                 filter_defs: filters, action: this.props.action, rulesets: this.state.selected, comment: this.state.comment
             };
-            if (['threshold', 'tag', 'tagkeep', 'send_mail'].indexOf(this.props.action) !== -1) {
+            if (supportedActions.indexOf(this.props.action) !== -1) {
                 data.options = this.state.options;
             }
             axios.post(config.API_URL + config.PROCESSING_PATH, data).then(
@@ -273,40 +274,9 @@ export default class RuleToggleModal extends React.Component {
                                 </Col>
                             </FormGroup>
                         </React.Fragment>}
-                        {this.props.action === 'tag' && <FormGroup key="tag" controlId="tag" disabled={false}>
-                            <Col sm={4}>
-                                <strong>Tag</strong>
-                            </Col>
-                            <Col sm={8}>
-                                <FormControl componentClass="select" placeholder="relevant" onChange={this.handleOptionsChange}>
-                                    <option value="relevant">Relevant</option>
-                                    <option value="informational">Informational</option>
-                                </FormControl>
-                            </Col>
-                        </FormGroup>}
-                        {this.props.action === 'tagkeep' && <FormGroup key="tag" controlId="tag" disabled={false}>
-                            <Col sm={4}>
-                                <strong>Tag and Keep</strong>
-                            </Col>
-                            <Col sm={8}>
-                                <FormControl componentClass="select" placeholder="relevant" onChange={this.handleOptionsChange}>
-                                    <option value="relevant">Relevant</option>
-                                    <option value="informational">Informational</option>
-                                </FormControl>
-                            </Col>
-                        </FormGroup>}
-                        {this.props.action === 'send_mail' && <React.Fragment>
-                            <FormGroup key="max_mails_per_day" controlId="max_mails_per_day" disabled={false}>
-                                <Col sm={4}>
-                                    <strong>Maximum number of mail sent per day</strong>
-                                </Col>
-                                <Col sm={8}>
-                                    <FormControl type="integer" disabled={false} defaultValue={5} onChange={this.handleOptionsChange} />
-                                </Col>
-                            </FormGroup>
-                        </React.Fragment>}
+                        {this.props.children(this)}
                         <hr />
-                        <FormGroup controlId="ruleset" disabled={false}>
+                        {<FormGroup controlId="ruleset" disabled={false}>
                             <Col sm={12}>
                                 <label><strong>Ruleset{this.props.rulesets.length > 1 && 's'}:</strong></label>
                                 {this.props.rulesets && this.props.rulesets.map((ruleset) => (
@@ -319,7 +289,7 @@ export default class RuleToggleModal extends React.Component {
                                     </div>
                                 ))}
                             </Col>
-                        </FormGroup>
+                        </FormGroup>}
                         <hr />
 
                         <div className="form-group">
@@ -355,4 +325,5 @@ RuleToggleModal.propTypes = {
     show: PropTypes.any,
     config: PropTypes.any,
     close: PropTypes.func,
+    children: PropTypes.any,
 };

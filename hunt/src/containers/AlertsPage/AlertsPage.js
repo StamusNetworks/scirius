@@ -29,7 +29,7 @@ import md5 from 'md5';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from 'hunt_common/buildQFilter';
 import { buildFilterParams } from 'hunt_common/buildFilterParams';
-import RuleToggleModal from '../../RuleToggleModal';
+import RuleToggleModal from 'hunt_common/RuleToggleModal';
 import HuntFilter from '../../HuntFilter';
 import AlertItem from '../../components/AlertItem';
 import { actionsButtons, buildListUrlParams, loadActions, UpdateFilter, createAction, closeAction } from '../../helpers/common';

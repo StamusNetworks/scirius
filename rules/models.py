@@ -2994,10 +2994,7 @@ class Threshold(models.Model):
 
 
 class RuleProcessingFilter(models.Model):
-    ACTIONS = (('suppress', 'Suppress'), ('threshold', 'Threshold'),
-                ('tag', 'Tag'), ('tagkeep', 'Tag and keep'), ('send_mail', 'Send email'))
-
-    action = models.CharField(max_length=10, choices=ACTIONS)
+    action = models.CharField(max_length=10)
     options = models.CharField(max_length=512, null=True, blank=True)
     index = models.PositiveIntegerField()
     description = models.TextField(default='')

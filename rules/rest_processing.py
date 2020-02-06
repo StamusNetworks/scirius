@@ -80,19 +80,8 @@ class ThresholdOptionsSerializer(serializers.Serializer):
     track = serializers.ChoiceField((('by_src', 'By source'), ('by_dst', 'By destination')))
 
 
-class TagOptionsSerializer(serializers.Serializer):
-    tag = serializers.CharField(max_length=512)
-
-
-class SendMailOptionsSerializer(serializers.Serializer):
-    max_mails_per_day = serializers.IntegerField(default=5, min_value=0)
-
-
 ACTION_OPTIONS_SERIALIZER = {
     'threshold': ThresholdOptionsSerializer,
-    'tag': TagOptionsSerializer,
-    'tagkeep': TagOptionsSerializer,
-    'send_mail': SendMailOptionsSerializer,
 }
 
 
@@ -106,11 +95,24 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
         model = RuleProcessingFilter
         fields = ('pk', 'filter_defs', 'action', 'options', 'rulesets', 'index', 'description', 'enabled', 'comment')
 
+    def __init__(self, *args, **kwargs):
+        super(RuleProcessingFilterSerializer, self).__init__(*args, **kwargs)
+        self.option_serializer = None
+
+    def to_representation(self, instance):
+        if not instance.options:
+            from scirius.utils import get_middleware_module
+            instance = get_middleware_module('common').update_proessing_filter_action_options(instance)
+        return super(RuleProcessingFilterSerializer, self).to_representation(instance)
+
     def to_internal_value(self, data):
+        from scirius.utils import get_middleware_module
+
         options = data.get('options')
         action = data.get('action')
 
-        serializer = ACTION_OPTIONS_SERIALIZER.get(action)
+        action_options_serializer = get_middleware_module('common').update_processing_filter_action_options_serializer(ACTION_OPTIONS_SERIALIZER)
+        serializer = action_options_serializer.get(action)
 
         if serializer:
             serializer = serializer(data=options)
@@ -124,11 +126,15 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({'options': ['Action "%s" does not accept options.' % action]})
             options = {}
 
-        if self.partial:
-            if 'options' in data:
+        if not isinstance(serializer, serializers.ModelSerializer):
+            if self.partial:
+                if 'options' in data:
+                    data['options'] = options
+            else:
                 data['options'] = options
         else:
-            data['options'] = options
+            self.option_serializer = serializer
+            data.pop('options', None)
 
         return super(RuleProcessingFilterSerializer, self).to_internal_value(data)
 
@@ -206,6 +212,9 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
 
             instance = super(RuleProcessingFilterSerializer, self).create(validated_data)
             user_action = 'create'
+
+            if self.option_serializer and hasattr(self.option_serializer.Meta.model, 'action'):
+                self.option_serializer.save(action=instance)
         else:
             if filters is not None and len(filters) == 0:
                 # Error on empty list only
@@ -251,6 +260,7 @@ class RuleProcessingTestSerializer(serializers.Serializer):
                                       ('threshold', 'Threshold'),
                                       ('tag', 'Tag'),
                                       ('tagkeep', 'Tag and Keep'),
+                                      ('threat', 'Threat'),
                                       ('send_mail', 'Send email')), allow_null=True)
 
 

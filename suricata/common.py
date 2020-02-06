@@ -170,6 +170,15 @@ def get_processing_filter_capabilities(fields, action):
         }
     return { 'fields': [], 'operators': ['equal'] }
 
+
+def update_processing_filter_action_options_serializer(dictionary):
+    return dictionary
+
+
+def update_proessing_filter_action_options(rule_processing):
+    return rule_processing
+
+
 def get_homepage_context():
     context = {
         'title': 'Scirius Community Edition',
