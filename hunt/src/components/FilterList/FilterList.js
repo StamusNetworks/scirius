@@ -103,6 +103,8 @@ class FilterList extends React.Component {
             helperText = 'Case insensitive substring match.';
         } else if (['hits_min', 'hits_max'].includes(this.state.filterId)) {
             helperText = '';
+        } else if (['es_filter'].includes(this.state.filterId)) {
+            helperText = 'Free ES filter with Lucene syntax';
         } else if (this.state.wildcardMode) {
             helperText = <React.Fragment>Wildcard characters (<i style={{ padding: '0px 5px', background: '#e0e0e0', margin: '0 2px' }}>*</i> and <i style={{ padding: '0px 5px', background: '#e0e0e0', margin: '0 2px' }}>?</i>) can match on word boundaries.<br />No spaces allowed.</React.Fragment>;
         } else {
