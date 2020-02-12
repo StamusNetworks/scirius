@@ -149,7 +149,7 @@ LOGGING = {
             'format': '%(asctime)s %(levelname)s %(message)s'
         },
         'raw': {
-            'format': '%(message)s'
+            'format': '%(asctime)s %(message)s'
         },
     },
     'handlers': {
