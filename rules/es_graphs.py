@@ -1990,10 +1990,14 @@ class ESIndices(ESQuery):
         if indices == None:
             return indexes_array
         for index in indices['indices']:
-            docs = indices['indices'][index]['total']['docs']
-            docs['name'] = index
-            docs['size'] = indices['indices'][index]['total']['store']['size_in_bytes']
-            indexes_array.append(docs)
+            try:
+                docs = indices['indices'][index]['total']['docs']
+                docs['name'] = index
+                docs['size'] = indices['indices'][index]['total']['store']['size_in_bytes']
+            except:
+                continue  # ES not ready yet
+            else:
+                indexes_array.append(docs)
         return indexes_array
 
 
