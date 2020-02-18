@@ -1251,16 +1251,6 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
         self.assertDictEqual(r, {'options': [{'type': ['This field is required.'],
             'track': ['This field is required.']}]})
 
-    def test_018_suri_tag_create_invalid(self):
-        self._force_suricata_middleware()
-        r = self.http_post(self.list_url, {
-            'filter_defs': [{'key': 'src_ip', 'value': '192.168.0.1', 'operator': 'equal', 'full_string': True}],
-            'action': 'tag',
-            'options': {'tag': 'test'},
-            'rulesets': [self.ruleset.pk]
-        }, status=status.HTTP_400_BAD_REQUEST)
-        self.assertDictEqual(r, {'non_field_errors': ['Action "tag" is not supported.']})
-
     def test_019_suri_filter_defs_invalid(self):
         self._force_suricata_middleware()
         r = self.http_post(self.list_url, {
