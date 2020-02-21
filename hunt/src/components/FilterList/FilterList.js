@@ -55,7 +55,6 @@ class FilterList extends React.Component {
 
     saveHandler = () => {
         const newFilterValue = isNumeric(this.state.newFilterValue) ? parseInt(this.state.newFilterValue, 10) : this.state.newFilterValue;
-
         this.props.editFilter(
             this.props.filterType,
             this.state.filterIdx,
@@ -97,7 +96,7 @@ class FilterList extends React.Component {
         let enableWildcard = !['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max', 'es_filter'].includes(this.state.filterId);
         enableWildcard = enableWildcard && !IP_FIELDS.includes(this.state.filterId);
 
-        const valid = (!newFilterValue.toString().length || (this.state.wildcardMode && newFilterValue.match(/[\s]+/g)) ? 'error' : 'success');
+        const valid = (!newFilterValue.toString().length || (this.state.wildcardMode && enableWildcard && newFilterValue.match(/[\s]+/g)) ? 'error' : 'success');
         let helperText = '';
         if (['msg', 'not_in_msg', 'search', 'not_in_content'].includes(this.state.filterId)) {
             helperText = 'Case insensitive substring match.';
