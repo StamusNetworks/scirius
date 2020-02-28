@@ -99,6 +99,10 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
         super(RuleProcessingFilterSerializer, self).__init__(*args, **kwargs)
         self.option_serializer = None
 
+        if 'context' in kwargs:
+            if 'enable_options' in kwargs['context'] and kwargs['context']['enable_options'] is False:
+                self.fields.pop('options')
+
     def to_representation(self, instance):
         if not instance.options:
             from scirius.utils import get_middleware_module
