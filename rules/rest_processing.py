@@ -119,7 +119,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
         serializer = action_options_serializer.get(action)
 
         if serializer:
-            serializer = serializer(data=options)
+            serializer = serializer(data=options, context=self.context)
             try:
                 serializer.is_valid(raise_exception=True)
             except serializers.ValidationError as e:
