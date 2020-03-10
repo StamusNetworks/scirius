@@ -224,3 +224,19 @@ def check_es_version(request):
 
 def update_context(request):
     return {}
+
+
+def custom_source_datatype():
+    return tuple()
+
+
+def update_source_content_type(content_type, source=None):
+    return content_type
+
+
+def update_custom_source(source_path):
+    pass
+
+
+def extract_custom_source(f, source_path):
+    pass

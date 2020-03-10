@@ -79,6 +79,15 @@ class SourceForm(forms.ModelForm, CommentForm):
         model = Source
         exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count', 'public_source']
 
+    def __init__(self, *args, **kwargs):
+        source = kwargs.get('instance', None)
+        super(SourceForm, self).__init__(*args, **kwargs)
+
+        from scirius.utils import get_middleware_module
+        choices = get_middleware_module('common').update_source_content_type(Source.CONTENT_TYPE, source)
+        self.fields['datatype'] = forms.ChoiceField(choices=choices)
+
+
 class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
     file  = forms.FileField(required = False)
     authkey = forms.CharField(max_length=100,
@@ -94,6 +103,11 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
         super(AddSourceForm, self).__init__(*args, **kwargs)
         if 'rulesets' in self.fields:
             self.fields['rulesets'].required =  False
+
+        from scirius.utils import get_middleware_module
+        choices = get_middleware_module('common').update_source_content_type(Source.CONTENT_TYPE)
+        self.fields['datatype'] = forms.ChoiceField(choices=choices)
+
 
 class AddPublicSourceForm(forms.ModelForm, RulesetChoiceForm):
     source_id = forms.CharField(max_length=100)

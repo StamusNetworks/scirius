@@ -220,6 +220,16 @@ def get_hunt_filters():
     return deepcopy(_HUNT_FILTERS)
 
 
+def validate_source_datatype(datatype):
+    from scirius.utils import get_middleware_module
+    content_types = get_middleware_module('common').update_source_content_type(Source.CONTENT_TYPE)
+    if datatype not in [ct[0] for ct in content_types]:
+        if datatype in get_middleware_module('common').custom_source_datatype():
+            raise ValidationError('You cannot add more than 1 "%s" source' % datatype)
+        else:
+            raise ValidationError('Invalid Source Type')
+
+
 def validate_hostname(val):
     try:
         validate_ipv4_address(val)
@@ -697,19 +707,19 @@ class Source(models.Model):
 #        ('https', 'HTTPS URL'),
         ('local', 'Upload'),
     )
-    CONTENT_TYPE = (
+    CONTENT_TYPE = [
         ('sigs', 'Signatures files in tar archive'),
         ('sig', 'Individual Signatures file'),
 #        ('iprep', 'IP reputation files'),
         ('other', 'Other content'),
-    )
+    ]
     TMP_DIR = "/tmp/"
 
     name = models.CharField(max_length=100, unique = True)
     created_date = models.DateTimeField('date created')
     updated_date = models.DateTimeField('date updated', blank = True, null = True)
     method = models.CharField(max_length=10, choices=FETCH_METHOD)
-    datatype = models.CharField(max_length=10, choices=CONTENT_TYPE)
+    datatype = models.CharField(max_length=10, validators=[validate_source_datatype])
     uri = models.CharField(max_length=400, blank = True, null = True)
     cert_verif = models.BooleanField('Check certificates', default=True)
     authkey = models.CharField(max_length=400, blank = True, null = True)
@@ -743,6 +753,9 @@ class Source(models.Model):
             self.init_flowbits = True
         else:
             self.init_flowbits = False
+
+        from scirius.utils import get_middleware_module
+        self.custom_data_type = get_middleware_module('common').custom_source_datatype()
 
     @staticmethod
     def get_icon(instance=None):
@@ -977,6 +990,37 @@ class Source(models.Model):
         else:
             category[0].get_rules(self)
 
+    def handle_custom_file(self, f):
+        from scirius.utils import get_middleware_module
+
+        f.seek(0)
+        if not tarfile.is_tarfile(f.name):
+            raise OSError("Invalid tar file")
+
+        self.first_run = False
+        self.updated_date = timezone.now()
+        repo = self.get_git_repo(delete=True)
+
+        sources_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
+        # create rules dir if needed
+        if not os.path.isdir(sources_dir):
+            os.makedirs(sources_dir)
+
+        f.seek(0)
+        get_middleware_module('common').extract_custom_source(f, sources_dir)
+
+        index = repo.index
+        if len(index.diff(None)) or self.first_run:
+            os.environ['USERNAME'] = 'scirius'
+            index.add(['rules'])
+            message = 'source version at %s' % self.updated_date
+            index.commit(message)
+
+        self.save()
+        # Now we must update SourceAtVersion for this source
+        # or create it if needed
+        self.create_sourceatversion()
+
     def json_rules_list(self, rlist):
         rules = []
         for rule in rlist:
@@ -1028,8 +1072,17 @@ class Source(models.Model):
                 self.handle_rules_file(f)
             elif self.datatype == 'other':
                 self.handle_other_file(f)
-        if not self.datatype == 'other' and not firstimport:
+            if self.datatype in self.custom_data_type:
+                self.handle_custom_file(f)
+
+        if self.datatype in ('sig', 'sigs') and not firstimport:
             self.create_update()
+
+        if self.datatype in self.custom_data_type:
+            from scirius.utils import get_middleware_module
+            source_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk), 'rules')
+            get_middleware_module('common').update_custom_source(source_path)
+
         for rule in self.updated_rules["deleted"]:
             rule.delete()
         self.needs_test()
@@ -1059,14 +1112,18 @@ class Source(models.Model):
                 if not member.name.startswith('rules/'):
                     continue
                 # don't copy original rules file to dest
-                if member.name.endswith('.rules') and not self.datatype == 'other':
+                if member.name.endswith('.rules') and self.datatype in ('sig', 'sigs'):
                     continue
-                if member.name.endswith('categories.txt') and not self.datatype == 'other':
+                if member.name.endswith('categories.txt') and self.datatype in ('sig', 'sigs'):
                     cats_content = tfile.extractfile(member).read()
                     continue
-                if member.name.endswith('.list') and not self.datatype == 'other':
+                if member.name.endswith('.list') and self.datatype in ('sig', 'sigs'):
                     iprep_content = tfile.extractfile(member).read()
                     continue
+
+                if self.datatype in self.custom_data_type and not member.name.endswith('.rules'):
+                    continue
+
                 if member.isfile():
                     member.name = os.path.join(*member.name.split("/", 2)[1:])
                     mfile = tfile.extract(member, path=directory)
@@ -1115,10 +1172,12 @@ class Source(models.Model):
             self.handle_rules_file(dest)
         elif self.datatype == 'other':
             self.handle_other_file(dest)
+        elif self.datatype in self.custom_data_type:
+            self.handle_custom_file(dest)
 
     def new_uploaded_file(self, f, firstimport):
         self.handle_uploaded_file(f)
-        if not self.datatype == 'other' and not firstimport:
+        if self.datatype in ('sig', 'sigs') and not firstimport:
             self.create_update()
         for rule in self.updated_rules["deleted"]:
             rule.delete()
