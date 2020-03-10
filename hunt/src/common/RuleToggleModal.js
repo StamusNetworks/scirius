@@ -274,7 +274,7 @@ export default class RuleToggleModal extends React.Component {
                                 </Col>
                             </FormGroup>
                         </React.Fragment>}
-                        {this.props.children(this)}
+                        {this.props.children && this.props.children(this)}
                         <hr />
                         {<FormGroup controlId="ruleset" disabled={false}>
                             <Col sm={12}>
