@@ -240,3 +240,8 @@ def update_custom_source(source_path):
 
 def extract_custom_source(f, source_path):
     pass
+
+
+def get_sources():
+    from rules.models import Source
+    return Source.objects.all()

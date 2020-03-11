@@ -118,7 +118,9 @@ def search(request):
     return scirius_render(request, 'rules/search.html', context)
 
 def sources(request):
-    sources = Source.objects.all().order_by('name')
+    from scirius.utils import get_middleware_module
+    sources = get_middleware_module('common').get_sources().order_by('name')
+
     for source in sources:
         if source.cats_count == 0:
             source.build_counters()
