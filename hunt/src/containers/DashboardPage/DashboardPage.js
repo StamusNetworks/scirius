@@ -686,7 +686,7 @@ export class HuntDashboard extends React.Component {
                         <HuntTimeline style={{ marginTop: '15px' }} filterParams={this.props.filterParams} chartTarget={this.state.chartTarget} filters={this.props.filtersWithAlert} systemSettings={this.props.systemSettings} />
                     </div>
                     <div className="col-lg-2 col-md-3 col-sm-12 col-xs-12" style={{ paddingLeft: '0px' }}>
-                        <HuntTrend filterParams={this.props.filterParams} filters={this.props.filtersWithAlert} />
+                        <HuntTrend filterParams={this.props.filterParams} filters={this.props.filtersWithAlert} systemSettings={this.props.systemSettings} />
                         {typeof this.state.chartTarget !== 'undefined' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && <div style={{ position: 'absolute', zIndex: 10, top: 0, right: '30px' }}>
                             <DropdownKebab id={'more-actions'} pullRight><MenuItem onClick={() => this.onChangeChartTarget(!this.state.chartTarget)} data-toggle="modal">Switch timeline by probes/tags</MenuItem></DropdownKebab>
                         </div>}
