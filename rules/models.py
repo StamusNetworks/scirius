@@ -508,7 +508,7 @@ class UserAction(models.Model):
 
         # UserAction
         ua_params = {}
-        for param in ('action_type', 'comment', 'user'):
+        for param in ('action_type', 'comment', 'user', 'date'):
             if param in kwargs:
                 ua_params[param] = kwargs.pop(param)
 
