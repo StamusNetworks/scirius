@@ -175,7 +175,7 @@ def update_processing_filter_action_options_serializer(dictionary):
     return dictionary
 
 
-def update_proessing_filter_action_options(rule_processing):
+def update_processing_filter_action_options(rule_processing):
     return rule_processing
 
 

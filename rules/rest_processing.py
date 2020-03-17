@@ -106,7 +106,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         if not instance.options:
             from scirius.utils import get_middleware_module
-            instance = get_middleware_module('common').update_proessing_filter_action_options(instance)
+            instance = get_middleware_module('common').update_processing_filter_action_options(instance)
         return super(RuleProcessingFilterSerializer, self).to_representation(instance)
 
     def to_internal_value(self, data):
