@@ -97,7 +97,7 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
 
     class Meta:
         model = Source
-        exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count', 'public_source']
+        exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count', 'public_source', 'version']
 
     def __init__(self, *args, **kwargs):
         super(AddSourceForm, self).__init__(*args, **kwargs)
@@ -116,7 +116,7 @@ class AddPublicSourceForm(forms.ModelForm, RulesetChoiceForm):
 
     class Meta:
         model = Source
-        exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count', 'method', 'datatype']
+        exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count', 'method', 'datatype', 'version']
 
     def __init__(self, *args, **kwargs):
         super(AddPublicSourceForm, self).__init__(*args, **kwargs)

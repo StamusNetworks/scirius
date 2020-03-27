@@ -727,6 +727,7 @@ class Source(models.Model):
     rules_count = models.IntegerField(default = 0)
     public_source = models.CharField(max_length=100, blank = True, null = True)
     use_iprep = models.BooleanField('Use IP reputation for group signatures', default=True)
+    version = models.IntegerField(default=1)
 
     editable = True
     # git repo where we store the physical thing
@@ -1063,29 +1064,34 @@ class Source(models.Model):
             firstimport = True
         if not self.method in ['http', 'local']:
             raise FieldError("Currently unsupported method")
+
+        need_update = False
         if self.update_ruleset:
             f = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
-            self.update_ruleset(f)
-            if self.datatype == 'sigs':
-                self.handle_rules_in_tar(f)
-            elif self.datatype == 'sig':
-                self.handle_rules_file(f)
-            elif self.datatype == 'other':
-                self.handle_other_file(f)
+            need_update = self.update_ruleset(f)
+
+            if need_update:
+                if self.datatype == 'sigs':
+                    self.handle_rules_in_tar(f)
+                elif self.datatype == 'sig':
+                    self.handle_rules_file(f)
+                elif self.datatype == 'other':
+                    self.handle_other_file(f)
+                if self.datatype in self.custom_data_type:
+                    self.handle_custom_file(f)
+
+        if need_update:
+            if self.datatype in ('sig', 'sigs') and not firstimport:
+                self.create_update()
+
             if self.datatype in self.custom_data_type:
-                self.handle_custom_file(f)
+                from scirius.utils import get_middleware_module
+                source_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk), 'rules')
+                get_middleware_module('common').update_custom_source(source_path)
 
-        if self.datatype in ('sig', 'sigs') and not firstimport:
-            self.create_update()
-
-        if self.datatype in self.custom_data_type:
-            from scirius.utils import get_middleware_module
-            source_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk), 'rules')
-            get_middleware_module('common').update_custom_source(source_path)
-
-        for rule in self.updated_rules["deleted"]:
-            rule.delete()
-        self.needs_test()
+            for rule in self.updated_rules["deleted"]:
+                rule.delete()
+            self.needs_test()
 
     def diff(self):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
@@ -1138,12 +1144,34 @@ class Source(models.Model):
         hdrs = { 'User-Agent': 'scirius' }
         if self.authkey:
             hdrs['Authorization'] = self.authkey
+
+        version_uri = None
+        if self.uri.startswith('https://rules.emergingthreatspro.com/') or \
+                self.uri.startswith('https://rules.emergingthreats.net/') or \
+                self.uri.startswith('https://ti.stamus-networks.io/') or \
+                self.datatype not in ('sigs', 'sig', 'other'):
+            version_uri = os.path.join(os.path.dirname(self.uri), 'version.txt')
+
         try:
-            if proxy_params:
-                resp = requests.get(self.uri, proxies = proxy_params, headers = hdrs, verify = self.cert_verif)
-            else:
-                resp = requests.get(self.uri, headers = hdrs, verify = self.cert_verif)
-            resp.raise_for_status()
+            version_server = 1
+            if version_uri:
+                resp = requests.get(version_uri, proxies=proxy_params, headers=hdrs, verify=self.cert_verif)
+                resp.raise_for_status()
+                version_server = int(resp.content.strip())
+
+                if self.version < version_server:
+                    version_uri = None
+
+            if version_uri is None:
+                resp = requests.get(self.uri, proxies=proxy_params, headers=hdrs, verify=self.cert_verif)
+                resp.raise_for_status()
+                f.write(resp.content)
+
+                if self.version < version_server:
+                    self.version = version_server
+
+                return True
+
         except requests.exceptions.ConnectionError, e:
             if "Name or service not known" in unicode(e):
                 raise IOError("Failure to resolve hostname, please check DNS configuration")
@@ -1159,7 +1187,7 @@ class Source(models.Model):
             raise IOError("Request timeout, server may be down")
         except requests.exceptions.TooManyRedirects:
             raise IOError("Too many redirects, server may be broken")
-        f.write(resp.content)
+        return False
 
     def handle_uploaded_file(self, f):
         dest = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
