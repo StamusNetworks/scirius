@@ -118,6 +118,8 @@ def scirius_render(request, template, context):
     if settings.SCIRIUS_HAS_DOC:
         djurl = request.resolver_match
         context['help_link'] = help_links(djurl.view_name)
+    if settings.SCIRIUS_IN_SELKS:
+        context['in_selks'] = 1
 
     context['toplinks'] = [{
         'id': 'suricata',

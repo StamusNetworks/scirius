@@ -1,5 +1,5 @@
 """
-Copyright(C) 2015, Stamus Networks
+Copyright(C) 2015-2020, Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
 
 This file is part of Scirius.
@@ -182,7 +182,7 @@ def update_processing_filter_action_options(rule_processing):
 def get_homepage_context():
     context = {
         'title': 'Scirius Community Edition',
-        'content_lead': 'Scirius CE is a web application for threat hunting and Suricata ruleset management.',
+        'content_lead': 'Scirius CE is a web application for threat hunting and Suricata ruleset management of one sensor.',
         'content_minor1': 'Scirius CE is developed by Stamus Networks and is available under the GNU GPLv3 license.',
         'content_minor2': 'Manage multiple rulesets and rules sources. Upload and manage custom rules and any data files. Handle thresholding and suppression to limit verbosity of noisy alerts. Get suricata performance statistics and information about rules activity.',
         'content_minor3': 'Interact with Elasticsearch, Kibana and other interfaces such as EveBox.',

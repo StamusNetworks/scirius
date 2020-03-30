@@ -50,169 +50,97 @@
             </div>
           </div>
 
+{% if in_selks %}
           <div class="container-fluid container-cards-pf">
-            <div class="row row-cards-pf" style="margin-left: -35px; margin-right: -35px">
-
-              <div class="col-md-3 col-xs-11">
-                <a href="/rules" style="color: black; text-decoration: none;">
-                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1">
+            <div class="row row-cards-pf" style="margin-left: -35px;">
+              <div class="col-md-7 col-xs-11">
+              	<div class="col-md-6 col-xs-11">
+                <a href="https://www.stamus-networks.com/scirius-open-source" style="color: black; text-decoration: none;">
+                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1; min-height: 23em;">
                     <div class="card-pf-body">
                       <div class="card-pf-top-element">
-                        <span class="pficon pficon-server list-view-pf-icon-sm" style="font-size: 5em"></span>
+                        <span class="pficon pficon-services list-view-pf-icon-sm" style="font-size: 5em"></span>
                       </div>
                       <h2 class="card-pf-title text-center" style="color: #7A1243">
-                        Administration
+                        Scirius CE Application
                       </h2>
-                      <div class="card-pf-items text-center">
-                        {% if icon %}
-                        <div class="card-pf-item">
-                          <span class="pficon pficon-server list-view-pf-icon-sm"></span>
-                          <span class="card-pf-item-text">{{ nb_probes }}</span>
-                        </div>
-                        {% endif %}
-                        <div class="card-pf-item">
-                          <span class="fa fa-check"></span>
-                        </div>
-                      </div>
-                      <p class="card-pf-info text-center"><strong>{{ admin_title }}</strong><br />
-                        (Enabled) </p>
-                    </div>
-                    <div class="card-pf-view-checkbox">
-                      <input type="checkbox">
+                      <div class="card-pf-items">
+                          <p class="card-pf-info">
+			  	<ul style="text-align: left;">
+				  <li><strong>Web Application</strong>: Django based web application</li>
+				  <li><strong>Ruleset Management</strong>: For one local instance of Suricata</li>
+				  <li><strong>Command line aware</strong>: Run administration commands</li>
+				  <li><strong>Threat Hunting</strong>: With the flexibility of metadata</li>
+				  <li><strong>Open Source</strong>: Released under GPLv3</li>
+				</ul>
+			   </p>
+		      </div>
                     </div>
                   </div>
                 </a>
               </div>
 
-              <div class="col-md-3 col-xs-11">
-                <a href="/rules/hunt" style="color: black; text-decoration: none;">
-                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1">
+              <div class="col-md-6 col-xs-11">
+                <a href="https://www.stamus-networks.com/scirius-open-source" style="color: black; text-decoration: none;">
+                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1; min-height: 23em;">
                     <div class="card-pf-body">
                       <div class="card-pf-top-element">
-                        <span class="pficon pficon-rebalance" style="font-size: 5em"></span>
+                        <span class="pficon pficon-home" style="font-size: 5em"></span>
                       </div>
                       <h2 class="card-pf-title text-center" style="color: #7A1243">
-                        Hunt
+                        SELKS Distribution
                       </h2>
-                      <div class="card-pf-items text-center">
-                        <div class="card-pf-item">
-                          <span class="pficon pficon-security"></span>
-                          <span class="card-pf-item-text alerts_count">--</span>
-                        </div>
-                        <div class="card-pf-item">
-                          <span class="fa fa-check"></span>
-                        </div>
-                      </div>
-                      <p class="card-pf-info text-center"><strong>Threat hunting</strong><br />
-                        (Enabled) </p>
-                    </div>
-                    <div class="card-pf-view-checkbox">
-                      <input type="checkbox">
-                    </div>
+                      <div class="card-pf-items">
+                          <p class="card-pf-info">
+			  	<ul style="text-align: left;">
+				  <li><strong>Suricata</strong>: Ready to use Suricata</li>
+				  <li><strong>Elasticsearch</strong>: Search Engine</li>
+				  <li><strong>Logstash</strong>: Log injection</li>
+				  <li><strong>Kibana</strong>: Custom dashboards and event exploration</li>
+				  <li><strong>Scirius CE</strong>: Ruleset Management and Threat Hunting</li>
+				</ul>
+			   </p>
+		      </div>
                   </div>
-                </a>
               </div>
+	      </a>
+              </div>
+	      </div>
 
-              <div class="col-md-3 col-xs-11">
-                {% if kibana %}
-                <a href="{{ kibana_url }}" style="color: black; text-decoration: none;">
-                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1">
-                {% else %}
-                    <a href="/#" style="color: black; text-decoration: none;">
-                      <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select disabled_home"
-                        style="background-color:#f1f1f1">
-                {% endif %}
+              <div class="col-md-5 col-xs-11">
+                <a href="https://www.stamus-networks.com/scirius-platform" style="color: black; text-decoration: none;">
+                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1; min-height: 23em;">
                         <div class="card-pf-body">
                           <div class="card-pf-top-element">
-                            <span class="glyphicon glyphicon-stats" style="font-size: 4.8em"></span>
+                            <span class="pficon pficon-enterprise" style="font-size: 4.8em"></span>
                           </div>
                           <h2 class="card-pf-title text-center" style="color: #7A1243">
-                            Dashboards
+                            Scirius Security Platform
                           </h2>
-                        <div class="card-pf-items text-center">
-                {% if kibana %}
-                            <div class="card-pf-item">
-                                <span class="fa fa-check"></span>
-                            </div>
-                {% else %}
-                            <div class="card-pf-item failure">
-                                <span class="fa fa-remove"></span>
-                            </div>
-                {% endif %}
-                        </div>
-                          <p class="card-pf-info text-center"><strong>Kibana dashboards for Elasticsearch</strong><br />
-                {% if kibana %}
-                            (Enabled)
-                {% else %}
-                            (Disabled)
-                {% endif %}
-                          </p>
-                        </div>
-                        <div class="card-pf-view-checkbox">
-                          <input type="checkbox">
+                          <p class="card-pf-info">
+			  	<ul style="text-align: left;">
+					<li><strong>Scirius Probe Management:</strong> IDS administration and ruleset management across multiple probes</li>
+					<li><strong>Scirius Enriched Hunting:</strong> Threat hunting based on the correlation of NTA, IDS and organizational data</li>
+					<li><strong>Scirius Threat Radar:</strong> Automated detection of high probability events mapped into the kill chain</li>
+					<li><strong><a href="https://www.stamus-networks.com/scirius-platform">More info...</a></li>
+				</ul>
+			   </p>
                         </div>
                       </div>
-                    </a>
+		      </a>
                   </div>
 
-                  <div class="col-md-3 col-xs-11">
-                    {% if evebox %}
-                    <a href="{{ evebox_url }}" style="color: black; text-decoration: none;">
-                      <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1">
-                    {% else %}
-                        <a href="/#" style="color: black; text-decoration: none;">
-                          <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select disabled_home"
-                            style="background-color:#f1f1f1">
-                    {% endif %}
-                            <div class="card-pf-body">
-                              <div class="card-pf-top-element">
-                                <span class="glyphicon glyphicon-th-list" style="font-size: 4.8em"></span>
-                              </div>
-                              <h2 class="card-pf-title text-center" style="color: #7A1243">
-                                Events Viewer
-                              </h2>
-                            <div class="card-pf-items text-center">
-                    {% if evebox %}
-                                <div class="card-pf-item">
-                                    <span class="fa fa-check"></span>
-                                </div>
-                    {% else %}
-                                <div class="card-pf-item failure">
-                                    <span class="fa fa-remove"></span>
-                                </div>
-                    {% endif %}
-                            </div>
-                              <p class="card-pf-info text-center"><strong>Evebox alert and event management tool</strong><br />
-                    {% if evebox %}
-                                (Enabled)
-                    {% else %}
-                                (Disabled)
-                    {% endif %}
-                              </p>
-                            </div>
-                            <div class="card-pf-view-checkbox">
-                              <input type="checkbox">
-                            </div>
-                          </div>
-                        </a>
-                      </div>
-
-                  </div>
               </div>
 
             </div>
+{% endif %}
           </div>
 
         </div>
-        <div class="row">
-          <ul class="list-inline text-center">
-            <li><a href="https://www.stamus-networks.com/scirius-open-source">Scirius Community Edition</a></li>
-            <li><a href="https://www.stamus-networks.com/scirius-platform">Scirius Security Platform</a></li>
-          </ul>
-        </div>
 	    {% include "rules/footer.html" %}
       </div>
-    </div><!-- container -->
+    </div><!-- row -->
+  </div><!-- container -->
 
 <script>
     function get_alert_count() {
