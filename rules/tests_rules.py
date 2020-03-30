@@ -29,6 +29,8 @@ import StringIO
 import re
 
 from django.utils.html import escape
+from django.conf import settings
+
 
 class TestRules():
     VARIABLE_ERROR = 101
@@ -266,7 +268,7 @@ config classification: command-and-control,Malware Command and Control Activity 
         from rules.models import export_iprep_files
         export_iprep_files(tmpdir, cats_content, iprep_content)
             
-        suri_cmd = ['suricata', '-T', '-l', tmpdir, '-S', rule_file, '-c', config_file]
+        suri_cmd = [settings.SURICATA_BINARY, '-T', '-l', tmpdir, '-S', rule_file, '-c', config_file]
         # start suricata in test mode
         suriprocess = subprocess.Popen(suri_cmd , stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (outdata, errdata) = suriprocess.communicate()
