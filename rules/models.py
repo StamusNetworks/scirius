@@ -3124,6 +3124,7 @@ class RuleProcessingFilter(models.Model):
             msg = self.filter_defs.get(key='alert.signature').value
             sid = Rule.objects.get(msg=msg).sid
             sid_track_ip = {unicode(sid): []}
+            sids.append(sid)
         except models.ObjectDoesNotExist:
             pass
 
@@ -3163,7 +3164,7 @@ class RuleProcessingFilter(models.Model):
                         elif alert_source_ip:
                             sid_track_ip[unicode(rule.sid)] = ('by_src', alert_ip.value,)
                     else:
-                        sid_track_ip.pop(rule.sid, None)
+                        sid_track_ip.pop(unicode(rule.sid), None)
 
             elif src_ip:
                 for sid in sids:
@@ -3174,7 +3175,8 @@ class RuleProcessingFilter(models.Model):
 
             res = []
             for sid, val in sid_track_ip.iteritems():
-                res.append('suppress gen_id 1, sid_id %s, track %s, ip %s\n' % (sid, val[0], val[1]))
+                if len(val):
+                    res.append('suppress gen_id 1, sid_id %s, track %s, ip %s\n' % (sid, val[0], val[1]))
             return res
 
         elif self.action == 'threshold':
