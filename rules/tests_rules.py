@@ -1,5 +1,5 @@
 """
-Copyright(C) 2018 Stamus Networks
+Copyright(C) 2018-2020 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
 
 This file is part of Scirius.
@@ -19,7 +19,6 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from __future__ import unicode_literals
-import psutil
 import subprocess
 import tempfile
 import shutil
@@ -34,9 +33,9 @@ from django.conf import settings
 
 class TestRules():
     VARIABLE_ERROR = 101
-    OPENING_RULE_FILE = 41 # Error when opening a file referenced in the source
-    RULEFILE_ERRNO = [ 39, 42 ]
-    USELESS_ERRNO = [ 40, 43, 44 ]
+    OPENING_RULE_FILE = 41  # Error when opening a file referenced in the source
+    RULEFILE_ERRNO = [39, 42]
+    USELESS_ERRNO = [40, 43, 44]
     CONFIG_FILE = """
 %YAML 1.1
 ---
@@ -154,27 +153,25 @@ config classification: coin-mining,Crypto Currency Mining Activity Detected,2
 config classification: command-and-control,Malware Command and Control Activity Detected,1
 """
 
-    def parse_suricata_error(self, error, single = False):
+    def parse_suricata_error(self, error, single=False):
         ret = {
             'errors': [],
             'warnings': [],
         }
-        error_list = []
-        warning_list = []
         variable_list = []
         files_list = []
         error_stream = StringIO.StringIO(error)
         for line in error_stream:
             try:
                 s_err = json.loads(line)
-            except:
+            except Exception:
                 ret['errors'].append({'message': error, 'format': 'raw'})
                 return ret
             errno = s_err['engine']['error_code']
             if not single or errno not in self.RULEFILE_ERRNO:
                 if errno == self.VARIABLE_ERROR:
                     variable = s_err['engine']['message'].split("\"")[1]
-                    if not "$" + variable  in variable_list:
+                    if not "$" + variable in variable_list:
                         variable_list.append("$" + variable)
                         s_err['engine']['message'] = "Custom address variable \"$%s\" is used and need to be defined in probes configuration" % (variable)
                         ret['warnings'].append(s_err['engine'])
@@ -188,10 +185,10 @@ config classification: command-and-control,Malware Command and Control Activity 
                         s_err['engine']['message'] = 'External file "%s" is a dependancy and needs to be added to rulesets' % filename
                         ret['warnings'].append(s_err['engine'])
                         continue
-                if not errno in self.USELESS_ERRNO:
+                if errno not in self.USELESS_ERRNO:
                     # clean error message
                     if errno == 39:
-                        # exclude error on varible
+                        # exclude error on variable
                         found = False
                         for variable in variable_list:
                             if variable in s_err['engine']['message']:
@@ -205,13 +202,13 @@ config classification: command-and-control,Malware Command and Control Activity 
                                     break
                         if found:
                             continue
-                        s_err['engine']['message'] = s_err['engine']['message'].split(' from file')[0] 
+                        s_err['engine']['message'] = s_err['engine']['message'].split(' from file')[0]
                         getsid = re.compile("sid *:(\d+)")
                         match = getsid.search(line)
                         if match:
                             s_err['engine']['sid'] = int(match.groups()[0])
                     if errno == 42:
-                        s_err['engine']['message'] =  s_err['engine']['message'].split(' from')[0] 
+                        s_err['engine']['message'] = s_err['engine']['message'].split(' from')[0]
                     ret['errors'].append(s_err['engine'])
         return ret
 
@@ -267,10 +264,10 @@ config classification: command-and-control,Malware Command and Control Activity 
 
         from rules.models import export_iprep_files
         export_iprep_files(tmpdir, cats_content, iprep_content)
-            
+
         suri_cmd = [settings.SURICATA_BINARY, '-T', '-l', tmpdir, '-S', rule_file, '-c', config_file]
         # start suricata in test mode
-        suriprocess = subprocess.Popen(suri_cmd , stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        suriprocess = subprocess.Popen(suri_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (outdata, errdata) = suriprocess.communicate()
         shutil.rmtree(tmpdir)
         # if success ok
@@ -291,11 +288,11 @@ config classification: command-and-control,Malware Command and Control Activity 
         prov_result = self.rule_buffer(rule_buffer, config_buffer=config_buffer, related_files=related_files, cats_content=cats_content, iprep_content=iprep_content)
         if prov_result['status'] and not prov_result.has_key('warnings'):
             return self._escape_result(prov_result)
-        res = self.parse_suricata_error(prov_result['errors'], single = single)
+        res = self.parse_suricata_error(prov_result['errors'], single=single)
         prov_result['errors'] = res['errors']
         prov_result['warnings'] = res['warnings']
-        i = 6 # support only 6 unknown variables per rule
-        prov_result['iter'] = 0;
+        i = 6  # support only 6 unknown variables per rule
+        prov_result['iter'] = 0
         while len(res['warnings']) and i > 0:
             modified = False
             for warning in res['warnings']:
@@ -305,10 +302,10 @@ config classification: command-and-control,Malware Command and Control Activity 
                     rule_buffer = rule_buffer.replace("!" + var, "192.0.2.0/24")
                     rule_buffer = rule_buffer.replace(var, "192.0.2.0/24")
                     modified = True
-            if modified == False:
+            if modified is False:
                 break
             result = self.rule_buffer(rule_buffer, config_buffer=config_buffer, related_files=related_files, cats_content=cats_content, iprep_content=iprep_content)
-            res = self.parse_suricata_error(result['errors'], single = single)
+            res = self.parse_suricata_error(result['errors'], single=single)
             prov_result['errors'] = res['errors']
             if len(res['warnings']):
                 prov_result['warnings'] = prov_result['warnings'] + res['warnings']
