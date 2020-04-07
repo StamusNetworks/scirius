@@ -113,6 +113,7 @@ export class AlertsPage extends React.Component {
         const stringFilters = buildQFilter(filters, this.props.systemSettings);
         const filterParams = buildFilterParams(this.props.filterParams);
         this.setState({ refresh_data: true, loading: true });
+
         const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?search_target=0&${this.buildListUrlParams(state)}&${filterParams}${stringFilters}`;
         axios.get(url)
         .then((res) => {
@@ -171,6 +172,8 @@ export class AlertsPage extends React.Component {
                         filters={this.props.filters}
                         close={this.closeAction}
                         rulesets={this.state.rulesets}
+                        systemSettings={this.props.systemSettings}
+                        filterParams={this.props.filterParams}
                     />
                 </ErrorHandler>
             </div>

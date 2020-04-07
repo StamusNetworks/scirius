@@ -144,6 +144,9 @@ class ESQuery(object):
                     hosts_list = dictionary['hosts'].split(',')
             if 'qfilter' in self.request.GET:
                 qfilter = self.request.GET['qfilter']
+        else:
+            if 'qfilter' in dictionary:
+                qfilter = dictionary['qfilter']
 
         hosts = None
         hosts_filter = None

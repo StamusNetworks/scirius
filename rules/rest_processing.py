@@ -219,6 +219,8 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
 
             if self.option_serializer and hasattr(self.option_serializer.Meta.model, 'action'):
                 self.option_serializer.save(action=instance)
+                if hasattr(self.option_serializer, 'extra_actions'):
+                    self.option_serializer.extra_actions()
         else:
             if filters is not None and len(filters) == 0:
                 # Error on empty list only

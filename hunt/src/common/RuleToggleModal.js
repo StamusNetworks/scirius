@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { Modal, Button, Checkbox, Col, Form, FormControl, FormGroup, Icon } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
+import { buildQFilter } from 'hunt_common/buildQFilter';
+import { buildFilterParams } from 'hunt_common/buildFilterParams';
 import { supportedActions, setDefaultOptions } from 'hunt_common/supportedActions';
 import HuntRestError from '../components/HuntRestError';
 
@@ -161,7 +163,9 @@ export default class RuleToggleModal extends React.Component {
             if (supportedActions.indexOf(this.props.action) !== -1) {
                 data.options = this.state.options;
             }
-            axios.post(config.API_URL + config.PROCESSING_PATH, data).then(
+
+            const url = `${config.API_URL}${config.PROCESSING_PATH}?${buildFilterParams(this.props.filterParams)}${buildQFilter(this.props.filters, this.props.systemSettings)}`;
+            axios.post(url, data).then(
                 () => {
                     this.close();
                 }
@@ -326,4 +330,6 @@ RuleToggleModal.propTypes = {
     config: PropTypes.any,
     close: PropTypes.func,
     children: PropTypes.any,
+    systemSettings: PropTypes.any,
+    filterParams: PropTypes.any
 };
