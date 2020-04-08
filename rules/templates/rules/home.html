@@ -33,30 +33,30 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-12">
-        <div class="blank-slate-pf" style="background-color:white">
+        <div class="blank-slate-pf" style="background-color:white; padding: 40px; padding-right: 60px; padding-left: 60px;">
 
           <div class="row">
             <div class="jumbotron fill" id="logininfo">
               <img src="/static/rules/stamus.png">
-              <h2 style="color: #7A1243">{{ title }}</h2>
-              <p class="lead">
+              <h2 style="color: #7A1243; font-size: 240%;">{{ title }}</h2>
+              <p class="lead" style="font-size: 170%;">
                 {{ content_lead }}
               </p>
               <hr class="m-y-2">
-              <p class="minor">{{ content_minor1 }}</p>
+              <p class="minor" style="font-size: 140%;">{{ content_minor1 }}</p>
               <p class="minor">{{ content_minor2 }}</p>
               <p class="minor">{{ content_minor3 }}</p>
-              <p><h3>Click on  <div class="fa fa-th applauncher-pf-icon"/>  to switch applications</h3></p>
+              <p><h3>Click on  <div class="fa fa-th applauncher-pf-icon"/> on top right to switch applications</h3></p>
             </div>
           </div>
 
 {% if in_selks %}
           <div class="container-fluid container-cards-pf">
-            <div class="row row-cards-pf" style="margin-left: -35px;">
+            <div class="row row-cards-pf">
               <div class="col-md-7 col-xs-11">
               	<div class="col-md-6 col-xs-11">
                 <a href="https://www.stamus-networks.com/scirius-open-source" style="color: black; text-decoration: none;">
-                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1; min-height: 23em;">
+                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1; min-height: 22em;">
                     <div class="card-pf-body">
                       <div class="card-pf-top-element">
                         <span class="pficon pficon-services list-view-pf-icon-sm" style="font-size: 5em"></span>
@@ -82,7 +82,7 @@
 
               <div class="col-md-6 col-xs-11">
                 <a href="https://www.stamus-networks.com/scirius-open-source" style="color: black; text-decoration: none;">
-                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1; min-height: 23em;">
+                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1; min-height: 22em;">
                     <div class="card-pf-body">
                       <div class="card-pf-top-element">
                         <span class="pficon pficon-home" style="font-size: 5em"></span>
@@ -109,7 +109,7 @@
 
               <div class="col-md-5 col-xs-11">
                 <a href="https://www.stamus-networks.com/scirius-platform" style="color: black; text-decoration: none;">
-                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1; min-height: 23em;">
+                  <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select" style="background-color:#f1f1f1; min-height: 22em;">
                         <div class="card-pf-body">
                           <div class="card-pf-top-element">
                             <span class="pficon pficon-enterprise" style="font-size: 4.8em"></span>
@@ -122,7 +122,7 @@
 					<li><strong>Scirius Probe Management:</strong> IDS administration and ruleset management across multiple probes</li>
 					<li><strong>Scirius Enriched Hunting:</strong> Threat hunting based on the correlation of NTA, IDS and organizational data</li>
 					<li><strong>Scirius Threat Radar:</strong> Automated detection of high probability events mapped into the kill chain</li>
-					<li><strong><a href="https://www.stamus-networks.com/scirius-platform">More info...</a></li>
+					<li><strong><a href="https://www.stamus-networks.com/scirius-platform">More info...</a></strong></li>
 				</ul>
 			   </p>
                         </div>
@@ -134,6 +134,7 @@
 
             </div>
 {% endif %}
+          </div>
           </div>
 
         </div>
