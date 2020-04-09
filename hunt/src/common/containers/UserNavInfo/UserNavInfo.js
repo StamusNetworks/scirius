@@ -170,7 +170,7 @@ export default class UserNavInfo extends Component {
                             <li className="applauncher-pf-item" role="presentation">
                                 <a className="applauncher-pf-link" href="/rules/hunt" role="menuitem" data-toggle="tooltip" title={'Threat Hunting'} style={{ cursor: 'pointer' }}>
 
-                                    <i style={{ fontSize: '2em' }} className="pficon-rebalance" aria-hidden="true"></i>
+                                    <img src="/static/rules/Stamus_SEH_icon.png" height="40" width="40" alt="Hunt" />
                                     <span className="applauncher-pf-link-title">{'Hunt'}</span>
                                 </a>
                             </li>
@@ -178,7 +178,7 @@ export default class UserNavInfo extends Component {
                             <li className="applauncher-pf-item" role="presentation">
                                 <a className="applauncher-pf-link" href="/rules" role="menuitem" data-toggle="tooltip" title={'Appliances Management'} style={{ cursor: 'pointer' }}>
 
-                                    <i style={{ fontSize: '2em' }} className="pficon-server" aria-hidden="true"></i>
+                                    <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40" alt="Admin" />
                                     <span className="applauncher-pf-link-title">{'Administration'}</span>
                                 </a>
                             </li>
@@ -186,7 +186,7 @@ export default class UserNavInfo extends Component {
                             {process.env.REACT_APP_HAS_TAG === '1' && <li className="applauncher-pf-item" role="presentation">
                                 <a className="applauncher-pf-link" href="/appliances/str" role="menuitem" data-toggle="tooltip" title={'Threat Radar'} style={{ cursor: 'pointer' }}>
 
-                                    <i style={{ fontSize: '2em' }} className="pficon-process-automation" aria-hidden="true"></i>
+                                    <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40" alt="STR" />
                                     <span className="applauncher-pf-link-title">{'Threat Radar'}</span>
                                 </a>
                             </li>}
@@ -194,16 +194,16 @@ export default class UserNavInfo extends Component {
                             {this.props.systemSettings && this.props.systemSettings.kibana && <li className="applauncher-pf-item" role="presentation">
                                 <a className="applauncher-pf-link" href={this.props.systemSettings.kibana_url} role="menuitem" data-toggle="tooltip" title={'Kibana dashboards for ES'} style={{ cursor: 'pointer' }}>
 
-                                    <i style={{ fontSize: '2em' }} className="glyphicon glyphicon-stats" aria-hidden="true"></i>
-                                    <span className="applauncher-pf-link-title">{'Dashboards'}</span>
+                                    <i style={{ fontSize: '2.5em', paddingTop: '5px' }} className="glyphicon glyphicon-stats" aria-hidden="true"></i>
+                                    <span className="applauncher-pf-link-title" style={{ paddingTop: '5px' }}>{'Dashboards'}</span>
                                 </a>
                             </li>}
 
                             {this.props.systemSettings && this.props.systemSettings.evebox && <li className="applauncher-pf-item" role="presentation">
                                 <a className="applauncher-pf-link" href={this.props.systemSettings.evebox_url} role="menuitem" data-toggle="tooltip" title={'Evebox alert and event management tool'} style={{ cursor: 'pointer' }}>
 
-                                    <i style={{ fontSize: '2em' }} className="glyphicon glyphicon-th-list" aria-hidden="true"></i>
-                                    <span className="applauncher-pf-link-title">{'Events viewer'}</span>
+                                    <i style={{ fontSize: '2.5em' }} className="glyphicon glyphicon-th-list" aria-hidden="true"></i>
+                                    <span className="applauncher-pf-link-title" style={{ paddingTop: '5px' }}>{'Events viewer'}</span>
                                 </a>
                             </li>}
 

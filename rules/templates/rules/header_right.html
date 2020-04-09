@@ -73,13 +73,13 @@ $( 'document' ).ready(
     <ul class="dropdown-menu" role="menu">
       <li class="applauncher-pf-item" role="presentation">
         <a class="applauncher-pf-link"  style="color: inherit" href="/rules/hunt" role="menuitem">
-          <i style="font-size: 2em;" class="applauncher-pf-link-icon pficon pficon-rebalance" aria-hidden="true"></i>
+          <img src="/static/rules/Stamus_SEH_icon.png" height="40" width="40"/>
           <span class="applauncher-pf-link-title">Hunt</span>
         </a>
       </li>
       <li class="applauncher-pf-item" role="presentation">
         <a class="applauncher-pf-link" style="color: inherit" href="/rules" role="menuitem">
-          <i style="font-size: 2em;" class="applauncher-pf-link-icon pficon pficon-server" aria-hidden="true"></i>
+          <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40"/>
           <span class="applauncher-pf-link-title">Administration</span>
         </a>
       </li>
@@ -87,7 +87,7 @@ $( 'document' ).ready(
       {% if generator and generator == 'appliances' %}
       <li class="applauncher-pf-item" role="presentation">
         <a class="applauncher-pf-link" style="color: inherit" href="/appliances/str" role="menuitem">
-          <i style="font-size: 2em;" class="pficon-process-automation" aria-hidden="true"></i>
+          <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40"/>
           <span class="applauncher-pf-link-title">Threat Radar</span>
         </a>
       </li>
@@ -96,7 +96,7 @@ $( 'document' ).ready(
       {% if kibana %}
       <li class="applauncher-pf-item" role="presentation">
         <a class="applauncher-pf-link" style="color: inherit" href="{{kibana_url}}" role="menuitem">
-          <i style="font-size: 2em;" class="glyphicon glyphicon-stats" aria-hidden="true"></i>
+          <i style="font-size: 2.5em; padding-top: 5px;" class="glyphicon glyphicon-stats" aria-hidden="true"></i>
           <span class="applauncher-pf-link-title">Dashboards</span>
         </a>
       </li>
@@ -104,7 +104,7 @@ $( 'document' ).ready(
       {% if evebox %}
       <li class="applauncher-pf-item" role="presentation">
         <a class="applauncher-pf-link" style="color: inherit" href="{{evebox_url}}" role="menuitem">
-          <i style="font-size: 2em;" class="glyphicon glyphicon-th-list" aria-hidden="true"></i>
+          <i style="font-size: 2.5em;  padding-bottom: 5px;" class="glyphicon glyphicon-th-list" aria-hidden="true"></i>
           <span class="applauncher-pf-link-title">Events viewer</span>
         </a>
       </li>
