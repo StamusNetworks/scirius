@@ -2071,46 +2071,53 @@ class ESDeleteAlertsBySid(ESQuery):
 
 
 class ESEventsCount(ESQuery):
-    QUERY_TMPL = """
+    QUERY_TMPL = '''
     {
-        "size": 0,
-        "query": {
-            "bool": {
-                "must": [
-                {
-                    "query_string": {
-                        "query": "_exists_:event_type",
-                        "analyze_wildcard": true
-                    }
-                },
-                {
-                    "range": {
-                        "@timestamp": {
-                            "gte": {{ from_date }},
-                            "lte": {{ to_date }},
-                            "format": "epoch_millis"
-                        }
-                    }
-                }
-                ]
+      "size": 0,
+      "aggs": {
+        "date": {
+          "date_histogram" : {
+            "field": "@timestamp",
+            "interval": "{{ interval }}",
+            "min_doc_count": 0,
+            "offset": "+{{ offset }}ms",
+            "extended_bounds": {
+                "min": {{ from_date }},
+                "max": {{ to_date }}
             }
-        },
-        "aggs": {
-            "date": {
-              "date_histogram": {
-                "field": "@timestamp",
-                "interval": "{{ interval }}",
-                "min_doc_count": 0,
-                "offset": "+{{ offset }}ms",
-                "extended_bounds": {
-                  "min": {{ from_date }},
-                  "max": {{ to_date }}
-                }
+          },
+          "aggs": {
+            "nb_events": {
+              "sum": {
+                "field": "stats.json.events"
               }
             }
+          }
+        },
+        "sum_events": {
+            "sum_bucket": {
+                "buckets_path": "date>nb_events"
+            }
         }
+      },
+      "query": {
+        "bool": {
+          "must": [{
+            "query_string": {
+              "query": "event_type:stats {{ query_filter }}"
+            }
+          },{
+          "range": {
+            "@timestamp": {
+              "gte": {{ from_date }},
+              "lte": {{ to_date }},
+              "format": "epoch_millis"
+            }
+          }}]
+        }
+      }
     }
-    """
+    '''
 
     def get(self, from_date, to_date, interval):
         es_url = self._get_es_url(data='logstash')
