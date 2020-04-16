@@ -755,7 +755,16 @@ export class HuntDashboard extends React.Component {
                     </div>
                 </div>
                 <ErrorHandler>
-                    <RuleToggleModal show={this.state.action.view} action={this.state.action.type} config={this.props.rules_list} filters={this.props.filters} close={this.closeAction} rulesets={this.state.rulesets} />
+                    <RuleToggleModal
+                        show={this.state.action.view}
+                        action={this.state.action.type}
+                        config={this.props.rules_list}
+                        filters={this.props.filters}
+                        close={this.closeAction}
+                        rulesets={this.state.rulesets}
+                        systemSettings={this.props.systemSettings}
+                        filterParams={this.props.filterParams}
+                    />
                 </ErrorHandler>
                 <Modal show={!(this.state.moreModal === null)} onHide={() => { this.hideMoreModal(); }}>
 
