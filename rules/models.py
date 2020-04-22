@@ -993,7 +993,7 @@ class Source(models.Model):
         category.get_rules(self)
         if len(Rule.objects.filter(category=category)) == 0:
             category.delete()
-            raise ValidationError('The source contains no valid signature')
+            raise ValidationError('The source %s contains no valid signature' % self.name)
 
     def handle_custom_file(self, f):
         from scirius.utils import get_middleware_module
