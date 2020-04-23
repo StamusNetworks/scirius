@@ -166,7 +166,7 @@ _HUNT_FILTERS = [
                                   {'id': 'status', 'title': 'Status', 'placeholder': 'Filter by Status'},
                                   {'id': 'http_method', 'title': 'Method', 'placeholder': 'Filter by Method'},
                                   {'id': 'http_content_type', 'title': 'Content Type', 'placeholder': 'Filter by Content Type'},
-                                  {'id': 'http_length', 'title': 'Length', 'placeholder': 'Filter by Content Length'},
+                                  {'id': 'length', 'title': 'Length', 'placeholder': 'Filter by Content Length'},
                                ]
                           },
                           {

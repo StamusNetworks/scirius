@@ -374,7 +374,7 @@ export default class AlertItem extends React.Component {
                                             {data.http.http_refer !== undefined && <ErrorHandler><EventField field_name="Referrer" field="http.http_refer" value={data.http.http_refer} addFilter={this.addFilter} /></ErrorHandler>}
                                             {data.http.http_port !== undefined && <ErrorHandler><EventField field_name="Port" field="http.http_port" value={data.http.http_port} addFilter={this.addFilter} /></ErrorHandler>}
                                             {data.http.http_content_type !== undefined && <ErrorHandler><EventField field_name="Content Type" field="http.http_content_type" value={data.http.http_content_type} addFilter={this.addFilter} /></ErrorHandler>}
-                                            {data.http.length !== undefined && <ErrorHandler><EventField field_name="Length" field="http.http_length" value={data.http.length} addFilter={this.addFilter} /></ErrorHandler>}
+                                            {data.http.length !== undefined && <ErrorHandler><EventField field_name="Length" field="http.length" value={data.http.length} addFilter={this.addFilter} /></ErrorHandler>}
                                         </dl>
                                     </div>
                                 </div>
