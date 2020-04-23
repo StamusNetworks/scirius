@@ -16,7 +16,8 @@ export default class RuleToggleModal extends React.Component {
             supported_filters: [],
             comment: '',
             options: {},
-            errors: undefined
+            errors: undefined,
+            submitting: false
         };
         this.submit = this.submit.bind(this);
         this.close = this.close.bind(this);
@@ -118,6 +119,8 @@ export default class RuleToggleModal extends React.Component {
     }
 
     submit() {
+        this.setState({ submitting: true });
+
         if (['enable', 'disable'].indexOf(this.props.action) !== -1) {
             this.state.selected.map(
                 (ruleset) => {
@@ -167,11 +170,12 @@ export default class RuleToggleModal extends React.Component {
             const url = `${config.API_URL}${config.PROCESSING_PATH}?${buildFilterParams(this.props.filterParams)}${buildQFilter(this.props.filters, this.props.systemSettings)}`;
             axios.post(url, data).then(
                 () => {
+                    this.setState({ submitting: false });
                     this.close();
                 }
             ).catch(
                 (error) => {
-                    this.setState({ errors: error.response.data });
+                    this.setState({ errors: error.response.data, submitting: false });
                 }
             );
         }
@@ -313,7 +317,7 @@ export default class RuleToggleModal extends React.Component {
                     >
                         Cancel
                     </Button>
-                    {!this.state.noaction && <Button bsStyle="primary" onClick={this.submit}>
+                    {!this.state.noaction && <Button bsStyle="primary" onClick={this.submit} disabled={this.state.submitting}>
                         Submit
                     </Button>}
                 </Modal.Footer>
