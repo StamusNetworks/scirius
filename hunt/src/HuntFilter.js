@@ -233,7 +233,7 @@ class HuntFilter extends React.Component {
         const { currentFilterType } = this.state;
         let error = false;
         if (currentFilterType.valueType === 'ip') {
-            const numbers = event.target.value.split(/\.|:/);
+            const numbers = event.target.value.split(/\.|:|\//);
             const filteredNum = numbers.filter((item) => item !== '');
 
             const UINT_REGEXP_V4 = /^\d*[0-9]\d*$/;
