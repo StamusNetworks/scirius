@@ -30,10 +30,11 @@ import Select from 'react-select';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
 import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
+import { sections } from 'hunt_common/constants';
 import { HuntSort } from './Sort';
 import FilterList from './components/FilterList/index';
 import FilterSetSave from './components/FilterSetSaveModal';
-import { makeSelectGlobalFilters, makeSelectAlertTag, makeSelectHistoryFilters, sections, addFilter, clearFilters, setTag, enableOnly } from './containers/App/stores/global';
+import { makeSelectGlobalFilters, makeSelectAlertTag, makeSelectHistoryFilters, addFilter, clearFilters, setTag, enableOnly } from './containers/App/stores/global';
 import { loadFilterSets } from './components/FilterSets/store';
 
 // https://www.regextester.com/104038

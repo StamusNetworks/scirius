@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { sections } from 'hunt_common/constants';
 import './style.css';
-import { sections } from '../../../containers/App/stores/global';
 
 const FilterItem = (props) => {
     const negated = (props.negated) ? 'label-not' : '';

@@ -1,6 +1,7 @@
 // CONSTANTS
 import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
+import { sections } from 'hunt_common/constants';
 
 export const ADD_FILTER = 'Hunt/App/ADD_FILTER';
 export const REMOVE_FILTER = 'Hunt/App/REMOVE_FILTER';
@@ -8,12 +9,6 @@ export const EDIT_FILTER = 'Hunt/App/EDIT_FILTER';
 export const CLEAR_FILTERS = 'Hunt/App/CLEAR_FILTERS';
 export const SET_ALERT = 'Hunt/App/SET_ALERT';
 export const SET_ONLY_ONE_ALERT = 'Hunt/App/SET_ONLY_ONE_ALERT';
-
-export const sections = {
-    GLOBAL: 'ids_filters',
-    HISTORY: 'history_filters',
-    ALERT: 'alert_tag',
-};
 
 export const validateFilter = (filter) => {
     if (filter.id === 'alert.tag') {

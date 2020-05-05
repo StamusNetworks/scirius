@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { Col, Icon, Row, ListViewItem, ListViewInfoItem, ListViewIcon } from 'patternfly-react';
-import { PAGE_STATE } from 'hunt_common/constants';
-import { sections, addFilter } from '../containers/App/stores/global';
+import { PAGE_STATE, sections } from 'hunt_common/constants';
+import { addFilter } from '../containers/App/stores/global';
 
 const HistoryItem = (props) => {
     const date = moment(props.data.date).format('YYYY-MM-DD, hh:mm:ss a');

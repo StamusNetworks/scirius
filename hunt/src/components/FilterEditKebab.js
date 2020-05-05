@@ -5,11 +5,12 @@ import { DropdownKebab, MenuItem } from 'patternfly-react';
 import axios from 'axios';
 import { createStructuredSelector } from 'reselect';
 import * as config from 'hunt_common/config/Api';
+import { sections } from 'hunt_common/constants';
 import FilterToggleModal from '../FilterToggleModal';
 import ErrorHandler from './Error';
 import FilterSetSave from './FilterSetSaveModal';
 import { loadFilterSets } from './FilterSets/store';
-import { addFilter, generateAlert, setTag, sections, clearFilters, makeSelectAlertTag } from '../containers/App/stores/global';
+import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag } from '../containers/App/stores/global';
 
 class FilterEditKebab extends React.Component {
     constructor(props) {

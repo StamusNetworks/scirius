@@ -25,7 +25,7 @@ import { FormGroup, FormControl, Notification, NotificationDrawer, MenuItem, Ico
 import { Collapse } from 'react-bootstrap';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
-import { sections } from '../../containers/App/stores/global';
+import { sections } from 'hunt_common/constants';
 
 export default class FilterSets extends React.Component {
     constructor(props) {

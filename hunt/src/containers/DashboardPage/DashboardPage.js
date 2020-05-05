@@ -35,6 +35,7 @@ import { dashboard } from 'hunt_common/config/Dashboard';
 import { buildQFilter } from 'hunt_common/buildQFilter';
 import { buildFilterParams } from 'hunt_common/buildFilterParams';
 import RuleToggleModal from 'hunt_common/RuleToggleModal';
+import { sections } from 'hunt_common/constants';
 import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
 import { actionsButtons, UpdateFilter, loadActions, createAction, closeAction } from '../../helpers/common';
@@ -44,7 +45,6 @@ import '../../../node_modules/react-grid-layout/css/styles.css';
 import '../../../node_modules/react-resizable/css/styles.css';
 import ErrorHandler from '../../components/Error';
 import copyTextToClipboard from '../../helpers/copyTextToClipboard';
-import { sections } from '../App/stores/global';
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 

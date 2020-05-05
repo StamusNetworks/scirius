@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Icon } from 'patternfly-react';
 import EventValueInfo from 'hunt_common/components/EventValueInfo';
+import { sections } from 'hunt_common/constants';
 import ErrorHandler from './Error';
-import { addFilter, sections } from '../containers/App/stores/global';
+import { addFilter } from '../containers/App/stores/global';
 
 const EventValue = (props) => <div className="value-field-complete">
     <span className="value-field" title={props.value + (props.hasCopyShortcut ? '\nCtrl + left click to copy' : '')}>{props.value}</span>

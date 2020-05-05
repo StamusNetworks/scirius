@@ -24,12 +24,12 @@ import PropTypes from 'prop-types';
 import { ListView, Spinner, PAGINATION_VIEW } from 'patternfly-react';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
+import { sections } from 'hunt_common/constants';
 import HuntFilter from '../../HuntFilter';
 import HistoryItem from '../../components/HistoryItem';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ErrorHandler from '../../components/Error';
 import { buildFilter, buildListUrlParams, UpdateFilter, loadActions, UpdateSort, onFirstPage, onNextPage, onPrevPage, onLastPage, handlePaginationChange } from '../../helpers/common';
-import { sections } from '../App/stores/global';
 
 const HistorySortFields = [
     {
