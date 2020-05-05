@@ -35,6 +35,7 @@ import '../../css/App.css';
 import sciriusLogo from '../../img/scirius-by-stamus.svg';
 import keymap from '../../Keymap';
 import ErrorHandler from '../../components/Error';
+import storage from '../../helpers/storage';
 
 const shortcutManager = new ShortcutManager(keymap);
 
@@ -42,13 +43,13 @@ export default class App extends Component {
     constructor(props) {
         super(props);
         this.timer = null;
-        const interval = localStorage.getItem('interval');
-        let rulesListConf = localStorage.getItem('rules_list');
-        let alertsListConf = localStorage.getItem('alerts_list');
-        let historyConf = localStorage.getItem('history');
-        let filtersListConf = localStorage.getItem('filters_list');
-        let pageDisplay = localStorage.getItem('page_display');
-        let historyFilters = localStorage.getItem('history_filters');
+        const interval = storage.getItem('interval');
+        let rulesListConf = storage.getItem('rules_list');
+        let alertsListConf = storage.getItem('alerts_list');
+        let historyConf = storage.getItem('history');
+        let filtersListConf = storage.getItem('filters_list');
+        let pageDisplay = storage.getItem('page_display');
+        let historyFilters = storage.getItem('history_filters');
 
         if (!rulesListConf) {
             rulesListConf = {
@@ -60,7 +61,7 @@ export default class App extends Component {
                 sort: { id: 'created', asc: false },
                 view_type: 'list'
             };
-            localStorage.setItem('rules_list', JSON.stringify(rulesListConf));
+            storage.setItem('rules_list', JSON.stringify(rulesListConf));
         } else {
             rulesListConf = JSON.parse(rulesListConf);
             // Sanity checks for the object retrieved from local storage
@@ -88,7 +89,7 @@ export default class App extends Component {
                 sort: { id: 'timestamp', asc: false },
                 view_type: 'list'
             };
-            localStorage.setItem('alerts_list', JSON.stringify(alertsListConf));
+            storage.setItem('alerts_list', JSON.stringify(alertsListConf));
         } else {
             alertsListConf = JSON.parse(alertsListConf);
         }
@@ -103,7 +104,7 @@ export default class App extends Component {
                 sort: { id: 'timestamp', asc: false },
                 view_type: 'list'
             };
-            localStorage.setItem('filters_list', JSON.stringify(filtersListConf));
+            storage.setItem('filters_list', JSON.stringify(filtersListConf));
         } else {
             filtersListConf = JSON.parse(filtersListConf);
         }
@@ -118,21 +119,21 @@ export default class App extends Component {
                 sort: { id: 'date', asc: false },
                 view_type: 'list'
             };
-            localStorage.setItem('history', JSON.stringify(historyConf));
+            storage.setItem('history', JSON.stringify(historyConf));
         } else {
             historyConf = JSON.parse(historyConf);
         }
 
         if (!historyFilters) {
             historyFilters = [];
-            localStorage.setItem('history_filters', JSON.stringify(historyFilters));
+            storage.setItem('history_filters', JSON.stringify(historyFilters));
         } else {
             historyFilters = JSON.parse(historyFilters);
         }
 
         if (!pageDisplay) {
             pageDisplay = { page: PAGE_STATE.dashboards, item: undefined };
-            localStorage.setItem('page_display', JSON.stringify(pageDisplay));
+            storage.setItem('page_display', JSON.stringify(pageDisplay));
         } else {
             pageDisplay = JSON.parse(pageDisplay);
         }
@@ -194,7 +195,7 @@ export default class App extends Component {
 
     changeRefreshInterval(interval) {
         this.setState({ ...this.state, interval });
-        localStorage.setItem('interval', interval);
+        storage.setItem('interval', interval);
 
         if (interval) {
             if (this.timer) {
@@ -214,32 +215,32 @@ export default class App extends Component {
         }
         const pageDisplay = { page, item };
         this.setState({ display: pageDisplay });
-        localStorage.setItem('page_display', JSON.stringify(pageDisplay));
+        storage.setItem('page_display', JSON.stringify(pageDisplay));
     }
 
     updateRuleListState(rulesListState) {
         this.setState({ rules_list: rulesListState });
-        localStorage.setItem('rules_list', JSON.stringify(rulesListState));
+        storage.setItem('rules_list', JSON.stringify(rulesListState));
     }
 
     updateAlertListState(alertsListState) {
         this.setState({ alerts_list: alertsListState });
-        localStorage.setItem('alerts_list', JSON.stringify(alertsListState));
+        storage.setItem('alerts_list', JSON.stringify(alertsListState));
     }
 
     updateFilterListState(filtersListState) {
         this.setState({ filters_list: filtersListState });
-        localStorage.setItem('filters_list', JSON.stringify(filtersListState));
+        storage.setItem('filters_list', JSON.stringify(filtersListState));
     }
 
     updateHistoryFilterState(filters) {
         this.setState({ historyFilters: filters });
-        localStorage.setItem('history_filters', JSON.stringify(filters));
+        storage.setItem('history_filters', JSON.stringify(filters));
     }
 
     updateHistoryListState(historyState) {
         this.setState({ history: historyState });
-        localStorage.setItem('history', JSON.stringify(historyState));
+        storage.setItem('history', JSON.stringify(historyState));
     }
 
     get_scirius_status = () => {

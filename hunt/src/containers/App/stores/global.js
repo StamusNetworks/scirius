@@ -2,6 +2,7 @@
 import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
 import { sections } from 'hunt_common/constants';
+import storage from '../../../helpers/storage';
 
 export const ADD_FILTER = 'Hunt/App/ADD_FILTER';
 export const REMOVE_FILTER = 'Hunt/App/REMOVE_FILTER';
@@ -32,14 +33,14 @@ export const generateAlert = (informational = true, relevant = true, untagged = 
 });
 
 export const updateStorage = (filterType, filters) => {
-    localStorage.setItem(filterType, JSON.stringify(filters));
+    storage.setItem(filterType, JSON.stringify(filters));
 }
 
 export const loadStorage = (filtersType) => {
     const initialFilterSet = undefined;
     let result;
     try {
-        const cached = JSON.parse(localStorage.getItem(filtersType));
+        const cached = JSON.parse(storage.getItem(filtersType));
         result = (typeof cached === 'undefined') ? initialFilterSet : cached;
     } catch (e) {
         result = initialFilterSet;

@@ -45,6 +45,7 @@ import '../../../node_modules/react-grid-layout/css/styles.css';
 import '../../../node_modules/react-resizable/css/styles.css';
 import ErrorHandler from '../../components/Error';
 import copyTextToClipboard from '../../helpers/copyTextToClipboard';
+import storage from '../../helpers/storage';
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
@@ -52,7 +53,7 @@ export class HuntDashboard extends React.Component {
     constructor(props) {
         super(props);
 
-        let onlyHits = localStorage.getItem('rules_list.only_hits');
+        let onlyHits = storage.getItem('rules_list.only_hits');
         if (!onlyHits) {
             onlyHits = false;
         }
