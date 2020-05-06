@@ -117,4 +117,10 @@ body {
   {
     color: $danger-color;
   }
+  .brand-color, h2.brand-color {
+    color: $brand-color;
+  }
+  .light-background {
+    background-color: $light-background;
+  }
 }
