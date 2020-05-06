@@ -3,6 +3,7 @@
 
 body {
   font-family: 'Open Sans', sans-serif;
+  color: black;
   margin-top: 0;
   .label {
     font-size: 85%;
@@ -31,7 +32,7 @@ body {
   .nav-tabs > li.active > a,
   .nav-tabs > li.active > a:hover,
   .nav-tabs > li.active > a:focus {
-    color: darken($brand-color, 20%);
+    color: darken($brand-color, 0%);
   }
   ul.dropdown-menu li {
     padding-right: 0;

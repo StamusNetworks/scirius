@@ -79,7 +79,7 @@ export default class HuntTimeline extends React.Component {
 
             if (this.props.chartTarget) {
                 data.data.colors = {
-                    relevant: '#ec7a08',
+                    relevant: '#fbde00',
                     informational: '#675d5c',
                     untagged: '#7b1244'
                 };

@@ -32,7 +32,7 @@ import UserNavInfo from 'hunt_common/containers/UserNavInfo';
 import EmitEvent from '../../helpers/EmitEvent';
 import '../../pygments.css';
 import '../../css/App.css';
-import sciriusLogo from '../../img/scirius-by-stamus.svg';
+import sciriusLogo from '../../img/stamus_logo.png';
 import keymap from '../../Keymap';
 import ErrorHandler from '../../components/Error';
 import storage from '../../helpers/storage';

@@ -1,23 +1,29 @@
-$color-pf-black:                #030303 !default;
+$color-pf-black:                #414042 !default;
 $color-pf-white:                #fff !default;
 $color-sn-border:               #ddd !default;
 $color-sn-menu:                 #f5f5f5 !default;
-$color-sn-purple:               #7b1244 !default;
+$color-sn-purple:               #005792 !default;
 $color-sn-purple-light:         lighten($color-sn-purple, 10%) !default;
+$color-sn-bgreen:               #0297A9 !default;
+
+$color-sn-purple-20:         	lighten($color-sn-purple, 20%) !default;
+$color-sn-purple-40:         	lighten($color-sn-purple, 40%) !default;
 
 $color-pf-blue:                 $color-sn-purple !default;
 //$color-pf-blue:                  #AD9C9B !default;
-$color-pf-blue-25:               #e4cdcc !default;
-$color-pf-blue-50:               #dcc6c5 !default;
-$color-pf-blue-100:              #c8b4b3 !default;
-$color-pf-blue-200:              #b8a6a5 !default;
-$color-pf-blue-300:              #a49493 !default;
-$color-pf-blue-400:              #766a6a !default;
-$color-pf-blue-500:              #675d5c !default;
-$color-pf-blue-600:              #4d4645 !default;
-$color-pf-blue-700:              #3b3635 !default;
+$color-pf-blue-20:               lighten($color-sn-purple, 20%) !default;
+$color-pf-blue-25:               lighten($color-sn-purple, 60%) !default;
+$color-pf-blue-50:               lighten($color-sn-purple, 62%) !default;
+$color-pf-blue-100:              lighten($color-sn-purple, 66%) !default;
+$color-pf-blue-200:              lighten($color-sn-purple, 70%) !default;
+$color-pf-blue-300:              lighten($color-sn-purple, 80%) !default;
+$color-pf-blue-400:              lighten($color-sn-purple, 85%) !default;
+$color-pf-blue-500:              lighten($color-sn-purple, 90%) !default;
+$color-pf-blue-600:              lighten($color-sn-purple, 95%) !default;
+$color-pf-blue-700:              lighten($color-sn-purple, 98%) !default;
 
-
+$light-background: #dcddde;
+$background-black: #414042;
 
 $link-hover-color:                                                  $color-sn-purple-light !default;
 
@@ -57,6 +63,10 @@ $nav-pf-vertical-active-before-color:                               $color-sn-pu
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+body.cards-pf {
+  color: $color-pf-black;
 }
 
 .rule-card {
@@ -118,9 +128,7 @@ span.eventValue {
 .navbar-pf-vertical {
   border-bottom: $navbar-pf-vertical-border-color $navbar-pf-vertical-border-style $navbar-pf-vertical-border-width;
   border-top: none;
-  -webkit-box-shadow: 3px 2px 3px 0px rgba(123,18,68,0.38);
-  -moz-box-shadow: 3px 2px 3px 0px rgba(123,18,68,0.38);
-  box-shadow: 3px 2px 3px 0px rgba(123,18,68,0.38);
+  border-color: $color-sn-bgreen;
 }
 
 .about-modal-pf .modal-footer {
@@ -209,6 +217,7 @@ span.eventValue {
   background: #fbfbfb;
   border-top: 1px solid #e4e4e4;
   border-bottom: 1px solid #e4e4e4;
+  color: $color-sn-purple;
 }
 .hunt-stat-body {
 }
@@ -229,14 +238,14 @@ span.eventValue {
   cursor: pointer;
 }
 .react-grid-item.react-grid-placeholder {
-  background: #7b1244 !important;
+  background: $color-sn-purple !important;
 }
 .react-draggable-dragging h2 {
-  background: #7b1244;
+  background: $color-sn-purple;
   color: #FFFFFF;
 }
 .react-draggable-dragging .react-grid-layout {
-  border: 1px solid #7b1244;
+  border: 1px solid $color-sn-purple;
   background: #f5f5f5;
 }
 .RulesList ul.list-inline span.label-info {
@@ -263,6 +272,15 @@ span.eventValue {
 span.label {
   padding-left: 7px;
 }
+
+span.badge {
+  background-color: lighten($background-black, 10%); 
+}
+
+span.hunt-filter.label {
+  background-color: $color-pf-blue;
+}
+
 span.badge.badge-primary {
   margin-left: -6px;
   margin-right: 3px;
@@ -328,7 +346,7 @@ button.dashboard-list-item.list-group-item.copy-mode:hover {
   cursor: pointer;
 }
 button.dashboard-list-item.list-group-item.copy-mode:active {
-  background: #e8dae1;
+  background: $color-sn-purple-40;
 }
 button.dashboard-list-item.list-group-item.copied:hover::before {
   background: #FFF;
@@ -341,9 +359,18 @@ button.dashboard-list-item.list-group-item.copied::before {
   position: absolute;
   right: 35px;
   background: #FFF;
-  color: #7b1144;
+  color: $color-sn-purple-20;
   font-weight: bold;
   padding: 0 0 0 20px;
+}
+
+.bootstrap-switch span.bootstrap-switch-handle-on.bootstrap-switch-info {
+  color: $color-pf-black;
+}
+
+.list-view-pf-expand-active .list-group-item-header, .list-view-pf .list-group-item-header:hover {
+  background-color: lighten($color-sn-bgreen, 0%);
+  color: white;
 }
 
 .timespan-picker {
@@ -361,7 +388,7 @@ button.dashboard-list-item.list-group-item.copied::before {
     margin: 0;
     padding: 0;
     display: block;
-    border-bottom: 1px solid #7b1244;
+    border-bottom: 1px solid $color-sn-purple;
     li {
       display: inline-block;
       list-style-type: none;
@@ -371,7 +398,7 @@ button.dashboard-list-item.list-group-item.copied::before {
           position: relative;
         }
       a:hover, .active {
-        background: #7b1244;
+        background: $color-sn-purple;
         color: #FFF;
         text-decoration: none;
       }
@@ -383,7 +410,7 @@ button.dashboard-list-item.list-group-item.copied::before {
         right: 0;
         width: 0;
         height: 0;
-        border-top: solid 6px #7b1244;
+        border-top: solid 6px $color-sn-purple;
         border-left: solid 10px transparent;
         border-right: solid 10px transparent;
       }
@@ -443,12 +470,12 @@ button.dashboard-list-item.list-group-item.copied::before {
         .rc-calendar-month-select:hover,
         .rc-calendar-day-select:hover,
         .rc-calendar-year-panel-header > a:hover{
-          color: #7b1244;
+          color: $color-sn-purple;
         }
 
         .rc-calendar-year-panel-cell {
           .rc-calendar-year-panel-year:hover {
-            background: #ffe7f2;
+            background: $color-sn-purple-40;
             text-decoration: none;
             color: #666;
           }
@@ -458,14 +485,14 @@ button.dashboard-list-item.list-group-item.copied::before {
         // day cell
         .rc-calendar-cell {
           .rc-calendar-date:hover {
-            background: #ffe7f2;
+            background: $color-sn-purple-40;
             text-decoration: none;
           }
         }
         // Decade cell {
         .rc-calendar-decade-panel-cell {
           .rc-calendar-decade-panel-decade:hover {
-            background: #ffe7f2;
+            background: $color-sn-purple-40;
             text-decoration: none;
             color: #666;
           }
@@ -476,23 +503,23 @@ button.dashboard-list-item.list-group-item.copied::before {
         // today cell
         .rc-calendar-today {
           .rc-calendar-date {
-            border: 0px solid #7b1244;
+            border: 0px solid $color-sn-purple;
             border-radius: 3px;
           }
         }
         .rc-calendar-selected-date {
           .rc-calendar-date {
-            background: #7b1244;
+            background: $color-sn-purple;
           }
           .rc-calendar-date:hover {
-            background: #7b1244;
+            background: $color-sn-purple;
           }
         }
         // selected cell
         .rc-calendar-selected-day {
           .rc-calendar-date,
           .rc-calendar-date:hover {
-            background: #7b1244;
+            background: $color-sn-purple;
             color: #FFF;
           }
         }
@@ -509,7 +536,7 @@ button.dashboard-list-item.list-group-item.copied::before {
         // normal month cell
         .rc-calendar-month-panel-cell {
           .rc-calendar-month-panel-month:hover {
-            background: #ffe7f2;
+            background: $color-sn-purple-40;
             text-decoration: none;
           }
         }
@@ -547,10 +574,10 @@ button.dashboard-list-item.list-group-item.copied::before {
         // Month
         .rc-calendar-month-panel-selected-cell {
           .rc-calendar-month-panel-month {
-            background: #7b1244;
+            background: $color-sn-purple;
           }
           .rc-calendar-month-panel-month:hover {
-            background: #942259;
+            background: $color-sn-purple-20;
             text-decoration: none;
           }
         }
@@ -558,11 +585,11 @@ button.dashboard-list-item.list-group-item.copied::before {
         // Year
         .rc-calendar-year-panel-selected-cell {
           .rc-calendar-year-panel-year {
-            background: #7b1244;
+            background: $color-sn-purple;
           }
           .rc-calendar-year-panel-year:hover {
             color: #FFF;
-            background: #942259;
+            background: $color-sn-purple-20;
             text-decoration: none;
           }
         }
@@ -570,11 +597,11 @@ button.dashboard-list-item.list-group-item.copied::before {
         // Decade
         .rc-calendar-decade-panel-selected-cell {
           .rc-calendar-decade-panel-decade {
-            background: #7b1244;
+            background: $color-sn-purple;
           }
           .rc-calendar-decade-panel-decade:hover {
             color: #FFF;
-            background: #942259;
+            background: $color-sn-purple-20;
             text-decoration: none;
           }
         }
@@ -583,7 +610,7 @@ button.dashboard-list-item.list-group-item.copied::before {
         .rc-calendar-ok-btn,
         .rc-calendar-time-picker-btn,
         .rc-calendar-today-btn {
-          color: #7b1244;
+          color: $color-sn-purple;
           text-transform: lowercase;
         }
         .rc-calendar-time-picker-btn-disabled,
@@ -596,14 +623,14 @@ button.dashboard-list-item.list-group-item.copied::before {
           .rc-calendar-footer-btn {
             padding: 17px 12px 5px 0;
             .rc-calendar-ok-btn {
-              background: #7b1244;
+              background: $color-sn-purple;
               color: #FFF;
               padding: 5px 20px;
               border-radius: 3px;
             }
             .rc-calendar-ok-btn:hover {
               text-decoration: none;
-              background: #942259;
+              background: $color-sn-purple-20;
             }
             .rc-calendar-time-picker-btn-disabled,
             .rc-calendar-time-picker-btn-disabled:hover,
@@ -628,7 +655,7 @@ button.dashboard-list-item.list-group-item.copied::before {
         .rc-calendar-panel {
           // header
           .rc-calendar-month-panel-header > a:hover {
-            color: #7b1244;
+            color: $color-sn-purple;
           }
           // calendar footer
         }
@@ -650,7 +677,7 @@ button.dashboard-list-item.list-group-item.copied::before {
           padding: 3px 10px;
         }
         a:hover, .active {
-          background: #7b1244;
+          background: $color-sn-purple;
           border-radius: 4px;
           color: #FFF;
           text-decoration: none;

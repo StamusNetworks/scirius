@@ -6,7 +6,7 @@ import { Dropdown, Icon, MenuItem, ApplicationLauncher, AboutModal, Modal, Form,
 import * as config from 'hunt_common/config/Api';
 import FilterSets from '../../../components/FilterSets';
 import OutsideAlerter from '../../../components/OutsideAlerter';
-import sciriusLogo from '../../../img/scirius-by-stamus.svg';
+import sciriusLogo from '../../../img/stamus_logo.png';
 import ErrorHandler from '../../../components/Error';
 import TimeSpanItem from '../../../components/TimeSpanItem';
 
