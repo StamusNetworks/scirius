@@ -1118,7 +1118,7 @@ def get_public_sources(force_fetch=True):
         # replace dash by underscode in keys
         yaml_data = re.sub(r'(\s+\w+)-(\w+):', r'\1_\2:', buf.decode('utf-8'))
         # FIXME error handling
-        public_sources = yaml.load(yaml_data)
+        public_sources = yaml.safe_load(yaml_data)
 
     if public_sources['version'] != 1:
         raise Exception("Unsupported version of sources definition")
