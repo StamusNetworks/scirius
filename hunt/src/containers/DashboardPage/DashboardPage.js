@@ -294,29 +294,33 @@ export class HuntDashboard extends React.Component {
         let newHeight = 0;
         const array = this.state.dashboard[panel].items;
         const filterParams = buildFilterParams(this.props.filterParams);
-        for (let j = 0; j < array.length; j += 1) {
-            const block = array[j];
-            axios.get(`${config.API_URL + config.ES_BASE_PATH
-            }field_stats/?field=${block.i
-            }&${filterParams
-            }&page_size=5${this.qFilter}`)
-            .then((json) => {
-                // Validation of the data property
-                if (typeof json.data === 'undefined' || json.data === null) { json.data = []; }
+        let filterList = `${array[0].i}`;
+        for (let j = 1; j < array.length; j += 1) {
+            filterList += `,${array[j].i}`;
+        }
+        axios.get(`${config.API_URL + config.ES_BASE_PATH
+        }fields_stats/?fields=${filterList}&${filterParams
+        }&page_size=5${this.qFilter}`)
+        .then((gjson) => {
+            // Validation of the data property
+            if (typeof gjson.data === 'undefined' || gjson.data === null) { gjson.data = []; }
 
+            for (let j = 0; j < array.length; j += 1) {
+                const block = array[j];
+                const json = gjson.data[block.i];
                 // When all of the blocks from a single panel are loaded, then mark the panel as loaded
                 blocksLoaded += 1;
                 if (blocksLoaded === this.state.dashboard[panel].items.length) {
                     this.panelsLoaded += 1;
                 }
 
-                const height = Math.ceil(((json.data.length * dashboard.block.defaultItemHeight) + dashboard.block.defaultHeadHeight) / 13);
-                const panelHeight = (json.data.length) ? 10 + (json.data.length * dashboard.block.defaultItemHeight) + dashboard.block.defaultHeadHeight + dashboard.panel.defaultHeadHeight : dashboard.panel.defaultHeadHeight;
+                const height = Math.ceil(((json.length * dashboard.block.defaultItemHeight) + dashboard.block.defaultHeadHeight) / 13);
+                const panelHeight = (json.length) ? 10 + (json.length * dashboard.block.defaultItemHeight) + dashboard.block.defaultHeadHeight + dashboard.panel.defaultHeadHeight : dashboard.panel.defaultHeadHeight;
                 const isPanelLoaded = (!this.state.dashboard[panel].items.find((itm) => itm.data !== null && itm.data.length === 0));
 
                 const items = this.panelState.dashboard[panel].items.map((el) => {
                     if (el.i === block.i) {
-                        const data = (json.data.length) ? json.data : [];
+                        const data = (json.length) ? json : [];
 
                         if (data) {
                             for (let idx = 0; idx < data.length; idx += 1) {
@@ -395,8 +399,8 @@ export class HuntDashboard extends React.Component {
                         ...this.panelState,
                     });
                 }
-            });
-        }
+            }
+        });
     };
 
     itemCopyModeOnClick = (event, itemPath, key, parentElem) => {
