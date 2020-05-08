@@ -42,7 +42,7 @@ from rules.es_data import ESData
 from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats, \
         ESTimeline, ESMetricsTimeline, ESHealth, ESIndicesStats, ESRulesPerCategory, ESAlertsCount, \
         ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESAlertsTail, ESSuriLogTail, ESPoststats, \
-        ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID
+        ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD
@@ -2013,6 +2013,36 @@ class ESPostStatsViewSet(ESBaseViewSet):
         return Response(ESPoststats(request).get(value=value))
 
 
+class ESFieldsStatsViewSet(ESBaseViewSet):
+    """
+    """
+
+    def _get(self, request, format=None):
+        errors = {}
+        fields = request.GET.get('fields', None)
+        sid = request.GET.get('sid', None)
+
+        if fields is None:
+            errors = {'fields': ['This field is required.']}
+            raise serializers.ValidationError(errors)
+
+        count = request.GET.get('page_size', 10)
+
+        field_list = fields.split(',')
+        tmpl_fields = []
+        for field in field_list:
+            if field not in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status', 'vlan', 'geoip.provider.autonomous_system_number', 'tunnel.depth']:
+                tmpl_fields.append({'name': field, 'key': field + '.' + settings.ELASTICSEARCH_KEYWORD})
+            else:
+                tmpl_fields.append({'name': field, 'key': field})
+
+        values = ESFieldsStats(request).get(sid, tmpl_fields,
+                                   count=count,
+                                   dict_format=True)
+
+        return Response(values)
+
+
 class ESFieldStatsViewSet(ESBaseViewSet):
     """
     """
@@ -2715,6 +2745,7 @@ def get_custom_urls():
     urls.append(url(r'rules/es/rule/$', ESRuleViewSet.as_view(), name='es_rule'))
     urls.append(url(r'rules/es/filter_ip/$', ESFilterIPViewSet.as_view(), name='es_filter_ip'))
     urls.append(url(r'rules/es/field_stats/$', ESFieldStatsViewSet.as_view(), name='es_field_stats'))
+    urls.append(url(r'rules/es/fields_stats/$', ESFieldsStatsViewSet.as_view(), name='es_fields_stats'))
     urls.append(url(r'rules/es/poststats_summary/$', ESPostStatsViewSet.as_view(), name='es_poststats_summary'))
     urls.append(url(r'rules/es/sigs_list/$', ESSigsListViewSet.as_view(), name='es_sigs_list'))
     urls.append(url(r'rules/es/top_rules/$', ESTopRulesViewSet.as_view(), name='es_top_rules'))

@@ -180,6 +180,88 @@ def get_top_query():
         }
             """
 
+
+def get_mtop_query():
+    if get_es_major_version() < 6:
+        return """
+        {
+          "size": 0,
+          "aggs": {
+              {% for field in fields %}
+            "{{ field.name }}": {
+              "terms": {
+                "field": "{{ field.key }}",
+                "size": {{ count }},
+                "order": {
+                  "_count": "desc"
+                }
+              }
+            }
+            {% if not forloop.last %},{% endif %}{% endfor %}
+          },
+          "query": {
+            "bool": {
+              "must": [ {
+                "query_string": {
+                  "query": "event_type:alert AND {% if sid %}alert.signature_id: {{ sid }} AND{% endif %} {{ hosts_filter }} {{ query_filter }}",
+                  "analyze_wildcard": false
+                }
+              },
+                    {
+                      "range": {
+                         "{{ timestamp }}": {
+                            "from": {{ from_date }},
+                            "to": {{ to_date }}
+                         }
+                      }
+                    }
+                  ]
+{{ bool_clauses }}
+                }
+              }
+        }
+            """
+    else:
+        return """
+        {
+          "size": 0,
+          "aggs": {
+              {% for field in fields %}
+            "{{ field.name }}": {
+              "terms": {
+                "field": "{{ field.key }}",
+                "size": {{ count }},
+                "order": {
+                  "_count": "desc"
+                }
+              }
+            }
+            {% if not forloop.last %},{% endif %}{% endfor %}
+          },
+          "query": {
+            "bool": {
+              "must": [ {
+                "query_string": {
+                  "query": "event_type:alert AND {% if sid %}alert.signature_id: {{ sid }} AND{% endif %} {{ hosts_filter }} {{ query_filter }}",
+                  "analyze_wildcard": false
+                }
+              },
+                    {
+                      "range": {
+                         "{{ timestamp }}": {
+                            "from": {{ from_date }},
+                            "to": {{ to_date }}
+                         }
+                      }
+                    }
+                  ]
+{{ bool_clauses }}
+                }
+              }
+        }
+            """
+
+
 def get_sid_by_host_query():
     if get_es_major_version() < 2:
         return """
@@ -1799,6 +1881,29 @@ class ESRulesStats(ESQuery):
             rules = ExtendedRuleTable([])
             tables.RequestConfig(self.request).configure(rules)
         return rules
+
+
+class ESFieldsStats(ESQuery):
+    def get(self, sid, fields, count=20, dict_format=False):
+        data = self._render_template(get_mtop_query(), {'count': count, 'fields': fields, 'sid': sid})
+        es_url = self._get_es_url()
+        data = self._urlopen(es_url, data)
+
+        # total number of results
+        rdata = {}
+        try:
+            for field in fields:
+                rdata[field['name']] = data['aggregations'][field['name']]['buckets']
+        except Exception:
+            if dict_format:
+                return {}
+            return None
+
+        if dict_format:
+            return rdata if rdata is not None else {}
+
+        return rdata
+
 
 class ESFieldStats(ESQuery):
     def get(self, sid, field, count=20, dict_format=False):
