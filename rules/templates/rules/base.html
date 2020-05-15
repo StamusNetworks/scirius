@@ -26,7 +26,7 @@
  <div class="container-fluid">
 		<div class="navbar-header">
 			<a class="navbar-dropdown collapsed" type="button" data-target="sc_menu" data-toggle="dropdown" id="logo">
-			<img src="{% static 'rules/stamus.png' %}"/><span class="caret"/>
+			<img src="{% static 'rules/stamus.png' %}" id="img-logo"/><span class="caret"/>
 </a>
 			<ul class="dropdown-menu" id="sc_menu" role="menu">
             <li><a href="{% url 'system_settings' %}" >{% bootstrap_icon "list-alt"%} System settings</a></li>
@@ -50,6 +50,7 @@
          <span class="icon-bar"></span>
          <span class="icon-bar"></span>
           </button>
+         <span class="logo-title">{{ scirius_long_name }}</span>
         </div>
 
 
