@@ -192,7 +192,7 @@ export default class UserNavInfo extends Component {
                             </li>}
 
                             {this.props.systemSettings && this.props.systemSettings.kibana && <li className="applauncher-pf-item" role="presentation">
-                                <a className="applauncher-pf-link" href={this.props.systemSettings.kibana_url} role="menuitem" data-toggle="tooltip" title={'Kibana dashboards for ES'} style={{ cursor: 'pointer' }}>
+                                <a className="applauncher-pf-link" href={this.props.systemSettings.kibana_url} role="menuitem" data-toggle="tooltip" title={'Kibana dashboards for ES'} style={{ cursor: 'pointer' }} target="_blank">
 
                                     <i style={{ fontSize: '2.5em', paddingTop: '5px' }} className="glyphicon glyphicon-stats" aria-hidden="true"></i>
                                     <span className="applauncher-pf-link-title" style={{ paddingTop: '5px' }}>{'Dashboards'}</span>
@@ -200,7 +200,7 @@ export default class UserNavInfo extends Component {
                             </li>}
 
                             {this.props.systemSettings && this.props.systemSettings.evebox && <li className="applauncher-pf-item" role="presentation">
-                                <a className="applauncher-pf-link" href={this.props.systemSettings.evebox_url} role="menuitem" data-toggle="tooltip" title={'Evebox alert and event management tool'} style={{ cursor: 'pointer' }}>
+                                <a className="applauncher-pf-link" href={this.props.systemSettings.evebox_url} role="menuitem" data-toggle="tooltip" title={'Evebox alert and event management tool'} style={{ cursor: 'pointer' }} target="_blank">
 
                                     <i style={{ fontSize: '2.5em' }} className="glyphicon glyphicon-th-list" aria-hidden="true"></i>
                                     <span className="applauncher-pf-link-title" style={{ paddingTop: '5px' }}>{'Events viewer'}</span>
