@@ -171,7 +171,7 @@ export default class UserNavInfo extends Component {
                                 <a className="applauncher-pf-link" href="/rules/hunt" role="menuitem" data-toggle="tooltip" title={'Threat Hunting'} style={{ cursor: 'pointer' }}>
 
                                     <img src="/static/rules/Stamus_SEH_icon.png" height="40" width="40" alt="Hunt" />
-                                    <span className="applauncher-pf-link-title">{'Hunt'}</span>
+                                    <span className="applauncher-pf-link-title">{'Hunting'}</span>
                                 </a>
                             </li>
 
@@ -179,7 +179,7 @@ export default class UserNavInfo extends Component {
                                 <a className="applauncher-pf-link" href="/rules" role="menuitem" data-toggle="tooltip" title={'Appliances Management'} style={{ cursor: 'pointer' }}>
 
                                     <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40" alt="Admin" />
-                                    <span className="applauncher-pf-link-title">{'Administration'}</span>
+                                    <span className="applauncher-pf-link-title">{'Management'}</span>
                                 </a>
                             </li>
 
