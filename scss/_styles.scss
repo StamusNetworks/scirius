@@ -161,7 +161,7 @@ body {
      background-color: $brand-color;
      color: white;
   }
-  .navbar-default .navbar-nav > li > a:hover {
+  .navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
      color: white;
      line-height: 64px;
   }
@@ -178,5 +178,8 @@ body {
   }
   .caret {
      color: white;
+  }
+  .applauncher-pf-link-title {
+     color: $brand-color;
   }
 }
