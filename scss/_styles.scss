@@ -157,6 +157,10 @@ body {
      padding-bottom: 0px;
      color: #dcddde;
   }
+  .navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:hover, .navbar-default .navbar-nav > .open > a:focus {
+     background-color: $brand-color;
+     color: white;
+  }
   .navbar-default .navbar-nav > li > a:hover {
      color: white;
      line-height: 64px;
