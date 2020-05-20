@@ -125,10 +125,63 @@ span.eventValue {
   margin-top: 10px;
 }
 
+.nav-pf-vertical {
+  top: 64px
+};
+
 .navbar-pf-vertical {
   border-bottom: $navbar-pf-vertical-border-color $navbar-pf-vertical-border-style $navbar-pf-vertical-border-width;
   border-top: none;
   border-color: $color-sn-bgreen;
+  background: $color-sn-purple;
+  height: 64px;
+  .navbar-toggle {
+    display: none;
+  }
+  .navbar-toggle:hover .icon-bar,
+  .navbar-toggle:focus .icon-bar {
+    background: #f5f5f5;
+  }
+  .nav {
+    .nav-item-iconic {
+      color: #FFF;
+      .caret,
+      .fa,
+      .pficon {
+        color: #FFF;
+      }
+    }
+    .nav-item-iconic:hover {
+      color: #f5f5f5;
+      .caret,
+      .fa,
+      .glyphicon,
+      .pficon {
+        color: #f5f5f5;
+      }
+    }
+    .nav-item-iconic:focus {
+      color: #f5f5f5;
+      .caret,
+      .fa,
+      .glyphicon,
+      .pficon {
+        color: #f5f5f5;
+      }
+    }
+    .open > .nav-item-iconic,
+    .open > .nav-item-iconic:hover,
+    .open > .nav-item-iconic:focus {
+      .caret,
+      .fa,
+      .pficon {
+        color: #f5f5f5;
+      }
+    }
+  }
+}
+.navbar-pf-vertical.navbar {
+  height: 64px;
 }
 
 .about-modal-pf .modal-footer {
