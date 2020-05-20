@@ -16,7 +16,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 SCIRIUS_FLAVOR="Scirius CE"
-SCIRIUS_VERSION="3.4.0"
+SCIRIUS_VERSION="3.5.0"
 SCIRIUS_LONG_NAME = "Scirius Community Edition"
 
 # Quick-start development settings - unsuitable for production
