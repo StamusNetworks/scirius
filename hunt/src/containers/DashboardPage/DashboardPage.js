@@ -307,7 +307,7 @@ export class HuntDashboard extends React.Component {
 
             for (let j = 0; j < array.length; j += 1) {
                 const block = array[j];
-                const json = gjson.data[block.i];
+                const json = (block.i in gjson.data) ? gjson.data[block.i] : [];
                 // When all of the blocks from a single panel are loaded, then mark the panel as loaded
                 blocksLoaded += 1;
                 if (blocksLoaded === this.state.dashboard[panel].items.length) {
