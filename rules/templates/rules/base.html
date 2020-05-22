@@ -68,12 +68,18 @@
 
 		</ul>
 <div class="navbar-right">
-		<form class="navbar-form navbar-nav"  action="{% url 'scirius_search' %}" method="post" role="search">{% csrf_token %}
-<span class="form-group">
-			<span class="glyphicon glyphicon-search"> <input type="text" name="search" id="id_search"/></span>
+<ul class="nav navbar-nav">
+<li>
+<a class="dropdown-toggle" type="button" id="display_search" data-toggle="dropdown" href="#">
+<span class="glyphicon glyphicon-search"> <span class="caret"/></span>
+</a>
+		<form class="dropdown-menu" id="display_search"  action="{% url 'scirius_search' %}" method="post" role="search">{% csrf_token %}
+<span class="form-group sn-drop-down">
+   <span class="glyphicon glyphicon-search"> <input type="text" name="search" id="id_search"/></span>
 </span>
 		</form>
-
+</li>
+</ul>
 {% include 'rules/header_right.html' %}
 
 </div>
