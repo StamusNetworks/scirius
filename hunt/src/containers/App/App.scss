@@ -183,6 +183,13 @@ span.eventValue {
 .navbar-pf-vertical.navbar {
   height: 64px;
 }
+.nav-pf-vertical.nav-pf-vertical-with-badges {
+    width: 180px;
+}
+.layout-pf.layout-pf-fixed .container-pf-nav-pf-vertical {
+    margin-left: 170px;
+    padding-right: 10px;
+}
 
 .about-modal-pf .modal-footer {
     background-color: $color-pf-white;
