@@ -149,6 +149,7 @@ body {
      line-height: 64px;
      border: none;
      border-bottom: solid 1px $brand-green;
+     z-index: 200;
   }
   .navbar-default .navbar-nav > li > a {
      line-height: 64px;
@@ -164,6 +165,9 @@ body {
   .navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
      color: white;
      line-height: 64px;
+  }
+  .navbar-collapse.in, .navbar-collapse.collapsing {
+     background-color: $brand-color;
   }
   input[type="text"]#id_search {
      padding-bottom: 0px;
