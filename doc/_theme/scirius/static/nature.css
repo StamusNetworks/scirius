@@ -155,7 +155,7 @@ div.body h4,
 div.body h5,
 div.body h6 {
     font-family: Arial, sans-serif;
-    background-color: #804f66;
+    background-color: #005792;
     /* background-color: #BED4EB; */
     font-weight: bold;
     /* color: #212224; */
@@ -173,14 +173,13 @@ div.body h5 { font-size: 100%;}
 div.body h6 { font-size: 100%;}
  
 a.headerlink {
-    color: #c60f0f;
+    color: #efefef;
     font-size: 0.8em;
     padding: 0 4px 0 4px;
     text-decoration: none;
 }
  
 a.headerlink:hover {
-    background-color: #c60f0f;
     color: white;
 }
  
