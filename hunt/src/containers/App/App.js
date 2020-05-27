@@ -297,7 +297,7 @@ export default class App extends Component {
                         <VerticalNav.Brand>
                             <img src={sciriusLogo} height={32} width={116} style={{ marginTop: 7, marginBottom: -7, marginLeft: 20, display: 'block', float: 'left' }} alt="logo" />
                             <div style={{ fontSize: '20px', float: 'left', paddingLeft: '40px', paddingTop: '11px', fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'" }}>
-                                {process.env.REACT_APP_HAS_TAG === '1' ? <React.Fragment>Scirius Enriched Hunting</React.Fragment> : <React.Fragment>Scirius Threat Hunting</React.Fragment>}
+                                {process.env.REACT_APP_HAS_TAG === '1' ? <React.Fragment>Scirius Enriched Hunting</React.Fragment> : <React.Fragment>Suricata Threat Hunting</React.Fragment>}
                             </div>
                         </VerticalNav.Brand>
 

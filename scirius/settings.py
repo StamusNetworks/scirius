@@ -17,7 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 SCIRIUS_FLAVOR="Scirius CE"
 SCIRIUS_VERSION="3.5.0"
-SCIRIUS_LONG_NAME = "Scirius Community Edition"
+SCIRIUS_LONG_NAME = "Suricata Management"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
