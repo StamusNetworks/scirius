@@ -2564,12 +2564,17 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
         return [permission() for permission in permission_classes]
 
     def retrieve(self, request, pk=None):
+        from scirius.utils import get_middleware_module
+
         if request.user.is_superuser:
             instance = self.get_object()
             serializer = SystemSettingsSerializer(instance)
             data = serializer.data.copy()
         else:
             data = {}
+
+        extra_info = get_middleware_module('common').extra_info()
+        data.update(extra_info)
 
         data['kibana'] = USE_KIBANA
         data['evebox'] = USE_EVEBOX

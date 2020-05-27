@@ -84,7 +84,7 @@ $( 'document' ).ready(
         </a>
       </li>
 
-      {% if generator and generator == 'appliances' %}
+      {% if generator and generator == 'appliances' and license and license.nta %}
       <li class="applauncher-pf-item" role="presentation">
         <a class="applauncher-pf-link" style="color: inherit" href="/appliances/str" role="menuitem">
           <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40"/>
