@@ -760,7 +760,7 @@ export class HuntDashboard extends React.Component {
                     </div>
                 </div>
                 <ErrorHandler>
-                    <RuleToggleModal
+                    {this.state.action.view && <RuleToggleModal
                         show={this.state.action.view}
                         action={this.state.action.type}
                         config={this.props.rules_list}
@@ -769,7 +769,7 @@ export class HuntDashboard extends React.Component {
                         rulesets={this.state.rulesets}
                         systemSettings={this.props.systemSettings}
                         filterParams={this.props.filterParams}
-                    />
+                    />}
                 </ErrorHandler>
                 <Modal show={!(this.state.moreModal === null)} onHide={() => { this.hideMoreModal(); }}>
 

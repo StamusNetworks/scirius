@@ -30,7 +30,14 @@ export default class RuleEditKebab extends React.Component {
                     <MenuItem href={`/rules/rule/pk/${this.props.config.rule.pk}/`}>Rule page in Scirius</MenuItem>
                 </DropdownKebab>
                 <ErrorHandler>
-                    <RuleToggleModal show={this.state.toggle.show} action={this.state.toggle.action} config={this.props.config} close={this.hideToggle} rulesets={this.props.rulesets} refresh_callback={this.props.refresh_callback} />
+                    {this.state.toggle.show && <RuleToggleModal
+                        show={this.state.toggle.show}
+                        action={this.state.toggle.action}
+                        config={this.props.config}
+                        close={this.hideToggle}
+                        rulesets={this.props.rulesets}
+                        refresh_callback={this.props.refresh_callback}
+                    />}
                 </ErrorHandler>
             </React.Fragment>
         );

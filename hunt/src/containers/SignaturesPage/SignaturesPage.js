@@ -379,7 +379,7 @@ export class SignaturesPage extends React.Component {
                 </ErrorHandler>
 
                 <ErrorHandler>
-                    <RuleToggleModal
+                    {this.state.action.view && <RuleToggleModal
                         show={this.state.action.view}
                         action={this.state.action.type}
                         config={this.props.rules_list}
@@ -388,7 +388,7 @@ export class SignaturesPage extends React.Component {
                         rulesets={this.state.rulesets}
                         systemSettings={this.props.systemSettings}
                         filterParams={this.props.filterParams}
-                    />
+                    />}
                 </ErrorHandler>
             </div>
         );
