@@ -1131,9 +1131,6 @@ class Source(models.Model):
                     iprep_content = tfile.extractfile(member).read()
                     continue
 
-                if self.datatype in self.custom_data_type and not member.name.endswith('.rules'):
-                    continue
-
                 if member.isfile():
                     member.name = os.path.join(*member.name.split("/", 2)[1:])
                     mfile = tfile.extract(member, path=directory)
