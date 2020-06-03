@@ -216,6 +216,10 @@ export default class App extends Component {
         const pageDisplay = { page, item };
         this.setState({ display: pageDisplay });
         storage.setItem('page_display', JSON.stringify(pageDisplay));
+
+        if (this.props.duration) {
+            this.props.reload();
+        }
     }
 
     updateRuleListState(rulesListState) {

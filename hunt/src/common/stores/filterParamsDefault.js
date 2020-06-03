@@ -2,6 +2,7 @@ import store from 'store';
 import moment from 'moment';
 
 const storedStamp = store.get('timespan');
+let timespan = null;
 
 export const absolute = {
     from: {
@@ -18,15 +19,27 @@ export const absolute = {
     },
 };
 
-const timespan = storedStamp || {
-    duration: '86400000',
-    fromDate: Math.round(Date.now() - (24 * 3600 * 1000)),
-    toDate: Date.now(),
-    absolute,
-};
 if (storedStamp) {
-    timespan.absolute.from.time = moment(timespan.absolute.from.time);
-    timespan.absolute.to.time = moment(timespan.absolute.to.time);
+    if (storedStamp.duration) {
+        timespan = {
+            duration: storedStamp.duration,
+            fromDate: Math.round(Date.now() - storedStamp.duration),
+            toDate: Date.now(),
+            absolute
+        }
+    } else {
+        timespan = storedStamp;
+    }
+
+    timespan.absolute.from.time = moment(storedStamp.absolute.from.time);
+    timespan.absolute.to.time = moment(storedStamp.absolute.to.time);
+} else {
+    timespan = {
+        duration: '86400000',
+        fromDate: Math.round(Date.now() - (24 * 3600 * 1000)),
+        toDate: Date.now(),
+        absolute,
+    }
 }
 
 export const defaultFilterParams = {
