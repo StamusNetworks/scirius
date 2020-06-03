@@ -19,8 +19,7 @@ class FilterList extends React.Component {
         super(props);
         this.state = {
             editForm: false,
-            filterIdx: '',
-            filterId: '',
+            filter: { id: '' },
             newFilterValue: '',
             newFilterNegated: false,
             wildcardMode: false,
@@ -35,12 +34,11 @@ class FilterList extends React.Component {
         }
     }
 
-    editHandler = (filterIdx, filterId, filterValue, filterNegated, wildcardMode) => {
-        wildcardMode = (filterId === 'host_id.ip') ? false : wildcardMode;
+    editHandler = (filter, filterValue, filterNegated, wildcardMode) => {
+        wildcardMode = (filter.id === 'host_id.ip') ? false : wildcardMode;
         this.setState({
             editForm: true,
-            filterIdx,
-            filterId,
+            filter,
             newFilterValue: filterValue,
             newFilterNegated: filterNegated,
             wildcardMode,
@@ -57,9 +55,9 @@ class FilterList extends React.Component {
         const newFilterValue = isNumeric(this.state.newFilterValue) ? parseInt(this.state.newFilterValue, 10) : this.state.newFilterValue;
         this.props.editFilter(
             this.props.filterType,
-            this.state.filterIdx,
+            this.state.filter,
             {
-                label: `${this.state.filterId}: ${this.state.newFilterValue}`,
+                label: `${this.state.filter.id}: ${this.state.newFilterValue}`,
                 value: newFilterValue,
                 negated: this.state.newFilterNegated,
                 fullString: !this.state.wildcardMode,
@@ -93,16 +91,16 @@ class FilterList extends React.Component {
 
     render() {
         const newFilterValue = this.state.newFilterValue.toString();
-        let enableWildcard = !['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max', 'es_filter'].includes(this.state.filterId);
-        enableWildcard = enableWildcard && !IP_FIELDS.includes(this.state.filterId);
+        let enableWildcard = !['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max', 'es_filter'].includes(this.state.filter.id);
+        enableWildcard = enableWildcard && !IP_FIELDS.includes(this.state.filter.id);
 
         const valid = (!newFilterValue.toString().length || (this.state.wildcardMode && enableWildcard && newFilterValue.match(/[\s]+/g)) ? 'error' : 'success');
         let helperText = '';
-        if (['msg', 'not_in_msg', 'search', 'not_in_content'].includes(this.state.filterId)) {
+        if (['msg', 'not_in_msg', 'search', 'not_in_content'].includes(this.state.filter.id)) {
             helperText = 'Case insensitive substring match.';
-        } else if (['hits_min', 'hits_max'].includes(this.state.filterId)) {
+        } else if (['hits_min', 'hits_max'].includes(this.state.filter.id)) {
             helperText = '';
-        } else if (['es_filter'].includes(this.state.filterId)) {
+        } else if (['es_filter'].includes(this.state.filter.id)) {
             helperText = 'Free ES filter with Lucene syntax';
         } else if (this.state.wildcardMode && enableWildcard) {
             helperText = <React.Fragment>Wildcard characters (<i style={{ padding: '0px 5px', background: '#e0e0e0', margin: '0 2px' }}>*</i> and <i style={{ padding: '0px 5px', background: '#e0e0e0', margin: '0 2px' }}>?</i>) can match on word boundaries.<br />No spaces allowed.</React.Fragment>;
@@ -114,8 +112,8 @@ class FilterList extends React.Component {
             {/* eslint-disable react/no-array-index-key */}
             <ul className="list-inline">{this.props.filters.map((filter, idx) => <FilterItem key={idx}
                 addFilter={this.props.addFilter}
-                onRemove={() => this.props.removeFilter(this.props.filterType, idx)}
-                onEdit={() => this.editHandler(idx, filter.id, filter.value, filter.negated, !filter.fullString)}
+                onRemove={() => this.props.removeFilter(this.props.filterType, filter)}
+                onEdit={() => this.editHandler(filter, filter.value, filter.negated, !filter.fullString)}
                 editFilter={this.props.editFilter}
                 filters={this.props.filters}
                 filterType={this.props.filterType}
@@ -142,7 +140,7 @@ class FilterList extends React.Component {
                             </Col>
                             <Col sm={10}>
                                 <InputGroup>
-                                    <InputGroupAddon>{this.state.filterId}</InputGroupAddon>
+                                    <InputGroupAddon>{this.state.filter.id}</InputGroupAddon>
                                     <FormGroup validationState={valid} className={'form-group-no-margins'}>
                                         <FormControl
                                             id={'input-value-filter'}
@@ -167,7 +165,7 @@ class FilterList extends React.Component {
                                 </Col>
                             </FormGroup>
                         </Row>
-                        {!['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filterId) && <Row>
+                        {!['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filter.id) && <Row>
                             <FormGroup controlId="checkbox">
                                 <Col componentClass={ControlLabel} sm={3}>
                                     <ControlLabel>Negated</ControlLabel>

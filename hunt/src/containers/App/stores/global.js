@@ -55,18 +55,18 @@ export function addFilter(filterType, filter) {
         filter
     };
 }
-export function removeFilter(filterType, filterIdx) {
+export function removeFilter(filterType, filter) {
     return {
         type: REMOVE_FILTER,
         filterType,
-        filterIdx
+        filter
     };
 }
-export function editFilter(filterType, filterIdx, filterUpdated) {
+export function editFilter(filterType, filter, filterUpdated) {
     return {
         type: EDIT_FILTER,
         filterType,
-        filterIdx,
+        filter,
         filterUpdated
     };
 }
@@ -99,6 +99,15 @@ const initialState = fromJS({
     },
 });
 
+function indexOfFilter(filter, allFilters) {
+    for (let idx = 0; idx < allFilters.length; idx += 1) {
+        if (allFilters[idx].label === filter.label && allFilters[idx].id === filter.id && allFilters[idx].value === filter.value && allFilters[idx].negated === filter.negated && allFilters[idx].query === filter.query && allFilters[idx].fullString === filter.fullString) {
+            return idx;
+        }
+    }
+    return -1;
+}
+
 export const reducer = (state = initialState, action) => {
     switch (action.type) {
         case ADD_FILTER: {
@@ -121,18 +130,24 @@ export const reducer = (state = initialState, action) => {
         case EDIT_FILTER: {
             if (!validateFilter(action.filterUpdated)) { return state }
             const globalFilters = state.getIn(['filters', action.filterType]).toJS();
+            const idx = indexOfFilter(action.filter, globalFilters);
+
             /* eslint-disable-next-line */
-            const updatedGlobalFilters = globalFilters.map((filter, i) => (i === action.filterIdx) ? {
+            const updatedGlobalFilters = globalFilters.map((filter, i) => (i === idx) ? {
                 ...filter,
                 ...action.filterUpdated
             } : filter);
+
             updateStorage(action.filterType, updatedGlobalFilters);
             return state.setIn(['filters', action.filterType], fromJS(updatedGlobalFilters));
         }
         case REMOVE_FILTER: {
             const globalFilters = state.getIn(['filters', action.filterType]).toJS();
-            const before = globalFilters.slice(0, action.filterIdx);
-            const after = globalFilters.slice(action.filterIdx + 1);
+
+            const idx = indexOfFilter(action.filter, globalFilters);
+            const before = globalFilters.slice(0, idx);
+            const after = globalFilters.slice(idx + 1);
+
             const updatedGlobalFilters = [...before, ...after];
             updateStorage(action.filterType, updatedGlobalFilters);
             return state.setIn(['filters', action.filterType], fromJS(updatedGlobalFilters));
