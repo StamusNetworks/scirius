@@ -183,9 +183,9 @@ class HuntFilter extends React.Component {
                 currentValue: '',
                 currentFilterType: filterType,
                 filterCategory:
-                    filterType.filterType === 'complex-select' ? undefined : prevState.filterCategory,
+                    filterType.filterType.includes('complex-select') ? undefined : prevState.filterCategory,
                 categoryValue:
-                    filterType.filterType === 'complex-select' ? '' : prevState.categoryValue
+                    filterType.filterType.includes('complex-select') ? '' : prevState.categoryValue
             }));
         }
     }
