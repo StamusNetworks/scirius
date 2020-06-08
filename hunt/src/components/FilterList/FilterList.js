@@ -57,6 +57,7 @@ class FilterList extends React.Component {
             this.props.filterType,
             this.state.filter,
             {
+                id: this.state.filter.id,
                 label: `${this.state.filter.id}: ${this.state.newFilterValue}`,
                 value: newFilterValue,
                 negated: this.state.newFilterNegated,
@@ -111,14 +112,12 @@ class FilterList extends React.Component {
         return <React.Fragment>
             {/* eslint-disable react/no-array-index-key */}
             <ul className="list-inline">{this.props.filters.map((filter, idx) => <FilterItem key={idx}
-                addFilter={this.props.addFilter}
                 onRemove={() => this.props.removeFilter(this.props.filterType, filter)}
                 onEdit={() => this.editHandler(filter, filter.value, filter.negated, !filter.fullString)}
                 editFilter={this.props.editFilter}
                 filters={this.props.filters}
                 filterType={this.props.filterType}
-                idx={idx}
-                {...filter}
+                filter={filter}
             />)}</ul>
             <Modal show={this.state.editForm} onHide={() => this.setState({ editForm: false })} className={'modal-hunt-filter'} backdrop keyboard>
                 <Modal.Header>

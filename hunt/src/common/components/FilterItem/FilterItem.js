@@ -4,8 +4,8 @@ import { sections } from 'hunt_common/constants';
 import './style.css';
 
 const FilterItem = (props) => {
-    const negated = (props.negated) ? 'label-not' : '';
-    const displayValue = (props.label) ? props.label : `${props.id}:${props.value}`;
+    const negated = (props.filter.negated) ? 'label-not' : '';
+    const displayValue = (props.filter.label) ? props.filter.label : `${props.filter.id}:${props.filter.value}`;
     return <li>
         <span className={`hunt-filter label label-info ${negated}`}>
             <div className={'label-content'}>{displayValue}</div>
@@ -37,21 +37,15 @@ const FilterItem = (props) => {
 }
 
 FilterItem.defaultProps = {
-    filterType: sections.GLOBAL
+    filterType: sections.GLOBAL,
 }
 
 FilterItem.propTypes = {
-    value: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number
-    ]).isRequired,
-    id: PropTypes.string.isRequired,
-    label: PropTypes.string,
-    negated: PropTypes.bool.isRequired,
     onEdit: PropTypes.func.isRequired,
     onRemove: PropTypes.func.isRequired,
     children: PropTypes.any,
     filterType: PropTypes.string,
+    filter: PropTypes.object.isRequired
 }
 
 export default FilterItem;
