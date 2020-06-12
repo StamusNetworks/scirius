@@ -48,8 +48,8 @@ Alerts
 This page displays the individual alert events as a list. It is possible to expand an event to
 see all details including metadata about it.
 
-Actions
-~~~~~~~
+Policies
+~~~~~~~~
 
 This page displays the list of actions. The list is ordered and the filter are applied in ascending order.
 
@@ -66,8 +66,8 @@ Home
 
 Link to the Scirius homepage.
 
-Actions
--------
+Policy Action
+-------------
 
 Suppress
 ~~~~~~~~
