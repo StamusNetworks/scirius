@@ -222,6 +222,15 @@ export default class RuleToggleModal extends React.Component {
     }
 
     render() {
+        let title = null;
+
+        if (this.props.action === 'threat') {
+            title = 'Create a STR threat vector';
+        } else if (this.props.config.rule) {
+            title = `${this.props.action} Rule ${this.props.config.rule.sid}`;
+        } else {
+            title = `Add a ${this.props.action} action`;
+        }
         return (
             <Modal show={this.props.show} onHide={this.close}>
                 <Modal.Header>
@@ -233,8 +242,7 @@ export default class RuleToggleModal extends React.Component {
                     >
                         <Icon type="pf" name="close" />
                     </button>
-                    {this.props.config.rule && <Modal.Title>{this.props.action} Rule {this.props.config.rule.sid}</Modal.Title>}
-                    {!this.props.config.rule && <Modal.Title>Add a {this.props.action} action</Modal.Title>}
+                    <Modal.Title>{title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <HuntRestError errors={this.state.errors} />

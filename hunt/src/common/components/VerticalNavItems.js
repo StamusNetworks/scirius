@@ -15,7 +15,7 @@ const VerticalNavItems = [{
     iconClass: 'fa fa-bell',
     def: PAGE_STATE.alerts_list,
 }, {
-    title: 'Actions',
+    title: 'Policy',
     iconClass: 'glyphicon glyphicon-filter',
     def: PAGE_STATE.filters_list,
 }];

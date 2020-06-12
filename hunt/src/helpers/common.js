@@ -10,7 +10,7 @@ export function actionsButtons() {
         if (this.state.supported_actions.length === 0) {
             return (
                 <div className="form-group">
-                    <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions" disabled />
+                    <DropdownButton bsStyle="default" title="Policy Actions" key="actions" id="dropdown-basic-actions" disabled />
                 </div>
             );
         }
@@ -35,7 +35,7 @@ export function actionsButtons() {
         }
         return (
             <div className="form-group">
-                <DropdownButton bsStyle="default" title="Actions" key="actions" id="dropdown-basic-actions">
+                <DropdownButton bsStyle="default" title="Policy Actions" key="actions" id="dropdown-basic-actions">
                     {actions}
                 </DropdownButton>
             </div>
