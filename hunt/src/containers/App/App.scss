@@ -433,6 +433,10 @@ button.dashboard-list-item.list-group-item.copied::before {
   color: white;
 }
 
+.dropdown-menu {
+  min-width: 100px;
+}
+
 .timespan-picker {
   position: absolute;
   right: 0px;
