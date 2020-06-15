@@ -65,6 +65,10 @@ $nav-pf-vertical-active-before-color:                               $color-sn-pu
   to { transform: rotate(360deg); }
 }
 
+*:focus {
+  outline: none !important;
+}
+
 body.cards-pf {
   color: $color-pf-black;
 }
