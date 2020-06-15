@@ -13,9 +13,20 @@ const setPage = (page) => {
 const setFilter = (key, value) => {
     storage.setItem(key, JSON.stringify(value));
 }
-if (getType() === 'temporary') {
+
+const isInit = () => {
+    let result = storage.getItem('init') || 'false';
+    try {
+        result = JSON.parse(result);
+    } catch (e) {
+        result = false;
+    }
+    return result;
+}
+if (getType() === 'temporary' && !isInit()) {
     setPage(params.get('page'));
     const ip = params.get('ip');
+    const tenantId = params.get('tenant');
     if (ip) {
         let existingFilters = storage.getItem(sections.GLOBAL) || '[]';
         try {
@@ -26,6 +37,10 @@ if (getType() === 'temporary') {
             setFilter(sections.GLOBAL, []);
         }
     }
+    if (tenantId) {
+        storage.setItem('filterParams.tenant', tenantId)
+    }
+    storage.setItem('init', 'true');
 }
 
 export default storage;

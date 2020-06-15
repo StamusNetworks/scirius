@@ -1,7 +1,7 @@
 import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
-import store from 'store';
 import { absolute, defaultFilterParams } from 'hunt_common/stores/filterParamsDefault';
+import storage from '../../../helpers/storage';
 
 export const FILTER_PARAMS_SET = 'Hunt/App/FILTER_PARAM_SET';
 export const FILTER_TIMESPAN_SET = 'Hunt/App/FILTER_TIMESPAN_SET';
@@ -41,7 +41,7 @@ export const reducer = (state = initialState, action) => {
     switch (action.type) {
         case FILTER_PARAMS_SET: {
             const param = state.setIn([action.paramName], action.paramValue);
-            store.set(`filterParams.${action.paramName}`, action.paramValue);
+            storage.setItem(`filterParams.${action.paramName}`, action.paramValue);
             return param;
         }
 
@@ -51,7 +51,7 @@ export const reducer = (state = initialState, action) => {
             .set('toDate', action.timeSpan.toDate)
             .set('absolute', fromJS((typeof action.timeSpan.absolute !== 'undefined') ? action.timeSpan.absolute : absolute))
             .set('duration', null);
-            store.set('timespan', timespan.toJS());
+            storage.setItem('timespan', timespan.toJS());
             return timespan;
         }
 
@@ -61,7 +61,7 @@ export const reducer = (state = initialState, action) => {
             .set('fromDate', Date.now() - action.duration)
             .set('toDate', Date.now())
             .set('absolute', fromJS(absolute));
-            store.set('timespan', timespan.toJS());
+            storage.setItem('timespan', timespan.toJS());
             return timespan;
         }
 
@@ -70,7 +70,7 @@ export const reducer = (state = initialState, action) => {
                 const timespan = state
                 .set('fromDate', Math.round(Date.now() - state.get('duration')))
                 .set('toDate', Date.now());
-                store.set('timespan', timespan.toJS());
+                storage.setItem('timespan', timespan.toJS());
                 return timespan;
             } // else absolute/relative no refresh
             return state;
