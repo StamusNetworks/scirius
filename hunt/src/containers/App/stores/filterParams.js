@@ -51,7 +51,7 @@ export const reducer = (state = initialState, action) => {
             .set('toDate', action.timeSpan.toDate)
             .set('absolute', fromJS((typeof action.timeSpan.absolute !== 'undefined') ? action.timeSpan.absolute : absolute))
             .set('duration', null);
-            storage.setItem('timespan', timespan.toJS());
+            storage.setItem('timespan', JSON.stringify(timespan.toJS()));
             return timespan;
         }
 
@@ -61,7 +61,7 @@ export const reducer = (state = initialState, action) => {
             .set('fromDate', Date.now() - action.duration)
             .set('toDate', Date.now())
             .set('absolute', fromJS(absolute));
-            storage.setItem('timespan', timespan.toJS());
+            storage.setItem('timespan', JSON.stringify(timespan.toJS()));
             return timespan;
         }
 
@@ -70,7 +70,7 @@ export const reducer = (state = initialState, action) => {
                 const timespan = state
                 .set('fromDate', Math.round(Date.now() - state.get('duration')))
                 .set('toDate', Date.now());
-                storage.setItem('timespan', timespan.toJS());
+                storage.setItem('timespan', JSON.stringify(timespan.toJS()));
                 return timespan;
             } // else absolute/relative no refresh
             return state;
