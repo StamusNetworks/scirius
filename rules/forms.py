@@ -192,6 +192,8 @@ class AddRuleThresholdForm(forms.ModelForm, RulesetChoiceForm):
 class AddRuleSuppressForm(forms.ModelForm, RulesetChoiceForm):
     rulesets_label = "Add suppression to the following ruleset(s)"
     threshold_type = forms.CharField(widget = forms.HiddenInput())
+    net = forms.CharField(required=True)
+
     class Meta:
         model = Threshold
         exclude = ['ruleset', 'rule', 'gid', 'descr', 'type', 'count', 'seconds']
