@@ -1327,7 +1327,7 @@ class SourceAtVersion(models.Model):
                     with open(fullpath, 'r') as cf:
                         related_files[f] = cf.read()
         shutil.rmtree(tmpdir)
-	return testor.check_rule_buffer(rule_buffer, related_files=related_files, single=single, cats_content=cats_content, iprep_content=iprep_content)
+        return testor.check_rule_buffer(rule_buffer, related_files=related_files, single=single, cats_content=cats_content, iprep_content=iprep_content)
 
     def test(self):
         rule_buffer = self.to_buffer()
