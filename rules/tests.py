@@ -40,7 +40,7 @@ import itertools
 from importlib import import_module
 
 
-ET_URL = 'https://rules.emergingthreats.net/open/suricata-2.0.1/emerging.rules.tar.gz'
+ET_URL = 'https://rules.emergingthreats.net/open/suricata-4.0/emerging.rules.tar.gz'
 
 RULE_CONTENT = 'alert ip any any -> any any (msg:"Unicode test rule éàç"; content:"uid=0|28|root|29|"; classtype:bad-unknown; sid:2100498; rev:7; metadata:created_at 2010_09_23, updated_at 2010_09_23;)\n'  # ignore_utf8_check: 233 224 231
 
