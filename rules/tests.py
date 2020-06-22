@@ -25,6 +25,7 @@ from django.urls import reverse
 from django.test import TestCase
 from django.utils import timezone
 from django.http import HttpRequest
+from django.db import models
 from rest_framework import status, mixins
 from rest_framework.test import APITestCase
 
@@ -1442,10 +1443,29 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
 
     def test_004_list_filter(self):
         for url, viewset, view_name in self.router.registry:
+            v = viewset()
+            v.request = HttpRequest()
+            v.request.user = None
+
             if not hasattr(viewset, 'filterset_fields'):
                 continue
-            for field in viewset.filter_fields:
-                self.http_get(reverse(view_name + '-list') + '?%s=0' % field)
+
+            for field in viewset.filterset_fields:
+                if '__' in field:
+                    continue
+
+                member = v.get_queryset().model._meta.get_field(field)
+                if isinstance(member, models.ForeignKey):
+                    continue
+
+
+                param = '0'
+                if isinstance(member, models.DateTimeField):
+                    param = timezone.now().strftime('%s')
+                elif member.choices is not None and len(member.choices) > 0:
+                    param = member.choices[0][0]
+
+                self.http_get(reverse(view_name + '-list') + '?%s=%s' % (field, param))
 
     def test_005_list_search(self):
         for url, viewset, view_name in self.router.registry:

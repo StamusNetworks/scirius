@@ -347,7 +347,7 @@ class CategoryViewSet(SciriusReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     ordering = ('name',)
     ordering_fields = ('pk', 'name', 'created_date', 'source')
-    filterset_fields = ('name', 'source', 'created_date')
+    filterset_fields = ('name', 'source')
 
     @detail_route(methods=['post'])
     def enable(self, request, pk):
@@ -428,20 +428,19 @@ class ListFilter(filters.CharFilter):
         multiple_vals = self.sanitize(multiple_vals)
         multiple_vals = list(map(self.customize, multiple_vals))
         for val in multiple_vals:
-            fval = filters_fields.Lookup(val, 'icontains')
-            qs =  super(ListFilter, self).filter(qs, fval)
+            qs = super().filter(qs, val)
         return qs
 
 
 class RuleFilter(filters.FilterSet):
-    min_created = filters.DateFilter(name="created", lookup_expr='gte')
-    max_created = filters.DateFilter(name="created", lookup_expr='lte')
-    min_updated = filters.DateFilter(name="updated", lookup_expr='gte')
-    max_updated = filters.DateFilter(name="updated", lookup_expr='lte')
-    msg = ListFilter(name="msg", lookup_expr='icontains')
-    not_in_msg = ListFilter(name="msg", lookup_expr='icontains', exclude=True)
-    content = ListFilter(name="content", lookup_expr='icontains')
-    not_in_content = ListFilter(name="content", lookup_expr='icontains', exclude=True)
+    min_created = filters.DateFilter(field_name="created", lookup_expr='gte')
+    max_created = filters.DateFilter(field_name="created", lookup_expr='lte')
+    min_updated = filters.DateFilter(field_name="updated", lookup_expr='gte')
+    max_updated = filters.DateFilter(field_name="updated", lookup_expr='lte')
+    msg = ListFilter(field_name="msg", lookup_expr='icontains')
+    not_in_msg = ListFilter(field_name="msg", lookup_expr='icontains', exclude=True)
+    content = ListFilter(field_name="content", lookup_expr='icontains')
+    not_in_content = ListFilter(field_name="content", lookup_expr='icontains', exclude=True)
 
     class Meta:
         model = Rule
@@ -453,9 +452,9 @@ class RuleFilter(filters.FilterSet):
 
 
 class UserActionFilter(filters.FilterSet):
-    min_date = filters.DateFilter(name='date', lookup_expr='gte')
-    max_date = filters.DateFilter(name='date', lookup_expr='lte')
-    comment = ListFilter(name='comment', lookup_expr='icontains')
+    min_date = filters.DateFilter(field_name='date', lookup_expr='gte')
+    max_date = filters.DateFilter(field_name='date', lookup_expr='lte')
+    comment = ListFilter(field_name='comment', lookup_expr='icontains')
 
     class Meta:
         model = UserAction
@@ -660,8 +659,8 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
     serializer_class = RuleSerializer
     ordering = ('sid',)
     ordering_fields = ('sid', 'category', 'msg', 'imported_date', 'updated_date', 'created', 'updated', 'hits')
-    filter_class = RuleFilter
     filter_backends = (DjangoFilterBackend, SearchFilter, RuleHitsOrderingFilter)
+    filterset_class = RuleFilter
     search_fields = ('sid', 'msg', 'content')
 
     @detail_route(methods=['get'])
