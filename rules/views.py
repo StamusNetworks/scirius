@@ -1163,7 +1163,7 @@ def add_public_source(request):
             source_id = form.cleaned_data['source_id']
             source = public_sources['sources'][source_id]
             source_uri = source['url']
-            params = {"__version__": "4.0"}
+            params = {"__version__": "5.0"}
             if form.cleaned_data.has_key('secret_code'):
                 params.update({'secret-code': form.cleaned_data['secret_code']})
             source_uri = source_uri % params

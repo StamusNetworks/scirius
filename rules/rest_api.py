@@ -1573,7 +1573,7 @@ class PublicSourceSerializer(BaseSourceSerializer):
                 raise serializers.ValidationError({'secret_code': ['Secret code is needed']})
             uri = uri % {'secret-code': validated_data.pop('secret_code')}
 
-        uri = uri % {'__version__': '4.0'}
+        uri = uri % {'__version__': '5.0'}
 
         validated_data['uri'] = uri
         validated_data['datatype'] = public_sources['sources'][source_name]['datatype']
