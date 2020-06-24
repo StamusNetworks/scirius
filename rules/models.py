@@ -1557,14 +1557,14 @@ class Transformable:
 
 
 class Cache:
-    TRANSFORMATIONS = None
+    TRANSFORMATIONS = {}
 
     def __init__(self):
         pass
 
     @classmethod
     def enable_cache(cls):
-        if cls.TRANSFORMATIONS is None:
+        if cls.TRANSFORMATIONS == {}:
             # Actions
             ACTION = Transformation.ACTION
             A_NONE = Transformation.A_NONE
@@ -1793,9 +1793,9 @@ class Cache:
 
     @classmethod
     def disable_cache(cls):
-        if cls.TRANSFORMATIONS is not None:
+        if cls.TRANSFORMATIONS != {}:
             del cls.TRANSFORMATIONS
-            cls.TRANSFORMATIONS = None
+            cls.TRANSFORMATIONS = {}
         else:
             raise Exception("%s cache has not been open" % cls.__name__)
 
@@ -2083,7 +2083,7 @@ class Category(models.Model, Transformable, Cache):
             )
 
     def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
-        if Category.TRANSFORMATIONS is None:
+        if Category.TRANSFORMATIONS == {}:
             return (self.pk in ruleset.get_transformed_categories(key=key, value=value).values_list('pk', flat=True))
 
         category_str = Category.__name__.lower()
@@ -2126,7 +2126,7 @@ class Category(models.Model, Transformable, Cache):
         else:
             raise Exception("Key '%s' is unknown" % key)
 
-        if Category.TRANSFORMATIONS is None:
+        if Category.TRANSFORMATIONS == {}:
             ct = CategoryTransformation.objects.filter(
                                     key=key.value,
                                     ruleset=ruleset,
@@ -2425,7 +2425,7 @@ class Rule(models.Model, Transformable, Cache):
         return (rule_ids is not None)
 
     def is_transformed(self, ruleset, key=Transformation.ACTION, value=Transformation.A_DROP):
-        if Rule.TRANSFORMATIONS is None:
+        if Rule.TRANSFORMATIONS == {}:
             return (self in ruleset.get_transformed_rules(key=key, value=value).values_list('pk', flat=True))
 
         rule_str = Rule.__name__.lower()
@@ -2447,7 +2447,7 @@ class Rule(models.Model, Transformable, Cache):
         else:
             raise Exception("Key '%s' is unknown" % key)
 
-        if Rule.TRANSFORMATIONS is None:
+        if Rule.TRANSFORMATIONS == {}:
             rt = RuleTransformation.objects.filter(
                                 key=key.value,
                                 ruleset=ruleset,
