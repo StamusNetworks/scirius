@@ -226,7 +226,7 @@ def update_context(request):
     return {}
 
 
-def custom_source_datatype():
+def custom_source_datatype(check_conf=False):
     return tuple()
 
 
