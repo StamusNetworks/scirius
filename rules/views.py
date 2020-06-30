@@ -1562,7 +1562,9 @@ def edit_ruleset(request, ruleset_id):
             context['mode'] = request.GET['mode']
             context['form'] = CommentForm()
             if context['mode'] == 'sources':
-                all_sources = SourceAtVersion.objects.all()
+                from scirius.utils import get_middleware_module
+                all_sources = SourceAtVersion.objects.exclude(source__datatype__in=get_middleware_module('common').custom_source_datatype(True))
+
                 sources_selection = []
                 for source in sources:
                     sources_selection.append(source.pk)
