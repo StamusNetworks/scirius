@@ -995,7 +995,7 @@ class Source(models.Model):
             category.delete()
             raise ValidationError('The source %s contains no valid signature' % self.name)
 
-    def handle_custom_file(self, f):
+    def handle_custom_file(self, f, upload=False):
         from scirius.utils import get_middleware_module
 
         f.seek(0)
@@ -1013,6 +1013,9 @@ class Source(models.Model):
 
         f.seek(0)
         get_middleware_module('common').extract_custom_source(f, sources_dir)
+        if upload:
+            sources_path = os.path.join(sources_dir, 'rules')
+            get_middleware_module('common').update_custom_source(sources_path)
 
         index = repo.index
         if len(index.diff(None)) or self.first_run:
@@ -1202,7 +1205,7 @@ class Source(models.Model):
         elif self.datatype == 'other':
             self.handle_other_file(dest)
         elif self.datatype in self.custom_data_type:
-            self.handle_custom_file(dest)
+            self.handle_custom_file(dest, upload=True)
 
     def new_uploaded_file(self, f, firstimport):
         self.handle_uploaded_file(f)
