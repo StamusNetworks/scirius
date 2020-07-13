@@ -18,18 +18,18 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from __future__ import unicode_literals
+
 import logging
 import json
 import os
 import sys
 import tarfile
 import tempfile
-from cStringIO import StringIO
+from io import StringIO
 from shutil import rmtree
 from time import strftime, sleep
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from django.conf import settings
 from elasticsearch import Elasticsearch, ConnectionError, NotFoundError
@@ -1735,16 +1735,16 @@ class ESData(object):
         }
         data = json.dumps(data)
         kibana_url = settings.KIBANA_URL + url
-        req = urllib2.Request(kibana_url, data, headers=headers)
-        urllib2.urlopen(req)
+        req = urllib.request.Request(kibana_url, data, headers=headers)
+        urllib.request.urlopen(req)
         return req
 
     def _es_request(self, url, data, method='POST'):
         headers = {'content-type': 'application/json'}
         data = json.dumps(data)
         es_url = get_es_address() + url
-        req = urllib2.Request(es_url, data, headers=headers)
-        urllib2.urlopen(req)
+        req = urllib.request.Request(es_url, data, headers=headers)
+        urllib.request.urlopen(req)
         return req
 
     def _kibana_remove(self, _type, body):
@@ -1852,7 +1852,7 @@ class ESData(object):
         if not self.client.indices.exists('.kibana'):
             self.client.indices.create(index='.kibana',body={ "mappings": get_kibana_mappings() })
             self.client.indices.refresh(index='.kibana')
-        elif not "visualization" in unicode(self.client.indices.get_mapping(index='.kibana')):
+        elif not "visualization" in str(self.client.indices.get_mapping(index='.kibana')):
             self.client.indices.delete(index='.kibana')
             self.client.indices.create(index='.kibana',body={ "mappings": get_kibana_mappings() })
             self.client.indices.refresh(index='.kibana')
@@ -1875,7 +1875,7 @@ class ESData(object):
         try:
             self.client.create(index='.kibana', doc_type=doc_type, id=name, body=content, refresh=True)
         except Exception as e:
-            print 'While processing %s:\n' % _file
+            print('While processing %s:\n' % _file)
             raise
 
     def _kibana_set_default_index(self, idx):
@@ -1897,7 +1897,7 @@ class ESData(object):
             if get_es_major_version() >= 6:
                 self._kibana_request('/api/kibana/settings/defaultIndex', {'value': 'logstash-*'})
             else:
-                print >> sys.stderr, "Warning: unknown ES version, not setting Kibana's defaultIndex"
+                print("Warning: unknown ES version, not setting Kibana's defaultIndex", file=sys.stderr)
 
     def _get_dashboard_dir(self):
         if get_es_major_version() < 6 or not hasattr(settings, 'KIBANA6_DASHBOARDS_PATH'):
@@ -1993,7 +1993,7 @@ class ESData(object):
 
     def get_indexes(self):
         res = self.client.indices.stats()
-        indexes = res['indices'].keys()
+        indexes = list(res['indices'].keys())
         idxs = list(indexes)
 
         for idx in idxs:
@@ -2009,7 +2009,7 @@ class ESData(object):
         return len(indexes)
 
     def wait_until_up(self):
-        for i in xrange(1024):
+        for i in range(1024):
             try:
                 ret = self.client.cluster.health(wait_for_status='green', request_timeout=15 * 60)
                 if ret.get('status') == 'green':

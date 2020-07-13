@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import unicode_literals
+
 from django.conf import settings
 import tarfile
 import tempfile
@@ -73,7 +73,7 @@ class SCOperation(object):
         for key in llevel:
             # removing application is unlikely so if miglebel don't have a key
             # then it is are older
-            if not miglevel.has_key(key):
+            if key not in miglevel:
                 return True
             if llevel[key] < miglevel[key]:
                 return False

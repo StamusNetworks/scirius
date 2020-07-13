@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import unicode_literals
+
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.conf import settings
@@ -28,8 +28,8 @@ from rest_framework.authtoken.models import Token
 from rules.models import UserAction
 
 from scirius.utils import scirius_render, scirius_listing
-from forms import LoginForm, UserSettingsForm, NormalUserSettingsForm, PasswordForm, DeleteForm, TokenForm, PasswordChangeForm, UserCreationForm
-from models import SciriusUser
+from .forms import LoginForm, UserSettingsForm, NormalUserSettingsForm, PasswordForm, DeleteForm, TokenForm, PasswordChangeForm, UserCreationForm
+from .models import SciriusUser
 
 from ipware.ip import get_client_ip
 import logging

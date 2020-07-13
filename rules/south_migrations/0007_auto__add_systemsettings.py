@@ -9,93 +9,93 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         # Adding model 'SystemSettings'
-        db.create_table(u'rules_systemsettings', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+        db.create_table('rules_systemsettings', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('use_http_proxy', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('http_proxy', self.gf('django.db.models.fields.CharField')(default='', max_length=200, blank=True)),
             ('https_proxy', self.gf('django.db.models.fields.CharField')(default='', max_length=200, blank=True)),
             ('use_elasticsearch', self.gf('django.db.models.fields.BooleanField')(default=True)),
         ))
-        db.send_create_signal(u'rules', ['SystemSettings'])
+        db.send_create_signal('rules', ['SystemSettings'])
 
 
     def backwards(self, orm):
         # Deleting model 'SystemSettings'
-        db.delete_table(u'rules_systemsettings')
+        db.delete_table('rules_systemsettings')
 
 
     models = {
-        u'rules.category': {
+        'rules.category': {
             'Meta': {'object_name': 'Category'},
             'created_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2015, 2, 3, 0, 0)'}),
             'descr': ('django.db.models.fields.CharField', [], {'max_length': '400', 'blank': 'True'}),
             'filename': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'source': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rules.Source']"})
+            'source': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['rules.Source']"})
         },
-        u'rules.flowbit': {
+        'rules.flowbit': {
             'Meta': {'object_name': 'Flowbit'},
             'enable': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'isset': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'set': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'source': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rules.Source']"})
+            'source': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['rules.Source']"})
         },
-        u'rules.rule': {
+        'rules.rule': {
             'Meta': {'object_name': 'Rule'},
-            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rules.Category']"}),
+            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['rules.Category']"}),
             'content': ('django.db.models.fields.CharField', [], {'max_length': '10000'}),
-            'flowbits': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['rules.Flowbit']", 'symmetrical': 'False'}),
+            'flowbits': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['rules.Flowbit']", 'symmetrical': 'False'}),
             'msg': ('django.db.models.fields.CharField', [], {'max_length': '1000'}),
             'rev': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'sid': ('django.db.models.fields.IntegerField', [], {'primary_key': 'True'}),
             'state': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
         },
-        u'rules.ruleset': {
+        'rules.ruleset': {
             'Meta': {'object_name': 'Ruleset'},
-            'categories': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['rules.Category']", 'symmetrical': 'False', 'blank': 'True'}),
+            'categories': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['rules.Category']", 'symmetrical': 'False', 'blank': 'True'}),
             'created_date': ('django.db.models.fields.DateTimeField', [], {}),
             'descr': ('django.db.models.fields.CharField', [], {'max_length': '400', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100'}),
-            'sources': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['rules.SourceAtVersion']", 'symmetrical': 'False'}),
-            'suppressed_rules': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['rules.Rule']", 'symmetrical': 'False', 'blank': 'True'}),
+            'sources': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['rules.SourceAtVersion']", 'symmetrical': 'False'}),
+            'suppressed_rules': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['rules.Rule']", 'symmetrical': 'False', 'blank': 'True'}),
             'updated_date': ('django.db.models.fields.DateTimeField', [], {'blank': 'True'})
         },
-        u'rules.source': {
+        'rules.source': {
             'Meta': {'object_name': 'Source'},
             'created_date': ('django.db.models.fields.DateTimeField', [], {}),
             'datatype': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'method': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100'}),
             'updated_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'uri': ('django.db.models.fields.CharField', [], {'max_length': '400', 'null': 'True', 'blank': 'True'})
         },
-        u'rules.sourceatversion': {
+        'rules.sourceatversion': {
             'Meta': {'object_name': 'SourceAtVersion'},
             'git_version': ('django.db.models.fields.CharField', [], {'default': "'HEAD'", 'max_length': '42'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'source': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rules.Source']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'source': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['rules.Source']"}),
             'updated_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2015, 2, 3, 0, 0)', 'blank': 'True'}),
             'version': ('django.db.models.fields.CharField', [], {'max_length': '42'})
         },
-        u'rules.sourceupdate': {
+        'rules.sourceupdate': {
             'Meta': {'object_name': 'SourceUpdate'},
             'changed': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'created_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2015, 2, 3, 0, 0)', 'blank': 'True'}),
             'data': ('django.db.models.fields.TextField', [], {}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'source': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rules.Source']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'source': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['rules.Source']"}),
             'version': ('django.db.models.fields.CharField', [], {'max_length': '42'})
         },
-        u'rules.systemsettings': {
+        'rules.systemsettings': {
             'Meta': {'object_name': 'SystemSettings'},
             'http_proxy': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '200', 'blank': 'True'}),
             'https_proxy': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '200', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'use_elasticsearch': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'use_http_proxy': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
         }

@@ -1,2 +1,2 @@
-from __future__ import unicode_literals
-import common
+
+from . import common

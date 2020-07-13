@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import unicode_literals
+
 from django.contrib.auth.models import User
 from scirius.utils import SciriusTable
 import django_tables2 as tables

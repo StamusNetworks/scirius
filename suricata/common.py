@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import unicode_literals
+
 import psutil
 from rest_framework import serializers
 
@@ -75,7 +75,7 @@ def help_links(djlink):
         "suricata_edit": {"name": "Suricata setup", "base_url": "doc/suricata-ce.html", "anchor": "#setup" },
         "suricata_update": {"name": "Updating Suricata ruleset", "base_url": "doc/suricata-ce.html", "anchor": "#updating-ruleset" },
         }
-    if HELP_LINKS_TABLE.has_key(djlink):
+    if djlink in HELP_LINKS_TABLE:
         return HELP_LINKS_TABLE[djlink]
     return None
 
@@ -106,9 +106,9 @@ def validate_rule_postprocessing(data, partial):
     }
 
     for f in data.get('filter_defs', []):
-        if f.get('key') in signatures.keys():
+        if f.get('key') in list(signatures.keys()):
             signatures[f.get('key')] = True
-            if signatures.values().count(True) > 1:
+            if list(signatures.values()).count(True) > 1:
                 raise serializers.ValidationError({'filter_defs': ['Only one field with key "alert.signature_id" or "msg" or "alert.signature" or "content" is accepted.']})
 
         if f.get('key') in ('src_ip', 'dest_ip', 'alert.target.ip', 'alert.source.ip'):
@@ -127,10 +127,10 @@ def validate_rule_postprocessing(data, partial):
 
     errors = []
     if not partial:
-        if signatures.values().count(False) == len(signatures):
+        if list(signatures.values()).count(False) == len(signatures):
             errors.append('A filter with a key "alert.signature_id" or "msg" or "alert.signature" or "content" is required.')
 
-        if signatures.values().count(True) > 1:
+        if list(signatures.values()).count(True) > 1:
             errors.append('Only one filter with a key "alert.signature_id" or "msg" or "alert.signature" or "content" can be set.')
 
         if not has_ip:

@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import unicode_literals
+
 from django.template.defaultfilters import filesizeformat
 from scirius.utils import SciriusTable
 from rules.models import Ruleset, Source, Category, Rule, SourceAtVersion, SourceUpdate, Threshold, UserAction

@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
-from __future__ import unicode_literals
+
 import json
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -28,14 +28,14 @@ from django.http import HttpRequest
 from rest_framework import status, mixins
 from rest_framework.test import APITestCase
 
-from models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, \
+from .models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, \
     RulesetTransformation, SourceUpdate, SystemSettings, UserAction, RuleProcessingFilter, RuleProcessingFilterDef
-from rest_api import router
+from .rest_api import router
 
 from copy import deepcopy
 import tempfile
 from shutil import rmtree
-from StringIO import StringIO
+from io import StringIO
 import itertools
 from importlib import import_module
 
@@ -217,7 +217,7 @@ class RestAPITestBase(object):
 
         # behavior/status could be different on remote and local build
         try:
-            data_msg = unicode(getattr(response, 'data', None))
+            data_msg = str(getattr(response, 'data', None))
         except UnicodeDecodeError:
             data_msg = repr(getattr(response, 'data', None))
         msg = 'Request failed: \n%s %s\n%s %s\n%s' % (method.upper(), url, response.status_code, response.reason_phrase, data_msg)
@@ -398,8 +398,8 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         self._create_custom_source('http', 'sigs', uri='http://localhost:1234/')
 
         response = self.http_post(reverse('source-update-source', args=(self.source.pk,)), status=status.HTTP_400_BAD_REQUEST)
-        msg = unicode(response.get('update', [''])[0])
-        self.assertRegexpMatches(msg, 'Can not fetch data: .* Connection refused')
+        msg = str(response.get('update', [''])[0])
+        self.assertRegex(msg, 'Can not fetch data: .* Connection refused')
 
     def test_006_custom_source_delete(self):
         self._create_custom_source('local', 'sig')
@@ -1159,7 +1159,7 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
         order = [f['pk'] for f in r['results']]
         self.assertListEqual(expected, order)
         indices = [f['index'] for f in r['results']]
-        self.assertListEqual(indices, range(4))
+        self.assertListEqual(indices, list(range(4)))
 
     def _test_010_order_update(self, prev_index, new_index):
         filters = []
@@ -1403,7 +1403,7 @@ def order_update_lambda(a, b):
     return lambda x: RestAPIRuleProcessingFilterTestCase._test_010_order_update(x, a, b)
 
 
-for a, b in itertools.product(range(4), range(5) + [None]):
+for a, b in itertools.product(list(range(4)), list(range(5)) + [None]):
     setattr(RestAPIRuleProcessingFilterTestCase, 'test_010_order_update_%i_to_%s' % (a, repr(b)), order_update_lambda(a, b))
 
 

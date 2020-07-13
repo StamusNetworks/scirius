@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import unicode_literals
+
 from django.conf import settings
 from django.template.defaultfilters import filesizeformat
 from datetime import datetime
@@ -1868,7 +1868,7 @@ class ESRulesStats(ESQuery):
                         sid=elt['term']
                     rule = Rule.objects.get(sid=sid)
                 except:
-                    print "Can not find rule with sid %s" % sid
+                    print("Can not find rule with sid %s" % sid)
                     continue
                 if get_es_major_version() >= 2:
                     rule.hits = elt['doc_count']
@@ -2003,7 +2003,7 @@ class ESTimeline(ESQuery):
                 for elt in data:
                     date = elt['key']
                     for host in elt["host"]['buckets']:
-                        if not rdata.has_key(host["key"]):
+                        if host["key"] not in rdata:
                             rdata[host["key"]] = { 'entries': [ { "time": date, "count": host["doc_count"] } ] }
                         else:
                             rdata[host["key"]]['entries'].append({ "time": date, "count": host["doc_count"] })
@@ -2039,7 +2039,7 @@ class ESMetricsTimeline(ESQuery):
                 rdata = {}
                 for elt in data:
                     date = elt['key']
-                    if not rdata.has_key(hosts[0]):
+                    if hosts[0] not in rdata:
                         rdata[hosts[0]] = { 'entries': [ { "time": date, "mean": elt["stat"]["value"] } ] }
                     else:
                         rdata[hosts[0]]['entries'].append({ "time": date, "mean": elt["stat"]["value"] })
@@ -2138,7 +2138,7 @@ def es_delete_alerts_by_sid_v2(sid):
     delete_url = get_es_path(DELETE_ALERTS_URL) % int(sid)
     try:
         r = requests.delete(delete_url)
-    except Exception, err:
+    except Exception as err:
         return {'msg': 'Elasticsearch error: %s' % err, 'status': 500 }
     if r.status_code == 200:
         data = json.loads(r.text)
@@ -2155,7 +2155,7 @@ def es_delete_alerts_by_sid_v5(sid):
     try:
         headers = {'content-type': 'application/json'}
         r = requests.post(delete_url, data = json.dumps(data), headers=headers)
-    except Exception, err:
+    except Exception as err:
         return {'msg': 'Elasticsearch error: %s' % err, 'status': 500 }
     if r.status_code == 200:
         data = json.loads(r.text)

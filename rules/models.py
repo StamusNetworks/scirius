@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
-from __future__ import unicode_literals
+
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -527,15 +527,15 @@ class UserAction(models.Model):
         ua.save(force_insert)
 
         # UserActionObject
-        for action_key, action_value in kwargs.iteritems():
+        for action_key, action_value in kwargs.items():
 
             ua_obj_params = {
                 'action_key': action_key,
-                'action_value': unicode(action_value)[:100],
+                'action_value': str(action_value)[:100],
                 'user_action': ua,
             }
 
-            if not isinstance(action_value, (str, unicode,)):
+            if not isinstance(action_value, str):
                 ua_obj_params['content'] = action_value
 
             ua_obj = UserActionObject(**ua_obj_params)
@@ -556,7 +556,7 @@ class UserAction(models.Model):
 
         from scirius.utils import get_middleware_module
         actions_dict = get_middleware_module('common').get_user_actions_dict()
-        if self.action_type not in actions_dict.keys():
+        if self.action_type not in list(actions_dict.keys()):
             raise Exception('Unknown action type "%s"' % self.action_type)
 
         format_ = {'user': format_html('<strong>{}</strong>', self.username), 'datetime': self.date}
@@ -585,7 +585,7 @@ class UserAction(models.Model):
 
         from scirius.utils import get_middleware_module
         actions_dict = get_middleware_module('common').get_user_actions_dict()
-        if self.action_type not in actions_dict.keys():
+        if self.action_type not in list(actions_dict.keys()):
             raise Exception('Unknown action type "%s"' % self.action_type)
 
         return actions_dict[self.action_type]['title']
@@ -770,7 +770,7 @@ class Source(models.Model):
     def delete(self):
         self.needs_test()
         # delete git tree
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         try:
             shutil.rmtree(source_git_dir)
         # Ignore error if not present
@@ -788,7 +788,7 @@ class Source(models.Model):
         self.updated_rules["updated"] = list(set(self.updated_rules["updated"]).union(set(update["updated"])))
 
     def get_categories(self):
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         catname = re.compile("(.+)\.rules$")
         existing_rules_hash = {}
         for rule in Rule.objects.all().prefetch_related('category'):
@@ -812,7 +812,7 @@ class Source(models.Model):
 
     def get_git_repo(self, delete = False):
         # check if git tree is in place
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         if not os.path.isdir(source_git_dir):
             if os.path.isfile(source_git_dir):
                 raise OSError("git-sources is not a directory")
@@ -904,7 +904,7 @@ class Source(models.Model):
         if rules_dir == None:
             raise SuspiciousOperation("Tar file does not contain a 'rules' directory")
 
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         tfile.extractall(path=source_git_dir, members = dir_list)
         if "/" in rules_dir:
             shutil.move(os.path.join(source_git_dir, rules_dir), os.path.join(source_git_dir, 'rules'))
@@ -930,7 +930,7 @@ class Source(models.Model):
 
         repo = self.get_git_repo(delete = True)
 
-        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk), 'rules')
+        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
         # create rules dir if needed
         if not os.path.isdir(rules_dir):
             os.makedirs(rules_dir)
@@ -973,7 +973,7 @@ class Source(models.Model):
 
         repo = self.get_git_repo(delete = True)
 
-        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk), 'rules')
+        rules_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
         # create rules dir if needed
         if not os.path.isdir(rules_dir):
             os.makedirs(rules_dir)
@@ -1018,7 +1018,7 @@ class Source(models.Model):
         self.updated_date = timezone.now()
         repo = self.get_git_repo(delete=True)
 
-        sources_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
+        sources_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         # create rules dir if needed
         if not os.path.isdir(sources_dir):
             os.makedirs(sources_dir)
@@ -1107,7 +1107,7 @@ class Source(models.Model):
 
             if self.datatype in self.custom_data_type:
                 from scirius.utils import get_middleware_module
-                source_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk), 'rules')
+                source_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
                 get_middleware_module('common').update_custom_source(source_path)
 
             for rule in self.updated_rules["deleted"]:
@@ -1115,7 +1115,7 @@ class Source(models.Model):
             self.needs_test()
 
     def diff(self):
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         if not os.path.isdir(source_git_dir):
             raise IOError("You have to update source first")
         repo = git.Repo(source_git_dir)
@@ -1123,7 +1123,7 @@ class Source(models.Model):
         return hcommit.diff('HEAD~1', create_patch = True)
 
     def export_files(self, directory, version):
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         repo = git.Repo(source_git_dir)
         cats_content = ''
         iprep_content = ''
@@ -1155,7 +1155,7 @@ class Source(models.Model):
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
-        return reverse('source', args=[unicode(self.id)])
+        return reverse('source', args=[str(self.id)])
 
     def update_ruleset_http(self, f):
         proxy_params = get_system_settings().get_proxy_params()
@@ -1190,10 +1190,10 @@ class Source(models.Model):
 
                 return True
 
-        except requests.exceptions.ConnectionError, e:
-            if "Name or service not known" in unicode(e):
+        except requests.exceptions.ConnectionError as e:
+            if "Name or service not known" in str(e):
                 raise IOError("Failure to resolve hostname, please check DNS configuration")
-            elif "Connection timed out" in unicode(e):
+            elif "Connection timed out" in str(e):
                 raise IOError("Connection error 'Connection timed out'")
             else:
                 raise IOError("Connection error '%s'" % (e))
@@ -1260,10 +1260,10 @@ class SourceAtVersion(models.Model):
     updated_date = models.DateTimeField('date updated', blank = True, default = timezone.now)
 
     def __unicode__(self):
-        return unicode(self.source) + "@" + self.version
+        return str(self.source) + "@" + self.version
 
     def _get_name(self):
-        return unicode(self)
+        return str(self)
 
     name = property(_get_name)
 
@@ -1309,7 +1309,7 @@ class SourceAtVersion(models.Model):
     def to_buffer(self):
         categories = Category.objects.filter(source = self.source)
         rules = Rule.objects.filter(category__in = categories)
-        file_content = "# Rules file for %s generated by Scirius at %s\n" % (self.name, unicode(timezone.now()))
+        file_content = "# Rules file for %s generated by Scirius at %s\n" % (self.name, str(timezone.now()))
         rules_content = [ rule.content for rule in rules ]
         file_content += "\n".join(rules_content)
         return file_content
@@ -1350,7 +1350,7 @@ class SourceUpdate(models.Model):
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
-        return reverse('sourceupdate', args=[unicode(self.id)])
+        return reverse('sourceupdate', args=[str(self.id)])
 
 
 class TransfoType(Enum):
@@ -1864,7 +1864,7 @@ class Category(models.Model, Transformable, Cache):
                 # Is there an existing rule to clean ? this is needed at
                 # conversion of source to use iprep but we will have a different
                 # message in this case (with group)
-                if existing_rules_hash.has_key(rule.sid):
+                if rule.sid in existing_rules_hash:
                     # the sig is already present and it is a group sid so let's declare it
                     # updated to avoid its deletion later in process. No else clause because
                     # the signature will be deleted as it is not referenced in a changed or
@@ -1894,7 +1894,7 @@ class Category(models.Model, Transformable, Cache):
             # if we already have a signature with the SID we are probably parsing
             # a source that has just been switched to iprep. So we get the old
             # rule and we update the content to avoid loosing information.
-            if existing_rules_hash.has_key(rule.sid):
+            if rule.sid in existing_rules_hash:
                 group_rule = existing_rules_hash[rule.sid]
                 group_rule.group = True
                 group_rule.msg = rule_base_msg
@@ -1924,7 +1924,7 @@ class Category(models.Model, Transformable, Cache):
         getsid = re.compile("sid *: *(\d+)")
         getrev = re.compile("rev *: *(\d+)")
         getmsg = re.compile("msg *: *\"(.*?)\"")
-        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, unicode(self.source.pk))
+        source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.source.pk))
         rfile = open(os.path.join(source_git_dir, self.filename))
 
         rules_update = {"added": [], "deleted": [], "updated": []}
@@ -1987,7 +1987,7 @@ class Category(models.Model, Transformable, Cache):
                 if source.use_iprep and Rule.GROUPSNAMEREGEXP.match(msg):
                     self.add_group_signature(rules_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged)
                 else:
-                    if existing_rules_hash.has_key(int(sid)):
+                    if int(sid) in existing_rules_hash:
                         # FIXME update references if needed
                         rule = existing_rules_hash[int(sid)]
                         if rule.category.source != source:
@@ -2056,7 +2056,7 @@ class Category(models.Model, Transformable, Cache):
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
-        return reverse('category', args=[unicode(self.id)])
+        return reverse('category', args=[str(self.id)])
 
     def enable(self, ruleset, user = None, comment = None):
         ruleset.categories.add(self)
@@ -2147,12 +2147,12 @@ class Category(models.Model, Transformable, Cache):
             category_str = Category.__name__.lower()
             ruleset_str = Ruleset.__name__.lower()
 
-            for trans, tsets in Category.TRANSFORMATIONS[key][category_str].iteritems():
+            for trans, tsets in Category.TRANSFORMATIONS[key][category_str].items():
                 if self.pk in tsets:  # DROP / REJECT / FILESTORE / NONE
                     return trans
 
             if override:
-                for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].iteritems():
+                for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].items():
                     if self.category.pk in tsets:
                         return trans
 
@@ -2222,7 +2222,7 @@ class Rule(models.Model, Transformable, Cache):
     GROUPSNAMEREGEXP = re.compile('^(.*) +group +\d+$')
 
     def __unicode__(self):
-        return unicode(self.sid) + ":" + self.msg
+        return str(self.sid) + ":" + self.msg
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
@@ -2234,7 +2234,7 @@ class Rule(models.Model, Transformable, Cache):
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
-        return reverse('rule', args=[unicode(self.sid)])
+        return reverse('rule', args=[str(self.sid)])
 
     def parse_flowbits(self, source, flowbits, addition = False):
         for ftype in self.BITSREGEXP:
@@ -2248,7 +2248,7 @@ class Rule(models.Model, Transformable, Cache):
                     else:
                         continue
                     # create Flowbit if needed
-                    if not flowinst[1] in flowbits[ftype].keys():
+                    if not flowinst[1] in list(flowbits[ftype].keys()):
                         elt = Flowbit(type = ftype, name = flowinst[1],
                                       source = source)
                         flowbits['last_pk'] += 1
@@ -2477,16 +2477,16 @@ class Rule(models.Model, Transformable, Cache):
             category_str = Category.__name__.lower()
             ruleset_str = Ruleset.__name__.lower()
 
-            for trans, tsets in Rule.TRANSFORMATIONS[key][rule_str].iteritems():
+            for trans, tsets in Rule.TRANSFORMATIONS[key][rule_str].items():
                 if self.pk in tsets:
                     return trans
 
             if override:
-                for trans, tsets in Rule.TRANSFORMATIONS[key][category_str].iteritems():
+                for trans, tsets in Rule.TRANSFORMATIONS[key][category_str].items():
                     if self.category.pk in tsets:
                         return trans
 
-                for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].iteritems():
+                for trans, tsets in Rule.TRANSFORMATIONS[key][ruleset_str].items():
                     if ruleset.pk in tsets:
                         return trans
 
@@ -2549,7 +2549,7 @@ class Rule(models.Model, Transformable, Cache):
         trans = self.get_transformation(key=TARGET, ruleset=ruleset, override=True)
         if trans in (T_SOURCE, T_DESTINATION, T_AUTO):
             c = content
-            if isinstance(content, unicode):
+            if isinstance(content, str):
                 c = content.encode('utf8')
             content = self.apply_transformation(c, key=Transformation.TARGET, value=trans)
 
@@ -2783,7 +2783,7 @@ class Ruleset(models.Model, Transformable):
             if isinstance(excludes, (list, tuple, set)):
                 for exclude in excludes:
                     categories = categories.exclude(pk__in=exclude)
-            elif isinstance(excludes, (str, unicode)):
+            elif isinstance(excludes, str):
                 categories = categories.exclude(pk__in=excludes)
 
         return categories
@@ -2810,7 +2810,7 @@ class Ruleset(models.Model, Transformable):
             if isinstance(excludes, (list, tuple, set)):
                 for exclude in excludes:
                     rules = rules.exclude(pk__in=exclude)
-            elif isinstance(excludes, (str, unicode)):
+            elif isinstance(excludes, str):
                 rules = rules.exclude(pk__in=excludes)
 
         return rules
@@ -2849,7 +2849,7 @@ class Ruleset(models.Model, Transformable):
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
-        return reverse('ruleset', args=[unicode(self.id)])
+        return reverse('ruleset', args=[str(self.id)])
 
     def update(self):
         update_errors = []
@@ -2961,7 +2961,7 @@ class Ruleset(models.Model, Transformable):
     def to_buffer(self):
         rules = self.generate()
         self.rules_count = len(rules)
-        file_content = "# Rules file for %s generated by Scirius at %s\n" % (self.name, unicode(timezone.now()))
+        file_content = "# Rules file for %s generated by Scirius at %s\n" % (self.name, str(timezone.now()))
 
         if len(rules) > 0:
             try:
@@ -3004,7 +3004,7 @@ class Ruleset(models.Model, Transformable):
         result = self.test_rule_buffer(rule_buffer)
         result['rules_count'] = self.rules_count
         self.validity = result['status']
-        if result.has_key('errors'):
+        if 'errors' in result:
             self.errors = json.dumps(result['errors'])
         else:
             self.errors = json.dumps([])
@@ -3097,7 +3097,7 @@ class Threshold(models.Model):
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
-        return reverse('threshold', args=[unicode(self.id)])
+        return reverse('threshold', args=[str(self.id)])
 
     def contain(self, elt):
         if elt.threshold_type != self.threshold_type:
@@ -3131,7 +3131,7 @@ class RuleProcessingFilter(models.Model):
         sids = []
         try:
             sid = self.filter_defs.get(key='alert.signature_id').value
-            sid_track_ip = {unicode(sid): []}
+            sid_track_ip = {str(sid): []}
             sids.append(sid)
         except models.ObjectDoesNotExist:
             pass
@@ -3139,21 +3139,21 @@ class RuleProcessingFilter(models.Model):
         try:
             msg = self.filter_defs.get(key='msg').value
             sids = list(Rule.objects.filter(msg__icontains=msg).order_by('sid').values_list('sid', flat=True))
-            sid_track_ip = dict([(unicode(sid), []) for sid in sids]) if msg else None
+            sid_track_ip = dict([(str(sid), []) for sid in sids]) if msg else None
         except models.ObjectDoesNotExist:
             pass
 
         try:
             content = self.filter_defs.get(key='content').value
             sids = list(Rule.objects.filter(content__icontains=content).order_by('sid').values_list('sid', flat=True))
-            sid_track_ip = dict([(unicode(sid), []) for sid in sids]) if content else None
+            sid_track_ip = dict([(str(sid), []) for sid in sids]) if content else None
         except models.ObjectDoesNotExist:
             pass
 
         try:
             msg = self.filter_defs.get(key='alert.signature').value
             sids = list(Rule.objects.filter(msg=msg).order_by('sid').values_list('sid', flat=True))
-            sid_track_ip = dict([(unicode(sid), []) for sid in sids]) if msg else None
+            sid_track_ip = dict([(str(sid), []) for sid in sids]) if msg else None
         except models.ObjectDoesNotExist:
             pass
 
@@ -3184,26 +3184,26 @@ class RuleProcessingFilter(models.Model):
 
                     if 'target:src_ip;' in content:
                         if alert_target_ip:
-                            sid_track_ip[unicode(rule.sid)] = ('by_src', alert_ip.value,)
+                            sid_track_ip[str(rule.sid)] = ('by_src', alert_ip.value,)
                         elif alert_source_ip:
-                            sid_track_ip[unicode(rule.sid)] = ('by_dst', alert_ip.value,)
+                            sid_track_ip[str(rule.sid)] = ('by_dst', alert_ip.value,)
                     elif 'target:dest_ip;' in content:
                         if alert_target_ip:
-                            sid_track_ip[unicode(rule.sid)] = ('by_dst', alert_ip.value,)
+                            sid_track_ip[str(rule.sid)] = ('by_dst', alert_ip.value,)
                         elif alert_source_ip:
-                            sid_track_ip[unicode(rule.sid)] = ('by_src', alert_ip.value,)
+                            sid_track_ip[str(rule.sid)] = ('by_src', alert_ip.value,)
                     else:
-                        sid_track_ip.pop(unicode(rule.sid), None)
+                        sid_track_ip.pop(str(rule.sid), None)
 
             elif src_ip:
                 for sid in sids:
-                    sid_track_ip[unicode(sid)] = ('by_src', src_ip.value)
+                    sid_track_ip[str(sid)] = ('by_src', src_ip.value)
             else:
                 for sid in sids:
-                    sid_track_ip[unicode(sid)] = ('by_dst', dest_ip.value)
+                    sid_track_ip[str(sid)] = ('by_dst', dest_ip.value)
 
             res = []
-            for sid, val in sid_track_ip.iteritems():
+            for sid, val in sid_track_ip.items():
                 if len(val):
                     res.append('suppress gen_id 1, sid_id %s, track %s, ip %s\n' % (sid, val[0], val[1]))
             return res
@@ -3212,7 +3212,7 @@ class RuleProcessingFilter(models.Model):
             options = self.get_options()
 
             res = []
-            for sid in sid_track_ip.iterkeys():
+            for sid in sid_track_ip.keys():
                 res.append('threshold gen_id 1, sig_id %s, type %s, track %s, count %s, seconds %s\n' % (sid, options['type'], options['track'], options['count'], options['seconds']))
             return res
 
@@ -3225,7 +3225,7 @@ class RuleProcessingFilter(models.Model):
     def __unicode__(self):
         filters = []
         for f in self.filter_defs.order_by('key'):
-            filters.append(unicode(f))
+            filters.append(str(f))
         return '%s (%s)' % (self.action, ', '.join(filters))
 
 

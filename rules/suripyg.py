@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 This code is based on hogments by Rune Hammersland (https://github.com/yaunj/hogments)
 """
 
-from __future__ import unicode_literals
+
 from pygments.lexer import RegexLexer, include, bygroups
 from pygments import highlight
 from pygments.formatters import HtmlFormatter

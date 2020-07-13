@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import unicode_literals
+
 import logging
 
 from django.shortcuts import redirect
@@ -26,7 +26,7 @@ from django.conf import settings
 
 from revproxy.views import ProxyView
 from scirius.utils import scirius_render
-from utils import get_middleware_module
+from .utils import get_middleware_module
 
 # Avoid logging every request
 revproxy_logger = logging.getLogger('revproxy')

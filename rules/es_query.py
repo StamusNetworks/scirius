@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from datetime import datetime, timedelta
 from time import time
@@ -9,7 +9,7 @@ import socket
 from django.conf import settings
 from django.template import Context, Template
 from django.utils.safestring import mark_safe
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from rules.models import get_es_address
 from scirius.utils import get_middleware_module
@@ -191,7 +191,7 @@ class ESQuery(object):
             'to_date': mark_safe(self._to_date(dictionary, es_format=True)), # mark quotes around "now" as safe
             'query_filter': query_filter,
             'bool_clauses': bool_clauses,
-            'interval': unicode(self._interval(dictionary)) + 'ms'
+            'interval': str(self._interval(dictionary)) + 'ms'
         })
 
         return bytearray(templ.render(context), encoding="utf-8")
@@ -199,17 +199,17 @@ class ESQuery(object):
     def _urlopen(self, url, data=None, method=None, contenttype='application/json'):
         from rules.es_graphs import ESError
         headers = {'content-type': contenttype}
-        req = urllib2.Request(url, data, headers)
+        req = urllib.request.Request(url, data, headers)
         if method is not None:
             req.get_method = lambda: method
 
         try:
-            out = urllib2.urlopen(req, timeout=self.TIMEOUT)
-        except (urllib2.URLError, urllib2.HTTPError, socket.timeout) as e:
+            out = urllib.request.urlopen(req, timeout=self.TIMEOUT)
+        except (urllib.error.URLError, urllib.error.HTTPError, socket.timeout) as e:
             msg = url + '\n'
             if isinstance(e, socket.timeout):
                 msg += 'Request timeout'
-            elif isinstance(e, urllib2.HTTPError):
+            elif isinstance(e, urllib.error.HTTPError):
                 msg += '%s %s\n%s\n\n%s\n%s' % (e.code, e.reason, e, data, e.read())
             else:
                 msg += repr(e)
@@ -264,7 +264,7 @@ class ESQuery(object):
             raise Exception('Missing aggregation')
         if len(_query['aggregations']) != 1:
             raise Exception('Unexpected aggregation count')
-        if 'composite' not in _query['aggregations'].values()[0]:
+        if 'composite' not in list(_query['aggregations'].values())[0]:
             raise Exception('Unexpected aggregation type')
 
         after = None
@@ -272,9 +272,9 @@ class ESQuery(object):
         # https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-composite-aggregation.html#_after
         while True:
             if after:
-                _query['aggregations'].values()[0]['composite']['after'] = after
+                list(_query['aggregations'].values())[0]['composite']['after'] = after
 
-            _query['aggregations'].values()[0]['composite']['size'] = 10000
+            list(_query['aggregations'].values())[0]['composite']['size'] = 10000
             query = bytearray(json.dumps(_query), encoding='utf-8')
 
             data = self._urlopen(es_url, query)
@@ -285,7 +285,7 @@ class ESQuery(object):
                 # No data matches the query
                 break
 
-            after = data['aggregations'].values()[0].get('after_key')
+            after = list(data['aggregations'].values())[0].get('after_key')
 
             if after is None:
                 break

@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 from django.core import exceptions
 from django.contrib.auth.models import User
 from django.contrib.auth import password_validation
@@ -102,7 +102,7 @@ class AccountSerializer(serializers.ModelSerializer):
         user_data = validated_data.pop('user')
         user = instance.user
 
-        for key, value in user_data.iteritems():
+        for key, value in user_data.items():
             if key == 'password':
                 raise serializers.ValidationError({'password': 'You do not have permission to perform this action'})
 
@@ -132,7 +132,7 @@ class ChangePasswordSuperUserSerializer(serializers.Serializer):
         try:
             password_validation.validate_password(password=password, user=User)
         except exceptions.ValidationError as e:
-            raise serializers.ValidationError({'password': [unicode(e)]})
+            raise serializers.ValidationError({'password': [str(e)]})
         return password
 
 

@@ -18,13 +18,13 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import unicode_literals
+
 import subprocess
 import tempfile
 import shutil
 import os
 import json
-import StringIO
+import io
 import re
 
 from django.utils.html import escape
@@ -166,7 +166,7 @@ config classification: command-and-control,Malware Command and Control Activity 
         variable_list = []
         files_list = []
         ignore_next = False
-        error_stream = StringIO.StringIO(error)
+        error_stream = io.StringIO(error)
         for line in error_stream:
             try:
                 s_err = json.loads(line)
@@ -306,7 +306,7 @@ config classification: command-and-control,Malware Command and Control Activity 
     def check_rule_buffer(self, rule_buffer, config_buffer=None, related_files=None, single=False, cats_content='', iprep_content=''):
         related_files = related_files or {}
         prov_result = self.rule_buffer(rule_buffer, config_buffer=config_buffer, related_files=related_files, cats_content=cats_content, iprep_content=iprep_content)
-        if prov_result['status'] and not prov_result.has_key('warnings'):
+        if prov_result['status'] and 'warnings' not in prov_result:
             return self._escape_result(prov_result)
         res = self.parse_suricata_error(prov_result['errors'], single=single)
         prov_result['errors'] = res['errors']

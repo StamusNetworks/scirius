@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import unicode_literals
+
 from importlib import import_module
 from time import time
 import math
@@ -71,9 +71,9 @@ def complete_context(request, context):
             duration = int(request.session.get('duration', '24'))
         from_date = int((time() - (duration * 3600)) * 1000)
         if duration <= 24:
-            date = '%sh' % unicode(duration)
+            date = '%sh' % str(duration)
         else:
-            date = '%sd' % unicode(duration / 24)
+            date = '%sd' % str(duration / 24)
         if request.GET.__contains__('graph'):
             graph = request.GET.get('graph', 'sunburst')
             if not graph in ['sunburst', 'circles']:
@@ -177,7 +177,7 @@ def help_links(djlink):
         "edit_rule": {"name": "Transform Rule", "base_url": "doc/ruleset.html", "anchor": "#rule-transformations" },
         "accounts_manage": {"name": "Accounts Management", "base_url": "doc/local-user-management.html", "anchor": "#manage-accounts" },
     }
-    if HELP_LINKS_TABLE.has_key(djlink):
+    if djlink in HELP_LINKS_TABLE:
         return HELP_LINKS_TABLE[djlink]
     Probe = __import__(settings.RULESET_MIDDLEWARE)
     return Probe.common.help_links(djlink)
@@ -193,7 +193,7 @@ class SciriusTable(tables.Table):
 
 # https://stackoverflow.com/questions/20656135/python-deep-merge-dictionary-data
 def merge_dict_deeply(src, dest):
-    for key, value in src.items():
+    for key, value in list(src.items()):
         if isinstance(value, dict):
             node = dest.setdefault(key, {})
             merge_dict_deeply(value, node)

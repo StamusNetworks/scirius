@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
-from __future__ import unicode_literals
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseServerError
@@ -44,9 +44,9 @@ import os
 
 from time import time
 import django_tables2 as tables
-from tables import *
-from forms import *
-from suripyg import SuriHTMLFormat
+from .tables import *
+from .forms import *
+from .suripyg import SuriHTMLFormat
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
 
@@ -57,7 +57,7 @@ def index(request):
     context = {'ruleset_list': ruleset_list,
                 'source_list': source_list}
     try:
-        context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
+        context['probes'] = ['"' +  x + '"' for x in Probe.models.get_probe_hostnames()]
     except:
         pass
     return scirius_render(request, 'rules/index.html', context)
@@ -79,12 +79,12 @@ def search(request):
     rules_width = 4
     search = None
     if request.method == 'POST':
-        if request.POST.has_key('search'):
+        if 'search' in request.POST:
             search = request.POST['search']
             request.GET = request.GET.copy()
             request.GET.update({'search': search})
     elif request.method == 'GET':
-        if request.GET.has_key('search'):
+        if 'search' in request.GET:
             search = request.GET['search']
     if search:
         rules = Rule.objects.filter(content__icontains=search)
@@ -203,7 +203,7 @@ def elasticsearch(request):
                 hosts = ESSidByHosts(request).get(sid)
                 context['table'] = hosts
                 return scirius_render(request, 'rules/table.html', context)
-            elif query in RULE_FIELDS_MAPPING.keys():
+            elif query in list(RULE_FIELDS_MAPPING.keys()):
                 ajax = request.GET.get('json', None)
                 if ajax:
                     raise ESError('Use REST API instead.')
@@ -331,7 +331,7 @@ def rule(request, rule_id, key = 'pk'):
         tables.RequestConfig(request).configure(suppress)
         context['suppress'] = suppress
     try:
-        context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
+        context['probes'] = ['"' +  x + '"' for x in Probe.models.get_probe_hostnames()]
     except:
         pass
 
@@ -466,8 +466,8 @@ def edit_rule(request, rule_id):
                         initial[key.value] = current_trans[key].value
 
         # Case 3: differents transformations are applied on n rulesets
-        for key, dict_val in rulesets_res.iteritems():
-            for val in dict_val.iterkeys():
+        for key, dict_val in rulesets_res.items():
+            for val in dict_val.keys():
 
                 if len(rulesets) == rulesets_res[key][val] or \
                         (None in rulesets_res[key] and
@@ -628,8 +628,8 @@ def transform_category(request, cat_id):
                         initial[key.value] = current_trans[key].value
 
         # Case 3: differents transformations are applied on n rulesets
-        for key, dict_val in rulesets_res.iteritems():
-            for val in dict_val.iterkeys():
+        for key, dict_val in rulesets_res.items():
+            for val in dict_val.keys():
 
                 if len(rulesets) == rulesets_res[key][val] or \
                         (None in rulesets_res[key] and
@@ -716,10 +716,10 @@ def delete_alerts(request, rule_id):
                 Probe.common.es_delete_alerts_by_sid(rule_id, request=request)
             else:
                 result = ESDeleteAlertsBySid(request).get(rule_id)
-                if result.has_key('status') and result['status'] != 200:
+                if 'status' in result and result['status'] != 200:
                     context = { 'object': rule_object, 'error': result['msg'] }
                     try:
-                        context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
+                        context['probes'] = ['"' +  x + '"' for x in Probe.models.get_probe_hostnames()]
                     except:
                         pass
                     context['comment_form'] = CommentForm()
@@ -736,7 +736,7 @@ def delete_alerts(request, rule_id):
         context = {'object': rule_object }
         context['comment_form'] = CommentForm()
         try:
-            context['probes'] = map(lambda x: '"' +  x + '"', Probe.models.get_probe_hostnames())
+            context['probes'] = ['"' +  x + '"' for x in Probe.models.get_probe_hostnames()]
         except:
             pass
         return scirius_render(request, 'rules/delete_alerts.html', context)
@@ -787,7 +787,7 @@ def threshold_rule(request, rule_id):
     if request.method == 'POST': # If the form has been submitted...
         action_type = 'create_threshold'
 
-        if request.POST.has_key('threshold_type'):
+        if 'threshold_type' in request.POST:
             if request.POST['threshold_type'] == 'threshold':
                 form = AddRuleThresholdForm(request.POST)
             else:
@@ -840,10 +840,10 @@ def threshold_rule(request, rule_id):
             direction = 'by_dst'
         data['track_by'] = direction
 
-    if data.has_key('track_by'):
+    if 'track_by' in data:
         containers = []
         pth = Threshold(rule = rule_object, track_by = data['track_by'], threshold_type = data['threshold_type'])
-        if data.has_key('net'):
+        if 'net' in data:
             pth.net = data['net']
         thresholds = Threshold.objects.filter(rule = rule_object)
         for threshold in thresholds:
@@ -917,11 +917,11 @@ def update_source(request, source_id):
         if hasattr(Probe.common, 'update_source'):
             return Probe.common.update_source(request, src)
         src.update()
-    except Exception, errors:
+    except Exception as errors:
         if request.is_ajax():
             data = {}
             data['status'] = False
-            data['errors'] = unicode(errors)
+            data['errors'] = str(errors)
             return HttpResponse(json.dumps(data), content_type="application/json")
         if isinstance(errors, (IOError, OSError)):
             _msg = 'Can not fetch data'
@@ -1023,17 +1023,17 @@ def add_source(request):
                         )
                 if src.method == 'local':
                     try:
-                        if not request.FILES.has_key('file'):
+                        if 'file' not in request.FILES:
                             form.add_error('file', 'This field is required.')
                             raise Exception('A source file is required')
                         src.handle_uploaded_file(request.FILES['file'])
-                    except Exception, error:
+                    except Exception as error:
                         if isinstance(error, ValidationError):
                             error = error.message
                         src.delete()
                         return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
 
-            except IntegrityError, error:
+            except IntegrityError as error:
                 return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
             try:
                 ruleset_list = form.cleaned_data['rulesets']
@@ -1075,10 +1075,10 @@ def fetch_public_sources():
         else:
             resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL, headers = hdrs)
         resp.raise_for_status()
-    except requests.exceptions.ConnectionError, e:
-        if "Name or service not known" in unicode(e):
+    except requests.exceptions.ConnectionError as e:
+        if "Name or service not known" in str(e):
             raise IOError("Connection error 'Name or service not known'")
-        elif "Connection timed out" in unicode(e):
+        elif "Connection timed out" in str(e):
             raise IOError("Connection error 'Connection timed out'")
         else:
             raise IOError("Connection error '%s'" % (e))
@@ -1125,12 +1125,12 @@ def get_public_sources(force_fetch=True):
 
     # get list of already defined public sources
     defined_pub_source = Source.objects.exclude(public_source__isnull=True)
-    added_sources = map(lambda x: x.public_source, defined_pub_source)
+    added_sources = [x.public_source for x in defined_pub_source]
 
     for source in public_sources['sources']:
-        if public_sources['sources'][source].has_key('support_url'):
+        if 'support_url' in public_sources['sources'][source]:
             public_sources['sources'][source]['support_url_cleaned'] = public_sources['sources'][source]['support_url'].split(' ')[0]
-        if public_sources['sources'][source].has_key('subscribe_url'):
+        if 'subscribe_url' in public_sources['sources'][source]:
             public_sources['sources'][source]['subscribe_url_cleaned'] = public_sources['sources'][source]['subscribe_url'].split(' ')[0]
         if public_sources['sources'][source]['url'].endswith('.rules'):
             public_sources['sources'][source]['datatype'] = 'sig'
@@ -1164,7 +1164,7 @@ def add_public_source(request):
             source = public_sources['sources'][source_id]
             source_uri = source['url']
             params = {"__version__": "5.0"}
-            if form.cleaned_data.has_key('secret_code'):
+            if 'secret_code' in form.cleaned_data:
                 params.update({'secret-code': form.cleaned_data['secret_code']})
             source_uri = source_uri % params
             try:
@@ -1177,7 +1177,7 @@ def add_public_source(request):
                         public_source = source_id,
                         use_iprep=form.cleaned_data['use_iprep']
                         )
-            except IntegrityError, error:
+            except IntegrityError as error:
                 return scirius_render(request, 'rules/add_public_source.html', { 'form': form, 'error': error })
             try:
                 ruleset_list = form.cleaned_data['rulesets']
@@ -1222,7 +1222,7 @@ def edit_source(request, source_id):
         prev_uri = source.uri
         form = SourceForm(request.POST, request.FILES, instance=source)
         try:
-            if source.method == 'local' and request.FILES.has_key('file'):
+            if source.method == 'local' and 'file' in request.FILES:
                 categories = Category.objects.filter(source = source)
                 firstimport = False
                 if not categories:
@@ -1402,7 +1402,7 @@ def add_ruleset(request):
                 else:
                     ruleset.remove_transformation(Transformation.TARGET)
 
-            except IntegrityError, error:
+            except IntegrityError as error:
                 return scirius_render(request, 'rules/add_ruleset.html', {'form': form, 'error': error})
 
             msg = """All changes are saved. Don't forget to update the ruleset to apply the changes.
@@ -1441,7 +1441,7 @@ def update_ruleset(request, ruleset_id):
         return Probe.common.update_ruleset(request, rset)
     try:
         rset.update()
-    except IOError, errors:
+    except IOError as errors:
         error="Can not fetch data: %s" % (errors)
         if request.is_ajax():
             return HttpResponse(json.dumps({'status': False, 'errors': error}), content_type="application/json")
@@ -1481,7 +1481,7 @@ def edit_ruleset(request, ruleset_id):
         if not form.is_valid():
             return redirect(ruleset)
 
-        if request.POST.has_key('category'):
+        if 'category' in request.POST:
             category_selection = [ int(x) for x in request.POST.getlist('category_selection') ]
             # clean ruleset
             for cat in ruleset.categories.all():
@@ -1492,12 +1492,12 @@ def edit_ruleset(request, ruleset_id):
                 category = get_object_or_404(Category, pk=cat)
                 if category not in ruleset.categories.all():
                     category.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
-        elif request.POST.has_key('rules'):
+        elif 'rules' in request.POST:
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
                 if rule_object in ruleset.get_transformed_rules(key=SUPPRESSED, value=S_SUPPRESSED):
                     rule_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
-        elif request.POST.has_key('sources'):
+        elif 'sources' in request.POST:
             source_selection = [ int(x) for x in request.POST.getlist('source_selection')]
             # clean ruleset
             for source in ruleset.sources.all():
@@ -1557,7 +1557,7 @@ def edit_ruleset(request, ruleset_id):
             src_cats = Category.objects.filter(source = sourceatversion.source)
             for pcats in src_cats:
                 if pcats in ruleset_cats:
-                    cats_selection.append(unicode(pcats.id))
+                    cats_selection.append(str(pcats.id))
             cats = EditCategoryTable(src_cats)
             tables.RequestConfig(request,paginate = False).configure(cats)
             categories_list[sourceatversion.source.name] = cats
@@ -1565,7 +1565,7 @@ def edit_ruleset(request, ruleset_id):
         tables.RequestConfig(request, paginate = False).configure(rules)
 
         context = {'ruleset': ruleset,  'categories_list': categories_list, 'sources': sources, 'rules': rules, 'cats_selection': ", ".join(cats_selection) }
-        if request.GET.has_key('mode'):
+        if 'mode' in request.GET:
             context['mode'] = request.GET['mode']
             context['form'] = CommentForm()
             if context['mode'] == 'sources':
@@ -1620,13 +1620,13 @@ def ruleset_add_supprule(request, ruleset_id):
         return scirius_render(request, 'rules/search_rule.html', context)
 
     if request.method == 'POST': # If the form has been submitted...
-        if request.POST.has_key('search'):
+        if 'search' in request.POST:
             #FIXME Protection on SQL injection ?
             rules = EditRuleTable(Rule.objects.filter(content__icontains=request.POST['search']))
             tables.RequestConfig(request).configure(rules)
             context = { 'ruleset': ruleset, 'rules': rules, 'form': CommentForm() }
             return scirius_render(request, 'rules/search_rule.html', context)
-        elif request.POST.has_key('rule_selection'):
+        elif 'rule_selection' in request.POST:
             form = CommentForm(request.POST)
             if not form.is_valid():
                 return redirect(ruleset)
@@ -1744,7 +1744,7 @@ def system_settings(request):
                     try:
                         count = es_data.kibana_import_fileobj(request.FILES['file'])
                         context['success'] = 'Successfully imported %i objects' % count
-                    except Exception, e:
+                    except Exception as e:
                         context['error'] = 'Import failed: %s' % e
                 else:
                     context['error'] = 'Please provide a dashboard archive'
@@ -1752,13 +1752,13 @@ def system_settings(request):
                 try:
                     es_data.kibana_clear()
                     context['success'] = 'Done'
-                except Exception, e:
+                except Exception as e:
                     context['error'] = 'Clearing failed: %s' % e
             elif 'reset' in request.POST:
                 try:
                     es_data.kibana_reset()
                     context['success'] = 'Done'
-                except Exception, e:
+                except Exception as e:
                     context['error'] = 'Reset failed: %s' % e
             else:
                 context['error'] = 'Invalid operation'
@@ -1799,7 +1799,7 @@ def info(request):
 def threshold(request, threshold_id):
     threshold = get_object_or_404(Threshold, pk=threshold_id)
     threshold.rule.highlight_content = SuriHTMLFormat(threshold.rule.content)
-    threshold.highlight_content = SuriHTMLFormat(unicode(threshold))
+    threshold.highlight_content = SuriHTMLFormat(str(threshold))
     context = { 'threshold': threshold }
     return scirius_render(request, 'rules/threshold.html', context)
 

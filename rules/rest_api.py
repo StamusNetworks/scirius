@@ -1,7 +1,7 @@
-from __future__ import unicode_literals
-from suripyg import SuriHTMLFormat
+
+from .suripyg import SuriHTMLFormat
 from time import time
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import socket
 
 from django.conf import settings
@@ -424,9 +424,9 @@ class ListFilter(filters.CharFilter):
         return value
 
     def filter(self, qs, value):
-        multiple_vals = value.split(u",")
+        multiple_vals = value.split(",")
         multiple_vals = self.sanitize(multiple_vals)
-        multiple_vals = map(self.customize, multiple_vals)
+        multiple_vals = list(map(self.customize, multiple_vals))
         for val in multiple_vals:
             fval = filters_fields.Lookup(val, 'icontains')
             qs =  super(ListFilter, self).filter(qs, fval)
@@ -488,7 +488,7 @@ class RuleHitsOrderingFilter(OrderingFilter):
             queryset = queryset.annotate(hits=models.ExpressionWrapper(models.Value(0), output_field=models.IntegerField()))
             return queryset.values_list('sid', 'hits')
 
-        result = map(lambda x: (x['key'], x['doc_count']), result)
+        result = [(x['key'], x['doc_count']) for x in result]
         return result
 
     def _filter_min_max(self, request, queryset, hits_order):
@@ -496,11 +496,11 @@ class RuleHitsOrderingFilter(OrderingFilter):
 
         min_hits = self.get_query_param(request, 'hits_min')
         if min_hits is not None:
-            queryset = filter(lambda x: hits_by_sid.get(x.sid, 0) >= min_hits, queryset)
+            queryset = [x for x in queryset if hits_by_sid.get(x.sid, 0) >= min_hits]
 
         max_hits = self.get_query_param(request, 'hits_max')
         if max_hits is not None:
-            queryset = filter(lambda x: hits_by_sid.get(x.sid, 0) <= max_hits, queryset)
+            queryset = [x for x in queryset if hits_by_sid.get(x.sid, 0) <= max_hits]
 
         return queryset
 
@@ -535,9 +535,9 @@ class RuleHitsOrderingFilter(OrderingFilter):
                     pass
 
             if order == 'desc':
-                queryset += rules.values()
+                queryset += list(rules.values())
             else:
-                queryset = rules.values() + queryset
+                queryset = list(rules.values()) + queryset
 
         else:
             if ordering:
@@ -713,13 +713,13 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
 
         # Check wrongs filters types (other than type/value)
         if len(copy_params) > 0:
-            params_str = ', '.join(copy_params.keys())
+            params_str = ', '.join(list(copy_params.keys()))
             raise serializers.ValidationError({'filters': ['Wrong filters: "%s"' % params_str]})
 
         # Check key/value filters
         # Key
         if key_str:
-            if key_str not in Transformation.AVAILABLE_MODEL_TRANSFO.keys():
+            if key_str not in list(Transformation.AVAILABLE_MODEL_TRANSFO.keys()):
                 raise serializers.ValidationError({'filters': ['Wrong filter type "%s".' % key_str]})
 
             # Value
@@ -915,7 +915,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         }
 
     def _add_hits(self, request, data):
-        sids = ','.join([unicode(rule['sid']) for rule in data])
+        sids = ','.join([str(rule['sid']) for rule in data])
 
         try:
             result = ESSigsListHits(request).get(sids)
@@ -989,7 +989,7 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         comment_serializer.is_valid(raise_exception=True)
 
         fields = kwargs['fields']
-        for key, value in dict(fields).iteritems():
+        for key, value in dict(fields).items():
             fields[key] = serializer.validated_data[value]
 
         fields['comment'] = comment
@@ -1011,7 +1011,7 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         comment_serializer.is_valid(raise_exception=True)
 
         fields = kwargs['fields']
-        for key, value in dict(fields).iteritems():
+        for key, value in dict(fields).items():
             fields[key] = getattr(instance, value)
 
         fields['comment'] = comment
@@ -1056,7 +1056,7 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
         serializer.save()
 
         fields = params['fields']
-        for key, value in dict(fields).iteritems():
+        for key, value in dict(fields).items():
             if value in serializer.validated_data:
                 fields[key] = serializer.validated_data[value]
             else:
@@ -1446,13 +1446,13 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
             msg = 'No upload is allowed. method is currently "%s"' % source.method
             raise serializers.ValidationError({'upload': [msg]})
 
-        if not request.FILES.has_key('file'):
+        if 'file' not in request.FILES:
             raise serializers.ValidationError({'file': ['This field is required.']})
 
         try:
             source.handle_uploaded_file(request.FILES['file'])
         except Exception as error:
-            raise serializers.ValidationError({'upload': [unicode(error)]})
+            raise serializers.ValidationError({'upload': [str(error)]})
 
         UserAction.create(
                 action_type='upload_source',
@@ -1510,7 +1510,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         try:
             public_sources = get_public_sources(False)
         except Exception as e:
-            raise serializers.ValidationError({'list': [unicode(e)]})
+            raise serializers.ValidationError({'list': [str(e)]})
         return Response(public_sources['sources'])
 
     @list_route(methods=['get'])
@@ -1518,7 +1518,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         try:
             fetch_public_sources()
         except Exception as e:
-            raise serializers.ValidationError({'fetch': [unicode(e)]})
+            raise serializers.ValidationError({'fetch': [str(e)]})
         return Response({'fetch': 'ok'})
 
     @detail_route(methods=['post'])
@@ -1559,7 +1559,7 @@ class PublicSourceSerializer(BaseSourceSerializer):
         try:
             public_sources = get_public_sources(False)
         except Exception as e:
-            raise serializers.ValidationError({'list': [unicode(e)]})
+            raise serializers.ValidationError({'list': [str(e)]})
 
         if source_name not in public_sources['sources']:
             raise exceptions.NotFound(detail='Unknown public source "%s"' % source_name)
@@ -1845,7 +1845,7 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
         actions_dict = get_middleware_module('common').get_user_actions_dict()
 
         res = OrderedDict()
-        for key, value in actions_dict.iteritems():
+        for key, value in actions_dict.items():
             res.update({key: value['title']})
 
         return Response({'action_type_list': res})
@@ -1908,7 +1908,7 @@ class ESBaseViewSet(APIView):
         try:
             return self._get(request, format)
         except ESError as e:
-            return Response({'error: ES request failed, %s' % unicode(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error: ES request failed, %s' % str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def _get(self, request, format):
         raise NotImplementedError('This is an abstract class. ES sub classes must override this method')
@@ -2106,7 +2106,7 @@ class ESFilterIPViewSet(ESBaseViewSet):
             errors['field'] = ['This field is required.']
             raise serializers.ValidationError(errors)
 
-        if field not in self.RULE_FIELDS_MAPPING.keys():
+        if field not in list(self.RULE_FIELDS_MAPPING.keys()):
             raise exceptions.NotFound(detail='"%s" is not a valid field' % field)
 
         filter_ip = self.RULE_FIELDS_MAPPING[field]

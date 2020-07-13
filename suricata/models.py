@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import unicode_literals
+
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -47,7 +47,7 @@ class Suricata(models.Model):
 
     editable = True
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def generate(self):
@@ -62,7 +62,7 @@ class Suricata(models.Model):
         # FIXME gruick
         with open(self.output_directory + "/" + "rules.json", 'w') as rfile:
             for rule in Rule.objects.all():
-                dic = {'sid': rule.pk, 'created': unicode(rule.created), 'updated': unicode(rule.updated)}
+                dic = {'sid': rule.pk, 'created': str(rule.created), 'updated': str(rule.updated)}
                 rfile.write(json.dumps(dic) + '\n')
         # Export IPrep
         export_iprep_files(self.output_directory, cats_content, iprep_content)
@@ -76,7 +76,7 @@ class Suricata(models.Model):
         if os.path.isfile(reload_file):
             return False
         rfile = open(reload_file, 'w')
-        rfile.write(unicode(timezone.now()))
+        rfile.write(str(timezone.now()))
         rfile.close()
         # In case user has changed configuration file before reloading
         self.ruleset.needs_test()

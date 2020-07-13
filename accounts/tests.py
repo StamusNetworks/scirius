@@ -18,14 +18,14 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import unicode_literals
+
 from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
 from accounts.rest_api import router
-from models import SciriusUser
+from .models import SciriusUser
 from rules.tests import RestAPITestBase, RestAPIListTestCase
 
 
@@ -186,7 +186,7 @@ class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
         # compare with generated token with db token 
         token = response['token']
         token_db = Token.objects.filter(user_id=self.sciriususer_staff.user.pk)
-        self.assertEqual(token, unicode(token_db[0]))
+        self.assertEqual(token, str(token_db[0]))
 
     def test_031_get_user_staff_token_own(self):
         # Need to create token before getting it
@@ -197,7 +197,7 @@ class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
 
         token = response['token']
         token_db = Token.objects.filter(user_id=self.sciriususer_staff.user.pk)
-        self.assertEqual(token, unicode(token_db[0]))
+        self.assertEqual(token, str(token_db[0]))
 
     def test_032_fail_get_user_staff_token_with_user_active(self):
         self.client.force_login(self.sciriususer_active.user)
