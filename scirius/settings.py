@@ -315,7 +315,7 @@ IPWARE_PRIVATE_IP_PREFIX = ()
 HAVE_NETINFO_AGG = False
 
 try:
-    from local_settings import *
+    from .local_settings import *
 except:
     pass
 

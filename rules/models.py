@@ -507,7 +507,7 @@ class UserAction(models.Model):
         if not self.username and self.user:
             self.username = self.user.username
 
-    def __unicode__(self):
+    def __str__(self):
         return self.generate_description()
 
     @classmethod
@@ -779,7 +779,7 @@ class Source(models.Model):
         # delete model
         models.Model.delete(self)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def aggregate_update(self, update):
@@ -1259,7 +1259,7 @@ class SourceAtVersion(models.Model):
     git_version = models.CharField(max_length=42, default = 'HEAD')
     updated_date = models.DateTimeField('date updated', blank = True, default = timezone.now)
 
-    def __unicode__(self):
+    def __str__(self):
         return str(self.source) + "@" + self.version
 
     def _get_name(self):
@@ -1520,7 +1520,7 @@ class Transformable:
         if key == Transformation.LATERAL:
             if value == Transformation.L_YES:
                 rule_ids.raw = rule_ids.raw.replace("$EXTERNAL_NET", "any")
-                return rule_ids.format().encode("utf-8")
+                return rule_ids.format()
             elif value == Transformation.L_AUTO:
                 if rule_ids.msg.startswith("ET POLICY"):
                     return content
@@ -1534,10 +1534,10 @@ class Transformable:
         if key == Transformation.TARGET:
             if value == Transformation.T_SOURCE:
                 self._set_target(rule_ids, target='src_ip')
-                return rule_ids.format().encode("utf-8")
+                return rule_ids.format()
             elif value == Transformation.T_DESTINATION:
                 self._set_target(rule_ids, target='dest_ip')
-                return rule_ids.format().encode("utf-8")
+                return rule_ids.format()
             elif value == Transformation.T_AUTO:
                 target_client = False
                 for meta in rule_ids.metadata:
@@ -1554,7 +1554,7 @@ class Transformable:
                 if target_client is True:
                     self._apply_target_trans(rule_ids)
 
-        return rule_ids.format().encode("utf-8")
+        return rule_ids.format()
 
 
 class Cache:
@@ -1811,7 +1811,7 @@ class Category(models.Model, Transformable, Cache):
     class Meta:
         verbose_name_plural = "categories"
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def __init__(self, *args, **kwargs):
@@ -1960,7 +1960,6 @@ class Category(models.Model, Transformable, Cache):
             duplicate_sids = set()
 
             for line in rfile.readlines():
-                line = line.decode('utf-8')
                 state = True
                 if line.startswith('#'):
                     # check if it is a commented signature
@@ -2053,6 +2052,7 @@ class Category(models.Model, Transformable, Cache):
                                       set(rules_update["added"]).union(set(rules_update["updated"])) -
                                       set(rules_unchanged))
             source.aggregate_update(rules_update)
+        rfile.close()
 
     def get_absolute_url(self):
         from django.core.urlresolvers import reverse
@@ -2221,7 +2221,7 @@ class Rule(models.Model, Transformable, Cache):
 
     GROUPSNAMEREGEXP = re.compile('^(.*) +group +\d+$')
 
-    def __unicode__(self):
+    def __str__(self):
         return str(self.sid) + ":" + self.msg
 
     def __init__(self, *args, **kwargs):
@@ -2548,13 +2548,7 @@ class Rule(models.Model, Transformable, Cache):
 
         trans = self.get_transformation(key=TARGET, ruleset=ruleset, override=True)
         if trans in (T_SOURCE, T_DESTINATION, T_AUTO):
-            c = content
-            if isinstance(content, str):
-                c = content.encode('utf8')
-            content = self.apply_transformation(c, key=Transformation.TARGET, value=trans)
-
-        if isinstance(content, str):
-            content = content.decode('utf8')
+            content = self.apply_transformation(content, key=Transformation.TARGET, value=trans)
 
         return content
 
@@ -2688,7 +2682,7 @@ class Ruleset(models.Model, Transformable):
     # Apply ruleset:
     #  - Tell Ansible to publish
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def _json_errors(self):
@@ -2858,7 +2852,7 @@ class Ruleset(models.Model, Transformable):
             try:
                 sourcesat.source.update()
             except IOError as e:
-                update_errors.append('Source "%s" update failed:\n\t%s' % (sourcesat.source.name, e.message))
+                update_errors.append('Source "%s" update failed:\n\t%s' % (sourcesat.source.name, str(e)))
 
         # Update timestamp if at least one source update was successful
         if len(sourcesatversion) != 0 and len(sourcesatversion) != len(update_errors):
@@ -3083,7 +3077,7 @@ class Threshold(models.Model):
     count = models.IntegerField(default=1)
     seconds = models.IntegerField(default=60)
 
-    def __unicode__(self):
+    def __str__(self):
         rep = ""
         if self.threshold_type == "suppress":
             net = self.net
@@ -3203,7 +3197,7 @@ class RuleProcessingFilter(models.Model):
                     sid_track_ip[str(sid)] = ('by_dst', dest_ip.value)
 
             res = []
-            for sid, val in sid_track_ip.items():
+            for sid, val in sorted(sid_track_ip.items()):
                 if len(val):
                     res.append('suppress gen_id 1, sid_id %s, track %s, ip %s\n' % (sid, val[0], val[1]))
             return res
@@ -3222,7 +3216,7 @@ class RuleProcessingFilter(models.Model):
     def get_icon():
         return 'pficon-filter'
 
-    def __unicode__(self):
+    def __str__(self):
         filters = []
         for f in self.filter_defs.order_by('key'):
             filters.append(str(f))
@@ -3245,7 +3239,7 @@ class RuleProcessingFilterDef(models.Model):
     class Meta:
         ordering = ('key', 'value')
 
-    def __unicode__(self):
+    def __str__(self):
         op = self.OPERATOR_DISPLAY.get(self.operator, self.operator)
         return '%s %s %s' % (self.key, op, self.value)
 

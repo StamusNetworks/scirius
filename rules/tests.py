@@ -164,7 +164,7 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
 
     def test_002_lateral_yes(self):
         content = self.rule_lateral_yes.apply_lateral_target_transfo(self.rule_lateral_yes.content, key=Transformation.LATERAL, value=Transformation.L_YES)
-        self.assertEqual('alert tcp any any' in content, True)
+        self.assertIn('alert tcp any any', content)
 
     def test_003_lateral_auto(self):
         # ET POLICY disbale transformation
@@ -173,12 +173,12 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
 
         # deployment Interna enable Transformation
         content = self.rule_lateral_auto_transfo.apply_lateral_target_transfo(self.rule_lateral_auto_transfo.content, Transformation.LATERAL, Transformation.L_AUTO)
-        self.assertEqual('alert tcp any any' in content, True)
+        self.assertIn('alert tcp any any', content)
 
     def test_004_target_auto(self):
         # attack_target enable transformation
         content = self.rule_target_auto_transfo.apply_lateral_target_transfo(self.rule_target_auto_transfo.content, Transformation.TARGET, Transformation.T_AUTO)
-        self.assertEqual(content.endswith('target:dest_ip;)'), True)
+        self.assertTrue(content.endswith('target:dest_ip;)'))
 
         # attack_target enable transformation
         # but not-suspicious disable it
@@ -188,12 +188,12 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
     def test_005_target_source(self):
         # attack_target enable transformation
         content = self.rule_target_source_transfo.apply_lateral_target_transfo(self.rule_target_source_transfo.content, Transformation.TARGET, Transformation.T_SOURCE)
-        self.assertEqual(content.endswith('target:src_ip;)'), True)
+        self.assertTrue(content.endswith('target:src_ip;)'))
 
     def test_005_target_destination(self):
         # attack_target enable transformation
         content = self.rule_target_destination_transfo.apply_lateral_target_transfo(self.rule_target_destination_transfo.content, Transformation.TARGET, Transformation.T_DESTINATION)
-        self.assertEqual(content.endswith('target:dest_ip;)'), True)
+        self.assertTrue(content.endswith('target:dest_ip;)'))
 
 
 class RestAPITestBase(object):
@@ -1320,7 +1320,7 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
 
         f = RuleProcessingFilter.objects.all()[0]
         suppress = f.get_threshold_content(self.ruleset)
-        self.assertEqual(suppress, ['suppress gen_id 1, sid_id 3, track by_src, ip 192.168.0.1\n', 'suppress gen_id 1, sid_id 2, track by_src, ip 192.168.0.1\n', 'suppress gen_id 1, sid_id 4, track by_src, ip 192.168.0.1\n'])
+        self.assertEqual(suppress, ['suppress gen_id 1, sid_id 2, track by_src, ip 192.168.0.1\n', 'suppress gen_id 1, sid_id 3, track by_src, ip 192.168.0.1\n', 'suppress gen_id 1, sid_id 4, track by_src, ip 192.168.0.1\n'])
 
     def test_125_target_src_msg_validation(self):
         self._force_suricata_middleware()

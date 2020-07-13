@@ -1735,7 +1735,7 @@ class ESData(object):
         }
         data = json.dumps(data)
         kibana_url = settings.KIBANA_URL + url
-        req = urllib.request.Request(kibana_url, data, headers=headers)
+        req = urllib.request.Request(kibana_url, data.encode('utf8'), headers=headers)
         urllib.request.urlopen(req)
         return req
 

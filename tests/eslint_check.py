@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import logging
 import os
 import re
@@ -34,9 +34,9 @@ def es_check(filename, content):
 def show_error(f, line_no, check=None):
     line_no += 1
     if check:
-        print '%s:%i Useless check %s' % (f, line_no, check)
+        print('%s:%i Useless check %s' % (f, line_no, check))
     else:
-        print '%s:%i Useless global check' % (f, line_no)
+        print('%s:%i Useless global check' % (f, line_no))
 
 
 def check_file(filename):
@@ -53,7 +53,7 @@ def check_file(filename):
             terms = line.split(eslint_kw, 1)
             logging.debug('%s:%i terms %s' % (filename, line_no, terms))
             exceptions = re.split('[ ,]', terms[1])
-            exceptions = filter(lambda x: x != '', exceptions)
+            exceptions = list(filter(lambda x: x != '', exceptions))
 
             post_terms = ''
 

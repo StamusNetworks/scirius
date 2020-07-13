@@ -199,6 +199,9 @@ class ESQuery(object):
     def _urlopen(self, url, data=None, method=None, contenttype='application/json'):
         from rules.es_graphs import ESError
         headers = {'content-type': contenttype}
+        if isinstance(data, str):
+            data = data.encode('utf-8')
+
         req = urllib.request.Request(url, data, headers)
         if method is not None:
             req.get_method = lambda: method
@@ -229,7 +232,7 @@ class ESQuery(object):
                 es_logger.info('%s %s\n%s' % (method, url, data))
 
         out = out.read()
-        out = json.loads(out)
+        out = json.loads(out.decode('utf-8'))
         return out
 
     def _scroll_query(self, es_url, query):

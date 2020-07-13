@@ -56,7 +56,7 @@ class Suricata(models.Model):
         rules = self.ruleset.to_buffer()
         # write to file
         with open(self.output_directory + "/" + "scirius.rules", 'w') as rfile:
-            rfile.write(rules.encode('utf-8'))
+            rfile.write(rules)
         # export files at version
         cats_content, iprep_content = self.ruleset.export_files(self.output_directory)
         # FIXME gruick

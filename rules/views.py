@@ -233,7 +233,7 @@ def elasticsearch(request):
             else:
                 raise Exception('Query parameter not supported: %s' % query)
         except ESError as e:
-            return HttpResponseServerError(e.message)
+            return HttpResponseServerError(str(e))
     else:
         template = Probe.common.get_es_template()
         return scirius_render(request, template, context)
@@ -1094,7 +1094,7 @@ def fetch_public_sources():
     if not os.path.isdir(settings.GIT_SOURCES_BASE_DIRECTORY):
         os.makedirs(settings.GIT_SOURCES_BASE_DIRECTORY)
     sources_yaml = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, 'sources.yaml') 
-    with open(sources_yaml, 'w') as sfile:
+    with open(sources_yaml, 'wb') as sfile:
         sfile.write(resp.content)
 
 
@@ -1113,10 +1113,10 @@ def get_public_sources(force_fetch=True):
             raise Exception(e)
 
     public_sources = None
-    with open(sources_yaml, 'r') as stream:
+    with open(sources_yaml, 'r', encoding='utf-8') as stream:
         buf = stream.read()
         # replace dash by underscode in keys
-        yaml_data = re.sub(r'(\s+\w+)-(\w+):', r'\1_\2:', buf.decode('utf-8'))
+        yaml_data = re.sub(r'(\s+\w+)-(\w+):', r'\1_\2:', buf)
         # FIXME error handling
         public_sources = yaml.safe_load(yaml_data)
 

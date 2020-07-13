@@ -238,10 +238,7 @@ config classification: command-and-control,Malware Command and Control Activity 
         # write the rule file in temp dir
         rule_file = os.path.join(tmpdir, "file.rules")
         rf = open(rule_file, 'w')
-        try:
-            rf.write(rule_buffer)
-        except UnicodeEncodeError:
-            rf.write(rule_buffer.encode('utf-8'))
+        rf.write(rule_buffer)
         rf.close()
 
         if not reference_config:
@@ -294,7 +291,7 @@ config classification: command-and-control,Malware Command and Control Activity 
         if suriprocess.returncode == 0:
             return {'status': True, 'errors': ''}
         # if not return error
-        return {'status': False, 'errors': errdata}
+        return {'status': False, 'errors': errdata.decode('utf-8')}
 
     def _escape_result(self, res):
         for key in ('warnings', 'errors'):
