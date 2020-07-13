@@ -178,7 +178,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
     serializer_class = RulesetSerializer
     ordering = ('name',)
     ordering_fields = ('name', 'created_date', 'updated_date', 'rules_count')
-    filter_fields = ('name', 'descr')
+    filterset_fields = ('name', 'descr')
 
     def _validate_categories(self, sources_at_version, categories):
         if len(sources_at_version) == 0 and len(categories) > 0:
@@ -347,7 +347,7 @@ class CategoryViewSet(SciriusReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     ordering = ('name',)
     ordering_fields = ('pk', 'name', 'created_date', 'source')
-    filter_fields = ('name', 'source', 'created_date')
+    filterset_fields = ('name', 'source', 'created_date')
 
     @detail_route(methods=['post'])
     def enable(self, request, pk):
@@ -1143,7 +1143,7 @@ class RulesetTransformationViewSet(BaseTransformationViewSet):
     queryset = RulesetTransformation.objects.all()
     serializer_class = RulesetTransformationSerializer
     ordering = ('pk',)
-    filter_fields = ('ruleset_transformation',)
+    filterset_fields = ('ruleset_transformation',)
     ordering_fields = ('ruleset_transformation',)
     _fields = {'ruleset': 'ruleset_transformation', 'trans_type': 'key', 'trans_value': 'value'}
     _action_type = 'transform_ruleset'
@@ -1240,7 +1240,7 @@ class CategoryTransformationViewSet(BaseTransformationViewSet):
     queryset = CategoryTransformation.objects.all()
     serializer_class = CategoryTransformationSerializer
     ordering = ('pk',)
-    filter_fields = ('category_transformation', 'ruleset')
+    filterset_fields = ('category_transformation', 'ruleset')
     ordering_fields = ('pk', 'ruleset', 'category_transformation')
     _fields = {'ruleset': 'ruleset', 'trans_type': 'key', 'trans_value': 'value', 'category': 'category_transformation'}
     _action_type = 'transform_category'
@@ -1344,7 +1344,7 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
     queryset = RuleTransformation.objects.all()
     serializer_class = RuleTransformationSerializer
     ordering = ('pk',)
-    filter_fields = ('rule_transformation', 'ruleset')
+    filterset_fields = ('rule_transformation', 'ruleset')
     ordering_fields = ('pk', 'ruleset', 'rule_transformation')
     _fields = {'ruleset': 'ruleset', 'trans_type': 'key', 'trans_value': 'value', 'rule': 'rule_transformation'}
     _action_type = 'transform_rule'
@@ -1651,7 +1651,7 @@ class PublicSourceViewSet(BaseSourceViewSet):
     serializer_class = PublicSourceSerializer
     ordering = ('name',)
     ordering_fields = ('name', 'created_date', 'updated_date', 'cats_count', 'rules_count',)
-    filter_fields = ('name', 'method')
+    filterset_fields = ('name', 'method')
     search_fields = ('name', 'method')
 
 
@@ -1728,7 +1728,7 @@ class SourceViewSet(BaseSourceViewSet):
     parser_classes = (MultiPartParser, JSONParser)
     ordering = ('name',)
     ordering_fields = ('name', 'created_date', 'updated_date', 'cats_count', 'rules_count', 'datatype')
-    filter_fields = ('name', 'method', 'datatype')
+    filterset_fields = ('name', 'method', 'datatype')
     search_fields = ('name', 'method', 'datatype')
 
     @detail_route(methods=['post'])
@@ -1894,7 +1894,7 @@ class ChangelogViewSet(viewsets.ReadOnlyModelViewSet):
     """
     serializer_class = ChangelogSerializer
     queryset = SourceUpdate.objects.all()
-    filter_fields = ('source', 'version')
+    filterset_fields = ('source', 'version')
     ordering = ('-pk',)
     ordering_fields = ('pk', 'source', 'version',)
 

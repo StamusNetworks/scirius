@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import TestCase
 from django.utils import timezone
 from django.http import HttpRequest
@@ -285,7 +285,7 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         self.ruleset.sources.add(sources_at_version[0])
 
     def _set_source_from_name(self, name):
-        sources = Source.objects.filter(name='sonic test custom source')
+        sources = Source.objects.filter(name=name)
         self.assertEqual(len(sources), 1)
         self.source = sources[0]
 
@@ -1442,7 +1442,7 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
 
     def test_004_list_filter(self):
         for url, viewset, view_name in self.router.registry:
-            if not hasattr(viewset, 'filter_fields'):
+            if not hasattr(viewset, 'filterset_fields'):
                 continue
             for field in viewset.filter_fields:
                 self.http_get(reverse(view_name + '-list') + '?%s=0' % field)

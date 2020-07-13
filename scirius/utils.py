@@ -51,7 +51,7 @@ class TimezoneMiddleware(object):
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             try:
                 user = SciriusUser.objects.get(user = request.user)
             except:

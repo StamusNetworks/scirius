@@ -81,7 +81,7 @@ def loginview(request, target):
 
 
 def editview(request, action):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         request_data = None
         context = {}
 

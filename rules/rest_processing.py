@@ -341,7 +341,7 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
     serializer_class = RuleProcessingFilterSerializer
     ordering = ('index',)
     ordering_fields = ('pk', 'index', 'action', 'enabled')
-    filter_fields = ('action', 'enabled', 'filter_defs__key', 'filter_defs__value')
+    filterset_fields = ('action', 'enabled', 'filter_defs__key', 'filter_defs__value')
     search_fields = ('description', 'filter_defs__key', 'filter_defs__value')
 
     def destroy(self, request, *args, **kwargs):

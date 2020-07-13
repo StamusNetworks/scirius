@@ -23,6 +23,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.conf import settings
+from django.urls import reverse
 
 # Create your models here.
 import os
@@ -83,7 +84,6 @@ class Suricata(models.Model):
         return True
 
     def get_absolute_url(self):
-        from django.core.urlresolvers import reverse
         return reverse('suricata_index')
 
 def get_probe_hostnames(limit = 10):

@@ -2,6 +2,7 @@
 
 
 from django.db import models, migrations
+import django.db.models.deletion
 import datetime
 
 
@@ -33,7 +34,7 @@ class Migration(migrations.Migration):
                 ('state', models.BooleanField(default=True)),
                 ('rev', models.IntegerField(default=0)),
                 ('content', models.CharField(max_length=10000)),
-                ('category', models.ForeignKey(to='rules.Category')),
+                ('category', models.ForeignKey(to='rules.Category', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
             },
@@ -75,7 +76,7 @@ class Migration(migrations.Migration):
                 ('version', models.CharField(max_length=42)),
                 ('git_version', models.CharField(default=b'HEAD', max_length=42)),
                 ('updated_date', models.DateTimeField(default=datetime.datetime(2014, 11, 9, 19, 55, 32, 203594), verbose_name=b'date updated', blank=True)),
-                ('source', models.ForeignKey(to='rules.Source')),
+                ('source', models.ForeignKey(to='rules.Source', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
             },
@@ -89,7 +90,7 @@ class Migration(migrations.Migration):
                 ('data', models.TextField()),
                 ('version', models.CharField(max_length=42)),
                 ('changed', models.IntegerField(default=0)),
-                ('source', models.ForeignKey(to='rules.Source')),
+                ('source', models.ForeignKey(to='rules.Source', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
             },
@@ -110,7 +111,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='category',
             name='source',
-            field=models.ForeignKey(to='rules.Source'),
+            field=models.ForeignKey(to='rules.Source', on_delete=django.db.models.deletion.CASCADE),
             preserve_default=True,
         ),
     ]

@@ -26,7 +26,7 @@ import pytz
 class SciriusUser(models.Model):
     TIMEZONES = ((x, x) for x in pytz.all_timezones)
 
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     timezone = models.CharField(max_length=40, choices = TIMEZONES)
 
     def to_dict(self):

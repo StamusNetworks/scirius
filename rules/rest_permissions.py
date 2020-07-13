@@ -5,7 +5,7 @@ from rest_framework import permissions
 class IsStaffOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         # Authentication is required
-        if request.user is None or not request.user.is_authenticated():
+        if request.user is None or not request.user.is_authenticated:
             return False
 
         # Read permissions are allowed to any request,
@@ -20,7 +20,7 @@ class IsCurrentUserOrSuperUserOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
 
         # Authentication is required
-        if request.user is None or not request.user.is_authenticated():
+        if request.user is None or not request.user.is_authenticated:
             return False
 
         if request.user.is_superuser:
