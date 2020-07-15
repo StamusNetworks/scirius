@@ -1253,6 +1253,11 @@ class SourceAtVersion(models.Model):
 
     def enable(self, ruleset, user = None, comment = None):
         ruleset.sources.add(self)
+
+        for cat in Category.objects.filter(source=self.source):
+            if cat not in ruleset.categories.all():
+                ruleset.categories.add(cat)
+
         ruleset.needs_test()
         ruleset.save()
         if user:
@@ -1266,6 +1271,11 @@ class SourceAtVersion(models.Model):
 
     def disable(self, ruleset, user = None, comment = None):
         ruleset.sources.remove(self)
+
+        for cat in Category.objects.filter(source=self.source):
+            if cat in ruleset.categories.all():
+                ruleset.categories.remove(cat)
+
         ruleset.needs_test()
         ruleset.save()
         if user:
