@@ -11,15 +11,14 @@
 <script>
     $(document).ready(function($) {
         $("input[name='sources']").click(function(){
-            alert('it works');
-            if ($(this).is(':checked')) {               
-                $('input[name="activate_categories"]').attr("disabled", false); 
-
-            else if ($(this).not(':checked')) {
+            if ($(this).is(':checked')) {
+                $('input[name="activate_categories"]').attr("disabled", false);
+            } else if ($(this).not(':checked')) {
                 $('input[name="activate_categories"]').attr("checked", false);
                 $('input[name="activate_categories"]').attr("disabled", true);
             }
-        }); });
+        });
+    });
 </script>
 
 {% if missing %}
@@ -46,7 +45,7 @@
     {% bootstrap_field form.comment %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "plus" %} Add 
+            {% bootstrap_icon "plus" %} Add
         </button>
     {% endbuttons %}
 
