@@ -19,13 +19,12 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from django.conf.urls import url, include
+from django.conf.urls import url
 
 from suricata import views
-from .rest_api import router
 
 urlpatterns = [
     url(r'^$', views.index, name='suricata_index'),
     url(r'^edit$', views.edit, name='suricata_edit'),
     url(r'^update$', views.update, name='suricata_update'),
-    ]
+]

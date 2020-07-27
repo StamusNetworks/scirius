@@ -183,7 +183,7 @@ class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
         response = self.http_post(reverse('sciriususer-token', args=(self.sciriususer_staff.pk,)))
         self.assertEqual('token' in response, True)
 
-        # compare with generated token with db token 
+        # compare with generated token with db token
         token = response['token']
         token_db = Token.objects.filter(user_id=self.sciriususer_staff.user.pk)
         self.assertEqual(token, str(token_db[0]))

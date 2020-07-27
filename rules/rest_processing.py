@@ -23,7 +23,7 @@ import json
 from IPy import IP
 
 from django.db import models
-from rest_framework import serializers, viewsets, exceptions
+from rest_framework import serializers
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
 
@@ -208,7 +208,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                     validated_data['index'] = 0
                 else:
                     validated_data['index'] = index_max + 1
-                    
+
             else:
                 new_index = validated_data['index']
                 if new_index != 0 and (index_max is None or new_index > index_max + 1):
@@ -249,15 +249,18 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                 raise
 
         UserAction.create(
-                action_type='%s_rule_filter' % user_action,
-                comment=comment,
-                user=self.context['request'].user,
-                rule_filter=instance
+            action_type='%s_rule_filter' % user_action,
+            comment=comment,
+            user=self.context['request'].user,
+            rule_filter=instance
         )
         return instance
 
-    update = lambda self, instance, validated_data: RuleProcessingFilterSerializer._update_or_create(self, 'update', instance, validated_data)
-    create = lambda self, validated_data: RuleProcessingFilterSerializer._update_or_create(self, 'create', None, validated_data)
+    def update(self, instance, validated_data):
+        return RuleProcessingFilterSerializer._update_or_create(self, 'update', instance, validated_data)
+
+    def create(self, validated_data):
+        return RuleProcessingFilterSerializer._update_or_create(self, 'create', None, validated_data)
 
 
 class RuleProcessingTestSerializer(serializers.Serializer):
@@ -350,10 +353,10 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
         comment_serializer.is_valid(raise_exception=True)
 
         UserAction.create(
-                action_type='delete_rule_filter',
-                comment=comment_serializer.validated_data.get('comment'),
-                user=request.user,
-                rule_filter=self.get_object()
+            action_type='delete_rule_filter',
+            comment=comment_serializer.validated_data.get('comment'),
+            user=request.user,
+            rule_filter=self.get_object()
         )
 
         index = self.get_object().index
@@ -381,7 +384,6 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
 
     @list_route(methods=['post'])
     def intersect(self, request):
-        from scirius.utils import get_middleware_module
         fields_serializer = RuleProcessingFilterIntersectSerializer(data=request.data)
         fields_serializer.is_valid(raise_exception=True)
         index = fields_serializer.validated_data.get('index', None)

@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChangeForm
@@ -57,26 +56,33 @@ class UserCreationForm(DjangoUserCreationForm):
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)
-    persistent = forms.BooleanField(label="Remember this browser.", required = False)
+    persistent = forms.BooleanField(label="Remember this browser.", required=False)
+
 
 TIMEZONES = ((x, x) for x in pytz.all_timezones)
 
+
 class UserSettingsForm(forms.ModelForm, CommentForm):
     TIMEZONES = ((x, x) for x in pytz.all_timezones)
-    timezone = forms.ChoiceField(choices = TIMEZONES)
+    timezone = forms.ChoiceField(choices=TIMEZONES)
+
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'timezone', 'is_active', 'is_superuser', 'is_staff']
 
+
 class NormalUserSettingsForm(forms.ModelForm, CommentForm):
     TIMEZONES = ((x, x) for x in pytz.all_timezones)
-    timezone = forms.ChoiceField(choices = TIMEZONES)
+    timezone = forms.ChoiceField(choices=TIMEZONES)
+
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'timezone']
 
+
 class PasswordForm(CommentForm):
     password = forms.CharField(label="New user password", widget=forms.PasswordInput)
+
 
 class DeleteForm(CommentForm):
     confirm = forms.IntegerField()
@@ -84,6 +90,7 @@ class DeleteForm(CommentForm):
     def __init__(self, *args, **kwargs):
         super(DeleteForm, self).__init__(*args, **kwargs)
         self.fields['confirm'].widget = forms.HiddenInput()
+
 
 class TokenForm(CommentForm):
     token = forms.CharField(label="Token", required=False)

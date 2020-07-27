@@ -1,8 +1,7 @@
 
 from django.contrib.auth.models import User
-from django.conf import settings
-from rest_framework import serializers, viewsets
-from rest_framework.routers import DefaultRouter, Route
+from rest_framework import serializers
+from rest_framework.routers import DefaultRouter
 
 from .utils import get_middleware_module
 from accounts.rest_api import router as accounts_router

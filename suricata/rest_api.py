@@ -1,10 +1,8 @@
-
 from rest_framework.views import APIView
 from rest_framework import serializers
 from rest_framework.routers import DefaultRouter, url
 from rest_framework.response import Response
 from suricata.models import Suricata
-from rest_framework.decorators import list_route
 from django.utils import timezone
 
 from rules.models import UserAction
@@ -44,10 +42,10 @@ class SuricataViewSet(APIView):
             comment_serializer.is_valid(raise_exception=True)
 
             UserAction.create(
-                    action_type='update_push_all',
-                    user=request.user,
-                    ruleset=suri.ruleset,
-                    comment=comment_serializer.validated_data['comment']
+                action_type='update_push_all',
+                user=request.user,
+                ruleset=suri.ruleset,
+                comment=comment_serializer.validated_data['comment']
             )
         return Response({'update_push_all': msg})
 

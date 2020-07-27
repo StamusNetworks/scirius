@@ -21,7 +21,6 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from importlib import import_module
 from time import time
-import math
 
 from django.shortcuts import render
 from django.conf import settings
@@ -32,6 +31,7 @@ import django_tables2 as tables
 
 from accounts.models import SciriusUser
 from rules.models import get_system_settings
+
 
 def build_path_info(request):
     splval = request.path_info.strip('/ ').split('/')
@@ -46,6 +46,7 @@ def build_path_info(request):
     else:
         return "home"
 
+
 class TimezoneMiddleware(object):
     def __init__(self, get_response):
         self.get_response = get_response
@@ -53,12 +54,13 @@ class TimezoneMiddleware(object):
     def __call__(self, request):
         if request.user.is_authenticated:
             try:
-                user = SciriusUser.objects.get(user = request.user)
+                user = SciriusUser.objects.get(user=request.user)
             except:
                 return self.get_response(request)
             if user:
                 timezone.activate(user.timezone)
         return self.get_response(request)
+
 
 def complete_context(request, context):
     if get_system_settings().use_elasticsearch:
@@ -69,27 +71,32 @@ def complete_context(request, context):
             request.session['duration'] = duration
         else:
             duration = int(request.session.get('duration', '24'))
+
         from_date = int((time() - (duration * 3600)) * 1000)
         if duration <= 24:
             date = '%sh' % str(duration)
         else:
             date = '%sd' % str(duration / 24)
+
         if request.GET.__contains__('graph'):
             graph = request.GET.get('graph', 'sunburst')
-            if not graph in ['sunburst', 'circles']:
+            if graph not in ['sunburst', 'circles']:
                 graph = 'sunburst'
             request.session['graph'] = graph
         else:
             graph = 'sunburst'
+
         if graph == 'sunburst':
             context['draw_func'] = 'draw_sunburst'
             context['draw_elt'] = 'path'
         else:
             context['draw_func'] = 'draw_circle'
             context['draw_elt'] = 'circle'
+
         context['date'] = date
         context['from_date'] = from_date
         context['time_range'] = duration * 3600
+
 
 def scirius_render(request, template, context):
     context['generator'] = settings.RULESET_MIDDLEWARE
@@ -135,14 +142,16 @@ def scirius_render(request, template, context):
     complete_context(request, context)
     return render(request, template, context)
 
-def scirius_listing(request, objectname, name, template = 'rules/object_list.html', table = None, adduri = None):
+
+def scirius_listing(request, objectname, name, template='rules/object_list.html', table=None, adduri=None):
     # FIXME could be improved by generating function name
     from accounts.tables import UserTable
     from rules.tables import CategoryTable
-    assocfn = { 'Categories': CategoryTable, 'Users': UserTable }
+    assocfn = {'Categories': CategoryTable, 'Users': UserTable}
     olist = objectname.objects.all()
+
     if olist:
-        if table == None:
+        if table is None:
             data = assocfn[name](olist)
         else:
             data = table(olist)
@@ -158,24 +167,27 @@ def scirius_listing(request, objectname, name, template = 'rules/object_list.htm
         context['action'] = objectname.__name__.lower()
     except:
         pass
+
     if adduri:
         context['action'] = True
         context['adduri'] = adduri
     return scirius_render(request, template, context)
 
+
 def get_middleware_module(module):
     return import_module('%s.%s' % (settings.RULESET_MIDDLEWARE, module))
 
+
 def help_links(djlink):
     HELP_LINKS_TABLE = {
-        "sources": {"name": "Creating a source", "base_url": "doc/ruleset.html", "anchor": "#creating-source" },
-        "add_source": {"name": "Add a custom source", "base_url": "doc/ruleset.html", "anchor": "#manual-addition" },
-        "add_public_source": {"name": "Add a public source", "base_url": "doc/ruleset.html", "anchor": "#public-sources" },
-        "threshold_rule": {"name": "Suppression and thresholding", "base_url": "doc/ruleset.html", "anchor": "#suppression-and-thresholding" },
-        "add_ruleset": {"name": "Ruleset creation", "base_url": "doc/ruleset.html", "anchor": "#creating-ruleset" },
-        "edit_ruleset": {"name": "Edit Ruleset", "base_url": "doc/ruleset.html", "anchor": "#editing-ruleset" },
-        "edit_rule": {"name": "Transform Rule", "base_url": "doc/ruleset.html", "anchor": "#rule-transformations" },
-        "accounts_manage": {"name": "Accounts Management", "base_url": "doc/local-user-management.html", "anchor": "#manage-accounts" },
+        "sources": {"name": "Creating a source", "base_url": "doc/ruleset.html", "anchor": "#creating-source"},
+        "add_source": {"name": "Add a custom source", "base_url": "doc/ruleset.html", "anchor": "#manual-addition"},
+        "add_public_source": {"name": "Add a public source", "base_url": "doc/ruleset.html", "anchor": "#public-sources"},
+        "threshold_rule": {"name": "Suppression and thresholding", "base_url": "doc/ruleset.html", "anchor": "#suppression-and-thresholding"},
+        "add_ruleset": {"name": "Ruleset creation", "base_url": "doc/ruleset.html", "anchor": "#creating-ruleset"},
+        "edit_ruleset": {"name": "Edit Ruleset", "base_url": "doc/ruleset.html", "anchor": "#editing-ruleset"},
+        "edit_rule": {"name": "Transform Rule", "base_url": "doc/ruleset.html", "anchor": "#rule-transformations"},
+        "accounts_manage": {"name": "Accounts Management", "base_url": "doc/local-user-management.html", "anchor": "#manage-accounts"},
     }
     if djlink in HELP_LINKS_TABLE:
         return HELP_LINKS_TABLE[djlink]

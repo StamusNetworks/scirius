@@ -27,6 +27,7 @@ from pygments import highlight
 from pygments.formatters import HtmlFormatter
 import pygments.token as t
 
+
 class SuriLexer(RegexLexer):
     name = 'suricata'
     aliases = ['suricata']
@@ -118,6 +119,7 @@ class SuriLexer(RegexLexer):
             (r';', t.Punctuation, str('#pop'))
         ]
     }
+
 
 def SuriHTMLFormat(rule):
     return highlight(rule, SuriLexer(encoding='utf-8'), HtmlFormatter())

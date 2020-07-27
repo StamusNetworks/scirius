@@ -37,14 +37,15 @@ def validate_hostname(value):
     if ' ' in value:
         raise ValidationError('"%s" contains space' % value)
 
+
 class Suricata(models.Model):
-    name = models.CharField(max_length=100, unique = True, validators = [validate_hostname])
+    name = models.CharField(max_length=100, unique=True, validators=[validate_hostname])
     descr = models.CharField(max_length=400)
     output_directory = models.CharField('Rules directory', max_length=400)
     yaml_file = models.CharField('Suricata configuration file', max_length=400)
     created_date = models.DateTimeField('date created')
-    updated_date = models.DateTimeField('date updated', blank = True)
-    ruleset = models.ForeignKey(Ruleset, blank = True, null = True, on_delete=models.SET_NULL)
+    updated_date = models.DateTimeField('date updated', blank=True)
+    ruleset = models.ForeignKey(Ruleset, blank=True, null=True, on_delete=models.SET_NULL)
 
     editable = True
 
@@ -86,10 +87,13 @@ class Suricata(models.Model):
     def get_absolute_url(self):
         return reverse('suricata_index')
 
-def get_probe_hostnames(limit = 10):
+
+def get_probe_hostnames(limit=10):
     if settings.SURICATA_NAME_IS_HOSTNAME:
-        return [ socket.gethostname() ]
+        return [socket.gethostname()]
+
     suricata = Suricata.objects.all()
-    if suricata != None:
-        return [ suricata[0].name ]
+    if suricata is not None:
+        return [suricata[0].name]
+
     return None

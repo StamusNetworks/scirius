@@ -6,7 +6,6 @@ import subprocess
 import sys
 
 from copy import copy
-from tempfile import NamedTemporaryFile
 
 
 ESLINT = 'hunt/node_modules/eslint/bin/eslint.js'
@@ -23,7 +22,7 @@ def es_check(filename, content):
     f.close()
 
     logging.debug('running: %s -c .eslintrc --max-warnings 0 %s 2>&1 >/dev/null' % (ESLINT, filename))
-    r = subprocess.call('%s -c .eslintrc --max-warnings 0 %s 2>&1 >/dev/null' % (ESLINT, filename), shell=True)
+    r = subprocess.call('%s -c .eslintrc --max-warnings 0 %s 2>&1 >/dev/null' % (ESLINT, filename), shell=True)  # noqa: DUO116
     logging.debug('eslint rc %d' % r)
 
     os.unlink(filename)

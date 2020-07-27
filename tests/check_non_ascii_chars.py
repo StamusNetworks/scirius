@@ -53,7 +53,7 @@ for _type in ('js', 'html', 'css', 'py',):
                                 char = str(ord(c))
                                 if 'ignore_utf8_check' in line:
                                     content = line[line.index('ignore_utf8_check'):]
-                                    char_code = re.findall('\d+', content)
+                                    char_code = re.findall(r'\d+', content)
 
                                     if char in char_code:
                                         continue

@@ -21,8 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 
-from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from rules.es_data import ESData
 
@@ -35,11 +34,13 @@ class Command(BaseCommand, ESData):
         ESData.__init__(self)
 
     def add_arguments(self, parser):
-        parser.add_argument('--full',
+        parser.add_argument(
+            '--full',
             action='store_true',
             dest='full',
             default=False,
-            help='Save everything (SN dashboards and index)')
+            help='Save everything (SN dashboards and index)'
+        )
 
     def handle(self, *args, **options):
         tar_name, tar_file = self.kibana_export(options['full'])

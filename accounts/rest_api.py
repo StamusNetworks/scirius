@@ -29,9 +29,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         extra_kwargs = {
-                'password': {'write_only': True},
-                'date_joined': {'read_only': True}
-            }
+            'password': {'write_only': True},
+            'date_joined': {'read_only': True}
+        }
         read_only_fields = ('auth_token', 'date_joined',)
         fields = ('username', 'password', 'first_name', 'last_name', 'is_staff', 'is_active', 'is_superuser', 'email', 'date_joined')
 
@@ -165,7 +165,7 @@ class AccountViewSet(viewsets.ModelViewSet):
         HTTP/1.1 200 OK
         {"token":"64f803c77076b50081543d01ed9d1c4f52aec104"}
 
-    /|\ Active/staff users can only update their own password.
+    /|\\ Active/staff users can only update their own password.
     Modify Scirius User own password (active/staff):\n
         curl -k https://x.x.x.x/rest/accounts/sciriususer/<pk-sciriususer>/password/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"old_password": "69scirius69", "new_password": "51scirius51"}'
 

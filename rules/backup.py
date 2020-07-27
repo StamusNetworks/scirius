@@ -28,7 +28,7 @@ import sys
 import json
 
 from dbbackup.dbcommands import DBCommands
-from dbbackup.storage.base import BaseStorage, StorageError
+from dbbackup.storage.base import BaseStorage
 from dbbackup.utils import filename_generate
 
 from django.core.management import call_command
@@ -37,11 +37,14 @@ from django.db.migrations.loader import MigrationLoader
 
 DB_SERVERNAME = "scirius"
 
+
 class SCBackupException(Exception):
     def __init__(self, value):
         self.value = value
+
     def __str__(self):
         return repr(self.value)
+
 
 class SCOperation(object):
     def get_migration_levels(self):
@@ -79,6 +82,7 @@ class SCOperation(object):
                 return False
         return True
 
+
 class SCBackup(SCOperation):
     def __init__(self):
         self.storage = BaseStorage.storage_factory()
@@ -102,20 +106,22 @@ class SCBackup(SCOperation):
 
     def backup_ruleset_middleware(self):
         try:
-            middleware_backup = __import__("%s.%s" % (settings.RULESET_MIDDLEWARE, 'backup'))
+            __import__("%s.%s" % (settings.RULESET_MIDDLEWARE, 'backup'))
         except ImportError:
             return
-        Probe = __import__(settings.RULESET_MIDDLEWARE)
-        Probe.backup.backup(self.directory)
+
+        probe_class = __import__(settings.RULESET_MIDDLEWARE)
+        probe_class.backup.backup(self.directory)
 
     def write_migration_level(self):
         last_migrations = self.get_migration_levels()
         migfile = os.path.join(self.directory, 'miglevel')
-        with open(migfile, 'w') as miglevel: 
+
+        with open(migfile, 'w') as miglevel:
             miglevel.write(json.dumps(last_migrations))
 
     def run(self):
-        self.directory = tempfile.mkdtemp() 
+        self.directory = tempfile.mkdtemp()
         self.write_migration_level()
         self.backup_db()
         self.backup_git_sources()
@@ -126,14 +132,17 @@ class SCBackup(SCOperation):
         filename = filename_generate('tar.bz2', self.dbcommands.settings.database['NAME'], self.servername)
         outputfile = tempfile.SpooledTemporaryFile()
         ts = tarfile.open(filename, 'w:bz2', fileobj=outputfile)
+
         for dfile in os.listdir('.'):
             ts.add(dfile)
+
         ts.close()
         self.storage.write_file(outputfile, filename)
         os.chdir(call_dir)
-        
+
+
 class SCRestore(SCOperation):
-    def __init__(self, filepath = None):
+    def __init__(self, filepath=None):
         self.storage = BaseStorage.storage_factory()
         if filepath:
             self.filepath = filepath
@@ -144,9 +153,11 @@ class SCRestore(SCOperation):
     def restore_git_sources(self):
         sys.stdout.write("Restoring to %s from %s\n" % (settings.GIT_SOURCES_BASE_DIRECTORY, self.directory))
         ts = tarfile.open(os.path.join(self.directory, 'sources.tar'), 'r')
-        shutil.rmtree(settings.GIT_SOURCES_BASE_DIRECTORY, ignore_errors = True)
+        shutil.rmtree(settings.GIT_SOURCES_BASE_DIRECTORY, ignore_errors=True)
+
         if not os.path.exists(settings.GIT_SOURCES_BASE_DIRECTORY):
             os.mkdir(settings.GIT_SOURCES_BASE_DIRECTORY)
+
         os.chdir(settings.GIT_SOURCES_BASE_DIRECTORY)
         ts.extractall()
 
@@ -159,11 +170,11 @@ class SCRestore(SCOperation):
 
     def restore_ruleset_middleware(self):
         try:
-            middleware_backup = __import__("%s.%s" % (settings.RULESET_MIDDLEWARE, 'backup'))
+            __import__("%s.%s" % (settings.RULESET_MIDDLEWARE, 'backup'))
         except ImportError:
             return
-        Probe = __import__(settings.RULESET_MIDDLEWARE)
-        Probe.backup.restore(self.directory)
+        probe_class = __import__(settings.RULESET_MIDDLEWARE)
+        probe_class.backup.restore(self.directory)
 
     def test_migration_level(self):
         miglevel = None
@@ -176,13 +187,15 @@ class SCRestore(SCOperation):
         inputfile = self.storage.read_file(self.filepath)
         call_dir = os.getcwd()
         ts = tarfile.open(self.filepath, 'r', fileobj=inputfile)
-        tmpdir = tempfile.mkdtemp() 
+        tmpdir = tempfile.mkdtemp()
         os.chdir(tmpdir)
         ts.extractall()
         ts.close()
         self.directory = tmpdir
-        if self.test_migration_level() == False:
-            raise SCBackupException("Backup is newer than local Scirius version, please update local instance and apply migrations.")
+        if self.test_migration_level() is False:
+            raise SCBackupException(
+                "Backup is newer than local Scirius version, please update local instance and apply migrations."
+            )
         self.restore_git_sources()
         self.restore_db()
 
@@ -192,4 +205,3 @@ class SCRestore(SCOperation):
         self.restore_ruleset_middleware()
         shutil.rmtree(tmpdir)
         os.chdir(call_dir)
-

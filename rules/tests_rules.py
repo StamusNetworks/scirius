@@ -223,7 +223,7 @@ config classification: command-and-control,Malware Command and Control Activity 
                         if found:
                             continue
                         s_err['engine']['message'] = s_err['engine']['message'].split(' from file')[0]
-                        getsid = re.compile("sid *:(\d+)")
+                        getsid = re.compile(r"sid *:(\d+)")
                         match = getsid.search(line)
                         if match:
                             s_err['engine']['sid'] = int(match.groups()[0])

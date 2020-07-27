@@ -19,23 +19,25 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
+from django.core.management.base import BaseCommand
 
 import sys
 
 from rules.backup import SCRestore, SCBackupException
 
+
 class Command(BaseCommand):
     help = 'Restore a backup directory. This will erase all data.'
 
     def add_arguments(self, parser):
-        parser.add_argument('backup',
-            help='Path to a scirius backup file')
+        parser.add_argument(
+            'backup',
+            help='Path to a scirius backup file'
+        )
 
     def handle(self, *args, **options):
         filepath = options['backup']
-        restore = SCRestore(filepath = filepath)
+        restore = SCRestore(filepath=filepath)
         try:
             restore.run()
         except SCBackupException as err:

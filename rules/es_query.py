@@ -9,7 +9,9 @@ import socket
 from django.conf import settings
 from django.template import Context, Template
 from django.utils.safestring import mark_safe
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 
 from rules.models import get_es_address
 from scirius.utils import get_middleware_module
@@ -29,7 +31,7 @@ class ESQuery(object):
         self.request = request
 
     def _build_es_timestamping(self, date, data='alert'):
-        format_table = { 'daily': '%Y.%m.%d', 'hourly': '%Y.%m.%d.%H' }
+        format_table = {'daily': '%Y.%m.%d', 'hourly': '%Y.%m.%d.%H'}
         now = datetime.now()
         if settings.ELASTICSEARCH_LOGSTASH_TIMESTAMPING == 'daily':
             end = now + timedelta(days=1)
@@ -85,8 +87,8 @@ class ESQuery(object):
                 else:
                     indexes = settings.ELASTICSEARCH_LOGSTASH_INDEX + "*"
             else:
-                start = datetime.fromtimestamp(int(from_date)/1000)
-                indexes = self._build_es_timestamping(start, data = data)
+                start = datetime.fromtimestamp(int(from_date) / 1000)
+                indexes = self._build_es_timestamping(start, data=data)
         return self.URL % (get_es_address(), indexes)
 
     def _from_date(self, params=None):
@@ -188,7 +190,7 @@ class ESQuery(object):
             'hostname': settings.ELASTICSEARCH_HOSTNAME,
             'timestamp': settings.ELASTICSEARCH_TIMESTAMP,
             'from_date': self._from_date(dictionary),
-            'to_date': mark_safe(self._to_date(dictionary, es_format=True)), # mark quotes around "now" as safe
+            'to_date': mark_safe(self._to_date(dictionary, es_format=True)),  # mark quotes around "now" as safe
             'query_filter': query_filter,
             'bool_clauses': bool_clauses,
             'interval': str(self._interval(dictionary)) + 'ms'

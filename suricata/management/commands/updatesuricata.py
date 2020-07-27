@@ -19,8 +19,9 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from suricata.models import Suricata
+
 
 class Command(BaseCommand):
     help = 'Update Suricata ruleset and apply it'
@@ -31,8 +32,7 @@ class Command(BaseCommand):
             suricata.ruleset.update()
         except Exception as detail:
             self.stderr.write('Unable to update ruleset for suricata "%s": %s' %
-                                (suricata.name, detail))
+                              (suricata.name, detail))
         suricata.generate()
         suricata.push()
         self.stdout.write('Successfully pushed ruleset to suricata "%s"' % suricata.name)
-

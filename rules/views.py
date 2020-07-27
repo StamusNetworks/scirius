@@ -18,60 +18,66 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from django.shortcuts import render, get_object_or_404, redirect
+import re
+import os
+import yaml
+import requests
+
+from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
-from django.http import HttpResponse, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseServerError, JsonResponse
 from django.db import IntegrityError
 from django.conf import settings
-from elasticsearch.exceptions import ConnectionError
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.contrib import messages
-import requests
+from elasticsearch.exceptions import ConnectionError as ESConnectionError
+import django_tables2 as tables
 
 from scirius.utils import scirius_render, scirius_listing
 
 from rules.es_data import ESData
-from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings, Threshold, Transformation, CategoryTransformation, RulesetTransformation, UserAction, UserActionObject, reset_es_address
-from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, HistoryTable
+from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings
+from rules.models import Threshold, Transformation, RulesetTransformation, UserAction, reset_es_address, SourceAtVersion
+from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, SourceUpdateTable
 
-from rules.es_graphs import (ESError, ESRulesStats, ESFieldStatsAsTable, ESSidByHosts, ESIndices, ESDeleteAlertsBySid,
-        get_es_major_version, reset_es_version)
+from rules.es_graphs import ESError, ESRulesStats, ESFieldStatsAsTable, ESSidByHosts, ESIndices, ESDeleteAlertsBySid
+from rules.es_graphs import get_es_major_version, reset_es_version
 
-import json
-import yaml
-import re
-import os
-
-from time import time
-import django_tables2 as tables
-from .tables import *
-from .forms import *
+from .tables import RuleTable, CategoryTable, RulesetTable, CategoryRulesetTable, RuleHostTable, ESIndexessTable
+from .tables import RuleThresholdTable, RuleSuppressTable, RulesetThresholdTable, RulesetSuppressTable
+from .tables import EditCategoryTable, EditRuleTable, EditSourceAtVersionTable
+from .forms import RuleCommentForm, RuleTransformForm, CategoryTransformForm, RulesetSuppressForm, CommentForm
+from .forms import AddRuleThresholdForm, AddRuleSuppressForm, AddSourceForm, AddPublicSourceForm, SourceForm
+from .forms import RulesetForm, RulesetEditForm, RulesetCopyForm, SystemSettingsForm, KibanaDataForm, EditThresholdForm
 from .suripyg import SuriHTMLFormat
 
-Probe = __import__(settings.RULESET_MIDDLEWARE)
+PROBE = __import__(settings.RULESET_MIDDLEWARE)
+
 
 # Create your views here.
 def index(request):
     ruleset_list = Ruleset.objects.all().order_by('-created_date')[:5]
     source_list = Source.objects.all().order_by('-created_date')[:5]
     context = {'ruleset_list': ruleset_list,
-                'source_list': source_list}
+               'source_list': source_list}
     try:
-        context['probes'] = ['"' +  x + '"' for x in Probe.models.get_probe_hostnames()]
+        context['probes'] = ['"' + x + '"' for x in PROBE.models.get_probe_hostnames()]
     except:
         pass
     return scirius_render(request, 'rules/index.html', context)
+
 
 def about(request):
     context = {}
     try:
         from suricata.models import Suricata
         suricata = Suricata.objects.all()
-        if suricata != None:
+        if suricata is not None:
             context['suricata'] = suricata[0]
     except:
         pass
     return scirius_render(request, 'rules/about.html', context)
+
 
 def search(request):
     context = {}
@@ -94,14 +100,14 @@ def search(request):
             tables.RequestConfig(request).configure(rules)
         else:
             rules = None
-        categories = Category.objects.filter(name__icontains=search)
-        if len(categories) > 0:
-            length += len(categories)
-            categories = CategoryTable(categories)
-            tables.RequestConfig(request).configure(categories)
+        categories_ = Category.objects.filter(name__icontains=search)
+        if len(categories_) > 0:
+            length += len(categories_)
+            categories_ = CategoryTable(categories_)
+            tables.RequestConfig(request).configure(categories_)
         else:
             rules_width += 4
-            categories = None
+            categories_ = None
         rulesets = Ruleset.objects.filter(name__icontains=search)
         if len(rulesets) > 0:
             length += len(rulesets)
@@ -112,43 +118,57 @@ def search(request):
             rulesets = None
     else:
         rules = None
-        categories = None
+        categories_ = None
         rulesets = None
-    context = { 'rules': rules, 'rules_width': rules_width, 'categories': categories, 'rulesets': rulesets, 'motif': search, 'length': length }
+
+    context = {
+        'rules': rules,
+        'rules_width': rules_width,
+        'categories': categories_,
+        'rulesets': rulesets,
+        'motif': search,
+        'length': length
+    }
     return scirius_render(request, 'rules/search.html', context)
+
 
 def sources(request):
     from scirius.utils import get_middleware_module
     sources = get_middleware_module('common').get_sources().order_by('name')
 
-    for source in sources:
-        if source.cats_count == 0:
-            source.build_counters()
-    context = { 'sources': sources }
+    for source_ in sources:
+        if source_.cats_count == 0:
+            source_.build_counters()
+
+    context = {'sources': sources}
     return scirius_render(request, 'rules/sources.html', context)
 
-def source(request, source_id, error=None, update = False, activate = False, rulesets = None):
+
+def source(request, source_id, error=None, update=False, activate=False, rulesets=None):
     source = get_object_or_404(Source, pk=source_id)
-    cats = CategoryTable(Category.objects.filter(source = source).order_by('name'))
+    cats = CategoryTable(Category.objects.filter(source=source).order_by('name'))
     tables.RequestConfig(request).configure(cats)
     context = {'source': source, 'categories': cats,
                'update': update, 'activate': activate, 'rulesets': rulesets}
     if error:
         context['error'] = error
-    if hasattr(Probe.common, 'update_source'):
+    if hasattr(PROBE.common, 'update_source'):
         context['middleware_has_update'] = True
+
     return scirius_render(request, 'rules/source.html', context)
+
 
 def categories(request):
     return scirius_listing(request, Category, 'Categories')
 
+
 def category(request, cat_id):
     cat = get_object_or_404(Category, pk=cat_id)
-    rules = RuleTable(Rule.objects.filter(category = cat, state = True).order_by('sid'))
+    rules = RuleTable(Rule.objects.filter(category=cat, state=True).order_by('sid'))
     tables.RequestConfig(request).configure(rules)
-    commented_rules = RuleTable(Rule.objects.filter(category = cat, state = False))
+    commented_rules = RuleTable(Rule.objects.filter(category=cat, state=False))
     tables.RequestConfig(request).configure(commented_rules)
-    category_path = [ cat.source ]
+    category_path = [cat.source]
     # build table of rulesets and display if category is active
     rulesets = Ruleset.objects.all()
     rulesets_status = []
@@ -165,18 +185,19 @@ def category(request, cat_id):
                 transformations[key] = "%s: %s" % (key.value.capitalize(), trans.value.capitalize())
 
         rulesets_status.append({
-                    'name': ruleset.name,
-                    'pk': ruleset.pk,
-                    'status': status,
-                    'action': transformations[Transformation.ACTION] if Transformation.ACTION in transformations else '',
-                    'lateral': transformations[Transformation.LATERAL] if Transformation.LATERAL in transformations else '',
-                    'target': transformations[Transformation.TARGET] if Transformation.TARGET in transformations else '',
-                })
+            'name': ruleset.name,
+            'pk': ruleset.pk,
+            'status': status,
+            'action': transformations[Transformation.ACTION] if Transformation.ACTION in transformations else '',
+            'lateral': transformations[Transformation.LATERAL] if Transformation.LATERAL in transformations else '',
+            'target': transformations[Transformation.TARGET] if Transformation.TARGET in transformations else '',
+        })
 
     rulesets_status = CategoryRulesetTable(rulesets_status)
     tables.RequestConfig(request).configure(rulesets_status)
     context = {'category': cat, 'rules': rules, 'commented_rules': commented_rules, 'object_path': category_path, 'rulesets': rulesets_status}
     return scirius_render(request, 'rules/category.html', context)
+
 
 class Reference:
     def __init__(self, key, value):
@@ -184,9 +205,16 @@ class Reference:
         self.key = key
         self.url = None
 
+
 def elasticsearch(request):
-    data = None
-    RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip', 'rule_probe': settings.ELASTICSEARCH_HOSTNAME, 'field_stats': None}
+    RULE_FIELDS_MAPPING = {
+        'rule_src': 'src_ip',
+        'rule_dest': 'dest_ip',
+        'rule_source': 'alert.source.ip',
+        'rule_target': 'alert.target.ip',
+        'rule_probe': settings.ELASTICSEARCH_HOSTNAME,
+        'field_stats': None
+    }
     context = {'es2x': get_es_major_version() >= 2}
 
     if request.GET.__contains__('query'):
@@ -194,8 +222,8 @@ def elasticsearch(request):
             query = request.GET.get('query')
             if query == 'rules':
                 rules = ESRulesStats(request).get()
-                if rules == None:
-                    return HttpResponse(json.dumps(rules), content_type="application/json")
+                if rules is None:
+                    return JsonResponse(rules)
                 context['table'] = rules
                 return scirius_render(request, 'rules/table.html', context)
             elif query == 'rule':
@@ -216,10 +244,12 @@ def elasticsearch(request):
                 sid = request.GET.get('sid', None)
                 count = request.GET.get('page_size', 10)
 
-                hosts = ESFieldStatsAsTable(request).get(sid,
-                                                        filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
-                                                        RuleHostTable,
-                                                        count=count)
+                hosts = ESFieldStatsAsTable(request).get(
+                    sid,
+                    filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD,
+                    RuleHostTable,
+                    count=count
+                )
                 context['table'] = hosts
                 return scirius_render(request, 'rules/table.html', context)
             elif query == 'indices':
@@ -235,13 +265,13 @@ def elasticsearch(request):
         except ESError as e:
             return HttpResponseServerError(str(e))
     else:
-        template = Probe.common.get_es_template()
+        template = PROBE.common.get_es_template()
         return scirius_render(request, template, context)
 
 
 def extract_rule_references(rule):
     references = []
-    for ref in re.findall("reference: *(\w+), *(\S+);", rule.content):
+    for ref in re.findall(r"reference: *(\w+), *(\S+);", rule.content):
         refer = Reference(ref[0], ref[1])
         if refer.key == 'url':
             if not refer.value.startswith("http"):
@@ -257,14 +287,13 @@ def extract_rule_references(rule):
     return references
 
 
-def rule(request, rule_id, key = 'pk'):
+def rule(request, rule_id, key='pk'):
     if request.is_ajax():
         rule = get_object_or_404(Rule, sid=rule_id)
         rule.highlight_content = SuriHTMLFormat(rule.content)
-        data = { 'msg': rule.msg, 'sid': rule.sid, 'content': rule.content,
-                 'highlight_content': rule.highlight_content}
-        return HttpResponse(json.dumps(data),
-                            content_type="application/json")
+        data = {'msg': rule.msg, 'sid': rule.sid, 'content': rule.content,
+                'highlight_content': rule.highlight_content}
+        return JsonResponse(data)
     if key == 'pk':
         rule = get_object_or_404(Rule, pk=rule_id)
     else:
@@ -273,12 +302,12 @@ def rule(request, rule_id, key = 'pk'):
 
     rule.highlight_content = SuriHTMLFormat(rule.content)
     references = extract_rule_references(rule)
-    
+
     # build table of rulesets and display if rule is active
     rulesets = Ruleset.objects.all()
     rulesets_status = []
     rule_transformations = False
-    
+
     SUPPRESSED = Transformation.SUPPRESSED
     S_SUPPRESSED = Transformation.S_SUPPRESSED
 
@@ -311,7 +340,7 @@ def rule(request, rule_id, key = 'pk'):
                 prefix = 't_'
 
             if trans is not None:
-                ruleset_info[prefix+trans.value] = True
+                ruleset_info[prefix + trans.value] = True
                 if content:
                     rule_transformations = True
         rulesets_status.append(ruleset_info)
@@ -320,32 +349,33 @@ def rule(request, rule_id, key = 'pk'):
     context = {'rule': rule, 'references': references, 'object_path': rule_path, 'rulesets': rulesets_status,
                'rule_transformations': rule_transformations, 'comment_form': comment_form}
 
-    thresholds = Threshold.objects.filter(rule = rule, threshold_type = 'threshold')
+    thresholds = Threshold.objects.filter(rule=rule, threshold_type='threshold')
     if thresholds:
         thresholds = RuleThresholdTable(thresholds)
         tables.RequestConfig(request).configure(thresholds)
         context['thresholds'] = thresholds
-    suppress = Threshold.objects.filter(rule = rule, threshold_type = 'suppress')
+    suppress = Threshold.objects.filter(rule=rule, threshold_type='suppress')
     if suppress:
         suppress = RuleSuppressTable(suppress)
         tables.RequestConfig(request).configure(suppress)
         context['suppress'] = suppress
     try:
-        context['probes'] = ['"' +  x + '"' for x in Probe.models.get_probe_hostnames()]
+        context['probes'] = ['"' + x + '"' for x in PROBE.models.get_probe_hostnames()]
     except:
         pass
 
     context['kibana_version'] = get_es_major_version()
     return scirius_render(request, 'rules/rule.html', context)
 
+
 def edit_rule(request, rule_id):
     rule_object = get_object_or_404(Rule, sid=rule_id)
 
     if not request.user.is_staff:
-        context = { 'rule': rule_object, 'error': 'Unsufficient permissions' }
+        context = {'rule': rule_object, 'error': 'Unsufficient permissions'}
         return scirius_render(request, 'rules/rule.html', context)
-        
-    if request.method == 'POST': # If the form has been submitted...
+
+    if request.method == 'POST':  # If the form has been submitted...
         form = RuleTransformForm(request.POST, instance=rule_object)
         if form.is_valid():  # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
@@ -388,12 +418,12 @@ def edit_rule(request, rule_id):
 
                         if trans != cat_trans:
                             UserAction.create(
-                                    action_type='transform_rule',
-                                    comment=form.cleaned_data['comment'],
-                                    user=request.user,
-                                    transformation='%s: %s' % (TYPE.value, CAT_DEFAULT.name.replace('_', ' ').title()),
-                                    rule=rule_object,
-                                    ruleset=ruleset
+                                action_type='transform_rule',
+                                comment=form.cleaned_data['comment'],
+                                user=request.user,
+                                transformation='%s: %s' % (TYPE.value, CAT_DEFAULT.name.replace('_', ' ').title()),
+                                rule=rule_object,
+                                ruleset=ruleset
                             )
 
                         rule_object.remove_transformations(ruleset, TYPE)
@@ -403,36 +433,36 @@ def edit_rule(request, rule_id):
 
                     if form_trans != NONE and form_trans != trans:
                         UserAction.create(
-                                action_type='transform_rule',
-                                comment=form.cleaned_data['comment'],
-                                user=request.user,
-                                transformation='%s: %s' % (TYPE.value.title(), form_trans.value.title()),
-                                rule=rule_object,
-                                ruleset=ruleset
+                            action_type='transform_rule',
+                            comment=form.cleaned_data['comment'],
+                            user=request.user,
+                            transformation='%s: %s' % (TYPE.value.title(), form_trans.value.title()),
+                            rule=rule_object,
+                            ruleset=ruleset
                         )
                     elif form_trans == NONE and trans:
                         UserAction.create(
-                                action_type='transform_rule',
-                                comment=form.cleaned_data['comment'],
-                                user=request.user,
-                                transformation='%s: %s' % (TYPE.value.title(), trans.value.title()),
-                                rule=rule_object,
-                                ruleset=ruleset
+                            action_type='transform_rule',
+                            comment=form.cleaned_data['comment'],
+                            user=request.user,
+                            transformation='%s: %s' % (TYPE.value.title(), trans.value.title()),
+                            rule=rule_object,
+                            ruleset=ruleset
                         )
 
             return redirect(rule_object)
     else:
         rulesets_ids = []
         current_trans = {
-                Transformation.ACTION: Transformation.A_CAT_DEFAULT,
-                Transformation.LATERAL: Transformation.L_CAT_DEFAULT,
-                Transformation.TARGET: Transformation.T_CAT_DEFAULT
+            Transformation.ACTION: Transformation.A_CAT_DEFAULT,
+            Transformation.LATERAL: Transformation.L_CAT_DEFAULT,
+            Transformation.TARGET: Transformation.T_CAT_DEFAULT
         }
 
         rulesets_res = {
-                Transformation.ACTION: {},
-                Transformation.LATERAL: {},
-                Transformation.TARGET: {},
+            Transformation.ACTION: {},
+            Transformation.LATERAL: {},
+            Transformation.TARGET: {},
         }
 
         initial = {'action': current_trans[Transformation.ACTION].value,
@@ -451,7 +481,7 @@ def edit_rule(request, rule_id):
             for key, value in all_trans:
                 if value not in rulesets_res[key]:
                     rulesets_res[key][value] = 0
-                rulesets_res[key][value] += 1 
+                rulesets_res[key][value] += 1
 
                 if value:
                     rulesets_ids.append(ruleset.id)
@@ -460,8 +490,7 @@ def edit_rule(request, rule_id):
                 # Case 1: One transfo on all rulesets
                 # Case 2: one transfo on n rulesets on x. x-n rulesets without transfo (None)
                 if len(rulesets) == rulesets_res[key][value] or \
-                        (None in rulesets_res[key] and
-                         len(rulesets) == rulesets_res[key][value] + rulesets_res[key][None]):
+                        (None in rulesets_res[key] and len(rulesets) == rulesets_res[key][value] + rulesets_res[key][None]):
                     if value:
                         initial[key.value] = current_trans[key].value
 
@@ -470,8 +499,7 @@ def edit_rule(request, rule_id):
             for val in dict_val.keys():
 
                 if len(rulesets) == rulesets_res[key][val] or \
-                        (None in rulesets_res[key] and
-                         len(rulesets) == rulesets_res[key][val] + rulesets_res[key][None]):
+                        (None in rulesets_res[key] and len(rulesets) == rulesets_res[key][val] + rulesets_res[key][None]):
                     pass
                 else:
                     initial[key.value] = 'category'
@@ -479,8 +507,9 @@ def edit_rule(request, rule_id):
                         del initial['rulesets']
 
         form = RuleTransformForm(
-                initial=initial,
-                instance=rule_object)
+            initial=initial,
+            instance=rule_object
+        )
 
     category_transforms = []
     ruleset_transforms = []
@@ -513,12 +542,12 @@ def transform_category(request, cat_id):
     cat_object = get_object_or_404(Category, pk=cat_id)
 
     if not request.user.is_staff:
-        context = { 'category': cat_object, 'error': 'Unsufficient permissions' }
+        context = {'category': cat_object, 'error': 'Unsufficient permissions'}
         return scirius_render(request, 'rules/category.html', context)
-        
-    if request.method == 'POST': # If the form has been submitted...
+
+    if request.method == 'POST':  # If the form has been submitted...
         form = CategoryTransformForm(request.POST)
-        if form.is_valid(): # All validation rules pass
+        if form.is_valid():  # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
 
             for ruleset in rulesets:
@@ -527,24 +556,21 @@ def transform_category(request, cat_id):
                 form_target_trans = Transformation.TargetTransfoType(form.cleaned_data["target"])
 
                 for form_trans in (form_action_trans, form_lateral_trans, form_target_trans):
-                    (TYPE, NONE, LOOP) = (None, None, None)
+                    (TYPE, LOOP) = (None, None)
 
                     # Remove all transformations
                     if form_trans == form_action_trans:
                         TYPE = Transformation.ACTION
-                        NONE = Transformation.A_NONE
                         LOOP = (Transformation.A_DROP, Transformation.A_REJECT, Transformation.A_FILESTORE, Transformation.A_BYPASS)
                         RULESET_DEFAULT = Transformation.A_RULESET_DEFAULT
 
                     if form_trans == form_lateral_trans:
                         TYPE = Transformation.LATERAL
-                        NONE = Transformation.L_NO
-                        LOOP = (Transformation.L_AUTO, Transformation.L_YES, Transformation.L_NO) 
+                        LOOP = (Transformation.L_AUTO, Transformation.L_YES, Transformation.L_NO)
                         RULESET_DEFAULT = Transformation.L_RULESET_DEFAULT
 
                     if form_trans == form_target_trans:
                         TYPE = Transformation.TARGET
-                        NONE = Transformation.T_NONE
                         LOOP = (Transformation.T_SOURCE, Transformation.T_DESTINATION, Transformation.T_AUTO)
                         RULESET_DEFAULT = Transformation.T_RULESET_DEFAULT
 
@@ -565,36 +591,36 @@ def transform_category(request, cat_id):
                     if form_trans != trans:
                         cat_object.toggle_transformation(ruleset, key=TYPE, value=form_trans)
                         UserAction.create(
-                                action_type='transform_category',
-                                comment=form.cleaned_data['comment'],
-                                user=request.user,
-                                transformation='%s: %s' % (TYPE.value.title(), form_trans.value.title()),
-                                category=cat_object,
-                                ruleset=ruleset
+                            action_type='transform_category',
+                            comment=form.cleaned_data['comment'],
+                            user=request.user,
+                            transformation='%s: %s' % (TYPE.value.title(), form_trans.value.title()),
+                            category=cat_object,
+                            ruleset=ruleset
                         )
                     elif trans:
                         UserAction.create(
-                                action_type='transform_category',
-                                comment=form.cleaned_data['comment'],
-                                user=request.user,
-                                transformation='%s: %s' % (TYPE.value.title(), trans.value.title()),
-                                category=cat_object,
-                                ruleset=ruleset
+                            action_type='transform_category',
+                            comment=form.cleaned_data['comment'],
+                            user=request.user,
+                            transformation='%s: %s' % (TYPE.value.title(), trans.value.title()),
+                            category=cat_object,
+                            ruleset=ruleset
                         )
 
             return redirect(cat_object)
     else:
         rulesets_ids = []
         current_trans = {
-                Transformation.ACTION: Transformation.A_RULESET_DEFAULT,
-                Transformation.LATERAL: Transformation.L_RULESET_DEFAULT,
-                Transformation.TARGET: Transformation.T_RULESET_DEFAULT
+            Transformation.ACTION: Transformation.A_RULESET_DEFAULT,
+            Transformation.LATERAL: Transformation.L_RULESET_DEFAULT,
+            Transformation.TARGET: Transformation.T_RULESET_DEFAULT
         }
 
         rulesets_res = {
-                Transformation.ACTION: {},
-                Transformation.LATERAL: {},
-                Transformation.TARGET: {},
+            Transformation.ACTION: {},
+            Transformation.LATERAL: {},
+            Transformation.TARGET: {},
         }
 
         initial = {'action': current_trans[Transformation.ACTION].value,
@@ -622,8 +648,7 @@ def transform_category(request, cat_id):
                 # Case 1: One transfo on all rulesets
                 # Case 2: one transfo on n rulesets on x. x-n rulesets without transfo (None)
                 if len(rulesets) == rulesets_res[key][value] or \
-                        (None in rulesets_res[key] and
-                         len(rulesets) == rulesets_res[key][value] + rulesets_res[key][None]):
+                        (None in rulesets_res[key] and len(rulesets) == rulesets_res[key][value] + rulesets_res[key][None]):
                     if value:
                         initial[key.value] = current_trans[key].value
 
@@ -632,8 +657,7 @@ def transform_category(request, cat_id):
             for val in dict_val.keys():
 
                 if len(rulesets) == rulesets_res[key][val] or \
-                        (None in rulesets_res[key] and
-                         len(rulesets) == rulesets_res[key][val] + rulesets_res[key][None]):
+                        (None in rulesets_res[key] and len(rulesets) == rulesets_res[key][val] + rulesets_res[key][None]):
                     pass
                 else:
                     initial[key.value] = 'none'
@@ -658,30 +682,35 @@ def transform_category(request, cat_id):
     context = {'rulesets': rulesets, 'category': cat_object, 'form': form, 'ruleset_transforms': ruleset_transforms}
     return scirius_render(request, 'rules/edit_rule.html', context)
 
-def switch_rule(request, rule_id, operation = 'disable'):
+
+def switch_rule(request, rule_id, operation='disable'):
     rule_object = get_object_or_404(Rule, sid=rule_id)
 
     if not request.user.is_staff:
-        context = { 'rule': rule_object, 'operation': operation, 'error': 'Unsufficient permissions' }
+        context = {'rule': rule_object, 'operation': operation, 'error': 'Unsufficient permissions'}
         return scirius_render(request, 'rules/disable_rule.html', context)
-        
-    if request.method == 'POST': # If the form has been submitted...
+
+    if request.method == 'POST':  # If the form has been submitted...
         form = RulesetSuppressForm(request.POST)
-        if form.is_valid(): # All validation rules pass
+        if form.is_valid():  # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
             for ruleset in rulesets:
-                suppressed_rules = ruleset.get_transformed_rules(key=Transformation.SUPPRESSED,
-                                                                value=Transformation.S_SUPPRESSED).values_list('pk', flat=True)
-                if rule_object.pk not in suppressed_rules and operation == 'disable' :
-                    rule_object.disable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
+
+                suppressed_rules = ruleset.get_transformed_rules(
+                    key=Transformation.SUPPRESSED,
+                    value=Transformation.S_SUPPRESSED
+                ).values_list('pk', flat=True)
+
+                if rule_object.pk not in suppressed_rules and operation == 'disable':
+                    rule_object.disable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
                 elif rule_object.pk in suppressed_rules and operation == 'enable':
-                    rule_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
+                    rule_object.enable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
                 ruleset.save()
             return redirect(rule_object)
     else:
         form = RulesetSuppressForm()
 
-    context = { 'rule': rule_object, 'form': form }
+    context = {'rule': rule_object, 'form': form}
     rulesets = Ruleset.objects.all()
     for ruleset in rulesets:
         ruleset.deps_rules = rule_object.get_dependant_rules(ruleset)
@@ -689,102 +718,110 @@ def switch_rule(request, rule_id, operation = 'disable'):
     context['operation'] = operation
     return scirius_render(request, 'rules/disable_rule.html', context)
 
+
 def disable_rule(request, rule_id):
     return switch_rule(request, rule_id)
+
 
 def enable_rule(request, rule_id):
     return switch_rule(request, rule_id, operation='enable')
 
-def test_rule(request, rule_id, ruleset_id, key = 'pk'):
+
+def test_rule(request, rule_id, ruleset_id, key='pk'):
     rule_object = get_object_or_404(Rule, pk=rule_id)
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
     ret = rule_object.test(ruleset)
-    return HttpResponse(json.dumps(ret), content_type="application/json")
+    return JsonResponse(ret)
+
 
 def delete_alerts(request, rule_id):
     rule_object = get_object_or_404(Rule, sid=rule_id)
 
     if not request.user.is_staff:
-        context = { 'object': rule, 'error': 'Unsufficient permissions' }
+        context = {'object': rule, 'error': 'Unsufficient permissions'}
         context['comment_form'] = CommentForm()
         return scirius_render(request, 'rules/delete_alerts.html', context)
 
-    if request.method == 'POST': # If the form has been submitted...
+    if request.method == 'POST':  # If the form has been submitted...
         form = CommentForm(request.POST)
         if form.is_valid():
-            if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
-                Probe.common.es_delete_alerts_by_sid(rule_id, request=request)
+            if hasattr(PROBE.common, 'es_delete_alerts_by_sid'):
+                PROBE.common.es_delete_alerts_by_sid(rule_id, request=request)
             else:
                 result = ESDeleteAlertsBySid(request).get(rule_id)
                 if 'status' in result and result['status'] != 200:
-                    context = { 'object': rule_object, 'error': result['msg'] }
+                    context = {'object': rule_object, 'error': result['msg']}
                     try:
-                        context['probes'] = ['"' +  x + '"' for x in Probe.models.get_probe_hostnames()]
+                        context['probes'] = ['"' + x + '"' for x in PROBE.models.get_probe_hostnames()]
                     except:
                         pass
                     context['comment_form'] = CommentForm()
                     return scirius_render(request, 'rules/delete_alerts.html', context)
-            messages.add_message(request, messages.INFO, "Events deletion may be in progress, graphics and stats could be not in sync.");
+
+            messages.add_message(request, messages.INFO, "Events deletion may be in progress, graphics and stats could be not in sync.")
             UserAction.create(
-                    action_type='delete_alerts',
-                    comment=form.cleaned_data['comment'],
-                    user=request.user,
-                    rule=rule_object
+                action_type='delete_alerts',
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                rule=rule_object
             )
         return redirect(rule_object)
     else:
-        context = {'object': rule_object }
+        context = {'object': rule_object}
         context['comment_form'] = CommentForm()
         try:
-            context['probes'] = ['"' +  x + '"' for x in Probe.models.get_probe_hostnames()]
+            context['probes'] = ['"' + x + '"' for x in PROBE.models.get_probe_hostnames()]
         except:
             pass
         return scirius_render(request, 'rules/delete_alerts.html', context)
 
+
 def comment_rule(request, rule_id):
     rule_object = get_object_or_404(Rule, sid=rule_id)
 
-    if request.method == 'POST': # If the form has been submitted...
+    if request.method == 'POST':  # If the form has been submitted...
         if request.user.is_staff:
             form = RuleCommentForm(request.POST)
             if form.is_valid():
                 UserAction.create(
-                        action_type='comment_rule',
-                        comment=form.cleaned_data['comment'],
-                        user=request.user,
-                        rule=rule_object
+                    action_type='comment_rule',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    rule=rule_object
                 )
     return redirect(rule_object)
+
 
 def toggle_availability(request, rule_id):
     rule_object = get_object_or_404(Rule, sid=rule_id)
 
     if not request.user.is_staff:
-        context = { 'object': rule, 'error': 'Unsufficient permissions' }
+        context = {'object': rule, 'error': 'Unsufficient permissions'}
         return scirius_render(request, 'rules/rule.html', context)
 
     if not request.method == 'POST':
-        context = { 'object': rule, 'error': 'Invalid action' }
+        context = {'object': rule, 'error': 'Invalid action'}
         return scirius_render(request, 'rules/rule.html', context)
 
     rule_object.toggle_availability()
 
     UserAction.create(
-            action_type='toggle_availability',
-            user=request.user,
-            rule=rule_object
+        action_type='toggle_availability',
+        user=request.user,
+        rule=rule_object
     )
 
     return redirect(rule_object)
+
 
 def threshold_rule(request, rule_id):
     rule_object = get_object_or_404(Rule, sid=rule_id)
 
     if not request.user.is_staff:
-        context = { 'object': rule, 'error': 'Unsufficient permissions' }
+        context = {'object': rule, 'error': 'Unsufficient permissions'}
         return scirius_render(request, 'rules/rule.html', context)
 
-    if request.method == 'POST': # If the form has been submitted...
+    if request.method == 'POST':  # If the form has been submitted...
         action_type = 'create_threshold'
 
         if 'threshold_type' in request.POST:
@@ -811,12 +848,12 @@ def threshold_rule(request, rule_id):
                 threshold.save()
 
                 UserAction.create(
-                        action_type=action_type,
-                        comment=form.cleaned_data['comment'],
-                        user=request.user,
-                        rule=rule_object,
-                        threshold=threshold,
-                        ruleset=ruleset
+                    action_type=action_type,
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    rule=rule_object,
+                    threshold=threshold,
+                    ruleset=ruleset
                 )
 
             return redirect(rule_object)
@@ -827,7 +864,8 @@ def threshold_rule(request, rule_id):
             else:
                 context['type'] = 'threshold'
             return scirius_render(request, 'rules/add_threshold.html', context)
-    data = { 'gid': 1, 'count': 1, 'seconds': 60, 'type': 'limit', 'rule': rule_object, 'ruleset': 1 }
+
+    data = {'gid': 1, 'count': 1, 'seconds': 60, 'type': 'limit', 'rule': rule_object, 'ruleset': 1}
     if request.GET.__contains__('action'):
         data['threshold_type'] = request.GET.get('action', 'suppress')
     if request.GET.__contains__('net'):
@@ -842,10 +880,12 @@ def threshold_rule(request, rule_id):
 
     if 'track_by' in data:
         containers = []
-        pth = Threshold(rule = rule_object, track_by = data['track_by'], threshold_type = data['threshold_type'])
+        pth = Threshold(rule=rule_object, track_by=data['track_by'], threshold_type=data['threshold_type'])
+
         if 'net' in data:
             pth.net = data['net']
-        thresholds = Threshold.objects.filter(rule = rule_object)
+        thresholds = Threshold.objects.filter(rule=rule_object)
+
         for threshold in thresholds:
             if threshold.contain(pth):
                 containers.append(threshold)
@@ -858,14 +898,15 @@ def threshold_rule(request, rule_id):
             else:
                 containers = RuleSuppressTable(containers)
             tables.RequestConfig(request).configure(containers)
+
         if thresholds:
             thresholds = ThresholdTable(thresholds)
             tables.RequestConfig(request).configure(thresholds)
     else:
         containers = None
         thresholds = None
-        
-    context = {'rule': rule_object, 'thresholds': thresholds, 'containers': containers }
+
+    context = {'rule': rule_object, 'thresholds': thresholds, 'containers': containers}
     if data['threshold_type'] == 'suppress':
         context['form'] = AddRuleSuppressForm(initial=data)
         context['type'] = 'suppress'
@@ -874,30 +915,33 @@ def threshold_rule(request, rule_id):
         context['type'] = 'threshold'
     return scirius_render(request, 'rules/add_threshold.html', context)
 
-def disable_category(request, cat_id, operation = 'suppress'):
+
+def disable_category(request, cat_id, operation='suppress'):
     cat_object = get_object_or_404(Category, id=cat_id)
 
     if not request.user.is_staff:
-        context = { 'category': cat_object, 'error': 'Unsufficient permissions', 'operation': operation }
+        context = {'category': cat_object, 'error': 'Unsufficient permissions', 'operation': operation}
         return scirius_render(request, 'rules/disable_category.html', context)
 
-    if request.method == 'POST': # If the form has been submitted...
+    if request.method == 'POST':  # If the form has been submitted...
         form = RulesetSuppressForm(request.POST)
-        if form.is_valid(): # All validation rules pass
+        if form.is_valid():  # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
             for ruleset in rulesets:
                 if operation == 'suppress':
-                    cat_object.disable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
+                    cat_object.disable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
                 elif operation == 'enable':
-                    cat_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
+                    cat_object.enable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
             return redirect(cat_object)
     else:
         form = RulesetSuppressForm()
-    context = { 'category': cat_object, 'form': form, 'operation': operation }
+    context = {'category': cat_object, 'form': form, 'operation': operation}
     return scirius_render(request, 'rules/disable_category.html', context)
+
 
 def enable_category(request, cat_id):
     return disable_category(request, cat_id, operation='enable')
+
 
 def update_source(request, source_id):
     src = get_object_or_404(Source, pk=source_id)
@@ -905,24 +949,24 @@ def update_source(request, source_id):
     if not request.user.is_staff:
         return redirect(src)
 
-    if request.method != 'POST': # If the form has been submitted...
+    if request.method != 'POST':  # If the form has been submitted...
         if request.is_ajax():
             data = {}
             data['status'] = False
             data['errors'] = "Invalid method for page"
-            return HttpResponse(json.dumps(data), content_type="application/json")
+            return JsonResponse(data)
         return source(request, source_id, error="Invalid method for page")
 
     try:
-        if hasattr(Probe.common, 'update_source'):
-            return Probe.common.update_source(request, src)
+        if hasattr(PROBE.common, 'update_source'):
+            return PROBE.common.update_source(request, src)
         src.update()
     except Exception as errors:
         if request.is_ajax():
             data = {}
             data['status'] = False
             data['errors'] = str(errors)
-            return HttpResponse(json.dumps(data), content_type="application/json")
+            return JsonResponse(data)
         if isinstance(errors, (IOError, OSError)):
             _msg = 'Can not fetch data'
         elif isinstance(errors, ValidationError):
@@ -938,45 +982,49 @@ def update_source(request, source_id):
         data = {}
         data['status'] = True
         data['redirect'] = True
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return JsonResponse(data)
 
-    supdate = SourceUpdate.objects.filter(source = src).order_by('-created_date')
+    supdate = SourceUpdate.objects.filter(source=src).order_by('-created_date')
     if len(supdate) == 0:
         return redirect(src)
-    return redirect('changelog_source', source_id = source_id)
+
+    return redirect('changelog_source', source_id=source_id)
+
 
 def activate_source(request, source_id, ruleset_id):
 
     if not request.user.is_staff:
-        return HttpResponse(json.dumps(False), content_type="application/json")
+        return JsonResponse(False, safe=False)
 
-    if request.method != 'POST': # If the form has been submitted...
+    if request.method != 'POST':  # If the form has been submitted...
         if request.is_ajax():
             data = {}
             data['status'] = False
             data['errors'] = "Invalid method for page"
-            return HttpResponse(json.dumps(data), content_type="application/json")
+            return JsonResponse(data)
         return source(request, source_id, error="Invalid method for page")
 
     src = get_object_or_404(Source, pk=source_id)
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
 
-    sversions  = SourceAtVersion.objects.filter(source = src, version = 'HEAD')
+    sversions = SourceAtVersion.objects.filter(source=src, version='HEAD')
     if not sversions:
-        return HttpResponse(json.dumps(False), content_type="application/json")
+        return JsonResponse(False, safe=False)
 
     ruleset.sources.add(sversions[0])
-    for cat in Category.objects.filter(source = src):
-        cat.enable(ruleset, user = request.user)
+    for cat in Category.objects.filter(source=src):
+        cat.enable(ruleset, user=request.user)
 
     ruleset.needs_test()
     ruleset.save()
-    return HttpResponse(json.dumps(True), content_type="application/json")
+    return JsonResponse(True, safe=False)
+
 
 def test_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
-    sourceatversion = get_object_or_404(SourceAtVersion, source=source, version = 'HEAD')
-    return HttpResponse(json.dumps(sourceatversion.test()), content_type="application/json")
+    sourceatversion = get_object_or_404(SourceAtVersion, source=source, version='HEAD')
+    return JsonResponse(sourceatversion.test())
+
 
 def build_source_diff(request, diff):
     for field in ["added", "deleted", "updated"]:
@@ -986,41 +1034,46 @@ def build_source_diff(request, diff):
             diff[field] = UpdateRuleTable(diff[field])
         tables.RequestConfig(request).configure(diff[field])
 
+
 def changelog_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
-    supdate = SourceUpdate.objects.filter(source = source).order_by('-created_date')
-    # get last for now 
+    supdate = SourceUpdate.objects.filter(source=source).order_by('-created_date')
+    # get last for now
     if len(supdate) == 0:
-        return scirius_render(request, 'rules/source.html', { 'source': source, 'error': "No changelog" })
+        return scirius_render(request, 'rules/source.html', {'source': source, 'error': "No changelog"})
     changelogs = SourceUpdateTable(supdate)
     tables.RequestConfig(request).configure(changelogs)
     diff = supdate[0].diff()
     build_source_diff(request, diff)
-    return scirius_render(request, 'rules/source.html', { 'source': source, 'diff': diff, 'changelogs': changelogs , 'src_update': supdate[0]})
+    return scirius_render(request, 'rules/source.html', {'source': source, 'diff': diff, 'changelogs': changelogs, 'src_update': supdate[0]})
+
 
 def diff_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
     diff = source.diff()
-    return scirius_render(request, 'rules/source.html', { 'source': source, 'diff': diff })
+    return scirius_render(request, 'rules/source.html', {'source': source, 'diff': diff})
+
 
 def add_source(request):
 
     if not request.user.is_staff:
-        return scirius_render(request, 'rules/add_source.html', { 'error': 'Unsufficient permissions' })
+        return scirius_render(request, 'rules/add_source.html', {'error': 'Unsufficient permissions'})
 
-    if request.method == 'POST': # If the form has been submitted...
-        form = AddSourceForm(request.POST, request.FILES) # A form bound to the POST data
-        if form.is_valid(): # All validation rules pass
+    if request.method == 'POST':  # If the form has been submitted...
+        form = AddSourceForm(request.POST, request.FILES)  # A form bound to the POST data
+        if form.is_valid():  # All validation rules pass
             try:
-                src = Source.objects.create(name = form.cleaned_data['name'],
-                        uri = form.cleaned_data['uri'],
-                        authkey = form.cleaned_data['authkey'],
-                        method = form.cleaned_data['method'],
-                        created_date = timezone.now(),
-                        datatype = form.cleaned_data['datatype'],
-                        cert_verif = form.cleaned_data['cert_verif'],
-                        use_iprep=form.cleaned_data['use_iprep']
-                        )
+                src = Source.objects.create(
+                    name=form.cleaned_data['name'],
+                    uri=form.cleaned_data['uri'],
+                    authkey=form.cleaned_data['authkey'],
+                    method=form.cleaned_data['method'],
+                    created_date=timezone.now(),
+                    datatype=form.cleaned_data['datatype'],
+                    cert_verif=form.cleaned_data['cert_verif'],
+                    use_iprep=form.cleaned_data['use_iprep']
+                )
+
                 if src.method == 'local':
                     try:
                         if 'file' not in request.FILES:
@@ -1031,49 +1084,55 @@ def add_source(request):
                         if isinstance(error, ValidationError):
                             error = error.message
                         src.delete()
-                        return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
+                        return scirius_render(request, 'rules/add_source.html', {'form': form, 'error': error})
 
             except IntegrityError as error:
-                return scirius_render(request, 'rules/add_source.html', { 'form': form, 'error': error })
+                return scirius_render(request, 'rules/add_source.html', {'form': form, 'error': error})
             try:
                 ruleset_list = form.cleaned_data['rulesets']
             except:
                 ruleset_list = []
-            rulesets = [ ruleset.pk for ruleset in ruleset_list ]
+
+            rulesets = [ruleset.pk for ruleset in ruleset_list]
             if len(ruleset_list):
                 for ruleset in ruleset_list:
                     UserAction.create(
-                            action_type='create_source',
-                            comment=form.cleaned_data['comment'],
-                            user=request.user,
-                            source=src,
-                            ruleset=ruleset
-                    )
-
-            else:
-                UserAction.create(
                         action_type='create_source',
                         comment=form.cleaned_data['comment'],
                         user=request.user,
                         source=src,
-                        ruleset='No Ruleset'
+                        ruleset=ruleset
+                    )
+
+            else:
+                UserAction.create(
+                    action_type='create_source',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    source=src,
+                    ruleset='No Ruleset'
                 )
 
-            ruleset_list = [ '"' + ruleset.name + '"' for ruleset in ruleset_list ]
-            return scirius_render(request, 'rules/add_source.html', { 'source': src,  'update': True, 'rulesets': rulesets, 'ruleset_list': ruleset_list})
+            ruleset_list = ['"' + ruleset.name + '"' for ruleset in ruleset_list]
+            return scirius_render(
+                request,
+                'rules/add_source.html',
+                {'source': src, 'update': True, 'rulesets': rulesets, 'ruleset_list': ruleset_list}
+            )
     else:
-        form = AddSourceForm() # An unbound form
+        form = AddSourceForm()  # An unbound form
 
-    return scirius_render(request, 'rules/add_source.html', { 'form': form, })
+    return scirius_render(request, 'rules/add_source.html', {'form': form})
+
 
 def fetch_public_sources():
     proxy_params = get_system_settings().get_proxy_params()
     try:
-        hdrs = { 'User-Agent': 'scirius' }
+        hdrs = {'User-Agent': 'scirius'}
         if proxy_params:
-            resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL, proxies = proxy_params, headers = hdrs)
+            resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL, proxies=proxy_params, headers=hdrs)
         else:
-            resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL, headers = hdrs)
+            resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL, headers=hdrs)
         resp.raise_for_status()
     except requests.exceptions.ConnectionError as e:
         if "Name or service not known" in str(e):
@@ -1090,10 +1149,12 @@ def fetch_public_sources():
         raise IOError("Request timeout, server may be down")
     except requests.exceptions.TooManyRedirects:
         raise IOError("Too many redirects, server may be broken")
+
     # store as sources.yaml
     if not os.path.isdir(settings.GIT_SOURCES_BASE_DIRECTORY):
         os.makedirs(settings.GIT_SOURCES_BASE_DIRECTORY)
-    sources_yaml = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, 'sources.yaml') 
+
+    sources_yaml = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, 'sources.yaml')
     with open(sources_yaml, 'wb') as sfile:
         sfile.write(resp.content)
 
@@ -1105,7 +1166,7 @@ def update_public_sources(request):
 
 
 def get_public_sources(force_fetch=True):
-    sources_yaml = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, 'sources.yaml') 
+    sources_yaml = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, 'sources.yaml')
     if not os.path.exists(sources_yaml) or force_fetch is True:
         try:
             fetch_public_sources()
@@ -1127,28 +1188,28 @@ def get_public_sources(force_fetch=True):
     defined_pub_source = Source.objects.exclude(public_source__isnull=True)
     added_sources = [x.public_source for x in defined_pub_source]
 
-    for source in public_sources['sources']:
-        if 'support_url' in public_sources['sources'][source]:
-            public_sources['sources'][source]['support_url_cleaned'] = public_sources['sources'][source]['support_url'].split(' ')[0]
-        if 'subscribe_url' in public_sources['sources'][source]:
-            public_sources['sources'][source]['subscribe_url_cleaned'] = public_sources['sources'][source]['subscribe_url'].split(' ')[0]
-        if public_sources['sources'][source]['url'].endswith('.rules'):
-            public_sources['sources'][source]['datatype'] = 'sig'
-        elif public_sources['sources'][source]['url'].endswith('z'):
-            public_sources['sources'][source]['datatype'] = 'sigs'
+    for source_ in public_sources['sources']:
+        if 'support_url' in public_sources['sources'][source_]:
+            public_sources['sources'][source_]['support_url_cleaned'] = public_sources['sources'][source_]['support_url'].split(' ')[0]
+        if 'subscribe_url' in public_sources['sources'][source_]:
+            public_sources['sources'][source_]['subscribe_url_cleaned'] = public_sources['sources'][source_]['subscribe_url'].split(' ')[0]
+        if public_sources['sources'][source_]['url'].endswith('.rules'):
+            public_sources['sources'][source_]['datatype'] = 'sig'
+        elif public_sources['sources'][source_]['url'].endswith('z'):
+            public_sources['sources'][source_]['datatype'] = 'sigs'
         else:
-            public_sources['sources'][source]['datatype'] = 'other'
-        if source in added_sources:
-            public_sources['sources'][source]['added'] = True
+            public_sources['sources'][source_]['datatype'] = 'other'
+        if source_ in added_sources:
+            public_sources['sources'][source_]['added'] = True
         else:
-            public_sources['sources'][source]['added'] = False
+            public_sources['sources'][source_]['added'] = False
 
     return public_sources
 
 
 def add_public_source(request):
     if not request.user.is_staff:
-        return scirius_render(request, 'rules/add_public_source.html', { 'error': 'Unsufficient permissions' })
+        return scirius_render(request, 'rules/add_public_source.html', {'error': 'Unsufficient permissions'})
 
     try:
         public_sources = get_public_sources()
@@ -1156,7 +1217,7 @@ def add_public_source(request):
         return scirius_render(request, 'rules/add_public_source.html', {'error': e})
 
     if request.is_ajax():
-        return HttpResponse(json.dumps(public_sources['sources']), content_type="application/json")
+        return JsonResponse(public_sources['sources'])
     if request.method == 'POST':
         form = AddPublicSourceForm(request.POST)
         if form.is_valid():
@@ -1168,62 +1229,73 @@ def add_public_source(request):
                 params.update({'secret-code': form.cleaned_data['secret_code']})
             source_uri = source_uri % params
             try:
-                src = Source.objects.create(name = form.cleaned_data['name'],
-                        uri = source_uri,
-                        method = 'http',
-                        created_date = timezone.now(),
-                        datatype = source['datatype'],
-                        cert_verif = True,
-                        public_source = source_id,
-                        use_iprep=form.cleaned_data['use_iprep']
-                        )
+                src = Source.objects.create(
+                    name=form.cleaned_data['name'],
+                    uri=source_uri,
+                    method='http',
+                    created_date=timezone.now(),
+                    datatype=source['datatype'],
+                    cert_verif=True,
+                    public_source=source_id,
+                    use_iprep=form.cleaned_data['use_iprep']
+                )
             except IntegrityError as error:
-                return scirius_render(request, 'rules/add_public_source.html', { 'form': form, 'error': error })
+                return scirius_render(request, 'rules/add_public_source.html', {'form': form, 'error': error})
             try:
                 ruleset_list = form.cleaned_data['rulesets']
             except:
                 ruleset_list = []
-            rulesets = [ ruleset.pk for ruleset in ruleset_list ]
+            rulesets = [ruleset.pk for ruleset in ruleset_list]
             if len(ruleset_list):
                 for ruleset in ruleset_list:
                     UserAction.create(
-                            action_type='create_source',
-                            comment=form.cleaned_data['comment'],
-                            user=request.user,
-                            source=src,
-                            ruleset=ruleset
-                    )
-            else:
-                UserAction.create(
                         action_type='create_source',
                         comment=form.cleaned_data['comment'],
                         user=request.user,
                         source=src,
-                        ruleset='No Ruleset'
+                        ruleset=ruleset
+                    )
+            else:
+                UserAction.create(
+                    action_type='create_source',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    source=src,
+                    ruleset='No Ruleset'
                 )
-            ruleset_list = [ '"' + ruleset.name + '"' for ruleset in ruleset_list ]
-            return scirius_render(request, 'rules/add_public_source.html', { 'source': src,  'update': True, 'rulesets': rulesets, 'ruleset_list': ruleset_list})
+            ruleset_list = ['"' + ruleset.name + '"' for ruleset in ruleset_list]
+            return scirius_render(
+                request,
+                'rules/add_public_source.html',
+                {'source': src, 'update': True, 'rulesets': rulesets, 'ruleset_list': ruleset_list}
+            )
         else:
-            return scirius_render(request, 'rules/add_public_source.html', { 'form': form, 'error': 'form is not valid' })
-        
-
+            return scirius_render(
+                request,
+                'rules/add_public_source.html',
+                {'form': form, 'error': 'form is not valid'}
+            )
 
     rulesets = Ruleset.objects.all()
-    return scirius_render(request, 'rules/add_public_source.html', { 'sources': public_sources['sources'], 'rulesets': rulesets})
+    return scirius_render(
+        request,
+        'rules/add_public_source.html',
+        {'sources': public_sources['sources'], 'rulesets': rulesets}
+    )
 
 
 def edit_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
 
     if not request.user.is_staff:
-        return scirius_render(request, 'rules/add_source.html', { 'error': 'Unsufficient permissions' })
+        return scirius_render(request, 'rules/add_source.html', {'error': 'Unsufficient permissions'})
 
-    if request.method == 'POST': # If the form has been submitted...
+    if request.method == 'POST':  # If the form has been submitted...
         prev_uri = source.uri
         form = SourceForm(request.POST, request.FILES, instance=source)
         try:
             if source.method == 'local' and 'file' in request.FILES:
-                categories = Category.objects.filter(source = source)
+                categories = Category.objects.filter(source=source)
                 firstimport = False
                 if not categories:
                     firstimport = True
@@ -1247,36 +1319,49 @@ def edit_source(request, source_id):
                     category.save()
 
             UserAction.create(
-                    action_type='edit_source',
-                    comment=form.cleaned_data['comment'],
-                    user=request.user,
-                    source=source
+                action_type='edit_source',
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                source=source
             )
 
             return redirect(source)
         except Exception as e:
             if isinstance(e, ValidationError):
                 e = e.message
-            return scirius_render(request, 'rules/add_source.html', {'form': form, 'source': source, 'error': e})
+            return scirius_render(
+                request,
+                'rules/add_source.html',
+                {'form': form, 'source': source, 'error': e}
+            )
     else:
-        form = SourceForm(instance = source)
+        form = SourceForm(instance=source)
 
-    return scirius_render(request, 'rules/add_source.html', { 'form': form, 'source': source})
+    return scirius_render(
+        request,
+        'rules/add_source.html',
+        {'form': form, 'source': source}
+    )
+
 
 def delete_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
 
     if not request.user.is_staff:
-        return scirius_render(request, 'rules/delete.html', { 'object': source, 'error': 'Unsufficient permissions'})
+        return scirius_render(
+            request,
+            'rules/delete.html',
+            {'object': source, 'error': 'Unsufficient permissions'}
+        )
 
-    if request.method == 'POST': # If the form has been submitted...
+    if request.method == 'POST':  # If the form has been submitted...
         form = CommentForm(request.POST)
         if form.is_valid():
             UserAction.create(
-                    action_type='delete_source',
-                    comment=form.cleaned_data['comment'],
-                    user=request.user,
-                    source=source
+                action_type='delete_source',
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                source=source
             )
             source.delete()
         return redirect("/rules/source/")
@@ -1284,38 +1369,47 @@ def delete_source(request, source_id):
         context = {'object': source, 'delfn': 'delete_source', 'form': CommentForm()}
         return scirius_render(request, 'rules/delete.html', context)
 
+
 def sourceupdate(request, update_id):
     sourceupdate = get_object_or_404(SourceUpdate, pk=update_id)
     source = sourceupdate.source
     diff = sourceupdate.diff()
     build_source_diff(request, diff)
-    return scirius_render(request, 'rules/source.html', { 'source': source, 'diff': diff, 'src_update': sourceupdate })
+    return scirius_render(
+        request,
+        'rules/source.html',
+        {'source': source, 'diff': diff, 'src_update': sourceupdate}
+    )
+
 
 def rulesets(request):
     rulesets = Ruleset.objects.all().order_by('name')
     for ruleset in rulesets:
         ruleset.number_of_rules()
-    context = { 'rulesets': rulesets }
+    context = {'rulesets': rulesets}
     return scirius_render(request, 'rules/rulesets.html', context)
 
-def ruleset(request, ruleset_id, mode = 'struct', error = None):
+
+def ruleset(request, ruleset_id, mode='struct', error=None):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
     if mode == 'struct':
         categories_list = {}
         sources = ruleset.sources.all()
         for sourceatversion in sources:
-            cats = CategoryTable(ruleset.categories.filter(source = sourceatversion.source).order_by('name'))
-            tables.RequestConfig(request,  paginate={"per_page": 15}).configure(cats)
+            cats = CategoryTable(ruleset.categories.filter(source=sourceatversion.source).order_by('name'))
+            tables.RequestConfig(request, paginate={"per_page": 15}).configure(cats)
             categories_list[sourceatversion.source.name] = cats
+
         context = {'ruleset': ruleset, 'categories_list': categories_list, 'sources': sources, 'mode': mode}
 
         # Threshold
-        thresholds = Threshold.objects.filter(ruleset = ruleset, threshold_type = 'threshold')
+        thresholds = Threshold.objects.filter(ruleset=ruleset, threshold_type='threshold')
         if thresholds:
             thresholds = RulesetThresholdTable(thresholds)
             tables.RequestConfig(request).configure(thresholds)
             context['thresholds'] = thresholds
-        suppress = Threshold.objects.filter(ruleset = ruleset, threshold_type = 'suppress')
+
+        suppress = Threshold.objects.filter(ruleset=ruleset, threshold_type='suppress')
         if suppress:
             suppress = RulesetSuppressTable(suppress)
             tables.RequestConfig(request).configure(suppress)
@@ -1342,7 +1436,10 @@ def ruleset(request, ruleset_id, mode = 'struct', error = None):
 
             # Categories Transformation
             if trans != S_SUPPRESSED:  # SUPPRESSED cannot be applied on categories
-                trans_categories = ruleset.categories_transformation.filter(categorytransformation__value=trans.value).all()
+                trans_categories = ruleset.categories_transformation.filter(
+                    categorytransformation__value=trans.value
+                ).all()
+
                 if len(trans_categories):
                     trans_categories_t = CategoryTable(trans_categories.order_by('name'))
                     tables.RequestConfig(request).configure(trans_categories_t)
@@ -1360,33 +1457,38 @@ def ruleset(request, ruleset_id, mode = 'struct', error = None):
         response['Content-Disposition'] = 'attachment; filename=scirius.rules'
         return response
 
-    if hasattr(Probe.common, 'update_ruleset'):
+    if hasattr(PROBE.common, 'update_ruleset'):
         context['middleware_has_update'] = True
     return scirius_render(request, 'rules/ruleset.html', context)
 
+
 def add_ruleset(request):
     if not request.user.is_staff:
-        return scirius_render(request, 'rules/add_ruleset.html', { 'error': 'Unsufficient permissions' })
+        return scirius_render(
+            request,
+            'rules/add_ruleset.html',
+            {'error': 'Unsufficient permissions'}
+        )
 
     context = {}
-    if request.method == 'POST': # If the form has been submitted...
-        form = RulesetForm(request.POST) # A form bound to the POST data
-        if form.is_valid(): # All validation rules pass
+    if request.method == 'POST':  # If the form has been submitted...
+        form = RulesetForm(request.POST)  # A form bound to the POST data
+        if form.is_valid():  # All validation rules pass
             # Process the data in form.cleaned_data
             # ...
             try:
                 ruleset = form.create_ruleset()
                 UserAction.create(
-                        action_type='create_ruleset',
-                        comment=form.cleaned_data['comment'],
-                        user=request.user,
-                        ruleset=ruleset
+                    action_type='create_ruleset',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    ruleset=ruleset
                 )
 
                 form_action_trans = Transformation.ActionTransfoType(form.cleaned_data["action"])
                 form_lateral_trans = Transformation.LateralTransfoType(form.cleaned_data["lateral"])
                 form_target_trans = Transformation.TargetTransfoType(form.cleaned_data["target"])
-    
+
                 if form_action_trans != Transformation.A_NONE:
                     ruleset.set_transformation(key=Transformation.ACTION, value=form_action_trans)
                 else:
@@ -1423,58 +1525,71 @@ def add_ruleset(request):
 
     return scirius_render(request, 'rules/add_ruleset.html', context)
 
+
 def update_ruleset(request, ruleset_id):
     rset = get_object_or_404(Ruleset, pk=ruleset_id)
 
     if not request.user.is_staff:
         return redirect(rset)
 
-    if request.method != 'POST': # If the form has been submitted...
+    if request.method != 'POST':  # If the form has been submitted...
         if request.is_ajax():
             data = {}
             data['status'] = False
             data['errors'] = "Invalid method for page"
-            return HttpResponse(json.dumps(data), content_type="application/json")
+            return JsonResponse(data)
         return ruleset(rset, ruleset_id, error="Invalid method for page")
 
-    if hasattr(Probe.common, 'update_ruleset'):
-        return Probe.common.update_ruleset(request, rset)
+    if hasattr(PROBE.common, 'update_ruleset'):
+        return PROBE.common.update_ruleset(request, rset)
     try:
         rset.update()
     except IOError as errors:
-        error="Can not fetch data: %s" % (errors)
+        error = "Can not fetch data: %s" % (errors)
         if request.is_ajax():
-            return HttpResponse(json.dumps({'status': False, 'errors': error}), content_type="application/json")
+            return JsonResponse({'status': False, 'errors': error})
         return ruleset(request, ruleset_id, error)
     if request.is_ajax():
-        return HttpResponse(json.dumps({'status': True, 'redirect': True}), content_type="application/json")
-    return redirect('changelog_ruleset', ruleset_id = ruleset_id)
+        return JsonResponse({'status': True, 'redirect': True})
+    return redirect('changelog_ruleset', ruleset_id=ruleset_id)
+
 
 def changelog_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
     diff = ruleset.diff()
+
     for key in diff:
         cdiff = diff[key]
         build_source_diff(request, cdiff)
         diff[key] = cdiff
-    return scirius_render(request, 'rules/ruleset.html', { 'ruleset': ruleset, 'diff': diff, 'mode': 'changelog'})
+
+    return scirius_render(
+        request,
+        'rules/ruleset.html',
+        {'ruleset': ruleset, 'diff': diff, 'mode': 'changelog'}
+    )
 
 
 def test_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
-    return HttpResponse(json.dumps(ruleset.test()), content_type="application/json")
+    return JsonResponse(ruleset.test())
+
 
 def edit_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
 
     if not request.user.is_staff:
-        return scirius_render(request, 'rules/edit_ruleset.html', {'ruleset': ruleset, 'error': 'Unsufficient permissions'})
+        return scirius_render(
+            request,
+            'rules/edit_ruleset.html',
+            {'ruleset': ruleset, 'error': 'Unsufficient permissions'}
+        )
 
     # TODO: manage other types
     SUPPRESSED = Transformation.SUPPRESSED
     S_SUPPRESSED = Transformation.S_SUPPRESSED
 
-    if request.method == 'POST': # If the form has been submitted...
+    if request.method == 'POST':  # If the form has been submitted...
         # check if this is a categories edit
         # ID is unique so we can just look by indice and add
         form = CommentForm(request.POST)
@@ -1482,41 +1597,45 @@ def edit_ruleset(request, ruleset_id):
             return redirect(ruleset)
 
         if 'category' in request.POST:
-            category_selection = [ int(x) for x in request.POST.getlist('category_selection') ]
+            category_selection = [int(x) for x in request.POST.getlist('category_selection')]
             # clean ruleset
             for cat in ruleset.categories.all():
                 if cat.pk not in category_selection:
-                    cat.disable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
+                    cat.disable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+
             # add updated entries
             for cat in category_selection:
                 category = get_object_or_404(Category, pk=cat)
                 if category not in ruleset.categories.all():
-                    category.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
+                    category.enable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+
         elif 'rules' in request.POST:
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
                 if rule_object in ruleset.get_transformed_rules(key=SUPPRESSED, value=S_SUPPRESSED):
-                    rule_object.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
+                    rule_object.enable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+
         elif 'sources' in request.POST:
-            source_selection = [ int(x) for x in request.POST.getlist('source_selection')]
+            source_selection = [int(x) for x in request.POST.getlist('source_selection')]
             # clean ruleset
-            for source in ruleset.sources.all():
-                if source.pk not in source_selection:
-                    source.disable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
+            for source_ in ruleset.sources.all():
+                if source_.pk not in source_selection:
+                    source_.disable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+
             # add new entries
             for src in source_selection:
                 source = get_object_or_404(SourceAtVersion, pk=src)
                 if source not in ruleset.sources.all():
-                    source.enable(ruleset, user = request.user, comment=form.cleaned_data['comment'])
+                    source.enable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
         else:
             form = RulesetEditForm(request.POST, instance=ruleset)
 
             if form.is_valid():
                 UserAction.create(
-                        action_type='edit_ruleset',
-                        comment=form.cleaned_data['comment'],
-                        user=request.user,
-                        ruleset=ruleset
+                    action_type='edit_ruleset',
+                    comment=form.cleaned_data['comment'],
+                    user=request.user,
+                    ruleset=ruleset
                 )
 
                 form.save()
@@ -1524,7 +1643,7 @@ def edit_ruleset(request, ruleset_id):
                 form_action_trans = Transformation.ActionTransfoType(form.cleaned_data["action"])
                 form_lateral_trans = Transformation.LateralTransfoType(form.cleaned_data["lateral"])
                 form_target_trans = Transformation.TargetTransfoType(form.cleaned_data["target"])
-    
+
                 if form_action_trans != Transformation.A_NONE:
                     ruleset.set_transformation(key=Transformation.ACTION, value=form_action_trans)
                 else:
@@ -1540,7 +1659,11 @@ def edit_ruleset(request, ruleset_id):
                 else:
                     ruleset.remove_transformation(Transformation.TARGET)
             else:
-                return scirius_render(request, 'rules/edit_ruleset.html', {'ruleset': ruleset, 'error': 'Invalid form.', 'form': form})
+                return scirius_render(
+                    request,
+                    'rules/edit_ruleset.html',
+                    {'ruleset': ruleset, 'error': 'Invalid form.', 'form': form}
+                )
 
         msg = """All changes are saved. Don't forget to update the ruleset to apply the changes.
                  After the ruleset Update the changes would be updated on the probe(s) upon the next Ruleset Push"""
@@ -1554,29 +1677,40 @@ def edit_ruleset(request, ruleset_id):
         sources = ruleset.sources.all()
         ruleset_cats = ruleset.categories.all()
         for sourceatversion in sources:
-            src_cats = Category.objects.filter(source = sourceatversion.source)
+            src_cats = Category.objects.filter(source=sourceatversion.source)
             for pcats in src_cats:
                 if pcats in ruleset_cats:
                     cats_selection.append(str(pcats.id))
+
             cats = EditCategoryTable(src_cats)
-            tables.RequestConfig(request,paginate = False).configure(cats)
+            tables.RequestConfig(request, paginate=False).configure(cats)
             categories_list[sourceatversion.source.name] = cats
         rules = EditRuleTable(ruleset.get_transformed_rules(key=SUPPRESSED, value=S_SUPPRESSED))
-        tables.RequestConfig(request, paginate = False).configure(rules)
+        tables.RequestConfig(request, paginate=False).configure(rules)
 
-        context = {'ruleset': ruleset,  'categories_list': categories_list, 'sources': sources, 'rules': rules, 'cats_selection': ", ".join(cats_selection) }
+        context = {
+            'ruleset': ruleset,
+            'categories_list': categories_list,
+            'sources': sources,
+            'rules': rules,
+            'cats_selection': ", ".join(cats_selection)
+        }
+
         if 'mode' in request.GET:
             context['mode'] = request.GET['mode']
             context['form'] = CommentForm()
             if context['mode'] == 'sources':
                 from scirius.utils import get_middleware_module
-                all_sources = SourceAtVersion.objects.exclude(source__datatype__in=get_middleware_module('common').custom_source_datatype(True))
+                all_sources = SourceAtVersion.objects.exclude(
+                    source__datatype__in=get_middleware_module('common').custom_source_datatype(True)
+                )
 
                 sources_selection = []
-                for source in sources:
-                    sources_selection.append(source.pk)
+                for source_ in sources:
+                    sources_selection.append(source_.pk)
+
                 sources_list = EditSourceAtVersionTable(all_sources)
-                tables.RequestConfig(request, paginate = False).configure(sources_list)
+                tables.RequestConfig(request, paginate=False).configure(sources_list)
                 context['sources_list'] = sources_list
                 context['sources_selection'] = sources_selection
         else:
@@ -1584,15 +1718,27 @@ def edit_ruleset(request, ruleset_id):
                        'lateral': Transformation.L_NO.value,
                        'target': Transformation.T_NONE.value
                        }
-            trans_action = RulesetTransformation.objects.filter(key=Transformation.ACTION.value, ruleset_transformation=ruleset)
+            trans_action = RulesetTransformation.objects.filter(
+                key=Transformation.ACTION.value,
+                ruleset_transformation=ruleset
+            )
+
             if len(trans_action) > 0:
                 initial['action'] = trans_action[0].value
 
-            trans_lateral = RulesetTransformation.objects.filter(key=Transformation.LATERAL.value, ruleset_transformation=ruleset)
+            trans_lateral = RulesetTransformation.objects.filter(
+                key=Transformation.LATERAL.value,
+                ruleset_transformation=ruleset
+            )
+
             if len(trans_lateral) > 0:
                 initial['lateral'] = trans_lateral[0].value
 
-            trans_target = RulesetTransformation.objects.filter(key=Transformation.TARGET.value, ruleset_transformation=ruleset)
+            trans_target = RulesetTransformation.objects.filter(
+                key=Transformation.TARGET.value,
+                ruleset_transformation=ruleset
+            )
+
             if len(trans_target) > 0:
                 initial['target'] = trans_target[0].value
 
@@ -1616,15 +1762,15 @@ def ruleset_add_supprule(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
 
     if not request.user.is_staff:
-        context = { 'ruleset': ruleset, 'error': 'Unsufficient permissions' }
+        context = {'ruleset': ruleset, 'error': 'Unsufficient permissions'}
         return scirius_render(request, 'rules/search_rule.html', context)
 
-    if request.method == 'POST': # If the form has been submitted...
+    if request.method == 'POST':  # If the form has been submitted...
         if 'search' in request.POST:
-            #FIXME Protection on SQL injection ?
+            # FIXME Protection on SQL injection ?
             rules = EditRuleTable(Rule.objects.filter(content__icontains=request.POST['search']))
             tables.RequestConfig(request).configure(rules)
-            context = { 'ruleset': ruleset, 'rules': rules, 'form': CommentForm() }
+            context = {'ruleset': ruleset, 'rules': rules, 'form': CommentForm()}
             return scirius_render(request, 'rules/search_rule.html', context)
         elif 'rule_selection' in request.POST:
             form = CommentForm(request.POST)
@@ -1632,7 +1778,7 @@ def ruleset_add_supprule(request, ruleset_id):
                 return redirect(ruleset)
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
-                rule_object.disable(ruleset, user = request.user, comment = form.cleaned_data['comment'])
+                rule_object.disable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
             ruleset.save()
         return redirect(ruleset)
 
@@ -1646,17 +1792,17 @@ def delete_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
 
     if not request.user.is_staff:
-        context = { 'object': ruleset, 'error': 'Unsufficient permissions', 'form': CommentForm()  }
+        context = {'object': ruleset, 'error': 'Unsufficient permissions', 'form': CommentForm()}
         return scirius_render(request, 'rules/delete.html', context)
 
-    if request.method == 'POST': # If the form has been submitted...
+    if request.method == 'POST':  # If the form has been submitted...
         form = CommentForm(request.POST)
         if form.is_valid():
             UserAction.create(
-                    action_type='delete_ruleset',
-                    comment=form.cleaned_data['comment'],
-                    user=request.user,
-                    ruleset=ruleset
+                action_type='delete_ruleset',
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                ruleset=ruleset
             )
             ruleset.delete()
         return redirect("/rules/ruleset/")
@@ -1664,37 +1810,40 @@ def delete_ruleset(request, ruleset_id):
         context = {'object': ruleset, 'delfn': 'delete_ruleset', 'form': CommentForm()}
         return scirius_render(request, 'rules/delete.html', context)
 
+
 def copy_ruleset(request, ruleset_id):
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
 
     if not request.user.is_staff:
-        context = { 'object': ruleset, 'error': 'Unsufficient permissions' }
+        context = {'object': ruleset, 'error': 'Unsufficient permissions'}
         return scirius_render(request, 'rules/copy_ruleset.html', context)
 
-    if request.method == 'POST': # If the form has been submitted...
-        form = RulesetCopyForm(request.POST) # A form bound to the POST data
-        if form.is_valid(): # All validation rules pass
+    if request.method == 'POST':  # If the form has been submitted...
+        form = RulesetCopyForm(request.POST)  # A form bound to the POST data
+        if form.is_valid():  # All validation rules pass
             copy = ruleset.copy(form.cleaned_data['name'])
             UserAction.create(
-                    action_type='copy_ruleset',
-                    comment=form.cleaned_data['comment'],
-                    user=request.user,
-                    ruleset=ruleset
+                action_type='copy_ruleset',
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                ruleset=ruleset
             )
             return redirect(copy)
     else:
         form = RulesetCopyForm()
-    context = {'object': ruleset , 'form': form}
+    context = {'object': ruleset, 'form': form}
     return scirius_render(request, 'rules/copy_ruleset.html', context)
+
 
 def system_settings(request):
     if not request.user.is_staff:
-        context = { 'error': 'Unsufficient permissions' }
+        context = {'error': 'Unsufficient permissions'}
         return scirius_render(request, 'rules/system_settings.html', context)
 
     gsettings = get_system_settings()
-    main_form = SystemSettingsForm(instance = gsettings)
+    main_form = SystemSettingsForm(instance=gsettings)
     kibana_form = KibanaDataForm()
+
     context = {
         'form_id': 'main',
         'main_form': main_form,
@@ -1706,7 +1855,7 @@ def system_settings(request):
         comment = {'comment': request.POST.get('comment', None)}
 
         if form_id == 'main':
-            main_form = SystemSettingsForm(request.POST, instance = gsettings)
+            main_form = SystemSettingsForm(request.POST, instance=gsettings)
             context['main_form'] = main_form
             if main_form.is_valid():
                 main_form.save()
@@ -1721,7 +1870,7 @@ def system_settings(request):
             try:
                 es_data.es_clear()
                 context['success'] = 'Done'
-            except ConnectionError as e:
+            except ESConnectionError:
                 context['error'] = 'Could not connect to Elasticsearch'
             except Exception as e:
                 context['error'] = 'Clearing failed: %s' % e
@@ -1771,20 +1920,21 @@ def system_settings(request):
         comment_form = CommentForm(comment)
         comment_form.is_valid()
         UserAction.create(
-                action_type='system_settings',
-                comment=comment_form.cleaned_data['comment'],
-                user=request.user,
+            action_type='system_settings',
+            comment=comment_form.cleaned_data['comment'],
+            user=request.user,
         )
     context['global_settings'] = get_system_settings()
     return scirius_render(request, 'rules/system_settings.html', context)
 
+
 def info(request):
     data = {'status': 'green'}
     if request.GET.__contains__('query'):
-        info = Probe.common.Info()
+        info = PROBE.common.Info()
         query = request.GET.get('query', 'status')
         if query == 'status':
-            data = { 'running': info.status() }
+            data = {'running': info.status()}
         elif query == 'disk':
             data = info.disk()
         elif query == 'memory':
@@ -1793,15 +1943,16 @@ def info(request):
             data = info.used_memory()
         elif query == 'cpu':
             data = info.cpu()
-    return HttpResponse(json.dumps(data),
-                        content_type="application/json")
+    return JsonResponse(data, safe=False)
+
 
 def threshold(request, threshold_id):
     threshold = get_object_or_404(Threshold, pk=threshold_id)
     threshold.rule.highlight_content = SuriHTMLFormat(threshold.rule.content)
     threshold.highlight_content = SuriHTMLFormat(str(threshold))
-    context = { 'threshold': threshold }
+    context = {'threshold': threshold}
     return scirius_render(request, 'rules/threshold.html', context)
+
 
 def edit_threshold(request, threshold_id):
     threshold = get_object_or_404(Threshold, pk=threshold_id)
@@ -1811,52 +1962,55 @@ def edit_threshold(request, threshold_id):
     if not request.user.is_staff:
         return redirect(threshold)
 
-    if request.method == 'POST': # If the form has been submitted...
-        form = EditThresholdForm(request.POST, instance=threshold) # A form bound to the POST data
-        if form.is_valid(): # All validation rules pass
+    if request.method == 'POST':  # If the form has been submitted...
+        form = EditThresholdForm(request.POST, instance=threshold)  # A form bound to the POST data
+        if form.is_valid():  # All validation rules pass
             form.save()
             UserAction.create(
-                    action_type='edit_threshold',
-                    comment=form.cleaned_data['comment'],
-                    user=request.user,
-                    rule=rule,
-                    threshold=threshold,
-                    ruleset=ruleset
+                action_type='edit_threshold',
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                rule=rule,
+                threshold=threshold,
+                ruleset=ruleset
             )
             return redirect(threshold)
         else:
-            context = {'threshold': threshold, 'form': form, 'error': 'Invalid form'}            
+            context = {'threshold': threshold, 'form': form, 'error': 'Invalid form'}
             return scirius_render(request, 'rules/edit_threshold.html', context)
     else:
         form = EditThresholdForm(instance=threshold)
-        context = { 'threshold': threshold, 'form': form }
+        context = {'threshold': threshold, 'form': form}
         return scirius_render(request, 'rules/edit_threshold.html', context)
+
 
 def delete_threshold(request, threshold_id):
     threshold = get_object_or_404(Threshold, pk=threshold_id)
     ruleset = threshold.ruleset
     rule = threshold.rule
+
     if not request.user.is_staff:
-        context = { 'object': threshold, 'error': 'Unsufficient permissions', 'form': CommentForm() }
+        context = {'object': threshold, 'error': 'Unsufficient permissions', 'form': CommentForm()}
         return scirius_render(request, 'rules/delete.html', context)
 
-    if request.method == 'POST': # If the form has been submitted...
+    if request.method == 'POST':  # If the form has been submitted...
         form = CommentForm(request.POST)
         if form.is_valid():
             action_type = 'delete_suppress_rule' if threshold.threshold_type == 'suppress' else 'delete_threshold'
             UserAction.create(
-                    action_type=action_type,
-                    comment=form.cleaned_data['comment'],
-                    user=request.user,
-                    rule=rule,
-                    threshold=threshold,
-                    ruleset=ruleset
+                action_type=action_type,
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                rule=rule,
+                threshold=threshold,
+                ruleset=ruleset
             )
             threshold.delete()
         return redirect(ruleset)
     else:
-        context = {'object': threshold, 'delfn': 'delete_threshold', 'form': CommentForm() }
+        context = {'object': threshold, 'delfn': 'delete_threshold', 'form': CommentForm()}
         return scirius_render(request, 'rules/delete.html', context)
+
 
 def history(request):
     history = UserAction.objects.all().order_by('-date')
@@ -1866,12 +2020,14 @@ def history(request):
     context = {'history': history[:50]}
     return scirius_render(request, 'rules/history.html', context)
 
+
 def delete_comment(request, comment_id):
-    ua = get_object_or_404(UserAction, pk=comment_id, action="comment", user = request.user)
+    ua = get_object_or_404(UserAction, pk=comment_id, action="comment", user=request.user)
     ua.delete()
     data = {'status': 'OK'}
-    return HttpResponse(json.dumps(data), content_type="application/json")
+    return JsonResponse(data)
+
 
 def hunt(request):
-    context = { }
+    context = {}
     return scirius_render(request, 'rules/hunt.html', context)

@@ -19,14 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 
-import os
-import tarfile
-import tempfile
-from shutil import rmtree
-from time import strftime
-
-from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from rules.es_data import ESData
 

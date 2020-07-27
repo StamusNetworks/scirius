@@ -23,8 +23,10 @@ from django.contrib.auth.models import User
 from scirius.utils import SciriusTable
 import django_tables2 as tables
 
+
 class DefaultMeta:
     attrs = {"class": "paleblue"}
+
 
 class UserTable(SciriusTable):
     username = tables.LinkColumn('user', args=[tables.A('pk')])

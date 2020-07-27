@@ -21,15 +21,12 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import forms
 from django.utils import timezone
-from django.conf import settings
 from django.core.exceptions import NON_FIELD_ERRORS
-from rules.models import Ruleset, Rule, Source, Category, SourceAtVersion, SystemSettings, Threshold, UserAction, Transformation
+from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold, Transformation
 
 
 class CommentForm(forms.Form):
-    comment = forms.CharField(widget=forms.Textarea,
-                              label = "Optional comment",
-                              required = False)
+    comment = forms.CharField(widget=forms.Textarea, label="Optional comment", required=False)
 
     def __init__(self, *args, **kwargs):
         super(CommentForm, self).__init__(*args, **kwargs)
@@ -38,14 +35,13 @@ class CommentForm(forms.Form):
         comment = self.fields.pop('comment')
         self.fields['comment'] = comment
 
+
 class RulesetChoiceForm(CommentForm):
-    rulesets = forms.ModelMultipleChoiceField(None,
-                        widget=forms.CheckboxSelectMultiple(),
-                        required=True)
+    rulesets = forms.ModelMultipleChoiceField(None, widget=forms.CheckboxSelectMultiple(), required=True)
 
     def __init__(self, *args, **kwargs):
         super(RulesetChoiceForm, self).__init__(*args, **kwargs)
-        ruleset_list =  Ruleset.objects.all()
+        ruleset_list = Ruleset.objects.all()
         self.fields['rulesets'].queryset = ruleset_list
 
         if hasattr(self, 'rulesets_label'):
@@ -55,6 +51,7 @@ class RulesetChoiceForm(CommentForm):
             if not (isinstance(self, AddSourceForm) or isinstance(self, AddPublicSourceForm)):
                 self.errors[NON_FIELD_ERRORS] = ['Please create a ruleset first']
             self.fields.pop('rulesets')
+
 
 class SystemSettingsForm(forms.ModelForm, CommentForm):
     use_http_proxy = forms.BooleanField(label='Use a proxy', required=False)
@@ -66,15 +63,18 @@ class SystemSettingsForm(forms.ModelForm, CommentForm):
         model = SystemSettings
         exclude = []
 
+
 class KibanaDataForm(forms.Form):
-    file = forms.FileField(required = False)
+    file = forms.FileField(required=False)
+
 
 class SourceForm(forms.ModelForm, CommentForm):
-    file = forms.FileField(required = False)
+    file = forms.FileField(required=False)
     authkey = forms.CharField(max_length=100,
-                              label = "Optional authorization key",
-                              required = False,
-                              widget = forms.PasswordInput(render_value = True))
+                              label="Optional authorization key",
+                              required=False,
+                              widget=forms.PasswordInput(render_value=True))
+
     class Meta:
         model = Source
         exclude = ['created_date', 'updated_date', 'cats_count', 'rules_count', 'public_source', 'version']
@@ -89,10 +89,8 @@ class SourceForm(forms.ModelForm, CommentForm):
 
 
 class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
-    file  = forms.FileField(required = False)
-    authkey = forms.CharField(max_length=100,
-                              label = "Optional authorization key",
-                              required = False)
+    file = forms.FileField(required=False)
+    authkey = forms.CharField(max_length=100, label="Optional authorization key", required=False)
     rulesets_label = "Add source to the following ruleset(s)"
 
     class Meta:
@@ -102,7 +100,7 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
     def __init__(self, *args, **kwargs):
         super(AddSourceForm, self).__init__(*args, **kwargs)
         if 'rulesets' in self.fields:
-            self.fields['rulesets'].required =  False
+            self.fields['rulesets'].required = False
 
         from scirius.utils import get_middleware_module
         choices = get_middleware_module('common').update_source_content_type(Source.CONTENT_TYPE)
@@ -111,7 +109,7 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
 
 class AddPublicSourceForm(forms.ModelForm, RulesetChoiceForm):
     source_id = forms.CharField(max_length=100)
-    secret_code = forms.CharField(max_length=100, required = False)
+    secret_code = forms.CharField(max_length=100, required=False)
     use_iprep = forms.BooleanField(required=False)
 
     class Meta:
@@ -121,31 +119,33 @@ class AddPublicSourceForm(forms.ModelForm, RulesetChoiceForm):
     def __init__(self, *args, **kwargs):
         super(AddPublicSourceForm, self).__init__(*args, **kwargs)
         if 'rulesets' in self.fields:
-            self.fields['rulesets'].required =  False
+            self.fields['rulesets'].required = False
+
 
 # Display choices of SourceAtVersion
 class RulesetForm(CommentForm):
     name = forms.CharField(max_length=100)
     sources = forms.ModelMultipleChoiceField(None, widget=forms.CheckboxSelectMultiple())
-    activate_categories = forms.BooleanField(label = "Activate all categories in selected sources",
-                                             initial = True, required = False)
+    activate_categories = forms.BooleanField(label="Activate all categories in selected sources", initial=True, required=False)
 
     rulesets_label = "Apply transformation(s) to the following ruleset(s)"
     action = forms.ChoiceField()
     lateral = forms.ChoiceField()
     target = forms.ChoiceField()
 
-
     def create_ruleset(self):
-        ruleset = Ruleset.objects.create(name = self.cleaned_data['name'],
-                    created_date = timezone.now(),
-                    updated_date = timezone.now(),
-                    )
+        ruleset = Ruleset.objects.create(
+            name=self.cleaned_data['name'],
+            created_date=timezone.now(),
+            updated_date=timezone.now(),
+        )
+
         for src in self.cleaned_data['sources']:
             ruleset.sources.add(src)
             if self.cleaned_data['activate_categories']:
-                for cat in Category.objects.filter(source = src.source):
+                for cat in Category.objects.filter(source=src.source):
                     ruleset.categories.add(cat)
+
         return ruleset
 
     def __init__(self, *args, **kwargs):
@@ -161,7 +161,6 @@ class RulesetForm(CommentForm):
 
 class RulesetEditForm(forms.ModelForm, CommentForm):
     name = forms.CharField(max_length=100)
-
     rulesets_label = "Apply transformation(s) to the following ruleset(s)"
     action = forms.ChoiceField()
     lateral = forms.ChoiceField()
@@ -181,19 +180,23 @@ class RulesetEditForm(forms.ModelForm, CommentForm):
 class RulesetCopyForm(CommentForm):
     name = forms.CharField(max_length=100)
 
+
 class RulesetSuppressForm(RulesetChoiceForm):
     rulesets_label = "Modify object in the following ruleset(s)"
 
+
 class AddRuleThresholdForm(forms.ModelForm, RulesetChoiceForm):
     rulesets_label = "Add threshold to the following ruleset(s)"
-    threshold_type = forms.CharField(widget = forms.HiddenInput())
+    threshold_type = forms.CharField(widget=forms.HiddenInput())
+
     class Meta:
         model = Threshold
         exclude = ['ruleset', 'rule', 'gid', 'descr', 'net']
 
+
 class AddRuleSuppressForm(forms.ModelForm, RulesetChoiceForm):
     rulesets_label = "Add suppression to the following ruleset(s)"
-    threshold_type = forms.CharField(widget = forms.HiddenInput())
+    threshold_type = forms.CharField(widget=forms.HiddenInput())
     net = forms.CharField(required=True)
 
     class Meta:
@@ -210,6 +213,7 @@ class EditThresholdForm(forms.ModelForm, CommentForm):
     class Meta:
         model = Threshold
         exclude = ['pk', 'rule']
+
 
 class RuleTransformForm(RulesetChoiceForm):
     rulesets_label = "Apply transformation(s) to the following ruleset(s)"
@@ -241,4 +245,4 @@ class CategoryTransformForm(RulesetChoiceForm):
 
 
 class RuleCommentForm(forms.Form):
-    comment = forms.CharField(widget = forms.Textarea)
+    comment = forms.CharField(widget=forms.Textarea)

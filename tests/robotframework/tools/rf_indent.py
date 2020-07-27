@@ -4,8 +4,9 @@ from shutil import copy
 from tempfile import NamedTemporaryFile
 
 if len(sys.argv) < 2:
-    print >>sys.stderr, 'Usage: %s file [file..]'
+    print('Usage: %s file [file...]', file=sys.stderr)
     exit(1)
+
 
 def add_table(fout, table, col_sizes):
     while len(col_sizes) and col_sizes[-1] == 0:
@@ -24,6 +25,7 @@ def add_table(fout, table, col_sizes):
             _row += ' ' + txt.ljust(col_size) + ' |'
         fout.write(_row + '\n')
 
+
 for arg in sys.argv[1:]:
     fin = open(arg, 'r')
     fout = NamedTemporaryFile()
@@ -37,10 +39,9 @@ for arg in sys.argv[1:]:
     for line in lines:
         if line.startswith('|'):
             row = []
-            
             escaped = False
-            
             col_no = 0
+
             for i, col in enumerate(line.split('|')[1:]):
                 if escaped:
                     row[-1] = row[-1] + '|' + col
@@ -53,7 +54,7 @@ for arg in sys.argv[1:]:
 
                 if len(row[-1].strip()) > col_sizes[col_no]:
                     col_sizes[col_no] = len(row[-1].strip())
-    
+
                 if len(col) and col[-1] == '\\':
                     escaped = True
                 else:
