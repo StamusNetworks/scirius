@@ -30,11 +30,11 @@ class Command(BaseCommand):
         parser.add_argument('category', help='Category name')
 
     def handle(self, *args, **options):
-        name = options['ruleset']
+        ruleset_name = options['ruleset']
         catname = options['category']
         
         try:
-            ruleset = Ruleset.objects.filter(name = ruleset)
+            ruleset = Ruleset.objects.filter(name = ruleset_name)
             ruleset = ruleset[0]
         except:
             raise CommandError("No ruleset with name '%s' is defined" % (ruleset))
