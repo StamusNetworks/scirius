@@ -308,7 +308,7 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         for rule in rules:
             self.assertIn('group', rule.msg)
 
-        response = self.http_patch(reverse('source-detail', args=(self.source.pk,)), {'use_iprep': True})
+        response = self.http_patch(reverse('source-detail', args=(self.source.pk,)), {'use_iprep': True, 'version': 1})
         self.assertEqual(response['use_iprep'], True)
 
         self._set_source_from_name('sonic test custom source')
@@ -318,7 +318,7 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         self.assertEqual(len(rules), 1)
         self.assertIn('iprep', rules[0].content)
 
-        response = self.http_patch(reverse('source-detail', args=(self.source.pk,)), {'use_iprep': False})
+        response = self.http_patch(reverse('source-detail', args=(self.source.pk,)), {'use_iprep': False, 'version': 1})
         self.assertEqual(response['use_iprep'], False)
 
         self._set_source_from_name('sonic test custom source')
