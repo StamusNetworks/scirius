@@ -3136,9 +3136,8 @@ class RuleProcessingFilter(models.Model):
 
         try:
             msg = self.filter_defs.get(key='alert.signature').value
-            sid = Rule.objects.get(msg=msg).sid
-            sid_track_ip = {unicode(sid): []}
-            sids.append(sid)
+            sids = list(Rule.objects.filter(msg=msg).order_by('sid').values_list('sid', flat=True))
+            sid_track_ip = dict([(unicode(sid), []) for sid in sids]) if msg else None
         except models.ObjectDoesNotExist:
             pass
 
