@@ -1219,6 +1219,7 @@ def edit_source(request, source_id):
         return scirius_render(request, 'rules/add_source.html', { 'error': 'Unsufficient permissions' })
 
     if request.method == 'POST': # If the form has been submitted...
+        prev_uri = source.uri
         form = SourceForm(request.POST, request.FILES, instance=source)
         try:
             if source.method == 'local' and request.FILES.has_key('file'):
@@ -1229,6 +1230,12 @@ def edit_source(request, source_id):
                 source.new_uploaded_file(request.FILES['file'], firstimport)
 
             form.save()
+
+            # do a soft reset of rules in the source if URL changes
+            if source.method == 'http' and source.uri != prev_uri:
+                Rule.objects.filter(category__source=source).update(rev=0)
+                source.version = 1
+                source.save()
 
             if source.datatype == 'sig':
                 categories = Category.objects.filter(source=source)
