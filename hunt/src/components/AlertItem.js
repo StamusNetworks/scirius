@@ -305,7 +305,7 @@ export default class AlertItem extends React.Component {
                             <Col sm={4}>
                                 <div className="card-pf">
                                     <div className="card-pf-heading">
-                                        <h5>Enrichement</h5>
+                                        <h5>Enrichment</h5>
                                     </div>
                                     <div className="card-pf-body">
                                         <dl className="dl-horizontal">
