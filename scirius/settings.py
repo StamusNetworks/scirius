@@ -51,9 +51,6 @@ INSTALLED_APPS = (
     'webpack_loader',
 )
 
-if DEBUG:
-    INSTALLED_APPS += ('django.contrib.admin',)
-
 if LooseVersion(get_version()) < LooseVersion('1.7'):
     INSTALLED_APPS += ('south', )
 
