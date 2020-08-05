@@ -42,6 +42,7 @@ import git
 import shutil
 import json
 import IPy
+import base64
 from datetime import date as datetime_date
 
 from rules.tests_rules import TestRules
@@ -712,6 +713,7 @@ class Source(models.Model):
         ('sig', 'Individual Signatures file'),
 #        ('iprep', 'IP reputation files'),
         ('other', 'Other content'),
+        ('b64dataset', 'String dataset file'),
     ]
     TMP_DIR = "/tmp/"
 
@@ -922,7 +924,7 @@ class Source(models.Model):
         # Get categories
         self.get_categories()
 
-    def handle_other_file(self, f):
+    def handle_other_file(self, f, b64encode=False):
         self.updated_date = timezone.now()
         self.first_run = False
 
@@ -932,10 +934,17 @@ class Source(models.Model):
         # create rules dir if needed
         if not os.path.isdir(rules_dir):
             os.makedirs(rules_dir)
-        # copy file content to target
+
         f.seek(0)
-        os.fsync(f)
-        shutil.copy(f.name, os.path.join(rules_dir, self.name))
+        if b64encode is False:
+            # copy file content to target
+            os.fsync(f)
+            shutil.copy(f.name, os.path.join(rules_dir, self.name))
+        else:
+            target_file = os.path.join(rules_dir, self.name)
+            with open(target_file, 'w') as tf:
+                for stringelt in f:
+                    tf.write(base64.b64encode(stringelt.rstrip('\r\n')) + "\n")
 
         index = repo.index
         if len(index.diff(None)) or self.first_run:
@@ -948,6 +957,9 @@ class Source(models.Model):
         # Now we must update SourceAtVersion for this source
         # or create it if needed
         self.create_sourceatversion()
+
+    def handle_b64dataset(self, f):
+        return self.handle_other_file(f, b64encode=True)
 
     def handle_rules_file(self, f):
 
@@ -1084,6 +1096,8 @@ class Source(models.Model):
                     self.handle_rules_file(f)
                 elif self.datatype == 'other':
                     self.handle_other_file(f)
+                elif self.datatype == 'b64dataset':
+                    self.handle_b64dataset(f)
                 if self.datatype in self.custom_data_type:
                     self.handle_custom_file(f)
 
@@ -1204,6 +1218,8 @@ class Source(models.Model):
             self.handle_rules_file(dest)
         elif self.datatype == 'other':
             self.handle_other_file(dest)
+        elif self.datatype == 'b64dataset':
+            self.handle_b64dataset(dest)
         elif self.datatype in self.custom_data_type:
             self.handle_custom_file(dest, upload=True)
 
