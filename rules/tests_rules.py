@@ -34,6 +34,7 @@ from django.conf import settings
 class TestRules():
     VARIABLE_ERROR = 101
     OPENING_RULE_FILE = 41  # Error when opening a file referenced in the source
+    OPENING_DATASET_FILE = 322  # Error when opening a dataset referenced in the source
     RULEFILE_ERRNO = [39, 42]
     USELESS_ERRNO = [40, 43, 44]
     CONFIG_FILE = """
@@ -164,6 +165,7 @@ config classification: command-and-control,Malware Command and Control Activity 
         }
         variable_list = []
         files_list = []
+        ignore_next = False
         error_stream = StringIO.StringIO(error)
         for line in error_stream:
             try:
@@ -180,6 +182,14 @@ config classification: command-and-control,Malware Command and Control Activity 
                         s_err['engine']['message'] = "Custom address variable \"$%s\" is used and need to be defined in probes configuration" % (variable)
                         ret['warnings'].append(s_err['engine'])
                     continue
+                if errno == self.OPENING_DATASET_FILE:
+                    m = re.match('fopen \'([^:]*)\' failed: No such file or directory', s_err['engine']['message'])
+                    if m is not None:
+                        datasource = m.group(1)
+                        s_err['engine']['message'] = 'Dataset source "%s" is a dependancy and needs to be added to rulesets' % datasource
+                        ret['warnings'].append(s_err['engine'])
+                        ignore_next = True
+                        continue
                 if errno == self.OPENING_RULE_FILE:
                     m = re.match('opening hash file ([^:]*): No such file or directory', s_err['engine']['message'])
                     if m is not None:
@@ -192,6 +202,12 @@ config classification: command-and-control,Malware Command and Control Activity 
                 if errno not in self.USELESS_ERRNO:
                     # clean error message
                     if errno == 39:
+                        if 'failed to set up dataset' in s_err['engine']['message']:
+                            if ignore_next:
+                                continue
+                        if ignore_next:
+                            ignore_next = False
+                            continue
                         # exclude error on variable
                         found = False
                         for variable in variable_list:
