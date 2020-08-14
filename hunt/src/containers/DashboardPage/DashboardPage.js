@@ -38,7 +38,7 @@ import RuleToggleModal from 'hunt_common/RuleToggleModal';
 import { sections } from 'hunt_common/constants';
 import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
-import { actionsButtons, UpdateFilter, loadActions, createAction, closeAction } from '../../helpers/common';
+import { actionsButtons, loadActions, createAction, closeAction } from '../../helpers/common';
 import HuntFilter from '../../HuntFilter';
 import EventValue from '../../components/EventValue';
 import '../../../node_modules/react-grid-layout/css/styles.css';
@@ -82,7 +82,6 @@ export class HuntDashboard extends React.Component {
             rulesets: [],
             rules_count: 0,
             loading: true,
-            refresh_data: false,
             view: 'rules_list',
             onlyHits,
             action: { view: false, type: 'suppress' },
@@ -98,7 +97,6 @@ export class HuntDashboard extends React.Component {
             copiedItem: '',
         };
         this.actionsButtons = actionsButtons.bind(this);
-        this.UpdateFilter = UpdateFilter.bind(this);
         this.createAction = createAction.bind(this);
         this.closeAction = closeAction.bind(this);
         this.loadActions = loadActions.bind(this);
@@ -674,7 +672,6 @@ export class HuntDashboard extends React.Component {
                     <HuntFilter
                         config={this.props.rules_list}
                         ActiveSort={this.props.rules_list.sort}
-                        UpdateFilter={this.UpdateFilter}
                         UpdateSort={this.UpdateSort}
                         setViewType={this.setViewType}
                         filterFields={this.state.rulesFilters}

@@ -29,7 +29,7 @@ import HuntFilter from '../../HuntFilter';
 import HistoryItem from '../../components/HistoryItem';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ErrorHandler from '../../components/Error';
-import { buildFilter, buildListUrlParams, UpdateFilter, loadActions, UpdateSort, onFirstPage, onNextPage, onPrevPage, onLastPage, handlePaginationChange } from '../../helpers/common';
+import { buildFilter, buildListUrlParams, loadActions, UpdateSort, onFirstPage, onNextPage, onPrevPage, onLastPage, handlePaginationChange } from '../../helpers/common';
 
 const HistorySortFields = [
     {
@@ -76,7 +76,6 @@ export default class HistoryPage extends React.Component {
         this.fetchData = this.fetchData.bind(this);
         this.buildFilter = buildFilter;
         this.buildListUrlParams = buildListUrlParams.bind(this);
-        this.UpdateFilter = UpdateFilter.bind(this);
         this.loadActions = loadActions.bind(this);
         this.UpdateSort = UpdateSort.bind(this);
         this.onFirstPage = onFirstPage.bind(this);
@@ -101,7 +100,6 @@ export default class HistoryPage extends React.Component {
             filterFields.find((field) => field.id === 'action_type').filterValues = this.props.actionTypesList;
             // eslint-disable-next-line react/no-did-update-set-state
             this.setState({
-                ...this.state,
                 filterFields
             });
         }
@@ -110,14 +108,14 @@ export default class HistoryPage extends React.Component {
     fetchData() {
         const stringFilters = this.buildFilter(this.props.filters);
         const listParams = this.buildListUrlParams(this.props.rules_list);
-        this.setState({ refresh_data: true, loading: true });
+        this.setState({ loading: true });
         axios.get(`${config.API_URL}${config.HISTORY_PATH}?${listParams}${stringFilters}`)
         .then((res) => {
             this.setState({
-                data: res.data, count: res.data.count, refresh_data: false, loading: false
+                data: res.data, count: res.data.count, loading: false
             });
         }).catch(() => {
-            this.setState({ refresh_data: false, loading: false });
+            this.setState({ loading: false });
         });
     }
 

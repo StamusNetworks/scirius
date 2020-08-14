@@ -76,17 +76,6 @@ export function createAction(type) {
     this.setState({ action: { view: true, type } });
 }
 
-export function UpdateFilter(filters, page = 1) {
-    const newListState = Object.assign({}, this.props.rules_list);
-    newListState.pagination.page = page;
-    this.props.updateFilterState(filters);
-    this.updateRuleListState(newListState, () => this.fetchData());
-    if (this.props.needReload) {
-        this.props.needReload();
-    }
-    this.loadActions(filters);
-}
-
 export function handlePaginationChange(pagin) {
     const lastPage = Math.ceil(this.state.count / pagin.perPage);
     if (pagin.page > lastPage) {

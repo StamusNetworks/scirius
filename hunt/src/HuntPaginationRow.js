@@ -29,7 +29,6 @@ export default class HuntPaginationRow extends React.Component {
             viewType,
             pageInputValue,
             amountOfPages,
-            pageSizeDropUp,
             itemCount,
             itemsStart,
             itemsEnd,
@@ -45,7 +44,7 @@ export default class HuntPaginationRow extends React.Component {
                 pageInputValue={pageInputValue}
                 pagination={this.props.pagination}
                 amountOfPages={amountOfPages}
-                pageSizeDropUp={pageSizeDropUp}
+                pageSizeDropUp={true}
                 itemCount={itemCount}
                 itemsStart={itemsStart}
                 itemsEnd={itemsEnd}
@@ -72,7 +71,6 @@ HuntPaginationRow.propTypes = {
     viewType: PropTypes.oneOf(PAGINATION_VIEW_TYPES).isRequired,
     pageInputValue: PropTypes.number.isRequired,
     amountOfPages: PropTypes.number.isRequired,
-    pageSizeDropUp: PropTypes.bool,
     itemCount: PropTypes.number.isRequired,
     itemsStart: PropTypes.number.isRequired,
     itemsEnd: PropTypes.number.isRequired,
@@ -83,7 +81,6 @@ HuntPaginationRow.propTypes = {
 };
 
 HuntPaginationRow.defaultProps = {
-    pageSizeDropUp: true,
     onFirstPage: noop,
     onPreviousPage: noop,
     onNextPage: noop,

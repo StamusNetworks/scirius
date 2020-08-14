@@ -138,8 +138,6 @@ export default class App extends Component {
             pageDisplay = JSON.parse(pageDisplay);
         }
         this.state = {
-            sources: [],
-            rulesets: [],
             interval,
             display: pageDisplay,
             rules_list: rulesListConf,
@@ -166,18 +164,9 @@ export default class App extends Component {
 
     componentDidMount() {
         setInterval(this.get_scirius_status, 10000);
-        axios.all([
-            axios.get(config.API_URL + config.SOURCE_PATH),
-            axios.get(config.API_URL + config.RULESET_PATH),
-            axios.get(config.API_URL + config.SYSTEM_SETTINGS_PATH),
-        ])
-        .then(axios.spread((SrcRes, RulesetRes, systemSettings) => {
-            this.setState({
-                rulesets: RulesetRes.data.results,
-                sources: SrcRes.data.results,
-                systemSettings: systemSettings.data
-            });
-        }));
+        axios.get(config.API_URL + config.SYSTEM_SETTINGS_PATH).then((systemSettings) => {
+            this.setState({ systemSettings: systemSettings.data });
+        });
 
         if (this.state.interval) {
             this.timer = setInterval(this.needReload, this.state.interval * 1000);
@@ -188,13 +177,8 @@ export default class App extends Component {
         this.props.reload();
     }
 
-    fromDate = (period) => {
-        const duration = period * 3600 * 1000;
-        return Date.now() - duration;
-    }
-
     changeRefreshInterval(interval) {
-        this.setState({ ...this.state, interval });
+        this.setState({ interval });
         storage.setItem('interval', interval);
 
         if (interval) {
@@ -256,20 +240,17 @@ export default class App extends Component {
             if (!data) {
                 if (this.state.hasConnectivity) {
                     this.setState({
-                        ...this.state,
                         hasConnectivity: false
                     });
                 }
             } else {
                 if (data.data.status === 'green' && !this.state.hasConnectivity) {
                     this.setState({
-                        ...this.state,
                         hasConnectivity: true
                     });
                 }
                 if (data.data.status !== 'green' && this.state.hasConnectivity) {
                     this.setState({
-                        ...this.state,
                         hasConnectivity: false,
                         connectionProblem: 'Scirius does not feel comfortable',
                     });
@@ -278,7 +259,6 @@ export default class App extends Component {
         }).catch(() => {
             if (this.state.hasConnectivity) {
                 this.setState({
-                    ...this.state,
                     hasConnectivity: false,
                     connectionProblem: 'No connection with scirius. This pop-up will disappear if connection is restored.',
                 });
@@ -336,7 +316,6 @@ export default class App extends Component {
                                     page={this.state.display.page}
                                     systemSettings={this.state.systemSettings}
                                     rules_list={this.state.rules_list}
-                                    idsFilters={this.state.idsFilters}
                                     switchPage={this.switchPage}
                                     updateRuleListState={this.updateRuleListState}
                                     item={this.state.display.item}

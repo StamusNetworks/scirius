@@ -31,7 +31,6 @@ import { actionsButtons,
     buildListUrlParams,
     loadActions,
     createAction,
-    UpdateFilter,
     handlePaginationChange,
     onFirstPage,
     onNextPage,
@@ -50,7 +49,6 @@ export class ActionsPage extends React.Component {
         this.onNextPage = onNextPage.bind(this);
         this.onPrevPage = onPrevPage.bind(this);
         this.onLastPage = onLastPage.bind(this);
-        this.UpdateFilter = UpdateFilter.bind(this);
         this.UpdateSort = UpdateSort.bind(this);
 
         this.buildFilter = buildFilter.bind(this);

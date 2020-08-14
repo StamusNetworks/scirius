@@ -32,7 +32,7 @@ import { buildFilterParams } from 'hunt_common/buildFilterParams';
 import RuleToggleModal from 'hunt_common/RuleToggleModal';
 import HuntFilter from '../../HuntFilter';
 import AlertItem from '../../components/AlertItem';
-import { actionsButtons, buildListUrlParams, loadActions, UpdateFilter, createAction, closeAction } from '../../helpers/common';
+import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction } from '../../helpers/common';
 import ErrorHandler from '../../components/Error';
 import HuntRestError from '../../components/HuntRestError';
 
@@ -46,7 +46,6 @@ export class AlertsPage extends React.Component {
             alerts: [],
             rulesets: [],
             loading: true,
-            refresh_data: false,
             action: { view: false, type: 'suppress' },
             net_error: undefined,
             rulesFilters,
@@ -57,7 +56,6 @@ export class AlertsPage extends React.Component {
         this.actionsButtons = actionsButtons.bind(this);
         this.buildListUrlParams = buildListUrlParams.bind(this);
         this.loadActions = loadActions.bind(this);
-        this.UpdateFilter = UpdateFilter.bind(this);
         this.createAction = createAction.bind(this);
         this.closeAction = closeAction.bind(this);
     }
@@ -113,7 +111,7 @@ export class AlertsPage extends React.Component {
         const stringFilters = buildQFilter(this.props.filtersWithAlert, this.props.systemSettings);
         const filterParams = buildFilterParams(this.props.filterParams);
         const listParams = this.buildListUrlParams(this.props.rules_list);
-        this.setState({ refresh_data: true, loading: true });
+        this.setState({ loading: true });
 
         const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?search_target=0&${listParams}&${filterParams}${stringFilters}`;
         axios.get(url)
@@ -161,7 +159,7 @@ export class AlertsPage extends React.Component {
                         // eslint-disable-next-line no-underscore-dangle
                         <ErrorHandler key={rule._id}>
                             {/* eslint-disable-next-line no-underscore-dangle */}
-                            <AlertItem key={rule._id} id={rule._id} data={rule._source} filterParams={this.props.filterParams} UpdateFilter={this.UpdateFilter} filters={this.props.filters} addFilter={this.props.addFilter} />
+                            <AlertItem key={rule._id} id={rule._id} data={rule._source} filterParams={this.props.filterParams} filters={this.props.filters} addFilter={this.props.addFilter} />
                         </ErrorHandler>
                     ))}
                 </ListView>
