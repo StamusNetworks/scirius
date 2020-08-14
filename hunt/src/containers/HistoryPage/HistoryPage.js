@@ -89,12 +89,12 @@ export default class HistoryPage extends React.Component {
     }
 
     componentDidMount() {
-        this.fetchData(this.props.rules_list, this.props.filters);
+        this.fetchData();
     }
 
     componentDidUpdate(prevProps) {
         if (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
-            this.fetchData(this.props.rules_list, this.props.filters);
+            this.fetchData();
         }
         if (prevProps.actionTypesList.length !== this.props.actionTypesList.length) {
             const filterFields = [...this.state.filterFields];
@@ -107,10 +107,11 @@ export default class HistoryPage extends React.Component {
         }
     }
 
-    fetchData(historyStat, filters) {
-        const stringFilters = this.buildFilter(filters);
+    fetchData() {
+        const stringFilters = this.buildFilter(this.props.filters);
+        const listParams = this.buildListUrlParams(this.props.rules_list);
         this.setState({ refresh_data: true, loading: true });
-        axios.get(`${config.API_URL}${config.HISTORY_PATH}?${this.buildListUrlParams(historyStat)}${stringFilters}`)
+        axios.get(`${config.API_URL}${config.HISTORY_PATH}?${listParams}${stringFilters}`)
         .then((res) => {
             this.setState({
                 data: res.data, count: res.data.count, refresh_data: false, loading: false
@@ -120,8 +121,8 @@ export default class HistoryPage extends React.Component {
         });
     }
 
-    updateRuleListState(rulesListState) {
-        this.props.updateListState(rulesListState);
+    updateRuleListState(rulesListState, fetchDataCallback) {
+        this.props.updateListState(rulesListState, fetchDataCallback);
     }
 
     render() {

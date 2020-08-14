@@ -80,8 +80,7 @@ export function UpdateFilter(filters, page = 1) {
     const newListState = Object.assign({}, this.props.rules_list);
     newListState.pagination.page = page;
     this.props.updateFilterState(filters);
-    this.updateRuleListState(newListState);
-    this.fetchData(newListState, filters);
+    this.updateRuleListState(newListState, () => this.fetchData());
     if (this.props.needReload) {
         this.props.needReload();
     }
@@ -96,49 +95,43 @@ export function handlePaginationChange(pagin) {
 
     const newListState = Object.assign({}, this.props.rules_list);
     newListState.pagination = pagin;
-    this.updateRuleListState(newListState);
-    this.fetchData(newListState, this.props.filters);
+    this.updateRuleListState(newListState, () => this.fetchData());
 }
 
 export function onFirstPage() {
     const newListState = Object.assign({}, this.props.rules_list);
     newListState.pagination.page = 1;
-    this.updateRuleListState(newListState);
-    this.fetchData(newListState, this.props.filters);
+    this.updateRuleListState(newListState, () => this.fetchData());
 }
 
 export function onNextPage() {
     const newListState = Object.assign({}, this.props.rules_list);
     newListState.pagination.page += 1;
-    this.updateRuleListState(newListState);
-    this.fetchData(newListState, this.props.filters);
+    this.updateRuleListState(newListState, () => this.fetchData());
 }
 
 export function onPrevPage() {
     const newListState = Object.assign({}, this.props.rules_list);
     newListState.pagination.page -= 1;
-    this.updateRuleListState(newListState);
-    this.fetchData(newListState, this.props.filters);
+    this.updateRuleListState(newListState, () => this.fetchData());
 }
 
 export function onLastPage() {
     const newListState = Object.assign({}, this.props.rules_list);
     newListState.pagination.page = Math.ceil(this.state.count / this.props.rules_list.pagination.perPage);
-    this.updateRuleListState(newListState);
-    this.fetchData(newListState, this.props.filters);
+    this.updateRuleListState(newListState, () => this.fetchData());
 }
 
 export function setViewType(type) {
     const newListState = Object.assign({}, this.props.rules_list);
     newListState.view_type = type;
-    this.updateRuleListState(newListState);
+    this.updateRuleListState(newListState, () => this.fetchData());
 }
 
 export function UpdateSort(sort) {
     const newListState = Object.assign({}, this.props.rules_list);
     newListState.sort = sort;
-    this.updateRuleListState(newListState);
-    this.fetchData(newListState, this.props.filters);
+    this.updateRuleListState(newListState, () => this.fetchData());
 }
 
 export function closeAction() {

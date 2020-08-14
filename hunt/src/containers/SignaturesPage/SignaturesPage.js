@@ -186,7 +186,7 @@ export class SignaturesPage extends React.Component {
         if (sid !== undefined) {
             this.setState({ loading: false });
         } else {
-            this.fetchData(this.props.rules_list, this.props.filtersWithAlert);
+            this.fetchData();
         }
         const huntFilters = store.get('huntFilters');
         axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(
@@ -226,7 +226,7 @@ export class SignaturesPage extends React.Component {
                     loading: false
                 });
             } else {
-                this.fetchData(this.props.rules_list, this.props.filtersWithAlert);
+                this.fetchData();
             }
             if (filtersChanged) {
                 this.loadActions(this.props.filtersWithAlert);
@@ -254,11 +254,12 @@ export class SignaturesPage extends React.Component {
         return foundSid;
     }
 
-    fetchData(rulesStat, filters) {
-        const stringFilters = this.buildFilter(filters);
+    fetchData() {
+        const stringFilters = this.buildFilter(this.props.filtersWithAlert);
+        const rulesStat = this.props.rules_list;
         const hash = md5(`${rulesStat.pagination.page}|${rulesStat.pagination.perPage}|${JSON.stringify(this.props.filterParams)}|${rulesStat.sort.id}|${rulesStat.sort.asc}|${stringFilters}`);
         if (typeof this.cache[hash] !== 'undefined') {
-            this.processRulesData(this.cache[hash].RuleRes, this.cache[hash].SrcRes, this.cache[hash].filters);
+            this.processRulesData(this.cache[hash].RuleRes, this.cache[hash].SrcRes);
             return;
         }
 
@@ -275,14 +276,14 @@ export class SignaturesPage extends React.Component {
                 this.setState({ updateCache: true });
             }
 
-            this.cache[hash] = { RuleRes, SrcRes, filters };
-            this.processRulesData(RuleRes, SrcRes, filters);
+            this.cache[hash] = { RuleRes, SrcRes };
+            this.processRulesData(RuleRes, SrcRes);
         })).catch((e) => {
             this.setState({ net_error: e, loading: false });
         });
     }
 
-    processRulesData(RuleRes, SrcRes, filters) {
+    processRulesData(RuleRes, SrcRes) {
         const sourcesArray = SrcRes.data.results;
         const sources = {};
         this.setState({ net_error: undefined });
@@ -298,15 +299,15 @@ export class SignaturesPage extends React.Component {
         });
         if (RuleRes.data.results.length > 0) {
             if (!RuleRes.data.results[0].timeline_data) {
-                this.fetchHitsStats(RuleRes.data.results, filters);
+                this.fetchHitsStats(RuleRes.data.results);
             } else {
                 this.buildHitsStats(RuleRes.data.results);
             }
         }
     }
 
-    fetchHitsStats(rules, filters) {
-        const qfilter = buildQFilter(filters, this.props.systemSettings);
+    fetchHitsStats(rules) {
+        const qfilter = buildQFilter(this.props.filtersWithAlert, this.props.systemSettings);
         const filterParams = buildFilterParams(this.props.filterParams);
         updateHitsStats(rules, filterParams, this.updateRulesState, qfilter);
     }
@@ -323,8 +324,8 @@ export class SignaturesPage extends React.Component {
         this.setState({ rules });
     }
 
-    updateRuleListState(rulesListState) {
-        this.props.updateListState(rulesListState);
+    updateRuleListState(rulesListState, fetchDataCallback) {
+        this.props.updateListState(rulesListState, fetchDataCallback);
     }
 
     render() {

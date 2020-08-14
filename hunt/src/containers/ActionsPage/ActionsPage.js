@@ -78,23 +78,24 @@ export class ActionsPage extends React.Component {
                 this.setState({ rulesets });
             });
         }
-        this.fetchData(this.props.rules_list, this.props.filters);
+        this.fetchData();
     }
 
     componentDidUpdate(prevProps) {
-        if (JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams) || JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
-            this.fetchData(this.props.rules_list, this.props.filters);
+        if (JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams)) {
+            this.fetchData();
         }
     }
 
-    updateRuleListState(rulesListState) {
-        this.props.updateListState(rulesListState);
+    updateRuleListState(rulesListState, fetchDataCallback) {
+        this.props.updateListState(rulesListState, fetchDataCallback);
     }
 
     // eslint-disable-next-line no-unused-vars
-    fetchData(filtersStat, filters) {
+    fetchData() {
+        const listParams = this.buildListUrlParams(this.props.rules_list);
         this.setState({ loading: true });
-        axios.get(`${config.API_URL}${config.PROCESSING_PATH}?${this.buildListUrlParams(filtersStat)}`)
+        axios.get(`${config.API_URL}${config.PROCESSING_PATH}?${listParams}`)
         .then((res) => {
             this.setState({ data: res.data.results, count: res.data.count, loading: false });
         }).catch(() => {
@@ -103,7 +104,7 @@ export class ActionsPage extends React.Component {
     }
 
     needUpdate() {
-        this.fetchData(this.props.rules_list, this.props.filters);
+        this.fetchData();
     }
 
     render() {
@@ -139,7 +140,6 @@ export class ActionsPage extends React.Component {
 
 ActionsPage.propTypes = {
     rules_list: PropTypes.any,
-    filters: PropTypes.any,
     updateListState: PropTypes.func,
     switchPage: PropTypes.any,
     filterParams: PropTypes.object.isRequired

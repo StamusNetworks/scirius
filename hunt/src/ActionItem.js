@@ -14,17 +14,16 @@ export default class FilterItem extends React.Component {
     }
 
     componentDidMount() {
-        this.fetchData(this.props.config, this.props.filters);
+        this.fetchData();
     }
 
     componentDidUpdate(prevProps) {
         if (JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams)) {
-            this.fetchData(this.props.config, this.props.filters);
+            this.fetchData();
         }
     }
 
-    // eslint-disable-next-line no-unused-vars
-    fetchData(filtersStat, filters) {
+    fetchData() {
         // eslint-disable-next-line react/no-unused-state
         this.setState({ loading: true });
         const filterParams = buildFilterParams(this.props.filterParams);
@@ -108,9 +107,7 @@ export default class FilterItem extends React.Component {
     }
 }
 FilterItem.propTypes = {
-    config: PropTypes.any,
     data: PropTypes.any,
-    filters: PropTypes.any,
     rulesets: PropTypes.any,
     needUpdate: PropTypes.any,
     last_index: PropTypes.any,

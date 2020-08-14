@@ -222,28 +222,28 @@ export default class App extends Component {
         }
     }
 
-    updateRuleListState(rulesListState) {
-        this.setState({ rules_list: rulesListState });
+    updateRuleListState(rulesListState, fetchDataCallback) {
+        this.setState({ rules_list: rulesListState }, fetchDataCallback);
         storage.setItem('rules_list', JSON.stringify(rulesListState));
     }
 
-    updateAlertListState(alertsListState) {
-        this.setState({ alerts_list: alertsListState });
+    updateAlertListState(alertsListState, fetchDataCallback) {
+        this.setState({ alerts_list: alertsListState }, fetchDataCallback);
         storage.setItem('alerts_list', JSON.stringify(alertsListState));
     }
 
-    updateFilterListState(filtersListState) {
-        this.setState({ filters_list: filtersListState });
+    updateFilterListState(filtersListState, fetchDataCallback) {
+        this.setState({ filters_list: filtersListState }, fetchDataCallback);
         storage.setItem('filters_list', JSON.stringify(filtersListState));
     }
 
-    updateHistoryFilterState(filters) {
-        this.setState({ historyFilters: filters });
+    updateHistoryFilterState(filters, fetchDataCallback) {
+        this.setState({ historyFilters: filters }, fetchDataCallback);
         storage.setItem('history_filters', JSON.stringify(filters));
     }
 
-    updateHistoryListState(historyState) {
-        this.setState({ history: historyState });
+    updateHistoryListState(historyState, fetchDataCallback) {
+        this.setState({ history: historyState }, fetchDataCallback);
         storage.setItem('history', JSON.stringify(historyState));
     }
 
@@ -348,7 +348,6 @@ export default class App extends Component {
                                     alerts_list={this.state.alerts_list}
                                     updateAlertListState={this.updateAlertListState}
                                     filters_list={this.state.filters_list}
-                                    filters_filters={this.state.filters_filters}
                                     updateFilterListState={this.updateFilterListState}
                                     updateFiltersFilterState={this.updateFiltersFilterState}
                                     updateHostListState={this.updateHostListState}

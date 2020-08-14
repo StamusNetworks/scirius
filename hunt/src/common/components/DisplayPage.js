@@ -52,7 +52,6 @@ const DisplayPage = (props) => {
             displayedPage = (<ActionsPage
                 systemSettings={props.systemSettings}
                 rules_list={props.filters_list}
-                filters={props.filters_filters}
                 updateListState={props.updateFilterListState}
                 updateFilterState={props.updateFiltersFilterState}
                 switchPage={props.switchPage}
@@ -78,7 +77,6 @@ DisplayPage.propTypes = {
     alerts_list: PropTypes.any,
     updateAlertListState: PropTypes.any,
     filters_list: PropTypes.any,
-    filters_filters: PropTypes.any,
     updateFilterListState: PropTypes.any,
     updateFiltersFilterState: PropTypes.any,
     updateHostListState: PropTypes.any,

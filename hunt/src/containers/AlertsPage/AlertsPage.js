@@ -63,7 +63,7 @@ export class AlertsPage extends React.Component {
     }
 
     componentDidMount() {
-        this.fetchData(this.props.rules_list, this.props.filtersWithAlert);
+        this.fetchData();
         if (this.state.rulesets.length === 0) {
             axios.get(config.API_URL + config.RULESET_PATH).then((res) => {
                 this.setState({ rulesets: res.data.results });
@@ -102,19 +102,20 @@ export class AlertsPage extends React.Component {
     componentDidUpdate(prevProps) {
         const filtersChanged = (JSON.stringify(prevProps.filtersWithAlert) !== JSON.stringify(this.props.filtersWithAlert));
         if (JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams) || filtersChanged) {
-            this.fetchData(this.props.rules_list, this.props.filtersWithAlert);
+            this.fetchData();
             if (filtersChanged) {
                 this.loadActions();
             }
         }
     }
 
-    fetchData(state, filters) {
-        const stringFilters = buildQFilter(filters, this.props.systemSettings);
+    fetchData() {
+        const stringFilters = buildQFilter(this.props.filtersWithAlert, this.props.systemSettings);
         const filterParams = buildFilterParams(this.props.filterParams);
+        const listParams = this.buildListUrlParams(this.props.rules_list);
         this.setState({ refresh_data: true, loading: true });
 
-        const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?search_target=0&${this.buildListUrlParams(state)}&${filterParams}${stringFilters}`;
+        const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?search_target=0&${listParams}&${filterParams}${stringFilters}`;
         axios.get(url)
         .then((res) => {
             if ((res.data !== null) && (typeof res.data !== 'string')) {
@@ -132,8 +133,8 @@ export class AlertsPage extends React.Component {
         });
     }
 
-    updateRuleListState(rulesListState) {
-        this.props.updateListState(rulesListState);
+    updateRuleListState(rulesListState, fetchDataCallback) {
+        this.props.updateListState(rulesListState, fetchDataCallback);
     }
 
     render() {
