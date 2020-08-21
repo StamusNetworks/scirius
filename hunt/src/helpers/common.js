@@ -76,53 +76,6 @@ export function createAction(type) {
     this.setState({ action: { view: true, type } });
 }
 
-export function handlePaginationChange(pagin) {
-    const lastPage = Math.ceil(this.state.count / pagin.perPage);
-    if (pagin.page > lastPage) {
-        pagin.page = lastPage;
-    }
-
-    const newListState = Object.assign({}, this.props.rules_list);
-    newListState.pagination = pagin;
-    this.updateRuleListState(newListState, () => this.fetchData());
-}
-
-export function onFirstPage() {
-    const newListState = Object.assign({}, this.props.rules_list);
-    newListState.pagination.page = 1;
-    this.updateRuleListState(newListState, () => this.fetchData());
-}
-
-export function onNextPage() {
-    const newListState = Object.assign({}, this.props.rules_list);
-    newListState.pagination.page += 1;
-    this.updateRuleListState(newListState, () => this.fetchData());
-}
-
-export function onPrevPage() {
-    const newListState = Object.assign({}, this.props.rules_list);
-    newListState.pagination.page -= 1;
-    this.updateRuleListState(newListState, () => this.fetchData());
-}
-
-export function onLastPage() {
-    const newListState = Object.assign({}, this.props.rules_list);
-    newListState.pagination.page = Math.ceil(this.state.count / this.props.rules_list.pagination.perPage);
-    this.updateRuleListState(newListState, () => this.fetchData());
-}
-
-export function setViewType(type) {
-    const newListState = Object.assign({}, this.props.rules_list);
-    newListState.view_type = type;
-    this.updateRuleListState(newListState, () => this.fetchData());
-}
-
-export function UpdateSort(sort) {
-    const newListState = Object.assign({}, this.props.rules_list);
-    newListState.sort = sort;
-    this.updateRuleListState(newListState, () => this.fetchData());
-}
-
 export function closeAction() {
     this.setState({ action: { view: false, type: null } });
 }

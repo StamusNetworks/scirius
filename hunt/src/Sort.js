@@ -26,9 +26,10 @@ import { Sort } from 'patternfly-react';
 export class HuntSort extends React.Component {
     constructor(props) {
         super(props);
+        const activeSort = this.props.itemsList.sort;
         let sortType;
         for (let i = 0; i < this.props.config.length; i += 1) {
-            if (this.props.ActiveSort.id === this.props.config[i].id) {
+            if (activeSort.id === this.props.config[i].id) {
                 sortType = this.props.config[i];
                 break;
             }
@@ -39,8 +40,19 @@ export class HuntSort extends React.Component {
         this.state = {
             currentSortType: sortType,
             isSortNumeric: sortType.isNumeric,
-            isSortAscending: this.props.ActiveSort.asc
+            isSortAscending: activeSort.asc
         };
+        this.updateSort = this.updateSort.bind(this);
+    }
+
+    updateSort = (sort) => {
+        this.props.itemsListUpdate({
+            ...this.props.itemsList,
+            sort: {
+                ...this.props.itemsList.sort,
+                ...sort
+            }
+        });
     }
 
     updateCurrentSortType = (sortType) => {
@@ -51,12 +63,12 @@ export class HuntSort extends React.Component {
                 isSortNumeric: sortType.isNumeric,
                 isSortAscending: sortType.defaultAsc
             });
-            this.props.UpdateSort({ id: sortType.id, asc: sortType.defaultAsc });
+            this.updateSort({ id: sortType.id, asc: sortType.defaultAsc });
         }
     }
 
     toggleCurrentSortDirection = () => {
-        this.props.UpdateSort({ id: this.state.currentSortType.id, asc: !this.state.isSortAscending });
+        this.updateSort({ id: this.state.currentSortType.id, asc: !this.state.isSortAscending });
         this.setState((prevState) => ({ isSortAscending: !prevState.isSortAscending }));
     }
 
@@ -83,7 +95,7 @@ export class HuntSort extends React.Component {
 }
 HuntSort.propTypes = {
     config: PropTypes.any,
-    ActiveSort: PropTypes.any,
-    UpdateSort: PropTypes.any,
+    itemsList: PropTypes.any,
+    itemsListUpdate: PropTypes.any,
     disabled: PropTypes.any,
 };

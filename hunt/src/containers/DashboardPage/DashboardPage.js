@@ -673,7 +673,6 @@ export class HuntDashboard extends React.Component {
                         config={this.props.rules_list}
                         ActiveSort={this.props.rules_list.sort}
                         UpdateSort={this.UpdateSort}
-                        setViewType={this.setViewType}
                         filterFields={this.state.rulesFilters}
                         sort_config={undefined}
                         actionsButtons={this.actionsButtons}

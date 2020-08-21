@@ -31,39 +31,23 @@ import { actionsButtons,
     buildListUrlParams,
     loadActions,
     createAction,
-    handlePaginationChange,
-    onFirstPage,
-    onNextPage,
-    onPrevPage,
-    onLastPage,
-    setViewType,
-    UpdateSort,
     closeAction,
     buildFilter } from '../../helpers/common';
 
 export class ActionsPage extends React.Component {
     constructor(props) {
         super(props);
-        this.handlePaginationChange = handlePaginationChange.bind(this);
-        this.onFirstPage = onFirstPage.bind(this);
-        this.onNextPage = onNextPage.bind(this);
-        this.onPrevPage = onPrevPage.bind(this);
-        this.onLastPage = onLastPage.bind(this);
-        this.UpdateSort = UpdateSort.bind(this);
+        this.state = { data: [], count: 0, rulesets: [] };
 
         this.buildFilter = buildFilter.bind(this);
-
-        this.setViewType = setViewType.bind(this);
-
         this.actionsButtons = actionsButtons.bind(this);
         this.createAction = createAction.bind(this);
         this.closeAction = closeAction.bind(this);
         this.loadActions = loadActions.bind(this);
-
-        this.state = { data: [], count: 0, rulesets: [] };
         this.fetchData = this.fetchData.bind(this);
         this.needUpdate = this.needUpdate.bind(this);
         this.buildListUrlParams = buildListUrlParams.bind(this);
+        this.updateActionListState = this.updateActionListState.bind(this);
     }
 
     componentDidMount() {
@@ -85,8 +69,8 @@ export class ActionsPage extends React.Component {
         }
     }
 
-    updateRuleListState(rulesListState, fetchDataCallback) {
-        this.props.updateListState(rulesListState, fetchDataCallback);
+    updateActionListState(rulesListState) {
+        this.props.updateListState(rulesListState, () => this.fetchData());
     }
 
     // eslint-disable-next-line no-unused-vars
@@ -117,18 +101,9 @@ export class ActionsPage extends React.Component {
                 <ErrorHandler>
                     <HuntPaginationRow
                         viewType={PAGINATION_VIEW.LIST}
-                        pagination={this.props.rules_list.pagination}
-                        onPaginationChange={this.handlePaginationChange}
-                        amountOfPages={Math.ceil(this.state.count / this.props.rules_list.pagination.perPage)}
-                        pageInputValue={this.props.rules_list.pagination.page}
-                        itemCount={this.state.count - 1} // used as last item
-                        itemsStart={(this.props.rules_list.pagination.page - 1) * this.props.rules_list.pagination.perPage}
-                        itemsEnd={Math.min((this.props.rules_list.pagination.page * this.props.rules_list.pagination.perPage) - 1, this.state.count - 1)}
-                        onFirstPage={this.onFirstPage}
-                        onNextPage={this.onNextPage}
-                        onPreviousPage={this.onPrevPage}
-                        onLastPage={this.onLastPage}
-
+                        onPaginationChange={this.updateActionListState}
+                        itemsCount={this.state.count}
+                        itemsList={this.props.rules_list}
                     />
                 </ErrorHandler>
             </div>

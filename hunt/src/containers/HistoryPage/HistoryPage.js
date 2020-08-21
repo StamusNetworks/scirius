@@ -29,7 +29,7 @@ import HuntFilter from '../../HuntFilter';
 import HistoryItem from '../../components/HistoryItem';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ErrorHandler from '../../components/Error';
-import { buildFilter, buildListUrlParams, loadActions, UpdateSort, onFirstPage, onNextPage, onPrevPage, onLastPage, handlePaginationChange } from '../../helpers/common';
+import { buildFilter, buildListUrlParams, loadActions } from '../../helpers/common';
 
 const HistorySortFields = [
     {
@@ -77,12 +77,7 @@ export default class HistoryPage extends React.Component {
         this.buildFilter = buildFilter;
         this.buildListUrlParams = buildListUrlParams.bind(this);
         this.loadActions = loadActions.bind(this);
-        this.UpdateSort = UpdateSort.bind(this);
-        this.onFirstPage = onFirstPage.bind(this);
-        this.onNextPage = onNextPage.bind(this);
-        this.onPrevPage = onPrevPage.bind(this);
-        this.onLastPage = onLastPage.bind(this);
-        this.handlePaginationChange = handlePaginationChange.bind(this);
+        this.updateHistoryListState = this.updateHistoryListState.bind(this);
 
         this.props.getActionTypes();
     }
@@ -119,8 +114,8 @@ export default class HistoryPage extends React.Component {
         });
     }
 
-    updateRuleListState(rulesListState, fetchDataCallback) {
-        this.props.updateListState(rulesListState, fetchDataCallback);
+    updateHistoryListState(rulesListState) {
+        this.props.updateListState(rulesListState, () => this.fetchData());
     }
 
     render() {
@@ -136,9 +131,7 @@ export default class HistoryPage extends React.Component {
                 <ErrorHandler>
                     <HuntFilter
                         config={this.props.rules_list}
-                        ActiveSort={this.props.rules_list.sort}
-                        UpdateSort={this.UpdateSort}
-                        setViewType={this.setViewType}
+                        itemsListUpdate={this.updateHistoryListState}
                         filterFields={this.state.filterFields}
                         sort_config={HistorySortFields}
                         queryType={['all']}
@@ -160,17 +153,9 @@ export default class HistoryPage extends React.Component {
                 <ErrorHandler>
                     <HuntPaginationRow
                         viewType={PAGINATION_VIEW.LIST}
-                        pagination={this.props.rules_list.pagination}
-                        onPaginationChange={this.handlePaginationChange}
-                        amountOfPages={Math.ceil(this.state.count / this.props.rules_list.pagination.perPage)}
-                        pageInputValue={this.props.rules_list.pagination.page}
-                        itemCount={this.state.count - 1} // used as last item
-                        itemsStart={(this.props.rules_list.pagination.page - 1) * this.props.rules_list.pagination.perPage}
-                        itemsEnd={Math.min((this.props.rules_list.pagination.page * this.props.rules_list.pagination.perPage) - 1, this.state.count - 1)}
-                        onFirstPage={this.onFirstPage}
-                        onNextPage={this.onNextPage}
-                        onPreviousPage={this.onPrevPage}
-                        onLastPage={this.onLastPage}
+                        onPaginationChange={this.updateHistoryListState}
+                        itemsCount={this.state.count}
+                        itemsList={this.props.rules_list}
                     />
                 </ErrorHandler>
             </div>

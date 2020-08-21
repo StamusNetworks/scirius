@@ -73,6 +73,7 @@ class HuntFilter extends React.Component {
         this.submitFilterSets = this.submitFilterSets.bind(this);
         this.handleFieldChange = this.handleFieldChange.bind(this);
         this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
+        this.setViewType = this.setViewType.bind(this);
     }
 
     componentDidMount() {
@@ -564,6 +565,13 @@ class HuntFilter extends React.Component {
         );
     }
 
+    setViewType(type) {
+        this.props.itemsListUpdate({
+            ...this.props.config,
+            view_type: type
+        })
+    }
+
     render() {
         const { currentFilterType } = this.state;
         const activeFilters = [];
@@ -597,9 +605,9 @@ class HuntFilter extends React.Component {
                             />
                             {this.renderInput()}
                         </Filter>
-                        {this.props.sort_config && <HuntSort config={this.props.sort_config}
-                            ActiveSort={this.props.ActiveSort}
-                            UpdateSort={this.props.UpdateSort}
+                        {this.props.sort_config && this.props.config && <HuntSort config={this.props.sort_config}
+                            itemsList={this.props.config}
+                            itemsListUpdate={this.props.itemsListUpdate}
                             disabled={this.props.disable_sort ? this.props.disable_sort : false}
                         />}
                         {this.props.gotAlertTag && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && <div className="form-group" style={{ paddingTop: '3px', height: '25px' }}>
@@ -634,7 +642,7 @@ class HuntFilter extends React.Component {
                                 bsStyle="link"
                                 className={{ active: this.props.config.view_type === 'list' }}
                                 onClick={() => {
-                                    this.props.setViewType('list');
+                                    this.setViewType('list');
                                 }}
                             >
                                 <Icon type="fa" name="th-list" />
@@ -644,7 +652,7 @@ class HuntFilter extends React.Component {
                                 bsStyle="link"
                                 className={{ active: this.props.config.view_type === 'card' }}
                                 onClick={() => {
-                                    this.props.setViewType('card');
+                                    this.setViewType('card');
                                 }}
                             >
                                 <Icon type="fa" name="th" />
@@ -702,12 +710,10 @@ HuntFilter.defaultProps = {
 HuntFilter.propTypes = {
     filterFields: PropTypes.any,
     gotAlertTag: PropTypes.bool,
-    setViewType: PropTypes.any,
     queryType: PropTypes.any,
     sort_config: PropTypes.any,
     disable_sort: PropTypes.any,
-    ActiveSort: PropTypes.any,
-    UpdateSort: PropTypes.any,
+    itemsListUpdate: PropTypes.any,
     config: PropTypes.any,
     actionsButtons: PropTypes.any,
     displayToggle: PropTypes.bool,

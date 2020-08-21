@@ -5,84 +5,56 @@ import { PaginationRow, PAGINATION_VIEW_TYPES } from 'patternfly-react';
 export default class HuntPaginationRow extends React.Component {
     constructor(props) {
         super(props);
+        this.updatePagination = this.updatePagination.bind(this);
         this.onPageInput = this.onPageInput.bind(this);
-        this.onPerPageSelect = this.onPerPageSelect.bind(this);
+    }
+
+    updatePagination = (pagin) => {
+        const pagination = {
+            ...this.props.itemsList,
+            pagination: {
+                ...this.props.itemsList.pagination,
+                ...pagin
+            }
+        };
+
+        const pageCount = Math.ceil(this.props.itemsCount / pagination.perPage);
+        pagination.page = Math.min(pagination.page, pageCount);
+        this.props.onPaginationChange(pagination);
     }
 
     onPageInput = (e) => {
         const val = parseInt(e.target.value, 10);
         if (val > 0) {
-            const newPaginationState = Object.assign({}, this.props.pagination);
-            newPaginationState.page = val;
-            this.props.onPaginationChange(newPaginationState);
+            this.updatePagination({ page: val });
         }
     }
 
-    onPerPageSelect = (eventKey) => {
-        const newPaginationState = Object.assign({}, this.props.pagination);
-        newPaginationState.perPage = eventKey;
-        this.props.onPaginationChange(newPaginationState);
-    }
-
     render() {
-        const {
-            viewType,
-            pageInputValue,
-            amountOfPages,
-            itemCount,
-            itemsStart,
-            itemsEnd,
-            onFirstPage,
-            onPreviousPage,
-            onNextPage,
-            onLastPage
-        } = this.props;
-
+        const { pagination } = this.props.itemsList;
+        const pageCount = Math.ceil(this.props.itemsCount / pagination.perPage);
         return (
-            <PaginationRow
-                viewType={viewType}
-                pageInputValue={pageInputValue}
-                pagination={this.props.pagination}
-                amountOfPages={amountOfPages}
-                pageSizeDropUp={true}
-                itemCount={itemCount}
-                itemsStart={itemsStart}
-                itemsEnd={itemsEnd}
-                onPerPageSelect={this.onPerPageSelect}
-                onFirstPage={onFirstPage}
-                onPreviousPage={onPreviousPage}
+            <PaginationRow pageSizeDropUp
+                viewType={this.props.viewType}
+                pageInputValue={pagination.page}
+                pagination={pagination}
+                amountOfPages={pageCount}
+                itemCount={this.props.itemsCount - 1}
+                itemsStart={(pagination.page - 1) * pagination.perPage}
+                itemsEnd={Math.min((pagination.page * pagination.perPage) - 1, this.props.itemsCount - 1)}
                 onPageInput={this.onPageInput}
-                onNextPage={onNextPage}
-                onLastPage={onLastPage}
+                onPerPageSelect={(e) => this.updatePagination({ perPage: e })}
+                onPreviousPage={() => this.updatePagination({ page: pagination.page - 1 })}
+                onNextPage={() => this.updatePagination({ page: pagination.page + 1 })}
+                onFirstPage={() => this.updatePagination({ page: 1 })}
+                onLastPage={() => this.updatePagination({ page: pageCount })}
             />
         );
     }
 }
 HuntPaginationRow.propTypes = {
-    pagination: PropTypes.any,
-    onPaginationChange: PropTypes.func,
-};
-
-function noop() {
-
-}
-
-HuntPaginationRow.propTypes = {
+    onPaginationChange: PropTypes.func.isRequired,
     viewType: PropTypes.oneOf(PAGINATION_VIEW_TYPES).isRequired,
-    pageInputValue: PropTypes.number.isRequired,
-    amountOfPages: PropTypes.number.isRequired,
-    itemCount: PropTypes.number.isRequired,
-    itemsStart: PropTypes.number.isRequired,
-    itemsEnd: PropTypes.number.isRequired,
-    onFirstPage: PropTypes.func,
-    onPreviousPage: PropTypes.func,
-    onNextPage: PropTypes.func,
-    onLastPage: PropTypes.func
-};
-
-HuntPaginationRow.defaultProps = {
-    onFirstPage: noop,
-    onPreviousPage: noop,
-    onNextPage: noop,
-    onLastPage: noop
+    itemsCount: PropTypes.number.isRequired,
+    itemsList: PropTypes.object.isRequired,
 };

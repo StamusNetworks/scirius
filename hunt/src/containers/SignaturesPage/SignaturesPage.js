@@ -41,13 +41,6 @@ import { actionsButtons,
     buildListUrlParams,
     loadActions,
     createAction,
-    handlePaginationChange,
-    onFirstPage,
-    onNextPage,
-    onPrevPage,
-    onLastPage,
-    setViewType,
-    UpdateSort,
     closeAction,
     buildFilter } from '../../helpers/common';
 
@@ -160,20 +153,15 @@ export class SignaturesPage extends React.Component {
         this.cache = {};
         this.cachePage = 1;
         this.updateRulesState = this.updateRulesState.bind(this);
+        this.updateSignatureListState = this.updateSignatureListState.bind(this);
         this.fetchHitsStats = this.fetchHitsStats.bind(this);
         this.actionsButtons = actionsButtons.bind(this);
         this.buildListUrlParams = buildListUrlParams.bind(this);
         this.loadActions = loadActions.bind(this);
         this.createAction = createAction.bind(this);
-        this.handlePaginationChange = handlePaginationChange.bind(this);
-        this.onFirstPage = onFirstPage.bind(this);
-        this.onNextPage = onNextPage.bind(this);
-        this.onPrevPage = onPrevPage.bind(this);
-        this.onLastPage = onLastPage.bind(this);
-        this.setViewType = setViewType.bind(this);
-        this.UpdateSort = UpdateSort.bind(this);
         this.closeAction = closeAction.bind(this);
         this.buildFilter = buildFilter.bind(this);
+        this.fetchData = this.fetchData.bind(this);
     }
 
     componentDidMount() {
@@ -324,8 +312,8 @@ export class SignaturesPage extends React.Component {
         this.setState({ rules });
     }
 
-    updateRuleListState(rulesListState, fetchDataCallback) {
-        this.props.updateListState(rulesListState, fetchDataCallback);
+    updateSignatureListState(sigsListState) {
+        this.props.updateListState(sigsListState, () => this.fetchData());
     }
 
     render() {
@@ -337,9 +325,7 @@ export class SignaturesPage extends React.Component {
                 <ErrorHandler>
                     <HuntFilter
                         config={this.props.rules_list}
-                        ActiveSort={this.props.rules_list.sort}
-                        UpdateSort={this.UpdateSort}
-                        setViewType={this.setViewType}
+                        itemsListUpdate={this.updateSignatureListState}
                         filterFields={this.state.rulesFilters}
                         sort_config={RuleSortFields}
                         displayToggle={view === 'rules_list'}
@@ -363,17 +349,9 @@ export class SignaturesPage extends React.Component {
                 <ErrorHandler>
                     { view === 'rules_list' && <HuntPaginationRow
                         viewType={PAGINATION_VIEW.LIST}
-                        pagination={this.props.rules_list.pagination}
-                        onPaginationChange={this.handlePaginationChange}
-                        amountOfPages={Math.ceil(this.state.count / this.props.rules_list.pagination.perPage)}
-                        pageInputValue={this.props.rules_list.pagination.page}
-                        itemCount={this.state.count - 1} // used as last item
-                        itemsStart={(this.props.rules_list.pagination.page - 1) * this.props.rules_list.pagination.perPage}
-                        itemsEnd={Math.min((this.props.rules_list.pagination.page * this.props.rules_list.pagination.perPage) - 1, this.state.count - 1)}
-                        onFirstPage={this.onFirstPage}
-                        onNextPage={this.onNextPage}
-                        onPreviousPage={this.onPrevPage}
-                        onLastPage={this.onLastPage}
+                        onPaginationChange={this.updateSignatureListState}
+                        itemsCount={this.state.count}
+                        itemsList={this.props.rules_list}
                     /> }
                     {view === 'rule' && <RulePage systemSettings={this.props.systemSettings} rule={displayRule} config={this.props.rules_list} filters={this.props.filters} filterParams={this.props.filterParams} rulesets={this.state.rulesets} />}
                     {view === 'dashboard' && <DashboardPage />}
