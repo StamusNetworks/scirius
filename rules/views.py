@@ -1514,8 +1514,8 @@ def add_ruleset(request):
             return redirect(ruleset)
     else:
         initial = {'action': Transformation.A_NONE.value,
-                   'lateral': Transformation.L_NO.value,
-                   'target': Transformation.T_NONE.value
+                   'lateral': Transformation.L_AUTO.value,
+                   'target': Transformation.T_AUTO.value
                    }
         form = RulesetForm(initial=initial)  # An unbound form
         missing = dependencies_check(Ruleset)
