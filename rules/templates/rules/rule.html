@@ -468,7 +468,12 @@ function populate_topip_actions(pdiv, field, direction) {
                 $(this).parent("tr").children(".host").css('cursor', 'pointer');
                 $(this).parent("tr").children(".host").click( function() {
 			ip = $(this).text()
-			window.open("{{ evebox_url }}/#/events;q=" + field + ":\"" + ip + "\"");
+
+            {% if custom_eve_url %}
+                window.open("{{ custom_eve_url|safe }}" + ip);
+            {% else %}
+                window.open("{{ evebox_url }}/#/events;q=" + field + ":\"" + ip + "\"");
+            {% endif %}
 		});
 	    {% endif %}
 
