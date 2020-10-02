@@ -109,7 +109,7 @@ WSGI_APPLICATION = 'scirius.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'data', 'db.sqlite3'),
     }
 }
 
@@ -290,7 +290,7 @@ PROXY_PARAMS = {'http': "http://proxy:3128", 'https': "http://proxy:3128"}
 # For basic authentication you can use
 # PROXY_PARAMS = { 'http': "http://user:pass@proxy:3128", 'https': "http://user:pass@proxy:3128" }
 
-GIT_SOURCES_BASE_DIRECTORY = os.path.join(BASE_DIR, 'git-sources/')
+GIT_SOURCES_BASE_DIRECTORY = os.path.join(BASE_DIR, 'data', 'git-sources/')
 
 DBBACKUP_STORAGE = 'dbbackup.storage.filesystem_storage'
 # DBBACKUP_STORAGE_OPTIONS = {'location': '/var/backups'}
