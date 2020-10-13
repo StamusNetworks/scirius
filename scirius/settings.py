@@ -208,6 +208,7 @@ REST_FRAMEWORK = {
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_AUTHENTICATED = False
 
 # Suricata binary
 SURICATA_BINARY = "suricata"

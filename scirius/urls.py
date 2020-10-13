@@ -2,7 +2,7 @@
 from django.conf.urls import url, include
 from django.conf import settings
 
-from .views import homepage, KibanaProxyView, EveboxProxyView, MolochProxyView
+from .views import homepage, KibanaProxyView, EveboxProxyView, MolochProxyView, static_redirect
 from .rest_api import router
 
 urlpatterns = [
@@ -30,3 +30,8 @@ urlpatterns = [
     # Moloch proxy
     url(r'^moloch/(?P<path>.*)$', MolochProxyView.as_view()),
 ]
+
+if settings.STATIC_AUTHENTICATED:
+    urlpatterns += [
+        url(r'^static/(?P<static_path>.*)$', static_redirect, name='static_redirect'),
+    ]
