@@ -44,6 +44,12 @@ class KibanaProxyView(ProxyView):
     upstream = settings.KIBANA_URL
     add_remote_user = False
 
+    def dispatch(self, request, path):
+        if (path == 'api/infra/graphql' or path.startswith('api/infra/graphql/')) and \
+                not settings.KIBANA_ALLOW_GRAPHQL:
+            raise PermissionDenied()
+        return super().dispatch(request, path)
+
 
 class EveboxProxyView(ProxyView):
     upstream = "http://" + settings.EVEBOX_ADDRESS

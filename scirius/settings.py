@@ -260,6 +260,7 @@ KIBANA_INDEX = "kibana-int"
 # Path to Kibana's dashboards installation
 KIBANA_DASHBOARDS_PATH = '/opt/kibana-dashboards/'
 KIBANA6_DASHBOARDS_PATH = '/opt/kibana6-dashboards/'
+KIBANA_ALLOW_GRAPHQL = True
 
 USE_EVEBOX = False
 EVEBOX_ADDRESS = "evebox:5636"
