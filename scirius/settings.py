@@ -64,6 +64,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'scirius.loginrequired.LoginRequiredMiddleware',
     'scirius.utils.TimezoneMiddleware',
+    'csp.middleware.CSPMiddleware',
     'django_cprofile_middleware.middleware.ProfilerMiddleware'
 ]
 
@@ -185,6 +186,10 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
+
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'",)
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'",)
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
