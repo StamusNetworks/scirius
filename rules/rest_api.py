@@ -686,7 +686,10 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         else:
             result = ESDeleteAlertsBySid(request).get(pk)
             if 'status' in result and result['status'] != 200:
-                return Response({'error: ES request failed, %s' % result['msg']}, status=result['status'])
+                if settings.DEBUG:
+                    return Response({'details': 'Elasticsearch error: %s' % result['msg']}, status=result['status'])
+                else:
+                    return Response({'details': 'Elasticsearch error %s' % result['status']}, status=result['status'])
             return Response({'delete_alerts': 'ok'})
         return Response(result)
 
@@ -1918,7 +1921,7 @@ class ESBaseViewSet(APIView):
         try:
             return self._get(request, format)
         except ESError as e:
-            return Response({'error: ES request failed, %s' % str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def _get(self, request, format):
         raise NotImplementedError('This is an abstract class. ES sub classes must override this method')

@@ -219,7 +219,11 @@ class ESQuery(object):
             else:
                 msg += repr(e)
             es_logger.exception(msg)
-            raise ESError(msg, e)
+
+            if settings.DEBUG:
+                raise ESError(msg, e)
+            else:
+                raise ESError('Elasticsearch error %s %s' % (e.code, e.reason), e)
         else:
             if settings.DEBUG:
                 if method is None:
