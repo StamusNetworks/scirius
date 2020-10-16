@@ -882,6 +882,22 @@ class Source(models.Model):
             except (IndexError, ValueError):
                 raise Exception('Invalid syntax in file %s (line %i)' % (filename, line_no + 1))
 
+    # Rewrite of https://github.com/python/cpython/blob/master/Lib/tarfile.py
+    # Extract tar file but force setting permissions
+    @staticmethod
+    def _tar_extractall(tarfile, path=".", members=None, *, numeric_owner=False):
+        if members is None:
+            members = tarfile
+
+        for tarinfo in members:
+            tarfile.extract(tarinfo, path, set_attrs=False)
+            fpath = os.path.join(path, tarinfo.name)
+
+            if tarinfo.isdir():
+                os.chmod(fpath, 0o755)
+            else:
+                os.chmod(fpath, 0o644)
+
     def handle_rules_in_tar(self, f):
         f.seek(0)
         if (not tarfile.is_tarfile(f.name)):
@@ -932,7 +948,7 @@ class Source(models.Model):
             raise SuspiciousOperation("Tar file does not contain a 'rules' directory")
 
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
-        tfile.extractall(path=source_git_dir, members=dir_list)
+        self._tar_extractall(tfile, path=source_git_dir, members=dir_list)
         if "/" in rules_dir:
             shutil.move(os.path.join(source_git_dir, rules_dir), os.path.join(source_git_dir, 'rules'))
             shutil.rmtree(os.path.join(source_git_dir, rules_dir.split('/')[0]))
