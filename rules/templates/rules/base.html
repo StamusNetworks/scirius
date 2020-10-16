@@ -8,18 +8,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}"/>
     <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
-    <script src="{% static 'js/jquery.min.js' %}"></script>
-    <script src="{% static 'js/c3.min.js' %}" charset="utf-8"></script>
-    <script src="{% static 'js/d3.v3.min.js' %}" charset="utf-8"></script>
-    <script src="{% static 'js/nv.d3.min.js' %}" charset="utf-8"></script>
+    <script src="{% static 'dist/scirius-bundle.js' %}"></script>
     {% block head %} {% endblock %}
     <link rel="stylesheet" type="text/css" href="{% static 'dist/styles.css' %}" />
     {% if settings.CUSTOM_CSS %}
         <link rel="stylesheet" type="text/css" href="{{ settings.CUSTOM_CSS }}" />
     {% endif %}
-
-    <script src="{% static 'dist/scirius-bundle.js' %}"></script>
-
 </head>
 
 {% block body %}
@@ -150,7 +144,7 @@
 		{% endif %}
 
 <!-- Modal -->
-<div class="modal fade bs-example-modal-sm" id="scirius_down" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal bs-example-modal-sm" id="scirius_down" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -168,7 +162,7 @@
 </div>
 
 <!-- Generic modal -->
-<div class="modal fade bs-example-modal-sm" id="generic-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal bs-example-modal-sm" id="generic-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">

@@ -128,11 +128,15 @@ Comment <span class="badge">{{ rule.get_comments|length }}</span>
 <script>
 $(document).ready(function(){
     $('a[data-toggle="tab"]').on('show.bs.tab', function(e) {
+        $(this).closest('li').siblings().removeClass('active');
         localStorage.setItem('ruleactiveTab', $(e.target).attr('href'));
+        $(this).closest('li').addClass('active');
     });
     var activeTab = localStorage.getItem('ruleactiveTab');
     if(activeTab){
+        $('#ruleinfo li').siblings().removeClass('active');
         $('#ruleinfo a[href="' + activeTab + '"]').tab('show');
+        $('#ruleinfo a[href="' + activeTab + '"]').closest('li').addClass('active');
     }
 
     $('#toggle_availability').click(function () {
@@ -154,7 +158,7 @@ $(document).ready(function(){
  <div class="tab-content">
 
 {% if suricata_stats and elasticsearch %}
-<div role="tabpanel" class="tab-pane fade in active" id="stats">
+<div role="tabpanel" class="tab-pane active" id="stats">
 <div class="container-fluid" >
 <div class="col-md-4">
 <div class="container-fluid">
@@ -231,7 +235,7 @@ $(document).ready(function(){
 
 {% endif %} {# if probes #}
 </div> <!-- tabpanel -->
-<div role="tabpanel" class="tab-pane fade in" id="metastats">
+<div role="tabpanel" class="tab-pane" id="metastats">
 <div class="container-fluid" >
 <!--
 <div class="col-md-4">
@@ -256,7 +260,7 @@ $(document).ready(function(){
 
 {% endif %} {# suricata_stats and elasticsearch #}
 
-<div role="tabpanel" class="tab-pane fade in{% if not suricata_stats and not elasticsearch %} active{% endif %}" id="rule_status">
+<div role="tabpanel" class="tab-pane{% if not suricata_stats and not elasticsearch %} active{% endif %}" id="rule_status">
 <div class="container-fluid">
 
 <h2 class="title">Definition</h2>
@@ -356,7 +360,7 @@ $(document).ready(function(){
 
 </div>
 
-<div role="tabpanel" class="tab-pane fade in" id="rule_comments">
+<div role="tabpanel" class="tab-pane" id="rule_comments">
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-10">
@@ -589,6 +593,10 @@ function rule_validity_check() {
       );
 }
 
-$( 'document' ).ready(rule_validity_check());
+$( 'document' ).ready(function() {
+    if (window.location.href.indexOf('?no_tests') == -1) {
+        rule_validity_check();
+    }
+});
 </script>
 {% endblock %}

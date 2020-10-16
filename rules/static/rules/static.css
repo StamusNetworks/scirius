@@ -425,3 +425,25 @@ div#highlight_info {
   height: 200px;
   padding: 5px;
 }
+
+.navbar .container, .navbar .container-fluid, .navbar .container-lg, .navbar .container-md, .navbar .container-sm, .navbar .container-xl {
+    display: block;
+    -ms-flex-wrap: initial;
+    flex-wrap: nowrap;
+    -ms-flex-align: center;
+    align-items: normal;
+    -ms-flex-pack: initial;
+    justify-content: normal;
+}
+.navbar-nav {
+    display: block;;
+    flex-direction: unset;
+}
+.navbar-nav .dropdown-menu {
+    position: absolute;
+}
+.applauncher-pf .applauncher-pf-item {
+    width: 50%;
+    display: block;
+    float: left;
+}
