@@ -21,6 +21,23 @@ from scirius.utils import get_middleware_module
 es_logger = logging.getLogger('elasticsearch')
 
 
+def es_string_escape(s):
+    if s is None:
+        return None
+    elif isinstance(s, int):
+        return s
+    elif isinstance(s, list):
+        return [es_string_escape(_s) for _s in s]
+    elif isinstance(s, dict):
+        _dict = {}
+        for key, val in s.items():
+            _dict[key] = es_string_escape(val)
+        return _dict
+    elif not isinstance(s, str):
+        raise Exception('Unsupported datatype %s' % s.__class__.__name__)
+    return mark_safe(json.dumps(s)[1:-1])
+
+
 class ESQuery(object):
     TIMEOUT = 30
     MAX_RESULT_WINDOW = 10000
@@ -134,32 +151,24 @@ class ESQuery(object):
 
         return interval
 
-    def _render_template(self, tmpl, dictionary, ignore_middleware=False):
-        hosts_list = ['*']
+    def _render_template(self, tmpl, _dictionary, ignore_middleware=False):
+        dictionary = es_string_escape(_dictionary)
+        hosts = ['*']
         qfilter = None
 
         if self.request:
             if 'hosts' in self.request.GET:
-                hosts_list = self.request.GET['hosts'].split(',')
+                hosts = es_string_escape(self.request.GET['hosts']).split(',')
             else:
                 if 'hosts' in dictionary:
-                    hosts_list = dictionary['hosts'].split(',')
+                    hosts = dictionary['hosts'].split(',')
             if 'qfilter' in self.request.GET:
-                qfilter = self.request.GET['qfilter']
+                qfilter = es_string_escape(self.request.GET['qfilter'])
         else:
             if 'qfilter' in dictionary:
                 qfilter = dictionary['qfilter']
 
-        hosts = None
         hosts_filter = None
-
-        hosts = []
-        for host in hosts_list:
-            if host != '*':
-                host = json.dumps(host).replace('"', '\\"')
-                host = mark_safe(host)
-            hosts.append(host)
-
         if hosts == ['*']:
             # use _exists_ in case analyze_wildcard is false
             hosts_filter = '_exists_:%s' % settings.ELASTICSEARCH_HOSTNAME
@@ -171,10 +180,7 @@ class ESQuery(object):
 
         if qfilter is not None:
             query_filter += ' AND ' + qfilter
-
-        if query_filter:
-            # dump as json but remove quotes since the quotes are already set in templates
-            query_filter = mark_safe(json.dumps(query_filter)[1:-1])
+            query_filter = mark_safe(query_filter)
 
         if ignore_middleware:
             bool_clauses = ''
