@@ -24,7 +24,7 @@ es_logger = logging.getLogger('elasticsearch')
 def es_string_escape(s):
     if s is None:
         return None
-    elif isinstance(s, int):
+    elif isinstance(s, (int, float)):
         return s
     elif isinstance(s, list):
         return [es_string_escape(_s) for _s in s]
@@ -229,7 +229,13 @@ class ESQuery(object):
             if settings.DEBUG:
                 raise ESError(msg, e)
             else:
-                raise ESError('Elasticsearch error %s %s' % (e.code, e.reason), e)
+                if isinstance(e, socket.timeout):
+                    msg = 'request timeout'
+                elif isinstance(e, urllib.error.HTTPError):
+                    msg = 'error %s %s' % (e.code, e.reason)
+                else:
+                    msg = repr(e)
+                raise ESError('Elasticsearch %s' % msg, e)
         else:
             if settings.DEBUG:
                 if method is None:
