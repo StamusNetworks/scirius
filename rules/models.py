@@ -984,9 +984,9 @@ class Source(models.Model):
             shutil.copy(f.name, os.path.join(rules_dir, self.name))
         else:
             target_file = os.path.join(rules_dir, self.name)
-            with open(target_file, 'w') as tf:
+            with open(target_file, 'wb') as tf:
                 for stringelt in f:
-                    tf.write(base64.b64encode(stringelt.rstrip('\r\n')) + "\n")
+                    tf.write(base64.b64encode(stringelt.rstrip(b'\r\n')) + b"\n")
 
         index = repo.index
         if len(index.diff(None)) or self.first_run:
