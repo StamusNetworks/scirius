@@ -22,6 +22,8 @@ import re
 import os
 import yaml
 import requests
+import hashlib
+import base64
 
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
@@ -32,6 +34,7 @@ from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.contrib import messages
 from elasticsearch.exceptions import ConnectionError as ESConnectionError
 import django_tables2 as tables
+from webpack_loader.utils import get_files as webpack_files
 
 from csp.decorators import csp
 
@@ -2030,7 +2033,35 @@ def delete_comment(request, comment_id):
     return JsonResponse(data)
 
 
-@csp(DEFAULT_SRC=["'self'"], SCRIPT_SRC=["'self'", "'unsafe-eval'"], STYLE_SRC=["'self'", "'unsafe-inline'"])
+def get_js_files(config, filetype, bundles=['main']):
+    files = []
+    for bundle in bundles:
+        try:
+            wfiles = webpack_files(bundle, filetype, config=config)
+        except OSError:
+            # Ignore loading error when the bundle is not yet compiled
+            continue
+        for entry in wfiles:
+            f = entry['path']
+            with open(f, 'rb') as fd:
+                digest = hashlib.sha256(fd.read()).digest()
+            b64 = base64.b64encode(digest).decode('ascii')
+            entry['hash'] = "sha256-%s" % b64
+            files.append(entry)
+
+    return files
+
+
+def get_bundle_csp_hash(*args, **kwargs):
+    return ["'%s'" % f['hash'] for f in get_js_files(*args, **kwargs)]
+
+
+hunt_js_files = get_js_files('DEFAULT', 'js')
+
+
+@csp(DEFAULT_SRC=["'self'"],
+     SCRIPT_SRC=get_bundle_csp_hash('DEFAULT', 'js'),
+     STYLE_SRC=["'self'", "'unsafe-inline'"])
 def hunt(request):
-    context = {}
+    context = {'js_files': hunt_js_files}
     return scirius_render(request, 'rules/hunt.html', context)
