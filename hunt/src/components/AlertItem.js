@@ -408,6 +408,7 @@ export default class AlertItem extends React.Component {
                                                     <EventField field_name="User-Agent" field="tls.ja3.agent" value={agent} addFilter={this.addFilter} key={`to-${idx}`} />
                                                 </ErrorHandler>
                                             ))}
+                                            {(data.tls.ja3s && data.tls.ja3s.hash !== undefined) && <ErrorHandler><EventField field_name="JA3S" field="tls.ja3s.hash" value={data.tls.ja3s.hash} addFilter={this.addFilter} /></ErrorHandler>}
                                         </dl>
                                     </div>
                                 </div>

@@ -833,6 +833,24 @@ export const dashboard = {
                             w: 8, h: 7, x: 0, y: 44
                         },
                     },
+                }, {
+                    i: 'tls.ja3s.hash',
+                    title: 'JA3S Hash',
+                    data: null,
+                    dimensions: {
+                        lg: {
+                            w: 10, h: 7, x: 0, y: 22
+                        },
+                        md: {
+                            w: 12, h: 7, x: 0, y: 22
+                        },
+                        sm: {
+                            w: 8, h: 7, x: 8, y: 22
+                        },
+                        xs: {
+                            w: 4, h: 7, x: 4, y: 22
+                        },
+                    },
                 }
             ],
             dimensions: {

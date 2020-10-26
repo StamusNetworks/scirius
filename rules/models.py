@@ -211,6 +211,7 @@ _HUNT_FILTERS = [
                     {'id': 'fingerprint', 'title': 'Fingerprint', 'placeholder': 'Filter by Fingerprint'},
                     {'id': 'serial', 'title': 'Serial', 'placeholder': 'Filter by Serial'},
                     {'id': 'ja3.hash', 'title': 'JA3 Hash', 'placeholder': 'Filter by JA3 Hash'},
+                    {'id': 'ja3s.hash', 'title': 'JA3S Hash', 'placeholder': 'Filter by JA3S Hash'},
                 ]
             },
         ]
