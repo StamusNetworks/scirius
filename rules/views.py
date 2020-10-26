@@ -2030,7 +2030,7 @@ def delete_comment(request, comment_id):
     return JsonResponse(data)
 
 
-@csp(DEFAULT_SRC=["'self'"], SCRIPT_SRC=["'self'", "'unsafe-eval'"], STYLE_SRC=["'self'", "'unsafe-inline'"])
+@csp(DEFAULT_SRC=["'self'"], SCRIPT_SRC=["'unsafe-eval'"], STYLE_SRC=["'self'", "'unsafe-inline'"])
 def hunt(request):
     context = {}
     return scirius_render(request, 'rules/hunt.html', context)

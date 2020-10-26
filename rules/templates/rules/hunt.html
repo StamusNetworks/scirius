@@ -18,7 +18,7 @@
 
      {% get_files 'main' 'js' as js_files %}
      {% for js_file in js_files %}
-       <script type="text/javascript" src="{{ js_file.url }}"></script>
+       <script type="text/javascript" src="{{ js_file.url }}" nonce="{{ request.csp_nonce }}"></script>
      {% endfor %}
   </body>
 </html>
