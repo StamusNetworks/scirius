@@ -41,7 +41,7 @@ from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
-from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD
+from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD, USE_CYBERCHEF, CYBERCHEF_URL
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
 
@@ -2560,7 +2560,7 @@ class SystemSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = SystemSettings
         fields = '__all__'
-        read_only_fields = ('kibana', 'kibana_url', 'evebox', 'evebox_url',)
+        read_only_fields = ('kibana', 'kibana_url', 'evebox', 'evebox_url', 'cyberchef', 'cyberchef_url')
 
 
 class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
@@ -2617,6 +2617,9 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
         if USE_EVEBOX:
             data['evebox_url'] = '/evebox'
 
+        data['cyberchef'] = USE_CYBERCHEF
+        if USE_CYBERCHEF:
+            data['cyberchef_url'] = CYBERCHEF_URL
         return Response(data)
 
     def get_object(self):

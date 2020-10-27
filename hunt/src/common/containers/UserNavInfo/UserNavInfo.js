@@ -207,6 +207,14 @@ export default class UserNavInfo extends Component {
                                 </a>
                             </li>}
 
+                            {this.props.systemSettings && this.props.systemSettings.cyberchef && <li className="applauncher-pf-item" role="presentation">
+                                <a className="applauncher-pf-link" href={this.props.systemSettings.cyberchef_url} role="menuitem" data-toggle="tooltip" title={'Cyberchef data processing tool'} style={{ color: 'inherit' }} target="_blank">
+
+                                    <i style={{ fontSize: '2.5em' }} className="glyphicon glyphicon-cutlery" aria-hidden="true"></i>
+                                    <span className="applauncher-pf-link-title" style={{ paddingTop: '5px' }}>{'Cyberchef'}</span>
+                                </a>
+                            </li>}
+
                         </ApplicationLauncher>
                     </OutsideAlerter>
                 </ErrorHandler>

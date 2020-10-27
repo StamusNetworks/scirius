@@ -111,6 +111,9 @@ def scirius_render(request, template, context):
     if settings.USE_EVEBOX:
         context['evebox'] = 1
         context['evebox_url'] = "/evebox"
+    if settings.USE_CYBERCHEF:
+        context['cyberchef'] = 1
+        context['cyberchef_url'] = "/static/cyberchef/"
     if settings.SCIRIUS_HAS_DOC:
         djurl = request.resolver_match
         context['help_link'] = help_links(djurl.view_name)

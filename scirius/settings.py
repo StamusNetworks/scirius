@@ -267,6 +267,9 @@ KIBANA_ALLOW_GRAPHQL = True
 USE_EVEBOX = False
 EVEBOX_ADDRESS = "evebox:5636"
 
+USE_CYBERCHEF = True
+CYBERCHEF_URL = '/static/cyberchef/'
+
 # Suricata is configured to write stats to EVE
 USE_SURICATA_STATS = False
 # Logstash is generating metrics on eve events

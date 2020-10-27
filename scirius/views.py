@@ -67,7 +67,7 @@ class MolochProxyView(ProxyView):
 
 
 def static_redirect(request, static_path):
-    if static_path.endswith('.js') and not request.user.is_authenticated:
+    if (static_path.endswith('.js') or static_path.endswith('.html') or static_path.endswith('/')) and not request.user.is_authenticated:
         raise PermissionDenied()
     response = HttpResponse(status=200)
     response['Content-Type'] = ''
