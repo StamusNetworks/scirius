@@ -1493,7 +1493,7 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
             v.request = HttpRequest()
             v.request.user = None
 
-            if v.get_queryset().ordered or not issubclass(viewset, mixins.ListModelMixin) or not getattr(v, 'ordering_test', True) or v.ordering_test is False:
+            if v.get_queryset().ordered or not issubclass(viewset, mixins.ListModelMixin) or not getattr(v, 'ordering_test', True):
                 continue
             ERR = 'Viewset "%s" must set an "ordering" attribute or have an ordered queryset' % viewset.__name__
             self.assertTrue(hasattr(viewset, 'ordering'), ERR)
