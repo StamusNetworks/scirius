@@ -341,7 +341,7 @@ $( 'document' ).ready(function() {
 });
 {% else %}
 {% if ruleset.errors|length > 2 %}
-    $("#ruleset_status_row").show();
+    $("#ruleset_status_row").show(duration=200);
 {% endif %}
 {% endif %}
 </script>

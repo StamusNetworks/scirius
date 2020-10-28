@@ -46,31 +46,31 @@ function display_warning(method) {
 
 function hide_fields() {
     $("#id_method").change(display_field);
-    $("#id_uri").parents(".form-group").hide();
-    $("#id_authkey").parents(".form-group").hide();
-    $("#id_file").parents(".form-group").hide();
-    $("#id_cert_verif").parents(".form-group").hide();
-    $("#name_warning").hide();
+    $("#id_uri").parents(".form-group").hide(duration=200);
+    $("#id_authkey").parents(".form-group").hide(duration=200);
+    $("#id_file").parents(".form-group").hide(duration=200);
+    $("#id_cert_verif").parents(".form-group").hide(duration=200);
+    $("#name_warning").hide(duration=200);
     $("#id_method").change(display_field);
     $("#id_datatype").change(display_warning);
 }
 
 function select_fields() {
     if ($("#id_method").find("option:selected").text() == "HTTP URL") {
-        $("#id_file").parents(".form-group").hide();
-        $("#id_uri").parents(".form-group").show();
-        $("#id_authkey").parents(".form-group").show();
-        $("#id_cert_verif").parents(".form-group").show();
+        $("#id_file").parents(".form-group").hide(duration=200);
+        $("#id_uri").parents(".form-group").show(duration=200);
+        $("#id_authkey").parents(".form-group").show(duration=200);
+        $("#id_cert_verif").parents(".form-group").show(duration=200);
     } else if ($("#id_method").find("option:selected").text() == "Upload") {
-        $("#id_uri").parents(".form-group").hide();
-        $("#id_authkey").parents(".form-group").hide();
-        $("#id_cert_verif").parents(".form-group").hide();
-        $("#id_file").parents(".form-group").show();
+        $("#id_uri").parents(".form-group").hide(duration=200);
+        $("#id_authkey").parents(".form-group").hide(duration=200);
+        $("#id_cert_verif").parents(".form-group").hide(duration=200);
+        $("#id_file").parents(".form-group").show(duration=200);
     }
     if ($("#id_datatype").find("option:selected").text() == "Other content") {
-        $("#name_warning").show();
+        $("#name_warning").show(duration=200);
     } else {
-        $("#name_warning").hide();
+        $("#name_warning").hide(duration=200);
     }
 
     $("#id_method").change(display_field);
