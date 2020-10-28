@@ -78,20 +78,8 @@ def complete_context(request, context):
         else:
             date = '%sd' % str(duration / 24)
 
-        if request.GET.__contains__('graph'):
-            graph = request.GET.get('graph', 'sunburst')
-            if graph not in ['sunburst', 'circles']:
-                graph = 'sunburst'
-            request.session['graph'] = graph
-        else:
-            graph = 'sunburst'
-
-        if graph == 'sunburst':
-            context['draw_func'] = 'draw_sunburst'
-            context['draw_elt'] = 'path'
-        else:
-            context['draw_func'] = 'draw_circle'
-            context['draw_elt'] = 'circle'
+        context['draw_func'] = 'draw_sunburst'
+        context['draw_elt'] = 'path'
 
         context['date'] = date
         context['from_date'] = from_date
