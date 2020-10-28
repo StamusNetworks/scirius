@@ -532,19 +532,6 @@ function draw_circle(from_date, hosts, filter, callback) {
                    .style("fill", function(d) { return d.children ? color(d.depth) : null; })
                    .on("click", function(d) { if (focus !== d) zoom(d), d3.event.stopPropagation(); });
             
-               $('circle').tipsy({ 
-                 gravity: 'w', 
-                 html: true, 
-                 fade: 'true',
-                 title: function() {
-                   var d = this.__data__;
-               if (d.msg) {
-                       return d.msg;
-               }
-                   return d.key ? d.key : "Unknown"; 
-                 }
-               });
-
                var node = svg.selectAll("circle,text");
              
                d3.select("circle")

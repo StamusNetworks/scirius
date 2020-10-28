@@ -8,6 +8,5 @@ import "../node_modules/patternfly/dist/css/patternfly-additions.css";
 import "../scss/_styles.scss";
 // JS
 import "../rules/static/js/bootstrap.min.js";
-import "../rules/static/js/tipsy.js";
 import "../rules/static/js/scirius.js";
 import "../node_modules/patternfly/dist/js/patternfly.js";
