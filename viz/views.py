@@ -25,7 +25,6 @@ from __future__ import unicode_literals
 from scirius.utils import scirius_render
 
 from django.conf import settings
-from csp.decorators import csp_replace
 
 PROBE = __import__(settings.RULESET_MIDDLEWARE)
 
