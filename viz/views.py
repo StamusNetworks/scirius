@@ -68,22 +68,3 @@ def dashboard_target(request):
 
     context['reload'] = reload
     return scirius_render(request, 'viz/dashboard_target.html', context)
-
-
-@csp_replace(IMG_SRC=["'self'", "data:"])
-def pktcity(request):
-    context = {}
-    if request.method == 'POST' and 'filter' in request.POST:
-        context['filter'] = request.POST['filter']
-        request.session['filter'] = request.POST['filter']
-    else:
-        context['filter'] = request.session.get('filter', '*')
-
-    if request.GET.__contains__('reload'):
-        reload = int(request.GET.get('reload', '300'))
-        request.session['reload'] = reload
-    else:
-        reload = int(request.session.get('reload', '300'))
-
-    context['reload'] = reload
-    return scirius_render(request, 'viz/pktcity.html', context)
