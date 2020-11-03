@@ -2023,13 +2023,6 @@ def history(request):
     return scirius_render(request, 'rules/history.html', context)
 
 
-def delete_comment(request, comment_id):
-    ua = get_object_or_404(UserAction, pk=comment_id, action="comment", user=request.user)
-    ua.delete()
-    data = {'status': 'OK'}
-    return JsonResponse(data)
-
-
 @csp(DEFAULT_SRC=["'self'"], SCRIPT_SRC=["'unsafe-eval'"], STYLE_SRC=["'self'", "'unsafe-inline'"])
 def hunt(request):
     context = {}

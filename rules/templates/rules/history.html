@@ -3,21 +3,6 @@
 {% block content %}
 <h2 class="title">User actions history</h2>
 {% include "rules/useraction.html" %}
-<script>
-$('button.comment_button').click(function() {
-    var comment_pk = $(this).attr("id");
-    if (confirm("Do you want to delete this comment ?")) {
-        $.ajax({
-            url: "{% url 'comment' %}/" + comment_pk + "/delete",
-            success: function(data) {
-                $(".comment#" + comment_pk).toggle();
-                $(".comment#" + comment_pk).remove();
-            }
-            }
-        );
-    }
- });
-</script>
 {% endblock %}
 
 {% block sidebar %}
