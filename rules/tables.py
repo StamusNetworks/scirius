@@ -73,6 +73,9 @@ class EditSourceAtVersionTable(SciriusTable):
         model = SourceAtVersion
         fields = ("source_selection", "name", "created_date")
 
+    def order_name(self, queryset, is_descending):
+        return (queryset.order_by('%s%s' % ('-' if is_descending else '', 'source__name')), True)
+
 
 class CategoryTable(SciriusTable):
     name = tables.LinkColumn('category', args=[tables.A('pk')])
