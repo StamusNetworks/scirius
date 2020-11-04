@@ -217,7 +217,6 @@ export default class UserNavInfo extends Component {
                     <Dropdown.Menu>
                         <MenuItem href={config.HUNT_DOC} target="_blank"><span className="glyphicon glyphicon-book" /> User manual</MenuItem>
                         <MenuItem onClick={this.AboutClick}><span className="glyphicon glyphicon-question-sign" /> About Scirius</MenuItem>
-                        <MenuItem onClick={() => window.open('https://github.com/StamusNetworks/scirius', '_blank')}><span className="glyphicon glyphicon-new-window" /> Scirius homepage</MenuItem>
                     </Dropdown.Menu>
                 </Dropdown>
 
