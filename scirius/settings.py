@@ -191,6 +191,7 @@ CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'",)
 CSP_STYLE_SRC = ("'self'", "'unsafe-inline'",)
 CSP_INCLUDE_NONCE_IN = ['script-src']
+CSP_EXCLUDE_URL_PREFIXES = ('/evebox',)
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
