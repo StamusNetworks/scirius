@@ -2,6 +2,7 @@
 from .suripyg import SuriHTMLFormat
 
 from django.conf import settings
+from django.conf.urls import url
 from django.utils import timezone
 from django.db import models
 from collections import OrderedDict
@@ -12,12 +13,12 @@ from django.core.exceptions import SuspiciousOperation, ValidationError
 from rest_framework.views import APIView
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers, viewsets, exceptions
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException, ParseError
-from rest_framework.routers import DefaultRouter, url
+from rest_framework.routers import DefaultRouter
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.mixins import UpdateModelMixin, RetrieveModelMixin
@@ -271,7 +272,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
         self._update_or_partial_update(request, True)
         return super(RulesetViewSet, self).update(request, partial=True, *args, **kwargs)
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def copy(self, request, pk):
         data = request.data.copy()
         ruleset = self.get_object()
@@ -291,7 +292,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
         return Response({'copy': 'ok'})
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def rules_count(self, request, pk):
         ruleset = self.get_object()
         return Response(ruleset.number_of_rules())
@@ -343,7 +344,7 @@ class CategoryViewSet(SciriusReadOnlyModelViewSet):
     ordering_fields = ('pk', 'name', 'created_date', 'source')
     filterset_fields = ('name', 'source')
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def enable(self, request, pk):
         category = self.get_object()
         serializer = CategoryChangeSerializer(data=request.data)
@@ -355,7 +356,7 @@ class CategoryViewSet(SciriusReadOnlyModelViewSet):
         )
         return Response({'enable': 'ok'})
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def disable(self, request, pk):
         category = self.get_object()
         serializer = CategoryChangeSerializer(data=request.data)
@@ -665,7 +666,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
     filterset_class = RuleFilter
     search_fields = ('sid', 'msg', 'content')
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def references(self, request, pk):
         rule = self.get_object()
         references = extract_rule_references(rule)
@@ -676,7 +677,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
 
         return Response(res)
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def delete_alerts(self, request, pk):
         # return 404 error if pk does not exist
         self.get_object()
@@ -693,7 +694,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
             return Response({'delete_alerts': 'ok'})
         return Response(result)
 
-    @list_route(methods=['get'])
+    @action(detail=False, methods=['get'])
     def transformation(self, request):
         copy_params = request.query_params.dict()
         key_str = copy_params.pop('transfo_type', None)
@@ -793,7 +794,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
 
         return Response(res)
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def content(self, request, pk):
         rule = self.get_object()
         rulesets = Ruleset.objects.filter(categories__rule=rule)
@@ -811,7 +812,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
 
         return Response(res)
 
-    @detail_route(methods=['post', 'get'])
+    @action(detail=True, methods=['get', 'post'])
     def comment(self, request, pk):
         if request.method == 'POST':
             rule = self.get_object()
@@ -839,7 +840,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
                                       'date': ua.date})
             return Response(res)
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def toggle_availability(self, request, pk):
         rule = self.get_object()
         comment = request.data.get('comment', None)
@@ -858,7 +859,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
 
         return Response({'toggle_availability': 'ok'})
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def enable(self, request, pk):
         rule = self.get_object()
         serializer = RuleChangeSerializer(data=request.data)
@@ -869,7 +870,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         )
         return Response({'enable': 'ok'})
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def disable(self, request, pk):
         rule = self.get_object()
         serializer = RuleChangeSerializer(data=request.data)
@@ -885,7 +886,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
             return RuleChangeSerializer
         return RuleSerializer
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def status(self, request, pk):
         rule = self.get_object()
 
@@ -1085,10 +1086,10 @@ class BaseTransformationViewSet(viewsets.ModelViewSet):
 
 
 class RulesetTransformationSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = RulesetTransformation
         fields = ('pk', 'ruleset', 'transfo_type', 'transfo_value')
+
         extra_kwargs = {
             'ruleset': {'source': 'ruleset_transformation'},
             'transfo_type': {'source': 'key'},
@@ -1473,7 +1474,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
 
         return Response({'upload': 'ok'}, status=200)
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def update_source(self, request, pk):
         # Do not need to copy 'request.data' and pop 'comment'
         # because we are not using serializer there
@@ -1518,7 +1519,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         )
         return Response({'update': msg})
 
-    @list_route(methods=['get'])
+    @action(detail=False, methods=['get'])
     def list_sources(self, request):
         try:
             public_sources = get_public_sources(False)
@@ -1526,7 +1527,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError({'list': [str(e)]})
         return Response(public_sources['sources'])
 
-    @list_route(methods=['get'])
+    @action(detail=False, methods=['get'])
     def fetch_list_sources(self, request):
         try:
             fetch_public_sources()
@@ -1534,7 +1535,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError({'fetch': [str(e)]})
         return Response({'fetch': 'ok'})
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def test(self, request, pk):
         source = self.get_object()
         sources_at_version = SourceAtVersion.objects.filter(source=source, version='HEAD')
@@ -1550,7 +1551,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
 
         return Response(response)
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def build_counter(self, request, pk):
         instance = self.get_object()
         instance.build_counters()
@@ -1744,7 +1745,7 @@ class SourceViewSet(BaseSourceViewSet):
     filterset_fields = ('name', 'method', 'datatype')
     search_fields = ('name', 'method', 'datatype')
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def upload(self, request, pk):
         return super(SourceViewSet, self).upload(request, pk)
 
@@ -1852,7 +1853,7 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
     filter_class = UserActionFilter
     filter_backends = (filters.DjangoFilterBackend, UserActionDateOrderingFilter)
 
-    @list_route(methods=['get'])
+    @action(detail=False, methods=['get'])
     def get_action_type_list(self, request):
         from scirius.utils import get_middleware_module
         actions_dict = get_middleware_module('common').get_user_actions_dict()
@@ -2799,8 +2800,8 @@ router = DefaultRouter()
 router.register('rules/ruleset', RulesetViewSet)
 router.register('rules/category', CategoryViewSet)
 router.register('rules/rule', RuleViewSet)
-router.register('rules/source', SourceViewSet, base_name='source')
-router.register('rules/public_source', PublicSourceViewSet, base_name='publicsource')
+router.register('rules/source', SourceViewSet, basename='source')
+router.register('rules/public_source', PublicSourceViewSet, basename='publicsource')
 router.register('rules/transformation/ruleset', RulesetTransformationViewSet)
 router.register('rules/transformation/category', CategoryTransformationViewSet)
 router.register('rules/transformation/rule', RuleTransformationViewSet)
@@ -2808,4 +2809,4 @@ router.register('rules/history', UserActionViewSet)
 router.register('rules/changelog/source', ChangelogViewSet)
 router.register('rules/system_settings', SystemSettingsViewSet)
 router.register('rules/processing-filter', RuleProcessingFilterViewSet)
-router.register('rules/hunt_filter_sets', FilterSetViewSet, base_name='hunt_filter_sets')
+router.register('rules/hunt_filter_sets', FilterSetViewSet, basename='hunt_filter_sets')

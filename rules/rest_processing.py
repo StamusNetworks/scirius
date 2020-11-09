@@ -24,7 +24,7 @@ from IPy import IP
 
 from django.db import models
 from rest_framework import serializers
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from rules.models import RuleProcessingFilter, RuleProcessingFilterDef, Threshold, UserAction, Rule
@@ -366,7 +366,7 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
         RuleProcessingFilter.objects.filter(index__gt=index).update(index=models.F('index') - 1)
         return response
 
-    @list_route(methods=['post'])
+    @action(detail=False, methods=['post'])
     def test(self, request):
         from scirius.utils import get_middleware_module
         fields_serializer = RuleProcessingTestSerializer(data=request.data)
@@ -374,7 +374,7 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
         capabilities = get_middleware_module('common').get_processing_filter_capabilities(fields_serializer.validated_data['fields'], fields_serializer.validated_data['action'])
         return Response(capabilities)
 
-    @list_route(methods=['post'])
+    @action(detail=False, methods=['post'])
     def test_actions(self, request):
         from scirius.utils import get_middleware_module
         fields_serializer = RuleProcessingTestActionsSerializer(data=request.data)
@@ -382,7 +382,7 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
         capabilities = get_middleware_module('common').get_processing_actions_capabilities(fields_serializer.validated_data.get('fields'))
         return Response({'actions': capabilities})
 
-    @list_route(methods=['post'])
+    @action(detail=False, methods=['post'])
     def intersect(self, request):
         fields_serializer = RuleProcessingFilterIntersectSerializer(data=request.data)
         fields_serializer.is_valid(raise_exception=True)
