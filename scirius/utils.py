@@ -74,9 +74,9 @@ def complete_context(request, context):
 
         from_date = int((time() - (duration * 3600)) * 1000)
         if duration <= 24:
-            date = '%sh' % str(duration)
+            date = '%ih' % int(duration)
         else:
-            date = '%sd' % str(duration / 24)
+            date = '%id' % int(duration / 24)
 
         context['draw_func'] = 'draw_sunburst'
         context['draw_elt'] = 'path'
