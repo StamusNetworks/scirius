@@ -7,7 +7,7 @@ from rest_framework import serializers, viewsets
 from rest_framework.routers import DefaultRouter
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.validators import UniqueValidator
 from rest_framework import status
@@ -264,7 +264,7 @@ class AccountViewSet(viewsets.ModelViewSet):
         )
         return super(AccountViewSet, self).update(request, pk, partial=True, *args, **kwargs)
 
-    @detail_route(methods=['get', 'post'])
+    @action(detail=True, methods=['get', 'post'])
     def token(self, request, *args, **kwargs):
         scirius_user = self.get_object()
         tokens = Token.objects.filter(user=scirius_user.user)
@@ -293,7 +293,7 @@ class AccountViewSet(viewsets.ModelViewSet):
 
         return Response({'token': token})
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def password(self, request, pk, *args, **kwargs):
         data = request.data.copy()
         scirius_user = self.get_object()
@@ -324,7 +324,7 @@ class AccountViewSet(viewsets.ModelViewSet):
         )
         return Response({'password': 'updated'})
 
-    @list_route(methods=['get'])
+    @action(detail=False, methods=['get'])
     def current_user(self, request, *args, **kwargs):
         user = request.user
         sciriususer = SciriusUser.objects.get(user=user)
