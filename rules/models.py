@@ -872,9 +872,9 @@ class Source(models.Model):
             try:
                 line = line.strip()
 
-                if not line or line.startswith('#'):
+                if not line or line.startswith(b'#'):
                     continue
-                fields = line.split(',')
+                fields = line.split(b',')
 
                 cat_no = int(fields[field_no])
                 if cat_no < 20:
