@@ -14,6 +14,10 @@ export const IP_FIELDS = ['src_ip', 'dest_ip', 'alert.source.ip', 'alert.target.
     'dns.grouped.AAAA', 'tunnel.src_ip', 'tunnel.dest_ip'];
 
 
+export const INTERGER_FIELDS_ENDS_WITH = ['.min', '.max', '_min', '_max', '.port', '_port', '.length']
+export const INTERGER_FIELDS_EXACT = ['alert.signature_id', 'alert.rev', 'alert.severity', 'http.status', 'vlan', 'flow_id', 'flow.bytes_toclient', 'flow.bytes_toserver', 'flow.pkts_toclient', 'flow.pkts_toserver', 'geoip.provider.autonomous_system_number', 'port']
+
+
 class FilterList extends React.Component {
     constructor(props) {
         super(props);
@@ -92,8 +96,11 @@ class FilterList extends React.Component {
 
     render() {
         const newFilterValue = this.state.newFilterValue.toString();
+        const isInteger = INTERGER_FIELDS_ENDS_WITH.findIndex((item) => this.state.filter.id.endsWith(item)) !== -1 || INTERGER_FIELDS_EXACT.includes(this.state.filter.id);
+        const controlType = !isInteger ? 'text' : 'number';
+
         let enableWildcard = !['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max', 'es_filter'].includes(this.state.filter.id);
-        enableWildcard = enableWildcard && !IP_FIELDS.includes(this.state.filter.id);
+        enableWildcard = enableWildcard && !IP_FIELDS.includes(this.state.filter.id) && !isInteger;
 
         const valid = (!newFilterValue.toString().length || (this.state.wildcardMode && enableWildcard && newFilterValue.match(/[\s]+/g)) ? 'error' : 'success');
         let helperText = '';
@@ -143,7 +150,7 @@ class FilterList extends React.Component {
                                     <FormGroup validationState={valid} className={'form-group-no-margins'}>
                                         <FormControl
                                             id={'input-value-filter'}
-                                            type="text"
+                                            type={controlType}
                                             value={newFilterValue}
                                             onKeyDown={this.keyListener}
                                             onChange={(e) => this.setState({ newFilterValue: e.target.value })}
