@@ -30,6 +30,22 @@ $.ajaxSetup({
     }
 });
 
+function confirmModal({title, msg, cb}) {
+    $("#generic-modal-title").text(title);
+    $("#generic-modal-msg").html(msg);
+
+    $("#generic-modal-submit").off("click");
+    $("#generic-modal-submit").one("click", function() {
+        if (cb) {
+            cb();
+        }
+        $("#generic-modal").modal('hide');
+    });
+
+    $("#generic-modal").modal('show');
+}
+window.confirmModal = confirmModal;
+
 function prepare_rule_details() {
     $(".msg").click(function( event ) {
         if ($(this).find(".detail").length) {
