@@ -5,20 +5,79 @@ from time import time
 import json
 import logging
 import socket
+from collections import OrderedDict
 
 from django.conf import settings
 from django.template import Context, Template
 from django.utils.safestring import mark_safe
+from rest_framework.response import Response
+from rest_framework.utils.urls import replace_query_param, remove_query_param
+
 import urllib.request
 import urllib.error
 import urllib.parse
 
 from rules.models import get_es_address
 from scirius.utils import get_middleware_module
+from scirius.rest_utils import SciriusSetPagination
 
 
 # ES requests timeout (keep this below Scirius's ajax requests timeout)
 es_logger = logging.getLogger('elasticsearch')
+
+
+def get_ordering(request, default):
+    ordering = request.query_params.get('ordering', default)
+
+    if ordering[0] == '-':
+        return True, ordering[1:]
+    return False, ordering
+
+
+class ESPaginator(SciriusSetPagination):
+    def __init__(self, request):
+        super(ESPaginator, self).__init__()
+        self.request = request
+
+    def _get_current_page(self):
+        page = self.request.query_params.get(self.page_query_param, 1)
+        return int(page)
+
+    def get_es_params(self, view):
+        reverse, order = get_ordering(self.request, 'ip')
+        order_sort = 'desc' if reverse else 'asc'
+        page_size = self.get_page_size(self.request)
+        return {
+            'size': page_size,
+            'from': (self._get_current_page() - 1) * page_size,
+            'sort_field': order,
+            'sort_order': order_sort
+        }
+
+    def get_paginated_response(self, data, full=False):
+        total = data['hits']['total']
+        return Response(OrderedDict([
+            ('count', total),
+            ('next', self.get_next_link(total)),
+            ('previous', self.get_previous_link()),
+            ('results', [entry['_source'] if not full else entry for entry in data['hits']['hits']])
+        ]))
+
+    def get_next_link(self, total):
+        if self._get_current_page() * self.get_page_size(self.request) >= total:
+            return None
+        url = self.request.build_absolute_uri()
+        page_number = self._get_current_page() + 1
+        return replace_query_param(url, self.page_query_param, page_number)
+
+    def get_previous_link(self):
+        if self._get_current_page() <= 1:
+            return None
+        url = self.request.build_absolute_uri()
+        page_number = self._get_current_page() - 1
+        if page_number == 1:
+            return remove_query_param(url, self.page_query_param)
+        return replace_query_param(url, self.page_query_param, page_number)
 
 
 def es_string_escape(s):

@@ -116,8 +116,8 @@ export class AlertsPage extends React.Component {
         const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?search_target=0&${listParams}&${filterParams}${stringFilters}`;
         axios.get(url)
         .then((res) => {
-            if ((res.data !== null) && (typeof res.data !== 'string')) {
-                this.setState({ alerts: res.data, loading: false, error: null });
+            if (res.data !== null && res.data.results && typeof res.data.results !== 'string') {
+                this.setState({ alerts: res.data.results, loading: false, error: null });
             } else {
                 this.setState({ loading: false });
             }

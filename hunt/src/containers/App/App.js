@@ -83,7 +83,7 @@ export default class App extends Component {
             alertsListConf = {
                 pagination: {
                     page: 1,
-                    perPage: 20,
+                    perPage: 100,
                     perPageOptions: [20, 50, 100]
                 },
                 sort: { id: 'timestamp', asc: false },

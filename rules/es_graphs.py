@@ -1470,9 +1470,9 @@ def get_ippair_netinfo_alerts_count():
 
 ALERTS_TAIL = """
 {
-  "size": 100,
-  "sort": [
-    {
+  "size": {{ size }},
+  "from": {{ from }},
+  "sort": [{
       "{{ timestamp }}": {
         "order": "desc",
         "unmapped_type": "boolean"
@@ -1491,7 +1491,7 @@ ALERTS_TAIL = """
           }
       }, {
         "query_string": {
-          "query": "event_type:alert {{ target_only }} {{ query_filter }}",
+          "query": "event_type:{{ event_type }} {{ target_only }} {{ query_filter }}",
           "analyze_wildcard": true
         }
       }]
@@ -2347,15 +2347,17 @@ class ESIppairNetworkAlerts(ESQuery):
 
 
 class ESAlertsTail(ESQuery):
-    def get(self, search_target=True):
+    def get(self, es_params, search_target=True, index='alert'):
         if search_target:
-            context = {'target_only': 'AND alert.target.ip:*'}
+            es_params.update({'target_only': 'AND alert.target.ip:*'})
         else:
-            context = {'target_only': ''}
-        data = self._render_template(ALERTS_TAIL, context)
-        es_url = self._get_es_url()
+            es_params.update({'target_only': ''})
+
+        es_params.update({'event_type': index})
+        data = self._render_template(ALERTS_TAIL, es_params)
+        es_url = self._get_es_url(index)
         data = self._urlopen(es_url, data)
-        return data['hits']['hits']
+        return data
 
 
 class ESEventsFromFlowID(ESQuery):
