@@ -61,7 +61,7 @@ class ESQuery(object):
         elif data == 'metricbeat':
             base_index = 'metricbeat-'
         elif data == 'stamus':
-            base_index = 'stamus-'
+            base_index = '{}stamus-'.format(settings.ELASTICSEARCH_LOGSTASH_INDEX)
         elif data == 'all':
             base_index = '%s*-' % settings.ELASTICSEARCH_LOGSTASH_INDEX
         else:
