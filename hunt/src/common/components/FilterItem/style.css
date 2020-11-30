@@ -1,7 +1,8 @@
 .hunt-filter {
-    display: inline-block !important;
-    height: auto !important;
-    padding: 0px !important;
+    display: flex !important;
+    align-items: center;
+    padding: 9px !important;
+    margin-bottom: 9px;
 }
 .hunt-filter .filter-action {
     padding: 5px !important;
@@ -23,7 +24,5 @@
     font-weight: bold;
 }
 .hunt-filter .label-content {
-    float: left;
-    padding: 4px 8px;
-    height: 21px;
+    padding-left: 6px;
 }
