@@ -2088,11 +2088,6 @@ class ESVersion(ESQuery):
         return data['nodes']['versions'][0]
 
 
-class ESIndicesStats(ESQuery):
-    def get(self):
-        return self._urlopen(get_es_path(INDICES_STATS_DOCS_URL))
-
-
 class ESIndices(ESQuery):
     def get(self):
         docs = self._urlopen(get_es_path(INDICES_STATS_DOCS_URL))

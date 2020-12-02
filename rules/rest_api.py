@@ -36,7 +36,7 @@ from rules.es_data import ESData
 from rules.es_query import ESPaginator
 
 from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats
-from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESIndicesStats, ESRulesPerCategory, ESAlertsCount
+from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount
 from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESAlertsTail, ESSuriLogTail, ESPoststats
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
@@ -2299,31 +2299,6 @@ class ESCheckVersionViewSet(APIView):
         return Response(res)
 
 
-class ESIndicesViewSet(ESBaseViewSet):
-    """
-    =============================================================================================================================================================
-    ==== GET ====\n
-    Show indices:\n
-        curl -k https://x.x.x.x/rest/rules/es/indices/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
-
-    Return:\n
-        {"indices":[{"count":12512,"deleted":0,"name":"logstash-2018.07.03"},{"count":15712,"deleted":0,"name":"logstash-2018.07.05"},
-        {"count":56821,"deleted":0,"name":"logstash-2018.07.04"},{"count":17,"deleted":0,"name":"logstash-alert-2018.07.04"},
-        {"count":26,"deleted":0,"name":"logstash-alert-2018.07.05"},{"count":2,"deleted":0,"name":"logstash-alert-2018.07.03"},
-        {"count":258,"deleted":0,"name":".kibana"},{"count":13,"deleted":0,"name":"logstash-http-2018.07.05"},
-        {"count":124,"deleted":0,"name":"logstash-http-2018.07.04"},{"count":22,"deleted":0,"name":"logstash-fileinfo-2018.07.05"},
-        {"count":98,"deleted":0,"name":"logstash-fileinfo-2018.07.04"},{"count":25,"deleted":0,"name":"logstash-ssh-2018.07.04"},
-        {"count":60,"deleted":0,"name":"logstash-ssh-2018.07.05"},{"count":628,"deleted":0,"name":"logstash-ifacestats-2018.07.04"},
-        {"count":174,"deleted":0,"name":"logstash-ifacestats-2018.07.05"},{"count":6476,"deleted":0,"name":"logstash-dns-2018.07.04"},
-        {"count":1757,"deleted":0,"name":"logstash-tls-2018.07.04"},{"count":122,"deleted":0,"name":"logstash-ifacestats-2018.07.03"}]}
-
-    =============================================================================================================================================================
-    """
-
-    def _get(self, request, format=None):
-        return Response({'indices': ESIndicesStats(request).get()})
-
-
 class ESRulesPerCategoryViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
@@ -2790,7 +2765,6 @@ def get_custom_urls():
     urls.append(url(r'rules/es/health/$', ESHealthViewSet.as_view(), name='es_health'))
     urls.append(url(r'rules/es/stats/$', ESStatsViewSet.as_view(), name='es_stats'))
     urls.append(url(r'rules/es/check_version/$', ESCheckVersionViewSet.as_view(), name='es_check_version'))
-    urls.append(url(r'rules/es/indices/$', ESIndicesViewSet.as_view(), name='es_indices'))
     urls.append(url(r'rules/es/rules_per_category/$', ESRulesPerCategoryViewSet.as_view(), name='es_rules_per_category'))
     urls.append(url(r'rules/es/alerts_count/$', ESAlertsCountViewSet.as_view(), name='es_alerts_count'))
     urls.append(url(r'rules/es/latest_stats/$', ESLatestStatsViewSet.as_view(), name='es_latest_stats'))
