@@ -87,7 +87,7 @@ TEMPLATES = [
 WEBPACK_LOADER = {
     'DEFAULT': {
         'BUNDLE_DIR_NAME': 'rules/static/bundles/',
-        'STATS_FILE': os.path.join(BASE_DIR, 'rules/static/webpack-stats.prod.json'),
+        'STATS_FILE': os.path.join(BASE_DIR, 'rules/static/webpack-stats-hunt.prod.json'),
     }
 }
 
