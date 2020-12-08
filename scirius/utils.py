@@ -127,6 +127,7 @@ def scirius_render(request, template, context):
 
     context.update(get_middleware_module('common').update_context(request))
     context['messages'] = messages.get_messages(request)
+    context['settings'] = settings
     complete_context(request, context)
     return render(request, template, context)
 

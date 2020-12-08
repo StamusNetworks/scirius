@@ -20,5 +20,8 @@
      {% for js_file in js_files %}
        <script type="text/javascript" src="{{ js_file.url }}" nonce="{{ request.csp_nonce }}"></script>
      {% endfor %}
+     {% if settings.CUSTOM_CSS %}
+       <link rel="stylesheet" type="text/css" href="{{ settings.CUSTOM_CSS }}" />
+     {% endif %}
   </body>
 </html>
