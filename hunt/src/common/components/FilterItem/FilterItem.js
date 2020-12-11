@@ -8,6 +8,7 @@ const FilterItem = (props) => {
     const displayValue = (props.filter.label) ? props.filter.label : `${props.filter.id}:${props.filter.value}`;
     return <li>
         <span className={`hunt-filter label label-info ${negated}`}>
+            <div className={'label-content'}>{displayValue}</div>
             <div>
                 {props.filterType !== sections.HISTORY && <a
                     href="#"
@@ -33,7 +34,6 @@ const FilterItem = (props) => {
                     <span className="sr-only">Remove</span>
                 </a>
             </div>
-            <div className={'label-content'}>{displayValue}</div>
         </span>
     </li>
 }
