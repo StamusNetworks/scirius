@@ -36,7 +36,7 @@ from rules.es_data import ESData
 from rules.es_query import ESPaginator
 
 from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats
-from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount
+from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend
 from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESAlertsTail, ESSuriLogTail, ESPoststats
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
@@ -687,11 +687,8 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
             result = Probe.common.es_delete_alerts_by_sid(pk, request=request)
         else:
             result = ESDeleteAlertsBySid(request).get(pk)
-            if 'status' in result and result['status'] != 200:
-                if settings.DEBUG:
-                    return Response({'details': 'Elasticsearch error: %s' % result['msg']}, status=result['status'])
-                else:
-                    return Response({'details': 'Elasticsearch error %s' % result['status']}, status=result['status'])
+            if result.get('failures', []):
+                return Response({'details': '\n'.join(result['failures'])}, status=500)
             return Response({'delete_alerts': 'ok'})
         return Response(result)
 
@@ -2234,7 +2231,7 @@ class ESLogstashEveViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         value = request.GET.get('value', None)
-        return Response(ESMetricsTimeline(request).get(value=value))
+        return Response(ESMetricsTimeline(request, value).get())
 
 
 class ESHealthViewSet(ESBaseViewSet):
@@ -2293,7 +2290,11 @@ class ESCheckVersionViewSet(APIView):
         from scirius.utils import get_middleware_module
         res = {}
         try:
-            res = get_middleware_module('common').check_es_version(request)
+            es_url = self.request.data.get('es_url', '')
+            if es_url.endswith('/'):
+                es_url = es_url[:-1]
+
+            res = get_middleware_module('common').check_es_version(request, es_url)
         except (ValueError, ValidationError) as error:
             res['error'] = 'Invalid hostname or IP, %s' % error
         return Response(res)
@@ -2347,9 +2348,11 @@ class ESAlertsCountViewSet(ESBaseViewSet):
     """
 
     def _get(self, request, format=None):
-        prev = request.GET.get('prev', None)
-        prev = 1 if prev is not None and prev != 'false' else None
-        return Response(ESAlertsCount(request).get(prev=prev))
+        if request.GET.get('prev') != 'false':
+            data = ESAlertsTrend(request).get()
+        else:
+            data = ESAlertsCount(request).get()
+        return Response(data)
 
 
 class ESLatestStatsViewSet(ESBaseViewSet):

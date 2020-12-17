@@ -209,18 +209,18 @@ def get_default_filter_sets():
 
 
 def es_bool_clauses(request):
-    return ''
+    return {}
 
 
 def es_query_string(request):
     return ''
 
 
-def check_es_version(request):
+def check_es_version(request, es_url):
     from rules.es_graphs import ESVersion, ESError
 
     try:
-        es_version = ESVersion(request).get()
+        es_version = ESVersion(None, es_url).get()
     except ESError as e:
         return {'error': e.args[0]}
 

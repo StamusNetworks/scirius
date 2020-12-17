@@ -29,14 +29,12 @@ from shutil import rmtree
 from time import strftime, sleep
 
 import urllib.request
-import urllib.error
-import urllib.parse
 
 from django.conf import settings
-from elasticsearch import Elasticsearch, ConnectionError, NotFoundError
+from elasticsearch import ConnectionError
 
-from rules.models import get_es_address
-from rules.es_graphs import get_es_major_version
+from rules.es_graphs import get_es_major_version, ESError
+from rules.es_query import ESQuery
 
 # Avoid logging every request
 ES_LOGGER = logging.getLogger('elasticsearch')
@@ -1722,11 +1720,9 @@ KIBANA6_NAMESPACE = {
 }
 
 
-class ESData:
+class ESData(ESQuery):
     def __init__(self):
-        es_addr = get_es_address()
-        self.client = Elasticsearch([es_addr])
-
+        super().__init__(None)
         self.doc_type = None
 
         if get_es_major_version() == 6:
@@ -1746,15 +1742,6 @@ class ESData:
         urllib.request.urlopen(req)
         return req
 
-    @staticmethod
-    def _es_request(url, data):
-        headers = {'content-type': 'application/json'}
-        data = json.dumps(data)
-        es_url = get_es_address() + url
-        req = urllib.request.Request(es_url, data, headers=headers)
-        urllib.request.urlopen(req)
-        return req
-
     def _kibana_remove(self, _type, body):
         i = 0
         ids = []
@@ -1764,7 +1751,7 @@ class ESData:
             _type = self.doc_type
 
         while True:
-            res = self.client.search(index='.kibana', from_=i, doc_type=_type, body=body, request_cache=False)
+            res = self.es.search(index='.kibana', from_=i, doc_type=_type, body=body, request_cache=False)
             if len(res['hits']['hits']) == 0:
                 break
             i += 10
@@ -1773,10 +1760,7 @@ class ESData:
             ids += _ids
 
         for _id in ids:
-            try:
-                self.client.delete(index='.kibana', doc_type=_type, id=_id, refresh=True)
-            except NotFoundError:
-                pass
+            self.es.delete(index='.kibana', doc_type=_type, id=_id, refresh=True, ignore=[404])
 
     def _kibana_export_obj(self, dest, _type, body):
         i = 0
@@ -1786,9 +1770,9 @@ class ESData:
 
         while True:
             if get_es_major_version() < 6:
-                res = self.client.search(index='.kibana', from_=i, doc_type=_type, body=body)
+                res = self.es.search(index='.kibana', from_=i, doc_type=_type, body=body)
             else:
-                res = self.client.search(index='.kibana', from_=i, body=body)
+                res = self.es.search(index='.kibana', from_=i, body=body)
 
             if len(res['hits']['hits']) == 0:
                 break
@@ -1801,9 +1785,9 @@ class ESData:
                 filename += '.json'
 
                 if get_es_major_version() < 6:
-                    res = self.client.get(index='.kibana', doc_type=_type, id=_id)
+                    res = self.es.get(index='.kibana', doc_type=_type, id=_id)
                 else:
-                    res = self.client.get(index='.kibana', doc_type=self.doc_type, id=_id)
+                    res = self.es.get(index='.kibana', doc_type=self.doc_type, id=_id)
 
                 with open(filename, 'w') as file_:
                     file_.write(json.dumps(res['_source'], separators=(',', ':')))
@@ -1857,13 +1841,13 @@ class ESData:
         return tar_name, file_.name
 
     def _create_kibana_mappings(self):
-        if not self.client.indices.exists('.kibana'):
-            self.client.indices.create(index='.kibana', body={"mappings": get_kibana_mappings()})
-            self.client.indices.refresh(index='.kibana')
-        elif "visualization" not in str(self.client.indices.get_mapping(index='.kibana')):
-            self.client.indices.delete(index='.kibana')
-            self.client.indices.create(index='.kibana', body={"mappings": get_kibana_mappings()})
-            self.client.indices.refresh(index='.kibana')
+        if not self.es.indices.exists('.kibana'):
+            self.es.indices.create(index='.kibana', body={"mappings": get_kibana_mappings()})
+            self.es.indices.refresh(index='.kibana')
+        elif "visualization" not in str(self.es.indices.get_mapping(index='.kibana')):
+            self.es.indices.delete(index='.kibana')
+            self.es.indices.create(index='.kibana', body={"mappings": get_kibana_mappings()})
+            self.es.indices.refresh(index='.kibana')
 
     def _kibana_inject(self, _type, _file):
         with open(_file) as file_:
@@ -1875,32 +1859,30 @@ class ESData:
         else:
             doc_type = self.doc_type
 
+        # Delete the document first, to prevent an error when it's already there
+        self.es.delete(index='.kibana', doc_type=doc_type, id=name, refresh=True, ignore=[404])
+
         try:
-            # Delete the document first, to prevent an error when it's already there
-            self.client.delete(index='.kibana', doc_type=doc_type, id=name, refresh=True)
-        except NotFoundError:
-            pass
-        try:
-            self.client.create(index='.kibana', doc_type=doc_type, id=name, body=content, refresh=True)
+            self.es.create(index='.kibana', doc_type=doc_type, id=name, body=content, refresh=True)
         except Exception:
             print('While processing %s:\n' % _file)
             raise
 
     def _kibana_set_default_index(self, idx):
         if get_es_major_version() < 6:
-            res = self.client.search(index='.kibana', doc_type='config', body={'query': {'match_all': {}}}, request_cache=False)
+            res = self.es.search(index='.kibana', doc_type='config', body={'query': {'match_all': {}}}, request_cache=False)
         else:
             body = {'query': {'query_string': {'query': 'type: config'}}}
-            res = self.client.search(index='.kibana', doc_type=self.doc_type, body=body, request_cache=False)
+            res = self.es.search(index='.kibana', doc_type=self.doc_type, body=body, request_cache=False)
 
         for hit in res['hits']['hits']:
             content = hit['_source']
             content['defaultIndex'] = idx
 
             if get_es_major_version() < 6:
-                self.client.update(index='.kibana', doc_type='config', id=hit['_id'], body={'doc': content}, refresh=True)
+                self.es.update(index='.kibana', doc_type='config', id=hit['_id'], body={'doc': content}, refresh=True)
             elif get_es_major_version() < 7:
-                self.client.update(index='.kibana', doc_type=self.doc_type, id=hit['_id'], body=content, refresh=True)
+                self.es.update(index='.kibana', doc_type=self.doc_type, id=hit['_id'], body=content, refresh=True)
 
         if get_es_major_version() >= 6:
             self._kibana_request('/api/kibana/settings/defaultIndex', {'value': 'logstash-*'})
@@ -2002,7 +1984,7 @@ class ESData:
         self._kibana_set_default_index('logstash-*')
 
     def get_indexes(self):
-        res = self.client.indices.stats()
+        res = self.es.indices.stats()
         indexes = list(res['indices'].keys())
         idxs = list(indexes)
 
@@ -2015,15 +1997,16 @@ class ESData:
     def es_clear(self):
         indexes = self.get_indexes()
         for idx in indexes:
-            self.client.indices.delete(index=idx)
+            self.es.indices.delete(index=idx)
         return len(indexes)
 
     def wait_until_up(self):
         for _ in range(1024):
             try:
-                ret = self.client.cluster.health(wait_for_status='green', request_timeout=15 * 60)
+                ret = self.es.cluster.health(wait_for_status='green', request_timeout=15 * 60)
                 if ret.get('status') == 'green':
                     break
                 sleep(10)
-            except ConnectionError:
-                pass
+            except ESError as e:
+                if not isinstance(e.initial_exception, ConnectionError):
+                    raise

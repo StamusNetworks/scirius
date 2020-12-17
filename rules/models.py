@@ -712,10 +712,6 @@ def reset_es_address():
     ES_ADDRESS = None
 
 
-def get_es_path(path):
-    return get_es_address() + path.lstrip('/')
-
-
 class Source(models.Model):
     FETCH_METHOD = (
         ('http', 'HTTP URL'),
