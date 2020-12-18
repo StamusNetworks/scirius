@@ -144,7 +144,6 @@ class ESQuery:
         if es_address is None:
             es_address = get_es_address()
         self.es = ESWrap(Elasticsearch([es_address], transport_class=ESTransport))
-        self._es_version = None
 
     def _from_date(self):
         if self.from_date:
