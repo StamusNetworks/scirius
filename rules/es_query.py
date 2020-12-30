@@ -50,7 +50,11 @@ class ESPaginator(SciriusSetPagination):
         }
 
     def get_paginated_response(self, data, full=False):
+        from rules.es_graphs import get_es_major_version
         total = data['hits']['total']
+        if get_es_major_version() >= 7:
+            total = total['value']
+
         return Response(OrderedDict([
             ('count', total),
             ('next', self.get_next_link(total)),
@@ -205,7 +209,7 @@ class ESQuery:
                               scroll=scroll_duration)
 
         scroll_id = data['_scroll_id']
-        count = data['hits']['total'] - self.MAX_RESULT_WINDOW
+        count = self._parse_total_hits(data) - self.MAX_RESULT_WINDOW
         yield data
 
         while count is None or count > 0:
@@ -321,6 +325,12 @@ class ESQuery:
             hosts_filter = '(%s)' % ' '.join(hosts_filter)
 
         return hosts_filter
+
+    def _parse_total_hits(self, resp):
+        from rules.es_graphs import get_es_major_version
+        if get_es_major_version() < 7:
+            return resp['hits']['total']
+        return resp['hits']['total']['value']
 
     def get(self, *args, **kwargs):
         index = self._get_index()

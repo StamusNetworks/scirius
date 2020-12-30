@@ -1891,10 +1891,17 @@ class ESData(ESQuery):
 
     @staticmethod
     def _get_dashboard_dir():
-        if get_es_major_version() < 6 or not hasattr(settings, 'KIBANA6_DASHBOARDS_PATH'):
-            # Use KIBANA_DASHBOARDS_PATH when using ES<6 or when KIBANA6_DASHBOARDS_PATH is not set
-            return settings.KIBANA_DASHBOARDS_PATH
-        return settings.KIBANA6_DASHBOARDS_PATH
+        dashboard_path = settings.KIBANA_DASHBOARDS_PATH
+
+        kibana6_path = getattr(settings, 'KIBANA6_DASHBOARDS_PATH')
+        if get_es_major_version() > 5 and kibana6_path:
+            dashboard_path = kibana6_path
+
+        kibana7_path = getattr(settings, 'KIBANA7_DASHBOARDS_PATH')
+        if get_es_major_version() > 6 and kibana7_path:
+            dashboard_path = kibana7_path
+
+        return dashboard_path
 
     @staticmethod
     def _get_kibana_files(source, _type):

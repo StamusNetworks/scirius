@@ -594,7 +594,7 @@ class ESRulesPerCategory(ESQuery):
     def get(self):
         data = super().get()
         # clean the data: we need to compact the leaf and previous data
-        if data["hits"]["total"] > 0:
+        if self._parse_total_hits(data) > 0:
             cdata = compact_tree(data["aggregations"]["category"]["buckets"])
         else:
             return {}
@@ -743,7 +743,7 @@ class ESAlertsCount(ESQuery):
 
     def get(self):
         data = super().get()
-        return {"doc_count": data["hits"]["total"]}
+        return {"doc_count": self._parse_total_hits(data)}
 
 
 class ESLatestStats(ESQuery):
