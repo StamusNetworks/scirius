@@ -1877,12 +1877,14 @@ class ESData(ESQuery):
 
         for hit in res['hits']['hits']:
             content = hit['_source']
-            content['defaultIndex'] = idx
 
             if get_es_major_version() < 6:
+                content['defaultIndex'] = idx
                 self.es.update(index='.kibana', doc_type='config', id=hit['_id'], body={'doc': content}, refresh=True)
             elif get_es_major_version() < 7:
-                self.es.update(index='.kibana', doc_type=self.doc_type, id=hit['_id'], body=content, refresh=True)
+                content['config'] = content.get('config', {})
+                content['config']['defaultIndex'] = idx
+                self.es.update(index='.kibana', doc_type=self.doc_type, id=hit['_id'], body={'doc': content}, refresh=True)
 
         if get_es_major_version() >= 6:
             self._kibana_request('/api/kibana/settings/defaultIndex', {'value': 'logstash-*'})
@@ -1986,7 +1988,13 @@ class ESData(ESQuery):
                 self._kibana_inject(_type, _file)
 
         if get_es_major_version() >= 6:
-            self._kibana_request('/api/spaces/space', KIBANA6_NAMESPACE)
+            try:
+                self._kibana_request('/api/spaces/space', KIBANA6_NAMESPACE)
+            except urllib.error.HTTPError as e:
+                if e.code == 409:
+                    print('Default namespace already exist, skipping creation.')
+                else:
+                    raise
 
         self._kibana_set_default_index('logstash-*')
 
