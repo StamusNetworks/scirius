@@ -33,7 +33,7 @@ from rules.models import Source, SourceAtVersion, SourceUpdate, UserAction, User
 from rules.views import get_public_sources, fetch_public_sources, extract_rule_references
 from rules.rest_processing import RuleProcessingFilterViewSet
 from rules.es_data import ESData
-from rules.es_query import ESPaginator
+from rules.es_query import normalize_es_url, ESPaginator
 
 from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats
 from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend
@@ -2291,8 +2291,7 @@ class ESCheckVersionViewSet(APIView):
         res = {}
         try:
             es_url = self.request.data.get('es_url', '')
-            if es_url.endswith('/'):
-                es_url = es_url[:-1]
+            es_url = normalize_es_url(es_url)
 
             res = get_middleware_module('common').check_es_version(request, es_url)
         except (ValueError, ValidationError) as error:

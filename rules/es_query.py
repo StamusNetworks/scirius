@@ -21,6 +21,15 @@ from scirius.rest_utils import SciriusSetPagination
 es_logger = logging.getLogger('elasticsearch')
 
 
+def normalize_es_url(es_url):
+    es_urls = []
+    for url in es_url.split(','):
+        if not url.endswith('/'):
+            url = url + '/'
+        es_urls.append(url)
+    return ','.join(es_urls)
+
+
 def get_ordering(request, default):
     ordering = request.query_params.get('ordering', default)
 
@@ -147,7 +156,8 @@ class ESQuery:
 
         if es_address is None:
             es_address = get_es_address()
-        self.es = ESWrap(Elasticsearch([es_address], transport_class=ESTransport))
+        es_address = es_address.split(',')
+        self.es = ESWrap(Elasticsearch(es_address, transport_class=ESTransport))
 
     def _from_date(self):
         if self.from_date:

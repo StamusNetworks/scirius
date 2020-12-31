@@ -288,6 +288,11 @@ def validate_url(val):
     validate_hostname(netloc)
 
 
+def validate_url_list(value):
+    for url in value.split(','):
+        validate_url(url)
+
+
 class FilterSet(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     content = models.TextField()
@@ -656,8 +661,8 @@ class SystemSettings(models.Model):
     use_elasticsearch = models.BooleanField(default=True)
     custom_elasticsearch = models.BooleanField(default=False)
     elasticsearch_url = models.CharField(
-        max_length=200,
-        validators=[validate_url],
+        max_length=4096,
+        validators=[validate_url_list],
         blank=False,
         null=False,
         default='http://elasticsearch:9200/'
@@ -691,6 +696,7 @@ def get_system_settings():
 
 
 def get_es_address():
+    from rules.es_query import normalize_es_url
     global ES_ADDRESS
     if ES_ADDRESS is not None:
         return ES_ADDRESS
@@ -698,10 +704,7 @@ def get_es_address():
     gsettings = get_system_settings()
     if gsettings.custom_elasticsearch:
         addr = gsettings.elasticsearch_url
-        if not addr.endswith('/'):
-            addr += '/'
-
-        ES_ADDRESS = addr
+        ES_ADDRESS = normalize_es_url(addr)
     else:
         ES_ADDRESS = 'http://%s/' % settings.ELASTICSEARCH_ADDRESS
     return ES_ADDRESS
