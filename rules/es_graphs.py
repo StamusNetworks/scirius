@@ -1214,4 +1214,6 @@ class ESSigsListHits(ESQuery):
 
     def get(self, *args, **kwargs):
         data = super().get(*args, **kwargs)
-        return data['aggregations']['alerts']['buckets']
+        # avoir error 500 if there is no Source added yet
+        # we return empty list
+        return data.get('aggregations', {}).get('alerts', {}).get('buckets', [])
