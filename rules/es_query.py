@@ -6,6 +6,7 @@ import logging
 from collections import OrderedDict
 from pprint import pformat
 from traceback import format_exc
+import os
 
 from elasticsearch import Elasticsearch, Transport, ElasticsearchException, TransportError, ConnectionError, ConnectionTimeout
 from django.conf import settings
@@ -157,7 +158,24 @@ class ESQuery:
         if es_address is None:
             es_address = get_es_address()
         es_address = es_address.split(',')
-        self.es = ESWrap(Elasticsearch(es_address, transport_class=ESTransport))
+
+        ssl_params = {}
+        if es_address[0].startswith('https'):
+            ca_certs = None
+            requests_ca_path = os.getenv('REQUESTS_CA_BUNDLE')
+            if requests_ca_path:
+                ca_certs = requests_ca_path
+
+            ssl_params = {
+                'use_ssl': True,
+                'verify_certs': True,
+                'ca_certs': ca_certs
+            }
+
+        es = Elasticsearch(es_address,
+                           transport_class=ESTransport,
+                           **ssl_params)
+        self.es = ESWrap(es)
 
     def _from_date(self):
         if self.from_date:
