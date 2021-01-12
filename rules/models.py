@@ -281,6 +281,9 @@ def validate_url(val):
     if '/' in netloc:
         netloc = netloc.split('/', 1)[0]
 
+    if '@' in netloc:
+        netloc = netloc.split('@', 1)[1]
+
     if ':' in netloc:
         netloc, port = netloc.split(':', 1)
         validate_port(port)
