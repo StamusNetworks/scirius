@@ -26,6 +26,7 @@ from django.shortcuts import render
 from django.conf import settings
 from django.utils import timezone
 from django.contrib import messages
+from django.db.models.query import QuerySet
 
 import django_tables2 as tables
 
@@ -135,34 +136,49 @@ def scirius_render(request, template, context):
     return render(request, template, context)
 
 
-def scirius_listing(request, objectname, name, template='rules/object_list.html', table=None, adduri=None):
+def scirius_listing(request, objectname, assocfn, template='rules/object_list.html', table=None, adduri=None):
     # FIXME could be improved by generating function name
-    from accounts.tables import UserTable
-    from rules.tables import CategoryTable
-    assocfn = {'Categories': CategoryTable, 'Users': UserTable}
-    olist = objectname.objects.all()
 
+    name = list(assocfn.keys())[0]
+    if name == 'Roles' and get_middleware_module('common').has_extra_auth():
+        assocfn['Roles']['action_links']['edit_priorities'] = 'Edit priorities'
+
+    action = name
+    if not isinstance(objectname, QuerySet):
+        action = objectname.__name__.lower() if name != 'Roles' else 'role'
+        olist = objectname.objects.all()
+    else:
+        olist = objectname
+
+    if name in assocfn:
+        if 'annotate' in assocfn[name]:
+            olist = olist.annotate(**assocfn[name]['annotate'])
+        if 'order_by' in assocfn[name]:
+            olist = olist.order_by(*assocfn[name]['order_by'])
+
+    links = None
+    action_links = {}
     if olist:
         if table is None:
-            data = assocfn[name](olist)
+            data = assocfn[name]['table'](olist)
+            links = assocfn[name]['manage_links']
+            action_links = assocfn[name]['action_links']
         else:
             data = table(olist)
         tables.RequestConfig(request).configure(data)
-        data_len = len(olist)
     else:
         data = None
-        data_len = 0
 
-    context = {'objects': data, 'name': name, 'objects_len': data_len}
-    try:
-        objectname.editable
-        context['action'] = objectname.__name__.lower()
-    except:
-        pass
+    context = {
+        'objects': data,
+        'size': olist.count(),
+        'name': name,
+        'manage_links': links,
+        'action_links': action_links,
+        'action': action,
+        'adduri': adduri
+    }
 
-    if adduri:
-        context['action'] = True
-        context['adduri'] = adduri
     return scirius_render(request, template, context)
 
 

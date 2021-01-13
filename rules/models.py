@@ -296,6 +296,19 @@ def validate_url_list(value):
         validate_url(url)
 
 
+class FakePermissionModel(models.Model):
+    '''
+    This fake model with no database table will generate a contenttype id
+    that will be used with all permissions.
+    This way, permissions are not linked with models.
+    Ref: https://stackoverflow.com/questions/13932774/how-can-i-use-django-permissions-without-defining-a-content-type-or-model
+    '''
+
+    class Meta:
+        managed = False
+        default_permissions = ()
+
+
 class FilterSet(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     content = models.TextField()
@@ -313,196 +326,254 @@ class UserAction(models.Model):
         # Login/Logout
         ('create_user', {
             'description': '{user} has created new user {new_user}',
-            'title': 'Create User'
+            'title': 'Create User',
+            'perm': 'rules.configuration_auth'
         }),
         ('edit_user', {
             'description': '{user} has edited user {other_user}',
-            'title': 'Edit User'
+            'title': 'Edit User',
+            'perm': 'rules.configuration_auth'
         }),
         ('edit_user_token', {
             'description': '{user} has edited {other_user} token',
-            'title': 'Edit User Token'
+            'title': 'Edit User Token',
+            'perm': 'rules.configuration_auth'
         }),
         ('edit_user_password', {
             'description': '{user} has edited {other_user} password',
-            'title': 'Edit User Password'
+            'title': 'Edit User Password',
+            'perm': 'rules.configuration_auth'
         }),
         ('delete_user', {
             'description': '{user} has deleted user {old_user}',
-            'title': 'Delete User'
+            'title': 'Delete User',
+            'perm': 'rules.configuration_auth'
+        }),
+        ('create_group', {
+            'description': '{user} has created new group {new_group}',
+            'title': 'Create Group',
+            'perm': 'rules.configuration_auth'
+        }),
+        ('edit_group', {
+            'description': '{user} has edited group {group}',
+            'title': 'Edit Group',
+            'perm': 'rules.configuration_auth'
+        }),
+        ('delete_group', {
+            'description': '{user} has deleted group {group}',
+            'title': 'Delete User',
+            'perm': 'rules.configuration_auth'
         }),
         ('login', {
             'description': 'Logged in as {user}',
-            'title': 'Login'
+            'title': 'Login',
+            'perm': 'rules.configuration_auth'
         }),
         ('logout', {
             'description': '{user} has logged out',
-            'title': 'Logout'
+            'title': 'Logout',
+            'perm': 'rules.configuration_auth'
         }),
 
         # Sources:
         ('create_source', {
             'description': '{user} has created source {source}',
-            'title': 'Create Source'
+            'title': 'Create Source',
+            'perm': 'rules.source_view'
         }),
         ('update_source', {
             'description': '{user} has updated source {source}',
-            'title': 'Update Source'
+            'title': 'Update Source',
+            'perm': 'rules.source_view'
         }),
         ('edit_source', {
             'description': '{user} has edited source {source}',
-            'title': 'Edit Source'
+            'title': 'Edit Source',
+            'perm': 'rules.source_view'
         }),
         ('upload_source', {
             'description': '{user} has uploaded source {source}',
-            'title': 'Upload Source'
+            'title': 'Upload Source',
+            'perm': 'rules.source_view'
         }),
         ('enable_source', {
             'description': '{user} has enabled source {source} in ruleset {ruleset}',
-            'title': 'Enable Source'
+            'title': 'Enable Source',
+            'perm': 'rules.source_view'
         }),
         ('disable_source', {
             'description': '{user} has disabled source {source} in ruleset {ruleset}',
-            'title': 'Disable Source'
+            'title': 'Disable Source',
+            'perm': 'rules.source_view'
         }),
         ('delete_source', {
             'description': '{user} has deleted source {source}',
-            'title': 'Delete Source'
+            'title': 'Delete Source',
+            'perm': 'rules.source_view'
         }),
 
         # Rulesets:
         ('create_ruleset', {
             'description': '{user} has created ruleset {ruleset}',
-            'title': 'Create Ruleset'
+            'title': 'Create Ruleset',
+            'perm': 'rules.source_view'
         }),
         ('transform_ruleset', {
             'description': '{user} has transformed ruleset {ruleset} to {transformation}',
-            'title': 'Transform Ruleset'
+            'title': 'Transform Ruleset',
+            'perm': 'rules.source_view'
         }),
         ('edit_ruleset', {
             'description': '{user} has edited ruleset {ruleset}',
-            'title': 'Edit Ruleset'
+            'title': 'Edit Ruleset',
+            'perm': 'rules.source_view'
         }),
         ('copy_ruleset', {
             'description': '{user} has copied ruleset {ruleset}',
-            'title': 'Copy Ruleset'
+            'title': 'Copy Ruleset',
+            'perm': 'rules.source_view'
         }),
         ('delete_ruleset', {
             'description': '{user} has deleted ruleset {ruleset}',
-            'title': 'Delete Ruleset'
+            'title': 'Delete Ruleset',
+            'perm': 'rules.source_view'
         }),
 
         # Categories:
         ('enable_category', {
             'description': '{user} has enabled category {category} in ruleset {ruleset}',
-            'title': 'Enable Category'
+            'title': 'Enable Category',
+            'perm': 'rules.ruleset_policy_view'
         }),
         ('transform_category', {
             'description': '{user} has transformed category {category} to {transformation} in ruleset {ruleset}',
-            'title': 'Transform Category'
+            'title': 'Transform Category',
+            'perm': 'rules.ruleset_policy_view'
         }),
         ('disable_category', {
             'description': '{user} has disabled category {category} in ruleset {ruleset}',
-            'title': 'Disable Category'
+            'title': 'Disable Category',
+            'perm': 'rules.ruleset_policy_view'
         }),
 
         # Rules:
         ('enable_rule', {
             'description': '{user} has enabled rule {rule} in ruleset {ruleset}',
-            'title': 'Enable Rule'
+            'title': 'Enable Rule',
+            'perm': 'rules.ruleset_policy_view'
         }),
         ('comment_rule', {
             'description': '{user} has commented rule {rule}',
-            'title': 'Comment Rule'
+            'title': 'Comment Rule',
+            'perm': 'rules.ruleset_policy_view'
         }),
         ('transform_rule', {
             'description': '{user} has transformed rule {rule} to {transformation} in ruleset {ruleset}',
-            'title': 'Transform Rule'
+            'title': 'Transform Rule',
+            'perm': 'rules.ruleset_policy_view'
         }),
         ('suppress_rule', {
             'description': '{user} has suppressed rule {rule} in ruleset {ruleset}',
-            'title': 'Suppress Rule'
+            'title': 'Suppress Rule',
+            'perm': 'rules.ruleset_policy_view'
         }),
         ('disable_rule', {
             'description': '{user} has disabled rule {rule} in ruleset {ruleset}',
-            'title': 'Disable Rule'
+            'title': 'Disable Rule',
+            'perm': 'rules.ruleset_policy_view'
         }),
         ('delete_suppress_rule', {
             'description': '{user} has deleted suppressed rule {rule} in ruleset {ruleset}',
-            'title': 'Delete Suppress Rule'
+            'title': 'Delete Suppress Rule',
+            'perm': 'rules.ruleset_policy_view'
         }),
 
         # Toggle availability
         ('toggle_availability', {
             'description': '{user} has modified rule availability {rule}',
-            'title': 'Toggle Availability'
+            'title': 'Toggle Availability',
+            'perm': 'rules.ruleset_policy_view'
         }),
 
         # Thresholds:
         ('create_threshold', {
             'description': '{user} has created threshold on rule {rule} in ruleset {ruleset}',
-            'title': 'Create Threshold'
+            'title': 'Create Threshold',
+            'perm': 'rules.ruleset_policy_view'
         }),
         ('edit_threshold', {
             'description': '{user} has edited threshold {threshold} on rule {rule} in ruleset {ruleset}',
-            'title': 'Edit Threshold'
+            'title': 'Edit Threshold',
+            'perm': 'rules.ruleset_policy_view'
         }),
         ('delete_threshold', {
             'description': '{user} has deleted threshold {threshold} on rule {rule} in ruleset {ruleset}',
-            'title': 'Delete Threshold'
+            'title': 'Delete Threshold',
+            'perm': 'rules.ruleset_policy_view'
         }),
 
         # Used only in REST API
         ('delete_transform_ruleset', {
             'description': '{user} has deleted transformation {transformation} on ruleset {ruleset}',
-            'title': 'Deleted Ruleset Transformation'
+            'title': 'Deleted Ruleset Transformation',
+            'perm': 'rules.ruleset_policy_view'
         }),
         ('delete_transform_rule', {
             'description': '{user} has deleted transformation {transformation} on rule {rule} in ruleset {ruleset}',
-            'title': 'Delete Rule Transformation'
+            'title': 'Delete Rule Transformation',
+            'perm': 'rules.ruleset_policy_view'
         }),
         ('delete_transform_category', {
             'description': '{user} has deleted transformation {transformation} on category {category} in ruleset {ruleset}',
-            'title': 'Delete Category Transformation'
+            'title': 'Delete Category Transformation',
+            'perm': 'rules.ruleset_policy_view'
         }),
         # End REST API
 
         # Suricata
         ('edit_suricata', {
             'description': '{user} has edited suricata',
-            'title': 'Edit Suricata'
+            'title': 'Edit Suricata',
+            'perm': 'rules.configuration_view'
         }),
         ('create_suricata', {
             'description': '{user} has created suricata',
-            'title': 'Create Suricata'
+            'title': 'Create Suricata',
+            'perm': 'rules.configuration_view'
         }),
         ('update_push_all', {
             'description': '{user} has pushed ruleset {ruleset}',
-            'title': 'Update/Push ruleset'
+            'title': 'Update/Push ruleset',
+            'perm': 'rules.ruleset_update_push'
         }),
 
         # Settings
         ('system_settings', {
             'description': '{user} has edited system settings',
-            'title': 'Edit System Settings'
+            'title': 'Edit System Settings',
+            'perm': 'rules.configuration_view'
         }),
         ('delete_alerts', {
             'description': '{user} has deleted alerts from rule {rule}',
-            'title': 'Delete Alerts'
+            'title': 'Delete Alerts',
+            'perm': 'rules.events_view'
         }),
 
         # Rule processing filter
         ('create_rule_filter', {
             'description': '{user} has created rule filter {rule_filter}',
-            'title': 'Create rule filter'
+            'title': 'Create rule filter',
+            'perm': 'rules.events_view'
         }),
         ('edit_rule_filter', {
             'description': '{user} has edited rule filter {rule_filter}',
-            'title': 'Edit rule filter'
+            'title': 'Edit rule filter',
+            'perm': 'rules.events_view'
         }),
         ('delete_rule_filter', {
             'description': '{user} has deleted rule filter {rule_filter}',
-            'title': 'Delete rule filter'
+            'title': 'Delete rule filter',
+            'perm': 'rules.events_view'
         })
     ])
 
@@ -522,6 +593,18 @@ class UserAction(models.Model):
 
     def __str__(self):
         return self.generate_description()
+
+    @staticmethod
+    def get_allowed_actions_type(request):
+        from scirius.utils import get_middleware_module
+        actions_dict = get_middleware_module('common').get_user_actions_dict()
+
+        actions = []
+        for action_type, val in actions_dict.items():
+            for perm in val.get('perm', 'no_perm'):
+                if request.user.has_perm(perm):
+                    actions.append(action_type)
+        return actions
 
     @classmethod
     def create(cls, **kwargs):
@@ -555,7 +638,7 @@ class UserAction(models.Model):
             ua_obj.save()
 
         # Used as test
-        ua.generate_description()
+        ua.generate_description(ua_params['user'])
 
         # Warning; do not remove.
         # hack callback is called after UserAction.save is called. So the
@@ -563,7 +646,17 @@ class UserAction(models.Model):
         # have been created
         ua.save()
 
-    def generate_description(self):
+    @staticmethod
+    def _is_action_authorized(action_key, user):
+        if user:
+            if action_key == 'ruleset':
+                if user.has_perm('rules.ruleset_policy_view'):
+                    return True
+                return False
+
+        return True
+
+    def generate_description(self, user=None):
         if self.description:
             return self.description
 
@@ -576,7 +669,7 @@ class UserAction(models.Model):
         actions = UserActionObject.objects.filter(user_action=self).all()
 
         for action in actions:
-            if action.content and hasattr(action.content, 'get_absolute_url'):
+            if action.content and hasattr(action.content, 'get_absolute_url') and self._is_action_authorized(action.action_key, user):
                 format_[action.action_key] = format_html('<a href="{}"><strong>{}</strong></a>',
                                                          action.content.get_absolute_url(),
                                                          action.action_value)
@@ -2470,11 +2563,22 @@ class Rule(models.Model, Transformable, Cache):
                     dependant_rules.extend(drule.get_dependant_rules(ruleset))
         return dependant_rules
 
-    def get_actions(self):
-        return UserAction.objects.filter(
+    def get_actions(self, user):
+        history = UserAction.objects.filter(
             user_action_objects__content_type=ContentType.objects.get_for_model(Rule),
             user_action_objects__object_id=self.pk
         ).order_by('-date')
+
+        res = []
+        for item in history:
+            res.append({
+                'description': item.generate_description(user),
+                'comment': item.comment,
+                'title': item.get_title(),
+                'date': item.date,
+                'icons': item.get_icons()
+            })
+        return res
 
     def get_comments(self):
         return UserAction.objects.filter(

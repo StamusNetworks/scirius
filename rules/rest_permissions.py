@@ -1,69 +1,88 @@
+from functools import wraps
 
-from rest_framework import permissions
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import BasePermission
+
+from scirius.utils import get_middleware_module
 
 
-class IsStaffOrReadOnly(permissions.BasePermission):
+def has_group_permission(perms, owner_allowed=False):
+    def decorator(func):
+        # allows to disable permissions check on the class
+        # check method permissions instead of class permissions
+        func.disable_main_check = True
+
+        # allows to use drf action decorator with this one
+        @wraps(func)
+        def view(self, request, *args, **kwargs):
+            # specific case for accounts module
+            # current user can edit his own content
+            if owner_allowed and self.__class__.__name__ == 'AccountViewSet':
+                modified_user_pk = int(kwargs.get('pk', '-1'))
+                if request.user.sciriususer.pk == modified_user_pk:
+                    return func(self, request, *args, **kwargs)
+
+            if not HasGroupPermission.check_perms(request, self, perms):
+                raise PermissionDenied()
+            return func(self, request, *args, **kwargs)
+        return view
+    return decorator
+
+
+class NoPermission(BasePermission):
     def has_permission(self, request, view):
-        # Authentication is required
-        if request.user is None or not request.user.is_authenticated:
-            return False
-
-        # Read permissions are allowed to any request,
-        # so we'll always allow GET, HEAD or OPTIONS requests.
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        return request.user.is_staff or request.user.is_superuser
+        return False
 
 
-class IsCurrentUserOrSuperUserOrReadOnly(permissions.BasePermission):
+class HasGroupPermission(BasePermission):
+    """
+    Ensure user is in required groups.
+    """
+    READ = ('GET', 'HEAD', 'OPTIONS')
+    WRITE = ('POST', 'PUT', 'PATCH', 'DELETE')
+
     def has_permission(self, request, view):
-
-        # Authentication is required
-        if request.user is None or not request.user.is_authenticated:
-            return False
-
-        if request.user.is_superuser:
-            return True
-
-        if request.user.is_staff:
-            if view.action == 'create' or view.action == 'list':
-                return False
-
-        # All users are allowed to change their own password
-        if view.action == 'password' or view.action == 'token' or view.action == 'current_user':
-            return True
-
-        return request.user.is_staff or request.user.is_superuser
-
-    def has_object_permission(self, request, view, obj):
-        '''
-        This method is called only if has_permission has returned True.
-        This is a second validation.
-        '''
-        return obj.user.pk == request.user.pk or request.user.is_superuser
-
-
-class IsOwnerOrReadOnly(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        if 'share' in request.data and request.data['share']:
-            if request.user.is_active and not request.user.is_staff and not request.user.is_superuser:
-                return False
-
-        return True
-
-    def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed to any request,
-        # so we'll always allow GET, HEAD or OPTIONS requests.
-        if request.method in permissions.SAFE_METHODS:
-            if request.user.is_staff or request.user.is_superuser:
+        # if method is decorated, we skip the main class check
+        if getattr(view, 'action', False):
+            func = getattr(view, view.action)
+            if hasattr(func, 'disable_main_check') and func.disable_main_check:
                 return True
-            elif request.user.is_active:
-                if request.user == obj.user or obj.id < 0 or obj.user is None:  # obj.id < 0 means static filter sets
-                    return True
-            return False
 
-        return obj.user == request.user or request.user.is_superuser or request.user.is_staff
+        required_groups_mapping = getattr(view, "REQUIRED_GROUPS", {})
+        action = None
+        if request.method in HasGroupPermission.READ:
+            action = 'READ'
+        elif request.method in HasGroupPermission.WRITE:
+            action = 'WRITE'
+        else:
+            raise Exception('Not implemented: {}'.format(request.method))
+
+        required_groups = required_groups_mapping.get(action, [])
+
+        return self.check_perms(request, view, required_groups)
+
+    @staticmethod
+    def check_perms(request, view, required_groups):
+
+        if get_middleware_module('common').has_multitenant():
+            # bypass tenant check on some ViewSet that does not handle tenants
+            if not getattr(view, 'no_tenant_check', False):
+                if {'rules.events_view', 'rules.events_edit'} & set(required_groups):
+                    tenant = request.query_params.get('tenant', -1)
+                    try:
+                        tenant = int(tenant)
+                    except (ValueError, TypeError):
+                        return False
+
+                    if tenant in (-1, 0):
+                        if not request.user.sciriususer.has_no_tenant():
+                            return False
+                    elif tenant > 0:
+                        if not request.user.sciriususer.has_all_tenants():
+                            if tenant not in request.user.sciriususer.get_tenants().values_list('pk', flat=True):
+                                return False
+
+        for group in required_groups:
+            if request.user.has_perm(group):
+                return True
+        return False

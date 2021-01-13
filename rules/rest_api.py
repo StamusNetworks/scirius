@@ -17,13 +17,13 @@ from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
-from rest_framework.exceptions import APIException, ParseError
+from rest_framework.exceptions import APIException, ParseError, PermissionDenied
 from rest_framework.routers import DefaultRouter
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.mixins import UpdateModelMixin, RetrieveModelMixin
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rules.rest_permissions import IsOwnerOrReadOnly
+from rules.rest_permissions import NoPermission
+from rest_framework.permissions import IsAuthenticated
 
 from django_filters import rest_framework as filters
 from elasticsearch.exceptions import ConnectionError
@@ -175,6 +175,11 @@ class RulesetViewSet(viewsets.ModelViewSet):
     ordering = ('name',)
     ordering_fields = ('name', 'created_date', 'updated_date', 'rules_count')
     filterset_fields = ('name', 'descr')
+    REQUIRED_GROUPS = {
+        'READ': ('rules.source_view',),
+        'WRITE': ('rules.source_edit',),
+    }
+    no_tenant_check = True
 
     def _validate_categories(self, sources_at_version, categories):
         if len(sources_at_version) == 0 and len(categories) > 0:
@@ -344,6 +349,10 @@ class CategoryViewSet(SciriusReadOnlyModelViewSet):
     ordering = ('name',)
     ordering_fields = ('pk', 'name', 'created_date', 'source')
     filterset_fields = ('name', 'source')
+    REQUIRED_GROUPS = {
+        'READ': ('rules.ruleset_policy_view',),
+        'WRITE': ('rules.ruleset_policy_edit',),
+    }
 
     @action(detail=True, methods=['post'])
     def enable(self, request, pk):
@@ -666,6 +675,17 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
     filter_backends = (DjangoFilterBackend, SearchFilter, RuleHitsOrderingFilter)
     filterset_class = RuleFilter
     search_fields = ('sid', 'msg', 'content')
+    REQUIRED_GROUPS = {
+        'READ': ('rules.ruleset_policy_view',),
+        'WRITE': ('rules.ruleset_policy_edit',),
+    }
+
+    def get_permissions(self):
+        if self.action == 'delete_alerts':
+            if not self.request.user.has_perm('rules.events_edit'):
+                return [NoPermission()]
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
     @action(detail=True, methods=['get'])
     def references(self, request, pk):
@@ -834,7 +854,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
                 res[rule.sid].append({'title': ua.get_title(),
                                       'icon': ua.get_icons(),
                                       'comment': ua.comment if len(ua.comment) else 'No comment',
-                                      'description': ua.generate_description(),
+                                      'description': ua.generate_description(request.user),
                                       'date': ua.date})
             return Response(res)
 
@@ -1156,6 +1176,10 @@ class RulesetTransformationViewSet(BaseTransformationViewSet):
     ordering_fields = ('ruleset_transformation',)
     _fields = {'ruleset': 'ruleset_transformation', 'trans_type': 'key', 'trans_value': 'value'}
     _action_type = 'transform_ruleset'
+    REQUIRED_GROUPS = {
+        'READ': ('rules.ruleset_policy_view',),
+        'WRITE': ('rules.ruleset_policy_edit',),
+    }
 
     def destroy(self, request, *args, **kwargs):
         return super(RulesetTransformationViewSet, self).destroy(request, *args, **kwargs)
@@ -1253,6 +1277,10 @@ class CategoryTransformationViewSet(BaseTransformationViewSet):
     ordering_fields = ('pk', 'ruleset', 'category_transformation')
     _fields = {'ruleset': 'ruleset', 'trans_type': 'key', 'trans_value': 'value', 'category': 'category_transformation'}
     _action_type = 'transform_category'
+    REQUIRED_GROUPS = {
+        'READ': ('rules.ruleset_policy_view',),
+        'WRITE': ('rules.ruleset_policy_edit',),
+    }
 
     def destroy(self, request, *args, **kwargs):
         return super(CategoryTransformationViewSet, self).destroy(request, *args, **kwargs)
@@ -1357,6 +1385,10 @@ class RuleTransformationViewSet(BaseTransformationViewSet):
     ordering_fields = ('pk', 'ruleset', 'rule_transformation')
     _fields = {'ruleset': 'ruleset', 'trans_type': 'key', 'trans_value': 'value', 'rule': 'rule_transformation'}
     _action_type = 'transform_rule'
+    REQUIRED_GROUPS = {
+        'READ': ('rules.ruleset_policy_view',),
+        'WRITE': ('rules.ruleset_policy_edit',),
+    }
 
     def destroy(self, request, *args, **kwargs):
         return super(RuleTransformationViewSet, self).destroy(request, *args, **kwargs)
@@ -1397,6 +1429,11 @@ class BaseSourceSerializer(serializers.ModelSerializer):
 
 
 class BaseSourceViewSet(viewsets.ModelViewSet):
+    REQUIRED_GROUPS = {
+        'READ': ('rules.source_view',),
+        'WRITE': ('rules.source_edit',),
+    }
+
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
         comment = data.pop('comment', None)
@@ -1850,6 +1887,13 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
     ordering_fields = ('pk', 'date', 'username', 'action_type')
     filter_class = UserActionFilter
     filter_backends = (filters.DjangoFilterBackend, UserActionDateOrderingFilter)
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        actions_type = UserAction.get_allowed_actions_type(self.request)
+        history = UserAction.objects.filter(action_type__in=actions_type)
+        history |= UserAction.objects.filter(user=self.request.user)
+        return history
 
     @action(detail=False, methods=['get'])
     def get_action_type_list(self, request):
@@ -1909,6 +1953,9 @@ class ChangelogViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ('source', 'version')
     ordering = ('-pk',)
     ordering_fields = ('pk', 'source', 'version',)
+    REQUIRED_GROUPS = {
+        'READ': ('rules.source_view',),
+    }
 
 
 class ESBaseViewSet(APIView):
@@ -1942,6 +1989,9 @@ class ESRulesViewSet(ESBaseViewSet):
 
     =============================================================================================================================================================
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.configuration_view', 'rules.events_view'),
+    }
 
     def _get(self, request, format=None):
         errors = {}
@@ -1967,6 +2017,9 @@ class ESRuleViewSet(ESBaseViewSet):
 
     =============================================================================================================================================================
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.configuration_view', 'rules.events_view'),
+    }
 
     def _get(self, request, format=None):
         sid = request.GET.get('sid', None)
@@ -1984,6 +2037,9 @@ class ESRuleViewSet(ESBaseViewSet):
 class ESTopRulesViewSet(ESBaseViewSet):
     """
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
 
     def _get(self, request, format=None):
         count = request.GET.get('count', 20)
@@ -1999,6 +2055,9 @@ class ESTopRulesViewSet(ESBaseViewSet):
 class ESSigsListViewSet(ESBaseViewSet):
     """
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
 
     def _get(self, request, format=None):
         sids = request.GET.get('sids', 20)
@@ -2019,6 +2078,9 @@ class ESSigsListViewSet(ESBaseViewSet):
 class ESPostStatsViewSet(ESBaseViewSet):
     """
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.ruleset_policy_view',),
+    }
 
     def _get(self, request, format=None):
         value = request.GET.get('value', None)
@@ -2028,6 +2090,9 @@ class ESPostStatsViewSet(ESBaseViewSet):
 class ESFieldsStatsViewSet(ESBaseViewSet):
     """
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
 
     def _get(self, request, format=None):
         errors = {}
@@ -2061,6 +2126,9 @@ class ESFieldsStatsViewSet(ESBaseViewSet):
 class ESFieldStatsViewSet(ESBaseViewSet):
     """
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
 
     def _get(self, request, format=None):
         errors = {}
@@ -2113,6 +2181,10 @@ class ESFilterIPViewSet(ESBaseViewSet):
     =============================================================================================================================================================
     """
 
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
+
     RULE_FIELDS_MAPPING = {'rule_src': 'src_ip', 'rule_dest': 'dest_ip', 'rule_source': 'alert.source.ip', 'rule_target': 'alert.target.ip'}
 
     def _get(self, request, format=None):
@@ -2156,9 +2228,20 @@ class ESTimelineViewSet(ESBaseViewSet):
 
     =============================================================================================================================================================
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.configuration_view', 'rules.events_view'),
+    }
+    no_tenant_check = True
 
     def _get(self, request, format=None):
         tags = False if request.GET.get('target', 'false') == 'false' else True
+
+        if request.user.has_perm('rules.events_view') and not request.user.has_perm('rules.configuration_view') and not tags:
+            raise PermissionDenied()
+
+        if not request.user.has_perm('rules.events_view') and request.user.has_perm('rules.configuration_view') and tags:
+            raise PermissionDenied()
+
         return Response(ESTimeline(request).get(tags=tags))
 
 
@@ -2228,6 +2311,9 @@ class ESLogstashEveViewSet(ESBaseViewSet):
 
     =============================================================================================================================================================
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.configuration_view',),
+    }
 
     def _get(self, request, format=None):
         value = request.GET.get('value', None)
@@ -2247,6 +2333,10 @@ class ESHealthViewSet(ESBaseViewSet):
 
     =============================================================================================================================================================
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.configuration_view',),
+    }
+    no_tenant_check = True
 
     def _get(self, request, format=None):
         return Response(ESHealth(request).get())
@@ -2277,6 +2367,10 @@ class ESStatsViewSet(ESBaseViewSet):
 
     =============================================================================================================================================================
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.configuration_view',),
+    }
+
     def _get(self, request, format=None):
         return Response(ESStats(request).get())
 
@@ -2284,7 +2378,9 @@ class ESStatsViewSet(ESBaseViewSet):
 class ESCheckVersionViewSet(APIView):
     """
     """
-    permission_classes = (IsAdminUser,)
+    REQUIRED_GROUPS = {
+        'WRITE': ('rules.configuration_view',),
+    }
 
     def post(self, request, format=None):
         from scirius.utils import get_middleware_module
@@ -2322,6 +2418,9 @@ class ESRulesPerCategoryViewSet(ESBaseViewSet):
 
     =============================================================================================================================================================
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.ruleset_policy_view',),
+    }
 
     def _get(self, request, format=None):
         return Response(ESRulesPerCategory(request).get())
@@ -2345,6 +2444,10 @@ class ESAlertsCountViewSet(ESBaseViewSet):
 
     =============================================================================================================================================================
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
+    no_tenant_check = True
 
     def _get(self, request, format=None):
         if request.GET.get('prev') != 'false':
@@ -2379,6 +2482,9 @@ class ESLatestStatsViewSet(ESBaseViewSet):
 
     =============================================================================================================================================================
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.configuration_view',),
+    }
 
     def _get(self, request, format=None):
         return Response(ESLatestStats(request).get())
@@ -2405,6 +2511,9 @@ class ESIPPairAlertsViewSet(ESBaseViewSet):
     =============================================================================================================================================================
 
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
 
     def _get(self, request, format=None):
         return Response(ESIppairAlerts(request).get())
@@ -2426,6 +2535,9 @@ class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
     =============================================================================================================================================================
 
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
 
     def _get(self, request, format=None):
         return Response(ESIppairNetworkAlerts(request).get())
@@ -2447,6 +2559,9 @@ class ESAlertsTailViewSet(ESBaseViewSet):
     =============================================================================================================================================================
 
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
 
     def _get(self, request, format=None):
         pagination = ESPaginator(request)
@@ -2471,6 +2586,9 @@ class ESEventsFromFlowIDViewSet(ESBaseViewSet):
     =============================================================================================================================================================
 
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
 
     def _get(self, request, format=None):
         return Response(ESEventsFromFlowID(request).get())
@@ -2495,6 +2613,9 @@ class ESSuriLogTailViewSet(ESBaseViewSet):
     =============================================================================================================================================================
 
     """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.configuration_view',),
+    }
 
     def _get(self, request, format=None):
         return Response(ESSuriLogTail(request).get())
@@ -2513,6 +2634,9 @@ class ESDeleteLogsViewSet(APIView):
 
     =============================================================================================================================================================
     """
+    REQUIRED_GROUPS = {
+        'WRITE': ('rules.configuration_edit',),
+    }
 
     def post(self, request, format=None):
         es_data = ESData()
@@ -2557,24 +2681,18 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
     """
     serializer_class = SystemSettingsSerializer
     queryset = SystemSettings.objects.all()
-
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            permission_classes = [IsAuthenticated, ]
-        else:
-            permission_classes = [IsAdminUser, ]
-
-        return [permission() for permission in permission_classes]
+    REQUIRED_GROUPS = {
+        'READ': ('rules.configuration_view', 'rules.events_view'),
+        'WRITE': ('rules.configuration_edit',),
+    }
+    no_tenant_check = True
 
     def retrieve(self, request, pk=None):
         from scirius.utils import get_middleware_module
 
-        if request.user.is_superuser:
-            instance = self.get_object()
-            serializer = SystemSettingsSerializer(instance)
-            data = serializer.data.copy()
-        else:
-            data = {}
+        instance = self.get_object()
+        serializer = SystemSettingsSerializer(instance)
+        data = serializer.data.copy()
 
         data['kibana'] = USE_KIBANA
         data['evebox'] = USE_EVEBOX
@@ -2597,9 +2715,7 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
         return Response(data)
 
     def get_object(self):
-        obj = get_system_settings()
-        self.check_object_permissions(self.request, obj)
-        return obj
+        return get_system_settings()
 
     def _update_or_partial_update(self, request):
         data = request.data.copy()
@@ -2628,6 +2744,11 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
 
 
 class SciriusContextAPIView(APIView):
+    REQUIRED_GROUPS = {
+        'READ': ('rules.configuration_view', 'rules.events_view'),
+    }
+    no_tenant_check = True
+
     def get(self, request, format=None):
         from scirius.utils import get_middleware_module
         context = get_middleware_module('common').get_homepage_context()
@@ -2683,9 +2804,13 @@ class FilterSetViewSet(viewsets.ModelViewSet):
 
     =============================================================================================================================================================
     """
-    permission_classes = (IsOwnerOrReadOnly, )
     serializer_class = FilterSetSerializer
     ordering = ('name',)
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+        'WRITE': ('rules.events_view',),
+    }
+    no_tenant_check = True
 
     def get_queryset(self):
         user = self.request.user
@@ -2702,6 +2827,9 @@ class FilterSetViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
+
+        if data.get('share', False) and not request.user.has_perm('rules.events_edit'):
+            raise PermissionDenied()
 
         serializer = FilterSetSerializer(data=data, context={'request': request})
         serializer.is_valid(raise_exception=True)
@@ -2731,6 +2859,11 @@ class HuntFilterAPIView(APIView):
 
     =============================================================================================================================================================
     """
+
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
+    no_tenant_check = True
 
     def get(self, request, format=None):
         from scirius.utils import get_middleware_module

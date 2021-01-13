@@ -6,7 +6,9 @@
 <h2 class="panel-title">{{ action }}</h2>
 </div>
 <ul>
-<li><a href="{% url 'accounts_edit' 'password' %}">Change password</a></li>
+{% if not is_from_ldap %}
+    <li><a href="{% url 'accounts_edit' 'password' %}">Change password</a></li>
+{% endif %}
 <li><a href="{% url 'accounts_edit' 'settings' %}">Edit settings</a></li>
 <li><a href="{% url 'accounts_edit' 'token' %}">Edit token</a></li>
 </ul>
@@ -42,10 +44,24 @@
 <li class="list-group-item"><strong>Timezone:</strong> <span class="pull-right">{{ user.sciriususer.timezone }}</span></li>
 {% endif %}
 <li class="list-group-item"><strong>Active:</strong> <span class="pull-right">{{ user.is_active }}</span></li>
-<li class="list-group-item"><strong>Staff user:</strong> <span class="pull-right">{{ user.is_staff }}</span></li>
-<li class="list-group-item"><strong>Super user:</strong> <span class="pull-right">{{ user.is_superuser }}</span></li>
+<li class="list-group-item"><strong>Role:</strong> <span class="pull-right">{% with user.groups.all|first as group %}{{ group.name }}{% endwith %}</span></li>
+{% if tenants or all_tenants or no_tenant %}
+    <li class="list-group-item"><strong>No tenant:</strong> <span class="pull-right">{{ no_tenant }}</span></li>
+    <li class="list-group-item"><strong>All tenants:</strong> <span class="pull-right">{{ all_tenants }}</span></li>
+    <li class="list-group-item"><strong>Tenants:</strong>
+        {% if tenants %}
+            {% for tenant in tenants %}
+                <div style="margin-right:0;" class="row">
+                    <span class="pull-right">{{ tenant }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </li>
+{% endif %}
 </ul>
+<div class="row">
 <p>Choose action in the left menu.</p>
+</div>
 {% endif %}
 </div>
 </div>

@@ -31,25 +31,29 @@ from rules.tests import RestAPITestBase, RestAPIListTestCase
 
 class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
     def setUp(self):
+        from scirius.utils import get_middleware_module
         RestAPITestBase.setUp(self)
 
         # Create scirius user is_superuser
         APITestCase.setUp(self)
-        self.sciriususer_super = SciriusUser.objects.create(user=self.user, timezone='UTC')
+        self.sciriususer_super, _ = SciriusUser.objects.get_or_create(user=self.user, defaults={'timezone': 'UTC'})
+        get_middleware_module('common').update_scirius_user_class(self.user, {})
 
         # Create Scirius User is_staff
-        params = {'username': 'sonic_staff', 'timezone': 'UTC', 'password': '69scirius69', 'is_superuser': False, 'is_staff': True, 'is_active': True}
+        params = {'username': 'sonic_staff', 'timezone': 'UTC', 'password': '69scirius69'}
         response = self.http_post(reverse('sciriususer-list'), params, status=status.HTTP_201_CREATED)
 
         self.sciriususer_staff = SciriusUser.objects.get(pk=response['pk'])
+        self.staff_role.user_set.add(self.sciriususer_staff.user)
         self.assertEqual(self.sciriususer_staff is not None, True)
         self.assertEqual(self.sciriususer_staff.user.username, 'sonic_staff')
 
         # Create scirius user is_active
-        params = {'username': 'sonic_active', 'timezone': 'UTC', 'password': '69scirius69', 'is_superuser': False, 'is_staff': False, 'is_active': True}
+        params = {'username': 'sonic_active', 'timezone': 'UTC', 'password': '69scirius69'}
         response = self.http_post(reverse('sciriususer-list'), params, status=status.HTTP_201_CREATED)
 
         self.sciriususer_active = SciriusUser.objects.get(pk=response['pk'])
+        self.user_role.user_set.add(self.sciriususer_active.user)
         self.assertEqual(self.sciriususer_active.user.username, 'sonic_active')
 
         # Connect by default with is_staff user
@@ -58,14 +62,15 @@ class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
     # ################
     # ###### Details
     def test_001_update_user_staff_details_own(self):
-        params = {'username': 'sonic_test_done', 'timezone': 'Europe/Paris'}
+        params = {'timezone': 'UTC', 'first_name': 'toto', 'last_name': 'tutu', 'email': 'toto@tutu.fr'}
         self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_staff.pk,)), params)
 
         # update its own details
         sciriususer_staff = SciriusUser.objects.get(pk=self.sciriususer_staff.pk)
-        self.assertEqual(sciriususer_staff is not None, True)
-        self.assertEqual(sciriususer_staff.user.username, 'sonic_test_done')
-        self.assertEqual(sciriususer_staff.timezone, 'Europe/Paris')
+        self.assertEqual(sciriususer_staff.user.first_name, 'toto')
+        self.assertEqual(sciriususer_staff.user.last_name, 'tutu')
+        self.assertEqual(sciriususer_staff.user.email, 'toto@tutu.fr')
+        self.assertEqual(sciriususer_staff.timezone, 'UTC')
 
     def test_002_fail_update_user_staff_details_with_user_active(self):
         # Update staff user with active user => forbidden
@@ -86,18 +91,23 @@ class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
     def test_004_fail_update_user_active_details_own(self):
         self.client.force_login(self.sciriususer_active.user)
         params = {'username': 'sonic_test_done', 'timezone': 'Europe/Paris'}
-        self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_active.pk,)), params, status=status.HTTP_403_FORBIDDEN)
+        self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_active.pk,)), params, status=status.HTTP_400_BAD_REQUEST)
 
         # update its own details
-        sciriususer_staff = SciriusUser.objects.get(pk=self.sciriususer_active.pk)
-        self.assertEqual(sciriususer_staff is not None, True)
-        self.assertEqual(sciriususer_staff.user.username, 'sonic_active')
-        self.assertEqual(sciriususer_staff.timezone, 'UTC')
+        sciriususer_active = SciriusUser.objects.get(pk=self.sciriususer_active.pk)
+        self.assertEqual(sciriususer_active is not None, True)
+        self.assertEqual(sciriususer_active.user.username, 'sonic_active')
+        self.assertEqual(sciriususer_active.timezone, 'UTC')
 
     def test_005_fail_update_user_active_details_with_user_staff(self):
-        self.client.force_login(self.sciriususer_staff.user)
-        params = {'username': 'sonic_test_forbid', 'timezone': 'UTC'}
-        self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_active.pk,)), params, status=status.HTTP_403_FORBIDDEN)
+        params = {'username': 'sonic_test_done', 'timezone': 'Europe/Paris'}
+        self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_staff.pk,)), params, status=status.HTTP_400_BAD_REQUEST)
+
+        # update its own details
+        sciriususer_staff = SciriusUser.objects.get(pk=self.sciriususer_staff.pk)
+        self.assertEqual(sciriususer_staff is not None, True)
+        self.assertNotEqual(sciriususer_staff.user.username, 'sonic_test_done')
+        self.assertNotEqual(sciriususer_staff.timezone, 'Europe/Paris')
 
     def test_006_update_user_active_details_with_user_super(self):
         # Super user can update another user details
@@ -111,18 +121,18 @@ class RestAPIAccountTestCase(RestAPITestBase, APITestCase):
 
     def test_007_fail_upgrade_privilege_from_active_to_staff(self):
         self.client.force_login(self.sciriususer_active.user)
-        params = {'is_taff': True}
-        self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_active.pk,)), params, status=status.HTTP_403_FORBIDDEN)
+        params = {'role': self.staff_role.pk}
+        self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_active.pk,)), params, status=status.HTTP_400_BAD_REQUEST)
 
     def test_008_fail_upgrade_privilege_from_active_to_super(self):
         self.client.force_login(self.sciriususer_active.user)
-        params = {'is_superuser': True}
-        self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_active.pk,)), params, status=status.HTTP_403_FORBIDDEN)
+        params = {'role': self.superuser_role.pk}
+        self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_active.pk,)), params, status=status.HTTP_400_BAD_REQUEST)
 
     def test_009_fail_upgrade_privilege_from_staff_to_super(self):
         self.client.force_login(self.sciriususer_staff.user)
-        params = {'is_superuser': True}
-        self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_staff.pk,)), params, status=status.HTTP_403_FORBIDDEN)
+        params = {'role': self.superuser_role.pk}
+        self.http_put(reverse('sciriususer-detail', args=(self.sciriususer_staff.pk,)), params, status=status.HTTP_400_BAD_REQUEST)
 
     def test_010_fail_update_user_active_password_from_details_api_with_user_super(self):
         self.client.force_login(self.user)

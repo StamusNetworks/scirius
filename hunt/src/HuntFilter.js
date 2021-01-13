@@ -539,7 +539,7 @@ class HuntFilter extends React.Component {
         let errors = error.response.data;
 
         if (error.response.status === 403) {
-          const noRights = this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser && this.state.filterSets.shared;
+          const noRights = !this.state.user.perms.includes('rules.events_edit') && this.state.filterSets.shared;
           if (noRights) {
             errors = { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
           }
@@ -559,7 +559,7 @@ class HuntFilter extends React.Component {
       }
     }
 
-    const noRights = this.state.user !== undefined && this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser;
+    const noRights = this.state.user !== undefined && !this.state.user.perms.includes('rules.events_edit');
     return (
       <FilterSetSave
         title="Create new Filter Set"

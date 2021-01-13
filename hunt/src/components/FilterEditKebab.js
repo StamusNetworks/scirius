@@ -164,7 +164,7 @@ class FilterEditKebab extends React.Component {
         let errors = error.response.data;
 
         if (error.response.status === 403) {
-          const noRights = this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser && this.state.filterSets.shared;
+          const noRights = !this.state.user.perms.includes('rules.events_edit') && this.state.filterSets.shared;
           if (noRights) {
             errors = { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
           }
@@ -174,7 +174,7 @@ class FilterEditKebab extends React.Component {
   }
 
   render() {
-    const noRights = this.state.user !== undefined && this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser;
+    const noRights = this.state.user !== undefined && !this.state.user.perms.includes('rules.events_edit');
     return (
       <React.Fragment>
         <FilterSetSave
@@ -191,38 +191,43 @@ class FilterEditKebab extends React.Component {
         />
 
         <DropdownKebab id="filterActions" pullRight>
-          {this.props.data.index !== 0 && (
-            <MenuItem
-              onClick={() => {
-                this.displayToggle('movetop');
-              }}
-            >
-              Send Action to top
-            </MenuItem>
+          {this.state.user !== undefined && this.state.user.perms.includes('rules.events_edit') && (
+            <React.Fragment>
+              {this.props.data.index !== 0 && (
+                <MenuItem
+                  onClick={() => {
+                    this.displayToggle('movetop');
+                  }}
+                >
+                  Send Action to top
+                </MenuItem>
+              )}
+              <MenuItem
+                onClick={() => {
+                  this.displayToggle('move');
+                }}
+              >
+                Move Action
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  this.displayToggle('movebottom');
+                }}
+              >
+                Send Action to bottom
+              </MenuItem>
+              <MenuItem divider />
+              <MenuItem
+                onClick={() => {
+                  this.displayToggle('delete');
+                }}
+              >
+                Delete Action
+              </MenuItem>
+              <MenuItem divider />
+            </React.Fragment>
           )}
-          <MenuItem
-            onClick={() => {
-              this.displayToggle('move');
-            }}
-          >
-            Move Action
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              this.displayToggle('movebottom');
-            }}
-          >
-            Send Action to bottom
-          </MenuItem>
-          <MenuItem divider />
-          <MenuItem
-            onClick={() => {
-              this.displayToggle('delete');
-            }}
-          >
-            Delete Action
-          </MenuItem>
-          <MenuItem divider />
+
           <MenuItem
             onClick={() => {
               this.convertActionToFilters();
@@ -230,13 +235,15 @@ class FilterEditKebab extends React.Component {
           >
             Convert Action to Filters
           </MenuItem>
-          <MenuItem
-            onClick={() => {
-              this.saveActionToFilterSet();
-            }}
-          >
-            Save Action as Filter set
-          </MenuItem>
+          {this.state.user !== undefined && this.state.user.perms.includes('rules.events_edit') && (
+            <MenuItem
+              onClick={() => {
+                this.saveActionToFilterSet();
+              }}
+            >
+              Save Action as Filter set
+            </MenuItem>
+          )}
         </DropdownKebab>
         <ErrorHandler>
           <FilterToggleModal

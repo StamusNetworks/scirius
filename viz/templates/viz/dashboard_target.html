@@ -123,10 +123,12 @@ function differentiate_suppressed() {
     );
 }
 
+{% if perms.rules.events_view %}
 {% if filter and not filter == "*" %}
 $( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], "{{ filter }}", differentiate_suppressed));
 {% else %}
 $( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], null, differentiate_suppressed));
+{% endif %}
 {% endif %}
 
 function draw_ippair_alerts(from_date, hosts, filter, callback) {

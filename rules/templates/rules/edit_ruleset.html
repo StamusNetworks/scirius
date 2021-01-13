@@ -18,18 +18,22 @@
 <h2 class="panel-title">Action</h2>
 </div>
 <ul class="action">
-<li>
-<a href="{% url 'edit_ruleset' ruleset.id %}?mode=sources">Edit sources</a>
-</li>
-<li>
-<a href="{% url 'edit_ruleset' ruleset.id %}?mode=categories">Edit categories</a>
-</li>
+{% if perms.rules.source_edit %}
+    <li>
+        <a href="{% url 'edit_ruleset' ruleset.id %}?mode=sources">Edit sources</a>
+    </li>
+{% endif %}
+{% if perms.rules.ruleset_policy_edit %}
+    <li>
+        <a href="{% url 'edit_ruleset' ruleset.id %}?mode=categories">Edit categories</a>
+    </li>
 <li>
 <a href="{% url 'addsupprule' ruleset.id %}">Add rules to disabled list</a>
 </li>
 <li>
 <a href="{% url 'edit_ruleset' ruleset.id %}?mode=rules">Remove rules from disabled list</a>
 </li>
+{% endif %}
 </ul>
 {% endblock %}
 
@@ -78,10 +82,14 @@ function tables2_checking() {
 <h2>Edit ruleset</h2>
 Choose an operation in the actions below:
 <div>
-<div class="label label-default"><a href="{% url 'edit_ruleset' ruleset.id %}?mode=sources">Edit sources</a></div> 
-<div class="label label-default"><a href="{% url 'edit_ruleset' ruleset.id %}?mode=categories">Edit categories</a></div> 
-<div class="label label-default"><a href="{% url 'addsupprule' ruleset.id %}">Add rules to disabled list</a></div> 
-<div class="label label-default"><a href="{% url 'edit_ruleset' ruleset.id %}?mode=rules">Remove rules from disabled list</a></div>
+    {% if perms.rules.source_edit %}
+        <div class="label label-default"><a href="{% url 'edit_ruleset' ruleset.id %}?mode=sources">Edit sources</a></div> 
+    {% endif %}
+    {% if perms.rules.ruleset_policy_edit %}
+        <div class="label label-default"><a href="{% url 'edit_ruleset' ruleset.id %}?mode=categories">Edit categories</a></div> 
+        <div class="label label-default"><a href="{% url 'addsupprule' ruleset.id %}">Add rules to disabled list</a></div> 
+        <div class="label label-default"><a href="{% url 'edit_ruleset' ruleset.id %}?mode=rules">Remove rules from disabled list</a></div>
+    {% endif %}
 </div>
 <h2>Rename ruleset</h2>
 <form class="form" action="{% url 'edit_ruleset' ruleset.id %}" method="post">{% csrf_token %}
@@ -95,11 +103,13 @@ Choose an operation in the actions below:
     {% bootstrap_field form.target %}
 
     {% bootstrap_field form.comment %}
-    {% buttons %}
+    {% if perms.rules.ruleset_policy_edit %}
+        {% buttons %}
         <button type="submit" class="btn btn-primary">
             {% bootstrap_icon "ok" %} Submit
         </button>
-    {% endbuttons %}
+        {% endbuttons %}
+    {% endif %}
 </form>
 </div>
 </div>

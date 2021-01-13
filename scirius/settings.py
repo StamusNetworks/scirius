@@ -195,7 +195,7 @@ CSP_EXCLUDE_URL_PREFIXES = ('/evebox',)
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        'rules.rest_permissions.IsStaffOrReadOnly',
+        'rules.rest_permissions.HasGroupPermission',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',

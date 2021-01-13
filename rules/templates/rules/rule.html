@@ -19,24 +19,30 @@
 </ul>
 </div>
 
+{% if perms.rules.events_kibana or perms.rules.events_evebox %}
 {% if kibana and kibana_version >= 4 or evebox %}
 <div class="panel-heading">
        <h2 class="panel-title">Events list</h2>
 </div>
 <div class="panel-body">
 <ul>
+{% if perms.rules.events_kibana %}
 {% if kibana and kibana_version >= 4 %}
 	<li><a href="{{ kibana_url }}/app/kibana?#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-{{ date }},mode:quick,to:now))&_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:'alert.signature_id:{{ rule.sid }}')),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:_source,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=logstash-*&type=histogram" target="_blank">Kibana</a></li>
 {% endif %}
+{% endif %}
 
+{% if perms.rules.events_evebox %}
 {% if evebox %}
 <li><a href="{{ evebox_url }}/#/events;q=alert.signature_id:{{ rule.sid }}" target="_blank">Evebox</a></li>
+{% endif %}
 {% endif %}
 </ul>
 </div>
 
 {% endif %} {# kibana or evebox #}
-{% if request.user.is_staff %}
+{% endif %} {# perms kibana/evebox #}
+{% if perms.rules.ruleset_policy_edit %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
@@ -72,7 +78,7 @@
 {% endif %}
 </ul>
 </div>
-{% endif %} {# user.is_staff #}
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -147,7 +153,7 @@ $(document).ready(function(){
 
   <!-- Nav tabs -->
   <ul class="nav nav-tabs" role="tablist" id="ruleinfo">
-    {% if suricata_stats and elasticsearch %}
+    {% if suricata_stats and elasticsearch and perms.rules.events_view %}
     <li role="presentation" class="active"><a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">IP and Time Stats</a></li>
     <li role="presentation"><a href="#metastats" aria-controls="metastats" role="tab" data-toggle="tab">Advanced Data</a></li>
     {% endif %}
@@ -217,7 +223,7 @@ $(document).ready(function(){
 </div>
 
 </div> <!-- container-fluid -->
-{% if probes %}
+{% if probes and perms.rules.configuration_view %}
 <div class="row">
 <div class="col-md-12">
 <h2 class="title">Activity</h2>
@@ -366,10 +372,10 @@ $(document).ready(function(){
 <div class="col-md-10">
 <h3 class="title">History</h3> 
 <div id="comments">
-{% if rule.get_actions %}
+{% if history %}
 <div class="container-fluid">
     <div class="list-group list-view-pf list-view-pf-view">
-        {% for user_action in rule.get_actions %}
+        {% for user_action in history %}
             {% include "rules/useraction_entry.html" with user_action=user_action %}
         {% endfor %}
     </div>
@@ -404,7 +410,7 @@ No comment.
 {% endif %}
 </div>
 
-{% if request.user.is_staff %}
+{% if perms.rules.ruleset_policy_edit %}
 <h3 class="title">Add comment</h3>
 <form class="form" action="{% url 'comment_rule' rule.pk %}" method="post">
     {% csrf_token %}
@@ -423,7 +429,7 @@ No comment.
 
  <script>
 {% if suricata_stats and elasticsearch %}
-{% if probes %}
+{% if probes and perms.rules.configuration_view %}
 $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "alert.signature_id:{{ rule.sid }}", 'Hits' ); });
 {% endif %}
 
@@ -444,7 +450,9 @@ function load_stats() {
 
 }
 
+{% if perms.rules.configuration_view or perms.rules.events_view %}
 $( 'document' ).ready(load_stats());
+{% endif %}
 
 function populate_topip_actions(pdiv, field, direction) {
     pdiv.find("td.actions").each(
@@ -541,7 +549,9 @@ function load_ip_stats() {
     });
 }
 
+{% if perms.rules.configuration_view %}
 $( 'document' ).ready(load_ip_stats());
+{% endif %}
 {% endif %} {# suricata_stats and elasticsearch #}
 </script>
 

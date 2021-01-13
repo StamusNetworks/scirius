@@ -75,6 +75,22 @@ def get_es_template():
     return 'rules/elasticsearch.html'
 
 
+def has_extra_auth():
+    return False
+
+
+def has_multitenant():
+    return False
+
+
+def get_tenants():
+    return []
+
+
+def update_scirius_user_class(user, data):
+    pass
+
+
 def help_links(djlink):
     HELP_LINKS_TABLE = {
         "suricata_edit": {"name": "Suricata setup", "base_url": "doc/suricata-ce.html", "anchor": "#setup"},

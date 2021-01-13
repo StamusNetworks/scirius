@@ -122,11 +122,13 @@ Please choose a transformation to apply on current object. As transformation are
     {% bootstrap_field form.lateral %}
     {% bootstrap_field form.target %}
     {% bootstrap_field form.comment %}
-    {% buttons %}
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "check" %} Valid
-        </button>
-    {% endbuttons %}
+    {% if perms.rules.ruleset_policy_edit %}
+        {% buttons %}
+            <button type="submit" class="btn btn-primary">
+                {% bootstrap_icon "check" %} Valid
+            </button>
+        {% endbuttons %}
+    {% endif %}
 
 </form>
 </div>

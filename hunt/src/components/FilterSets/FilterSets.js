@@ -112,7 +112,7 @@ export default class FilterSets extends React.Component {
     const rowsStatic = this.props.staticSet
       ? this.props.staticSet.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase()))
       : [];
-    const noRights = this.state.user !== undefined && this.state.user.is_active && !this.state.user.is_staff && !this.state.user.is_superuser;
+    const noRights = this.state.user !== undefined && !this.state.user.perms.includes('rules.events_edit');
 
     return (
       <NotificationDrawer>

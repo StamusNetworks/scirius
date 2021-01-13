@@ -30,9 +30,13 @@ $.ajaxSetup({
     }
 });
 
-function confirmModal({title, msg, cb}) {
+function confirmModal({title, msg, cb, comment=false}) {
     $("#generic-modal-title").text(title);
     $("#generic-modal-msg").html(msg);
+
+    if (!comment) {
+        $("#generic-modal-comment-div").hide();
+    }
 
     $("#generic-modal-submit").off("click");
     $("#generic-modal-submit").one("click", function() {

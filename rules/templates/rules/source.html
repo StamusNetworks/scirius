@@ -14,7 +14,6 @@
        <li><span class="type">Use IP reputation:</span> {{ source.use_iprep }}</li>
 </ul>
 
-{% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
@@ -22,9 +21,12 @@
 <li>
 <a href="{% url 'changelog_source' source.id %}">Changelog</a>
 </li>
+{% if perms.rules.ruleset_update %}
 <li>
 <span id="update_source" ><a style="cursor: pointer;">Update</a></span>
 </li>
+{% endif %}
+{% if perms.rules.source_edit %}
 <li>
 <a href="{% url 'edit_source' source.id %}">Edit</a>
 </li>
@@ -36,8 +38,10 @@
 <a href="{% url 'diff_source' source.id %}">Diff</a>
 </li>
 -->
+{% endif %}
 </ul>
 
+{% if perms.rules.source_edit %}
 <script>
     $("#update_source").click(function() {
 	$("#update_modal").modal('show');

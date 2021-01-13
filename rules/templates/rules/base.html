@@ -27,7 +27,9 @@
 			<img src="{% static 'rules/stamus.png' %}" id="img-logo"/><span class="caret"/>
 </a>
 			<ul class="dropdown-menu" id="sc_menu" role="menu">
-            <li><a href="{% url 'system_settings' %}" >{% bootstrap_icon "list-alt"%} System settings</a></li>
+                {% if perms.rules.configuration_view %}
+                    <li><a href="{% url 'system_settings' %}" >{% bootstrap_icon "list-alt"%} System settings</a></li>
+                {% endif %}
                         {% block menusettings %}
 			        {% if links %}
 				<li role="presentation" class="divider"></li>
@@ -36,10 +38,12 @@
 				{% endfor %}
 				{% endif %}
 			{% endblock %}
- 			<li role="presentation" class="divider"></li>
+                {% if perms.rules.configuration_view or links %}
+                    <li role="presentation" class="divider"></li>
+                {% endif %}
                         <li><a href="{% url 'history' %}" >{% bootstrap_icon "time"%} Actions history</a></li>
-            {% if request.user.is_superuser %}
-                        <li><a href="{% url 'accounts_manage' '' %}" >{% bootstrap_icon "user"%} Manage accounts</a></li>
+            {% if perms.rules.configuration_auth %}
+                        <li><a href="{% url 'list_accounts' %}" >{% bootstrap_icon "user"%} Manage accounts</a></li>
             {% endif %}
 			</ul>
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#top-menu-collapse">
@@ -56,11 +60,15 @@
                 <ul class="nav navbar-nav" id="top_menu">
 
 			<li><a id="home" href="{% url 'rules_index' %}">{% bootstrap_icon "home" %} Home</a></li>
-			<li><a id="source" href="{% url 'sources' %}">{% bootstrap_icon "cloud-download" %} Sources</a></li>
-			<li><a id="ruleset" href="{% url 'rulesets' %}">{% bootstrap_icon "th" %} Rulesets</a></li>
+            {% if perms.rules.source_view %}
+                <li><a id="source" href="{% url 'sources' %}">{% bootstrap_icon "cloud-download" %} Sources</a></li>
+                <li><a id="ruleset" href="{% url 'rulesets' %}">{% bootstrap_icon "th" %} Rulesets</a></li>
+            {% endif %}
 			{% if toplinks %}
 			{% for link in toplinks %}
-			<li><a id="{{ link.id }}" href="{{ link.url }}">{% bootstrap_icon link.icon %} {{ link.label }}</a></li>
+                {% if link.perm %}
+			        <li><a id="{{ link.id }}" href="{{ link.url }}">{% bootstrap_icon link.icon %} {{ link.label }}</a></li>
+                {% endif %}
 			{% endfor %}
 			{% endif %}
 
@@ -92,12 +100,14 @@
 					<h2 class="panel-title">System status</h2>
 					</div>
                     <div class="panel-body">
-                    <div id="suri-status" class="label label-default"><a href="/{{ generator }}/">Suricata</a></div>
-{% if elasticsearch %}
-                    <div id="health" class="label label-default"><a href="{% url 'elasticsearch' %}">Elasticsearch</a></div>
-{% endif %}
-                    <div id="disk-status" class="label label-default"><a href="{% url monitoring_url %}">Disk</a></div>
-                    <div id="memory-status" class="label label-default"><a href="{% url monitoring_url %}">Memory</a></div>
+                        {% if perms.rules.configuration_view %}
+                            <div id="suri-status" class="label label-default"><a href="/{{ generator }}/">Suricata</a></div>
+                            {% if elasticsearch %}
+                                <div id="health" class="label label-default"><a href="{% url 'elasticsearch' %}">Elasticsearch</a></div>
+                            {% endif %}
+                            <div id="disk-status" class="label label-default"><a href="{% url monitoring_url %}">Disk</a></div>
+                            <div id="memory-status" class="label label-default"><a href="{% url monitoring_url %}">Memory</a></div>
+                        {% endif %}
                     </div>
             </div>
 			<div class="panel panel-default" id="sidebar">
@@ -170,6 +180,12 @@
         <h4 class="modal-title" id="generic-modal-title"></h4>
       </div>
       <div class="modal-body" id="generic-modal-msg">
+      </div>
+      <div class="modal-body" id="generic-modal-comment-div">
+          <label>Comment:</label>
+          <div>
+            <textarea id="generic-modal-comment" name="comment" rows="4" cols="78"></textarea>
+          </div>
       </div>
       <div class="modal-footer" id="generic-modal-footer">
         <button class="btn btn-primary" type="button" id="generic-modal-submit"><span class="glyphicon glyphicon-ok" id="generic-modal-submit-icon"></span>Ok</button>
@@ -286,7 +302,7 @@ function get_scirius_status() {
 
 </script>
 
-{% if elasticsearch %}
+{% if elasticsearch and perms.rules.configuration_view %}
 
 <script>
 function get_es_health() {
@@ -470,7 +486,7 @@ function call_health_functions() {
     get_disk_health();
     get_memory_health();
     get_cpu_health();
-{% if elasticsearch %}
+{% if elasticsearch and perms.rules.configuration_view %}
     get_es_health();
 {% endif %}
 }

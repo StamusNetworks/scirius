@@ -6,7 +6,7 @@
 </div>
 <ul><li>List of feeds.</li></ul>
 
-{% if request.user.is_staff %}
+{% if perms.rules.source_edit %}
 <div class="panel-heading">
 <h2 class="panel-title">Actions</h2>
 </div>
@@ -35,26 +35,39 @@
 <div class="list-group list-view-pf list-view-pf-view">
 {% for source in sources %}
   <div class="list-group-item">
-  <div class="list-group-item-header">
-      <div class="list-view-pf-expand">
-        <span class="fa fa-angle-right"></span>
-      </div>
-    <div class="list-view-pf-actions">
-      <a href="{% url "source" source.pk %}"><button class="btn btn-default">View</button></a>
-      <div class="dropdown pull-right dropdown-kebab-pf">
-  <button class="btn btn-link dropdown-toggle" type="button" id="dropdownKebabRight{{ source.pk }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-    <span class="fa fa-ellipsis-v"></span>
-  </button>
-{% if request.user.is_staff %}
-  <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownKebabRight{{ source.pk }}">
-    <li><a onclick="UpdateSource{{ source.pk }}()" style="cursor: pointer;">Update source</a></li>
-    <li><a href="{% url "edit_source" source.pk %}">Edit source</a></li>
-    <li><a href="{% url "delete_source" source.pk %}">Delete source</a></li>
-  </ul>
-{% endif %}
-</div>
+      <div class="list-group-item-header">
+          <div class="list-view-pf-expand">
+              <span class="fa fa-angle-right"></span>
+          </div>
+          <div class="list-view-pf-actions">
+              {% if perms.rules.ruleset_policy_view %}
+                  <a href="{% url "source" source.pk %}">
+                      <button class="btn btn-default">View</button>
+                  </a>
+              {% else %}
+                  <button class="btn btn-default" disabled>View</button>
+              {% endif %}
+              {% if perms.rules.source_edit or perms.rules.ruleset_update_push or perms.rules.source_view %}
+                  <div class="dropdown pull-right dropdown-kebab-pf">
+                      <button class="btn btn-link dropdown-toggle" type="button" id="dropdownKebabRight{{ source.pk }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                          <span class="fa fa-ellipsis-v"></span>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownKebabRight{{ source.pk }}">
+                          {% if perms.rules.ruleset_update_push %}
+                              <li><a onclick="UpdateSource{{ source.pk }}()" style="cursor: pointer;">Update source</a></li>
+                          {% endif %}
+                          {% if perms.rules.source_edit %}
+                              <li><a href="{% url "edit_source" source.pk %}">Edit source</a></li>
+                              <li><a href="{% url "delete_source" source.pk %}">Delete source</a></li>
+                          {% endif %}
+                          {% if perms.rules.source_view %}
+                              <li><a href="{% url 'changelog_source' source.id %}">Changelog</a></li>
+                          {% endif %}
+                      </ul>
+                  </div>
+              {% endif %}
+          </div>
 
-    </div>
     <div class="list-view-pf-main-info">
       <div class="list-view-pf-left">
       {% if source.method == 'http' %}
@@ -188,7 +201,7 @@ function UpdateSource{{ source.id }}() {
 <p>
 You need at least a source to be able to create a Ruleset.
 </p>
-{% if request.user.is_staff %}
+{% if perms.rules.source_edit %}
 <ul>
 	<li>
 		<a href="{% url "add_public_source" %}">Add a public source</a>

@@ -24,10 +24,21 @@ from django.conf.urls import url
 from accounts import views
 
 urlpatterns = [
+    url(r'^$', views.list_accounts, name='list_accounts'),
     url(r'^logout/$', views.logoutview, name='accounts_logout'),
     url(r'^login/(?P<target>.*)$', views.loginview, name='accounts_login'),
+    url(r'^user/$', views.list_users, name='list_users'),
+    url(r'^user/add/$', views.add_user, name='add_user'),
+    url(r'^user/(?P<user_id>\d+)$', views.edit_user, name='edit_user'),
+    url(r'^user/(?P<user_id>\d+)/delete$', views.delete_user, name='delete_user'),
+    url(r'^user/(?P<user_id>\d+)/edit_password$', views.edit_password, name='edit_password'),
+    url(r'^role/$', views.list_groups, name='list_groups'),
+    url(r'^role/add/$', views.add_group, name='add_group'),
+    url(r'^role/(?P<group_id>\d+)$', views.edit_group, name='edit_group'),
+    url(r'^role/(?P<group_id>\d+)/delete$', views.delete_group, name='delete_group'),
+    url(r'^priorities/$', views.edit_priorities, name='edit_priorities'),
+    url(r'^sort_priorities/$', views.sort_priorities, name='sort_priorities'),
+
+    # TODO PERMS: split into different views
     url(r'^edit/(?P<action>.*)$', views.editview, name='accounts_edit'),
-    url(r'^manage/user/(?P<user_id>.*)/$', views.manageuser, name='user'),
-    url(r'^manage/user/(?P<user_id>.*)/(?P<action>.*)$', views.manageuseraction, name='accounts_useraction'),
-    url(r'^manage/(?P<action>.*)$', views.manageview, name='accounts_manage'),
 ]

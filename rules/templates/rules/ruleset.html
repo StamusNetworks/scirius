@@ -28,7 +28,6 @@
         {{ ruleset.rules_count }}
        </span></li>
 </ul>
-{% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
@@ -36,20 +35,27 @@
 <li>
 <a href="{% url 'changelog_ruleset' ruleset.id %}">Changelog</a>
 </li>
+{% if perms.rules.ruleset_update %}
 <li>
 <span  id="update_ruleset"><a style="cursor: pointer;">Update</a></span>
 </li>
+{% endif %}
+{% if perms.rules.source_edit or perms.rules.ruleset_policy_edit %}
 <li>
 <a href="{% url 'edit_ruleset' ruleset.id %}">Edit</a>
 </li>
+{% endif %}
+{% if perms.rules.source_edit %}
 <li>
 <a href="{% url 'copy_ruleset' ruleset.id %}">Copy</a>
 </li>
 <li>
 <a href="{% url 'delete_ruleset' ruleset.id %}">Delete</a>
 </li>
+{% endif %}
 </ul>
 
+{% if perms.rules.ruleset_update_push %}
 <script>
 $("#update_ruleset").click(function() {
 	$("#update_modal").modal('show');
@@ -98,19 +104,22 @@ $("#update_ruleset").click(function() {
 </div>
 
 {% endif %}
-<div class="panel-heading">
-<h2 class="panel-title">Display</h2>
-</div>
-<ul class="action">
-<li>
-<a href="{% url 'ruleset' ruleset.id %}">Show structure</a>
-</li>
-<li>
-<a href="{% url 'display_ruleset' ruleset.id %}">Show rules</a>
-</li>
-<li>
-<a href="{% url 'export_ruleset' ruleset.id %}" target="_blank" >Export rules file</a>
-</ul>
+{% if perms.rules.ruleset_policy_view %}
+    <div class="panel-heading">
+        <h2 class="panel-title">Display</h2>
+    </div>
+    <ul class="action">
+        <li>
+            <a href="{% url 'ruleset' ruleset.id %}">Show structure</a>
+        </li>
+        <li>
+            <a href="{% url 'display_ruleset' ruleset.id %}">Show rules</a>
+        </li>
+        <li>
+            <a href="{% url 'export_ruleset' ruleset.id %}" target="_blank" >Export rules file</a>
+        </li>
+    </ul>
+{% endif %}
 {% endblock %}
 
 {% block content %}

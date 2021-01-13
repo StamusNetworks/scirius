@@ -18,18 +18,26 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import json
 
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group as DjangoGroup
+from django.contrib.auth.decorators import permission_required
 from rest_framework.authtoken.models import Token
+from django.db.models import F
+from django.http import JsonResponse, HttpResponseNotAllowed
+
+import django_tables2 as tables
 
 from rules.models import UserAction
+from rules.forms import CommentForm
 
-from scirius.utils import scirius_render, scirius_listing
-from .forms import LoginForm, UserSettingsForm, NormalUserSettingsForm, PasswordForm, DeleteForm, TokenForm, PasswordChangeForm, UserCreationForm
-from .models import SciriusUser
+from scirius.utils import scirius_render, scirius_listing, get_middleware_module
+from .forms import LoginForm, UserSettingsForm, NormalUserSettingsForm, PasswordForm, TokenForm, PasswordChangeForm, GroupEditForm, PasswordCreationForm
+from .models import SciriusUser, Group
+from .tables import UserTable, GroupTable
 
 from ipware.ip import get_client_ip
 import logging
@@ -50,9 +58,11 @@ def loginview(request, target):
             if user.is_active:
                 login(request, user)
                 try:
-                    SciriusUser.objects.get(user=user)
-                except SciriusUser.DoesNotExist:
-                    SciriusUser.objects.create(user=user, timezone='UTC')
+                    sciriususer = SciriusUser.objects.get(user=user)
+                    sciriususer.sciriususerapp
+                except (SciriusUser.DoesNotExist, AttributeError):
+                    SciriusUser.objects.get_or_create(user=user, defaults={'timezone': 'UTC'})
+                    get_middleware_module('common').update_scirius_user_class(user, form.cleaned_data)
 
                 if not form.cleaned_data['persistent']:
                     request.session.set_expiry(0)
@@ -100,7 +110,7 @@ def editview(request, action):
                 tz = request.user.sciriususer.timezone
             initial = {'timezone': tz}
 
-            if request.user.is_superuser:
+            if request.user.has_perm('rules.configuration_auth'):
                 form = UserSettingsForm(request_data, instance=request.user, initial=initial)
             else:
                 form = NormalUserSettingsForm(request_data, instance=request.user, initial=initial)
@@ -114,11 +124,16 @@ def editview(request, action):
             form = TokenForm(request_data, initial=initial)
             context = {'form': form, 'action': 'User token', 'edition': True}
         else:
-            context = {'action': 'User settings', 'edition': False}
+            context = {
+                'action': 'User settings',
+                'edition': False,
+            }
+            if get_middleware_module('common').has_multitenant():
+                context['tenants'] = request.user.sciriususer.get_tenants()
+                context['all_tenants'] = request.user.sciriususer.has_all_tenants()
+                context['no_tenant'] = request.user.sciriususer.has_no_tenant()
 
         if request.method == 'POST':
-            orig_superuser = request.user.is_superuser
-            orig_staff = request.user.is_staff
             if form.is_valid():
                 if action == 'token':
                     current_tokens = Token.objects.filter(user=request.user)
@@ -137,11 +152,7 @@ def editview(request, action):
                 context['edition'] = False
                 context['action'] = 'User settings'
 
-                ruser = form.save(commit=False)
-                if not orig_superuser:
-                    ruser.is_superuser = False
-                    ruser.is_staff = orig_staff
-                ruser.save()
+                ruser = form.save()
                 if action == 'password':
                     update_session_auth_hash(request, ruser)
 
@@ -160,6 +171,7 @@ def editview(request, action):
                             user=ruser,
                             timezone=form.cleaned_data['timezone']
                         )
+                        get_middleware_module('common').update_scirius_user_class(ruser, form.cleaned_data)
 
                     UserAction.create(
                         action_type='edit_user',
@@ -168,159 +180,306 @@ def editview(request, action):
                         other_user=request.user
                     )
                     sciriususer.save()
+
+        context.update({'is_from_ldap': request.user.sciriususer.is_from_ldap()})
         return scirius_render(request, 'accounts/edit.html', context)
 
 
-def manageview(request, action):
-    context = {'action': 'User management'}
+@permission_required('rules.configuration_auth', raise_exception=True)
+def list_accounts(request):
+    template = 'accounts/accounts_list.html'
+    mapping = {'User': UserTable, 'Role': GroupTable}
+    klasses = (User, DjangoGroup)
+
+    data = {
+        'User': {
+            'size': 0,
+            'content': None,
+            'annotate': {'role': F('groups__name')},
+            'order_by': ('groups__group__priority', '-username')
+        },
+        'Role': {
+            'size': 0,
+            'content': None,
+            'order_by': ('group__priority',)
+        }
+    }
+
+    conf = tables.RequestConfig(request)
+    for klass in klasses:
+        klass_name = klass.__name__ if klass != DjangoGroup else 'Role'
+        objects = klass.objects.all()
+        if 'annotate' in data[klass_name]:
+            objects = objects.annotate(**data[klass_name]['annotate'])
+
+        objects = objects.order_by(*data[klass_name]['order_by'])
+        data[klass_name]['content'] = conf.configure(mapping[klass_name](objects))
+        data[klass_name]['size'] = objects.count()
+
+    context = {'objects': data, 'extra_auth': get_middleware_module('common').has_extra_auth()}
+    return scirius_render(request, template, context)
+
+
+@permission_required('rules.configuration_auth', raise_exception=True)
+def edit_priorities(request):
+    groups = Group.objects.order_by('priority')
+    return scirius_render(request, 'accounts/priorities.html', {'groups': groups})
+
+
+@permission_required('rules.configuration_auth', raise_exception=True)
+def sort_priorities(request):
+    if request.method != 'POST' or not request.is_ajax():
+        return HttpResponseNotAllowed('Only POST here')
+
+    updated = False
+    nb_static_groups = 3
+    for index, group_pk in enumerate(request.POST.getlist('group[]'), start=nb_static_groups):
+        group = get_object_or_404(DjangoGroup, pk=int(group_pk))
+        Group.objects.filter(group=group).update(priority=index)
+        if updated is False:
+            updated = True
+    return JsonResponse({'updated': updated})
+
+
+@permission_required('rules.configuration_auth', raise_exception=True)
+def list_users(request):
+    assocfn = {
+        'Users': {
+            'table': UserTable,
+            'annotate': {'role': F('groups__name')},
+            'order_by': ('groups__group__priority', '-username'),
+            'manage_links': {
+                'list_accounts': 'Accounts list',
+                'list_users': 'Users list',
+                'list_groups': 'Roles list'
+            },
+            'action_links': {}
+        }
+    }
+    return scirius_listing(request, User, assocfn, adduri="/accounts/user/add")
+
+
+@permission_required('rules.configuration_auth', raise_exception=True)
+def add_user(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            if request.user.is_superuser:
-                ruser = form.save()
+        form = UserSettingsForm(request.POST)
+        password_form = PasswordCreationForm(request.POST)
 
-                sciriususer = SciriusUser.objects.create(user=ruser, timezone='UTC')
-                sciriususer.save()
+        if form.is_valid() and password_form.is_valid():
+            ruser = form.save()
+            ruser.set_password(password_form.cleaned_data['password1'])
+            ruser.save()
 
-                UserAction.create(
-                    action_type='create_user',
-                    comment=form.cleaned_data['comment'],
-                    user=request.user,
-                    new_user=sciriususer.user
-                )
-            else:
-                context['error'] = 'Not enough permission to create users'
-        else:
-            if action != 'add':
-                context['error'] = 'Invalid form'
-            else:
-                context['error'] = 'Username and/or password are not valid'
+            UserAction.create(
+                action_type='create_user',
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                new_user=ruser
+            )
 
-            context['form'] = form
-            return scirius_render(request, 'accounts/user.html', context)
-    else:
-        if request.user.is_superuser is False:
-            if len(action) == 0:
-                action = 'list'
+            return redirect('list_accounts')
 
-            context['error'] = 'Not enough permission to %s users' % action
-            return scirius_render(request, 'accounts/user.html', context)
+        context = {
+            'error': 'Username and/or password are not valid',
+            'form': form,
+            'password_form': password_form,
+            'current_action': 'Add user'
+        }
+        return scirius_render(request, 'accounts/user.html', context)
 
-        if (action == 'add'):
-            form = UserCreationForm()
-            context = {'form': form, 'current_action': 'Add user'}
-            return scirius_render(request, 'accounts/user.html', context)
-
-    return scirius_listing(request, User, 'Users', adduri="/accounts/manage/add")
-
-
-def manageuser(request, user_id):
-    user = get_object_or_404(User, pk=user_id)
-    context = {'action': 'User actions', 'user': user}
-    if not request.user.is_superuser:
-        context['error'] = 'Unsufficient permissions'
-        context['user'] = get_object_or_404(User, pk=request.user.pk)
+    form = UserSettingsForm()
+    password_form = PasswordCreationForm()
+    context = {'form': form, 'current_action': 'Add user', 'password_form': password_form}
     return scirius_render(request, 'accounts/user.html', context)
 
 
-def manageuseraction(request, user_id, action):
+@permission_required('rules.configuration_auth', raise_exception=True)
+def edit_user(request, user_id):
     user = get_object_or_404(User, pk=user_id)
-    context = {'action': 'User actions', 'user': user}
+    context = {'user': user, 'username': json.dumps(user.username)}
+
     if request.method == 'POST':
-        if not request.user.is_superuser:
-            context['error'] = 'Unsufficient permissions'
-            return scirius_render(request, 'accounts/user.html', context)
-        if action == "edit":
-            form = UserSettingsForm(request.POST, instance=user)
-            if form.is_valid():
-                form.save()
-                try:
-                    sciriususer = user.sciriususer
-                    sciriususer.timezone = form.cleaned_data['timezone']
-                except:
-                    sciriususer = SciriusUser.objects.create(
-                        user=user,
-                        timezone=form.cleaned_data['timezone']
-                    )
-                sciriususer.save()
+        form = UserSettingsForm(request.POST, instance=user)
+        if form.is_valid():
+            user = form.save()
 
-                UserAction.create(
-                    action_type='edit_user',
-                    comment=form.cleaned_data['comment'],
-                    user=request.user,
-                    other_user=user
-                )
-            else:
-                context['error'] = 'Edition form is not valid'
-                context['form'] = form
-        elif action == 'password':
-            form = PasswordForm(request.POST)
-            if form.is_valid():
-                user.set_password(form.cleaned_data['password'])
-                user.save()
-                if user == request.user:
-                    # If the user change his own password prevent the session to be invalidated
-                    update_session_auth_hash(request, user)
+            UserAction.create(
+                action_type='edit_user',
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                other_user=user
+            )
+            return redirect('list_accounts')
 
-                UserAction.create(
-                    action_type='edit_user_password',
-                    comment=form.cleaned_data['comment'],
-                    user=request.user,
-                    other_user=user
-                )
-            else:
-                context['error'] = 'Password form is not valid'
-        elif action == "delete":
-            form = DeleteForm(request.POST)
-            if form.is_valid():
-                if request.POST.__contains__('confirm'):
-                    user.delete()
-
-                    UserAction.create(
-                        action_type='delete_user',
-                        comment=form.cleaned_data['comment'],
-                        user=request.user,
-                        old_user=user
-                    )
-                    return redirect('/accounts/manage/')
-            else:
-                context['error'] = 'Delete form is not valid'
-
-        return scirius_render(request, 'accounts/user.html', context)
-
-    if not request.user.is_superuser:
-        context['error'] = 'Unsufficient permissions'
-        context['user'] = get_object_or_404(User, pk=request.user.pk)
-        return scirius_render(request, 'accounts/user.html', context)
-
-    if action == "activate":
-        user.is_active = True
-        user.save()
-        context['current_action'] = 'Activate user %s' % user.username
-    elif action == "deactivate":
-        user.is_active = False
-        user.save()
-        context['current_action'] = 'Deactivate user %s' % user.username
-    elif action == "edit":
-        form = UserSettingsForm(instance=user)
-        try:
-            form.initial['timezone'] = user.sciriususer.timezone
-        except:
-            pass
+        context['error'] = 'Edition form is not valid'
         context['form'] = form
         context['current_action'] = 'Edit user %s' % user.username
         return scirius_render(request, 'accounts/user.html', context)
-    elif action == "password":
-        form = PasswordForm()
+
+    form = UserSettingsForm(instance=user)
+    context['form'] = form
+    context['current_action'] = 'Edit user %s' % user.username
+    context['is_from_ldap'] = user.sciriususer.is_from_ldap()
+    return scirius_render(request, 'accounts/user.html', context)
+
+
+@permission_required('rules.configuration_auth', raise_exception=True)
+def delete_user(request, user_id):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed('Only POST here')
+
+    user = get_object_or_404(User, pk=user_id)
+    comment_form = CommentForm(request.POST)
+
+    if not comment_form.is_valid():
+        return JsonResponse({'error': '\n'.join(comment_form.errors)})
+
+    user.delete()
+    UserAction.create(
+        action_type='delete_user',
+        comment=comment_form.cleaned_data['comment'],
+        user=request.user,
+        old_user=user
+    )
+    return JsonResponse({'redirect': '/accounts/user/'})
+
+
+@permission_required('rules.configuration_auth', raise_exception=True)
+def list_groups(request):
+    assocfn = {
+        'Roles': {
+            'table': GroupTable,
+            'order_by': ('group__priority',),
+            'manage_links': {
+                'list_accounts': 'Accounts list',
+                'list_users': 'Users list',
+                'list_groups': 'Roles list'
+            },
+            'action_links': {}
+        }
+    }
+    return scirius_listing(request, DjangoGroup, assocfn, adduri="/accounts/role/add")
+
+
+@permission_required('rules.configuration_auth', raise_exception=True)
+def add_group(request):
+    if request.method == 'POST':
+        form = GroupEditForm(request.POST)
+        if form.is_valid():
+            group = form.save()
+
+            UserAction.create(
+                action_type='create_group',
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                new_group=group
+            )
+
+            return redirect('list_accounts')
+
+        context = {
+            'form': form,
+            'current_action': 'Add role',
+            'can_edit': True
+        }
+        return scirius_render(request, 'accounts/group.html', context)
+
+    form = GroupEditForm()
+    context = {
+        'form': form,
+        'current_action': 'Add role',
+        'mapping': json.dumps(form.mapping),
+        'can_edit': True
+    }
+    return scirius_render(request, 'accounts/group.html', context)
+
+
+@permission_required('rules.configuration_auth', raise_exception=True)
+def edit_group(request, group_id):
+    django_group = get_object_or_404(DjangoGroup, pk=group_id)
+    context = {'group': django_group, 'action': 'edit', 'group_name': json.dumps(django_group.name)}
+
+    if request.method == 'POST':
+        form = GroupEditForm(request.POST, instance=django_group)
+        if form.is_valid():
+            form.save()
+
+            UserAction.create(
+                action_type='edit_group',
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                group=django_group
+            )
+            return redirect('list_accounts')
+
+        context['error'] = 'Edition form is not valid'
         context['form'] = form
-        context['current_action'] = 'Edit password for user %s' % user.username
-        return scirius_render(request, 'accounts/user.html', context)
-    elif action == "delete":
-        form = DeleteForm()
-        context = {'confirm_action': 'Delete user', 'user': user, 'action': 'delete', 'form': form}
+        context['current_action'] = 'Edit group %s' % django_group.name
+        return scirius_render(request, 'accounts/group.html', context)
+
+    form = GroupEditForm(instance=django_group)
+    context['can_edit'] = django_group.name not in GroupEditForm.DEFAULT_GROUPS
+    context['form'] = form
+    context['mapping'] = json.dumps(form.mapping)
+    context['current_action'] = 'Edit role %s' % django_group.name
+    return scirius_render(request, 'accounts/group.html', context)
+
+
+@permission_required('rules.configuration_auth', raise_exception=True)
+def delete_group(request, group_id):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed('Only POST here')
+
+    group = get_object_or_404(DjangoGroup, pk=group_id)
+    comment_form = CommentForm(request.POST)
+
+    if not comment_form.is_valid():
+        return JsonResponse({'error': '\n'.join(comment_form.errors)})
+
+    Group.objects.filter(
+        priority__gt=group.group.priority,
+    ).update(priority=F('priority') - 1)
+
+    group.delete()
+    UserAction.create(
+        action_type='delete_group',
+        comment=comment_form.cleaned_data['comment'],
+        user=request.user,
+        group=group.group
+    )
+    return JsonResponse({'redirect': '/accounts/role/'})
+
+
+@permission_required('rules.configuration_auth', raise_exception=True)
+def edit_password(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    context = {'user': user, 'username': json.dumps(user.username)}
+
+    if request.method == 'POST':
+        form = PasswordForm(request.POST)
+        if form.is_valid():
+            user.set_password(form.cleaned_data['password'])
+            user.save()
+            if user == request.user:
+                # If the user change his own password prevent the session to be invalidated
+                update_session_auth_hash(request, user)
+
+            UserAction.create(
+                action_type='edit_user_password',
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                other_user=user
+            )
+            return redirect('list_accounts')
+        else:
+            context['error'] = 'Password form is not valid'
+            context['form'] = form
+
         return scirius_render(request, 'accounts/user.html', context)
 
-    context['current_action'] = 'User %s' % user.username
+    form = PasswordForm()
+    context['form'] = form
+    context['current_action'] = 'Edit password for user %s' % user.username
     return scirius_render(request, 'accounts/user.html', context)
 
 

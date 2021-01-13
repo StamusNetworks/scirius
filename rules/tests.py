@@ -19,8 +19,10 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import sys
 import json
-from django.contrib.auth.models import User
+import re
+from django.contrib.auth.models import User, Group
 from django.urls import reverse
 from django.test import TestCase
 from django.utils import timezone
@@ -32,6 +34,7 @@ from rest_framework.test import APITestCase
 from .models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, \
     RulesetTransformation, SourceUpdate, SystemSettings, UserAction, RuleProcessingFilter, RuleProcessingFilterDef
 from .rest_api import router
+from accounts.models import SciriusUser
 
 from copy import deepcopy
 import tempfile
@@ -39,11 +42,50 @@ from shutil import rmtree
 from io import StringIO
 import itertools
 from importlib import import_module
+from rules.urls import urlpatterns
+import inspect
 
 
 ET_URL = 'https://rules.emergingthreats.net/open/suricata-4.0/emerging.rules.tar.gz'
 
 RULE_CONTENT = 'alert ip any any -> any any (msg:"Unicode test rule éàç"; content:"uid=0|28|root|29|"; classtype:bad-unknown; sid:2100498; rev:7; metadata:created_at 2010_09_23, updated_at 2010_09_23;)\n'  # ignore_utf8_check: 233 224 231
+
+
+class PermissionsTestCase(TestCase):
+    def setUp(self):
+        self.urls = urlpatterns
+        self.blacklist = {'rules.views': ('index', 'about', 'elasticsearch', 'info', 'history', 'edit_ruleset')}
+
+    def test_001_test_view_decorator(self):
+        for url in self.urls:
+            try:
+                module = url.callback.__module__
+                view_name = url.callback.__name__
+            except AttributeError:
+                # admin part with no callbacks
+                continue
+
+            if view_name in self.blacklist.get(module, {}):
+                continue
+
+            view = getattr(sys.modules[module], view_name)
+            is_class = inspect.isclass(view)
+
+            if not is_class:
+                source = inspect.getsource(view)
+                def_index = source.find('def ')
+
+                found = False
+                for match in re.finditer('@', source[:def_index]):
+                    index = match.start()
+                    if source[index:def_index].strip().startswith(('@permission_required', '@tasks_permission_required')):
+                        found = True
+                        break
+            else:
+                if hasattr(view, 'check_permissions') and view.check_permissions.__module__ == module:
+                    found = True
+
+            self.assertTrue(found)
 
 
 class SourceCreationTestCase(TestCase):
@@ -204,7 +246,14 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
 
 class RestAPITestBase(object):
     def setUp(self):
-        self.user = User.objects.create(username='scirius', password='scirius', is_superuser=True, is_staff=True)
+        self.user = User.objects.create(username='scirius', password='scirius')
+        self.superuser_role = Group.objects.get(name='Superuser')
+        self.staff_role = Group.objects.get(name='Staff')
+        self.user_role = Group.objects.get(name='User')
+
+        SciriusUser.objects.create(user=self.user, timezone='UTC')
+
+        self.superuser_role.user_set.add(self.user)
         self.client.force_login(self.user)
 
     def _make_request(self, method, url, *args, **kwargs):
@@ -789,12 +838,33 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
             status=status.HTTP_403_FORBIDDEN
         )
 
-        # Post not authorized non-staff
-        self.user.is_superuser = False
-        self.user.is_staff = False
-        self.user.save()
         self.client.force_login(self.user)
         # Read still authorized
+        self.http_post(
+            reverse('rule-disable', args=(self.rule.pk,)),
+            {'ruleset': self.ruleset.pk},
+            status=status.HTTP_200_OK
+        )
+
+        # Post not authorized non-role
+        self.superuser_role.user_set.remove(self.user)
+        self.http_post(
+            reverse('rule-disable', args=(self.rule.pk,)),
+            {'ruleset': self.ruleset.pk},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+        # Post authorized staff role
+        self.staff_role.user_set.add(self.user)
+        self.http_post(
+            reverse('rule-disable', args=(self.rule.pk,)),
+            {'ruleset': self.ruleset.pk},
+            status=status.HTTP_200_OK
+        )
+
+        # Post not authorized user role
+        self.staff_role.user_set.remove(self.user)
+        self.user_role.user_set.add(self.user)
         self.http_post(
             reverse('rule-disable', args=(self.rule.pk,)),
             {'ruleset': self.ruleset.pk},
@@ -1497,7 +1567,7 @@ class RestAPIListTestCase(RestAPITestBase, APITestCase):
             # Need to instanciate request and user because of FilterSetViewSet::get_queryset override that uses self.request.user
             v = viewset()
             v.request = HttpRequest()
-            v.request.user = None
+            v.request.user = self.user
 
             if v.get_queryset().ordered or not issubclass(viewset, mixins.ListModelMixin) or not getattr(v, 'ordering_test', True):
                 continue

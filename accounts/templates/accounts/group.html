@@ -1,0 +1,160 @@
+{% extends "rules/base.html" %}
+{% load bootstrap3  %}
+
+{% block sidebar %}
+    <div class="panel-heading">
+        <h2 class="panel-title">Manage users</h2>
+    </div>
+    <ul>
+        <li><a href="{% url 'list_accounts' %}">Accounts list</a></li>
+        <li><a href="{% url 'list_groups' %}">Roles list</a></li>
+        <li><a href="{% url 'list_users' %}">Users list</a></li>
+        {% if extra_auth %}
+            <li>
+                <a data-toggle="tooltip" title="Set priority on Role/Group assignments" href="{% url 'edit_priorities' %}">Edit priorities
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+
+    {% if current_action != 'Add role' and can_edit %}
+        <div class="panel-heading">
+            <h2 class="panel-title">Actions</h2>
+        </div>
+        <ul>
+            <li><a href="#" onclick="del_group();">Delete role</a></li>
+        </ul>
+
+        <script language="JavaScript">
+            function del_group() {
+                let name = {{ group_name|safe }};
+                confirmModal({
+                    title: `Delete role "${name}"`,
+                    msg: "Do you want to delete this role ?",
+                    comment: true,
+                    cb: function() {
+                        let comment = $("#generic-modal-comment").val();
+                        $.ajax({
+                            type: 'POST',
+                            data: {'comment': comment},
+                            url: "{% url 'delete_group' group.pk %}",
+                            success: function(data) {
+                                window.location.href = data.redirect;
+                            }
+                        });
+                    }
+                });
+                return false;
+            }
+        </script>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            {% if current_action %}
+                <h2>{{ current_action }}</h2>
+            {% endif %}
+            <form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
+                {% bootstrap_form form %}
+                    {% buttons %}
+                    <button type="submit" class="btn btn-primary">
+                        {% bootstrap_icon "ok" %}
+                        {% if current_action == 'Add role' %}
+                            Add
+                        {% else %}
+                            Submit
+                        {% endif %}
+                    </button>
+                    {% endbuttons %}
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function get_key_by_value(object, value) {
+            return Object.keys(object).find(key => object[key] === value);
+        }
+
+        function check_all(mapping, isChecked, arr) {
+            let item = undefined;
+
+            for (let idx = 0; idx < arr.length; idx++) {
+                item = get_key_by_value(mapping, arr[idx]);
+                $(`input[name=permissions][value=${item}]`).prop("checked", isChecked);
+            }
+        }
+
+        $('document').ready(function() {
+            let mapping = {{ mapping|safe }};
+
+            for (let cpt = 0; cpt < Object.keys(mapping).length; cpt++) {
+                $(`#id_permissions_${cpt}`).change(function(e) {
+                    if (this.checked) {
+                        switch(mapping[this.value]) {
+                            case 'configuration_auth':
+                                check_all(mapping, true, ['configuration_edit', 'configuration_view']);
+                                break;
+                            case 'configuration_edit':
+                                check_all(mapping, true, ['configuration_view']);
+                                break;
+                            case 'events_edit':
+                                check_all(mapping, true, ['events_view']);
+                                break;
+                            case 'source_edit':
+                                check_all(mapping, true, ['source_view']);
+                                break;
+                            case 'ruleset_policy_edit':
+                                check_all(mapping, true, ['ruleset_policy_view']);
+                                break;
+                            case 'ruleset_update_push':
+                                check_all(mapping, true, ['source_view',]);
+                                break;
+                            case 'configuration_view':
+                            case 'events_ryod':
+                            case 'events_view':
+                            case 'source_view':
+                            case 'events_evebox':
+                            case 'events_kibana':
+                                break;
+                            default:
+                                console.error(`${mapping[this.value]} is not a know value`);
+                                break;
+                        }
+                    } else {
+                        switch(mapping[this.value]) {
+                            case 'configuration_view':
+                                check_all(mapping, false, ['configuration_edit', 'configuration_auth']);
+                                break;
+                            case 'configuration_edit':
+                                check_all(mapping, false, ['configuration_auth']);
+                                break;
+                            case 'events_view':
+                                check_all(mapping, false, ['events_edit']);
+                                break;
+                            case 'source_view':
+                                check_all(mapping, false, ['source_edit', 'ruleset_update_push']);
+                                break;
+                            case 'ruleset_policy_view':
+                                check_all(mapping, false, ['ruleset_policy_edit']);
+                                break;
+                            case 'events_kibana':
+                            case 'events_evebox':
+                            case 'events_edit':
+                            case 'configuration_auth':
+                            case 'events_ryod':
+                            case 'source_edit':
+                            case 'ruleset_update_push':
+                                break;
+                            default:
+                                console.error(`${mapping[this.value]} is not a know value`);
+                                break;
+                    }
+                }
+            });
+        }
+    });
+    </script>
+
+{% endblock %}

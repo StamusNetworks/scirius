@@ -7,6 +7,7 @@
 {% if elasticsearch %}
 
 <div class="row">
+{% if perms.rules.source_view %}
 <div class="col-md-8">
 <div class="container-fluid">
 
@@ -127,7 +128,9 @@
         }
     )
 </script>
+{% endif %}
 
+{% if perms.rules.events_view %}
 <div class="col-md-12">
 <div class="container-fluid">
 <div class="row">
@@ -143,15 +146,19 @@
 </div>
 </div>
 </div>
+{% endif %}
 
 
 </div> <!-- row -->
 
 <script>
+{% if perms.rules.source_view %}
 $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null, 'Hits'); });
+{% endif %}
 
+{% if perms.rules.events_view %}
 $( 'document' ).ready(function() {
-	load_rules({{ from_date }},  [ '*' ], null);
+	    load_rules({{ from_date }},  [ '*' ], null);
         var canvas = document.createElement("canvas");
         // Get WebGLRenderingContext from canvas element.
         var gl = canvas.getContext("webgl")
@@ -162,6 +169,7 @@ $( 'document' ).ready(function() {
 	       $('#webgl-test').text("Missing WebGL");
         }
 });
+{% endif %}
 </script>
 {% endif %}
 
@@ -179,6 +187,7 @@ $( 'document' ).ready(function() {
 	  <li><span class="type">Logged in as</span> {{ request.user|truncatechars:20 }}</li>
         </ul>
         </div>
+    {% if perms.rules.events_view %}
         <div class="panel-heading">
         <h2 class="panel-title">Visualizations</h2>
         </div>
@@ -190,5 +199,6 @@ $( 'document' ).ready(function() {
         {% endif %}
         </ul>
         </div>
+    {% endif %}
 
 {% endblock %}

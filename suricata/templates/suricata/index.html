@@ -388,7 +388,9 @@ function differentiate_suppressed() {
 
 $( 'document' ).ready(function () {
     draw_timeline({{ from_date }}, [ '{{ suricata.name }}'], null, 'Hits');
-    load_rules({{ from_date }},  [ '{{ suricata.name }}'], null, differentiate_suppressed);
+    {% if perms.rules.events_view %}
+        load_rules({{ from_date }},  [ '{{ suricata.name }}'], null, differentiate_suppressed);
+    {% endif %}
     {{ draw_func }}({{ from_date }}, [{% autoescape off %} "{{ suricata.name }}" {% endautoescape %}], null,
       function() {
         $('{{ draw_elt }}').mouseover(function(){
@@ -446,7 +448,7 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 </ul>
 
 
-{% if request.user.is_staff %}
+{% if request.user.has_perm('rules.configuration_edit') %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>

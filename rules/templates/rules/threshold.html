@@ -14,12 +14,14 @@
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
+{% if perms.rules.ruleset_policy_edit %}
 <div class="panel-body">
         <ul class="action"> 
         <li> <a href="{% url 'delete_threshold' threshold.pk %}">Delete</a></li>
         <li> <a href="{% url 'edit_threshold' threshold.pk %}">Edit</a></li>
         </ul>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block content %}

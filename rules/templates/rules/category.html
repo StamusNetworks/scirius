@@ -8,18 +8,18 @@
        <li><span class="type">Filename:</span> {{ category.filename}}</li>
        <li><span class="type">Created:</span> {{ category.created_date}}</li>
 </ul>
-{% if request.user.is_staff %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
-<ul class="action"><li>
-<a href="{% url 'disable_category' category.pk %}">Disable category</a></li>
-<li><a href="{% url 'enable_category' category.pk %}">Enable category</a>
-</li>
-<li><a href="{% url 'transform_category' category.pk %}">Transform category</a>
-</li>
+<ul class="action">
+    {% if perms.rules.ruleset_policy_edit %}
+        <li><a href="{% url 'disable_category' category.pk %}">Disable category</a></li>
+        <li><a href="{% url 'enable_category' category.pk %}">Enable category</a></li>
+    {% endif %}
+    {% if perms.rules.ruleset_policy_view %}
+        <li><a href="{% url 'transform_category' category.pk %}">Transform category</a></li>
+    {% endif %}
 </ul>
-{% endif %}
 {% endblock %}
 
 {% block content %}

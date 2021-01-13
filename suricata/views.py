@@ -22,6 +22,7 @@ import socket
 
 from django.shortcuts import redirect
 from django.db import IntegrityError
+from django.contrib.auth.decorators import permission_required
 
 from django.utils import timezone
 from scirius.utils import scirius_render
@@ -75,11 +76,9 @@ def index(request, error=None):
         return scirius_render(request, 'suricata/edit.html', context)
 
 
+@permission_required('rules.configuration_edit', raise_exception=True)
 def edit(request):
     suri = get_suri()
-
-    if not request.user.is_staff:
-        return redirect('/')
 
     if request.method == 'POST':
         if suri:
@@ -137,11 +136,9 @@ def edit(request):
     return scirius_render(request, 'suricata/edit.html', {'form': form, 'missing': missing})
 
 
+@permission_required('rules.ruleset_update_push', raise_exception=True)
 def update(request):
     suri = get_suri()
-
-    if not request.user.is_staff:
-        return redirect('/')
 
     if suri is None:
         form = SuricataForm()

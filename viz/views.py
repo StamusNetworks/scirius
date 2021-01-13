@@ -25,10 +25,12 @@ from __future__ import unicode_literals
 from scirius.utils import scirius_render
 
 from django.conf import settings
+from django.contrib.auth.decorators import permission_required
 
 PROBE = __import__(settings.RULESET_MIDDLEWARE)
 
 
+@permission_required('rules.events_view', raise_exception=True)
 def dashboard(request):
     context = {}
     context['probes'] = map(lambda x: '"' + x + '"', PROBE.models.get_probe_hostnames())
@@ -49,6 +51,7 @@ def dashboard(request):
     return scirius_render(request, 'viz/dashboard.html', context)
 
 
+@permission_required('rules.events_view', raise_exception=True)
 def dashboard_target(request):
     context = {}
     context['probes'] = map(lambda x: '"' + x + '"', PROBE.models.get_probe_hostnames())

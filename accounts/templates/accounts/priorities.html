@@ -1,0 +1,48 @@
+{% extends "rules/base.html" %}
+{% load bootstrap3  %}
+
+{% block sidebar %}
+    <div class="panel-heading">
+        <h2 class="panel-title">Manage priorities</h2>
+    </div>
+    <ul>
+        <li><a href="{% url 'list_accounts' %}">Accounts list</a></li>
+        <li><a href="{% url 'list_users' %}">Users list</a></li>
+        <li><a href="{% url 'list_groups' %}">Roles list</a></li>
+    </ul>
+
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function() {
+            $("#sortable").sortable({
+                update: function(event, ui) {
+                    let serial = $('#sortable').sortable('serialize');
+                    $.ajax({
+                        url: "{% url 'sort_priorities' %}",
+                        type: "post",
+                        data: serial
+                    });
+                },
+            }).disableSelection();
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h2>Roles priorities</h2>
+        <!-- 3 firsts roles (Superuser, Staff, User) are not editable nor sortable -->
+        <ol id="no-sortable" start="0">
+            {% for group in groups|slice:"0:3" %}
+                <li id="group_{{ group.pk }}" class="ui-state-default">{{ group.name }}</li>
+            {% endfor %}
+        </ol>
+        {% if groups|length > 3 %}
+            <ol id="sortable" start="3">
+                {% for group in groups|slice:"3:" %}
+                    <li id="group_{{ group.pk }}" class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>{{ group.name }}</li>
+                {% endfor %}
+            </ol>
+        {% endif %}
+    </div>
+
+{% endblock %}

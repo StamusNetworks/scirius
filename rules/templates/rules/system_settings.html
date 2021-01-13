@@ -44,12 +44,14 @@
         <button class="btn btn-secondary" type="button" id="es_button_lb" onclick="es_check_version(); return false;">Check</button>
       </div>
     </div>
+    {% if perms.rules.configuration_edit %}
     {% bootstrap_field  main_form.comment %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">
             {% bootstrap_icon "ok" %} Submit
         </button>
     {% endbuttons %}
+    {% endif %}
 </form>
 </div>
 </div>
@@ -91,13 +93,20 @@ Clicking on the button will download the user-defined dashboards.
     <p class="help-block">
  <strong>Note:</strong> existing dashboards with same name will be overwritten.
  </p>
-    {% bootstrap_field kibana_form.file show_label=False %}
+    <div class="form-group">
+        <label class="sr-only control-label" for="id_file">File</label>
+        <div class="row bootstrap3-multi-input" disabled="">
+            <div class="col-xs-12">
+                <input type="file" name="file" class="" title="" id="id_file" {% if not perms.rules.configuration_edit %}disabled{% endif %}>
+            </div>
+        </div>
+    </div>
     <p class="help-block">
 Select a file to import dashboards from.
 </p>
 
     {% buttons %}
-        <button type="submit" name="import" class="btn btn-warning">
+        <button type="submit" name="import" class="btn btn-warning" {% if not perms.rules.configuration_edit %}disabled{% endif %}>
             {% bootstrap_icon "upload" %} Import
         </button>
     {% endbuttons %}
@@ -105,7 +114,7 @@ Select a file to import dashboards from.
     <p class="help-block">This will clear all user-defined dashboards.</p>
     {% buttons %}
         <span id="clear_dashboards">
-	<button type="button" name="clear" class="btn btn-danger">
+	<button type="button" name="clear" class="btn btn-danger" {% if not perms.rules.configuration_edit %}disabled{% endif %}>
             {% bootstrap_icon "trash" %} Clear
         </button>
 	</span>
@@ -114,7 +123,7 @@ Select a file to import dashboards from.
     <p class="help-block">Reset Stamus Networks dashboards to default.</p>
     {% buttons %}
         <span id="reset_dashboards">
-        <button type="button" class="btn btn-danger">
+        <button type="button" class="btn btn-danger" {% if not perms.rules.configuration_edit %}disabled{% endif %}>
             {% bootstrap_icon "refresh" %} Reset
         </button>
 	</span>

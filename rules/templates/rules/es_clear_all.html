@@ -10,7 +10,7 @@ Clicking on the button will erase all Elasticsearch data except Kibana dashboard
 </p>
     {% buttons %}
         <span id="es_clear">
-	<button type="button" name="clear" class="btn btn-danger">
+	<button type="button" name="clear" class="btn btn-danger" {% if not perms.rules.configuration_edit %} disabled{% endif %}>
             {% bootstrap_icon "trash" %} Clear
         </button>
 	</span>

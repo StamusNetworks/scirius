@@ -398,6 +398,10 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
     ordering_fields = ('pk', 'index', 'action', 'enabled')
     filterset_fields = ('action', 'enabled', 'filter_defs__key', 'filter_defs__value')
     search_fields = ('description', 'filter_defs__key', 'filter_defs__value')
+    REQUIRED_GROUPS = {
+        'READ': ('rules.ruleset_policy_view',),
+        'WRITE': ('rules.ruleset_policy_edit',),
+    }
 
     def destroy(self, request, *args, **kwargs):
         from rules.rest_api import CommentSerializer

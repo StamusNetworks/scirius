@@ -1,0 +1,51 @@
+{% extends "rules/base.html" %}
+
+
+{% block sidebar %}
+    {% for name, object in objects.items %}
+        <div class="panel-heading">
+            <h2 class="panel-title">{{ name }}{{ object.size|pluralize }}</h2>
+        </div>
+        <ul><li>{{ object.size }} object{{ object.size|pluralize }}</li></ul>
+    {% endfor %}
+        <div class="panel-heading">
+            <h2 class="panel-title">Manage accounts</h2>
+        </div>
+        <ul class="manage">
+            <li> <a href="{% url 'list_users' %}">Users list</a></li>
+            <li> <a href="{% url 'list_groups' %}">Roles list</a></li>
+        </ul>
+        <div class="panel-heading">
+            <h2 class="panel-title">Actions</h2>
+        </div>
+        <ul class="action">
+            <li> <a href="{% url 'add_user' %}">Add User</a></li>
+            <li> <a href="{% url 'add_group' %}">Add Role</a></li>
+            {% if extra_auth %}
+                <li>
+                    <a data-toggle="tooltip" title="Set priority on Role/Group assignments" href="{% url 'edit_priorities' %}">Edit priorities
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+{% endblock %}
+
+{% block content %}
+    {% if objects %}
+        {% for name, object in objects.items %}
+            <div class="row">
+                <h2 class="title">{{ name }}{{ object.size|pluralize }}</h2>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                            {% load render_table from django_tables2 %}
+                            {% render_table object.content %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        No object available.
+    {% endif %}
+{% endblock %}

@@ -13,7 +13,7 @@ from rules.rest_api import CommentSerializer
 class SuricataViewSet(APIView):
     """
     =============================================================================================================================================================
-    ==== GET ====\n
+    ==== POST ====\n
     Update and Push ruleset:\n
         curl -v -k https://x.x.x.x/rest/suricata/update_push_all/  -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
 
@@ -23,6 +23,9 @@ class SuricataViewSet(APIView):
 
     =============================================================================================================================================================
     """
+    REQUIRED_GROUPS = {
+        'WRITE': ('rules.ruleset_update_push',),
+    }
 
     def post(self, request, format=None):
         suri = Suricata.objects.first()
