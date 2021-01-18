@@ -23,7 +23,7 @@
 
 <div class="tab-content">
 
-<div role="tabpanel" class="tab-pane fade{% if form_id == 'main' %} in active{% endif %}" id="main">
+<div role="tabpanel" class="tab-pane {% if form_id == 'main' %}active{% endif %}" id="main">
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-6">
@@ -56,7 +56,7 @@
 </div> <!-- container-fluid -->
 </div> <!-- tabpanel -->
 
-<div role="tabpanel" class="tab-pane fade{% if form_id == 'es' %} in active{% endif %}" id="es">
+<div role="tabpanel" class="tab-pane {% if form_id == 'es' %}active{% endif %}" id="es">
 <div class="container-fluid">
   <div class="row">
 <div class="col-md-6">
@@ -70,7 +70,7 @@ Please enable Elasticsearch first.
 </div> <!-- container-fluid -->
 </div> <!-- tabpanel -->
 
-<div role="tabpanel" class="tab-pane fade{% if form_id == 'kibana' %} in active{% endif %}" id="kibana">
+<div role="tabpanel" class="tab-pane {% if form_id == 'kibana' %}active{% endif %}" id="kibana">
 <div class="container-fluid">
 <div class="row">
 <div class="col-md-6">
