@@ -1150,7 +1150,7 @@ class ESTopRules(ESQuery):
 
     def get(self, *args, **kwargs):
         data = super().get(*args, **kwargs)
-        return data['aggregations']['alerts']['buckets']
+        return data.get('aggregations', {}).get('alerts', {}).get('buckets', [])
 
 
 class ESSigsListHits(ESQuery):
