@@ -5,9 +5,9 @@ import { makeSelectFilterParams } from '../App/stores/filterParams';
 import { SignaturesPage } from './SignaturesPage';
 
 const mapStateToProps = createStructuredSelector({
-    filters: makeSelectGlobalFilters(),
-    filtersWithAlert: makeSelectGlobalFilters(true),
-    filterParams: makeSelectFilterParams()
+  filters: makeSelectGlobalFilters(),
+  filtersWithAlert: makeSelectGlobalFilters(true),
+  filterParams: makeSelectFilterParams(),
 });
 
 export default connect(mapStateToProps)(SignaturesPage);

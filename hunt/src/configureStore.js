@@ -28,23 +28,19 @@ export default function configureStore(initialState = {}, history) {
             : compose;
     /* eslint-enable */
 
-    const store = createStore(
-        createReducer(),
-        fromJS(initialState),
-        composeEnhancers(...enhancers),
-    );
+  const store = createStore(createReducer(), fromJS(initialState), composeEnhancers(...enhancers));
 
-    // Extensions
-    store.runSaga = sagaMiddleware.run;
-    store.injectedReducers = {}; // Reducer registry
-    store.injectedSagas = {}; // Saga registry
+  // Extensions
+  store.runSaga = sagaMiddleware.run;
+  store.injectedReducers = {}; // Reducer registry
+  store.injectedSagas = {}; // Saga registry
 
-    // Make reducers hot reloadable, see http://mxs.is/googmo
-    if (module.hot) {
-        module.hot.accept('./reducers', () => {
-            store.replaceReducer(createReducer(store.injectedReducers));
-        });
-    }
+  // Make reducers hot reloadable, see http://mxs.is/googmo
+  if (module.hot) {
+    module.hot.accept('./reducers', () => {
+      store.replaceReducer(createReducer(store.injectedReducers));
+    });
+  }
 
-    return store;
+  return store;
 }

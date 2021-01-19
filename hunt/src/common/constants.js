@@ -19,16 +19,16 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 export const sections = {
-    GLOBAL: 'ids_filters',
-    HISTORY: 'history_filters',
-    ALERT: 'alert_tag',
+  GLOBAL: 'ids_filters',
+  HISTORY: 'history_filters',
+  ALERT: 'alert_tag',
 };
 
 export const PAGE_STATE = {
-    rules_list: 'RULES_LIST',
-    alerts_list: 'ALERTS_LIST',
-    dashboards: 'DASHBOARDS',
-    history: 'HISTORY',
-    filters_list: 'FILTERS',
-    setup: 'SETUP'
+  rules_list: 'RULES_LIST',
+  alerts_list: 'ALERTS_LIST',
+  dashboards: 'DASHBOARDS',
+  history: 'HISTORY',
+  filters_list: 'FILTERS',
+  setup: 'SETUP',
 };

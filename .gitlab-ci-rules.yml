@@ -17,7 +17,7 @@ npm:
   - ./node_modules/webpack/bin/webpack.js
 
 npm-hunt:
-  image: node:8.9.4
+  image: node:10.23.1
   stage: build
   artifacts:
     expire_in: 1 day
@@ -31,7 +31,7 @@ npm-hunt:
   - cd hunt
   - npm install
   - npm run build
-  - node node_modules/eslint/bin/eslint.js -c .eslintrc .
+  - node node_modules/eslint/bin/eslint.js src/
 
 test-static:
   stage: test

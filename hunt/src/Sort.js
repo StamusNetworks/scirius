@@ -18,84 +18,83 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Sort } from 'patternfly-react';
 
 export class HuntSort extends React.Component {
-    constructor(props) {
-        super(props);
-        const activeSort = this.props.itemsList.sort;
-        let sortType;
-        for (let i = 0; i < this.props.config.length; i += 1) {
-            if (activeSort.id === this.props.config[i].id) {
-                sortType = this.props.config[i];
-                break;
-            }
-        }
-        if (sortType === undefined) {
-            [sortType] = this.props.config;
-        }
-        this.state = {
-            currentSortType: sortType,
-            isSortNumeric: sortType.isNumeric,
-            isSortAscending: activeSort.asc
-        };
-        this.updateSort = this.updateSort.bind(this);
+  constructor(props) {
+    super(props);
+    const activeSort = this.props.itemsList.sort;
+    let sortType;
+    for (let i = 0; i < this.props.config.length; i += 1) {
+      if (activeSort.id === this.props.config[i].id) {
+        sortType = this.props.config[i];
+        break;
+      }
     }
-
-    updateSort = (sort) => {
-        this.props.itemsListUpdate({
-            ...this.props.itemsList,
-            sort: {
-                ...this.props.itemsList.sort,
-                ...sort
-            }
-        });
+    if (sortType === undefined) {
+      [sortType] = this.props.config;
     }
+    this.state = {
+      currentSortType: sortType,
+      isSortNumeric: sortType.isNumeric,
+      isSortAscending: activeSort.asc,
+    };
+    this.updateSort = this.updateSort.bind(this);
+  }
 
-    updateCurrentSortType = (sortType) => {
-        const { currentSortType } = this.state;
-        if (currentSortType !== sortType) {
-            this.setState({
-                currentSortType: sortType,
-                isSortNumeric: sortType.isNumeric,
-                isSortAscending: sortType.defaultAsc
-            });
-            this.updateSort({ id: sortType.id, asc: sortType.defaultAsc });
-        }
+  updateSort = (sort) => {
+    this.props.itemsListUpdate({
+      ...this.props.itemsList,
+      sort: {
+        ...this.props.itemsList.sort,
+        ...sort,
+      },
+    });
+  };
+
+  updateCurrentSortType = (sortType) => {
+    const { currentSortType } = this.state;
+    if (currentSortType !== sortType) {
+      this.setState({
+        currentSortType: sortType,
+        isSortNumeric: sortType.isNumeric,
+        isSortAscending: sortType.defaultAsc,
+      });
+      this.updateSort({ id: sortType.id, asc: sortType.defaultAsc });
     }
+  };
 
-    toggleCurrentSortDirection = () => {
-        this.updateSort({ id: this.state.currentSortType.id, asc: !this.state.isSortAscending });
-        this.setState((prevState) => ({ isSortAscending: !prevState.isSortAscending }));
-    }
+  toggleCurrentSortDirection = () => {
+    this.updateSort({ id: this.state.currentSortType.id, asc: !this.state.isSortAscending });
+    this.setState((prevState) => ({ isSortAscending: !prevState.isSortAscending }));
+  };
 
-    render() {
-        const { currentSortType, isSortNumeric, isSortAscending } = this.state;
+  render() {
+    const { currentSortType, isSortNumeric, isSortAscending } = this.state;
 
-        return (
-            <Sort>
-                <Sort.TypeSelector
-                    sortTypes={this.props.config}
-                    currentSortType={currentSortType}
-                    onSortTypeSelected={this.updateCurrentSortType}
-                    disabled={this.props.disabled}
-                />
-                <Sort.DirectionSelector
-                    isNumeric={isSortNumeric}
-                    isAscending={isSortAscending}
-                    onClick={() => this.toggleCurrentSortDirection()}
-                    disabled={this.props.disabled}
-                />
-            </Sort>
-        );
-    }
+    return (
+      <Sort>
+        <Sort.TypeSelector
+          sortTypes={this.props.config}
+          currentSortType={currentSortType}
+          onSortTypeSelected={this.updateCurrentSortType}
+          disabled={this.props.disabled}
+        />
+        <Sort.DirectionSelector
+          isNumeric={isSortNumeric}
+          isAscending={isSortAscending}
+          onClick={() => this.toggleCurrentSortDirection()}
+          disabled={this.props.disabled}
+        />
+      </Sort>
+    );
+  }
 }
 HuntSort.propTypes = {
-    config: PropTypes.any,
-    itemsList: PropTypes.any,
-    itemsListUpdate: PropTypes.any,
-    disabled: PropTypes.any,
+  config: PropTypes.any,
+  itemsList: PropTypes.any,
+  itemsListUpdate: PropTypes.any,
+  disabled: PropTypes.any,
 };

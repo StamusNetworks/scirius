@@ -13,13 +13,13 @@ import saga from './saga';
 import HistoryPage from './HistoryPage';
 
 const mapDispatchToProps = (dispatch) => ({
-    getActionTypes: () => dispatch(actionTypes()),
+  getActionTypes: () => dispatch(actionTypes()),
 });
 
 const mapStateToProps = createStructuredSelector({
-    actionTypesList: makeSelectActionTypesList(),
-    historyList: makeSelectHistoryList(),
-    filters: makeSelectHistoryFilters()
+  actionTypesList: makeSelectActionTypesList(),
+  historyList: makeSelectHistoryList(),
+  filters: makeSelectHistoryFilters(),
 });
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);

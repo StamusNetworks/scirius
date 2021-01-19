@@ -18,43 +18,51 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 import React from 'react';
 import PropTypes from 'prop-types';
 
 const HuntRestError = (props) => {
-    if (props.errors === undefined) {
-        return (null);
-    }
-    return (
-        <div>
-            {Object.keys(props.errors).map((field) => {
-                if (typeof (props.errors[field]) === 'object') {
-                    return (
-                        <div key={field}>
-                            {props.errors[field].map((error) => {
-                                if (typeof (error) === 'object') {
-                                    return (<div key={1} className="alert alert-danger">{field}: {JSON.stringify(error)}</div>);
-                                }
-                                return (<div key={error} className="alert alert-danger">{field}: {error}</div>);
-                            })
-                            }
-                        </div>
-                    );
-                }
-                const error = props.errors[field];
-                return (
-                    <div key={field}>
-                        <div key={error} className="alert alert-danger">{field}: {error}</div>
+  if (props.errors === undefined) {
+    return null;
+  }
+  return (
+    <div>
+      {Object.keys(props.errors).map((field) => {
+        if (typeof props.errors[field] === 'object') {
+          return (
+            <div key={field}>
+              {props.errors[field].map((error) => {
+                if (typeof error === 'object') {
+                  return (
+                    <div key={1} className="alert alert-danger">
+                      {field}: {JSON.stringify(error)}
                     </div>
+                  );
+                }
+                return (
+                  <div key={error} className="alert alert-danger">
+                    {field}: {error}
+                  </div>
                 );
-            })}
-        </div>
-    );
-}
+              })}
+            </div>
+          );
+        }
+        const error = props.errors[field];
+        return (
+          <div key={field}>
+            <div key={error} className="alert alert-danger">
+              {field}: {error}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 HuntRestError.propTypes = {
-    errors: PropTypes.any,
+  errors: PropTypes.any,
 };
 
 export default HuntRestError;

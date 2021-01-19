@@ -7,9 +7,4 @@ const makeSelectActionTypesList = () => createSelector(selectHistory, (historySt
 const makeSelectHistoryList = () => createSelector(selectHistory, (historyState) => historyState.get('historyList'));
 const makeSelectHistoryFilters = () => createSelector(selectHistory, (historyState) => historyState.get('filters').toJS());
 
-export {
-    selectHistory,
-    makeSelectActionTypesList,
-    makeSelectHistoryList,
-    makeSelectHistoryFilters,
-};
+export { selectHistory, makeSelectActionTypesList, makeSelectHistoryList, makeSelectHistoryFilters };

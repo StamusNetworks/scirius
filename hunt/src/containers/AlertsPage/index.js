@@ -5,13 +5,13 @@ import { makeSelectFilterParams } from '../App/stores/filterParams';
 import { AlertsPage } from './AlertsPage';
 
 const mapStateToProps = createStructuredSelector({
-    filters: makeSelectGlobalFilters(),
-    filtersWithAlert: makeSelectGlobalFilters(true),
-    filterParams: makeSelectFilterParams(),
+  filters: makeSelectGlobalFilters(),
+  filtersWithAlert: makeSelectGlobalFilters(true),
+  filterParams: makeSelectFilterParams(),
 });
 
 const mapDispatchToProps = {
-    addFilter,
-}
+  addFilter,
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlertsPage);

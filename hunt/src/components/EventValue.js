@@ -7,34 +7,68 @@ import { sections } from 'hunt_common/constants';
 import ErrorHandler from './Error';
 import { addFilter } from '../containers/App/stores/global';
 
-const EventValue = (props) => <div className="value-field-complete">
-    <span className="value-field" title={props.value + (props.hasCopyShortcut ? '\nCtrl + left click to copy' : '')}>{props.value}</span>
-    <span className={'value-actions'}>
-        <ErrorHandler>
-            <EventValueInfo field={props.field} value={props.value} magnifiers={props.magnifiers} />
-            {props.magnifiers && <a onClick={() => props.addFilter(sections.GLOBAL, { id: props.field, value: props.value, label: `${props.field}: ${props.value}`, fullString: true, negated: false })}> <Icon type="fa" name="search-plus" /></a>}
-            {props.magnifiers && <a onClick={() => props.addFilter(sections.GLOBAL, { id: props.field, value: props.value, label: `${props.field}: ${props.value}`, fullString: true, negated: true })}> <Icon type="fa" name="search-minus" /></a>}
-        </ErrorHandler>
+const EventValue = (props) => (
+  <div className="value-field-complete">
+    <span className="value-field" title={props.value + (props.hasCopyShortcut ? '\nCtrl + left click to copy' : '')}>
+      {props.value}
+    </span>
+    <span className="value-actions">
+      <ErrorHandler>
+        <EventValueInfo field={props.field} value={props.value} magnifiers={props.magnifiers} />
+        {props.magnifiers && (
+          <a
+            onClick={() =>
+              props.addFilter(sections.GLOBAL, {
+                id: props.field,
+                value: props.value,
+                label: `${props.field}: ${props.value}`,
+                fullString: true,
+                negated: false,
+              })
+            }
+          >
+            {' '}
+            <Icon type="fa" name="search-plus" />
+          </a>
+        )}
+        {props.magnifiers && (
+          <a
+            onClick={() =>
+              props.addFilter(sections.GLOBAL, {
+                id: props.field,
+                value: props.value,
+                label: `${props.field}: ${props.value}`,
+                fullString: true,
+                negated: true,
+              })
+            }
+          >
+            {' '}
+            <Icon type="fa" name="search-minus" />
+          </a>
+        )}
+      </ErrorHandler>
     </span>
     {props.right_info && <span className="value-right-info">{props.right_info}</span>}
-</div>
+  </div>
+);
 
 EventValue.defaultProps = {
-    magnifiers: true,
-    hasCopyShortcut: false
-}
+  magnifiers: true,
+  hasCopyShortcut: false,
+};
 
 EventValue.propTypes = {
-    addFilter: PropTypes.any,
-    right_info: PropTypes.any,
-    field: PropTypes.any,
-    value: PropTypes.any,
-    magnifiers: PropTypes.bool,
-    hasCopyShortcut: PropTypes.bool
+  addFilter: PropTypes.any,
+  right_info: PropTypes.any,
+  field: PropTypes.any,
+  value: PropTypes.any,
+  magnifiers: PropTypes.bool,
+  hasCopyShortcut: PropTypes.bool,
 };
 
 const mapDispatchToProps = (dispatch) => ({
-    addFilter: (section, filter) => dispatch(addFilter(section, filter))
+  addFilter: (section, filter) => dispatch(addFilter(section, filter)),
 });
 
 export default connect(null, mapDispatchToProps)(EventValue);

@@ -4,7 +4,7 @@ import { makeSelectFilterParams } from '../App/stores/filterParams';
 import { ActionsPage } from './ActionsPage';
 
 const mapStateToProps = createStructuredSelector({
-    filterParams: makeSelectFilterParams(),
+  filterParams: makeSelectFilterParams(),
 });
 
 export default connect(mapStateToProps)(ActionsPage);

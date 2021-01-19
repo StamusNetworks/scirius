@@ -6,15 +6,15 @@ import { filterParamsSet, makeSelectFilterParam, reducer, reload } from './store
 import App from './App';
 
 const mapStateToProps = createStructuredSelector({
-    filterParamHash: makeSelectFilterParam('hash'),
-    filterParamFromDate: makeSelectFilterParam('fromDate'),
-    filterParamToDate: makeSelectFilterParam('toDate'),
-    duration: makeSelectFilterParam('duration'),
+  filterParamHash: makeSelectFilterParam('hash'),
+  filterParamFromDate: makeSelectFilterParam('fromDate'),
+  filterParamToDate: makeSelectFilterParam('toDate'),
+  duration: makeSelectFilterParam('duration'),
 });
 
 const mapDispatchToProps = (dispatch) => ({
-    filterParamsSet: (paramName, paramValue) => dispatch(filterParamsSet(paramName, paramValue)),
-    reload: () => dispatch(reload()),
+  filterParamsSet: (paramName, paramValue) => dispatch(filterParamsSet(paramName, paramValue)),
+  reload: () => dispatch(reload()),
 });
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);

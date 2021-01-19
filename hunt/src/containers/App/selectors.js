@@ -8,8 +8,4 @@ const makeSelectPlaceholder = () => createSelector(selectGlobal, (globalState) =
 
 const makeSelectLocation = () => createSelector(selectRouter, (routerState) => routerState.get('location').toJS());
 
-export {
-    selectGlobal,
-    makeSelectPlaceholder,
-    makeSelectLocation,
-};
+export { selectGlobal, makeSelectPlaceholder, makeSelectLocation };

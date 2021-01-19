@@ -39,14 +39,14 @@ export const store = configureStore(initialState, history);
 const MOUNT_NODE = document.getElementById('root');
 
 const render = () => {
-    ReactDOM.render(
-        <Provider store={store}>
-            <ConnectedRouter history={history}>
-                <App />
-            </ConnectedRouter>
-        </Provider>,
-        MOUNT_NODE,
-    );
+  ReactDOM.render(
+    <Provider store={store}>
+      <ConnectedRouter history={history}>
+        <App />
+      </ConnectedRouter>
+    </Provider>,
+    MOUNT_NODE,
+  );
 };
 
 render();
