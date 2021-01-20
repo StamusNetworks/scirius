@@ -2578,9 +2578,6 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
         else:
             data = {}
 
-        extra_info = get_middleware_module('common').extra_info()
-        data.update(extra_info)
-
         data['kibana'] = USE_KIBANA
         data['evebox'] = USE_EVEBOX
         data['es_keyword'] = ELASTICSEARCH_KEYWORD
@@ -2597,6 +2594,8 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
         data['cyberchef'] = USE_CYBERCHEF
         if USE_CYBERCHEF:
             data['cyberchef_url'] = CYBERCHEF_URL
+
+        get_middleware_module('common').update_settings(data)
         return Response(data)
 
     def get_object(self):
