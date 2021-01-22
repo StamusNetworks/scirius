@@ -2853,6 +2853,11 @@ class Ruleset(models.Model, Transformable):
 
     json_errors = property(_json_errors)
 
+    def get_processing_filter_thresholds(self):
+        for f in self.processing_filters.filter(enabled=True, action='threshold'):
+            for item in f.get_threshold_content(self):
+                yield item
+
     @staticmethod
     def get_transformation_choices(key=Transformation.ACTION):
         # Keys
@@ -3044,8 +3049,7 @@ class Ruleset(models.Model, Transformable):
             for threshold in Threshold.objects.filter(ruleset=self):
                 f.write("%s\n" % (threshold))
 
-            from scirius.utils import get_middleware_module
-            for threshold in get_middleware_module('common').get_processing_filter_thresholds(self):
+            for threshold in self.get_processing_filter_thresholds():
                 f.write(threshold)
 
     def copy(self, name):

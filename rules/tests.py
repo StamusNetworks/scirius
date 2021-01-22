@@ -1280,7 +1280,13 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
 
     def test_014_threshold_create(self):
         f = {
-            'filter_defs': [{'key': 'alert.sid', 'value': '1', 'operator': 'equal', 'full_string': True}],
+            'filter_defs': [{
+                'key': 'alert.signature_id',
+                'value': '1',
+                'operator': 'equal',
+                'full_string': True,
+                'msg': 'test rule'
+            }],
             'action': 'threshold',
             'options': {'type': 'both', 'count': 2, 'seconds': 30, 'track': 'by_src'},
             'rulesets': [self.ruleset.pk]
@@ -1338,7 +1344,7 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
         self.assertEqual(suppress, ['suppress gen_id 1, sid_id 1, track by_src, ip 192.168.0.1\n'])
 
     def test_021_suri_threshold_generate(self):
-        self.http_post(self.list_url, {
+        r = self.http_post(self.list_url, {
             'filter_defs': [
                 {'key': 'dest_ip', 'value': '192.168.0.1', 'operator': 'equal', 'full_string': True},
                 {'key': 'alert.signature_id', 'value': '1', 'operator': 'equal', 'full_string': True}
@@ -1346,11 +1352,11 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
             'action': 'threshold',
             'options': {'type': 'both', 'track': 'by_dst'},
             'rulesets': [self.ruleset.pk]
-        }, status=status.HTTP_201_CREATED)
+        }, status=status.HTTP_400_BAD_REQUEST)
 
-        f = RuleProcessingFilter.objects.all()[0]
-        threshold = f.get_threshold_content()
-        self.assertEqual(threshold, ['threshold gen_id 1, sig_id 1, type both, track by_dst, count 1, seconds 60\n'])
+        self.assertDictEqual(r, {
+            'filter_defs': ['Field "dest_ip" is not supported for threshold.']
+        })
 
     def test_022_ip_validation(self):
         r = self.http_post(self.list_url, {

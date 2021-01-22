@@ -95,62 +95,11 @@ def get_hunt_filters():
     return get_hunt_filters()
 
 
-def validate_rule_postprocessing(data, partial):
+def validate_rule_postprocessing(data, partial, serializer):
     action = data.get('action')
-    if not partial and action not in ('suppress', 'threshold'):
+    if not partial and action not in ('suppress',):
         raise serializers.ValidationError('Action "%s" is not supported.' % action)
-
-    has_ip = False
-    has_bad_operator = False
-
-    signatures = {
-        'alert.signature_id': False,
-        'alert.signature': False,
-        'msg': False,
-        'content': False,
-    }
-
-    for f in data.get('filter_defs', []):
-        if f.get('key') in list(signatures.keys()):
-            signatures[f.get('key')] = True
-            if list(signatures.values()).count(True) > 1:
-                raise serializers.ValidationError({'filter_defs': ['Only one field with key "alert.signature_id" or "msg" or "alert.signature" or "content" is accepted.']})
-
-        if f.get('key') in ('src_ip', 'dest_ip', 'alert.target.ip', 'alert.source.ip'):
-            if action == 'suppress':
-                if has_ip:
-                    raise serializers.ValidationError({'filter_defs': ['Only one field with key "src_ip" or "dest_ip" or "alert.source.ip" or "alert.target.ip" is accepted.']})
-                has_ip = True
-            else:
-                raise serializers.ValidationError({'filter_defs': ['Field "%s" is not supported for threshold.' % f['key']]})
-
-        if f.get('operator') != 'equal':
-            has_bad_operator = True
-
-    if action == 'threshold':
-        has_ip = True
-
-    errors = []
-    if not partial:
-        if list(signatures.values()).count(False) == len(signatures):
-            errors.append('A filter with a key "alert.signature_id" or "msg" or "alert.signature" or "content" is required.')
-
-        if list(signatures.values()).count(True) > 1:
-            errors.append('Only one filter with a key "alert.signature_id" or "msg" or "alert.signature" or "content" can be set.')
-
-        if not has_ip:
-            errors.append('A filter with a key "src_ip" or "dest_ip" or "alert.source.ip" or "alert.target.ip" is required.')
-    if has_bad_operator:
-        errors.append('Only operator "equal" is supported.')
-
-    if errors:
-        raise serializers.ValidationError({'filter_defs': errors})
-
-
-def get_processing_filter_thresholds(ruleset):
-    for f in ruleset.processing_filters.filter(enabled=True, action__in=('suppress', 'threshold')):
-        for item in f.get_threshold_content(ruleset):
-            yield item
+    serializer.validate_rule_postprocessing(data, partial)
 
 
 PROCESSING_FILTER_FIELDS = set(('src_ip', 'dest_ip', 'alert.signature_id', 'alert.target.ip', 'alert.source.ip', 'msg', 'alert.signature', 'content'))
