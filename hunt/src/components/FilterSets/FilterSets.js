@@ -22,8 +22,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormGroup, FormControl, Notification, NotificationDrawer, MenuItem, Icon } from 'patternfly-react';
 import { Collapse } from 'react-bootstrap';
-import axios from 'axios';
-import * as config from 'hunt_common/config/Api';
 import { sections } from 'hunt_common/constants';
 
 export default class FilterSets extends React.Component {
@@ -32,17 +30,12 @@ export default class FilterSets extends React.Component {
     this.state = {
       expandedPanel: 'static',
       searchValue: '',
-      user: undefined,
     };
 
     this.escFunction = this.escFunction.bind(this);
   }
 
   componentDidMount() {
-    axios.get(`${config.API_URL}${config.USER_PATH}current_user/`).then((currentUser) => {
-      this.setState({ user: currentUser.data });
-    });
-
     this.props.loadFilterSets();
     document.addEventListener('keydown', this.escFunction, false);
   }
@@ -112,7 +105,7 @@ export default class FilterSets extends React.Component {
     const rowsStatic = this.props.staticSet
       ? this.props.staticSet.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase()))
       : [];
-    const noRights = this.state.user !== undefined && !this.state.user.perms.includes('rules.events_edit');
+    const noRights = this.props.user.isActive && !this.props.user.permissions.includes('rules.events_edit');
 
     return (
       <NotificationDrawer>
@@ -260,4 +253,15 @@ FilterSets.propTypes = {
   privateSet: PropTypes.array,
   staticSet: PropTypes.array,
   setTag: PropTypes.func,
+  user: PropTypes.shape({
+    pk: PropTypes.any,
+    timezone: PropTypes.any,
+    username: PropTypes.any,
+    firstName: PropTypes.any,
+    lastName: PropTypes.any,
+    isActive: PropTypes.any,
+    email: PropTypes.any,
+    dateJoined: PropTypes.any,
+    permissions: PropTypes.any,
+  }),
 };

@@ -17,6 +17,7 @@ import {
 
 import FilterSets from './FilterSets';
 import { addFilter, clearFilters, setTag } from '../../containers/App/stores/global';
+import { withPermissions } from '../../containers/App/stores/withPermissions';
 
 const mapDispatchToProps = (dispatch) => ({
   addFilter: (filterType, filter) => dispatch(addFilter(filterType, filter)),
@@ -38,5 +39,5 @@ const withConnect = connect(mapStateToProps, mapDispatchToProps);
 const withReducer = injectReducer({ key: 'filterSets', reducer });
 const withSaga = injectSaga({ key: 'filterSets', saga });
 
-export default compose(withReducer, withSaga, withConnect)(FilterSets);
+export default compose(withReducer, withSaga, withConnect, withPermissions)(FilterSets);
 export { mapDispatchToProps };

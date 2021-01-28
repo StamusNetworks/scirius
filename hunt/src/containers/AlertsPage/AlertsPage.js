@@ -96,14 +96,16 @@ export class AlertsPage extends React.Component {
         this.setState({ rulesFilters: fdata });
       }
     });
-    this.loadActions();
+    if (this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
+      this.loadActions();
+    }
   }
 
   componentDidUpdate(prevProps) {
     const filtersChanged = JSON.stringify(prevProps.filtersWithAlert) !== JSON.stringify(this.props.filtersWithAlert);
     if (JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams) || filtersChanged) {
       this.fetchData();
-      if (filtersChanged) {
+      if (filtersChanged && this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
         this.loadActions();
       }
     }
@@ -200,4 +202,15 @@ AlertsPage.propTypes = {
   page: PropTypes.any,
   addFilter: PropTypes.func,
   filterParams: PropTypes.object.isRequired,
+  user: PropTypes.shape({
+    pk: PropTypes.any,
+    timezone: PropTypes.any,
+    username: PropTypes.any,
+    firstName: PropTypes.any,
+    lastName: PropTypes.any,
+    isActive: PropTypes.any,
+    email: PropTypes.any,
+    dateJoined: PropTypes.any,
+    permissions: PropTypes.any,
+  }),
 };

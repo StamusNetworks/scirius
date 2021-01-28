@@ -28,7 +28,7 @@ import HuntFilter from '../../HuntFilter';
 import HistoryItem from '../../components/HistoryItem';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ErrorHandler from '../../components/Error';
-import { buildFilter, buildListUrlParams, loadActions } from '../../helpers/common';
+import { buildFilter, buildListUrlParams } from '../../helpers/common';
 
 const HistorySortFields = [
   {
@@ -76,7 +76,6 @@ export default class HistoryPage extends React.Component {
     this.fetchData = this.fetchData.bind(this);
     this.buildFilter = buildFilter;
     this.buildListUrlParams = buildListUrlParams.bind(this);
-    this.loadActions = loadActions.bind(this);
     this.updateHistoryListState = this.updateHistoryListState.bind(this);
 
     this.props.getActionTypes();
@@ -170,4 +169,15 @@ HistoryPage.propTypes = {
   getActionTypes: PropTypes.func,
   actionTypesList: PropTypes.array,
   page: PropTypes.any,
+  user: PropTypes.shape({
+    pk: PropTypes.any,
+    timezone: PropTypes.any,
+    username: PropTypes.any,
+    firstName: PropTypes.any,
+    lastName: PropTypes.any,
+    isActive: PropTypes.any,
+    email: PropTypes.any,
+    dateJoined: PropTypes.any,
+    permissions: PropTypes.any,
+  }),
 };

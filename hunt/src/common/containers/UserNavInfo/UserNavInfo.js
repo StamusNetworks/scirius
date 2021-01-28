@@ -4,11 +4,13 @@ import axios from 'axios';
 import { PAGE_STATE } from 'hunt_common/constants';
 import { Dropdown, Icon, MenuItem, ApplicationLauncher, AboutModal, Modal, Form, Button } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
+import { compose } from 'redux';
 import FilterSets from '../../../components/FilterSets';
 import OutsideAlerter from '../../../components/OutsideAlerter';
 import sciriusLogo from '../../../img/stamus_logo.png';
 import ErrorHandler from '../../../components/Error';
 import TimeSpanItem from '../../../components/TimeSpanItem';
+import { withPermissions } from '../../../containers/App/stores/withPermissions';
 
 const REFRESH_INTERVAL = {
   '': 'Off',
@@ -22,14 +24,13 @@ const REFRESH_INTERVAL = {
   3600: '1h',
 };
 
-export default class UserNavInfo extends Component {
+class UserNavInfo extends Component {
   constructor(props) {
     super(props);
     this.state = {
       showModal: false,
       showUpdateModal: false,
       showNotifications: false,
-      user: undefined,
       isShown: false,
       context: undefined,
     };
@@ -47,10 +48,6 @@ export default class UserNavInfo extends Component {
   }
 
   componentDidMount() {
-    axios.get(`${config.API_URL}${config.USER_PATH}current_user/`).then((currentUser) => {
-      this.setState({ user: currentUser.data });
-    });
-
     axios.get(`${config.API_URL}${config.SCIRIUS_CONTEXT}`).then((context) => {
       this.setState({ context: context.data });
     });
@@ -108,10 +105,7 @@ export default class UserNavInfo extends Component {
   }
 
   render() {
-    let user = ' ...';
-    if (this.state.user !== undefined) {
-      user = this.state.user.username;
-    }
+    const user = this.props.user.username.length === 0 ? ' ...' : this.props.user.username;
     const { title, version } = this.state.context !== undefined ? this.state.context : { title: '', version: '' };
 
     return (
@@ -384,4 +378,17 @@ UserNavInfo.propTypes = {
   ChangeRefreshInterval: PropTypes.any,
   switchPage: PropTypes.any,
   duration: PropTypes.any,
+  user: PropTypes.shape({
+    pk: PropTypes.any,
+    timezone: PropTypes.any,
+    username: PropTypes.any,
+    firstName: PropTypes.any,
+    lastName: PropTypes.any,
+    isActive: PropTypes.any,
+    email: PropTypes.any,
+    dateJoined: PropTypes.any,
+    permissions: PropTypes.any,
+  }),
 };
+
+export default compose(withPermissions)(UserNavInfo);

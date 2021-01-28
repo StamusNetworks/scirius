@@ -6,11 +6,13 @@ import axios from 'axios';
 import { createStructuredSelector } from 'reselect';
 import * as config from 'hunt_common/config/Api';
 import { sections } from 'hunt_common/constants';
+import { compose } from 'redux';
 import FilterToggleModal from '../FilterToggleModal';
 import ErrorHandler from './Error';
 import FilterSetSave from './FilterSetSaveModal';
 import { loadFilterSets } from './FilterSets/store';
 import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag } from '../containers/App/stores/global';
+import { withPermissions } from '../containers/App/stores/withPermissions';
 
 class FilterEditKebab extends React.Component {
   constructor(props) {
@@ -21,7 +23,6 @@ class FilterEditKebab extends React.Component {
       toggle: { show: false, action: 'delete' },
       filterSets: { showModal: false, page: '', shared: false, name: '' },
       errors: undefined,
-      user: undefined,
     };
     this.closeAction = this.closeAction.bind(this);
     this.convertActionToFilters = this.convertActionToFilters.bind(this);
@@ -31,12 +32,6 @@ class FilterEditKebab extends React.Component {
     this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
     this.setSharedFilter = this.setSharedFilter.bind(this);
     this.submitActionToFilterSet = this.submitActionToFilterSet.bind(this);
-  }
-
-  componentDidMount() {
-    axios.get(`${config.API_URL}${config.USER_PATH}current_user/`).then((currentUser) => {
-      this.setState({ user: currentUser.data });
-    });
   }
 
   setSharedFilter(e) {
@@ -164,7 +159,7 @@ class FilterEditKebab extends React.Component {
         let errors = error.response.data;
 
         if (error.response.status === 403) {
-          const noRights = !this.state.user.perms.includes('rules.events_edit') && this.state.filterSets.shared;
+          const noRights = this.props.user.isActive && !this.props.user.permissions.includes('rules.events_edit') && this.state.filterSets.shared;
           if (noRights) {
             errors = { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
           }
@@ -174,7 +169,7 @@ class FilterEditKebab extends React.Component {
   }
 
   render() {
-    const noRights = this.state.user !== undefined && !this.state.user.perms.includes('rules.events_edit');
+    const noRights = this.props.user.isActive && !this.props.user.permissions.includes('rules.events_edit');
     return (
       <React.Fragment>
         <FilterSetSave
@@ -269,6 +264,17 @@ FilterEditKebab.propTypes = {
   clearFilters: PropTypes.func,
   alertTag: PropTypes.object,
   switchPage: PropTypes.any,
+  user: PropTypes.shape({
+    pk: PropTypes.any,
+    timezone: PropTypes.any,
+    username: PropTypes.any,
+    firstName: PropTypes.any,
+    lastName: PropTypes.any,
+    isActive: PropTypes.any,
+    email: PropTypes.any,
+    dateJoined: PropTypes.any,
+    permissions: PropTypes.any,
+  }),
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -282,4 +288,5 @@ const mapDispatchToProps = {
   setTag,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(FilterEditKebab);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
+export default compose(withConnect, withPermissions)(FilterEditKebab);

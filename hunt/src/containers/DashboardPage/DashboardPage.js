@@ -156,7 +156,7 @@ export class HuntDashboard extends React.Component {
       }, 250);
     });
 
-    if (this.props.filters.length) {
+    if (this.props.filters.length && this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
       this.loadActions(this.props.filters);
     }
 
@@ -197,7 +197,9 @@ export class HuntDashboard extends React.Component {
         this.filters = JSON.stringify(this.props.filters);
         this.resetPanelHeights();
         this.bootPanels();
-        this.loadActions(this.props.filters);
+        if (this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
+          this.loadActions(this.props.filters);
+        }
       }
     }
   }
@@ -895,4 +897,15 @@ HuntDashboard.propTypes = {
   page: PropTypes.any,
   filtersWithAlert: PropTypes.array,
   filterParams: PropTypes.object.isRequired,
+  user: PropTypes.shape({
+    pk: PropTypes.any,
+    timezone: PropTypes.any,
+    username: PropTypes.any,
+    firstName: PropTypes.any,
+    lastName: PropTypes.any,
+    isActive: PropTypes.any,
+    email: PropTypes.any,
+    dateJoined: PropTypes.any,
+    permissions: PropTypes.any,
+  }),
 };

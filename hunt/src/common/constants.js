@@ -22,6 +22,7 @@ export const sections = {
   GLOBAL: 'ids_filters',
   HISTORY: 'history_filters',
   ALERT: 'alert_tag',
+  USER: 'user',
 };
 
 export const PAGE_STATE = {

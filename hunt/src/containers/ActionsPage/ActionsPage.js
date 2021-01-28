@@ -26,7 +26,7 @@ import * as config from 'hunt_common/config/Api';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ActionItem from '../../ActionItem';
 import ErrorHandler from '../../components/Error';
-import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction, buildFilter } from '../../helpers/common';
+import { actionsButtons, buildListUrlParams, createAction, closeAction, buildFilter } from '../../helpers/common';
 
 export class ActionsPage extends React.Component {
   constructor(props) {
@@ -37,7 +37,6 @@ export class ActionsPage extends React.Component {
     this.actionsButtons = actionsButtons.bind(this);
     this.createAction = createAction.bind(this);
     this.closeAction = closeAction.bind(this);
-    this.loadActions = loadActions.bind(this);
     this.fetchData = this.fetchData.bind(this);
     this.needUpdate = this.needUpdate.bind(this);
     this.buildListUrlParams = buildListUrlParams.bind(this);

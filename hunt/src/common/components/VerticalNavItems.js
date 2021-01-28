@@ -12,6 +12,7 @@ const VerticalNavItems = [
     iconClass: 'pficon pficon-security',
     def: PAGE_STATE.rules_list,
     className: null,
+    permission: 'rules.ruleset_policy_view',
   },
   {
     title: 'Alerts',
@@ -22,6 +23,7 @@ const VerticalNavItems = [
     title: 'Policy',
     iconClass: 'glyphicon glyphicon-filter',
     def: PAGE_STATE.filters_list,
+    permission: 'rules.ruleset_policy_view',
   },
 ];
 

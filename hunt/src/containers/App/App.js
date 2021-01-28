@@ -171,6 +171,7 @@ export default class App extends Component {
     if (this.state.interval) {
       this.timer = setInterval(this.needReload, this.state.interval * 1000);
     }
+    this.props.getUserDetails();
   }
 
   needReload() {
@@ -319,7 +320,7 @@ export default class App extends Component {
               </ErrorHandler>
             </VerticalNav.IconBar>
           </VerticalNav.Masthead>
-          {VerticalNavItems.map((v) => (
+          {VerticalNavItems.filter((v) => !v.permission || this.props.user.permissions.includes(v.permission)).map((v) => (
             <VerticalNavItem
               title={v.title}
               iconClass={v.iconClass}
@@ -379,4 +380,16 @@ App.childContextTypes = {
 App.propTypes = {
   reload: PropTypes.func.isRequired,
   duration: PropTypes.any,
+  user: PropTypes.shape({
+    pk: PropTypes.any,
+    timezone: PropTypes.any,
+    username: PropTypes.any,
+    firstName: PropTypes.any,
+    lastName: PropTypes.any,
+    isActive: PropTypes.any,
+    email: PropTypes.any,
+    dateJoined: PropTypes.any,
+    permissions: PropTypes.any,
+  }),
+  getUserDetails: PropTypes.func.isRequired,
 };

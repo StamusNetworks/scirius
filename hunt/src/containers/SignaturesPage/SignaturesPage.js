@@ -138,7 +138,9 @@ export class SignaturesPage extends React.Component {
         this.setState({ rulesFilters: fdata });
       }
     });
-    this.loadActions();
+    if (this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
+      this.loadActions();
+    }
   }
 
   componentDidUpdate(prevProps) {
@@ -153,7 +155,7 @@ export class SignaturesPage extends React.Component {
       } else {
         this.fetchData();
       }
-      if (filtersChanged) {
+      if (filtersChanged && this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
         this.loadActions(this.props.filtersWithAlert);
       }
     }
@@ -358,4 +360,15 @@ SignaturesPage.propTypes = {
   rules_list: PropTypes.any, // should be removed when redux is implemented
   page: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
+  user: PropTypes.shape({
+    pk: PropTypes.any,
+    timezone: PropTypes.any,
+    username: PropTypes.any,
+    firstName: PropTypes.any,
+    lastName: PropTypes.any,
+    isActive: PropTypes.any,
+    email: PropTypes.any,
+    dateJoined: PropTypes.any,
+    permissions: PropTypes.any,
+  }),
 };
