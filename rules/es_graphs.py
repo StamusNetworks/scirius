@@ -985,9 +985,16 @@ class ESIppairNetworkAlerts(ESQuery):
         return {'nodes': nodes, 'links': links}
 
 
-class ESAlertsTail(ESQuery):
-    def _get_query(self, es_params, search_target=True, index='alert'):
-        qfilter = 'event_type:%s' % index
+class ESEventsTail(ESQuery):
+    def __init__(self, request, index, *args, **kwargs):
+        self.index = index
+        super().__init__(request, *args, **kwargs)
+
+    def _get_index(self):
+        return self.index
+
+    def _get_query(self, es_params, search_target=True, event_type='alert'):
+        qfilter = 'event_type:%s' % event_type
         if search_target:
             qfilter += ' AND alert.target.ip:*'
         qfilter += self._qfilter()

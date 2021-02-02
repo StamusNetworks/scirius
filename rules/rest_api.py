@@ -37,7 +37,7 @@ from rules.es_query import normalize_es_url, ESPaginator
 
 from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats
 from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend
-from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESAlertsTail, ESSuriLogTail, ESPoststats
+from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESEventsTail, ESSuriLogTail, ESPoststats
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
@@ -2455,7 +2455,8 @@ class ESAlertsTailViewSet(ESBaseViewSet):
         search_target = request.GET.get('search_target', True)
         search_target = False if search_target is not True else True
 
-        data = ESAlertsTail(request).get(search_target=search_target, es_params=es_params)
+        index = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + '*'
+        data = ESEventsTail(request, index).get(search_target=search_target, es_params=es_params)
         return pagination.get_paginated_response(data, full=True)
 
 
