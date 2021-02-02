@@ -115,7 +115,7 @@ export class AlertsPage extends React.Component {
     const listParams = this.buildListUrlParams(this.props.rules_list);
     this.setState({ loading: true });
 
-    const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?search_target=0&${listParams}&${filterParams}${stringFilters}`;
+    const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?${listParams}&${filterParams}${stringFilters}`;
     axios
       .get(url)
       .then((res) => {

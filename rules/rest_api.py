@@ -2452,11 +2452,8 @@ class ESAlertsTailViewSet(ESBaseViewSet):
         pagination = ESPaginator(request)
         es_params = pagination.get_es_params(self)
 
-        search_target = request.GET.get('search_target', True)
-        search_target = False if search_target is not True else True
-
         index = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + '*'
-        data = ESEventsTail(request, index).get(search_target=search_target, es_params=es_params)
+        data = ESEventsTail(request, index).get(es_params=es_params)
         return pagination.get_paginated_response(data, full=True)
 
 

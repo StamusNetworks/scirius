@@ -993,10 +993,8 @@ class ESEventsTail(ESQuery):
     def _get_index(self):
         return self.index
 
-    def _get_query(self, es_params, search_target=True, event_type='alert'):
+    def _get_query(self, es_params, event_type='alert'):
         qfilter = 'event_type:%s' % event_type
-        if search_target:
-            qfilter += ' AND alert.target.ip:*'
         qfilter += self._qfilter()
 
         q = {
