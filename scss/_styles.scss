@@ -79,7 +79,7 @@ body {
           color: darken($brand-color, 10%);
       }
    }
-            
+
   #tasks_finished .panel-heading {
     a {
       color: white;
@@ -200,5 +200,8 @@ body {
   .form-group.sn-drop-down {
      margin-left: 5px;
      color: black;
+  }
+  .dropdown-toggle::after {
+    display: none;
   }
 }
