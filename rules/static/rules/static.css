@@ -180,6 +180,17 @@ h2.panel-title {
     padding-left: 0px;
 }
 
+div#status ul {
+    padding-left: 20px;
+    margin-left: 0px;
+    list-style-type: circle;
+    font-weight: normal;
+}
+
+div#status ul li {
+    margin-left: 0px;
+}
+
 .msg {
     cursor: row-resize;
 }
@@ -284,7 +295,7 @@ div.tab-content {
 }
 
 div.panel-body {
-    padding: 5px;
+    padding: 5px 5px 5px 15px;
 }
 
 div.label a {
