@@ -338,7 +338,7 @@ span.label {
 }
 
 span.badge {
-  background-color: lighten($background-black, 10%); 
+  background-color: lighten($background-black, 10%);
 }
 
 span.hunt-filter.label {
@@ -770,5 +770,12 @@ button.dashboard-list-item.list-group-item.copied::before {
   }
 }
 span.label.label-primary {
-  background: lighten($background-black, 10%); 
+  background: lighten($background-black, 10%);
+}
+
+li.dropdown > a#tenant {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
