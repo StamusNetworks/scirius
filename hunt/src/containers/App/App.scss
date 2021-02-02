@@ -772,6 +772,9 @@ button.dashboard-list-item.list-group-item.copied::before {
 span.label.label-primary {
   background: lighten($background-black, 10%);
 }
+.dropdown-toggle::after {
+  display: none !important;
+}
 
 li.dropdown > a#tenant {
   max-width: 200px;
