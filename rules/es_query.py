@@ -236,12 +236,15 @@ class ESQuery:
                               request_timeout=self.TIMEOUT,
                               scroll=scroll_duration)
 
-        scroll_id = data['_scroll_id']
+        scroll_id = data.get('_scroll_id')
         count = self._parse_total_hits(data) - self.MAX_RESULT_WINDOW
         yield data
 
         while count is None or count > 0:
-            yield self.es.scroll(scroll_id=scroll_id)
+            data = self.es.scroll(scroll_id=scroll_id)
+            scroll_id = data.get('_scroll_id')
+            yield data
+
             count -= self.MAX_RESULT_WINDOW
 
         if scroll_id:
