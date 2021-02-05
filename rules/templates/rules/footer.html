@@ -3,3 +3,41 @@
         <p><a href="https://github.com/StamusNetworks/scirius">{{ scirius_release }}</a>. Copyright (c) 2014-2021 <a href="https://www.stamus-networks.com">Stamus Networks</a>.</p>
     </div>
 </div>
+
+<div class="modal bs-example-modal-sm" id="modal-about" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content about-modal-pf">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" aria-label="Close">
+                    <span class="pficon pficon-close"></span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <h1>{{ scirius_title }}</h1>
+                <div class="product-versions-pf">
+                    <ul class="list-unstyled">
+                        <li><strong>Version</strong> <span>{{ scirius_release }}</span></li>
+                    </ul>
+                </div>
+                <div>Copyright 2014-2021, Stamus Networks</div>
+
+            </div>
+            <div class="modal-footer" style="background: #FFF">
+                <div class="about-footer"><img src="/static/rules/stamus-color.png" alt="SSP Logo"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style type="text/css">
+    .about-modal {
+        background-color: rgb(41, 46, 52);
+        background-image: url('/static/bundles/media/bg-modal-about-pf.png');
+        background-position: right bottom;
+        background-repeat: no-repeat;
+        padding-bottom: 0px !important;
+        width: 600px !important;
+    }
+</style>

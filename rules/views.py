@@ -69,18 +69,6 @@ def index(request):
     return scirius_render(request, 'rules/index.html', context)
 
 
-def about(request):
-    context = {}
-    try:
-        from suricata.models import Suricata
-        suricata = Suricata.objects.all()
-        if suricata is not None:
-            context['suricata'] = suricata[0]
-    except:
-        pass
-    return scirius_render(request, 'rules/about.html', context)
-
-
 @permission_required('rules.ruleset_policy_view', raise_exception=True)
 def search(request):
     context = {}

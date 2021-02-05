@@ -25,7 +25,6 @@ from rules import views
 
 urlpatterns = [
     url(r'^$', views.index, name='rules_index'),
-    url(r'^about/$', views.about, name='scirius_about'),
     url(r'^search$', views.search, name='scirius_search'),
     url(r'^es$', views.elasticsearch, name='elasticsearch'),
     url(r'^settings/$', views.system_settings, name='system_settings'),
