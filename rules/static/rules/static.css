@@ -453,6 +453,12 @@ div#highlight_info {
 .navbar-nav .dropdown-menu {
     position: absolute;
 }
+
+.navbar-nav .dropdown-menu.show {
+    display: grid !important;
+    grid-template-columns: repeat(2, 100px);
+}
+
 .applauncher-pf .applauncher-pf-item {
     width: 50%;
     display: block;
