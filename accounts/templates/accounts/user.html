@@ -24,9 +24,8 @@
 {% block content %}
 
 <div class="container-fluid">
-<div class="row">
 {% if current_action %}
-<h2>{{ current_action }}</h2>
+    <h2>{{ current_action }}</h2>
 {% endif %}
 {% if form %}
     {% if action == 'delete' %}
@@ -50,28 +49,32 @@
         </div>
     {% endif %}
 
-    <form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
-        {% bootstrap_form form %}
-        {% if action != 'delete' %}
-            {% buttons %}
-                <button type="submit" class="btn btn-primary">
-                    {% bootstrap_icon "ok" %}
-                    {% if current_action == 'Add user' %}
-                        Add
-                    {% else %}
-                        Submit
-                    {% endif %}
-                </button>
-            {% endbuttons %}
-        {% else %}
-            <input type="hidden" name="confirm" value="1">
-            {% buttons %}
-                <button type="submit" class="btn btn-primary">
-                    Confirm user deletion
-                </button>
-            {% endbuttons %}
-        {% endif %}
-    </form>
+    <div class="row">
+        <div class="col-md-6">
+            <form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
+                {% bootstrap_form form %}
+                {% if action != 'delete' %}
+                    {% buttons %}
+                        <button type="submit" class="btn btn-primary">
+                            {% bootstrap_icon "ok" %}
+                            {% if current_action == 'Add user' %}
+                                Add
+                            {% else %}
+                                Submit
+                            {% endif %}
+                        </button>
+                    {% endbuttons %}
+                {% else %}
+                    <input type="hidden" name="confirm" value="1">
+                    {% buttons %}
+                        <button type="submit" class="btn btn-primary">
+                            Confirm user deletion
+                        </button>
+                    {% endbuttons %}
+                {% endif %}
+            </form>
+        </div>
+    </div>
 {% else %}
     {% if action != 'delete' %}
         <h2>User {{user.username}}</h2>
@@ -95,7 +98,6 @@
     {% endif %}
 {% endif %}
 
-</div>
 </div>
 
 {% endblock %}
