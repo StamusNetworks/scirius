@@ -15,7 +15,7 @@
 {% block content %}
 {% if main_form %}
 <h2>System settings edition</h2>
-<ul class="nav nav-tabs" role="tablist">
+<ul class="nav nav-tabs">
     <li role="main" {% if form_id == 'main' %}class="active"{% endif %}><a href="#main" aria-controls="main" role="tab" data-toggle="tab">Main</a></li>
     <li role="es" {% if form_id == 'es' %}class="active"{% endif %}><a href="#es" aria-controls="es" role="tab" data-toggle="tab">Elasticsearch</a></li>
     <li role="kibana" {% if form_id == 'kibana' %}class="active"{% endif %}><a href="#kibana" aria-controls="kibana" role="tab" data-toggle="tab">Kibana</a></li>

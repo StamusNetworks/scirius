@@ -511,6 +511,12 @@ function start_down_check() {
 
 $( 'document' ).ready(start_interval_check());
 
+$(function (){
+    $('a[data-toggle="tab"]').on('click', function(e) {
+        $(this).closest('li').siblings().removeClass('active');
+        $(this).closest('li').addClass('active');
+    });
+});
 
 </script>
 </body>

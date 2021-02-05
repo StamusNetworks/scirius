@@ -4,7 +4,7 @@ window.SparkMD5 = require("spark-md5");
 $.fn.datetimepicker = require('eonasdan-bootstrap-datetimepicker');
 
 // CSS
-require("bootstrap/dist/css/bootstrap.min.css");
+require('./npm.scss');
 require("nvd3/build/nv.d3.min.css");
 require("c3/c3.min.css");
 require("../rules/static/rules/static.css");
