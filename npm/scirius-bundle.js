@@ -14,8 +14,8 @@ require("../scss/_styles.scss");
 
 // JS
 require("../node_modules/patternfly/dist/js/patternfly.js");
-require("jquery-treeview");
 require("bootstrap");
+require("../node_modules/patternfly-bootstrap-treeview/dist/bootstrap-treeview.js");
 require("jquery-ui");
 require("jquery-knob");
 require("d3");

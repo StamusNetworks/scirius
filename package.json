@@ -55,6 +55,6 @@
     "tipsy": "^1.0.0",
     "popper.js": "^1.16.1-lts",
     "eonasdan-bootstrap-datetimepicker": "^4.17.47",
-    "jquery-treeview": "^1.4.2"
+    "patternfly-bootstrap-treeview": "^2.1.10"
   }
 }
