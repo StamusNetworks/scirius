@@ -620,31 +620,31 @@ class HuntFilter extends React.Component {
               <div className="form-group" style={{ paddingTop: '3px', height: '25px' }}>
                 <ul className="list-inline">
                   <li>
+                    <span>Informational </span>
                     <Switch
                       bsSize="small"
                       onColor="info"
                       value={this.props.alertTag.value.informational}
                       onChange={() => this.props.setTag('informational', !this.props.alertTag.value.informational)}
                     />
-                    Informational
                   </li>
-                  <li>
+                  <li className="filter-middle-switch">
+                    <span>Relevant </span>
                     <Switch
                       bsSize="small"
                       onColor="warning"
                       value={this.props.alertTag.value.relevant}
                       onChange={() => this.props.setTag('relevant', !this.props.alertTag.value.relevant)}
                     />
-                    Relevant
                   </li>
                   <li>
+                    <span>Untagged </span>
                     <Switch
                       bsSize="small"
                       onColor="primary"
                       value={this.props.alertTag.value.untagged}
                       onChange={() => this.props.setTag('untagged', !this.props.alertTag.value.untagged)}
                     />
-                    Untagged
                   </li>
                 </ul>
               </div>

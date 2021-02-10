@@ -782,3 +782,10 @@ li.dropdown > a#tenant {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.filter-middle-switch {
+  border-right: 1px solid #d1d1d1;
+  border-left: 1px solid #d1d1d1;
+  padding: 0 10px !important;
+  margin: 0 10px;
+}
