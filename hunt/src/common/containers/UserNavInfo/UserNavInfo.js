@@ -366,7 +366,7 @@ export default class UserNavInfo extends Component {
           productTitle={title}
           logo={sciriusLogo}
           altLogo="SSP Logo"
-          trademarkText="Copyright 2014-2020, Stamus Networks"
+          trademarkText="Copyright 2014-2021, Stamus Networks"
         >
           <AboutModal.Versions>
             <AboutModal.VersionItem label="Version" versionText={version} />
