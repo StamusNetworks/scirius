@@ -2808,7 +2808,7 @@ class FilterSetViewSet(viewsets.ModelViewSet):
     ordering = ('name',)
     REQUIRED_GROUPS = {
         'READ': ('rules.events_view',),
-        'WRITE': ('rules.events_view',),
+        'WRITE': ('rules.events_edit',),
     }
     no_tenant_check = True
 
