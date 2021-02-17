@@ -190,11 +190,8 @@ class UserSettingsForm(forms.ModelForm, CommentForm):
         return cleaned_data
 
     def save(self, commit=True):
-        '''
-        Do not support commit==False
-        '''
         if not commit:
-            raise NotImplementedError('This method does not support "commit=True"')
+            raise NotImplementedError('This method does not support "commit=False"')
 
         instance = super().save()
         try:
