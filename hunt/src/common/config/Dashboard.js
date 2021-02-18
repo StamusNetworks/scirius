@@ -219,6 +219,18 @@ export const dashboard = {
           i: 'alert.severity',
           title: 'Severities',
           data: null,
+          format: (value) => {
+            switch (value) {
+              case 1:
+                return 'Severe';
+              case 2:
+                return 'Suspicious';
+              case 3:
+                return 'Contextual';
+              default:
+                return value;
+            }
+          },
           dimensions: {
             lg: {
               w: 5,

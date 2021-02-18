@@ -27,7 +27,7 @@ import store from 'store';
 import md5 from 'md5';
 import map from 'lodash/map';
 import find from 'lodash/find';
-import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
+import { OverlayTrigger, Tooltip, Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
 import * as config from 'hunt_common/config/Api';
 import { dashboard } from 'hunt_common/config/Dashboard';
 import { buildQFilter } from 'hunt_common/buildQFilter';
@@ -453,11 +453,13 @@ export class HuntDashboard extends React.Component {
           {block.title}
         </h3>
         {block.data !== null && block.data.length === 5 && (
-          <DropdownKebab id={`more-${this.props.item}`} pullRight>
-            <MenuItem onClick={() => this.loadMore(block, url)} data-toggle="modal">
-              Load more results
-            </MenuItem>
-          </DropdownKebab>
+          <div className="dropdown-kebab-pf open btn-group">
+            <OverlayTrigger trigger={['hover', 'hover']} placement="top" overlay={<Tooltip id="tooltip-top">Load more results</Tooltip>}>
+              <button role="button" type="button" className="btn btn-link" onClick={() => this.loadMore(block, url)}>
+                <span className="fa fa-ellipsis-v" />
+              </button>
+            </OverlayTrigger>
+          </div>
         )}
         <div className="hunt-stat-body">
           <ListGroup>
@@ -488,6 +490,7 @@ export class HuntDashboard extends React.Component {
                       <EventValue
                         field={block.i}
                         value={item.key}
+                        format={block.format}
                         magnifiers={(!this.state.copyMode || this.state.hoveredItem !== itemPath) && item.key !== 'Unknown'}
                         right_info={<Badge>{item.doc_count}</Badge>}
                         hasCopyShortcut
@@ -891,7 +894,6 @@ HuntDashboard.propTypes = {
   systemSettings: PropTypes.any,
   filters: PropTypes.any,
   children: PropTypes.any,
-  item: PropTypes.any,
   rules_list: PropTypes.any,
   updateListState: PropTypes.any,
   page: PropTypes.any,
