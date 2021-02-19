@@ -601,9 +601,9 @@ class UserAction(models.Model):
 
         actions = []
         for action_type, val in actions_dict.items():
-            for perm in val.get('perm', 'no_perm'):
-                if request.user.has_perm(perm):
-                    actions.append(action_type)
+            perm = val.get('perm', 'no_perm')
+            if request.user.has_perm(perm):
+                actions.append(action_type)
         return actions
 
     @classmethod
