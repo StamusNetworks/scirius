@@ -186,7 +186,7 @@ class FilterEditKebab extends React.Component {
         />
 
         <DropdownKebab id="filterActions" pullRight>
-          {this.state.user !== undefined && this.state.user.perms.includes('rules.events_edit') && (
+          {this.props.user.isActive && !this.props.user.permissions.includes('rules.events_edit') && (
             <React.Fragment>
               {this.props.data.index !== 0 && (
                 <MenuItem
@@ -230,7 +230,7 @@ class FilterEditKebab extends React.Component {
           >
             Convert Action to Filters
           </MenuItem>
-          {this.state.user !== undefined && this.state.user.perms.includes('rules.events_edit') && (
+          {this.props.user.isActive && !this.props.user.permissions.includes('rules.events_edit') && (
             <MenuItem
               onClick={() => {
                 this.saveActionToFilterSet();
