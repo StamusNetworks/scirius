@@ -454,13 +454,7 @@ div#highlight_info {
     position: absolute;
 }
 
-.navbar-nav .dropdown-menu.show {
+.applauncher-pf .dropdown-menu.show {
     display: grid !important;
     grid-template-columns: repeat(2, 100px);
-}
-
-.applauncher-pf .applauncher-pf-item {
-    width: 50%;
-    display: block;
-    float: left;
 }
