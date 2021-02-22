@@ -36,7 +36,7 @@ npm-hunt:
 test-static:
   stage: test
   script:
-  - /home/admin/venv/bin/pylint --load-plugins pylint_django -E -d unexpected-keyword-arg,no-member,access-member-before-definition,no-name-in-module,import-error,imported-auth-user */*.py
+  - /home/admin/venv/bin/pylint --load-plugins pylint_django -E -d unexpected-keyword-arg,no-member,access-member-before-definition,no-name-in-module,import-error,imported-auth-user,django-not-configured */*.py
   - PYTHONIOENCODING="UTF-8" ./tests/check_non_ascii_chars.py
 
 eslint_check:
