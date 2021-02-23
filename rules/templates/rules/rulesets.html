@@ -4,12 +4,12 @@
 <div class="panel-heading">
     <h2 class="panel-title">Defined rulesets</h2>
 </div>
-<ul><li>List of rulesets.</li></ul>
+<ul class="panel-body"><li>List of rulesets.</li></ul>
 {% if perms.rules.source_edit %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
-        <ul class="action"> <li> <a href="{% url "add_ruleset" %}">Add</a></li></ul>
+        <ul class="action panel-body"> <li> <a href="{% url "add_ruleset" %}">Add</a></li></ul>
 {% endif %}
 {% endblock %}
 

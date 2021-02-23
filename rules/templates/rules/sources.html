@@ -4,13 +4,13 @@
 <div class="panel-heading">
     <h2 class="panel-title">Defined sources</h2>
 </div>
-<ul><li>List of feeds.</li></ul>
+<ul class="panel-body"><li>List of feeds.</li></ul>
 
 {% if perms.rules.source_edit %}
 <div class="panel-heading">
 <h2 class="panel-title">Actions</h2>
 </div>
-        <ul class="action">
+        <ul class="action panel-body">
 	     <li> <a href="{% url "add_public_source" %}">Add public source</a></li>
 	     <li> <a href="{% url "add_source" %}">Add custom source</a></li>
 	</ul>

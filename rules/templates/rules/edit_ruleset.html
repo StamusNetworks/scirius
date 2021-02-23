@@ -5,7 +5,7 @@
 <div class="panel-heading">
        <h2 class="panel-title"><a href="{% url 'ruleset' ruleset.pk %}">{{ ruleset.name }}</a></h2>
 </div>
-<ul>
+<ul class="panel-body">
 {% if ruleset.descr %}
        <li><span class="type">Description:</span> {{ ruleset.descr }}</li>
 {% endif %}
@@ -17,7 +17,7 @@
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
-<ul class="action">
+<ul class="action panel-body">
 {% if perms.rules.source_edit %}
     <li>
         <a href="{% url 'edit_ruleset' ruleset.id %}?mode=sources">Edit sources</a>

@@ -3,7 +3,7 @@
 <div class="panel-heading">
        <h2 class="panel-title">{{ source.name }}</h2>
 </div>
-<ul>
+<ul class="panel-body">
 {% if source.descr %}
        <li><span class="type">Description:</span> {{ source.descr }}</li>
 {% endif %}
@@ -17,7 +17,7 @@
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
-<ul class="action">
+<ul class="action panel-body">
 <li>
 <a href="{% url 'changelog_source' source.id %}">Changelog</a>
 </li>

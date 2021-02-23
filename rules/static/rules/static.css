@@ -151,15 +151,10 @@ h2.panel-title {
 
 #sidebar ul {
     margin-bottom: 10px;
-    padding-left: 1em;
 }
 
 #sidebar ul a {
     padding-left: 0em;
-}
-
-#sidebar a {
-    padding-left: 1em;
 }
 
 #sidebar div.panel-text {
