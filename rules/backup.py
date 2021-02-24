@@ -138,6 +138,7 @@ class SCBackup(SCOperation):
 
         ts.close()
         self.storage.write_file(outputfile, filename)
+        shutil.rmtree(self.directory)
         os.chdir(call_dir)
 
 
