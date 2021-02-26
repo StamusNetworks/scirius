@@ -649,7 +649,7 @@ class UserAction(models.Model):
     @staticmethod
     def _is_action_authorized(action_key, user):
         if user:
-            if action_key == 'ruleset':
+            if action_key == 'ruleset' or action_key == 'source':
                 if user.has_perm('rules.ruleset_policy_view'):
                     return True
                 return False
