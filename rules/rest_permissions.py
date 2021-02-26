@@ -63,6 +63,8 @@ class HasGroupPermission(BasePermission):
 
     @staticmethod
     def check_perms(request, view, required_groups):
+        if request.user.is_anonymous:
+            return False
 
         if get_middleware_module('common').has_multitenant():
             # bypass tenant check on some ViewSet that does not handle tenants
