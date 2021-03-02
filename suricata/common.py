@@ -130,14 +130,16 @@ def get_processing_filter_capabilities(fields, action):
     if action == 'suppress':
         return {
             'fields': sorted(list(PROCESSING_FILTER_FIELDS & set(fields))),
-            'operators': ['equal']
+            'operators': ['equal'],
+            'supported_fields': ', '.join(PROCESSING_FILTER_FIELDS)
         }
     elif action == 'threshold':
         return {
             'fields': sorted(list(PROCESSING_THRESHOLD_FIELDS & set(fields))),
-            'operators': ['equal']
+            'operators': ['equal'],
+            'supported_fields': ', '.join(PROCESSING_THRESHOLD_FIELDS)
         }
-    return {'fields': [], 'operators': ['equal']}
+    return {'fields': [], 'operators': ['equal'], 'supported_fields': ''}
 
 
 def update_processing_filter_action_options_serializer(dictionary):

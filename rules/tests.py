@@ -1439,18 +1439,24 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
     def test_023_capabilities_test(self):
         self._force_suricata_middleware()
         r = self.http_post(reverse('ruleprocessingfilter-test'), {'fields': ['src_ip', 'dns.rdata'], 'action': 'suppress'})
+        supported_fields = sorted(r.pop('supported_fields').split(', '))
         self.assertDictEqual(r, {
             'fields': ['src_ip'],
             'operators': ['equal']
         })
+        self.assertEqual(
+            supported_fields,
+            ['alert.signature', 'alert.signature_id', 'alert.source.ip', 'alert.target.ip', 'content', 'dest_ip', 'msg', 'src_ip'])
 
     def test_024_capabilities_test(self):
         self._force_suricata_middleware()
         r = self.http_post(reverse('ruleprocessingfilter-test'), {'fields': ['src_ip', 'dns.rdata'], 'action': 'threshold'})
+        supported_fields = sorted(r.pop('supported_fields').split(', '))
         self.assertDictEqual(r, {
             'fields': [],
             'operators': ['equal']
         })
+        self.assertEqual(supported_fields, ['alert.signature', 'alert.signature_id', 'content', 'msg'])
 
     def test_124_srcip_msg_validation(self):
         self._force_suricata_middleware()

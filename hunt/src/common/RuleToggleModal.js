@@ -104,7 +104,11 @@ export default class RuleToggleModal extends React.Component {
 
           let errors;
           if (notfound) {
-            errors = { filters: ['No filters available'] };
+            if (!res.data.supported_fields) {
+              errors = { filters: ['No filters available'] };
+            } else {
+              errors = { filters: [`Supported filters are "${res.data.supported_fields}"`] };
+            }
           }
           this.setState({ supported_filters: suppFilters, noaction: notfound, errors });
         })
