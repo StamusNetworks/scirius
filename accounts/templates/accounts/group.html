@@ -52,12 +52,13 @@
 
 {% block content %}
     <div class="container-fluid">
+        {% if current_action %}
+            <h2>{{ current_action }}</h2>
+        {% endif %}
         <div class="row">
-            {% if current_action %}
-                <h2>{{ current_action }}</h2>
-            {% endif %}
-            <form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
-                {% bootstrap_form form %}
+            <div class="col-md-6">
+                <form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
+                    {% bootstrap_form form %}
                     {% buttons %}
                     <button type="submit" class="btn btn-primary">
                         {% bootstrap_icon "ok" %}
@@ -68,7 +69,8 @@
                         {% endif %}
                     </button>
                     {% endbuttons %}
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
