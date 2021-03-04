@@ -7,7 +7,7 @@
 {% if elasticsearch %}
 
 <div class="row">
-{% if perms.rules.source_view %}
+{% if perms.rules.source_view or perms.rules.configuration_view %}
 <div class="col-md-8">
 <div class="container-fluid">
 
@@ -152,7 +152,7 @@
 </div> <!-- row -->
 
 <script>
-{% if perms.rules.source_view %}
+{% if perms.rules.source_view or perms.rules.configuration_view %}
 $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null, 'Hits'); });
 {% endif %}
 

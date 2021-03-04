@@ -196,7 +196,7 @@ class ESRulesStats(ESFieldStats):
                     continue
                 rule.hits = elt['doc_count']
                 rules.append(rule)
-        rules = ExtendedRuleTable(rules)
+        rules = ExtendedRuleTable(rules, request=self.request)
         tables.RequestConfig(self.request).configure(rules)
         return rules
 

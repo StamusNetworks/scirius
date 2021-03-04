@@ -20,6 +20,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from django.template.defaultfilters import filesizeformat
+from django.utils.html import format_html
+from django.urls import reverse
 from scirius.utils import SciriusTable
 from rules.models import Ruleset, Category, Rule, SourceAtVersion, SourceUpdate, Threshold, UserAction
 import django_tables2 as tables
@@ -38,12 +40,21 @@ class RuleTable(SciriusTable):
 
 
 class ExtendedRuleTable(SciriusTable):
-    sid = tables.LinkColumn('rule', args=[tables.A('pk')])
+    sid = tables.Column()
 
     class Meta(DefaultMeta):
         model = Rule
         fields = ("sid", "msg", "category", "hits")
         orderable = False
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request')
+        super().__init__(*args, **kwargs)
+
+    def render_sid(self, record):
+        if self.request.user.has_perm('rules.ruleset_policy_view'):
+            return format_html('<a href="{}">{}</a>', reverse('rule', args=[record.pk]), record.pk)
+        return record.pk
 
 
 class UpdateRuleTable(SciriusTable):
