@@ -2808,7 +2808,7 @@ class FilterSetViewSet(viewsets.ModelViewSet):
     ordering = ('name',)
     REQUIRED_GROUPS = {
         'READ': ('rules.events_view',),
-        'WRITE': ('rules.events_edit',),
+        'WRITE': ('rules.events_view',),
     }
     no_tenant_check = True
 
@@ -2837,6 +2837,21 @@ class FilterSetViewSet(viewsets.ModelViewSet):
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        if request.data.get('share', False) and not request.user.has_perm('rules.events_edit'):
+            raise PermissionDenied()
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        if request.data.get('share', False) and not request.user.has_perm('rules.events_edit'):
+            raise PermissionDenied()
+        return super().update(request, partial=True, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        if request.data.get('share', False) and not request.user.has_perm('rules.events_edit'):
+            raise PermissionDenied()
+        return super().destroy(request, *args, **kwargs)
 
 
 class HuntFilterAPIView(APIView):
