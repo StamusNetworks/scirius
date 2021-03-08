@@ -246,7 +246,7 @@ deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2
 
 class RestAPITestBase(object):
     def setUp(self):
-        self.user = User.objects.create(username='scirius', password='scirius')
+        self.user = User.objects.create(username='scirius', password='scirius', is_superuser=False, is_staff=False)
         self.superuser_role = Group.objects.get(name='Superuser')
         self.staff_role = Group.objects.get(name='Staff')
         self.user_role = Group.objects.get(name='User')
