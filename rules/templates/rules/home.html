@@ -2,165 +2,64 @@
 {% load bootstrap3 %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>Scirius Home</title>
-        <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
-        <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
-        <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
-        <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
-        <script src="{% static 'dist/scirius-bundle.js' %}"></script>
-        <link rel="stylesheet" type="text/css" href="{% static 'dist/styles.css' %}" />
-    </head>
 
-    <body>
-        <nav class="navbar navbar-default home-menu" role="navigation">
-            <div class="container-fluid">
-                <div class="navbar-collapse collapse" id="top-menu-collapse">
-                    <div class="navbar-right">
-                        {% include "rules/header_right.html" %}
-                    </div>
-                </div>
-            </div>
-        </nav>
+<head>
+    <title>Scirius Home</title>
+    <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
+    <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
+    <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
+    <script src="{% static 'dist/scirius-bundle.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'dist/styles.css' %}" />
+</head>
 
-        {% if not in_selks %}
-        {% include "rules/ssp-home.html" %}
-        {% else %}
+<body>
+    <nav class="navbar navbar-default home-menu" role="navigation">
         <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="blank-slate-pf" style="background-color:white; padding: 35px; padding-right: 60px; padding-left: 60px;">
-
-                        <div class="row">
-                            <div class="jumbotron fill light-background" id="logininfo">
-                                <span class="pficon pficon-services list-view-pf-icon-sm" style="font-size: 4em"></span>
-                                <h2 class="brand-color" style="font-size: 220%;">{{ title }}</h2>
-                                <p class="lead" style="font-size: 150%;">
-                                {{ content_lead }}
-                                </p>
-                                <hr class="m-y-2">
-                                <p class="minor" style="font-size: 140%;">{{ content_minor1 }}</p>
-                                <p class="minor">{{ content_minor2 }}</p>
-                                <p class="minor">{{ content_minor3 }}</p>
-                                <p><h3>Click on  <div class="fa fa-th applauncher-pf-icon"/> on top right to switch applications</h3></p>
-                                    </div>
-                            </div>
-
-                            <div class="container-fluid container-cards-pf">
-                                <div class="row row-cards-pf">
-                                    <div class="col-md-7 col-xs-11">
-                                        <div class="row">
-                                            <div class="col-md-6 col-xs-11">
-                                                <a href="https://www.stamus-networks.com/scirius-open-source#sce" target="_blank" style="color: black; text-decoration: none;">
-                                                    <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select light-background" style="min-height: 21.5em;">
-                                                        <div class="card-pf-body">
-                                                            <div class="card-pf-top-element">
-                                                                <span class="pficon pficon-services list-view-pf-icon-sm" style="font-size: 3.5em"></span>
-                                                            </div>
-                                                            <h2 class="card-pf-title text-center brand-color">
-                                                                Scirius CE Application
-                                                            </h2>
-                                                            <div class="card-pf-items">
-                                                                <p class="card-pf-info">
-                                                                <ul style="text-align: left;">
-                                                                    <li><strong>Web Application</strong>: Django based web application</li>
-                                                                    <li><strong>Ruleset Management</strong>: For one local instance of Suricata</li>
-                                                                    <li><strong>Command line aware</strong>: Run administration commands</li>
-                                                                    <li><strong>Threat Hunting</strong>: With the flexibility of metadata</li>
-                                                                    <li><strong>Open Source</strong>: Released under GPLv3</li>
-                                                                </ul>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </a>
-                                            </div>
-
-                                            <div class="col-md-6 col-xs-11">
-                                                <a href="https://www.stamus-networks.com/scirius-open-source#selks"  target="_blank" style="color: black; text-decoration: none;">
-                                                    <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select light-background" style="min-height: 21.5em;">
-                                                        <div class="card-pf-body">
-                                                            <div class="card-pf-top-element">
-                                                                <img src="/static/rules/selks.png" style="height: 3.5em">
-                                                            </div>
-                                                            <h2 class="card-pf-title text-center brand-color">
-                                                                SELKS Distribution
-                                                            </h2>
-                                                            <div class="card-pf-items">
-                                                                <p class="card-pf-info">
-                                                                <ul style="text-align: left;">
-                                                                    <li><strong>Suricata</strong>: Ready to use Suricata</li>
-                                                                    <li><strong>Elasticsearch</strong>: Search Engine</li>
-                                                                    <li><strong>Logstash</strong>: Log injection</li>
-                                                                    <li><strong>Kibana</strong>: Custom dashboards and event exploration</li>
-                                                                    <li><strong>Scirius CE</strong>: Ruleset Management and Threat Hunting</li>
-                                                                </ul>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-5 col-xs-11">
-                                        <a href="https://www.stamus-networks.com/scirius-platform"  target="_blank" style="color: black; text-decoration: none;">
-                                            <div class="card-pf card-pf-view card-pf-view-select card-pf-view-single-select light-background" style="min-height: 21.5em;">
-                                                <div class="card-pf-body">
-                                                    <div class="card-pf-top-element">
-                                                        <img src="/static/rules/stamus-color.png">
-                                                    </div>
-                                                    <h2 class="card-pf-title text-center brand-color">
-                                                        Scirius Security Platform
-                                                    </h2>
-                                                    <p class="card-pf-info">
-                                                    <ul style="text-align: left;">
-                                                        <li><strong>Scirius Probe Management:</strong> IDS administration and ruleset management across multiple probes</li>
-                                                        <li><strong>Scirius Enriched Hunting:</strong> Threat hunting based on the correlation of NTA, IDS and organizational data</li>
-                                                        <li><strong>Scirius Threat Radar:</strong> Automated detection of high probability events mapped into the kill chain</li>
-                                                        <li><strong><a href="https://www.stamus-networks.com/scirius-platform">More info...</a></strong></li>
-                                                    </ul>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    {% endif %}
+            <div class="navbar-collapse collapse" id="top-menu-collapse">
+                <div class="navbar-right">
+                    {% include "rules/header_right.html" %}
                 </div>
-                {% include "rules/footer.html" %}
             </div>
-        </div><!-- row -->
-        </div><!-- container -->
+        </div>
+    </nav>
 
-        <script>
-            function get_alert_count() {
-                $.ajax({
-                    type:"GET",
-                    url: "{% url 'es_alerts_count' %}?from_date={{ from_date }}&prev=1&hosts=*",
-                    context: $(this),
-                    success: function(data) {
-                        if (data && (typeof data !== 'string') && ('doc_count' in data)) {
-                            $(".alerts_count").text(data['doc_count']);
-                        }
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                {% if not in_selks %}
+                    {% include "rules/ssp-home.html" %}
+                {% else %}
+                    {% include "rules/ce-home.html" %}
+                {% endif %}
+            </div>
+        </div>
+        {% include "rules/footer.html" %}
+    </div>
+
+    <script>
+        function get_alert_count() {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'es_alerts_count' %}?from_date={{ from_date }}&prev=1&hosts=*",
+                context: $(this),
+                success: function (data) {
+                    if (data && (typeof data !== 'string') && ('doc_count' in data)) {
+                        $(".alerts_count").text(data['doc_count']);
                     }
-                });
+                }
+            });
+        }
+        $('document').ready(
+            function () {
+                get_alert_count();
+                setInterval(get_alert_count, 15000);
             }
-$( 'document' ).ready(
-    function() {
-        get_alert_count();
-        setInterval(get_alert_count, 15000);
-    }
-)
-        </script>
-    </body>
+        )
+    </script>
+</body>
+
 </html>
