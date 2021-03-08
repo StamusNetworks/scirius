@@ -21,7 +21,6 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import re
 import os
 import yaml
-import requests
 
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
@@ -36,7 +35,7 @@ import django_tables2 as tables
 
 from csp.decorators import csp
 
-from scirius.utils import scirius_render, scirius_listing
+from scirius.utils import scirius_render, scirius_listing, RequestsWrapper
 
 from rules.es_data import ESData
 from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings
@@ -1147,29 +1146,7 @@ def add_source(request):
 
 
 def fetch_public_sources():
-    proxy_params = get_system_settings().get_proxy_params()
-    try:
-        hdrs = {'User-Agent': 'scirius'}
-        if proxy_params:
-            resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL, proxies=proxy_params, headers=hdrs)
-        else:
-            resp = requests.get(settings.DEFAULT_SOURCE_INDEX_URL, headers=hdrs)
-        resp.raise_for_status()
-    except requests.exceptions.ConnectionError as e:
-        if "Name or service not known" in str(e):
-            raise IOError("Connection error 'Name or service not known'")
-        elif "Connection timed out" in str(e):
-            raise IOError("Connection error 'Connection timed out'")
-        else:
-            raise IOError("Connection error '%s'" % (e))
-    except requests.exceptions.HTTPError:
-        if resp.status_code == 404:
-            raise IOError("URL not found on server (error 404), please check URL")
-        raise IOError("HTTP error %d sent by server, please check URL or server" % (resp.status_code))
-    except requests.exceptions.Timeout:
-        raise IOError("Request timeout, server may be down")
-    except requests.exceptions.TooManyRedirects:
-        raise IOError("Too many redirects, server may be broken")
+    resp = RequestsWrapper().get(url=settings.DEFAULT_SOURCE_INDEX_URL)
 
     # store as sources.yaml
     if not os.path.isdir(settings.GIT_SOURCES_BASE_DIRECTORY):

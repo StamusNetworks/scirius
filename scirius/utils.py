@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from importlib import import_module
 from time import time
+import requests
 
 from django.shortcuts import render
 from django.conf import settings
@@ -220,3 +221,39 @@ def merge_dict_deeply(src, dest):
         else:
             dest[key] = value
     return dest
+
+
+class RequestsWrapper:
+    def __init__(self, method=None):
+        self.method = method
+
+    def __getattr__(self, attr):
+        return RequestsWrapper(getattr(requests, attr))
+
+    def __call__(self, *args, **kwargs):
+        kwargs.update({'proxies': self._get_proxies()})
+
+        if 'headers' not in kwargs:
+            kwargs.update({'headers': {'User-Agent': 'scirius'}})
+
+        try:
+            resp = self.method(*args, **kwargs)
+            resp.raise_for_status()
+        except requests.exceptions.ConnectionError as exc:
+            if "Name or service not known" in str(exc):
+                raise IOError("Connection error 'Name or service not known'")
+            elif "Connection timed out" in str(exc):
+                raise IOError("Connection error 'Connection timed out'")
+            raise IOError("Connection error '%s'" % (exc))
+        except requests.exceptions.HTTPError:
+            if resp.status_code == 404:
+                raise IOError("URL not found on server (error 404), please check URL")
+            raise IOError("HTTP error %d sent by server, please check URL or server" % (resp.status_code))
+        except requests.exceptions.Timeout:
+            raise IOError("Request timeout, server may be down")
+        except requests.exceptions.TooManyRedirects:
+            raise IOError("Too many redirects, server may be broken")
+        return resp
+
+    def _get_proxies(self):
+        return get_system_settings().get_proxy_params()

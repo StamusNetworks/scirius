@@ -32,7 +32,6 @@ from idstools import rule as rule_idstools
 from enum import Enum, unique
 from copy import deepcopy
 from collections import OrderedDict
-import requests
 import tempfile
 import tarfile
 import re
@@ -1309,7 +1308,8 @@ class Source(models.Model):
         return reverse('source', args=[str(self.id)])
 
     def update_ruleset_http(self, f):
-        proxy_params = get_system_settings().get_proxy_params() if self.use_sys_proxy else None
+        from scirius.utils import RequestsWrapper
+
         hdrs = {'User-Agent': 'scirius'}
         if self.authkey:
             hdrs['Authorization'] = self.authkey
@@ -1321,41 +1321,23 @@ class Source(models.Model):
                 self.datatype not in ('sigs', 'sig', 'other'):
             version_uri = os.path.join(os.path.dirname(self.uri), 'version.txt')
 
-        try:
-            version_server = 1
-            if version_uri:
-                resp = requests.get(version_uri, proxies=proxy_params, headers=hdrs, verify=self.cert_verif)
-                resp.raise_for_status()
-                version_server = int(resp.content.strip())
+        version_server = 1
+        if version_uri:
+            resp = RequestsWrapper().get(url=version_uri, headers=hdrs, verify=self.cert_verif)
+            version_server = int(resp.content.strip())
 
-                if self.version < version_server:
-                    version_uri = None
+            if self.version < version_server:
+                version_uri = None
 
-            if version_uri is None:
-                resp = requests.get(self.uri, proxies=proxy_params, headers=hdrs, verify=self.cert_verif)
-                resp.raise_for_status()
-                f.write(resp.content)
+        if version_uri is None:
+            resp = RequestsWrapper().get(url=self.uri, headers=hdrs, verify=self.cert_verif)
+            f.write(resp.content)
 
-                if self.version < version_server:
-                    self.version = version_server
+            if self.version < version_server:
+                self.version = version_server
 
-                return True
+            return True
 
-        except requests.exceptions.ConnectionError as e:
-            if "Name or service not known" in str(e):
-                raise IOError("Failure to resolve hostname, please check DNS configuration")
-            elif "Connection timed out" in str(e):
-                raise IOError("Connection error 'Connection timed out'")
-            else:
-                raise IOError("Connection error '%s'" % (e))
-        except requests.exceptions.HTTPError:
-            if resp.status_code == 404:
-                raise IOError("URL not found on server (error 404), please check URL")
-            raise IOError("HTTP error %d (%s) sent by server, please check URL or server" % (resp.status_code, resp.reason))
-        except requests.exceptions.Timeout:
-            raise IOError("Request timeout, server may be down")
-        except requests.exceptions.TooManyRedirects:
-            raise IOError("Too many redirects, server may be broken")
         return False
 
     def handle_uploaded_file(self, f):
