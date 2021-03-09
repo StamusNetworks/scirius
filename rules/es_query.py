@@ -228,21 +228,24 @@ class ESQuery:
 
     def _scroll_query(self, scroll_duration, *args, **kwargs):
         index = self._get_index()
+
         body = self._get_query(*args, **kwargs)
+        if 'size' in body:
+            raise Exception('size parameter cannot be used in scroll queries')
         data = self.es.search(body=body,
                               index=index,
                               ignore_unavailable=True,
                               _source=True,
                               request_timeout=self.TIMEOUT,
+                              size=self.MAX_RESULT_WINDOW,
                               scroll=scroll_duration)
 
         scroll_id = data.get('_scroll_id')
         count = self._parse_total_hits(data) - self.MAX_RESULT_WINDOW
         yield data
 
-        while count is None or count > 0:
+        while count > 0:
             data = self.es.scroll(scroll_id=scroll_id)
-            scroll_id = data.get('_scroll_id')
             yield data
 
             count -= self.MAX_RESULT_WINDOW
