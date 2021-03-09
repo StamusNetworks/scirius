@@ -16,7 +16,8 @@ const EventValue = (props) => (
     <span className="value-actions">
       <ErrorHandler>
         <EventValueInfo field={props.field} value={props.value} magnifiers={props.magnifiers} />
-        {props.magnifiers && (
+        {/* 256 chars max on ES queries */}
+        {props.magnifiers && ((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
           <OverlayTrigger trigger={['hover', 'hover']} placement="top" overlay={<Tooltip id="tooltip-top">add a filter on value</Tooltip>}>
             <a
               onClick={() =>
@@ -34,7 +35,8 @@ const EventValue = (props) => (
             </a>
           </OverlayTrigger>
         )}
-        {props.magnifiers && (
+        {/* 256 chars max on ES queries */}
+        {props.magnifiers && ((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
           <OverlayTrigger trigger={['hover', 'hover']} placement="top" overlay={<Tooltip id="tooltip-top">add negated filter on value</Tooltip>}>
             <a
               onClick={() =>
