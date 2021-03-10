@@ -69,7 +69,12 @@ export class HuntDashboard extends React.Component {
 
     const huntFilters = store.get('huntFilters');
     const rulesFilters = typeof huntFilters !== 'undefined' && typeof huntFilters.dashboard !== 'undefined' ? huntFilters.dashboard.data : [];
-    const chartTarget = store.get('chartTarget') === true;
+    let chartTarget = store.get('chartTarget') === true;
+
+    if (!chartTarget && !this.props.user.permissions.includes('rules.configuration_view')) {
+      chartTarget = true;
+    }
+
     this.state = {
       load: Object.keys(dashboard.sections),
       // load: ['basic'],

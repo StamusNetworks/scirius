@@ -43,10 +43,13 @@ class HasGroupPermission(BasePermission):
 
     def has_permission(self, request, view):
         # if method is decorated, we skip the main class check
+        no_tenant_check = False
         if getattr(view, 'action', False):
             func = getattr(view, view.action)
             if hasattr(func, 'disable_main_check') and func.disable_main_check:
                 return True
+            if hasattr(func, 'no_tenant_check'):
+                no_tenant_check = func.no_tenant_check
 
         required_groups_mapping = getattr(view, "REQUIRED_GROUPS", {})
         action = None
@@ -59,16 +62,16 @@ class HasGroupPermission(BasePermission):
 
         required_groups = required_groups_mapping.get(action, [])
 
-        return self.check_perms(request, view, required_groups)
+        return self.check_perms(request, view, required_groups, no_tenant_check)
 
     @staticmethod
-    def check_perms(request, view, required_groups):
+    def check_perms(request, view, required_groups, no_tenant_check=False):
         if request.user.is_anonymous:
             return False
 
         if get_middleware_module('common').has_multitenant():
             # bypass tenant check on some ViewSet that does not handle tenants
-            if not getattr(view, 'no_tenant_check', False):
+            if not getattr(view, 'no_tenant_check', False) and not no_tenant_check:
                 if {'rules.events_view', 'rules.events_edit'} & set(required_groups):
                     tenant = request.query_params.get('tenant', -1)
                     try:
