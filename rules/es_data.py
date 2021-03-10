@@ -1721,7 +1721,7 @@ KIBANA6_NAMESPACE = {
 
 
 class ESData(ESQuery):
-    OBJ_TYPES = ('search', 'visualization', 'dashboard')
+    OBJ_TYPES = ('search', 'visualization', 'dashboard', 'query', 'canvas-workpad', 'canvas-element')
     ALL_OBJ_TYPES = ('index-pattern',) + OBJ_TYPES
 
     def __init__(self):
