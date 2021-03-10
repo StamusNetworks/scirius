@@ -1721,6 +1721,9 @@ KIBANA6_NAMESPACE = {
 
 
 class ESData(ESQuery):
+    OBJ_TYPES = ('search', 'visualization', 'dashboard')
+    ALL_OBJ_TYPES = ('index-pattern',) + OBJ_TYPES
+
     def __init__(self):
         super().__init__(None)
         self.doc_type = None
@@ -1794,10 +1797,10 @@ class ESData(ESQuery):
 
     def kibana_export(self, full=False):
         dest = tempfile.mkdtemp()
-        _types = ('search', 'visualization', 'dashboard')
+        _types = self.OBJ_TYPES
 
         if full:
-            _types = _types + ('index-pattern',)
+            _types = self.ALL_OBJ_TYPES
 
         for _type in _types:
             if get_es_major_version() < 6:
@@ -1940,7 +1943,7 @@ class ESData(ESQuery):
         self._create_kibana_mappings()
 
         count = 0
-        for _type in ('search', 'visualization', 'dashboard'):
+        for _type in self.OBJ_TYPES:
             source_files = self._get_kibana_files(source, _type)
             count += len(source_files)
             for _file in source_files:
@@ -1953,8 +1956,7 @@ class ESData(ESQuery):
         return count
 
     def kibana_clear(self):
-        _types = ('search', 'visualization', 'dashboard')
-        for _type in _types:
+        for _type in self.OBJ_TYPES:
             if get_es_major_version() >= 6:
                 query = 'NOT %s.title: SN' % _type
             else:
@@ -1978,12 +1980,8 @@ class ESData(ESQuery):
         if self._get_kibana_subdirfiles('index-pattern') == []:
             raise Exception('Please make sure Kibana dashboards are installed at %s: no index-pattern found' % self._get_dashboard_dir())
 
-        self._kibana_remove('dashboard', {'query': {'query_string': {'query': 'SN*'}}})
-        self._kibana_remove('visualization', {'query': {'query_string': {'query': 'SN*'}}})
-        self._kibana_remove('search', {'query': {'query_string': {'query': 'SN*'}}})
-        self._kibana_remove('index-pattern', {'query': {'query_string': {'query': '*'}}})
-
-        for _type in ('index-pattern', 'search', 'visualization', 'dashboard'):
+        for _type in self.ALL_OBJ_TYPES:
+            self._kibana_remove(_type, {'query': {'query_string': {'query': 'SN*'}}})
             for _file in self._get_kibana_subdirfiles(_type):
                 self._kibana_inject(_type, _file)
 
