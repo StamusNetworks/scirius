@@ -1833,7 +1833,7 @@ def system_settings(request):
         comment = {'comment': request.POST.get('comment', None)}
 
         if form_id == 'main':
-            main_form = SystemSettingsForm(request.POST, instance=gsettings)
+            main_form = SystemSettingsForm(request.POST, instance=gsettings, can_edit=can_edit)
             context['main_form'] = main_form
             if main_form.is_valid():
                 main_form.save()
