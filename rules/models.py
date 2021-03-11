@@ -2194,6 +2194,9 @@ class Category(models.Model, Transformable, Cache):
                     msg = ""
                 else:
                     msg = match.groups()[0]
+                    # length of message could exceed 1000 so truncate
+                    if len(msg) > 1000:
+                        msg = msg[0:999]
 
                 if source.use_iprep and Rule.GROUPSNAMEREGEXP.match(msg):
                     self.add_group_signature(rules_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged)
