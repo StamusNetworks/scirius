@@ -94,6 +94,7 @@ def scirius_render(request, template, context):
     context['scirius_release'] = settings.SCIRIUS_FLAVOR + " v" + settings.SCIRIUS_VERSION
     context['scirius_long_name'] = settings.SCIRIUS_LONG_NAME
     context['scirius_title'] = get_middleware_module('common').get_homepage_context()['title']
+    context['scirius_short_title'] = get_middleware_module('common').get_homepage_context()['short_title']
     gsettings = get_system_settings()
     if settings.USE_INFLUXDB:
         context['influxdb'] = 1

@@ -76,58 +76,67 @@ $(function (){
       </span>
     </a>
     <ul class="dropdown-menu" role="menu">
-      {% if perms.rules.events_view %}
-        <li class="applauncher-pf-item" role="presentation">
-          <a class="applauncher-pf-link"  style="color: inherit" href="/rules/hunt" role="menuitem">
-            <img src="/static/rules/Stamus_SEH_icon.png" height="40" width="40"/>
-            <span class="applauncher-pf-link-title">Hunting</span>
-          </a>
-        </li>
-      {% endif %}
-      <li class="applauncher-pf-item" role="presentation">
-        <a class="applauncher-pf-link" style="color: inherit" href="/rules" role="menuitem">
-          <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40"/>
-          <span class="applauncher-pf-link-title">Management</span>
-        </a>
-      </li>
-
-      {% if generator and generator == 'appliances' and license and license.nta %}
-        {% if perms.rules.events_view %}
-            <li class="applauncher-pf-item" role="presentation">
-              <a class="applauncher-pf-link" style="color: inherit" href="/appliances/str" role="menuitem">
-                <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40"/>
-                <span class="applauncher-pf-link-title">Threat Radar</span>
+      <div style="padding: 2px 6px">
+        <div style="display: grid; grid-template-columns: 20px repeat(3, 100px)">
+          <div style=" position: relative">
+            <div style="position: absolute; top: -36px; left: -81px; width: 100px; transform-origin: 100% 100%; transform: rotate(-90deg); color: rgba(0, 0, 0, .5); font-weight: 600; font-size: 10px; line-height: 1.666;">
+              {{ scirius_short_title }} APPS
+            </div>
+          </div>
+          <li class="applauncher-pf-item" role="presentation">
+              <a class="applauncher-pf-link" {% if license and license.etl and perms.rules.events_view %}href="/rules/hunt" style="color: inherit"{% else %} style="pointer-events: none"{% endif %} role="menuitem">
+                <img src="/static/rules/Stamus_SEH_icon.png" height="40" width="40"/>
+                <span {% if license and license.etl and perms.rules.events_view %}style="line-height: 1.5715;" {% else %}style="line-height: 1.5715; color: rgba(0,0,0,.2);"{% endif %} class="applauncher-pf-link-title">Hunting</span>
               </a>
-            </li>
-        {% endif %}
-      {% endif %}
-
-      {% if kibana and perms.rules.events_kibana %}
-      <li class="applauncher-pf-item" role="presentation">
-        <a class="applauncher-pf-link" style="color: #414042" href="{{kibana_url}}" target="_blank" role="menuitem">
-          <i style="font-size: 2.5em; padding-top: 5px;" class="glyphicon glyphicon-stats" aria-hidden="true"></i>
-          <span class="applauncher-pf-link-title">Dashboards</span>
-        </a>
-      </li>
-      {% endif %}
-      {% if evebox and perms.rules.events_evebox %}
-      <li class="applauncher-pf-item" role="presentation">
-        <a class="applauncher-pf-link" style="color: #414042" href="{{evebox_url}}" target="_blank" role="menuitem">
-          <i style="font-size: 2.5em;  padding-bottom: 5px;" class="glyphicon glyphicon-th-list" aria-hidden="true"></i>
-          <span class="applauncher-pf-link-title">Events viewer</span>
-        </a>
-      </li>
-      {% endif %}
-      {% if cyberchef %}
-      <li class="applauncher-pf-item" role="presentation">
-        <a class="applauncher-pf-link" style="color: #414042" href="{{cyberchef_url}}" target="_blank" role="menuitem">
-          <i style="font-size: 2.5em;  padding-bottom: 5px;" class="glyphicon glyphicon-cutlery" aria-hidden="true"></i>
-          <span class="applauncher-pf-link-title">Cyberchef</span>
-        </a>
-      </li>
-      {% endif %}
+          </li>
+          <li class="applauncher-pf-item" role="presentation">
+            <a class="applauncher-pf-link" style="color: inherit" href="/rules" role="menuitem">
+              <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40"/>
+              <span style="line-height: 1.5715;" class="applauncher-pf-link-title">Management</span>
+            </a>
+          </li>
+          <li class="applauncher-pf-item" role="presentation">
+            <a class="applauncher-pf-link" {% if generator and generator == 'appliances' and license and license.nta and perms.rules.events_view %}style="color: inherit" href="/appliances/str"{% else %} style="pointer-events: none"{% endif %} role="menuitem">
+              <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40"/>
+              <span {% if generator and generator == 'appliances' and license and license.nta and perms.rules.events_view %}style="line-height: 1.5715;" {% else %}style="line-height: 1.5715; color: rgba(0,0,0,.2);"{% endif %} class="applauncher-pf-link-title">Threat Radar</span>
+            </a>
+          </li>
+        </div>
+        <hr style="border: 0.5px solid rgba(0,0,0,.1); background: rgba(0,0,0,.1); margin: 7px 0;" />
+        <div style="display: grid; grid-template-columns: 20px repeat(3, 100px)">
+          <div style=" position: relative">
+            <div style="position: absolute; top: -32px; left: -81px; width: 100px; transform-origin: 100% 100%; transform: rotate(-90deg);color: rgba(0, 0, 0, .5); font-weight: 600; font-size: 10px; line-height: 1.666;">
+              EXTERNAL APPS
+            </div>
+          </div>
+          {% if kibana and perms.rules.events_kibana %}
+          <li class="applauncher-pf-item" role="presentation">
+            <a class="applauncher-pf-link" style="color: #414042" href="{{kibana_url}}" target="_blank" role="menuitem">
+              <i style="font-size: 2.5em; height: 40px; width: 40px;" class="glyphicon glyphicon-stats" aria-hidden="true"></i>
+              <span style="line-height: 1.5715;" class="applauncher-pf-link-title">Kibana <i class="glyphicon glyphicon-new-window"></i></span>
+            </a>
+          </li>
+          {% endif %}
+          {% if evebox and perms.rules.events_evebox %}
+          <li class="applauncher-pf-item" role="presentation">
+            <a class="applauncher-pf-link" style="color: #414042" href="{{evebox_url}}" target="_blank" role="menuitem">
+              <i style="font-size: 2.5em; height: 40px; width: 40px;" class="glyphicon glyphicon-th-list" aria-hidden="true"></i>
+              <span style="line-height: 1.5715;" class="applauncher-pf-link-title">Evebox <i class="glyphicon glyphicon-new-window"></i></span>
+            </a>
+          </li>
+          {% endif %}
+          {% if cyberchef %}
+          <li class="applauncher-pf-item" role="presentation">
+            <a class="applauncher-pf-link" style="color: #414042" href="{{cyberchef_url}}" target="_blank" role="menuitem">
+              <i style="font-size: 2.5em; height: 40px; width: 40px;" class="glyphicon glyphicon-cutlery" aria-hidden="true"></i>
+              <span style="line-height: 1.5715;" class="applauncher-pf-link-title">Cyberchef <i class="glyphicon glyphicon-new-window"></i></span>
+            </a>
+          </li>
+          {% endif %}
+        </div>
+      </div>
     </ul>
-  </li>
+</li>
 
 
 </ul>

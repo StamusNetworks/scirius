@@ -448,8 +448,3 @@ div#highlight_info {
 .navbar-nav .dropdown-menu {
     position: absolute;
 }
-
-.applauncher-pf .dropdown-menu.show {
-    display: grid !important;
-    grid-template-columns: repeat(2, 100px);
-}

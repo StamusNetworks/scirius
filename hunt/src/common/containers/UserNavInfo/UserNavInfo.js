@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { PAGE_STATE } from 'hunt_common/constants';
+import { PAGE_STATE, APP_NAME_SHORT } from 'hunt_common/constants';
 import { Dropdown, Icon, MenuItem, ApplicationLauncher, AboutModal, Modal, Form, Button } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
 import { compose } from 'redux';
@@ -104,6 +104,69 @@ class UserNavInfo extends Component {
     }));
   }
 
+  getManagement() {
+    if (
+      this.props.systemSettings &&
+      ((this.props.systemSettings.license && this.props.systemSettings.license.mngt) || !this.props.systemSettings.license)
+    )
+      return (
+        <li className="applauncher-pf-item" role="presentation">
+          <a
+            className="applauncher-pf-link"
+            href="/rules"
+            role="menuitem"
+            data-toggle="tooltip"
+            title="Appliances Management"
+            style={{ cursor: 'pointer' }}
+          >
+            <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40" alt="Management" />
+            <span className="applauncher-pf-link-title" style={{ lineHeight: '1.5715' }}>
+              Management
+            </span>
+          </a>
+        </li>
+      );
+
+    return (
+      <li className="applauncher-pf-item">
+        <div className="applauncher-pf-link">
+          <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40" style={{ filter: 'opacity(.2)' }} />
+          <span className="applauncher-pf-link-title" style={{ fontSize: '12px', color: 'rgba(0,0,0,.2)', lineHeight: '1.5715' }}>
+            Management
+          </span>
+        </div>
+      </li>
+    );
+  }
+
+  getThreatRadar() {
+    if (
+      process.env.REACT_APP_HAS_TAG === '1' &&
+      this.props.systemSettings &&
+      this.props.systemSettings.license &&
+      this.props.systemSettings.license.nta &&
+      this.props.user.permissions.includes('rules.events_view')
+    )
+      return (
+        <li className="applauncher-pf-item" role="presentation">
+          <a
+            className="applauncher-pf-link"
+            href="/appliances/str"
+            role="menuitem"
+            data-toggle="tooltip"
+            title="Threat Radar"
+            style={{ cursor: 'pointer' }}
+          >
+            <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40" alt="STR" />
+            <span className="applauncher-pf-link-title" style={{ lineHeight: '1.5715' }}>
+              Threat Radar
+            </span>
+          </a>
+        </li>
+      );
+    return true;
+  }
+
   render() {
     const user = this.props.user.username.length === 0 ? ' ...' : this.props.user.username;
     const { title, version } = this.state.context !== undefined ? this.state.context : { title: '', version: '' };
@@ -191,109 +254,134 @@ class UserNavInfo extends Component {
         <ErrorHandler>
           <OutsideAlerter hide={this.isShownFalse}>
             <ApplicationLauncher grid open={this.state.isShown} toggleLauncher={this.toggleiSshown}>
-              <li className="applauncher-pf-item" role="presentation">
-                <a
-                  className="applauncher-pf-link"
-                  href="/rules/hunt"
-                  role="menuitem"
-                  data-toggle="tooltip"
-                  title="Threat Hunting"
-                  style={{ cursor: 'pointer' }}
-                >
-                  <img src="/static/rules/Stamus_SEH_icon.png" height="40" width="40" alt="Hunt" />
-                  <span className="applauncher-pf-link-title">Hunting</span>
-                </a>
-              </li>
-
-              <li className="applauncher-pf-item" role="presentation">
-                <a
-                  className="applauncher-pf-link"
-                  href="/rules"
-                  role="menuitem"
-                  data-toggle="tooltip"
-                  title="Appliances Management"
-                  style={{ cursor: 'pointer' }}
-                >
-                  <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40" alt="Admin" />
-                  <span className="applauncher-pf-link-title">Management</span>
-                </a>
-              </li>
-
-              {process.env.REACT_APP_HAS_TAG === '1' &&
-                this.props.systemSettings &&
-                this.props.systemSettings.license &&
-                this.props.systemSettings.license.nta && (
+              <div style={{ padding: '2px 6px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '20px repeat(3, 100px)' }}>
+                  <div style={{ position: 'relative' }}>
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '-36px',
+                        left: '-81px',
+                        width: '100px',
+                        transformOrigin: '100% 100%',
+                        transform: 'rotate(-90deg)',
+                        color: 'rgba(0, 0, 0, .5)',
+                        fontWeight: '600',
+                        fontSize: '10px',
+                      }}
+                    >
+                      {APP_NAME_SHORT} APPS
+                    </div>
+                  </div>
                   <li className="applauncher-pf-item" role="presentation">
                     <a
                       className="applauncher-pf-link"
-                      href="/appliances/str"
+                      href="/rules/hunt"
                       role="menuitem"
                       data-toggle="tooltip"
-                      title="Threat Radar"
+                      title="Threat Hunting"
                       style={{ cursor: 'pointer' }}
                     >
-                      <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40" alt="STR" />
-                      <span className="applauncher-pf-link-title">Threat Radar</span>
+                      <img src="/static/rules/Stamus_SEH_icon.png" height="40" width="40" alt="Hunt" />
+                      <span className="applauncher-pf-link-title" style={{ lineHeight: '1.5715' }}>
+                        Hunting
+                      </span>
                     </a>
                   </li>
-                )}
+                  {this.getManagement()}
+                  {this.getThreatRadar()}
+                </div>
+                {this.props.systemSettings &&
+                  (this.props.systemSettings.kibana || this.props.systemSettings.evebox || this.props.systemSettings.cyberchef) && (
+                    <hr style={{ border: '0.5px solid rgba(0,0,0,.1)', background: 'rgba(0,0,0,.1)', margin: '7px 0' }} />
+                  )}
+                <div style={{ display: 'grid', gridTemplateColumns: '20px repeat(3, 100px)' }}>
+                  {this.props.systemSettings &&
+                    (this.props.systemSettings.kibana || this.props.systemSettings.evebox || this.props.systemSettings.cyberchef) && (
+                      <div style={{ position: 'relative' }}>
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '-32px',
+                            left: '-81px',
+                            width: '100px',
+                            transformOrigin: '100% 100%',
+                            transform: 'rotate(-90deg)',
+                            color: 'rgba(0, 0, 0, .5)',
+                            fontWeight: '600',
+                            fontSize: '10px',
+                          }}
+                        >
+                          EXTERNAL APPS
+                        </div>
+                      </div>
+                    )}
+                  {this.props.systemSettings && this.props.systemSettings.kibana && this.props.user.permissions.includes('rules.events_kibana') && (
+                    <li className="applauncher-pf-item" role="presentation">
+                      <a
+                        className="applauncher-pf-link"
+                        href={this.props.systemSettings.kibana_url}
+                        role="menuitem"
+                        data-toggle="tooltip"
+                        title="Kibana dashboards for ES"
+                        style={{ color: 'inherit' }}
+                        target="_blank"
+                      >
+                        <i style={{ fontSize: '2.5em', height: '40px', width: '40px' }} className="glyphicon glyphicon-stats" aria-hidden="true"></i>
+                        <span className="applauncher-pf-link-title" style={{ lineHeight: '1.5715' }}>
+                          {'Kibana'} <i className="glyphicon glyphicon-new-window" />
+                        </span>
+                      </a>
+                    </li>
+                  )}
 
-              {this.props.systemSettings && this.props.systemSettings.kibana && (
-                <li className="applauncher-pf-item" role="presentation">
-                  <a
-                    className="applauncher-pf-link"
-                    href={this.props.systemSettings.kibana_url}
-                    role="menuitem"
-                    data-toggle="tooltip"
-                    title="Kibana dashboards for ES"
-                    style={{ color: 'inherit' }}
-                    target="_blank"
-                  >
-                    <i style={{ fontSize: '2.5em', paddingTop: '5px' }} className="glyphicon glyphicon-stats" aria-hidden="true"></i>
-                    <span className="applauncher-pf-link-title" style={{ paddingTop: '5px' }}>
-                      {'Dashboards'}
-                    </span>
-                  </a>
-                </li>
-              )}
+                  {this.props.systemSettings && this.props.systemSettings.evebox && this.props.user.permissions.includes('rules.events_evebox') && (
+                    <li className="applauncher-pf-item" role="presentation">
+                      <a
+                        className="applauncher-pf-link"
+                        href={this.props.systemSettings.evebox_url}
+                        role="menuitem"
+                        data-toggle="tooltip"
+                        title="Evebox alert and event management tool"
+                        style={{ color: 'inherit' }}
+                        target="_blank"
+                      >
+                        <i
+                          style={{ fontSize: '2.5em', height: '40px', width: '40px' }}
+                          className="glyphicon glyphicon-th-list"
+                          aria-hidden="true"
+                        ></i>
+                        <span className="applauncher-pf-link-title" style={{ lineHeight: '1.5715' }}>
+                          {'Evebox'} <i className="glyphicon glyphicon-new-window" />
+                        </span>
+                      </a>
+                    </li>
+                  )}
 
-              {this.props.systemSettings && this.props.systemSettings.evebox && (
-                <li className="applauncher-pf-item" role="presentation">
-                  <a
-                    className="applauncher-pf-link"
-                    href={this.props.systemSettings.evebox_url}
-                    role="menuitem"
-                    data-toggle="tooltip"
-                    title="Evebox alert and event management tool"
-                    style={{ color: 'inherit' }}
-                    target="_blank"
-                  >
-                    <i style={{ fontSize: '2.5em' }} className="glyphicon glyphicon-th-list" aria-hidden="true"></i>
-                    <span className="applauncher-pf-link-title" style={{ paddingTop: '5px' }}>
-                      {'Events viewer'}
-                    </span>
-                  </a>
-                </li>
-              )}
-
-              {this.props.systemSettings && this.props.systemSettings.cyberchef && (
-                <li className="applauncher-pf-item" role="presentation">
-                  <a
-                    className="applauncher-pf-link"
-                    href={this.props.systemSettings.cyberchef_url}
-                    role="menuitem"
-                    data-toggle="tooltip"
-                    title="Cyberchef data processing tool"
-                    style={{ color: 'inherit' }}
-                    target="_blank"
-                  >
-                    <i style={{ fontSize: '2.5em' }} className="glyphicon glyphicon-cutlery" aria-hidden="true"></i>
-                    <span className="applauncher-pf-link-title" style={{ paddingTop: '5px' }}>
-                      {'Cyberchef'}
-                    </span>
-                  </a>
-                </li>
-              )}
+                  {this.props.systemSettings && this.props.systemSettings.cyberchef && (
+                    <li className="applauncher-pf-item" role="presentation">
+                      <a
+                        className="applauncher-pf-link"
+                        href={this.props.systemSettings.cyberchef_url}
+                        role="menuitem"
+                        data-toggle="tooltip"
+                        title="Cyberchef data processing tool"
+                        style={{ color: 'inherit' }}
+                        target="_blank"
+                      >
+                        <i
+                          style={{ fontSize: '2.5em', height: '40px', width: '40px' }}
+                          className="glyphicon glyphicon-cutlery"
+                          aria-hidden="true"
+                        ></i>
+                        <span className="applauncher-pf-link-title" style={{ lineHeight: '1.5715' }}>
+                          {'Cyberchef'} <i className="glyphicon glyphicon-new-window" />
+                        </span>
+                      </a>
+                    </li>
+                  )}
+                </div>
+              </div>
             </ApplicationLauncher>
           </OutsideAlerter>
         </ErrorHandler>

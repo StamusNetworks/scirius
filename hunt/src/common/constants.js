@@ -33,3 +33,5 @@ export const PAGE_STATE = {
   filters_list: 'FILTERS',
   setup: 'SETUP',
 };
+
+export const APP_NAME_SHORT = 'Scirius CE';
