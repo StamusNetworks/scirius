@@ -142,8 +142,8 @@ There is now different operations available in the ``Action`` menu
 
 * Edit sources: select which sources of signatures to use in the Ruleset
 * Edit categories: select which categories of signatures to use in the Ruleset
-* Add rule to suppressed list: if a rule is in this list then it will not be part of the generated Ruleset
-* Remove rule from suppressed list: this remove a rule from the previously mentioned list thus re-enabling it in the Ruleset
+* Add rule to disabled list: if a rule is in this list then it will not be part of the generated Ruleset
+* Remove rule from disabled list: this remove a rule from the previously mentioned list thus re-enabling it in the Ruleset
 
 Edit Sources
 ~~~~~~~~~~~~
@@ -156,16 +156,16 @@ Edit Categories
 
 To select which Categories to use, just select them via the checkbox and click on ``Update categories``.
 
-Add rule to suppressed list
+Add rule to disabled list
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Use the search field to find the rule(s) you want to remove, you can use the SID or any other element in the signature. Scirius will search the entered text in the definition of signature and return you the list of rules.
-You will then be able to remove them by clicking on the check boxes and clicking on ``Add selected rules to suppressed list``.
+You will then be able to remove them by clicking on the check boxes and clicking on ``Add selected rules to disabled rules list``.
 
-Remove rule from suppressed list
+Remove rule from disabled list
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To remove rules from suppressed list, simply check them in the array and click on ``Remove select rules from suppressed list``.
+To remove rules from disabled list, simply check them in the array and click on ``Remove select rules from disabled rules list``.
 
 
 Suppression and thresholding
