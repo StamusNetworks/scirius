@@ -245,7 +245,7 @@ class ESQuery:
         yield data
 
         while count > 0:
-            data = self.es.scroll(scroll_id=scroll_id)
+            data = self.es.scroll(scroll_id=scroll_id, scroll=scroll_duration)
             yield data
 
             count -= self.MAX_RESULT_WINDOW
