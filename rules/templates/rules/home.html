@@ -13,6 +13,9 @@
     <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
     <script src="{% static 'dist/scirius-bundle.js' %}"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'dist/styles.css' %}" />
+    {% if settings.CUSTOM_CSS %}
+        <link rel="stylesheet" type="text/css" href="{{ settings.CUSTOM_CSS }}" />
+    {% endif %}
 </head>
 
 <body>
