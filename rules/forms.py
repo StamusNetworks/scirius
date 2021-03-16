@@ -175,10 +175,16 @@ class RulesetEditForm(BaseEditForm, forms.ModelForm, CommentForm):
     action = forms.ChoiceField()
     lateral = forms.ChoiceField()
     target = forms.ChoiceField()
+    suppressed_sids = forms.CharField(
+        label="Suppress events",
+        help_text="Ex: suppress gen_id 1, sig_id 2003614, track by_src, ip 217.110.97.128/25",
+        required=False,
+        widget=forms.Textarea
+    )
 
     class Meta:
         model = Ruleset
-        fields = ('name', 'action', 'lateral', 'target')
+        fields = ('name', 'action', 'lateral', 'target', 'suppressed_sids')
 
     def __init__(self, *args, **kwargs):
         super(RulesetEditForm, self).__init__(*args, **kwargs)

@@ -2889,6 +2889,7 @@ class Ruleset(models.Model, Transformable):
     validity = models.BooleanField(default=True)
     errors = models.TextField(blank=True)
     rules_count = models.IntegerField(default=0)
+    suppressed_sids = models.TextField(verbose_name='Suppress events', default='', blank=True)
 
     editable = True
 
@@ -3140,6 +3141,9 @@ class Ruleset(models.Model, Transformable):
 
             for threshold in self.get_processing_filter_thresholds():
                 f.write(threshold)
+
+            if self.suppressed_sids:
+                f.write(self.suppressed_sids)
 
     def copy(self, name):
         orig_ruleset_pk = self.pk

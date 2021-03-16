@@ -102,6 +102,9 @@ Choose an operation in the actions below:
     {% bootstrap_field form.lateral %}
     {% bootstrap_field form.target %}
 
+    <h2>Expert mode</h2>
+    {% bootstrap_field form.suppressed_sids %}
+
     {% bootstrap_field form.comment %}
     {% if perms.rules.ruleset_policy_edit %}
         {% buttons %}
