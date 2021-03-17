@@ -793,3 +793,17 @@ li.dropdown > a#tenant {
 .dropdown-toggle.btn.btn-default .caret:before {
   color: #0a0a0a;
 }
+
+nav.navbar.navbar-pf-vertical {
+  display: flex;
+  flex-direction: row;
+  nav.collapse.navbar-collapse {
+    margin-left: auto;
+  }
+}
+
+.RulesList {
+  .list-view-pf-additional-info > div:last-child {
+    margin-left: auto;
+  }
+}
