@@ -6,6 +6,7 @@ import axios from 'axios';
 import { createStructuredSelector } from 'reselect';
 import * as config from 'hunt_common/config/Api';
 import { sections } from 'hunt_common/constants';
+import { dashboard } from 'hunt_common/config/Dashboard';
 import { compose } from 'redux';
 import FilterToggleModal from '../FilterToggleModal';
 import ErrorHandler from './Error';
@@ -64,10 +65,14 @@ class FilterEditKebab extends React.Component {
       const val = Number(this.props.data.filter_defs[idx].value)
         ? Number(this.props.data.filter_defs[idx].value)
         : this.props.data.filter_defs[idx].value;
+      const { format } = dashboard.sections.basic.items.find((o) => o.i === this.props.data.filter_defs[idx].key) || {};
+      const label = `${this.props.data.filter_defs[idx].key}: ${
+        format ? format(this.props.data.filter_defs[idx].value) : this.props.data.filter_defs[idx].value
+      }`;
       const filter = {
         id: this.props.data.filter_defs[idx].key,
         key: this.props.data.filter_defs[idx].key,
-        label: `${this.props.data.filter_defs[idx].key}: ${this.props.data.filter_defs[idx].value}`,
+        label,
         value: val,
         negated: this.props.data.filter_defs[idx].operator !== 'equal',
         fullString: this.props.data.filter_defs[idx].full_string,

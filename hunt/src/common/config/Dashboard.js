@@ -220,12 +220,12 @@ export const dashboard = {
           title: 'Severities',
           data: null,
           format: (value) => {
-            switch (value) {
-              case 1:
+            switch (value.toString()) {
+              case '1':
                 return 'Severe';
-              case 2:
+              case '2':
                 return 'Suspicious';
-              case 3:
+              case '3':
                 return 'Contextual';
               default:
                 return value;

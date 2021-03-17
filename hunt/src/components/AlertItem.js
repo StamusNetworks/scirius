@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import { ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
 import * as config from 'hunt_common/config/Api';
+import { dashboard } from 'hunt_common/config/Dashboard';
 import { buildFilterParams } from 'hunt_common/buildFilterParams';
 import axios from 'axios';
 import ReactJson from 'react-json-view';
@@ -282,7 +283,13 @@ export default class AlertItem extends React.Component {
                         <EventField field_name="Category" field="alert.category" value={data.alert.category} addFilter={this.addFilter} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="Severity" field="alert.severity" value={data.alert.severity} addFilter={this.addFilter} />
+                        <EventField
+                          field_name="Severity"
+                          field="alert.severity"
+                          value={data.alert.severity}
+                          addFilter={this.addFilter}
+                          format={(dashboard.sections.basic.items.find((o) => o.i === 'alert.severity') || {}).format}
+                        />
                       </ErrorHandler>
                       <ErrorHandler>
                         <EventField field_name="Revision" field="alert.rev" value={data.alert.rev} addFilter={this.addFilter} />
