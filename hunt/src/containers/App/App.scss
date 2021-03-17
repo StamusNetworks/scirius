@@ -789,3 +789,7 @@ li.dropdown > a#tenant {
   padding: 0 10px !important;
   margin: 0 10px;
 }
+
+.dropdown-toggle.btn.btn-default .caret:before {
+  color: #0a0a0a;
+}
