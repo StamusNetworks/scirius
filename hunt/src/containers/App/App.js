@@ -36,6 +36,7 @@ import sciriusLogo from '../../img/stamus.png';
 import keymap from '../../Keymap';
 import ErrorHandler from '../../components/Error';
 import storage from '../../helpers/storage';
+import Breadcrumb from '../../components/Breadcrumb';
 
 const shortcutManager = new ShortcutManager(keymap);
 
@@ -289,24 +290,8 @@ export default class App extends Component {
                 style={{ marginTop: 7, marginBottom: -7, marginLeft: 20, display: 'block', float: 'left' }}
                 alt="logo"
               />
-              <div
-                style={{
-                  fontSize: '20px',
-                  float: 'left',
-                  paddingLeft: '40px',
-                  paddingTop: '11px',
-                  fontFamily:
-                    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
-                }}
-              >
-                {process.env.REACT_APP_HAS_TAG === '1' ? (
-                  <React.Fragment>Scirius Enriched Hunting</React.Fragment>
-                ) : (
-                  <React.Fragment>Suricata Threat Hunting</React.Fragment>
-                )}
-              </div>
             </VerticalNav.Brand>
-
+            <Breadcrumb currentPage={this.state.display} />
             <VerticalNav.IconBar>
               <ErrorHandler>
                 <UserNavInfo
