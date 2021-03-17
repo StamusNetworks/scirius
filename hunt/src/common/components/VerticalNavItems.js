@@ -8,16 +8,16 @@ const VerticalNavItems = [
     className: null,
   },
   {
+    title: 'Alerts',
+    iconClass: 'fa fa-bell',
+    def: PAGE_STATE.alerts_list,
+  },
+  {
     title: 'Signatures',
     iconClass: 'pficon pficon-security',
     def: PAGE_STATE.rules_list,
     className: null,
     permission: 'rules.ruleset_policy_view',
-  },
-  {
-    title: 'Alerts',
-    iconClass: 'fa fa-bell',
-    def: PAGE_STATE.alerts_list,
   },
   {
     title: 'Policy',
