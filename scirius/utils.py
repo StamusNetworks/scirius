@@ -127,7 +127,8 @@ def scirius_render(request, template, context):
         'id': 'suricata',
         'url': '/suricata/',
         'icon': 'eye-open',
-        'label': 'Suricata'
+        'label': 'Suricata',
+        'perm': request.user.has_perm('rules.configuration_view')
     }]
     context['monitoring_url'] = 'suricata_index'
 
