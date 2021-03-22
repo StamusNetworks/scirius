@@ -448,7 +448,7 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 </ul>
 
 
-{% if request.user.has_perm('rules.configuration_edit') %}
+{% if perms.rules.configuration_edit %}
 <div class="panel-heading">
 <h2 class="panel-title">Action</h2>
 </div>
