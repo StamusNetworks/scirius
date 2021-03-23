@@ -73,7 +73,14 @@ const Separator = styled.div`
 
 const Breadcrumb = ({ currentPage }) => {
   const { page = '' } = currentPage;
-  const navItem = VerticalNavItems.find((p) => p.def === page) || {};
+  const pages = [
+    ...VerticalNavItems,
+    {
+      title: 'History',
+      def: 'HISTORY',
+    },
+  ];
+  const navItem = pages.find((p) => p.def === page) || {};
   const { title = '' } = navItem;
   return (
     <BcStyled>
