@@ -644,7 +644,7 @@ export const dashboard = {
       ],
       dimensions: {
         w: 1,
-        h: 270,
+        h: 370,
         x: 0,
         y: 356,
       },
@@ -967,7 +967,7 @@ export const dashboard = {
       ],
       dimensions: {
         w: 1,
-        h: 170,
+        h: 270,
         x: 0,
         y: 782,
       },
@@ -1133,7 +1133,7 @@ export const dashboard = {
       ],
       dimensions: {
         w: 1,
-        h: 370,
+        h: 470,
         x: 0,
         y: 1138,
       },
@@ -1434,7 +1434,7 @@ export const dashboard = {
       ],
       dimensions: {
         w: 1,
-        h: 270,
+        h: 370,
         x: 0,
         y: 1720,
       },

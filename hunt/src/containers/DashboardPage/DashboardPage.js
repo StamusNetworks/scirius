@@ -200,7 +200,6 @@ export class HuntDashboard extends React.Component {
           JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams))
       ) {
         this.filters = JSON.stringify(this.props.filters);
-        this.resetPanelHeights();
         this.bootPanels();
         if (this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
           this.loadActions(this.props.filters);
@@ -265,31 +264,29 @@ export class HuntDashboard extends React.Component {
     );
   };
 
+  resetPanelHeight = (field, data = null) => ({
+    [field]: {
+      ...this.state.dashboard[field],
+      items: [
+        ...this.state.dashboard[field].items.map((z, i) => ({
+          ...z,
+          data,
+          dimensions: {
+            ...dashboard.sections[field].items[i].dimensions,
+          },
+        })),
+      ],
+      dimensions: {
+        ...this.state.dashboard[field].dimensions,
+        h: dashboard.sections[field].dimensions.h,
+        minH: dashboard.sections[field].dimensions.minH,
+      },
+    },
+  });
+
   /* reset panel to it's initial state - no data into blocks and the default height for the panel with empty blocks */
   resetPanelHeights = () => {
-    const reset = Object.assign(
-      {},
-      ...Object.keys(this.state.dashboard).map((k) => ({
-        [k]: {
-          ...this.state.dashboard[k],
-          items: [
-            ...this.state.dashboard[k].items.map((z, i) => ({
-              ...z,
-              data: null,
-              dimensions: {
-                ...dashboard.sections[k].items[i].dimensions,
-              },
-            })),
-          ],
-          dimensions: {
-            ...this.state.dashboard[k].dimensions,
-            h: dashboard.sections[k].dimensions.h,
-            minH: dashboard.sections[k].dimensions.minH,
-          },
-        },
-      })),
-    );
-
+    const reset = Object.assign({}, ...Object.keys(this.state.dashboard).map((k) => this.resetPanelHeight(k)));
     this.setState({
       ...this.state,
       dashboard: reset,
@@ -420,6 +417,16 @@ export class HuntDashboard extends React.Component {
             });
           }
         }
+      })
+      .catch(() => {
+        this.setState({
+          ...this.state,
+          dashboard: {
+            ...this.state.dashboard,
+            ...this.resetPanelHeight(panel, []),
+          },
+        });
+        this.panelsBooted = 'yes';
       });
   };
 
