@@ -3316,6 +3316,23 @@ class Ruleset(models.Model, Transformable):
         self.need_test = True
         self.save()
 
+    @classmethod
+    def create_ruleset(cls, name, sources=[], activate_categories=False):
+        ruleset = cls.objects.create(
+            name=name,
+            created_date=timezone.now(),
+            updated_date=timezone.now(),
+        )
+
+        for src in sources:
+            src_at_version = SourceAtVersion.objects.get(pk=src)
+            ruleset.sources.add(src_at_version)
+            if activate_categories:
+                for cat in Category.objects.filter(source=src_at_version.source):
+                    ruleset.categories.add(cat)
+
+        return ruleset
+
 
 class RuleTransformation(Transformation):
     ruleset = models.ForeignKey(Ruleset, on_delete=models.CASCADE)

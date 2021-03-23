@@ -1443,20 +1443,29 @@ def ruleset(request, ruleset_id, mode='struct', error=None):
 
 @permission_required('rules.source_edit', raise_exception=True)
 def add_ruleset(request):
+    from scirius.utils import get_middleware_module
+
+    extra_form = get_middleware_module('common').extra_ruleset_form(request)
+
     context = {}
+    if extra_form:
+        context = extra_form.get_context()
+        context['extra_form'] = extra_form
+
     if request.method == 'POST':  # If the form has been submitted...
         form = RulesetForm(request.POST)  # A form bound to the POST data
-        if form.is_valid():  # All validation rules pass
-            # Process the data in form.cleaned_data
-            # ...
+        context['form'] = form
+
+        if form.is_valid() and (extra_form is None or extra_form.is_valid()):  # All validation rules pass
+
+            ruleset = extra_form.cleaned_data['ruleset'] if extra_form else None
             try:
-                ruleset = form.create_ruleset()
-                UserAction.create(
-                    action_type='create_ruleset',
-                    comment=form.cleaned_data['comment'],
-                    user=request.user,
-                    ruleset=ruleset
-                )
+                if ruleset is None:
+                    ruleset = Ruleset.create_ruleset(
+                        name=form.cleaned_data['name'],
+                        sources=form.cleaned_data['sources'].values_list('pk', flat=True),
+                        activate_categories=form.cleaned_data['activate_categories']
+                    )
 
                 form_action_trans = Transformation.ActionTransfoType(form.cleaned_data["action"])
                 form_lateral_trans = Transformation.LateralTransfoType(form.cleaned_data["lateral"])
@@ -1478,23 +1487,38 @@ def add_ruleset(request):
                     ruleset.remove_transformation(Transformation.TARGET)
 
             except IntegrityError as error:
-                return scirius_render(request, 'rules/add_ruleset.html', {'form': form, 'error': error})
+                if ruleset:
+                    Ruleset.objects.filter(pk=ruleset.pk).delete()
+
+                context.update({'form': form, 'error': error})
+                return scirius_render(request, 'rules/add_ruleset.html', context)
+
+            UserAction.create(
+                action_type='create_ruleset',
+                comment=form.cleaned_data['comment'],
+                user=request.user,
+                ruleset=ruleset
+            )
 
             msg = """All changes are saved. Don't forget to update the ruleset to apply the changes.
                      After the ruleset Update the changes would be updated on the probe(s) upon the next Ruleset Push"""
 
             messages.success(request, msg)
             return redirect(ruleset)
+
+        if extra_form.data['ruleset']:
+            Ruleset.objects.filter(pk=extra_form.data['ruleset']).delete()
     else:
         initial = {'action': Transformation.A_NONE.value,
                    'lateral': Transformation.L_AUTO.value,
                    'target': Transformation.T_AUTO.value
                    }
         form = RulesetForm(initial=initial)  # An unbound form
+        context['form'] = form
+
         missing = dependencies_check(Ruleset)
         if missing:
             context['missing'] = missing
-    context['form'] = form
 
     return scirius_render(request, 'rules/add_ruleset.html', context)
 

@@ -222,3 +222,7 @@ def get_sources():
 
 def update_settings(data):
     pass
+
+
+def extra_ruleset_form(request):
+    return None

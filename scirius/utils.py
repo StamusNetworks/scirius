@@ -19,6 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+import pytz
 from importlib import import_module
 from time import time
 import requests
@@ -260,3 +261,11 @@ class RequestsWrapper:
 
     def _get_proxies(self):
         return get_system_settings().get_proxy_params()
+
+
+def convert_to_utc(time, user):
+    try:
+        tz = pytz.timezone(user.sciriususer.timezone)
+    except:
+        return time
+    return tz.normalize(tz.localize(time.replace(tzinfo=None))).astimezone(pytz.utc)

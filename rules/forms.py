@@ -20,7 +20,6 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from django import forms
-from django.utils import timezone
 from django.core.exceptions import NON_FIELD_ERRORS
 from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold, Transformation
 
@@ -142,21 +141,6 @@ class RulesetForm(CommentForm):
     action = forms.ChoiceField()
     lateral = forms.ChoiceField()
     target = forms.ChoiceField()
-
-    def create_ruleset(self):
-        ruleset = Ruleset.objects.create(
-            name=self.cleaned_data['name'],
-            created_date=timezone.now(),
-            updated_date=timezone.now(),
-        )
-
-        for src in self.cleaned_data['sources']:
-            ruleset.sources.add(src)
-            if self.cleaned_data['activate_categories']:
-                for cat in Category.objects.filter(source=src.source):
-                    ruleset.categories.add(cat)
-
-        return ruleset
 
     def __init__(self, *args, **kwargs):
         super(RulesetForm, self).__init__(*args, **kwargs)
