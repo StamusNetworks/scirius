@@ -75,16 +75,18 @@
 		</ul>
 <div class="navbar-right">
 <ul class="nav navbar-nav">
-<li>
-<a class="dropdown-toggle" type="button" id="display_search" data-toggle="dropdown" href="#">
-<span class="glyphicon glyphicon-search"> <span class="caret"/></span>
-</a>
-		<form class="dropdown-menu" id="display_search"  action="{% url 'scirius_search' %}" method="post" role="search">{% csrf_token %}
-<span class="form-group sn-drop-down">
-   <span class="glyphicon glyphicon-search"> <input type="text" name="search" id="id_search"/></span>
-</span>
-		</form>
-</li>
+{% if perms.rules.ruleset_policy_view %}
+    <li>
+        <a class="dropdown-toggle" type="button" id="display_search" data-toggle="dropdown" href="#">
+            <span class="glyphicon glyphicon-search"> <span class="caret"/></span>
+        </a>
+        <form class="dropdown-menu" id="display_search"  action="{% url 'scirius_search' %}" method="post" role="search">{% csrf_token %}
+            <span class="form-group sn-drop-down">
+                <span class="glyphicon glyphicon-search"> <input type="text" name="search" id="id_search"/></span>
+            </span>
+        </form>
+    </li>
+{% endif %}
 </ul>
 {% include 'rules/header_right.html' %}
 
