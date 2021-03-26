@@ -25,10 +25,14 @@ import pytz
 import django_auth_ldap.backend
 
 
+def get_next_priority():
+    return Group.objects.aggregate(models.Max('priority')).get('priority__max') + 1
+
+
 class Group(models.Model):
     group = models.OneToOneField(DjangoGroup, on_delete=models.CASCADE)
     ldap_group = models.CharField(max_length=400, default='')
-    priority = models.IntegerField(default=-1)
+    priority = models.IntegerField(default=get_next_priority)
 
     @property
     def name(self):
