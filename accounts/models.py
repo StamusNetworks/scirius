@@ -108,6 +108,7 @@ class SciriusUser(models.Model):
             "date_joined": self.user.date_joined,
             "perms": ['rules.{}'.format(item[0]) for item in self.user.groups.values_list('permissions__codename')],
             "role": self.user.groups.first().name,
+            "no_tenant": self.has_no_tenant()
         }
 
         if get_middleware_module('common').has_extra_auth():
