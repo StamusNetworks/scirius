@@ -173,18 +173,20 @@ class UserNavInfo extends Component {
 
     return (
       <React.Fragment>
-        <li>
-          <div
-            tabIndex={0}
-            data-toggle="tooltip"
-            title="Update threat detection"
-            onClick={this.showUpdateThreatDetection}
-            role="button"
-            className="nav-item-iconic"
-          >
-            <Icon type="fa" name="upload" />
-          </div>
-        </li>
+        {this.props.user.permissions.includes('rules.ruleset_update_push') && (
+          <li>
+            <div
+              tabIndex={0}
+              data-toggle="tooltip"
+              title="Update threat detection"
+              onClick={this.showUpdateThreatDetection}
+              role="button"
+              className="nav-item-iconic"
+            >
+              <Icon type="fa" name="upload" />
+            </div>
+          </li>
+        )}
 
         <li>
           <div
