@@ -6,6 +6,8 @@ import { Col, DropdownButton, FormControl, FormGroup, Icon, InputGroup, MenuItem
 import moment from 'moment';
 import * as PropTypes from 'prop-types';
 import OutsideClickHandler from 'react-outside-click-handler';
+import axios from 'axios';
+import { ES_BASE_PATH } from 'hunt_common/config/Api';
 import DateRangePicker from './DateRangePicker';
 import {
   filterTimeSpanSet,
@@ -14,6 +16,7 @@ import {
   makeSelectFilterParam,
   makeSelectFilterAbsolute,
 } from '../containers/App/stores/filterParams';
+import { makeSelectGlobalFilters } from '../containers/App/stores/global';
 import injectReducer from '../util/injectReducer';
 import { periodShortener, USER_PERIODS } from '../helpers/PeriodShortener';
 
@@ -46,13 +49,29 @@ class TimeSpanItem extends React.Component {
     this.format = 'MMMM Do YYYY, HH:mm:ss';
 
     this.state = {
+      minTime: 0, // used by the `All` timerange
+      maxTime: 0, // used by the `All` timerange
       picker: PICKERS.PREDEFINED,
       timeSpanPicker: false,
       ...props.absolute,
     };
   }
 
+  async getAlertsTimerange() {
+    const { data } = await axios.get(`${ES_BASE_PATH}alerts_timerange`);
+    if (data.min_timestamp && data.max_timestamp) {
+      this.setState({ minTime: data.min_timestamp, maxTime: data.max_timestamp });
+    }
+  }
+
+  componentDidMount() {
+    this.getAlertsTimerange();
+  }
+
   componentDidUpdate(prevProps) {
+    if (prevProps.tenant !== this.props.tenant || JSON.stringify(prevProps.globalFilters) !== JSON.stringify(this.props.globalFilters))
+      this.getAlertsTimerange();
+
     if (
       JSON.stringify(prevProps.absolute) !== JSON.stringify(this.props.absolute) &&
       JSON.stringify(this.props.absolute) !== JSON.stringify({ from: this.state.from, to: this.state.to })
@@ -215,8 +234,23 @@ class TimeSpanItem extends React.Component {
                   <ul className="hardcoded-stamps">
                     {Object.keys(USER_PERIODS).map((period) => (
                       <li key={period}>
-                        <a className={this.props.duration === period ? 'active' : ''} href="#" onClick={() => this.props.setDuration(period)}>
-                          Last {USER_PERIODS[period]}
+                        <a
+                          className={this.props.duration === period || (this.props.duration === null && !parseInt(period, 10)) ? 'active' : ''}
+                          href="#"
+                          onClick={() => {
+                            if (USER_PERIODS[period] !== USER_PERIODS.all) {
+                              this.props.setDuration(period);
+                            } else {
+                              if (!this.state.minTime || !this.state.maxTime) return;
+                              this.getAlertsTimerange();
+                              this.props.setTimeSpan({
+                                fromDate: this.state.minTime,
+                                toDate: this.state.maxTime,
+                              });
+                            }
+                          }}
+                        >
+                          {USER_PERIODS[period] !== USER_PERIODS.all ? 'Last' : ''} {USER_PERIODS[period]}
                         </a>
                       </li>
                     ))}
@@ -319,6 +353,8 @@ TimeSpanItem.propTypes = {
   toDate: PropTypes.any,
   duration: PropTypes.any,
   absolute: PropTypes.object,
+  tenant: PropTypes.number,
+  globalFilters: PropTypes.arrayOf(PropTypes.object),
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -326,6 +362,8 @@ const mapStateToProps = createStructuredSelector({
   toDate: makeSelectFilterParam('toDate'),
   duration: makeSelectFilterParam('duration'),
   absolute: makeSelectFilterAbsolute(),
+  tenant: makeSelectFilterParam('tenant'),
+  globalFilters: makeSelectGlobalFilters(),
 });
 
 const mapDispatchToProps = (dispatch) => ({

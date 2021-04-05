@@ -8,6 +8,8 @@ export const USER_PERIODS = {
   172800000: '2d',
   604800000: '7d',
   2592000000: '30d',
+  31540000000: '1y',
+  all: 'All',
 };
 
 const getSecond = (fromDate, toDate) => [fromDate.format('ss'), toDate.format('ss')];
@@ -34,7 +36,8 @@ export const periodShortener = (fromDate, toDate, duration) => {
 
   let resultFinal = '';
   if (duration !== null) {
-    resultFinal = `Last ${USER_PERIODS[duration]}`;
+    const period = USER_PERIODS[duration];
+    resultFinal = period !== USER_PERIODS.all ? `Last ${period}` : `${period}`;
   } else {
     const year = getYear(from, to);
     const month = getMonth(from, to);
