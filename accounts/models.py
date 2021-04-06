@@ -97,6 +97,14 @@ class SciriusUser(models.Model):
     def to_dict(self):
         from scirius.utils import get_middleware_module
 
+        tenants = []
+        if self.has_all_tenants():
+            tenants = get_middleware_module('common').get_tenants().values_list('pk', flat=True)
+        else:
+            tenants = self.get_tenants()
+            if not isinstance(tenants, (list, tuple)):
+                tenants = tenants.values_list('pk', flat=True)
+
         res = {
             "pk": self.pk,
             "timezone": self.timezone,
@@ -108,7 +116,9 @@ class SciriusUser(models.Model):
             "date_joined": self.user.date_joined,
             "perms": ['rules.{}'.format(item[0]) for item in self.user.groups.values_list('permissions__codename')],
             "role": self.user.groups.first().name,
-            "no_tenant": self.has_no_tenant()
+            "no_tenant": self.has_no_tenant(),
+            "all_tenant": self.has_all_tenants(),
+            "tenants": tenants
         }
 
         if get_middleware_module('common').has_extra_auth():
