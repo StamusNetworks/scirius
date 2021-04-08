@@ -1307,6 +1307,11 @@ class Source(models.Model):
     def get_absolute_url(self):
         return reverse('source', args=[str(self.id)])
 
+    def is_etpro_url(self):
+        return self.uri.startswith('https://rules.emergingthreatspro.com/') or \
+            self.uri.startswith('https://rules.emergingthreats.net/') or \
+            self.uri.startswith('https://ti.stamus-networks.io/')
+
     def update_ruleset_http(self, f):
         from scirius.utils import RequestsWrapper
 
@@ -1315,10 +1320,7 @@ class Source(models.Model):
             hdrs['Authorization'] = self.authkey
 
         version_uri = None
-        if self.uri.startswith('https://rules.emergingthreatspro.com/') or \
-                self.uri.startswith('https://rules.emergingthreats.net/') or \
-                self.uri.startswith('https://ti.stamus-networks.io/') or \
-                self.datatype not in ('sigs', 'sig', 'other'):
+        if self.is_etpro_url() or self.datatype not in ('sigs', 'sig', 'other'):
             version_uri = os.path.join(os.path.dirname(self.uri), 'version.txt')
 
         version_server = 1
