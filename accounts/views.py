@@ -27,7 +27,7 @@ from django.contrib.auth.models import User, Group as DjangoGroup
 from django.contrib.auth.decorators import permission_required
 from rest_framework.authtoken.models import Token
 from django.db.models import F
-from django.http import JsonResponse, HttpResponseNotAllowed
+from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponse
 
 import django_tables2 as tables
 
@@ -492,3 +492,10 @@ def logoutview(request):
     )
     logout(request)
     return redirect(settings.LOGIN_URL)
+
+
+def current_user(request):
+    return HttpResponse(
+        'var current_user = %s' % json.dumps(request.user.sciriususer.to_dict(json_compatible=True)),
+        content_type='application/x-javascript'
+    )

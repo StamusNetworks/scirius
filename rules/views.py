@@ -30,6 +30,7 @@ from django.conf import settings
 from django.core.exceptions import SuspiciousOperation, ValidationError, PermissionDenied
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
+from django.urls import reverse
 from elasticsearch.exceptions import ConnectionError as ESConnectionError
 import django_tables2 as tables
 
@@ -2037,5 +2038,5 @@ def history(request):
 @csp(DEFAULT_SRC=["'self'"], SCRIPT_SRC=["'unsafe-eval'"], STYLE_SRC=["'self'", "'unsafe-inline'"])
 @permission_required('rules.events_view', raise_exception=True)
 def hunt(request):
-    context = {}
+    context = {'current_user_url': reverse('current_user')}
     return scirius_render(request, 'rules/hunt.html', context)

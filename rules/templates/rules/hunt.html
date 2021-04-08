@@ -11,6 +11,7 @@
   <body class="cards-pf">
     <div id="root">
     </div>
+    <script type="text/javascript" src="{{ current_user_url }}" nonce="{{ request.csp_nonce }}"></script>
      {% get_files 'main' 'css' as css_files %}
      {% for css_file in css_files %}
        <link type="text/css" href="{{ css_file.url }}" rel="preload stylesheet" />

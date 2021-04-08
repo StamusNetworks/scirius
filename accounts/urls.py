@@ -38,6 +38,7 @@ urlpatterns = [
     url(r'^role/(?P<group_id>\d+)/delete$', views.delete_group, name='delete_group'),
     url(r'^priorities/$', views.edit_priorities, name='edit_priorities'),
     url(r'^sort_priorities/$', views.sort_priorities, name='sort_priorities'),
+    url(r'^current_user/$', views.current_user, name='current_user'),
 
     # TODO PERMS: split into different views
     url(r'^edit/(?P<action>.*)$', views.editview, name='accounts_edit'),

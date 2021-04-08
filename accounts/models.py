@@ -94,7 +94,7 @@ class SciriusUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     timezone = models.CharField(max_length=40, choices=TIMEZONES)
 
-    def to_dict(self):
+    def to_dict(self, json_compatible=False):
         from scirius.utils import get_middleware_module
 
         tenants = []
@@ -105,6 +105,9 @@ class SciriusUser(models.Model):
             if not isinstance(tenants, (list, tuple)):
                 tenants = tenants.values_list('pk', flat=True)
 
+        if json_compatible:
+            tenants = list(tenants)
+
         res = {
             "pk": self.pk,
             "timezone": self.timezone,
@@ -113,7 +116,7 @@ class SciriusUser(models.Model):
             "last_name": self.user.last_name,
             "is_active": self.user.is_active,
             "email": self.user.email,
-            "date_joined": self.user.date_joined,
+            "date_joined": self.user.date_joined if not json_compatible else self.user.date_joined.isoformat(),
             "perms": ['rules.{}'.format(item[0]) for item in self.user.groups.values_list('permissions__codename')],
             "role": self.user.groups.first().name,
             "no_tenant": self.has_no_tenant(),
