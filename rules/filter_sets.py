@@ -60,6 +60,22 @@ FILTER_SETS = [
     {
         'content': [
             {
+                'value': 'HUNTING',
+                'label': 'Message: HUNTING',
+                'fullString': False,
+                'query': 'filter',
+                'negated': False,
+                'id': 'msg'
+            }
+        ],
+        'name': 'Hunt: HUNTING related events',
+        'page': 'DASHBOARDS',
+        'description': 'This filter set results in displaying specifically designed hunting related rules events',
+        'share': 'static'
+    },
+    {
+        'content': [
+            {
                 'value': 'Executable',
                 'label': 'Message: Executable',
                 'fullString': False,
@@ -96,6 +112,190 @@ FILTER_SETS = [
         'page': 'DASHBOARDS',
         'description': 'This filter set provides results for any related events that are done via HTTP and either are posting or downloading executables.',
         'share': 'static'
+    },
+    {
+        "content": [
+            {
+                "id": "app_proto",
+                "value": "http",
+                "label": "app_proto: http",
+                "fullString": True,
+                "negated": False
+            },
+            {
+                "label": "es_filter: ( http.hostname.keyword: /10\\..*\\..*\\..*/ OR http.hostname.keyword: /192\\.168\\..*\\..*/ OR  http.hostname.keyword: /172\\.<16-32>\\..*\\..*/ ) AND http.hostname.keyword: /([0-9]{1,3}\\.){3}[0-9]{1,3}/",
+                "id": "es_filter",
+                "value": "( http.hostname.keyword: /10\\..*\\..*\\..*/ OR http.hostname.keyword: /192\\.168\\..*\\..*/ OR  http.hostname.keyword: /172\\.<16-32>\\..*\\..*/ ) AND http.hostname.keyword: /([0-9]{1,3}\\.){3}[0-9]{1,3}/",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+        ],
+        "name": "Hunt: HTTP direct requests and replies to private IP",
+        "page": "DASHBOARDS",
+        "description": "HTTP requests and responses directly to internal IP not domain. This is not traditional since usually a domain name is used to reach out to the servers inside. Though might be common in Dev environments  - it could also indicate later movement.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "app_proto",
+                "value": "http",
+                "label": "app_proto: http",
+                "fullString": True,
+                "negated": False
+            },
+            {
+                "label": "ES Filter: ( NOT http.hostname.keyword: /10\\..*\\..*\\..*/ AND NOT http.hostname.keyword: /192\\.168\\..*\\..*/ AND NOT http.hostname.keyword: /172\\.<16-32>\\..*\\..*/ ) AND http.hostname.keyword: /([0-9]{1,3}\\.){3}[0-9]{1,3}/",
+                "id": "es_filter",
+                "value": "( NOT http.hostname.keyword: /10\\..*\\..*\\..*/ AND NOT http.hostname.keyword: /192\\.168\\..*\\..*/ AND NOT http.hostname.keyword: /172\\.<16-32>\\..*\\..*/ ) AND http.hostname.keyword: /([0-9]{1,3}\\.){3}[0-9]{1,3}/",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+        ],
+        "name": "Hunt: HTTP non internal  direct IP requests and replies",
+        "page": "DASHBOARDS",
+        "description": "HTTP requests and responses directly by IP not domain. This is not traditional since usually a domain name is used to reach out to the servers outside (non private/internal IPs).",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "app_proto",
+                "value": "dns",
+                "label": "app_proto: dns",
+                "fullString": True,
+                "negated": True
+            },
+            {
+                "label": "ES Filter: payload_printable.keyword: *admin*",
+                "id": "es_filter",
+                "value": "payload_printable.keyword: *admin*",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+        ],
+        "name": "Hunt: Admin payload search",
+        "page": "DASHBOARDS",
+        "description": "Search for Admin or Administrator in the alert events payloads.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "app_proto",
+                "value": "dns",
+                "label": "app_proto: dns",
+                "fullString": True,
+                "negated": True
+            },
+            {
+                "label": "es_filter: payload_printable.keyword: *root*",
+                "id": "es_filter",
+                "value": "payload_printable.keyword: *root*",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+        ],
+        "name": "Hunt: Root payload search",
+        "page": "DASHBOARDS",
+        "description": "Search for root in the alert events payloads.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "app_proto",
+                "value": "http",
+                "label": "app_proto: http",
+                "fullString": True,
+                "negated": False
+            },
+            {
+                "label": "es_filter: payload_printable.keyword: *root* ",
+                "id": "es_filter",
+                "value": "payload_printable.keyword: *root* ",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+        ],
+        "name": "Hunt: HTTP payloads containing root",
+        "page": "DASHBOARDS",
+        "description": "Hunt: HTTP payloads containing root.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "app_proto",
+                "value": "http",
+                "label": "app_proto: http",
+                "fullString": True,
+                "negated": False
+            },
+            {
+                "label": "es_filter: payload_printable.keyword: *admin* ",
+                "id": "es_filter",
+                "value": "payload_printable.keyword: *admin* ",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+        ],
+        "name": "Hunt: HTTP payloads containing admin",
+        "page": "DASHBOARDS",
+        "description": "Hunt: HTTP payloads containing admin.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "app_proto",
+                "value": "tls",
+                "label": "app_proto: tls",
+                "fullString": True,
+                "negated": False
+            },
+            {
+                "label": "es_filter: payload_printable.keyword: *admin* OR payload_printable.keyword: *root* ",
+                "id": "es_filter",
+                "value": "payload_printable.keyword: *admin* OR payload_printable.keyword: *root* ",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+        ],
+        "name": "Hunt: TLS payloads containing root or admin",
+        "page": "DASHBOARDS",
+        "description": "Hunt: TLS payloads containing root or admin.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "app_proto",
+                "value": "tls",
+                "label": "app_proto: tls",
+                "fullString": True,
+                "negated": False
+            },
+            {
+                "label": "es_filter: tls.version.keyword: TLSv1* OR tls.version.keyword: SSL* AND NOT tls.version.keyword: TLSv1.3 AND NOT tls.version.keyword: TLSv1.2",
+                "id": "es_filter",
+                "value": "tls.version.keyword: TLSv1* OR tls.version.keyword: SSL* AND NOT tls.version.keyword: TLSv1.3 AND NOT tls.version.keyword: TLSv1.2",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+        ],
+        "name": "Hunt: Old TLS versions alert events",
+        "page": "DASHBOARDS",
+        "description": "Alert events with old or retired TLS versions.",
+        "share": "static"
     },
     {
         'content': [
@@ -293,70 +493,6 @@ FILTER_SETS = [
         'page': 'DASHBOARDS',
         'description': 'This filter results in providing events that are SSH based but have no libssh or openssh client version. Usually good starting point for further investigations.',
         'share': 'static'
-    },
-    {
-        'content': [
-            {
-                'value': 'firefox*',
-                'label': 'http.http_user_agent: firefox*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
-            },
-            {
-                'value': 'explorer*',
-                'label': 'http.http_user_agent: explorer*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
-            },
-            {
-                'value': 'opera*',
-                'label': 'http.http_user_agent: opera*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
-            },
-            {
-                'value': 'edge*',
-                'label': 'http.http_user_agent: edge*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
-            },
-            {
-                'value': 'wget*',
-                'label': 'http.http_user_agent: wget*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
-            },
-            {
-                'value': 'curl*',
-                'label': 'http.http_user_agent: curl*',
-                'fullString': False,
-                'query': 'filter',
-                'negated': True,
-                'id': 'http.http_user_agent'
-            },
-            {
-                'value': 'http',
-                'label': 'app_proto: http',
-                'fullString': True,
-                'query': 'filter',
-                'negated': False,
-                'id': 'app_proto'
-            }
-        ],
-        'share': 'static',
-        'name': 'Non common user agents',
-        'description': 'This filter set contains results of non common/traditionally seen in a network user agents generating alert/events. Thus making it a good starting point for a Threat Hunting initiative.',
-        'page': 'ALERTS_LIST'
     },
     {
         'content': [
