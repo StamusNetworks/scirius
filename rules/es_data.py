@@ -1734,14 +1734,14 @@ class ESData(ESQuery):
             self.doc_type = '_doc'
 
     @staticmethod
-    def _kibana_request(url, data):
+    def _kibana_request(url, data, method='GET'):
         headers = {
             'content-type': 'application/json',
             'kbn-xsrf': True
         }
         data = json.dumps(data)
         kibana_url = settings.KIBANA_URL + url
-        req = urllib.request.Request(kibana_url, data.encode('utf8'), headers=headers)
+        req = urllib.request.Request(kibana_url, data.encode('utf8'), headers=headers, method=method)
         urllib.request.urlopen(req)
         return req
 
@@ -1890,7 +1890,7 @@ class ESData(ESQuery):
                 self.es.update(index='.kibana', doc_type=self.doc_type, id=hit['_id'], body={'doc': content}, refresh=True)
 
         if get_es_major_version() >= 6:
-            self._kibana_request('/api/kibana/settings/defaultIndex', {'value': 'logstash-*'})
+            self._kibana_request('/api/kibana/settings/defaultIndex', {'value': 'logstash-*'}, method='POST')
         else:
             print("Warning: unknown ES version, not setting Kibana's defaultIndex", file=sys.stderr)  # noqa: E999
 
@@ -1987,10 +1987,12 @@ class ESData(ESQuery):
 
         if get_es_major_version() >= 6:
             try:
-                self._kibana_request('/api/spaces/space', KIBANA6_NAMESPACE)
+                self._kibana_request('/api/spaces/space', KIBANA6_NAMESPACE, method='POST')
             except urllib.error.HTTPError as e:
                 if e.code == 409:
                     print('Default namespace already exist, skipping creation.')
+                elif e.code == 404:
+                    print('Kibana OSS is used, skipping namespace creation.')
                 else:
                     raise
 
