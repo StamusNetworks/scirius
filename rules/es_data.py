@@ -1750,7 +1750,11 @@ class ESData(ESQuery):
         ids = []
 
         if get_es_major_version() >= 6:
-            body['query']['query_string']['query'] += ' type:%s' % _type
+            query = body['query']['query_string']['query']
+            if query:
+                query += ' AND '
+            query += 'type:%s' % _type
+            body['query']['query_string']['query'] = query
             _type = self.doc_type
 
         while True:
@@ -1981,7 +1985,14 @@ class ESData(ESQuery):
             raise Exception('Please make sure Kibana dashboards are installed at %s: no index-pattern found' % self._get_dashboard_dir())
 
         for _type in self.ALL_OBJ_TYPES:
-            self._kibana_remove(_type, {'query': {'query_string': {'query': 'SN*'}}})
+            if _type == 'index-pattern':
+                pattern = ''
+            elif get_es_major_version() >= 6:
+                pattern = '%s.title: SN*' % _type
+            else:
+                pattern = 'title: SN*' % _type
+
+            self._kibana_remove(_type, {'query': {'query_string': {'query': pattern}}})
             for _file in self._get_kibana_subdirfiles(_type):
                 self._kibana_inject(_type, _file)
 
