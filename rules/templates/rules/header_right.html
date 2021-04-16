@@ -84,6 +84,12 @@ $(function (){
             </div>
           </div>
           <li class="applauncher-pf-item" role="presentation">
+            <a class="applauncher-pf-link" {% if generator and generator == 'appliances' and license and license.nta and perms.rules.events_view %}style="color: inherit" href="/appliances/str"{% else %} style="pointer-events: none"{% endif %} role="menuitem">
+              <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40"/>
+              <span {% if generator and generator == 'appliances' and license and license.nta and perms.rules.events_view %}style="line-height: 1.5715;" {% else %}style="line-height: 1.5715; color: rgba(0,0,0,.2);"{% endif %} class="applauncher-pf-link-title">Threat Radar</span>
+            </a>
+          </li>
+          <li class="applauncher-pf-item" role="presentation">
               <a class="applauncher-pf-link" {% if license and license.etl and perms.rules.events_view %}href="/rules/hunt" style="color: inherit"{% else %} style="pointer-events: none"{% endif %} role="menuitem">
                 <img src="/static/rules/Stamus_SEH_icon.png" height="40" width="40"/>
                 <span {% if license and license.etl and perms.rules.events_view %}style="line-height: 1.5715;" {% else %}style="line-height: 1.5715; color: rgba(0,0,0,.2);"{% endif %} class="applauncher-pf-link-title">Hunting</span>
@@ -93,12 +99,6 @@ $(function (){
             <a class="applauncher-pf-link" style="color: inherit" href="/rules" role="menuitem">
               <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40"/>
               <span style="line-height: 1.5715;" class="applauncher-pf-link-title">Management</span>
-            </a>
-          </li>
-          <li class="applauncher-pf-item" role="presentation">
-            <a class="applauncher-pf-link" {% if generator and generator == 'appliances' and license and license.nta and perms.rules.events_view %}style="color: inherit" href="/appliances/str"{% else %} style="pointer-events: none"{% endif %} role="menuitem">
-              <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40"/>
-              <span {% if generator and generator == 'appliances' and license and license.nta and perms.rules.events_view %}style="line-height: 1.5715;" {% else %}style="line-height: 1.5715; color: rgba(0,0,0,.2);"{% endif %} class="applauncher-pf-link-title">Threat Radar</span>
             </a>
           </li>
         </div>

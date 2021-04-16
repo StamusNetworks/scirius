@@ -275,6 +275,7 @@ class UserNavInfo extends Component {
                       {APP_NAME_SHORT} APPS
                     </div>
                   </div>
+                  {this.getThreatRadar()}
                   <li className="applauncher-pf-item" role="presentation">
                     <a
                       className="applauncher-pf-link"
@@ -291,7 +292,6 @@ class UserNavInfo extends Component {
                     </a>
                   </li>
                   {this.getManagement()}
-                  {this.getThreatRadar()}
                 </div>
                 {this.props.systemSettings &&
                   (this.props.systemSettings.kibana || this.props.systemSettings.evebox || this.props.systemSettings.cyberchef) && (
