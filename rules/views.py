@@ -570,7 +570,7 @@ def transform_category(request, cat_id):
     cat_object = get_object_or_404(Category, pk=cat_id)
     can_edit = request.user.has_perm('rules.ruleset_policy_edit')
 
-    if request.method == 'POST':  # If the form has been submitted...
+    if request.method == 'POST' and can_edit:  # If the form has been submitted...
         form = CategoryTransformForm(request.POST, can_edit=can_edit)
         if form.is_valid():  # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
@@ -1828,7 +1828,7 @@ def system_settings(request):
         'kibana_form': kibana_form,
     }
 
-    if request.method == 'POST':
+    if request.method == 'POST' and can_edit:
         form_id = request.POST.get('form_id', None)
         comment = {'comment': request.POST.get('comment', None)}
 
