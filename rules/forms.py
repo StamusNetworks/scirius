@@ -20,8 +20,16 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from django import forms
-from django.core.exceptions import NON_FIELD_ERRORS
+from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied
 from rules.models import Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold, Transformation
+
+
+class RulesetPolicyEditPermForm:
+    WRITE_PERM = 'rules.ruleset_policy_edit'
+
+
+class ConfigurationEditPermForm:
+    WRITE_PERM = 'rules.configuration_edit'
 
 
 class CommentForm(forms.Form):
@@ -54,15 +62,22 @@ class RulesetChoiceForm(CommentForm):
 
 class BaseEditForm:
     def __init__(self, *args, **kwargs):
-        can_edit = kwargs.pop('can_edit', False)
+        request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
 
-        if not can_edit:
+        self.can_edit = request.user.has_perm(self.WRITE_PERM) if request else False
+        if not self.can_edit:
             for key in self.fields.keys():
                 self.fields[key].disabled = True
 
+    def clean(self):
+        if not self.can_edit:
+            raise PermissionDenied()
 
-class SystemSettingsForm(BaseEditForm, forms.ModelForm, CommentForm):
+        return super().clean()
+
+
+class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelForm, CommentForm):
     use_http_proxy = forms.BooleanField(label='Use a proxy', required=False)
     custom_elasticsearch = forms.BooleanField(label='Use a custom Elasticsearch server', required=False)
     http_proxy = forms.CharField(max_length=200, required=False, help_text='Proxy address of the form "http://username:password@hostname:port/"')
@@ -153,7 +168,7 @@ class RulesetForm(CommentForm):
         self.fields['target'].choices = Ruleset.get_transformation_choices(key=Transformation.TARGET)
 
 
-class RulesetEditForm(BaseEditForm, forms.ModelForm, CommentForm):
+class RulesetEditForm(RulesetPolicyEditPermForm, BaseEditForm, forms.ModelForm, CommentForm):
     name = forms.CharField(max_length=100)
     rulesets_label = "Apply transformation(s) to the following ruleset(s)"
     action = forms.ChoiceField()
@@ -231,7 +246,7 @@ class RuleTransformForm(RulesetChoiceForm):
         self.fields['target'].choices = rule.get_transformation_choices(key=Transformation.TARGET)
 
 
-class CategoryTransformForm(BaseEditForm, RulesetChoiceForm):
+class CategoryTransformForm(RulesetPolicyEditPermForm, BaseEditForm, RulesetChoiceForm):
     rulesets_label = "Apply transformation(s) to the following ruleset(s)"
     action = forms.ChoiceField()
     lateral = forms.ChoiceField()

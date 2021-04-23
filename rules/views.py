@@ -569,10 +569,9 @@ def edit_rule(request, rule_id):
 @permission_required('rules.ruleset_policy_view', raise_exception=True)
 def transform_category(request, cat_id):
     cat_object = get_object_or_404(Category, pk=cat_id)
-    can_edit = request.user.has_perm('rules.ruleset_policy_edit')
 
-    if request.method == 'POST' and can_edit:  # If the form has been submitted...
-        form = CategoryTransformForm(request.POST, can_edit=can_edit)
+    if request.method == 'POST':
+        form = CategoryTransformForm(request.POST, request=request)
         if form.is_valid():  # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
 
@@ -690,7 +689,7 @@ def transform_category(request, cat_id):
                     if 'rulesets' in initial:
                         del initial['rulesets']
 
-        form = CategoryTransformForm(initial=initial, can_edit=can_edit)
+        form = CategoryTransformForm(initial=initial, request=request)
 
     ruleset_transforms = []
     rulesets = Ruleset.objects.all()
@@ -1577,7 +1576,6 @@ def edit_ruleset(request, ruleset_id):
     if not user.has_perm('rules.ruleset_policy_edit') and not user.has_perm('rules.source_edit'):
         raise PermissionDenied()
 
-    can_edit = user.has_perm('rules.ruleset_policy_edit')
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
 
     # TODO: manage other types
@@ -1632,7 +1630,7 @@ def edit_ruleset(request, ruleset_id):
                 if source not in ruleset.sources.all():
                     source.enable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
         else:
-            form = RulesetEditForm(request.POST, instance=ruleset, can_edit=can_edit)
+            form = RulesetEditForm(request.POST, instance=ruleset, request=request)
 
             if form.is_valid():
                 UserAction.create(
@@ -1770,7 +1768,7 @@ def edit_ruleset(request, ruleset_id):
             # if len(trans_action) > 0:
             #     initial['target'] = trans_target[0].value
 
-            context['form'] = RulesetEditForm(instance=ruleset, initial=initial, can_edit=can_edit)
+            context['form'] = RulesetEditForm(instance=ruleset, initial=initial, request=request)
         return scirius_render(request, 'rules/edit_ruleset.html', context)
 
 
@@ -1843,8 +1841,7 @@ def copy_ruleset(request, ruleset_id):
 @permission_required('rules.configuration_view', raise_exception=True)
 def system_settings(request):
     gsettings = get_system_settings()
-    can_edit = request.user.has_perm('rules.configuration_edit')
-    main_form = SystemSettingsForm(instance=gsettings, can_edit=can_edit)
+    main_form = SystemSettingsForm(instance=gsettings, request=request)
     kibana_form = KibanaDataForm()
 
     context = {
@@ -1853,12 +1850,12 @@ def system_settings(request):
         'kibana_form': kibana_form,
     }
 
-    if request.method == 'POST' and can_edit:
+    if request.method == 'POST':
         form_id = request.POST.get('form_id', None)
         comment = {'comment': request.POST.get('comment', None)}
 
         if form_id == 'main':
-            main_form = SystemSettingsForm(request.POST, instance=gsettings, can_edit=can_edit)
+            main_form = SystemSettingsForm(request.POST, instance=gsettings, request=request)
             context['main_form'] = main_form
             if main_form.is_valid():
                 main_form.save()
@@ -1928,7 +1925,6 @@ def system_settings(request):
             user=request.user,
         )
     context['global_settings'] = get_system_settings()
-    context['can_edit'] = can_edit
     return scirius_render(request, 'rules/system_settings.html', context)
 
 
