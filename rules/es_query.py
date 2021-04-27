@@ -251,7 +251,8 @@ class ESQuery:
             count -= self.MAX_RESULT_WINDOW
 
         if scroll_id:
-            self.es.clear_scroll(scroll_id=scroll_id)
+            # Ignore 404 to prevent an exception when the query exceeded scroll_duration
+            self.es.clear_scroll(scroll_id=scroll_id, ignore=[404])
 
     def _scroll_composite(self, index, body):
         if 'aggregations' not in body:
