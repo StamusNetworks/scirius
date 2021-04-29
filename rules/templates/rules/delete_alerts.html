@@ -32,15 +32,21 @@
 </div> <!-- row -->
 
 <div class="row">
-<h2 class="title">Are you sure you want to delete all stored alerts for {{ object.pk }}?</h2>
+    <div class="col-md-12">
+        <h2 class="title">Are you sure you want to delete all stored alerts for {{ object.pk }}?</h2>
+    </div>
+</div> <!-- row -->
 
-<form class="form" action="{% url 'delete_alerts' object.pk %}" method="post">{% csrf_token %}
+<div class="row">
+    <div class="col-md-12">
+        <form class="form" action="{% url 'delete_alerts' object.pk %}" method="post">{% csrf_token %}
 
-    {% bootstrap_form comment_form %}
-<button class="btn btn-primary" type="submit">
-<span class="glyphicon glyphicon-trash"> Delete alerts</span>
-</button>
-</form>
+            {% bootstrap_form comment_form %}
+            <button class="btn btn-primary" type="submit">
+                <span class="glyphicon glyphicon-trash"> Delete alerts</span>
+            </button>
+        </form>
+    </div> <!-- col -->
 </div> <!-- row -->
 
 </div>
