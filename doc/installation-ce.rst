@@ -5,7 +5,7 @@ Installing Scirius CE
 ---------------------
 
 Scirius CE is an application written in `Django <https://www.djangoproject.com/>`_. It requires
-at least Django 1.11 and has not yet support for Django 2.0.
+at least Django 2.0 and has not yet support for Django 3.0.
 
 Scirius CE also uses `webpack <https://webpack.js.org/>`_ to build CSS and JS bundles.
 
@@ -40,11 +40,13 @@ For npm and webpack, you need a stable version of npm and webpack version 3.11. 
 you can do ::
 
  sudo apt-get install npm
- sudo npm install -g npm@latest webpack@3.11
  npm install
+ npm install -g webpack@3.11
+ webpack
  cd hunt
  npm install
  npm run build
+ cd ..
 
 Running Scirius CE
 ~~~~~~~~~~~~~~~~~~
