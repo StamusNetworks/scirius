@@ -16,11 +16,16 @@ The easy way to install the dependencies is to use `pip <https://pypi.python.org
 
 On Debian, you can run ::
 
- aptitude install python-pip python-dev
+ apt update
+ apt install --no-install-recommends -y apt-utils
+ apt install --no-install-recommends -y make wget git gcc libc-dev gunicorn python-sphinx gnupg2 libsasl2-dev libldap2-dev libssl-dev python-pip python-dev
 
 You can then install django and the dependencies ::
 
- pip install -r requirements.txt
+ python -m pip install --upgrade pip wheel setuptools
+ python -m pip install --upgrade six python-daemon suricatactl
+ python -m pip install django-bootstrap3==11.1.0 elasticsearch-curator==5.6
+ python -m pip install -r requirements.txt
 
 To use the suri_reloader script which is handling suricata restart, you will also need
 pyinotify ::
@@ -39,6 +44,16 @@ You will also potentially needs the gitdb module ::
 For npm and webpack, you need a stable version of npm and webpack version 3.11. On Debian
 you can do ::
 
+Add nodesource repository::
+
+ wget -O- https://deb.nodesource.com/setup_12.x | bash -
+ 
+Install nodejs::
+
+ apt-get install --no-install-recommends -y nodejs
+
+Install nodejs dependencies for Scirius:
+::
  sudo apt-get install npm
  npm install
  npm install -g webpack@3.11
