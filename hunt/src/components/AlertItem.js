@@ -31,11 +31,15 @@ export default class AlertItem extends React.Component {
     if (ev.event_type === 'alert') {
       msg = ev.alert.signature;
     } else if (ev.event_type === 'dns') {
-      msg = `${ev.dns.rrtype} ${ev.dns.type} ${ev.dns.rrname}`;
       if (ev.dns.type === 'answer') {
         if (ev.dns.grouped) {
-          msg += ' - ';
-          msg += ev.dns.grouped[ev.dns.rrtype].join(', ');
+          Object.keys(ev.dns.grouped).forEach((key, idx) => {
+            if (idx > 0) {
+              msg += ` / ${key} ${ev.dns.type} ${ev.dns.rrname} - ${ev.dns.grouped[key].join(', ')}`;
+            } else {
+              msg = `${key} ${ev.dns.type} ${ev.dns.rrname} - ${ev.dns.grouped[key].join(', ')}`;
+            }
+          });
         } else if ('answers' in ev.dns) {
           msg += ' - ';
           msg += ev.dns.answers
@@ -43,6 +47,8 @@ export default class AlertItem extends React.Component {
             .filter((a) => a || false)
             .join(', ');
         }
+      } else {
+        msg = `${ev.dns.rrtype} ${ev.dns.type} ${ev.dns.rrname}`;
       }
     } else if (ev.event_type === 'fileinfo') {
       msg = ev.fileinfo.filename;
