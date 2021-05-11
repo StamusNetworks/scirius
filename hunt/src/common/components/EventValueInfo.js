@@ -14,8 +14,8 @@ const EventValueInfo = (props) => {
       return <EventIPInfo key="event_ip_info" value={props.value} />;
     }
     return (
-      <OverlayTrigger key="onyphe_link" trigger={['hover', 'hover']} placement="top" overlay={<Tooltip id="tooltip-top">external info</Tooltip>}>
-        <a href={`https://www.onyphe.io/search/?query=${props.value}`} target="_blank">
+      <OverlayTrigger key="virustotal_link" trigger={['hover', 'hover']} placement="top" overlay={<Tooltip id="tooltip-top">external info</Tooltip>}>
+        <a href={`https://www.virustotal.com/gui/ip-address/${props.value}`} target="_blank">
           {' '}
           <Icon type="fa" name="info-circle" />
         </a>
