@@ -24,6 +24,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.conf import settings
 from django.core.exceptions import FieldError, SuspiciousOperation, ValidationError
 from django.core.validators import validate_ipv4_address
+from django.core.cache import cache
 from django.db import transaction
 from django.urls import reverse
 from django.utils import timezone
@@ -41,6 +42,7 @@ import shutil
 import json
 import IPy
 import base64
+import time
 from datetime import date as datetime_date
 
 from rules.tests_rules import TestRules
@@ -824,6 +826,8 @@ class Source(models.Model):
         ('b64dataset', 'String dataset file'),
     ]
     TMP_DIR = "/tmp/"
+    REFRESH_LOCK_ID = 'source-lock'
+    REFRESH_LOCK_EXPIRE = 60 * 10
 
     name = models.CharField(max_length=100, unique=True)
     created_date = models.DateTimeField('date created')
@@ -1220,45 +1224,51 @@ class Source(models.Model):
     # This method cannot be called twice consecutively
     @transaction.atomic
     def update(self):
-        # look for categories list: if none, first import
-        categories = Category.objects.filter(source=self)
-        firstimport = False
-        if not categories:
-            firstimport = True
+        while not cache.add('%s-%s' % (Source.REFRESH_LOCK_ID, self.pk), 'true', Source.REFRESH_LOCK_EXPIRE):
+            time.sleep(5)
 
-        if self.method not in ['http', 'local']:
-            raise FieldError("Currently unsupported method")
+        try:
+            # look for categories list: if none, first import
+            categories = Category.objects.filter(source=self)
+            firstimport = False
+            if not categories:
+                firstimport = True
 
-        need_update = False
-        if self.update_ruleset:
-            f = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
-            need_update = self.update_ruleset(f)
+            if self.method not in ['http', 'local']:
+                raise FieldError("Currently unsupported method")
+
+            need_update = False
+            if self.update_ruleset:
+                f = tempfile.NamedTemporaryFile(dir=self.TMP_DIR)
+                need_update = self.update_ruleset(f)
+
+                if need_update:
+                    if self.datatype == 'sigs':
+                        self.handle_rules_in_tar(f)
+                    elif self.datatype == 'sig':
+                        self.handle_rules_file(f)
+                    elif self.datatype == 'other':
+                        self.handle_other_file(f)
+                    elif self.datatype == 'b64dataset':
+                        self.handle_b64dataset(f)
+
+                    if self.datatype in self.custom_data_type:
+                        self.handle_custom_file(f)
 
             if need_update:
-                if self.datatype == 'sigs':
-                    self.handle_rules_in_tar(f)
-                elif self.datatype == 'sig':
-                    self.handle_rules_file(f)
-                elif self.datatype == 'other':
-                    self.handle_other_file(f)
-                elif self.datatype == 'b64dataset':
-                    self.handle_b64dataset(f)
+                if self.datatype in ('sig', 'sigs') and not firstimport:
+                    self.create_update()
 
                 if self.datatype in self.custom_data_type:
-                    self.handle_custom_file(f)
+                    from scirius.utils import get_middleware_module
+                    source_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
+                    get_middleware_module('common').update_custom_source(source_path)
 
-        if need_update:
-            if self.datatype in ('sig', 'sigs') and not firstimport:
-                self.create_update()
-
-            if self.datatype in self.custom_data_type:
-                from scirius.utils import get_middleware_module
-                source_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk), 'rules')
-                get_middleware_module('common').update_custom_source(source_path)
-
-            for rule in self.updated_rules["deleted"]:
-                rule.delete()
-            self.needs_test()
+                for rule in self.updated_rules["deleted"]:
+                    rule.delete()
+                self.needs_test()
+        finally:
+            cache.delete('%s-%s' % (Source.REFRESH_LOCK_ID, self.pk))
 
     def diff(self):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
