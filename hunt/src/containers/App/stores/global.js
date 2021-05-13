@@ -181,7 +181,7 @@ export const reducer = (state = initialState, action) => {
       const idx = indexOfFilter(action.filter, globalFilters);
 
       /* eslint-disable-next-line */
-            const updatedGlobalFilters = globalFilters.map((filter, i) => (i === idx) ? {
+      const updatedGlobalFilters = globalFilters.map((filter, i) => (i === idx) ? {
               ...filter,
               ...action.filterUpdated,
             }
@@ -289,7 +289,7 @@ export const makeSelectGlobalFilters = (includeAlertTag = false) =>
   });
 export const makeSelectHistoryFilters = () => createSelector(selectGlobal, (globalState) => globalState.getIn(['filters', sections.HISTORY]).toJS());
 export const makeSelectAlertTag = () => createSelector(selectGlobal, (globalState) => globalState.getIn(['filters', sections.ALERT]).toJS());
-export const makSelectUserData = () =>
+export const makeSelectUserData = () =>
   createSelector(selectGlobal, (globalState) => {
     const userDetails = globalState.getIn([sections.USER]).toJS();
     const { data = {} } = userDetails;
@@ -318,4 +318,4 @@ export const makSelectUserData = () =>
       noTenant,
     };
   });
-export const makSelectUserRequest = () => createSelector(selectGlobal, (globalState) => globalState.getIn(['user']).toJS().request);
+export const makeSelectUserRequest = () => createSelector(selectGlobal, (globalState) => globalState.getIn(['user']).toJS().request);
