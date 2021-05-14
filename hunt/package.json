@@ -98,7 +98,7 @@
     "copy-img": "cp node_modules/patternfly/dist/img/* src/img",
     "build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules --include-path ./node_modules/patternfly/node_modules/ --include-path=node_modules/patternfly/dist/sass/ --include-path=node_modules/patternfly/node_modules/bootstrap-sass/assets/stylesheets/ --include-path=node_modules/patternfly/node_modules/font-awesome-sass/assets/stylesheets/ --include-path=node_modules/react-grid-layout/css/ --include-path=node_modules/react-resizable/css/ --include-path=node_modules/patternfly-react/dist/sass/ src/ -o src/css/; mv src/css/containers/App/App.css src/css/",
     "build": "npm run copy-fonts && npm run copy-img && npm run build-css && npm run build-js",
-    "eslint:fix": "node node_modules/eslint/bin/eslint.js ./ --fix"
+    "eslint:fix": "node node_modules/eslint/bin/eslint.js ./ --fix --max-warnings 0"
   },
   "jest": {
     "collectCoverageFrom": [

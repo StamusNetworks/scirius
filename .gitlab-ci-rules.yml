@@ -31,7 +31,7 @@ npm-hunt:
   - cd hunt
   - npm install
   - npm run build
-  - node node_modules/eslint/bin/eslint.js src/
+  - node node_modules/eslint/bin/eslint.js src/ --max-warnings 0
 
 test-static:
   stage: test

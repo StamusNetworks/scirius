@@ -57,5 +57,6 @@ module.exports = {
     // Hunt required customizations
     'import/no-unresolved': [2, { ignore: ['hunt_common'] }], // Ignore the common folder
     'react/no-this-in-sfc': 0, // Ignore this rule because hunt still has function binds
+    'func-names': 0,
   },
 };
