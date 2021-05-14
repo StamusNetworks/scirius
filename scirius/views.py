@@ -22,6 +22,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 
 from django.conf import settings
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 
@@ -40,9 +41,10 @@ def homepage(request):
 
 
 # Proxy
-class KibanaProxyView(ProxyView):
+class KibanaProxyView(PermissionRequiredMixin, ProxyView):
     upstream = settings.KIBANA_URL
     add_remote_user = False
+    permission_required = ['rules.events_kibana']
 
     def dispatch(self, request, path):
         if (path == 'api/infra/graphql' or path.startswith('api/infra/graphql/')) and \
@@ -51,9 +53,10 @@ class KibanaProxyView(ProxyView):
         return super().dispatch(request, path)
 
 
-class EveboxProxyView(ProxyView):
+class EveboxProxyView(PermissionRequiredMixin, ProxyView):
     upstream = "http://" + settings.EVEBOX_ADDRESS
     add_remote_user = True
+    permission_required = ['rules.events_evebox']
 
 
 class MolochProxyView(ProxyView):
