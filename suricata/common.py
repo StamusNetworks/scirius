@@ -83,7 +83,7 @@ def has_multitenant():
     return False
 
 
-def get_tenants():
+def get_tenants(empty_queryset=False):
     return []
 
 
