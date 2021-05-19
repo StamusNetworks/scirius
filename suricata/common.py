@@ -226,3 +226,7 @@ def update_settings(data):
 
 def extra_ruleset_form(request):
     return None
+
+
+def data_export():
+    pass

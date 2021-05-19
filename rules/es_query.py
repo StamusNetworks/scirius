@@ -305,7 +305,9 @@ class ESQuery:
         return 'fixed_interval'
 
     def _es_bool_clauses(self):
-        return get_middleware_module('common').es_bool_clauses(self.request)
+        if self.request:
+            return get_middleware_module('common').es_bool_clauses(self.request)
+        return ''
 
     def _get_index_name(self):
         return self.INDEX

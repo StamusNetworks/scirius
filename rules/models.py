@@ -44,6 +44,7 @@ import IPy
 import base64
 import time
 from datetime import date as datetime_date
+import logging
 
 from rules.tests_rules import TestRules
 from rules.validators import validate_addresses_or_networks
@@ -51,6 +52,8 @@ from rules.filter_sets import FILTER_SETS
 
 from django.contrib.auth.models import User
 
+
+request_logger = logging.getLogger('django.request')
 
 ES_ADDRESS = None
 
@@ -1317,10 +1320,13 @@ class Source(models.Model):
     def get_absolute_url(self):
         return reverse('source', args=[str(self.id)])
 
+    def is_ti_url(self):
+        return self.uri.startswith('https://ti.stamus-networks.io/')
+
     def is_etpro_url(self):
         return self.uri.startswith('https://rules.emergingthreatspro.com/') or \
             self.uri.startswith('https://rules.emergingthreats.net/') or \
-            self.uri.startswith('https://ti.stamus-networks.io/')
+            self.is_ti_url()
 
     def update_ruleset_http(self, f):
         from scirius.utils import RequestsWrapper
@@ -3119,10 +3125,19 @@ class Ruleset(models.Model, Transformable):
 
     def update(self):
         update_errors = []
+        is_ti_url = False
         sourcesatversion = self.sources.all()
         for sourcesat in sourcesatversion:
             try:
                 sourcesat.source.update()
+
+                if sourcesat.source.method == 'http' and sourcesat.source.is_ti_url() and not is_ti_url:
+                    from scirius.utils import get_middleware_module
+                    try:
+                        get_middleware_module('common').data_export()
+                        is_ti_url = True
+                    except Exception as exc:
+                        request_logger.error('Unable to export data: %s' % exc)
             except IOError as e:
                 update_errors.append('Source "%s" update failed:\n\t%s' % (sourcesat.source.name, str(e)))
 
