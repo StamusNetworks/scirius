@@ -7,6 +7,7 @@ from collections import OrderedDict
 from pprint import pformat
 from traceback import format_exc
 import os
+import json
 
 from elasticsearch import Elasticsearch, Transport, ElasticsearchException, TransportError, ConnectionError, ConnectionTimeout
 from django.conf import settings
@@ -375,3 +376,15 @@ class ESQuery:
                               ignore_unavailable=True,
                               _source=True,
                               request_timeout=self.TIMEOUT)
+
+    def is_read_only(self, index=None):
+        settings_ = self.es.indices.get_settings(index)
+
+        for val in settings_.values():
+            if 'settings' in val:
+                val = val['settings']
+
+                if 'index' in val and 'blocks' in val['index'] and 'read_only_allow_delete' in val['index']['blocks']:
+                    if json.loads(val['index']['blocks'].get('read_only_allow_delete', 'false')):
+                        return True
+        return False

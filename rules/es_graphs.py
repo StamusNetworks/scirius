@@ -488,12 +488,18 @@ class ESPoststats(ESQuery):
 
 class ESHealth(ESQuery):
     def get(self):
-        return self.es.cluster.health()
+        health = self.es.cluster.health()
+        if self.is_read_only():
+            health['status'] = 'red'
+        return health
 
 
 class ESStats(ESQuery):
     def get(self):
-        return self.es.cluster.stats()
+        stats = self.es.cluster.stats()
+        if self.is_read_only():
+            stats['status'] = 'red'
+        return stats
 
 
 class ESVersion(ESQuery):
