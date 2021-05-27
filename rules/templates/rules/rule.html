@@ -34,7 +34,7 @@
 
 {% if perms.rules.events_evebox %}
 {% if evebox %}
-<li><a href="{{ evebox_url }}/#/events;q=alert.signature_id:{{ rule.sid }}" target="_blank">Evebox</a></li>
+<li><a href="{{ evebox_url }}/#/events?q=alert.signature_id:{{ rule.sid }}" target="_blank">Evebox</a></li>
 {% endif %}
 {% endif %}
 </ul>
@@ -471,7 +471,7 @@ function populate_topip_actions(pdiv, field, direction) {
             {% if custom_eve_url %}
                 window.open("{{ custom_eve_url|safe }}" + ip);
             {% else %}
-                window.open("{{ evebox_url }}/#/events;q=" + field + ":\"" + ip + "\"");
+                window.open("{{ evebox_url }}/#/events?q=" + field + ":\"" + ip + "\"");
             {% endif %}
 		});
 	    {% endif %}
