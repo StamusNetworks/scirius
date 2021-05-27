@@ -27,7 +27,7 @@ from django.conf import settings
 
 if settings.SURICATA_UNIX_SOCKET:
     try:
-        import suricatasc
+        import suricata.sc as suricatasc
     except:
         settings.SURICATA_UNIX_SOCKET = None
 
