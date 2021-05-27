@@ -1,1 +1,2 @@
-from suricata.sc.suricatasc import *
+from suricata.sc.suricatasc import SuricataSC
+__all__ = ['SuricataSC']
