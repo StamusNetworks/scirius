@@ -26,16 +26,35 @@ PERMS = [
 class Command(BaseCommand):
     help = 'Create or restore scirius user in Superuser role with all permissions'
 
+    def add_arguments(self, parser):
+
+        parser.add_argument(
+            '-u', '--username',
+            default=None,
+            dest='username',
+            required=True,
+            help='Username of the created/restored user')
+
+        parser.add_argument(
+            '-p', '--password',
+            default=None,
+            dest='password',
+            required=True,
+            help='Password of the created/restored user')
+
     def handle(self, *args, **options):
+        username = options['username']
+        passwd = options['password']
+
         dj_group, _ = DjangoGroup.objects.get_or_create(name='Superuser')
         role, _ = Group.objects.get_or_create(group=dj_group)
-        user, user_created = User.objects.get_or_create(username='scirius')
+        user, user_created = User.objects.get_or_create(username=username)
         SciriusUser.objects.get_or_create(user=user, defaults={'timezone': 'UTC'})
 
         content_type = ContentType.objects.get_for_model(FakePermissionModel)
 
         if user_created:
-            user.set_password('scirius')
+            user.set_password(passwd)
             user.is_active = True
             user.save()
 
