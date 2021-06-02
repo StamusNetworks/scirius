@@ -84,23 +84,26 @@ export default class FilterItem extends React.Component {
       );
     }
     let icon;
+    const icons = [];
     switch (item.action) {
       case 'suppress':
-        icon = <ListViewIcon name="close" />;
+        icon = <ListViewIcon name="close" key="suppress" />;
         break;
       case 'threshold':
-        icon = <ListViewIcon name="minus" />;
+        icon = <ListViewIcon name="minus" key="threshold" />;
         break;
       case 'tag':
-        icon = <ListViewIcon name="envelope" />;
+        icon = <ListViewIcon name="envelope" key="tag" />;
         break;
       case 'tagkeep':
-        icon = <ListViewIcon name="envelope" />;
+        icon = <ListViewIcon name="envelope" key="tagkeep" />;
         break;
       default:
-        icon = <ListViewIcon name="envelope" />;
+        icon = <ListViewIcon name="envelope" key="tag" />;
         break;
     }
+    icons.push(icon);
+
     const actionsMenu = [
       <span key={`${item.pk}-index`} className="badge badge-default">
         {item.index}
@@ -115,10 +118,15 @@ export default class FilterItem extends React.Component {
         needUpdate={this.props.needUpdate}
       />,
     );
+
+    if (item.imported) {
+      icons.push(<ListViewIcon key="imported" name="upload" title="Imported" className="glyphicon glyphicon-upload" />);
+    }
+
     return (
       <ListViewItem
         key={`${item.pk}-listitem`}
-        leftContent={icon}
+        leftContent={icons}
         additionalInfo={addinfo}
         heading={item.action}
         description={description}

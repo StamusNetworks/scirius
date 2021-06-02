@@ -93,7 +93,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RuleProcessingFilter
-        fields = ('pk', 'filter_defs', 'action', 'options', 'rulesets', 'index', 'description', 'enabled', 'comment')
+        fields = ('pk', 'filter_defs', 'action', 'options', 'rulesets', 'index', 'description', 'enabled', 'imported', 'comment')
 
     def __init__(self, *args, **kwargs):
         super(RuleProcessingFilterSerializer, self).__init__(*args, **kwargs)

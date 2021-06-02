@@ -230,3 +230,19 @@ def extra_ruleset_form(request):
 
 def data_export():
     pass
+
+
+def update_policies(proc_filter):
+    pass
+
+
+def delete_policies():
+    pass
+
+
+def extract_policies(item):
+    return {}
+
+
+def import_policies(filter_, method_dict=None, threat_dict=None):
+    pass

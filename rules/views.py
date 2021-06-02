@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import re
 import os
 import yaml
+from datetime import date
 
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
@@ -51,7 +52,7 @@ from .tables import RuleThresholdTable, RuleSuppressTable, RulesetThresholdTable
 from .tables import EditCategoryTable, EditRuleTable, EditSourceAtVersionTable
 from .forms import RuleCommentForm, RuleTransformForm, CategoryTransformForm, RulesetSuppressForm, CommentForm
 from .forms import AddRuleThresholdForm, AddRuleSuppressForm, AddSourceForm, AddPublicSourceForm, SourceForm
-from .forms import RulesetForm, RulesetEditForm, RulesetCopyForm, SystemSettingsForm, KibanaDataForm, EditThresholdForm
+from .forms import RulesetForm, RulesetEditForm, RulesetCopyForm, SystemSettingsForm, KibanaDataForm, EditThresholdForm, PoliciesForm
 from .suripyg import SuriHTMLFormat
 
 PROBE = __import__(settings.RULESET_MIDDLEWARE)
@@ -2029,6 +2030,28 @@ def history(request):
 
     context = {'history': res}
     return scirius_render(request, 'rules/history.html', context)
+
+
+@permission_required('rules.ruleset_policy_view', raise_exception=True)
+def policies(request):
+    context = {}
+    if request.method == 'POST':
+        if 'import' in request.POST:
+            form = PoliciesForm(request.POST, request.FILES, request=request)
+
+            if not form.is_valid():
+                context['error'] = 'No policies file'
+                return scirius_render(request, 'rules/policies.html', context)
+
+            PoliciesForm._import(request.FILES['file'], 'delete' in request.POST)
+            context['success'] = 'Successfully imported'
+        elif 'export' in request.POST:
+            file_tar_io = PoliciesForm._export()
+            response = HttpResponse(file_tar_io.getvalue(), content_type='application/gzip')
+            response['Content-Disposition'] = 'attachment; filename="policies-filtersets-%s.tgz"' % str(date.today())
+            return response
+
+    return scirius_render(request, 'rules/policies.html', context)
 
 
 @csp(DEFAULT_SRC=["'self'"], SCRIPT_SRC=["'unsafe-eval'"], STYLE_SRC=["'self'", "'unsafe-inline'"])

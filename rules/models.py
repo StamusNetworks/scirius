@@ -319,6 +319,7 @@ class FilterSet(models.Model):
     name = models.CharField(max_length=150)
     page = models.CharField(max_length=25)
     description = models.TextField(blank=True, null=True)
+    imported = models.BooleanField(default=False)
 
     @staticmethod
     def get_default_filter_sets():
@@ -3435,6 +3436,7 @@ class RuleProcessingFilter(models.Model):
     description = models.TextField(default='')
     enabled = models.BooleanField(default=True)
     rulesets = models.ManyToManyField(Ruleset, related_name='processing_filters')
+    imported = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['index']

@@ -74,5 +74,6 @@ urlpatterns = [
     url(r'^threshold/(?P<threshold_id>\d+)/edit$', views.edit_threshold, name='edit_threshold'),
     url(r'^history$', views.history, name='history'),
     url(r'^comment$', views.history, name='comment'),
+    url(r'^policies$', views.policies, name='policies'),
     url(r'^hunt$', views.hunt, name='hunt'),
 ]

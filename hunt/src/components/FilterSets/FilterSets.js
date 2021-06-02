@@ -53,20 +53,25 @@ export default class FilterSets extends React.Component {
     this.setState({ searchValue: event.target.value });
   };
 
-  getIcon = (item) => {
+  getIcons = (item) => {
+    const icons = [];
     if (item.page === 'DASHBOARDS') {
-      return <Icon className="pull-left" type="fa" name="tachometer" />;
+      icons.push(<Icon className="pull-left" type="fa" name="tachometer" key="tachometer" />);
     }
     if (item.page === 'RULES_LIST') {
-      return <Icon className="pull-left" type="pf" name="security" />;
+      icons.push(<Icon className="pull-left" type="pf" name="security" key="security" />);
     }
     if (item.page === 'ALERTS_LIST') {
-      return <Icon className="pull-left" type="fa" name="bell" />;
+      icons.push(<Icon className="pull-left" type="fa" name="bell" key="bell" />);
     }
     if (item.page === 'HOSTS_LIST') {
-      return <Icon className="pull-left" type="fa" name="id-card-o" />;
+      icons.push(<Icon className="pull-left" type="fa" name="id-card-o" key="card" />);
     }
-    return undefined;
+
+    if (item.imported) {
+      icons.push(<Icon className="glyphicon-upload pull-right" title="Imported" key="upload" name="upload" />);
+    }
+    return icons;
   };
 
   escFunction(event) {
@@ -133,7 +138,7 @@ export default class FilterSets extends React.Component {
                 {rowsGlobal && (
                   <NotificationDrawer.PanelBody key="containsNotifications">
                     {rowsGlobal.map((item) => (
-                      <span key={item.name} data-toggle="tooltip" title={item.description}>
+                      <span key={Math.random()} data-toggle="tooltip" title={item.description}>
                         <Notification key={item.id} seen={false}>
                           <NotificationDrawer.Dropdown id="Dropdown1">
                             <MenuItem key="load" onClick={() => this.loadFilterSets(item)}>
@@ -145,7 +150,7 @@ export default class FilterSets extends React.Component {
                               </MenuItem>
                             )}
                           </NotificationDrawer.Dropdown>
-                          {this.getIcon(item)}
+                          {this.getIcons(item)}
                           <Notification.Content onClick={() => this.loadFilterSets(item)}>
                             <Notification.Message>{item.name}</Notification.Message>
                             <Notification.Info leftText={`${item.pageTitle} Page`} rightText="Shared" />
@@ -183,7 +188,7 @@ export default class FilterSets extends React.Component {
                               Delete
                             </MenuItem>
                           </NotificationDrawer.Dropdown>
-                          {this.getIcon(item)}
+                          {this.getIcons(item)}
                           <Notification.Content onClick={() => this.loadFilterSets(item)}>
                             <Notification.Message>{item.name}</Notification.Message>
                             <Notification.Info leftText={`${item.pageTitle} Page`} rightText="Private" />
@@ -219,7 +224,7 @@ export default class FilterSets extends React.Component {
                               Load
                             </MenuItem>
                           </NotificationDrawer.Dropdown>
-                          {this.getIcon(item)}
+                          {this.getIcons(item)}
                           <Notification.Content onClick={() => this.loadFilterSets(item)}>
                             <Notification.Message>{item.name}</Notification.Message>
                             <Notification.Info leftText={`${item.pageTitle} Page`} rightText="Static" />
