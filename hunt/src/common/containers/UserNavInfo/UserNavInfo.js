@@ -164,7 +164,17 @@ class UserNavInfo extends Component {
           </a>
         </li>
       );
-    return true;
+
+    return (
+      <li className="applauncher-pf-item">
+        <div className="applauncher-pf-link">
+          <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40" style={{ filter: 'opacity(.2)' }} />
+          <span className="applauncher-pf-link-title" style={{ fontSize: '12px', color: 'rgba(0,0,0,.2)', lineHeight: '1.5715' }}>
+            Threat Radar
+          </span>
+        </div>
+      </li>
+    );
   }
 
   render() {
