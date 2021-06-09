@@ -62,10 +62,10 @@ class RulesetChoiceForm(CommentForm):
 
 class BaseEditForm:
     def __init__(self, *args, **kwargs):
-        request = kwargs.pop('request', None)
+        request = kwargs.pop('request')
         super().__init__(*args, **kwargs)
 
-        self.can_edit = request.user.has_perm(self.WRITE_PERM) if request else False
+        self.can_edit = request.user.has_perm(self.WRITE_PERM)
         if not self.can_edit:
             for key in self.fields.keys():
                 self.fields[key].disabled = True
