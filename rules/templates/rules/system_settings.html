@@ -40,6 +40,7 @@
       {% bootstrap_field main_form.custom_elasticsearch %}
       <div id="es_custom_fields">
         {% bootstrap_field main_form.elasticsearch_url %}
+        {% bootstrap_field main_form.use_proxy_for_es %}
         <div id="es_msg_version"></div>
         <button class="btn btn-secondary" type="button" id="es_button_lb" onclick="es_check_version(); return false;">Check</button>
       </div>

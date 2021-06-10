@@ -767,6 +767,7 @@ class SystemSettings(models.Model):
         null=False,
         default='http://elasticsearch:9200/'
     )
+    use_proxy_for_es = models.BooleanField(default=False)
 
     def get_proxy_params(self):
         if self.use_http_proxy:

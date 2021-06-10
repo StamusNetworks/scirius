@@ -9,12 +9,12 @@ from traceback import format_exc
 import os
 import json
 
-from elasticsearch import Elasticsearch, Transport, ElasticsearchException, TransportError, ConnectionError, ConnectionTimeout
+from elasticsearch import Elasticsearch, Transport, ElasticsearchException, TransportError, ConnectionError, ConnectionTimeout, RequestsHttpConnection
 from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.utils.urls import replace_query_param, remove_query_param
 
-from rules.models import get_es_address
+from rules.models import get_es_address, get_system_settings
 from scirius.utils import get_middleware_module
 from scirius.rest_utils import SciriusSetPagination
 
@@ -143,6 +143,16 @@ class ESTransport(Transport):
         super().__init__(es_addr, *args, **kwargs)
 
 
+class ESConnection(RequestsHttpConnection):
+    '''
+    https://github.com/elastic/elasticsearch-py/issues/275#issuecomment-218403073
+    '''
+    def __init__(self, *args, **kwargs):
+        proxies = kwargs.pop('proxies', {})
+        super().__init__(*args, **kwargs)
+        self.session.proxies = proxies
+
+
 class ESQuery:
     TIMEOUT = 30
     MAX_RESULT_WINDOW = 10000
@@ -160,22 +170,30 @@ class ESQuery:
             es_address = get_es_address()
         es_address = es_address.split(',')
 
-        ssl_params = {}
+        es_params = {
+            'hosts': es_address,
+            'transport_class': ESTransport
+        }
+
         if es_address[0].startswith('https'):
             ca_certs = None
             requests_ca_path = os.getenv('REQUESTS_CA_BUNDLE')
             if requests_ca_path:
                 ca_certs = requests_ca_path
 
-            ssl_params = {
+            es_params.update({
                 'use_ssl': True,
                 'verify_certs': True,
                 'ca_certs': ca_certs
-            }
+            })
 
-        es = Elasticsearch(es_address,
-                           transport_class=ESTransport,
-                           **ssl_params)
+        if get_system_settings().custom_elasticsearch and get_system_settings().use_proxy_for_es:
+            es_params.update({
+                'connection_class': ESConnection,
+                'proxies': get_system_settings().get_proxy_params()
+            })
+
+        es = Elasticsearch(**es_params)
         self.es = ESWrap(es)
 
     def _from_date(self):
