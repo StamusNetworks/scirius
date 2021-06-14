@@ -36,7 +36,7 @@ from rules.es_data import ESData
 from rules.es_query import normalize_es_url, ESPaginator
 
 from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats
-from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend
+from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend, ESTimeRangeAllAlerts
 from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESEventsTail, ESSuriLogTail, ESPoststats
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
@@ -2457,6 +2457,34 @@ class ESAlertsCountViewSet(ESBaseViewSet):
         return Response(data)
 
 
+class ESTimeRangeAllAlertsViewSet(ESBaseViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+
+    Show alerts count:\n
+        1. curl -k https://x.x.x.x/rest/rules/es/alerts_timerange/?hosts=ProbeMain -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        2. curl -k https://x.x.x.x/rest/rules/es/alerts_timerange/?hosts=ProbeMain&from_date=1537264545477&prev=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+        3. curl -k https://x.x.x.x/rest/rules/es/alerts_timerange/?hosts=ProbeMain&from_date=1537264545477&prev=true&qfilter=<"filter in Elasticsearch Query String Query format"> -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        1. {"min_timestamp":1623685733514.0,"max_timestamp":1623686992004.0}
+        2. {"min_timestamp":1623685733514.0,"max_timestamp":1623686992004.0}
+        3. {"min_timestamp":1623685733514.0,"max_timestamp":1623686992004.0}
+
+    =============================================================================================================================================================
+    """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
+
+    def _get(self, request, format=None):
+        data = ESTimeRangeAllAlerts(request).get()
+        return Response(data)
+
+
 class ESLatestStatsViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
@@ -2914,6 +2942,7 @@ def get_custom_urls():
     urls.append(url(r'rules/es/check_version/$', ESCheckVersionViewSet.as_view(), name='es_check_version'))
     urls.append(url(r'rules/es/rules_per_category/$', ESRulesPerCategoryViewSet.as_view(), name='es_rules_per_category'))
     urls.append(url(r'rules/es/alerts_count/$', ESAlertsCountViewSet.as_view(), name='es_alerts_count'))
+    urls.append(url(r'rules/es/alerts_timerange/$', ESTimeRangeAllAlertsViewSet.as_view(), name='es_alerts_timerange'))
     urls.append(url(r'rules/es/latest_stats/$', ESLatestStatsViewSet.as_view(), name='es_latest_stats'))
     urls.append(url(r'rules/es/ip_pair_alerts/$', ESIPPairAlertsViewSet.as_view(), name='es_ip_pair_alerts'))
     urls.append(url(r'rules/es/ip_pair_network_alerts/$', ESIPPairNetworkAlertsViewSet.as_view(), name='es_ip_pair_network_alerts'))

@@ -720,6 +720,45 @@ class ESAlertsTrend(ESQuery):
         return {"prev_doc_count": countsdata[0]["doc_count"], "doc_count": countsdata[1]["doc_count"]}
 
 
+class ESTimeRangeAllAlerts(ESQuery):
+    def _get_query(self, *args, **kwargs):
+        q = {
+            'size': 0,
+            'query': {
+                'bool': {
+                    'must': [{
+                        'query_string': {
+                            'query': 'event_type:alert AND %s %s' % (self._hosts(), self._qfilter()),
+                            'analyze_wildcard': True
+                        }
+                    }],
+                    'must_not': []
+                }
+            },
+            'aggs': {
+                'max_timestamp': {
+                    'max': {
+                        'field': '@timestamp'
+                    }
+                },
+                'min_timestamp': {
+                    'min': {
+                        'field': '@timestamp'
+                    }
+                }
+            }
+        }
+        q['query']['bool'].update(self._es_bool_clauses())
+        return q
+
+    def get(self):
+        data = super().get()
+        return {
+            'min_timestamp': data.get('aggregations', {}).get('min_timestamp', {}).get('value', None),
+            'max_timestamp': data.get('aggregations', {}).get('max_timestamp', {}).get('value', None)
+        }
+
+
 class ESAlertsCount(ESQuery):
     def _get_query(self):
         q = {
