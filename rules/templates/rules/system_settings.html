@@ -210,7 +210,7 @@ $.ajax(
 {
     url: "{% url 'es_check_version'%}",
     type: 'POST',
-    data: {"es_url": $('#id_elasticsearch_url').val()},
+    data: {"es_url": $('#id_elasticsearch_url').val().trim()},
     success: function(data) {
         if (!data.error) {
             var msg = "<strong>Connected to ES " + data.es_version + "</strong>";
