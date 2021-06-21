@@ -1,8 +1,6 @@
 #!/bin/bash
 
-# Copyright(C) 2019, Stamus Networks
-# All rights reserved
-# Written by Raphaël Brogat <rbrogat@stamus-networks.com>
+# Copyright(C) 2020 Gabor Seljan
 #
 # Designed for Debian
 #

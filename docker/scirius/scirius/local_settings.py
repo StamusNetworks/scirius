@@ -1,6 +1,7 @@
-# Copyright (C) 2019, Stamus Networks
-# Adapted by Raphaël Brogat <rbrogat@stamus-networks.com> based on Gabor Seljan's code
-# Designed for Debian
+# Copyright(C) 2020, Gabor Seljan
+# Copyright(C) 2021, Stamus Networks
+#
+# Adapted by Raphaël Brogat <rbrogat@stamus-networks.com>
 #
 # This script comes with ABSOLUTELY NO WARRANTY!
 #

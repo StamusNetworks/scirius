@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Copyright(C) 2021, Stamus Networks and Gabor Seljan
-# Written by Raphaël Brogat <rbrogat@stamus-networks.com> based on Gabor Seljan work
+# Copyright(C) 2016 Stamus Networks
+# Copyright(C) 2020 Gabor Seljan
+#
+# Adapted by Raphaël Brogat <rbrogat@stamus-networks.com>
 # Designed for Debian
 #
 # This script comes with ABSOLUTELY NO WARRANTY!

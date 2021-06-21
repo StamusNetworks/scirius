@@ -1,5 +1,7 @@
-# Copyright(C) 2021, Stamus Networks and Gabor Seljan
-# Written by Raphaël Brogat <rbrogat@stamus-networks.com> based on Gabor Seljan work
+# Copyright(C) 2020, Gabor Seljan
+# Copyright(C) 2021, Stamus Networks
+#
+# Adapted by Raphaël Brogat <rbrogat@stamus-networks.com>
 #
 # This file comes with ABSOLUTELY NO WARRANTY!
 #

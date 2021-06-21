@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright(C) 2019, Stamus Networks
+# Copyright(C) 2021, Stamus Networks
 # All rights reserved
 # Written by Raphaël Brogat <rbrogat@stamus-networks.com>
 #
