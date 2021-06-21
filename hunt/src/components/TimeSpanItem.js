@@ -7,7 +7,7 @@ import moment from 'moment';
 import * as PropTypes from 'prop-types';
 import OutsideClickHandler from 'react-outside-click-handler';
 import axios from 'axios';
-import { ES_BASE_PATH } from 'hunt_common/config/Api';
+import { API_URL, ES_BASE_PATH } from 'hunt_common/config/Api';
 import DateRangePicker from './DateRangePicker';
 import {
   filterTimeSpanSet,
@@ -58,7 +58,7 @@ class TimeSpanItem extends React.Component {
   }
 
   async getAlertsTimerange() {
-    const { data } = await axios.get(`${ES_BASE_PATH}alerts_timerange`);
+    const { data } = await axios.get(`${API_URL}${ES_BASE_PATH}alerts_timerange`);
     if (data.min_timestamp && data.max_timestamp) {
       this.setState({ minTime: data.min_timestamp, maxTime: data.max_timestamp });
     }
