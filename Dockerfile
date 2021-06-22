@@ -82,6 +82,7 @@ RUN echo "**** install Node.js dependencies for Scirius ****" && \
     
 # Install python packages
 FROM base as python_modules
+COPY --from=download /opt/scirius/requirements.txt /opt/scirius/requirements.txt
 RUN \
   echo "**** install packages ****" && \
   apt-get update && \
