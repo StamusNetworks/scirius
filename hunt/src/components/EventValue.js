@@ -11,6 +11,12 @@ import isIP from '../helpers/isIP';
 
 // put all the sections where we want to inlclude `virus total links` for ip addresses and domains
 const virusTotalLinks = ['hostname_info.domain', 'http.hostname', 'dns.query.rrname', 'http.http_refer_info.domain', 'tls.sni'];
+const mitreLinks = [
+  'alert.metadata.mitre_tactic_id',
+  'alert.metadata.mitre_technique_id',
+  'alert.metadata.mitre_tactic_name',
+  'alert.metadata.mitre_technique_name',
+];
 
 const EventValue = (props) => {
   const getLink = () => {
@@ -32,13 +38,44 @@ const EventValue = (props) => {
         </OverlayTrigger>
       );
     }
+    if (props.field === mitreLinks[0] || props.field === mitreLinks[1]) {
+      return (
+        <OverlayTrigger key="mitre_link" trigger={['hover', 'hover']} placement="top" overlay={<Tooltip id="tooltip-top">external info</Tooltip>}>
+          <a
+            href={() => {
+              if (props.field === mitreLinks[0]) {
+                return `https://attack.mitre.org/tactics/${props.value}`;
+              }
+              if (!props.value.includes('.')) {
+                return `https://attack.mitre.org/techniques/${props.value}`;
+              }
+              return `https://attack.mitre.org/techniques/${props.value.split('.')[0]}/${props.value.split('.')[1]}`;
+            }}
+            target="_blank"
+          >
+            {' '}
+            <Icon type="fa" name="info-circle" />
+          </a>
+        </OverlayTrigger>
+      );
+    }
     return false;
+  };
+
+  const printValue = () => {
+    if (!mitreLinks.includes(props.field)) {
+      if (props.format) return props.format(props.value);
+      return props.value;
+    }
+    if (!props.value.toString().includes('_')) return props.value;
+
+    return props.value.toString().replaceAll('_', ' ');
   };
 
   return (
     <div className="value-field-complete">
       <span className="value-field" title={props.value + (props.hasCopyShortcut ? '\nCtrl + left click to copy' : '')}>
-        {props.format ? props.format(props.value) : props.value}
+        {printValue()}
       </span>
       <span className="value-actions">
         <ErrorHandler>

@@ -150,6 +150,141 @@ export const dashboard = {
         y: 426,
       },
     },
+    mitre: {
+      title: 'MITRE ATTACK Information',
+      items: [
+        {
+          i: 'alert.metadata.mitre_tactic_id',
+          title: 'Tactic ID',
+          data: null,
+          dimensions: {
+            lg: {
+              w: 9,
+              h: 7,
+              x: 15,
+              y: 0,
+            },
+            md: {
+              w: 9,
+              h: 7,
+              x: 15,
+              y: 0,
+            },
+            sm: {
+              w: 8,
+              h: 7,
+              x: 0,
+              y: 0,
+            },
+            xs: {
+              w: 4,
+              h: 7,
+              x: 0,
+              y: 0,
+            },
+          },
+        },
+        {
+          i: 'alert.metadata.mitre_tactic_name',
+          title: 'Tactic Name',
+          data: null,
+          dimensions: {
+            lg: {
+              w: 8,
+              h: 7,
+              x: 7,
+              y: 0,
+            },
+            md: {
+              w: 8,
+              h: 7,
+              x: 7,
+              y: 0,
+            },
+            sm: {
+              w: 8,
+              h: 7,
+              x: 0,
+              y: 22,
+            },
+            xs: {
+              w: 4,
+              h: 7,
+              x: 4,
+              y: 0,
+            },
+          },
+        },
+        {
+          i: 'alert.metadata.mitre_technique_id',
+          title: 'Technique ID',
+          data: null,
+          dimensions: {
+            lg: {
+              w: 8,
+              h: 7,
+              x: 24,
+              y: 0,
+            },
+            md: {
+              w: 7,
+              h: 7,
+              x: 0,
+              y: 18,
+            },
+            sm: {
+              w: 8,
+              h: 7,
+              x: 8,
+              y: 18,
+            },
+            xs: {
+              w: 4,
+              h: 7,
+              x: 4,
+              y: 15,
+            },
+          },
+        },
+        {
+          i: 'alert.metadata.mitre_technique_name',
+          title: 'Technique Name',
+          data: null,
+          dimensions: {
+            lg: {
+              w: 7,
+              h: 7,
+              x: 0,
+              y: 0,
+            },
+            md: {
+              w: 7,
+              h: 7,
+              x: 0,
+              y: 0,
+            },
+            sm: {
+              w: 8,
+              h: 7,
+              x: 8,
+              y: 0,
+            },
+            xs: {
+              w: 4,
+              h: 7,
+              x: 0,
+              y: 22,
+            },
+          },
+        },
+      ],
+      dimensions: {
+        w: 1,
+        h: 170,
+        x: 0,
+        y: 426,
+      },
+    },
     basic: {
       title: 'Basic Information',
       items: [
