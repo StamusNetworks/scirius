@@ -70,7 +70,13 @@ RUN \
     echo "**** install Node.js ****" && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
         nodejs
-COPY --from=source /opt/scirius /opt/scirius
+        
+COPY --from=source /opt/scirius/*.js* /opt/scirius/.eslintrc /opt/scirius/
+COPY --from=source /opt/scirius/hunt /opt/scirius/hunt
+COPY --from=source /opt/scirius/npm /opt/scirius/npm
+COPY --from=source /opt/scirius/scss /opt/scirius/scss
+COPY --from=source /opt/scirius/rules /opt/scirius/rules
+
 WORKDIR /opt/scirius
 RUN echo "**** install Node.js dependencies for Scirius ****" && \
     npm install && \
