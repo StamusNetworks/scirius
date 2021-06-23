@@ -1,0 +1,34 @@
+name: Build docker Image
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  push_to_registry:
+    name: Push Docker image to GitHub Container Registry
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: PrepareReg Names
+        run: |
+          echo IMAGE_TAG=$(echo ${{ github.ref }} | tr '[:upper:]' '[:lower:]' | awk '{split($0,a,"/"); print a[3]}') >> $GITHUB_ENV
+      - name: Build container image
+        uses: docker/build-push-action@v2
+        with:
+          context : .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/scirius:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/scirius:${{ env.IMAGE_TAG }}
