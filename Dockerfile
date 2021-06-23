@@ -17,15 +17,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#Base containers
+FROM python:3.8.6-slim-buster as base
+RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
+    echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
+
 #Download STEP
-FROM python:3.8.6-slim-buster as download
+FROM base as download
 ARG VERSION
 ENV VERSION ${VERSION:-master}
 
 RUN \
     echo "**** install packages ****" && \
     apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
         apt-utils \
         wget
 RUN \
@@ -47,31 +52,26 @@ RUN chmod ugo+x /opt/scirius/bin/*
     
 
 # BUILD JS stuff
-FROM python:3.8.6-slim-buster as static
-
+FROM base as build_js
 RUN \
     echo "**** install packages ****" && \
     apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
         apt-utils && \
-    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
         make \
         wget \
         gcc \
         libc-dev
-        
 RUN \
     echo "**** add NodeSource repository ****" && \
     wget -O- https://deb.nodesource.com/setup_12.x | bash -
-    
 RUN \
     echo "**** install Node.js ****" && \
-    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
         nodejs
-
 COPY --from=download /opt/scirius /opt/scirius
 WORKDIR /opt/scirius
-
 RUN echo "**** install Node.js dependencies for Scirius ****" && \
     npm install && \
     npm install -g webpack@3.11 && \
@@ -80,33 +80,50 @@ RUN echo "**** install Node.js dependencies for Scirius ****" && \
     npm install && \
     npm run build
     
-    
-#BUILD doc 
-FROM python:3.8.6-slim-buster as docs
+# Install python packages
+FROM base as python_modules
+RUN \
+  echo "**** install packages ****" && \
+  apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    gnupg2 \
+    gcc \
+    libc-dev \
+    libsasl2-dev \
+    libldap2-dev \
+    libssl-dev \
+    python-pip \
+    python-dev
+RUN \
+  echo "**** install Python dependencies for Scirius ****" && \
+  cd /opt/scirius && \
+  python -m pip install --user --upgrade\
+    six \
+    python-daemon \
+    suricatactl \
+    django-webpack-loader==0.7 &&\
+  python -m pip install --user -r requirements.txt
 
+#BUILD doc 
+FROM base as build_docs
 RUN \
     echo "**** install packages ****" && \
     apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
         apt-utils && \
-    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
         make \
         gcc \
         libc-dev \
         python-sphinx
-        
-
 COPY --from=download /opt/scirius /opt/scirius
 RUN \
     echo "**** build docs ****" && \
     cd /opt/scirius/doc && \
     make html
 
-
-#
-
 # PACKAGING STEP
-FROM python:3.8.6-slim-buster
+FROM base
 
 ARG BUILD_DATE
 ARG VCS_REF
@@ -116,50 +133,29 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.schema-version="1.0.0-rc1"
 
-RUN \
-  echo "**** install packages ****" && \
-  apt-get update && \
-  DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-    apt-utils && \
-  DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-    curl \
-    gunicorn \
-    git \
-    gnupg2 \
-    gcc \
-    libc-dev \
-    libsasl2-dev \
-    libldap2-dev \
-    libssl-dev \
-    python-pip \
-    python-dev \
-    suricata && \
-  rm -rf /var/lib/apt/lists/*
-    
 COPY --from=download /opt/scirius /opt/scirius
 
 RUN \
-  echo "**** install Python dependencies for Scirius ****" && \
-  cd /opt/scirius && \
-  python -m pip install --upgrade \
-    pip \
-    wheel \
-    setuptools && \
-  python -m pip install --upgrade \
-    six \
-    python-daemon \
-    suricatactl && \
-  python -m pip install \
-    django-webpack-loader==0.7 \
-    pyinotify && \
-  python -m pip install -r requirements.txt  
+  echo "**** install packages ****" && \
+  apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    curl \
+    git \
+    gunicorn \
+    suricata && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
+  
+RUN pip install gunicorn
+  
 
-COPY --from=static /opt/scirius/rules/static /opt/scirius/rules/static
-COPY --from=docs /opt/scirius/doc/_build/html /static/doc
+COPY --from=build_js /opt/scirius/rules/static /opt/scirius/rules/static
+COPY --from=python_modules /root/.local /root/.local
+COPY --from=build_docs /opt/scirius/doc/_build/html /static/doc
 COPY --from=download /opt/kibana7-dashboards /opt/kibana7-dashboards
 
-    
-    
+  
+
 HEALTHCHECK --start-period=3m \
   CMD curl --silent --fail http://127.0.0.1:8000 || exit 1
 
