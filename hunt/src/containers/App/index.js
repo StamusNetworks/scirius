@@ -5,9 +5,6 @@ import injectReducer from '../../util/injectReducer';
 import { filterParamsSet, makeSelectFilterParam, reducer, reload } from './stores/filterParams';
 import App from './App';
 import { withPermissions } from './stores/withPermissions';
-import injectSaga from '../../util/injectSaga';
-import saga from './stores/global.saga';
-import { getUserDetails } from './stores/global';
 
 const mapStateToProps = createStructuredSelector({
   filterParamHash: makeSelectFilterParam('hash'),
@@ -19,11 +16,9 @@ const mapStateToProps = createStructuredSelector({
 const mapDispatchToProps = (dispatch) => ({
   filterParamsSet: (paramName, paramValue) => dispatch(filterParamsSet(paramName, paramValue)),
   reload: () => dispatch(reload()),
-  getUserDetails: () => dispatch(getUserDetails()),
 });
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
 const withReducer = injectReducer({ key: 'filterParams', reducer });
-const withSaga = injectSaga({ key: 'global', saga });
 
-export default compose(withSaga, withReducer, withConnect, withPermissions)(App);
+export default compose(withReducer, withConnect, withPermissions)(App);

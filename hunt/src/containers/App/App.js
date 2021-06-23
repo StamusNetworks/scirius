@@ -172,7 +172,6 @@ export default class App extends Component {
     if (this.state.interval) {
       this.timer = setInterval(this.needReload, this.state.interval * 1000);
     }
-    this.props.getUserDetails();
   }
 
   needReload() {
@@ -376,5 +375,4 @@ App.propTypes = {
     dateJoined: PropTypes.any,
     permissions: PropTypes.any,
   }),
-  getUserDetails: PropTypes.func.isRequired,
 };

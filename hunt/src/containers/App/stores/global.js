@@ -10,9 +10,6 @@ export const EDIT_FILTER = 'Hunt/App/EDIT_FILTER';
 export const CLEAR_FILTERS = 'Hunt/App/CLEAR_FILTERS';
 export const SET_ALERT = 'Hunt/App/SET_ALERT';
 export const SET_ONLY_ONE_ALERT = 'Hunt/App/SET_ONLY_ONE_ALERT';
-export const GET_USER_DETAILS_REQUEST = 'Hunt/App/GET_USER_DETAILS_REQUEST';
-export const GET_USER_DETAILS_SUCCESS = 'Hunt/App/GET_USER_DETAILS_SUCCESS';
-export const GET_USER_DETAILS_FAILURE = 'Hunt/App/GET_USER_DETAILS_FAILURE';
 
 export const validateFilter = (filter) => {
   if (filter.id === 'alert.tag') {
@@ -100,28 +97,6 @@ export function enableOnly(filterType) {
   return {
     type: SET_ONLY_ONE_ALERT,
     filterType,
-  };
-}
-
-export function getUserDetails() {
-  return {
-    type: GET_USER_DETAILS_REQUEST,
-  };
-}
-export function getUserDetailsSuccess(data) {
-  return {
-    type: GET_USER_DETAILS_SUCCESS,
-    payload: {
-      data,
-    },
-  };
-}
-export function getUserDetailsFailure(error) {
-  return {
-    type: GET_USER_DETAILS_FAILURE,
-    payload: {
-      error,
-    },
   };
 }
 
@@ -233,45 +208,6 @@ export const reducer = (state = initialState, action) => {
       updateStorage(sections.ALERT, updatedAlert.getIn(['filters', sections.ALERT]).toJS());
       return updatedAlert;
     }
-    case GET_USER_DETAILS_REQUEST: {
-      return state.setIn(
-        [sections.USER],
-        fromJS({
-          data: { ...state.getIn([sections.USER]).toJS().data },
-          request: {
-            loading: true,
-            status: null,
-            message: '',
-          },
-        }),
-      );
-    }
-    case GET_USER_DETAILS_SUCCESS: {
-      updateStorage(sections.USER, action.payload.data);
-      return state.setIn(
-        [sections.USER],
-        fromJS({
-          request: {
-            loading: false,
-            status: true,
-            message: 'Success',
-          },
-          data: action.payload.data,
-        }),
-      );
-    }
-    case GET_USER_DETAILS_FAILURE:
-      return state.setIn(
-        [sections.USER],
-        fromJS({
-          request: {
-            loading: true,
-            status: false,
-            message: 'Failure',
-          },
-          data: { ...state.getIn([sections.USER]).toJS().data },
-        }),
-      );
     default:
       return state;
   }
@@ -289,35 +225,34 @@ export const makeSelectGlobalFilters = (includeAlertTag = false) =>
   });
 export const makeSelectHistoryFilters = () => createSelector(selectGlobal, (globalState) => globalState.getIn(['filters', sections.HISTORY]).toJS());
 export const makeSelectAlertTag = () => createSelector(selectGlobal, (globalState) => globalState.getIn(['filters', sections.ALERT]).toJS());
-export const makeSelectUserData = () =>
-  createSelector(selectGlobal, (globalState) => {
-    const userDetails = globalState.getIn([sections.USER]).toJS();
-    const { data = {} } = userDetails;
-    const {
-      pk = '',
-      timezone = '',
-      username = '',
-      first_name: firstName = '',
-      last_name: lastName = '',
-      is_active: isActive = false,
-      email = '',
-      date_joined: dateJoined = '',
-      perms: permissions = [],
-      no_tenant: noTenant = false,
-      all_tenant: allTenant = false,
-    } = data;
-    return {
-      pk,
-      timezone,
-      username,
-      firstName,
-      lastName,
-      isActive,
-      email,
-      dateJoined,
-      permissions,
-      noTenant,
-      allTenant,
-    };
-  });
+export const makeSelectUserData = () => () => {
+  const userDetails = window.current_user;
+  const { data = {} } = userDetails;
+  const {
+    pk = '',
+    timezone = '',
+    username = '',
+    first_name: firstName = '',
+    last_name: lastName = '',
+    is_active: isActive = false,
+    email = '',
+    date_joined: dateJoined = '',
+    perms: permissions = [],
+    no_tenant: noTenant = false,
+    all_tenant: allTenant = false,
+  } = data;
+  return {
+    pk,
+    timezone,
+    username,
+    firstName,
+    lastName,
+    isActive,
+    email,
+    dateJoined,
+    permissions,
+    noTenant,
+    allTenant,
+  };
+};
 export const makeSelectUserRequest = () => createSelector(selectGlobal, (globalState) => globalState.getIn(['user']).toJS().request);
