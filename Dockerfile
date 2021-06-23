@@ -23,7 +23,7 @@ RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
     echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
 
 #Download STEP
-FROM base as download
+FROM base as source
 ARG VERSION
 ENV VERSION ${VERSION:-master}
 
@@ -70,7 +70,7 @@ RUN \
     echo "**** install Node.js ****" && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
         nodejs
-COPY --from=download /opt/scirius /opt/scirius
+COPY --from=source /opt/scirius /opt/scirius
 WORKDIR /opt/scirius
 RUN echo "**** install Node.js dependencies for Scirius ****" && \
     npm install && \
@@ -82,7 +82,7 @@ RUN echo "**** install Node.js dependencies for Scirius ****" && \
     
 # Install python packages
 FROM base as python_modules
-COPY --from=download /opt/scirius/requirements.txt /opt/scirius/requirements.txt
+COPY --from=source /opt/scirius/requirements.txt /opt/scirius/requirements.txt
 RUN \
   echo "**** install packages ****" && \
   apt-get update && \
@@ -117,7 +117,7 @@ RUN \
         gcc \
         libc-dev \
         python-sphinx
-COPY --from=download /opt/scirius /opt/scirius
+COPY --from=source /opt/scirius/doc /opt/scirius/doc
 RUN \
     echo "**** build docs ****" && \
     cd /opt/scirius/doc && \
@@ -134,7 +134,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.schema-version="1.0.0-rc1"
 
-COPY --from=download /opt/scirius /opt/scirius
+COPY --from=source /opt/scirius /opt/scirius
 
 RUN \
   echo "**** install packages ****" && \
@@ -153,7 +153,7 @@ RUN pip install gunicorn
 COPY --from=build_js /opt/scirius/rules/static /opt/scirius/rules/static
 COPY --from=python_modules /root/.local /root/.local
 COPY --from=build_docs /opt/scirius/doc/_build/html /static/doc
-COPY --from=download /opt/kibana7-dashboards /opt/kibana7-dashboards
+COPY --from=source /opt/kibana7-dashboards /opt/kibana7-dashboards
 
   
 
