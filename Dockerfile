@@ -153,7 +153,7 @@ RUN \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
   
-RUN pip install gunicorn
+RUN pip install --no-cache-dir gunicorn
   
 
 COPY --from=build_js /opt/scirius/rules/static /opt/scirius/rules/static
