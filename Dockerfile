@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #Base containers
-FROM python:3.8.6-slim-buster as base
+FROM python:3.9.5-slim-buster as base
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
     echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
 
