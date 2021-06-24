@@ -23,12 +23,28 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: PrepareReg Names
         run: |
-          echo IMAGE_TAG=$(echo ${{ github.ref }} | tr '[:upper:]' '[:lower:]' | awk '{split($0,a,"/"); print a[3]}') >> $GITHUB_ENV
+          # Change all uppercase to lowercase
+          OWNER=$(echo ${{ github.repository_owner }} | tr '[A-Z]' '[a-z]')
+          
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && LATEST="latest"
+          
+          echo "OWNER=$OWNER" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          
+          echo "OWNER=$OWNER"
+          echo "VERSION=$VERSION"
       - name: Build container image
         uses: docker/build-push-action@v2
         with:
           context : .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/scirius:${{ github.sha }}
-            ghcr.io/${{ github.repository_owner }}/scirius:${{ env.IMAGE_TAG }}
+            ghcr.io/${{ env.OWNER }}/scirius:${{ github.sha }}
+            ghcr.io/${{ env.OWNER }}/scirius:${{ env.VERSION }}
