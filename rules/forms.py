@@ -285,6 +285,11 @@ class RulesetEditForm(RulesetPolicyEditPermForm, BaseEditForm, forms.ModelForm, 
         self.fields['lateral'].choices = Ruleset.get_transformation_choices(key=Transformation.LATERAL)
         self.fields['target'].choices = Ruleset.get_transformation_choices(key=Transformation.TARGET)
 
+    def clean_suppressed_sids(self):
+        suppressed_sids = self.cleaned_data['suppressed_sids']
+        suppressed_sids = suppressed_sids.replace('\r', '')
+        return suppressed_sids
+
 
 class RulesetCopyForm(CommentForm):
     name = forms.CharField(max_length=100)
