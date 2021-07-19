@@ -7,8 +7,8 @@
     </div>
     <ul>
         <li><a href="{% url 'list_accounts' %}">Accounts list</a></li>
-        <li><a href="{% url 'list_users' %}">Users list</a></li>
-        <li><a href="{% url 'list_groups' %}">Roles list</a></li>
+        <li><a href="{% url 'list_users' %}">User list</a></li>
+        <li><a href="{% url 'list_groups' %}">Role list</a></li>
         {% if extra_auth %}
             <li>
                 <a data-toggle="tooltip" title="Set priority on Role/Group assignments" href="{% url 'edit_priorities' %}">Edit priorities

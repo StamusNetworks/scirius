@@ -31,7 +31,7 @@ User actions logging
 --------------------
 
 All actions done in ruleset management are logged. It is possible to access
-their history by using ``Actions history`` in the Stamus icon menu.
+their history by using ``Action History`` in the Stamus icon menu.
 
 Optional comment are available for each action to allow users to interact
 with each other.
@@ -58,7 +58,7 @@ and the second one via manual addition.
 Public sources
 ~~~~~~~~~~~~~~
 
-Go to ``Sources -> Add public source`` (``Add`` being in the ``Actions`` menu in the sidebar).
+Go to ``Sources -> Add Public Source`` (``Add`` being in the ``Actions`` menu in the sidebar).
 
 Choose a source and click on the ``Add`` button. In the popup you can select to which ruleset you
 want to add the source. In some cases there will be some fields like the secret key provided by
@@ -67,7 +67,7 @@ the rules editors to be entered.
 Manual addition
 ~~~~~~~~~~~~~~~
 
-To create a Source go to ``Sources -> Add custom source`` (``Add`` being in the
+To create a Source go to ``Sources -> Add Custom Source`` (``Add`` being in the
 ``Actions`` menu in the sidebar). Then set the different fields and click ``Submit``.
 
 A source of datatype ``Signatures files in tar archive`` has to follow some rules:

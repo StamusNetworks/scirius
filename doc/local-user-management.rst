@@ -16,7 +16,7 @@ Edit User
 
 In order to edit an existing user: in the upper left corner click on Stamus Networks logo drop down icon -> ``Manage Accounts``.
 
-On the ``User Management Page``, in the ``Users list`` -> click on the ``Username`` of the user you wish to edit.
+On the ``User Management Page``, in the ``User list`` -> click on the ``Username`` of the user you wish to edit.
 
 In the ``Actions`` panel -> click on ``Edit user``.
 
@@ -26,7 +26,7 @@ Change User Password
 
 In order to change user password: in the upper left corner click on Stamus Networks logo drop down icon -> ``Manage Accounts``.
 
-On the ``User Management Page``, in the ``Users list`` -> click on the ``Username`` of the user whose password you wish to change.
+On the ``User Management Page``, in the ``User list`` -> click on the ``Username`` of the user whose password you wish to change.
 
 In the ``Actions`` panel -> click on ``Change user password``.
 
@@ -36,7 +36,7 @@ Delete User
 
 In order to delete a user: in the upper left corner click on Stamus Networks logo drop down icon -> ``Manage Accounts``.
 
-On the ``User Management Page``, in the ``Users list`` -> click on the ``Username`` of the user you wish to delete.
+On the ``User Management Page``, in the ``User list`` -> click on the ``Username`` of the user you wish to delete.
 
 In the ``Actions`` panel -> click on ``Delete user``.
 
@@ -52,6 +52,6 @@ There are three levels of permissions:
 
 In order to handle permission levels: in the upper left corner click on Stamus Networks logo drop down icon -> ``Manage Accounts``.
 
-On the ``User Management Page``, in the ``Users list`` -> click on the ``Username`` of the user whose permission levels you wish to change.
+On the ``User Management Page``, in the ``User list`` -> click on the ``Username`` of the user whose permission levels you wish to change.
 
 In the ``Actions`` panel -> click on ``Edit user`` and set permission levels by enabling/disabling the ``Active`` , ``Staff User`` and ``Superuser`` checkboxes.

@@ -41,7 +41,7 @@
                 {% if perms.rules.configuration_view or links %}
                     <li role="presentation" class="divider"></li>
                 {% endif %}
-                        <li><a href="{% url 'history' %}" >{% bootstrap_icon "time"%} Actions history</a></li>
+                        <li><a href="{% url 'history' %}" >{% bootstrap_icon "time"%} Action History</a></li>
             {% if perms.rules.configuration_auth %}
                         <li><a href="{% url 'list_accounts' %}" >{% bootstrap_icon "user"%} Manage accounts</a></li>
             {% endif %}

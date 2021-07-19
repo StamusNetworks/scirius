@@ -250,8 +250,8 @@ def list_users(request):
             'order_by': ('groups__group__priority', '-username'),
             'manage_links': {
                 'list_accounts': 'Accounts list',
-                'list_users': 'Users list',
-                'list_groups': 'Roles list'
+                'list_users': 'User list',
+                'list_groups': 'Role list'
             },
             'action_links': {}
         }
@@ -352,8 +352,8 @@ def list_groups(request):
             'order_by': ('group__priority',),
             'manage_links': {
                 'list_accounts': 'Accounts list',
-                'list_users': 'Users list',
-                'list_groups': 'Roles list'
+                'list_users': 'User list',
+                'list_groups': 'Role list'
             },
             'action_links': {}
         }
