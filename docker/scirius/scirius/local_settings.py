@@ -1,7 +1,7 @@
 # Copyright(C) 2020, Gabor Seljan
 # Copyright(C) 2021, Stamus Networks
 #
-# Adapted by Raphaël Brogat <rbrogat@stamus-networks.com>
+# Adapted by Raphael Brogat <rbrogat@stamus-networks.com>
 #
 # This script comes with ABSOLUTELY NO WARRANTY!
 #
