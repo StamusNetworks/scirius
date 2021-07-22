@@ -226,8 +226,7 @@ export const makeSelectGlobalFilters = (includeAlertTag = false) =>
 export const makeSelectHistoryFilters = () => createSelector(selectGlobal, (globalState) => globalState.getIn(['filters', sections.HISTORY]).toJS());
 export const makeSelectAlertTag = () => createSelector(selectGlobal, (globalState) => globalState.getIn(['filters', sections.ALERT]).toJS());
 export const makeSelectUserData = () => () => {
-  const userDetails = window.current_user;
-  const { data = {} } = userDetails;
+  const userDetails = window.current_user || {};
   const {
     pk = '',
     timezone = '',
@@ -240,7 +239,7 @@ export const makeSelectUserData = () => () => {
     perms: permissions = [],
     no_tenant: noTenant = false,
     all_tenant: allTenant = false,
-  } = data;
+  } = userDetails;
   return {
     pk,
     timezone,
