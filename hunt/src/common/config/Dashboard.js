@@ -151,7 +151,7 @@ export const dashboard = {
       },
     },
     mitre: {
-      title: 'MITRE ATTACK Information',
+      title: 'MITRE ATT&CK Information',
       items: [
         {
           i: 'alert.metadata.mitre_tactic_id',
