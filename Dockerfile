@@ -107,8 +107,7 @@ RUN \
   python -m pip install --user --upgrade\
     six \
     python-daemon \
-    suricatactl \
-    django-webpack-loader==0.7 &&\
+    suricatactl &&\
   python -m pip install --user -r requirements.txt
 
 #BUILD doc 
