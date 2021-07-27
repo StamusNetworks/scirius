@@ -65,20 +65,7 @@ module.exports = options => ({
         use: 'file-loader',
       },
       {
-        test: /\.svg$/,
-        use: [
-          {
-            loader: 'svg-url-loader',
-            options: {
-              // Inline files smaller than 10 kB
-              limit: 10 * 1024,
-              noquotes: true,
-            },
-          },
-        ],
-      },
-      {
-        test: /\.(jpg|png|gif)$/,
+        test: /\.(jpg|png|gif|svg)$/,
         use: [
           {
             loader: 'url-loader',
@@ -146,6 +133,9 @@ module.exports = options => ({
     modules: ['node_modules', 'app'],
     extensions: ['.js', '.jsx', '.react.js'],
     mainFields: ['browser', 'jsnext:main', 'main'],
+    alias: {
+      ui: [path.resolve(__dirname, '../../app/appliance/'), path.resolve(__dirname, '../../app/')]
+    }
   },
   devtool: options.devtool,
   target: 'web', // Make web variables accessible to webpack, e.g. window

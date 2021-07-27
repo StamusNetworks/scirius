@@ -13,7 +13,7 @@ export const initialState = {
 
 /* eslint-disable default-case */
 const appReducer = (state = initialState, action) =>
-  produce(state, draft => {
+  produce(state, (/* draft */) => {
     switch (action.type) {
       case LOCATION_CHANGE: {
         break;
