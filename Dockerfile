@@ -143,12 +143,13 @@ COPY --from=source /opt/scirius /opt/scirius
 
 RUN \
   echo "**** install packages ****" && \
+  echo "deb http://deb.debian.org/debian buster-backports main" > /etc/apt/sources.list.d/buster-backports.list && \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
     curl \
     git \
-    gunicorn \
-    suricata && \
+    gunicorn && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -t buster-backports suricata -y && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
   
