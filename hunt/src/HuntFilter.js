@@ -96,6 +96,9 @@ class HuntFilter extends React.Component {
 
     if (keyEvent.key === 'Enter') {
       if (currentValue && currentValue.length > 0) {
+        // remove empty spaces from the filter string start/end
+        this.setState({ currentValue: currentValue.trim() });
+
         if (currentFilterType.valueType === 'positiveint') {
           const val = parseInt(currentValue, 10);
           if (val >= 0) {
@@ -231,8 +234,12 @@ class HuntFilter extends React.Component {
   updateCurrentValue = (event) => {
     const { currentFilterType } = this.state;
     let error = false;
+    let { value } = event.target;
+
     if (currentFilterType.valueType === 'ip') {
-      const numbers = event.target.value.split(/\.|:|\//);
+      // not allow empty spaces anywhere in the IP while typing it
+      value = value.trim();
+      const numbers = value.split(/\.|:|\//);
       const filteredNum = numbers.filter((item) => item !== '');
 
       const UINT_REGEXP_V4 = /^\d*[0-9]\d*$/;
@@ -243,14 +250,11 @@ class HuntFilter extends React.Component {
           break;
         }
       }
-    } else if (
-      ['msg', 'not_in_msg', 'search', 'es_filter'].indexOf(this.state.currentFilterType.id) === -1 &&
-      event.target.value.indexOf(' ') !== -1
-    ) {
+    } else if (['msg', 'not_in_msg', 'search', 'es_filter'].indexOf(this.state.currentFilterType.id) === -1 && value.indexOf(' ') !== -1) {
       // No space allowed to avoid breaking ES queries
       error = true;
     }
-    if (!error) this.setState({ currentValue: event.target ? event.target.value : event /* used by Select component */ });
+    if (!error) this.setState({ currentValue: event.target ? value : event /* used by Select component */ });
   };
 
   getValidationState = () => {

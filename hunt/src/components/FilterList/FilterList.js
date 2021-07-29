@@ -182,7 +182,7 @@ class FilterList extends React.Component {
                         type={controlType}
                         value={newFilterValue}
                         onKeyDown={this.keyListener}
-                        onChange={(e) => this.setState({ newFilterValue: e.target.value })}
+                        onChange={(e) => this.setState({ newFilterValue: e.target.value.trim() })}
                         className="has-error"
                       />
                     </FormGroup>
