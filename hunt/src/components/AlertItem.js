@@ -10,6 +10,7 @@ import ReactJson from 'react-json-view';
 import { Tabs, Tab } from 'react-bootstrap';
 import EventField from './EventField';
 import ErrorHandler from './Error';
+import './AlertItem.css';
 
 export default class AlertItem extends React.Component {
   constructor(props) {
@@ -18,6 +19,7 @@ export default class AlertItem extends React.Component {
       events: undefined,
       showTabs: false,
       collapsed: {},
+      files: {},
     };
 
     this.addFilter = this.addFilter.bind(this);
@@ -144,6 +146,9 @@ export default class AlertItem extends React.Component {
 
   fetchData(flowId) {
     if (!this.state.showTabs) {
+      // reset the files state for each event
+      this.setState({ files: {} });
+
       const filterParams = buildFilterParams(this.props.filterParams);
       const url = `${config.API_URL + config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId}&${filterParams}`;
       axios.get(url).then((res) => {
@@ -163,10 +168,75 @@ export default class AlertItem extends React.Component {
             }
           }
           this.setState({ events: res.data });
+
+          if ('Fileinfo' in res.data) {
+            res.data.Fileinfo.forEach(async ({ fileinfo, host }) => {
+              if (fileinfo.stored) {
+                // verify the file exists
+                const {
+                  data: { status },
+                } = await axios.get(`${config.API_URL + config.FILESTORE_PATH}${fileinfo.sha256}/status/?host=${host}`);
+                if (status === 'available') {
+                  this.setState({
+                    files: {
+                      ...this.state.files,
+                      [fileinfo.file_id]: {
+                        file_id: fileinfo.file_id,
+                        filename: fileinfo.filename,
+                        size: fileinfo.size,
+                        magic: fileinfo.magic,
+                        sha256: fileinfo.sha256,
+                        host,
+                        downloading: false,
+                      },
+                    },
+                  });
+                }
+              }
+            });
+          }
         }
       });
     }
     this.setState({ showTabs: !this.state.showTabs });
+  }
+
+  async downloadFile(file) {
+    // show spinner
+    this.setState({ files: { ...this.state.files, [file.file_id]: { ...this.state.files[file.file_id], downloading: true } } });
+
+    // the request downloads the file from the host
+    const {
+      data: { retrieve },
+    } = await axios.get(`${config.API_URL + config.FILESTORE_PATH}${file.sha256}/retrieve/?host=${file.host}`);
+
+    if (retrieve === 'done') {
+      // hide the spinner
+      this.setState({ files: { ...this.state.files, [file.file_id]: { ...this.state.files[file.file_id], downloading: false } } });
+
+      // trigger the download dialog
+      const element = document.createElement('a');
+      element.setAttribute('href', `${config.API_URL + config.FILESTORE_PATH}${file.sha256}/download/`);
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+  }
+
+  renderFiles() {
+    return Object.values(this.state.files).map((file) => (
+      <div key={file.file_id + file.sha256} className="file-item">
+        <div>{file.sha256}</div>
+        <div>{file.filename}</div>
+        <div>{file.magic}</div>
+        <div>{(file.size / 1000).toFixed(1)}KB</div>
+        {!this.state.files[file.file_id].downloading ? (
+          <i className="glyphicon glyphicon-download-alt" onClick={() => this.downloadFile(file)}></i>
+        ) : (
+          <Spinner loading size="sm" />
+        )}
+      </div>
+    ));
   }
 
   render() {
@@ -919,6 +989,15 @@ export default class AlertItem extends React.Component {
                 collapseStringsAfterLength={150}
                 collapsed={false}
               />
+            </Tab>
+          )}
+          {showTabs && JSON.stringify(this.state.files) !== '{}' && (
+            <Tab eventKey="json-files" title="Files">
+              <div className="files-warning">
+                WARNING: These files are dangerous! We are not responsible for any damage to your system that might occur as a consequence of
+                downloading them.
+              </div>
+              {this.renderFiles()}
             </Tab>
           )}
           {showTabs && (
