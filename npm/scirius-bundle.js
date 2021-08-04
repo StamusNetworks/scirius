@@ -1,5 +1,6 @@
 window.$ = window.jQuery = require('jquery');
 window.c3 = require("c3");
+window.cola = require("webcola");
 window.SparkMD5 = require("spark-md5");
 $.fn.datetimepicker = require('eonasdan-bootstrap-datetimepicker');
 
