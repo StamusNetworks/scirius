@@ -1377,7 +1377,11 @@ class Source(models.Model):
         elif self.datatype in self.custom_data_type:
             self.handle_custom_file(dest, upload=True)
 
-    def new_uploaded_file(self, f, firstimport):
+    def new_uploaded_file(self, f):
+        firstimport = False
+        if Category.objects.filter(source=self).count() == 0:
+            firstimport = True
+
         self.handle_uploaded_file(f)
         if self.datatype in ('sig', 'sigs') and not firstimport:
             self.create_update()

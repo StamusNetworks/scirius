@@ -1496,7 +1496,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError({'file': ['This field is required.']})
 
         try:
-            source.handle_uploaded_file(request.FILES['file'])
+            source.new_uploaded_file(request.FILES['file'])
         except Exception as error:
             raise serializers.ValidationError({'upload': [str(error)]})
 

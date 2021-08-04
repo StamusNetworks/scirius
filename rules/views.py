@@ -1278,11 +1278,7 @@ def edit_source(request, source_id):
         form = SourceForm(request.POST, request.FILES, instance=source)
         try:
             if source.method == 'local' and 'file' in request.FILES:
-                categories = Category.objects.filter(source=source)
-                firstimport = False
-                if not categories:
-                    firstimport = True
-                source.new_uploaded_file(request.FILES['file'], firstimport)
+                source.new_uploaded_file(request.FILES['file'])
 
             form.save()
 
