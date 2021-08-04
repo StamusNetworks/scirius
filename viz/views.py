@@ -33,7 +33,7 @@ PROBE = __import__(settings.RULESET_MIDDLEWARE)
 @permission_required('rules.events_view', raise_exception=True)
 def dashboard(request):
     context = {}
-    context['probes'] = map(lambda x: '"' + x + '"', PROBE.models.get_probe_hostnames())
+    context['probes'] = list(map(lambda x: '"' + x + '"', PROBE.models.get_probe_hostnames()))
 
     if request.method == 'POST' and 'filter' in request.POST:
         context['filter'] = request.POST['filter']
@@ -54,7 +54,7 @@ def dashboard(request):
 @permission_required('rules.events_view', raise_exception=True)
 def dashboard_target(request):
     context = {}
-    context['probes'] = map(lambda x: '"' + x + '"', PROBE.models.get_probe_hostnames())
+    context['probes'] = list(map(lambda x: '"' + x + '"', PROBE.models.get_probe_hostnames()))
 
     if request.method == 'POST' and 'filter' in request.POST:
         context['filter'] = request.POST['filter']
