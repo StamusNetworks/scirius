@@ -3441,6 +3441,7 @@ class RuleProcessingFilter(models.Model):
     enabled = models.BooleanField(default=True)
     rulesets = models.ManyToManyField(Ruleset, related_name='processing_filters')
     imported = models.BooleanField(default=False)
+    event_type = models.CharField(max_length=32, default='alert', null=False, blank=False)
 
     class Meta:
         ordering = ['index']
