@@ -1,0 +1,211 @@
+/*
+  @TODO
+  originally this file has been located in ThreatPage/style.scss
+  and imported in ThreatPage/index.js. No matter whether the ThreatPage
+  has been activated on the web interface or not the style.scss is loaded
+  This is not correct due to a few reasons:
+  In ThreatPage/style.scss must not be placed css styles for components outside this container
+  .r .w .d ... etc are part of MiniKillChain others are part from MiniElement....
+  .tag is used in ThreatAssets.
+  For time being I'll put this file in the global scope, because right now I don't have
+  the time to separate the files to the correct components
+ */
+$height: 60px;
+$arrow: 16px;
+
+.mini-kill-chain {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 195px);
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.pointer {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  position: relative;
+  height: 130px;
+
+  .title {
+    font-size: 18px;
+    padding: 10px 0 5px 0;
+    /* overflow: hidden; */
+    white-space: nowrap;
+    min-height: 42px;
+  }
+
+  .title.top {
+    position: relative;
+  }
+
+  .title.bottom {
+    position: absolute;
+    bottom: 0;
+  }
+
+  .centered {
+    text-align: center;
+    width: 100%;
+  }
+
+  .shape {
+    width: 170px;
+    height: $height;
+    position: relative;
+    background: red;
+    margin-right: $arrow;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    .value {
+      font-size: 22px;
+      text-align: center;
+      color: #fff;
+      padding-left: 30px;
+      text-shadow: 0px 0px 20px #000;
+    }
+    .zero {
+      opacity: 0.4;
+      font-size: 12px;
+      padding-left: 30px;
+    }
+  }
+
+  .shape:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-left: $arrow * 1.5 solid white;
+    border-top: $height/2 solid transparent;
+    border-bottom: $height/2 solid transparent;
+  }
+
+  .shape:before {
+    content: '';
+    position: absolute;
+    right: $arrow * -1.5;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-left: $arrow * 1.5 solid red;
+    border-top: $height/2 solid transparent;
+    border-bottom: $height/2 solid transparent;
+  }
+}
+
+.mini-kill-chain.global {
+  background: transparent;
+  .shape:after {
+    border-left: $arrow * 1.5 solid #f0f2f5;
+  }
+}
+
+.tag {
+  color: #fff;
+}
+.tag-black {
+  color: black;
+}
+.r {
+  z-index: 7;
+  .shape {
+    background-color: var(--reconnaissance-color);
+  }
+  .shape:before {
+    border-left-color: var(--reconnaissance-color);
+  }
+  .title {
+    color: var(--reconnaissance-color);
+  }
+}
+.w {
+  z-index: 6;
+  .shape {
+    background-color: var(--weaponization-color);
+  }
+  .shape:before {
+    border-left-color: var(--weaponization-color);
+  }
+  .title {
+    color: var(--reconnaissance-color);
+  }
+}
+.d {
+  z-index: 5;
+  .shape {
+    background-color: var(--delivery-color);
+  }
+  .shape:before {
+    border-left-color: var(--delivery-color);
+  }
+  .title {
+    color: var(--reconnaissance-color);
+  }
+}
+.e {
+  z-index: 4;
+  .shape {
+    background-color: #ffc000;
+  }
+  .shape:before {
+    border-left-color: #ffc000;
+  }
+  .title {
+    color: var(--reconnaissance-color);
+  }
+}
+.i {
+  z-index: 3;
+  .shape {
+    background-color: var(--installation-color);
+  }
+  .shape:before {
+    border-left-color: var(--installation-color);
+  }
+  .title {
+    color: var(--reconnaissance-color);
+  }
+}
+.c {
+  z-index: 2;
+  .shape {
+    background-color: var(--command-and-control-color);
+  }
+  .shape:before {
+    border-left-color: var(--command-and-control-color);
+  }
+  .title {
+    color: var(--reconnaissance-color);
+  }
+}
+.a {
+  z-index: 1;
+  .shape {
+    background-color: var(--actions-on-objectives-color);
+  }
+  .shape:before {
+    border-left-color: var(--actions-on-objectives-color);
+  }
+  .title {
+    color: var(--reconnaissance-color);
+  }
+}
+.kill-chain-white {
+  z-index: 7;
+  .shape {
+    background-color: #f0f2ed;
+  }
+  .shape:before {
+    border-left-color: #f0f2ed;
+  }
+  .title {
+    color: var(--reconnaissance-color);
+  }
+}

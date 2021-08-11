@@ -4,4 +4,5 @@ const { Header } = Layout;
 
 export default styled(Header)`
   background-color: #30568a;
+  padding: 0;
 `;

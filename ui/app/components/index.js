@@ -1,4 +1,4 @@
-export {default as Header} from './Header/Header';
+export {default as Header} from './Header';
 export {default as Sider} from './Sider/Sider';
 export {default as Content} from './Content/Content';
 export {default as Link} from './Link/Link';

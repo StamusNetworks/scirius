@@ -1,0 +1,473 @@
+@font-face {
+  font-family: "PatternFlyIcons-webfont";
+  src: url(./PatternFlyIcons-webfont.d798b97f.eot);
+  src: url(./PatternFlyIcons-webfont.d798b97f.eot?#iefix) format("embedded-opentype"),
+  url(./PatternFlyIcons-webfont.c577c62c.ttf) format("truetype"),
+  url(./PatternFlyIcons-webfont.3b729e88.woff) format("woff"),
+  url(./PatternFlyIcons-webfont.70b2da67.svg#PatternFlyIcons-webfont) format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="pficon-"], [class*=" pficon-"] {
+  display: inline-block;
+  vertical-align: -0.125em;
+  font-family: "PatternFlyIcons-webfont";
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  line-height: 1;
+  speak: none;
+  text-transform: none;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+}
+
+.pficon-add-circle-o:before {
+  content: "";
+}
+
+.pficon-applications:before {
+  content: "";
+}
+
+.pficon-arrow:before {
+  content: "";
+}
+
+.pficon-asleep:before {
+  content: "";
+}
+
+.pficon-automation:before {
+  content: "";
+}
+
+.pficon-build:before {
+  content: "";
+}
+
+.pficon-builder-image:before {
+  content: "";
+}
+
+.pficon-bundle:before {
+  content: "";
+}
+
+.pficon-blueprint:before {
+  content: "";
+}
+
+.pficon-catalog:before {
+  content: "";
+}
+
+.pficon-chat:before {
+  content: "";
+}
+
+.pficon-close:before {
+  content: "";
+}
+
+.pficon-cloud-security:before {
+  content: "";
+}
+
+.pficon-cloud-tenant:before {
+  content: "";
+}
+
+.pficon-cluster:before {
+  content: "";
+}
+
+.pficon-connected:before {
+  content: "";
+}
+
+.pficon-container-node:before {
+  content: "";
+}
+
+.pficon-cpu:before {
+  content: "";
+}
+
+.pficon-degraded:before {
+  content: "";
+}
+
+.pficon-delete:before {
+  content: "";
+}
+
+.pficon-disconnected:before {
+  content: "";
+}
+
+.pficon-domain:before {
+  content: "";
+}
+
+.pficon-edit:before {
+  content: "";
+}
+
+.pficon-enhancement:before {
+  content: "";
+}
+
+.pficon-enterprise:before {
+  content: "";
+}
+
+.pficon-equalizer:before {
+  content: "";
+}
+
+.pficon-error-circle-o:before {
+  color: #cc0000;
+  content: "";
+}
+
+.pficon-export:before {
+  content: "";
+}
+
+.pficon-flag:before,
+.pficon-messages:before {
+  content: "";
+}
+
+.pficon-flavor:before {
+  content: "";
+}
+
+.pficon-filter:before {
+  content: "";
+}
+
+.pficon-folder-close:before {
+  content: "";
+}
+
+.pficon-folder-open:before {
+  content: "";
+}
+
+.pficon-help:before {
+  content: "";
+}
+
+.pficon-history:before {
+  content: "";
+}
+
+.pficon-home:before {
+  content: "";
+}
+
+.pficon-image:before {
+  content: "";
+}
+
+.pficon-import:before {
+  content: "";
+}
+
+.pficon-in-progress:before {
+  content: "";
+}
+
+.pficon-info:before {
+  content: "";
+}
+
+.pficon-infrastructure:before {
+  content: "";
+}
+
+.pficon-integration:before {
+  content: "";
+}
+
+.pficon-key:before {
+  content: "";
+}
+
+.pficon-locked:before {
+  content: "";
+}
+
+.pficon-maintenance:before {
+  content: "";
+}
+
+.pficon-memory:before {
+  content: "";
+}
+
+.pficon-middleware:before {
+  content: "";
+}
+
+.pficon-migration:before {
+  content: "";
+}
+
+.pficon-monitoring:before {
+  content: "";
+}
+
+.pficon-network:before {
+  content: "";
+}
+
+.pficon-network-range:before {
+  content: "";
+}
+
+.pficon-on:before {
+  content: "";
+}
+
+.pficon-on-running:before {
+  content: "";
+}
+
+.pficon-optimize:before {
+  content: "";
+}
+
+.pficon-orders:before {
+  content: "";
+}
+
+.pficon-off:before {
+  content: "";
+}
+
+.pficon-ok:before {
+  color: #3f9c35;
+  content: "";
+}
+
+.pficon-paused:before {
+  content: "";
+}
+
+.pficon-pending:before {
+  content: "";
+}
+
+.pficon-plugged:before {
+  content: "";
+}
+
+.pficon-port:before {
+  content: "";
+}
+
+.pficon-print:before {
+  content: "";
+}
+
+.pficon-process-automation:before {
+  content: "";
+}
+
+.pficon-private:before {
+  content: "";
+}
+
+.pficon-project:before {
+  content: "";
+}
+
+.pficon-rebalance:before {
+  content: "";
+}
+
+.pficon-rebooting:before {
+  content: "";
+}
+
+.pficon-refresh:before,
+.pficon-restart:before {
+  content: "";
+}
+
+.pficon-regions:before {
+  content: "";
+}
+
+.pficon-registry:before {
+  content: "";
+}
+
+.pficon-remove:before {
+  content: "";
+}
+
+.pficon-replicator:before {
+  content: "";
+}
+
+.pficon-repository:before {
+  content: "";
+}
+
+.pficon-resource-pool:before {
+  content: "";
+}
+
+.pficon-resources-almost-empty:before {
+  content: "";
+}
+
+.pficon-resources-almost-full:before {
+  content: "";
+}
+
+.pficon-resources-full:before {
+  content: "";
+}
+
+.pficon-route:before {
+  content: "";
+}
+
+.pficon-running:before {
+  content: "";
+}
+
+.pficon-satellite:before {
+  content: "";
+}
+
+.pficon-save:before {
+  content: "";
+}
+
+.pficon-screen:before {
+  content: "";
+}
+
+.pficon-search:before {
+  content: "";
+}
+
+.pficon-security:before {
+  content: "";
+}
+
+.pficon-server:before {
+  content: "";
+}
+
+.pficon-server-group:before {
+  content: "";
+}
+
+.pficon-service:before {
+  content: "";
+}
+
+.pficon-services:before {
+  content: "";
+}
+
+.pficon-service-catalog:before {
+  content: "";
+}
+
+.pficon-settings:before {
+  content: "";
+}
+
+.pficon-sort-common-asc:before {
+  content: "";
+}
+
+.pficon-sort-common-desc:before {
+  content: "";
+}
+
+.pficon-spinner:before {
+  content: "";
+}
+
+.pficon-spinner2:before {
+  content: "";
+}
+
+.pficon-storage-domain:before {
+  content: "";
+}
+
+.pficon-template:before {
+  content: "";
+}
+
+.pficon-tenant:before {
+  content: "";
+}
+
+.pficon-thumb-tack-o:before {
+  content: "";
+}
+
+.pficon-topology:before {
+  content: "";
+}
+
+.pficon-trend-down:before {
+  content: "";
+}
+
+.pficon-trend-up:before {
+  content: "";
+}
+
+.pficon-unknown:before {
+  content: "";
+}
+
+.pficon-user:before {
+  content: "";
+}
+
+.pficon-users:before {
+  content: "";
+}
+
+.pficon-unlocked:before {
+  content: "";
+}
+
+.pficon-unplugged:before {
+  content: "";
+}
+
+.pficon-vcenter:before {
+  content: "";
+}
+
+.pficon-virtual-machine:before {
+  content: "";
+}
+
+.pficon-volume:before {
+  content: "";
+}
+
+.pficon-warning-triangle-o:before {
+  color: #ec7a08;
+  content: "";
+}
+
+.pficon-zone:before {
+  content: "";
+}
