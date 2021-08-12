@@ -1477,16 +1477,10 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         return super(BaseSourceViewSet, self).destroy(request, *args, **kwargs)
 
     def upload(self, request, pk):
-        data = request.data.copy()
-        comment = data.pop('comment', None)
-
-        # because of rest website UI
-        if isinstance(comment, list):
-            comment = comment[0]
-
-        comment_serializer = CommentSerializer(data={'comment': comment})
-        comment_serializer.is_valid(raise_exception=True)
         source = self.get_object()
+
+        comment_serializer = CommentSerializer(data=request.data)
+        comment_serializer.is_valid(raise_exception=True)
 
         if source.method != 'local':
             msg = 'No upload is allowed. method is currently "%s"' % source.method
@@ -1502,7 +1496,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
 
         UserAction.create(
             action_type='upload_source',
-            comment=comment_serializer.validated_data['comment'],
+            comment=comment_serializer.validated_data.get('comment'),
             user=request.user,
             source=source
         )
