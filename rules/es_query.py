@@ -417,3 +417,8 @@ class ESQuery:
                     if json.loads(val['index']['blocks'].get('read_only_allow_delete', 'false')):
                         return True
         return False
+
+    def bulk(self, *args, **kwargs):
+        return self.es.bulk(*args,
+                            **kwargs,
+                            request_timeout=self.TIMEOUT)
