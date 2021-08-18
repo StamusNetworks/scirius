@@ -323,6 +323,8 @@ LOGIN_URL = '/accounts/login/'
 
 IPWARE_PRIVATE_IP_PREFIX = ()
 
+FILESTORE_SRC = '/var/log/suricata/filestore'
+
 HAVE_NETINFO_AGG = False
 
 try:
