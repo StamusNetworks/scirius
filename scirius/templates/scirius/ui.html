@@ -1,0 +1,39 @@
+{% load get_files from webpack_loader %}
+{% load staticfiles %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- The first thing in any HTML file should be the charset -->
+  <meta charset="utf-8">
+
+  <!-- Make the page mobile compatible -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Allow installing the app to the homescreen -->
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
+  <title>Scirius User Interface</title>
+
+  {% get_files 'ui' 'css' 'UI' as css_files %}
+  {% for css_file in css_files %}
+    <link type="text/css" href="{{ css_file.url }}" rel="preload stylesheet" />
+  {% endfor %}
+
+  <script type="text/javascript" src="{{ current_user_url }}" nonce="{{ request.csp_nonce }}"></script>
+  {% get_files 'ui' 'js' 'UI' as js_files %}
+  {% for js_file in js_files %}
+    <script type="text/javascript" src="{{ js_file.url }}" nonce="{{ request.csp_nonce }}"></script>
+  {% endfor %}
+</head>
+
+<body>
+  <!-- Display a message if JS has been disabled on the browser. -->
+  <noscript>If you're seeing this message, that means
+    <strong>JavaScript has been disabled on your browser</strong>, please
+    <strong>enable JS</strong> to make this app work.</noscript>
+
+  <!-- The app hooks into this div -->
+  <div id="app"></div>
+</html>

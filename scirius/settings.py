@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'dbbackup',
     'viz',
     'rules',
+    'scirius',
     'suricata',
     'accounts',
     'rest_framework',
@@ -90,6 +91,10 @@ WEBPACK_LOADER = {
         'STATS_FILE': os.path.join(BASE_DIR, 'rules/static/webpack-stats-hunt.prod.json'),
         'LOADER_CLASS': 'rules.hunt_webpack.HuntLoader',
         'CACHE': False
+    },
+    'UI': {
+        'BUNDLE_DIR_NAME': 'rules/static/bundles/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'rules/static/webpack-stats-ui.prod.json'),
     }
 }
 
