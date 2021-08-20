@@ -12,8 +12,8 @@ import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import styled from 'styled-components';
 import { ReloadPeriodEnum } from 'ui/maps/ReloadPeriodEnum';
-import { doReload, setReload } from 'ui/containers/App/actions';
-import { makeSelectReload } from 'ui/containers/App/selectors';
+import actions from 'ui/containers/App/actions';
+import selectors from 'ui/containers/App/selectors';
 
 const QuicksWrapper = styled.div`
   display: flex;
@@ -58,14 +58,14 @@ ReloadPicker.propTypes = {
 };
 
 const mapStateToProps = createStructuredSelector({
-  reloadPeriod: makeSelectReload(),
+  reloadPeriod: selectors.makeSelectReload(),
 });
 
 const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
-      setReload,
-      doReload,
+      setReload: actions.setReload,
+      doReload: actions.doReload,
     },
     dispatch,
   );

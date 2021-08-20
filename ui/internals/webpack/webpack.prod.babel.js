@@ -19,7 +19,7 @@ module.exports = require('./webpack.base.babel')({
 
   // In production, we skip all hot-reloading stuff
   entry: {
-    redlights: [
+    ui: [
       require.resolve('react-app-polyfill/ie11'),
       path.join(process.cwd(), 'app/app.js'),
     ],
@@ -129,12 +129,12 @@ module.exports = require('./webpack.base.babel')({
 
     new BundleTracker({
       path: resolveApp('../rules/static/'),
-      filename: 'webpack-stats-redlights.prod.json',
+      filename: 'webpack-stats-ui.prod.json',
     }),
   ],
 
   performance: {
     assetFilter: assetFilename =>
-      !/(\.map$)|(^(redlights\.|npm\.|favicon\.))/.test(assetFilename),
+      !/(\.map$)|(^(ui\.|npm\.|favicon\.))/.test(assetFilename),
   },
 });

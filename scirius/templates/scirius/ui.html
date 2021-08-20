@@ -15,17 +15,6 @@
 
   <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
   <title>Scirius User Interface</title>
-
-  {% get_files 'ui' 'css' 'UI' as css_files %}
-  {% for css_file in css_files %}
-    <link type="text/css" href="{{ css_file.url }}" rel="preload stylesheet" />
-  {% endfor %}
-
-  <script type="text/javascript" src="{{ current_user_url }}" nonce="{{ request.csp_nonce }}"></script>
-  {% get_files 'ui' 'js' 'UI' as js_files %}
-  {% for js_file in js_files %}
-    <script type="text/javascript" src="{{ js_file.url }}" nonce="{{ request.csp_nonce }}"></script>
-  {% endfor %}
 </head>
 
 <body>
@@ -36,4 +25,15 @@
 
   <!-- The app hooks into this div -->
   <div id="app"></div>
+
+  {% get_files 'ui' 'css' 'UI' as css_files %}
+  {% for css_file in css_files %}
+  <link type="text/css" href="{{ css_file.url }}" rel="preload stylesheet" />
+  {% endfor %}
+
+  <script type="text/javascript" src="{{ current_user_url }}" nonce="{{ request.csp_nonce }}"></script>
+  {% get_files 'ui' 'js' 'UI' as js_files %}
+  {% for js_file in js_files %}
+  <script type="text/javascript" src="{{ js_file.url }}" nonce="{{ request.csp_nonce }}"></script>
+  {% endfor %}
 </html>

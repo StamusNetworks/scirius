@@ -85,4 +85,4 @@ def static_redirect(request, static_path):
 @permission_required('rules.events_view', raise_exception=True)
 def ui_view(request, red_path):
     context = {'current_user_url': reverse('current_user')}
-    return scirius_render(request, 'scirius/ui.html', {})
+    return scirius_render(request, 'scirius/ui.html', context)

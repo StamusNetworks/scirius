@@ -6,7 +6,7 @@ import { omit } from 'lodash';
 import { createStructuredSelector } from 'reselect';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
-import { makeSelectFiltersParam } from 'ui/containers/App/selectors';
+import selectors from 'ui/containers/App/selectors';
 import { getQueryObject } from './getQueryObject';
 import { parseObjectToUrl } from './parseObjectToUrl';
 
@@ -38,7 +38,7 @@ CustomLink.propTypes = {
 };
 
 const mapStateToProps = createStructuredSelector({
-  filterParam: makeSelectFiltersParam(),
+  filterParam: selectors.makeSelectFiltersParam(),
 });
 
 const withConnect = connect(mapStateToProps);

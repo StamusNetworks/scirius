@@ -1,13 +1,9 @@
-/**
- * The global state selectors
- */
-
 import { createSelector } from 'reselect';
 import moment from 'moment';
 import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import { parseObjectToUrl } from 'ui/helpers/parseObjectToUrl';
-import { initialState, singleActiveThreatObject } from './reducer';
+import { initialState } from 'ui/containers/App/reducer';
 
 const selectGlobal = state => state.global || initialState;
 
@@ -25,33 +21,10 @@ const makeSelectGlobalSettings = () =>
     subState => subState.settings,
   );
 
-const makeSelectFamilies = () =>
-  createSelector(
-    selectGlobal,
-    subState => subState.families,
-  );
-
 const makeSelectUser = () =>
   createSelector(
     selectGlobal,
     ({ user }) => user,
-  );
-
-const makeSelectThreats = () =>
-  createSelector(
-    selectGlobal,
-    subState => ({
-      list: subState.threats.list,
-      active: subState.threats.active,
-      data: subState.threats.list.data.map(threat => {
-        const threatContent = subState.threats.active.data[threat.family];
-        return {
-          ...threat,
-          data: (threatContent || []).find(t => t.pk === threat.pk) || singleActiveThreatObject,
-        };
-      }),
-      delete: subState.threats.delete,
-    }),
   );
 
 const makeSelectStartDate = () =>
@@ -100,22 +73,6 @@ const makeSelectReloadFlag = () =>
     subState => subState.reload.now,
   );
 
-const makeSelectTenant = () =>
-  createSelector(
-    selectGlobal,
-    subState => subState.tenant,
-  );
-
-const makeSelectTenantParam = (prefix = '&') =>
-  createSelector(
-    selectGlobal,
-    makeSelectFilters(),
-    (subState, filters) => {
-      const { tenant = 0 } = filters;
-      return subState.tenant.enabled ? `${prefix}tenant=${tenant}` : '';
-    },
-  );
-
 const makeSelectFilters = () =>
   createSelector(
     selectGlobal,
@@ -141,21 +98,17 @@ const makeSelectSource = () =>
     subState => subState.source,
   );
 
-export {
+export default {
   selectGlobal,
   makeSelectLocation,
   makeSelectGlobalSettings,
-  makeSelectFamilies,
   makeSelectStartDate,
   makeSelectEndDate,
   makeSelectDuration,
   makeSelectTimePicker,
   makeSelectUser,
-  makeSelectThreats,
   makeSelectReload,
   makeSelectReloadFlag,
-  makeSelectTenant,
-  makeSelectTenantParam,
   makeSelectFilters,
   makeSelectFiltersParam,
   makeSelectSource,

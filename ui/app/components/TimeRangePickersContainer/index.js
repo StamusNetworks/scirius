@@ -7,16 +7,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 import moment from 'moment';
 import DateRangePicker from 'ui/components/DateRangePicker';
-import {
-  makeSelectDuration,
-  makeSelectEndDate,
-  makeSelectStartDate,
-  makeSelectTimePicker,
-  makeSelectFiltersParam,
-  makeSelectReload,
-  makeSelectTenant,
-} from 'ui/containers/App/selectors';
-import { setDuration, setTimeSpan } from 'ui/containers/App/actions';
+import selectors from 'ui/containers/App/selectors';
+import actions from 'ui/containers/App/actions';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import request from 'ui/utils/request';
 // eslint-disable-next-line import/named
@@ -46,14 +38,11 @@ const TimeRangePickersContainer = ({
   timePicker,
   filtersParam,
   reloadData,
-  tenant,
 }) => {
   const [minTime, setMinTime] = useState(moment(0)); // used by the `All` timerange
   const [maxTime, setMaxTime] = useState(moment(0)); // used by the `All` timerange
 
   let error = '';
-
-  console.log('reloadData:', reloadData);
 
   useEffect(() => {
     (async () => {
@@ -63,7 +52,7 @@ const TimeRangePickersContainer = ({
         setMaxTime(moment(timeRange.max_timestamp));
       }
     })();
-  }, [filtersParam, reloadData.now, tenant]);
+  }, [filtersParam, reloadData.now]);
 
   const validateTimeSpan = (startDateIn, endDateIn) => {
     if (startDateIn.unix() === endDateIn.unix()) {
@@ -137,24 +126,22 @@ TimeRangePickersContainer.propTypes = {
   timePicker: PropTypes.any,
   filtersParam: PropTypes.any,
   reloadData: PropTypes.object,
-  tenant: PropTypes.object,
 };
 
 const mapStateToProps = createStructuredSelector({
-  startDate: makeSelectStartDate(),
-  endDate: makeSelectEndDate(),
-  duration: makeSelectDuration(),
-  timePicker: makeSelectTimePicker(),
-  filtersParam: makeSelectFiltersParam(),
-  reloadData: makeSelectReload(),
-  tenant: makeSelectTenant(),
+  startDate: selectors.makeSelectStartDate(),
+  endDate: selectors.makeSelectEndDate(),
+  duration: selectors.makeSelectDuration(),
+  timePicker: selectors.makeSelectTimePicker(),
+  filtersParam: selectors.makeSelectFiltersParam(),
+  reloadData: selectors.makeSelectReload(),
 });
 
 export const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
-      setTimeSpan,
-      setDuration,
+      setTimeSpan: actions.setTimeSpan,
+      setDuration: actions.setDuration,
     },
     dispatch,
   );

@@ -1,32 +1,25 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Menu, Popover, Row } from 'antd';
 import PropTypes from 'prop-types';
 import StamusLogo from 'ui/images/stamus.png';
 import { Link } from 'react-router-dom';
-import StyledHeader from './StyledHeader';
-import LogoHandler from './LogoHandler';
 import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
 import { ClockCircleFilled, ReloadOutlined } from '@ant-design/icons';
-import {
-  makeSelectDuration, makeSelectEndDate,
-  makeSelectReload,
-  makeSelectStartDate,
-  makeSelectTimePicker,
-} from '../../containers/App/selectors';
 import { createStructuredSelector } from 'reselect';
 import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
 import { DATE_TIME_FORMAT } from 'ui/constants';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import { bindActionCreators, compose } from 'redux';
-import { setDuration, setTimeSpan } from 'ui/containers/App/actions';
+import actions from 'ui/containers/App/actions';
 import { connect } from 'react-redux';
 import { createGlobalStyle } from 'styled-components';
-import MenuItem from 'antd/es/menu/MenuItem';
 import ReloadPicker from 'ui/components/ReloadPicker';
-import { doReload } from 'ui/containers/App/actions';
 import PfIcon from 'ui/components/PfIcon';
 import HelpMenu from 'ui/components/HelpMenu';
 import UserMenu from 'ui/components/UserMenu';
+import selectors from 'ui/containers/App/selectors';
+import StyledHeader from './StyledHeader';
+import LogoHandler from './LogoHandler';
 
 const iconStyle = {
   fontSize: '20px',
@@ -125,19 +118,19 @@ Header.propTypes = {
 }
 
 const mapStateToProps = createStructuredSelector({
-  timePicker: makeSelectTimePicker(),
-  duration: makeSelectDuration(),
-  reloadData: makeSelectReload(),
-  startDate: makeSelectStartDate(),
-  endDate: makeSelectEndDate(),
+  timePicker: selectors.makeSelectTimePicker(),
+  duration: selectors.makeSelectDuration(),
+  reloadData: selectors.makeSelectReload(),
+  startDate: selectors.makeSelectStartDate(),
+  endDate: selectors.makeSelectEndDate(),
 });
 
 export const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
-      setDuration,
-      setTimeSpan,
-      doReload,
+      setDuration: actions.setDuration,
+      setTimeSpan: actions.setTimeSpan,
+      doReload: actions.doReload,
     },
     dispatch,
   );
