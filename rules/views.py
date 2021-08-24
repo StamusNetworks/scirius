@@ -1091,7 +1091,12 @@ def add_source(request):
                         src.handle_uploaded_file(request.FILES['file'])
                     except Exception as error:
                         if isinstance(error, ValidationError):
-                            error = error.message
+                            if hasattr(error, 'error_dict'):
+                                error = ', '.join(['%s: %s' % (key, val) for key, val in error.message_dict.items()])
+                            elif hasattr(error, 'error_list'):
+                                error = ', '.join(error.error_list)
+                            else:
+                                error = str(error)
                         src.delete()
                         return scirius_render(request, 'rules/add_source.html', {'form': form, 'error': error})
 

@@ -2265,6 +2265,14 @@ class Category(models.Model, Transformable, Cache):
                             imported_date=creation_date,
                             updated_date=creation_date
                         )
+
+                        try:
+                            rule.full_clean()
+                        except ValidationError as e:
+                            err = {'sid': rule.sid}
+                            err.update(e.message_dict)
+                            raise ValidationError(err)
+
                         rule.parse_metadata()
                         rules_update["added"].append(rule)
                         rule.parse_flowbits(source, flowbits, addition=True)
