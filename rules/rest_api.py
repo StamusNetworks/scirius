@@ -218,7 +218,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
         UserAction.create(
             action_type='create_ruleset',
             comment=comment_serializer.validated_data['comment'],
-            user=request.user,
+            request=request,
             ruleset=serializer.instance
         )
 
@@ -233,7 +233,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
 
         UserAction.create(
             action_type='delete_ruleset',
-            user=request.user,
+            request=request,
             ruleset=ruleset,
             comment=comment_serializer.validated_data['comment']
         )
@@ -266,7 +266,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
         UserAction.create(
             action_type='edit_ruleset',
             comment=comment_serializer.validated_data['comment'],
-            user=request.user,
+            request=request,
             ruleset=instance
         )
 
@@ -292,7 +292,7 @@ class RulesetViewSet(viewsets.ModelViewSet):
         UserAction.create(
             action_type='copy_ruleset',
             comment=comment,
-            user=request.user,
+            request=request,
             ruleset=ruleset
         )
 
@@ -361,7 +361,7 @@ class CategoryViewSet(SciriusReadOnlyModelViewSet):
         serializer.is_valid(raise_exception=True)
         category.enable(
             serializer.validated_data['ruleset'],
-            request.user,
+            request,
             serializer.validated_data.get('comment', None)
         )
         return Response({'enable': 'ok'})
@@ -372,7 +372,7 @@ class CategoryViewSet(SciriusReadOnlyModelViewSet):
         serializer = CategoryChangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         category.disable(
-            serializer.validated_data['ruleset'], request.user,
+            serializer.validated_data['ruleset'], request,
             serializer.validated_data.get('comment', None)
         )
         return Response({'disable': 'ok'})
@@ -468,10 +468,11 @@ class UserActionFilter(filters.FilterSet):
     min_date = filters.DateFilter(field_name='date', lookup_expr='gte')
     max_date = filters.DateFilter(field_name='date', lookup_expr='lte')
     comment = ListFilter(field_name='comment', lookup_expr='icontains')
+    client_ip = filters.CharFilter(field_name='client_ip', lookup_expr='exact')
 
     class Meta:
         model = UserAction
-        fields = ['username', 'date', 'action_type', 'comment', 'user_action_objects__action_key', 'user_action_objects__action_value']
+        fields = ['username', 'date', 'action_type', 'comment', 'client_ip', 'user_action_objects__action_key', 'user_action_objects__action_value']
 
 
 class RuleHitsOrderingFilter(OrderingFilter):
@@ -842,7 +843,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
             UserAction.create(
                 action_type='comment_rule',
                 comment=comment,
-                user=request.user,
+                request=request,
                 rule=rule
             )
             return Response({'comment': 'ok'})
@@ -871,7 +872,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         UserAction.create(
             action_type='toggle_availability',
             comment=comment,
-            user=request.user,
+            request=request,
             rule=rule
         )
 
@@ -883,7 +884,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         serializer = RuleChangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         rule.enable(
-            serializer.validated_data['ruleset'], request.user,
+            serializer.validated_data['ruleset'], request,
             serializer.validated_data.get('comment', None)
         )
         return Response({'enable': 'ok'})
@@ -894,7 +895,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         serializer = RuleChangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         rule.disable(
-            serializer.validated_data['ruleset'], request.user,
+            serializer.validated_data['ruleset'], request,
             serializer.validated_data.get('comment', None)
         )
         return Response({'disable': 'ok'})
@@ -1453,7 +1454,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         UserAction.create(
             action_type='create_source',
             comment=comment_serializer.validated_data['comment'],
-            user=request.user,
+            request=request,
             source=source
         )
 
@@ -1470,7 +1471,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
 
         UserAction.create(
             action_type='delete_source',
-            user=request.user,
+            request=request,
             source=source,
             comment=comment_serializer.validated_data['comment']
         )
@@ -1497,7 +1498,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         UserAction.create(
             action_type='upload_source',
             comment=comment_serializer.validated_data.get('comment'),
-            user=request.user,
+            request=request,
             source=source
         )
 
@@ -1543,7 +1544,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
         UserAction.create(
             action_type='update_source',
             comment=comment_serializer.validated_data['comment'],
-            user=request.user,
+            request=request,
             source=source
         )
         return Response({'update': msg})
@@ -1783,7 +1784,7 @@ class UserActionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserAction
-        fields = ('pk', 'action_type', 'date', 'comment', 'user', 'username', 'ua_objects')
+        fields = ('pk', 'action_type', 'date', 'comment', 'user', 'username', 'ua_objects', 'client_ip')
 
     def to_representation(self, instance):
         from scirius.utils import get_middleware_module
@@ -1878,7 +1879,7 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
     queryset = UserAction.objects.all()
     serializer_class = UserActionSerializer
     ordering = ('-pk',)
-    ordering_fields = ('pk', 'date', 'username', 'action_type')
+    ordering_fields = ('pk', 'date', 'username', 'action_type', 'client_ip')
     filter_class = UserActionFilter
     filter_backends = (filters.DjangoFilterBackend, UserActionDateOrderingFilter)
     permission_classes = [IsAuthenticated]
@@ -2753,7 +2754,7 @@ class SystemSettingsViewSet(UpdateModelMixin, RetrieveModelMixin, viewsets.Gener
         UserAction.create(
             action_type='system_settings',
             comment=comment_serializer.validated_data['comment'],
-            user=request.user
+            request=request
         )
 
     def update(self, request, *args, **kwargs):

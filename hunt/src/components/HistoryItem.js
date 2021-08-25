@@ -53,14 +53,24 @@ const HistoryItem = (props) => {
       compoundExpand={props.expand_row}
       compoundExpanded
     >
-      {props.data.comment && (
+      {(props.data.comment || props.data.client_ip) && (
         <Row>
-          <Col sm={11}>
-            <div className="container-fluid">
-              <strong>Comment</strong>
-              <p>{props.data.comment}</p>
-            </div>
-          </Col>
+          {props.data.comment && (
+            <Col sm={10}>
+              <div className="container-fluid">
+                <strong>Comment</strong>
+                <p>{props.data.comment}</p>
+              </div>
+            </Col>
+          )}
+          {props.data.client_ip && (
+            <Col sm={2}>
+              <div className="container-fluid">
+                <strong>IP</strong>
+                <p>{props.data.client_ip}</p>
+              </div>
+            </Col>
+          )}
         </Row>
       )}
     </ListViewItem>

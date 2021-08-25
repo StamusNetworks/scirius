@@ -449,7 +449,7 @@ def edit_rule(request, rule_id):
                             UserAction.create(
                                 action_type='transform_rule',
                                 comment=form.cleaned_data['comment'],
-                                user=request.user,
+                                request=request,
                                 transformation='%s: %s' % (TYPE.value, CAT_DEFAULT.name.replace('_', ' ').title()),
                                 rule=rule_object,
                                 ruleset=ruleset
@@ -464,7 +464,7 @@ def edit_rule(request, rule_id):
                         UserAction.create(
                             action_type='transform_rule',
                             comment=form.cleaned_data['comment'],
-                            user=request.user,
+                            request=request,
                             transformation='%s: %s' % (TYPE.value.title(), form_trans.value.title()),
                             rule=rule_object,
                             ruleset=ruleset
@@ -473,7 +473,7 @@ def edit_rule(request, rule_id):
                         UserAction.create(
                             action_type='transform_rule',
                             comment=form.cleaned_data['comment'],
-                            user=request.user,
+                            request=request,
                             transformation='%s: %s' % (TYPE.value.title(), trans.value.title()),
                             rule=rule_object,
                             ruleset=ruleset
@@ -619,7 +619,7 @@ def transform_category(request, cat_id):
                         UserAction.create(
                             action_type='transform_category',
                             comment=form.cleaned_data['comment'],
-                            user=request.user,
+                            request=request,
                             transformation='%s: %s' % (TYPE.value.title(), form_trans.value.title()),
                             category=cat_object,
                             ruleset=ruleset
@@ -628,7 +628,7 @@ def transform_category(request, cat_id):
                         UserAction.create(
                             action_type='transform_category',
                             comment=form.cleaned_data['comment'],
-                            user=request.user,
+                            request=request,
                             transformation='%s: %s' % (TYPE.value.title(), trans.value.title()),
                             category=cat_object,
                             ruleset=ruleset
@@ -724,9 +724,9 @@ def switch_rule(request, rule_id, operation='disable'):
                 ).values_list('pk', flat=True)
 
                 if rule_object.pk not in suppressed_rules and operation == 'disable':
-                    rule_object.disable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+                    rule_object.disable(ruleset, request=request, comment=form.cleaned_data['comment'])
                 elif rule_object.pk in suppressed_rules and operation == 'enable':
-                    rule_object.enable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+                    rule_object.enable(ruleset, request=request, comment=form.cleaned_data['comment'])
                 ruleset.save()
             return redirect(rule_object)
     else:
@@ -783,7 +783,7 @@ def delete_alerts(request, rule_id):
             UserAction.create(
                 action_type='delete_alerts',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 rule=rule_object
             )
         return redirect(rule_object)
@@ -807,7 +807,7 @@ def comment_rule(request, rule_id):
             UserAction.create(
                 action_type='comment_rule',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 rule=rule_object
             )
     return redirect(rule_object)
@@ -825,7 +825,7 @@ def toggle_availability(request, rule_id):
 
     UserAction.create(
         action_type='toggle_availability',
-        user=request.user,
+        request=request,
         rule=rule_object
     )
 
@@ -865,7 +865,7 @@ def threshold_rule(request, rule_id):
                 UserAction.create(
                     action_type=action_type,
                     comment=form.cleaned_data['comment'],
-                    user=request.user,
+                    request=request,
                     rule=rule_object,
                     threshold=threshold,
                     ruleset=ruleset
@@ -941,9 +941,9 @@ def disable_category(request, cat_id, operation='suppress'):
             rulesets = form.cleaned_data['rulesets']
             for ruleset in rulesets:
                 if operation == 'suppress':
-                    cat_object.disable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+                    cat_object.disable(ruleset, request=request, comment=form.cleaned_data['comment'])
                 elif operation == 'enable':
-                    cat_object.enable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+                    cat_object.enable(ruleset, request=request, comment=form.cleaned_data['comment'])
             return redirect(cat_object)
     else:
         form = RulesetSuppressForm()
@@ -1022,7 +1022,7 @@ def activate_source(request, source_id, ruleset_id):
 
     ruleset.sources.add(sversions[0])
     for cat in Category.objects.filter(source=src):
-        cat.enable(ruleset, user=request.user)
+        cat.enable(ruleset, request=request)
 
     ruleset.needs_test()
     ruleset.save()
@@ -1113,7 +1113,7 @@ def add_source(request):
                     UserAction.create(
                         action_type='create_source',
                         comment=form.cleaned_data['comment'],
-                        user=request.user,
+                        request=request,
                         source=src,
                         ruleset=ruleset
                     )
@@ -1122,7 +1122,7 @@ def add_source(request):
                 UserAction.create(
                     action_type='create_source',
                     comment=form.cleaned_data['comment'],
-                    user=request.user,
+                    request=request,
                     source=src,
                     ruleset='No Ruleset'
                 )
@@ -1241,7 +1241,7 @@ def add_public_source(request):
                     UserAction.create(
                         action_type='create_source',
                         comment=form.cleaned_data['comment'],
-                        user=request.user,
+                        request=request,
                         source=src,
                         ruleset=ruleset
                     )
@@ -1249,7 +1249,7 @@ def add_public_source(request):
                 UserAction.create(
                     action_type='create_source',
                     comment=form.cleaned_data['comment'],
-                    user=request.user,
+                    request=request,
                     source=src,
                     ruleset='No Ruleset'
                 )
@@ -1305,7 +1305,7 @@ def edit_source(request, source_id):
             UserAction.create(
                 action_type='edit_source',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 source=source
             )
 
@@ -1338,7 +1338,7 @@ def delete_source(request, source_id):
             UserAction.create(
                 action_type='delete_source',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 source=source
             )
             source.delete()
@@ -1498,7 +1498,7 @@ def add_ruleset(request):
             UserAction.create(
                 action_type='create_ruleset',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 ruleset=ruleset
             )
 
@@ -1599,13 +1599,13 @@ def edit_ruleset(request, ruleset_id):
             # clean ruleset
             for cat in ruleset.categories.all():
                 if cat.pk not in category_selection:
-                    cat.disable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+                    cat.disable(ruleset, request=request, comment=form.cleaned_data['comment'])
 
             # add updated entries
             for cat in category_selection:
                 category = get_object_or_404(Category, pk=cat)
                 if category not in ruleset.categories.all():
-                    category.enable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+                    category.enable(ruleset, request=request, comment=form.cleaned_data['comment'])
 
         elif 'rules' in request.POST:
             if not user.has_perm('rules.ruleset_policy_edit'):
@@ -1614,7 +1614,7 @@ def edit_ruleset(request, ruleset_id):
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
                 if rule_object in ruleset.get_transformed_rules(key=SUPPRESSED, value=S_SUPPRESSED):
-                    rule_object.enable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+                    rule_object.enable(ruleset, request=request, comment=form.cleaned_data['comment'])
 
         elif 'sources' in request.POST:
             if not user.has_perm('rules.source_edit'):
@@ -1624,13 +1624,13 @@ def edit_ruleset(request, ruleset_id):
             # clean ruleset
             for source_ in ruleset.sources.all():
                 if source_.pk not in source_selection:
-                    source_.disable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+                    source_.disable(ruleset, request=request, comment=form.cleaned_data['comment'])
 
             # add new entries
             for src in source_selection:
                 source = get_object_or_404(SourceAtVersion, pk=src)
                 if source not in ruleset.sources.all():
-                    source.enable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+                    source.enable(ruleset, request=request, comment=form.cleaned_data['comment'])
         else:
             form = RulesetEditForm(request.POST, instance=ruleset, request=request)
 
@@ -1638,7 +1638,7 @@ def edit_ruleset(request, ruleset_id):
                 UserAction.create(
                     action_type='edit_ruleset',
                     comment=form.cleaned_data['comment'],
-                    user=request.user,
+                    request=request,
                     ruleset=ruleset
                 )
 
@@ -1790,7 +1790,7 @@ def ruleset_add_supprule(request, ruleset_id):
                 return redirect(ruleset)
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
-                rule_object.disable(ruleset, user=request.user, comment=form.cleaned_data['comment'])
+                rule_object.disable(ruleset, request=request, comment=form.cleaned_data['comment'])
             ruleset.save()
         return redirect(ruleset)
 
@@ -1810,7 +1810,7 @@ def delete_ruleset(request, ruleset_id):
             UserAction.create(
                 action_type='delete_ruleset',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 ruleset=ruleset
             )
             ruleset.delete()
@@ -1830,7 +1830,7 @@ def copy_ruleset(request, ruleset_id):
             UserAction.create(
                 action_type='copy_ruleset',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 ruleset=ruleset
             )
             return redirect(copy)
@@ -1924,7 +1924,7 @@ def system_settings(request):
         UserAction.create(
             action_type='system_settings',
             comment=comment_form.cleaned_data['comment'],
-            user=request.user,
+            request=request,
         )
     context['global_settings'] = get_system_settings()
     return scirius_render(request, 'rules/system_settings.html', context)
@@ -1970,7 +1970,7 @@ def edit_threshold(request, threshold_id):
             UserAction.create(
                 action_type='edit_threshold',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 rule=rule,
                 threshold=threshold,
                 ruleset=ruleset
@@ -1998,7 +1998,7 @@ def delete_threshold(request, threshold_id):
             UserAction.create(
                 action_type=action_type,
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 rule=rule,
                 threshold=threshold,
                 ruleset=ruleset
@@ -2026,7 +2026,8 @@ def history(request):
             'comment': item.comment,
             'title': item.get_title(),
             'date': item.date,
-            'icons': item.get_icons()
+            'icons': item.get_icons(),
+            'client_ip': item.client_ip
         })
 
     context = {'history': res}

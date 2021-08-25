@@ -54,7 +54,7 @@ class SuricataViewSet(APIView):
 
             UserAction.create(
                 action_type='update_push_all',
-                user=request.user,
+                request=request,
                 ruleset=suri.ruleset,
                 comment=comment_serializer.validated_data['comment']
             )

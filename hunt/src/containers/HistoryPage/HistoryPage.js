@@ -43,6 +43,12 @@ const HistorySortFields = [
     isNumeric: false,
     defaultAsc: false,
   },
+  {
+    id: 'client_ip',
+    title: 'Client IP',
+    isNumeric: false,
+    defaultAsc: false,
+  },
 ];
 
 export default class HistoryPage extends React.Component {
@@ -68,6 +74,14 @@ export default class HistoryPage extends React.Component {
         title: 'Action Type',
         placeholder: 'Filter by Action Type',
         filterType: 'select',
+        filterValues: [],
+        queryType: 'all',
+      },
+      {
+        id: 'client_ip',
+        title: 'Client IP',
+        placeholder: 'Filter by Client IP',
+        filterType: 'text',
         filterValues: [],
         queryType: 'all',
       },
@@ -124,7 +138,7 @@ export default class HistoryPage extends React.Component {
   render() {
     let expand = false;
     for (let filter = 0; filter < this.props.filters; filter += 1) {
-      if (this.props.filters[filter].id === 'comment') {
+      if (this.props.filters[filter].id === 'comment' || this.props.filters[filter].id === 'client_ip') {
         expand = true;
         break;
       }

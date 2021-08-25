@@ -71,7 +71,7 @@ def loginview(request, target):
                 logger.info("Successful login for '%s' from '%s'", username, get_client_ip(request))
                 UserAction.create(
                     action_type='login',
-                    user=user,
+                    request=request,
                     force_insert=True
                 )
                 return redirect("/" + target)
@@ -144,7 +144,7 @@ def editview(request, action):
                     UserAction.create(
                         action_type='edit_user_token',
                         comment=form.cleaned_data['comment'],
-                        user=request.user,
+                        request=request,
                         other_user=request.user
                     )
                     return redirect('accounts_edit', action='token')
@@ -159,7 +159,7 @@ def editview(request, action):
                     UserAction.create(
                         action_type='edit_user_password',
                         comment=form.cleaned_data['comment'],
-                        user=request.user,
+                        request=request,
                         other_user=request.user
                     )
                 if action == 'settings':
@@ -176,7 +176,7 @@ def editview(request, action):
                     UserAction.create(
                         action_type='edit_user',
                         comment=form.cleaned_data['comment'],
-                        user=request.user,
+                        request=request,
                         other_user=request.user
                     )
                     sciriususer.save()
@@ -273,7 +273,7 @@ def add_user(request):
             UserAction.create(
                 action_type='create_user',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 new_user=ruser
             )
 
@@ -306,7 +306,7 @@ def edit_user(request, user_id):
             UserAction.create(
                 action_type='edit_user',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 other_user=user
             )
             return redirect('list_accounts')
@@ -338,7 +338,7 @@ def delete_user(request, user_id):
     UserAction.create(
         action_type='delete_user',
         comment=comment_form.cleaned_data['comment'],
-        user=request.user,
+        request=request,
         old_user=user
     )
     return JsonResponse({'redirect': '/accounts/user/'})
@@ -371,7 +371,7 @@ def add_group(request):
             UserAction.create(
                 action_type='create_group',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 new_group=group
             )
 
@@ -407,7 +407,7 @@ def edit_group(request, group_id):
             UserAction.create(
                 action_type='edit_group',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 group=django_group
             )
             return redirect('list_accounts')
@@ -444,7 +444,7 @@ def delete_group(request, group_id):
     UserAction.create(
         action_type='delete_group',
         comment=comment_form.cleaned_data['comment'],
-        user=request.user,
+        request=request,
         group=group.group
     )
     return JsonResponse({'redirect': '/accounts/role/'})
@@ -467,7 +467,7 @@ def edit_password(request, user_id):
             UserAction.create(
                 action_type='edit_user_password',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 other_user=user
             )
             return redirect('list_accounts')
@@ -487,7 +487,7 @@ def logoutview(request):
     from rules.models import UserAction
     UserAction.create(
         action_type='logout',
-        user=request.user,
+        request=request,
         force_insert=True
     )
     logout(request)

@@ -34,6 +34,11 @@
         <div class="row">
                 <dl class="dl-horizontal">
                     <dt>Description:</dt><dd> {{ user_action.description }}</dd>
+                    {% if user_action.client_ip %}
+                    <dt>IP:</dt><dd>{{ user_action.client_ip }}</dd>
+                    {% else %}
+                    <dt>IP:</dt><dd>Unknown</dd>
+                    {% endif %}
                     {% if user_action.comment %}
                     <dt>Comment:</dt><dd>{{ user_action.comment }}</dd>
                     {% else %}

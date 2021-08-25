@@ -45,6 +45,7 @@ import base64
 import time
 from datetime import date as datetime_date
 import logging
+from ipware.ip import get_client_ip
 
 from rules.tests_rules import TestRules
 from rules.validators import validate_addresses_or_networks
@@ -590,6 +591,7 @@ class UserAction(models.Model):
     ua_objects = GenericRelation('UserActionObject', related_query_name='ua_objects')
     # Compatibilty
     description = models.CharField(max_length=1512, null=True)
+    client_ip = models.CharField(max_length=64, blank=True, null=True)
 
     def __init__(self, *args, **kwargs):
         super(UserAction, self).__init__(*args, **kwargs)
@@ -611,16 +613,28 @@ class UserAction(models.Model):
                 actions.append(action_type)
         return actions
 
+    @staticmethod
+    def _get_request_info(request):
+        return request.user, get_client_ip(request)[0]
+
     @classmethod
     def create(cls, **kwargs):
         if 'action_type' not in kwargs:
             raise Exception('Cannot create UserAction without "action_type"')
 
+        if 'request' in kwargs:
+            user, ip = cls._get_request_info(kwargs['request'])
+            kwargs.pop('request')
+            kwargs.update({
+                'user': user,
+                'client_ip': ip
+            })
+
         force_insert = True if 'force_insert' in kwargs and kwargs.pop('force_insert') else False
 
         # UserAction
         ua_params = {}
-        for param in ('action_type', 'comment', 'user', 'date'):
+        for param in ('action_type', 'comment', 'user', 'date', 'client_ip'):
             if param in kwargs:
                 ua_params[param] = kwargs.pop(param)
 
@@ -1426,7 +1440,7 @@ class SourceAtVersion(models.Model):
 
     name = property(_get_name)
 
-    def enable(self, ruleset, user=None, comment=None):
+    def enable(self, ruleset, request=None, comment=None):
         ruleset.sources.add(self)
 
         for cat in Category.objects.filter(source=self.source):
@@ -1435,16 +1449,16 @@ class SourceAtVersion(models.Model):
 
         ruleset.needs_test()
         ruleset.save()
-        if user:
+        if request:
             UserAction.create(
                 action_type='enable_source',
                 comment=comment,
-                user=user,
+                request=request,
                 source=self.source,
                 ruleset=ruleset
             )
 
-    def disable(self, ruleset, user=None, comment=None):
+    def disable(self, ruleset, request=None, comment=None):
         ruleset.sources.remove(self)
 
         for cat in Category.objects.filter(source=self.source):
@@ -1453,11 +1467,11 @@ class SourceAtVersion(models.Model):
 
         ruleset.needs_test()
         ruleset.save()
-        if user:
+        if request:
             UserAction.create(
                 action_type='disable_source',
                 comment=comment,
-                user=user,
+                request=request,
                 source=self.source,
                 ruleset=ruleset
             )
@@ -2314,28 +2328,28 @@ class Category(models.Model, Transformable, Cache):
     def get_absolute_url(self):
         return reverse('category', args=[str(self.id)])
 
-    def enable(self, ruleset, user=None, comment=None):
+    def enable(self, ruleset, request=None, comment=None):
         ruleset.categories.add(self)
         ruleset.needs_test()
         ruleset.save()
-        if user:
+        if request:
             UserAction.create(
                 action_type='enable_category',
                 comment=comment,
-                user=user,
+                request=request,
                 category=self,
                 ruleset=ruleset
             )
 
-    def disable(self, ruleset, user=None, comment=None):
+    def disable(self, ruleset, request=None, comment=None):
         ruleset.categories.remove(self)
         ruleset.needs_test()
         ruleset.save()
-        if user:
+        if request:
             UserAction.create(
                 action_type='disable_category',
                 comment=comment,
-                user=user,
+                request=request,
                 category=self,
                 ruleset=ruleset
             )
@@ -2604,29 +2618,29 @@ class Rule(models.Model, Transformable, Cache):
             user_action_objects__object_id=self.pk
         ).order_by('-date')
 
-    def enable(self, ruleset, user=None, comment=None):
+    def enable(self, ruleset, request=None, comment=None):
         enable_rules = [self]
         enable_rules.extend(self.get_dependant_rules(ruleset))
         ruleset.enable_rules(enable_rules)
-        if user:
+        if request:
             UserAction.create(
                 action_type='enable_rule',
                 comment=comment,
-                user=user,
+                request=request,
                 rule=self,
                 ruleset=ruleset
             )
         return
 
-    def disable(self, ruleset, user=None, comment=None):
+    def disable(self, ruleset, request=None, comment=None):
         disable_rules = [self]
         disable_rules.extend(self.get_dependant_rules(ruleset))
         ruleset.disable_rules(disable_rules)
-        if user:
+        if request:
             UserAction.create(
                 action_type='disable_rule',
                 comment=comment,
-                user=user,
+                request=request,
                 rule=self,
                 ruleset=ruleset
             )

@@ -303,7 +303,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
         UserAction.create(
             action_type='%s_rule_filter' % user_action,
             comment=comment,
-            user=self.context['request'].user,
+            request=self.context['request'],
             rule_filter=instance
         )
         return instance
@@ -411,7 +411,7 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
         UserAction.create(
             action_type='delete_rule_filter',
             comment=comment_serializer.validated_data.get('comment'),
-            user=request.user,
+            request=request,
             rule_filter=self.get_object()
         )
 

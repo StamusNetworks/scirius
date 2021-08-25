@@ -92,7 +92,7 @@ def edit(request):
                 UserAction.create(
                     action_type='edit_suricata',
                     comment=form.cleaned_data['comment'],
-                    user=request.user,
+                    request=request,
                     suricata=suri
                 )
                 return redirect(index)
@@ -116,7 +116,7 @@ def edit(request):
             UserAction.create(
                 action_type='create_suricata',
                 comment=form.cleaned_data['comment'],
-                user=request.user,
+                request=request,
                 suricata=suricata
             )
             return redirect(index)
@@ -181,7 +181,7 @@ def update(request):
         UserAction.create(
             action_type='edit_suricata',
             comment=form.cleaned_data['comment'],
-            user=request.user,
+            request=request,
             suricata=suri
         )
         context = {'message': message, 'suricata': suri}

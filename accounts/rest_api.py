@@ -345,7 +345,7 @@ class AccountViewSet(viewsets.ModelViewSet):
         UserAction.create(
             action_type='create_user',
             comment=comment_serializer.validated_data['comment'],
-            user=request.user,
+            request=request,
             new_user=serializer.instance.user
         )
         headers = self.get_success_headers(serializer.data)
@@ -361,7 +361,7 @@ class AccountViewSet(viewsets.ModelViewSet):
 
         UserAction.create(
             action_type='delete_user',
-            user=request.user,
+            request=request,
             old_user=old_user.user,
             comment=comment_serializer.validated_data['comment']
         )
@@ -381,7 +381,7 @@ class AccountViewSet(viewsets.ModelViewSet):
         UserAction.create(
             action_type='edit_user',
             comment=comment_serializer.validated_data['comment'],
-            user=request.user,
+            request=request,
             other_user=serializer.instance.user
         )
         return super(AccountViewSet, self).update(request, pk, *args, **kwargs)
@@ -400,7 +400,7 @@ class AccountViewSet(viewsets.ModelViewSet):
         UserAction.create(
             action_type='edit_user',
             comment=comment_serializer.validated_data['comment'],
-            user=request.user,
+            request=request,
             other_user=serializer.instance.user
         )
         return super(AccountViewSet, self).update(request, pk, partial=True, *args, **kwargs)
@@ -429,7 +429,7 @@ class AccountViewSet(viewsets.ModelViewSet):
             UserAction.create(
                 action_type='edit_user_token',
                 comment=comment_serializer.validated_data['comment'],
-                user=request.user,
+                request=request,
                 other_user=scirius_user.user
             )
 
@@ -466,7 +466,7 @@ class AccountViewSet(viewsets.ModelViewSet):
         UserAction.create(
             action_type='edit_user_password',
             comment=comment_serializer.validated_data['comment'],
-            user=request.user,
+            request=request,
             other_user=scirius_user.user
         )
         return Response({'password': 'updated'})
