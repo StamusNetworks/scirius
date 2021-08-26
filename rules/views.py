@@ -1094,7 +1094,7 @@ def add_source(request):
                             if hasattr(error, 'error_dict'):
                                 error = ', '.join(['%s: %s' % (key, val) for key, val in error.message_dict.items()])
                             elif hasattr(error, 'error_list'):
-                                error = ', '.join(error.error_list)
+                                error = ', '.join(error.messages)
                             else:
                                 error = str(error)
                         src.delete()
