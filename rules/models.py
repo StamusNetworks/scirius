@@ -56,7 +56,6 @@ from django.contrib.auth.models import User
 
 request_logger = logging.getLogger('django.request')
 
-ES_ADDRESS = None
 
 _HUNT_FILTERS = [
     {
@@ -812,23 +811,13 @@ def get_system_settings():
 
 
 def get_es_address():
-    from rules.es_query import normalize_es_url
-    global ES_ADDRESS
-    if ES_ADDRESS is not None:
-        return ES_ADDRESS
-
-    gsettings = get_system_settings()
-    if gsettings.custom_elasticsearch:
-        addr = gsettings.elasticsearch_url
-        ES_ADDRESS = normalize_es_url(addr)
-    else:
-        ES_ADDRESS = 'http://%s/' % settings.ELASTICSEARCH_ADDRESS
-    return ES_ADDRESS
+    from rules.es_query import ESQuery
+    return ESQuery.get_es_address()
 
 
 def reset_es_address():
-    global ES_ADDRESS
-    ES_ADDRESS = None
+    from rules.es_query import ESQuery
+    ESQuery.ES = None
 
 
 class Source(models.Model):

@@ -15,7 +15,7 @@ from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.utils.urls import replace_query_param, remove_query_param
 
-from rules.models import get_es_address, get_system_settings
+from rules.models import get_system_settings
 from scirius.utils import get_middleware_module
 from scirius.rest_utils import SciriusSetPagination
 
@@ -169,6 +169,7 @@ class ESQuery:
     MAX_RESULT_WINDOW = 10000
     INTERVAL_POINTS = 100
     INDEX = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
+    ES = None
 
     def __init__(self, request, es_address=None, from_date=None, to_date=None, interval=None, qfilter=None):
         self.from_date = from_date
@@ -178,9 +179,23 @@ class ESQuery:
         self.qfilter = qfilter
 
         if es_address is None:
-            es_address = get_es_address()
-        es_address = es_address.split(',')
+            es_address = self.get_es_address()
 
+            if ESQuery.ES is None:
+                ESQuery.ES = self.build_es_wrapper(es_address)
+
+            self.es = ESQuery.ES
+        else:
+            self.es = self.build_es_wrapper(es_address)
+
+    def build_es_wrapper(self, es_address):
+        es_address = es_address.split(',')
+        es_params = self.get_es_params(es_address)
+        es = Elasticsearch(**es_params)
+        return ESWrap(es)
+
+    @staticmethod
+    def get_es_params(es_address):
         es_params = {
             'hosts': es_address,
             'transport_class': ESTransport
@@ -204,8 +219,18 @@ class ESQuery:
                 'proxies': get_system_settings().get_proxy_params()
             })
 
-        es = Elasticsearch(**es_params)
-        self.es = ESWrap(es)
+        return es_params
+
+    @classmethod
+    def get_es_address(cls):
+        gsettings = get_system_settings()
+        es_address = 'http://%s/' % settings.ELASTICSEARCH_ADDRESS
+
+        if gsettings.custom_elasticsearch:
+            addr = gsettings.elasticsearch_url
+            es_address = normalize_es_url(addr)
+
+        return es_address
 
     def _from_date(self):
         if self.from_date:
