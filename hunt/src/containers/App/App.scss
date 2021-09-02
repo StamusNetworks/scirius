@@ -337,7 +337,18 @@ span.label {
   padding-left: 7px;
 }
 
-span.badge {
+.badge {
+  display: inline-block;
+  min-width: 10px;
+  padding: 3px 7px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #fff;
+  line-height: 1;
+  vertical-align: middle;
+  white-space: nowrap;
+  text-align: center;
+  border-radius: 1px;
   background-color: lighten($background-black, 10%);
 }
 
@@ -345,7 +356,7 @@ span.hunt-filter.label {
   background-color: $color-pf-blue;
 }
 
-span.badge.badge-primary {
+.badge.badge-primary {
   margin-left: -6px;
   margin-right: 3px;
   margin-bottom: 2px;
@@ -400,25 +411,25 @@ g.tick[transform^='translate(-']{
   margin: 0 !important;
 }
 
-button.dashboard-list-item.list-group-item {
+li.ant-list-item.dashboard-list-item {
   background: #FFF;
   outline: none;
   cursor: default;
 }
-button.dashboard-list-item.list-group-item.copy-mode:hover {
+li.ant-list-item.dashboard-list-item.copy-mode:hover {
   background: #e4e4e4;
   cursor: pointer;
 }
-button.dashboard-list-item.list-group-item.copy-mode:active {
+li.ant-list-item.dashboard-list-item.copy-mode:active {
   background: $color-sn-purple-40;
 }
-button.dashboard-list-item.list-group-item.copied:hover::before {
+li.ant-list-item.dashboard-list-item.copied:hover::before {
   background: #FFF;
 }
-button.dashboard-list-item.list-group-item.copy-mode.copied:hover::before {
+li.ant-list-item.dashboard-list-item.copy-mode.copied:hover::before {
   background: #e4e4e4;
 }
-button.dashboard-list-item.list-group-item.copied::before {
+li.ant-list-item.dashboard-list-item.copied::before {
   content: 'Copied!';
   position: absolute;
   right: 35px;

@@ -21,13 +21,13 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Modal, DropdownKebab, MenuItem, Spinner } from 'patternfly-react';
+import { Dropdown, List, Menu, Modal, Spin, Tooltip } from 'antd';
+import { MenuOutlined } from '@ant-design/icons';
 import { WidthProvider, Responsive } from 'react-grid-layout';
 import store from 'store';
 import md5 from 'md5';
 import map from 'lodash/map';
 import find from 'lodash/find';
-import { OverlayTrigger, Tooltip, Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
 import * as config from 'hunt_common/config/Api';
 import { dashboard } from 'hunt_common/config/Dashboard';
 import { buildQFilter } from 'hunt_common/buildQFilter';
@@ -84,7 +84,6 @@ export class HuntDashboard extends React.Component {
       sources: [],
       rulesets: [],
       rules_count: 0,
-      loading: true,
       view: 'rules_list',
       onlyHits,
       action: { view: false, type: 'suppress' },
@@ -466,18 +465,23 @@ export class HuntDashboard extends React.Component {
         </h3>
         {block.data !== null && block.data.length === 5 && (
           <div className="dropdown-kebab-pf open btn-group">
-            <OverlayTrigger trigger={['hover', 'hover']} placement="top" overlay={<Tooltip id="tooltip-top">Load more results</Tooltip>}>
+            <Tooltip title="Load more results" id="tooltip-top">
               <button role="button" type="button" className="btn btn-link" onClick={() => this.loadMore(block, url)}>
                 <span className="fa fa-ellipsis-v" />
               </button>
-            </OverlayTrigger>
+            </Tooltip>
           </div>
         )}
         <div className="hunt-stat-body">
-          <ListGroup>
-            {block.data === null && <Spinner loading />}
-            {block.data !== null &&
-              block.data.map((item) => {
+          {block.data === null && <Spin />}
+          {block.data !== null && (
+            <List
+              size="small"
+              header={null}
+              footer={null}
+              dataSource={block.data}
+              loading={block.data === null}
+              renderItem={(item) => {
                 const itemPath = `${block.title}-${block.i}-${item.key}`;
                 let classes = 'dashboard-list-item';
                 let clickHandler = null;
@@ -491,7 +495,7 @@ export class HuntDashboard extends React.Component {
                 }
 
                 return (
-                  <ListGroupItem
+                  <List.Item
                     key={item.key}
                     onClick={clickHandler}
                     onMouseMove={(event) => this.onMouseMove(event, itemPath)}
@@ -504,14 +508,15 @@ export class HuntDashboard extends React.Component {
                         value={item.key}
                         format={block.format}
                         magnifiers={(!this.state.copyMode || this.state.hoveredItem !== itemPath) && item.key !== 'Unknown'}
-                        right_info={<Badge>{item.doc_count}</Badge>}
+                        right_info={<span className="badge">{item.doc_count}</span>}
                         hasCopyShortcut
                       />
                     </ErrorHandler>
-                  </ListGroupItem>
+                  </List.Item>
                 );
-              })}
-          </ListGroup>
+              }}
+            />
+          )}
         </div>
       </div>
     );
@@ -710,6 +715,14 @@ export class HuntDashboard extends React.Component {
     store.set('chartTarget', chartTarget);
   };
 
+  menu = (
+    <Menu>
+      <Menu.Item onClick={() => this.onChangeChartTarget(!this.state.chartTarget)} data-toggle="modal">
+        Switch timeline by probes/tags
+      </Menu.Item>
+    </Menu>
+  );
+
   render() {
     return (
       <div className="HuntList">
@@ -742,11 +755,11 @@ export class HuntDashboard extends React.Component {
             <HuntTrend filterParams={this.props.filterParams} filters={this.props.filtersWithAlert} systemSettings={this.props.systemSettings} />
             {typeof this.state.chartTarget !== 'undefined' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
               <div style={{ position: 'absolute', zIndex: 10, top: 0, right: '30px' }}>
-                <DropdownKebab id="more-actions" pullRight>
-                  <MenuItem onClick={() => this.onChangeChartTarget(!this.state.chartTarget)} data-toggle="modal">
-                    Switch timeline by probes/tags
-                  </MenuItem>
-                </DropdownKebab>
+                <Dropdown id="more-actions" overlay={this.menu} trigger={['click']}>
+                  <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+                    <MenuOutlined />
+                  </a>
+                </Dropdown>
               </div>
             )}
           </div>
@@ -840,63 +853,60 @@ export class HuntDashboard extends React.Component {
           )}
         </ErrorHandler>
         <Modal
-          show={!(this.state.moreModal === null)}
-          onHide={() => {
+          title="More results"
+          footer={null}
+          visible={!(this.state.moreModal === null)}
+          onCancel={() => {
             this.hideMoreModal();
           }}
         >
-          <Modal.Header>
-            More results{' '}
-            <Modal.CloseButton
-              closeText="Close"
-              onClick={() => {
-                this.hideMoreModal();
-              }}
-            />{' '}
-          </Modal.Header>
-          <Modal.Body>
-            <div className="hunt-stat-body" id="more-result-modal">
-              <ListGroup>
-                {this.state.moreModal &&
-                  this.state.moreResults.map((item) => {
-                    const itemPath = `modal-${this.state.moreModal.title}-${this.state.moreModal.i}-${item.key}`;
-                    let classes = 'dashboard-list-item';
-                    let clickHandler = null;
-                    classes += this.state.copiedItem === itemPath ? ' copied' : '';
+          <div className="hunt-stat-body" id="more-result-modal">
+            {this.state.moreModal && (
+              <List
+                size="small"
+                header={null}
+                footer={null}
+                dataSource={this.state.moreResults}
+                // loading={block.data === null}
+                renderItem={(item) => {
+                  const itemPath = `modal-${this.state.moreModal.title}-${this.state.moreModal.i}-${item.key}`;
+                  let classes = 'dashboard-list-item';
+                  let clickHandler = null;
+                  classes += this.state.copiedItem === itemPath ? ' copied' : '';
 
-                    if (this.state.copyMode && this.state.hoveredItem === itemPath) {
-                      // Only set clickHandler during copy mode to let click events reach the magnifiers in EventValue
-                      // otherwise hover and click on magnifiers breaks on Firefox
-                      const moreResultModal = document.getElementById('more-result-modal');
-                      clickHandler = (event) => this.itemCopyModeOnClick(event, itemPath, item.key, moreResultModal);
-                      classes += ' copy-mode';
-                    }
+                  if (this.state.copyMode && this.state.hoveredItem === itemPath) {
+                    // Only set clickHandler during copy mode to let click events reach the magnifiers in EventValue
+                    // otherwise hover and click on magnifiers breaks on Firefox
+                    const moreResultModal = document.getElementById('more-result-modal');
+                    clickHandler = (event) => this.itemCopyModeOnClick(event, itemPath, item.key, moreResultModal);
+                    classes += ' copy-mode';
+                  }
 
-                    return (
-                      <ListGroupItem
-                        key={item.key}
-                        onClick={clickHandler}
-                        onMouseMove={(event) => this.onMouseMove(event, itemPath)}
-                        onMouseLeave={(event) => this.onMouseLeave(event, itemPath)}
-                        className={classes}
-                      >
-                        {this.state.moreModal && (
-                          <ErrorHandler>
-                            <EventValue
-                              field={this.state.moreModal.i}
-                              value={item.key}
-                              magnifiers={!this.state.copyMode || this.state.hoveredItem !== itemPath}
-                              right_info={<Badge>{item.doc_count}</Badge>}
-                              hasCopyShortcut
-                            />
-                          </ErrorHandler>
-                        )}
-                      </ListGroupItem>
-                    );
-                  })}
-              </ListGroup>
-            </div>
-          </Modal.Body>
+                  return (
+                    <List.Item
+                      key={item.key}
+                      onClick={clickHandler}
+                      onMouseMove={(event) => this.onMouseMove(event, itemPath)}
+                      onMouseLeave={(event) => this.onMouseLeave(event, itemPath)}
+                      className={classes}
+                    >
+                      {this.state.moreModal && (
+                        <ErrorHandler>
+                          <EventValue
+                            field={this.state.moreModal.i}
+                            value={item.key}
+                            magnifiers={!this.state.copyMode || this.state.hoveredItem !== itemPath}
+                            right_info={<span className="badge">{item.doc_count}</span>}
+                            hasCopyShortcut
+                          />
+                        </ErrorHandler>
+                      )}
+                    </List.Item>
+                  );
+                }}
+              />
+            )}
+          </div>
         </Modal>
       </div>
     );

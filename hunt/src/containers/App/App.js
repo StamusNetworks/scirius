@@ -28,6 +28,7 @@ import DisplayPage from 'hunt_common/components/DisplayPage';
 import { PAGE_STATE } from 'hunt_common/constants';
 import * as config from 'hunt_common/config/Api';
 import UserNavInfo from 'hunt_common/containers/UserNavInfo';
+import 'antd/dist/antd.min.css';
 import EmitEvent from '../../helpers/EmitEvent';
 import '../../pygments.css';
 // eslint-disable-next-line import/no-unresolved
