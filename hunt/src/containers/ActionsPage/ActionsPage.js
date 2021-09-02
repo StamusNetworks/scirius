@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { PAGINATION_VIEW, ListView, Spinner } from 'patternfly-react';
+import { List, Spin } from 'antd';
 import * as config from 'hunt_common/config/Api';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ActionItem from '../../ActionItem';
@@ -87,10 +87,14 @@ export class ActionsPage extends React.Component {
   render() {
     return (
       <div>
-        <Spinner loading={this.state.loading}></Spinner>
-        <ListView>
-          {this.state.data &&
-            this.state.data.map((item) => (
+        <Spin spinning={this.state.loading} />
+        {this.state.data && (
+          <List
+            size="small"
+            header={null}
+            footer={null}
+            dataSource={this.state.data}
+            renderItem={(item) => (
               <ActionItem
                 switchPage={this.props.switchPage}
                 key={item.pk}
@@ -100,11 +104,12 @@ export class ActionsPage extends React.Component {
                 rulesets={this.state.rulesets}
                 filterParams={this.props.filterParams}
               />
-            ))}
-        </ListView>
+            )}
+          />
+        )}
         <ErrorHandler>
           <HuntPaginationRow
-            viewType={PAGINATION_VIEW.LIST}
+            viewType="list"
             onPaginationChange={this.updateActionListState}
             itemsCount={this.state.count}
             itemsList={this.props.rules_list}
