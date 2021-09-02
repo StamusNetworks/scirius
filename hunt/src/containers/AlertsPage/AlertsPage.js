@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { ListView, Spinner } from 'patternfly-react';
+import { List, Spin } from 'antd';
 import axios from 'axios';
 import store from 'store';
 import md5 from 'md5';
@@ -157,24 +157,30 @@ export class AlertsPage extends React.Component {
             systemSettings={this.props.systemSettings}
           />
         </ErrorHandler>
-        <Spinner loading={this.state.loading}></Spinner>
-        <ListView>
-          {this.state.alerts.map((rule) => {
-            const { _id: ruleId, _source: ruleSource } = rule;
-            return (
-              <ErrorHandler key={ruleId}>
-                <AlertItem
-                  key={ruleId}
-                  id={ruleId}
-                  data={ruleSource}
-                  filterParams={this.props.filterParams}
-                  filters={this.props.filters}
-                  addFilter={this.props.addFilter}
-                />
-              </ErrorHandler>
-            );
-          })}
-        </ListView>
+        <Spin spinning={this.state.loading} />
+        {this.state.alerts && (
+          <List
+            size="small"
+            header={null}
+            footer={null}
+            dataSource={this.state.alerts}
+            renderItem={(rule) => {
+              const { _id: ruleId, _source: ruleSource } = rule;
+              return (
+                <ErrorHandler key={ruleId}>
+                  <AlertItem
+                    key={ruleId}
+                    id={ruleId}
+                    data={ruleSource}
+                    filterParams={this.props.filterParams}
+                    filters={this.props.filters}
+                    addFilter={this.props.addFilter}
+                  />
+                </ErrorHandler>
+              );
+            }}
+          />
+        )}
         <ErrorHandler>
           {this.state.action.view && (
             <RuleToggleModal
