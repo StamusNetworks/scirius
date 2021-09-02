@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Spinner, PAGINATION_VIEW } from 'patternfly-react';
+import { Spin } from 'antd';
 import axios from 'axios';
 import store from 'store';
 import md5 from 'md5';
@@ -298,7 +298,7 @@ export class SignaturesPage extends React.Component {
           />
         </ErrorHandler>
 
-        {view === 'rules_list' && <Spinner loading={this.state.loading} />}
+        {view === 'rules_list' && <Spin spinning={this.state.loading} />}
 
         {view === 'rules_list' && (
           <List
@@ -315,7 +315,7 @@ export class SignaturesPage extends React.Component {
         <ErrorHandler>
           {view === 'rules_list' && (
             <HuntPaginationRow
-              viewType={PAGINATION_VIEW.LIST}
+              viewType="list"
               onPaginationChange={this.updateSignatureListState}
               itemsCount={this.state.count}
               itemsList={this.props.rules_list}
