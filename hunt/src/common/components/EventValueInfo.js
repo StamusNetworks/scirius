@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Icon } from 'patternfly-react';
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Tooltip } from 'antd';
+import { InfoCircleFilled } from '@ant-design/icons';
 import EventIPInfo from '../../components/EventIPInfo';
 
 const EventValueInfo = (props) => {
@@ -14,22 +14,22 @@ const EventValueInfo = (props) => {
       return <EventIPInfo key="event_ip_info" value={props.value} />;
     }
     return (
-      <OverlayTrigger key="virustotal_link" trigger={['hover', 'hover']} placement="top" overlay={<Tooltip id="tooltip-top">external info</Tooltip>}>
+      <Tooltip key="virustotal_link" title="external info" trigger="hover" id="tooltip-top">
         <a href={`https://www.virustotal.com/gui/ip-address/${props.value}`} target="_blank">
           {' '}
-          <Icon type="fa" name="info-circle" />
+          <InfoCircleFilled />
         </a>
-      </OverlayTrigger>
+      </Tooltip>
     );
   }
   if (['src_port', 'dest_port', 'host_id.services.port'].indexOf(props.field) > -1) {
     return (
-      <OverlayTrigger key="dshield_link" trigger={['hover', 'hover']} placement="top" overlay={<Tooltip id="tooltip-top">external info</Tooltip>}>
+      <Tooltip key="dshield_link" title="external info456" trigger="hover" id="tooltip-top">
         <a href={`https://www.dshield.org/port.html?port=${props.value}`} target="_blank">
           {' '}
-          <Icon type="fa" name="info-circle" />
+          <InfoCircleFilled />
         </a>
-      </OverlayTrigger>
+      </Tooltip>
     );
   }
   return null;
