@@ -1,22 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Col } from 'patternfly-react';
 
 const EventIPResolver = (props) => (
-  <Col md={6}>
+  <div>
     <h4>Resolver info</h4>
     <dl>
       {props.data.map((item) => {
         let value = 'unknown';
-        if (item['@type'] === 'forward') {
+        if (item.type === 'forward') {
           value = item.forward;
         }
-        if (item['@type'] === 'reverse') {
+        if (item.type === 'reverse') {
           value = item.reverse;
         }
         return (
           <React.Fragment key={`${value}-${item.seen_date}`}>
-            <dt>{item['@type']}</dt>
+            <dt>{item.type}</dt>
             <dd>
               {value} ({item.seen_date})
             </dd>
@@ -24,7 +23,7 @@ const EventIPResolver = (props) => (
         );
       })}
     </dl>
-  </Col>
+  </div>
 );
 
 EventIPResolver.propTypes = {
