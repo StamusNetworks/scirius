@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Icon } from 'patternfly-react';
 import EventValueInfo from 'hunt_common/components/EventValueInfo';
 import { sections } from 'hunt_common/constants';
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Tooltip } from 'antd';
+import { InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import ErrorHandler from './Error';
 import { addFilter } from '../containers/App/stores/global';
 import isIP from '../helpers/isIP';
@@ -22,25 +22,20 @@ const EventValue = (props) => {
   const getLink = () => {
     if (virusTotalLinks.includes(props.field)) {
       return (
-        <OverlayTrigger
-          key="virustotal_link"
-          trigger={['hover', 'hover']}
-          placement="top"
-          overlay={<Tooltip id="tooltip-top">external info</Tooltip>}
-        >
+        <Tooltip key="virustotal_link" title="external info" trigger="hover" id="tooltip-top">
           <a
             href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(props.value)) ? 'ip-address' : 'domain'}/${props.value}`}
             target="_blank"
           >
             {' '}
-            <Icon type="fa" name="info-circle" />
+            <InfoCircleFilled />
           </a>
-        </OverlayTrigger>
+        </Tooltip>
       );
     }
     if (props.field === mitreLinks[0] || props.field === mitreLinks[1]) {
       return (
-        <OverlayTrigger key="mitre_link" trigger={['hover', 'hover']} placement="top" overlay={<Tooltip id="tooltip-top">external info</Tooltip>}>
+        <Tooltip key="mitre_link" title="external info" trigger="hover" id="tooltip-top">
           <a
             href={() => {
               if (props.field === mitreLinks[0]) {
@@ -54,9 +49,9 @@ const EventValue = (props) => {
             target="_blank"
           >
             {' '}
-            <Icon type="fa" name="info-circle" />
+            <InfoCircleFilled />
           </a>
-        </OverlayTrigger>
+        </Tooltip>
       );
     }
     return false;
@@ -83,7 +78,7 @@ const EventValue = (props) => {
           {getLink()}
           {/* 256 chars max on ES queries */}
           {props.magnifiers && ((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
-            <OverlayTrigger trigger={['hover', 'hover']} placement="top" overlay={<Tooltip id="tooltip-top">add a filter on value</Tooltip>}>
+            <Tooltip title="add a filter on value" trigger="hover" id="tooltip-top">
               <a
                 onClick={() =>
                   props.addFilter(sections.GLOBAL, {
@@ -96,13 +91,13 @@ const EventValue = (props) => {
                 }
               >
                 {' '}
-                <Icon type="fa" name="search-plus" />
+                <ZoomInOutlined />
               </a>
-            </OverlayTrigger>
+            </Tooltip>
           )}
           {/* 256 chars max on ES queries */}
           {props.magnifiers && ((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
-            <OverlayTrigger trigger={['hover', 'hover']} placement="top" overlay={<Tooltip id="tooltip-top">add negated filter on value</Tooltip>}>
+            <Tooltip title="add negated filter on value" trigger="hover" id="tooltip-top">
               <a
                 onClick={() =>
                   props.addFilter(sections.GLOBAL, {
@@ -115,9 +110,9 @@ const EventValue = (props) => {
                 }
               >
                 {' '}
-                <Icon type="fa" name="search-minus" />
+                <ZoomOutOutlined />
               </a>
-            </OverlayTrigger>
+            </Tooltip>
           )}
         </ErrorHandler>
       </span>
