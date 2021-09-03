@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Col } from 'patternfly-react';
 
 const EventIPThreatlist = (props) => (
-  <Col md={6}>
+  <div>
     <h4>Threat list info</h4>
     <dl>
       {props.data['@type'] && (
@@ -31,7 +30,7 @@ const EventIPThreatlist = (props) => (
         </React.Fragment>
       )}
     </dl>
-  </Col>
+  </div>
 );
 
 EventIPThreatlist.propTypes = {
