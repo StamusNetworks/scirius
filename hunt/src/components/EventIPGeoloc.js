@@ -1,13 +1,12 @@
 import React from 'react';
-import { Col } from 'patternfly-react';
 import PropTypes from 'prop-types';
 
 const EventIPGeoloc = (props) => (
-  <Col md={6}>
+  <div>
     <h4>Geo localization result</h4>
     <dl>
       <dt>Country</dt>
-      <dd>{props.data.country_name}</dd>
+      <dd>{props.data.country}</dd>
       {props.data.city && (
         <React.Fragment>
           <dt>City</dt>
@@ -21,7 +20,7 @@ const EventIPGeoloc = (props) => (
       <dt>Subnet</dt>
       <dd>{props.data.subnet}</dd>
     </dl>
-  </Col>
+  </div>
 );
 
 EventIPGeoloc.propTypes = {
