@@ -1,9 +1,8 @@
 import React from 'react';
-import { Col } from 'patternfly-react';
 import PropTypes from 'prop-types';
 
 const EventIPSynscan = (props) => (
-  <Col md={6}>
+  <div>
     <h4>SYN scanner result</h4>
     <dl>
       {props.data.os && (
@@ -25,7 +24,7 @@ const EventIPSynscan = (props) => (
         </React.Fragment>
       )}
     </dl>
-  </Col>
+  </div>
 );
 
 EventIPSynscan.propTypes = {
