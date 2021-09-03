@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Modal, Button, Icon, Row } from 'patternfly-react';
+import { Button, Modal } from 'antd';
+import { InfoCircleFilled } from '@ant-design/icons';
 import EventIPGeoloc from './EventIPGeoloc';
 import EventIPDatascan from './EventIPDatascan';
 import EventIPSynscan from './EventIPSynscan';
@@ -25,7 +26,7 @@ export default class EventIPInfo extends React.Component {
   displayIPInfo() {
     this.setState({ show_ip_info: true });
     if (this.state.ipinfo === null) {
-      axios.get(`https://www.onyphe.io/api/ip/${this.props.value}?apikey=${process.env.REACT_APP_ONYPHE_API_KEY}`).then((res) => {
+      axios.get(`https://www.onyphe.io/api/v2/summary/ip/${this.props.value}?apikey=${process.env.REACT_APP_ONYPHE_API_KEY}`).then((res) => {
         this.setState({ ipinfo: res.data.results });
       });
     }
@@ -49,74 +50,73 @@ export default class EventIPInfo extends React.Component {
       <React.Fragment>
         <a onClick={this.displayIPInfo} role="button">
           {' '}
-          <Icon type="fa" name="info-circle" />
+          <InfoCircleFilled />
         </a>
-        <Modal show={this.state.show_ip_info} onHide={this.closeIPInfo}>
-          <Modal.Header>
-            <button type="button" className="close" onClick={this.closeIPInfo} aria-hidden="true" aria-label="Close">
-              <Icon type="pf" name="close" />
-            </button>
-            <Modal.Title>
+        <Modal
+          visible={this.state.show_ip_info}
+          onCancel={this.closeIPInfo}
+          title={
+            <span>
               Some Info from{' '}
               <a href={`https://www.onyphe.io/search/?query=${this.props.value}`} target="_blank">
+                {' '}
                 Onyphe.io for {this.props.value}
               </a>
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            {this.state.ipinfo && (
-              <Row>
-                {this.state.ipinfo.map((item) => {
-                  if (item['@category'] === 'geoloc') {
-                    return (
-                      <ErrorHandler>
-                        <EventIPGeoloc data={item} />
-                      </ErrorHandler>
-                    );
-                  }
-                  if (item['@category'] === 'datascan') {
-                    return (
-                      <ErrorHandler>
-                        <EventIPDatascan data={item} />
-                      </ErrorHandler>
-                    );
-                  }
-                  if (item['@category'] === 'synscan') {
-                    return (
-                      <ErrorHandler>
-                        <EventIPSynscan data={item} />
-                      </ErrorHandler>
-                    );
-                  }
-                  if (item['@category'] === 'threatlist') {
-                    return (
-                      <ErrorHandler>
-                        <EventIPThreatlist data={item} />
-                      </ErrorHandler>
-                    );
-                  }
-
-                  return null;
-                })}
-                {resolvers.length > 0 && (
-                  <ErrorHandler>
-                    <EventIPResolver data={resolvers} />
-                  </ErrorHandler>
-                )}
-                {pastries.length > 0 && (
-                  <ErrorHandler>
-                    <EventIPPastries data={pastries} />
-                  </ErrorHandler>
-                )}
-              </Row>
-            )}
-            {this.state.ipinfo === null && <p>Fetching IP info</p>}
-          </Modal.Body>
-          <Modal.Footer>
-            <Button bsStyle="default" className="btn-cancel" onClick={this.closeIPInfo}>
+            </span>
+          }
+          footer={
+            <Button className="btn-cancel" onClick={this.closeIPInfo}>
               Close
             </Button>
-          </Modal.Footer>
+          }
+        >
+          {this.state.ipinfo && (
+            <div>
+              {this.state.ipinfo.map((item) => {
+                if (item['@category'] === 'geoloc') {
+                  return (
+                    <ErrorHandler>
+                      <EventIPGeoloc data={item} />
+                    </ErrorHandler>
+                  );
+                }
+                if (item['@category'] === 'datascan') {
+                  return (
+                    <ErrorHandler>
+                      <EventIPDatascan data={item} />
+                    </ErrorHandler>
+                  );
+                }
+                if (item['@category'] === 'synscan') {
+                  return (
+                    <ErrorHandler>
+                      <EventIPSynscan data={item} />
+                    </ErrorHandler>
+                  );
+                }
+                if (item['@category'] === 'threatlist') {
+                  return (
+                    <ErrorHandler>
+                      <EventIPThreatlist data={item} />
+                    </ErrorHandler>
+                  );
+                }
+
+                return null;
+              })}
+              {resolvers.length > 0 && (
+                <ErrorHandler>
+                  <EventIPResolver data={resolvers} />
+                </ErrorHandler>
+              )}
+              {pastries.length > 0 && (
+                <ErrorHandler>
+                  <EventIPPastries data={pastries} />
+                </ErrorHandler>
+              )}
+            </div>
+          )}
+          {this.state.ipinfo === null && <p>Fetching IP info</p>}
         </Modal>
       </React.Fragment>
     );
