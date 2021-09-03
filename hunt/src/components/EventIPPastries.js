@@ -1,11 +1,10 @@
 import React from 'react';
-import { Col } from 'patternfly-react';
 import PropTypes from 'prop-types';
 
 const EventIPPastries = (props) => {
   const baseUrl = 'https://pastebin.com/';
   return (
-    <Col md={6}>
+    <div>
       <h4>Pastries info</h4>
       <dl>
         {props.data.map((item) => {
@@ -22,7 +21,7 @@ const EventIPPastries = (props) => {
           return null;
         })}
       </dl>
-    </Col>
+    </div>
   );
 };
 
