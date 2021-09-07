@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Modal, CloseButton, Row, Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
-import { Spinner } from 'patternfly-react';
+import { List, Modal, Spin } from 'antd';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from 'hunt_common/buildQFilter';
 import { buildFilterParams } from 'hunt_common/buildFilterParams';
@@ -149,7 +148,7 @@ export default class RulePage extends React.Component {
   render() {
     return (
       <div>
-        <Spinner loading={this.state.rule === undefined}>
+        <Spin spinning={this.state.rule === undefined}>
           {this.state.rule && (
             <div className="row">
               <div className="col-xs-12 col-sm-12 col-md-12">
@@ -222,11 +221,11 @@ export default class RulePage extends React.Component {
                     )}
                   </div>
                   {this.state.rule_status !== undefined && (
-                    <Row>
+                    <div style={{ minHeight: '150px' }}>
                       {this.state.rule_status.map((rstatus) => (
                         <RuleStatus rule={this.state.rule} key={rstatus.pk} rule_status={rstatus} />
                       ))}
-                    </Row>
+                    </div>
                   )}
                   <div className="row">
                     <HuntStat
@@ -365,41 +364,36 @@ export default class RulePage extends React.Component {
               </div>
             </div>
           )}
-        </Spinner>
+        </Spin>
 
         <Modal
-          show={!(this.state.moreModal === null)}
-          onHide={() => {
+          visible={!(this.state.moreModal === null)}
+          title="More results"
+          footer={null}
+          onCancel={() => {
             this.hideMoreModal();
           }}
         >
-          <Modal.Header>
-            More results{' '}
-            <CloseButton
-              closeText="Close"
-              onClick={() => {
-                this.hideMoreModal();
-              }}
-            />{' '}
-          </Modal.Header>
-          <Modal.Body>
-            <div className="hunt-stat-body">
-              <ListGroup>
-                {this.state.moreResults.map((item) => (
-                  <ListGroupItem key={item.key}>
-                    {this.state.moreModal && (
-                      <EventValue
-                        field={this.state.moreModal}
-                        value={item.key}
-                        addFilter={this.props.addFilter}
-                        right_info={<Badge>{item.doc_count}</Badge>}
-                      />
-                    )}
-                  </ListGroupItem>
-                ))}
-              </ListGroup>
-            </div>
-          </Modal.Body>
+          <div className="hunt-stat-body">
+            <List
+              size="small"
+              header={null}
+              footer={null}
+              dataSource={this.state.moreResults}
+              renderItem={(item) => (
+                <List.Item key={item.key}>
+                  {this.state.moreModal && (
+                    <EventValue
+                      field={this.state.moreModal}
+                      value={item.key}
+                      addFilter={this.props.addFilter}
+                      right_info={<span className="badge">{item.doc_count}</span>}
+                    />
+                  )}
+                </List.Item>
+              )}
+            />
+          </div>
         </Modal>
       </div>
     );
