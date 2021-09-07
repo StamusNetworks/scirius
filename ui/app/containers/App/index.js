@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { Switch, Route } from 'react-router-dom';
 import { Layout } from 'antd';
 import pages from 'ui/pages';
+import { APP_URL } from 'ui/config';
 import './style.scss'; // please dont move it! should be loaded before all components
 import { CamelCaseToDashCase, CamelCaseToNormal } from 'ui/helpers';
 import { Sider, Content, LinkGroup, LinkGroupTitle, SideLink } from 'ui/components';
@@ -78,13 +79,13 @@ const App = ({
         <Sider>
           {linkGroups.map(group => <LinkGroup key={group}>
             <LinkGroupTitle title={group} />
-            {getGroupPages(group).map(page => <SideLink key={page} to={CamelCaseToDashCase(page)}>{CamelCaseToNormal(page)}</SideLink>)}
+            {getGroupPages(group).map(page => <SideLink key={page} to={`${APP_URL  }/${CamelCaseToDashCase(page)}`}>{CamelCaseToNormal(page)}</SideLink>)}
           </LinkGroup>)}
         </Sider>
         <Content>
           <Switch>
             {pagesList.map(page => (
-              <Route key={page} exact path={`/${CamelCaseToDashCase(page)}`} component={pages[page]} />
+              <Route key={page} exact path={`${APP_URL  }/${CamelCaseToDashCase(page)}`} component={pages[page]} />
             ))}
             <Route path="" component={pages.NotFoundPage} />
           </Switch>
