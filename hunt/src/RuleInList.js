@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Badge, ListGroup, ListGroupItem } from 'react-bootstrap';
-import { Col, Icon, Row, Spinner, ListViewIcon, ListViewInfoItem, ListViewItem } from 'patternfly-react';
+import { List, Menu, Spin } from 'antd';
+import { SafetyOutlined, ZoomInOutlined } from '@ant-design/icons';
 import { sections } from 'hunt_common/constants';
 import RuleEditKebab from './components/RuleEditKebab';
 import SciriusChart from './components/SciriusChart';
@@ -10,6 +10,7 @@ import EventValue from './components/EventValue';
 import { addFilter } from './containers/App/stores/global';
 
 const RuleInList = (props) => {
+  const { SubMenu } = Menu;
   const { category } = props.data;
   const source = props.sources[category.source];
   let catTooltip = category.name;
@@ -18,77 +19,79 @@ const RuleInList = (props) => {
   }
   const kebabConfig = { rule: props.data };
   return (
-    <ListViewItem
-      key={props.data.sid}
-      actions={[
-        <a
-          role="button"
-          key={`actions-${props.data.sid}`}
-          onClick={() => props.addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: props.data.sid, negated: false })}
-        >
-          <Icon type="fa" name="search-plus" />{' '}
-        </a>,
-        <RuleEditKebab key={`kebab-${props.data.sid}`} config={kebabConfig} rulesets={props.rulesets} />,
-      ]}
-      leftContent={<ListViewIcon name="security" className="pficon pficon-security" />}
-      additionalInfo={[
-        <ListViewInfoItem key={`created-${props.data.sid}`}>
-          <p>Created: {props.data.created}</p>
-        </ListViewInfoItem>,
-        <ListViewInfoItem key={`updated-${props.data.sid}`}>
-          <p>Updated: {props.data.updated}</p>
-        </ListViewInfoItem>,
-        <ListViewInfoItem key={`category-${props.data.sid}`}>
-          <p data-toggle="tooltip" title={catTooltip}>
-            Category: {category.name}
-          </p>
-        </ListViewInfoItem>,
-        <ListViewInfoItem key={`hits-${props.data.sid}`}>
-          <Spinner loading={props.data.hits === undefined} size="xs">
-            <p>
-              Alerts <span className="badge">{props.data.hits}</span>
-            </p>
-          </Spinner>
-        </ListViewInfoItem>,
-      ]}
-      heading={props.data.sid}
-      description={props.data.msg}
-    >
-      {props.data.timeline && (
-        <Row>
-          <Col sm={11}>
-            <div className="container-fluid">
-              <div className="row">
-                {/* eslint-disable-next-line react/no-danger */}
-                <div className="SigContent" dangerouslySetInnerHTML={{ __html: props.data.content }}></div>
-              </div>
-              <div className="row">
-                <div className="col-md-12">
-                  <SciriusChart
-                    data={props.data.timeline}
-                    axis={{ x: { min: props.filterParams.fromDate, max: props.filterParams.toDate } }}
-                    legend={{ show: false }}
-                    padding={{ bottom: 10 }}
-                  />
-                </div>
-              </div>
-              <div className="row">
-                <div className="col-md-4">
-                  <h4>Probes</h4>
-                  <ListGroup>
-                    {props.data.probes.map((item) => (
-                      <ListGroupItem key={item.probe}>
-                        <EventValue field="host" value={item.probe} right_info={<Badge>{item.hits}</Badge>} />
-                      </ListGroupItem>
-                    ))}
-                  </ListGroup>
-                </div>
+    <Menu mode="inline">
+      <SubMenu
+        key="sub1"
+        icon={<SafetyOutlined style={{ fontSize: '27px' }} />}
+        title={
+          <div>
+            <span>{props.data.sid}</span>
+            <span>{props.data.msg}</span>
+            <span>Created: {props.data.created}</span>
+            <span>Updated: {props.data.updated}</span>
+            <span data-toggle="tooltip" title={catTooltip}>
+              Category: {category.name}
+            </span>
+            <span>
+              {!props.data.hits && props.data.hits !== 0 ? (
+                <Spin size="small" />
+              ) : (
+                <span>
+                  Alerts <span className="badge">{props.data.hits}</span>
+                </span>
+              )}
+            </span>
+            <span>
+              <a
+                role="button"
+                key={`actions-${props.data.sid}`}
+                onClick={() => props.addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: props.data.sid, negated: false })}
+              >
+                <ZoomInOutlined />
+              </a>
+            </span>
+            <span>
+              <RuleEditKebab key={`kebab-${props.data.sid}`} config={kebabConfig} rulesets={props.rulesets} />
+            </span>
+          </div>
+        }
+      >
+        {props.data.timeline && (
+          <Menu.Item key="item1" style={{ height: '100%' }}>
+            <div className="row">
+              {/* eslint-disable-next-line react/no-danger */}
+              <div className="SigContent" dangerouslySetInnerHTML={{ __html: props.data.content }}></div>
+            </div>
+            <div className="row">
+              <div className="col-md-12">
+                <SciriusChart
+                  data={props.data.timeline}
+                  axis={{ x: { min: props.filterParams.fromDate, max: props.filterParams.toDate } }}
+                  legend={{ show: false }}
+                  padding={{ bottom: 10 }}
+                />
               </div>
             </div>
-          </Col>
-        </Row>
-      )}
-    </ListViewItem>
+            <div className="row">
+              <div className="col-md-4">
+                <h4>Probes</h4>
+                <List
+                  size="small"
+                  header={null}
+                  footer={null}
+                  dataSource={props.data.probes}
+                  renderItem={(item) => (
+                    <List.Item key={item.probe}>
+                      <EventValue field="host" value={item.probe} right_info={<span className="badge">{item.hits}</span>} />
+                    </List.Item>
+                  )}
+                />
+              </div>
+            </div>
+          </Menu.Item>
+        )}
+      </SubMenu>
+    </Menu>
   );
 };
 
