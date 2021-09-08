@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Icon, Spinner } from 'patternfly-react';
+import { Spin } from 'antd';
+import { ZoomInOutlined } from '@ant-design/icons';
 import { sections } from 'hunt_common/constants';
 import RuleEditKebab from './components/RuleEditKebab';
 import SciriusChart from './components/SciriusChart';
@@ -42,13 +43,13 @@ const RuleCard = (props) => {
               </div>
               <div className="col-md-3">
                 Alerts
-                <Spinner loading={props.data.hits === undefined} size="xs">
+                <Spin spinning={props.data.hits === undefined}>
                   <span className="badge">{props.data.hits}</span>
-                </Spinner>
+                </Spin>
               </div>
             </div>
           </div>
-          <Spinner loading={props.data.hits === undefined} size="xs">
+          <Spin spinning={props.data.hits === undefined}>
             {props.data.timeline && (
               <div className="chart-pf-sparkline">
                 <ErrorHandler>
@@ -70,7 +71,7 @@ const RuleCard = (props) => {
                 <p>No alert</p>
               </div>
             )}
-          </Spinner>
+          </Spin>
           <div>
             SID: <strong>{props.data.sid}</strong>
             <span className="pull-right">
@@ -78,7 +79,7 @@ const RuleCard = (props) => {
                 onClick={() => props.addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: props.data.sid, negated: false })}
                 style={{ cursor: 'pointer' }}
               >
-                <Icon type="fa" name="search-plus" />
+                <ZoomInOutlined />
               </a>
             </span>
           </div>
