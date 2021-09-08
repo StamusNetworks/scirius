@@ -1,19 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Modal, Icon } from 'patternfly-react';
+import { Modal } from 'antd';
 
 const RuleContentModal = (props) => (
-  <Modal show={props.display} onHide={props.close} bsSize="large" aria-labelledby="contained-modal-title-lg">
-    <Modal.Header>
-      <button type="button" className="close" onClick={props.close} aria-hidden="true" aria-label="Close">
-        <Icon type="pf" name="close" />
-      </button>
-      <Modal.Title>Transformed rule content in {props.rule_status.name}</Modal.Title>
-    </Modal.Header>
-    <Modal.Body>
-      {/* eslint-disable-next-line react/no-danger */}
-      <div className="SigContent" dangerouslySetInnerHTML={{ __html: props.rule_status.content }}></div>
-    </Modal.Body>
+  <Modal
+    title={<div>Transformed rule content in {props.rule_status.name}</div>}
+    visible={props.display}
+    onCancel={props.close}
+    footer={null}
+    aria-labelledby="contained-modal-title-lg"
+  >
+    {/* eslint-disable-next-line react/no-danger */}
+    <div className="SigContent" dangerouslySetInnerHTML={{ __html: props.rule_status.content }}></div>
   </Modal>
 );
 
