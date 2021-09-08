@@ -1,12 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Modal, Button, Checkbox, Col, Form, FormControl, FormGroup, Icon } from 'patternfly-react';
+import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Select } from 'antd';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from 'hunt_common/buildQFilter';
 import { buildFilterParams } from 'hunt_common/buildFilterParams';
 import { supportedActions, setDefaultOptions } from 'hunt_common/supportedActions';
 import HuntRestError from '../components/HuntRestError';
+
+const { Option } = Select;
 
 export default class RuleToggleModal extends React.Component {
   constructor(props) {
@@ -252,122 +254,120 @@ export default class RuleToggleModal extends React.Component {
       title = `Add a ${this.props.action} action`;
     }
     return (
-      <Modal show={this.props.show} onHide={this.close}>
-        <Modal.Header>
-          <button type="button" className="close" onClick={this.close} aria-hidden="true" aria-label="Close">
-            <Icon type="pf" name="close" />
-          </button>
-          <Modal.Title>{title}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {this.props.action === 'threat' && (
-            <div style={{ marginBottom: '30px' }}> These Declaration(s) of Compromise (DoC) will appear in the Custom Threats family</div>
-          )}
-          <HuntRestError errors={this.state.errors} />
-          {!this.state.noaction && (
-            <Form horizontal>
-              {this.state.supported_filters &&
-                this.state.supported_filters.map((item, i) => (
-                  <FormGroup key={item.id} controlId={item.id}>
-                    <Col sm={4}>
-                      <Checkbox defaultChecked onChange={() => this.toggleFilter(i)}>
-                        <strong>
-                          {item.negated && 'Not '}
-                          {item.key}
-                        </strong>
-                      </Checkbox>
-                    </Col>
-                    <Col sm={8}>
-                      <FormControl
-                        type={item.id}
-                        disabled={!item.isChecked}
-                        defaultValue={item.value}
-                        onChange={(e) => this.handleFieldChange(e, i)}
-                        onKeyPress={(e) => this.onFieldKeyPress(e)}
-                      />
-                    </Col>
-                  </FormGroup>
-                ))}
-              {this.props.action === 'threshold' && (
-                <React.Fragment>
-                  <FormGroup key="count" controlId="count" disabled={false}>
-                    <Col sm={4}>
-                      <strong>Count</strong>
-                    </Col>
-                    <Col sm={8}>
-                      <FormControl type="integer" disabled={false} defaultValue={1} onChange={this.handleOptionsChange} />
-                    </Col>
-                  </FormGroup>
-                  <FormGroup key="seconds" controlId="seconds" disabled={false}>
-                    <Col sm={4}>
-                      <strong>Seconds</strong>
-                    </Col>
-                    <Col sm={8}>
-                      <FormControl type="integer" disabled={false} defaultValue={60} onChange={this.handleOptionsChange} />
-                    </Col>
-                  </FormGroup>
-                  <FormGroup key="track" controlId="track" disabled={false}>
-                    <Col sm={4}>
-                      <strong>Track by</strong>
-                    </Col>
-                    <Col sm={8}>
-                      <FormControl componentClass="select" placeholder="by_src" onChange={this.handleOptionsChange}>
-                        <option value="by_src">By Source</option>
-                        <option value="by_dst">By Destination</option>
-                      </FormControl>
-                    </Col>
-                  </FormGroup>
-                </React.Fragment>
-              )}
-              {this.props.children && this.props.children(this)}
-              <hr />
-              {
-                <FormGroup controlId="ruleset" disabled={false}>
-                  <Col sm={12}>
-                    <label>
-                      <strong>Ruleset{this.props.rulesets.length > 1 && 's'}:</strong>
-                    </label>
-                    {this.props.rulesets &&
-                      this.props.rulesets.map((ruleset) => (
-                        <div className="row" key={ruleset.pk}>
-                          <div className="col-sm-9">
-                            <label htmlFor={ruleset.pk}>
-                              <input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange} /> {ruleset.name}
-                            </label>
-                            {ruleset.warnings && <div style={{ marginLeft: '5%' }}>• {ruleset.warnings}</div>} {/* ignore_utf8_check 8226 8214 */}
-                            {ruleset[`warnings_${this.props.action}`] && (
-                              <React.Fragment>
-                                <div style={{ marginLeft: '5%' }}>• {ruleset[`warnings_${this.props.action}`]}</div> {/* ignore_utf8_check 8226 */}
-                              </React.Fragment>
-                            )}{' '}
-                          </div>
-                        </div>
-                      ))}
-                  </Col>
-                </FormGroup>
-              }
-              <hr />
-
-              <div className="form-group">
-                <div className="col-sm-9">
-                  <strong>Optional comment</strong>
-                  <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange} />
-                </div>
-              </div>
-            </Form>
-          )}
-          {this.state.noaction && <p>You need enough permissions and at least a filter supported by the ruleset backend to define an action</p>}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button bsStyle="default" className="btn-cancel" onClick={this.close}>
-            Cancel
-          </Button>
-          {!this.state.noaction && (
-            <Button bsStyle="primary" onClick={this.submit} disabled={this.state.submitting}>
-              Submit
+      <Modal
+        visible={this.props.show}
+        title={title}
+        onCancel={this.close}
+        footer={
+          <React.Fragment>
+            <Button className="btn-cancel" onClick={this.close}>
+              Cancel
             </Button>
-          )}
-        </Modal.Footer>
+            {!this.state.noaction && (
+              <Button type="primary" onClick={this.submit} disabled={this.state.submitting}>
+                Submit
+              </Button>
+            )}
+          </React.Fragment>
+        }
+      >
+        {this.props.action === 'threat' && (
+          <div style={{ marginBottom: '30px' }}> These Declaration(s) of Compromise (DoC) will appear in the Custom Threats family</div>
+        )}
+        <HuntRestError errors={this.state.errors} />
+        {!this.state.noaction && (
+          <Form>
+            {this.state.supported_filters &&
+              this.state.supported_filters.map((item, i) => (
+                <Form.Item key={item.id}>
+                  <Col span={4}>
+                    <Checkbox defaultChecked onChange={() => this.toggleFilter(i)}>
+                      <strong>
+                        {item.negated && 'Not '}
+                        {item.key}
+                      </strong>
+                    </Checkbox>
+                  </Col>
+                  <Col span={8}>
+                    <Input
+                      type={item.id}
+                      disabled={!item.isChecked}
+                      defaultValue={item.value}
+                      onChange={(e) => this.handleFieldChange(e, i)}
+                      onKeyPress={(e) => this.onFieldKeyPress(e)}
+                    />
+                  </Col>
+                </Form.Item>
+              ))}
+            {this.props.action === 'threshold' && (
+              <React.Fragment>
+                <Form.Item key="count">
+                  <Col span={4}>
+                    <strong>Count</strong>
+                  </Col>
+                  <Col span={8}>
+                    <InputNumber defaultValue={1} onChange={this.handleOptionsChange} />
+                  </Col>
+                </Form.Item>
+                <Form.Item key="seconds">
+                  <Col span={4}>
+                    <strong>Seconds</strong>
+                  </Col>
+                  <Col span={8}>
+                    <InputNumber defaultValue={60} onChange={this.handleOptionsChange} />
+                  </Col>
+                </Form.Item>
+                <Form.Item key="track">
+                  <Col span={4}>
+                    <strong>Track by</strong>
+                  </Col>
+                  <Col span={8}>
+                    <Select placeholder="By Source" onChange={this.handleOptionsChange} allowClear>
+                      <Option value="by_src">By Source</Option>
+                      <Option value="by_dst">By Destination</Option>
+                    </Select>
+                  </Col>
+                </Form.Item>
+              </React.Fragment>
+            )}
+            {this.props.children && this.props.children(this)}
+            <hr />
+            {
+              <Form.Item>
+                <Col span={12}>
+                  <label>
+                    <strong>Ruleset{this.props.rulesets.length > 1 && 's'}:</strong>
+                  </label>
+                  {this.props.rulesets &&
+                    this.props.rulesets.map((ruleset) => (
+                      <div className="row" key={ruleset.pk}>
+                        <div className="col-sm-9">
+                          <label htmlFor={ruleset.pk}>
+                            <input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange} /> {ruleset.name}
+                          </label>
+                          {ruleset.warnings && <div style={{ marginLeft: '5%' }}>• {ruleset.warnings}</div>} {/* ignore_utf8_check 8226 8214 */}
+                          {ruleset[`warnings_${this.props.action}`] && (
+                            <React.Fragment>
+                              <div style={{ marginLeft: '5%' }}>• {ruleset[`warnings_${this.props.action}`]}</div> {/* ignore_utf8_check 8226 */}
+                            </React.Fragment>
+                          )}{' '}
+                        </div>
+                      </div>
+                    ))}
+                </Col>
+              </Form.Item>
+            }
+            <hr />
+
+            <div className="form-group">
+              <div className="col-sm-9">
+                <strong>Optional comment</strong>
+                <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange} />
+              </div>
+            </div>
+          </Form>
+        )}
+        {this.state.noaction && <p>You need enough permissions and at least a filter supported by the ruleset backend to define an action</p>}
       </Modal>
     );
   }
