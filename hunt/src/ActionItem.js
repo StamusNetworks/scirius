@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { ListViewItem, ListViewInfoItem, ListViewIcon, Row } from 'patternfly-react';
+import { Menu } from 'antd';
+import { CloseCircleOutlined, MailOutlined, MinusCircleOutlined, UploadOutlined } from '@ant-design/icons';
 import * as config from 'hunt_common/config/Api';
 import { buildFilterParams } from 'hunt_common/buildFilterParams';
 import FilterEditKebab from './components/FilterEditKebab';
@@ -44,30 +45,30 @@ export default class FilterItem extends React.Component {
     const addinfo = [];
     for (let i = 0; i < item.filter_defs.length; i += 1) {
       let info = (
-        <ListViewInfoItem key={`filter-${i}`}>
-          <p>
+        <span key={`filter-${i}`}>
+          <span>
             {item.filter_defs[i].operator === 'different' && 'Not '}
             {item.filter_defs[i].key}: {item.filter_defs[i].value}
-          </p>
-        </ListViewInfoItem>
+          </span>
+        </span>
       );
       if (item.filter_defs[i].key === 'alert.signature_id' && item.filter_defs[i].msg) {
         info = (
-          <ListViewInfoItem key={`filter-${i}`}>
-            <p>
+          <span key={`filter-${i}`}>
+            <span>
               {item.filter_defs[i].operator === 'different' && 'Not '}
               {item.filter_defs[i].key}: {item.filter_defs[i].value} ({item.filter_defs[i].msg})
-            </p>
-          </ListViewInfoItem>
+            </span>
+          </span>
         );
       }
       addinfo.push(info);
     }
     if (Object.keys(this.props.rulesets).length > 0) {
       const rulesets = item.rulesets.map((item2) => (
-        <ListViewInfoItem key={`${item2}-ruleset`}>
-          <p>Ruleset: {this.props.rulesets[item2].name}</p>
-        </ListViewInfoItem>
+        <span key={`${item2}-ruleset`}>
+          <span>Ruleset: {this.props.rulesets[item2].name}</span>
+        </span>
       ));
       addinfo.push(rulesets);
     }
@@ -97,19 +98,19 @@ export default class FilterItem extends React.Component {
     const icons = [];
     switch (item.action) {
       case 'suppress':
-        icon = <ListViewIcon name="close" key="suppress" />;
+        icon = <CloseCircleOutlined style={{ fontSize: '27px' }} key="suppress" />;
         break;
       case 'threshold':
-        icon = <ListViewIcon name="minus" key="threshold" />;
+        icon = <MinusCircleOutlined style={{ fontSize: '27px' }} key="threshold" />;
         break;
       case 'tag':
-        icon = <ListViewIcon name="envelope" key="tag" />;
+        icon = <MailOutlined style={{ fontSize: '27px' }} key="tag" />;
         break;
       case 'tagkeep':
-        icon = <ListViewIcon name="envelope" key="tagkeep" />;
+        icon = <MailOutlined style={{ fontSize: '27px' }} key="tagkeep" />;
         break;
       default:
-        icon = <ListViewIcon name="envelope" key="tag" />;
+        icon = <MailOutlined style={{ fontSize: '27px' }} key="tag" />;
         break;
     }
     icons.push(icon);
@@ -130,22 +131,26 @@ export default class FilterItem extends React.Component {
     );
 
     if (item.imported) {
-      icons.push(<ListViewIcon key="imported" name="upload" title="Imported" className="glyphicon glyphicon-upload" />);
+      icons.push(<UploadOutlined key="imported" title="Imported" className="glyphicon glyphicon-upload" />);
     }
 
     return (
-      <ListViewItem
-        key={`${item.pk}-listitem`}
-        leftContent={icons}
-        additionalInfo={addinfo}
-        heading={item.action}
-        description={description}
-        actions={actionsMenu}
-      >
-        {this.state.data && (
-          <Row>
-            {this.state.data.map((item2) => (
-              <div className="col-xs-3 col-sm-2 col-md-2" key={item2.key}>
+      <Menu mode="inline">
+        <Menu.SubMenu
+          key={`${item.pk}-listitem`}
+          icon={icons}
+          title={
+            <div style={{ display: 'flex' }}>
+              <span>{item.action}</span>
+              <span>{description}</span>
+              <span style={{ display: 'flex' }}>{addinfo}</span>
+              <span>{actionsMenu}</span>
+            </div>
+          }
+        >
+          {this.state.data &&
+            this.state.data.map((item2) => (
+              <Menu.Item key={item2.key} style={{ height: '100%' }}>
                 <div className="card-pf card-pf-accented card-pf-aggregate-status">
                   <h2 className="card-pf-title">
                     <span className="fa fa-shield" />
@@ -164,11 +169,10 @@ export default class FilterItem extends React.Component {
                     </p>
                   </div>
                 </div>
-              </div>
+              </Menu.Item>
             ))}
-          </Row>
-        )}
-      </ListViewItem>
+        </Menu.SubMenu>
+      </Menu>
     );
   }
 }
