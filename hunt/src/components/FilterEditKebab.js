@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { DropdownKebab, MenuItem } from 'patternfly-react';
+import { Dropdown, Menu } from 'antd';
+import { MenuOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { createStructuredSelector } from 'reselect';
 import * as config from 'hunt_common/config/Api';
@@ -173,6 +174,68 @@ class FilterEditKebab extends React.Component {
       });
   }
 
+  menu = (
+    <Menu>
+      {this.props.user.isActive && this.props.user.permissions.includes('rules.events_edit') && (
+        <React.Fragment>
+          {this.props.data.index !== 0 && (
+            <Menu.Item
+              key="1"
+              onClick={() => {
+                this.displayToggle('movetop');
+              }}
+            >
+              Send Action to top
+            </Menu.Item>
+          )}
+          <Menu.Item
+            key="2"
+            onClick={() => {
+              this.displayToggle('move');
+            }}
+          >
+            Move Action
+          </Menu.Item>
+          <Menu.Item
+            key="3"
+            onClick={() => {
+              this.displayToggle('movebottom');
+            }}
+          >
+            Send Action to bottom
+          </Menu.Item>
+          <Menu.Item
+            key="4"
+            onClick={() => {
+              this.displayToggle('delete');
+            }}
+          >
+            Delete Action
+          </Menu.Item>
+        </React.Fragment>
+      )}
+
+      <Menu.Item
+        key="5"
+        onClick={() => {
+          this.convertActionToFilters();
+        }}
+      >
+        Convert Action to Filters
+      </Menu.Item>
+      {this.props.user.isActive && this.props.user.permissions.includes('rules.events_edit') && (
+        <Menu.Item
+          key="6"
+          onClick={() => {
+            this.saveActionToFilterSet();
+          }}
+        >
+          Save Action as Filter set
+        </Menu.Item>
+      )}
+    </Menu>
+  );
+
   render() {
     const noRights = this.props.user.isActive && !this.props.user.permissions.includes('rules.events_edit');
     return (
@@ -189,62 +252,11 @@ class FilterEditKebab extends React.Component {
           submit={this.submitActionToFilterSet}
           noRights={noRights}
         />
-
-        <DropdownKebab id="filterActions" pullRight>
-          {this.props.user.isActive && this.props.user.permissions.includes('rules.events_edit') && (
-            <React.Fragment>
-              {this.props.data.index !== 0 && (
-                <MenuItem
-                  onClick={() => {
-                    this.displayToggle('movetop');
-                  }}
-                >
-                  Send Action to top
-                </MenuItem>
-              )}
-              <MenuItem
-                onClick={() => {
-                  this.displayToggle('move');
-                }}
-              >
-                Move Action
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  this.displayToggle('movebottom');
-                }}
-              >
-                Send Action to bottom
-              </MenuItem>
-              <MenuItem divider />
-              <MenuItem
-                onClick={() => {
-                  this.displayToggle('delete');
-                }}
-              >
-                Delete Action
-              </MenuItem>
-              <MenuItem divider />
-            </React.Fragment>
-          )}
-
-          <MenuItem
-            onClick={() => {
-              this.convertActionToFilters();
-            }}
-          >
-            Convert Action to Filters
-          </MenuItem>
-          {this.props.user.isActive && this.props.user.permissions.includes('rules.events_edit') && (
-            <MenuItem
-              onClick={() => {
-                this.saveActionToFilterSet();
-              }}
-            >
-              Save Action as Filter set
-            </MenuItem>
-          )}
-        </DropdownKebab>
+        <Dropdown id="filterActions" overlay={this.menu} trigger={['click']}>
+          <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+            <MenuOutlined />
+          </a>
+        </Dropdown>
         <ErrorHandler>
           <FilterToggleModal
             show={this.state.toggle.show}
