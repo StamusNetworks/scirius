@@ -109,12 +109,12 @@ class FilterEditKebab extends React.Component {
     }
   }
 
-  handleComboChange(event) {
+  handleComboChange(value) {
     this.setState({
       filterSets: {
         showModal: true,
         shared: this.state.filterSets.shared,
-        page: event.target.value,
+        page: value,
         name: this.state.filterSets.name,
         description: this.state.filterSets.description,
       },

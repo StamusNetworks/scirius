@@ -1,11 +1,25 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Checkbox, Col, Form, FormControl, FormGroup, Button, Icon, Modal } from 'patternfly-react';
+import { Button, Checkbox, Col, Form, Input, Modal, Row, Select } from 'antd';
 import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
 import HuntRestError from './HuntRestError';
 
 const FilterSetSaveModal = (props) => (
-  <Modal show={props.showModal} onHide={props.close}>
+  <Modal
+    title={props.title}
+    visible={props.showModal}
+    onCancel={props.close}
+    footer={
+      <React.Fragment>
+        <Button bsStyle="default" className="btn-cancel" onClick={props.close}>
+          Cancel
+        </Button>
+        <Button bsStyle="primary" onClick={props.submit}>
+          Save
+        </Button>
+      </React.Fragment>
+    }
+  >
     <div
       onClick={
         // Stopping event propagation is required since the modal is the children of a list item that
@@ -15,21 +29,15 @@ const FilterSetSaveModal = (props) => (
         }
       }
     >
-      <Modal.Header>
-        <button type="button" className="close" onClick={props.close} aria-hidden="true" aria-label="Close">
-          <Icon type="pf" name="close" />
-        </button>
-        <Modal.Title>{props.title}</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <HuntRestError errors={props.errors} />
-        <Form horizontal>
-          <FormGroup key="name" controlId="name">
-            <Col sm={4}>
-              <strong>Name</strong>
-            </Col>
-            <Col sm={8}>
-              <FormControl
+      <HuntRestError errors={props.errors} />
+      <Form>
+        <Row>
+          <Col span={6}>
+            <strong>Name</strong>
+          </Col>
+          <Col span={18}>
+            <Form.Item name="input-name">
+              <Input
                 defaultValue=""
                 onChange={props.handleFieldChange}
                 onKeyDown={(e) => {
@@ -38,66 +46,59 @@ const FilterSetSaveModal = (props) => (
                     props.submit();
                   }
                 }}
+                style={{ width: '100%' }}
               />
-            </Col>
-          </FormGroup>
-          <FormGroup key="page" controlId="page">
-            <Col sm={4}>
-              <strong>Page</strong>
-            </Col>
-            <Col sm={8}>
-              {!props.page && (
-                <FormControl componentClass="select" placeholder="relevant" onChange={props.handleComboChange}>
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={6}>
+            <strong>Page</strong>
+          </Col>
+          <Col span={18}>
+            {!props.page && (
+              <Form.Item name="select-page">
+                <Select style={{ width: '100%' }} placeholder="Please select page" onChange={props.handleComboChange}>
                   {VerticalNavItems.filter((item) => item.title !== 'Actions').map((item) => (
-                    <option key={item.title} value={item.def}>
+                    <Select.Option key={item.title} value={item.def}>
                       {item.title}
-                    </option> // eslint-disable-line indent
+                    </Select.Option> // eslint-disable-line indent
                   ))}
-                </FormControl>
-              )}
-              {props.page && <FormControl disabled defaultValue={props.page} />}
-            </Col>
-          </FormGroup>
-          {!props.noRights && (
-            <FormGroup>
-              <Col sm={2}>
-                <Checkbox
-                  defaultChecked={false}
-                  onChange={(e) => {
-                    props.setSharedFilter(e);
-                  }}
-                >
+                </Select>
+              </Form.Item>
+            )}
+            {props.page && <Input disabled defaultValue={props.page} />}
+          </Col>
+        </Row>
+        {!props.noRights && (
+          <Row>
+            <Col span={6}>
+              <Form.Item name="checkbox">
+                <Checkbox onChange={props.setSharedFilter}>
                   <strong>Shared</strong>
                 </Checkbox>
-              </Col>
-              <Col>
-                <span
-                  className="pficon-help"
-                  data-toggle="tooltip"
-                  title="Enable: Create Filter Set with All Users&#10;Disable: Create Filter Set only for you"
-                />
-              </Col>
-            </FormGroup>
-          )}
-          <FormGroup>
-            <Col sm={4}>
-              <strong>Description:</strong>
+              </Form.Item>
             </Col>
-            <Col sm={8}>
-              <textarea cols="49" rows="3" onChange={props.handleDescriptionChange} />
+            <Col span={18}>
+              <span
+                className="pficon-help"
+                data-toggle="tooltip"
+                title="Enable: Create Filter Set with All Users&#10;Disable: Create Filter Set only for you"
+              />
             </Col>
-          </FormGroup>
-        </Form>
-      </Modal.Body>
-
-      <Modal.Footer>
-        <Button bsStyle="default" className="btn-cancel" onClick={props.close}>
-          Cancel
-        </Button>
-        <Button bsStyle="primary" onClick={props.submit}>
-          Save
-        </Button>
-      </Modal.Footer>
+          </Row>
+        )}
+        <Row>
+          <Col span={6}>
+            <strong>Description:</strong>
+          </Col>
+          <Col span={18}>
+            <Form.Item name="textarea-description">
+              <Input.TextArea onChange={props.handleDescriptionChange} />
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
     </div>
   </Modal>
 );
