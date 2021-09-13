@@ -20,7 +20,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Sort } from 'patternfly-react';
+import { Button, Dropdown, Menu } from 'antd';
+import { DownOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
 
 export class HuntSort extends React.Component {
   constructor(props) {
@@ -38,7 +39,6 @@ export class HuntSort extends React.Component {
     }
     this.state = {
       currentSortType: sortType,
-      isSortNumeric: sortType.isNumeric,
       isSortAscending: activeSort.asc,
     };
     this.updateSort = this.updateSort.bind(this);
@@ -59,7 +59,6 @@ export class HuntSort extends React.Component {
     if (currentSortType !== sortType) {
       this.setState({
         currentSortType: sortType,
-        isSortNumeric: sortType.isNumeric,
         isSortAscending: sortType.defaultAsc,
       });
       this.updateSort({ id: sortType.id, asc: sortType.defaultAsc });
@@ -71,24 +70,37 @@ export class HuntSort extends React.Component {
     this.setState((prevState) => ({ isSortAscending: !prevState.isSortAscending }));
   };
 
-  render() {
-    const { currentSortType, isSortNumeric, isSortAscending } = this.state;
+  menu = () => (
+    <Menu selectedKeys={[this.state.currentSortType.id]}>
+      {this.props.config.map((conf) => (
+        <Menu.Item
+          key={conf.id}
+          onClick={() => {
+            this.updateCurrentSortType(conf);
+          }}
+        >
+          {conf.title}
+        </Menu.Item>
+      ))}
+    </Menu>
+  );
 
+  render() {
+    const { currentSortType, isSortAscending } = this.state;
     return (
-      <Sort>
-        <Sort.TypeSelector
-          sortTypes={this.props.config}
-          currentSortType={currentSortType}
-          onSortTypeSelected={this.updateCurrentSortType}
+      <div>
+        <Dropdown overlay={this.menu} trigger={['click']} disabled={this.props.disabled}>
+          <Button size="small">
+            {currentSortType.title} <DownOutlined />
+          </Button>
+        </Dropdown>
+        <Button
+          type="text"
+          icon={isSortAscending ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
           disabled={this.props.disabled}
-        />
-        <Sort.DirectionSelector
-          isNumeric={isSortNumeric}
-          isAscending={isSortAscending}
           onClick={() => this.toggleCurrentSortDirection()}
-          disabled={this.props.disabled}
         />
-      </Sort>
+      </div>
     );
   }
 }
