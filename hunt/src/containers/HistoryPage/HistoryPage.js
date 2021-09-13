@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { ListView, Spinner, PAGINATION_VIEW } from 'patternfly-react';
+import { List, Spin } from 'antd';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
 import { sections } from 'hunt_common/constants';
@@ -158,14 +158,19 @@ export default class HistoryPage extends React.Component {
             systemSettings={this.props.systemSettings}
           />
         </ErrorHandler>
-        <Spinner loading={this.state.loading}></Spinner>
-        <ListView>
-          {this.state.data.results &&
-            this.state.data.results.map((item) => <HistoryItem key={item.pk} data={item} switchPage={this.props.switchPage} expand_row={expand} />)}
-        </ListView>
+        <Spin spinning={this.state.loading} />
+        {this.state.data.results && (
+          <List
+            size="small"
+            header={null}
+            footer={null}
+            dataSource={this.state.data.results}
+            renderItem={(item) => <HistoryItem key={item.pk} data={item} switchPage={this.props.switchPage} expand_row={expand} />}
+          />
+        )}
         <ErrorHandler>
           <HuntPaginationRow
-            viewType={PAGINATION_VIEW.LIST}
+            viewType="list"
             onPaginationChange={this.updateHistoryListState}
             itemsCount={this.state.count}
             itemsList={this.props.rules_list}
