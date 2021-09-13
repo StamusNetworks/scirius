@@ -1,5 +1,6 @@
 import React from 'react';
-import { DropdownButton, MenuItem } from 'patternfly-react';
+import { Button, Dropdown, Menu } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import * as config from 'hunt_common/config/Api';
 import { buildQFilter } from 'hunt_common/buildQFilter';
@@ -9,7 +10,11 @@ export function actionsButtons() {
     if (this.state.supported_actions.length === 0) {
       return (
         <div className="form-group">
-          <DropdownButton bsStyle="default" title="Policy Actions" key="actions" id="dropdown-basic-actions" disabled />
+          <Dropdown id="dropdown-basic-actions" overlay={null} trigger={['click']} disabled>
+            <Button size="small">
+              Policy Actions <DownOutlined />
+            </Button>
+          </Dropdown>
         </div>
       );
     }
@@ -18,10 +23,10 @@ export function actionsButtons() {
     for (let i = 0; i < this.state.supported_actions.length; i += 1) {
       const action = this.state.supported_actions[i];
       if (action[0] === '-') {
-        actions.push(<MenuItem key={`divider${i}`} divider />);
+        actions.push(<hr key={`divider${i}`} />);
       } else {
         actions.push(
-          <MenuItem
+          <Menu.Item
             key={action[0]}
             eventKey={eventKey}
             onClick={() => {
@@ -29,16 +34,18 @@ export function actionsButtons() {
             }}
           >
             {action[1]}
-          </MenuItem>,
+          </Menu.Item>,
         );
         eventKey += 1;
       }
     }
     return (
       <div className="form-group">
-        <DropdownButton bsStyle="default" title="Policy Actions" key="actions" id="dropdown-basic-actions">
-          {actions}
-        </DropdownButton>
+        <Dropdown id="dropdown-basic-actions" overlay={<Menu>{actions}</Menu>} trigger={['click']}>
+          <Button size="small">
+            Policy Actions <DownOutlined />
+          </Button>
+        </Dropdown>
       </div>
     );
   }
