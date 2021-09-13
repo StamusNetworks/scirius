@@ -149,14 +149,7 @@ class UserNavInfo extends Component {
     )
       return (
         <li className="applauncher-pf-item" role="presentation">
-          <a
-            className="applauncher-pf-link"
-            href="/appliances/str"
-            role="menuitem"
-            data-toggle="tooltip"
-            title="Threat Radar"
-            style={{ cursor: 'pointer' }}
-          >
+          <a className="applauncher-pf-link" href="/stamus" role="menuitem" data-toggle="tooltip" title="Threat Radar" style={{ cursor: 'pointer' }}>
             <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40" alt="STR" />
             <span className="applauncher-pf-link-title" style={{ lineHeight: '1.5715' }}>
               Threat Radar
