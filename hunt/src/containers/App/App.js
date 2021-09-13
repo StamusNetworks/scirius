@@ -19,7 +19,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 import React, { Component } from 'react';
-import { VerticalNav, Modal, VerticalNavItem } from 'patternfly-react';
+import { VerticalNav, VerticalNavItem } from 'patternfly-react';
+import { Modal } from 'antd';
 import { ShortcutManager } from 'react-shortcuts';
 import PropTypes from 'prop-types';
 import axios from 'axios';
@@ -345,13 +346,8 @@ export default class App extends Component {
           </div>
         </div>
 
-        <Modal show={!this.state.hasConnectivity}>
-          <Modal.Header>
-            <Modal.Title>Scirius is down</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <div className="modal-body text-danger">{this.state.connectionProblem}</div>
-          </Modal.Body>
+        <Modal title="Scirius is down" visible={!this.state.hasConnectivity} footer={null}>
+          <div className="modal-body text-danger">{this.state.connectionProblem}</div>
         </Modal>
       </div>
     );
