@@ -1,9 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { ControlLabel, Icon, Modal } from 'patternfly-react';
-import { Button, Checkbox, Col, Form, FormControl, FormGroup, HelpBlock, InputGroup, Row } from 'react-bootstrap';
-import InputGroupAddon from 'react-bootstrap/es/InputGroupAddon';
+import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Row } from 'antd';
 import FilterItem from 'hunt_common/components/FilterItem/index';
 import isNumeric from '../../helpers/isNumeric';
 import './style.css';
@@ -68,12 +66,6 @@ class FilterList extends React.Component {
       newFilterValue: filterValue,
       newFilterNegated: filterNegated,
       wildcardMode: wildcardEnabled,
-    });
-  };
-
-  closeHandler = () => {
-    this.setState({
-      editForm: false,
     });
   };
 
@@ -167,71 +159,80 @@ class FilterList extends React.Component {
             />
           ))}
         </ul>
-        <Modal show={this.state.editForm} onHide={() => this.setState({ editForm: false })} className="modal-hunt-filter" backdrop keyboard>
-          <Modal.Header>
-            <button type="button" className="close" onClick={this.closeHandler} aria-hidden="true" aria-label="Close">
-              <Icon type="pf" name="close" />
-            </button>
-            <Modal.Title>Edit filter</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <FormGroup controlId="name">
-                <Col componentClass={ControlLabel} sm={2}>
-                  <ControlLabel>Filter</ControlLabel>
+        <Modal
+          title="Edit filter"
+          visible={this.state.editForm}
+          onCancel={() => this.setState({ editForm: false })}
+          className="modal-hunt-filter"
+          footer={
+            <React.Fragment>
+              <Button onClick={() => this.setState({ editForm: false })}>Cancel</Button>
+              <Button type="primary" disabled={valid === 'error'} onClick={this.saveHandler}>
+                Save
+              </Button>
+            </React.Fragment>
+          }
+        >
+          <Form>
+            <Form.Item name="name">
+              <Row>
+                <Col span={4}>
+                  <label>Filter</label>
                 </Col>
-                <Col sm={10}>
-                  <InputGroup>
-                    <InputGroupAddon>{this.state.filter.id}</InputGroupAddon>
-                    <FormGroup validationState={valid} className="form-group-no-margins">
-                      <FormControl
+                <Col span={20}>
+                  <Form.Item validateStatus={valid}>
+                    <span>{this.state.filter.id}</span>
+                    {controlType === 'text' ? (
+                      <Input
                         id="input-value-filter"
-                        type={controlType}
                         value={newFilterValue}
                         onKeyDown={this.keyListener}
                         onChange={(e) => this.changeHandler(e, this.state.filter.id)}
-                        className="has-error"
+                        style={{ width: '100%' }}
                       />
-                    </FormGroup>
-                  </InputGroup>
-                  <HelpBlock>{helperText}</HelpBlock>
+                    ) : (
+                      <InputNumber
+                        id="input-value-filter"
+                        value={newFilterValue}
+                        onKeyDown={this.keyListener}
+                        onChange={(e) => this.setState({ newFilterValue: e.target.value.trim() })}
+                        style={{ width: '100%' }}
+                      />
+                    )}
+                  </Form.Item>
+                  <span style={{ color: '#b4b3b5' }}>{helperText}</span>
                 </Col>
-              </FormGroup>
-              <Row>
-                <FormGroup controlId="checkbox">
-                  <Col componentClass={ControlLabel} sm={3}>
-                    <ControlLabel>Wildcard view</ControlLabel>
-                  </Col>
-                  <Col sm={9}>
-                    <Checkbox
-                      onChange={this.wildcardHandler}
-                      onKeyDown={this.keyListener}
-                      checked={this.state.wildcardMode && enableWildcard}
-                      disabled={!enableWildcard}
-                    />
-                  </Col>
-                </FormGroup>
               </Row>
-              {!['msg', 'not_in_msg', 'content', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filter.id) && (
+            </Form.Item>
+            <Form.Item name="checkbox-wildcard_view">
+              <Row>
+                <Col span={6}>
+                  <label>Wildcard view</label>
+                </Col>
+                <Col span={18}>
+                  <Checkbox
+                    onChange={this.wildcardHandler}
+                    onKeyDown={this.keyListener}
+                    checked={this.state.wildcardMode && enableWildcard}
+                    disabled={!enableWildcard}
+                  />
+                </Col>
+              </Row>
+            </Form.Item>
+
+            {!['msg', 'not_in_msg', 'content', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filter.id) && (
+              <Form.Item name="checkbox-negated">
                 <Row>
-                  <FormGroup controlId="checkbox">
-                    <Col componentClass={ControlLabel} sm={3}>
-                      <ControlLabel>Negated</ControlLabel>
-                    </Col>
-                    <Col sm={9}>
-                      <Checkbox onChange={this.negateHandler} onKeyDown={this.keyListener} checked={this.state.newFilterNegated} />
-                    </Col>
-                  </FormGroup>
+                  <Col span={6}>
+                    <label>Negated</label>
+                  </Col>
+                  <Col span={18}>
+                    <Checkbox onChange={this.negateHandler} onKeyDown={this.keyListener} checked={this.state.newFilterNegated} />
+                  </Col>
                 </Row>
-              )}
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={this.closeHandler}>Cancel</Button>
-            <Button bsStyle="primary" disabled={valid === 'error'} onClick={this.saveHandler}>
-              Save
-            </Button>
-          </Modal.Footer>
+              </Form.Item>
+            )}
+          </Form>
         </Modal>
       </React.Fragment>
     );
