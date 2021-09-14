@@ -2,34 +2,35 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { connect } from 'react-redux';
-import { Col, Icon, Row, ListViewItem, ListViewInfoItem, ListViewIcon } from 'patternfly-react';
+import { Menu } from 'antd';
+import { MailOutlined, TableOutlined, UserOutlined } from '@ant-design/icons';
 import { PAGE_STATE, sections } from 'hunt_common/constants';
 import { addFilter } from '../containers/App/stores/global';
 
 const HistoryItem = (props) => {
   const date = moment(props.data.date).format('YYYY-MM-DD, hh:mm:ss a');
   const info = [
-    <ListViewInfoItem key="date">
+    <div key="date">
       <p>Date: {date}</p>
-    </ListViewInfoItem>,
-    <ListViewInfoItem key="user">
+    </div>,
+    <div key="user">
       <p>
-        <Icon type="pf" name="user" /> {props.data.username}
+        <UserOutlined /> {props.data.username}
       </p>
-    </ListViewInfoItem>,
+    </div>,
   ];
   if (props.data.ua_objects.ruleset && props.data.ua_objects.ruleset.pk) {
     info.push(
-      <ListViewInfoItem key="ruleset">
+      <div key="ruleset">
         <p>
-          <Icon type="fa" name="th" /> {props.data.ua_objects.ruleset.value}
+          <TableOutlined /> {props.data.ua_objects.ruleset.value}
         </p>
-      </ListViewInfoItem>,
+      </div>,
     );
   }
   if (props.data.ua_objects.rule && props.data.ua_objects.rule.sid) {
     info.push(
-      <ListViewInfoItem key="rule">
+      <div key="rule">
         <p>
           <a
             onClick={() => {
@@ -40,40 +41,37 @@ const HistoryItem = (props) => {
             <i className="pficon-security" /> {props.data.ua_objects.rule.sid}
           </a>
         </p>
-      </ListViewInfoItem>,
+      </div>,
     );
   }
+
   return (
-    <ListViewItem
-      leftContent={<ListViewIcon name="envelope" />}
-      additionalInfo={info}
-      heading={props.data.title}
-      description={props.data.description}
-      key={props.data.pk}
-      compoundExpand={props.expand_row}
-      compoundExpanded
-    >
-      {(props.data.comment || props.data.client_ip) && (
-        <Row>
-          {props.data.comment && (
-            <Col sm={10}>
-              <div className="container-fluid">
-                <strong>Comment</strong>
-                <p>{props.data.comment}</p>
-              </div>
-            </Col>
-          )}
-          {props.data.client_ip && (
-            <Col sm={2}>
-              <div className="container-fluid">
-                <strong>IP</strong>
-                <p>{props.data.client_ip}</p>
-              </div>
-            </Col>
-          )}
-        </Row>
-      )}
-    </ListViewItem>
+    <Menu mode="inline" expandIcon={!props.data.comment && <span />} defaultOpenKeys={[props.expand_row && props.data.pk]}>
+      <Menu.SubMenu
+        key={props.data.pk}
+        icon={<MailOutlined style={{ fontSize: '21px' }} />}
+        title={
+          <div style={{ display: 'flex' }}>
+            <span>{props.data.title}</span>
+            <span>{props.data.description}</span>
+            <span style={{ display: 'flex' }}>{info}</span>
+          </div>
+        }
+      >
+        {props.data.comment && (
+          <Menu.Item key={props.data.comment} style={{ height: '100%' }}>
+            <strong>Comment</strong>
+            <div>{props.data.comment}</div>
+          </Menu.Item>
+        )}
+        {props.data.client_ip && (
+          <Menu.Item key={props.data.client_ip} style={{ height: '100%' }}>
+            <strong>IP</strong>
+            <div>{props.data.client_ip}</div>
+          </Menu.Item>
+        )}
+      </Menu.SubMenu>
+    </Menu>
   );
 };
 
