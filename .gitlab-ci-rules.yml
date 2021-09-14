@@ -49,6 +49,7 @@ npm-ui:
   - npm install
   - npm run build
   - node node_modules/eslint/bin/eslint.js app/ --max-warnings 0
+  - cd "$CI_PROJECT_DIR" && mv ui/webpack-stats-ui.prod.json rules/static/
 
 test-static:
   stage: test
