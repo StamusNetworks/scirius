@@ -87,6 +87,7 @@ const App = ({
             {pagesList.map(page => (
               <Route key={page} exact path={`${APP_URL  }/${CamelCaseToDashCase(page)}`} component={pages[page]} />
             ))}
+            <Route path={APP_URL} component={pages.OverviewPage}/>
             <Route path="" component={pages.NotFoundPage} />
           </Switch>
         </Content>

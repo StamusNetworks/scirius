@@ -67,6 +67,25 @@ export const initialState = {
 const appReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
+      case constants.GET_GLOBAL_SETTINGS_REQUEST:
+        draft.settings.request.loading = true;
+        draft.settings.request.status = null;
+        draft.settings.request.message = '';
+        break;
+      case constants.GET_GLOBAL_SETTINGS_SUCCESS: {
+        draft.settings.data = action.payload.data;
+        draft.settings.request.loading = false;
+        draft.settings.request.status = true;
+        draft.settings.request.message = '';
+        break;
+      }
+      case constants.GET_GLOBAL_SETTINGS_FAILURE: {
+        const { httpCode, httpError, httpResponse } = action.payload;
+        draft.settings.request.loading = false;
+        draft.settings.request.status = false;
+        draft.settings.request.message = `Global settings could not be retrieved.\n${httpCode} ${httpError}\n ${httpResponse}`;
+        break;
+      }
       case constants.GET_USER_REQUEST:
         draft.user.request.loading = true;
         draft.user.request.status = null;

@@ -1,0 +1,56 @@
+.header {
+    padding: 0;
+
+    .logo {
+        float: left;
+        width: 200px;
+        text-align: center;
+    }
+    
+    .logo img {
+        height: 32px;
+    }
+
+    .ant-menu {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        height: 100%;
+        background-color: rgb(0, 87, 146);
+    }
+
+    .tenant-dropdown {
+        & i {
+            font-size: 20px;
+            margin-right: 5px;
+        }
+    }
+
+    .timerange-dropdown {
+        flex-shrink: 0;
+
+        & > span > span {
+            display: flex;
+            align-items: center;
+        }
+
+        & svg {
+            height: 22px;
+            width: 22px;
+            margin-right: 5px;
+        }
+    }
+
+    .user-dropdown {
+        & svg {
+            display: flex;
+            align-items: center;
+            width: 22px;
+              height: 22px;
+              fill: transparent;
+              stroke: currentColor;
+              stroke-width: 2;
+        }
+    }
+}
+

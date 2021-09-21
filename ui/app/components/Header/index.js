@@ -1,56 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import { Menu, Popover, Row } from 'antd';
-import PropTypes from 'prop-types';
-import StamusLogo from 'ui/images/stamus.png';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
-import { ClockCircleFilled, ReloadOutlined } from '@ant-design/icons';
+import { connect } from 'react-redux';
+import { bindActionCreators, compose } from 'redux';
+import PropTypes from 'prop-types';
+import { Layout, Menu, Popover } from 'antd';
+import { ClockCircleOutlined } from '@ant-design/icons';
+import selectors from 'ui/containers/App/selectors';
 import { createStructuredSelector } from 'reselect';
+import AccountCircleRounded from "@material-ui/icons/AccountCircleRounded";
+// icon select: https://fonts.google.com/icons?selected=Material+Icons
+// React name for icon: select checkbox, click the icon and see the name for the import: https://mui.com/components/material-icons
+
+import './style.scss';
+import StamusLogo from 'ui/images/stamus.png';
+import SwitchApps from 'ui/components/SwitchApps';
+import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
+import HelpMenu from 'ui/components/HelpMenu';
+import UserMenu from 'ui/components/UserMenu';
+import { COLOR_ANT_MENU } from 'ui/constants/colors';
 import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
 import { DATE_TIME_FORMAT } from 'ui/constants';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
-import { bindActionCreators, compose } from 'redux';
 import actions from 'ui/containers/App/actions';
-import { connect } from 'react-redux';
-import { createGlobalStyle } from 'styled-components';
-import ReloadPicker from 'ui/components/ReloadPicker';
-import PfIcon from 'ui/components/PfIcon';
-import HelpMenu from 'ui/components/HelpMenu';
-import UserMenu from 'ui/components/UserMenu';
-import selectors from 'ui/containers/App/selectors';
-import StyledHeader from './StyledHeader';
-import LogoHandler from './LogoHandler';
 
-const iconStyle = {
-  fontSize: '20px',
-  marginRight: '5px',
-};
+const { Header: AntdHeader } = Layout;
 
-const GlobalStyle = createGlobalStyle`
-  .ant-menu-custom {
-    background-color: transparent;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-  }
-`;
-
-let reloadTimeout = null;
-
-const Header = ({timePicker, setDuration, setTimeSpan, duration, reloadData, doReload, startDate, endDate, menuItems = [] }) => {
-  const [hidden, setHidden] = useState(false);
-  const [reloadPopOver, setReloadPopOver] = useState(false);
+const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePicker, menuItems = [] }) => {
   const [helpPopOver, setHelpPopOver] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [userPopOver, setUserPopOver] = useState(false);
-
-  useEffect(() => {
-    clearInterval(reloadTimeout);
-    if (reloadData.period.seconds > 0) {
-      reloadTimeout = setInterval(() => {
-        doReload();
-      }, reloadData.period.seconds);
-    }
-  }, [reloadData.period.seconds]);
 
   const timePreview =
     timePicker === TimePickerEnum.ABSOLUTE
@@ -58,16 +36,14 @@ const Header = ({timePicker, setDuration, setTimeSpan, duration, reloadData, doR
       : PeriodEnum[duration].title;
 
   return (
-    <StyledHeader>
-      <GlobalStyle />
-      <LogoHandler>
-        <Link to="/appliances/str">
-          <img src={StamusLogo} style={{ height: '32px' }} alt="Scirius UI" />
-        </Link>
-      </LogoHandler>
+    <AntdHeader className="header" style={{ background: COLOR_ANT_MENU }}>
+      <Link to="/stamus" className="logo">
+        <img src={StamusLogo} alt="Scirius UI" />
+      </Link>
 
       <Menu mode='horizontal' theme='custom'>
-        <Menu.Item>
+        {menuItems}
+        <Menu.Item key="timerange-dropdown" className="timerange-dropdown" data-test="timerange-dropdown">
           <Popover
             placement="bottom"
             content={<TimeRangePickersContainer setDuration={setDuration} setTimeSpan={setTimeSpan} />}
@@ -75,52 +51,42 @@ const Header = ({timePicker, setDuration, setTimeSpan, duration, reloadData, doR
             visible={hidden}
             onVisibleChange={setHidden}
           >
-            <Row type="flex" align="middle">
-              <ClockCircleFilled style={iconStyle} /> {timePreview}
-            </Row>
+            <ClockCircleOutlined /> {timePreview}
           </Popover>
         </Menu.Item>
-        <Menu.Item style={{ flexShrink: 0 }}>
-          <Popover placement="bottomRight" content={<ReloadPicker />} trigger="click" visible={reloadPopOver} onVisibleChange={setReloadPopOver}>
-            <Row type="flex" align="middle">
-              <ReloadOutlined style={iconStyle} />Reload{' '}
-              {reloadData.period.seconds > 0 && <React.Fragment>every {reloadData.period.title}</React.Fragment>}
-            </Row>
+        <Menu.Item key="apps">
+          <Popover placement="bottomRight" content={<SwitchApps />} trigger="click">
+            Apps
           </Popover>
         </Menu.Item>
-        {/* eslint-disable-next-line react/no-array-index-key */}
-        {menuItems.map((menuItem, i) => <Menu.Item key={i}>{menuItem}</Menu.Item>)}
-        <Menu.Item>
+        <Menu.Item key="help">
           <Popover placement="bottomRight" content={<HelpMenu />} trigger="click" visible={helpPopOver} onVisibleChange={setHelpPopOver}>
-            <PfIcon type="help" style={iconStyle} />{' '}
+            Help
           </Popover>
         </Menu.Item>
-        <Menu.Item>
+        <Menu.Item key="user-dropdown" className="user-dropdown">
           <Popover placement="bottomRight" content={<UserMenu />} trigger="click" visible={userPopOver} onVisibleChange={setUserPopOver}>
-            <PfIcon type="user" style={iconStyle} />{' '}
+            <AccountCircleRounded style={{color: "currentColor", strokeWidth: 1.5}} />
           </Popover>
         </Menu.Item>
       </Menu>
-    </StyledHeader>
+    </AntdHeader>
   );
-}
+};
 
 Header.propTypes = {
-  timePicker: PropTypes.number,
-  setTimeSpan: PropTypes.func,
-  setDuration: PropTypes.func,
-  duration: PropTypes.any,
-  doReload: PropTypes.func,
-  reloadData: PropTypes.object,
-  menuItems: PropTypes.array,
-  startDate: PropTypes.any,
-  endDate: PropTypes.any,
-}
+  duration: PropTypes.oneOf(Object.keys(PeriodEnum)).isRequired,
+  endDate: PropTypes.object,
+  setTimeSpan: PropTypes.func.isRequired,
+  setDuration: PropTypes.func.isRequired,
+  startDate: PropTypes.object,
+  timePicker: PropTypes.oneOf([0, 1]).isRequired,
+  menuItems: PropTypes.array // not required! only used by EE
+};
 
 const mapStateToProps = createStructuredSelector({
   timePicker: selectors.makeSelectTimePicker(),
   duration: selectors.makeSelectDuration(),
-  reloadData: selectors.makeSelectReload(),
   startDate: selectors.makeSelectStartDate(),
   endDate: selectors.makeSelectEndDate(),
 });
@@ -130,7 +96,6 @@ export const mapDispatchToProps = dispatch =>
     {
       setDuration: actions.setDuration,
       setTimeSpan: actions.setTimeSpan,
-      doReload: actions.doReload,
     },
     dispatch,
   );

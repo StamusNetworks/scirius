@@ -5,7 +5,7 @@ import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import { parseObjectToUrl } from 'ui/helpers/parseObjectToUrl';
 import { initialState } from 'ui/containers/App/reducer';
 
-const selectGlobal = state => state.global || initialState;
+const selectGlobal = state => state.global.ce || initialState;
 
 const selectRouter = state => state.router || { location: {} };
 

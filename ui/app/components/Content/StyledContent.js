@@ -4,4 +4,5 @@ const { Content } = Layout;
 
 export default styled(Content)`
   background-color: #f1f2f5;
+  padding: 20px;
 `;
