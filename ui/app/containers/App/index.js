@@ -6,14 +6,15 @@
  * contain code that should be seen on all pages. (e.g. navigation bar)
  */
 import React, { useEffect, useState } from 'react';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Redirect, Route } from 'react-router-dom';
 import { Layout } from 'antd';
 import pages from 'ui/pages';
 import { APP_URL } from 'ui/config';
 import './style.scss'; // please dont move it! should be loaded before all components
-import { CamelCaseToDashCase, CamelCaseToNormal } from 'ui/helpers';
-import { Sider, Content, LinkGroup, LinkGroupTitle, SideLink } from 'ui/components';
+import { CamelCaseToDashCase } from 'ui/helpers';
+import { Content } from 'ui/components';
 import Header from 'ui/components/Header';
+import LeftNav from 'ui/components/LeftNav';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import { syncUrl } from 'ui/helpers/syncUrl';
@@ -24,16 +25,9 @@ import './commonKillChainStyles.scss';
 import GlobalStyle from 'ui/global-styles';
 import actions from 'ui/containers/App/actions';
 import selectors from 'ui/containers/App/selectors';
+import ErrorHandler from 'ui/components/ErrorHandler';
 
 const pagesList = Object.keys(pages);
-
-const getGroups = () => pagesList
-    .map(page => pages[page].metadata && pages[page].metadata.category)
-    .filter((page, index, self) => self.indexOf(page) === index && page !== undefined)
-
-const getGroupPages = (category) => pagesList
-    .filter(page => pages[page].metadata && pages[page].metadata.category === category)
-    .sort((a, b) => a - b)
 
 const App = ({
   source,
@@ -41,7 +35,6 @@ const App = ({
   getUser,
   getSource,
 }) => {
-  const linkGroups = getGroups();
   useEffect(() => {
     if (source.data.length === 0) {
       getSource();
@@ -74,23 +67,26 @@ const App = ({
     <Layout>
       {errorMsg && <pre id="rf_js_error">{errorMsg}</pre>}
       <GlobalStyle />
-      <Header />
+      <ErrorHandler>
+        <Header />
+      </ErrorHandler>
       <Layout>
-        <Sider>
-          {linkGroups.map(group => <LinkGroup key={group}>
-            <LinkGroupTitle title={group} />
-            {getGroupPages(group).map(page => <SideLink key={page} to={`${APP_URL  }/${CamelCaseToDashCase(page)}`}>{CamelCaseToNormal(page)}</SideLink>)}
-          </LinkGroup>)}
-        </Sider>
-        <Content>
-          <Switch>
-            {pagesList.map(page => (
-              <Route key={page} exact path={`${APP_URL  }/${CamelCaseToDashCase(page)}`} component={pages[page]} />
-            ))}
-            <Route path={APP_URL} component={pages.OverviewPage}/>
-            <Route path="" component={pages.NotFoundPage} />
-          </Switch>
-        </Content>
+        <ErrorHandler>
+          <LeftNav />
+        </ErrorHandler>
+        <ErrorHandler>
+          <Content>
+            <Switch>
+              {pagesList.map(page => (
+                <Route key={page} exact path={`${APP_URL}/${CamelCaseToDashCase(page)}`} component={pages[page]} />
+              ))}
+              <Route exact path={["/", APP_URL]}>
+                {pages.Overview ? <Redirect to={`${APP_URL}/overview`} /> : <Redirect to={`${APP_URL}/explorer`} />}
+              </Route>
+              <Route path="" component={pages.NotFoundPage} />
+            </Switch>
+          </Content>
+        </ErrorHandler>
       </Layout>
     </Layout>
   );

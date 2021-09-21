@@ -1,10 +1,10 @@
 import React from 'react';
 import { LeftNavMap } from 'ui/maps/LeftNavMap';
 
-const Alerts = () => <div>Alerts</div>;
-Alerts.metadata = {
-  position: 0,
+const Explorer = () => <div>Explorer</div>;
+Explorer.metadata = {
+  position: 1,
   category: LeftNavMap.HUNTING
 }
 
-export default Alerts;
+export default Explorer;

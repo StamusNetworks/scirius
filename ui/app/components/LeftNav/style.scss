@@ -1,0 +1,56 @@
+.left-nav {
+       .ant-menu-submenu-title {
+         padding-left: 10px !important;
+         padding-right: 0px !important;
+         text-transform: uppercase;
+         font-weight: bold;
+       }
+       
+       .ant-menu-submenu-title > i {
+         display: none;
+       }
+      
+       .ant-menu-title-content {
+        display: flex;
+        align-items: center;
+       }
+       
+       .anticon {
+         margin-right: 5px !important;
+       }
+       
+       .ant-menu-submenu-title .anticon > svg, .ant-menu-title-content {
+         fill: rgb(0, 87, 146);
+         color: rgb(0, 87, 146);
+       }
+       
+        .ant-menu-item {
+          padding-left: 40px !important;
+          padding-right: 5px !important;
+        }
+       
+       .ant-menu-item a {
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+         position: relative;
+         z-index: 10;
+       }
+       
+       .ant-menu-item::before {
+         content: "";
+         position: absolute;
+         top: 0;
+         left: 0;
+         height: 100%;
+         width: 3px;
+         background-color: #f0f2f5;
+         transform: scaleY(0);
+         transition: transform .2s, width .4s cubic-bezier(1,0,0,1) .2s;
+       }
+       
+       .ant-menu-item:hover::before {
+         transform: scaleY(1);
+         width: 100%;
+       }
+}
