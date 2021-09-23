@@ -1552,19 +1552,10 @@ def update_ruleset(request, ruleset_id):
 
 @permission_required('rules.source_view', raise_exception=True)
 def changelog_ruleset(request, ruleset_id):
+    from scirius.utils import get_middleware_module
+
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
-    diff = ruleset.diff()
-
-    for key in diff:
-        cdiff = diff[key]
-        build_source_diff(request, cdiff)
-        diff[key] = cdiff
-
-    return scirius_render(
-        request,
-        'rules/ruleset.html',
-        {'ruleset': ruleset, 'diff': diff, 'mode': 'changelog'}
-    )
+    return get_middleware_module('common').changelog_ruleset(request, ruleset)
 
 
 @permission_required('rules.source_view', raise_exception=True)

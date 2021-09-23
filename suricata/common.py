@@ -246,3 +246,19 @@ def extract_policies(item):
 
 def import_policies(filter_, method_dict=None, threat_dict=None):
     pass
+
+
+def changelog_ruleset(request, ruleset):
+    from rules.views import build_source_diff
+    from scirius.utils import scirius_render
+
+    url = 'rules/ruleset.html'
+    diff = ruleset.diff()
+
+    for key in diff:
+        cdiff = diff[key]
+        build_source_diff(request, cdiff)
+        diff[key] = cdiff
+
+    context = {'ruleset': ruleset, 'diff': diff, 'mode': 'changelog'}
+    return scirius_render(request, url, context)

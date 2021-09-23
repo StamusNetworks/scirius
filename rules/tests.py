@@ -85,7 +85,7 @@ class PermissionsTestCase(TestCase):
                 if hasattr(view, 'check_permissions') and view.check_permissions.__module__ == module:
                     found = True
 
-            self.assertTrue(found)
+            self.assertTrue(found, 'Permission not found on "%s"' % view_name)
 
 
 class SourceCreationTestCase(TestCase):

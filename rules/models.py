@@ -2984,6 +2984,29 @@ class Ruleset(models.Model, Transformable):
             for item in f.get_threshold_content(self):
                 yield item
 
+    def get_user_actions(self, rversion_from, rversion_to, actions_type):
+        ua_objects_from = rversion_from.ua_objects.filter(user_action__action_type__in=actions_type)
+        ua_objects_to = rversion_to.ua_objects.filter(user_action__action_type__in=actions_type)
+
+        user_action_pk_min = ua_objects_from.filter(
+            user_action__action_type__in=actions_type
+        ).aggregate(models.Min('user_action__pk')).get('user_action__pk__min')
+
+        user_action_pk_max = ua_objects_to.filter(
+            user_action__action_type__in=actions_type
+        ).aggregate(models.Max('user_action__pk')).get('user_action__pk__max')
+
+        user_has_all_ua = (ua_objects_from.values('user_action').count() == rversion_from.ua_objects.values('user_action').count()) and \
+            (ua_objects_to.values('user_action').count() == rversion_to.ua_objects.values('user_action').count())
+
+        qs = UserAction.objects.none()
+        if user_action_pk_min is not None and user_action_pk_max is not None:
+            qs = UserAction.objects.filter(
+                pk__gte=user_action_pk_min,
+                pk__lte=user_action_pk_max
+            )
+        return qs, user_has_all_ua
+
     @staticmethod
     def get_transformation_choices(key=Transformation.ACTION):
         # Keys
@@ -3176,7 +3199,7 @@ class Ruleset(models.Model, Transformable):
         rules = Rule.objects.select_related('category')
         rules = rules.filter(category__source__pk__in=sources, category__in=self.categories.all(), state=True)
         rules = rules.exclude(ruletransformation__value=S_SUPPRESSED.value)
-        return rules
+        return rules.order_by('sid')
 
     def generate_threshold(self, directory):
         thresholdfile = os.path.join(directory, 'threshold.config')
