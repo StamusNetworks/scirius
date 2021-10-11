@@ -15,12 +15,10 @@
         <!-- /row -->
     </div>
     <!-- /container -->
-    <div class="container-fluid">
-        <div class="list-group list-view-pf list-view-pf-view">
-            {% for user_action in history %}
-                {% include "rules/useraction_entry.html" with user_action=user_action %}
-            {% endfor %}
-        </div>
+    <div class="list-group list-view-pf list-view-pf-view">
+        {% for user_action in history %}
+            {% include "rules/useraction_entry.html" with user_action=user_action %}
+        {% endfor %}
     </div>
 {% endif %}
 <script>

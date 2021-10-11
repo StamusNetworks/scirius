@@ -479,12 +479,10 @@ $(document).ready(function(){
                             </h3>
                             <div id="comments">
                                 {% if history %}
-                                    <div class="container-fluid">
-                                        <div class="list-group list-view-pf list-view-pf-view">
-                                            {% for user_action in history %}
-                                                {% include "rules/useraction_entry.html" with user_action=user_action %}
-                                            {% endfor %}
-                                        </div>
+                                    <div class="list-group list-view-pf list-view-pf-view">
+                                        {% for user_action in history %}
+                                            {% include "rules/useraction_entry.html" with user_action=user_action %}
+                                        {% endfor %}
                                     </div>
                                     <script>
 $(document).ready(function () {
