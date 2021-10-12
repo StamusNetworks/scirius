@@ -2,6 +2,7 @@
 from django.core import exceptions
 from django.contrib.auth.models import User
 from django.contrib.auth import password_validation
+from django.conf import settings
 
 from rest_framework import serializers, viewsets
 from rest_framework.routers import DefaultRouter
@@ -473,6 +474,8 @@ class AccountViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def current_user(self, request, *args, **kwargs):
         user = request.user
+        if user.__class__.__name__ == 'FakeUser' and settings.DEBUG:
+            return Response(SciriusUser.FAKE_USER)
         sciriususer = SciriusUser.objects.get(user=user)
         return Response(sciriususer.to_dict())
 

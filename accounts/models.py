@@ -90,6 +90,35 @@ django_auth_ldap.backend.populate_user.connect(update_groups)
 
 class SciriusUser(models.Model):
     TIMEZONES = ((x, x) for x in pytz.all_timezones)
+    FAKE_USER = {
+        'pk': 1,
+        'timezone': 'Europe/Paris',
+        'username': 'scirius',
+        'first_name': '',
+        'last_name': '',
+        'is_active': True,
+        'email': 'admin@domain.com',
+        'date_joined': '2014-11-05T16:06:38.113000Z',
+        'perms': [
+            'rules.events_ryod',
+            'rules.events_evebox',
+            'rules.events_kibana',
+            'rules.events_edit',
+            'rules.events_view',
+            'rules.ruleset_update_push',
+            'rules.ruleset_policy_edit',
+            'rules.ruleset_policy_view',
+            'rules.source_edit',
+            'rules.source_view',
+            'rules.configuration_auth',
+            'rules.configuration_edit',
+            'rules.configuration_view'
+        ],
+        'role': 'Superuser',
+        'no_tenant': True,
+        'all_tenant': True,
+        'tenants': []
+    }
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     timezone = models.CharField(max_length=40, choices=TIMEZONES)
