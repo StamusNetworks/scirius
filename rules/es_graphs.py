@@ -1038,7 +1038,7 @@ class ESEventsTail(ESQuery):
     def _get_index(self):
         return self.index
 
-    def _get_query(self, es_params, event_type='alert'):
+    def _get_query(self, es_params, event_type='alert', ordering=False):
         qfilter = 'event_type:%s' % event_type
         qfilter += self._qfilter()
 
@@ -1069,6 +1069,14 @@ class ESEventsTail(ESQuery):
                 }
             }
         }
+
+        if ordering:
+            q['sort'] = [{
+                es_params['sort_field']: {
+                    'order': es_params['sort_order']
+                }
+            }]
+
         q['query']['bool'].update(self._es_bool_clauses())
         return q
 

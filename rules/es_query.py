@@ -8,6 +8,7 @@ from pprint import pformat
 from traceback import format_exc
 import os
 import json
+import re
 
 from elasticsearch import Elasticsearch, Transport, ElasticsearchException, TransportError, ConnectionError, ConnectionTimeout, RequestsHttpConnection
 from django.conf import settings
@@ -48,6 +49,13 @@ class ESPaginator(SciriusSetPagination):
     def _get_current_page(self):
         page = self.request.query_params.get(self.page_query_param, 1)
         return int(page)
+
+    @staticmethod
+    def validate_ordering(ordering):
+        if ordering:
+            if not re.fullmatch('^-?[0-9a-zA-Z_@.]+', ordering):
+                return False
+        return True
 
     def get_es_params(self, view):
         reverse, order = get_ordering(self.request, 'ip')

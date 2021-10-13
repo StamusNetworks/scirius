@@ -2589,9 +2589,13 @@ class ESAlertsTailViewSet(ESBaseViewSet):
     def _get(self, request, format=None):
         pagination = ESPaginator(request)
         es_params = pagination.get_es_params(self)
+        ordering = request.query_params.get('ordering', None)
+
+        if not pagination.validate_ordering(ordering):
+            return Response("Wrong ordering value: %s" % ordering, status=status.HTTP_400_BAD_REQUEST)
 
         index = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + '*'
-        data = ESEventsTail(request, index).get(es_params=es_params)
+        data = ESEventsTail(request, index).get(es_params=es_params, ordering=ordering is not None)
         return pagination.get_paginated_response(data, full=True)
 
 
