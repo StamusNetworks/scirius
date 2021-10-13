@@ -37,7 +37,7 @@ from rules.es_query import normalize_es_url, ESPaginator
 
 from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats
 from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend, ESTimeRangeAllAlerts
-from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESEventsTail, ESSuriLogTail, ESPoststats
+from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESEventsTail, ESSuriLogTail, ESPoststats, ESEventsTimeline
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
@@ -2595,8 +2595,70 @@ class ESAlertsTailViewSet(ESBaseViewSet):
             return Response("Wrong ordering value: %s" % ordering, status=status.HTTP_400_BAD_REQUEST)
 
         index = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + '*'
-        data = ESEventsTail(request, index).get(es_params=es_params, ordering=ordering is not None)
+        data = ESEventsTail(request, index).get(es_params=es_params, ordering=ordering is not None, event_type='alert')
         return pagination.get_paginated_response(data, full=True)
+
+
+class ESEventsTailViewSet(ESBaseViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+
+    Show events tail:\n
+        curl -k https://x.x.x.x/rest/rules/es/events_tail/?from_date=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        []
+
+    =============================================================================================================================================================
+
+    """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
+
+    def _get(self, request, format=None):
+        pagination = ESPaginator(request)
+        es_params = pagination.get_es_params(self)
+        ordering = request.query_params.get('ordering', None)
+
+        if not pagination.validate_ordering(ordering):
+            return Response("Wrong ordering value: %s" % ordering, status=status.HTTP_400_BAD_REQUEST)
+
+        index = settings.ELASTICSEARCH_LOGSTASH_INDEX + '*'
+        data = ESEventsTail(request, index).get(es_params=es_params, ordering=ordering is not None, event_type=None)
+        res = pagination.get_paginated(data, full=True)
+
+        for idx, item in enumerate(res['results']):
+            item['_source']['_id'] = item['_id']
+            res['results'][idx] = item['_source']
+
+        return Response(res)
+
+
+class ESEventsTimelineViewSet(ESBaseViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+
+    Show events timeline:\n
+        curl -k https://x.x.x.x/rest/rules/es/events_timeline/?from_date=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        []
+
+    =============================================================================================================================================================
+    """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
+
+    def _get(self, request, format=None):
+        return Response(ESEventsTimeline(request).get())
 
 
 class ESEventsFromFlowIDViewSet(ESBaseViewSet):
@@ -2946,6 +3008,8 @@ def get_custom_urls():
     urls.append(url(r'rules/es/ip_pair_alerts/$', ESIPPairAlertsViewSet.as_view(), name='es_ip_pair_alerts'))
     urls.append(url(r'rules/es/ip_pair_network_alerts/$', ESIPPairNetworkAlertsViewSet.as_view(), name='es_ip_pair_network_alerts'))
     urls.append(url(r'rules/es/alerts_tail/$', ESAlertsTailViewSet.as_view(), name='es_alerts_tail'))
+    urls.append(url(r'rules/es/events_tail/$', ESEventsTailViewSet.as_view(), name='es_events_tail'))
+    urls.append(url(r'rules/es/events_timeline/$', ESEventsTimelineViewSet.as_view(), name='es_events_timeline'))
     urls.append(url(r'rules/es/events_from_flow_id/$', ESEventsFromFlowIDViewSet.as_view(), name='es_events_from_flow_id'))
     urls.append(url(r'rules/es/suri_log_tail/$', ESSuriLogTailViewSet.as_view(), name='es_suri_log_tail'))
     urls.append(url(r'rules/es/delete_logs/$', ESDeleteLogsViewSet.as_view(), name='es_delete_logs'))

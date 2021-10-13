@@ -274,6 +274,46 @@ class ESSidByHosts(ESQuery):
         return stats
 
 
+class ESEventsTimeline(ESQuery):
+    INDEX = settings.ELASTICSEARCH_LOGSTASH_INDEX
+
+    def _get_query(self):
+        qfilter = 'event_type:* ' + self._qfilter()
+
+        q = {
+            'size': 0,
+            'query': {
+                'bool': {
+                    'must': [{
+                        'query_string': {
+                            'query': qfilter,
+                            'analyze_wildcard': False
+                        }
+                    }, {
+                        'range': {
+                            ES_TIMESTAMP: {
+                                'gte': self._from_date(),
+                                'lte': self._to_date(),
+                                'format': 'epoch_millis'
+                            }
+                        }
+                    }]
+                }
+            },
+            'aggs': {
+                'date': {
+                    'date_histogram': {
+                        'field': ES_TIMESTAMP,
+                        self._es_interval_kw(): self._es_interval(),
+                        'min_doc_count': 0
+                    }
+                }
+            }
+        }
+        q['query']['bool'].update(self._es_bool_clauses())
+        return q
+
+
 class ESTimeline(ESQuery):
     def _get_query(self, tags=False):
         q = {
@@ -1038,9 +1078,12 @@ class ESEventsTail(ESQuery):
     def _get_index(self):
         return self.index
 
-    def _get_query(self, es_params, event_type='alert', ordering=False):
-        qfilter = 'event_type:%s' % event_type
-        qfilter += self._qfilter()
+    def _get_query(self, es_params, event_type=None, ordering=False):
+        qfilter = self._qfilter()
+        if event_type is not None:
+            qfilter = 'event_type:%s %s' % (event_type, qfilter)
+        else:
+            qfilter = 'event_type:* %s' % qfilter
 
         q = {
             'size': es_params['size'],
