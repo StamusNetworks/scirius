@@ -36,7 +36,7 @@ from rules.es_data import ESData
 from rules.es_query import normalize_es_url, ESPaginator
 
 from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats
-from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend, ESTimeRangeAllAlerts
+from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend, ESTimeRangeAllAlerts, ESFlowTimeline
 from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESEventsTail, ESSuriLogTail, ESPoststats, ESEventsTimeline
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
@@ -2671,6 +2671,29 @@ class ESTLSTailViewSet(ESBaseViewSet):
         return pagination.get_paginated_response(data)
 
 
+class ESFlowTimelineViewSet(ESBaseViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    qfilter: "filter in Elasticsearch Query String Query format"
+
+    Show flow timeline:\n
+        curl -k https://x.x.x.x/rest/rules/es/flow_timeline/?from_date=1537264545477 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        []
+
+    =============================================================================================================================================================
+    """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
+
+    def _get(self, request, format=None):
+        return Response(ESFlowTimeline(request).get())
+
+
 class ESEventsTimelineViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
@@ -3044,6 +3067,7 @@ def get_custom_urls():
     urls.append(url(r'rules/es/events_tail/$', ESEventsTailViewSet.as_view(), name='es_events_tail'))
     urls.append(url(r'rules/es/tls_tail/$', ESTLSTailViewSet.as_view(), name='es_tls_tail'))
     urls.append(url(r'rules/es/events_timeline/$', ESEventsTimelineViewSet.as_view(), name='es_events_timeline'))
+    urls.append(url(r'rules/es/flow_timeline/$', ESFlowTimelineViewSet.as_view(), name='es_flow_timeline'))
     urls.append(url(r'rules/es/events_from_flow_id/$', ESEventsFromFlowIDViewSet.as_view(), name='es_events_from_flow_id'))
     urls.append(url(r'rules/es/suri_log_tail/$', ESSuriLogTailViewSet.as_view(), name='es_suri_log_tail'))
     urls.append(url(r'rules/es/delete_logs/$', ESDeleteLogsViewSet.as_view(), name='es_delete_logs'))
