@@ -315,7 +315,7 @@ function get_es_health() {
     $.ajax(
         {
                 type:"GET",
-                url: "{% url 'es_health' %}",
+                url: "{% url 'es_stats' %}",
                 success: function(data) {
                 if (!data) {
                         $("#health").removeClass("label-default");
@@ -335,6 +335,11 @@ function get_es_health() {
                         } else if (data['status'] == 'red') {
                             $("#health").addClass("label-danger");
                         }
+                }
+
+                if (data['need_reboot']) {
+                        $('#error').text('ES version does not match. You must reboot.');
+                        $('#error').parent().show();
                 }
                 },
                 error: function(data) {

@@ -38,18 +38,32 @@ ES_KEYWORD = settings.ELASTICSEARCH_KEYWORD
 ES_HOST_FIELD = '%s.%s' % (ES_HOSTNAME, ES_KEYWORD)
 
 
+def extract_es_version(es_stats):
+    try:
+        es_version = es_stats['nodes']['versions'][0].split('.')
+        es_version = [int(v) for v in es_version]
+    except (TypeError, ValueError):
+        return [7, 0, 0]
+
+    return es_version
+
+
+def fetch_es_version():
+    try:
+        es_stats = ESStats(None).get()
+        es_version = extract_es_version(es_stats)
+    except ESError:
+        return [7, 0, 0]
+
+    return es_version
+
+
 def get_es_major_version():
     global ES_VERSION
     if ES_VERSION is not None:
         return ES_VERSION[0]
 
-    try:
-        es_stats = ESStats(None).get()
-        es_version = es_stats['nodes']['versions'][0].split('.')
-    except (TypeError, ValueError, ESError):
-        return 6
-
-    ES_VERSION = [int(v) for v in es_version]
+    ES_VERSION = fetch_es_version()
     return ES_VERSION[0]
 
 
