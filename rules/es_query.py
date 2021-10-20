@@ -235,12 +235,10 @@ class ESQuery:
     def _from_date(self):
         if self.from_date:
             return self.from_date
-        elif self.request and ('from_date' in self.request.GET or 'start_date' in self.request.GET):
-            if 'from_date' in self.request.GET:
-                key = 'from_date'
-            elif 'start_date' in self.request.GET:
-                key = 'start_date'
-            from_date = int(self.request.GET[key])
+        elif self.request and 'from_date' in self.request.GET:
+            from_date = int(self.request.GET['from_date'])
+        elif self.request and 'start_date' in self.request.GET:
+            from_date = float(self.request.GET['start_date']) * 1000
         else:
             # 30 days ago
             from_date = (time() - (30 * 24 * 60 * 60)) * 1000
@@ -255,17 +253,11 @@ class ESQuery:
         if self.to_date:
             return self.to_date
 
-        to_date = 'now'
-        if self.request and ('to_date' in self.request.GET or 'end_date' in self.request.GET):
-            if 'to_date' in self.request.GET:
-                key = 'to_date'
-            elif 'end_date' in self.request.GET:
-                key = 'end_date'
-
-            if self.request.GET[key] != 'now':
-                to_date = int(self.request.GET[key])
-
-        if to_date == 'now':
+        if self.request and self.request.GET.get('to_date', 'now') != 'now':
+            to_date = int(self.request.GET['to_date'])
+        elif self.request and self.request.GET.get('end_date', 'now') != 'now':
+            to_date = float(self.request.GET['end_date']) * 1000
+        else:
             if es_format:
                 return 'now'
             else:
