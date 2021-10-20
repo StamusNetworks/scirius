@@ -1,7 +1,7 @@
 /**
- * Converts normal string with spaces to camel-case
+ * Converts normal string with spaces to camelCase
  *
- * @param value
+ * @example "normal string here" to "normalStringHere"
  */
 
 export default function (value) {
