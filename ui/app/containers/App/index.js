@@ -77,11 +77,9 @@ const App = ({
         <ErrorHandler>
           <Content>
             <Switch>
-              {pagesList.map(page => (
-                <Route key={page} exact path={`${APP_URL}/${CamelCaseToDashCase(page)}`} component={pages[page]} />
-              ))}
+              {pagesList.map(page => <Route key={page} exact path={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`} component={pages[page]} />)}
               <Route exact path={["/", APP_URL]}>
-                {pages.Overview ? <Redirect to={`${APP_URL}/overview`} /> : <Redirect to={`${APP_URL}/explorer`} />}
+                {pages.Overview ? <Redirect to={`${APP_URL}/security-posture/overview`} /> : <Redirect to={`${APP_URL}/explorer`} />}
               </Route>
               <Route path="" component={pages.NotFoundPage} />
             </Switch>
@@ -91,7 +89,6 @@ const App = ({
     </Layout>
   );
 }
-
 
 App.propTypes = {
   source: PropTypes.object,
