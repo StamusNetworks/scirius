@@ -275,7 +275,7 @@ class ESSidByHosts(ESQuery):
 
 
 class ESEventsTimeline(ESQuery):
-    INDEX = settings.ELASTICSEARCH_LOGSTASH_INDEX
+    INDEX = settings.ELASTICSEARCH_LOGSTASH_INDEX + '*'
 
     def _get_query(self):
         qfilter = 'event_type:* ' + self._qfilter()
