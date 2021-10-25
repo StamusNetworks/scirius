@@ -26,6 +26,7 @@ import shutil
 import os
 import sys
 import json
+import git
 
 from dbbackup.dbcommands import DBCommands
 from dbbackup.storage.base import BaseStorage
@@ -84,19 +85,36 @@ class SCOperation(object):
 
 
 class SCBackup(SCOperation):
-    def __init__(self):
+    def __init__(self, no_history=False):
         self.storage = BaseStorage.storage_factory()
         self.servername = DB_SERVERNAME
+        self.no_history = no_history
 
     def backup_git_sources(self):
         # Create a tar of the git sources in the target directory
         sys.stdout.write("%s in %s\n" % (settings.GIT_SOURCES_BASE_DIRECTORY, self.directory))
+        sources_path = settings.GIT_SOURCES_BASE_DIRECTORY
+
+        # clone with depth=1 each source directory
+        if self.no_history:
+            sources_path = tempfile.mkdtemp()
+            for directory in os.listdir(settings.GIT_SOURCES_BASE_DIRECTORY):
+                dir_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, directory)
+
+                if not os.path.isdir(dir_path) or not directory.isdigit():
+                    continue
+
+                git.Repo.clone_from('file://%s' % dir_path, os.path.join(sources_path, directory), depth=1)
+
         ts = tarfile.open(os.path.join(self.directory, 'sources.tar'), 'w')
         call_dir = os.getcwd()
-        os.chdir(settings.GIT_SOURCES_BASE_DIRECTORY)
+        os.chdir(sources_path)
         ts.add('.')
         ts.close()
         os.chdir(call_dir)
+
+        if self.no_history:
+            shutil.rmtree(sources_path)
 
     def backup_db(self):
         database = settings.DATABASES['default']
@@ -111,7 +129,7 @@ class SCBackup(SCOperation):
             return
 
         probe_class = __import__(settings.RULESET_MIDDLEWARE)
-        probe_class.backup.backup(self.directory)
+        probe_class.backup.backup(self.directory, self.no_history)
 
     def write_migration_level(self):
         last_migrations = self.get_migration_levels()
