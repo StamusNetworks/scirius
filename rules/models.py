@@ -2085,12 +2085,23 @@ class Category(models.Model, Transformable, Cache):
             return
 
         rule_base_msg = Rule.GROUPSNAMEREGEXP.findall(rule.msg)[0]
+        ips_list = Rule.IPSREGEXP['src'].findall(rule.header)[0]
+        track_by = 'src' if ips_list.startswith('[') else 'dst'
+        content = rule.raw
+        iprep_group = rule.sid
+
+        content = content.replace(';)', '; iprep:%s,%s,>,1;)' % (track_by, iprep_group))
+        # replace IP list by any
+        content = re.sub(r'\[\d+.*\d+\]', r'any', content)
+        # fix message
+        content = re.sub(r'msg:".*";', r'msg:"%s";' % rule_base_msg, content)
+
         # check if we already have a signature in the group signatures
         # that match
         if rule_base_msg in sigs_groups:
             # TODO coherence check
             # add IPs to the list if revision has changed
-            if rule.rev != sigs_groups[rule_base_msg].rev:
+            if content != sigs_groups[rule_base_msg].content:
                 self.parse_group_signature(sigs_groups[rule_base_msg], rule)
                 # Is there an existing rule to clean ? this is needed at
                 # conversion of source to use iprep but we will have a different
@@ -2109,19 +2120,7 @@ class Category(models.Model, Transformable, Cache):
             state = True
             if rule.raw.startswith("#"):
                 state = False
-            # update rule content
-            content = rule.raw
-            iprep_group = rule.sid
-            ips_list = Rule.IPSREGEXP['src'].findall(rule.header)[0]
-            if ips_list.startswith('['):
-                track_by = 'src'
-            else:
-                track_by = 'dst'
-            content = content.replace(';)', '; iprep:%s,%s,>,1;)' % (track_by, iprep_group))
-            # replace IP list by any
-            content = re.sub(r'\[\d+.*\d+\]', r'any', content)
-            # fix message
-            content = re.sub(r'msg:".*";', r'msg:"%s";' % rule_base_msg, content)
+
             # if we already have a signature with the SID we are probably parsing
             # a source that has just been switched to iprep. So we get the old
             # rule and we update the content to avoid loosing information.
@@ -2210,7 +2209,7 @@ class Category(models.Model, Transformable, Cache):
                 match = getsid.search(line)
                 if not match:
                     continue
-                sid = match.groups()[0]
+                sid_str = match.groups()[0]
                 match = getrev.search(line)
                 if match:
                     rev = int(match.groups()[0])
@@ -2228,17 +2227,19 @@ class Category(models.Model, Transformable, Cache):
                 if source.use_iprep and Rule.GROUPSNAMEREGEXP.match(msg):
                     self.add_group_signature(rules_groups, line, existing_rules_hash, source, flowbits, rules_update, rules_unchanged)
                 else:
-                    if int(sid) in existing_rules_hash:
+                    sid = int(sid_str)
+                    if sid in existing_rules_hash:
                         # FIXME update references if needed
-                        rule = existing_rules_hash[int(sid)]
+                        rule = existing_rules_hash[sid]
                         if rule.category.source != source:
                             source_name = rule.category.source.name
                             duplicate_source.add(source_name)
-                            duplicate_sids.add(sid)
+                            duplicate_sids.add(sid_str)
                             if len(duplicate_sids) == 20:
                                 break
                             continue
-                        if rev is None or rule.rev < rev or rule.group is True:
+
+                        if rule.content != line or rule.group is True:
                             rule.content = line
                             if rev is None:
                                 rule.rev = 0
