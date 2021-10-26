@@ -1,49 +1,55 @@
-{% load bootstrap3  %}
-
-
+{% load bootstrap3 %}
 <form class="form" enctype="multipart/form-data" method="post">
     {% csrf_token %}
-    <input type='hidden' name='form_id' value='es'>
+    <input type='hidden' name='form_id' value='es' />
     {% bootstrap_label "Erase Elasticsearch data" %}
     <p class="help-block">
-Clicking on the button will erase all Elasticsearch data except Kibana dashboards.
-</p>
+        Clicking on the button will erase all Elasticsearch data except Kibana dashboards.
+    </p>
     {% buttons %}
-        <span id="es_clear">
-	<button type="button" name="clear" class="btn btn-danger" {% if not perms.rules.configuration_edit %} disabled{% endif %}>
+    <span id="es_clear">
+        <button type="button"
+                name="clear"
+                class="btn btn-danger"
+                {% if not perms.rules.configuration_edit %}disabled{% endif %}>
             {% bootstrap_icon "trash" %} Clear
         </button>
-	</span>
-    {% endbuttons %}
+    </span>
+{% endbuttons %}
 </form>
 <!-- Modal -->
-<div class="modal bs-example-modal-sm" id="es_clear_modal" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="UpdateModalLabel">Delete all data</h4>
-      </div>
-      <div class="modal-body" id="update_text">
-        {% if global_settings.custom_elasticsearch %}
-		<div class="alert alert-danger">This will delete all the indexes including data not related to Scirius. Are you sure you want to proceed ?</div>
-        {% endif %}
-        Clicking on <code>Clear</code> will delete all saved data. Click on <code>Cancel</code> to abort.
-      </div>
-      <div class="modal-footer">
-
-<form class="form" enctype="multipart/form-data" action="{{ action }}" method="post">
-    {% csrf_token %}
-    <input type='hidden' name='form_id' value='es'>
-        <button type="submit" name="clear" class="btn btn-danger">
-            {% bootstrap_icon "trash" %} Clear
-	</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-</form>
-      </div>
+<div class="modal bs-example-modal-sm"
+     id="es_clear_modal"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="UpdateModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="UpdateModalLabel">Delete all data</h4>
+            </div>
+            <div class="modal-body" id="update_text">
+                {% if global_settings.custom_elasticsearch %}
+                    <div class="alert alert-danger">
+                        This will delete all the indexes including data not related to Scirius. Are you sure you want to proceed ?
+                    </div>
+                {% endif %}
+                Clicking on <code>Clear</code> will delete all saved data. Click on <code>Cancel</code> to abort.
+            </div>
+            <div class="modal-footer">
+                <form class="form"
+                      enctype="multipart/form-data"
+                      action="{{ action }}"
+                      method="post">
+                    {% csrf_token %}
+                    <input type='hidden' name='form_id' value='es' />
+                    <button type="submit" name="clear" class="btn btn-danger">{% bootstrap_icon "trash" %} Clear</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
-
 <script type="text/javascript">
 $("#es_clear").click(function() {
 	$("#es_clear_modal").modal('show');

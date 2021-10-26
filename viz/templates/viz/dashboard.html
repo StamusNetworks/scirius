@@ -1,23 +1,26 @@
 {% load  staticfiles %}
 {% load bootstrap3  %}
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>{% block title %}Scirius - {{ path_info|title }}{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}"/>
-    <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
-    <script src="{% static 'dist/scirius-bundle.js' %}"></script>
-    {% block head %} {% endblock %}
-    <link rel="stylesheet" type="text/css" href="{% static 'dist/styles.css' %}" />
-</head>
-
-
-<body> 
-<meta charset="utf-8">
-<style>
+    <head>
+        <title>
+            {% block title %}Scirius - {{ path_info|title }}{% endblock %}
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet"
+              type="text/css"
+              href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}"/>
+        <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
+        <script src="{% static 'dist/scirius-bundle.js' %}"></script>
+        {% block head %}{% endblock %}
+        <link rel="stylesheet"
+              type="text/css"
+              href="{% static 'dist/styles.css' %}"/>
+    </head>
+    <body>
+        <meta charset="utf-8">
+        <style>
 
 .link {
   stroke-opacity: 0.6;
@@ -28,87 +31,119 @@
   stroke-width: 1.5px;
 }
 
-</style>
-
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-12">
-<div class="pull-left">
-<form class="form" method="post">
-{% csrf_token %}
-			<span class="glyphicon glyphicon-search"> Filter: <input type="text" name="filter" id="id_filter" {% if filter %}value="{{ filter }}" {% endif %} width="20" /></span>
-</form>
-</div>
-<div class="pull-right">
-<div class="btn-group">
-Time: {% now "H:i:s" %} | Reload every {{ reload }}s
-<a  class="dropdown-toggle" type="button" id="display_reload" data-toggle="dropdown">
-<span class="glyphicon glyphicon-refresh"> </span>
-</a>
-<ul class="dropdown-menu" id="display_reload">
-   <li><a href="?reload=30">30s</a></li>
-   <li><a href="?reload=60">1m</a></li>
-   <li><a href="?reload=120">2m</a></li>
-   <li><a href="?reload=300">5m</a></li>
-   <li><a href="?reload=600">10m</a></li>
-</ul>
-</div>
-
-<div class="btn-group">
-| Last {{ date }}
-<a  class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown">
-<span class="glyphicon glyphicon-cog"> </span>
-</a>
-<ul class="dropdown-menu" id="display_menu">
-   <li><a href="?duration=1">Last 1h</a></li>
-   <li><a href="?duration=6">Last 6h</a></li>
-   <li><a href="?duration=24">Last 24h</a></li>
-   <li><a href="?duration=48">Last 2d</a></li>
-   <li><a href="?duration=168">Last 7d</a></li>
-</ul>
-</div>
-</div>
-
-</div>
-</div>
-
-<div class="row">
-<div class="col-md-6">
-<h2 class="title">IP addresses linked by alerts</h3>
-<div  >
-<svg width="950" height="700" id="alerts"></svg>
-<div id="highlight_info">
-</div>
-</div>
-</div>
-<div class="col-md-6">
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-12">
-<h2 class="title">Alert timeline</h3>
-
-<div id="timeline">
-<p>Fetching data...</p>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-</div>
-</div>
-
-<div class="row">
-<div class="col-md-12">
-<h2 class="title">Rule Activity</h2>
-
-
-<div id="rules_table">Fetching data...</div>
-
-</div>
-
-</div>
-</div>
-</div>
-
-<script>
+        </style>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="pull-left">
+                        <form class="form" method="post">
+                            {% csrf_token %}
+                            <span class="glyphicon glyphicon-search">
+                                Filter:
+                                <input type="text"
+                                       name="filter"
+                                       id="id_filter"
+                                       {% if filter %}
+                                               value="{{ filter }}"
+                                                             {% endif %}
+                                       width="20"/>
+                            </span>
+                        </form>
+                    </div>
+                    <div class="pull-right">
+                        <div class="btn-group">
+                            Time: {% now "H:i:s" %} | Reload every {{ reload }}s
+                            <a class="dropdown-toggle"
+                               type="button"
+                               id="display_reload"
+                               data-toggle="dropdown">
+                                <span class="glyphicon glyphicon-refresh"></span>
+                            </a>
+                            <ul class="dropdown-menu" id="display_reload">
+                                <li>
+                                    <a href="?reload=30">30s</a>
+                                </li>
+                                <li>
+                                    <a href="?reload=60">1m</a>
+                                </li>
+                                <li>
+                                    <a href="?reload=120">2m</a>
+                                </li>
+                                <li>
+                                    <a href="?reload=300">5m</a>
+                                </li>
+                                <li>
+                                    <a href="?reload=600">10m</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="btn-group">
+                            | Last {{ date }}
+                            <a class="dropdown-toggle"
+                               type="button"
+                               id="display_menu"
+                               data-toggle="dropdown">
+                                <span class="glyphicon glyphicon-cog"></span>
+                            </a>
+                            <ul class="dropdown-menu" id="display_menu">
+                                <li>
+                                    <a href="?duration=1">Last 1h</a>
+                                </li>
+                                <li>
+                                    <a href="?duration=6">Last 6h</a>
+                                </li>
+                                <li>
+                                    <a href="?duration=24">Last 24h</a>
+                                </li>
+                                <li>
+                                    <a href="?duration=48">Last 2d</a>
+                                </li>
+                                <li>
+                                    <a href="?duration=168">Last 7d</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h2 class="title">
+                        IP addresses linked by alerts
+                    </h2>
+                    <div >
+                        <svg width="950" height="700" id="alerts">
+                        </svg>
+                        <div id="highlight_info"></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h2 class="title">
+                                    Alert timeline
+                                </h2>
+                                <div id="timeline">
+                                    <p>
+                                        Fetching data...
+                                    </p>
+                                    <svg style="width:100%;height:300px">
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h2 class="title">Rule Activity</h2>
+                                <div id="rules_table">Fetching data...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
 
 $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "{{ filter }}", 'Hits'); });
 
@@ -124,11 +159,11 @@ function differentiate_suppressed() {
 }
 
 {% if perms.rules.events_view %}
-{% if filter and not filter == "*" %}
+    {% if filter and not filter == "*" %}
 $( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], "{{ filter }}", differentiate_suppressed));
-{% else %}
+    {% else %}
 $( 'document' ).ready(load_rules({{ from_date }},  [ '*' ], null, differentiate_suppressed));
-{% endif %}
+    {% endif %}
 {% endif %}
 
 function draw_ippair_alerts(from_date, hosts, filter, callback) {
@@ -136,94 +171,92 @@ function draw_ippair_alerts(from_date, hosts, filter, callback) {
     if (filter) {
         esurl = esurl + "&filter=" + filter;
     }
-    $.ajax(
-     {
-     type:"GET",
-     url:esurl,
-     success: function(json) {
-        if ((json == null) || (json.links.length == 0)) {
-             d3.select("svg#alerts").append('text').text("No data to build the graph.")
-             .attr("x", 150)
-             .attr("y", 150);
-            return;
-        }
-
-        var svg = d3.select("svg#alerts"),
-            width = +svg.attr("width"),
-            height = +svg.attr("height");
-        
-        var color = d3.scale.category20b();
-        
-        var force = d3.layout.force()
-            .gravity(0.06)
-            .distance(90)
-            .charge(-50)
-            .size([width, height]);
-        
-        force
-          .nodes(json.nodes)
-          .links(json.links)
-          .start();
-
-        var link = svg.selectAll(".link")
-            .data(json.links)
-          .enter().append("line")
-            .attr("class", "link")
-            .attr("stroke-width", function(d) { return d.value; })
-            .attr("stroke", "#999");
-
-        link.append("title").text(function(d) {
-        var title="";
-        for (var i = 0; i < d.alerts.length; i++) {
-          title = title + d.alerts[i]['key'] + ": " + d.alerts[i]['doc_count'] + "\n";
-        }
-        return title;
-        });
-
-        var node = svg.selectAll(".node")
-            .data(json.nodes)
-          .enter().append("g")
-            .attr("class", "node")
-          .append("circle")
-          .attr("r", 7)
-          .attr("fill", function(d) { return color(d.group * 10); })
-          .call(force.drag);
-      
-        node.append("title")
-            .text(function(d) { return d.id; });
-      
-        force.on("tick", function() {
-          link.attr("x1", function(d) { return d.source.x; })
-              .attr("y1", function(d) { return d.source.y; })
-              .attr("x2", function(d) { return d.target.x; })
-              .attr("y2", function(d) { return d.target.y; });
-      
-          node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-        });
-
-        var i = 0;
-        setInterval(function() {
-            text = "<div class='text-center'><h3 class='title'>"  + json.links[i].source.id + " <span class='glyphicon glyphicon-transfer'> </span> " + json.links[i].target.id + "</h3></div>"
-            //text = text + "<h3 class='title text-center'>Alerts</h3> <ul class='list-group'>";
-            text = text + "<ul class='list-group'>";
-            d = json.links[i];
-            for (var j = 0; j < d.alerts.length; j++) {
-                text = text + "<li class='list-group-item'>" + d.alerts[j]['key'] + "<span class='badge'>" + d.alerts[j]['doc_count'] + "</span></li>";
+    $.ajax({
+        type:"GET",
+        url:esurl,
+        success: function(json) {
+            if ((json == null) || (json.links.length == 0)) {
+                 d3.select("svg#alerts").append('text').text("No data to build the graph.")
+                 .attr("x", 150)
+                 .attr("y", 150);
+                return;
             }
-            text = text + "</ul>";
-            $("#highlight_info").empty();
-            $("#highlight_info").append(text);
-            d3.selectAll("circle").data(json.nodes).attr("r", function(d) { if (d.id == json.links[i].source.id || d.id == json.links[i].target.id) return 14; return 7; });	
-            d3.selectAll("line").data(json.links).attr("stroke", function(d) { if (d == json.links[i]) return "red"; return "#999"; });	
-            i++;
-            if (i >= json.links.length) {
-                i = 0;
-            }
-        }
-        , 3000);
 
-      }
-      });
+            var svg = d3.select("svg#alerts"),
+                width = +svg.attr("width"),
+                height = +svg.attr("height");
+
+            var color = d3.scale.category20b();
+
+            var force = d3.layout.force()
+                .gravity(0.06)
+                .distance(90)
+                .charge(-50)
+                .size([width, height]);
+
+            force
+              .nodes(json.nodes)
+              .links(json.links)
+              .start();
+
+            var link = svg.selectAll(".link")
+                .data(json.links)
+              .enter().append("line")
+                .attr("class", "link")
+                .attr("stroke-width", function(d) { return d.value; })
+                .attr("stroke", "#999");
+
+            link.append("title").text(function(d) {
+            var title="";
+            for (var i = 0; i < d.alerts.length; i++) {
+              title = title + d.alerts[i]['key'] + ": " + d.alerts[i]['doc_count'] + "\n";
+            }
+            return title;
+            });
+
+            var node = svg.selectAll(".node")
+                .data(json.nodes)
+              .enter().append("g")
+                .attr("class", "node")
+              .append("circle")
+              .attr("r", 7)
+              .attr("fill", function(d) { return color(d.group * 10); })
+              .call(force.drag);
+
+            node.append("title")
+                .text(function(d) { return d.id; });
+
+            force.on("tick", function() {
+              link.attr("x1", function(d) { return d.source.x; })
+                  .attr("y1", function(d) { return d.source.y; })
+                  .attr("x2", function(d) { return d.target.x; })
+                  .attr("y2", function(d) { return d.target.y; });
+
+              node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+            });
+
+            var i = 0;
+            setInterval(function() {
+                text = "<div class='text-center'><h3 class='title'>"  + json.links[i].source.id + " <span class='glyphicon glyphicon-transfer'></span> " + json.links[i].target.id + "</h3></div>"
+                //text = text + "<h3 class='title text-center'>Alerts</h3> <ul class='list-group'>";
+                text = text + "<ul class='list-group'>";
+                d = json.links[i];
+                for (var j = 0; j < d.alerts.length; j++) {
+                    text = text + "<li class='list-group-item'>" + d.alerts[j]['key'] + "<span class='badge'>" + d.alerts[j]['doc_count'] + "</span></li>";
+                }
+                text = text + "</ul>";
+                $("#highlight_info").empty();
+                $("#highlight_info").append(text);
+                d3.selectAll("circle").data(json.nodes).attr("r", function(d) { if (d.id == json.links[i].source.id || d.id == json.links[i].target.id) return 14; return 7; });
+                d3.selectAll("line").data(json.links).attr("stroke", function(d) { if (d == json.links[i]) return "red"; return "#999"; });
+                i++;
+                if (i >= json.links.length) {
+                    i = 0;
+                }
+            }
+            , 3000);
+        }
+    });
 }
 
 
@@ -231,7 +264,6 @@ $( 'document' ).ready(function () { draw_ippair_alerts({{ from_date }}, [{% auto
 
 setTimeout(function () { location.reload(); }, {{ reload }} * 1000);
 
-</script>
-
-</body>
+        </script>
+    </body>
 </html>

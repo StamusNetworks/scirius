@@ -2,48 +2,45 @@
 {% load bootstrap3 %}
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <title>Scirius Home</title>
-    <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
-    <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
-    <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
-    <script src="{% static 'dist/scirius-bundle.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'dist/styles.css' %}" />
-    {% if settings.CUSTOM_CSS %}
-        <link rel="stylesheet" type="text/css" href="{{ settings.CUSTOM_CSS }}" />
-    {% endif %}
-</head>
-
-<body>
-    <nav class="navbar navbar-default home-menu" role="navigation">
-        <div class="container-fluid">
-            <div class="navbar-collapse collapse" id="top-menu-collapse">
-                <div class="navbar-right">
-                    {% include "rules/header_right.html" %}
+    <head>
+        <title>Scirius Home</title>
+        <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
+        <link rel="stylesheet"
+              type="text/css"
+              href="{% static 'rules/static.css' %}"/>
+        <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet"
+              type="text/css"
+              href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}"/>
+        <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
+        <script src="{% static 'dist/scirius-bundle.js' %}"></script>
+        <link rel="stylesheet"
+              type="text/css"
+              href="{% static 'dist/styles.css' %}"/>
+        {% if settings.CUSTOM_CSS %}<link rel="stylesheet" type="text/css" href="{{ settings.CUSTOM_CSS }}" />{% endif %}
+    </head>
+    <body>
+        <nav class="navbar navbar-default home-menu" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-collapse collapse" id="top-menu-collapse">
+                    <div class="navbar-right">{% include "rules/header_right.html" %}</div>
                 </div>
             </div>
-        </div>
-    </nav>
-
-
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-12">
-                {% if not in_selks %}
-                    {% include "rules/ssp-home.html" %}
-                {% else %}
-                    {% include "rules/ce-home.html" %}
-                {% endif %}
+        </nav>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    {% if not in_selks %}
+                        {% include "rules/ssp-home.html" %}
+                    {% else %}
+                        {% include "rules/ce-home.html" %}
+                    {% endif %}
+                </div>
             </div>
+            {% include "rules/footer.html" %}
         </div>
-        {% include "rules/footer.html" %}
-    </div>
-
-    <script>
+        <script>
         function get_alert_count() {
             $.ajax({
                 type: "GET",
@@ -62,7 +59,6 @@
                 setInterval(get_alert_count, 15000);
             }
         )
-    </script>
-</body>
-
+        </script>
+    </body>
 </html>

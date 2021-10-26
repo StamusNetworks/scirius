@@ -1,27 +1,25 @@
 {% extends "rules/base.html" %}
-{% load bootstrap3  %}
-
+{% load bootstrap3 %}
 {% block sidebar %}
-<div class="panel-heading">
-<h2 class="panel-title">
-{% if source %}
-{% if update %}
-Source '{{ source.name }}'
-{% else %}
-Edit Source '{{ source.name }}'
-{% endif %}
-{% else %}
-Add a Source
-{% endif %}
-</h2>
-</div>
-{% endblock %}
-
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            {% if source %}
+                {% if update %}
+                    Source '{{ source.name }}'
+                {% else %}
+                    Edit Source '{{ source.name }}'
+                {% endif %}
+            {% else %}
+                Add a Source
+            {% endif %}
+        </h2>
+    </div>
+{% endblock sidebar %}
 {% block content %}
-{% if update %}
-{% include "rules/import_and_add_source.html" %}
-{% else %}
-<script language="JavaScript">
+    {% if update %}
+        {% include "rules/import_and_add_source.html" %}
+    {% else %}
+        <script language="JavaScript">
 function display_field(method) {
     if ($( this ).find("option:selected").text() == "HTTP URL") {
         $("#id_uri").parents(".form-group").show(duration=200);
@@ -80,32 +78,24 @@ function select_fields() {
 $('document').ready(function() {hide_fields();});
 $('document').ready(function() { select_fields();});
 
-</script>
-
-<div class="alert alert-warning" id="name_warning">Warning: the name will be file name in Suricata rules directory</div>
-
-{% if form %}
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-6">
-{% if source %}
-    <form class="form" enctype="multipart/form-data" action="{% url 'edit_source'  source.pk %}" method="post">
-{% else %}
-    <form class="form" enctype="multipart/form-data" action="{% url 'add_source' %}" method="post">
-{% endif %}
-    {% csrf_token %}
-    {% bootstrap_form form %}
-    {% buttons %}
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "ok" %} Submit
-        </button>
-    {% endbuttons %}
-</form>
-</div>
-</div>
-</div>
-{% endif %}
-{% endif %}
-
-
-{% endblock %}
+        </script>
+        <div class="alert alert-warning" id="name_warning">
+            Warning: the name will be file name in Suricata rules directory
+        </div>
+        {% if form %}
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-6">
+                        <form class="form" enctype="multipart/form-data" action={% if source %}"{% url 'edit_source'  source.pk %}"{% else %}"{% url 'add_source' %}"{% endif %} method="post">
+                            {% csrf_token %}
+                            {% bootstrap_form form %}
+                            {% buttons %}
+                                <button type="submit" class="btn btn-primary">{% bootstrap_icon "ok" %} Submit</button>
+                            {% endbuttons %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock content %}

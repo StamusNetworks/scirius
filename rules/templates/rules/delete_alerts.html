@@ -1,60 +1,70 @@
 {% extends "rules/base.html" %}
-{% load bootstrap3  %}
-
+{% load bootstrap3 %}
 {% block sidebar %}
-<div class="panel-heading">
-<h2 class="panel-title">Delete alerts for {{object.pk}}</h2>
-</div>
-<div class="panel-body">
-<ul>
-       <li><span class="type">Msg:</span> {{ object.msg }}</li>
-       <li><span class="type">Revision:</span> {{ object.rev }}</li>
-</ul>
-</div>
-{% endblock %}
-
-{% block content %}
-
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-12">
-<h2 class="title">Activity</h2>
-</div> <!-- col -->
-</div> <!-- row -->
-<div class="row">
-<div class="col-md-12">
-<div id="timeline">
-<p>Fetching data...</p>
-<svg style="width:100%;height:300px">
-</svg>
-</div> <!-- timeline -->
-</div> <!-- col -->
-</div> <!-- row -->
-
-<div class="row">
-    <div class="col-md-12">
-        <h2 class="title">Are you sure you want to delete all stored alerts for {{ object.pk }}?</h2>
+    <div class="panel-heading">
+        <h2 class="panel-title">Delete alerts for {{ object.pk }}</h2>
     </div>
-</div> <!-- row -->
-
-<div class="row">
-    <div class="col-md-12">
-        <form class="form" action="{% url 'delete_alerts' object.pk %}" method="post">{% csrf_token %}
-
-            {% bootstrap_form comment_form %}
-            <button class="btn btn-primary" type="submit">
-                <span class="glyphicon glyphicon-trash"> Delete alerts</span>
-            </button>
-        </form>
-    </div> <!-- col -->
-</div> <!-- row -->
-
-</div>
-
-<script>
+    <div class="panel-body">
+        <ul>
+            <li>
+                <span class="type">Msg:</span>
+                {{ object.msg }}
+            </li>
+            <li>
+                <span class="type">Revision:</span>
+                {{ object.rev }}
+            </li>
+        </ul>
+    </div>
+{% endblock sidebar %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <h2 class="title">Activity</h2>
+            </div>
+            <!-- col -->
+        </div>
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <div id="timeline">
+                    <p>
+                        Fetching data...
+                    </p>
+                    <svg style="width:100%;height:300px">
+                    </svg>
+                </div>
+                <!-- timeline -->
+            </div>
+            <!-- col -->
+        </div>
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <h2 class="title">Are you sure you want to delete all stored alerts for {{ object.pk }}?</h2>
+            </div>
+        </div>
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <form class="form"
+                      action="{% url 'delete_alerts' object.pk %}"
+                      method="post">
+                    {% csrf_token %}
+                    {% bootstrap_form comment_form %}
+                    <button class="btn btn-primary" type="submit">
+                        <span class="glyphicon glyphicon-trash">Delete alerts</span>
+                    </button>
+                </form>
+            </div>
+            <!-- col -->
+        </div>
+        <!-- row -->
+    </div>
+    <script>
 {% if probes %}
 $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "alert.signature_id:{{ object.sid }}", 'Hits'); });
 {% endif %}
-</script>
-
-{% endblock %}
+    </script>
+{% endblock content %}

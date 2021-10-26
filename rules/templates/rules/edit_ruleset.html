@@ -1,49 +1,54 @@
 {% extends "rules/base.html" %}
-{% load bootstrap3  %}
-
+{% load bootstrap3 %}
 {% block sidebar %}
-<div class="panel-heading">
-       <h2 class="panel-title"><a href="{% url 'ruleset' ruleset.pk %}">{{ ruleset.name }}</a></h2>
-</div>
-<ul class="panel-body">
-{% if ruleset.descr %}
-       <li><span class="type">Description:</span> {{ ruleset.descr }}</li>
-{% endif %}
-       <li><span class="type">Created:</span> {{ ruleset.created_date }}</li>
-{% if ruleset.updated_date %}
-       <li><span class="type">Updated:</span> {{ ruleset.updated_date }}</li>
-{% endif %}
-</ul>
-<div class="panel-heading">
-<h2 class="panel-title">Action</h2>
-</div>
-<ul class="action panel-body">
-{% if perms.rules.source_edit %}
-    <li>
-        <a href="{% url 'edit_ruleset' ruleset.id %}?mode=sources">Edit sources</a>
-    </li>
-{% endif %}
-{% if perms.rules.ruleset_policy_edit %}
-    <li>
-        <a href="{% url 'edit_ruleset' ruleset.id %}?mode=categories">Edit categories</a>
-    </li>
-<li>
-<a href="{% url 'addsupprule' ruleset.id %}">Add rules to disabled list</a>
-</li>
-<li>
-<a href="{% url 'edit_ruleset' ruleset.id %}?mode=rules">Remove rules from disabled list</a>
-</li>
-{% endif %}
-</ul>
-{% endblock %}
-
-{% block body %}
-<body onload="tables2_checking();" >
-{% endblock %}
-
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            <a href="{% url 'ruleset' ruleset.pk %}">{{ ruleset.name }}</a>
+        </h2>
+    </div>
+    <ul class="panel-body">
+        {% if ruleset.descr %}
+            <li>
+                <span class="type">Description:</span>
+                {{ ruleset.descr }}
+            </li>
+        {% endif %}
+        <li>
+            <span class="type">Created:</span>
+            {{ ruleset.created_date }}
+        </li>
+        {% if ruleset.updated_date %}
+            <li>
+                <span class="type">Updated:</span>
+                {{ ruleset.updated_date }}
+            </li>
+        {% endif %}
+    </ul>
+    <div class="panel-heading">
+        <h2 class="panel-title">Action</h2>
+    </div>
+    <ul class="action panel-body">
+        {% if perms.rules.source_edit %}
+            <li>
+                <a href="{% url 'edit_ruleset' ruleset.id %}?mode=sources">Edit sources</a>
+            </li>
+        {% endif %}
+        {% if perms.rules.ruleset_policy_edit %}
+            <li>
+                <a href="{% url 'edit_ruleset' ruleset.id %}?mode=categories">Edit categories</a>
+            </li>
+            <li>
+                <a href="{% url 'addsupprule' ruleset.id %}">Add rules to disabled list</a>
+            </li>
+            <li>
+                <a href="{% url 'edit_ruleset' ruleset.id %}?mode=rules">Remove rules from disabled list</a>
+            </li>
+        {% endif %}
+    </ul>
+{% endblock sidebar %}
+{% block body %}<body onload="tables2_checking();">{% endblock body %}
 {% block content %}
-
-<script language="JavaScript">
+    <script language="JavaScript">
 function tables2_toggle(source, name) {
     $( source ).parents('table').find("input").prop('checked', source.checked)
 }
@@ -73,106 +78,111 @@ function tables2_checking() {
 
 {% endif %}
 
-</script>
-
-{% if not mode %}
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-6">
-<h2>Edit ruleset</h2>
-Choose an operation in the actions below:
-<div>
-    {% if perms.rules.source_edit %}
-        <div class="label label-default"><a href="{% url 'edit_ruleset' ruleset.id %}?mode=sources">Edit sources</a></div> 
+    </script>
+    {% if not mode %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <h2>Edit ruleset</h2>
+                    Choose an operation in the actions below:
+                    <div>
+                        {% if perms.rules.source_edit %}
+                            <div class="label label-default">
+                                <a href="{% url 'edit_ruleset' ruleset.id %}?mode=sources">Edit sources</a>
+                            </div>
+                        {% endif %}
+                        {% if perms.rules.ruleset_policy_edit %}
+                            <div class="label label-default">
+                                <a href="{% url 'edit_ruleset' ruleset.id %}?mode=categories">Edit categories</a>
+                            </div>
+                            <div class="label label-default">
+                                <a href="{% url 'addsupprule' ruleset.id %}">Add rules to disabled list</a>
+                            </div>
+                            <div class="label label-default">
+                                <a href="{% url 'edit_ruleset' ruleset.id %}?mode=rules">Remove rules from disabled list</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <h2>Rename ruleset</h2>
+                    <form class="form"
+                          action="{% url 'edit_ruleset' ruleset.id %}"
+                          method="post">
+                        {% csrf_token %}
+                        {# {% bootstrap_form form %} #}
+                        {% bootstrap_field form.name %}
+                        {# {% bootstrap_field form.sources %}#}
+                        <h2>Transformations</h2>
+                        {% bootstrap_label "Transformations will be applied on all ruleset's categories" %}
+                        {% bootstrap_field form.action %}
+                        {% bootstrap_field form.lateral %}
+                        {% bootstrap_field form.target %}
+                        <h2>Expert mode</h2>
+                        {% bootstrap_field form.suppressed_sids %}
+                        {% bootstrap_field form.comment %}
+                        {% if perms.rules.ruleset_policy_edit %}
+                            {% buttons %}
+                                <button type="submit" class="btn btn-primary">{% bootstrap_icon "ok" %} Submit</button>
+                            {% endbuttons %}
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
     {% endif %}
-    {% if perms.rules.ruleset_policy_edit %}
-        <div class="label label-default"><a href="{% url 'edit_ruleset' ruleset.id %}?mode=categories">Edit categories</a></div> 
-        <div class="label label-default"><a href="{% url 'addsupprule' ruleset.id %}">Add rules to disabled list</a></div> 
-        <div class="label label-default"><a href="{% url 'edit_ruleset' ruleset.id %}?mode=rules">Remove rules from disabled list</a></div>
+    {% if mode == 'sources' %}
+        {% load render_table from django_tables2 %}
+        <h2 class="title">Choose sources</h2>
+        <h4>Check sources to enable/disable them and validate form at bottom.</h4>
+        <form class="form"
+              action="{% url 'edit_ruleset' ruleset.id %}"
+              method="post">
+            {% csrf_token %}
+            {% render_table sources_list %}
+            <input type="hidden" name="sources" value="sources">
+            {% bootstrap_form form %}
+            <p>
+            </p>
+            <input type="submit" class="btn btn-primary" value="Update sources" />
+        </form>
     {% endif %}
-</div>
-<h2>Rename ruleset</h2>
-<form class="form" action="{% url 'edit_ruleset' ruleset.id %}" method="post">{% csrf_token %}
-    {# {% bootstrap_form form %} #}
-    {% bootstrap_field form.name %}
-    {# {% bootstrap_field form.sources %}#}
-    <h2>Transformations</h2>
-    {% bootstrap_label "Transformations will be applied on all ruleset's categories" %}
-    {% bootstrap_field form.action %}
-    {% bootstrap_field form.lateral %}
-    {% bootstrap_field form.target %}
-
-    <h2>Expert mode</h2>
-    {% bootstrap_field form.suppressed_sids %}
-
-    {% bootstrap_field form.comment %}
-    {% if perms.rules.ruleset_policy_edit %}
-        {% buttons %}
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "ok" %} Submit
-        </button>
-        {% endbuttons %}
+    {% if mode == 'categories' %}
+        {% load render_table from django_tables2 %}
+        <form class="form"
+              action="{% url 'edit_ruleset' ruleset.id %}"
+              method="post">
+            {% csrf_token %}
+            {% for sourceatversion in sources %}
+                {% if not sourceatversion.source.datatype == 'other' %}
+                    <h2 class="title">Source: {{ sourceatversion }}</h2>
+                    <h4>Check categories to enable/disable them and validate form at bottom</h4>
+                    {% for key, value in categories_list.items  %}
+                        {% if key == sourceatversion.source.name %}
+                            {% render_table value %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+            {% bootstrap_form form %}
+            <p>
+            </p>
+            <p>
+                <input type="submit"  class="btn btn-primary" value="Update categories" />
+            </p>
+            <input type="hidden" name="category" value="category">
+        </form>
     {% endif %}
-</form>
-</div>
-</div>
-</div>
-{% endif %}
-
-{% if mode == 'sources' %}
-{% load render_table from django_tables2 %}
-<h2 class="title">Choose sources</h2>
-<h4>Check sources to enable/disable them and validate form at bottom.</h4>
-
-<form class="form" action="{% url 'edit_ruleset' ruleset.id %}" method="post">{% csrf_token %}
-{% render_table sources_list %}
-<input type="hidden" name="sources" value="sources">
-    {% bootstrap_form form %}
-<p></p>
-<input type="submit" class="btn btn-primary" value="Update sources" />
-</form>
-
-{% endif %}
-
-{% if mode == 'categories' %}
-
-{% load render_table from django_tables2 %}
-<form class="form" action="{% url 'edit_ruleset' ruleset.id %}" method="post">{% csrf_token %}
-{% for sourceatversion in sources %}
-
-{% if not sourceatversion.source.datatype == 'other' %}
-<h2 class="title">Source: {{ sourceatversion }}</h2>
-<h4>Check categories to enable/disable them and validate form at bottom</h4>
-
-    {% for key, value in categories_list.items  %}
-        {% if key == sourceatversion.source.name %}
-            {% render_table value %}
-        {% endif %}
-    {% endfor %}
-{% endif %}
-
-{% endfor %}
-    {% bootstrap_form form %}
-<p></p>
-<p>
-<input type="submit"  class="btn btn-primary" value="Update categories" />
-</p>
-<input type="hidden" name="category" value="category">
-</form>
-
-{% endif %}
-
-{% if mode == 'rules' %}
-
-<h2 class="title">Disabled rules</h2>
-
-<form class="form" action="{% url 'edit_ruleset' ruleset.id %}" method="post">{% csrf_token %}
-{% render_table rules %}
-<input type="hidden" name="rules" value="rules">
-    {% bootstrap_form form %}
-<input type="submit"  class="btn btn-primary" value="Remove selected rules from disabled rules" />
-</form>
-
-{% endif %}
-
-{% endblock %}
+    {% if mode == 'rules' %}
+        <h2 class="title">Disabled rules</h2>
+        <form class="form"
+              action="{% url 'edit_ruleset' ruleset.id %}"
+              method="post">
+            {% csrf_token %}
+            {% render_table rules %}
+            <input type="hidden" name="rules" value="rules">
+            {% bootstrap_form form %}
+            <input type="submit"
+                   class="btn btn-primary"
+                   value="Remove selected rules from disabled rules"/>
+        </form>
+    {% endif %}
+{% endblock content %}

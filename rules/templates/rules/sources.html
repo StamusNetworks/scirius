@@ -1,126 +1,158 @@
 {% extends "rules/base.html" %}
-
 {% block sidebar %}
-<div class="panel-heading">
-    <h2 class="panel-title">Defined sources</h2>
-</div>
-<ul class="panel-body"><li>List of feeds.</li></ul>
-
-{% if perms.rules.source_edit %}
-<div class="panel-heading">
-<h2 class="panel-title">Actions</h2>
-</div>
-        <ul class="action panel-body">
-	     <li> <a href="{% url "add_public_source" %}">Add Public Source</a></li>
-	     <li> <a href="{% url "add_source" %}">Add Custom Source</a></li>
-	</ul>
-{% endif %}
-{% endblock %}
-
-{% block content %}
-{% if sources %}
-      <div class="container-fluid">
-        <div class="row toolbar-pf">
-          <div class="col-sm-12">
-            <div class="row toolbar-pf-results">
-              <div class="col-sm-12">
-                <h5>{{ sources|length }} Source{{ sources|length|pluralize }}</h5>
-              </div><!-- /col -->
-            </div><!-- /row -->
-          </div><!-- /col -->
-        </div><!-- /row -->
-      </div><!-- /container -->
-
-<div class="container-fluid">
-<div class="list-group list-view-pf list-view-pf-view">
-{% for source in sources %}
-  <div class="list-group-item">
-      <div class="list-group-item-header">
-          <div class="list-view-pf-expand">
-              <span class="fa fa-angle-right"></span>
-          </div>
-          <div class="list-view-pf-actions">
-              {% if perms.rules.ruleset_policy_view %}
-                  <a href="{% url "source" source.pk %}">
-                      <button class="btn btn-default">View</button>
-                  </a>
-              {% else %}
-                  <button class="btn btn-default" disabled>View</button>
-              {% endif %}
-              {% if perms.rules.source_edit or perms.rules.ruleset_update_push or perms.rules.source_view %}
-                  <div class="dropdown pull-right dropdown-kebab-pf">
-                      <button class="btn btn-link dropdown-toggle" type="button" id="dropdownKebabRight{{ source.pk }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                          <span class="fa fa-ellipsis-v"></span>
-                      </button>
-                      <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownKebabRight{{ source.pk }}">
-                          {% if perms.rules.ruleset_update_push %}
-                              <li><a onclick="UpdateSource{{ source.pk }}()" style="cursor: pointer;">Update source</a></li>
-                          {% endif %}
-                          {% if perms.rules.source_edit %}
-                              <li><a href="{% url "edit_source" source.pk %}">Edit source</a></li>
-                              <li><a href="{% url "delete_source" source.pk %}">Delete source</a></li>
-                          {% endif %}
-                          {% if perms.rules.source_view %}
-                              <li><a href="{% url 'changelog_source' source.id %}">Changelog</a></li>
-                          {% endif %}
-                      </ul>
-                  </div>
-              {% endif %}
-          </div>
-
-    <div class="list-view-pf-main-info">
-      <div class="list-view-pf-left">
-      {% if source.method == 'http' %}
-        <span class="fa fa-external-link list-view-pf-icon-sm"></span>
-      {% else %}
-        <span class="pficon pficon-volume list-view-pf-icon-sm"></span>
-      {% endif %}
-      </div>
-      <div class="list-view-pf-body">
-        <div class="list-view-pf-description">
-          <div class="list-group-item-heading">
-            {{ source.name }}
-          </div>
-          <div class="list-group-item-text">
-            Last update: {{ source.updated_date }}.
-          </div>
-        </div>
-        <div class="list-view-pf-additional-info">
-          <div class="list-view-pf-additional-info-item"> <span class="fa fa-list-alt"> </span> <strong>{{ source.cats_count }}</strong> Categor{{ source.cats_count|pluralize:"y,ies" }}
-          </div>
-          <div class="list-view-pf-additional-info-item">
-            <span class="pficon pficon-security"> </span> <strong> {{ source.rules_count }}</strong> Rule{{ source.rules_count|pluralize }}
-          </div>
-        </div>
-      </div>
+    <div class="panel-heading">
+        <h2 class="panel-title">Defined sources</h2>
     </div>
-  </div>
-
-        <div class="list-group-item-container container-fluid hidden">
-      <div class="close">
-        <span class="pficon pficon-close"></span>
-      </div>
-      <div class="row">
-        <div class="col-md-6">
-        <dl class="dl-horizontal">
-        <dt>Type</dt><dd>{{ source.datatype }}</dd>
-      {% if source.method == 'http' %}
-        <dt>URI</dt><dd>{{ source.uri }}</dd>
-      {% endif %}
-        <dt>Creation date</dt><dd>{{ source.created_date }}</dd>
-        </dl>
+    <ul class="panel-body">
+        <li>List of feeds.</li>
+    </ul>
+    {% if perms.rules.source_edit %}
+        <div class="panel-heading">
+            <h2 class="panel-title">Actions</h2>
         </div>
+        <ul class="action panel-body">
+            <li>
+                <a href="{% url "add_public_source" %}">Add Public Source</a>
+            </li>
+            <li>
+                <a href="{% url "add_source" %}">Add Custom Source</a>
+            </li>
+        </ul>
+    {% endif %}
+{% endblock sidebar %}
+{% block content %}
+    {% if sources %}
+        <div class="container-fluid">
+            <div class="row toolbar-pf">
+                <div class="col-sm-12">
+                    <div class="row toolbar-pf-results">
+                        <div class="col-sm-12">
+                            <h5>{{ sources|length }} Source{{ sources|length|pluralize }}</h5>
+                        </div>
+                        <!-- /col -->
+                    </div>
+                    <!-- /row -->
+                </div>
+                <!-- /col -->
+            </div>
+            <!-- /row -->
         </div>
-        </div>
-        </div>
-
-<script>
+        <!-- /container -->
+        <div class="container-fluid">
+            <div class="list-group list-view-pf list-view-pf-view">
+                {% for source in sources %}
+                    <div class="list-group-item">
+                        <div class="list-group-item-header">
+                            <div class="list-view-pf-expand">
+                                <span class="fa fa-angle-right"></span>
+                            </div>
+                            <div class="list-view-pf-actions">
+                                {% if perms.rules.ruleset_policy_view %}
+                                    <a href="{% url "source" source.pk %}">
+                                        <button class="btn btn-default">View</button>
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-default" disabled>View</button>
+                                {% endif %}
+                                {% if perms.rules.source_edit or perms.rules.ruleset_update_push or perms.rules.source_view %}
+                                    <div class="dropdown pull-right dropdown-kebab-pf">
+                                        <button class="btn btn-link dropdown-toggle"
+                                                type="button"
+                                                id="dropdownKebabRight{{ source.pk }}"
+                                                data-toggle="dropdown"
+                                                aria-haspopup="true"
+                                                aria-expanded="true">
+                                            <span class="fa fa-ellipsis-v"></span>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-right"
+                                            aria-labelledby="dropdownKebabRight{{ source.pk }}">
+                                            {% if perms.rules.ruleset_update_push %}
+                                                <li>
+                                                    <a onclick="UpdateSource{{ source.pk }}()" style="cursor: pointer;">Update source</a>
+                                                </li>
+                                            {% endif %}
+                                            {% if perms.rules.source_edit %}
+                                                <li>
+                                                    <a href="{% url "edit_source" source.pk %}">Edit source</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{% url "delete_source" source.pk %}">Delete source</a>
+                                                </li>
+                                            {% endif %}
+                                            {% if perms.rules.source_view %}
+                                                <li>
+                                                    <a href="{% url 'changelog_source' source.id %}">Changelog</a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="list-view-pf-main-info">
+                                <div class="list-view-pf-left">
+                                    {% if source.method == 'http' %}
+                                        <span class="fa fa-external-link list-view-pf-icon-sm"></span>
+                                    {% else %}
+                                        <span class="pficon pficon-volume list-view-pf-icon-sm"></span>
+                                    {% endif %}
+                                </div>
+                                <div class="list-view-pf-body">
+                                    <div class="list-view-pf-description">
+                                        <div class="list-group-item-heading">{{ source.name }}</div>
+                                        <div class="list-group-item-text">Last update: {{ source.updated_date }}.</div>
+                                    </div>
+                                    <div class="list-view-pf-additional-info">
+                                        <div class="list-view-pf-additional-info-item">
+                                            <span class="fa fa-list-alt"></span>
+                                            <strong>{{ source.cats_count }}</strong> Categor{{ source.cats_count|pluralize:"y,ies" }}
+                                        </div>
+                                        <div class="list-view-pf-additional-info-item">
+                                            <span class="pficon pficon-security"></span>
+                                            <strong>{{ source.rules_count }}</strong> Rule{{ source.rules_count|pluralize }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item-container container-fluid hidden">
+                            <div class="close">
+                                <span class="pficon pficon-close"></span>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <dl class="dl-horizontal">
+                                        <dt>
+                                            Type
+                                        </dt>
+                                        <dd>
+                                            {{ source.datatype }}
+                                        </dd>
+                                        {% if source.method == 'http' %}
+                                            <dt>
+                                                URI
+                                            </dt>
+                                            <dd>
+                                                {{ source.uri }}
+                                            </dd>
+                                        {% endif %}
+                                        <dt>
+                                            Creation date
+                                        </dt>
+                                        <dd>
+                                            {{ source.created_date }}
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <script>
 function UpdateSource{{ source.id }}() {
 	$("#update_modal").modal('show');
-	$.ajax( {
-                type:"POST",
-                url:"{% url 'update_source' source.id %}",
-                success: function(data) {
+	$.ajax({
+        type:"POST",
+        url:"{% url 'update_source' source.id %}",
+        success: function(data) {
 			if (data['status'] == true) {
 				$("#update_modal").modal('hide');
                 if (data['redirect'] == true) {
@@ -130,43 +162,41 @@ function UpdateSource{{ source.id }}() {
 				$("#update_text").text("Error during update: " + data['errors']);
 			}
 		},
-                error: function(data) {
+        error: function(data) {
 			$("#update_text").text("Error during update");
-                },
-                timeout: 120000,
-	}
-  );
+        },
+        timeout: 120000,
+	});
 }
-</script>
-
- {% endfor %}
-</div>
-</div>
-
-<!-- Modal -->
-<div class="modal bs-example-modal-sm" id="update_modal" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="UpdateModalLabel">Please wait...</h4>
-      </div>
-      <div class="modal-body" id="update_text">
-{% if middleware_has_udpate %}
-        Triggering source update. This window will close when operation is registered.
-{% else %}
-        Scirius is updating source. This window will close when update is over.
-{% endif %}
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-<script>
+                    </script>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal bs-example-modal-sm"
+             id="update_modal"
+             tabindex="-1"
+             role="dialog"
+             aria-labelledby="UpdateModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="UpdateModalLabel">Please wait...</h4>
+                    </div>
+                    <div class="modal-body" id="update_text">
+                        {% if middleware_has_udpate %}
+                            Triggering source update. This window will close when operation is registered.
+                        {% else %}
+                            Scirius is updating source. This window will close when update is over.
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
   $(document).ready(function () {
     // toggle dropdown menu
     $('.list-view-pf-actions').on('show.bs.dropdown', function () {
@@ -178,40 +208,43 @@ function UpdateSource{{ source.id }}() {
 
     // click the list-view heading then expand a row
     $(".list-group-item-header").click(function(event){
-      if(!$(event.target).is("button, a, input, .fa-ellipsis-v")){
-        $(this).find(".fa-angle-right").toggleClass("fa-angle-down")
-          .end().parent().toggleClass("list-view-pf-expand-active")
-            .find(".list-group-item-container").toggleClass("hidden");
-      } else {
-      }
+        if(!$(event.target).is("button, a, input, .fa-ellipsis-v")){
+            $(this).find(".fa-angle-right").toggleClass("fa-angle-down")
+                .end().parent().toggleClass("list-view-pf-expand-active")
+                .find(".list-group-item-container").toggleClass("hidden");
+        }
     })
 
     // click the close button, hide the expand row and remove the active status
     $(".list-group-item-container .close").on("click", function (){
-      $(this).parent().addClass("hidden")
-        .parent().removeClass("list-view-pf-expand-active")
-          .find(".fa-angle-right").removeClass("fa-angle-down");
+        $(this).parent().addClass("hidden")
+            .parent().removeClass("list-view-pf-expand-active")
+            .find(".fa-angle-right").removeClass("fa-angle-down");
     })
-
   });
-</script>
-
-{% else %}
-<h3>No defined source</h3>
-<p>
-You need at least a source to be able to create a Ruleset.
-</p>
-{% if perms.rules.source_edit %}
-<ul>
-	<li>
-		<a href="{% url "add_public_source" %}">Add a public source</a>
-	</li>
-	<li>
-		<a href="{% url "add_source" %}">Add a custom source</a>
-	</li>
-</ul>
-{% else %}
-<p>Ask user with access to create one.</p>
-{% endif %}
-{% endif %}
-{% endblock %}
+        </script>
+    {% else %}
+        <h3>No defined source</h3>
+        <p>
+            You need at least a source to be able to create a Ruleset.
+        </p>
+        {% if perms.rules.source_edit %}
+            <ul>
+                <li>
+                    <a href="{% url "add_public_source" %}">
+                        Add a public source
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url "add_source" %}">
+                        Add a custom source
+                    </a>
+                </li>
+            </ul>
+        {% else %}
+            <p>
+                Ask user with access to create one.
+            </p>
+        {% endif %}
+    {% endif %}
+{% endblock content %}

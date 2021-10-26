@@ -1,71 +1,81 @@
 {% extends "rules/base.html" %}
 {% load bootstrap3  %}
-
 {% block sidebar %}
     <div class="panel-heading">
         <h2 class="panel-title">Manage users</h2>
     </div>
     <ul>
-        <li><a href="{% url 'list_accounts' %}">Accounts list</a></li>
-        <li><a href="{% url 'list_users' %}">User list</a></li>
-        <li><a href="{% url 'list_groups' %}">Role list</a></li>
+        <li>
+            <a href="{% url 'list_accounts' %}">Accounts list</a>
+        </li>
+        <li>
+            <a href="{% url 'list_users' %}">User list</a>
+        </li>
+        <li>
+            <a href="{% url 'list_groups' %}">Role list</a>
+        </li>
         {% if extra_auth %}
             <li>
-                <a data-toggle="tooltip" title="Set priority on Role/Group assignments" href="{% url 'edit_priorities' %}">Edit priorities
+                <a data-toggle="tooltip"
+                   title="Set priority on Role/Group assignments"
+                   href="{% url 'edit_priorities' %}">
+                    Edit priorities
                 </a>
             </li>
         {% endif %}
     </ul>
-
     {% if current_action != 'Add user' %}
         <div class="panel-heading">
             <h2 class="panel-title">Actions</h2>
         </div>
         <ul>
             {% if 'Edit password' not in current_action and not is_from_ldap %}
-                <li><a href="{% url 'edit_password' user.pk %}">Change user password</a></li>
+                <li>
+                    <a href="{% url 'edit_password' user.pk %}">Change user password</a>
+                </li>
             {% endif %}
-            <li><a href="#" onclick="del_user();">Delete user</a></li>
+            <li>
+                <a href="#" onclick="del_user();">Delete user</a>
+            </li>
         </ul>
-
         <script language="JavaScript">
-            function del_user() {
-                let username = {{ username|safe }};
-                confirmModal({
-                    title: `Delete user "${username}"`,
-                    msg: "Do you want to delete this user ?",
-                    comment: true,
-                    cb: function() {
-                        let comment = $("#generic-modal-comment").val();
-                        $.ajax({
-                            type: 'POST',
-                            data: {'comment': comment},
-                            url: "{% url 'delete_user' user.pk %}",
-                            success: function(data) {
-                                if (data.redirect) {
-                                    window.location.href = data.redirect;
-                                }
-
-                                if (data.error) {
-                                    $('#error').parent('.alert').show();
-                                    $('#error').parent('.alert').text(data.error);
-                                }
-                            }
-                        });
+function del_user() {
+    let username = {{ username|safe }};
+    confirmModal({
+        title: `Delete user "${username}"`,
+        msg: "Do you want to delete this user ?",
+        comment: true,
+        cb: function() {
+            let comment = $("#generic-modal-comment").val();
+            $.ajax({
+                type: 'POST',
+                data: {'comment': comment},
+                url: "{% url 'delete_user' user.pk %}",
+                success: function(data) {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
                     }
-                });
-                return false;
-            }
+
+                    if (data.error) {
+                        $('#error').parent('.alert').show();
+                        $('#error').parent('.alert').text(data.error);
+                    }
+                }
+            });
+        }
+    });
+    return false;
+}
         </script>
     {% endif %}
-{% endblock %}
-
+{% endblock sidebar %}
 {% block content %}
     <div class="container-fluid">
         <h2>{{ current_action }}</h2>
         <div class="row">
             <div class="col-md-6">
-                <form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
+                <form action="{{ request.get_full_path }}" method="post" class="form">
+                    {% csrf_token %}
                     {% if 'Edit password' in current_action %}
                         {% bootstrap_form form %}
                     {% else %}
@@ -81,7 +91,7 @@
                         {% endif %}
                         {% bootstrap_field form.groups %}
                         {% bootstrap_field form.is_active %}
-                        {% if form.no_tenant or form.all_tenants or form.tenants%}
+                        {% if form.no_tenant or form.all_tenants or form.tenants %}
                             <label class="control-label" for="id_tenants">Tenants</label>
                             {% bootstrap_field form.no_tenant %}
                             {% bootstrap_field form.all_tenants %}
@@ -89,34 +99,33 @@
                         {% endif %}
                     {% endif %}
                     {% buttons %}
-                    <button type="submit" class="btn btn-primary">
-                        {% bootstrap_icon "ok" %}
-                        {% if current_action == 'Add user' %}
-                            Add
-                        {% else %}
-                            Submit
-                        {% endif %}
-                    </button>
+                        <button type="submit" class="btn btn-primary">
+                            {% bootstrap_icon "ok" %}
+                            {% if current_action == 'Add user' %}
+                                Add
+                            {% else %}
+                                Submit
+                            {% endif %}
+                        </button>
                     {% endbuttons %}
                 </form>
             </div>
         </div>
     </div>
-
-{% if form.no_tenant or form.all_tenants or form.tenants%}
+    {% if form.no_tenant or form.all_tenants or form.tenants %}
     <script language="JavaScript">
-        function click_all_tenants() {
-            if ($("#id_all_tenants").is(":checked")) {
-                $('#id_tenants').parents('.form-group').hide(duration=200);
-            } else {
-                $('#id_tenants').parents('div')[0].style['padding-left'] = '5%';
-                $('#id_tenants').parents('.form-group').show(duration=200);
-            }
-        }
-        $('document').ready(function() {
-            $("#id_all_tenants").change(click_all_tenants);
-            click_all_tenants();
-        });
+function click_all_tenants() {
+    if ($("#id_all_tenants").is(":checked")) {
+        $('#id_tenants').parents('.form-group').hide(duration=200);
+    } else {
+        $('#id_tenants').parents('div')[0].style['padding-left'] = '5%';
+        $('#id_tenants').parents('.form-group').show(duration=200);
+    }
+}
+$('document').ready(function() {
+    $("#id_all_tenants").change(click_all_tenants);
+    click_all_tenants();
+});
     </script>
-{% endif %}
+    {% endif %}
 {% endblock %}

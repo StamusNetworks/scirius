@@ -1,36 +1,31 @@
 {% extends "rules/base.html" %}
 {% load bootstrap3  %}
-
 {% block sidebar %}
     <div class="panel-heading">
         <h2 class="panel-title">Policies</h2>
     </div>
-    <ul class="panel-body"><li>Import/Export of policies</li></ul>
+    <ul class="panel-body">
+        <li>Import/Export of policies</li>
+    </ul>
 {% endblock %}
-
 {% block content %}
-    <form class="form" enctype="multipart/form-data" action="{% url 'policies' %}" method="post">
+    <form class="form"
+          enctype="multipart/form-data"
+          action="{% url 'policies' %}"
+          method="post">
         {% csrf_token %}
-
         <div class="row">
             <div class="col-md-4">
-
                 <h2>Export policies</h2>
-
                 <p class="help-block">
                     Clicking on the button will download policies and filtersets.
                 </p>
-
                 {% buttons %}
-                    <button type="submit" name="export" class="btn btn-primary">
-                        {% bootstrap_icon "download" %} Export
-                    </button>
+                    <button type="submit" name="export" class="btn btn-primary">{% bootstrap_icon "download" %} Export</button>
                 {% endbuttons %}
-
                 {% if perms.rules.configuration_edit %}
                     <br>
                     <h2>Import policies</h2>
-
                     <div class="form-group">
                         <label class="sr-only control-label" for="id_file">File</label>
                         <div class="row bootstrap3-multi-input" disabled="">
@@ -38,24 +33,20 @@
                                 <p>
                                     <input type="file" name="file" class="" title="" id="id_file">
                                 </p>
-
                                 <input type="checkbox" id="delete_policies" name="delete">
-                                <label for="delete_policies"> Delete all previous imported policies and filtersets</label><br>
+                                <label for="delete_policies">Delete all previous imported policies and filtersets</label>
+                                <br>
                                 <p class="help-block">
                                     <strong>WARNING:</strong> All previous imported policies and filtersets will be deleted before importing new ones
                                 </p>
-
                             </div>
                         </div>
                     </div>
-
                     {% buttons %}
-                        <button type="submit" name="import" class="btn btn-warning">
-                            {% bootstrap_icon "upload" %} Import
-                        </button>
+                        <button type="submit" name="import" class="btn btn-warning">{% bootstrap_icon "upload" %} Import</button>
                     {% endbuttons %}
                 {% endif %}
             </div>
         </div>
     </form>
-{% endblock %}
+{% endblock content %}

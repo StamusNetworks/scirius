@@ -1,15 +1,11 @@
-
 {% extends "rules/base.html" %}
 {% block content %}
-<h2 class="title">User action history</h2>
-{% include "rules/useraction.html" %}
+    <h2 class="title">User action history</h2>
+    {% include "rules/useraction.html" %}
 {% endblock %}
-
 {% block sidebar %}
-<div class="panel-heading">
-<h2 class="panel-title">History</h2>
-</div>
-<div class="panel-body">
-Chronological list of user actions and comments.
-</div>
+    <div class="panel-heading">
+        <h2 class="panel-title">History</h2>
+    </div>
+    <div class="panel-body">Chronological list of user actions and comments.</div>
 {% endblock %}

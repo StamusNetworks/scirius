@@ -1,55 +1,56 @@
 {% extends "rules/base.html" %}
-
 {% block content %}
-
-<div class="container-fluid">
-
-{% if elasticsearch %}
-
-<div class="row">
-{% if perms.rules.source_view or perms.rules.configuration_view %}
-<div class="col-md-8">
-<div class="container-fluid">
-
-<div class="row">
-<div class="col-md-12">
-<h2 class="title">Alert Activity</h2><p id="timeline_title"/>
-
-</div> <!-- col -->
-</div> <!-- row -->
-<div class="row">
-<div class="col-md-12">
-<div id="timeline">
-<p>Fetching data...</p>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-
-</div> <!-- col -->
-</div> <!-- row -->
-
-</div>
-</div> <!-- col side display -->
-
-<div class="col-md-4">
-      <div class="container-fluid container-cards-pf">
-        <div class="row row-cards-pf">
-          <div class="col-md-12">
-            <div class="card-pf card-pf-utilization" id="alert-trend">
-  <h2 class="card-pf-title">
-    Alert Trends
-  </h2>
-  <div class="card-pf-body">
-    <p class="card-pf-utilization-details">
-      <span class="card-pf-utilization-card-details-count">--</span>
-        <span class="card-pf-utilization-card-details-description">
-          <span class="card-pf-utilization-card-details-line-1">alerts</span>
-          <span class="card-pf-utilization-card-details-line-2">vs <span id="alert-prev">--</span> on prev period</span>
-        </span>
-    </p>
-    <div id="chart-pf-donut-5"></div>
-    <div class="chart-pf-sparkline" id=""></div>
-    <script>
+    <div class="container-fluid">
+        {% if elasticsearch %}
+            <div class="row">
+                {% if perms.rules.source_view or perms.rules.configuration_view %}
+                    <div class="col-md-8">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h2 class="title">Alert Activity</h2>
+                                    <p id="timeline_title"/>
+                                </div>
+                                <!-- col -->
+                            </div>
+                            <!-- row -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="timeline">
+                                        <p>
+                                            Fetching data...
+                                        </p>
+                                        <svg style="width:100%;height:300px">
+                                        </svg>
+                                    </div>
+                                </div>
+                                <!-- col -->
+                            </div>
+                            <!-- row -->
+                        </div>
+                    </div>
+                    <!-- col side display -->
+                    <div class="col-md-4">
+                        <div class="container-fluid container-cards-pf">
+                            <div class="row row-cards-pf">
+                                <div class="col-md-12">
+                                    <div class="card-pf card-pf-utilization" id="alert-trend">
+                                        <h2 class="card-pf-title">Alert Trends</h2>
+                                        <div class="card-pf-body">
+                                            <p class="card-pf-utilization-details">
+                                                <span class="card-pf-utilization-card-details-count">--</span>
+                                                <span class="card-pf-utilization-card-details-description">
+                                                    <span class="card-pf-utilization-card-details-line-1">alerts</span>
+                                                    <span class="card-pf-utilization-card-details-line-2">
+                                                        vs
+                                                        <span id="alert-prev">--</span>
+                                                        on prev period
+                                                    </span>
+                                                </span>
+                                            </p>
+                                            <div id="chart-pf-donut-5"></div>
+                                            <div class="chart-pf-sparkline" id=""></div>
+                                            <script>
       var c3ChartDefaults = $().c3ChartDefaults();
 
       var donutConfig = c3ChartDefaults.getDefaultDonutConfig('A');
@@ -81,43 +82,44 @@
       donutChartTitle.text("");
       donutChartTitle.insert('tspan').text("--%").classed('donut-title-big-pf', true).attr('dy', 0).attr('x', 0);
       donutChartTitle.insert('tspan').text("trend").classed('donut-title-small-pf', true).attr('dy', 20).attr('x', 0);
-    </script>
-  </div>
-</div>
-
-          </div>
-        </div><!-- /row -->
-      </div><!-- /container -->
-</div> <!-- col -->
-<script>
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /row -->
+                        </div>
+                        <!-- /container -->
+                    </div>
+                    <!-- col -->
+                    <script>
     function get_alert_count() {
-    $.ajax({
+        $.ajax({
             type:"GET",
             url: "{% url 'es_alerts_count' %}?from_date={{ from_date }}&prev=1&hosts=*",
             context: $(this),
             success: function(data) {
-                    if (data && (typeof data !== 'string') && ('doc_count' in data)) {
-                            $("#alert-trend .card-pf-utilization-card-details-count").text(data['doc_count']);
-                            $("#alert-prev").text(data['prev_doc_count']);
+                if (data && (typeof data !== 'string') && ('doc_count' in data)) {
+                    $("#alert-trend .card-pf-utilization-card-details-count").text(data['doc_count']);
+                    $("#alert-prev").text(data['prev_doc_count']);
 
-                            chart1.load(
-                                { columns: [
-                                          ["previous", data['prev_doc_count']],
-                                          ["current", data['doc_count']]
-                                        ]
-                                      }
-                                );
-                            var trend = (data['doc_count'] - data['prev_doc_count']) * 100.0/ data['prev_doc_count'];
-                            var sign = "";
-                            if (trend > 0) {
-                                    sign = "+";
-                            }
-                            var donutChartTitle = d3.select("#chart-pf-donut-5").select('text.c3-chart-arcs-title');
-                            donutChartTitle.text("");
-                            donutChartTitle.insert('tspan').text(sign + trend.toFixed(0) + "%").classed('donut-title-big-pf', true).attr('dy', 0).attr('x', 0);
-                            donutChartTitle.insert('tspan').text("trend").classed('donut-title-small-pf', true).attr('dy', 20).attr('x', 0);
+                    chart1.load({
+                        columns: [
+                            ["previous", data['prev_doc_count']],
+                            ["current", data['doc_count']]
+                        ]
+                    });
 
+                    var trend = (data['doc_count'] - data['prev_doc_count']) * 100.0/ data['prev_doc_count'];
+                    var sign = "";
+                    if (trend > 0) {
+                        sign = "+";
                     }
+                    var donutChartTitle = d3.select("#chart-pf-donut-5").select('text.c3-chart-arcs-title');
+                    donutChartTitle.text("");
+                    donutChartTitle.insert('tspan').text(sign + trend.toFixed(0) + "%").classed('donut-title-big-pf', true).attr('dy', 0).attr('x', 0);
+                    donutChartTitle.insert('tspan').text("trend").classed('donut-title-small-pf', true).attr('dy', 20).attr('x', 0);
+                }
             }
         });
     }
@@ -127,31 +129,27 @@
             setInterval(get_alert_count, 15000);
         }
     )
-</script>
-{% endif %}
-
-{% if perms.rules.events_view %}
-<div class="col-md-12">
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-12">
-<h2 class="title">Rule Activity</h2>
-</div>
-</div>
-
-<div class="row">
-<div class="col-md-12">
-<div id="rules_table">Fetching data...</div>
-</div>
-</div>
-</div>
-</div>
-{% endif %}
-
-
-</div> <!-- row -->
-
-<script>
+                    </script>
+                {% endif %}
+                {% if perms.rules.events_view %}
+                    <div class="col-md-12">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h2 class="title">Rule Activity</h2>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="rules_table">Fetching data...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <!-- row -->
+            <script>
 {% if perms.rules.source_view or perms.rules.configuration_view %}
 $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], null, 'Hits'); });
 {% endif %}
@@ -161,8 +159,7 @@ $( 'document' ).ready(function() {
 	    load_rules({{ from_date }},  [ '*' ], null);
         var canvas = document.createElement("canvas");
         // Get WebGLRenderingContext from canvas element.
-        var gl = canvas.getContext("webgl")
-                 || canvas.getContext("experimental-webgl");
+        var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
          // Report the result.
         if (!(gl && gl instanceof WebGLRenderingContext)) {
 	       $('#webgl-test').parent().click(function(event) {event.preventDefault(); }).addClass('text-muted');
@@ -170,35 +167,38 @@ $( 'document' ).ready(function() {
         }
 });
 {% endif %}
-</script>
-{% endif %}
-
-</div> <!-- container -->
-
-
-{% endblock %}
-
+            </script>
+        {% endif %}
+    </div>
+    <!-- container -->
+{% endblock content %}
 {% block sidebar %}
-	<div class="panel-heading">
-	<h2 class="panel-title">Scirius</h2>
-	</div>
-	<div class="panel-body">
+    <div class="panel-heading">
+        <h2 class="panel-title">Scirius</h2>
+    </div>
+    <div class="panel-body">
         <ul>
-	  <li><span class="type">Logged in as</span> {{ request.user|truncatechars:20 }}</li>
+            <li>
+                <span class="type">Logged in as</span>
+                <span>{{ request.user|truncatechars:20 }}</span>
+            </li>
         </ul>
-        </div>
+    </div>
     {% if perms.rules.events_view %}
         <div class="panel-heading">
-        <h2 class="panel-title">Visualizations</h2>
+            <h2 class="panel-title">Visualizations</h2>
         </div>
         <div class="panel-body">
-        <ul class="action">
-        <li><a href="{% url 'viz_dashboard'%}" target="_blank">IP based Dashboard</a></li>
-        {% if netinfo_agg %}
-        <li><a href="{% url 'viz_target_dashboard'%}" target="_blank">Organizational Dashboard</a></li>
-        {% endif %}
-        </ul>
+            <ul class="action">
+                <li>
+                    <a href="{% url 'viz_dashboard' %}" target="_blank">IP based Dashboard</a>
+                </li>
+                {% if netinfo_agg %}
+                    <li>
+                        <a href="{% url 'viz_target_dashboard' %}" target="_blank">Organizational Dashboard</a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
     {% endif %}
-
-{% endblock %}
+{% endblock sidebar %}

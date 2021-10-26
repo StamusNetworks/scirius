@@ -1,40 +1,27 @@
 {% extends "rules/base.html" %}
-{% load bootstrap3  %}
-
+{% load bootstrap3 %}
 {% block content %}
-
-{% if form %}
-
-{% if operation == 'enable' %}
-<h4>Enable category {{ category.name }} in</h4>
-{% else %}
-<h4>Disable category {{ category.name }} from</h4>
-{% endif %}
-
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-4">
-
-{% if operation == 'enable' %}
-<form action="{% url 'enable_category' category.pk %}" method="post">
-{% else %}
-<form action="{% url 'disable_category' category.pk %}" method="post">
-{% endif %}
-{% csrf_token %}
-{% bootstrap_form form %}
-<input class="btn btn-primary" type="submit" value="Submit" />
-</form>
-
-</div>
-</div>
-</div>
-{% endif %}
-
-{% endblock %}
-
+    {% if form %}
+        {% if operation == 'enable' %}
+            <h4>Enable category {{ category.name }} in</h4>
+        {% else %}
+            <h4>Disable category {{ category.name }} from</h4>
+        {% endif %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-4">
+                    <form action={% if operation == 'enable' %}"{% url 'enable_category' category.pk %}"{% else %}"{% url 'disable_category' category.pk %}"{% endif %} method="post">
+                        {% csrf_token %}
+                        {% bootstrap_form form %}
+                        <input class="btn btn-primary" type="submit" value="Submit" />
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock content %}
 {% block sidebar %}
-<div class="panel-heading">
-<h2 class="panel-title">Category {{ category.name }}</h2>
-</div>
-
-{% endblock %}
+    <div class="panel-heading">
+        <h2 class="panel-title">Category {{ category.name }}</h2>
+    </div>
+{% endblock sidebar %}

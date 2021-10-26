@@ -1,22 +1,37 @@
 {% load staticfiles %}
 {% load bootstrap3 %}
-
 <ul class="nav navbar-nav">
-<li>
-<a class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown" href="#">
-{% bootstrap_icon "time" %} last {{ date }} <span class="caret"/>
-</a>
-<ul class="dropdown-menu" id="display_menu">
-   <li><a href="?duration=1">Last 1h</a></li>
-   <li><a href="?duration=6">Last 6h</a></li>
-   <li><a href="?duration=24">Last 24h</a></li>
-   <li><a href="?duration=48">Last 2d</a></li>
-   <li><a href="?duration=168">Last 7d</a></li>
-   <li><a href="?duration=720">Last 30d</a></li>
-</ul>
-</li>
-
-<script>
+    <li>
+        <a class="dropdown-toggle"
+           type="button"
+           id="display_menu"
+           data-toggle="dropdown"
+           href="#">
+            {% bootstrap_icon "time" %} last {{ date }}
+            <span class="caret"/>
+        </a>
+        <ul class="dropdown-menu" id="display_menu">
+            <li>
+                <a href="?duration=1">Last 1h</a>
+            </li>
+            <li>
+                <a href="?duration=6">Last 6h</a>
+            </li>
+            <li>
+                <a href="?duration=24">Last 24h</a>
+            </li>
+            <li>
+                <a href="?duration=48">Last 2d</a>
+            </li>
+            <li>
+                <a href="?duration=168">Last 7d</a>
+            </li>
+            <li>
+                <a href="?duration=720">Last 30d</a>
+            </li>
+        </ul>
+    </li>
+    <script>
 function is_first_connection() {
     if (typeof localStorage != 'undefined') {
         if ('first_connection_done' in localStorage === false) {
@@ -40,103 +55,195 @@ $(function (){
     e.preventDefault();
   });
 })
-</script>
-
-  <li>
-<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="about" href="#">
-{% bootstrap_icon "question-sign" %} <span class="caret"/>
-</a>
-<ul class="dropdown-menu" id="about_menu" role="menu">
-<li>
-  <a href="{% static 'doc/index.html' %}" target="_blank" >{% bootstrap_icon "book" %} User manual</a>
-</li>
-<li>
-  <a href="#" id="modal-about-button">{% bootstrap_icon "question-sign" %} About Scirius</a>
-</li>
-	    </ul>
-</li>
-
-<li>
-			<a class="navbar-dropdown collapsed" type="button" data-target="user_menu" data-toggle="dropdown" id="user" href="#">
-			{% bootstrap_icon "user" %} {{ request.user }} <span class="caret"/>
-</a>
-			<ul class="dropdown-menu" id="user_menu" role="menu">
-            <li><a href="{% url 'accounts_edit' '' %}" >{% bootstrap_icon "cog"%} Account settings</a></li>
-            <li><a href="/accounts/logout/" >{% bootstrap_icon "log-out"%} Logout</a></li>
-</ul>
-</li>
-<li class="applauncher-pf  applauncher-pf-block-list  dropdown">
-    <a class="dropdown-toggle" type="button" id="display_menu" data-toggle="dropdown" href="#">
-      <span class="fa fa-th applauncher-pf-icon first_tooltip" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Switch applications"></span>
-      <span class="dropdown-title">
-        <span class="applauncher-pf-title">
-          Application Launcher
-          <span class="caret" aria-hidden="true"></span>
-        </span>
-      </span>
-    </a>
-    <ul class="dropdown-menu" role="menu">
-      <div style="padding: 2px 6px">
-        <div style="display: grid; grid-template-columns: 20px repeat(3, 100px)">
-          <div style=" position: relative">
-            <div style="position: absolute; top: -36px; left: -81px; width: 100px; transform-origin: 100% 100%; transform: rotate(-90deg); color: rgba(0, 0, 0, .5); font-weight: 600; font-size: 10px; line-height: 1.666;">
-              {{ scirius_short_title }} APPS
+    </script>
+    <li>
+        <a class="navbar-dropdown collapsed"
+           type="button"
+           data-target="user_menu"
+           data-toggle="dropdown"
+           id="about"
+           href="#">
+            {% bootstrap_icon "question-sign" %}
+            <span class="caret"/>
+        </a>
+        <ul class="dropdown-menu" id="about_menu" role="menu">
+            <li>
+                <a href="{% static 'doc/index.html' %}" target="_blank">{% bootstrap_icon "book" %} User manual</a>
+            </li>
+            <li>
+                <a href="#" id="modal-about-button">{% bootstrap_icon "question-sign" %} About Scirius</a>
+            </li>
+        </ul>
+    </li>
+    <li>
+        <a class="navbar-dropdown collapsed"
+           type="button"
+           data-target="user_menu"
+           data-toggle="dropdown"
+           id="user"
+           href="#">
+            {% bootstrap_icon "user" %} {{ request.user }}
+            <span class="caret"/>
+        </a>
+        <ul class="dropdown-menu" id="user_menu" role="menu">
+            <li>
+                <a href="{% url 'accounts_edit' '' %}">{% bootstrap_icon "cog" %} Account settings</a>
+            </li>
+            <li>
+                <a href="/accounts/logout/">{% bootstrap_icon "log-out" %} Logout</a>
+            </li>
+        </ul>
+    </li>
+    <li class="applauncher-pf  applauncher-pf-block-list  dropdown">
+        <a class="dropdown-toggle"
+           type="button"
+           id="display_menu"
+           data-toggle="dropdown"
+           href="#">
+            <span class="fa fa-th applauncher-pf-icon first_tooltip"
+                  aria-hidden="true"
+                  data-toggle="tooltip"
+                  data-placement="bottom"
+                  title="Switch applications">
+            </span>
+            <span class="dropdown-title">
+                <span class="applauncher-pf-title">
+                    Application Launcher
+                    <span class="caret" aria-hidden="true"></span>
+                </span>
+            </span>
+        </a>
+        <ul class="dropdown-menu" role="menu">
+            <div style="padding: 2px 6px">
+                <div style="display: grid; grid-template-columns: 20px repeat(3, 100px)">
+                    <div style=" position: relative">
+                        <div style="position: absolute;
+                                    top: -36px;
+                                    left: -81px;
+                                    width: 100px;
+                                    transform-origin: 100% 100%;
+                                    transform: rotate(-90deg);
+                                    color: rgba(0, 0, 0, .5);
+                                    font-weight: 600;
+                                    font-size: 10px;
+                                    line-height: 1.666;">
+                            {{ scirius_short_title }} APPS
+                        </div>
+                    </div>
+                    <li class="applauncher-pf-item" role="presentation">
+                        <a class="applauncher-pf-link"
+                           {% if generator and generator == 'appliances' and license and license.nta and perms.rules.events_view %}
+                                style="color: inherit" href="/stamus"
+                            {% else %}
+                                style="pointer-events: none"
+                            {% endif %}
+                                role="menuitem">
+                            <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40"/>
+                            <span {% if generator and generator == 'appliances' and license and license.nta and perms.rules.events_view %}style="line-height: 1.5715;" {% else %}style="line-height: 1.5715;
+                  color: rgba(0,0,0,.2);"{% endif %}
+                                  class="applauncher-pf-link-title">
+                                Threat Radar
+                            </span>
+                        </a>
+                    </li>
+                    <li class="applauncher-pf-item" role="presentation">
+                        <a class="applauncher-pf-link"
+                           {% if generator == 'appliances' and license and license.etl and perms.rules.events_view or generator == 'suricata' and perms.rules.events_view %}
+                                href="/rules/hunt" style="color: inherit"
+                            {% else %}
+                                style="pointer-events: none"
+                            {% endif %}
+                                role="menuitem">
+                            <img src="/static/rules/Stamus_SEH_icon.png" height="40" width="40"/>
+                            <span {% if generator == 'appliances' and license and license.etl and perms.rules.events_view or generator == 'suricata' and perms.rules.events_view %}style="line-height: 1.5715;" {% else %}style="line-height: 1.5715; color: rgba(0,0,0,.2);"{% endif %} class="applauncher-pf-link-title">
+                                Hunting
+                            </span>
+                        </a>
+                    </li>
+                    <li class="applauncher-pf-item" role="presentation">
+                        <a class="applauncher-pf-link"
+                           style="color: inherit"
+                           href="/rules"
+                           role="menuitem">
+                            <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40"/>
+                            <span style="line-height: 1.5715;" class="applauncher-pf-link-title">Management</span>
+                        </a>
+                    </li>
+                </div>
+                <hr style="border: 0.5px solid rgba(0,0,0,.1);
+                           background: rgba(0,0,0,.1);
+                           margin: 7px 0;"/>
+                <div style="display: grid; grid-template-columns: 20px repeat(3, 100px)">
+                    <div style=" position: relative">
+                        <div style="position: absolute;
+                                    top: -32px;
+                                    left: -81px;
+                                    width: 100px;
+                                    transform-origin: 100% 100%;
+                                    transform: rotate(-90deg);
+                                    color: rgba(0, 0, 0, .5);
+                                    font-weight: 600;
+                                    font-size: 10px;
+                                    line-height: 1.666;">
+                            EXTERNAL APPS
+                        </div>
+                    </div>
+                    {% if kibana and perms.rules.events_kibana %}
+                        <li class="applauncher-pf-item" role="presentation">
+                            <a class="applauncher-pf-link"
+                               style="color: #414042"
+                               href="{{ kibana_url }}"
+                               target="_blank"
+                               role="menuitem">
+                                <i style="font-size: 2.5em;
+                                          height: 40px;
+                                          width: 40px;"
+                                   class="glyphicon glyphicon-stats"
+                                   aria-hidden="true"></i>
+                                <span style="line-height: 1.5715;" class="applauncher-pf-link-title">
+                                    Kibana <i class="glyphicon glyphicon-new-window"></i>
+                                </span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if evebox and perms.rules.events_evebox %}
+                        <li class="applauncher-pf-item" role="presentation">
+                            <a class="applauncher-pf-link"
+                               style="color: #414042"
+                               href="{{ evebox_url }}"
+                               target="_blank"
+                               role="menuitem">
+                                <i style="font-size: 2.5em;
+                                          height: 40px;
+                                          width: 40px;"
+                                   class="glyphicon glyphicon-th-list"
+                                   aria-hidden="true"></i>
+                                <span style="line-height: 1.5715;" class="applauncher-pf-link-title">
+                                    Evebox <i class="glyphicon glyphicon-new-window"></i>
+                                </span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if cyberchef %}
+                        <li class="applauncher-pf-item" role="presentation">
+                            <a class="applauncher-pf-link"
+                               style="color: #414042"
+                               href="{{ cyberchef_url }}"
+                               target="_blank"
+                               role="menuitem">
+                                <i style="font-size: 2.5em;
+                                          height: 40px;
+                                          width: 40px;"
+                                   class="glyphicon glyphicon-cutlery"
+                                   aria-hidden="true"></i>
+                                <span style="line-height: 1.5715;" class="applauncher-pf-link-title">
+                                    Cyberchef <i class="glyphicon glyphicon-new-window"></i>
+                                </span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </div>
             </div>
-          </div>
-          <li class="applauncher-pf-item" role="presentation">
-            <a class="applauncher-pf-link" {% if generator and generator == 'appliances' and license and license.nta and perms.rules.events_view %}style="color: inherit" href="/stamus"{% else %} style="pointer-events: none"{% endif %} role="menuitem">
-              <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40"/>
-              <span {% if generator and generator == 'appliances' and license and license.nta and perms.rules.events_view %}style="line-height: 1.5715;" {% else %}style="line-height: 1.5715; color: rgba(0,0,0,.2);"{% endif %} class="applauncher-pf-link-title">Threat Radar</span>
-            </a>
-          </li>
-          <li class="applauncher-pf-item" role="presentation">
-              <a class="applauncher-pf-link" {% if generator == 'appliances' and license and license.etl and perms.rules.events_view or generator == 'suricata' and perms.rules.events_view %}href="/rules/hunt" style="color: inherit"{% else %} style="pointer-events: none"{% endif %} role="menuitem">
-                <img src="/static/rules/Stamus_SEH_icon.png" height="40" width="40"/>
-                <span {% if generator == 'appliances' and license and license.etl and perms.rules.events_view or generator == 'suricata' and perms.rules.events_view %}style="line-height: 1.5715;" {% else %}style="line-height: 1.5715; color: rgba(0,0,0,.2);"{% endif %} class="applauncher-pf-link-title">Hunting</span>
-              </a>
-          </li>
-          <li class="applauncher-pf-item" role="presentation">
-            <a class="applauncher-pf-link" style="color: inherit" href="/rules" role="menuitem">
-              <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40"/>
-              <span style="line-height: 1.5715;" class="applauncher-pf-link-title">Management</span>
-            </a>
-          </li>
-        </div>
-        <hr style="border: 0.5px solid rgba(0,0,0,.1); background: rgba(0,0,0,.1); margin: 7px 0;" />
-        <div style="display: grid; grid-template-columns: 20px repeat(3, 100px)">
-          <div style=" position: relative">
-            <div style="position: absolute; top: -32px; left: -81px; width: 100px; transform-origin: 100% 100%; transform: rotate(-90deg);color: rgba(0, 0, 0, .5); font-weight: 600; font-size: 10px; line-height: 1.666;">
-              EXTERNAL APPS
-            </div>
-          </div>
-          {% if kibana and perms.rules.events_kibana %}
-          <li class="applauncher-pf-item" role="presentation">
-            <a class="applauncher-pf-link" style="color: #414042" href="{{kibana_url}}" target="_blank" role="menuitem">
-              <i style="font-size: 2.5em; height: 40px; width: 40px;" class="glyphicon glyphicon-stats" aria-hidden="true"></i>
-              <span style="line-height: 1.5715;" class="applauncher-pf-link-title">Kibana <i class="glyphicon glyphicon-new-window"></i></span>
-            </a>
-          </li>
-          {% endif %}
-          {% if evebox and perms.rules.events_evebox %}
-          <li class="applauncher-pf-item" role="presentation">
-            <a class="applauncher-pf-link" style="color: #414042" href="{{evebox_url}}" target="_blank" role="menuitem">
-              <i style="font-size: 2.5em; height: 40px; width: 40px;" class="glyphicon glyphicon-th-list" aria-hidden="true"></i>
-              <span style="line-height: 1.5715;" class="applauncher-pf-link-title">Evebox <i class="glyphicon glyphicon-new-window"></i></span>
-            </a>
-          </li>
-          {% endif %}
-          {% if cyberchef %}
-          <li class="applauncher-pf-item" role="presentation">
-            <a class="applauncher-pf-link" style="color: #414042" href="{{cyberchef_url}}" target="_blank" role="menuitem">
-              <i style="font-size: 2.5em; height: 40px; width: 40px;" class="glyphicon glyphicon-cutlery" aria-hidden="true"></i>
-              <span style="line-height: 1.5715;" class="applauncher-pf-link-title">Cyberchef <i class="glyphicon glyphicon-new-window"></i></span>
-            </a>
-          </li>
-          {% endif %}
-        </div>
-      </div>
-    </ul>
-</li>
-
-
+        </ul>
+    </li>
 </ul>

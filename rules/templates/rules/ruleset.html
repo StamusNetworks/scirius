@@ -1,68 +1,80 @@
 {% extends "rules/base.html" %}
-
 {% block sidebar %}
-
-<div class="panel-heading">
-       <h2 class="panel-title">{{ ruleset.name }}</h2>
-</div>
-<ul>
-{% if ruleset.descr %}
-       <li><span class="type">Description:</span> {{ ruleset.descr }}</li>
-{% endif %}
-       <li><span class="type">Created:</span> {{ ruleset.created_date }}</li>
-{% if ruleset.updated_date %}
-       <li><span class="type">Updated:</span> {{ ruleset.updated_date }}</li>
-{% endif %}
-       <li><span class="type">All rules operational:</span> <span id="ruleset_status_menu">
-      {% if ruleset.need_test %}
-       Checking
-       {% else %}
-       {% if ruleset.validity %}
-        {{ ruleset.validity }}
-       {% else %}
-        <a href="#ruleset_status">{{ ruleset.validity }}</a>
-       {% endif %}
-       {% endif %}
-       </span></li>
-       <li><span class="type">Rules count:</span> <span id="ruleset_rules_count">
-        {{ ruleset.rules_count }}
-       </span></li>
-</ul>
-<div class="panel-heading">
-<h2 class="panel-title">Action</h2>
-</div>
-<ul class="action panel-body">
-<li>
-<a href="{% url 'changelog_ruleset' ruleset.id %}">Changelog</a>
-</li>
-{% if perms.rules.ruleset_update_push %}
-<li>
-<span  id="update_ruleset"><a style="cursor: pointer;">Update</a></span>
-</li>
-{% endif %}
-{% if perms.rules.source_edit or perms.rules.ruleset_policy_edit %}
-<li>
-<a href="{% url 'edit_ruleset' ruleset.id %}">Edit</a>
-</li>
-{% endif %}
-{% if perms.rules.source_edit %}
-<li>
-<a href="{% url 'copy_ruleset' ruleset.id %}">Copy</a>
-</li>
-<li>
-<a href="{% url 'delete_ruleset' ruleset.id %}">Delete</a>
-</li>
-{% endif %}
-</ul>
-
-{% if perms.rules.ruleset_update_push %}
-<script>
+    <div class="panel-heading">
+        <h2 class="panel-title">{{ ruleset.name }}</h2>
+    </div>
+    <ul>
+        {% if ruleset.descr %}
+            <li>
+                <span class="type">Description:</span>
+                {{ ruleset.descr }}
+            </li>
+        {% endif %}
+        <li>
+            <span class="type">Created:</span>
+            {{ ruleset.created_date }}
+        </li>
+        {% if ruleset.updated_date %}
+            <li>
+                <span class="type">Updated:</span>
+                {{ ruleset.updated_date }}
+            </li>
+        {% endif %}
+        <li>
+            <span class="type">All rules operational:</span>
+            <span id="ruleset_status_menu">
+                {% if ruleset.need_test %}
+                    Checking
+                {% else %}
+                    {% if ruleset.validity %}
+                        {{ ruleset.validity }}
+                    {% else %}
+                        <a href="#ruleset_status">{{ ruleset.validity }}</a>
+                    {% endif %}
+                {% endif %}
+            </span>
+        </li>
+        <li>
+            <span class="type">Rules count:</span>
+            <span id="ruleset_rules_count">{{ ruleset.rules_count }}</span>
+        </li>
+    </ul>
+    <div class="panel-heading">
+        <h2 class="panel-title">Action</h2>
+    </div>
+    <ul class="action panel-body">
+        <li>
+            <a href="{% url 'changelog_ruleset' ruleset.id %}">Changelog</a>
+        </li>
+        {% if perms.rules.ruleset_update_push %}
+            <li>
+                <span id="update_ruleset">
+                    <a style="cursor: pointer;">Update</a>
+                </span>
+            </li>
+        {% endif %}
+        {% if perms.rules.source_edit or perms.rules.ruleset_policy_edit %}
+            <li>
+                <a href="{% url 'edit_ruleset' ruleset.id %}">Edit</a>
+            </li>
+        {% endif %}
+        {% if perms.rules.source_edit %}
+            <li>
+                <a href="{% url 'copy_ruleset' ruleset.id %}">Copy</a>
+            </li>
+            <li>
+                <a href="{% url 'delete_ruleset' ruleset.id %}">Delete</a>
+            </li>
+        {% endif %}
+    </ul>
+    {% if perms.rules.ruleset_update_push %}
+        <script>
 $("#update_ruleset").click(function() {
 	$("#update_modal").modal('show');
-	$.ajax( {
-                type:"POST",
-                url:"{% url 'update_ruleset' ruleset.id %}",
-                success: function(data) {
+	$.ajax({
+        type:"POST",
+        url:"{% url 'update_ruleset' ruleset.id %}",
+        success: function(data) {
 			if (data['status'] == true) {
 				$("#update_modal").modal('hide');
                 if (data['redirect'] == true) {
@@ -72,223 +84,241 @@ $("#update_ruleset").click(function() {
 				$("#update_text").text("Error during update: " + data['errors']);
 			}
 		},
-                error: function(data) {
+        error: function(data) {
 			$("#update_text").text("Error during update");
-                },
-                timeout: 120000,
-	}
-  );
+        },
+        timeout: 120000,
+	});
 });
 
-</script>
-
-<!-- Modal -->
-<div class="modal bs-example-modal-sm" id="update_modal" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="UpdateModalLabel">Please wait...</h4>
-      </div>
-      <div class="modal-body" id="update_text">
-{% if middleware_has_udpate %}
-        Triggering ruleset update. This window will close when operation is registered.
-{% else %}
-        Scirius is updating ruleset. This window will close when update is over.
-{% endif %}
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-{% endif %}
-{% if perms.rules.ruleset_policy_view %}
-    <div class="panel-heading">
-        <h2 class="panel-title">Display</h2>
-    </div>
-    <ul class="action panel-body">
-        <li>
-            <a href="{% url 'ruleset' ruleset.id %}">Show structure</a>
-        </li>
-        <li>
-            <a href="{% url 'display_ruleset' ruleset.id %}">Show rules</a>
-        </li>
-        <li>
-            <a href="{% url 'export_ruleset' ruleset.id %}" target="_blank" >Export rules file</a>
-        </li>
-    </ul>
-{% endif %}
-{% endblock %}
-
-{% block content %}
-
-
-{% if update %}
-Updated at {{ ruleset.updated_date }} !
-{% endif %}
-
-{% load render_table from django_tables2 %}
-
-{% if mode == 'struct' %}
-
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-6">
-{% for sourceatversion in sources %}
-<h2 class="title">Source: {{ sourceatversion }}</h2>
-
-{% if not sourceatversion.source.datatype == 'other' %}
-<h4>Categories</h4>
-
-    {% for key, value in categories_list.items  %}
-        {% if key == sourceatversion.source.name %}
-            {% render_table value %}
-        {% endif %}
-    {% endfor %}
-{% else %}
- Source fetched from {{ sourceatversion.source.uri }}
-{% endif %}
-{% endfor %}
-</div>
-
-{% endif %}
-
-{% if mode == 'changelog' or diff %}
-<h3 class="title">Changelog</h3>
-{% if diff %}
-{% load render_table from django_tables2 %}
-
-{% for key, cdiff in diff.items %}
-<h4>Source {{ key }}</h4>
-<p>
-Added: {{ cdiff.stats.added }}
-Deleted: {{ cdiff.stats.deleted }} 
-Updated: {{ cdiff.stats.updated }} 
-(Updated at {{ cdiff.date }})
-</p>
-{% if cdiff.stats.added > 0 %}
-<h5 class="title">Added rules</h5>
-{% render_table cdiff.added %}
-{% endif %}
-
-{% if cdiff.stats.deleted > 0 %}
-<h5 class="title">Deleted rules</h5>
-{% render_table cdiff.deleted %}
-{% endif %}
-
-{% if cdiff.stats.updated > 0 %}
-<h5 class="title">Updated rules</h5>
-{% render_table cdiff.updated %}
-{% endif %}
-{% endfor %}
-{% else %}
-<p>No change on last update</p>
-{% endif %}
-{% endif %}
-
-
-
-{% if mode == 'struct' %}
-
-{% if disabled_rules  %}
-<div class="col-md-6">
-<h2 class="title">Disabled rules</h2>
-{% render_table disabled_rules %}
-</div>
-{% endif %}
-{% if thresholds %}
-<div class="col-md-6">
-<h2 class="title">Thresholds</h2>
-{% render_table thresholds %}
-</div>
-{% endif %}
-{% if suppress %}
-<div class="col-md-6">
-<h2 class="title">Suppressions</h2>
-{% render_table suppress %}
-</div>
-{% endif %}
-
-{% if reject_categories %}
-<div class="col-md-6">
-<h2 class="title">Reject categories</h2>
-{% render_table reject_categories %}
-</div>
-{% endif %}
-
-{% if drop_categories %}
-<div class="col-md-6">
-<h2 class="title">Drop categories</h2>
-{% render_table drop_categories %}
-</div>
-{% endif %}
-
-{% if filestore_categories %}
-<div class="col-md-6">
-<h2 class="title">Filestore categories</h2>
-{% render_table filestore_categories %}
-</div>
-{% endif %}
-
-{% if reject_rules %}
-<div class="col-md-6">
-<h2 class="title">Reject rules</h2>
-{% render_table reject_rules %}
-</div>
-{% endif %}
-
-{% if drop_rules %}
-<div class="col-md-6">
-<h2 class="title">Drop rules</h2>
-{% render_table drop_rules %}
-</div>
-{% endif %}
-
-{% if filestore_rules %}
-<div class="col-md-6">
-<h2 class="title">Filestore rules</h2>
-{% render_table filestore_rules %}
-</div>
-{% endif %}
-
-</div>
-<div class="row" id="ruleset_status_row" style="display:none">
-<div class="col-md-12">
-<h2 class="title">Ruleset has errors</h2>
-<div id="ruleset_status"></div>
-{% if not ruleset.need_test and ruleset.errors %}
-    {% if ruleset.json_errors.format == 'raw' %}
-       <pre>{{ ruleset.json_errors.message }}</pre>
-    {% else %}
-    <ul>
-    {% for error in ruleset.json_errors %}
-        {% if error.sid %}
-            <li><span class="text-danger"><strong>{{ error.error }}</strong></span>: <a href="{% url 'rule_sid'  error.sid %}"><span>{{ error.message|safe }}</span></a></li>
-        {% else %}
-            <li><span class="text-danger"><strong>{{ error.error }}</strong></span>: <span>{{ error.message|safe }}</span></li>
-        {% endif %}
-    {% endfor %}
-    </ul>
+        </script>
+        <!-- Modal -->
+        <div class="modal bs-example-modal-sm"
+             id="update_modal"
+             tabindex="-1"
+             role="dialog"
+             aria-labelledby="UpdateModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="UpdateModalLabel">Please wait...</h4>
+                    </div>
+                    <div class="modal-body" id="update_text">
+                        {% if middleware_has_udpate %}
+                            Triggering ruleset update. This window will close when operation is registered.
+                        {% else %}
+                            Scirius is updating ruleset. This window will close when update is over.
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     {% endif %}
-{% endif %}
-</div>
-</div>
-</div> <!-- container -->
-
-<script>
+    {% if perms.rules.ruleset_policy_view %}
+        <div class="panel-heading">
+            <h2 class="panel-title">Display</h2>
+        </div>
+        <ul class="action panel-body">
+            <li>
+                <a href="{% url 'ruleset' ruleset.id %}">Show structure</a>
+            </li>
+            <li>
+                <a href="{% url 'display_ruleset' ruleset.id %}">Show rules</a>
+            </li>
+            <li>
+                <a href="{% url 'export_ruleset' ruleset.id %}" target="_blank">Export rules file</a>
+            </li>
+        </ul>
+    {% endif %}
+{% endblock sidebar %}
+{% block content %}
+    {% if update %}Updated at {{ ruleset.updated_date }} !{% endif %}
+    {% load render_table from django_tables2 %}
+    {% if mode == 'struct' %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    {% for sourceatversion in sources %}
+                        <h2 class="title">Source: {{ sourceatversion }}</h2>
+                        {% if not sourceatversion.source.datatype == 'other' %}
+                            <h4>Categories</h4>
+                            {% for key, value in categories_list.items  %}
+                                {% if key == sourceatversion.source.name %}
+                                    {% render_table value %}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            Source fetched from {{ sourceatversion.source.uri }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if mode == 'changelog' or diff %}
+                <h3 class="title">Changelog</h3>
+                {% if diff %}
+                    {% load render_table from django_tables2 %}
+                    {% for key, cdiff in diff.items %}
+                        <h4>Source {{ key }}</h4>
+                        <p>
+                            Added: {{ cdiff.stats.added }}
+                            Deleted: {{ cdiff.stats.deleted }}
+                            Updated: {{ cdiff.stats.updated }}
+                            (Updated at {{ cdiff.date }})
+                        </p>
+                        {% if cdiff.stats.added > 0 %}
+                            <h5 class="title">Added rules</h5>
+                            {% render_table cdiff.added %}
+                        {% endif %}
+                        {% if cdiff.stats.deleted > 0 %}
+                            <h5 class="title">Deleted rules</h5>
+                            {% render_table cdiff.deleted %}
+                        {% endif %}
+                        {% if cdiff.stats.updated > 0 %}
+                            <h5 class="title">
+                                Updated rules
+                            </h5>
+                            {% render_table cdiff.updated %}
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p>
+                        No change on last update
+                    </p>
+                {% endif %}
+            {% endif %}
+            {% if mode == 'struct' %}
+                {% if disabled_rules  %}
+                    <div class="col-md-6">
+                        <h2 class="title">
+                            Disabled rules
+                        </h2>
+                        {% render_table disabled_rules %}
+                    </div>
+                {% endif %}
+                {% if thresholds %}
+                    <div class="col-md-6">
+                        <h2 class="title">
+                            Thresholds
+                        </h2>
+                        {% render_table thresholds %}
+                    </div>
+                {% endif %}
+                {% if suppress %}
+                    <div class="col-md-6">
+                        <h2 class="title">
+                            Suppressions
+                        </h2>
+                        {% render_table suppress %}
+                    </div>
+                {% endif %}
+                {% if reject_categories %}
+                    <div class="col-md-6">
+                        <h2 class="title">
+                            Reject categories
+                        </h2>
+                        {% render_table reject_categories %}
+                    </div>
+                {% endif %}
+                {% if drop_categories %}
+                    <div class="col-md-6">
+                        <h2 class="title">
+                            Drop categories
+                        </h2>
+                        {% render_table drop_categories %}
+                    </div>
+                {% endif %}
+                {% if filestore_categories %}
+                    <div class="col-md-6">
+                        <h2 class="title">
+                            Filestore categories
+                        </h2>
+                        {% render_table filestore_categories %}
+                    </div>
+                {% endif %}
+                {% if reject_rules %}
+                    <div class="col-md-6">
+                        <h2 class="title">
+                            Reject rules
+                        </h2>
+                        {% render_table reject_rules %}
+                    </div>
+                {% endif %}
+                {% if drop_rules %}
+                    <div class="col-md-6">
+                        <h2 class="title">
+                            Drop rules
+                        </h2>
+                        {% render_table drop_rules %}
+                    </div>
+                {% endif %}
+                {% if filestore_rules %}
+                    <div class="col-md-6">
+                        <h2 class="title">
+                            Filestore rules
+                        </h2>
+                        {% render_table filestore_rules %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row" id="ruleset_status_row" style="display:none">
+                <div class="col-md-12">
+                    <h2 class="title">
+                        Ruleset has errors
+                    </h2>
+                    <div id="ruleset_status">
+                    </div>
+                    {% if not ruleset.need_test and ruleset.errors %}
+                        {% if ruleset.json_errors.format == 'raw' %}
+                            <pre>{{ ruleset.json_errors.message }}</pre>
+                        {% else %}
+                            <ul>
+                                {% for error in ruleset.json_errors %}
+                                    {% if error.sid %}
+                                        <li>
+                                            <span class="text-danger">
+                                                <strong>{{ error.error }}</strong>
+                                            </span>
+                                            :
+                                            <a href="{% url 'rule_sid'  error.sid %}">
+                                                <span>
+                                                    {{ error.message|safe }}
+                                                </span>
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li>
+                                            <span class="text-danger">
+                                                <strong>{{ error.error }}</strong>
+                                            </span>
+                                            :
+                                            <span>
+                                                {{ error.message|safe }}
+                                            </span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- container -->
+        <script>
 function ruleset_rules_count(ruleset_pk)
 {
     var url = "{% url 'ruleset-rules-count' ruleset.id %}"
 
     $.ajax({
-       url: url,
-          success: function(data) {
+        url: url,
+        success: function(data) {
             if ((data['rules_count'] != {{ ruleset.rules_count }}) || {{ ruleset.rules_count }} == 0) {
                 fadeChange($("#ruleset_rules_count"), data['rules_count']);
             }
-          }
+        }
     });
 }
 
@@ -297,68 +327,68 @@ function test_ruleset(ruleset_pk)
     var tgturl = "{% url 'test_ruleset' ruleset.id %}?ajax=1";
 
     $.ajax({
-       url: tgturl,
-          success: function(data) {
+        url: tgturl,
+        success: function(data) {
             if ((data['rules_count'] != {{ ruleset.rules_count }}) || {{ ruleset.rules_count }} == 0) {
                 fadeChange($("#ruleset_rules_count"), data['rules_count']);
             }
-            if (data['status'] == true) { 
+            if (data['status'] == true) {
                 fadeChange($("#ruleset_status_menu"), "True");
             } else {
-		$("#ruleset_status_menu").empty();
-		$("#ruleset_status_menu").append("<a href='#ruleset_status'>False</a>");
-		$("#error").empty();
-		$("#error").append("Ruleset has errors. See <a href='#ruleset_status'>list at bottom of page</a>.");
-		$("#error").parent("div").toggle();
+		        $("#ruleset_status_menu").empty();
+		        $("#ruleset_status_menu").append("<a href='#ruleset_status'>False</a>");
+		        $("#error").empty();
+		        $("#error").append("Ruleset has errors. See <a href='#ruleset_status'>list at bottom of page</a>.");
+		        $("#error").parent("div").toggle();
 
                 error_content = ""
                 if (data['errors']['format'] == 'raw') {
                     error_content = data['errors']['message'];
                     $("#ruleset_status").append('<pre>' + error_content + '</pre>');
                 } else {
-                  for (i = 0; i < data['errors'].length; i++) {
-                    if (data['errors'][i]['sid']) {
-                        error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <a href="{% url 'rules_index' %}rule/' + parseInt(data['errors'][i]['sid']) + '"><span>' + data['errors'][i]['message'] + '</span></a></li>';
-                    } else {
-                        error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
+                    for (i = 0; i < data['errors'].length; i++) {
+                        if (data['errors'][i]['sid']) {
+                            error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <a href="{% url 'rules_index' %}rule/';
+                            error_content += parseInt(data['errors'][i]['sid']) + '"><span>' + data['errors'][i]['message'] + '</span></a></li>';
+                        } else {
+                            error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
+                        }
                     }
-                  }
-                  $("#ruleset_status").append('<ul>' + error_content + '</ul>');
+                    $("#ruleset_status").append('<ul>' + error_content + '</ul>');
                 }
                 $("#ruleset_status_row").fadeIn();
             }
-          },
-	  error: function(jqXHR, textStatus, errorThrown) {
-             if (jqXHR.readyState != 4) {
-                 // Handling of the request is not finished,
-                 // triggered while exiting the page during the query
-                 return;
-             }
-             $("#ruleset_status").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Unable to check ruleset validity' + errorThrown + '</p>');
-             $("#ruleset_status_row").fadeIn();
-             fadeChange($("#ruleset_status_menu"), "Unknown");
-	  },
-      timeout: 120 * 1000
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            if (jqXHR.readyState != 4) {
+                // Handling of the request is not finished,
+                // triggered while exiting the page during the query
+                return;
+            }
+            $("#ruleset_status").append('<p class="text-danger"> <span class="glyphicon glyphicon-remove"></span> Unable to check ruleset validity' + errorThrown + '</p>');
+            $("#ruleset_status_row").fadeIn();
+            fadeChange($("#ruleset_status_menu"), "Unknown");
+        },
+        timeout: 120 * 1000
     });
 }
+
 $( 'document' ).ready(function() {
     ruleset_rules_count({{ ruleset.pk }})
 });
 {% if ruleset.need_test %}
-$( 'document' ).ready(function() {
-    test_ruleset({{ ruleset.pk }})
-});
+    $( 'document' ).ready(function() {
+        test_ruleset({{ ruleset.pk }})
+    });
 {% else %}
-{% if ruleset.errors|length > 2 %}
-    $("#ruleset_status_row").show(duration=200);
+    {% if ruleset.errors|length > 2 %}$("#ruleset_status_row").show(duration=200);{% endif %}
 {% endif %}
+    </script>
 {% endif %}
-</script>
-{% endif %}
-
 {% if mode  == 'display' %}
-<h2 class="title">Rules list</h2>
-{% render_table rules %}
+    <h2 class="title">
+        Rules list
+    </h2>
+    {% render_table rules %}
 {% endif %}
-
-{% endblock %}
+{% endblock content %}

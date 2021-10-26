@@ -1,41 +1,51 @@
 {% extends "rules/base.html" %}
-
-
 {% block sidebar %}
     {% for name, object in objects.items %}
         <div class="panel-heading">
             <h2 class="panel-title">{{ name }}{{ object.size|pluralize }}</h2>
         </div>
         <div class="panel-body">
-            <ul><li>{{ object.size }} object{{ object.size|pluralize }}</li></ul>
+            <ul>
+                <li>{{ object.size }} object{{ object.size|pluralize }}</li>
+            </ul>
         </div>
     {% endfor %}
-        <div class="panel-heading">
-            <h2 class="panel-title">Manage accounts</h2>
-        </div>
-        <div class="panel-body">
-            <ul class="manage">
-                <li> <a href="{% url 'list_users' %}">User list</a></li>
-                <li> <a href="{% url 'list_groups' %}">Role list</a></li>
-            </ul>
-        </div>
-        <div class="panel-heading">
-            <h2 class="panel-title">Actions</h2>
-        </div>
-        <div class="panel-body">
-            <ul class="action">
-                <li> <a href="{% url 'add_user' %}">Add User</a></li>
-                <li> <a href="{% url 'add_group' %}">Add Role</a></li>
-                {% if extra_auth %}
-                    <li>
-                        <a data-toggle="tooltip" title="Set priority on Role/Group assignments" href="{% url 'edit_priorities' %}">Edit priorities
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
-{% endblock %}
-
+    <div class="panel-heading">
+        <h2 class="panel-title">Manage accounts</h2>
+    </div>
+    <div class="panel-body">
+        <ul class="manage">
+            <li>
+                <a href="{% url 'list_users' %}">User list</a>
+            </li>
+            <li>
+                <a href="{% url 'list_groups' %}">Role list</a>
+            </li>
+        </ul>
+    </div>
+    <div class="panel-heading">
+        <h2 class="panel-title">Actions</h2>
+    </div>
+    <div class="panel-body">
+        <ul class="action">
+            <li>
+                <a href="{% url 'add_user' %}">Add User</a>
+            </li>
+            <li>
+                <a href="{% url 'add_group' %}">Add Role</a>
+            </li>
+            {% if extra_auth %}
+                <li>
+                    <a data-toggle="tooltip"
+                       title="Set priority on Role/Group assignments"
+                       href="{% url 'edit_priorities' %}">
+                        Edit priorities
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+{% endblock sidebar %}
 {% block content %}
     {% if objects %}
         {% for name, object in objects.items %}
@@ -54,4 +64,4 @@
     {% else %}
         No object available.
     {% endif %}
-{% endblock %}
+{% endblock content %}

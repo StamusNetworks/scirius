@@ -1,77 +1,96 @@
 {% load staticfiles %}
 {% load bootstrap3  %}
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>{% block title %}Scirius Rule Management{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'rules/static.css' %}" />
-    <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
-</head>
-<body>
-
-
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-12">
-{% if error %}
-<div class="alert alert-danger">{{ error }}</div>
-{% endif %}
-</div>
-</div>
-<div class="row">
-<div class="col-md-12">
-<img class="img-circle center-block" id="sciriuslogo" src="{% static 'rules/scirius.jpg' %}"/>
-</div>
-</div>
-<div class="row row-eq-height">
-<div class="col-md-3 col-xs-12">
-</div>
-<div class="col-md-4 col-xs-12">
-<div class="jumbotron fill" id="logininfo">
-<h2>Scirius Community Edition</h2>
-<p class="lead">
-Scirius CE is a web application dedicated to Suricata ruleset management.
-</p>
-<hr class="m-y-2">
-<p class="minor">Scirius CE is developed by Stamus Networks and is available under the GNU GPLv3 license.</p>
-<p class="minor">Manage multiple rulesets and rules sources. Upload and manage custom rules and any data files. Handle thresholding and suppression to limit verbosity of noisy alerts. Get suricata performance statistics and information about rules activity.
-</p>
-<p class="minor">
-Interact with Elasticsearch, Kibana and other interfaces such as EveBox.
-</p>
-</div>
-</div>
-<div class="col-md-2 col-xs-12">
-<div class="panel panel-default fill" id="login">
-<div class="panel-heading">
-<h2 class="panel-title">Login to Scirius</h2>
-</div>
-<div>
-<form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
-    {% bootstrap_form form %}
-    {% buttons %}
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "ok" %} Login
-        </button>
-    {% endbuttons %}
-</form>
-</div>
-</div>
-
-</div>
-</div> <!-- row -->
-
-<hr>
-<ul class="list-inline text-center">
- <li><a href="https://www.stamus-networks.com"><img src="{% static 'rules/stamus.png' %}"/></a><li> 
-<!-- <li><a href="/">Stamus Networks</a><li> -->
-<li><a href="https://www.stamus-networks.com/scirius-open-source">Scirius Community Edition</a></li>
-<li><a href="https://www.stamus-networks.com/scirius-platform">Scirius Security Platform</a></li>
-<li><li>
-</ul>
-
-</div> <!-- container-fluid -->
-</body>
+    <head>
+        <title>
+            {% block title %}Scirius Security Platform{% endblock %}
+        </title>
+        <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
+        <link rel="stylesheet"
+              type="text/css"
+              href="{% static 'rules/static.css' %}"/>
+        <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <img class="center-block"
+                         id="sciriuslogo"
+                         src="{% static 'rules/stamus_logo_full.png' %}"/>
+                </div>
+            </div>
+            <div class="row row-eq-height">
+                <div class="col-md-3 col-xs-12"></div>
+                <div class="col-md-4 col-xs-12">
+                    <div class="jumbotron fill" id="logininfo">
+                        <h2>Scirius Security Platform</h2>
+                        <p class="lead">
+                            Scirius Security Platform is an advanced network detection and response (NDR) solution
+                            that mitigates risk by exposing threats to critical assets and empowering rapid response.
+                        </p>
+                        <hr class="m-y-2">
+                        <p class="minor">
+                            Scirius Security Platform is developed by Stamus Networks and provides:
+                        </p>
+                        <ul>
+                            <li>
+                                <p class="minor">
+                                    Comprehensive network inspection for complete visibility into network activity and threat events
+                                </p>
+                            </li>
+                            <li>
+                                <p class="minor">
+                                    Guided threat hunting for proactive network defence and incident investigation using enriched event data
+                                </p>
+                            </li>
+                            <li>
+                                <p class="minor">
+                                    Automated detection and notification of acute and urgent threats to assets, tracked by stage on the cyber kill chain
+                                </p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-2 col-xs-12">
+                    <div class="panel panel-default fill" id="login">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">Login to Scirius</h2>
+                        </div>
+                        <div>
+                            <form action="{{ request.get_full_path }}" method="post" class="form">
+                                {% csrf_token %}
+                                {% bootstrap_form form %}
+                                {% buttons %}
+                                    <button type="submit" class="btn btn-primary">{% bootstrap_icon "ok" %} Login</button>
+                                {% endbuttons %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- row -->
+            <hr>
+            <ul class="list-inline text-center">
+                <li>
+                    <a href="https://www.stamus-networks.com"><img src="{% static 'rules/stamus.png' %}"/></a>
+                <li>
+                        <!-- <li><a href="/">Stamus Networks</a><li> -->
+                <li>
+                    <a href="https://www.stamus-networks.com/scirius-open-source">Scirius Community Edition</a>
+                </li>
+                <li>
+                    <a href="https://www.stamus-networks.com/scirius-platform">Scirius Security Platform</a>
+                </li>
+                <li><li>
+            </ul>
+        </div>
+        <!-- container-fluid -->
+    </body>
 </html>

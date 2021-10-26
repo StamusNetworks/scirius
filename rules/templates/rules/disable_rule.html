@@ -1,82 +1,75 @@
 {% extends "rules/base.html" %}
-{% load bootstrap3  %}
-
+{% load bootstrap3 %}
 {% block content %}
-
-{% if form %}
-{% if operation == 'disable' %}
-<h4>Disable rule {{ rule.sid }} from ruleset(s)</h4>
-{% else %}
-<h4>Enable rule {{ rule.sid }} in ruleset(s)</h4>
-{% endif %}
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-4">
-
-{% for ruleset in rulesets %}
-{% if ruleset.deps_rules|length %}
-In ruleset <strong>{{ ruleset.name }}</strong>, this will also {% if operation == 'disable' %}disable{% else %}enable{% endif %} the following rules due to flowbits dependencies:
-<ul>
-{% for rule in ruleset.deps_rules %}
-<li><a href="{% url 'rule' rule.pk %}">{{ rule.msg }}</a></li>
-{% endfor %}
-</ul>
-{% endif %}
-{% endfor %}
-
-
-{% if operation == 'disable' %}
-<form class="form" action="{% url 'disable_rule' rule.sid %}" method="post">
-{% else %}
-<form class="form" action="{% url 'enable_rule' rule.sid %}" method="post">
-{% endif %}
-
-{% csrf_token %}
-    {% bootstrap_form form %}
-
-
-    {% buttons %}
-        <button type="submit" class="btn btn-primary">
-{% if operation == 'disable' %}
-            {% bootstrap_icon "ok" %} Disable
-{% else %}
-            {% bootstrap_icon "ok" %} Enable
-{% endif %}
-        </button>
-    {% endbuttons %}
-</form>
-
-</div>
-</div>
-</div>
-{% endif %}
-
-{% endblock %}
-
+    {% if form %}
+        {% if operation == 'disable' %}
+            <h4>Disable rule {{ rule.sid }} from ruleset(s)</h4>
+        {% else %}
+            <h4>Enable rule {{ rule.sid }} in ruleset(s)</h4>
+        {% endif %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-4">
+                    {% for ruleset in rulesets %}
+                        {% if ruleset.deps_rules|length %}
+                            In ruleset <strong>{{ ruleset.name }}</strong>, this will also
+                            {% if operation == 'disable' %}
+                                disable
+                            {% else %}
+                                enable
+                            {% endif %}
+                            the following rules due to flowbits dependencies:
+                            <ul>
+                                {% for rule in ruleset.deps_rules %}
+                                    <li>
+                                        <a href="{% url 'rule' rule.pk %}">{{ rule.msg }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% endfor %}
+                    <form class="form" action={% if operation == 'disable' %}"{% url 'disable_rule' rule.sid %}"{% else %}"{% url 'enable_rule' rule.sid %}"{% endif %} method="post">
+                        {% csrf_token %}
+                        {% bootstrap_form form %}
+                        {% buttons %}
+                            <button type="submit" class="btn btn-primary">
+                                {% if operation == 'disable' %}
+                                    {% bootstrap_icon "ok" %} Disable
+                                {% else %}
+                                    {% bootstrap_icon "ok" %} Enable
+                                {% endif %}
+                            </button>
+                        {% endbuttons %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock content %}
 {% block sidebar %}
-<div class="panel-heading">
-<h2 class="panel-title">Rule {{ rule.sid }}</h2>
-</div>
-
-<div class="panel-body">
-<ul class="action">
-{% if rule.state %}
-<li>
-    <a href="{% url 'edit_rule' rule.sid %}">Transform rule</a>
-</li>
-<li>
-<a href="{% url 'disable_rule' rule.sid %}">Disable rule</a>
-</li>
-<li>
-<a href="{% url 'enable_rule' rule.sid %}">Enable rule</a>
-</li>
-<li>
-<a href="{% url 'threshold_rule' rule.sid %}?action=threshold">Threshold rule</a>
-</li>
-<li>
-<a href="{% url 'threshold_rule' rule.sid %}?action=suppress">Suppress rule</a>
-</li>
-{% endif %} {# rule.state #}
-</ul>
-</div>
-{% endblock %}
+    <div class="panel-heading">
+        <h2 class="panel-title">Rule {{ rule.sid }}</h2>
+    </div>
+    <div class="panel-body">
+        <ul class="action">
+            {% if rule.state %}
+                <li>
+                    <a href="{% url 'edit_rule' rule.sid %}">Transform rule</a>
+                </li>
+                <li>
+                    <a href="{% url 'disable_rule' rule.sid %}">Disable rule</a>
+                </li>
+                <li>
+                    <a href="{% url 'enable_rule' rule.sid %}">Enable rule</a>
+                </li>
+                <li>
+                    <a href="{% url 'threshold_rule' rule.sid %}?action=threshold">Threshold rule</a>
+                </li>
+                <li>
+                    <a href="{% url 'threshold_rule' rule.sid %}?action=suppress">Suppress rule</a>
+                </li>
+            {% endif %}
+            {# rule.state #}
+        </ul>
+    </div>
+{% endblock sidebar %}

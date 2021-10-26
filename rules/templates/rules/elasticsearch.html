@@ -1,11 +1,8 @@
 {% extends "rules/base.html" %}
-
 {% block content %}
-
-<div class="container-fluid">
-{% if elasticsearch %}
-
-<script>
+    <div class="container-fluid">
+        {% if elasticsearch %}
+            <script>
 $(document).ready(function(){
     $('a[data-toggle="tab"]').on('show.bs.tab', function(e) {
         localStorage.setItem('esstatsactiveTab', $(e.target).attr('href'));
@@ -19,139 +16,182 @@ $(document).ready(function(){
         $('#estats a[href="' + activeTab + '"]').tab('show');
     }
 });
-</script>
-
-<div role="tabpanel">
-
-  <!-- Nav tabs -->
-  <ul class="nav nav-tabs" id="estats" role="tablist">
-    <li role="presentation" class="active"><a href="#cluster" aria-controls="cluster" role="tab" data-toggle="tab">Cluster info</a></li>
-    <li role="presentation"><a href="#indices" aria-controls="indices" role="tab" data-toggle="tab">Indices stats</a></li>
-{% if logstash_stats %}
-    <li role="presentation"><a href="#logstash-panel" aria-controls="logstash-panel" role="tab" data-toggle="tab">Logstash insertion speed</a></li>
-{% endif %}
-  </ul>
-
-  <div class="tab-content">
-<div role="tabpanel" class="tab-pane fade in active" id="cluster">
-
-<div class="row">
-<div class="col-md-4">
-<div class="panel panel-default" id="shards">
-<div class="panel-heading">
-<h2 class="panel-title">Data shards</h2>
-</div>
-<div class="panel-body">
-<ul>
-<li><span class="type">Active primary shards:</span><span class="label label-default pull-right" id="active_primary_shards">N/A</span></li>
-<li><span class="type">Active shards:</span><span class="label label-default pull-right" id="active_shards">N/A</span></li>
-<li><span class="type">Relocating shards:</span><span class="label label-default pull-right" id="relocating_shards">N/A</span></li>
-<li><span class="type">Initializing shards:</span><span class="label label-default pull-right" id="initializing_shards">N/A</span></li>
-<li><span class="type">Unassigned shards:</span><span class="label label-default pull-right" id="unassigned_shards">N/A</span></li>
-</ul>
-</div> <!-- panel-body -->
-</div> <!-- panel -->
-</div> <!-- col -->
-
-
-
-<div class="col-md-4">
-<div class="panel panel-default" id="docs">
-<div class="panel-heading">
-<h2 class="panel-title">Documents/entries info</h2>
-</div>
-<div class="panel-body">
-<ul>
-
-       <li><span class="type">Nb of documents:</span> <span class="pull-right label label-default" id="docs_count">N/A</span></li>
-       <li><span class="type">Nb of deletions:</span> <span class="pull-right label label-default" id="docs_deleted">N/A</span></li>
-
-</div> <!-- panel-body -->
-</div> <!-- panel -->
-</div> <!-- col -->
-
-</div> <!-- row -->
-
-<div class="row">
-<div class="col-md-4">
-<div class="panel panel-default" id="nodes">
-<div class="panel-heading">
-<h2 class="panel-title">Nodes info</h2>
-</div>
-<div class="panel-body">
-<ul>
-
-       <li><span class="type">Number of nodes:</span> <span class="pull-right label label-default" id="nb_nodes">N/A</span></li>
-       <li><span class="type">Number of data nodes:</span> <span class="pull-right label label-default" id="nb_data_nodes">N/A</span></li>
-
-</div> <!-- panel-body -->
-</div> <!-- panel -->
-</div> <!-- col -->
-
-<div class="col-md-4">
-    <div class="container-fluid container-cards-pf">
-        <div class="row row-cards-pf">
-          <div class="col-xs-12 col-sm-12 col-md-12">
-            <div class="card-pf card-pf-utilization">
-  <h2 class="card-pf-title">
-    Filesystem
-  </h2>
-  <div class="card-pf-body" id="fs">
-    <p class="card-pf-utilization-details">
-      <span class="card-pf-utilization-card-details-count" id="fs_free"></span>
-        <span class="card-pf-utilization-card-details-description">
-          <span class="card-pf-utilization-card-details-line-1">Available</span>
-          <span class="card-pf-utilization-card-details-line-2">of <span id="fs_total"></span></span>
-        </span>
-    </p>
-    <div id="chart-pf-donut-fs"></div>
-    <script>
-    </script>
-  </div>
-</div>
-
-          </div>
-        </div><!-- /row -->
-      </div><!-- /container -->
-</div> <!-- col -->
-
-</div> <!-- row -->
-</div>
-
-  <div role="tabpanel" class="tab-pane fade in" id="indices">
-<div class="row">
-<div class="col-md-12">
-<div id="indices_stats">Fetching data</div>
-</div>
-</div>
-
-</div>
-
-{% if logstash_stats %}
-  <div role="tabpanel" class="tab-pane fade in" id="logstash-panel">
-<div class="row">
-<div class="col-md-12">
-<h2>Logstash event insertion speed</h2><p id="logstash_title"/>
-</div>
-</div>
-
-<div class="row">
-<div class="col-md-12">
-<div id="logstash">
-<span>Fetching data...</span>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-</div> <!-- col -->
-</div> <!-- row -->
-</div>
-{% endif %}
-
-</div>
-</div>
-
-<script>
-
+            </script>
+            <div role="tabpanel">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" id="estats" role="tablist">
+                    <li role="presentation" class="active">
+                        <a href="#cluster" aria-controls="cluster" role="tab" data-toggle="tab">Cluster info</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#indices" aria-controls="indices" role="tab" data-toggle="tab">Indices stats</a>
+                    </li>
+                    {% if logstash_stats %}
+                        <li role="presentation">
+                            <a href="#logstash-panel"
+                               aria-controls="logstash-panel"
+                               role="tab"
+                               data-toggle="tab">Logstash insertion speed</a>
+                        </li>
+                    {% endif %}
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active" id="cluster">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="panel panel-default" id="shards">
+                                    <div class="panel-heading">
+                                        <h2 class="panel-title">Data shards</h2>
+                                    </div>
+                                    <div class="panel-body">
+                                        <ul>
+                                            <li>
+                                                <span class="type">Active primary shards:</span>
+                                                <span class="label label-default pull-right" id="active_primary_shards">N/A</span>
+                                            </li>
+                                            <li>
+                                                <span class="type">Active shards:</span>
+                                                <span class="label label-default pull-right" id="active_shards">N/A</span>
+                                            </li>
+                                            <li>
+                                                <span class="type">Relocating shards:</span>
+                                                <span class="label label-default pull-right" id="relocating_shards">N/A</span>
+                                            </li>
+                                            <li>
+                                                <span class="type">Initializing shards:</span>
+                                                <span class="label label-default pull-right" id="initializing_shards">N/A</span>
+                                            </li>
+                                            <li>
+                                                <span class="type">Unassigned shards:</span>
+                                                <span class="label label-default pull-right" id="unassigned_shards">N/A</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <!-- panel-body -->
+                                </div>
+                                <!-- panel -->
+                            </div>
+                            <!-- col -->
+                            <div class="col-md-4">
+                                <div class="panel panel-default" id="docs">
+                                    <div class="panel-heading">
+                                        <h2 class="panel-title">Documents/entries info</h2>
+                                    </div>
+                                    <div class="panel-body">
+                                        <ul>
+                                            <li>
+                                                <span class="type">Nb of documents:</span>
+                                                <span class="pull-right label label-default" id="docs_count">N/A</span>
+                                            </li>
+                                            <li>
+                                                <span class="type">Nb of deletions:</span>
+                                                <span class="pull-right label label-default" id="docs_deleted">N/A</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <!-- panel-body -->
+                                </div>
+                                <!-- panel -->
+                            </div>
+                            <!-- col -->
+                        </div>
+                        <!-- row -->
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="panel panel-default" id="nodes">
+                                    <div class="panel-heading">
+                                        <h2 class="panel-title">Nodes info</h2>
+                                    </div>
+                                    <div class="panel-body">
+                                        <ul>
+                                            <li>
+                                                <span class="type">Number of nodes:</span>
+                                                <span class="pull-right label label-default" id="nb_nodes">N/A</span>
+                                            </li>
+                                            <li>
+                                                <span class="type">Number of data nodes:</span>
+                                                <span class="pull-right label label-default" id="nb_data_nodes">N/A</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <!-- panel-body -->
+                                </div>
+                                <!-- panel -->
+                            </div>
+                            <!-- col -->
+                            <div class="col-md-4">
+                                <div class="container-fluid container-cards-pf">
+                                    <div class="row row-cards-pf">
+                                        <div class="col-xs-12 col-sm-12 col-md-12">
+                                            <div class="card-pf card-pf-utilization">
+                                                <h2 class="card-pf-title">Filesystem</h2>
+                                                <div class="card-pf-body" id="fs">
+                                                    <p class="card-pf-utilization-details">
+                                                        <span class="card-pf-utilization-card-details-count" id="fs_free"></span>
+                                                        <span class="card-pf-utilization-card-details-description">
+                                                            <span class="card-pf-utilization-card-details-line-1">
+                                                                Available
+                                                            </span>
+                                                            <span class="card-pf-utilization-card-details-line-2">
+                                                                of
+                                                                <span id="fs_total">
+                                                                </span>
+                                                            </span>
+                                                        </span>
+                                                    </p>
+                                                    <div id="chart-pf-donut-fs">
+                                                    </div>
+                                                    <script>
+                                                    </script>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- /row -->
+                                </div>
+                                <!-- /container -->
+                            </div>
+                            <!-- col -->
+                        </div>
+                        <!-- row -->
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade in" id="indices">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="indices_stats">
+                                    Fetching data
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if logstash_stats %}
+                        <div role="tabpanel" class="tab-pane fade in" id="logstash-panel">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h2>
+                                        Logstash event insertion speed
+                                    </h2>
+                                    <p id="logstash_title"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="logstash">
+                                        <span>
+                                            Fetching data...
+                                        </span>
+                                        <svg style="width:100%;height:300px">
+                                        </svg>
+                                    </div>
+                                </div>
+                                <!-- col -->
+                            </div>
+                            <!-- row -->
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <script>
 function bytesToSize(bytes) {
 var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
 if (bytes == 0) return '0 Byte';
@@ -160,18 +200,17 @@ return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
 };
 
 function get_es_stats() {
-$.ajax(
-{
+    $.ajax({
         type:"GET",
         url: "{% url 'es_stats' %}",
         success: function(data) {
-        if (!data) {
+            if (!data) {
                 $("#es_status").removeClass("label-default");
                 $("#es_status").removeClass("label-warning");
                 $("#es_status").removeClass("label-success");
                 $("#es_status").addClass("label-danger");
                 $("#es_status").text("red");
-        } else {
+            } else {
                 $("#docs_count").text(data['indices']['docs']['count']);
                 $("#docs_deleted").text(data['indices']['docs']['deleted']);
                 var data_size = data['indices']['store']['size_in_bytes'];
@@ -201,24 +240,24 @@ $.ajax(
                 var fs_used_percent = 100.0 * ( 1 - 1.0 * fs_free / fs_total) - data_size_percent;
                 donutConfig.color =  {
                       pattern: ["red", "#EC7A08","#D1D1D1"]
-                                      };
-                                      donutConfig.data = {
-                      type: "donut",
-                            columns: [
-                                    ["ES Data", data_size_percent],
-                                    ["Used", fs_used_percent],
-                                    ["Available", fs_free_percent]
-                            ],
-                            groups: [
-                                    ["data", "used", "available"]
-                            ],
-                            order: null
-                                      };
-                                      donutConfig.tooltip = {
-                      contents: function (d) {
-                                        return '<span class="donut-tooltip-pf" style="white-space: nowrap;">' +
-                                                Math.round(d[0].ratio * 100) + '% ' + d[0].name +
-                                                '</span>';
+                };
+                donutConfig.data = {
+                    type: "donut",
+                    columns: [
+                        ["ES Data", data_size_percent],
+                        ["Used", fs_used_percent],
+                        ["Available", fs_free_percent]
+                    ],
+                    groups: [
+                        ["data", "used", "available"]
+                    ],
+                    order: null
+                };
+                donutConfig.tooltip = {
+                    contents: function (d) {
+                        return '<span class="donut-tooltip-pf" style="white-space: nowrap;">' +
+                                Math.round(d[0].ratio * 100) + '% ' + d[0].name +
+                                '</span>';
                       }
                 };
 
@@ -229,21 +268,20 @@ $.ajax(
                 donutChartTitle.insert('tspan').text(datasize).classed('donut-title-big-pf', true).attr('dy', 0).attr('x', 0);
                 donutChartTitle.insert('tspan').text("of ES data").classed('donut-title-small-pf', true).attr('dy', 20).attr('x', 0);
 
-        }
+            }
         },
         error: function(data) {
-                $("#es_status").removeClass("label-default");
-                $("#es_status").removeClass("label-warning");
-                $("#es_status").removeClass("label-success");
-                $("#es_status").addClass("label-danger");
-                $("#es_status").text("red");
+            $("#es_status").removeClass("label-default");
+            $("#es_status").removeClass("label-warning");
+            $("#es_status").removeClass("label-success");
+            $("#es_status").addClass("label-danger");
+            $("#es_status").text("red");
         },
         complete: function() {
             setTimeout(get_es_stats, 30000);
         },
         timeout: 15000,
-}
-);
+    });
 }
 $( 'document' ).ready(get_es_stats());
 
@@ -262,15 +300,14 @@ $("#".concat(selector)).addClass("label-success");
 }
 
 function get_es_detailed_health() {
-$.ajax(
-{
+    $.ajax({
         type:"GET",
         url: "{% url 'es_health' %}",
         success: function(data) {
-        if (!data) {
+            if (!data) {
                 $("#es_status").removeClass("label-default");
                 $("#es_status").addClass("label-danger");
-        } else {
+            } else {
                 $("#active_primary_shards").text(data['active_primary_shards']);
                 $("#active_shards").text(data['active_shards']);
                 set_critical_value(data, "relocating_shards");
@@ -279,18 +316,17 @@ $.ajax(
                 $("#nb_nodes").text(data['number_of_nodes']);
                 $("#nb_data_nodes").text(data['number_of_data_nodes']);
                 $("#es_cluster_name").text(data['cluster_name']);
-        }
+            }
         },
         error: function(data) {
-                $("#es_status").removeClass("label-default");
-                $("#es_status").addClass("label-danger");
+            $("#es_status").removeClass("label-default");
+            $("#es_status").addClass("label-danger");
         },
         complete: function() {
             setTimeout(get_es_detailed_health, 30000);
         },
         timeout: 15000,
-}
-);
+    });
 }
 
 $( 'document' ).ready(get_es_detailed_health());
@@ -306,57 +342,72 @@ function get_es_indices_stats() {
         }
     }
 
-    $.ajax(
-    {
-            type:"GET",
-            url:indices_url,
-            success: function(data) {
-                    $("#indices_stats").empty();
-                    $("#indices_stats").append(data);
-            },
-            error: function(data) {
-                    $("#indices_stats").text("Could not fetch data");
-            },
-            complete: function() {
-                setTimeout(get_es_indices_stats, 30000);
-            },
-            timeout: 15000,
-    }
-    );
+    $.ajax({
+        type:"GET",
+        url:indices_url,
+        success: function(data) {
+            $("#indices_stats").empty();
+            $("#indices_stats").append(data);
+        },
+        error: function(data) {
+            $("#indices_stats").text("Could not fetch data");
+        },
+        complete: function() {
+            setTimeout(get_es_indices_stats, 30000);
+        },
+        timeout: 15000,
+    });
 }
 
-{% if perms.rules.configuration_view %}
-$( 'document' ).ready(get_es_indices_stats());
-{% endif %}
+{% if perms.rules.configuration_view %}$( 'document' ).ready(get_es_indices_stats());{% endif %}
 {% if logstash_stats %}
-{% if es2x %}
-$( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve_insert.rate_1m', '#logstash', 0, null, 'Events per second'));
-{% else %}
-$( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve.total.rate_1m', '#logstash', 0, null, 'Events per second'));
-{% endif %}
+    {% if es2x %}
+        $( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve_insert.rate_1m', '#logstash', 0, null, 'Events per second'));
+    {% else %}
+        $( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve.total.rate_1m', '#logstash', 0, null, 'Events per second'));
+    {% endif %}
 {% endif %}
 </script>
-{% else %}
-
-<div class="alert alert-warning">Nothing to see here if you don't enable elasticsearch.</div>
-
-{% endif %}
-</div> <!-- container -->
-
-
-{% endblock %}
-
+    {% else %}
+        <div class="alert alert-warning">
+            Nothing to see here if you don't enable elasticsearch.
+        </div>
+    {% endif %}
+    </div>
+    <!-- container -->
+{% endblock content %}
 {% block sidebar %}
-
-<div class="panel-heading">
-<h2 class="panel-title">Elasticsearch</h2>
-</div>
-<div class="panel-body">
-<ul>
-       <li><span class="type">Status:</span> <span class="pull-right label label-default" id="es_status" >Checking</span></li>
-       <li><span class="type">Cluster name:</span><span class="pull-right" id="es_cluster_name">N/A</span></li>
-       <li><span class="type">Version:</span> <span class="pull-right text-info" id="es_version">N/A</span></li>
-</ul>
-</div>
-
-{% endblock %}
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            Elasticsearch
+        </h2>
+    </div>
+    <div class="panel-body">
+        <ul>
+            <li>
+                <span class="type">
+                    Status:
+                </span>
+                <span class="pull-right label label-default" id="es_status">
+                    Checking
+                </span>
+            </li>
+            <li>
+                <span class="type">
+                    Cluster name:
+                </span>
+                <span class="pull-right" id="es_cluster_name">
+                    N/A
+                </span>
+            </li>
+            <li>
+                <span class="type">
+                    Version:
+                </span>
+                <span class="pull-right text-info" id="es_version">
+                    N/A
+                </span>
+            </li>
+        </ul>
+    </div>
+{% endblock sidebar %}

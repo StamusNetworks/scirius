@@ -1,197 +1,243 @@
 {% extends "rules/base.html" %}
 {% load bootstrap3  %}
-
-
 {% block sidebar %}
-  <div class="panel-heading">
-    <h2 class="panel-title">System settings</h2>
- </div>
-  <div class="panel-body">
-  <p>Submit form to update Scirius system settings.</p>
-</div>
-{% endblock %}
-
-
+    <div class="panel-heading">
+        <h2 class="panel-title">System settings</h2>
+    </div>
+    <div class="panel-body">
+        <p>
+            Submit form to update Scirius system settings.
+        </p>
+    </div>
+{% endblock sidebar%}
 {% block content %}
-{% if main_form %}
-<h2>System settings edition</h2>
-<ul class="nav nav-tabs">
-    <li role="main" {% if form_id == 'main' %}class="active"{% endif %}><a href="#main" aria-controls="main" role="tab" data-toggle="tab">Main</a></li>
-    <li role="es" {% if form_id == 'es' %}class="active"{% endif %}><a href="#es" aria-controls="es" role="tab" data-toggle="tab">Elasticsearch</a></li>
-    <li role="kibana" {% if form_id == 'kibana' %}class="active"{% endif %}><a href="#kibana" aria-controls="kibana" role="tab" data-toggle="tab">Kibana</a></li>
-</ul>
-
-<div class="tab-content">
-
-<div role="tabpanel" class="tab-pane {% if form_id == 'main' %}active{% endif %}" id="main">
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-6">
-<form class="form" action="{% url 'system_settings' %}" method="post">
-    {% csrf_token %}
-    <input type='hidden' name='form_id' value='main'>
-    {% bootstrap_field main_form.use_http_proxy show_label=False %}
-    <div id="proxy_fields">
-      {% bootstrap_field main_form.http_proxy %}
-      {% bootstrap_field main_form.https_proxy %}
-    </div>
-    {% bootstrap_field main_form.use_elasticsearch %}
-    <div id="es_fields">
-      {% bootstrap_field main_form.custom_elasticsearch %}
-      <div id="es_custom_fields">
-        {% bootstrap_field main_form.elasticsearch_url %}
-        {% bootstrap_field main_form.use_proxy_for_es %}
-        <div id="es_msg_version"></div>
-        <button class="btn btn-secondary" type="button" id="es_button_lb" onclick="es_check_version(); return false;">Check</button>
-      </div>
-    </div>
-    {% if perms.rules.configuration_edit %}
-    {% bootstrap_field  main_form.comment %}
-    {% buttons %}
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "ok" %} Submit
-        </button>
-    {% endbuttons %}
-    {% endif %}
-</form>
-</div>
-</div>
-</div> <!-- container-fluid -->
-</div> <!-- tabpanel -->
-
-<div role="tabpanel" class="tab-pane {% if form_id == 'es' %}active{% endif %}" id="es">
-<div class="container-fluid">
-  <div class="row">
-<div class="col-md-6">
-{% if main_form.use_elasticsearch.value %}
-  {% include 'rules/es_clear_all.html' %}
-{% else %}
-Please enable Elasticsearch first.
-{% endif %}
-</div>
-</div>
-</div> <!-- container-fluid -->
-</div> <!-- tabpanel -->
-
-<div role="tabpanel" class="tab-pane {% if form_id == 'kibana' %}active{% endif %}" id="kibana">
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-6">
-{% if main_form.use_elasticsearch.value %}
-<form class="form" enctype="multipart/form-data" action="{% url 'system_settings' %}" method="post">
-    {% csrf_token %}
-    <input type='hidden' name='form_id' value='kibana'>
-    {% bootstrap_label "Export user dashboards" %}
-    <p class="help-block">
-Clicking on the button will download the user-defined dashboards.
-</p>
-    {% buttons %}
-        <button type="submit" name="export" class="btn btn-primary">
-            {% bootstrap_icon "download" %} Export
-        </button>
-    {% endbuttons %}
-    {% bootstrap_label "Import user dashboards" %}
-    <p class="help-block">
- <strong>Note:</strong> existing dashboards with same name will be overwritten.
- </p>
-    <div class="form-group">
-        <label class="sr-only control-label" for="id_file">File</label>
-        <div class="row bootstrap3-multi-input" disabled="">
-            <div class="col-xs-12">
-                <input type="file" name="file" class="" title="" id="id_file" {% if not perms.rules.configuration_edit %}disabled{% endif %}>
+    {% if main_form %}
+        <h2>System settings edition</h2>
+        <ul class="nav nav-tabs">
+            <li role="main" {% if form_id == 'main' %}class="active"{% endif %}>
+                <a href="#main" aria-controls="main" role="tab" data-toggle="tab">Main</a>
+            </li>
+            <li role="es" {% if form_id == 'es' %}class="active"{% endif %}>
+                <a href="#es" aria-controls="es" role="tab" data-toggle="tab">Elasticsearch</a>
+            </li>
+            <li role="kibana" {% if form_id == 'kibana' %}class="active"{% endif %}>
+                <a href="#kibana" aria-controls="kibana" role="tab" data-toggle="tab">Kibana</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div role="tabpanel"
+                 class="tab-pane
+                        {% if form_id == 'main' %}
+                            active
+                        {% endif %}"
+                 id="main">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form class="form" action="{% url 'system_settings' %}" method="post">
+                                {% csrf_token %}
+                                <input type='hidden' name='form_id' value='main'>
+                                {% bootstrap_field main_form.use_http_proxy show_label=False %}
+                                <div id="proxy_fields">
+                                    {% bootstrap_field main_form.http_proxy %}
+                                    {% bootstrap_field main_form.https_proxy %}
+                                </div>
+                                {% bootstrap_field main_form.use_elasticsearch %}
+                                <div id="es_fields">
+                                    {% bootstrap_field main_form.custom_elasticsearch %}
+                                    <div id="es_custom_fields">
+                                        {% bootstrap_field main_form.elasticsearch_url %}
+                                        {% bootstrap_field main_form.use_proxy_for_es %}
+                                        <div id="es_msg_version"></div>
+                                        <button class="btn btn-secondary"
+                                                type="button"
+                                                id="es_button_lb"
+                                                onclick="es_check_version(); return false;">
+                                            Check
+                                        </button>
+                                    </div>
+                                </div>
+                                {% if perms.rules.configuration_edit %}
+                                    {% bootstrap_field  main_form.comment %}
+                                    {% buttons %}
+                                        <button type="submit" class="btn btn-primary">{% bootstrap_icon "ok" %} Submit</button>
+                                    {% endbuttons %}
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- container-fluid -->
             </div>
+            <!-- tabpanel -->
+            <div role="tabpanel"
+                 class="tab-pane
+                        {% if form_id == 'es' %}
+                            active
+                        {% endif %}"
+                 id="es">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% if main_form.use_elasticsearch.value %}
+                                {% include 'rules/es_clear_all.html' %}
+                            {% else %}
+                                Please enable Elasticsearch first.
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <!-- container-fluid -->
+            </div>
+            <!-- tabpanel -->
+            <div role="tabpanel"
+                 class="tab-pane
+                        {% if form_id == 'kibana' %}
+                            active
+                        {% endif %}"
+                 id="kibana">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% if main_form.use_elasticsearch.value %}
+                                <form class="form"
+                                      enctype="multipart/form-data"
+                                      action="{% url 'system_settings' %}"
+                                      method="post">
+                                    {% csrf_token %}
+                                    <input type='hidden' name='form_id' value='kibana'>
+                                    {% bootstrap_label "Export user dashboards" %}
+                                    <p class="help-block">
+                                        Clicking on the button will download the user-defined dashboards.
+                                    </p>
+                                    {% buttons %}
+                                        <button type="submit" name="export" class="btn btn-primary">{% bootstrap_icon "download" %} Export</button>
+                                    {% endbuttons %}
+                                    {% bootstrap_label "Import user dashboards" %}
+                                    <p class="help-block">
+                                        <strong>Note:</strong> existing dashboards with same name will be overwritten.
+                                    </p>
+                                    <div class="form-group">
+                                        <label class="sr-only control-label" for="id_file">File</label>
+                                        <div class="row bootstrap3-multi-input" disabled="">
+                                            <div class="col-xs-12">
+                                                <input type="file"
+                                                       name="file"
+                                                       class=""
+                                                       title=""
+                                                       id="id_file"
+                                                       {% if not perms.rules.configuration_edit %}disabled{% endif %}>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="help-block">
+                                        Select a file to import dashboards from.
+                                    </p>
+                                    {% buttons %}
+                                        <button type="submit"
+                                                name="import"
+                                                class="btn btn-warning"
+                                                {% if not perms.rules.configuration_edit %}disabled{% endif %}>
+                                            {% bootstrap_icon "upload" %} Import
+                                        </button>
+                                    {% endbuttons %}
+                                    {% bootstrap_label "Clear user dashboards" %}
+                                    <p class="help-block">
+                                        This will clear all user-defined dashboards.
+                                    </p>
+                                    {% buttons %}
+                                        <span id="clear_dashboards">
+                                            <button type="button"
+                                                    name="clear"
+                                                    class="btn btn-danger"
+                                                    {% if not perms.rules.configuration_edit %}disabled{% endif %}>
+                                                {% bootstrap_icon "trash" %} Clear
+                                            </button>
+                                        </span>
+                                    {% endbuttons %}
+                                    {% bootstrap_label "Reset SN dashboards" %}
+                                    <p class="help-block">
+                                        Reset Stamus Networks dashboards to default.
+                                    </p>
+                                    {% buttons %}
+                                        <span id="reset_dashboards">
+                                            <button type="button"
+                                                    class="btn btn-danger"
+                                                    {% if not perms.rules.configuration_edit %}disabled{% endif %}>
+                                                {% bootstrap_icon "refresh" %} Reset
+                                            </button>
+                                        </span>
+                                    {% endbuttons %}
+                                </form>
+                                <!-- Modal -->
+                                <div class="modal bs-example-modal-sm"
+                                     id="clear_modal"
+                                     tabindex="-1"
+                                     role="dialog"
+                                     aria-labelledby="UpdateModalLabel">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h4 class="modal-title" id="UpdateModalLabel">Delete all user dashboards</h4>
+                                            </div>
+                                            <div class="modal-body" id="update_text">
+                                                Clicking on <code>Clear</code> will delete all saved user dashboards. Click on <code>Cancel</code> to abort.
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form class="form"
+                                                      enctype="multipart/form-data"
+                                                      action="{% url 'system_settings' %}"
+                                                      method="post">
+                                                    {% csrf_token %}
+                                                    <input type='hidden' name='form_id' value='kibana'>
+                                                    <button type="submit" name="clear" class="btn btn-danger">{% bootstrap_icon "trash" %} Clear</button>
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Modal -->
+                                <div class="modal bs-example-modal-sm"
+                                     id="reset_modal"
+                                     tabindex="-1"
+                                     role="dialog"
+                                     aria-labelledby="UpdateModalLabel">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h4 class="modal-title" id="UpdateModalLabel">Reset Stamus Networks' dashboards</h4>
+                                            </div>
+                                            <div class="modal-body" id="update_text">
+                                                Clicking on <code>Reset</code> will result in a reset to factory default of all Stamus Networks's dashboards.
+                                                Click on <code>Cancel</code> to abort.
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form class="form"
+                                                      enctype="multipart/form-data"
+                                                      action="{% url 'system_settings' %}"
+                                                      method="post">
+                                                    {% csrf_token %}
+                                                    <input type='hidden' name='form_id' value='kibana'>
+                                                    <button type="submit" name="reset" class="btn btn-danger">{% bootstrap_icon "refresh" %} Reset</button>
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                    Please enable Elasticsearch first.
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                <!-- container-fluid -->
+            </div>
+            <!-- tabpanel -->
         </div>
-    </div>
-    <p class="help-block">
-Select a file to import dashboards from.
-</p>
-
-    {% buttons %}
-        <button type="submit" name="import" class="btn btn-warning" {% if not perms.rules.configuration_edit %}disabled{% endif %}>
-            {% bootstrap_icon "upload" %} Import
-        </button>
-    {% endbuttons %}
-    {% bootstrap_label "Clear user dashboards" %}
-    <p class="help-block">This will clear all user-defined dashboards.</p>
-    {% buttons %}
-        <span id="clear_dashboards">
-	<button type="button" name="clear" class="btn btn-danger" {% if not perms.rules.configuration_edit %}disabled{% endif %}>
-            {% bootstrap_icon "trash" %} Clear
-        </button>
-	</span>
-    {% endbuttons %}
-    {% bootstrap_label "Reset SN dashboards" %}
-    <p class="help-block">Reset Stamus Networks dashboards to default.</p>
-    {% buttons %}
-        <span id="reset_dashboards">
-        <button type="button" class="btn btn-danger" {% if not perms.rules.configuration_edit %}disabled{% endif %}>
-            {% bootstrap_icon "refresh" %} Reset
-        </button>
-	</span>
-    {% endbuttons %}
-</form>
-<!-- Modal -->
-<div class="modal bs-example-modal-sm" id="clear_modal" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="UpdateModalLabel">Delete all user dashboards</h4>
-      </div>
-      <div class="modal-body" id="update_text">
-        Clicking on <code>Clear</code> will delete all saved user dashboards. Click on <code>Cancel</code> to abort.
-      </div>
-      <div class="modal-footer">
-
-<form class="form" enctype="multipart/form-data" action="{% url 'system_settings' %}" method="post">
-    {% csrf_token %}
-    <input type='hidden' name='form_id' value='kibana'>
-        <button type="submit" name="clear" class="btn btn-danger">
-            {% bootstrap_icon "trash" %} Clear
-	</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-</form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal -->
-<div class="modal bs-example-modal-sm" id="reset_modal" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="UpdateModalLabel">Reset Stamus Networks' dashboards</h4>
-      </div>
-      <div class="modal-body" id="update_text">
-        Clicking on <code>Reset</code> will result in a reset to factory default of all Stamus Networks's dashboards.
- Click on <code>Cancel</code> to abort.
-      </div>
-      <div class="modal-footer">
-
-<form class="form" enctype="multipart/form-data" action="{% url 'system_settings' %}" method="post">
-    {% csrf_token %}
-    <input type='hidden' name='form_id' value='kibana'>
-        <button type="submit" name="reset" class="btn btn-danger">
-            {% bootstrap_icon "refresh" %} Reset
-	</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-</form>
-      </div>
-    </div>
-  </div>
-</div>
-
-{% else %}
-Please enable Elasticsearch first.
-{% endif %}
-</div>
-</div>
-</div> <!-- container-fluid -->
-</div> <!-- tabpanel -->
-
-</div> <!-- tab-content -->
-
-<script type="text/javascript">
+        <!-- tab-content -->
+        <script type="text/javascript">
 
 $("#clear_dashboards").click(function() {
 	$("#clear_modal").modal('show');
@@ -206,30 +252,24 @@ checkbox_toggle_div('#id_use_elasticsearch', '#es_fields');
 checkbox_toggle_div('#id_custom_elasticsearch', '#es_custom_fields');
 
 function es_check_version() {
-$.ajax(
-{
-    url: "{% url 'es_check_version'%}",
-    type: 'POST',
-    data: {"es_url": $('#id_elasticsearch_url').val().trim()},
-    success: function(data) {
-        if (!data.error) {
-            var msg = "<strong>Connected to ES " + data.es_version + "</strong>";
-            if (!data.es_is_good_version) {
-                msg = "<strong style=\"color: #d5ab81\">Warning: this ES version " + data.es_version + " is not supported. Please install ES version " + data.es_good_version + ".x</strong>";
+    $.ajax({
+        url: "{% url 'es_check_version' %}",
+        type: 'POST',
+        data: {"es_url": $('#id_elasticsearch_url').val().trim()},
+        success: function(data) {
+            if (!data.error) {
+                var msg = "<strong>Connected to ES " + data.es_version + "</strong>";
+                if (!data.es_is_good_version) {
+                    msg = "<strong style=\"color: #d5ab81\">Warning: this ES version " + data.es_version + " is not supported. Please install ES version " + data.es_good_version + ".x</strong>";
+                }
+                $("#es_msg_version").html(msg);
+            } else {
+              $("#es_msg_version").html("<strong style=\"color: #cb4a62\">Error: " + data.error + "</strong>");
             }
-            $("#es_msg_version").html(msg);
-        } else {
-          $("#es_msg_version").html("<strong style=\"color: #cb4a62\">Error: " + data.error + "</strong>");
-        }
-    },
-});
+        },
+    });
 }
 
-</script>
-
-
-{% endif %}
-
-
-
+        </script>
+    {% endif %}
 {% endblock %}

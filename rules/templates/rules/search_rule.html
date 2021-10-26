@@ -1,35 +1,41 @@
 {% extends "rules/base.html" %}
 {% load bootstrap3  %}
-
 {% block sidebar %}
-<div class="panel-heading">
-<h2 class="panel-title">Action</h2>
-</div>
-<div class="panel-body">
-<form action="{% url 'addsupprule' ruleset.id %}" method="post">{% csrf_token %}
-<ul class="action">
-<li>Search: <input type="text" name="search" /></li>
-</ul>
-</form>
-</div>
+    <div class="panel-heading">
+        <h2 class="panel-title">Action</h2>
+    </div>
+    <div class="panel-body">
+        <form action="{% url 'addsupprule' ruleset.id %}" method="post">
+            {% csrf_token %}
+            <ul class="action">
+                <li>
+                    Search:
+                    <input type="text" name="search" />
+                </li>
+            </ul>
+        </form>
+    </div>
 {% endblock %}
-
 {% block content %}
-<script language="JavaScript">
+    <script language="JavaScript">
 function tables2_toggle(source, name) {
     checkboxes = document.getElementsByName(name);
     for(var i in checkboxes)
         checkboxes[i].checked = source.checked;
 }
-</script>
-
-{% if rules %} 
-<h2 class="title">Rules</h2>
-    {% load render_table from django_tables2 %}
-<form class="form" action="{% url 'addsupprule' ruleset.id %}" method="post">{% csrf_token %}
-    {% render_table rules %}
-    {% bootstrap_form form %}
-<input  class="btn btn-primary" type="submit" value="Add selected rules to disabled rules list" />
-</form>
-{% endif %}
+    </script>
+    {% if rules %}
+        <h2 class="title">Rules</h2>
+        {% load render_table from django_tables2 %}
+        <form class="form"
+              action="{% url 'addsupprule' ruleset.id %}"
+              method="post">
+            {% csrf_token %}
+            {% render_table rules %}
+            {% bootstrap_form form %}
+            <input class="btn btn-primary"
+                   type="submit"
+                   value="Add selected rules to disabled rules list"/>
+        </form>
+    {% endif %}
 {% endblock %}

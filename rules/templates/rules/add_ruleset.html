@@ -1,14 +1,12 @@
 {% extends "rules/base.html" %}
-{% load bootstrap3  %}
+{% load bootstrap3 %}
 {% block sidebar %}
-<div class="panel-heading">
-<h2 class="panel-title">Add a Ruleset</h2>
-</div>
-{% endblock %}
-
+    <div class="panel-heading">
+        <h2 class="panel-title">Add a Ruleset</h2>
+    </div>
+{% endblock sidebar %}
 {% block content %}
-
-<script>
+    <script>
     {% if extra_form %}
         function tables_checking(source) {
             checkboxes = document.getElementsByClassName('action_selection');
@@ -37,57 +35,74 @@
             }
         });
     });
-</script>
-
-{% if missing %}
-
-{{ missing }}
-
-{% else %}
- {% if form %}
-
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-6">
-<form action="{% url 'add_ruleset' %}" method="post" class="form">{% csrf_token %}
-    <h2 class="title">Add Ruleset</h2>
-
-    {% bootstrap_field form.name %}
-    {% bootstrap_field form.sources %}
-    {% bootstrap_label "Categories" %}
-    {% bootstrap_field form.activate_categories %}
-
-    <h3 class="title">Transformations</h2>
-    {% bootstrap_label "Transformations will be applied on all ruleset's categories" %}
-    {% bootstrap_field form.action %}
-    {% bootstrap_field form.lateral %}
-    {% bootstrap_field form.target %}
-
-    {% if extra_form %}
-        <h3 class="title">Ruleset update recurrence</h2>
-        {% bootstrap_label "Will update periodically all appliances using this ruleset." %}
-        <div class="form-group" id="update">
-          <h4><label><input type="checkbox" id="check_all" name="check_all" onclick="tables_checking(this);" /> (Un)Select all</label></h4>
-          <div><label><input type="checkbox" name="reload" id="reload" class="action_selection" onclick="table_all_toggle(this);" /> <span class="glyphicon glyphicon-refresh"> Update</span></label></div>
-          <div><label><input type="checkbox" name="push" id="push" class="action_selection" onclick="table_all_toggle(this);" /> <span class="glyphicon glyphicon-share-alt"> Build, push and reload</span></label></div>
+    </script>
+    {% if missing %}
+        {{ missing }}
+    {% else %}
+        {% if form %}
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-6">
+                        <form action="{% url 'add_ruleset' %}" method="post" class="form">
+                            {% csrf_token %}
+                            <h2 class="title">Add Ruleset</h2>
+                            {% bootstrap_field form.name %}
+                            {% bootstrap_field form.sources %}
+                            {% bootstrap_label "Categories" %}
+                            {% bootstrap_field form.activate_categories %}
+                            <h3 class="title">
+                                Transformations
+                            </h3>
+                            {% bootstrap_label "Transformations will be applied on all ruleset's categories" %}
+                            {% bootstrap_field form.action %}
+                            {% bootstrap_field form.lateral %}
+                            {% bootstrap_field form.target %}
+                            {% if extra_form %}
+                                <h3 class="title">
+                                    Ruleset update recurrence
+                                </h3>
+                                {% bootstrap_label "Will update periodically all appliances using this ruleset." %}
+                                <div class="form-group" id="update">
+                                    <h4>
+                                        <label>
+                                            <input type="checkbox"
+                                                   id="check_all"
+                                                   name="check_all"
+                                                   onclick="tables_checking(this);"/>
+                                            (Un)Select all
+                                        </label>
+                                    </h4>
+                                    <div>
+                                        <label>
+                                            <input type="checkbox"
+                                                   name="reload"
+                                                   id="reload"
+                                                   class="action_selection"
+                                                   onclick="table_all_toggle(this);"/>
+                                            <span class="glyphicon glyphicon-refresh">Update</span>
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <label>
+                                            <input type="checkbox"
+                                                   name="push"
+                                                   id="push"
+                                                   class="action_selection"
+                                                   onclick="table_all_toggle(this);"/>
+                                            <span class="glyphicon glyphicon-share-alt">Build, push and reload</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                {% include 'appliances/schedule_recurrence.html' %}
+                            {% endif %}
+                            {% bootstrap_field form.comment %}
+                            {% buttons %}
+                            <button type="submit" class="btn btn-primary">{% bootstrap_icon "plus" %} Add</button>
+                        {% endbuttons %}
+                    </form>
+                </div>
+            </div>
         </div>
-
-        {% include 'appliances/schedule_recurrence.html' %}
     {% endif %}
-
-    {% bootstrap_field form.comment %}
-    {% buttons %}
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "plus" %} Add
-        </button>
-    {% endbuttons %}
-
-</form>
-</div>
-</div>
-</div>
-
- {% endif %}
 {% endif %}
-
-{% endblock %}
+{% endblock content %}

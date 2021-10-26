@@ -1,137 +1,163 @@
 {% extends "rules/base.html" %}
 {% load staticfiles %}
-{% load bootstrap3  %}
-
+{% load bootstrap3 %}
 {% block sidebar %}
-<div class="panel-heading">
-       <h2 class="panel-title">{{ rule.sid }}</h2>
-</div>
-<div class="panel-body">
-<ul>
-       <li><span class="type">Revision:</span> {{ rule.rev }}</li>
- {% if not rule.state_in_source %}
-       <li><span class="type">State in source:</span> commented</li>
- {% endif %}
-       <li><span class="type">Available:</span> {{ rule.state }}</li>
-       <li><span class="type">Imported:</span> {{ rule.imported_date }}</li>
-       <li><span class="type">Updated:</span> {{ rule.updated_date }}</li>
-       <li><span class="type">Group rule:</span> {{ rule.group }}</li>
-</ul>
-</div>
-
-{% if perms.rules.events_kibana or perms.rules.events_evebox %}
-{% if kibana and kibana_version >= 4 or evebox %}
-<div class="panel-heading">
-       <h2 class="panel-title">Events list</h2>
-</div>
-<div class="panel-body">
-<ul>
-{% if perms.rules.events_kibana %}
-{% if kibana and kibana_version >= 4 %}
-	<li><a href="{{ kibana_url }}/app/kibana?#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-{{ date }},mode:quick,to:now))&_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:'alert.signature_id:{{ rule.sid }}')),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:_source,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=logstash-*&type=histogram" target="_blank">Kibana</a></li>
-{% endif %}
-{% endif %}
-
-{% if perms.rules.events_evebox %}
-{% if evebox %}
-<li><a href="{{ evebox_url }}/#/events?q=alert.signature_id:{{ rule.sid }}" target="_blank">Evebox</a></li>
-{% endif %}
-{% endif %}
-</ul>
-</div>
-
-{% endif %} {# kibana or evebox #}
-{% endif %} {# perms kibana/evebox #}
-{% if perms.rules.ruleset_policy_edit %}
-<div class="panel-heading">
-<h2 class="panel-title">Action</h2>
-</div>
-<div class="panel-body">
-<ul class="action">
-{% if rule.state and rulesets|length %}
-<li>
-<li>
-<a href="{% url 'disable_rule' rule.sid %}">Disable rule</a>
-</li>
-<li>
-<a href="{% url 'enable_rule' rule.sid %}">Enable rule</a>
-</li>
-{% if rule.get_transformation_choices|length %}
-<a href="{% url 'edit_rule' rule.sid %}">Edit rule</a>
-{% else %}
-<span class="text-muted">Edit rule</span>
-{% endif %}
-</li>
-{% endif %} {# rule.state #}
-{% if not rule.state_in_source %}
-<li>
-<form id="toggle_availability_form" class="form" action="{% url 'toggle_availability' rule.sid %}" method="post">
-    {% csrf_token %}
-    <a href="javascript:{}" onclick="document.getElementById('toggle_availability_form').submit(); return false;">Toggle availability</a>
-</form>
-</li>
-{% endif %}
-{% if elasticsearch %}
-<li>
-<a href="{% url 'delete_alerts' rule.sid %}">Delete generated alerts</a>
-</li>
-{% endif %}
-</ul>
-</div>
-{% endif %}
-{% endblock %}
-
+    <div class="panel-heading">
+        <h2 class="panel-title">{{ rule.sid }}</h2>
+    </div>
+    <div class="panel-body">
+        <ul>
+            <li>
+                <span class="type">Revision:</span>
+                {{ rule.rev }}
+            </li>
+            {% if not rule.state_in_source %}
+                <li>
+                    <span class="type">State in source:</span>
+                    commented
+                </li>
+            {% endif %}
+            <li>
+                <span class="type">Available:</span>
+                {{ rule.state }}
+            </li>
+            <li>
+                <span class="type">Imported:</span>
+                {{ rule.imported_date }}
+            </li>
+            <li>
+                <span class="type">Updated:</span>
+                {{ rule.updated_date }}
+            </li>
+            <li>
+                <span class="type">Group rule:</span>
+                {{ rule.group }}
+            </li>
+        </ul>
+    </div>
+    {% if perms.rules.events_kibana or perms.rules.events_evebox %}
+        {% if kibana and kibana_version >= 4 or evebox %}
+            <div class="panel-heading">
+                <h2 class="panel-title">Events list</h2>
+            </div>
+            <div class="panel-body">
+                <ul>
+                    {% if perms.rules.events_kibana %}
+                        {% if kibana and kibana_version >= 4 %}
+                            <li>
+                                <a href="{{ kibana_url }}/app/kibana?#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-{{ date }},mode:quick,to:now))&_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:'alert.signature_id:{{ rule.sid }}')),sort:!('@timestamp',desc),vis:(aggs:!((params:(field:_source,orderBy:'2',size:20),schema:segment,type:terms),(id:'2',schema:metric,type:count)),type:histogram))&indexPattern=logstash-*&type=histogram"
+                                   target="_blank">
+                                    Kibana
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                    {% if perms.rules.events_evebox %}
+                        {% if evebox %}
+                            <li>
+                                <a href="{{ evebox_url }}/#/events?q=alert.signature_id:{{ rule.sid }}"
+                                   target="_blank">Evebox</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+        {% endif %}
+        {# kibana or evebox #}
+    {% endif %}
+    {# perms kibana/evebox #}
+    {% if perms.rules.ruleset_policy_edit %}
+        <div class="panel-heading">
+            <h2 class="panel-title">Action</h2>
+        </div>
+        <div class="panel-body">
+            <ul class="action">
+                {% if rule.state and rulesets|length %}
+                    <li>
+                        <li>
+                            <a href="{% url 'disable_rule' rule.sid %}">Disable rule</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'enable_rule' rule.sid %}">Enable rule</a>
+                        </li>
+                        {% if rule.get_transformation_choices|length %}
+                            <a href="{% url 'edit_rule' rule.sid %}">Edit rule</a>
+                        {% else %}
+                            <span class="text-muted">Edit rule</span>
+                        {% endif %}
+                    </li>
+                {% endif %}
+                {# rule.state #}
+                {% if not rule.state_in_source %}
+                    <li>
+                        <form id="toggle_availability_form"
+                              class="form"
+                              action="{% url 'toggle_availability' rule.sid %}"
+                              method="post">
+                            {% csrf_token %}
+                            <a href="javascript:{}"
+                               onclick="document.getElementById('toggle_availability_form').submit(); return false;">
+                                Toggle availability
+                            </a>
+                        </form>
+                    </li>
+                {% endif %}
+                {% if elasticsearch %}
+                    <li>
+                        <a href="{% url 'delete_alerts' rule.sid %}">Delete generated alerts</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endif %}
+{% endblock sidebar %}
 {% block content %}
-
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-8">
-
-<h2>{{ rule.msg }}</h2>
-
-</div>
-
-
-
-{% if references or rule.get_comments %}
-<div class="col-md-4">
-<div class="panel panel-default" id="reference">
-{% if references %}
-<div class="panel-heading">
-<h2 class="panel-title">References</h2>
-</div>
-<div class="panel-body">
-<ul>
-{% for ref in references %}
-<li>
-{% if ref.url %}
-{{ ref.key|capfirst }}:  <a href={{ ref.url }} target="_blank">{{ ref.value|truncatechars:80}}</a>
-{% else %}
-{{ ref.key }}:  {{ ref.value }}
-{% endif %}
-</li>
-{% endfor %}
-</ul>
-</div>
-{% endif %}
-{% if rule.get_comments %}
-<div class="panel-heading">
-<h2 class="panel-title">Information</h2>
-</div>
-<div class="panel-body">
-{% if rule.get_comments %}
-Comment <span class="badge">{{ rule.get_comments|length }}</span>
-{% endif %}
-</div>
-{% endif %}
-</div> <!-- panel -->
-</div> <!-- col -->
-{% endif %}
-</div> <!-- row -->
-
-
-
-<script>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <h2>{{ rule.msg }}</h2>
+            </div>
+            {% if references or rule.get_comments %}
+                <div class="col-md-4">
+                    <div class="panel panel-default" id="reference">
+                        {% if references %}
+                            <div class="panel-heading">
+                                <h2 class="panel-title">References</h2>
+                            </div>
+                            <div class="panel-body">
+                                <ul>
+                                    {% for ref in references %}
+                                        <li>
+                                            {% if ref.url %}
+                                                {{ ref.key|capfirst }}:
+                                                <a href="{{ ref.url }}" target="_blank">{{ ref.value|truncatechars:80 }}</a>
+                                            {% else %}
+                                                {{ ref.key }}:  {{ ref.value }}
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                        {% if rule.get_comments %}
+                            <div class="panel-heading">
+                                <h2 class="panel-title">Information</h2>
+                            </div>
+                            <div class="panel-body">
+                                {% if rule.get_comments %}
+                                    Comment
+                                    <span class="badge">{{ rule.get_comments|length }}</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <!-- panel -->
+                </div>
+                <!-- col -->
+            {% endif %}
+        </div>
+        <!-- row -->
+        <script>
 $(document).ready(function(){
     $('a[data-toggle="tab"]').on('show.bs.tab', function(e) {
         $(this).closest('li').siblings().removeClass('active');
@@ -149,240 +175,318 @@ $(document).ready(function(){
         $('#toggle_availability_form').submit();
     });
 });
-</script>
-
-  <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist" id="ruleinfo">
-    {% if suricata_stats and elasticsearch and perms.rules.events_view %}
-    <li role="presentation" class="active"><a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">IP and Time Stats</a></li>
-    <li role="presentation"><a href="#metastats" aria-controls="metastats" role="tab" data-toggle="tab">Advanced Data</a></li>
-    {% endif %}
-     <li role="presentation"><a href="#rule_status" aria-controls="rule_status" role="tab" data-toggle="tab">Information</a></li>
-   <li role="presentation"><a href="#rule_comments" aria-controls="rule_comments" role="tab" data-toggle="tab">History</a></li>
-  </ul>
-
- <div class="tab-content">
-
-{% if suricata_stats and elasticsearch %}
-<div role="tabpanel" class="tab-pane active" id="stats">
-<div class="container-fluid" >
-<div class="col-md-4">
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-12">
-<h2 class="title">Hits by host</h2>
-
-</div>
-</div>
-<div class="row">
-<div class="col-md-12">
-
-<div id="stats_table">Fetching data...</div>
-</div>
-</div> <!-- row -->
-
-</div> <!-- container -->
-</div> <!-- col -->
-
-
-<div class="col-md-4">
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-12">
-<h2 class="title">Source IP</h2>
-
-</div>
-</div>
-<div class="row">
-<div class="col-md-12">
-
-<div id="src_ip_table">Fetching data...</div>
-</div>
-</div> <!-- row -->
-
-</div> <!-- container -->
-</div> <!-- col -->
-
-
-<div class="col-md-4">
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-12">
-<h2 class="title">Destination IP</h2>
-
-</div>
-</div>
-<div class="row">
-<div class="col-md-12">
-
-<div id="dest_ip_table">Fetching data...</div>
-</div>
-</div> <!-- row -->
-
-</div> <!-- container -->
-</div>
-
-</div> <!-- container-fluid -->
-{% if probes and perms.rules.configuration_view %}
-<div class="row">
-<div class="col-md-12">
-<h2 class="title">Activity</h2>
-</div> <!-- col -->
-</div> <!-- row -->
-<div class="row">
-<div class="col-md-12">
-<div id="timeline">
-<p>Fetching data...</p>
-<svg style="width:100%;height:300px">
-</svg>
-</div> <!-- timeline -->
-</div> <!-- col -->
-</div> <!-- row -->
-
-{% endif %} {# if probes #}
-</div> <!-- tabpanel -->
-<div role="tabpanel" class="tab-pane" id="metastats">
-<div class="container-fluid" >
-<!--
+        </script>
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist" id="ruleinfo">
+            {% if suricata_stats and elasticsearch and perms.rules.events_view %}
+                <li role="presentation" class="active">
+                    <a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">IP and Time Stats</a>
+                </li>
+                <li role="presentation">
+                    <a href="#metastats"
+                       aria-controls="metastats"
+                       role="tab"
+                       data-toggle="tab">Advanced Data</a>
+                </li>
+            {% endif %}
+            <li role="presentation">
+                <a href="#rule_status"
+                   aria-controls="rule_status"
+                   role="tab"
+                   data-toggle="tab">Information</a>
+            </li>
+            <li role="presentation">
+                <a href="#rule_comments"
+                   aria-controls="rule_comments"
+                   role="tab"
+                   data-toggle="tab">History</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            {% if suricata_stats and elasticsearch %}
+                <div role="tabpanel" class="tab-pane active" id="stats">
+                    <div class="container-fluid">
+                        <div class="col-md-4">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h2 class="title">
+                                            Hits by host
+                                        </h2>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div id="stats_table">
+                                            Fetching data...
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- row -->
+                            </div>
+                            <!-- container -->
+                        </div>
+                        <!-- col -->
+                        <div class="col-md-4">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h2 class="title">
+                                            Source IP
+                                        </h2>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div id="src_ip_table">
+                                            Fetching data...
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- row -->
+                            </div>
+                            <!-- container -->
+                        </div>
+                        <!-- col -->
+                        <div class="col-md-4">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h2 class="title">
+                                            Destination IP
+                                        </h2>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div id="dest_ip_table">
+                                            Fetching data...
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- row -->
+                            </div>
+                            <!-- container -->
+                        </div>
+                    </div>
+                    <!-- container-fluid -->
+                    {% if probes and perms.rules.configuration_view %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h2 class="title">
+                                    Activity
+                                </h2>
+                            </div>
+                            <!-- col -->
+                        </div>
+                        <!-- row -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="timeline">
+                                    <p>
+                                        Fetching data...
+                                    </p>
+                                    <svg style="width:100%;height:300px">
+                                    </svg>
+                                </div>
+                                <!-- timeline -->
+                            </div>
+                            <!-- col -->
+                        </div>
+                        <!-- row -->
+                    {% endif %}
+                    {# if probes #}
+                </div>
+                <!-- tabpanel -->
+                <div role="tabpanel" class="tab-pane" id="metastats">
+                    <div class="container-fluid">
+                        <!--
 <div class="col-md-4">
 <h2 class="title">Hits by assets</h2>
 <div id="stats_table">Fetching data...</div>
 </div>
 -->
-<div class="col-md-4">
-<h2 class="title">Source of attacks</h2>
-
-<div id="source_ip_table">Fetching data...</div>
-</div> <!-- col -->
-
-
-<div class="col-md-4">
-<h2 class="title">Target of attacks</h2>
-<div id="target_ip_table">Fetching data...</div>
-</div>
-
-</div> <!-- container-fluid -->
-</div> <!-- tabpanel -->
-
-{% endif %} {# suricata_stats and elasticsearch #}
-
-<div role="tabpanel" class="tab-pane{% if not suricata_stats and not elasticsearch %} active{% endif %}" id="rule_status">
-<div class="container-fluid">
-
-<h2 class="title">Definition</h2>
-<div class="rule">
-      {{ rule.highlight_content|safe }}
-</div>
-
-{% if rule_transformations %}
-<h2 class="title">Rule transformation(s)</h2>
-{% for ruleset in rulesets %}
-{% if ruleset.a_drop or ruleset.a_reject or ruleset.a_filestore or ruleset.a_bypass or ruleset.l_auto or ruleset.l_yes or ruleset.t_auto or ruleset.t_src or ruleset.t_dst %}
-<h3 class="title">{{ ruleset.name }}</h3>
-<div class="rule">
-      {{ ruleset.content|safe }}
-</div>
-{% endif %}
-{% endfor %}
-{% endif %} {# rule_transformation #}
-
-<div class="row">
-        <div id="validity_error" class="col-md-12" style="display:none;">
-                <h2 class="title">Rulesets error</h2>
-        </div>
-</div>
-<div class="row">
-<div class="col-md-6">
-<h2 class="title">Status in rulesets</h2>
-
-<div class="container-fluid">
-        <div class="row">
-{% for ruleset in rulesets %}
-<div class="col-md-6">
-<div class="panel panel-default">
-<div class="panel-heading">
-        <h2 class="panel-title"><a href="{% url 'ruleset' ruleset.pk %}">{{ ruleset.name }}</a></h2>
-</div>
-<div class="panel-body ruleset-status" id="{{ ruleset.pk }}">
-        <div class="label {% if ruleset.status == "Active" %}label-info{% else %}label-default{% endif %}">{{ ruleset.status}}</div>
-        <div class="label label-default" id="validity">Validity</div>
-        {% if ruleset.threshold %}
-        <div class="label label-info">Threshold</div>
-        {% endif %}
-        {% if ruleset.a_reject %}
-        <div class="label label-info">Reject</div>
-        {% endif %}
-        {% if ruleset.a_drop %}
-        <div class="label label-info">Drop</div>
-        {% endif %}
-        {% if ruleset.a_filestore %}
-        <div class="label label-info">Filestore</div>
-        {% endif %}
-        {% if ruleset.l_auto %}
-        <div class="label label-info">Lateral Auto</div>
-        {% endif %}
-        {% if ruleset.l_yes %}
-        <div class="label label-info">Lateral Yes</div>
-        {% endif %}
-        {% if ruleset.t_auto %}
-        <div class="label label-info">Target Auto</div>
-        {% endif %}
-        {% if ruleset.t_src %}
-        <div class="label label-info">Target Src</div>
-        {% endif %}
-        {% if ruleset.t_dst %}
-        <div class="label label-info">Target Dst</div>
-        {% endif %}
-</div>
-</div>
-</div>
-{% endfor %}
-        </div>
-</div> <!-- container-fluid -->
-
-</div> <!-- col -->
-
-{% if thresholds %}
-<div class="col-md-6">
-<h2 class="title">Thresholds</h2>
-
-{% load render_table from django_tables2 %}
-{% render_table thresholds %}
-
-</div> <!-- col -->
-{% endif %}
-
-{% if suppress %}
-<div class="col-md-6">
-<h2 class="title">Suppressions</h2>
-
-{% render_table suppress %}
-
-</div> <!-- col -->
-{% endif %}
-
-</div>
-</div>
-
-</div>
-
-<div role="tabpanel" class="tab-pane" id="rule_comments">
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-10">
-<h3 class="title">History</h3> 
-<div id="comments">
-{% if history %}
-<div class="container-fluid">
-    <div class="list-group list-view-pf list-view-pf-view">
-        {% for user_action in history %}
-            {% include "rules/useraction_entry.html" with user_action=user_action %}
-        {% endfor %}
-    </div>
-</div>
-
-<script>
-
+                        <div class="col-md-4">
+                            <h2 class="title">
+                                Source of attacks
+                            </h2>
+                            <div id="source_ip_table">
+                                Fetching data...
+                            </div>
+                        </div>
+                        <!-- col -->
+                        <div class="col-md-4">
+                            <h2 class="title">
+                                Target of attacks
+                            </h2>
+                            <div id="target_ip_table">
+                                Fetching data...
+                            </div>
+                        </div>
+                    </div>
+                    <!-- container-fluid -->
+                </div>
+                <!-- tabpanel -->
+            {% endif %}
+            {# suricata_stats and elasticsearch #}
+            <div role="tabpanel"
+                 class="tab-pane
+                        {% if not suricata_stats and not elasticsearch %}
+                            active
+                        {% endif %}"
+                 id="rule_status">
+                <div class="container-fluid">
+                    <h2 class="title">
+                        Definition
+                    </h2>
+                    <div class="rule">
+                        {{ rule.highlight_content|safe }}
+                    </div>
+                    {% if rule_transformations %}
+                        <h2 class="title">
+                            Rule transformation(s)
+                        </h2>
+                        {% for ruleset in rulesets %}
+                            {% if ruleset.a_drop or ruleset.a_reject or ruleset.a_filestore or ruleset.a_bypass or ruleset.l_auto or ruleset.l_yes or ruleset.t_auto or ruleset.t_src or ruleset.t_dst %}
+                                <h3 class="title">
+                                    {{ ruleset.name }}
+                                </h3>
+                                <div class="rule">
+                                    {{ ruleset.content|safe }}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    {# rule_transformation #}
+                    <div class="row">
+                        <div id="validity_error" class="col-md-12" style="display:none;">
+                            <h2 class="title">
+                                Rulesets error
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h2 class="title">
+                                Status in rulesets
+                            </h2>
+                            <div class="container-fluid">
+                                <div class="row">
+                                    {% for ruleset in rulesets %}
+                                        <div class="col-md-6">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h2 class="panel-title">
+                                                        <a href="{% url 'ruleset' ruleset.pk %}">
+                                                            {{ ruleset.name }}
+                                                        </a>
+                                                    </h2>
+                                                </div>
+                                                <div class="panel-body ruleset-status" id="{{ ruleset.pk }}">
+                                                    <div class="label
+                                                                {% if ruleset.status == "Active" %}
+                                                                    label-info
+                                                                {% else %}
+                                                                    label-default
+                                                                {% endif %}">
+                                                        {{ ruleset.status }}
+                                                    </div>
+                                                    <div class="label label-default" id="validity">
+                                                        Validity
+                                                    </div>
+                                                    {% if ruleset.threshold %}
+                                                        <div class="label label-info">
+                                                            Threshold
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if ruleset.a_reject %}
+                                                        <div class="label label-info">
+                                                            Reject
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if ruleset.a_drop %}
+                                                        <div class="label label-info">
+                                                            Drop
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if ruleset.a_filestore %}
+                                                        <div class="label label-info">
+                                                            Filestore
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if ruleset.l_auto %}
+                                                        <div class="label label-info">
+                                                            Lateral Auto
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if ruleset.l_yes %}
+                                                        <div class="label label-info">
+                                                            Lateral Yes
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if ruleset.t_auto %}
+                                                        <div class="label label-info">
+                                                            Target Auto
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if ruleset.t_src %}
+                                                        <div class="label label-info">
+                                                            Target Src
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if ruleset.t_dst %}
+                                                        <div class="label label-info">
+                                                            Target Dst
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <!-- container-fluid -->
+                        </div>
+                        <!-- col -->
+                        {% if thresholds %}
+                            <div class="col-md-6">
+                                <h2 class="title">
+                                    Thresholds
+                                </h2>
+                                {% load render_table from django_tables2 %}
+                                {% render_table thresholds %}
+                            </div>
+                            <!-- col -->
+                        {% endif %}
+                        {% if suppress %}
+                            <div class="col-md-6">
+                                <h2 class="title">
+                                    Suppressions
+                                </h2>
+                                {% render_table suppress %}
+                            </div>
+                            <!-- col -->
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="rule_comments">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <h3 class="title">
+                                History
+                            </h3>
+                            <div id="comments">
+                                {% if history %}
+                                    <div class="container-fluid">
+                                        <div class="list-group list-view-pf list-view-pf-view">
+                                            {% for user_action in history %}
+                                                {% include "rules/useraction_entry.html" with user_action=user_action %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <script>
 $(document).ready(function () {
     // click the list-view heading then expand a row
     $(".list-group-item-header").click(function(event){
@@ -401,38 +505,35 @@ $(document).ready(function () {
           .find(".fa-angle-right").removeClass("fa-angle-down");
     });
 });
-</script>
-
-{% else %}
-
-No comment.
-
-{% endif %}
-</div>
-
-{% if perms.rules.ruleset_policy_edit %}
-<h3 class="title">Add comment</h3>
-<form class="form" action="{% url 'comment_rule' rule.pk %}" method="post">
-    {% csrf_token %}
-    {% bootstrap_form comment_form %}
-    {% buttons %}
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "ok" %} Submit
-        </button>
-    {% endbuttons %}
-</form>
-{% endif %}
-</div>
-</div>
-</div>
-</div> <!-- tabpanel -->
-
- <script>
+                                    </script>
+                                {% else %}
+                                    No comment.
+                                {% endif %}
+                            </div>
+                            {% if perms.rules.ruleset_policy_edit %}
+                                <h3 class="title">
+                                    Add comment
+                                </h3>
+                                <form class="form" action="{% url 'comment_rule' rule.pk %}" method="post">
+                                    {% csrf_token %}
+                                    {% bootstrap_form comment_form %}
+                                    {% buttons %}
+                                        <button type="submit" class="btn btn-primary">
+                                            {% bootstrap_icon "ok" %} Submit
+                                        </button>
+                                    {% endbuttons %}
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- tabpanel -->
+            <script>
 {% if suricata_stats and elasticsearch %}
-{% if probes and perms.rules.configuration_view %}
-$( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "alert.signature_id:{{ rule.sid }}", 'Hits' ); });
-{% endif %}
-
+    {% if probes and perms.rules.configuration_view %}
+        $( 'document' ).ready(function () { draw_timeline({{ from_date }}, [{% autoescape off %} {{ probes|join:',' }} {% endautoescape %}], "alert.signature_id:{{ rule.sid }}", 'Hits' ); });
+    {% endif %}
 
 function load_stats() {
     $.ajax({
@@ -450,9 +551,7 @@ function load_stats() {
 
 }
 
-{% if perms.rules.configuration_view or perms.rules.events_view %}
-$( 'document' ).ready(load_stats());
-{% endif %}
+{% if perms.rules.configuration_view or perms.rules.events_view %}$( 'document' ).ready(load_stats());{% endif %}
 
 function populate_topip_actions(pdiv, field, direction) {
     pdiv.find("td.actions").each(
@@ -463,101 +562,95 @@ function populate_topip_actions(pdiv, field, direction) {
             content = content + ' <a href="{% url 'threshold_rule' rule.pk %}?action=suppress&dir=' + direction + '&net=' + ip + '"><span class="glyphicon glyphicon-remove"> </span></a>';
             $(this).empty();
             $(this).append(content);
-	    {% if evebox %}
+	        {% if evebox %}
                 $(this).parent("tr").children(".host").css('cursor', 'pointer');
                 $(this).parent("tr").children(".host").click( function() {
-			ip = $(this).text()
-
-            {% if custom_eve_url %}
-                window.open("{{ custom_eve_url|safe }}" + ip);
-            {% else %}
-                window.open("{{ evebox_url }}/#/events?q=" + field + ":\"" + ip + "\"");
-            {% endif %}
-		});
-	    {% endif %}
-
-
+		        	ip = $(this).text()
+                    {% if custom_eve_url %}
+                        window.open("{{ custom_eve_url|safe }}" + ip);
+                    {% else %}
+                        window.open("{{ evebox_url }}/#/events?q=" + field + ":\"" + ip + "\"");
+                    {% endif %}
+		        });
+	        {% endif %}
         }
     );
 }
 
 function load_ip_stats() {
     $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule_src&sid={{ rule.pk }}&from_date={{ from_date }}',
-          success: function(data) {
-             $('#src_ip_table').empty();
-             $('#src_ip_table').append(data);
-             populate_topip_actions($('#src_ip_table'), 'src_ip', 'src');
-          },
-	  error: function(data) {
-             $('#src_ip_table').text("Unable to get data.");
-             $("#error").text("Unable to get data from Elasticsearch");
-             $("#error").parent().toggle();
-	  }
+        url: '{% url 'elasticsearch' %}?query=rule_src&sid={{ rule.pk }}&from_date={{ from_date }}',
+        success: function(data) {
+           $('#src_ip_table').empty();
+           $('#src_ip_table').append(data);
+           populate_topip_actions($('#src_ip_table'), 'src_ip', 'src');
+        },
+	    error: function(data) {
+               $('#src_ip_table').text("Unable to get data.");
+               $("#error").text("Unable to get data from Elasticsearch");
+               $("#error").parent().toggle();
+	    }
     });
 
     $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule_dest&sid={{ rule.pk }}&from_date={{ from_date }}',
-          success: function(data) {
-             $('#dest_ip_table').empty();
-             $('#dest_ip_table').append(data);
-             populate_topip_actions($('#dest_ip_table'), 'dest_ip', 'dest');
-          },
-	  error: function(data) {
-             $('#dest_ip_table').text("Unable to get data.");
-             $("#error").text("Unable to get data from Elasticsearch");
-             $("#error").parent().toggle();
-	  }
+        url: '{% url 'elasticsearch' %}?query=rule_dest&sid={{ rule.pk }}&from_date={{ from_date }}',
+        success: function(data) {
+           $('#dest_ip_table').empty();
+           $('#dest_ip_table').append(data);
+           populate_topip_actions($('#dest_ip_table'), 'dest_ip', 'dest');
+        },
+	    error: function(data) {
+            $('#dest_ip_table').text("Unable to get data.");
+            $("#error").text("Unable to get data from Elasticsearch");
+            $("#error").parent().toggle();
+	    }
     });
 
     $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule_source&sid={{ rule.pk }}&from_date={{ from_date }}',
-          success: function(data) {
-             $('#source_ip_table').empty();
-             $('#source_ip_table').append(data);
-             /* FIXME use real method */
-             {% if "dest_ip" in rule.content %}
+        url: '{% url 'elasticsearch' %}?query=rule_source&sid={{ rule.pk }}&from_date={{ from_date }}',
+        success: function(data) {
+            $('#source_ip_table').empty();
+            $('#source_ip_table').append(data);
+            /* FIXME use real method */
+            {% if "dest_ip" in rule.content %}
                 populate_topip_actions($('#source_ip_table'), 'alert.source.ip', 'src');
-             {% else %}
+            {% else %}
                 populate_topip_actions($('#source_ip_table'), 'alert.source.ip', 'dest');
-             {% endif %}
-          },
-	  error: function(data) {
-             $('#source_ip_table').text("Unable to get data.");
-             $("#error").text("Unable to get data from Elasticsearch");
-             $("#error").parent().toggle();
-	  }
+            {% endif %}
+        },
+	    error: function(data) {
+            $('#source_ip_table').text("Unable to get data.");
+            $("#error").text("Unable to get data from Elasticsearch");
+            $("#error").parent().toggle();
+	    }
     });
 
     $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule_target&sid={{ rule.pk }}&from_date={{ from_date }}',
-          success: function(data) {
-             $('#target_ip_table').empty();
-             $('#target_ip_table').append(data);
-             /* FIXME use real method */
-             {% if "dest_ip" in rule.content %}
-                populate_topip_actions($('#target_ip_table'), 'alert.target.ip', 'dest');
-             {% else %}
-                populate_topip_actions($('#target_ip_table'), 'alert.target.ip', 'src');
-             {% endif %}
-          },
-	  error: function(data) {
-             $('#target_ip_table').text("Unable to get data.");
-             $("#error").text("Unable to get data from Elasticsearch");
-             $("#error").parent().toggle();
-	  }
+        url: '{% url 'elasticsearch' %}?query=rule_target&sid={{ rule.pk }}&from_date={{ from_date }}',
+        success: function(data) {
+            $('#target_ip_table').empty();
+            $('#target_ip_table').append(data);
+            /* FIXME use real method */
+            {% if "dest_ip" in rule.content %}
+               populate_topip_actions($('#target_ip_table'), 'alert.target.ip', 'dest');
+            {% else %}
+               populate_topip_actions($('#target_ip_table'), 'alert.target.ip', 'src');
+            {% endif %}
+        },
+	    error: function(data) {
+            $('#target_ip_table').text("Unable to get data.");
+            $("#error").text("Unable to get data from Elasticsearch");
+            $("#error").parent().toggle();
+	    }
     });
 }
 
-{% if perms.rules.configuration_view %}
-$( 'document' ).ready(load_ip_stats());
-{% endif %}
+{% if perms.rules.configuration_view %}$( 'document' ).ready(load_ip_stats());{% endif %}
 {% endif %} {# suricata_stats and elasticsearch #}
-</script>
-
-
+        </script>
+    </div>
 </div>
-</div> <!-- container-fluid -->
+<!-- container-fluid -->
 <script>
 function rule_validity_check() {
     $("div.ruleset-status").each(
@@ -565,42 +658,40 @@ function rule_validity_check() {
             var ruleset_id = $(this).attr('id');
             var ruleset_name = $(this).parent().find("h2").text();
             var test_url = "{{ rule.get_absolute_url }}test/" + ruleset_id;
-            $.ajax(
-                {
+            $.ajax({
                 type:"GET",
                 url: test_url,
                 context: $(this),
                 success: function(data) {
-                        if (data['status']) {
-                            vlabel = $(this).find("#validity");
-                            vlabel.text('Valid');
-                            vlabel.addClass('label-success');
-                            vlabel.removeClass('label-default');
-                        } else {
-                            vlabel = $(this).find("#validity")
-                            vlabel.addClass('label-danger');
-                            vlabel.text('Invalid');
-                            vlabel.removeClass('label-default');
-                            error_content = "";
-                            if (data['errors'][0] != undefined) {
-                                for (i = 0; i < data['errors'].length; i++) {
-                                    error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
-                                }
-                            } else {
-                                if (data['errors']['message'] != undefined) {
-                                    error_content = data['errors']['message'];
-                                } else {
-                                    error_content = "Unknown error";
-                                }
+                    if (data['status']) {
+                        vlabel = $(this).find("#validity");
+                        vlabel.text('Valid');
+                        vlabel.addClass('label-success');
+                        vlabel.removeClass('label-default');
+                    } else {
+                        vlabel = $(this).find("#validity")
+                        vlabel.addClass('label-danger');
+                        vlabel.text('Invalid');
+                        vlabel.removeClass('label-default');
+                        error_content = "";
+                        if (data['errors'][0] != undefined) {
+                            for (i = 0; i < data['errors'].length; i++) {
+                                error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
                             }
-                            $("#validity_error").append('<h4 class="title">' + ruleset_name + '</h4><div id="errors"><ul>' + error_content + '</ul></div>');
-                            $("#validity_error").show(duration=200);
+                        } else {
+                            if (data['errors']['message'] != undefined) {
+                                error_content = data['errors']['message'];
+                            } else {
+                                error_content = "Unknown error";
+                            }
                         }
+                        $("#validity_error").append('<h4 class="title">' + ruleset_name + '</h4><div id="errors"><ul>' + error_content + '</ul></div>');
+                        $("#validity_error").show(duration=200);
+                    }
                 }
-                }
-            );
+            });
         }
-      );
+    );
 }
 
 $( 'document' ).ready(function() {

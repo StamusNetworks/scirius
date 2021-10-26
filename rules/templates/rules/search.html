@@ -1,55 +1,44 @@
 {% extends "rules/base.html" %}
-
 {% block content %}
-{% if not length %}
-No match.
-{% endif %}
-
-
-<div class="container-fluid">
-<div class="row">
-{% if rules %} 
-<div class="col-md-{{ rules_width }}">
-<h2 class="title">Rules</h2>
-    {% load render_table from django_tables2 %}
-    {% render_table rules %}
-</div>
-{% endif %}
-
-{% if categories %} 
-<div class="col-md-4">
-<h2 class="title">Categories</h2>
-    {% load render_table from django_tables2 %}
-    {% render_table categories %}
-</div>
-{% endif %}
-
-{% if rulesets %} 
-<div class="col-md-4">
-<h2 class="title">Rulesets</h2>
-    {% load render_table from django_tables2 %}
-    {% render_table rulesets %}
-</div>
-{% endif %}
-
-</div>
-</div>
+    {% if not length %}No match.{% endif %}
+    <div class="container-fluid">
+        <div class="row">
+            {% if rules %}
+                <div class="col-md-{{ rules_width }}">
+                    <h2 class="title">Rules</h2>
+                    {% load render_table from django_tables2 %}
+                    {% render_table rules %}
+                </div>
+            {% endif %}
+            {% if categories %}
+                <div class="col-md-4">
+                    <h2 class="title">Categories</h2>
+                    {% load render_table from django_tables2 %}
+                    {% render_table categories %}
+                </div>
+            {% endif %}
+            {% if rulesets %}
+                <div class="col-md-4">
+                    <h2 class="title">Rulesets</h2>
+                    {% load render_table from django_tables2 %}
+                    {% render_table rulesets %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}
-
 {% block sidebar %}
-<div class="panel-heading">
-<h2 class="panel-title">Search</h2>
-</div>
-<ul class="panel-body">
-	<li>{{ length }} result{{ length|pluralize }} for '{{motif}}'.</li>
-  {% if rulesets %}
-  <li>{{rulesets.page.paginator.count}} ruleset{{ rulesets.page.paginator.count|pluralize }}</li>
-  {% endif %}
-  {% if categories %}
-  <li>{{categories.page.paginator.count}} categor{{ categories.page.paginator.count|pluralize:"y,ies" }}</li>
-  {% endif %}
-  {% if rules %}
-  <li>{{rules.page.paginator.count}} rule{{ rules.page.paginator.count|pluralize }}</li>
-  {% endif %}
-</ul>
+    <div class="panel-heading">
+        <h2 class="panel-title">Search</h2>
+    </div>
+    <ul class="panel-body">
+        <li>{{ length }} result{{ length|pluralize }} for '{{ motif }}'.</li>
+        {% if rulesets %}
+            <li>{{ rulesets.page.paginator.count }} ruleset{{ rulesets.page.paginator.count|pluralize }}</li>
+        {% endif %}
+        {% if categories %}
+            <li>{{ categories.page.paginator.count }} categor{{ categories.page.paginator.count|pluralize:"y,ies" }}</li>
+        {% endif %}
+        {% if rules %}<li>{{ rules.page.paginator.count }} rule{{ rules.page.paginator.count|pluralize }}</li>{% endif %}
+    </ul>
 {% endblock %}

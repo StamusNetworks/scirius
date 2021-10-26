@@ -1,26 +1,28 @@
-
 {% if history %}
-<div class="container-fluid">
-    <div class="row toolbar-pf">
-        <div class="col-sm-12">
-            <div class="row toolbar-pf-results">
-                <div class="col-sm-12">
-                    <h5>{{ history|length }} Action{{ history|length|pluralize }}</h5>
-                </div><!-- /col -->
-            </div><!-- /row -->
-        </div><!-- /col -->
-    </div><!-- /row -->
-</div><!-- /container -->
-
-<div class="container-fluid">
-    <div class="list-group list-view-pf list-view-pf-view">
-        {% for user_action in history %}
-            {% include "rules/useraction_entry.html" with user_action=user_action %}
-        {% endfor %}
+    <div class="container-fluid">
+        <div class="row toolbar-pf">
+            <div class="col-sm-12">
+                <div class="row toolbar-pf-results">
+                    <div class="col-sm-12">
+                        <h5>{{ history|length }} Action{{ history|length|pluralize }}</h5>
+                    </div>
+                    <!-- /col -->
+                </div>
+                <!-- /row -->
+            </div>
+            <!-- /col -->
+        </div>
+        <!-- /row -->
     </div>
-</div>
+    <!-- /container -->
+    <div class="container-fluid">
+        <div class="list-group list-view-pf list-view-pf-view">
+            {% for user_action in history %}
+                {% include "rules/useraction_entry.html" with user_action=user_action %}
+            {% endfor %}
+        </div>
+    </div>
 {% endif %}
-
 <script>
   $(document).ready(function () {
 
@@ -43,4 +45,3 @@
 
   });
 </script>
-

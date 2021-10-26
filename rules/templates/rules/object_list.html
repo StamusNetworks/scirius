@@ -1,47 +1,51 @@
 {% extends "rules/base.html" %}
-
-
 {% block sidebar %}
     <div class="panel-heading">
         <h2 class="panel-title">{{ name }}</h2>
     </div>
-    <ul class="panel-body"><li>{{ size }} object{{ size|pluralize }}</li></ul>
-
+    <ul class="panel-body">
+        <li>{{ size }} object{{ size|pluralize }}</li>
+    </ul>
     {% if manage_links %}
         <div class="panel-heading">
             <h2 class="panel-title">Manage {{ name }}</h2>
         </div>
         <ul class="panel-body">
             {% for url, title in manage_links.items  %}
-                <li><a href="{% url url  %}">{{ title }}</a></li>
+                <li>
+                    <a href="{% url url  %}">{{ title }}</a>
+                </li>
             {% endfor %}
         </ul>
     {% endif %}
-
-        <div class="panel-heading">
-            <h2 class="panel-title">Action</h2>
-        </div>
-        {% if adduri %}
-            <ul class="action panel-body">
-                <li> <a href="{{ adduri }}">Add {{ action }}</a></li>
-                {% for url, title in action_links.items  %}
-                    <li><a href="{% url url  %}">{{ title }}</a></li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <ul class="action panel-body"> <li> <a href="{% url 'rules_index' %}{{ action }}/add">Add</a></li></ul>
-        {% endif %}
-
+    <div class="panel-heading">
+        <h2 class="panel-title">Action</h2>
+    </div>
+    {% if adduri %}
+        <ul class="action panel-body">
+            <li>
+                <a href="{{ adduri }}">Add {{ action }}</a>
+            </li>
+            {% for url, title in action_links.items  %}
+                <li>
+                    <a href="{% url url  %}">{{ title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <ul class="action panel-body">
+            <li>
+                <a href="{% url 'rules_index' %}{{ action }}/add">Add</a>
+            </li>
+        </ul>
+    {% endif %}
 {% endblock %}
-
 {% block content %}
     {% if objects %}
-
         <div class="container-fluid">
             <div class="row">
                 <h2 class="title">{{ action.title }}{{ objects|length|pluralize }}</h2>
                 <div class="col-md-12">
-
                     {% load render_table from django_tables2 %}
                     {% render_table objects %}
                 </div>
@@ -50,5 +54,4 @@
     {% else %}
         No object available.
     {% endif %}
-
 {% endblock %}

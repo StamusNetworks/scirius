@@ -1,16 +1,20 @@
 {% extends "rules/base.html" %}
 {% load bootstrap3  %}
-
 {% block sidebar %}
     <div class="panel-heading">
         <h2 class="panel-title">Manage priorities</h2>
     </div>
     <ul>
-        <li><a href="{% url 'list_accounts' %}">Accounts list</a></li>
-        <li><a href="{% url 'list_users' %}">User list</a></li>
-        <li><a href="{% url 'list_groups' %}">Role list</a></li>
+        <li>
+            <a href="{% url 'list_accounts' %}">Accounts list</a>
+        </li>
+        <li>
+            <a href="{% url 'list_users' %}">User list</a>
+        </li>
+        <li>
+            <a href="{% url 'list_groups' %}">Role list</a>
+        </li>
     </ul>
-
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function() {
             $("#sortable").sortable({
@@ -25,8 +29,7 @@
             }).disableSelection();
         });
     </script>
-{% endblock %}
-
+{% endblock sidebar %}
 {% block content %}
     <div class="container-fluid">
         <h2>Roles priorities</h2>
@@ -39,10 +42,12 @@
         {% if groups|length > 3 %}
             <ol id="sortable" start="3">
                 {% for group in groups|slice:"3:" %}
-                    <li id="group_{{ group.pk }}" class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>{{ group.name }}</li>
+                    <li id="group_{{ group.pk }}" class="ui-state-default">
+                        <span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
+                        {{ group.name }}
+                    </li>
                 {% endfor %}
             </ol>
         {% endif %}
     </div>
-
-{% endblock %}
+{% endblock content %}

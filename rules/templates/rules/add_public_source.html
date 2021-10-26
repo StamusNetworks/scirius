@@ -1,154 +1,196 @@
 {% extends "rules/base.html" %}
-{% load bootstrap3  %}
-
+{% load bootstrap3 %}
 {% block sidebar %}
-<div class="panel-heading">
-<h2 class="panel-title">
-Add a Source
-</h2>
-</div>
-
-{% if perms.rules.source_edit %}
-<div class="panel-heading">
-<h2 class="panel-title">Action</h2>
-</div>
-        <ul class="action panel-body">
-	     <li> <a href="{% url "update_public_sources" %}">Update public sources</a></li>
-	</ul>
-{% endif %}
-{% endblock %}
-
-{% block content %}
-{% if update %}
-{% include "rules/import_and_add_source.html" %}
-{% else %}
-      <div class="container-fluid">
-        <div class="row toolbar-pf">
-          <div class="col-sm-12">
-            <div class="row toolbar-pf-results">
-              <div class="col-sm-12">
-                <h5>Select one of the {{ sources|length }} Source{{ sources|length|pluralize }}</h5>
-              </div><!-- /col -->
-            </div><!-- /row -->
-          </div><!-- /col -->
-        </div><!-- /row -->
-      </div><!-- /container -->
-
-      <div class="container-fluid">
-          <div class="list-group list-view-pf list-view-pf-view">
-              {% for source, params in sources.items %}
-              <div class="list-group-item">
-                  <div class="list-group-item-header">
-                      <div class="list-view-pf-expand">
-                          <span class="fa fa-angle-right"></span>
-                      </div>
-                      <div class="list-view-pf-actions">
-                          {% if not params.added %}
-                              {% if perms.rules.source_edit %}
-                          <a class="add_source_button" name="{{ source }}" style="cursor: pointer;"><button class="btn btn-default">Enable</button></a>
-                              {% else %}
-                                <button class="btn btn-default" disabled>Available</button>
-                              {% endif %}
-                          {% else %}
-                          <button class="btn btn-default" disabled>Enabled</button>
-                          {% endif %}
-                      </div>
-                      <div class="list-view-pf-main-info">
-                          <div class="list-view-pf-left">
-                              <span class="fa fa-external-link list-view-pf-icon-sm"></span>
-                          </div>
-                          <div class="list-view-pf-body">
-                              <div class="list-view-pf-description">
-                                  <div class="list-group-item-heading">
-                                      {{ source }}
-                                  </div>
-                                  <div class="list-group-item-text">
-                                      {{ params.summary }}
-                                  </div>
-                              </div>
-                              <div class="list-view-pf-additional-info">
-                                  <div class="list-view-pf-additional-info-item"> <span class="fa fa-list-alt"> </span> License: {{ params.license }}
-                                  </div>
-                                  <div class="list-view-pf-additional-info-item">
-                                      <span class="fa fa-shield"> </span> Vendor: {{ params.vendor }}
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-
-                  <div class="list-group-item-container container-fluid hidden">
-                      <div class="close">
-                          <span class="pficon pficon-close"></span>
-                      </div>
-                      <div class="row">
-                          <div class="col-md-6">
-                              <dl class="dl-horizontal">
-                                  {% if params.description %}
-                                  <dt>Description</dt><dd>{{ params.description }}</dd>
-                                  {% endif %}
-                                  <dt>Source URL</dt><dd>{{ params.url }}</a></dd>
-                                  {% if params.subscribe_url %}
-                                  <dt>Subscribe URL</dt><dd><a href="{{ params.subscribe_url_cleaned }}">{{ params.subscribe_url }}</a></dd>
-                                  {% endif %}
-                                  {% if params.support_url %}
-                                  <dt>Support URL</dt><dd><a href="{{ params.support_url_cleaned }}">{{ params.support_url }}</a></dd>
-                                  {% endif %}
-                              </dl>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-
-
-{% endfor %}
-
-</div>
-</div>
-
-
-</script>
-
-<!-- Modal -->
-<div class="modal bs-example-modal-sm" id="add_modal" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="UpdateModalLabel">Add source <span id="add_source_id"></span></h4>
-      </div>
-      <form class="form" action="{% url 'add_public_source' %}" method="post">
-      {% csrf_token %}
-      <div class="modal-body" id="update_text">
-      <input type="hidden" name="source_id" value="">
-      <div class="form-group"><label class="control-label" for="id_name">Name</label><input type="text" name="name" title="" required id="id_name" maxlength="100" placeholder="Name" class="form-control" /></div>
-      <div id="extra_params">
-
-      </div>
-      <div class="form-group"><label><input type="checkbox" name="use_iprep" checked> Use IP reputation for group signatures</label></div>
-      <label class="control-label">Add source to the following ruleset(s)</label>
-      <div class="form-group">
-      <div id="id_rulesets">
-        <div class="checkbox">
-        {% for ruleset in rulesets %}
-           <label><input type="checkbox" name="rulesets" value="{{ ruleset.pk }}" > {{ ruleset.name }}</label>
-        {% endfor %}
-        </div>
-      </div>
-      </div>
-      <div class="form-group"><label class="control-label" for="id_comment">Optional comment</label><textarea name="comment" rows="5" title="" cols="40" id="id_comment" placeholder="Optional comment" class="form-control">
-</textarea></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-ok"> </span> Submit</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-      </div>
-      </form>
+    <div class="panel-heading">
+        <h2 class="panel-title">Add a Source</h2>
     </div>
-  </div>
-</div>
-
-
-<script>
+    {% if perms.rules.source_edit %}
+        <div class="panel-heading">
+            <h2 class="panel-title">Action</h2>
+        </div>
+        <ul class="action panel-body">
+            <li>
+                <a href="{% url "update_public_sources" %}">Update public sources</a>
+            </li>
+        </ul>
+    {% endif %}
+{% endblock sidebar %}
+{% block content %}
+    {% if update %}
+        {% include "rules/import_and_add_source.html" %}
+    {% else %}
+        <div class="container-fluid">
+            <div class="row toolbar-pf">
+                <div class="col-sm-12">
+                    <div class="row toolbar-pf-results">
+                        <div class="col-sm-12">
+                            <h5>Select one of the {{ sources|length }} Source{{ sources|length|pluralize }}</h5>
+                        </div>
+                        <!-- /col -->
+                    </div>
+                    <!-- /row -->
+                </div>
+                <!-- /col -->
+            </div>
+            <!-- /row -->
+        </div>
+        <!-- /container -->
+        <div class="container-fluid">
+            <div class="list-group list-view-pf list-view-pf-view">
+                {% for source, params in sources.items %}
+                    <div class="list-group-item">
+                        <div class="list-group-item-header">
+                            <div class="list-view-pf-expand">
+                                <span class="fa fa-angle-right"></span>
+                            </div>
+                            <div class="list-view-pf-actions">
+                                {% if not params.added %}
+                                    {% if perms.rules.source_edit %}
+                                        <a class="add_source_button"
+                                           name="{{ source }}"
+                                           style="cursor: pointer;">
+                                            <button class="btn btn-default">Enable</button>
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-default" disabled>Available</button>
+                                    {% endif %}
+                                {% else %}
+                                    <button class="btn btn-default" disabled>Enabled</button>
+                                {% endif %}
+                            </div>
+                            <div class="list-view-pf-main-info">
+                                <div class="list-view-pf-left">
+                                    <span class="fa fa-external-link list-view-pf-icon-sm"></span>
+                                </div>
+                                <div class="list-view-pf-body">
+                                    <div class="list-view-pf-description">
+                                        <div class="list-group-item-heading">{{ source }}</div>
+                                        <div class="list-group-item-text">{{ params.summary }}</div>
+                                    </div>
+                                    <div class="list-view-pf-additional-info">
+                                        <div class="list-view-pf-additional-info-item">
+                                            <span class="fa fa-list-alt"></span>
+                                            License: {{ params.license }}
+                                        </div>
+                                        <div class="list-view-pf-additional-info-item">
+                                            <span class="fa fa-shield"></span>
+                                            Vendor: {{ params.vendor }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item-container container-fluid hidden">
+                            <div class="close">
+                                <span class="pficon pficon-close"></span>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <dl class="dl-horizontal">
+                                        {% if params.description %}
+                                            <dt>
+                                                Description
+                                            </dt>
+                                            <dd>
+                                                {{ params.description }}
+                                            </dd>
+                                        {% endif %}
+                                        <dt>
+                                            Source URL
+                                        </dt>
+                                        <dd>
+                                            {{ params.url }}
+                                        </dd>
+                                        {% if params.subscribe_url %}
+                                            <dt>
+                                                Subscribe URL
+                                            </dt>
+                                            <dd>
+                                                <a href="{{ params.subscribe_url_cleaned }}">{{ params.subscribe_url }}</a>
+                                            </dd>
+                                        {% endif %}
+                                        {% if params.support_url %}
+                                            <dt>
+                                                Support URL
+                                            </dt>
+                                            <dd>
+                                                <a href="{{ params.support_url_cleaned }}">{{ params.support_url }}</a>
+                                            </dd>
+                                        {% endif %}
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal bs-example-modal-sm"
+             id="add_modal"
+             tabindex="-1"
+             role="dialog"
+             aria-labelledby="UpdateModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="UpdateModalLabel">
+                            Add source
+                            <span id="add_source_id"></span>
+                        </h4>
+                    </div>
+                    <form class="form" action="{% url 'add_public_source' %}" method="post">
+                        {% csrf_token %}
+                        <div class="modal-body" id="update_text">
+                            <input type="hidden" name="source_id" value="" />
+                            <div class="form-group">
+                                <label class="control-label" for="id_name">Name</label>
+                                <input type="text"
+                                       name="name"
+                                       title=""
+                                       required
+                                       id="id_name"
+                                       maxlength="100"
+                                       placeholder="Name"
+                                       class="form-control"/>
+                            </div>
+                            <div id="extra_params"></div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="use_iprep" checked />
+                                    Use IP reputation for group signatures
+                                </label>
+                            </div>
+                            <label class="control-label">Add source to the following ruleset(s)</label>
+                            <div class="form-group">
+                                <div id="id_rulesets">
+                                    <div class="checkbox">
+                                        {% for ruleset in rulesets %}
+                                            <label>
+                                                <input type="checkbox" name="rulesets" value="{{ ruleset.pk }}" />
+                                                {{ ruleset.name }}
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="id_comment">Optional comment</label>
+                                <textarea name="comment" rows="5" title="" cols="40" id="id_comment" placeholder="Optional comment" class="form-control"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" type="submit">
+                                <span class="glyphicon glyphicon-ok"></span>
+                                Submit
+                            </button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script>
   $(document).ready(function () {
     $('.add_source_button').click(
         function() {
@@ -162,7 +204,11 @@ Add a Source
                     var source = data[source_id];
                     if (('parameters' in source) && ('secret_code' in source['parameters']))  {
                         if ($("#secret_code_div").length == 0) {
-                        $("#extra_params").append('<div id="secret_code_div" class="form-group"><label class="control-label" for="id_secret_code">Secret code</label><input type="text" name="secret_code" title="" required id="id_secret_code" maxlength="100" placeholder="Secret code" class="form-control" /></div>');
+                        $("#extra_params").append(
+                            `<div id="secret_code_div" class="form-group">
+                            <label class="control-label" for="id_secret_code">Secret code</label>
+                            <input type="text" name="secret_code" title="" required id="id_secret_code" maxlength="100" placeholder="Secret code" class="form-control" /></div>`
+                        );
                         }
                     } else {
                         $("#secret_code_div").remove();
@@ -206,10 +252,6 @@ Add a Source
     })
 
   });
-</script>
-
-
-
-{% endif %}
-
-{% endblock %}
+        </script>
+    {% endif %}
+{% endblock content %}

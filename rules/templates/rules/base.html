@@ -1,387 +1,513 @@
 {% load staticfiles %}
 {% load bootstrap3 %}
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>{% block title %}Scirius - {{ path_info|title }}{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}"/>
-    <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
-    <script src="{% static 'dist/scirius-bundle.js' %}"></script>
-    {% block head %} {% endblock %}
-    <link rel="stylesheet" type="text/css" href="{% static 'dist/styles.css' %}" />
-    {% if settings.CUSTOM_CSS %}
-        <link rel="stylesheet" type="text/css" href="{{ settings.CUSTOM_CSS }}" />
-    {% endif %}
-</head>
-
-{% block body %}
-<body>
-{% endblock %}
-<div class="container-fluid">
-	<nav class="navbar navbar-default" role="navigation">
- <div class="container-fluid">
-		<div class="navbar-header">
-			<a class="navbar-dropdown collapsed" type="button" data-target="sc_menu" data-toggle="dropdown" id="logo" style="cursor: pointer;">
-			<img src="{% static 'rules/stamus.png' %}" id="img-logo"/><span class="caret"/>
-</a>
-			<ul class="dropdown-menu" id="sc_menu" role="menu">
-                {% if perms.rules.configuration_view %}
-                    <li><a href="{% url 'system_settings' %}" >{% bootstrap_icon "list-alt"%} System settings</a></li>
-                {% endif %}
-                        {% block menusettings %}
-			        {% if links %}
-				<li role="presentation" class="divider"></li>
-				{% for link in links %}
-					<li><a href="{% url link.url %}">{% bootstrap_icon link.icon %} {{ link.name }}</a></li>
-				{% endfor %}
-				{% endif %}
-			{% endblock %}
-                {% if perms.rules.configuration_view or links %}
-                    <li role="presentation" class="divider"></li>
-                {% endif %}
-                        <li><a href="{% url 'history' %}" >{% bootstrap_icon "time"%} Action History</a></li>
-            {% if perms.rules.configuration_auth %}
-                        <li><a href="{% url 'list_accounts' %}" >{% bootstrap_icon "user"%} Manage accounts</a></li>
-            {% endif %}
-			</ul>
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#top-menu-collapse">
-        <span class="sr-only">Toggle navigation</span>
-         <span class="icon-bar"></span>
-         <span class="icon-bar"></span>
-         <span class="icon-bar"></span>
-          </button>
-         <span class="logo-title">{{ scirius_long_name }}</span>
-        </div>
-
-
-        <div class="navbar-collapse collapse" id="top-menu-collapse">
-                <ul class="nav navbar-nav" id="top_menu">
-
-			<li><a id="home" href="{% url 'rules_index' %}">{% bootstrap_icon "home" %} Home</a></li>
-            {% if perms.rules.source_view %}
-                <li><a id="source" href="{% url 'sources' %}">{% bootstrap_icon "cloud-download" %} Sources</a></li>
-                <li><a id="ruleset" href="{% url 'rulesets' %}">{% bootstrap_icon "th" %} Rulesets</a></li>
-            {% endif %}
-			{% if toplinks %}
-			{% for link in toplinks %}
-                {% if link.perm %}
-			        <li><a id="{{ link.id }}" href="{{ link.url }}">{% bootstrap_icon link.icon %} {{ link.label }}</a></li>
-                {% endif %}
-			{% endfor %}
-			{% endif %}
-
-		</ul>
-<div class="navbar-right">
-<ul class="nav navbar-nav">
-{% if perms.rules.ruleset_policy_view %}
-    <li>
-        <a class="dropdown-toggle" type="button" id="display_search" data-toggle="dropdown" href="#">
-            <span class="glyphicon glyphicon-search"> <span class="caret"/></span>
-        </a>
-        <form class="dropdown-menu" id="display_search"  action="{% url 'scirius_search' %}" method="post" role="search">{% csrf_token %}
-            <span class="form-group sn-drop-down">
-                <span class="glyphicon glyphicon-search"> <input type="text" name="search" id="id_search"/></span>
-            </span>
-        </form>
-    </li>
-{% endif %}
-</ul>
-{% include 'rules/header_right.html' %}
-
-</div>
-</div>
-</div>
-	</nav>
-	{% block subnavigation %} {% endblock %}
-	<div class="row">
-		<div class="col-md-2 col-sm-3">
-			<div class="panel panel-default" id="sys-status">
-					<div class="panel-heading">
-					<h2 class="panel-title">System status</h2>
-					</div>
-                    <div class="panel-body">
+    <head>
+        <title>
+            {% block title %}Scirius - {{ path_info|title }}{% endblock title %}
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet"
+              type="text/css"
+              href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}"/>
+        <link rel="shortcut icon" href="{% static 'rules/favicon.ico' %}" />
+        <script src="{% static 'dist/scirius-bundle.js' %}"></script>
+        {% block head %}{% endblock head %}
+        <link rel="stylesheet"
+              type="text/css"
+              href="{% static 'dist/styles.css' %}"/>
+        {% if settings.CUSTOM_CSS %}<link rel="stylesheet" type="text/css" href="{{ settings.CUSTOM_CSS }}" />{% endif %}
+    </head>
+    {% block body %}<body>{% endblock body %}
+    <div class="container-fluid">
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-dropdown collapsed"
+                       type="button"
+                       data-target="sc_menu"
+                       data-toggle="dropdown"
+                       id="logo"
+                       style="cursor: pointer;">
+                        <img src="{% static 'rules/stamus.png' %}" id="img-logo"/>
+                        <span class="caret"/>
+                    </a>
+                    <ul class="dropdown-menu" id="sc_menu" role="menu">
                         {% if perms.rules.configuration_view %}
-                            <div id="suri-status" class="label label-default"><a href="/{{ generator }}/">Suricata</a></div>
-                            {% if elasticsearch %}
-                                <div id="health" class="label label-default"><a href="{% url 'elasticsearch' %}">Elasticsearch</a></div>
-                            {% endif %}
-                            <div id="disk-status" class="label label-default"><a href="{% url monitoring_url %}">Disk</a></div>
-                            <div id="memory-status" class="label label-default"><a href="{% url monitoring_url %}">Memory</a></div>
+                            <li>
+                                <a href="{% url 'system_settings' %}">{% bootstrap_icon "list-alt" %} System settings</a>
+                            </li>
                         {% endif %}
-                    </div>
-            </div>
-			<div class="panel panel-default" id="sidebar">
-				        {% block sidebar %}
-					<div class="panel-heading">
-					<h2 class="panel-title">Scirius</h2>
-					</div>
-					<div class="panel-body">
-					 A web interface to manage Suricata rulesets
-					</div>
-        				{% endblock %}
-					{% if object_path %}
-					<div class="panel-heading">
-					<h2 class="panel-title">Path</h2>
-					</div>
-                    <div class="panel-body">
-					<ol class="breadcrumb">
-					   {% for object in object_path %}
-					  <li><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></li>
-					  {% endfor %}
-					</ol>
-                    </div>
-					{% endif %}
-
-                                        {% block status %}{% if middleware_status %}{% include middleware_status %}{% endif %} {% endblock %}
-
-			</div> <!-- panel -->
-            {% if help_link %}
-                  <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h2 class="panel-title">{% bootstrap_icon "book" %} Help</h2>
-                    </div>
-                    <div class="panel-body">
-                        <a href="{% static help_link.base_url %}{{ help_link.anchor }}" target="_blank">{{ help_link.name }}</a>
+                        {% block menusettings %}
+                            {% if links %}
+                                <li role="presentation" class="divider"></li>
+                                {% for link in links %}
+                                    <li>
+                                        <a href="{% url link.url %}">{% bootstrap_icon link.icon %} {{ link.name }}</a>
+                                    </li>
+                                {% endfor %}
+                            {% endif %}
+                        {% endblock menusettings %}
+                        {% if perms.rules.configuration_view or links %}<li role="presentation" class="divider"></li>{% endif %}
+                        <li>
+                            <a href="{% url 'history' %}">{% bootstrap_icon "time" %} Action History</a>
+                        </li>
+                        {% if perms.rules.configuration_auth %}
+                            <li>
+                                <a href="{% url 'list_accounts' %}">{% bootstrap_icon "user" %} Manage accounts</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    <button type="button"
+                            class="navbar-toggle"
+                            data-toggle="collapse"
+                            data-target="#top-menu-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <span class="logo-title">{{ scirius_long_name }}</span>
                 </div>
+                <div class="navbar-collapse collapse" id="top-menu-collapse">
+                    <ul class="nav navbar-nav" id="top_menu">
+                        <li>
+                            <a id="home" href="{% url 'rules_index' %}">{% bootstrap_icon "home" %} Home</a>
+                        </li>
+                        {% if perms.rules.source_view %}
+                            <li>
+                                <a id="source" href="{% url 'sources' %}">{% bootstrap_icon "cloud-download" %} Sources</a>
+                            </li>
+                            <li>
+                                <a id="ruleset" href="{% url 'rulesets' %}">{% bootstrap_icon "th" %} Rulesets</a>
+                            </li>
+                        {% endif %}
+                        {% if toplinks %}
+                            {% for link in toplinks %}
+                                {% if link.perm %}
+                                    <li>
+                                        <a id="{{ link.id }}" href="{{ link.url }}">{% bootstrap_icon link.icon %} {{ link.label }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </ul>
+                    <div class="navbar-right">
+                        <ul class="nav navbar-nav">
+                            {% if perms.rules.ruleset_policy_view %}
+                                <li>
+                                    <a class="dropdown-toggle"
+                                       type="button"
+                                       id="display_search"
+                                       data-toggle="dropdown"
+                                       href="#">
+                                        <span class="glyphicon glyphicon-search">
+                                            <span class="caret"/></span>
+                                        </a>
+                                        <form class="dropdown-menu"
+                                              id="display_search"
+                                              action="{% url 'scirius_search' %}"
+                                              method="post"
+                                              role="search">
+                                            {% csrf_token %}
+                                            <span class="form-group sn-drop-down">
+                                                <span class="glyphicon glyphicon-search">
+                                                    <input type="text" name="search" id="id_search"/>
+                                                </span>
+                                            </span>
+                                        </form>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                            {% include 'rules/header_right.html' %}
+                        </div>
+                    </div>
                 </div>
-            {% endif %}
-
-		</div> <!-- col -->
-		{% if three_columns %}
-		<div class="col-md-8 col-sm-9">
-		{% else %}
-		<div class="col-md-10 col-sm-9">
-		{% endif %}
-
-<!-- Modal -->
-<div class="modal bs-example-modal-sm" id="scirius_down" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Scirius is down.</h4>
-      </div>
-      <div class="modal-body text-danger" id="scirius_down_text">
-        Scirius is not currently available.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-dismiss="modal">Ignore</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Generic modal -->
-<div class="modal bs-example-modal-sm" id="generic-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="generic-modal-title"></h4>
-      </div>
-      <div class="modal-body" id="generic-modal-msg">
-      </div>
-      <div class="modal-body" id="generic-modal-comment-div">
-          <label>Comment:</label>
-          <div>
-            <textarea id="generic-modal-comment" name="comment" rows="4" style="min-width: 100%"></textarea>
-          </div>
-      </div>
-      <div class="modal-footer" id="generic-modal-footer">
-        <button class="btn btn-primary" type="button" id="generic-modal-submit"><span class="glyphicon glyphicon-ok" id="generic-modal-submit-icon"></span>Ok</button>
-        <button type="button" class="btn btn-default" id="generic-modal-cancel" data-dismiss="modal">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-            <div id="scirius_down_label" style="display:none;" >
-                <div class="alert alert-danger">Scirius is down. Don't leave page.</div>
-            </div>
-            {% block extra_message %}
-                {% if additional_error %}
-                    <div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                    <span id="error">{{ additional_error|safe }}</span></div>
-                {% endif %}
-            {% endblock %}
-                    {% block error %}
-
-			{% if messages %}
-			    {% for message in messages %}
-			    <div class="alert alert-dismissible alert-{% if message.tags %}{{ message.tags|lower }}{% endif %}">
-			        <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-				<span id="message">{{ message }}</span>
-			    </div>
-			    {% endfor %}
-			{% endif %}
-                      {% if error %}
-                       <div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
- <span id="error">{{ error }}</span></div>
-
-                      {% else %}
-                       <div class="alert alert-danger alert-dismissible" style="display:none;">
-                       <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-
-                       <span id="error"> No error</span></div>
-                       <div class="alert alert-info alert-dismissible" style="display:none;">
-                       <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-
-                       <span id="info"> No info</span></div>
-                      {% endif %}
-                      {% if success %}
-                       <div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
- <span id="error">{{ success }}</span></div>
+            </nav>
+            {% block subnavigation %}{% endblock subnavigation %}
+            <div class="row">
+                <div class="col-md-2 col-sm-3">
+                    <div class="panel panel-default" id="sys-status">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">System status</h2>
+                        </div>
+                        <div class="panel-body">
+                            {% if perms.rules.configuration_view %}
+                                <div id="suri-status" class="label label-default space-add">
+                                    <a href="/{{ generator }}/">Suricata</a>
+                                </div>
+                                {% if elasticsearch %}
+                                    <div id="health" class="label label-default space-add">
+                                        <a href="{% url 'elasticsearch' %}">Elasticsearch</a>
+                                    </div>
+                                {% endif %}
+                                <div id="disk-status" class="label label-default space-add">
+                                    <a href="{% url monitoring_url %}">Disk</a>
+                                </div>
+                                <div id="memory-status" class="label label-default space-add">
+                                    <a href="{% url monitoring_url %}">Memory</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="panel panel-default" id="sidebar">
+                        {% block sidebar %}
+                            <div class="panel-heading">
+                                <h2 class="panel-title">Scirius</h2>
+                            </div>
+                            <div class="panel-body">A web interface to manage Suricata rulesets</div>
+                        {% endblock sidebar %}
+                        {% if object_path %}
+                            <div class="panel-heading">
+                                <h2 class="panel-title">Path</h2>
+                            </div>
+                            <div class="panel-body">
+                                <ol class="breadcrumb">
+                                    {% for object in object_path %}
+                                        <li>
+                                            <a href="{{ object.get_absolute_url }}">{{ object.name }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ol>
+                            </div>
+                        {% endif %}
+                        {% block status %}
+                            {% if middleware_status %}
+                                {% include middleware_status %}
+                            {% endif %}
+                        {% endblock status %}
+                    </div>
+                    <!-- panel -->
+                    {% if help_link %}
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h2 class="panel-title">
+                                    {% bootstrap_icon "book" %} Help
+                                </h2>
+                            </div>
+                            <div class="panel-body">
+                                <a href="{% static help_link.base_url %}{{ help_link.anchor }}"
+                                   target="_blank">
+                                    {{ help_link.name }}
+                                </a>
+                            </div>
+                        </div>
                     {% endif %}
-
-                    {% endblock %}
-
-                    {% block content %}{% endblock %}
-		</div> <!-- col -->
-		{% if three_columns %}
-		<div class="col-md-2 col-sm-12">
-                    {% block 3dcol %}{% endblock %}
-		</div>
-		{% endif %}
-	</div> <!-- row -->
-
-
-{% include "rules/footer.html" %}
-</div> <!-- class container -->
-
-<script>
-
+                </div>
+                <!-- col -->
+                {% if three_columns %}
+                    <div class="col-md-8 col-sm-9">
+                    {% else %}
+                        <div class="col-md-10 col-sm-9">
+                        {% endif %}
+                        <!-- Modal -->
+                        <div class="modal bs-example-modal-sm"
+                             id="scirius_down"
+                             tabindex="-1"
+                             role="dialog"
+                             aria-labelledby="myModalLabel">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">
+                                                &times;
+                                            </span>
+                                        </button>
+                                        <h4 class="modal-title" id="myModalLabel">
+                                            Scirius is down.
+                                        </h4>
+                                    </div>
+                                    <div class="modal-body text-danger" id="scirius_down_text">
+                                        Scirius is not currently available.
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                            Ignore
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Generic modal -->
+                        <div class="modal bs-example-modal-sm"
+                             id="generic-modal"
+                             tabindex="-1"
+                             role="dialog"
+                             aria-labelledby="myModalLabel">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">
+                                                &times;
+                                            </span>
+                                        </button>
+                                        <h4 class="modal-title" id="generic-modal-title">
+                                        </h4>
+                                    </div>
+                                    <div class="modal-body" id="generic-modal-msg">
+                                    </div>
+                                    <div class="modal-body" id="generic-modal-comment-div">
+                                        <label>
+                                            Comment:
+                                        </label>
+                                        <div>
+                                            <textarea id="generic-modal-comment" name="comment" rows="4" style="min-width: 100%"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer" id="generic-modal-footer">
+                                        <button class="btn btn-primary" type="button" id="generic-modal-submit">
+                                            <span class="glyphicon glyphicon-ok" id="generic-modal-submit-icon">
+                                            </span>
+                                            Ok
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-default"
+                                                id="generic-modal-cancel"
+                                                data-dismiss="modal">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="scirius_down_label" style="display:none;">
+                            <div class="alert alert-danger">
+                                Scirius is down. Don't leave page.
+                            </div>
+                        </div>
+                        {% block extra_message %}
+                            {% if additional_error %}
+                                <div class="alert alert-danger alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert">
+                                        <span aria-hidden="true">
+                                            &times;
+                                        </span>
+                                        <span class="sr-only">
+                                            Close
+                                        </span>
+                                    </button>
+                                    <span id="error">
+                                        {{ additional_error|safe }}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        {% endblock extra_message %}
+                        {% block error %}
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-dismissible alert-
+                                                {% if message.tags %}
+                                                    {{ message.tags|lower }}
+                                                {% endif %}">
+                                        <button type="button" class="close" data-dismiss="alert">
+                                            <span aria-hidden="true">
+                                                &times;
+                                            </span>
+                                            <span class="sr-only">
+                                                Close
+                                            </span>
+                                        </button>
+                                        <span id="message">
+                                            {{ message }}
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                            {% if error %}
+                                <div class="alert alert-danger alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert">
+                                        <span aria-hidden="true">
+                                            &times;
+                                        </span>
+                                        <span class="sr-only">
+                                            Close
+                                        </span>
+                                    </button>
+                                    <span id="error">
+                                        {{ error }}
+                                    </span>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-danger alert-dismissible" style="display:none;">
+                                    <button type="button" class="close" data-dismiss="alert">
+                                        <span aria-hidden="true">
+                                            &times;
+                                        </span>
+                                        <span class="sr-only">
+                                            Close
+                                        </span>
+                                    </button>
+                                    <span id="error">
+                                        No error
+                                    </span>
+                                </div>
+                                <div class="alert alert-info alert-dismissible" style="display:none;">
+                                    <button type="button" class="close" data-dismiss="alert">
+                                        <span aria-hidden="true">
+                                            &times;
+                                        </span>
+                                        <span class="sr-only">
+                                            Close
+                                        </span>
+                                    </button>
+                                    <span id="info">
+                                        No info
+                                    </span>
+                                </div>
+                            {% endif %}
+                            {% if success %}
+                                <div class="alert alert-success alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert">
+                                        <span aria-hidden="true">
+                                            &times;
+                                        </span>
+                                        <span class="sr-only">
+                                            Close
+                                        </span>
+                                    </button>
+                                    <span id="error">
+                                        {{ success }}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        {% endblock error %}
+                        {% block content %}{% endblock content %}
+                    </div>
+                    <!-- col -->
+                    {% if three_columns %}
+                        <div class="col-md-2 col-sm-12">
+                            {% block 3dcol %}{% endblock 3dcol %}
+                        </div>
+                    {% endif %}
+                </div>
+                <!-- row -->
+                {% include "rules/footer.html" %}
+            </div>
+            <!-- class container -->
+            <script>
 var scirius_status = 'green';
 var scirius_modal = false;
 
 function get_scirius_status() {
-    $.ajax(
-        {
-                type:"GET",
-                url:"{% url 'info' %}",
-                success: function(data) {
-                    if (!data) {
-                        scirius_status = 'red';
-                        if (!scirius_modal) {
-                            $("#scirius_down").modal('show');
-                        }
-                    } else {
-                            if (data['status'] == 'green') {
-                                scirius_status = 'green';
-                                $("#scirius_down").modal('hide');
-                                $("#sys-status").show(300);
-                                $("#scirius_down_label").hide(duration=200);
-                                scirius_modal = false;
-                                start_interval_check();
-                                return;
-                            } else {
-                                $("#scirius_down_text").text("Scirius does not feel comfortable");
-                                scirius_status = 'red';
-                                if (!scirius_modal) {
-                                    $("#scirius_down").modal('show');
-                                    scirius_modal = true;
-                                }
-                            }
+    $.ajax({
+        type:"GET",
+        url:"{% url 'info' %}",
+        success: function(data) {
+            if (!data) {
+                scirius_status = 'red';
+                if (!scirius_modal) {
+                    $("#scirius_down").modal('show');
+                }
+            } else {
+                if (data['status'] == 'green') {
+                    scirius_status = 'green';
+                    $("#scirius_down").modal('hide');
+                    $("#sys-status").show(300);
+                    $("#scirius_down_label").hide(duration=200);
+                    scirius_modal = false;
+                    start_interval_check();
+                    return;
+                } else {
+                    $("#scirius_down_text").text("Scirius does not feel comfortable");
+                    scirius_status = 'red';
+                    if (!scirius_modal) {
+                        $("#scirius_down").modal('show');
+                        scirius_modal = true;
                     }
-                },
-                error: function(data) {
-                        if (scirius_status != 'red') {
-                                scirius_status = 'red';
-                                $("#scirius_down_text").text("No connection with scirius. This pop-up will disappear if connection is restored.");
-                                $("#sys-status").hide(1000);
-                                $("#scirius_down_label").show(duration=200);
-                                if (scirius_modal == false) {
-                                    $("#scirius_down").modal('show');
-                                    scirius_modal = true;
-                                }
-                        }
-                },
-                timeout: 15000,
-        }
-    );
+                }
+            }
+        },
+        error: function(data) {
+            if (scirius_status != 'red') {
+                scirius_status = 'red';
+                $("#scirius_down_text").text("No connection with scirius. This pop-up will disappear if connection is restored.");
+                $("#sys-status").hide(1000);
+                $("#scirius_down_label").show(duration=200);
+                if (scirius_modal == false) {
+                    $("#scirius_down").modal('show');
+                    scirius_modal = true;
+                }
+            }
+        },
+        timeout: 15000,
+    });
 }
 
-</script>
-
-{% if elasticsearch and perms.rules.configuration_view %}
-
-<script>
+            </script>
+            {% if elasticsearch and perms.rules.configuration_view %}
+                <script>
 function get_es_health() {
 
     if (scirius_status == "red") {
         return;
     }
-    $.ajax(
-        {
-                type:"GET",
-                url: "{% url 'es_stats' %}",
-                success: function(data) {
-                if (!data) {
-                        $("#health").removeClass("label-default");
-                        $("#health").removeClass("label-success");
-                        $("#health").removeClass("label-warning");
-                        $("#health").removeClass("label-danger");
-                        $("#health").addClass("label-danger");
-                } else {
-                        $("#health").removeClass("label-default");
-                        $("#health").removeClass("label-success");
-                        $("#health").removeClass("label-warning");
-                        $("#health").removeClass("label-danger");
-                        if (data['status'] == 'green') {
-                            $("#health").addClass("label-success");
-                        } else if (data['status'] == 'yellow') {
-                            $("#health").addClass("label-warning");
-                        } else if (data['status'] == 'red') {
-                            $("#health").addClass("label-danger");
-                        }
-                }
 
-                if (data['need_reboot']) {
-                        $('#error').text('ES version does not match. You must reboot.');
-                        $('#error').parent().show();
+    $.ajax({
+        type:"GET",
+        url: "{% url 'es_health' %}",
+        success: function(data) {
+            if (!data) {
+                $("#health").removeClass("label-default");
+                $("#health").removeClass("label-success");
+                $("#health").removeClass("label-warning");
+                $("#health").removeClass("label-danger");
+                $("#health").addClass("label-danger");
+            } else {
+                $("#health").removeClass("label-default");
+                $("#health").removeClass("label-success");
+                $("#health").removeClass("label-warning");
+                $("#health").removeClass("label-danger");
+                if (data['status'] == 'green') {
+                    $("#health").addClass("label-success");
+                } else if (data['status'] == 'yellow') {
+                    $("#health").addClass("label-warning");
+                } else if (data['status'] == 'red') {
+                    $("#health").addClass("label-danger");
                 }
-                },
-                error: function(data) {
-                        // Wait before running the check, to avoid flooding
-                        // when ES is not available
-                        setTimeout(start_down_check, 5000);
-                },
-                timeout: 15000,
-        }
-    );
+            }
+            if (data['need_reboot']) {
+                $('#error').text('ES version does not match. You must reboot.');
+                $('#error').parent().show();
+            }
+        },
+        error: function(data) {
+                // Wait before running the check, to avoid flooding
+                // when ES is not available
+                setTimeout(start_down_check, 5000);
+        },
+        timeout: 15000,
+    });
 }
 
-</script>
-{% endif %}
-
-<script>
+                </script>
+            {% endif %}
+            <script>
 function get_suricata_health() {
     if (scirius_status == "red") {
         return;
     }
 
-    $.ajax(
-        {
-                type:"GET",
-                url:"{% url 'info' %}?query=status",
-                success: function(data) {
-                $("#suri-status").removeClass("label-danger");
-                $("#suri-status").removeClass("label-default");
-                $("#suri-status").removeClass("label-success");
-                $("#suri-status").removeClass("label-warning");
-                if (!data) {
-                        $("#suri-status").addClass("label-danger");
-                } else {
-                        $("#suri-status").addClass("label-" + data['running']);
-                }
-                },
-                error: function(data) {
-                        start_down_check();
-                },
-                timeout: 15000,
-        }
-    );
+    $.ajax({
+        type:"GET",
+        url:"{% url 'info' %}?query=status",
+        success: function(data) {
+            $("#suri-status").removeClass("label-danger");
+            $("#suri-status").removeClass("label-default");
+            $("#suri-status").removeClass("label-success");
+            $("#suri-status").removeClass("label-warning");
+            if (!data) {
+                $("#suri-status").addClass("label-danger");
+            } else {
+                $("#suri-status").addClass("label-" + data['running']);
+            }
+        },
+        error: function(data) {
+            start_down_check();
+        },
+        timeout: 15000,
+    });
 }
 
 function set_info_card(key, data) {
@@ -400,68 +526,64 @@ function get_disk_health() {
     if (scirius_status == "red") {
         return;
     }
-    $.ajax(
-        {
-                type:"GET",
-                url:"{% url 'info' %}?query=disk",
-                success: function(data) {
-                $("#disk-status").removeClass("label-danger");
-                $("#disk-status").removeClass("label-default");
-                $("#disk-status").removeClass("label-success");
-                $("#disk-status").removeClass("label-warning");
-                if (!data) {
-                        $("#disk-status").addClass("label-danger");
+    $.ajax({
+        type:"GET",
+        url:"{% url 'info' %}?query=disk",
+        success: function(data) {
+            $("#disk-status").removeClass("label-danger");
+            $("#disk-status").removeClass("label-default");
+            $("#disk-status").removeClass("label-success");
+            $("#disk-status").removeClass("label-warning");
+            if (!data) {
+                    $("#disk-status").addClass("label-danger");
+            } else {
+		        set_info_card("#disk-status-card-bar", data[3]);
+                if (data[3] > 90) {
+                    $("#disk-status").addClass("label-danger");
+                } else if (data[3] > 80) {
+                    $("#disk-status").addClass("label-warning");
                 } else {
-			set_info_card("#disk-status-card-bar", data[3]);
-                        if (data[3] > 90) {
-                            $("#disk-status").addClass("label-danger");
-                        } else if (data[3] > 80) {
-                            $("#disk-status").addClass("label-warning");
-                        } else {
-                            $("#disk-status").addClass("label-success");
-                        }
+                    $("#disk-status").addClass("label-success");
                 }
-                },
-                error: function(data) {
-                        start_down_check();
-                },
-                timeout: 15000,
-        }
-    );
+            }
+        },
+        error: function(data) {
+            start_down_check();
+        },
+        timeout: 15000,
+    });
 }
 
 function get_memory_health() {
     if (scirius_status == "red") {
         return;
     }
-    $.ajax(
-        {
-                type:"GET",
-                url:"{% url 'info' %}?query=used_memory",
-                success: function(data) {
-                $("#memory-status").removeClass("label-danger");
-                $("#memory-status").removeClass("label-default");
-                $("#memory-status").removeClass("label-success");
-                $("#memory-status").removeClass("label-warning");
-                if (!data) {
-                        $("#memory-status").addClass("label-danger");
+    $.ajax({
+        type:"GET",
+        url:"{% url 'info' %}?query=used_memory",
+        success: function(data) {
+            $("#memory-status").removeClass("label-danger");
+            $("#memory-status").removeClass("label-default");
+            $("#memory-status").removeClass("label-success");
+            $("#memory-status").removeClass("label-warning");
+            if (!data) {
+                $("#memory-status").addClass("label-danger");
+            } else {
+		        set_info_card("#mem-status-card-bar", data);
+                if (data > 95) {
+                    $("#memory-status").addClass("label-danger");
+                } else if (data > 85) {
+                    $("#memory-status").addClass("label-warning");
                 } else {
-			set_info_card("#mem-status-card-bar", data);
-                        if (data > 95) {
-                            $("#memory-status").addClass("label-danger");
-                        } else if (data > 85) {
-                            $("#memory-status").addClass("label-warning");
-                        } else {
-                            $("#memory-status").addClass("label-success");
-                        }
+                    $("#memory-status").addClass("label-success");
                 }
-                },
-                error: function(data) {
-                        start_down_check();
-                },
-                timeout: 15000,
-        }
-    );
+            }
+        },
+        error: function(data) {
+            start_down_check();
+        },
+        timeout: 15000,
+    });
 }
 
 function get_cpu_health() {
@@ -469,23 +591,21 @@ function get_cpu_health() {
         return;
     }
     if (document.URL.indexOf("suricata") == -1) {
-	return;
+	    return;
     }
-    $.ajax(
-        {
-                type:"GET",
-                url:"{% url 'info' %}?query=cpu",
-                success: function(data) {
-                if (data) {
-			set_info_card("#cpu-status-card-bar", data);
-		}
-                },
-                error: function(data) {
-                        start_down_check();
-                },
-                timeout: 15000,
-        }
-    );
+    $.ajax({
+        type:"GET",
+        url:"{% url 'info' %}?query=cpu",
+        success: function(data) {
+            if (data) {
+		        set_info_card("#cpu-status-card-bar", data);
+		    }
+        },
+        error: function(data) {
+            start_down_check();
+        },
+        timeout: 15000,
+    });
 }
 
 function call_health_functions() {
@@ -493,9 +613,7 @@ function call_health_functions() {
     get_disk_health();
     get_memory_health();
     get_cpu_health();
-{% if elasticsearch and perms.rules.configuration_view %}
-    get_es_health();
-{% endif %}
+{% if elasticsearch and perms.rules.configuration_view %}get_es_health();{% endif %}
 }
 
 var status_interval;
@@ -525,6 +643,6 @@ $(function (){
     });
 });
 
-</script>
-</body>
-</html>
+            </script>
+        </body>
+    </html>

@@ -1,17 +1,18 @@
 {% extends "rules/base.html" %}
 {% load bootstrap3 %}
-
 {% block sidebar %}
-<div class="panel-heading">
-<h2 class="panel-title">Copy ruleset "{{ object.name }}"</h2>
-</div>
-{% endblock %}
-
+    <div class="panel-heading">
+        <h2 class="panel-title">Copy ruleset "{{ object.name }}"</h2>
+    </div>
+{% endblock sidebar %}
 {% block content %}
-{% if form %}
-<form class="form" action="{% url 'copy_ruleset' object.id %}" method="post">{% csrf_token %}
-{% bootstrap_form form %}
-<input class="btn btn-primary" type="submit" value="Submit" />
-</form>
-{% endif %}
-{% endblock %}
+    {% if form %}
+        <form class="form"
+              action="{% url 'copy_ruleset' object.id %}"
+              method="post">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <input class="btn btn-primary" type="submit" value="Submit" />
+        </form>
+    {% endif %}
+{% endblock content %}

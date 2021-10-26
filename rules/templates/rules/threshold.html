@@ -1,63 +1,68 @@
 {% extends "rules/base.html" %}
-
-
 {% block sidebar %}
-<div class="panel-heading">
-    <h2 class="panel-title">threshold {{ threshold.pk }}</h2>
-</div>
-<div class="panel-body">
-<ul>
-<li>Ruleset: <a href="{% url 'ruleset' threshold.ruleset.pk %}">{{ threshold.ruleset.name }}</a></li>
-<li>Signature: <a href="{% url 'rule' threshold.rule.sid %}">{{ threshold.rule.msg }}</a></li>
-</ul>
-</div>
-<div class="panel-heading">
-<h2 class="panel-title">Action</h2>
-</div>
-{% if perms.rules.ruleset_policy_edit %}
-<div class="panel-body">
-        <ul class="action"> 
-        <li> <a href="{% url 'delete_threshold' threshold.pk %}">Delete</a></li>
-        <li> <a href="{% url 'edit_threshold' threshold.pk %}">Edit</a></li>
+    <div class="panel-heading">
+        <h2 class="panel-title">threshold {{ threshold.pk }}</h2>
+    </div>
+    <div class="panel-body">
+        <ul>
+            <li>
+                Ruleset:
+                <a href="{% url 'ruleset' threshold.ruleset.pk %}">{{ threshold.ruleset.name }}</a>
+            </li>
+            <li>
+                Signature:
+                <a href="{% url 'rule' threshold.rule.sid %}">{{ threshold.rule.msg }}</a>
+            </li>
         </ul>
-</div>
-{% endif %}
-{% endblock %}
-
+    </div>
+    <div class="panel-heading">
+        <h2 class="panel-title">Action</h2>
+    </div>
+    {% if perms.rules.ruleset_policy_edit %}
+        <div class="panel-body">
+            <ul class="action">
+                <li>
+                    <a href="{% url 'delete_threshold' threshold.pk %}">Delete</a>
+                </li>
+                <li>
+                    <a href="{% url 'edit_threshold' threshold.pk %}">Edit</a>
+                </li>
+            </ul>
+        </div>
+    {% endif %}
+{% endblock sidebar %}
 {% block content %}
-<h2>Threshold for <a href="{% url 'rule' threshold.rule.sid %}">{{ threshold.rule.sid }}</a></h2>
-
-{% if threshold.threshold_type == "suppress" %}
-<p>Alert is suppressed for
-
-  {% if threshold.track_by == 'by_src' %}
-source {{ threshold.net }}
-  {% elif threshold.track_by == 'by_dst' %}
-destination {{ threshold.net }}
-  {% else %}
-address {{ threshold.net }}
-  {% endif %}
-</p>
-{% else %}
-<p>
-Alert is limited  {% if threshold.track_by == 'by_src' %}
-  by source
-  {% elif threshold.track_by == 'by_dst' %}
-  by destination
-  {% else %}
-  by source or destination
-  {% endif %}
-to
-{{ threshold.count }} per {{ threshold.seconds }} seconds.
-</p>
-
-{% endif %}
-<h2>Threshold expression</h2>
-<div class="rule">
-      {{ threshold.highlight_content|safe }}
-</div>
-<h2>Signature</h2>
-<div class="rule">
-      {{ threshold.rule.highlight_content|safe }}
-</div>
-{% endblock %}
+    <h2>
+        Threshold for
+        <a href="{% url 'rule' threshold.rule.sid %}">{{ threshold.rule.sid }}</a>
+    </h2>
+    {% if threshold.threshold_type == "suppress" %}
+        <p>
+            Alert is suppressed for
+            {% if threshold.track_by == 'by_src' %}
+                source {{ threshold.net }}
+            {% elif threshold.track_by == 'by_dst' %}
+                destination {{ threshold.net }}
+            {% else %}
+                address {{ threshold.net }}
+            {% endif %}
+        </p>
+    {% else %}
+        <p>
+            Alert is limited
+            {% if threshold.track_by == 'by_src' %}
+                by source
+            {% elif threshold.track_by == 'by_dst' %}
+                by destination
+            {% else %}
+                by source or destination
+            {% endif %}
+            to
+            {{ threshold.count }} per {{ threshold.seconds }} seconds.
+        </p>
+    {% endif %}
+    <h2>Threshold expression</h2>
+    <div class="rule">{{ threshold.highlight_content|safe }}</div>
+    <h2>Signature</h2>
+    <div class="rule">{{ threshold.rule.highlight_content|safe }}</div>
+{% endblock content %}

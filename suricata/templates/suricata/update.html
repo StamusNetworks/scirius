@@ -1,11 +1,8 @@
 {% extends "rules/base.html" %}
 {% load  staticfiles %}
 {% load bootstrap3  %}
- 
-
 {% block content %}
-
-<script language="JavaScript">
+    <script language="JavaScript">
 
 function tables_checking(source) {
     checkboxes = document.getElementsByClassName('action_selection');
@@ -20,48 +17,86 @@ function table_all_toggle(source) {
         checkboxes.checked = 0;
 }
 
-</script>
-
-<h2 class="title">Suricata Ruleset Actions</h2>
-{% if message %}
-{% for line in message %}
-{% if "Successful" in line %}
-<div class="alert alert-success" role="alert">{{ line }}</div>
-{% else %}
-<div class="alert alert-warning" role="alert">{{ line }}</div>
-{% endif %}
-{% endfor %}
-{% else %}
-    {% if suri.updated_date %}
-<p>Suricata last updated at {{ suri.updated_date }}</p>
+    </script>
+    <h2 class="title">Suricata Ruleset Actions</h2>
+    {% if message %}
+        {% for line in message %}
+            {% if "Successful" in line %}
+                <div class="alert alert-success" role="alert">{{ line }}</div>
+            {% else %}
+                <div class="alert alert-warning" role="alert">{{ line }}</div>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        {% if suri.updated_date %}
+            <p>
+                Suricata last updated at {{ suri.updated_date }}
+            </p>
+        {% endif %}
+        <form action="{% url 'suricata_update' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group" id="update">
+                <h4>
+                    <label>
+                        <input type="checkbox" name="check_all" onclick="tables_checking(this);" />
+                        Actions
+                    </label>
+                </h4>
+                <div>
+                    <label>
+                        <input type="checkbox"
+                               name="reload"
+                               id="reload"
+                               class="action_selection"
+                               onclick="table_all_toggle(this);"/>
+                        <span class="glyphicon glyphicon-refresh"></span>
+                        Update
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox"
+                               name="build"
+                               id="build"
+                               class="action_selection"
+                               onclick="table_all_toggle(this);"/>
+                        <span class="glyphicon glyphicon-cog"></span>
+                        Build
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox"
+                               name="push"
+                               id="push"
+                               class="action_selection"
+                               onclick="table_all_toggle(this);"/>
+                        <span class="glyphicon glyphicon-share-alt"></span>
+                        Push
+                    </label>
+                </div>
+                {% bootstrap_form form %}
+                <button type="submit" class="btn btn-primary">{% bootstrap_icon "ok" %} Apply</button>
+            </div>
+        </form>
     {% endif %}
-<form action="{% url 'suricata_update' %}" method="post">{% csrf_token %}
-
-<div class="form-group" id="update">
-<h4><label><input type="checkbox" name="check_all" onclick="tables_checking(this);" /> Actions</label></h4>
-<div><label><input type="checkbox" name="reload" id="reload" class="action_selection" onclick="table_all_toggle(this);" /> <span class="glyphicon glyphicon-refresh"> </span> Update</label></div>
-<div><label><input type="checkbox" name="build" id="build" class="action_selection" onclick="table_all_toggle(this);" /> <span class="glyphicon glyphicon-cog"> </span> Build</label></div>
-<div><label><input type="checkbox" name="push" id="push" class="action_selection" onclick="table_all_toggle(this);" /> <span class="glyphicon glyphicon-share-alt"> </span> Push</label></div>
-</div>
-
-{% bootstrap_form form %}
-<button type="submit" class="btn btn-primary">
-      {% bootstrap_icon "ok" %} Apply
-</button>
-</div>
-</form>
-{% endif %}
-{% endblock %}
-
+{% endblock content %}
 {% block sidebar %}
-<div class="panel-heading">
-<h2 class="panel-title">Suricata {{ suricata.name }}</h2>
-</div>
-<ul>
-       <li><span class="type">Ruleset:</span> {{ suricata.ruleset }}</li>
-       <li><span class="type">Ruleset Updated:</span> {{ suricata.ruleset.updated_date }}</li>
-       <li><span class="type">Last Build:</span> {{ suricata.updated_date }}</li>
-</ul>
-
-
+    <div class="panel-heading">
+        <h2 class="panel-title">Suricata {{ suricata.name }}</h2>
+    </div>
+    <ul>
+        <li>
+            <span class="type">Ruleset:</span>
+            {{ suricata.ruleset }}
+        </li>
+        <li>
+            <span class="type">Ruleset Updated:</span>
+            {{ suricata.ruleset.updated_date }}
+        </li>
+        <li>
+            <span class="type">Last Build:</span>
+            {{ suricata.updated_date }}
+        </li>
+    </ul>
 {% endblock %}

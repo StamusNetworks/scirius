@@ -1,12 +1,8 @@
 {% extends "rules/base.html" %}
 {% load staticfiles %}
-
 {% block content %}
-
-{% if elasticsearch %}
-
-
-<script>
+    {% if elasticsearch %}
+        <script>
 $(document).ready(function(){
     $('a[data-toggle="tab"]').on('show.bs.tab', function(e) {
         localStorage.setItem('suristatsactiveTab', $(e.target).attr('href'));
@@ -16,365 +12,430 @@ $(document).ready(function(){
         $('#suristats a[href="' + activeTab + '"]').tab('show');
     }
 });
-</script>
-
-<div class="row">
-<div class="col-xs-12 col-sm-3 col-md-2">
-<div class="card-pf card-pf-view card-pf-view-xs">
-  <div class="card-pf-body">
-    <div class="card-pf-heading-kebab">
-
-      <h2 class="card-pf-title">
-        <span class="pficon pficon-cpu"></span> CPU
-      </h2>
-    </div>
-    <div class="progress-pf-legend">
-      <div class="progress" id="cpu-status-card-bar">
-  <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" data-toggle="tooltip">
-    <span class="sr-only">Unknown</span>
-  </div>
-  <div class="progress-bar progress-bar-remaining" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" data-toggle="tooltip">
-    <span class="sr-only">Unknown</span>
-  </div>
-</div>
-    </div>
-  </div>
-</div>
-</div>
-
-<div class="col-xs-12 col-sm-3 col-md-2">
-<div class="card-pf card-pf-view card-pf-view-xs">
-  <div class="card-pf-body">
-    <div class="card-pf-heading-kebab">
-
-      <h2 class="card-pf-title">
-        <span class="pficon pficon-memory"></span> Memory
-      </h2>
-    </div>
-    <div class="progress-pf-legend">
-      <div class="progress" id="mem-status-card-bar">
-  <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" data-toggle="tooltip">
-    <span class="sr-only">Unknown</span>
-  </div>
-  <div class="progress-bar progress-bar-remaining" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" data-toggle="tooltip">
-    <span class="sr-only">Unkown</span>
-  </div>
-</div>
-    </div>
-  </div>
-</div>
-</div>
-
-<div class="col-xs-12 col-sm-3 col-md-2">
-<div class="card-pf card-pf-view card-pf-view-xs">
-  <div class="card-pf-body">
-    <div class="card-pf-heading-kebab">
-
-      <h2 class="card-pf-title">
-        <span class="pficon pficon-volume"></span> Disk
-      </h2>
-    </div>
-    <div class="progress-pf-legend">
-      <div class="progress" id="disk-status-card-bar">
-  <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" data-toggle="tooltip">
-    <span class="sr-only">Unknown</span>
-  </div>
-  <div class="progress-bar progress-bar-remaining" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" data-toggle="tooltip">
-    <span class="sr-only">Unknown</span>
-  </div>
-</div>
-    </div>
-  </div>
-</div>
-</div>
-</div> <!-- row -->
-
-<div role="tabpanel">
-
-  <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist" id="suristats">
-    <li role="presentation" class="active"><a href="#rules" aria-controls="rules" role="tab" data-toggle="tab">Rules Activity</a></li>
-    {% if suricata_stats %}
-    <li role="presentation"><a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Capture stats</a></li>
-    <li role="presentation"><a href="#memory" aria-controls="memory" role="tab" data-toggle="tab">Memory usage</a></li>
-    <li role="presentation"><a href="#indicators" aria-controls="indicators" role="tab" data-toggle="tab">Problem indicators</a></li>
-    {% endif %}
-  </ul>
-
-  <div class="tab-content">
-  <div role="tabpanel" class="tab-pane fade in active" id="rules">
-
-
-<div class="container-fluid">
-<div class="row">
-<div id="filter"> </div>
-</div>
-
-<div class="row">
-<div class="col-md-6">
-
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-12">
-<h2 class="title">Rules Activity</h2>
-</div>
-</div>
-
-<div class="row">
-<div class="col-md-12">
-<div id="rules_table">Fetching data...</div>
-</div>
-</div>
-</div>
-
-</div>
-<div class="col-md-6">
-
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-12">
-<h2 class="title">Alert Activity</h2><p id="timeline_title"/>
-</div> <!-- col -->
-</div> <!-- row -->
-
-<div class="row">
-<div class="col-md-12">
-<div id="timeline">
-<p>Fetching data...</p>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-
-</div> <!-- col -->
-</div> <!-- row -->
-<div class="row">
-<div class="col-md-12">
-<div id="circles" style="text-align:center;" ></div>
-</div>
-</div>
-</div> <!-- container -->
-
-</div>
-</div>
-</div>
-
-</div>
-
-{% if suricata_stats %}
-<div role="tabpanel" class="tab-pane fade in" id="stats">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-md-12">
-         <h2>kernel captured packets</h2><p id="suri_packet_title"/>
-      </div>
-    </div> <!-- row -->
-
-<div class="row">
-<div class="col-md-12">
-<div id="suri_packet">
-<span>Fetching data...</span>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-</div> <!-- col -->
-</div> <!-- row -->
-
-    <div class="row">
-      <div class="col-md-12">
-         <h2>kernel dropped packets</h2><p id="suri_drop_title"/>
-      </div>
-    </div> <!-- row -->
-
-<div class="row">
-<div class="col-md-12">
-<div id="suri_drop">
-<span>Fetching data...</span>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-</div> <!-- col -->
-</div> <!-- row -->
-
-</div> <!-- container -->
-
-</div> <!-- tabpanel -->
-
-<div role="tabpanel" class="tab-pane fade in" id="indicators">
-  <div class="container-fluid">
-
-
-<div class="row">
-<div class="col-md-6">
-
-    <div class="row">
-      <div class="col-md-12">
-         <h2>Flow emergency mode</h2><p id="flow_emergency_title"/>
-      </div>
-    </div> <!-- row -->
-
-<div class="row">
-<div class="col-md-12">
-<div id="flow_emergency">
-<span>Fetching data...</span>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-</div> <!-- col -->
-</div> <!-- row -->
-
-</div>
-<div class="col-md-6">
-
-<div class="row">
-  <div class="col-md-12">
-     <h2>TCP reassembly gaps</h2><p id="tcp_gaps_title"/>
-  </div>
-</div> <!-- row -->
-<div class="row">
-<div class="col-md-12">
-<div id="tcp_gaps">
-<span>Fetching data...</span>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-</div> <!-- col -->
-</div> <!-- row -->
-
-</div>
-</div>
-
-<div class="row">
-  <div class="col-md-12">
-     <h2>Decoder invalid</h2><p id="decoder_invalid_title"/>
-  </div>
-</div> <!-- row -->
-<div class="row">
-<div class="col-md-12">
-<div id="decoder_invalid">
-<span>Fetching data...</span>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-</div> <!-- col -->
-</div> <!-- row -->
-
-</div> <!-- container -->
-
-</div> <!-- tabpanel -->
-
-<div role="tabpanel" class="tab-pane fade in" id="memory">
-  <div class="container-fluid">
-
-
-<div class="row">
-  <div class="col-md-6">
-<div class="row">
-  <div class="col-md-12">
-     <h2>TCP memory usage</h2><p id="tcp_memuse_title"/>
-  </div>
-</div> <!-- row -->
-<div class="row">
-<div class="col-md-12">
-<div id="tcp_memuse">
-<span>Fetching data...</span>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-</div> <!-- col -->
-</div> <!-- row -->
-</div>
-
-  <div class="col-md-6">
-<div class="row">
-  <div class="col-md-12">
-     <h2>TCP reassembly memory usage</h2><p id="tcp_reassembly_memuse_title"/>
-  </div>
-</div> <!-- row -->
-<div class="row">
-<div class="col-md-12">
-<div id="tcp_reassembly_memuse">
-<span>Fetching data...</span>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-</div> <!-- col -->
-</div> <!-- row -->
-</div>
-
-</div>
-
-<div class="row">
-  <div class="col-md-6">
-<div class="row">
-      <div class="col-md-12">
-         <h2>DNS memory usage</h2><p id="dns_memuse_title"/>
-      </div>
-    </div> <!-- row -->
-
-<div class="row">
-<div class="col-md-12">
-<div id="dns_memuse">
-<span>Fetching data...</span>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-</div> <!-- col -->
-
-</div>
-</div>
-
-  <div class="col-md-6">
-    <div class="row">
-      <div class="col-md-12">
-         <h2>HTTP memory usage</h2><p id="http_memuse_title"/>
-      </div>
-    </div> <!-- row -->
-
-<div class="row">
-<div class="col-md-12">
-<div id="http_memuse">
-<span>Fetching data...</span>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-</div> <!-- col -->
-</div> <!-- row -->
-
-</div>
-</div>
-
-<div class="row">
-
-  <div class="col-md-6">
-<div class="row">
-  <div class="col-md-12">
-     <h2>Flow memory usage</h2><p id="flow_memuse_title"/>
-  </div>
-</div> <!-- row -->
-<div class="row">
-<div class="col-md-12">
-<div id="flow_memuse">
-<span>Fetching data...</span>
-<svg style="width:100%;height:300px">
-</svg>
-</div>
-</div> <!-- col -->
-</div> <!-- row -->
-
-</div>
-</div>
-
-</div> <!-- container -->
-
-</div> <!-- tabpanel -->
-{% endif %}
-
-</div>
-
-</div>
-
-
-<script>
+        </script>
+        <div class="row">
+            <div class="col-xs-12 col-sm-3 col-md-2">
+                <div class="card-pf card-pf-view card-pf-view-xs">
+                    <div class="card-pf-body">
+                        <div class="card-pf-heading-kebab">
+                            <h2 class="card-pf-title">
+                                <span class="pficon pficon-cpu"></span>
+                                CPU
+                            </h2>
+                        </div>
+                        <div class="progress-pf-legend">
+                            <div class="progress" id="cpu-status-card-bar">
+                                <div class="progress-bar"
+                                     role="progressbar"
+                                     aria-valuenow="0"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100"
+                                     data-toggle="tooltip">
+                                    <span class="sr-only">Unknown</span>
+                                </div>
+                                <div class="progress-bar progress-bar-remaining"
+                                     role="progressbar"
+                                     aria-valuenow="100"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100"
+                                     data-toggle="tooltip">
+                                    <span class="sr-only">Unknown</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-3 col-md-2">
+                <div class="card-pf card-pf-view card-pf-view-xs">
+                    <div class="card-pf-body">
+                        <div class="card-pf-heading-kebab">
+                            <h2 class="card-pf-title">
+                                <span class="pficon pficon-memory"></span>
+                                Memory
+                            </h2>
+                        </div>
+                        <div class="progress-pf-legend">
+                            <div class="progress" id="mem-status-card-bar">
+                                <div class="progress-bar"
+                                     role="progressbar"
+                                     aria-valuenow="0"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100"
+                                     data-toggle="tooltip">
+                                    <span class="sr-only">Unknown</span>
+                                </div>
+                                <div class="progress-bar progress-bar-remaining"
+                                     role="progressbar"
+                                     aria-valuenow="100"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100"
+                                     data-toggle="tooltip">
+                                    <span class="sr-only">Unkown</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-3 col-md-2">
+                <div class="card-pf card-pf-view card-pf-view-xs">
+                    <div class="card-pf-body">
+                        <div class="card-pf-heading-kebab">
+                            <h2 class="card-pf-title">
+                                <span class="pficon pficon-volume"></span>
+                                Disk
+                            </h2>
+                        </div>
+                        <div class="progress-pf-legend">
+                            <div class="progress" id="disk-status-card-bar">
+                                <div class="progress-bar"
+                                     role="progressbar"
+                                     aria-valuenow="0"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100"
+                                     data-toggle="tooltip">
+                                    <span class="sr-only">Unknown</span>
+                                </div>
+                                <div class="progress-bar progress-bar-remaining"
+                                     role="progressbar"
+                                     aria-valuenow="100"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100"
+                                     data-toggle="tooltip">
+                                    <span class="sr-only">Unknown</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- row -->
+        <div role="tabpanel">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs" role="tablist" id="suristats">
+                <li role="presentation" class="active">
+                    <a href="#rules" aria-controls="rules" role="tab" data-toggle="tab">Rules Activity</a>
+                </li>
+                {% if suricata_stats %}
+                    <li role="presentation">
+                        <a href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Capture stats</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#memory" aria-controls="memory" role="tab" data-toggle="tab">Memory usage</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#indicators"
+                           aria-controls="indicators"
+                           role="tab"
+                           data-toggle="tab">Problem indicators</a>
+                    </li>
+                {% endif %}
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade in active" id="rules">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div id="filter"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h2 class="title">Rules Activity</h2>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div id="rules_table">Fetching data...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h2 class="title">Alert Activity</h2>
+                                            <p id="timeline_title"/>
+                                        </div>
+                                        <!-- col -->
+                                    </div>
+                                    <!-- row -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div id="timeline">
+                                                <p>
+                                                    Fetching data...
+                                                </p>
+                                                <svg style="width:100%;height:300px">
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <!-- col -->
+                                    </div>
+                                    <!-- row -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div id="circles" style="text-align:center;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- container -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if suricata_stats %}
+                    <div role="tabpanel" class="tab-pane fade in" id="stats">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h2>kernel captured packets</h2>
+                                    <p id="suri_packet_title"/>
+                                </div>
+                            </div>
+                            <!-- row -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="suri_packet">
+                                        <span>Fetching data...</span>
+                                        <svg style="width:100%;height:300px">
+                                        </svg>
+                                    </div>
+                                </div>
+                                <!-- col -->
+                            </div>
+                            <!-- row -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h2>kernel dropped packets</h2>
+                                    <p id="suri_drop_title"/>
+                                </div>
+                            </div>
+                            <!-- row -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="suri_drop">
+                                        <span>Fetching data...</span>
+                                        <svg style="width:100%;height:300px">
+                                        </svg>
+                                    </div>
+                                </div>
+                                <!-- col -->
+                            </div>
+                            <!-- row -->
+                        </div>
+                        <!-- container -->
+                    </div>
+                    <!-- tabpanel -->
+                    <div role="tabpanel" class="tab-pane fade in" id="indicators">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h2>Flow emergency mode</h2>
+                                            <p id="flow_emergency_title"/>
+                                        </div>
+                                    </div>
+                                    <!-- row -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div id="flow_emergency">
+                                                <span>Fetching data...</span>
+                                                <svg style="width:100%;height:300px">
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <!-- col -->
+                                    </div>
+                                    <!-- row -->
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h2>TCP reassembly gaps</h2>
+                                            <p id="tcp_gaps_title"/>
+                                        </div>
+                                    </div>
+                                    <!-- row -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div id="tcp_gaps">
+                                                <span>Fetching data...</span>
+                                                <svg style="width:100%;height:300px">
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <!-- col -->
+                                    </div>
+                                    <!-- row -->
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h2>
+                                        Decoder invalid
+                                    </h2>
+                                    <p id="decoder_invalid_title"/>
+                                </div>
+                            </div>
+                            <!-- row -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="decoder_invalid">
+                                        <span>
+                                            Fetching data...
+                                        </span>
+                                        <svg style="width:100%;height:300px">
+                                        </svg>
+                                    </div>
+                                </div>
+                                <!-- col -->
+                            </div>
+                            <!-- row -->
+                        </div>
+                        <!-- container -->
+                    </div>
+                    <!-- tabpanel -->
+                    <div role="tabpanel" class="tab-pane fade in" id="memory">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h2>
+                                                TCP memory usage
+                                            </h2>
+                                            <p id="tcp_memuse_title"/>
+                                        </div>
+                                    </div>
+                                    <!-- row -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div id="tcp_memuse">
+                                                <span>
+                                                    Fetching data...
+                                                </span>
+                                                <svg style="width:100%;height:300px">
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <!-- col -->
+                                    </div>
+                                    <!-- row -->
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h2>
+                                                TCP reassembly memory usage
+                                            </h2>
+                                            <p id="tcp_reassembly_memuse_title"/>
+                                        </div>
+                                    </div>
+                                    <!-- row -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div id="tcp_reassembly_memuse">
+                                                <span>
+                                                    Fetching data...
+                                                </span>
+                                                <svg style="width:100%;height:300px">
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <!-- col -->
+                                    </div>
+                                    <!-- row -->
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h2>
+                                                DNS memory usage
+                                            </h2>
+                                            <p id="dns_memuse_title"/>
+                                        </div>
+                                    </div>
+                                    <!-- row -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div id="dns_memuse">
+                                                <span>
+                                                    Fetching data...
+                                                </span>
+                                                <svg style="width:100%;height:300px">
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <!-- col -->
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h2>
+                                                HTTP memory usage
+                                            </h2>
+                                            <p id="http_memuse_title"/>
+                                        </div>
+                                    </div>
+                                    <!-- row -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div id="http_memuse">
+                                                <span>
+                                                    Fetching data...
+                                                </span>
+                                                <svg style="width:100%;height:300px">
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <!-- col -->
+                                    </div>
+                                    <!-- row -->
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h2>
+                                                Flow memory usage
+                                            </h2>
+                                            <p id="flow_memuse_title"/>
+                                        </div>
+                                    </div>
+                                    <!-- row -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div id="flow_memuse">
+                                                <span>
+                                                    Fetching data...
+                                                </span>
+                                                <svg style="width:100%;height:300px">
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <!-- col -->
+                                    </div>
+                                    <!-- row -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- container -->
+                    </div>
+                    <!-- tabpanel -->
+                {% endif %}
+            </div>
+        </div>
+        <script>
 function differentiate_suppressed() {
     var suppressed_rules = [{{ suppressed }}];
     $("td.sid").each(
@@ -432,34 +493,52 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     }
 });
 
-</script>
-{% endif %}
-
-{% endblock %}
-
+        </script>
+    {% endif %}
+{% endblock content %}
 {% block sidebar %}
-<div class="panel-heading">
-<h2 class="panel-title">Suricata {{ suricata.name }}</h2>
-</div>
-<ul>
-       <li><span class="type">Ruleset:</span> {{ suricata.ruleset }}</li>
-       <li><span class="type">Description:</span> {{ suricata.descr }}</li>
-       <li><span class="type">Last updated:</span> {{ suricata.updated_date }}</li>
-</ul>
-
-
-{% if perms.rules.configuration_edit %}
-<div class="panel-heading">
-<h2 class="panel-title">Action</h2>
-</div>
-<ul class="action">
-<li>
-<a href="{% url 'suricata_update' %}">Ruleset actions</a>
-</li>
-<li>
-<a href="{% url 'suricata_edit' %}">Edit</a>
-</li>
-</ul>
-{% endif %}
-
-{% endblock %}
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            Suricata {{ suricata.name }}
+        </h2>
+    </div>
+    <ul>
+        <li>
+            <span class="type">
+                Ruleset:
+            </span>
+            {{ suricata.ruleset }}
+        </li>
+        <li>
+            <span class="type">
+                Description:
+            </span>
+            {{ suricata.descr }}
+        </li>
+        <li>
+            <span class="type">
+                Last updated:
+            </span>
+            {{ suricata.updated_date }}
+        </li>
+    </ul>
+    {% if perms.rules.configuration_edit %}
+        <div class="panel-heading">
+            <h2 class="panel-title">
+                Action
+            </h2>
+        </div>
+        <ul class="action">
+            <li>
+                <a href="{% url 'suricata_update' %}">
+                    Ruleset actions
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'suricata_edit' %}">
+                    Edit
+                </a>
+            </li>
+        </ul>
+    {% endif %}
+{% endblock sidebar %}

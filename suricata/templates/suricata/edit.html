@@ -1,40 +1,30 @@
 {% extends "rules/base.html" %}
 {% load bootstrap3  %}
-
-
 {% block sidebar %}
-<div class="panel-heading">
-{% if creation %}
-<h2 class="panel-title">Suricata creation</h2>
-{% else %}
-<h2 class="panel-title">Suricata edition</h2>
-{% endif %}
-</div>
-{% endblock %}
-
-
+    <div class="panel-heading">
+        {% if creation %}
+            <h2 class="panel-title">Suricata creation</h2>
+        {% else %}
+            <h2 class="panel-title">Suricata edition</h2>
+        {% endif %}
+    </div>
+{% endblock sidebar %}
 {% block content %}
-
-{% if missing %}
-
-
-<div class="alert alert-warning"> {{ missing }} </div>
-
-{% else %}
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-6">
-<form action="{% url 'suricata_edit' %}" class="form" method="post">{% csrf_token %}
-    {% bootstrap_form form %}
-    {% buttons %}
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "ok" %} Submit
-        </button>
-    {% endbuttons %}
-</form>
-</div>
-</div>
-</div>
-{% endif %}
-
-{% endblock %}
+    {% if missing %}
+        <div class="alert alert-warning">{{ missing }}</div>
+    {% else %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <form action="{% url 'suricata_edit' %}" class="form" method="post">
+                        {% csrf_token %}
+                        {% bootstrap_form form %}
+                        {% buttons %}
+                            <button type="submit" class="btn btn-primary">{% bootstrap_icon "ok" %} Submit</button>
+                        {% endbuttons %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock content %}

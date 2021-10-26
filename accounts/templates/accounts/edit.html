@@ -1,70 +1,102 @@
 {% extends "rules/base.html" %}
 {% load bootstrap3  %}
-
 {% block sidebar %}
-<div class="panel-heading">
-<h2 class="panel-title">{{ action }}</h2>
-</div>
-<ul>
-{% if not is_from_ldap %}
-    <li><a href="{% url 'accounts_edit' 'password' %}">Change password</a></li>
-{% endif %}
-<li><a href="{% url 'accounts_edit' 'settings' %}">Edit settings</a></li>
-<li><a href="{% url 'accounts_edit' 'token' %}">Edit token</a></li>
-</ul>
-{% endblock %}
-
-{% block content %}
-
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-6">
-{% if edition %}
-    {% if form %}
-    <form action="{{ request.get_full_path }}" method="post" class="form">{% csrf_token %}
-        {% bootstrap_form form %}
-        {% buttons %}
-            <button type="submit" class="btn btn-primary">
-                {% if action == 'User token' %}
-                    {% bootstrap_icon "refresh" %} Regenerate
-                {% else %}
-                    {% bootstrap_icon "ok" %} Valid
-                {% endif %}
-            </button>
-        {% endbuttons %}
-    </form>
-    {% endif %}
-{% else %}
-<h2>Logged in as {{user.username}}</h2>
-<ul class="list-group">
-<li class="list-group-item"><strong>First name:</strong> <span class="pull-right">{{ user.first_name }}</span></li>
-<li class="list-group-item"><strong>Last name:</strong> <span class="pull-right">{{ user.last_name }}</span></li>
-<li class="list-group-item"><strong>Email:</strong> <span class="pull-right">{{ user.email }}</span></li>
-{% if user.sciriususer %}
-<li class="list-group-item"><strong>Timezone:</strong> <span class="pull-right">{{ user.sciriususer.timezone }}</span></li>
-{% endif %}
-<li class="list-group-item"><strong>Active:</strong> <span class="pull-right">{{ user.is_active }}</span></li>
-<li class="list-group-item"><strong>Role:</strong> <span class="pull-right">{% with user.groups.all|first as group %}{{ group.name }}{% endwith %}</span></li>
-{% if tenants or all_tenants or no_tenant %}
-    <li class="list-group-item"><strong>No tenant:</strong> <span class="pull-right">{{ no_tenant }}</span></li>
-    <li class="list-group-item"><strong>All tenants:</strong> <span class="pull-right">{{ all_tenants }}</span></li>
-    <li class="list-group-item"><strong>Tenants:</strong>
-        {% if tenants %}
-            {% for tenant in tenants %}
-                <div style="margin-right:0;" class="row">
-                    <span class="pull-right">{{ tenant }}</span>
-                </div>
-            {% endfor %}
+    <div class="panel-heading">
+        <h2 class="panel-title">{{ action }}</h2>
+    </div>
+    <ul>
+        {% if not is_from_ldap %}
+            <li>
+                <a href="{% url 'accounts_edit' 'password' %}">Change password</a>
+            </li>
         {% endif %}
-    </li>
-{% endif %}
-</ul>
-<div class="row">
-<p>Choose action in the left menu.</p>
+        <li>
+            <a href="{% url 'accounts_edit' 'settings' %}">Edit settings</a>
+        </li>
+        <li>
+            <a href="{% url 'accounts_edit' 'token' %}">Edit token</a>
+        </li>
+    </ul>
+{% endblock sidebar %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                {% if edition %}
+                    {% if form %}
+                        <form action="{{ request.get_full_path }}" method="post" class="form">
+                            {% csrf_token %}
+                            {% bootstrap_form form %}
+                            {% buttons %}
+                            <button type="submit" class="btn btn-primary">
+                                {% if action == 'User token' %}
+                                    {% bootstrap_icon "refresh" %} Regenerate
+                                {% else %}
+                                    {% bootstrap_icon "ok" %} Valid
+                                {% endif %}
+                            </button>
+                        {% endbuttons %}
+                    </form>
+                {% endif %}
+            {% else %}
+                <h2>Logged in as {{ user.username }}</h2>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <strong>First name:</strong>
+                        <span class="pull-right">{{ user.first_name }}</span>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Last name:</strong>
+                        <span class="pull-right">{{ user.last_name }}</span>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Email:</strong>
+                        <span class="pull-right">{{ user.email }}</span>
+                    </li>
+                    {% if user.sciriususer %}
+                        <li class="list-group-item">
+                            <strong>Timezone:</strong>
+                            <span class="pull-right">{{ user.sciriususer.timezone }}</span>
+                        </li>
+                    {% endif %}
+                    <li class="list-group-item">
+                        <strong>Active:</strong>
+                        <span class="pull-right">{{ user.is_active }}</span>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Role:</strong>
+                        <span class="pull-right">
+                            {% with user.groups.all|first as group %}{{ group.name }}{% endwith %}
+                        </span>
+                    </li>
+                    {% if tenants or all_tenants or no_tenant %}
+                        <li class="list-group-item">
+                            <strong>No tenant:</strong>
+                            <span class="pull-right">{{ no_tenant }}</span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>All tenants:</strong>
+                            <span class="pull-right">{{ all_tenants }}</span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Tenants:</strong>
+                            {% if tenants %}
+                                {% for tenant in tenants %}
+                                    <div style="margin-right:0;" class="row">
+                                        <span class="pull-right">{{ tenant }}</span>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </li>
+                    {% endif %}
+                </ul>
+                <div class="row">
+                    <p>
+                        Choose action in the left menu.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
-{% endif %}
-</div>
-</div>
-</div>
-
-{% endblock %}
+{% endblock content %}

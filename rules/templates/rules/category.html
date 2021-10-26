@@ -1,50 +1,56 @@
 {% extends "rules/base.html" %}
-
 {% block sidebar %}
-<div class="panel-heading">
-       <h2 class="panel-title">{{ category.name|capfirst}}</h2>
-</div>
-<ul class="panel-body">
-       <li><span class="type">Filename:</span> {{ category.filename}}</li>
-       <li><span class="type">Created:</span> {{ category.created_date}}</li>
-</ul>
-<div class="panel-heading">
-<h2 class="panel-title">Action</h2>
-</div>
-<ul class="action panel-body">
-    {% if perms.rules.ruleset_policy_edit %}
-        <li><a href="{% url 'disable_category' category.pk %}">Disable category</a></li>
-        <li><a href="{% url 'enable_category' category.pk %}">Enable category</a></li>
-    {% endif %}
-    {% if perms.rules.ruleset_policy_view %}
-        <li><a href="{% url 'transform_category' category.pk %}">Transform category</a></li>
-    {% endif %}
-</ul>
-{% endblock %}
-
+    <div class="panel-heading">
+        <h2 class="panel-title">{{ category.name|capfirst }}</h2>
+    </div>
+    <ul class="panel-body">
+        <li>
+            <span class="type">Filename:</span>
+            <span>{{ category.filename }}</span>
+        </li>
+        <li>
+            <span class="type">Created:</span>
+            {{ category.created_date }}
+        </li>
+    </ul>
+    <div class="panel-heading">
+        <h2 class="panel-title">Action</h2>
+    </div>
+    <ul class="action panel-body">
+        {% if perms.rules.ruleset_policy_edit %}
+            <li>
+                <a href="{% url 'disable_category' category.pk %}">Disable category</a>
+            </li>
+            <li>
+                <a href="{% url 'enable_category' category.pk %}">Enable category</a>
+            </li>
+        {% endif %}
+        {% if perms.rules.ruleset_policy_view %}
+            <li>
+                <a href="{% url 'transform_category' category.pk %}">Transform category</a>
+            </li>
+        {% endif %}
+    </ul>
+{% endblock sidebar %}
 {% block content %}
-
-<div class="container-fluid">
- <div class="row">
-  <div class="col-md-6">
-<h2 class="title">Rules</h2>
-{% load render_table from django_tables2 %}
-{% render_table rules %}
-  </div>
-  <div class="col-md-6">
     <div class="container-fluid">
         <div class="row">
-<h2 class="title">Status in rulesets</h2>
-
-{% load render_table from django_tables2 %}
-{% render_table rulesets %}
-        </div>
-<h2 class="title">Commented rules</h2>
-        <div class="row">
-{% render_table commented_rules %}
+            <div class="col-md-6">
+                <h2 class="title">Rules</h2>
+                {% load render_table from django_tables2 %}
+                {% render_table rules %}
+            </div>
+            <div class="col-md-6">
+                <div class="container-fluid">
+                    <div class="row">
+                        <h2 class="title">Status in rulesets</h2>
+                        {% load render_table from django_tables2 %}
+                        {% render_table rulesets %}
+                    </div>
+                    <h2 class="title">Commented rules</h2>
+                    <div class="row">{% render_table commented_rules %}</div>
+                </div>
+            </div>
         </div>
     </div>
-  </div>
- </div>
-</div>
-{% endblock %}
+{% endblock content %}
