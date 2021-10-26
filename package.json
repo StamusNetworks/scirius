@@ -51,7 +51,7 @@
     "moment": "^2.29.1",
     "nvd3": "^1.8.6",
     "patternfly": "^3.59.5",
-    "jquery-ui": "^1.12.1",
+    "jquery-ui": "^1.13.0",
     "tipsy": "^1.0.0",
     "popper.js": "^1.16.1-lts",
     "eonasdan-bootstrap-datetimepicker": "^4.17.47",
