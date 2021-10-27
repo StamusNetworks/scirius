@@ -19,10 +19,10 @@ import HelpMenu from 'ui/components/HelpMenu';
 import UserMenu from 'ui/components/UserMenu';
 import { COLOR_ANT_MENU } from 'ui/constants/colors';
 import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
-import { DATE_TIME_FORMAT } from 'ui/constants';
+import constants from 'ui/constants';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import actions from 'ui/containers/App/actions';
-
+const { DATE_TIME_FORMAT } = constants;
 const { Header: AntdHeader } = Layout;
 
 const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePicker, menuItems = [] }) => {
