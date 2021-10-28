@@ -294,6 +294,7 @@ export class SignaturesPage extends React.Component {
             actionsButtons={this.actionsButtons}
             queryType={['filter', 'rest', 'filter_host_id']}
             page={this.props.page}
+            systemSettings={this.props.systemSettings}
           />
         </ErrorHandler>
 

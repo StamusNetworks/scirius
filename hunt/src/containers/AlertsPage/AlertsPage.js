@@ -154,6 +154,7 @@ export class AlertsPage extends React.Component {
             actionsButtons={this.actionsButtons}
             queryType={['filter', 'filter_host_id']}
             page={this.props.page}
+            systemSettings={this.props.systemSettings}
           />
         </ErrorHandler>
         <Spinner loading={this.state.loading}></Spinner>

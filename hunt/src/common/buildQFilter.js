@@ -46,6 +46,9 @@ export function buildQFilter(filters, systemSettings) {
         if (filters[i].value.relevant === true) {
           tagFilters.push('alert.tag:"relevant"');
         }
+        if (filters[i].value.sightings === false) {
+          qfilter.push('NOT _exists_:discovery');
+        }
         if (tagFilters.length === 0) {
           qfilter.push('alert.tag:"undefined"');
         } else if (tagFilters.length < 3) {

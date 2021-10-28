@@ -29,9 +29,9 @@ export const validateFilter = (filter) => {
   return true;
 };
 
-export const generateAlert = (informational = true, relevant = true, untagged = true) => ({
+export const generateAlert = (informational = true, relevant = true, untagged = true, sightings = false) => ({
   id: 'alert.tag',
-  value: { informational, relevant, untagged },
+  value: { informational, relevant, untagged, sightings },
 });
 
 export const generateDefaultRequest = () => ({
@@ -202,6 +202,7 @@ export const reducer = (state = initialState, action) => {
             filterType === 'informational' || filterType === 'all',
             filterType === 'relevant' || filterType === 'all',
             filterType === 'untagged' || filterType === 'all',
+            filterType === 'sightings' || filterType === 'all',
           ),
         ),
       );

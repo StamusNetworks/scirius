@@ -295,6 +295,10 @@ class HuntFilter extends React.Component {
         this.props.enableOnly('relevant');
         break;
       }
+      case 'SSP_SIGHTINGS': {
+        this.props.enableOnly('sightings');
+        break;
+      }
       case 'SSP_ALL': {
         this.props.enableOnly('all');
         break;
@@ -645,6 +649,17 @@ class HuntFilter extends React.Component {
                       onChange={() => this.props.setTag('untagged', !this.props.alertTag.value.untagged)}
                     />
                   </li>
+                  {this.props.systemSettings && this.props.systemSettings.license.nta && (
+                    <li>
+                      <span>Sightings </span>
+                      <Switch
+                        bsSize="small"
+                        onColor="primary"
+                        value={this.props.alertTag.value.sightings}
+                        onChange={() => this.props.setTag('sightings', !this.props.alertTag.value.sightings)}
+                      />
+                    </li>
+                  )}
                 </ul>
               </div>
             )}
@@ -748,6 +763,7 @@ HuntFilter.propTypes = {
       informational: PropTypes.bool,
       relevant: PropTypes.bool,
       untagged: PropTypes.bool,
+      sightings: PropTypes.bool,
     }),
   }),
   loadFilterSets: PropTypes.func,
@@ -764,6 +780,7 @@ HuntFilter.propTypes = {
     dateJoined: PropTypes.any,
     permissions: PropTypes.any,
   }),
+  systemSettings: PropTypes.any,
 };
 
 const mapStateToProps = createStructuredSelector({
