@@ -1,4 +1,9 @@
 .left-nav {
+      & * {
+        /*decrease height of menus*/
+        margin: 0 !important;
+      }
+
        .ant-menu-submenu-title {
          padding-left: 10px !important;
          padding-right: 0px !important;
@@ -27,15 +32,14 @@
         .ant-menu-item {
           padding-left: 40px !important;
           padding-right: 5px !important;
+          /*decrease height of menus*/
+          height: 30px !important;
+          line-height: 30px !important;
         }
-       
-       .ant-menu-item a {
-         display: flex;
-         align-items: center;
-         justify-content: space-between;
-         position: relative;
-         z-index: 10;
-       }
+
+        & .ant-menu-title-content {
+          z-index: 1;
+        }
        
        .ant-menu-item::before {
          content: "";

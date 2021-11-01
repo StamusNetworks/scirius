@@ -1,10 +1,9 @@
 import React from 'react';
 import { Layout, Menu } from 'antd';
-import { useLocation, withRouter } from 'react-router-dom';
-import { Link } from 'helpers/Link';
+import { useHistory, useLocation, withRouter } from 'react-router-dom';
 import { default as Icon } from 'ui/components/IconAntd';
 import pages from 'ui/pages';
-import { APP_URL } from 'ui/config';
+import { APP_URL, HUNT_URL } from 'ui/config';
 import { CamelCaseToDashCase, CamelCaseToNormal } from 'ui/helpers';
 import './style.scss';
 import { LeftNavMap } from 'ui/maps/LeftNavMap';
@@ -21,6 +20,33 @@ const getGroupPages = (category) => pagesList
   .sort((a, b) => a - b)
 
 function LeftNav() {
+  const history = useHistory();
+
+  const renderMenuItems = (group) => {
+    if (group === 'HUNTING') return <Menu.Item
+      onClick={() => history.push(`${HUNT_URL}`)}
+      key={`${HUNT_URL}`}
+    >
+      Enriched Hunting
+    </Menu.Item>
+
+    if (group === 'MANAGEMENT') return <Menu.Item
+      onClick={() => history.push('/rules')}
+      key={group}
+    >
+      Manager
+    </Menu.Item>
+
+    return getGroupPages(LeftNavMap[group]).map(page =>
+      <Menu.Item
+        onClick={() => history.push(`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`)}
+        key={`/stamus/${pages[page].metadata.url || page.toLowerCase()}`}
+      >
+        {CamelCaseToNormal(page)}
+      </Menu.Item>
+    )
+  }
+
   const renderSubMenus = () => subMenus.map(group => <SubMenu
     key={group}
     title={
@@ -30,15 +56,12 @@ function LeftNav() {
       </React.Fragment>
     }
   >
-    {getGroupPages(LeftNavMap[group]).map(page => <Menu.Item key={`/stamus/${pages[page].metadata.url || page.toLowerCase()}`}>
-      <Link to={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`}>{CamelCaseToNormal(page)}</Link>
-    </Menu.Item>
-    )}
+    {renderMenuItems(group)}
   </SubMenu>
   )
 
   return (
-    <Sider width={200} style={{ background: '#fff' }}>
+    <Sider width={200} style={{ background: '#fff', minHeight: "calc(100vh - 64px)" }}>
       <Menu
         mode="inline"
         defaultSelectedKeys={[useLocation().pathname]}
