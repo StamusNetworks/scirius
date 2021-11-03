@@ -22,6 +22,7 @@ import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
 import constants from 'ui/constants';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import actions from 'ui/containers/App/actions';
+
 const { DATE_TIME_FORMAT } = constants;
 const { Header: AntdHeader } = Layout;
 
@@ -41,8 +42,8 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
         <img src={StamusLogo} alt="Scirius UI" />
       </Link>
 
-      <Menu mode='horizontal' theme='custom'>
-        {menuItems}
+      <Menu theme="dark" mode="horizontal">
+        {menuItems.map((menuItem) => (<React.Fragment key={menuItem}>{menuItem}</React.Fragment>))}
         <Menu.Item key="timerange-dropdown" className="timerange-dropdown" data-test="timerange-dropdown">
           <Popover
             placement="bottom"
