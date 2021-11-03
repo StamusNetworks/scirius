@@ -26,6 +26,7 @@ import GlobalStyle from 'ui/global-styles';
 import actions from 'ui/containers/App/actions';
 import selectors from 'ui/containers/App/selectors';
 import ErrorHandler from 'ui/components/ErrorHandler';
+import ProxyRoute from 'ui/components/ProxyRoute';
 
 const pagesList = Object.keys(pages);
 
@@ -81,7 +82,7 @@ const App = ({
               <Route exact path={["/", APP_URL]}>
                 {pages.Overview ? <Redirect to={`${APP_URL}/security-posture/overview`} /> : <Redirect to={`${APP_URL}/explorer`} />}
               </Route>
-              <Route path="" component={pages.NotFoundPage} />
+              <ProxyRoute />
             </Switch>
           </Content>
         </ErrorHandler>
