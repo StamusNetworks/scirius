@@ -202,10 +202,9 @@ def help_links(djlink):
         "edit_rule": {"name": "Transform Rule", "base_url": "doc/ruleset.html", "anchor": "#rule-transformations"},
         "accounts_manage": {"name": "Accounts Management", "base_url": "doc/local-user-management.html", "anchor": "#manage-accounts"},
     }
-    if djlink in HELP_LINKS_TABLE:
-        return HELP_LINKS_TABLE[djlink]
     Probe = __import__(settings.RULESET_MIDDLEWARE)
-    return Probe.common.help_links(djlink)
+    help_link = Probe.common.help_links(djlink)
+    return help_link if help_link else HELP_LINKS_TABLE.get(djlink)
 
 
 # Based on https://github.com/jieter/django-tables2/blob/master/CHANGELOG.md#breaking-changes-200
