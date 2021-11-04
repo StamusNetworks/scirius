@@ -9,12 +9,14 @@ import { connect } from 'react-redux';
 import selectors from 'ui/containers/App/selectors';
 import { getQueryObject } from './getQueryObject';
 import { parseObjectToUrl } from './parseObjectToUrl';
+import { APP_URL } from '../config';
 
 const CustomLink = props => {
-  const { to, replaceParams, extendParams } = props;
+  const { app, to, replaceParams, extendParams } = props;
   let { search } = history.location;
   let params = {};
   let questionMark = '';
+  const appUrl = app ? `${APP_URL}/` : '';
   if ((replaceParams || extendParams) && !(replaceParams && extendParams)) {
     if (extendParams) {
       params = getQueryObject();
@@ -28,10 +30,15 @@ const CustomLink = props => {
     questionMark = '?';
     search = parseObjectToUrl(params);
   }
-  return <RouterLink {...omit(props, 'filterParam', 'dispatch', 'eventKey', 'extendParams', 'replaceParams')} to={`${to}${questionMark}${search}`} />;
+  return <RouterLink {...omit(props, 'app', 'filterParam', 'dispatch', 'eventKey', 'extendParams', 'replaceParams')} to={`${appUrl}${to}${questionMark}${search}`} />;
 };
 
+CustomLink.defaultTypes = {
+  app: false,
+}
+
 CustomLink.propTypes = {
+  app: PropTypes.bool,
   to: PropTypes.string,
   replaceParams: PropTypes.object,
   extendParams: PropTypes.object,
