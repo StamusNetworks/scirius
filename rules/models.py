@@ -1713,6 +1713,12 @@ class Transformable:
                     if meta.startswith("attack_target"):
                         target_client = True
                         break
+                    if meta.startswith("mitre_tactic_id"):
+                        target_client = True
+                        break
+                    if meta.startswith("affected_product"):
+                        target_client = True
+                        break
 
                 # not satisfactory but doing the best we can not too miss something like
                 # a successful bruteforce
