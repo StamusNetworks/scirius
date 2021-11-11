@@ -57,6 +57,29 @@ const makeSelectEndDate = () =>
     },
   );
 
+const makeSelectGranularity = () =>
+  createSelector(
+    [selectGlobal, makeSelectStartDate(), makeSelectEndDate()],
+    (subState, startDate, endDate) => {
+      let result = 'years';
+      const diff = endDate.unix()-startDate.unix();
+      // less than or equal to 1 hour
+      if (diff <= 60 * 60) {
+        result = 'minutes';
+      } // less than or equal to 2 days
+      else if (diff <= 60 * 60 * 24 * 2) {
+        result = 'hours';
+      } // less than or equal to 30 days
+      else if (diff <= 60 * 60 * 24 * 30) {
+        result = 'days';
+      } // less than or equal to 2 years
+      else if (diff <= 60 * 60 * 24 * 365 * 2) {
+        result = 'months';
+      }
+      return result;
+    }
+  );
+
 const makeSelectTimePicker = () =>
   createSelector(
     selectGlobal,
@@ -120,4 +143,5 @@ export default {
   makeSelectFilters,
   makeSelectFiltersParam,
   makeSelectSource,
+  makeSelectGranularity,
 };
