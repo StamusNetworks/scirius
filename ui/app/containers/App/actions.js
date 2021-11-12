@@ -81,6 +81,23 @@ const doReload = () => ({
     type: constants.DO_RELOAD,
   })
 
+const getAllPeriodRequest = () => ({
+    type: constants.GET_PERIOD_ALL_REQUEST,
+  })
+
+const getAllPeriodSuccess = (minTimestamp, maxTimestamp) => ({
+    type: constants.GET_PERIOD_ALL_SUCCESS,
+    payload: {
+      minTimestamp,
+      maxTimestamp
+    }
+  })
+
+const getAllPeriodFailure = (error) => ({
+    type: constants.GET_PERIOD_ALL_FAILURE,
+    payload: error,
+  })
+
 export default {
   getUser,
   getUserSuccess,
@@ -95,4 +112,7 @@ export default {
   setDuration,
   setReload,
   doReload,
+  getAllPeriodRequest,
+  getAllPeriodSuccess,
+  getAllPeriodFailure,
 }

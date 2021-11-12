@@ -35,6 +35,7 @@ const App = ({
   getGlobalSettings,
   getUser,
   getSource,
+  getAllPeriodRequest,
 }) => {
   useEffect(() => {
     if (source.data.length === 0) {
@@ -43,6 +44,7 @@ const App = ({
     getGlobalSettings();
     syncUrl();
     getUser();
+    getAllPeriodRequest();
   }, []);
 
   const [errorMsg, setErrorMsg] = useState(null);
@@ -96,6 +98,7 @@ App.propTypes = {
   getGlobalSettings: PropTypes.any,
   getUser: PropTypes.func,
   getSource: PropTypes.any,
+  getAllPeriodRequest: PropTypes.any,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -113,6 +116,7 @@ export const mapDispatchToProps = dispatch =>
       getGlobalSettings: actions.getGlobalSettings,
       getUser: actions.getUser,
       getSource: actions.getSource,
+      getAllPeriodRequest: actions.getAllPeriodRequest
     },
     dispatch,
   );

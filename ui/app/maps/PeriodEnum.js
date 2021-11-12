@@ -36,8 +36,8 @@ export const PeriodEnum = {
     seconds: 31536000000,
   },
   All: {
-    name: 'all',
-    title: 'all',
-    seconds: 'All',
+    name: 'All',
+    title: 'All',
+    /* REMAINDER: Please don't use .seconds directly from this enumerator */
   },
 };

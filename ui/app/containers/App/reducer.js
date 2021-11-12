@@ -19,6 +19,8 @@ const initialTimeSpanStorage = store.get(StorageEnum.TIMESPAN) || {
   endDate: moment().format(),
   duration: 'H1',
   timePicker: TimePickerEnum.QUICK,
+  minTimestamp: 0,
+  maxTimestamp: 0,
 };
 
 const initialSourceStorage = store.get(StorageEnum.SOURCE) || [];
@@ -72,6 +74,17 @@ const appReducer = (state = initialState, action) =>
         draft.settings.request.status = null;
         draft.settings.request.message = '';
         break;
+      case constants.GET_PERIOD_ALL_SUCCESS: {
+        const { minTimestamp, maxTimestamp } = action.payload;
+        draft.timespan.minTimestamp = minTimestamp;
+        draft.timespan.maxTimestamp = maxTimestamp;
+        store.set(StorageEnum.TIMESPAN, {
+          ...(store.get(StorageEnum.TIMESPAN) || initialTimeSpanStorage),
+          minTimestamp,
+          maxTimestamp,
+        });
+        break;
+      }
       case constants.GET_GLOBAL_SETTINGS_SUCCESS: {
         draft.settings.data = action.payload.data;
         draft.settings.request.loading = false;

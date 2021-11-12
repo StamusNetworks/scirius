@@ -30,22 +30,30 @@ const makeSelectUser = () =>
 const makeSelectStartDate = () =>
   createSelector(
     selectGlobal,
-    familiesState => {
-      if (familiesState.timespan.timePicker === TimePickerEnum.ABSOLUTE) {
-        return moment(familiesState.timespan.startDate);
+    subState => {
+      if (subState.timespan.timePicker === TimePickerEnum.ABSOLUTE) {
+        return moment(subState.timespan.startDate);
       }
-      return moment(parseInt((Date.now() / 60000).toFixed(0), 10) * 60000 - PeriodEnum[familiesState.timespan.duration].seconds);
+      const { minTimestamp } = subState.timespan;
+      if (subState.timespan.duration === 'All') {
+        return moment(minTimestamp);
+      }
+      return moment().subtract(PeriodEnum[subState.timespan.duration].seconds, 'milliseconds');
     },
   );
 
 const makeSelectEndDate = () =>
   createSelector(
     selectGlobal,
-    familiesState => {
-      if (familiesState.timespan.timePicker === TimePickerEnum.ABSOLUTE) {
-        return moment(familiesState.timespan.endDate);
+    subState => {
+      if (subState.timespan.timePicker === TimePickerEnum.ABSOLUTE) {
+        return moment(subState.timespan.endDate);
       }
-      return moment(parseInt((Date.now() / 60000).toFixed(0), 10) * 60000);
+      const { maxTimestamp } = subState.timespan;
+      if (subState.timespan.duration === 'All') {
+        return moment(maxTimestamp);
+      }
+      return moment();
     },
   );
 
