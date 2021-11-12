@@ -12,6 +12,7 @@ import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'connected-react-router';
 import FontFaceObserver from 'fontfaceobserver';
 import history from 'utils/history';
+import './fonts/fonts.css';
 
 // Import root app
 import App from 'ui/containers/App';
