@@ -23,18 +23,12 @@ function LeftNav() {
   const history = useHistory();
 
   const renderMenuItems = (group) => {
-    if (group === 'HUNTING') return <Menu.Item
-      onClick={() => history.push(`${HUNT_URL}`)}
-      key={`${HUNT_URL}`}
-    >
-      Enriched Hunting
+    if (group === 'HUNTING') return <Menu.Item key={`${HUNT_URL}`}>
+      <a href={`${HUNT_URL}`}>Enriched Hunting</a>
     </Menu.Item>
 
-    if (group === 'MANAGEMENT') return <Menu.Item
-      onClick={() => history.push('/rules')}
-      key={group}
-    >
-      Manager
+    if (group === 'MANAGEMENT') return <Menu.Item key='/rules'>
+      <a href='/rules'>Manager</a>
     </Menu.Item>
 
     return getGroupPages(LeftNavMap[group]).map(page =>

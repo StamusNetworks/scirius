@@ -69,13 +69,13 @@ function SwitchApps({ user }) {
         )}
         {systemSettings.evebox && permissions.includes('rules.events_evebox') && (
           <AppItem href={systemSettings.evebox_url} target="_blank">
-            <IconLabel>Eventbox</IconLabel>
+            <IconLabel>EveBox</IconLabel>
             <LaunchRounded style={{ color: "currentColor", strokeWidth: 1.5, fill: "#005792" }} />
           </AppItem>
         )}
         {systemSettings.cyberchef && (
           <AppItem href={systemSettings.cyberchef_url} target="_blank">
-            <IconLabel>Cyberchef</IconLabel>
+            <IconLabel>CyberChef</IconLabel>
             <LaunchRounded style={{ color: "currentColor", strokeWidth: 1.5, fill: "#005792" }} />
           </AppItem>
         )}
