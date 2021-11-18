@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link as RouterLink } from 'react-router-dom';
-import history from 'utils/history';
 import { omit } from 'lodash';
 import { createStructuredSelector } from 'reselect';
 import { compose } from 'redux';
@@ -13,13 +12,12 @@ import { APP_URL } from '../config';
 
 const CustomLink = props => {
   const { app, to, replaceParams, extendParams } = props;
-  let { search } = history.location;
   let params = {};
-  let questionMark = '';
   const appUrl = app ? `${APP_URL}/` : '';
+  params = getQueryObject();
+  if (params.status) delete params.status;
   if ((replaceParams || extendParams) && !(replaceParams && extendParams)) {
     if (extendParams) {
-      params = getQueryObject();
       params = { ...params, ...extendParams };
       // Filter all falsy values ( "", 0, false, null, undefined )
       // eslint-disable-next-line no-return-assign
@@ -27,9 +25,9 @@ const CustomLink = props => {
     } else if (replaceParams) {
       params = { ...replaceParams };
     }
-    questionMark = '?';
-    search = parseObjectToUrl(params);
   }
+  const search = parseObjectToUrl(params);
+  const questionMark = search.length > 0 ? '?' : '';
   return <RouterLink {...omit(props, 'app', 'filterParam', 'dispatch', 'eventKey', 'extendParams', 'replaceParams')} to={`${appUrl}${to}${questionMark}${search}`} />;
 };
 

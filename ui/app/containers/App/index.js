@@ -21,7 +21,6 @@ import { syncUrl } from 'ui/helpers/syncUrl';
 
 import { bindActionCreators, compose } from 'redux';
 import PropTypes from 'prop-types';
-import './commonKillChainStyles.scss';
 import GlobalStyle from 'ui/global-styles';
 import actions from 'ui/containers/App/actions';
 import selectors from 'ui/containers/App/selectors';
