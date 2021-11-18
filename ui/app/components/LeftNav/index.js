@@ -1,18 +1,18 @@
 import React from 'react';
 import { Layout, Menu } from 'antd';
-import { useHistory, useLocation, withRouter } from 'react-router-dom';
+import { useLocation, withRouter } from 'react-router-dom';
 import { default as Icon } from 'ui/components/IconAntd';
 import pages from 'ui/pages';
 import { APP_URL, HUNT_URL } from 'ui/config';
 import { CamelCaseToDashCase, CamelCaseToNormal } from 'ui/helpers';
 import './style.scss';
 import { LeftNavMap } from 'ui/maps/LeftNavMap';
+import { Link } from 'ui/helpers/Link';
 
 const { SubMenu } = Menu;
 const { Sider } = Layout;
 
 const pagesList = Object.keys(pages);
-
 const subMenus = Object.keys(LeftNavMap);
 
 const getGroupPages = (category) => pagesList
@@ -20,8 +20,6 @@ const getGroupPages = (category) => pagesList
   .sort((a, b) => a - b)
 
 function LeftNav() {
-  const history = useHistory();
-
   const renderMenuItems = (group) => {
     if (group === 'HUNTING') return <Menu.Item key={`${HUNT_URL}`}>
       <a href={`${HUNT_URL}`}>Enriched Hunting</a>
@@ -33,10 +31,11 @@ function LeftNav() {
 
     return getGroupPages(LeftNavMap[group]).map(page =>
       <Menu.Item
-        onClick={() => history.push(`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`)}
         key={`/stamus/${pages[page].metadata.url || page.toLowerCase()}`}
       >
-        {CamelCaseToNormal(page)}
+        <Link to={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`}>
+          {CamelCaseToNormal(page)}
+        </Link>
       </Menu.Item>
     )
   }
