@@ -74,9 +74,7 @@ def loginview(request, target):
                     request=request,
                     force_insert=True
                 )
-                if target:
-                    return redirect("/" + target)
-                return redirect("/stamus")
+                return redirect("/" + target)
             else:
                 form = LoginForm()
                 context = {'form': form, 'error': 'Disabled account'}

@@ -23,7 +23,6 @@ import logging
 
 from csp.decorators import csp
 from django.conf import settings
-from django.shortcuts import redirect
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import PermissionDenied
@@ -32,14 +31,16 @@ from django.urls import reverse
 
 from revproxy.views import ProxyView
 from scirius.utils import scirius_render
+from .utils import get_middleware_module
 
 # Avoid logging every request
 revproxy_logger = logging.getLogger('revproxy')
 revproxy_logger.setLevel(logging.WARNING)
 
 
-def homepage(_):
-    return redirect("/stamus")
+def homepage(request):
+    context = get_middleware_module('common').get_homepage_context()
+    return scirius_render(request, 'rules/home.html', context)
 
 
 # Proxy
