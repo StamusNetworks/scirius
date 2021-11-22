@@ -297,10 +297,7 @@
                         {% block error %}
                             {% if messages %}
                                 {% for message in messages %}
-                                    <div class="alert alert-dismissible alert-
-                                                {% if message.tags %}
-                                                    {{ message.tags|lower }}
-                                                {% endif %}">
+                                    <div class="alert alert-dismissible alert-{% if message.tags %}{{ message.tags|lower|striptags }}{% endif %}">
                                         <button type="button" class="close" data-dismiss="alert">
                                             <span aria-hidden="true">
                                                 &times;
