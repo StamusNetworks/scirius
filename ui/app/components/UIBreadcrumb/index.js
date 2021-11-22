@@ -5,10 +5,17 @@ import styled from 'styled-components';
 
 const StyledBreadcrumb = styled(Breadcrumb)`
   cursor: default;
+  text-transform: uppercase;
+  background: white;
+  height: 40px;
+  padding: 10px 20px;
+  margin-bottom: 15px;
+  margin-left: -20px;
+  margin-right: -20px;
 `;
 
 const UIBreadcrumb = ({ items, children }) => (
-  <StyledBreadcrumb>
+  <StyledBreadcrumb separator=">">
     {!items && children}
     {/* eslint-disable-next-line react/no-array-index-key */}
     {!children && items.map((item, i) => (<Breadcrumb.Item key={i}>{item}</Breadcrumb.Item>))}
