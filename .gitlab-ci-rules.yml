@@ -46,6 +46,7 @@ npm-ui:
     - echo "skip"
   script:
   - cd ui
+  - export NODE_OPTIONS=--max_old_space_size=4096
   - npm install
   - npm run build
   - node node_modules/eslint/bin/eslint.js app/ --max-warnings 0
