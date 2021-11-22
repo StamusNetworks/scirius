@@ -81,7 +81,7 @@ const App = ({
             <Switch>
               {pagesList.map(page => <Route key={page} exact path={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`} component={pages[page]} />)}
               <Route exact path={["/", APP_URL]}>
-                {pages.Overview ? <Redirect to={`${APP_URL}/security-posture/overview`} /> : <Redirect to={`${APP_URL}/explorer`} />}
+                {pages.OperationalCenter ? <Redirect to={`${APP_URL}/security-posture/operational-center`} /> : <Redirect to={`${APP_URL}/explorer`} />}
               </Route>
               <ProxyRoute />
             </Switch>

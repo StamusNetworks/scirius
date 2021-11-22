@@ -57,7 +57,7 @@ function LeftNav() {
     <Sider width={200} style={{ background: '#fff', minHeight: "calc(100vh - 64px)" }}>
       <Menu
         mode="inline"
-        defaultSelectedKeys={[useLocation().pathname]}
+        selectedKeys={[useLocation().pathname]}
         defaultOpenKeys={subMenus}
         className="left-nav"
       >
