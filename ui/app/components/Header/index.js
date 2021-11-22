@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 import PropTypes from 'prop-types';
-import { Layout, Menu, Popover } from 'antd';
-import { ClockCircleOutlined } from '@ant-design/icons';
+import { Layout, Menu, Popover, Progress } from 'antd';
+import styled from 'styled-components';
+import { ClockCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import selectors from 'ui/containers/App/selectors';
 import { createStructuredSelector } from 'reselect';
 import AccountCircleRounded from "@material-ui/icons/AccountCircleRounded";
@@ -17,24 +18,57 @@ import SwitchApps from 'ui/components/SwitchApps';
 import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
 import HelpMenu from 'ui/components/HelpMenu';
 import UserMenu from 'ui/components/UserMenu';
-import { COLOR_ANT_MENU } from 'ui/constants/colors';
+import { COLOR_ANT_MENU, COLOR_BRAND_BLUE, COLOR_ANT_MENU_FONT_HOVER } from 'ui/constants/colors';
 import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
 import constants from 'ui/constants';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import actions from 'ui/containers/App/actions';
+import ReloadPicker from 'ui/components/ReloadPicker';
 
 const { DATE_TIME_FORMAT } = constants;
 const { Header: AntdHeader } = Layout;
+let reloadTimeout = null;
+let animateTimeout = null;
 
-const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePicker, menuItems = [] }) => {
+const ProgressStyled = styled(Progress)`
+  .ant-progress-inner {
+    vertical-align: top;
+  }
+`
+
+const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePicker, doReload, reloadData, menuItems = [] }) => {
   const [helpPopOver, setHelpPopOver] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [userPopOver, setUserPopOver] = useState(false);
+  const [reloadPopOver, setReloadPopOver] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const timePreview =
     timePicker === TimePickerEnum.ABSOLUTE
       ? `${startDate.format(DATE_TIME_FORMAT)} - ${endDate.format(DATE_TIME_FORMAT)}`
       : PeriodEnum[duration].title;
+
+  const decrease = useCallback((seconds) => {
+    animateTimeout = setTimeout(() => {
+      const v = seconds - 1000;
+      setProgress(v);
+      if (v > 0) {
+        decrease(v);
+      }
+    }, 1000);
+  }, [progress]);
+
+  useEffect(() => {
+    clearInterval(reloadTimeout);
+    clearInterval(animateTimeout);
+    if (reloadData.period.seconds > 0) {
+      decrease(reloadData.period.seconds);
+      reloadTimeout = setInterval(() => {
+        doReload();
+        decrease(reloadData.period.seconds);
+      }, reloadData.period.seconds);
+    }
+  }, [reloadData.period.seconds]);
 
   return (
     <AntdHeader className="header" style={{ background: COLOR_ANT_MENU }}>
@@ -53,6 +87,13 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
             onVisibleChange={setHidden}
           >
             <ClockCircleOutlined /> {timePreview}
+          </Popover>
+        </Menu.Item>
+        <Menu.Item style={{ flexShrink: 0 }}>
+          <Popover placement="bottomRight" content={<ReloadPicker />} trigger="click" visible={reloadPopOver} onVisibleChange={setReloadPopOver}>
+            {reloadData.period.seconds > 0 && (<ProgressStyled type="circle" width={19} strokeColor={COLOR_BRAND_BLUE} trailColor={COLOR_ANT_MENU_FONT_HOVER} percent={100-(progress/reloadData.period.seconds*100)} strokeWidth={8} showInfo={false} />)}
+            {reloadData.period.seconds === 0 && (<ReloadOutlined style={{ fontSize: '20px ' }} />)} Reload
+            {reloadData.period.seconds > 0 && (<React.Fragment> every {reloadData.period.title}</React.Fragment>)}
           </Popover>
         </Menu.Item>
         <Menu.Item key="apps">
@@ -82,6 +123,8 @@ Header.propTypes = {
   setDuration: PropTypes.func.isRequired,
   startDate: PropTypes.object,
   timePicker: PropTypes.oneOf([0, 1]).isRequired,
+  reloadData: PropTypes.object,
+  doReload: PropTypes.func,
   menuItems: PropTypes.array // not required! only used by EE
 };
 
@@ -90,6 +133,7 @@ const mapStateToProps = createStructuredSelector({
   duration: selectors.makeSelectDuration(),
   startDate: selectors.makeSelectStartDate(),
   endDate: selectors.makeSelectEndDate(),
+  reloadData: selectors.makeSelectReload(),
 });
 
 export const mapDispatchToProps = dispatch =>
@@ -97,6 +141,7 @@ export const mapDispatchToProps = dispatch =>
     {
       setDuration: actions.setDuration,
       setTimeSpan: actions.setTimeSpan,
+      doReload: actions.doReload,
     },
     dispatch,
   );
