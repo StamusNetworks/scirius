@@ -383,59 +383,54 @@ $(document).ready(function(){
                                                     </h2>
                                                 </div>
                                                 <div class="panel-body ruleset-status" id="{{ ruleset.pk }}">
-                                                    <div class="label
-                                                                {% if ruleset.status == "Active" %}
-                                                                    label-info
-                                                                {% else %}
-                                                                    label-default
-                                                                {% endif %}">
+                                                    <div class="space-add label {% if ruleset.status == "Active" %} label-info{% else %} label-default{% endif %}">
                                                         {{ ruleset.status }}
                                                     </div>
-                                                    <div class="label label-default" id="validity">
+                                                    <div class="label label-default" id="validity" style="margin-right: 1px;">
                                                         Validity
                                                     </div>
                                                     {% if ruleset.threshold %}
-                                                        <div class="label label-info">
+                                                        <div class="space-add label label-info" >
                                                             Threshold
                                                         </div>
                                                     {% endif %}
                                                     {% if ruleset.a_reject %}
-                                                        <div class="label label-info">
+                                                        <div class="space-add label label-info">
                                                             Reject
                                                         </div>
                                                     {% endif %}
                                                     {% if ruleset.a_drop %}
-                                                        <div class="label label-info">
+                                                        <div class="space-add label label-info">
                                                             Drop
                                                         </div>
                                                     {% endif %}
                                                     {% if ruleset.a_filestore %}
-                                                        <div class="label label-info">
+                                                        <div class="space-add label label-info">
                                                             Filestore
                                                         </div>
                                                     {% endif %}
                                                     {% if ruleset.l_auto %}
-                                                        <div class="label label-info">
+                                                        <div class="space-add label label-info">
                                                             Lateral Auto
                                                         </div>
                                                     {% endif %}
                                                     {% if ruleset.l_yes %}
-                                                        <div class="label label-info">
+                                                        <div class="space-add label label-info">
                                                             Lateral Yes
                                                         </div>
                                                     {% endif %}
                                                     {% if ruleset.t_auto %}
-                                                        <div class="label label-info">
+                                                        <div class="space-add label label-info">
                                                             Target Auto
                                                         </div>
                                                     {% endif %}
                                                     {% if ruleset.t_src %}
-                                                        <div class="label label-info">
+                                                        <div class="space-add label label-info">
                                                             Target Src
                                                         </div>
                                                     {% endif %}
                                                     {% if ruleset.t_dst %}
-                                                        <div class="label label-info">
+                                                        <div class="space-add label label-info">
                                                             Target Dst
                                                         </div>
                                                     {% endif %}
