@@ -4,7 +4,6 @@ from datetime import datetime
 from time import time
 import logging
 from collections import OrderedDict
-from pprint import pformat
 from traceback import format_exc
 import os
 import json
@@ -114,13 +113,13 @@ class ESWrap(object):
     def __call__(self, *args, **kwargs):
         if settings.DEBUG:
             msg = ''
-            body = kwargs.get('body')
+            body = json.dumps(kwargs.get('body'), sort_keys=True, indent=2)
             if 'index' in kwargs:
                 msg = kwargs['index']
                 if body:
                     msg += ':\n'
             if body:
-                msg += pformat(body)
+                msg += body
 
             if msg:
                 es_logger.info(msg)
