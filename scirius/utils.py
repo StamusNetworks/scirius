@@ -234,7 +234,8 @@ class RequestsWrapper:
         return RequestsWrapper(getattr(requests, attr))
 
     def __call__(self, *args, **kwargs):
-        kwargs.update({'proxies': self._get_proxies()})
+        if kwargs.pop('use_proxy', True):
+            kwargs.update({'proxies': self._get_proxies()})
 
         if 'headers' not in kwargs:
             kwargs.update({'headers': {'User-Agent': 'scirius'}})

@@ -1346,14 +1346,14 @@ class Source(models.Model):
 
         version_server = 1
         if version_uri:
-            resp = RequestsWrapper().get(url=version_uri, headers=hdrs, verify=self.cert_verif)
+            resp = RequestsWrapper().get(url=version_uri, headers=hdrs, verify=self.cert_verif, use_proxy=self.use_sys_proxy)
             version_server = int(resp.content.strip())
 
             if self.version < version_server:
                 version_uri = None
 
         if version_uri is None:
-            resp = RequestsWrapper().get(url=self.uri, headers=hdrs, verify=self.cert_verif)
+            resp = RequestsWrapper().get(url=self.uri, headers=hdrs, verify=self.cert_verif, use_proxy=self.use_sys_proxy)
             f.write(resp.content)
 
             if self.version < version_server:
