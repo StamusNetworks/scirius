@@ -110,7 +110,7 @@ def scirius_render(request, template, context):
         if settings.USE_KIBANA:
             context['kibana'] = 1
             if settings.KIBANA_PROXY:
-                context['kibana_url'] = "/kibana"
+                context['kibana_url'] = "/"
             else:
                 context['kibana_url'] = settings.KIBANA_URL
     if settings.USE_EVEBOX:
