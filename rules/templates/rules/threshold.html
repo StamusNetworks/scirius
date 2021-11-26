@@ -1,7 +1,7 @@
 {% extends "rules/base.html" %}
 {% block sidebar %}
     <div class="panel-heading">
-        <h2 class="panel-title">threshold {{ threshold.pk }}</h2>
+        <h2 class="panel-title">{{ threshold.threshold_type }} {{ threshold.pk }}</h2>
     </div>
     <div class="panel-body">
         <ul>
@@ -33,7 +33,7 @@
 {% endblock sidebar %}
 {% block content %}
     <h2>
-        Threshold for
+        {{ threshold.threshold_type.title }} for
         <a href="{% url 'rule' threshold.rule.sid %}">{{ threshold.rule.sid }}</a>
     </h2>
     {% if threshold.threshold_type == "suppress" %}
@@ -61,7 +61,7 @@
             {{ threshold.count }} per {{ threshold.seconds }} seconds.
         </p>
     {% endif %}
-    <h2>Threshold expression</h2>
+    <h2>{{ threshold.threshold_type.title }} expression</h2>
     <div class="rule">{{ threshold.highlight_content|safe }}</div>
     <h2>Signature</h2>
     <div class="rule">{{ threshold.rule.highlight_content|safe }}</div>

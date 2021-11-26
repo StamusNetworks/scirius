@@ -394,6 +394,11 @@ $(document).ready(function(){
                                                             Threshold
                                                         </div>
                                                     {% endif %}
+                                                    {% if ruleset.suppress %}
+                                                        <div class="space-add label label-info" >
+                                                            Suppress
+                                                        </div>
+                                                    {% endif %}
                                                     {% if ruleset.a_reject %}
                                                         <div class="space-add label label-info">
                                                             Reject

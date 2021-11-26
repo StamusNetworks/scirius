@@ -343,13 +343,18 @@ def rule(request, rule_id, key='pk'):
             status = 'Active'
 
         threshold = False
-        if Threshold.objects.filter(rule=rule, ruleset=ruleset):
+        if Threshold.objects.filter(rule=rule, ruleset=ruleset, threshold_type='threshold'):
             threshold = True
+
+        suppress = False
+        if Threshold.objects.filter(rule=rule, ruleset=ruleset, threshold_type='suppress'):
+            suppress = True
 
         content = rule.generate_content(ruleset)
         if content:
             content = SuriHTMLFormat(rule.generate_content(ruleset))
-        ruleset_info = {'name': ruleset.name, 'pk': ruleset.pk, 'status': status, 'threshold': threshold,
+        ruleset_info = {'name': ruleset.name, 'pk': ruleset.pk, 'status': status,
+                        'threshold': threshold, 'suppress': suppress,
                         'a_drop': False, 'a_filestore': False, 'a_bypass': False,
                         'l_auto': False, 'l_yes': False,
                         't_auto': False, 't_src': False, 't_dst': False,
