@@ -179,6 +179,15 @@ class UserSettingsForm(forms.ModelForm, CommentForm):
             # self.fields['groups'].initial does not work
             self.initial['groups'] = instance.groups.first().pk if instance.groups.count() > 0 else ''
             self.fields['timezone'].initial = instance.sciriususer.timezone
+
+            if instance.sciriususer.is_from_ldap():
+                self.fields['groups'].required = False
+                # AUTH_LDAP_USER_ATTR_MAP => ldap user set first/last name and email
+                for field in ('groups', 'first_name', 'last_name', 'email'):
+                    self.fields[field].widget.attrs['readonly'] = True
+                    self.fields[field].widget.attrs['disabled'] = True
+                self.fields['groups'].help_text = 'Mapping ldap group to a Role is done on Role page for LDAP/AD users'
+
         else:
             self.fields['timezone'].initial = 'UTC'
             self.initial['groups'] = Group.objects.order_by('-priority').first()
@@ -186,7 +195,10 @@ class UserSettingsForm(forms.ModelForm, CommentForm):
     def clean(self):
         cleaned_data = super().clean()
         if 'groups' in cleaned_data:
-            cleaned_data['groups'] = [cleaned_data['groups']]
+            if cleaned_data['groups']:
+                cleaned_data['groups'] = [cleaned_data['groups']]
+            else:
+                cleaned_data['groups'] = []
         return cleaned_data
 
     def save(self, commit=True):

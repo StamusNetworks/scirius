@@ -296,7 +296,12 @@ def add_user(request):
 @permission_required('rules.configuration_auth', raise_exception=True)
 def edit_user(request, user_id):
     user = get_object_or_404(User, pk=user_id)
-    context = {'user': user, 'username': json.dumps(user.username)}
+    context = {
+        'user': user,
+        'username': json.dumps(user.username),
+        'current_action': f"Edit{' LDAP ' if user.sciriususer.is_from_ldap() else ' '}user {user.username}",
+        'is_from_ldap': user.sciriususer.is_from_ldap()
+    }
 
     if request.method == 'POST':
         form = UserSettingsForm(request.POST, instance=user)
@@ -313,13 +318,10 @@ def edit_user(request, user_id):
 
         context['error'] = 'Edition form is not valid'
         context['form'] = form
-        context['current_action'] = 'Edit user %s' % user.username
         return scirius_render(request, 'accounts/user.html', context)
 
     form = UserSettingsForm(instance=user)
     context['form'] = form
-    context['current_action'] = 'Edit user %s' % user.username
-    context['is_from_ldap'] = user.sciriususer.is_from_ldap()
     return scirius_render(request, 'accounts/user.html', context)
 
 
