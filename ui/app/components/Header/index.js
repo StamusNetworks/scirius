@@ -31,7 +31,10 @@ let reloadTimeout = null;
 let animateTimeout = null;
 
 const ProgressStyled = styled(Progress)`
+  line-height: 1em;
   .ant-progress-inner {
+    width: 14px !important;
+    height: 14px !important;
     vertical-align: top;
   }
 `
@@ -77,8 +80,8 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
       </Link>
 
       <Menu theme="dark" mode="horizontal">
-        {menuItems.map((menuItem) => (<React.Fragment key={menuItem}>{menuItem}</React.Fragment>))}
-        <Menu.Item key="timerange-dropdown" className="timerange-dropdown" data-test="timerange-dropdown">
+        {menuItems.map((menuItem) => (<Menu.Item key={menuItem.key} className="item-dropdown">{menuItem.content}</Menu.Item>))}
+        <Menu.Item key="timerange-dropdown" className="item-dropdown" data-test="timerange-dropdown">
           <Popover
             placement="bottom"
             content={<TimeRangePickersContainer setDuration={setDuration} setTimeSpan={setTimeSpan} />}
@@ -89,26 +92,28 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
             <ClockCircleOutlined /> {timePreview}
           </Popover>
         </Menu.Item>
-        <Menu.Item style={{ flexShrink: 0 }}>
+        <Menu.Item key="reload" className="item-dropdown">
           <Popover placement="bottomRight" content={<ReloadPicker />} trigger="click" visible={reloadPopOver} onVisibleChange={setReloadPopOver}>
-            {reloadData.period.seconds > 0 && (<ProgressStyled type="circle" width={19} strokeColor={COLOR_BRAND_BLUE} trailColor={COLOR_ANT_MENU_FONT_HOVER} percent={100-(progress/reloadData.period.seconds*100)} strokeWidth={8} showInfo={false} />)}
-            {reloadData.period.seconds === 0 && (<ReloadOutlined style={{ fontSize: '20px ' }} />)} Reload
+            {reloadData.period.seconds > 0 && (<ProgressStyled type="circle" width={14} strokeColor={COLOR_BRAND_BLUE} trailColor={COLOR_ANT_MENU_FONT_HOVER} percent={100-(progress/reloadData.period.seconds*100)} strokeWidth={8} showInfo={false} />)}
+            {reloadData.period.seconds === 0 && (<ReloadOutlined style={{ fontSize: '14px ' }} />)} Reload
             {reloadData.period.seconds > 0 && (<React.Fragment> every {reloadData.period.title}</React.Fragment>)}
           </Popover>
         </Menu.Item>
-        <Menu.Item key="apps">
+        <Menu.Item key="apps" className="item-dropdown">
           <Popover placement="bottomRight" content={<SwitchApps />} trigger="click">
             Apps
           </Popover>
         </Menu.Item>
-        <Menu.Item key="help">
+        <Menu.Item key="help" className="item-dropdown">
           <Popover placement="bottomRight" content={<HelpMenu />} trigger="click" visible={helpPopOver} onVisibleChange={setHelpPopOver}>
             Help
           </Popover>
         </Menu.Item>
-        <Menu.Item key="user-dropdown" className="user-dropdown">
+        <Menu.Item key="user-dropdown" className="item-dropdown" style={{ height: '100%' }}>
           <Popover placement="bottomRight" content={<UserMenu />} trigger="click" visible={userPopOver} onVisibleChange={setUserPopOver}>
-            <AccountCircleRounded style={{color: "currentColor", strokeWidth: 1.5}} />
+            <div style={{    display: 'flex', alignItems: 'center' ,height: '100%' }}>
+              <AccountCircleRounded style={{color: "currentColor", strokeWidth: 1.5 }} />
+            </div>
           </Popover>
         </Menu.Item>
       </Menu>
