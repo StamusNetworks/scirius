@@ -80,8 +80,8 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
       </Link>
 
       <Menu theme="dark" mode="horizontal">
-        {menuItems.map((menuItem) => (<Menu.Item key={menuItem.key} className="item-dropdown">{menuItem.content}</Menu.Item>))}
-        <Menu.Item key="timerange-dropdown" className="item-dropdown" data-test="timerange-dropdown">
+        {menuItems.map((menuItem) => (<Menu.Item key={menuItem.key} className="tenant-dropdown">{menuItem.content}</Menu.Item>))}
+        <Menu.Item key="timerange-dropdown" className="timerange-dropdown" data-test="timerange-dropdown">
           <Popover
             placement="bottom"
             content={<TimeRangePickersContainer setDuration={setDuration} setTimeSpan={setTimeSpan} />}
@@ -92,28 +92,28 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
             <ClockCircleOutlined /> {timePreview}
           </Popover>
         </Menu.Item>
-        <Menu.Item key="reload" className="item-dropdown">
+        <Menu.Item key="reload" className="reload-dropdown">
           <Popover placement="bottomRight" content={<ReloadPicker />} trigger="click" visible={reloadPopOver} onVisibleChange={setReloadPopOver}>
             {reloadData.period.seconds > 0 && (<ProgressStyled type="circle" width={14} strokeColor={COLOR_BRAND_BLUE} trailColor={COLOR_ANT_MENU_FONT_HOVER} percent={100-(progress/reloadData.period.seconds*100)} strokeWidth={8} showInfo={false} />)}
             {reloadData.period.seconds === 0 && (<ReloadOutlined style={{ fontSize: '14px ' }} />)} Reload
             {reloadData.period.seconds > 0 && (<React.Fragment> every {reloadData.period.title}</React.Fragment>)}
           </Popover>
         </Menu.Item>
-        <Menu.Item key="apps" className="item-dropdown">
+        <Menu.Item key="apps">
           <Popover placement="bottomRight" content={<SwitchApps />} trigger="click">
             Apps
           </Popover>
         </Menu.Item>
-        <Menu.Item key="help" className="item-dropdown">
+        <Menu.Item key="help">
           <Popover placement="bottomRight" content={<HelpMenu />} trigger="click" visible={helpPopOver} onVisibleChange={setHelpPopOver}>
             Help
           </Popover>
         </Menu.Item>
-        <Menu.Item key="user-dropdown" className="item-dropdown" style={{ height: '100%' }}>
+        <Menu.Item key="user-dropdown" className="user-dropdown" style={{ height: '100%' }}>
           <Popover placement="bottomRight" content={<UserMenu />} trigger="click" visible={userPopOver} onVisibleChange={setUserPopOver}>
-            <div style={{    display: 'flex', alignItems: 'center' ,height: '100%' }}>
+            <span>
               <AccountCircleRounded style={{color: "currentColor", strokeWidth: 1.5 }} />
-            </div>
+            </span>
           </Popover>
         </Menu.Item>
       </Menu>

@@ -1,53 +1,87 @@
 .header {
-    padding: 0;
+  padding: 0;
+
+  & .logo {
+      float: left;
+      width: 200px;
+      text-align: center;
+  }
+  
+  & .logo img {
+      height: 32px;
+  }
+
+  .tenant-dropdown {
+      & i {
+          font-size: 20px;
+          margin-right: 5px;
+      }
+  }
+
+  .timerange-dropdown {
+      & svg {
+          height: 22px;
+          width: 22px;
+          margin-right: 5px;
+      }
+  }
+
+  .reload-dropdown {
+    & svg {
+        height: 22px;
+        width: 22px;
+        margin-right: 5px;
+    }
+  }
+
+  .user-dropdown {
+      & svg {
+        width: 22px;
+        height: 22px;
+        fill: transparent;
+        stroke: currentColor;
+        stroke-width: 2;
+      }
+  }
+
+  & .ant-menu {
     display: flex;
-    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    height: 100%;
+    background-color: rgb(0, 87, 146);
+  }
 
-    .logo {
-        float: left;
-        width: 200px;
-        text-align: center;
-    }
+  & .ant-menu-item {
+    padding: 0 !important;
+    border-right: 1px solid #00426e !important;
+    border-left: 1px solid #226b9d !important;
+    transition: all .3s;
 
-    .logo img {
-        height: 32px;
-    }
-
-    .ant-menu {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        height: 100%;
-        background-color: rgb(0, 87, 146);
-        border-left: 1px solid #00426e !important;
-        margin-left: auto;
-
-      & > li {
-        border-left: 1px solid #226b9d !important;
+    &:first-child:after{
         border-right: 1px solid #00426e !important;
-      }
-      & > li:hover {
-        background-color: #004d81 !important;
-      }
-      & .ant-menu-item {
-        transition: none !important;
-      }
+        height: 100%;
+        width: 1px;
+        left: -2px;
     }
 
-    .item-dropdown {
-        flex-shrink: 0;
+    &:hover {
+        background: #004d80 !important;
+    }
+  }
 
-        & > span > span {
-            display: flex;
-            align-items: center;
+  & .ant-menu-title-content > span {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 20px;
+  }
+}
 
-            & > span, i {
-              margin-right: 5px;
-            }
-            & > svg {
-              display: block;
-            }
-        }
+.ant-popover {
+    top: 60px !important;
+    &-arrow {
+        transform: scale(3) translateY(-2px) !important;
     }
 }
 
