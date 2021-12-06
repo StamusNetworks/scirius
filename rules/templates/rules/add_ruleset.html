@@ -21,7 +21,7 @@
         }
     {% endif %}
     $(document).ready(function($) {
-        {% if extra_form %}
+        {% if extra_form and not no_js %}
             $("#check_all").prop('checked', true);
             tables_checking($("#check_all").get(0))
         {% endif %}

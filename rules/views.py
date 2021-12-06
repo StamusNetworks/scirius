@@ -1473,6 +1473,7 @@ def add_ruleset(request):
                         sources=form.cleaned_data['sources'].values_list('pk', flat=True),
                         activate_categories=form.cleaned_data['activate_categories']
                     )
+                extra_form.run()
 
                 form_action_trans = Transformation.ActionTransfoType(form.cleaned_data["action"])
                 form_lateral_trans = Transformation.LateralTransfoType(form.cleaned_data["lateral"])
@@ -1512,8 +1513,11 @@ def add_ruleset(request):
 
             messages.success(request, msg)
             return redirect(ruleset)
+        else:
+            if form.errors:
+                context['error'] = repr(form.errors)
 
-        if extra_form.data['ruleset']:
+        if extra_form.data.get('ruleset', False):
             Ruleset.objects.filter(pk=extra_form.data['ruleset']).delete()
     else:
         initial = {'action': Transformation.A_NONE.value,
