@@ -3004,7 +3004,10 @@ class Ruleset(models.Model, Transformable):
         if user_action_pk_min is not None and user_action_pk_max is not None:
             qs = UserAction.objects.filter(
                 pk__gte=user_action_pk_min,
-                pk__lte=user_action_pk_max
+                pk__lte=user_action_pk_max,
+                action_type__in=actions_type,
+                user_action_objects__action_key='ruleset',
+                user_action_objects__object_id=self.pk
             )
         return qs, user_has_all_ua
 
