@@ -994,8 +994,8 @@ export default class AlertItem extends React.Component {
           {showTabs && JSON.stringify(this.state.files) !== '{}' && (
             <Tab eventKey="json-files" title="Files">
               <div className="files-warning">
-                WARNING: These files are dangerous! We are not responsible for any damage to your system that might occur as a consequence of
-                downloading them.
+                WARNING: These files are potentially dangerous! We are not responsible for any damage to your system that might occur as a consequence
+                of downloading them.
               </div>
               {this.renderFiles()}
             </Tab>
