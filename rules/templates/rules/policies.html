@@ -36,7 +36,7 @@
                                 <input type="checkbox" id="delete_policies" name="delete">
                                 <label for="delete_policies">Delete all previous imported policies and filtersets</label>
                                 <br>
-                                <p class="help-block">
+                                <p class="help-block" id="help-delete" style="display: none">
                                     <strong>WARNING:</strong> All previous imported policies and filtersets will be deleted before importing new ones
                                 </p>
                             </div>
@@ -49,4 +49,15 @@
             </div>
         </div>
     </form>
+    <script>
+$(document).ready(function() {
+    $("#delete_policies").click(function() {
+        if ($("#delete_policies").is(":checked")) {
+            $("#help-delete").show();
+        } else {
+            $("#help-delete").hide();
+        }
+    })
+});
+    </script>
 {% endblock content %}
