@@ -26,10 +26,7 @@
         </ul>
         <div class="tab-content">
             <div role="tabpanel"
-                 class="tab-pane
-                        {% if form_id == 'main' %}
-                            active
-                        {% endif %}"
+                 class="tab-pane{% if form_id == 'main' %} active{% endif %}"
                  id="main">
                 <div class="container-fluid">
                     <div class="row">
@@ -71,10 +68,7 @@
             </div>
             <!-- tabpanel -->
             <div role="tabpanel"
-                 class="tab-pane
-                        {% if form_id == 'es' %}
-                            active
-                        {% endif %}"
+                 class="tab-pane{% if form_id == 'es' %} active{% endif %}"
                  id="es">
                 <div class="container-fluid">
                     <div class="row">
@@ -91,10 +85,7 @@
             </div>
             <!-- tabpanel -->
             <div role="tabpanel"
-                 class="tab-pane
-                        {% if form_id == 'kibana' %}
-                            active
-                        {% endif %}"
+                 class="tab-pane{% if form_id == 'kibana' %} active{% endif %}"
                  id="kibana">
                 <div class="container-fluid">
                     <div class="row">

@@ -335,10 +335,7 @@ $(document).ready(function(){
             {% endif %}
             {# suricata_stats and elasticsearch #}
             <div role="tabpanel"
-                 class="tab-pane
-                        {% if not suricata_stats and not elasticsearch %}
-                            active
-                        {% endif %}"
+                 class="tab-pane{% if not suricata_stats and not elasticsearch %} active{% endif %}"
                  id="rule_status">
                 <div class="container-fluid">
                     <h2 class="title">
