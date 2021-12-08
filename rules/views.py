@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import re
 import os
 import yaml
+import json
 from datetime import date
 
 from django.shortcuts import get_object_or_404, redirect
@@ -2047,8 +2048,12 @@ def policies(request):
                 context['error'] = 'No policies file'
                 return scirius_render(request, 'rules/policies.html', context)
 
-            PoliciesForm._import(request.FILES['file'], 'delete' in request.POST)
-            context['success'] = 'Successfully imported'
+            try:
+                PoliciesForm._import(request.FILES['file'], 'delete' in request.POST)
+            except json.JSONDecodeError:
+                context['error'] = 'JSON is wrongly formatted'
+            else:
+                context['success'] = 'Successfully imported'
         elif 'export' in request.POST:
             file_tar_io = PoliciesForm._export()
             response = HttpResponse(file_tar_io.getvalue(), content_type='application/gzip')
