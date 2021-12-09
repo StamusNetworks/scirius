@@ -14,6 +14,7 @@ body {
   margin-top: 0;
   .label {
     font-size: 85%;
+    margin: 1px;
   }
   .checkbox label {
     font-weight: 600;
@@ -245,5 +246,18 @@ body {
     position: absolute;
     top: 0;
     right: 15px;
+  }
+
+  table.volumetry {
+      border: 0px;
+      border-collapse: collapse;
+  }
+  table.volumetry > th, td {
+      padding-top: 15px;
+      padding-right: 70px;
+      padding-bottom: 15px;
+  }
+  ul.volumetry {
+     list-style-type: none;
   }
 }
