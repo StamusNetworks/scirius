@@ -417,7 +417,7 @@ class HuntFilter extends React.Component {
                 onChange={this.selectFilterValue}
                 className="basic-single toolbar-pf-filter"
                 classNamePrefix="select"
-                placeholder="Choose an Organization"
+                placeholder={currentFilterType.sub_placeholder}
               />
             )}
           </Filter.CategorySelector>
@@ -431,7 +431,7 @@ class HuntFilter extends React.Component {
             onChange={this.selectFilterValue}
             className="basic-single toolbar-pf-filter"
             classNamePrefix="select"
-            placeholder="Choose an Organization"
+            placeholder={currentFilterType.sub_placeholder}
           />
         );
       }
