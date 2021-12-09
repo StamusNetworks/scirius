@@ -1473,7 +1473,9 @@ def add_ruleset(request):
                         sources=form.cleaned_data['sources'].values_list('pk', flat=True),
                         activate_categories=form.cleaned_data['activate_categories']
                     )
-                extra_form.run()
+
+                if extra_form:
+                    extra_form.run()
 
                 form_action_trans = Transformation.ActionTransfoType(form.cleaned_data["action"])
                 form_lateral_trans = Transformation.LateralTransfoType(form.cleaned_data["lateral"])
