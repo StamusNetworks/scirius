@@ -18,48 +18,42 @@ On Debian, you can run ::
 
  apt update
  apt install --no-install-recommends -y apt-utils
- apt install --no-install-recommends -y make wget git gcc libc-dev gunicorn python-sphinx gnupg2 libsasl2-dev libldap2-dev libssl-dev python-pip python-dev
+ apt install --no-install-recommends -y make wget git gcc libc-dev gunicorn sphinx-common sphinx-doc gnupg2 libsasl2-dev libldap2-dev libssl-dev python3-pip python3-dev
 
 You can then install django and the dependencies ::
 
- python -m pip install --upgrade pip wheel setuptools
- python -m pip install --upgrade six python-daemon suricatactl
- python -m pip install django-bootstrap3==11.1.0 elasticsearch-curator==5.6
- python -m pip install -r requirements.txt
+ pip3 install --upgrade pip wheel setuptools
+ pip3 install --upgrade six python-daemon suricatactl
+ pip3 install django-bootstrap3==11.1.0 elasticsearch-curator==5.6
+ pip3 install -r requirements.txt
 
 To use the suri_reloader script which is handling suricata restart, you will also need
 pyinotify ::
 
- pip install pyinotify
-
-It has been reported that on some Debian system forcing a recent GitPython is required ::
-
- pip install gitpython==0.3.1-beta2
+ pip3 install pyinotify
 
 You will also potentially needs the gitdb module ::
 
- pip install gitdb
+ pip3 install gitdb
 
 
 For npm and webpack, you need a stable version of npm and webpack version 3.11. On Debian
 you can do ::
-
-Add nodesource repository::
-
- wget -O- https://deb.nodesource.com/setup_12.x | bash -
  
-Install nodejs::
-
- apt-get install --no-install-recommends -y nodejs
+Install npm::
+ apt install --no-install-recommends -y npm
 
 Install nodejs dependencies for Scirius:
 ::
- sudo apt-get install npm
+
  npm install
+ mkdir /var/log/scirius/
+ touch /var/log/scirius/elasticsearch.log
+ chown -R user:user /var/log/scirius
  npm install -g webpack@3.11
  webpack
  cd hunt
- npm install
+ npm install --legacy-peer-deps
  npm run build
  cd ..
 
@@ -68,23 +62,23 @@ Running Scirius CE
 
 From inside the source directory, you can initiate Django database ::
 
- python manage.py migrate
+ python3 manage.py migrate
 
 Authentication is by default in scirius so you will need to create a superuser
 account ::
 
- python manage.py createsuperuser
+ python3 manage.py createsuperuser
 
 Before starting the application you need to construct the bundles by running webpack and collect static files::
 
  webpack
- python manage.py collectstatic
+ python3 manage.py collectstatic
 
 This step as to be done after each code update.
 
 One of the easiest way to try Scirius CE is to run the Django test server ::
 
- python manage.py runserver
+ python3 manage.py runserver
 
 You can then connect to ``localhost:8000``.
 
