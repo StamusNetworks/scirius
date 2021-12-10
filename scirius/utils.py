@@ -209,6 +209,10 @@ def help_links(djlink):
 
 # Based on https://github.com/jieter/django-tables2/blob/master/CHANGELOG.md#breaking-changes-200
 class SciriusTable(tables.Table):
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+
     def get_column_class_names(self, classes_set, bound_column):
         classes_set = super(SciriusTable, self).get_column_class_names(classes_set, bound_column)
         classes_set.add(bound_column.name)
