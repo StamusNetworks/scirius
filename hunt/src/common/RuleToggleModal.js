@@ -238,7 +238,7 @@ export default class RuleToggleModal extends React.Component {
     let title = null;
 
     if (this.props.action === 'threat') {
-      title = 'Create a STR threat vector';
+      title = 'Define custom Declaration(s) of Compromise';
     } else if (this.props.config.rule) {
       title = `${this.props.action} Rule ${this.props.config.rule.sid}`;
     } else {
@@ -253,6 +253,7 @@ export default class RuleToggleModal extends React.Component {
           <Modal.Title>{title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          <div style={{ marginBottom: '30px' }}>These Declaration(s) of Compromise (DoC) will appear in the Custom Threats family</div>
           <HuntRestError errors={this.state.errors} />
           {!this.state.noaction && (
             <Form horizontal>
