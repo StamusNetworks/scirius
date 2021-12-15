@@ -127,7 +127,7 @@ $(function (){
                             <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40"/>
                             <span {% if generator and generator == 'appliances' and license and license.nta and perms.rules.events_view %}style="line-height: 1.5715;" {% else %}style="line-height: 1.5715; color: rgba(0,0,0,.2);"{% endif %}
                                   class="applauncher-pf-link-title">
-                                Threat Radar
+                                Stamus NDR
                             </span>
                         </a>
                     </li>
@@ -141,7 +141,7 @@ $(function (){
                                 role="menuitem">
                             <img src="/static/rules/Stamus_SEH_icon.png" height="40" width="40"/>
                             <span {% if generator == 'appliances' and license and license.etl and perms.rules.events_view or generator == 'suricata' and perms.rules.events_view %}style="line-height: 1.5715;" {% else %}style="line-height: 1.5715; color: rgba(0,0,0,.2);"{% endif %} class="applauncher-pf-link-title">
-                                Hunting
+                                Stamus ND
                             </span>
                         </a>
                     </li>
