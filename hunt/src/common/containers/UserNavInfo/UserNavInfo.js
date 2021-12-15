@@ -149,10 +149,10 @@ class UserNavInfo extends Component {
     )
       return (
         <li className="applauncher-pf-item" role="presentation">
-          <a className="applauncher-pf-link" href="/stamus" role="menuitem" data-toggle="tooltip" title="Threat Radar" style={{ cursor: 'pointer' }}>
+          <a className="applauncher-pf-link" href="/stamus" role="menuitem" data-toggle="tooltip" title="Stamus NDR" style={{ cursor: 'pointer' }}>
             <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40" alt="STR" />
             <span className="applauncher-pf-link-title" style={{ lineHeight: '1.5715' }}>
-              Threat Radar
+              Stamus NDR
             </span>
           </a>
         </li>
@@ -163,7 +163,7 @@ class UserNavInfo extends Component {
         <div className="applauncher-pf-link">
           <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40" style={{ filter: 'opacity(.2)' }} />
           <span className="applauncher-pf-link-title" style={{ fontSize: '12px', color: 'rgba(0,0,0,.2)', lineHeight: '1.5715' }}>
-            Threat Radar
+            Stamus NDR
           </span>
         </div>
       </li>
@@ -285,12 +285,12 @@ class UserNavInfo extends Component {
                       href="/rules/hunt"
                       role="menuitem"
                       data-toggle="tooltip"
-                      title="Threat Hunting"
+                      title="Stamus ND"
                       style={{ cursor: 'pointer' }}
                     >
                       <img src="/static/rules/Stamus_SEH_icon.png" height="40" width="40" alt="Hunt" />
                       <span className="applauncher-pf-link-title" style={{ lineHeight: '1.5715' }}>
-                        Hunting
+                        Stamus ND
                       </span>
                     </a>
                   </li>
