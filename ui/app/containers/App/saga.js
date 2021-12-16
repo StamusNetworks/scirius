@@ -23,14 +23,18 @@ function* retrieveUser() {
   }
 }
 
-function* retrieveGlobalSettings() {
+function* retrieveSettings() {
   try {
-    const data = yield call(request, `${API_URL}/global_settings`);
-    yield put(actions.getGlobalSettingsSuccess(data));
+    // Get global settings
+    const globalSettings = yield call(request, `${API_URL}/global_settings`);
+    // Get system settings
+    const systemSettings = yield call(request, `${RULES_URL}/system_settings/`);
+
+    yield put(actions.getSettingsSuccess(globalSettings, systemSettings));
   } catch (err) {
     const errorText = yield getResponseAsText(err.response);
     throwAs('error', errorText);
-    yield put(actions.getGlobalSettingsFailure(err.response.status, err, errorText));
+    yield put(actions.getSettingsFailure(err.response.status, err, errorText));
   }
 }
 
@@ -59,7 +63,7 @@ function* getAllPeriod() {
 
 export default function* rootSage() {
   yield takeEvery(constants.GET_USER_REQUEST, retrieveUser);
-  yield takeEvery(constants.GET_GLOBAL_SETTINGS_REQUEST, retrieveGlobalSettings);
+  yield takeEvery(constants.GET_SETTINGS_REQUEST, retrieveSettings);
   yield takeEvery(constants.GET_SOURCE_REQUEST, getSources);
   yield takeEvery(constants.GET_PERIOD_ALL_REQUEST, getAllPeriod);
 }

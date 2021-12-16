@@ -18,19 +18,20 @@ const getUserFailure = (httpCode, httpError, httpResponse) => ({
     },
   })
 
-const getGlobalSettings = () => ({
-    type: constants.GET_GLOBAL_SETTINGS_REQUEST,
+const getSettings = () => ({
+    type: constants.GET_SETTINGS_REQUEST,
   })
 
-const getGlobalSettingsSuccess = (data) => ({
-    type: constants.GET_GLOBAL_SETTINGS_SUCCESS,
+const getSettingsSuccess = (globalSettings, systemSettings) => ({
+    type: constants.GET_SETTINGS_SUCCESS,
     payload: {
-      data,
+      globalSettings,
+      systemSettings,
     },
   })
 
-const getGlobalSettingsFailure = (httpCode, httpError, httpResponse) => ({
-    type: constants.GET_GLOBAL_SETTINGS_FAILURE,
+const getSettingsFailure = (httpCode, httpError, httpResponse) => ({
+    type: constants.GET_SETTINGS_FAILURE,
     payload: {
       httpCode,
       httpError,
@@ -102,9 +103,9 @@ export default {
   getUser,
   getUserSuccess,
   getUserFailure,
-  getGlobalSettings,
-  getGlobalSettingsSuccess,
-  getGlobalSettingsFailure,
+  getSettings,
+  getSettingsSuccess,
+  getSettingsFailure,
   getSource,
   getSourceSuccess,
   getSourceFailure,

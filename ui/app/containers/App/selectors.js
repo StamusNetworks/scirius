@@ -18,7 +18,13 @@ const makeSelectLocation = () =>
 const makeSelectGlobalSettings = () =>
   createSelector(
     selectGlobal,
-    subState => subState.settings,
+    subState => subState.settings.data.global,
+  );
+
+const makeSelectSystemSettings = () =>
+  createSelector(
+    selectGlobal,
+    subState => subState.settings.data.system,
   );
 
 const makeSelectUser = () =>
@@ -132,6 +138,7 @@ const makeSelectSource = () =>
 export default {
   selectGlobal,
   makeSelectLocation,
+  makeSelectSystemSettings,
   makeSelectGlobalSettings,
   makeSelectStartDate,
   makeSelectEndDate,

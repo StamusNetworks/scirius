@@ -33,7 +33,10 @@ export const initialState = {
     ...initialTimeSpanStorage,
   },
   settings: {
-    data: {},
+    data: {
+      system: {},
+      global: {},
+    },
     request: {
       loading: null,
       status: null,
@@ -69,7 +72,7 @@ export const initialState = {
 const appReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
-      case constants.GET_GLOBAL_SETTINGS_REQUEST:
+      case constants.GET_SETTINGS_REQUEST:
         draft.settings.request.loading = true;
         draft.settings.request.status = null;
         draft.settings.request.message = '';
@@ -85,14 +88,15 @@ const appReducer = (state = initialState, action) =>
         });
         break;
       }
-      case constants.GET_GLOBAL_SETTINGS_SUCCESS: {
-        draft.settings.data = action.payload.data;
+      case constants.GET_SETTINGS_SUCCESS: {
+        draft.settings.data.system = action.payload.systemSettings;
+        draft.settings.data.global = action.payload.globalSettings;
         draft.settings.request.loading = false;
         draft.settings.request.status = true;
         draft.settings.request.message = '';
         break;
       }
-      case constants.GET_GLOBAL_SETTINGS_FAILURE: {
+      case constants.GET_SETTINGS_FAILURE: {
         const { httpCode, httpError, httpResponse } = action.payload;
         draft.settings.request.loading = false;
         draft.settings.request.status = false;

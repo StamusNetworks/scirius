@@ -1,5 +1,4 @@
 import React from 'react';
-import { LeftNavMap } from 'ui/maps/LeftNavMap';
 import UIBreadcrumb from 'ui/components/UIBreadcrumb';
 import { Link } from 'ui/helpers/Link';
 
@@ -15,8 +14,7 @@ const Signatures = () => (
   </div>
 );
 Signatures.metadata = {
-  position: 3,
-  category: LeftNavMap.STAMUS_ND,
+  category: 'STAMUS_ND',
   url: 'stamus-nd/signatures',
 }
 

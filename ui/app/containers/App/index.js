@@ -31,7 +31,7 @@ const pagesList = Object.keys(pages);
 
 const App = ({
   source,
-  getGlobalSettings,
+  getSettings,
   getUser,
   getSource,
   getAllPeriodRequest,
@@ -40,7 +40,7 @@ const App = ({
     if (source.data.length === 0) {
       getSource();
     }
-    getGlobalSettings();
+    getSettings();
     syncUrl();
     getUser();
     getAllPeriodRequest();
@@ -79,7 +79,10 @@ const App = ({
         <ErrorHandler>
           <Content>
             <Switch>
-              {pagesList.map(page => <Route key={page} exact path={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`} component={pages[page]} />)}
+              {pagesList
+                .filter(page => typeof pages[page].metadata.url !== 'function')
+                .map(page => <Route key={page} exact path={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`} component={pages[page]} />)
+              }
               <Route exact path={["/", APP_URL]}>
                 {pages.OperationalCenter ? <Redirect to={`${APP_URL}/security-posture/operational-center`} /> : <Redirect to={`${APP_URL}/explorer`} />}
               </Route>
@@ -94,7 +97,7 @@ const App = ({
 
 App.propTypes = {
   source: PropTypes.object,
-  getGlobalSettings: PropTypes.any,
+  getSettings: PropTypes.any,
   getUser: PropTypes.func,
   getSource: PropTypes.any,
   getAllPeriodRequest: PropTypes.any,
@@ -104,7 +107,6 @@ const mapStateToProps = createStructuredSelector({
   startDate: selectors.makeSelectStartDate(),
   endDate: selectors.makeSelectEndDate(),
   reloadData: selectors.makeSelectReload(),
-  globalSettings: selectors.makeSelectGlobalSettings(),
   filtersParam: selectors.makeSelectFiltersParam(),
   source: selectors.makeSelectSource(),
 });
@@ -112,7 +114,7 @@ const mapStateToProps = createStructuredSelector({
 export const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
-      getGlobalSettings: actions.getGlobalSettings,
+      getSettings: actions.getSettings,
       getUser: actions.getUser,
       getSource: actions.getSource,
       getAllPeriodRequest: actions.getAllPeriodRequest
