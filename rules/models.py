@@ -566,17 +566,17 @@ class UserAction(models.Model):
 
         # Rule processing filter
         ('create_rule_filter', {
-            'description': '{user} has created rule filter {rule_filter}',
+            'description': '{user} has created rule filter {rule_filter} in ruleset {ruleset}',
             'title': 'Create rule filter',
             'perm': 'rules.events_view'
         }),
         ('edit_rule_filter', {
-            'description': '{user} has edited rule filter {rule_filter}',
+            'description': '{user} has edited rule filter {rule_filter} in ruleset {ruleset}',
             'title': 'Edit rule filter',
             'perm': 'rules.events_view'
         }),
         ('delete_rule_filter', {
-            'description': '{user} has deleted rule filter {rule_filter}',
+            'description': '{user} has deleted rule filter {rule_filter} in ruleset {ruleset}',
             'title': 'Delete rule filter',
             'perm': 'rules.events_view'
         })

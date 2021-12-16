@@ -246,6 +246,7 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
     def _update_or_create(self, operation, instance, validated_data):
         filters = validated_data.pop('filter_defs', None)
         comment = validated_data.pop('comment', None)
+        rulesets = validated_data.get('rulesets')
         previous_index = None
         new_index = None
         index_max = RuleProcessingFilter.objects.aggregate(models.Max('index'))['index__max']
@@ -290,6 +291,9 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
             instance = super(RuleProcessingFilterSerializer, self).update(instance, validated_data)
             user_action = 'edit'
 
+            if rulesets is None:
+                rulesets = instance.rulesets.all()
+
         self._reorder(instance, previous_index, new_index)
 
         if filters:
@@ -300,12 +304,14 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
                     instance.delete()
                 raise
 
-        UserAction.create(
-            action_type='%s_rule_filter' % user_action,
-            comment=comment,
-            request=self.context['request'],
-            rule_filter=instance
-        )
+        for ruleset in rulesets:
+            UserAction.create(
+                action_type='%s_rule_filter' % user_action,
+                ruleset=ruleset,
+                comment=comment,
+                request=self.context['request'],
+                rule_filter=instance
+            )
         return instance
 
     def update(self, instance, validated_data):
@@ -405,17 +411,21 @@ class RuleProcessingFilterViewSet(SciriusModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         from rules.rest_api import CommentSerializer
+
+        instance = self.get_object()
         comment_serializer = CommentSerializer(data=request.data)
         comment_serializer.is_valid(raise_exception=True)
 
-        UserAction.create(
-            action_type='delete_rule_filter',
-            comment=comment_serializer.validated_data.get('comment'),
-            request=request,
-            rule_filter=self.get_object()
-        )
+        for ruleset in instance.rulesets.all():
+            UserAction.create(
+                action_type='delete_rule_filter',
+                comment=comment_serializer.validated_data.get('comment'),
+                request=request,
+                rule_filter=instance,
+                ruleset=ruleset
+            )
 
-        index = self.get_object().index
+        index = instance.index
         response = super(RuleProcessingFilterViewSet, self).destroy(request, *args, **kwargs)
 
         # Update index values
