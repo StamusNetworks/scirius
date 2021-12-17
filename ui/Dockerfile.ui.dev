@@ -2,7 +2,7 @@
 # docker build -f Dockerfile.ui.dev -t tzetzo/ui .
 # docker run -p 3003:3000 tzetzo/ui
 
-FROM debian
+FROM debian:buster
 
 WORKDIR /app
 
