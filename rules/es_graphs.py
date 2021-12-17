@@ -39,22 +39,14 @@ ES_HOST_FIELD = '%s.%s' % (ES_HOSTNAME, ES_KEYWORD)
 
 
 def extract_es_version(es_stats):
-    try:
-        es_version = es_stats['nodes']['versions'][0].split('.')
-        es_version = [int(v) for v in es_version]
-    except (TypeError, ValueError):
-        return [7, 0, 0]
-
+    es_version = es_stats['nodes']['versions'][0].split('.')
+    es_version = [int(v) for v in es_version]
     return es_version
 
 
 def fetch_es_version():
-    try:
-        es_stats = ESStats(None).get()
-        es_version = extract_es_version(es_stats)
-    except ESError:
-        return [7, 0, 0]
-
+    es_stats = ESStats(None).get()
+    es_version = extract_es_version(es_stats)
     return es_version
 
 
@@ -63,13 +55,13 @@ def get_es_major_version():
     if ES_VERSION is not None:
         return ES_VERSION[0]
 
-    ES_VERSION = fetch_es_version()
+    try:
+        es_version = fetch_es_version()
+    except (TypeError, ValueError, ESError):
+        return 7
+
+    ES_VERSION = es_version
     return ES_VERSION[0]
-
-
-def reset_es_version():
-    global ES_VERSION
-    ES_VERSION = None
 
 
 class ESError(Exception):

@@ -815,11 +815,6 @@ def get_es_address():
     return ESQuery.get_es_address()
 
 
-def reset_es_address():
-    from rules.es_query import ESQuery
-    ESQuery.ES = None
-
-
 class Source(models.Model):
     FETCH_METHOD = (
         ('http', 'HTTP URL'),

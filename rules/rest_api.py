@@ -35,7 +35,7 @@ from rules.rest_processing import RuleProcessingFilterViewSet
 from rules.es_data import ESData
 from rules.es_query import normalize_es_url, ESPaginator
 
-from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats, get_es_major_version, extract_es_version
+from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats
 from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend, ESTimeRangeAllAlerts, ESFlowTimeline
 from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESEventsTail, ESSuriLogTail, ESPoststats, ESEventsTimeline
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
@@ -2367,11 +2367,7 @@ class ESStatsViewSet(ESBaseViewSet):
     }
 
     def _get(self, request, format=None):
-        data = ESStats(request).get()
-        es_cache_version = get_es_major_version()
-        es_running_version = extract_es_version(data)[0]
-        data['need_reboot'] = es_cache_version != es_running_version
-        return Response(data)
+        return Response(ESStats(request).get())
 
 
 class ESCheckVersionViewSet(APIView):

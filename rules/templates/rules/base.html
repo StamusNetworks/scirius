@@ -462,10 +462,6 @@ function get_es_health() {
                     $("#health").addClass("label-danger");
                 }
             }
-            if (data['need_reboot']) {
-                $('#error').text('ES version does not match. You must reboot.');
-                $('#error').parent().show();
-            }
         },
         error: function(data) {
                 // Wait before running the check, to avoid flooding

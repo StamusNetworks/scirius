@@ -262,3 +262,7 @@ def changelog_ruleset(request, ruleset):
 
     context = {'ruleset': ruleset, 'diff': diff, 'mode': 'changelog'}
     return scirius_render(request, url, context)
+
+
+def es_version_changed():
+    pass

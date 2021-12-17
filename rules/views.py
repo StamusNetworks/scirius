@@ -42,11 +42,11 @@ from scirius.utils import scirius_render, scirius_listing, RequestsWrapper
 
 from rules.es_data import ESData
 from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings
-from rules.models import Threshold, Transformation, RulesetTransformation, UserAction, reset_es_address, SourceAtVersion
+from rules.models import Threshold, Transformation, RulesetTransformation, UserAction, SourceAtVersion
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, SourceUpdateTable
 
 from rules.es_graphs import ESError, ESRulesStats, ESFieldStatsAsTable, ESSidByHosts, ESIndices, ESDeleteAlertsBySid
-from rules.es_graphs import get_es_major_version, reset_es_version
+from rules.es_graphs import get_es_major_version
 
 from .tables import RuleTable, CategoryTable, RulesetTable, CategoryRulesetTable, RuleHostTable, ESIndexessTable
 from .tables import RuleThresholdTable, RuleSuppressTable, RulesetThresholdTable, RulesetSuppressTable
@@ -1864,8 +1864,6 @@ def system_settings(request):
             context['main_form'] = main_form
             if main_form.is_valid():
                 main_form.save()
-                reset_es_address()
-                reset_es_version()
                 context['success'] = "All changes saved."
             else:
                 context['error'] = "Invalid form."

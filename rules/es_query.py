@@ -169,6 +169,7 @@ class ESQuery:
     INTERVAL_POINTS = 100
     INDEX = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX
     ES = None
+    ES_ADDRESS = None
 
     def __init__(self, request, es_address=None, from_date=None, to_date=None, interval=None, qfilter=None):
         self.from_date = from_date
@@ -180,8 +181,13 @@ class ESQuery:
         if es_address is None:
             es_address = self.get_es_address()
 
-            if ESQuery.ES is None:
+            if ESQuery.ES_ADDRESS is None:
                 ESQuery.ES = self.build_es_wrapper(es_address)
+                ESQuery.ES_ADDRESS = es_address
+            else:
+                if ESQuery.ES_ADDRESS != es_address:
+                    # we don t set new address, just we show the reboot banner
+                    get_middleware_module('common').es_version_changed()
 
             self.es = ESQuery.ES
         else:
