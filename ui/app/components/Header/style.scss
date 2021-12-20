@@ -2,46 +2,46 @@
   padding: 0;
 
   & .logo {
-      float: left;
-      width: 200px;
-      text-align: center;
+    float: left;
+    width: 200px;
+    text-align: center;
   }
-  
+
   & .logo img {
-      height: 32px;
+    height: 32px;
   }
 
   .tenant-dropdown {
-      & i {
-          font-size: 20px;
-          margin-right: 5px;
-      }
+    & i {
+      font-size: 20px;
+      margin-right: 5px;
+    }
   }
 
   .timerange-dropdown {
-      & svg {
-          height: 22px;
-          width: 22px;
-          margin-right: 5px;
-      }
+    & svg {
+      height: 22px;
+      width: 22px;
+      margin-right: 5px;
+    }
   }
 
   .reload-dropdown {
     & svg {
-        height: 22px;
-        width: 22px;
-        margin-right: 5px;
+      height: 22px;
+      width: 22px;
+      margin-right: 5px;
     }
   }
 
   .user-dropdown {
-      & svg {
-        width: 22px;
-        height: 22px;
-        fill: transparent;
-        stroke: currentColor;
-        stroke-width: 2;
-      }
+    & svg {
+      width: 22px;
+      height: 22px;
+      fill: transparent;
+      stroke: currentColor;
+      stroke-width: 2;
+    }
   }
 
   & .ant-menu {
@@ -56,17 +56,17 @@
     padding: 0 !important;
     border-right: 1px solid #00426e !important;
     border-left: 1px solid #226b9d !important;
-    transition: all .3s;
+    transition: all 0.3s;
 
-    &:first-child:after{
-        border-right: 1px solid #00426e !important;
-        height: 100%;
-        width: 1px;
-        left: -2px;
+    &:first-child:after {
+      border-right: 1px solid #00426e !important;
+      height: 100%;
+      width: 1px;
+      left: -2px;
     }
 
     &:hover {
-        background: #004d80 !important;
+      background: #004d80 !important;
     }
   }
 
@@ -77,11 +77,3 @@
     padding: 0 20px;
   }
 }
-
-.ant-popover {
-    top: 60px !important;
-    &-arrow {
-        transform: scale(3) translateY(-2px) !important;
-    }
-}
-
