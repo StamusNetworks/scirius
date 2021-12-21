@@ -95,7 +95,7 @@ const Breadcrumb = ({ currentPage }) => {
               }}
             >
               {process.env.REACT_APP_HAS_TAG === '1' ? (
-                <React.Fragment>Scirius Enriched Hunting</React.Fragment>
+                <React.Fragment>Stamus Enriched Hunting</React.Fragment>
               ) : (
                 <React.Fragment>Suricata Threat Hunting</React.Fragment>
               )}

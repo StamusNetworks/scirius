@@ -399,7 +399,7 @@ class UserNavInfo extends Component {
               <span className="glyphicon glyphicon-book" /> User manual
             </MenuItem>
             <MenuItem onClick={this.AboutClick}>
-              <span className="glyphicon glyphicon-question-sign" /> About Scirius
+              <span className="glyphicon glyphicon-question-sign" /> About {APP_NAME_SHORT}
             </MenuItem>
           </Dropdown.Menu>
         </Dropdown>

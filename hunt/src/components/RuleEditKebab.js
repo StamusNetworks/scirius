@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { DropdownKebab, MenuItem } from 'patternfly-react';
 import RuleToggleModal from 'hunt_common/RuleToggleModal';
 import ErrorHandler from './Error';
+import { APP_NAME_SHORT } from '../common/constants';
 
 export default class RuleEditKebab extends React.Component {
   constructor(props) {
@@ -39,7 +40,7 @@ export default class RuleEditKebab extends React.Component {
             Disable Rule
           </MenuItem>
           <MenuItem divider />
-          <MenuItem href={`/rules/rule/pk/${this.props.config.rule.pk}/`}>Rule page in Scirius</MenuItem>
+          <MenuItem href={`/rules/rule/pk/${this.props.config.rule.pk}/`}>Rule page in {APP_NAME_SHORT} </MenuItem>
         </DropdownKebab>
         <ErrorHandler>
           {this.state.toggle.show && (
