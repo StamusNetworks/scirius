@@ -14,7 +14,6 @@ import AccountCircleRounded from "@material-ui/icons/AccountCircleRounded";
 
 import './style.scss';
 import StamusLogo from 'ui/images/stamus.png';
-import SwitchApps from 'ui/components/SwitchApps';
 import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
 import HelpMenu from 'ui/components/HelpMenu';
 import UserMenu from 'ui/components/UserMenu';
@@ -97,11 +96,6 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
             {reloadData.period.seconds > 0 && (<ProgressStyled type="circle" width={14} strokeColor={COLOR_BRAND_BLUE} trailColor={COLOR_ANT_MENU_FONT_HOVER} percent={100-(progress/reloadData.period.seconds*100)} strokeWidth={8} showInfo={false} />)}
             {reloadData.period.seconds === 0 && (<ReloadOutlined style={{ fontSize: '14px ' }} />)} Reload
             {reloadData.period.seconds > 0 && (<React.Fragment> every {reloadData.period.title}</React.Fragment>)}
-          </Popover>
-        </Menu.Item>
-        <Menu.Item key="apps">
-          <Popover placement="bottomRight" content={<SwitchApps />} trigger="click">
-            Apps
           </Popover>
         </Menu.Item>
         <Menu.Item key="help">

@@ -7,8 +7,8 @@ const Policies = () => (
   <div>
     <UIBreadcrumb
       items={[
-        'Hunting',
-        <Link app to='hunting/policies'>Policies</Link>,
+        'Stamus ND',
+        <Link app to='stamus-nd/policies'>Policies</Link>,
       ]}
     />
     Policies
@@ -16,8 +16,8 @@ const Policies = () => (
 );
 Policies.metadata = {
   position: 4,
-  category: LeftNavMap.HUNTING,
-  url: 'hunting/policies',
+  category: LeftNavMap.STAMUS_ND,
+  url: 'stamus-nd/policies',
 }
 
 export default Policies;

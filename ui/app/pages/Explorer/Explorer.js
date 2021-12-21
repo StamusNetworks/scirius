@@ -7,8 +7,8 @@ const Explorer = () => (
   <div>
     <UIBreadcrumb
       items={[
-        'Hunting',
-        <Link app to='hunting/explorer'>Explorer</Link>,
+        'Stamus ND',
+        <Link app to='stamus-nd/explorer'>Explorer</Link>,
       ]}
     />
     Explorer
@@ -16,7 +16,7 @@ const Explorer = () => (
 );
 Explorer.metadata = {
   position: 1,
-  category: LeftNavMap.HUNTING
+  category: LeftNavMap.STAMUS_ND
 }
 
 export default Explorer;

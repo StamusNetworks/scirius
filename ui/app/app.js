@@ -52,10 +52,17 @@ if (module.hot) {
   // modules.hot.accept does not accept dynamic dependencies,
   // have to be constants at compile-time
   // 2 apps in one React app, hence two entry points to watch
-  module.hot.accept(['containers/App', 'appliance/containers/App'], () => {
-    ReactDOM.unmountComponentAtNode(MOUNT_NODE);
-    render();
-  });
+  try {
+    module.hot.accept(['containers/App', 'appliance/containers/App'], () => {
+      ReactDOM.unmountComponentAtNode(MOUNT_NODE);
+      render();
+    });
+  } catch (e) {
+    module.hot.accept(['containers/App'], () => {
+      ReactDOM.unmountComponentAtNode(MOUNT_NODE);
+      render();
+    });
+  }
 }
 
 render();
