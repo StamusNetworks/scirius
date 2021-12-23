@@ -295,6 +295,10 @@ class HuntFilter extends React.Component {
         this.props.enableOnly('relevant');
         break;
       }
+      case 'SSP_ALERTS': {
+        this.props.enableOnly('alerts');
+        break;
+      }
       case 'SSP_SIGHTINGS': {
         this.props.enableOnly('sightings');
         break;
@@ -649,23 +653,34 @@ class HuntFilter extends React.Component {
                       onChange={() => this.props.setTag('untagged', !this.props.alertTag.value.untagged)}
                     />
                   </li>
-                  {this.props.systemSettings && this.props.systemSettings.license.nta && (
-                    <li>
-                      <span>Sightings </span>
-                      <Switch
-                        bsSize="small"
-                        onColor="primary"
-                        value={this.props.alertTag.value.sightings}
-                        onChange={() => this.props.setTag('sightings', !this.props.alertTag.value.sightings)}
-                      />
-                    </li>
-                  )}
                 </ul>
               </div>
             )}
           </div>
 
-          <Toolbar.RightContent>
+          <Toolbar.RightContent style={{ display: 'flex' }}>
+            {this.props.systemSettings && this.props.systemSettings.license.nta && (
+              <React.Fragment>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ paddingRight: '3px' }}>Alerts</span>
+                  <Switch
+                    bsSize="small"
+                    onColor="primary"
+                    value={this.props.alertTag.value.alerts}
+                    onChange={() => this.props.setTag('alerts', !this.props.alertTag.value.alerts)}
+                  />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '20px' }}>
+                  <span style={{ paddingRight: '3px' }}>Sightings </span>
+                  <Switch
+                    bsSize="small"
+                    onColor="primary"
+                    value={this.props.alertTag.value.sightings}
+                    onChange={() => this.props.setTag('sightings', !this.props.alertTag.value.sightings)}
+                  />
+                </div>
+              </React.Fragment>
+            )}
             {this.props.actionsButtons && this.props.actionsButtons()}
             {this.props.displayToggle && (
               <Toolbar.ViewSelector>
@@ -763,6 +778,7 @@ HuntFilter.propTypes = {
       informational: PropTypes.bool,
       relevant: PropTypes.bool,
       untagged: PropTypes.bool,
+      alerts: PropTypes.bool,
       sightings: PropTypes.bool,
     }),
   }),

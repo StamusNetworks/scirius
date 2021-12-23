@@ -46,13 +46,14 @@ export function buildQFilter(filters, systemSettings) {
         if (filters[i].value.relevant === true) {
           tagFilters.push('alert.tag:"relevant"');
         }
-        if (filters[i].value.sightings === false) {
-          qfilter.push('NOT _exists_:discovery');
-        }
-        if (tagFilters.length === 0) {
-          qfilter.push('alert.tag:"undefined"');
-        } else if (tagFilters.length < 3) {
+        if (tagFilters.length !== 0) {
           qfilter.push(`(${tagFilters.join(' OR ')})`);
+        }
+        if (filters[i].value.alerts === false) {
+          qfilter.push(`_exists_:discovery`);
+        }
+        if (filters[i].value.sightings === false) {
+          qfilter.push(`NOT _exists_:discovery`);
         }
       } else if (filters[i].id === 'msg') {
         qfilter.push(`${fPrefix}alert.signature:"${filters[i].value}"`);
