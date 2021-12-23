@@ -27,19 +27,32 @@ FROM base as source
 ARG VERSION
 ENV VERSION ${VERSION:-master}
 
+ARG CYBERCHEF_VERSION
+ENV CYBERCHEF_VERSION ${CYBERCHEF_VERSION:-v9.32.3}
+
+
 RUN \
     echo "**** install packages ****" && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
         apt-utils \
-        wget
+        wget \
+        unzip
 RUN \
   echo "**** download Kibana dashboards ****" && \
   wget --no-check-certificate --content-disposition -O /tmp/kibana7-dashboards.tar.gz https://github.com/StamusNetworks/KTS7/tarball/master && \
   mkdir /tmp/kibana7-dashboards && \
   tar zxf /tmp/kibana7-dashboards.tar.gz -C /tmp/kibana7-dashboards --strip-components 1 && \
   mv /tmp/kibana7-dashboards /opt/kibana7-dashboards
-  
+
+RUN \
+  echo "**** download Cyberchef ****" && \
+  wget --no-check-certificate -O /tmp/cyberchef.zip https://github.com/gchq/CyberChef/releases/download/${CYBERCHEF_VERSION}/CyberChef_${CYBERCHEF_VERSION}.zip && \
+  mkdir /tmp/cyberchef && \
+  unzip /tmp/cyberchef.zip -d /tmp/cyberchef && \
+  mv /tmp/cyberchef/CyberChef_${CYBERCHEF_VERSION}.html index.html
+
+
 RUN echo  "**** COPY Scirius ****"
 COPY . /opt/scirius
 RUN mv /opt/scirius/docker/scirius/ /tmp/
@@ -160,6 +173,7 @@ COPY --from=build_js /opt/scirius/rules/static /opt/scirius/rules/static
 COPY --from=python_modules /root/.local /root/.local
 COPY --from=build_docs /opt/scirius/doc/_build/html /static/doc
 COPY --from=source /opt/kibana7-dashboards /opt/kibana7-dashboards
+COPY --from=source /tmp/cyberchef /static/cyberchef/
 
   
 
