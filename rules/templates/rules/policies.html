@@ -2,10 +2,10 @@
 {% load bootstrap3  %}
 {% block sidebar %}
     <div class="panel-heading">
-        <h2 class="panel-title">Policies</h2>
+        <h2 class="panel-title">Policies & Filter Sets</h2>
     </div>
     <ul class="panel-body">
-        <li>Import/Export of policies</li>
+        <li>Import to and export from Hunting</li>
     </ul>
 {% endblock %}
 {% block content %}
@@ -15,8 +15,8 @@
           method="post">
         {% csrf_token %}
         <div class="row">
-            <div class="col-md-4">
-                <h2>Export policies</h2>
+            <div class="col-md-5">
+                <h2>Export Policies and custom Filter Sets from Hunting</h2>
                 <p class="help-block">
                     Clicking on the button will download policies and filtersets.
                 </p>
@@ -25,7 +25,7 @@
                 {% endbuttons %}
                 {% if perms.rules.configuration_edit %}
                     <br>
-                    <h2>Import policies</h2>
+                    <h2>Import Policies and custom Filter Sets to Hunting</h2>
                     <div class="form-group">
                         <label class="sr-only control-label" for="id_file">File</label>
                         <div class="row bootstrap3-multi-input" disabled="">
@@ -37,7 +37,9 @@
                                 <label for="delete_policies">Delete all previous imported policies and filtersets</label>
                                 <br>
                                 <p class="help-block" id="help-delete" style="display: none">
-                                    <strong>WARNING:</strong> All previous imported policies and filtersets will be deleted before importing new ones
+                                    <strong>WARNING:</strong>
+                                    <a>Delete all previously imported policies and custom Filter Sets.</a><br>
+                                    <a>All previously imported policies and custom filter sets will be deleted.</a>
                                 </p>
                             </div>
                         </div>
