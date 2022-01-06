@@ -29,7 +29,7 @@ export const validateFilter = (filter) => {
   return true;
 };
 
-export const generateAlert = (informational = true, relevant = true, untagged = true, alerts = false, sightings = false) => ({
+export const generateAlert = (informational = true, relevant = true, untagged = true, alerts = true, sightings = true) => ({
   id: 'alert.tag',
   value: { informational, relevant, untagged, alerts, sightings },
 });
