@@ -75,11 +75,21 @@ export default class FilterItem extends React.Component {
     if (item.action !== 'suppress') {
       description = (
         <ul className="list-inline">
-          {Object.keys(item.options).map((option) => (
-            <li key={option}>
-              <strong>{option}</strong>: {item.options[option]}
-            </li>
-          ))}
+          {Object.keys(item.options).map((option) => {
+            if (option === 'all_tenants' || option === 'no_tenant' || option === 'tenants') return null;
+            if (option === 'tenants_str') {
+              return (
+                <li key="tenants_str">
+                  <strong>tenants</strong>: {item.options[option].join()}
+                </li>
+              );
+            }
+            return (
+              <li key={option}>
+                <strong>{option}</strong>: {item.options[option]}
+              </li>
+            );
+          })}
         </ul>
       );
     }
