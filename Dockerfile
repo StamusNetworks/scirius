@@ -50,7 +50,7 @@ RUN \
   wget --no-check-certificate -O /tmp/cyberchef.zip https://github.com/gchq/CyberChef/releases/download/${CYBERCHEF_VERSION}/CyberChef_${CYBERCHEF_VERSION}.zip && \
   mkdir /tmp/cyberchef && \
   unzip /tmp/cyberchef.zip -d /tmp/cyberchef && \
-  mv /tmp/cyberchef/CyberChef_${CYBERCHEF_VERSION}.html index.html
+  mv /tmp/cyberchef/CyberChef_${CYBERCHEF_VERSION}.html /tmp/cyberchef/index.html
 
 
 RUN echo  "**** COPY Scirius ****"
