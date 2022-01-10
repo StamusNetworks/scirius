@@ -815,6 +815,10 @@ def get_es_address():
     return ESQuery.get_es_address()
 
 
+class InvalidCategoryException(Exception):
+    pass
+
+
 class Source(models.Model):
     FETCH_METHOD = (
         ('http', 'HTTP URL'),
@@ -981,7 +985,7 @@ class Source(models.Model):
 
                 cat_no = int(fields[field_no])
                 if cat_no < 20:
-                    raise Exception('Invalid category %i in %s (line %i): category < 20 are reserved to Scirius' % (cat_no, filename, line_no + 1))
+                    raise InvalidCategoryException('Invalid category %i in %s (line %i): category < 20 are reserved to Scirius' % (cat_no, filename, line_no + 1))
             except (IndexError, ValueError):
                 raise Exception('Invalid syntax in file %s (line %i)' % (filename, line_no + 1))
 
@@ -1016,6 +1020,7 @@ class Source(models.Model):
         tfile = tarfile.open(fileobj=f)
         dir_list = []
         rules_dir = None
+
         for member in tfile.getmembers():
             # only file and dir are allowed
             if not (member.isfile() or member.isdir()):
@@ -1024,37 +1029,27 @@ class Source(models.Model):
             if member.name.startswith('/') or '..' in member.name:
                 raise SuspiciousOperation("Suspect tar file contains invalid path '%s'" % (member.name))
 
-            # don't allow tar file with file in root dir
-            if member.isfile() and '/' not in member.name:
-                raise SuspiciousOperation("Suspect tar file contains file in root directory '%s' instead of under 'rules' directory" % (member.name))
-
             if member.isdir() and ('/' + member.name).endswith('/rules'):
                 if rules_dir:
                     raise SuspiciousOperation("Tar file contains two 'rules' directory instead of one")
                 dir_list.append(member)
                 rules_dir = member.name
 
-            if member.isfile() and member.name.split('/')[-2] == 'rules':
+            if member.isfile():
+                # we now allow "rules" files even if they are at root directory
+                member.name = os.path.join('rules', os.path.basename(member.name))
                 dir_list.append(member)
 
-            if member.isfile() and member.name.endswith('categories.txt'):
-                f = tfile.extractfile(member.name)
-                self._check_category_ids(f, member.name, 0)
-                dir_list.append(member)
+                if member.name.endswith('categories.txt'):
+                    f = tfile.extractfile(member.name)
+                    self._check_category_ids(f, member.name, 0)
 
-            if member.isfile() and member.name.endswith('.list'):
-                f = tfile.extractfile(member.name)
-                self._check_category_ids(f, member.name, 1)
-                dir_list.append(member)
-
-        if rules_dir is None:
-            raise SuspiciousOperation("Tar file does not contain a 'rules' directory")
+                if member.name.endswith('.list'):
+                    f = tfile.extractfile(member.name)
+                    self._check_category_ids(f, member.name, 1)
 
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         self._tar_extractall(tfile, path=source_git_dir, members=dir_list)
-        if "/" in rules_dir:
-            shutil.move(os.path.join(source_git_dir, rules_dir), os.path.join(source_git_dir, 'rules'))
-            shutil.rmtree(os.path.join(source_git_dir, rules_dir.split('/')[0]))
 
         index = repo.index
         if len(index.diff(None)) or self.first_run:
