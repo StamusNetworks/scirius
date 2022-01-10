@@ -51,8 +51,10 @@ def reloadRules():
                 sc.connect()
             except SuricataNetException as err:
                 logger.error('Unable to connect to socket %s: %s' % (SOCKET_PATH, err))
+                continue
             except SuricataReturnException as err:
                 logger.error('Unable to negotiate version with server: %s' % (err))
+                continue
             res = sc.send_command('reload-rules')
             sc.close()
             if res['return'] == 'OK':
