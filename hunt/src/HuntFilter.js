@@ -659,7 +659,7 @@ class HuntFilter extends React.Component {
           </div>
 
           <Toolbar.RightContent style={{ display: 'flex' }}>
-            {this.props.systemSettings && this.props.systemSettings.license.nta && (
+            {this.props.systemSettings && this.props.systemSettings.license && this.props.systemSettings.license.nta && (
               <React.Fragment>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <span style={{ paddingRight: '3px' }}>Alerts</span>
