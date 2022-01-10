@@ -167,3 +167,5 @@ CSP_SCRIPT_SRC = tuple(os.getenv('CSP_SCRIPT_SRC', "'self' 'unsafe-inline'").spl
 CSP_STYLE_SRC = tuple(os.getenv('CSP_STYLE_SRC', "'self' 'unsafe-inline'").split(' '))
 CSP_INCLUDE_NONCE_IN = os.getenv('CSP_INCLUDE_NONCE_IN', 'script-src').split(' ')
 CSP_EXCLUDE_URL_PREFIXES = tuple(os.getenv('CSP_EXCLUDE_URL_PREFIXES', '/evebox').split(' '))
+
+GIT_SOURCES_BASE_DIRECTORY = '/data/git-sources/'
