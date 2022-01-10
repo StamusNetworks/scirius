@@ -155,6 +155,7 @@ export default class HistoryPage extends React.Component {
             gotAlertTag={false}
             page={this.props.page}
             filterType={sections.HISTORY}
+            systemSettings={this.props.systemSettings}
           />
         </ErrorHandler>
         <Spinner loading={this.state.loading}></Spinner>
@@ -182,6 +183,7 @@ HistoryPage.propTypes = {
   updateListState: PropTypes.any,
   getActionTypes: PropTypes.func,
   actionTypesList: PropTypes.array,
+  systemSettings: PropTypes.any,
   page: PropTypes.any,
   user: PropTypes.shape({
     pk: PropTypes.any,
