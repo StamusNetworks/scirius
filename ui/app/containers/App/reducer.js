@@ -30,6 +30,8 @@ const initialFiltersStorage = getQueryObject();
 // The initial state of the App
 export const initialState = {
   timespan: {
+    // #4351 - Case: page load / refresh
+    now: new Date().getTime(),
     ...initialTimeSpanStorage,
   },
   settings: {
@@ -173,6 +175,8 @@ const appReducer = (state = initialState, action) =>
       }
       case constants.SET_DURATION: {
         const { duration } = action;
+        // #4351 - Case: time picker change (H1, H6, D1)
+        draft.timespan.now = new Date().getTime();
         draft.timespan.duration = duration;
         draft.timespan.timePicker = TimePickerEnum.QUICK;
         store.set(StorageEnum.TIMESPAN, {
@@ -187,10 +191,14 @@ const appReducer = (state = initialState, action) =>
         break;
       }
       case constants.DO_RELOAD: {
+        // #4351 - Case: reload button case
+        draft.timespan.now = new Date().getTime();
         draft.reload.now = new Date().getTime();
         break;
       }
       case constants.LOCATION_CHANGE: {
+        // #4351 - Case: location change
+        draft.timespan.now = new Date().getTime();
         if (isBooted()) {
           draft.filters = parseUrl(history.location.search);
           store.set(StorageEnum.FILTERS, parseUrl(history.location.search));

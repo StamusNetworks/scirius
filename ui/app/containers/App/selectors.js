@@ -44,7 +44,7 @@ const makeSelectStartDate = () =>
       if (subState.timespan.duration === 'All') {
         return moment(minTimestamp);
       }
-      return moment().subtract(PeriodEnum[subState.timespan.duration].seconds, 'milliseconds');
+      return moment(subState.timespan.now).subtract(PeriodEnum[subState.timespan.duration].seconds, 'milliseconds');
     },
   );
 
@@ -59,7 +59,7 @@ const makeSelectEndDate = () =>
       if (subState.timespan.duration === 'All') {
         return moment(maxTimestamp);
       }
-      return moment();
+      return moment(subState.timespan.now);
     },
   );
 
