@@ -1086,7 +1086,8 @@ def add_source(request):
                     created_date=timezone.now(),
                     datatype=form.cleaned_data['datatype'],
                     cert_verif=form.cleaned_data['cert_verif'],
-                    use_iprep=form.cleaned_data['use_iprep']
+                    use_iprep=form.cleaned_data['use_iprep'],
+                    use_sys_proxy=form.cleaned_data['use_sys_proxy']
                 )
 
                 if src.method == 'local':
