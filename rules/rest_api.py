@@ -1416,7 +1416,7 @@ class BaseSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Source
         fields = ('pk', 'name', 'created_date', 'updated_date', 'method', 'datatype', 'uri', 'cert_verif',
-                  'cats_count', 'rules_count', 'use_iprep', 'version')
+                  'cats_count', 'rules_count', 'use_iprep', 'version', 'use_sys_proxy')
         read_only_fields = ('pk', 'created_date', 'updated_date', 'method', 'datatype', 'cert_verif',
                             'cats_count', 'rules_count',)
 
@@ -1728,11 +1728,11 @@ class SourceViewSet(BaseSourceViewSet):
 
     ==== POST ====\n
     Create custom source:\n
-        curl -k https://x.x.x.x/rest/rules/source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"name": "sonic custom source", "method": "local", "datatype": "sigs"}'
+        curl -k https://x.x.x.x/rest/rules/source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"name": "sonic custom source", "method": "local", "datatype": "sigs", "use_sys_proxy": true}'
 
     Return:\n
         HTTP/1.1 201 Created
-        {"pk":5,"name":"sonic Custom source","created_date":"2018-05-07T12:01:00.658118+02:00","updated_date":"2018-05-07T12:01:00.658126+02:00","method":"local","datatype":"sigs","uri":null,"cert_verif":true,"cats_count":0,"rules_count":0,"authkey":"123456789"}
+        {"pk":5,"name":"sonic Custom source","created_date":"2018-05-07T12:01:00.658118+02:00","updated_date":"2018-05-07T12:01:00.658126+02:00","method":"local","datatype":"sigs","uri":null,"cert_verif":true,"cats_count":0,"rules_count":0,"authkey":"123456789","use_sys_proxy":true}
 
     Update custom (only for {method: http}):\n
         curl -k "https://x.x.x.x/rest/rules/source/<pk-source>/update_source/?async=true" -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
