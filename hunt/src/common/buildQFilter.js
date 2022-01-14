@@ -57,6 +57,8 @@ export function buildQFilter(filters, systemSettings) {
         }
       } else if (filters[i].id === 'msg') {
         qfilter.push(`${fPrefix}alert.signature:"${filters[i].value}"`);
+      } else if (filters[i].id === 'search' || filters[i].id === 'not_in_content') {
+        // continue
       } else if (filters[i].id === 'es_filter') {
         qfilter.push(`${fPrefix}(${filters[i].value})`);
       } else if (filters[i].id === 'port') {
