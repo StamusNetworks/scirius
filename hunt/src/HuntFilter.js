@@ -126,7 +126,7 @@ class HuntFilter extends React.Component {
   filterAdded = (field, value, fullString) => {
     let filterText = '';
     let fieldId = field.id;
-    if (['msg', 'not_in_msg', 'search'].indexOf(field.id) !== -1) {
+    if (['msg', 'not_in_msg', 'search', 'not_in_content'].indexOf(field.id) !== -1) {
       // eslint-disable-next-line no-param-reassign
       value = value.trim();
     }
@@ -250,7 +250,10 @@ class HuntFilter extends React.Component {
           break;
         }
       }
-    } else if (['msg', 'not_in_msg', 'search', 'es_filter'].indexOf(this.state.currentFilterType.id) === -1 && value.indexOf(' ') !== -1) {
+    } else if (
+      ['msg', 'not_in_msg', 'search', 'es_filter', 'not_in_content'].indexOf(this.state.currentFilterType.id) === -1 &&
+      value.indexOf(' ') !== -1
+    ) {
       // No space allowed to avoid breaking ES queries
       error = true;
     }
