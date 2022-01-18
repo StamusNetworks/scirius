@@ -1,14 +1,16 @@
 .header {
   padding: 0;
+  height: 40px;
+  line-height: 40px;
 
   & .logo {
     float: left;
-    width: 200px;
-    text-align: center;
+    padding-left: 14px;
   }
 
   & .logo img {
-    height: 32px;
+    height: 30px;
+    padding-bottom: 3px;
   }
 
   .tenant-dropdown {
@@ -75,5 +77,10 @@
     align-items: center;
     height: 100%;
     padding: 0 20px;
+  }
+
+  & .ant-menu-title-content > span > span { 
+    display: flex;
+    align-items: center;
   }
 }

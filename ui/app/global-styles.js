@@ -1,8 +1,12 @@
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
-  body {
-    background: #f1f2f5;
+  .ant-breadcrumb {
+    display: flex;
+    align-items: center;
+    font-size: 10px;
+    color: #818181;
+    border-bottom: 1px solid #ccc;
   }
 `;
 

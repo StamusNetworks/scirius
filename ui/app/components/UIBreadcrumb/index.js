@@ -6,8 +6,7 @@ import styled from 'styled-components';
 const StyledBreadcrumb = styled(Breadcrumb)`
   cursor: default;
   text-transform: uppercase;
-  background: white;
-  height: 40px;
+  height: 30px;
   padding: 10px 20px;
   margin-bottom: 15px;
   margin-left: -20px;

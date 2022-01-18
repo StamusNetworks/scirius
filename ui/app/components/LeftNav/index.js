@@ -13,16 +13,10 @@ import { LeftNavMap } from 'ui/maps/LeftNavMap';
 import { Link } from 'ui/helpers/Link';
 import selectors from 'ui/containers/App/selectors';
 import { createStructuredSelector } from 'reselect';
-import styled from 'styled-components';
 import LaunchRounded from "@material-ui/icons/LaunchRounded";
 
 const { SubMenu } = Menu;
 const { Sider } = Layout;
-
-const LaunchRoundedStyled = styled(LaunchRounded)`
-  vertical-align: middle;
-  font-size: 16px !important;
-`;
 
 const pagesList = Object.keys(pages);
 
@@ -40,11 +34,11 @@ function LeftNav({ user, systemSettings }) {
   } = user;
 
   const renderMenuItems = useCallback((groupId) => getGroupPages(groupId, permissions, systemSettings).map(page => {
-    const title = page.title || CamelCaseToNormal(page);
+    const title = pages[page].metadata.title || CamelCaseToNormal(page);
     return (
-      <Menu.Item key={`${groupId}${page}`}>
+      <Menu.Item key={`${APP_URL}/${pages[page].metadata.url}`}>
         {typeof pages[page].metadata.url === 'function' ? (
-          <a href={pages[page].metadata.url(systemSettings)} target='_blank'>{title} <LaunchRoundedStyled /></a>
+          <a href={pages[page].metadata.url(systemSettings)} target='_blank' className='left-nav-link'><div>{title}</div><LaunchRounded /></a>
         ) : (
           <Link to={`${APP_URL}/${pages[page].metadata.url}`}>
             {title}
@@ -68,12 +62,11 @@ function LeftNav({ user, systemSettings }) {
   )), [systemSettings]);
 
   return (
-    <Sider width={200} style={{ background: '#fff', minHeight: "calc(100vh - 64px)" }}>
+    <Sider width={200} className='left-nav'>
       <Menu
         mode="inline"
         selectedKeys={[useLocation().pathname]}
         defaultOpenKeys={LeftNavMap.map(group => group.id)}
-        className="left-nav"
       >
         {renderSubMenus}
         {loading && (
