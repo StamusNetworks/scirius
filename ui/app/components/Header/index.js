@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 import PropTypes from 'prop-types';
-import { Layout, Menu, Popover, Progress } from 'antd';
+import { Layout, Menu, Popover, Progress, Tooltip } from 'antd';
 import styled from 'styled-components';
 import { ClockCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import selectors from 'ui/containers/App/selectors';
@@ -35,6 +35,21 @@ const ProgressStyled = styled(Progress)`
     width: 14px !important;
     height: 14px !important;
     vertical-align: top;
+  }
+`
+const RangePreviewStyled = styled.table`
+  font-size: 12px;
+  border: 0;
+  & td {
+    border: 0;
+  }
+  & td.col {
+    padding-right: 10px;
+    text-align: right;
+  }
+  & td.col::after {
+    display: inline-block;
+    content: ':';
   }
 `
 
@@ -88,7 +103,30 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
             visible={hidden}
             onVisibleChange={setHidden}
           >
-            <ClockCircleOutlined /> {timePreview}
+            {timePicker === TimePickerEnum.ABSOLUTE && (
+              <React.Fragment>
+                <ClockCircleOutlined /> {timePreview}
+              </React.Fragment>
+            )}
+            {timePicker === TimePickerEnum.QUICK && (
+              <Tooltip
+                placement="bottom"
+                title={(
+                  <RangePreviewStyled>
+                    <tr>
+                      <td className='col'>From</td>
+                      <td>{startDate.format(DATE_TIME_FORMAT)}</td>
+                    </tr>
+                    <tr>
+                      <td className='col'>To</td>
+                      <td>{endDate.format(DATE_TIME_FORMAT)}</td>
+                    </tr>
+                  </RangePreviewStyled>
+                )}
+              >
+                <ClockCircleOutlined /> {timePreview}
+              </Tooltip>
+            )}
           </Popover>
         </Menu.Item>
         <Menu.Item key="reload" className="reload-dropdown">
