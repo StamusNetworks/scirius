@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { DropdownKebab, MenuItem } from 'patternfly-react';
 import RuleToggleModal from 'hunt_common/RuleToggleModal';
+import { APP_NAME_SHORT } from 'hunt_common/constants';
 import ErrorHandler from './Error';
-import { APP_NAME_SHORT } from '../common/constants';
 
 export default class RuleEditKebab extends React.Component {
   constructor(props) {
