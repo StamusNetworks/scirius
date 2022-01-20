@@ -1300,11 +1300,11 @@ class Source(models.Model):
                     continue
 
                 if member.name.endswith('categories.txt') and self.datatype in ('sig', 'sigs'):
-                    cats_content = tfile.extractfile(member).read()
+                    cats_content = tfile.extractfile(member).read().decode()
                     continue
 
                 if member.name.endswith('.list') and self.datatype in ('sig', 'sigs'):
-                    iprep_content = tfile.extractfile(member).read()
+                    iprep_content = tfile.extractfile(member).read().decode()
                     continue
 
                 if member.isfile():
