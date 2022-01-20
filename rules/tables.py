@@ -82,7 +82,7 @@ class EditSourceAtVersionTable(SciriusTable):
 
     class Meta(DefaultMeta):
         model = SourceAtVersion
-        fields = ("source_selection", "name", "created_date")
+        fields = ("source_selection", "name")
 
     def order_name(self, queryset, is_descending):
         return (queryset.order_by('%s%s' % ('-' if is_descending else '', 'source__name')), True)
