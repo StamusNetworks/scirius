@@ -51,11 +51,12 @@ Install nodejs dependencies for Scirius:
  touch /var/log/scirius/elasticsearch.log
  chown -R user:user /var/log/scirius
  npm install -g webpack@3.11
- webpack
  cd hunt
+ npm install
  npm install --legacy-peer-deps
  npm run build
  cd ..
+ webpack
 
 Running Scirius CE
 ~~~~~~~~~~~~~~~~~~
@@ -78,14 +79,23 @@ This step as to be done after each code update.
 
 One of the easiest way to try Scirius CE is to run the Django test server ::
 
+ python3 manage.py createcachetable
  python3 manage.py runserver
 
 You can then connect to ``localhost:8000``.
 
-If you need the application to listen to a reachable address, you can run
-something like ::
+If you need the application to listen to a reachable address,
+you will need to allow this adress in `` ./scirius/settings.py`` line 31 ::
+
+ ALLOWED_HOSTS = ['192.168.1.1']
+
+
+Then you can run something like ::
 
  python manage.py runserver 192.168.1.1:8000
+
+
+
 
 Suricata setup
 --------------
