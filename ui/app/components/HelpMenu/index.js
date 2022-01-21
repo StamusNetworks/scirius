@@ -159,7 +159,7 @@ const HelpMenu = () => {
         </VersionsList>
         <CopyRight>Copyright 2014-{new Date().getFullYear()}, Stamus Networks</CopyRight>
       </AboutModal>
-      <Item block type="link" icon={<GlyphIcon type="book" />} onClick={() => window.open('/static/doc/str.html')}>
+      <Item block type="link" icon={<GlyphIcon type="book" />} onClick={() => window.open('/static/doc/stamus-security-platform/security-posture.html')}>
         User manual
       </Item>
       <Item block type="link" icon={<GlyphIcon type="question-sign" />} onClick={() => setVisible(true)}>
