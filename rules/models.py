@@ -2127,6 +2127,10 @@ class Category(models.Model, Transformable, Cache):
                 group_rule.content = content
                 group_rule.updated_date = creation_date
                 group_rule.rev = rule.rev
+
+                if group_rule.state == group_rule.state_in_source and group_rule.state_in_source != state:
+                    group_rule.state = state
+                group_rule.state_in_source = state
                 rules_update["updated"].append(group_rule)
             else:
                 group_rule = Rule(
@@ -2235,8 +2239,13 @@ class Category(models.Model, Transformable, Cache):
                                 break
                             continue
 
-                        if rule.content != line or rule.group is True:
+                        if rule.content != line or rule.group is True or (rule.state == rule.state_in_source and rule.state_in_source != state):
                             rule.content = line
+
+                            if rule.state == rule.state_in_source and rule.state_in_source != state:
+                                rule.state = state
+                            rule.state_in_source = state
+
                             if rev is None:
                                 rule.rev = 0
                             else:
