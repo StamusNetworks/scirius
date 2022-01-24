@@ -116,12 +116,12 @@ class UserNavInfo extends Component {
             href="/rules"
             role="menuitem"
             data-toggle="tooltip"
-            title="Appliances Management"
+            title="Appliances Administration"
             style={{ cursor: 'pointer' }}
           >
-            <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40" alt="Management" />
+            <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40" alt="Administration" />
             <span className="applauncher-pf-link-title" style={{ lineHeight: '1.5715' }}>
-              Management
+              Administration
             </span>
           </a>
         </li>
@@ -132,7 +132,7 @@ class UserNavInfo extends Component {
         <div className="applauncher-pf-link">
           <img src="/static/rules/Stamus_SPM_icon.png" height="40" width="40" style={{ filter: 'opacity(.2)' }} />
           <span className="applauncher-pf-link-title" style={{ fontSize: '12px', color: 'rgba(0,0,0,.2)', lineHeight: '1.5715' }}>
-            Management
+            Administration
           </span>
         </div>
       </li>
@@ -152,7 +152,7 @@ class UserNavInfo extends Component {
           <a className="applauncher-pf-link" href="/stamus" role="menuitem" data-toggle="tooltip" title="Stamus NDR" style={{ cursor: 'pointer' }}>
             <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40" alt="STR" />
             <span className="applauncher-pf-link-title" style={{ lineHeight: '1.5715' }}>
-              Stamus NDR
+              NDR
             </span>
           </a>
         </li>
@@ -163,7 +163,7 @@ class UserNavInfo extends Component {
         <div className="applauncher-pf-link">
           <img src="/static/rules/Stamus_STR_icon.png" height="40" width="40" style={{ filter: 'opacity(.2)' }} />
           <span className="applauncher-pf-link-title" style={{ fontSize: '12px', color: 'rgba(0,0,0,.2)', lineHeight: '1.5715' }}>
-            Stamus NDR
+            NDR
           </span>
         </div>
       </li>
@@ -285,12 +285,12 @@ class UserNavInfo extends Component {
                       href="/rules/hunt"
                       role="menuitem"
                       data-toggle="tooltip"
-                      title="Stamus ND"
+                      title="Hunting"
                       style={{ cursor: 'pointer' }}
                     >
                       <img src="/static/rules/Stamus_SEH_icon.png" height="40" width="40" alt="Hunt" />
                       <span className="applauncher-pf-link-title" style={{ lineHeight: '1.5715' }}>
-                        Stamus ND
+                        Hunting
                       </span>
                     </a>
                   </li>
