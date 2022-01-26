@@ -12,15 +12,18 @@ import { getQueryObject } from 'ui/helpers/getQueryObject';
 import { isBooted, setBooted } from 'ui/helpers/isBooted';
 import constants from 'ui/containers/App/constants';
 
-const initialTimeSpanStorage = store.get(StorageEnum.TIMESPAN) || {
+const initialTimeSpanStorage = {
   startDate: moment()
     .subtract(1, 'day')
     .format(),
   endDate: moment().format(),
   duration: 'H1',
   timePicker: TimePickerEnum.QUICK,
-  minTimestamp: 0,
-  maxTimestamp: 0,
+  minTimestamp: null,
+  maxTimestamp: null,
+  // Disable All option by default. If the request returns good values then enable it in the reducer.
+  disableAll: true,
+  ...store.get(StorageEnum.TIMESPAN)
 };
 
 const initialSourceStorage = store.get(StorageEnum.SOURCE) || [];
@@ -81,13 +84,25 @@ const appReducer = (state = initialState, action) =>
         break;
       case constants.GET_PERIOD_ALL_SUCCESS: {
         const { minTimestamp, maxTimestamp } = action.payload;
+        const correct = !Number.isNaN(parseInt(minTimestamp, 10)) && !Number.isNaN(parseInt(maxTimestamp, 10));
+
+        // D7 period is the default one if min/max timestamp boundaries are incorrect
         draft.timespan.minTimestamp = minTimestamp;
         draft.timespan.maxTimestamp = maxTimestamp;
+        draft.timespan.duration = (!correct && draft.timespan.duration === 'All') ? 'D7' : draft.timespan.duration;
+        draft.timespan.disableAll = !correct;
+
         store.set(StorageEnum.TIMESPAN, {
-          ...(store.get(StorageEnum.TIMESPAN) || initialTimeSpanStorage),
+          ...({
+            ...initialTimeSpanStorage,
+            ...store.get(StorageEnum.TIMESPAN)
+          }),
+          duration: draft.timespan.duration,
           minTimestamp,
           maxTimestamp,
+          disableAll: !correct,
         });
+
         break;
       }
       case constants.GET_SETTINGS_SUCCESS: {

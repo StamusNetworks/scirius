@@ -42,7 +42,8 @@ const makeSelectStartDate = () =>
       }
       const { minTimestamp } = subState.timespan;
       if (subState.timespan.duration === 'All') {
-        return moment(minTimestamp);
+        // D7 period is the default one if min/max timestamp boundaries are incorrect
+        return !Number.isNaN(parseInt(minTimestamp, 10)) ? moment(minTimestamp) : moment().subtract(7, 'days');
       }
       return moment(subState.timespan.now).subtract(PeriodEnum[subState.timespan.duration].seconds, 'milliseconds');
     },
@@ -57,7 +58,8 @@ const makeSelectEndDate = () =>
       }
       const { maxTimestamp } = subState.timespan;
       if (subState.timespan.duration === 'All') {
-        return moment(maxTimestamp);
+        // D7 period is the default one if min/max timestamp boundaries are incorrect
+        return !Number.isNaN(parseInt(maxTimestamp, 10)) ? moment(maxTimestamp) : moment();
       }
       return moment(subState.timespan.now);
     },
@@ -90,6 +92,12 @@ const makeSelectTimePicker = () =>
   createSelector(
     selectGlobal,
     familiesState => familiesState.timespan.timePicker,
+  );
+
+const makeSelectTimespan = () =>
+  createSelector(
+    selectGlobal,
+    familiesState => familiesState.timespan,
   );
 
 const makeSelectDuration = () =>
@@ -142,6 +150,7 @@ export default {
   makeSelectGlobalSettings,
   makeSelectStartDate,
   makeSelectEndDate,
+  makeSelectTimespan,
   makeSelectDuration,
   makeSelectTimePicker,
   makeSelectUser,

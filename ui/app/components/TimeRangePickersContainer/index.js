@@ -33,6 +33,7 @@ const TimeRangePickersContainer = ({
   setDuration,
   setTimeSpan,
   timePicker,
+  timeSpan,
 }) => {
 
   const validateTimeSpan = (startDateIn, endDateIn) => {
@@ -65,11 +66,11 @@ const TimeRangePickersContainer = ({
           <Row type="flex" justify="center" style={{ padding: '40px 0px' }}>
             <QuicksWrapper>
               <strong>Last:</strong>
-              <RadioGroup defaultValue="a" size="default">
+              <RadioGroup size="default" value={duration}>
                 {Object.keys(PeriodEnum).map(p => (
                   <RadioButton
-                    value={PeriodEnum[p].title}
-                    checked={p === duration.title}
+                    disabled={timeSpan.disableAll && PeriodEnum[p].name === 'All'}
+                    value={p}
                     key={p}
                     name={PeriodEnum[p].title}
                     onClick={() => {
@@ -98,6 +99,7 @@ TimeRangePickersContainer.propTypes = {
   setDuration: PropTypes.any,
   setTimeSpan: PropTypes.any,
   timePicker: PropTypes.any,
+  timeSpan: PropTypes.any,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -105,6 +107,7 @@ const mapStateToProps = createStructuredSelector({
   endDate: selectors.makeSelectEndDate(),
   duration: selectors.makeSelectDuration(),
   timePicker: selectors.makeSelectTimePicker(),
+  timeSpan: selectors.makeSelectTimespan(),
 });
 
 export const mapDispatchToProps = dispatch =>
