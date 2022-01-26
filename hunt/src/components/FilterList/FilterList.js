@@ -95,6 +95,13 @@ class FilterList extends React.Component {
     });
   };
 
+  changeHandler = (e, filterType) => {
+    const value = filterType === 'host_id.roles.name' ? e.target.value : e.target.value.trim();
+    this.setState({
+      newFilterValue: value,
+    });
+  };
+
   wildcardHandler = (e) => {
     this.setState({
       wildcardMode: e.target.checked,
@@ -182,7 +189,7 @@ class FilterList extends React.Component {
                         type={controlType}
                         value={newFilterValue}
                         onKeyDown={this.keyListener}
-                        onChange={(e) => this.setState({ newFilterValue: e.target.value.trim() })}
+                        onChange={(e) => this.changeHandler(e, this.state.filter.id)}
                         className="has-error"
                       />
                     </FormGroup>
