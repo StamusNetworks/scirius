@@ -2962,13 +2962,19 @@ class FilterSetViewSet(viewsets.ModelViewSet):
         Q = models.Q
         return FilterSet.objects.filter(Q(user=user) | Q(user=None))
 
+    @staticmethod
+    def _sort_filtersets(item):
+        return item['name']
+
     def list(self, request):
         from scirius.utils import get_middleware_module
         filters = get_middleware_module('common').get_default_filter_sets()
 
         queryset = self.get_queryset()
         serializer = FilterSetSerializer(queryset, many=True)
-        return Response(serializer.data + filters)
+        filters = serializer.data + filters
+        filters = sorted(filters, key=self._sort_filtersets)
+        return Response(filters)
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
