@@ -163,7 +163,7 @@ const HelpMenu = () => {
         User manual
       </Item>
       <Item block type="link" icon={<GlyphIcon type="question-sign" />} onClick={() => setVisible(true)}>
-        About Scirius
+        About SSP
       </Item>
     </Wrapper>
   );
