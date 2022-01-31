@@ -557,5 +557,264 @@ FILTER_SETS = [
         'page': 'DASHBOARDS',
         'description': 'Informational filter: Any Wget HTTP User Agents seen.',
         'share': 'static'
+    },
+    {
+        "content": [
+            {
+                "id": "alert.signature",
+                "value": "*outdated*",
+                "label": "alert.signature: *outdated*",
+                "fullString": False,
+                "negated": False
+            },
+        ],
+        "name": "Policy: Outdated software",
+        "page": "DASHBOARDS",
+        "description": "Outdated or old software that needs upgrades or security patching. It presents a risk and policy violation.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "alert.signature",
+                "value": "*vulnerable*",
+                "label": "alert.signature: *vulnerable*",
+                "fullString": False,
+                "negated": False
+            },
+        ],
+        "name": "Policy: Vulnerable software",
+        "page": "DASHBOARDS",
+        "description": "Vulnerable software that needs upgrades or security patching. It presents a risk and policy violation.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "alert.signature",
+                "value": "*CVE-*",
+                "label": "alert.signature: *CVE-*",
+                "fullString": False,
+                "negated": False
+            },
+        ],
+        "name": "Policy: CVE global detection",
+        "page": "DASHBOARDS",
+        "description": "The guided filter set returns any CVE related events. It is a good starting point for policy violations review, CVE detection or threat hunting.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "alert.signature",
+                "value": "*phishing*",
+                "label": "alert.signature: *phishing*",
+                "fullString": False,
+                "negated": False
+            },
+        ],
+        "name": "Phishing: Phishing general detection",
+        "page": "DASHBOARDS",
+        "description": "This guided filter set returns events related to possible attempts of phishing and policy violations.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "label": "Message: adware_pup",
+                "id": "msg",
+                "value": "adware_pup",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+            {
+                "id": "alert.category",
+                "value": "Possibly Unwanted Program Detected",
+                "label": "alert.category: Possibly Unwanted Program Detected",
+                "fullString": True,
+                "negated": False
+            },
+        ],
+        "name": "Adware: PUP",
+        "page": "DASHBOARDS",
+        "description": "Potentially unwanted program detected. Usually indicative of policy violation on corporate network.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "label": "msg: web_client",
+                "id": "msg",
+                "value": "web_client",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+            {
+                "id": "alert.signature",
+                "value": "*encoded*",
+                "label": "alert.signature: *encoded*",
+                "fullString": False,
+                "negated": False
+            },
+        ],
+        "name": "Hunt: web client encoded values",
+        "page": "DASHBOARDS",
+        "description": "This filter set returns encoded values found in the HTTP URLs or  payloads of the alert events. Needs investigation as to where from and why these events appear.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "label": "msg: web_server",
+                "id": "msg",
+                "value": "web_server",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+            {
+                "id": "alert.signature",
+                "value": "*encoded*",
+                "label": "alert.signature: *encoded*",
+                "fullString": False,
+                "negated": False
+            },
+        ],
+        "name": "Hunt: web server encoded values",
+        "page": "DASHBOARDS",
+        "description": "This filter set returns encoded values found in the HTTP URLs or  payloads of the alert events. Needs investigation as to where from and why these events appear.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "label": "msg: shellcode",
+                "id": "msg",
+                "value": "shellcode",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+            {
+                "id": "alert.signature",
+                "value": "*encoded*",
+                "label": "alert.signature: *encoded*",
+                "fullString": False,
+                "negated": False
+            },
+        ],
+        "name": "Hunt: possible encoded shell code strings",
+        "page": "DASHBOARDS",
+        "description": "This filter set returns possible encoded shell code strings values found in the payloads of the alert events. Needs investigation as to where from and why these events appear.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "label": "es_filter: -http.http_user_agent.keyword:/.{55}.*/",
+                "id": "es_filter",
+                "value": "-http.http_user_agent.keyword:/.{55}.*/",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+            {
+                "id": "http.http_user_agent",
+                "value": "*",
+                "label": "http.http_user_agent: *",
+                "fullString": False,
+                "negated": False
+            },
+        ],
+        "name": "Hunt: Unusual in length http user agents",
+        "page": "DASHBOARDS",
+        "description": "This filter set returns unusual in length HTTP user agents. A good starting point for revealing custom, scripting languages or add on software user agents.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "value": "*java*",
+                "label": "http.http_user_agent: *java*",
+                "fullString": False,
+                "query": "filter",
+                "negated": False,
+                "id": "http.http_user_agent"
+            },
+        ],
+        "name": "Info: Java HTTP User Agents",
+        "page": "DASHBOARDS",
+        "description": "This filter set returns results of HTTP based signatures that have Java http user agent.  Mostly informational unless it comes from unexpected locations in the network.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "http.http_user_agent",
+                "value": "*shockwave*",
+                "label": "http.http_user_agent: *shockwave*",
+                "fullString": False,
+                "negated": False
+            },
+        ],
+        "name": "Info: Shockwave Flash HTTP User Agents",
+        "page": "DASHBOARDS",
+        "description": "This filter set returns results for Shockwave Flash HTTP user agents observed in alert events..",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "alert.signature",
+                "value": "*cleartext*",
+                "label": "alert.signature: *cleartext*",
+                "fullString": False,
+                "negated": False
+            },
+            {
+                "id": "alert.category",
+                "value": "Potential Corporate Privacy Violation",
+                "label": "alert.category: Potential Corporate Privacy Violation",
+                "fullString": True,
+                "negated": False
+            },
+        ],
+        "name": "Policy: Clear text password - 1",
+        "page": "DASHBOARDS",
+        "description": "Policy violation. Clear text password.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "label": "Message: password",
+                "id": "msg",
+                "value": "password",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+            {
+                "label": "msg: unencrypted",
+                "id": "msg",
+                "value": "unencrypted",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+            {
+                "id": "alert.category",
+                "value": "Potential Corporate Privacy Violation",
+                "label": "alert.category: Potential Corporate Privacy Violation",
+                "fullString": True,
+                "negated": False
+            },
+        ],
+        "name": "Policy: Clear text password - 2",
+        "page": "DASHBOARDS",
+        "description": "Policy violation. Unencrypted password.",
+        "share": "static"
     }
 ]
