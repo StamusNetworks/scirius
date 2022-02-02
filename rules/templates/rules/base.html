@@ -4,7 +4,7 @@
 <html lang="en">
     <head>
         <title>
-            {% block title %}Scirius - {{ path_info|title }}{% endblock title %}
+            {% block title %}{{ common_long_name }} - {{ path_info|title }}{% endblock title %}
         </title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="stylesheet"
@@ -151,7 +151,7 @@
                     <div class="panel panel-default" id="sidebar">
                         {% block sidebar %}
                             <div class="panel-heading">
-                                <h2 class="panel-title">Scirius</h2>
+                                <h2 class="panel-title">{{ common_long_name }}</h2>
                             </div>
                             <div class="panel-body">A web interface to manage Suricata rulesets</div>
                         {% endblock sidebar %}
@@ -213,11 +213,11 @@
                                             </span>
                                         </button>
                                         <h4 class="modal-title" id="myModalLabel">
-                                            Scirius is down.
+                                            {{ scirius_short_title }} is down.
                                         </h4>
                                     </div>
                                     <div class="modal-body text-danger" id="scirius_down_text">
-                                        Scirius is not currently available.
+                                        {{ scirius_short_title }} is not currently available.
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-danger" data-dismiss="modal">
@@ -272,7 +272,7 @@
                         </div>
                         <div id="scirius_down_label" style="display:none;">
                             <div class="alert alert-danger">
-                                Scirius is down. Don't leave page.
+                                {{ scirius_short_title }} is down. Don't leave page.
                             </div>
                         </div>
                         {% block extra_message %}
@@ -405,7 +405,8 @@ function get_scirius_status() {
                     start_interval_check();
                     return;
                 } else {
-                    $("#scirius_down_text").text("Scirius does not feel comfortable");
+                    let title = "{{ scirius_short_title|safe }}";
+                    $("#scirius_down_text").text(`${title} does not feel comfortable`);
                     scirius_status = 'red';
                     if (!scirius_modal) {
                         $("#scirius_down").modal('show');

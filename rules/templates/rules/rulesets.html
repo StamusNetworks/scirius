@@ -211,7 +211,7 @@ function UpdateRuleset{{ ruleset.id }}() {
                         {% if middleware_has_udpate %}
                             Triggering ruleset update. This window will close when operation is registered.
                         {% else %}
-                            Scirius is updating ruleset. This window will close when update is over.
+                            {{ scirius_short_title }} is updating ruleset. This window will close when update is over.
                         {% endif %}
                     </div>
                     <div class="modal-footer">

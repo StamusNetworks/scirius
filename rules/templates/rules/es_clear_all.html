@@ -31,7 +31,7 @@
             <div class="modal-body" id="update_text">
                 {% if global_settings.custom_elasticsearch %}
                     <div class="alert alert-danger">
-                        This will delete all the indexes including data not related to Scirius. Are you sure you want to proceed ?
+                        This will delete all the indexes including data not related to {{ scirius_short_title }}. Are you sure you want to proceed ?
                     </div>
                 {% endif %}
                 Clicking on <code>Clear</code> will delete all saved data. Click on <code>Cancel</code> to abort.
