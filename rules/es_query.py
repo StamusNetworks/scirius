@@ -275,7 +275,7 @@ class ESQuery:
         if dictionary and 'interval' in dictionary:
             interval = int(dictionary['interval']) * 1000
         elif self.request and 'interval' in self.request.GET:
-            interval = int(self.request['interval']) * 1000
+            interval = int(self.request.GET['interval']) * 1000
         else:
             interval = int((self._to_date(es_format=False) - self._from_date()) / self.INTERVAL_POINTS)
 
