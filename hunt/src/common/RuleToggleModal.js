@@ -253,7 +253,9 @@ export default class RuleToggleModal extends React.Component {
           <Modal.Title>{title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div style={{ marginBottom: '30px' }}>These Declaration(s) of Compromise (DoC) will appear in the Custom Threats family</div>
+          {this.props.action === 'threat' && (
+            <div style={{ marginBottom: '30px' }}> These Declaration(s) of Compromise (DoC) will appear in the Custom Threats family</div>
+          )}
           <HuntRestError errors={this.state.errors} />
           {!this.state.noaction && (
             <Form horizontal>
