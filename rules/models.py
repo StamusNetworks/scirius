@@ -1318,6 +1318,9 @@ class Source(models.Model):
     def is_ti_url(self):
         return self.uri.startswith('https://ti.stamus-networks.io/')
 
+    def is_ti_dev_url(self):
+        return self.uri.startswith('https://ti-dev.stamus-networks.io/')
+
     def is_etpro_url(self):
         return self.uri.startswith('https://rules.emergingthreatspro.com/') or \
             self.uri.startswith('https://rules.emergingthreats.net/') or \
@@ -1331,7 +1334,7 @@ class Source(models.Model):
             hdrs['Authorization'] = self.authkey
 
         version_uri = None
-        if self.is_etpro_url() or self.datatype not in ('sigs', 'sig', 'other'):
+        if self.is_etpro_url() or (self.datatype not in ('sigs', 'sig', 'other') and not self.is_ti_dev_url()):
             version_uri = os.path.join(os.path.dirname(self.uri), 'version.txt')
 
         version_server = 1
