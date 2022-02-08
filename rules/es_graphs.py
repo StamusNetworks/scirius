@@ -284,6 +284,7 @@ class ESEventsTimeline(ESQuery):
     INDEX = settings.ELASTICSEARCH_LOGSTASH_INDEX + '*'
 
     def _get_query(self):
+        offset = self._from_date() % self._interval()
         qfilter = 'event_type:* ' + self._qfilter()
 
         q = {
@@ -311,7 +312,12 @@ class ESEventsTimeline(ESQuery):
                     'date_histogram': {
                         'field': ES_TIMESTAMP,
                         self._es_interval_kw(): self._es_interval(),
-                        'min_doc_count': 0
+                        'offset': '+%sms' % offset,
+                        'min_doc_count': 0,
+                        'extended_bounds': {
+                            'min': self._from_date(),
+                            'max': self._to_date()
+                        }
                     }
                 }
             }
