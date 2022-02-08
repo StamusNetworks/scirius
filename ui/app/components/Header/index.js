@@ -31,12 +31,17 @@ let animateTimeout = null;
 
 const ProgressStyled = styled(Progress)`
   line-height: 1em;
+  margin-right: 5px;
   .ant-progress-inner {
-    width: 14px !important;
-    height: 14px !important;
     vertical-align: top;
   }
 `
+
+const ReloadStyled = styled(ReloadOutlined)`
+  font-size: 20px !important;
+  margin-right: 5px;
+`
+
 const RangePreviewStyled = styled.table`
   font-size: 12px;
   border: 0;
@@ -131,8 +136,8 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
         </Menu.Item>
         <Menu.Item key="reload" className="reload-dropdown">
           <Popover placement="bottomRight" content={<ReloadPicker />} trigger="click" visible={reloadPopOver} onVisibleChange={setReloadPopOver}>
-            {reloadData.period.seconds > 0 && (<ProgressStyled type="circle" width={14} strokeColor={COLOR_BRAND_BLUE} trailColor={COLOR_ANT_MENU_FONT_HOVER} percent={100-(progress/reloadData.period.seconds*100)} strokeWidth={8} showInfo={false} />)}
-            {reloadData.period.seconds === 0 && (<ReloadOutlined style={{ fontSize: '14px ' }} />)} Reload
+            {reloadData.period.seconds > 0 && (<ProgressStyled type="circle" width={20} strokeColor={COLOR_BRAND_BLUE} trailColor={COLOR_ANT_MENU_FONT_HOVER} percent={100-(progress/reloadData.period.seconds*100)} strokeWidth={8} showInfo={false} />)}
+            {reloadData.period.seconds === 0 && (<ReloadStyled />)} Reload
             {reloadData.period.seconds > 0 && (<React.Fragment> every {reloadData.period.title}</React.Fragment>)}
           </Popover>
         </Menu.Item>
