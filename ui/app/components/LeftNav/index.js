@@ -65,12 +65,12 @@ function LeftNav({ user, systemSettings }) {
     <Sider width={200} className='left-nav'>
       <Menu
         mode="inline"
-        selectedKeys={[useLocation().pathname]}
+        selectedKeys={[useLocation().pathname.split('/').slice(0,4).join('/')]}
         defaultOpenKeys={LeftNavMap.map(group => group.id)}
       >
         {renderSubMenus}
         {loading && (
-          <Menu.Item>
+          <Menu.Item key='loading'>
             <Spin indicator={<LoadingOutlined spin />} />
           </Menu.Item>
         )}
