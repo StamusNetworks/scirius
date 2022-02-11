@@ -15,7 +15,7 @@ from rest_framework.validators import UniqueValidator
 from rest_framework import serializers, viewsets, exceptions
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException, ParseError, PermissionDenied
 from rest_framework.routers import DefaultRouter
@@ -673,9 +673,8 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
     serializer_class = RuleSerializer
     ordering = ('sid',)
     ordering_fields = ('sid', 'category', 'msg', 'imported_date', 'updated_date', 'created', 'updated', 'hits')
-    filter_backends = (DjangoFilterBackend, SearchFilter, RuleHitsOrderingFilter)
+    filter_backends = (DjangoFilterBackend, RuleHitsOrderingFilter)
     filterset_class = RuleFilter
-    search_fields = ('sid', 'msg', 'content')
     REQUIRED_GROUPS = {
         'READ': ('rules.ruleset_policy_view',),
         'WRITE': ('rules.ruleset_policy_edit',),
@@ -2922,6 +2921,11 @@ class FilterSetSerializer(serializers.ModelSerializer):
         data['content'] = json.loads(data['content'])
         data['share'] = 'global' if data['user'] is None else 'private'
         data.pop('user')
+
+        # Work-around following #4388, to keep backward compatibility
+        for _filter in data['content']:
+            if _filter['id'] == 'search':
+                _filter['id'] = 'content'
         return data
 
 

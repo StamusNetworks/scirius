@@ -107,7 +107,7 @@ _HUNT_FILTERS = [
         'queryType': 'filter'
     },
     {
-        'id': 'search',
+        'id': 'content',
         'title': 'Content',
         'placeholder': 'Filter by Content',
         'filterType': 'text',

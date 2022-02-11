@@ -126,13 +126,13 @@ class FilterList extends React.Component {
       INTERGER_FIELDS_EXACT.includes(this.state.filter.id);
     const controlType = !isInteger ? 'text' : 'number';
 
-    let enableWildcard = !['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max', 'es_filter'].includes(this.state.filter.id);
+    let enableWildcard = !['msg', 'not_in_msg', 'content', 'not_in_content', 'hits_min', 'hits_max', 'es_filter'].includes(this.state.filter.id);
     enableWildcard = enableWildcard && !IP_FIELDS.includes(this.state.filter.id) && !isInteger;
 
     const valid =
       !newFilterValue.toString().length || (this.state.wildcardMode && enableWildcard && newFilterValue.match(/[\s]+/g)) ? 'error' : 'success';
     let helperText = '';
-    if (['msg', 'not_in_msg', 'search', 'not_in_content'].includes(this.state.filter.id)) {
+    if (['msg', 'not_in_msg', 'content', 'not_in_content'].includes(this.state.filter.id)) {
       helperText = 'Case insensitive substring match.';
     } else if (['hits_min', 'hits_max'].includes(this.state.filter.id)) {
       helperText = '';
@@ -212,7 +212,7 @@ class FilterList extends React.Component {
                   </Col>
                 </FormGroup>
               </Row>
-              {!['msg', 'not_in_msg', 'search', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filter.id) && (
+              {!['msg', 'not_in_msg', 'content', 'not_in_content', 'hits_min', 'hits_max'].includes(this.state.filter.id) && (
                 <Row>
                   <FormGroup controlId="checkbox">
                     <Col componentClass={ControlLabel} sm={3}>
