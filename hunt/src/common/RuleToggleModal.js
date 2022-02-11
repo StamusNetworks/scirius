@@ -85,6 +85,12 @@ export default class RuleToggleModal extends React.Component {
           const suppFilters = [];
           let notfound = true;
           for (let i = 0; i < this.props.filters.length; i += 1) {
+            if (this.props.action === 'threshold' && this.props.filters[i].negated) {
+              // Negated filters on threshold are not supported
+              // eslint-disable-next-line no-continue
+              continue;
+            }
+
             if (res.data.fields.indexOf(this.props.filters[i].id) !== -1) {
               const filter = JSON.parse(JSON.stringify(this.props.filters[i]));
 
@@ -107,7 +113,8 @@ export default class RuleToggleModal extends React.Component {
             if (!res.data.supported_fields) {
               errors = { filters: ['No filters available'] };
             } else {
-              errors = { filters: [`Supported filters are "${res.data.supported_fields}"`] };
+              const negatedError = this.props.action === 'threshold' ? ' (negated filter are not supported)' : '';
+              errors = { filters: [`Supported filters are ${res.data.supported_fields}${negatedError}`] };
             }
           }
           this.setState({ supported_filters: suppFilters, noaction: notfound, errors });
