@@ -21,9 +21,15 @@
             </div>
             <div class="row">
                 <div class="col-md-12">
-                    <img class="center-block"
-                         id="sciriuslogo"
-                         src="{% static 'rules/stamus_logo_full.png' %}"/>
+                    {% if not in_selks %}
+                        <img class="center-block"
+                             id="sciriuslogo"
+                             src="{% static 'rules/stamus_logo_full.png' %}"/>
+                    {% else %}
+                        <img class="img-circle center center-block"
+                             id="sciriuslogo"
+                             src="{% static 'rules/scirius.jpg' %}"/>
+                    {% endif %}
                 </div>
             </div>
             <div class="row row-eq-height">
