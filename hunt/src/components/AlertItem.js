@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { ListViewItem, ListViewInfoItem, ListViewIcon, Row, Col, Spinner } from 'patternfly-react';
@@ -20,6 +20,8 @@ export default class AlertItem extends React.Component {
       showTabs: false,
       collapsed: {},
       files: {},
+      fileInfo: false,
+      fileInfoLoading: false,
     };
 
     this.addFilter = this.addFilter.bind(this);
@@ -147,8 +149,7 @@ export default class AlertItem extends React.Component {
   fetchData(flowId) {
     if (!this.state.showTabs) {
       // reset the files state for each event
-      this.setState({ files: {} });
-
+      this.setState({ files: {}, fileInfo: false, fileInfoLoading: false });
       const filterParams = buildFilterParams(this.props.filterParams);
       const url = `${config.API_URL + config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId}&${filterParams}`;
       axios.get(url).then((res) => {
@@ -170,7 +171,8 @@ export default class AlertItem extends React.Component {
           this.setState({ events: res.data });
 
           if ('Fileinfo' in res.data) {
-            res.data.Fileinfo.forEach(async ({ fileinfo, host }) => {
+            this.setState({ fileInfo: true, fileInfoLoading: true });
+            res.data.Fileinfo.forEach(async ({ fileinfo, host }, i) => {
               if (fileinfo.stored) {
                 // verify the file exists
                 const {
@@ -191,10 +193,13 @@ export default class AlertItem extends React.Component {
                       },
                     },
                   });
+                  if (res.data.Fileinfo.length - 1 >= i) {
+                    this.setState({ fileInfoLoading: false });
+                  }
                 }
               }
             });
-          }
+          } else this.setState({ fileInfo: false, fileInfoLoading: false });
         }
       });
     }
@@ -224,19 +229,29 @@ export default class AlertItem extends React.Component {
   }
 
   renderFiles() {
-    return Object.values(this.state.files).map((file) => (
-      <div key={file.file_id + file.sha256} className="file-item">
-        <div>{file.sha256}</div>
-        <div>{file.filename}</div>
-        <div>{file.magic}</div>
-        <div>{(file.size / 1000).toFixed(1)}KB</div>
-        {!this.state.files[file.file_id].downloading ? (
-          <i className="glyphicon glyphicon-download-alt" onClick={() => this.downloadFile(file)}></i>
-        ) : (
-          <Spinner loading size="sm" />
+    return (
+      <Fragment>
+        {JSON.stringify(this.state.files) !== '{}' && (
+          <div className="files-warning">
+            WARNING: These files are potentially dangerous! We are not responsible for any damage to your system that might occur as a consequence of
+            downloading them.
+          </div>
         )}
-      </div>
-    ));
+        {Object.values(this.state.files).map((file) => (
+          <div key={file.file_id + file.sha256} className="file-item">
+            <div>{file.sha256}</div>
+            <div>{file.filename}</div>
+            <div>{file.magic}</div>
+            <div>{(file.size / 1000).toFixed(1)}KB</div>
+            {!this.state.files[file.file_id].downloading ? (
+              <i className="glyphicon glyphicon-download-alt" onClick={() => this.downloadFile(file)}></i>
+            ) : (
+              <Spinner loading size="sm" />
+            )}
+          </div>
+        ))}
+      </Fragment>
+    );
   }
 
   render() {
@@ -991,13 +1006,17 @@ export default class AlertItem extends React.Component {
               />
             </Tab>
           )}
-          {showTabs && JSON.stringify(this.state.files) !== '{}' && (
-            <Tab eventKey="json-files" title="Files">
-              <div className="files-warning">
-                WARNING: These files are potentially dangerous! We are not responsible for any damage to your system that might occur as a consequence
-                of downloading them.
-              </div>
-              {this.renderFiles()}
+          {showTabs && (
+            <Tab eventKey="json-files" title={`Files (${Object.values(this.state.files).length})`}>
+              {this.state.fileInfo && this.state.fileInfoLoading && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
+                  <Spinner loading size="sm" />
+                </div>
+              )}
+              {!this.state.fileInfo && !this.state.fileInfoLoading && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>No data</div>
+              )}
+              {this.state.fileInfo && !this.state.fileInfoLoading && this.renderFiles()}
             </Tab>
           )}
           {showTabs && (
