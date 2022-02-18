@@ -26,6 +26,12 @@ const initialTimeSpanStorage = {
   ...store.get(StorageEnum.TIMESPAN)
 };
 
+const initialSettingsStorage = {
+  system: {},
+  global: {},
+  ...store.get(StorageEnum.SETTINGS)
+}
+
 const initialSourceStorage = store.get(StorageEnum.SOURCE) || [];
 
 const initialFiltersStorage = getQueryObject();
@@ -38,10 +44,7 @@ export const initialState = {
     ...initialTimeSpanStorage,
   },
   settings: {
-    data: {
-      system: {},
-      global: {},
-    },
+    data: initialSettingsStorage,
     request: {
       loading: null,
       status: null,
@@ -111,6 +114,14 @@ const appReducer = (state = initialState, action) =>
         draft.settings.request.loading = false;
         draft.settings.request.status = true;
         draft.settings.request.message = '';
+        store.set(StorageEnum.SETTINGS, {
+          ...({
+            ...initialSettingsStorage,
+            ...store.get(StorageEnum.SETTINGS)
+          }),
+          system: action.payload.systemSettings,
+          global: action.payload.globalSettings,
+        });
         break;
       }
       case constants.GET_SETTINGS_FAILURE: {

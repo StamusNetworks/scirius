@@ -104,10 +104,15 @@ const makeSelectFilters = () =>
 const makeSelectFiltersParam = (prefix = '&', skipStatus = false) =>
   createSelector(
     selectGlobal,
-    subState => {
+    makeSelectGlobalSettings(),
+    (subState, globalSettingsState) => {
       const filters = Object.assign({}, subState.filters);
       if (skipStatus === true) {
         delete filters.status;
+      }
+      const { multi_tenancy: multiTenancy = false } = globalSettingsState;
+      if (multiTenancy) {
+        filters.tenant = 0;
       }
       const urlParams = parseObjectToUrl(filters);
       return urlParams.length > 0 ? `${prefix}${urlParams}` : '';

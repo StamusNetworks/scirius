@@ -5,4 +5,5 @@ export const StorageEnum = {
   TENANT: 'str-tenant',
   FILTERS: 'str-filters',
   BOOT: 'str-boot',
+  SETTINGS: 'str-settings',
 };
