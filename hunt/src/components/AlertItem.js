@@ -169,7 +169,12 @@ export default class AlertItem extends React.Component {
             }
           }
           this.setState({ events: res.data });
+        }
+      });
 
+      const fileUrl = `${config.API_URL}${config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId} AND fileinfo.stored:true&${filterParams}`;
+      axios.get(fileUrl).then((res) => {
+        if (res.data !== null) {
           if ('Fileinfo' in res.data) {
             this.setState({ fileInfo: true, fileInfoLoading: true });
             res.data.Fileinfo.forEach(async ({ fileinfo, host }, i) => {
