@@ -24,6 +24,27 @@ const QuicksWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  & label {
+    color: rgba(0, 0, 0, 0.85) !important;
+    border: 1px #bcccd1 solid !important;
+    margin-right: 1px;
+  }
+
+  & label:hover {
+    background: #f0f2f5;
+    border: 1px #005792 solid !important;
+  }
+
+  & .ant-radio-button-wrapper-checked {
+    background: #bcccd1 !important;
+    border-color: #005792 !important;
+  }
+
+  .ant-radio-button-wrapper-checked::before, .ant-radio-button-wrapper::before {
+    background-color: transparent;
+    border-color: transparent;
+  }
 `;
 
 const TimeRangePickersContainer = ({
@@ -65,7 +86,7 @@ const TimeRangePickersContainer = ({
         <TabPane tab="Quick" key="0">
           <Row type="flex" justify="center" style={{ padding: '40px 0px' }}>
             <QuicksWrapper>
-              <strong>Last:</strong>
+              <h4><strong>Last:</strong></h4>
               <RadioGroup size="default" value={duration}>
                 {Object.keys(PeriodEnum).map(p => (
                   <RadioButton

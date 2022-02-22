@@ -97,7 +97,7 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
         {menuItems.map((menuItem) => (<Menu.Item key={menuItem.key} className="tenant-dropdown">{menuItem.content}</Menu.Item>))}
         <Menu.Item key="timerange-dropdown" className="timerange-dropdown" data-test="timerange-dropdown">
           <Popover
-            placement="bottom"
+            placement="bottomRight"
             content={<TimeRangePickersContainer setDuration={setDuration} setTimeSpan={setTimeSpan} />}
             trigger="click"
             visible={hidden}
