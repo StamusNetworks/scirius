@@ -53,7 +53,7 @@ const RangePreviewStyled = styled.table`
   }
 `
 
-const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePicker, doReload, reloadData, menuItems = [] }) => {
+const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePicker, doReload, reloadData, menuItems = [], user }) => {
   const [helpPopOver, setHelpPopOver] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [userPopOver, setUserPopOver] = useState(false);
@@ -136,7 +136,7 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
             {reloadData.period.seconds > 0 && (<React.Fragment> every {reloadData.period.title}</React.Fragment>)}
           </Popover>
         </Menu.Item>
-        <Menu.Item key="help">
+        <Menu.Item key="help" className="help-dropdown">
           <Popover placement="bottomRight" content={<HelpMenu />} trigger="click" visible={helpPopOver} onVisibleChange={setHelpPopOver}>
             <QuestionCircleOutlined /> Help
           </Popover>
@@ -144,7 +144,7 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
         <Menu.Item key="user-dropdown" className="user-dropdown" style={{ height: '100%' }}>
           <Popover placement="bottomRight" content={<UserMenu />} trigger="click" visible={userPopOver} onVisibleChange={setUserPopOver}>
             <span>
-              <AccountCircleRounded style={{color: "currentColor", strokeWidth: 1.5 }} />
+              <AccountCircleRounded style={{color: "currentColor", strokeWidth: 1.5 }} /> {user.data.username}
             </span>
           </Popover>
         </Menu.Item>
@@ -162,7 +162,11 @@ Header.propTypes = {
   timePicker: PropTypes.oneOf([0, 1]).isRequired,
   reloadData: PropTypes.object,
   doReload: PropTypes.func,
-  menuItems: PropTypes.array // not required! only used by EE
+  menuItems: PropTypes.array, // not required! only used by EE
+  user: PropTypes.shape({
+    data: PropTypes.object,
+    request: PropTypes.object,
+  }).isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -171,6 +175,7 @@ const mapStateToProps = createStructuredSelector({
   startDate: selectors.makeSelectStartDate(),
   endDate: selectors.makeSelectEndDate(),
   reloadData: selectors.makeSelectReload(),
+  user: selectors.makeSelectUser(),
 });
 
 export const mapDispatchToProps = dispatch =>

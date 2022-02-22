@@ -28,6 +28,13 @@
     }
   }
 
+  .help-dropdown, .reload-dropdown {
+    & svg {
+      height: 22px;
+      width: 22px;
+    }
+  }
+
   .user-dropdown {
     & svg {
       width: 22px;
@@ -35,6 +42,7 @@
       fill: transparent;
       stroke: currentColor;
       stroke-width: 2;
+      margin-right: 5px;
     }
   }
 
