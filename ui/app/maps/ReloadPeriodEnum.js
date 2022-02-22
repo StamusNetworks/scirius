@@ -1,6 +1,6 @@
 export const ReloadPeriodEnum = {
   NONE: {
-    title: 'None',
+    title: 'No automatic reload',
     seconds: 0,
   },
   S10: {

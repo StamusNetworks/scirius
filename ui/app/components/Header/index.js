@@ -5,7 +5,7 @@ import { bindActionCreators, compose } from 'redux';
 import PropTypes from 'prop-types';
 import { Layout, Menu, Popover, Progress, Tooltip } from 'antd';
 import styled from 'styled-components';
-import { ClockCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, QuestionCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import selectors from 'ui/containers/App/selectors';
 import { createStructuredSelector } from 'reselect';
 import AccountCircleRounded from "@material-ui/icons/AccountCircleRounded";
@@ -35,11 +35,6 @@ const ProgressStyled = styled(Progress)`
   .ant-progress-inner {
     vertical-align: top;
   }
-`
-
-const ReloadStyled = styled(ReloadOutlined)`
-  font-size: 20px !important;
-  margin-right: 5px;
 `
 
 const RangePreviewStyled = styled.table`
@@ -137,13 +132,13 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
         <Menu.Item key="reload" className="reload-dropdown">
           <Popover placement="bottomRight" content={<ReloadPicker />} trigger="click" visible={reloadPopOver} onVisibleChange={setReloadPopOver}>
             {reloadData.period.seconds > 0 && (<ProgressStyled type="circle" width={20} strokeColor={COLOR_BRAND_BLUE} trailColor={COLOR_ANT_MENU_FONT_HOVER} percent={100-(progress/reloadData.period.seconds*100)} strokeWidth={8} showInfo={false} />)}
-            {reloadData.period.seconds === 0 && (<ReloadStyled />)} Reload
+            {reloadData.period.seconds === 0 && (<ReloadOutlined />)} Reload
             {reloadData.period.seconds > 0 && (<React.Fragment> every {reloadData.period.title}</React.Fragment>)}
           </Popover>
         </Menu.Item>
         <Menu.Item key="help">
           <Popover placement="bottomRight" content={<HelpMenu />} trigger="click" visible={helpPopOver} onVisibleChange={setHelpPopOver}>
-            Help
+            <QuestionCircleOutlined /> Help
           </Popover>
         </Menu.Item>
         <Menu.Item key="user-dropdown" className="user-dropdown" style={{ height: '100%' }}>

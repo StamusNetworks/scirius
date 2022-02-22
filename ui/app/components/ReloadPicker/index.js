@@ -1,9 +1,3 @@
-/**
- *
- * ReloadPicker
- *
- */
-
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Radio } from 'antd';
@@ -16,39 +10,62 @@ import actions from 'ui/containers/App/actions';
 import selectors from 'ui/containers/App/selectors';
 
 const QuicksWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
+  width: 240px;
 
-const RadioOption = styled(Radio)`
-  width: 200px;
-  display: block !important;
-  padding: 6px 10px !important;
-  &:hover {
-    background-color: #e6f7ff;
+  & button {
+    margin-bottom: 10px;
+  }
+
+  & label {
+    display: grid;
+    grid-template-columns: min-content 1fr min-content;
+    cursor: pointer;
+    align-items: center;
+    height: 32px;
+    margin-right: 0px;
+    & > span {
+      height: 32px;
+      padding: 5px 8px;
+    }
+  }
+  .ant-radio-wrapper-checked {
+    background: #bcccd1;
+  }
+
+  & label:hover {
+    background: #f0f2f5;
+  }
+
+  & > .ant-radio-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  & .ant-radio-checked::after {
+    border: none;
+    animation: none;
   }
 `;
 
 const ReloadPicker = ({ reloadPeriod, setReload, doReload }) => (
   <QuicksWrapper>
-    <Radio.Group defaultValue="a" size="default">
-      <Button type="primary" style={{ width: '100%' }} onClick={() => doReload()}>
-        Reload Now
-      </Button>
-      {Object.keys(ReloadPeriodEnum).map(p => (
-        <RadioOption
-          value={ReloadPeriodEnum[p].seconds}
-          checked={parseInt(p, 10) === reloadPeriod.period.seconds}
-          key={p}
-          name={ReloadPeriodEnum[p].title}
-          onClick={() => setReload(ReloadPeriodEnum[p])}
-        >
-          {ReloadPeriodEnum[p].title}
-        </RadioOption>
-      ))}
-    </Radio.Group>
-  </QuicksWrapper>
+      <Radio.Group defaultValue={ReloadPeriodEnum.NONE.seconds} size="default">
+        <Button type="primary" onClick={() => doReload()}>
+          Reload Now
+        </Button>
+        {Object.keys(ReloadPeriodEnum).map(p => (
+          <Radio
+            value={ReloadPeriodEnum[p].seconds}
+            checked={parseInt(p, 10) === reloadPeriod.period.seconds}
+            key={p}
+            name={ReloadPeriodEnum[p].title}
+            onClick={() => setReload(ReloadPeriodEnum[p])}
+          >
+            {ReloadPeriodEnum[p].title}
+          </Radio>
+        ))}
+      </Radio.Group>
+    </QuicksWrapper>
 );
 
 ReloadPicker.propTypes = {

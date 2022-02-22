@@ -16,7 +16,7 @@
   .tenant-dropdown {
     & i {
       font-size: 20px;
-      margin-right: 5px;
+      margin-right: 7px;
     }
   }
 
@@ -74,5 +74,6 @@
   & .ant-menu-title-content > span > span { 
     display: flex;
     align-items: center;
+    margin-right: 5px;
   }
 }
