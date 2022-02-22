@@ -1719,7 +1719,7 @@ class Transformable:
                     target_client = True
                 if rule_ids.classtype == "not-suspicious":
                     target_client = False
-                if target_client is True:
+                if target_client is True and 'target' not in rule_ids:
                     self._apply_target_trans(rule_ids)
 
         return rule_ids.format()
