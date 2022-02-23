@@ -178,6 +178,19 @@ export default class AlertItem extends React.Component {
           if ('Fileinfo' in res.data) {
             this.setState({ fileInfo: true, fileInfoLoading: true });
             res.data.Fileinfo.forEach(async ({ fileinfo, host }, i) => {
+              if (this.state.files[fileinfo.sha256] !== undefined) {
+                return;
+              }
+              this.setState({
+                files: {
+                  ...this.state.files,
+                  [fileinfo.sha256]: {
+                    loading: true,
+                    sha256: fileinfo.sha256,
+                  },
+                },
+              });
+
               if (fileinfo.stored) {
                 // verify the file exists
                 const {
@@ -187,7 +200,7 @@ export default class AlertItem extends React.Component {
                   this.setState({
                     files: {
                       ...this.state.files,
-                      [fileinfo.file_id]: {
+                      [fileinfo.sha256]: {
                         file_id: fileinfo.file_id,
                         filename: fileinfo.filename,
                         size: fileinfo.size,
@@ -195,6 +208,7 @@ export default class AlertItem extends React.Component {
                         sha256: fileinfo.sha256,
                         host,
                         downloading: false,
+                        loading: false,
                       },
                     },
                   });
@@ -213,7 +227,7 @@ export default class AlertItem extends React.Component {
 
   async downloadFile(file) {
     // show spinner
-    this.setState({ files: { ...this.state.files, [file.file_id]: { ...this.state.files[file.file_id], downloading: true } } });
+    this.setState({ files: { ...this.state.files, [file.sha256]: { ...this.state.files[file.sha256], downloading: true } } });
 
     // the request downloads the file from the host
     const {
@@ -222,7 +236,7 @@ export default class AlertItem extends React.Component {
 
     if (retrieve === 'done') {
       // hide the spinner
-      this.setState({ files: { ...this.state.files, [file.file_id]: { ...this.state.files[file.file_id], downloading: false } } });
+      this.setState({ files: { ...this.state.files, [file.sha256]: { ...this.state.files[file.sha256], downloading: false } } });
 
       // trigger the download dialog
       const element = document.createElement('a');
@@ -243,12 +257,12 @@ export default class AlertItem extends React.Component {
           </div>
         )}
         {Object.values(this.state.files).map((file) => (
-          <div key={file.file_id + file.sha256} className="file-item">
+          <div key={file.sha256} className="file-item">
             <div>{file.sha256}</div>
             <div>{file.filename}</div>
             <div>{file.magic}</div>
             <div>{(file.size / 1000).toFixed(1)}KB</div>
-            {!this.state.files[file.file_id].downloading ? (
+            {!this.state.files[file.sha256].downloading ? (
               <i className="glyphicon glyphicon-download-alt" onClick={() => this.downloadFile(file)}></i>
             ) : (
               <Spinner loading size="sm" />
