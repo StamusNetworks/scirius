@@ -1,31 +1,46 @@
-/**
- *
- * HelpMenu
- *
- */
-
 import React, { useState, useEffect } from 'react';
 import { Button, Modal } from 'antd';
+import { QuestionOutlined, ReadOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
-import GlyphIcon from 'ui/components/GlyphIcon';
 import request from 'ui/utils/request';
 import LoadingIndicator from 'ui/components/LoadingIndicator';
 
 const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 160px;
+  display: grid;
+  grid-gap: 10px;
+  width: 240px;
 `;
 
 const Item = styled(Button)`
-  text-align: left !important;
-  padding-left: 5px !important;
-  span {
-    padding-left: 10px;
-  }
-  &:hover {
-    background-color: #f0f0f0 !important;
-  }
+    display: grid;
+    grid-template-columns: min-content 1fr;
+    align-items: center;
+    padding: 0;
+    border: none;
+
+    &:hover {
+      background: #f0f2f5;
+    }
+    &:active {
+      background: #bcccd1;
+    }
+    &:hover svg {
+      color: rgba(0, 0, 0, 0.85);
+    }
+
+    & > span {
+      display: flex;
+      padding: 5px 8px;
+      margin: 0px !important;
+      color: rgba(0, 0, 0, 0.85);
+    }
+
+    & svg {
+      height: 22px;
+      width: 22px;
+      color: #d9d9d9;
+      transition: all .6s;
+    }
 `;
 
 const AboutModal = styled(Modal)`
@@ -159,10 +174,10 @@ const HelpMenu = () => {
         </VersionsList>
         <CopyRight>Copyright 2014-{new Date().getFullYear()}, Stamus Networks</CopyRight>
       </AboutModal>
-      <Item block type="link" icon={<GlyphIcon type="book" />} onClick={() => window.open('/static/doc/stamus-security-platform/security-posture.html')}>
+      <Item block type="link" icon={<ReadOutlined />} onClick={() => window.open('/static/doc/stamus-security-platform/security-posture.html')}>
         User manual
       </Item>
-      <Item block type="link" icon={<GlyphIcon type="question-sign" />} onClick={() => setVisible(true)}>
+      <Item block type="link" icon={<QuestionOutlined />} onClick={() => setVisible(true)}>
         About SSP
       </Item>
     </Wrapper>
