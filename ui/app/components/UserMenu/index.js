@@ -4,21 +4,41 @@
  import { PoweroffOutlined, SettingOutlined } from '@ant-design/icons';
 
  const Wrapper = styled.div`
-   display: flex;
-   flex-direction: column;
-   width: 140px;
+    display: grid;
+    grid-gap: 10px;
+    width: 240px;
  `;
 
  const Item = styled(Button)`
-   border: none !important;
-   display: flex !important;
-   align-items: center;
-   text-align: left;
-   padding: 0 5px !important;
-   transition: all 0.3s !important;
-   &:hover {
-     background-color: #f0f0f0 !important;
-   }
+    display: grid;
+    grid-template-columns: min-content 1fr;
+    align-items: center;
+    padding: 0;
+    border: none;
+
+    &:hover {
+      background: #f0f2f5;
+    }
+    &:active {
+      background: #bcccd1;
+    }
+    &:hover svg {
+      color: rgba(0, 0, 0, 0.85);
+    }
+
+    & > span {
+      display: flex;
+      padding: 5px 8px;
+      margin: 0px !important;
+      color: rgba(0, 0, 0, 0.85);
+    }
+
+    & svg {
+      height: 22px;
+      width: 22px;
+      color: #d9d9d9;
+      transition: all .6s;
+    }
  `;
 
  const UserMenu = () => (
