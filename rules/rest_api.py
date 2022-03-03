@@ -2476,6 +2476,9 @@ class ESTimeRangeAllAlertsViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         data = ESTimeRangeAllAlerts(request).get()
+        # ceil to 1 sec while we can loose alerts if not celing
+        # timestamp has been truncated by frontend
+        data['max_timestamp'] = data['max_timestamp'] + 1000
         return Response(data)
 
 
