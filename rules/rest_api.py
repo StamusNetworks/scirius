@@ -40,6 +40,8 @@ from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerC
 from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESEventsTail, ESSuriLogTail, ESPoststats, ESEventsTimeline
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
+from rules.es_analytics import ESGetUniqueFields
+
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD, USE_CYBERCHEF, CYBERCHEF_URL
 
@@ -3044,6 +3046,15 @@ class HuntFilterAPIView(APIView):
         return Response(filters)
 
 
+class ESUniqueFieldViewSet(ESBaseViewSet):
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
+
+    def _get(self, request, format=None) -> object:
+        return Response(ESGetUniqueFields(request).get(request.query_params.get("event_type", None)))
+
+
 def get_custom_urls():
     urls = []
     url_ = url(r'rules/system_settings/$', SystemSettingsViewSet.as_view({
@@ -3085,6 +3096,7 @@ def get_custom_urls():
     urls.append(url(r'rules/es/suri_log_tail/$', ESSuriLogTailViewSet.as_view(), name='es_suri_log_tail'))
     urls.append(url(r'rules/es/delete_logs/$', ESDeleteLogsViewSet.as_view(), name='es_delete_logs'))
     urls.append(url(r'rules/scirius_context/$', SciriusContextAPIView.as_view(), name='scirius_context'))
+    urls.append(url(r'rules/es/unique_fields/$', ESUniqueFieldViewSet.as_view(), name='es_unique_fields'))
 
     return urls
 
