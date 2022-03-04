@@ -21,7 +21,8 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 app.use(
   '/rest',
   createProxyMiddleware({
-    target: `http://${argv.proxy ? argv.proxy : '192.0.2.4:8080'}/`,
+    target: argv.proxy ? `https://${argv.proxy}/` : 'http://192.0.2.4:8080/',
+    secure: !argv.proxy,
   }),
 );
 
