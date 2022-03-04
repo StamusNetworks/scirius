@@ -41,6 +41,7 @@ from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
 from rules.es_analytics import ESGetUniqueFields
+from rules.es_analytics import ESGraphAgg
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD, USE_CYBERCHEF, CYBERCHEF_URL
@@ -3055,6 +3056,69 @@ class ESUniqueFieldViewSet(ESBaseViewSet):
         return Response(ESGetUniqueFields(request).get(request.query_params.get("event_type", None)))
 
 
+class ESGraphAggViewSet(ESBaseViewSet):
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
+
+    def _fmt_simple(self, data: dict) -> dict:
+        d_graph = {}
+        for item in data.get("aggregations", {}).get("col_src", {}).get("buckets", []):
+            if item != "":
+                sub = [i["key"] for i in item["col_dest"].get("buckets", [])]
+                if len(sub) > 0:
+                    d_graph[item["key"]] = sub
+        return d_graph
+
+    def _fmt_networkx(self, data: dict, col_src: str, col_dest: str) -> dict:
+        d_graph = {
+            "nodes": [],
+            "edges": [],
+        }
+
+        buckets = data.get("aggregations", {}).get("col_src", {}).get("buckets", [])
+        # pass 1 - insert source nodes
+        for b in buckets:
+            d_graph["nodes"].append({
+                "index": str(b["key"]),
+                "field": col_src,
+                "kind": "source",
+            })
+
+        # pass 2 insert destination nodes
+        for b in buckets:
+            for b2 in b.get("col_dest", {}).get("buckets", []):
+                d_graph["nodes"].append({
+                    "index": str(b2["key"]),
+                    "field": col_dest,
+                    "kind": "destination"
+                })
+
+        # pass 3 insert edges
+        for b in buckets:
+            for b2 in b.get("col_dest", {}).get("buckets", []):
+                d_graph["edges"].append({
+                    "edge": [str(b["key"]), str(b2["key"])],
+                    "doc_count": b2["doc_count"]
+                })
+
+        return d_graph
+
+    def _get(self, request, format=None) -> dict:
+        data = ESGraphAgg(request).get()
+        if len(data) == 0:
+            return Response("No data", status=status.HTTP_400_BAD_REQUEST)
+
+        col_src = request.GET.get("col_src", "src_ip")
+        col_dest = request.GET.get("col_dest", "dest_ip")
+
+        graph = self._fmt_networkx(data, col_src, col_dest)
+
+        return Response({
+            "graph": graph,
+        })
+
+
 def get_custom_urls():
     urls = []
     url_ = url(r'rules/system_settings/$', SystemSettingsViewSet.as_view({
@@ -3097,6 +3161,7 @@ def get_custom_urls():
     urls.append(url(r'rules/es/delete_logs/$', ESDeleteLogsViewSet.as_view(), name='es_delete_logs'))
     urls.append(url(r'rules/scirius_context/$', SciriusContextAPIView.as_view(), name='scirius_context'))
     urls.append(url(r'rules/es/unique_fields/$', ESUniqueFieldViewSet.as_view(), name='es_unique_fields'))
+    urls.append(url(r'rules/es/graph_agg/$', ESGraphAggViewSet.as_view(), name='es_graph_agg'))
 
     return urls
 
