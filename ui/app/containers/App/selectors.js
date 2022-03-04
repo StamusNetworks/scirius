@@ -111,8 +111,11 @@ const makeSelectFiltersParam = (prefix = '&', skipStatus = false) =>
         delete filters.status;
       }
       const { multi_tenancy: multiTenancy = false } = globalSettingsState;
-      if (multiTenancy) {
+      if (multiTenancy && !filters.tenant) {
         filters.tenant = 0;
+      }
+      if (!multiTenancy && filters.tenant) {
+        delete filters.tenant;
       }
       const urlParams = parseObjectToUrl(filters);
       return urlParams.length > 0 ? `${prefix}${urlParams}` : '';
