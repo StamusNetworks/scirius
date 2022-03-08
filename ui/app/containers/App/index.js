@@ -106,7 +106,6 @@ App.propTypes = {
 const mapStateToProps = createStructuredSelector({
   startDate: selectors.makeSelectStartDate(),
   endDate: selectors.makeSelectEndDate(),
-  reloadData: selectors.makeSelectReload(),
   filtersParam: selectors.makeSelectFiltersParam(),
   source: selectors.makeSelectSource(),
 });

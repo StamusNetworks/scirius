@@ -48,7 +48,6 @@ export const initialState = {
     request: {
       loading: null,
       status: null,
-      message: '',
     },
   },
   reload: {
@@ -60,7 +59,6 @@ export const initialState = {
     request: {
       loading: null,
       status: null,
-      message: '',
     },
   },
   filters: {
@@ -71,7 +69,6 @@ export const initialState = {
     request: {
       loading: false,
       status: null,
-      message: '',
     },
   },
 };
@@ -83,7 +80,6 @@ const appReducer = (state = initialState, action) =>
       case constants.GET_SETTINGS_REQUEST:
         draft.settings.request.loading = true;
         draft.settings.request.status = null;
-        draft.settings.request.message = '';
         break;
       case constants.GET_PERIOD_ALL_SUCCESS: {
         const { minTimestamp, maxTimestamp } = action.payload;
@@ -113,7 +109,6 @@ const appReducer = (state = initialState, action) =>
         draft.settings.data.global = action.payload.globalSettings;
         draft.settings.request.loading = false;
         draft.settings.request.status = true;
-        draft.settings.request.message = '';
         store.set(StorageEnum.SETTINGS, {
           ...({
             ...initialSettingsStorage,
@@ -125,16 +120,13 @@ const appReducer = (state = initialState, action) =>
         break;
       }
       case constants.GET_SETTINGS_FAILURE: {
-        const { httpCode, httpError, httpResponse } = action.payload;
         draft.settings.request.loading = false;
         draft.settings.request.status = false;
-        draft.settings.request.message = `Global settings could not be retrieved.\n${httpCode} ${httpError}\n ${httpResponse}`;
         break;
       }
       case constants.GET_USER_REQUEST:
         draft.user.request.loading = true;
         draft.user.request.status = null;
-        draft.user.request.message = '';
         break;
       case constants.GET_USER_SUCCESS:
         draft.user.data = {
@@ -154,35 +146,28 @@ const appReducer = (state = initialState, action) =>
 
         draft.user.request.loading = false;
         draft.user.request.status = true;
-        draft.user.request.message = '';
         break;
       case constants.GET_USER_FAILURE: {
-        const { httpCode, httpError, httpResponse } = action.payload;
         draft.user.data = {};
         draft.user.request.loading = false;
         draft.user.request.status = false;
-        draft.user.request.message = `User could not be retrieved.\n${httpCode} ${httpError}\n ${httpResponse}`;
         break;
       }
       case constants.GET_SOURCE_REQUEST:
         draft.source.data = [];
         draft.source.request.loading = true;
         draft.source.request.status = null;
-        draft.source.request.message = '';
         break;
       case constants.GET_SOURCE_SUCCESS:
         draft.source.data = action.payload.source;
         draft.source.request.loading = false;
         draft.source.request.status = true;
-        draft.source.request.message = '';
         store.set(StorageEnum.SOURCE, [...action.payload.source]);
         break;
       case constants.GET_SOURCE_FAILURE: {
-        const { httpCode, httpError, httpResponse } = action.payload;
         draft.source.data = [];
         draft.source.request.loading = false;
         draft.source.request.status = false;
-        draft.source.request.message = `Sources could not be retrieved.\n${httpCode} ${httpError}\n ${httpResponse}`;
         break;
       }
       case constants.SET_TIME_SPAN: {

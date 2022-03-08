@@ -21,6 +21,7 @@ import App from 'ui/containers/App';
 import '!file-loader?name=[name].[ext]!./images/favicon.ico';
 
 import configureStore from './configureStore';
+const store = configureStore({}, history);
 
 // Observe loading of Open Sans (to remove open sans, remove the <link> tag in
 // the index.html file and this observer)
@@ -31,9 +32,6 @@ openSansObserver.load().then(() => {
   document.body.classList.add('fontLoaded');
 });
 
-// Create redux store with history
-const initialState = {};
-const store = configureStore(initialState, history);
 const MOUNT_NODE = document.getElementById('app');
 
 const render = () => {

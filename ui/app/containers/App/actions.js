@@ -9,13 +9,8 @@ const getUserSuccess = (user) => ({
     payload: user,
   })
 
-const getUserFailure = (httpCode, httpError, httpResponse) => ({
+const getUserFailure = () => ({
     type: constants.GET_USER_FAILURE,
-    payload: {
-      httpCode,
-      httpError,
-      httpResponse,
-    },
   })
 
 const getSettings = () => ({
@@ -30,13 +25,8 @@ const getSettingsSuccess = (globalSettings, systemSettings) => ({
     },
   })
 
-const getSettingsFailure = (httpCode, httpError, httpResponse) => ({
+const getSettingsFailure = () => ({
     type: constants.GET_SETTINGS_FAILURE,
-    payload: {
-      httpCode,
-      httpError,
-      httpResponse,
-    },
   })
 
 const getSource = () => ({
@@ -50,13 +40,8 @@ const getSourceSuccess = (source) => ({
     },
   })
 
-const getSourceFailure = (httpCode, httpError, httpResponse) => ({
+const getSourceFailure = () => ({
     type: constants.GET_SOURCE_FAILURE,
-    payload: {
-      httpCode,
-      httpError,
-      httpResponse,
-    },
   })
 
 const setTimeSpan = (startDate, endDate) => ({
@@ -94,9 +79,8 @@ const getAllPeriodSuccess = (minTimestamp, maxTimestamp) => ({
     }
   })
 
-const getAllPeriodFailure = (error) => ({
+const getAllPeriodFailure = () => ({
     type: constants.GET_PERIOD_ALL_FAILURE,
-    payload: error,
   })
 
 export default {

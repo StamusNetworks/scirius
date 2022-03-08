@@ -9,6 +9,12 @@ const selectGlobal = state => state.global.ce || initialState;
 
 const selectRouter = state => state.router || { location: {} };
 
+/*
+ * General selectors.
+ *
+ * Selectors which return raw data from the state.
+*/
+
 const makeSelectLocation = () =>
   createSelector(
     selectRouter,
@@ -128,7 +134,42 @@ const makeSelectSource = () =>
     subState => subState.source,
   );
 
+/*
+ * Network parameters selectors.
+ *
+ * Selectors which deliver state values as api url parameters.
+ */
+
+const makeSelectURLDates = createSelector(
+  [makeSelectStartDate(), makeSelectEndDate()],
+  (startDate, endDate) => ({
+    start_date: startDate.unix(),
+    end_date: endDate.unix(),
+  })
+);
+
+const makeSelectURLDatesES = createSelector(
+  makeSelectURLDates,
+  (dates) => ({
+    from_date: dates.start_date * 1000,
+    to_date: dates.end_date * 1000,
+  })
+);
+
+/*
+ * Returns all possible filter values as primitive dependencies in a single string.
+ * It's intended to be used only in useEffect and other hooks
+ * */
+const makeSelectGlobalFiltersDependency = createSelector(
+  selectGlobal,
+  (subState) => ([
+    subState.reload.now,
+    ...Object.values(subState.filters)
+    ]).join(', ')
+);
+
 export default {
+  // General selectors
   selectGlobal,
   makeSelectLocation,
   makeSelectSystemSettings,
@@ -144,4 +185,8 @@ export default {
   makeSelectFilters,
   makeSelectFiltersParam,
   makeSelectSource,
+  // Network parameters selectors
+  makeSelectURLDates,
+  makeSelectURLDatesES,
+  makeSelectGlobalFiltersDependency,
 };

@@ -1,63 +1,48 @@
-/**
- * Gets the repositories of the user from Github
- */
-
-import { takeEvery, put, call, select } from 'redux-saga/effects';
-import request from 'utils/request';
-import { API_URL, CURRENT_USER_PATH, RULES_URL } from 'ui/config';
-import { getResponseAsText } from 'ui/helpers/getResponseAsText';
-import { throwAs } from 'ui/helpers/throwAs';
-import selectors from 'ui/containers/App/selectors';
+import { takeEvery, put, call } from 'redux-saga/effects';
 import constants from 'ui/containers/App/constants';
 import actions from 'ui/containers/App/actions';
+import NetworkService from 'ui/services/NetworkService';
 
 function* retrieveUser() {
   try {
     // Call our request helper (see 'utils/request')
-    const user = yield call(request, `${CURRENT_USER_PATH}`);
+    const user = yield call(NetworkService.fetchUser);
     yield put(actions.getUserSuccess(user));
   } catch (err) {
-    const errorText = yield getResponseAsText(err.response);
-    throwAs('error', errorText);
-    yield put(actions.getUserFailure(err.response.status, err, errorText));
+    yield put(actions.getUserFailure());
   }
 }
 
 function* retrieveSettings() {
   try {
     // Get global settings
-    const globalSettings = yield call(request, `${API_URL}/global_settings`);
+    const globalSettings = yield call(NetworkService.fetchGlobalSettings);
     // Get system settings
-    const systemSettings = yield call(request, `${RULES_URL}/system_settings/`);
+    const systemSettings = yield call(NetworkService.fetchSystemSettings);
 
     yield put(actions.getSettingsSuccess(globalSettings, systemSettings));
   } catch (err) {
-    const errorText = yield getResponseAsText(err.response);
-    throwAs('error', errorText);
-    yield put(actions.getSettingsFailure(err.response.status, err, errorText));
+    yield put(actions.getSettingsFailure());
   }
 }
 
 function* getSources() {
   try {
-    const data = yield call(request, `/rest/rules/source/?datatype=threat`);
+    const data = yield call(NetworkService.fetchSources, { datatype: 'threat' });
     const { results = [] } = data;
     yield put(actions.getSourceSuccess(results));
   } catch (err) {
-    const errorText = yield getResponseAsText(err.response);
-    throwAs('error', errorText);
-    yield put(actions.deleteThreatFailure(err.response.status, err, errorText));
+    yield put(actions.deleteThreatFailure());
   }
 }
 
 function* getAllPeriod() {
   try {
-    const filtersParam = yield select(selectors.makeSelectFiltersParam('?'));
-    const timeRange = yield call(request, `${RULES_URL}/es/alerts_timerange/${filtersParam}`);
+    const timeRange = yield call(NetworkService.fetchAllPeriod, { event: false });
     const { max_timestamp: maxTimestamp = 0, min_timestamp: minTimestamp = 0 } = timeRange
     yield put(actions.getAllPeriodSuccess(minTimestamp, maxTimestamp));
   } catch (e) {
-    yield put(actions.getAllPeriodFailure(e));
+    yield put(actions.getAllPeriodFailure());
   }
 }
 
