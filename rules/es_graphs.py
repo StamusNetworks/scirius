@@ -858,8 +858,8 @@ class ESTimeRangeAllAlerts(ESQuery):
     def get(self):
         data = super().get()
         return {
-            'min_timestamp': data.get('aggregations', {}).get('min_timestamp', {}).get('value', None),
-            'max_timestamp': data.get('aggregations', {}).get('max_timestamp', {}).get('value', None)
+            'min_timestamp': data.get('aggregations', {}).get('min_timestamp', {}).get('value', self._from_date()),
+            'max_timestamp': data.get('aggregations', {}).get('max_timestamp', {}).get('value', self._to_date(es_format=False))
         }
 
 
