@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Tooltip } from 'antd';
-import { InfoCircleFilled } from '@ant-design/icons';
-import EventIPInfo from 'ui/components/EventIPInfo';
+import { InfoCircleOutlined } from '@ant-design/icons';
+import EventIPInfo from 'components/EventIPInfo';
 
 const EventValueInfo = (props) => {
   if (!props.magnifiers) {
@@ -14,20 +14,20 @@ const EventValueInfo = (props) => {
       return <EventIPInfo key="event_ip_info" value={props.value} />;
     }
     return (
-      <Tooltip key="virustotal_link" title="external info" trigger="hover" id="tooltip-top">
+      <Tooltip title="external info" id="tooltip-top" key="virustotal_link" trigger="hover" style={{ cursor: 'default' }}>
         <a href={`https://www.virustotal.com/gui/ip-address/${props.value}`} target="_blank">
           {' '}
-          <InfoCircleFilled />
+          <InfoCircleOutlined />
         </a>
       </Tooltip>
     );
   }
   if (['src_port', 'dest_port', 'host_id.services.port'].indexOf(props.field) > -1) {
     return (
-      <Tooltip key="dshield_link" title="external info456" trigger="hover" id="tooltip-top">
+      <Tooltip title="external info" id="tooltip-top" key="dshield_link" trigger="hover" style={{ cursor: 'default' }}>
         <a href={`https://www.dshield.org/port.html?port=${props.value}`} target="_blank">
           {' '}
-          <InfoCircleFilled />
+          <InfoCircleOutlined />
         </a>
       </Tooltip>
     );

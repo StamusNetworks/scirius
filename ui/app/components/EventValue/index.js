@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import EventValueInfo from 'ui/components/EventValueInfo';
-import { sections } from 'ui/constants';
+import EventValueInfo from 'components/EventValueInfo';
+// import { sections } from 'constants';
 import { Tooltip } from 'antd';
-import { InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
-import ErrorHandler from 'ui/components/Error';
-import { addFilter } from 'ui/containers/HuntApp/stores/global';
-import isIP from 'ui/helpers/isIP';
+import { InfoCircleFilled/* , ZoomInOutlined, ZoomOutOutlined */ } from '@ant-design/icons';
+import ErrorHandler from 'components/Error';
+// import { addFilter } from 'containers/App/stores/global';
+import isIP from 'helpers/isIP';
 
 // put all the sections where we want to inlclude `virus total links` for ip addresses and domains
 const virusTotalLinks = ['hostname_info.domain', 'http.hostname', 'dns.query.rrname', 'http.http_refer_info.domain', 'tls.sni'];
@@ -77,9 +77,9 @@ const EventValue = (props) => {
           <EventValueInfo field={props.field} value={props.value} magnifiers={props.magnifiers} />
           {getLink()}
           {/* 256 chars max on ES queries */}
-          {props.magnifiers && ((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
+          {/* {props.magnifiers && ((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
             <Tooltip title="add a filter on value" trigger="hover" id="tooltip-top">
-              <span
+              <a
                 onClick={() =>
                   props.addFilter(sections.GLOBAL, {
                     id: props.field,
@@ -91,14 +91,14 @@ const EventValue = (props) => {
                 }
               >
                 {' '}
-                <ZoomInOutlined />
-              </span>
+                <ZoomInOutlined />123
+              </a>
             </Tooltip>
-          )}
+          )} */}
           {/* 256 chars max on ES queries */}
-          {props.magnifiers && ((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
+          {/* {props.magnifiers && ((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
             <Tooltip title="add negated filter on value" trigger="hover" id="tooltip-top">
-              <span
+              <a
                 onClick={() =>
                   props.addFilter(sections.GLOBAL, {
                     id: props.field,
@@ -110,10 +110,10 @@ const EventValue = (props) => {
                 }
               >
                 {' '}
-                <ZoomOutOutlined />
-              </span>
+                <ZoomOutOutlined />456
+              </a>
             </Tooltip>
-          )}
+          )} */}
         </ErrorHandler>
       </span>
       {props.right_info && <span className="value-right-info">{props.right_info}</span>}
@@ -127,7 +127,7 @@ EventValue.defaultProps = {
 };
 
 EventValue.propTypes = {
-  addFilter: PropTypes.any,
+  // addFilter: PropTypes.any,
   right_info: PropTypes.any,
   field: PropTypes.any,
   value: PropTypes.any,
@@ -136,8 +136,9 @@ EventValue.propTypes = {
   format: PropTypes.func,
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  addFilter: (section, filter) => dispatch(addFilter(section, filter)),
-});
+// const mapDispatchToProps = (dispatch) => ({
+  // addFilter: (section, filter) => dispatch(addFilter(section, filter)),
+// });
+const mapDispatchToProps = () => ({})
 
 export default connect(null, mapDispatchToProps)(EventValue);

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import EventValue from 'ui/components/EventValue';
+import EventValue from 'components/EventValue';
 
 const EventField = (props) =>
   props.value && props.value.toString().length > 0 ? (
