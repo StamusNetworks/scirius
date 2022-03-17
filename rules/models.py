@@ -1695,11 +1695,13 @@ class Transformable:
         # TARGET + DST/SRC
         if key == Transformation.TARGET:
             if value == Transformation.T_SOURCE:
+                rule_ids.raw = re.sub(r' target:\w*;', '', rule_ids.raw)
                 self._set_target(rule_ids, target='src_ip')
-                return rule_ids.format()
             elif value == Transformation.T_DESTINATION:
+                rule_ids.raw = re.sub(r' target:\w*;', '', rule_ids.raw)
                 self._set_target(rule_ids, target='dest_ip')
-                return rule_ids.format()
+            elif value == Transformation.T_NONE:
+                rule_ids.raw = re.sub(r' target:\w*;', '', rule_ids.raw)
             elif value == Transformation.T_AUTO:
                 target_client = False
                 for meta in rule_ids.metadata:
@@ -2830,9 +2832,10 @@ class Rule(models.Model, Transformable, Cache):
         T_SOURCE = Transformation.T_SOURCE
         T_DESTINATION = Transformation.T_DESTINATION
         T_AUTO = Transformation.T_AUTO
+        T_NONE = Transformation.T_NONE
 
         trans = self.get_transformation(key=TARGET, ruleset=ruleset, override=True)
-        if trans in (T_SOURCE, T_DESTINATION, T_AUTO):
+        if trans in (T_SOURCE, T_DESTINATION, T_AUTO, T_NONE):
             content = self.apply_transformation(content, key=Transformation.TARGET, value=trans)
 
         return content

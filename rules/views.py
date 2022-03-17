@@ -472,12 +472,12 @@ def edit_rule(request, rule_id):
                             rule=rule_object,
                             ruleset=ruleset
                         )
-                    elif form_trans == NONE and trans:
+                    elif form_trans == NONE:
                         UserAction.create(
                             action_type='transform_rule',
                             comment=form.cleaned_data['comment'],
                             request=request,
-                            transformation='%s: %s' % (TYPE.value.title(), trans.value.title()),
+                            transformation='%s: %s' % (TYPE.value.title(), trans.value.title()) if trans else 'removed target',
                             rule=rule_object,
                             ruleset=ruleset
                         )
