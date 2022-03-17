@@ -1,6 +1,6 @@
 import React  from 'react';
 import PropTypes from 'prop-types';
-import { Row, Tabs, Radio, notification } from 'antd';
+import { Row, Radio, notification } from 'antd';
 import styled from 'styled-components';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
@@ -9,8 +9,8 @@ import DateRangePicker from 'ui/components/DateRangePicker';
 import selectors from 'ui/containers/App/selectors';
 import actions from 'ui/containers/App/actions';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
+import UITabs from 'ui/components/UIElements/UITabs';
 // eslint-disable-next-line import/named
-const { TabPane } = Tabs;
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
 
@@ -82,33 +82,45 @@ const TimeRangePickersContainer = ({
 
   return (
     <PickersWrapper>
-      <Tabs defaultActiveKey={timePicker.toString()} size="small" className="tabs-time-frames">
-        <TabPane tab="Quick" key="0">
-          <Row type="flex" justify="center" style={{ padding: '40px 0px' }}>
-            <QuicksWrapper>
-              <h4><strong>Last:</strong></h4>
-              <RadioGroup size="default" value={duration}>
-                {Object.keys(PeriodEnum).map(p => (
-                  <RadioButton
-                    disabled={timeSpan.disableAll && PeriodEnum[p].name === 'All'}
-                    value={p}
-                    key={p}
-                    name={PeriodEnum[p].title}
-                    onClick={() => {
-                      setDuration(p);
-                    }}
-                  >
-                    {PeriodEnum[p].name}
-                  </RadioButton>
-                ))}
-              </RadioGroup>
-            </QuicksWrapper>
-          </Row>
-        </TabPane>
-        <TabPane tab="Absolute" key="1">
-          <DateRangePicker selectedFromDate={startDate} selectedToDate={endDate} onOk={validateTimeSpan} />
-        </TabPane>
-      </Tabs>
+      <UITabs
+        defaultActiveKey={timePicker.toString()}
+        size="small" className="tabs-time-frames"
+        tabs={[
+          {
+            key: "0",
+            tab: "Quick",
+            children: (
+              <Row type="flex" justify="center" style={{ padding: '40px 0px' }}>
+                <QuicksWrapper>
+                  <h4><strong>Last:</strong></h4>
+                  <RadioGroup size="default" value={duration}>
+                    {Object.keys(PeriodEnum).map(p => (
+                      <RadioButton
+                        disabled={timeSpan.disableAll && PeriodEnum[p].name === 'All'}
+                        value={p}
+                        key={p}
+                        name={PeriodEnum[p].title}
+                        onClick={() => {
+                          setDuration(p);
+                        }}
+                      >
+                        {PeriodEnum[p].name}
+                      </RadioButton>
+                    ))}
+                  </RadioGroup>
+                </QuicksWrapper>
+              </Row>
+            )
+          },
+          {
+            key: "1",
+            tab: "Absolute",
+            children: (
+              <DateRangePicker selectedFromDate={startDate} selectedToDate={endDate} onOk={validateTimeSpan} />
+            )
+          }
+        ]}
+      />
     </PickersWrapper>
   );
 };

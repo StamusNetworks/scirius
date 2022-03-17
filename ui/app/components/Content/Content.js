@@ -1,8 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import StyledContent from './StyledContent';
+import { Layout } from 'antd';
+import styled from 'styled-components';
+const { Content: AntdContent } = Layout;
 
-const Content = ({children}) => <StyledContent>{children}</StyledContent>
+const StyledOuterWrapper = styled(AntdContent)`
+  padding: 0 20px 20px 20px;
+`;
+
+const Content = ({children}) => (
+  <StyledOuterWrapper>
+    {children}
+  </StyledOuterWrapper>
+)
 
 Content.propTypes = {
   children: PropTypes.any,

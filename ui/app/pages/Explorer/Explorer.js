@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'ui/helpers/Link';
-import UIBreadcrumb from 'ui/components/UIBreadcrumb';
+import UIBreadcrumb from 'ui/components/UIElements/UIBreadcrumb';
 
 const Explorer = () => (
   <div>
