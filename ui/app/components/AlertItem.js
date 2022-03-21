@@ -822,14 +822,13 @@ export default class AlertItem extends React.Component {
                           </dl>
                         </div>
                       </div>
-                    </div>
-                  </Col>
-                )}
-              </Row>
-            )}
-          </Tab>
+                    </Col>
+                  )}
+                </Row>
+            </Tabs.TabPane>
+
           {showTabs && (
-            <Tab eventKey="json-alert" title="JSON View">
+            <Tabs.TabPane eventKey="json-alert" title="JSON View">
               <ReactJson
                 name={false}
                 src={data}
@@ -838,10 +837,10 @@ export default class AlertItem extends React.Component {
                 collapseStringsAfterLength={150}
                 collapsed={false}
               />
-            </Tab>
+            </Tabs.TabPane>
           )}
           {showTabs && (
-            <Tab eventKey="json-files" title={`Files (${Object.values(this.state.files).length})`}>
+            <Tabs.TabPane eventKey="json-files" title={`Files (${Object.values(this.state.files).length})`}>
               {this.state.fileInfo && this.state.fileInfoLoading && (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
                   <Spin size="small" />
@@ -851,18 +850,18 @@ export default class AlertItem extends React.Component {
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>No data</div>
               )}
               {this.state.fileInfo && !this.state.fileInfoLoading && this.renderFiles()}
-            </Tab>
+            </Tabs.TabPane>
           )}
           {showTabs && (
-            <Tab eventKey="json-related" title={this.formatString('Related events {0}', this.nbEvents(events))}>
-              <div style={{ paddingTop: '10px' }}>
+              <Tabs.TabPane eventKey="json-related" title={this.formatString('Related events {0}', this.nbEvents(events))}>
                 <Spin size="small" />
                 {events && (
+
                   <Tabs id="related-tabs">
                     {Object.keys(events)
                       .sort()
                       .map((key) => (
-                        <Tab
+                        <Tabs.TabPane
                           eventKey={`events-${key}`}
                           title={`Related ${key}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''} (${
                             Object.keys(events[key]).length
@@ -894,12 +893,11 @@ export default class AlertItem extends React.Component {
                                 )}
                               </div>
                             ))}
-                        </Tab>
+                        </Tabs.TabPane>
                       ))}
                     {Object.keys(events).length === 0 && <strong>No related events</strong>}
                   </Tabs>
                 )}
-                </Row>
                 {data.payload_printable && (
                   <Row>
                     <Col span={24}>
@@ -943,6 +941,7 @@ export default class AlertItem extends React.Component {
                   </Row>
                 )}
               </Tabs.TabPane>
+            )}
               {showTabs && (
                 <Tabs.TabPane key="json-alert" tab="JSON View">
                   <ReactJson
