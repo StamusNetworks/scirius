@@ -196,7 +196,6 @@ export default class HuntApp extends Component {
                   systemSettings={this.state.systemSettings}
                   rules_list={this.state.rules_list}
                   updateRuleListState={this.updateRuleListState}
-                  item={this.state.display.item}
                   history_list={this.state.history}
                   historyFilters={this.state.historyFilters}
                   updateHistoryListState={this.updateHistoryListState}

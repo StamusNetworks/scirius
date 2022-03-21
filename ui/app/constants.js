@@ -34,7 +34,7 @@ export const PAGE_STATE = {
   setup: 'SETUP',
 };
 
-const huntTabs = {
+export const huntTabs = {
   [ PAGE_STATE.dashboards ]: 'Dashboard',
   [ PAGE_STATE.alerts_list ]: 'Alerts',
   [ PAGE_STATE.rules_list ]: 'Signatures',

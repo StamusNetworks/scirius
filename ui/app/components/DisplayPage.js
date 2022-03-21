@@ -78,7 +78,6 @@ DisplayPage.propTypes = {
   rules_list: PropTypes.any,
   switchPage: PropTypes.any,
   updateRuleListState: PropTypes.any,
-  item: PropTypes.any,
   needReload: PropTypes.any,
   history_list: PropTypes.any,
   historyFilters: PropTypes.any,
