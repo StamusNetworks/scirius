@@ -2,8 +2,8 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 
-import injectReducer from '../../util/injectReducer';
-import injectSaga from '../../util/injectSaga';
+import injectReducer from 'ui/utils/injectReducer';
+import injectSaga from 'ui/utils/injectSaga';
 import { actionTypes } from './actions';
 import { makeSelectActionTypesList, makeSelectHistoryList } from './selectors';
 import { makeSelectHistoryFilters } from '../HuntApp/stores/global';

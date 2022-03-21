@@ -2,7 +2,7 @@
 import * as config from 'config/Api';
 import { call, put, takeLatest } from 'redux-saga/effects';
 
-import request from '../../util/request';
+import request from 'ui/utils/request';
 import { ACTION_TYPES_LOADING } from "./constants";
 import {actionTypesFail, actionTypesSuccess} from "./actions";
 import axios from "axios";

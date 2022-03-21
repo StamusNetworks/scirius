@@ -1,9 +1,9 @@
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
-import injectReducer from '../../util/injectReducer';
+import injectReducer from 'ui/utils/injectReducer';
 import { filterParamsSet, makeSelectFilterParam, reducer, reload } from './stores/filterParams';
-import HuntApp from './HuntApp';
+import HuntApp from './App';
 import { withPermissions } from './stores/withPermissions';
 
 const mapStateToProps = createStructuredSelector({
