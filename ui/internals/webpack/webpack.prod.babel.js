@@ -11,6 +11,7 @@ const webpack = require('webpack');
 const fs = require('fs');
 const appDirectory = fs.realpathSync(process.cwd());
 const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
+const getClientEnvironment = require('./env');
 
 const publicPath = '/static/bundles/';
 
@@ -98,6 +99,7 @@ module.exports = require('./webpack.base.babel')({
       },
       inject: true,
     }),
+    new webpack.DefinePlugin(getClientEnvironment().stringified),
 
     new CompressionPlugin({
       algorithm: 'gzip',

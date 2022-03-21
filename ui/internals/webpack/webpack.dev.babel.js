@@ -6,6 +6,7 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
+const getClientEnvironment = require('./env');
 
 module.exports = require('./webpack.base.babel')({
   mode: 'development',
@@ -37,6 +38,7 @@ module.exports = require('./webpack.base.babel')({
       template: 'app/index.html',
       favicon: 'app/images/favicon.ico',
     }),
+    new webpack.DefinePlugin(getClientEnvironment().stringified),
     new CircularDependencyPlugin({
       exclude: /a\.js|node_modules/, // exclude node_modules
       failOnError: false, // show a warning when there is a circular dependency
