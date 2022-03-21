@@ -128,6 +128,12 @@ module.exports = options => ({
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'development',
     }),
+    // https://stackoverflow.com/questions/68707553/uncaught-referenceerror-buffer-is-not-defined
+    // Work around for Buffer is undefined:
+    // https://github.com/webpack/changelog-v5/issues/10
+    new webpack.ProvidePlugin({
+        Buffer: ['buffer', 'Buffer'],
+    }),
   ]),
   resolve: {
     modules: ['node_modules', 'app'],
