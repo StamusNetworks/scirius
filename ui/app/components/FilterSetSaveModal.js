@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Checkbox, Col, Form, Input, Modal, Row, Select } from 'antd';
-import VerticalNavItems from 'components/VerticalNavItems';
+import { huntTabs } from 'constants';
 import HuntRestError from './HuntRestError';
 
 const FilterSetSaveModal = (props) => (
@@ -59,9 +59,9 @@ const FilterSetSaveModal = (props) => (
             {!props.page && (
               <Form.Item name="select-page">
                 <Select style={{ width: '100%' }} placeholder="Please select page" onChange={props.handleComboChange}>
-                  {VerticalNavItems.filter((item) => item.title !== 'Actions').map((item) => (
-                    <Select.Option key={item.title} value={item.def}>
-                      {item.title}
+                  {Object.keys(huntTabs).filter((key) => huntTabs[key] !== 'Policies').map((key) => (
+                    <Select.Option key={huntTabs[key]} value={key}>
+                      {huntTabs[key]}
                     </Select.Option> // eslint-disable-line indent
                   ))}
                 </Select>

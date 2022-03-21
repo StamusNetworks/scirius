@@ -3,7 +3,7 @@ import { createSelector } from 'reselect';
 import { call, put, takeLatest } from 'redux-saga/effects';
 import * as config from 'config/Api';
 import axios from 'axios';
-import VerticalNavItems from 'components/VerticalNavItems';
+import { huntTabs } from 'constants';
 
 // CONSTANTS
 const FILTER_SETS_LOADING = 'Hunt/components/FilterSets/FILTER_SETS_LOADING';
@@ -74,14 +74,7 @@ export const filterSetsReducer = (state = initialState, action) => {
       for (let idx = 0; idx < loadedFilterSets.length; idx += 1) {
         const row = loadedFilterSets[idx];
 
-        for (let idxPages = 0; idxPages < VerticalNavItems.length; idxPages += 1) {
-          const item = VerticalNavItems[idxPages];
-
-          if (item.def === row.page) {
-            row.pageTitle = item.title;
-            break;
-          }
-        }
+        row.pageTitle = huntTabs[page];
         // eslint-disable-next-line no-param-reassign
         state = state.updateIn(['filterSets', row.share], (list) => list.push(row));
       }

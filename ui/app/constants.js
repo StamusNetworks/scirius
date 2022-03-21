@@ -34,6 +34,13 @@ export const PAGE_STATE = {
   setup: 'SETUP',
 };
 
+const huntTabs = {
+  [ PAGE_STATE.dashboards ]: 'Dashboard',
+  [ PAGE_STATE.alerts_list ]: 'Alerts',
+  [ PAGE_STATE.rules_list ]: 'Signatures',
+  [ PAGE_STATE.filters_list ]: 'Policy',
+};
+
 export const APP_NAME_SHORT = 'Scirius CE';
 
 /* GLOBAL CONSTANTS */

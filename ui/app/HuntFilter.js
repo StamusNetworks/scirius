@@ -29,8 +29,7 @@ import Select from 'react-select';
 import axios from 'axios';
 import { compose } from 'redux';
 import * as config from 'config/Api';
-import VerticalNavItems from 'components/VerticalNavItems';
-import { sections } from 'constants';
+import { huntTabs, sections } from 'constants';
 import { HuntSort } from './Sort';
 import FilterList from 'ui/components/FilterList/index';
 import FilterSetSave from 'ui/components/FilterSetSaveModal';
@@ -560,14 +559,7 @@ class HuntFilter extends React.Component {
 
   renderInputHuntFilterSetsModal() {
     let { page } = this.props;
-    for (let idxPages = 0; idxPages < VerticalNavItems.length; idxPages += 1) {
-      const item = VerticalNavItems[idxPages];
-
-      if (item.def === page) {
-        page = item.title;
-        break;
-      }
-    }
+    page = huntTabs[page];
 
     const noRights = this.props.user.isActive && !this.props.user.permissions.includes('rules.events_edit');
     return (
