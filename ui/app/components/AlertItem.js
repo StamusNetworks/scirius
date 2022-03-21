@@ -822,7 +822,6 @@ export default class AlertItem extends React.Component {
                           </dl>
                         </div>
                       </div>
-<<<<<<< HEAD
                     </div>
                   </Col>
                 )}
