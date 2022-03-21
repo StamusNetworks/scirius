@@ -1,6 +1,5 @@
 import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
-import { absolute, defaultFilterParams } from 'stores/filterParamsDefault';
 import storage from '../../../helpers/storage';
 
 export const FILTER_PARAMS_SET = 'Hunt/HuntApp/FILTER_PARAM_SET';
@@ -35,7 +34,22 @@ export function reload() {
   };
 }
 
-const initialState = fromJS(defaultFilterParams);
+const initialState = fromJS({});
+
+export const absolute = {
+  from: {
+    id: 0,
+    value: 0,
+    time: moment(),
+    now: false,
+  },
+  to: {
+    id: 0,
+    value: 0,
+    time: moment(),
+    now: false,
+  },
+};
 
 export const reducer = (state = initialState, action) => {
   switch (action.type) {

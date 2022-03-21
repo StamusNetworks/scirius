@@ -29,7 +29,6 @@ import 'antd/dist/antd.min.css';
 import EmitEvent from '../../helpers/EmitEvent';
 import '../../pygments.css';
 // eslint-disable-next-line import/no-unresolved
-import '../../css/HuntApp.css';
 import sciriusLogo from '../../img/stamus.png';
 import keymap from '../../Keymap';
 import ErrorHandler from 'ui/components/Error';
