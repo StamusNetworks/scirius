@@ -9,7 +9,7 @@ const Signatures = () => (
     <UIBreadcrumb
       items={[
         'Hunting',
-        <Link app to='stamus/hunting/signatures'>Signatures</Link>,
+        <Link app to='hunting/signatures'>Signatures</Link>,
       ]}
     />
     Signatures
@@ -18,7 +18,7 @@ const Signatures = () => (
 );
 Signatures.metadata = {
   category: 'STAMUS_ND',
-  url: 'stamus/hunting/signatures',
+  url: 'hunting/signatures',
 }
 
 export default Signatures;
