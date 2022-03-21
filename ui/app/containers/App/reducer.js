@@ -3,6 +3,7 @@ import store from 'store';
 import moment from 'moment';
 import history from 'utils/history';
 import { isEqual } from 'lodash';
+import { combineReducers } from 'redux';
 
 import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
 import { StorageEnum } from 'ui/maps/StorageEnum';
@@ -224,4 +225,6 @@ const appReducer = (state = initialState, action) =>
     }
   });
 
-export default appReducer;
+export default combineReducers({
+  ce: appReducer,
+});
