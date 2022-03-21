@@ -103,6 +103,7 @@
     "react-force-graph-2d": "^1.23.7",
     "react-helmet": "6.1.0",
     "react-items-carousel": "^2.8.0",
+    "react-json-view": "^1.21.3",
     "react-redux": "7.2.4",
     "react-router-dom": "5.2.0",
     "react-select": "^5.2.2",
