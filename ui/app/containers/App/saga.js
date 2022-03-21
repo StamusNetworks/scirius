@@ -32,7 +32,7 @@ function* getSources() {
     const { results = [] } = data;
     yield put(actions.getSourceSuccess(results));
   } catch (err) {
-    yield put(actions.deleteThreatFailure());
+    yield put(actions.getSourceFailure());
   }
 }
 
