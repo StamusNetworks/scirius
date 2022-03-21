@@ -2,7 +2,7 @@ import { createSelector } from 'reselect';
 import { call, put, takeLatest } from 'redux-saga/effects';
 import * as config from 'config/Api';
 import axios from 'axios';
-import { huntTabs } from 'constants';
+import { huntTabs } from 'ui/constants';
 
 // CONSTANTS
 const FILTER_SETS_LOADING = 'Hunt/components/FilterSets/FILTER_SETS_LOADING';

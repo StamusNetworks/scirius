@@ -6,7 +6,7 @@ import { MenuOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { createStructuredSelector } from 'reselect';
 import * as config from 'config/Api';
-import { sections } from 'constants';
+import { sections } from 'ui/constants';
 import { dashboard } from 'config/Dashboard';
 import { compose } from 'redux';
 import FilterToggleModal from '../FilterToggleModal';

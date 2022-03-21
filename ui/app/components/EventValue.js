@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import EventValueInfo from 'components/EventValueInfo';
-import { sections } from 'constants';
+import { sections } from 'ui/constants';
 import { Tooltip } from 'antd';
 import { InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import ErrorHandler from './Error';

@@ -33,7 +33,7 @@ import { dashboard } from 'config/Dashboard';
 import { buildQFilter } from 'buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
 import RuleToggleModal from 'RuleToggleModal';
-import { sections } from 'constants';
+import { sections } from 'ui/constants';
 import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
 import { actionsButtons, loadActions, createAction, closeAction } from '../../helpers/common';

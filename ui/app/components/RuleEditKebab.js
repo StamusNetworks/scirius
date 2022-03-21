@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Dropdown, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import RuleToggleModal from 'RuleToggleModal';
-import { APP_NAME_SHORT } from 'constants';
+import { APP_NAME_SHORT } from 'ui/constants';
 import ErrorHandler from './Error';
 
 export default class RuleEditKebab extends React.Component {

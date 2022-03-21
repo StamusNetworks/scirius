@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Checkbox, Col, Form, Input, Modal, Row, Select } from 'antd';
-import { huntTabs } from 'constants';
+import { huntTabs } from 'ui/constants';
 import HuntRestError from './HuntRestError';
 
 const FilterSetSaveModal = (props) => (

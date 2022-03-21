@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { PAGE_STATE } from 'constants';
+import { PAGE_STATE } from 'ui/constants';
 import SignaturesPage from 'ui/containers/SignaturesPage';
 import DashboardPage from 'ui/containers/DashboardPage';
 import HistoryPage from 'ui/containers/HistoryPage';

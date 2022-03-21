@@ -4,7 +4,7 @@ import moment from 'moment';
 import { connect } from 'react-redux';
 import { Menu } from 'antd';
 import { MailOutlined, TableOutlined, UserOutlined } from '@ant-design/icons';
-import { PAGE_STATE, sections } from 'constants';
+import { PAGE_STATE, sections } from 'ui/constants';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
 
 const HistoryItem = (props) => {

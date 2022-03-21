@@ -23,7 +23,7 @@ import PropTypes from 'prop-types';
 import { List, Spin } from 'antd';
 import axios from 'axios';
 import * as config from 'config/Api';
-import { sections } from 'constants';
+import { sections } from 'ui/constants';
 import HuntFilter from '../../HuntFilter';
 import HistoryItem from 'ui/components/HistoryItem';
 import HuntPaginationRow from '../../HuntPaginationRow';

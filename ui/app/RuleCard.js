@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Spin } from 'antd';
 import { ZoomInOutlined } from '@ant-design/icons';
-import { sections } from 'constants';
+import { sections } from 'ui/constants';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
 import SciriusChart from 'ui/components/SciriusChart';
 import ErrorHandler from 'ui/components/Error';

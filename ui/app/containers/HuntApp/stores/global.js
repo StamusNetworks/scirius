@@ -1,6 +1,6 @@
 // CONSTANTS
 import { createSelector } from 'reselect';
-import { sections } from 'constants';
+import { sections } from 'ui/constants';
 import storage from '../../../helpers/storage';
 
 export const ADD_FILTER = 'Hunt/HuntApp/ADD_FILTER';

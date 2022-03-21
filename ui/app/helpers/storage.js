@@ -1,4 +1,4 @@
-import { sections } from 'constants';
+import { sections } from 'ui/constants';
 
 const params = new URLSearchParams(window.location.search);
 
