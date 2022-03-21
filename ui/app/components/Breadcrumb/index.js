@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
+import VerticalNavItems from 'components/VerticalNavItems';
 import PropTypes from 'prop-types';
 
 const BcStyled = styled.div`

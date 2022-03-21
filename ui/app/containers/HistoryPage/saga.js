@@ -1,5 +1,5 @@
 /* eslint-disable */
-import * as config from 'hunt_common/config/Api';
+import * as config from 'config/Api';
 import { call, put, takeLatest } from 'redux-saga/effects';
 
 import request from '../../util/request';

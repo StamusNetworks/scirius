@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import EventValueInfo from 'hunt_common/components/EventValueInfo';
-import { sections } from 'hunt_common/constants';
+import EventValueInfo from 'components/EventValueInfo';
+import { sections } from 'constants';
 import { Tooltip } from 'antd';
 import { InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import ErrorHandler from './Error';

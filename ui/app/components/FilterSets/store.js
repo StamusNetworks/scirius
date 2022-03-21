@@ -1,9 +1,9 @@
 import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
 import { call, put, takeLatest } from 'redux-saga/effects';
-import * as config from 'hunt_common/config/Api';
+import * as config from 'config/Api';
 import axios from 'axios';
-import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
+import VerticalNavItems from 'components/VerticalNavItems';
 
 // CONSTANTS
 const FILTER_SETS_LOADING = 'Hunt/components/FilterSets/FILTER_SETS_LOADING';

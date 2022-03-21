@@ -1,6 +1,6 @@
 import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
-import { absolute, defaultFilterParams } from 'hunt_common/stores/filterParamsDefault';
+import { absolute, defaultFilterParams } from 'stores/filterParamsDefault';
 import storage from '../../../helpers/storage';
 
 export const FILTER_PARAMS_SET = 'Hunt/HuntApp/FILTER_PARAM_SET';

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Checkbox, Col, Form, Input, Modal, Row, Select } from 'antd';
-import VerticalNavItems from 'hunt_common/components/VerticalNavItems';
+import VerticalNavItems from 'components/VerticalNavItems';
 import HuntRestError from './HuntRestError';
 
 const FilterSetSaveModal = (props) => (

@@ -7,7 +7,7 @@ import moment from 'moment';
 import * as PropTypes from 'prop-types';
 import OutsideClickHandler from 'react-outside-click-handler';
 import axios from 'axios';
-import { API_URL, ES_BASE_PATH } from 'hunt_common/config/Api';
+import { API_URL, ES_BASE_PATH } from 'config/Api';
 import DateRangePicker from './DateRangePicker';
 import {
   filterTimeSpanSet,

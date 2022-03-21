@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { Menu } from 'antd';
 import { CloseCircleOutlined, MailOutlined, MinusCircleOutlined, UploadOutlined } from '@ant-design/icons';
-import * as config from 'hunt_common/config/Api';
-import { buildFilterParams } from 'hunt_common/buildFilterParams';
+import * as config from 'config/Api';
+import { buildFilterParams } from 'buildFilterParams';
 import FilterEditKebab from './components/FilterEditKebab';
 
 export default class FilterItem extends React.Component {

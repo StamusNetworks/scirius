@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import axios from 'axios';
-import * as config from 'hunt_common/config/Api';
+import * as config from 'config/Api';
 
 const statsCache = {};
 function buildProbesSet(data) {

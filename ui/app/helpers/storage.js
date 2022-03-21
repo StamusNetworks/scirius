@@ -1,4 +1,4 @@
-import { sections } from 'hunt_common/constants';
+import { sections } from 'constants';
 
 const params = new URLSearchParams(window.location.search);
 

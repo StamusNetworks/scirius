@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { sections } from 'hunt_common/constants';
+import { sections } from 'constants';
 import './style.css';
 
 const FilterItem = (props) => {

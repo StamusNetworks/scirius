@@ -22,7 +22,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { List, Spin } from 'antd';
-import * as config from 'hunt_common/config/Api';
+import * as config from 'config/Api';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ActionItem from '../../ActionItem';
 import ErrorHandler from '../../components/Error';

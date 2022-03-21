@@ -1,7 +1,7 @@
 // CONSTANTS
 import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
-import { sections } from 'hunt_common/constants';
+import { sections } from 'constants';
 import storage from '../../../helpers/storage';
 
 export const ADD_FILTER = 'Hunt/HuntApp/ADD_FILTER';

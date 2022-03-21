@@ -1,4 +1,4 @@
-import { PAGE_STATE } from 'hunt_common/constants';
+import { PAGE_STATE } from 'constants';
 
 const VerticalNavItems = [
   {

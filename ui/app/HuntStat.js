@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import { Dropdown, List, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import * as config from 'hunt_common/config/Api';
-import { buildQFilter } from 'hunt_common/buildQFilter';
-import { buildFilterParams } from 'hunt_common/buildFilterParams';
+import * as config from 'config/Api';
+import { buildQFilter } from 'buildQFilter';
+import { buildFilterParams } from 'buildFilterParams';
 import EventValue from './components/EventValue';
 
 export default class HuntStat extends React.Component {

@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import * as config from 'hunt_common/config/Api';
-import { buildQFilter } from 'hunt_common/buildQFilter';
-import { buildFilterParams } from 'hunt_common/buildFilterParams';
+import * as config from 'config/Api';
+import { buildQFilter } from 'buildQFilter';
+import { buildFilterParams } from 'buildFilterParams';
 import ErrorHandler from './components/Error';
 import DonutChart from './components/DonutChart';
 

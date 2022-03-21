@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { List, Menu, Spin } from 'antd';
 import { SafetyOutlined, ZoomInOutlined } from '@ant-design/icons';
-import { sections } from 'hunt_common/constants';
+import { sections } from 'constants';
 import RuleEditKebab from './components/RuleEditKebab';
 import SciriusChart from './components/SciriusChart';
 import EventValue from './components/EventValue';

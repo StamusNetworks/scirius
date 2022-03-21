@@ -22,7 +22,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Drawer, Dropdown, Input, Menu, Spin } from 'antd';
 import { BellOutlined, DashboardOutlined, IdcardOutlined, InfoCircleOutlined, MenuOutlined, SafetyOutlined, UploadOutlined } from '@ant-design/icons';
-import { sections } from 'hunt_common/constants';
+import { sections } from 'constants';
 
 export default class FilterSets extends React.Component {
   constructor(props) {

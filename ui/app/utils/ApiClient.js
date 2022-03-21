@@ -2,7 +2,7 @@
 // file: src/util/ApiClient.js
 import axios from 'axios';
 import store from '../store';
-import { URL } from 'hunt_common/config/Api';
+import { URL } from 'config/Api';
 
 export const apiClient = function () {
     const { token } = store.getState();

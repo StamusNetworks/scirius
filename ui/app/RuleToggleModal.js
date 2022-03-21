@@ -2,10 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Select } from 'antd';
-import * as config from 'hunt_common/config/Api';
-import { buildQFilter } from 'hunt_common/buildQFilter';
-import { buildFilterParams } from 'hunt_common/buildFilterParams';
-import { supportedActions, setDefaultOptions } from 'hunt_common/supportedActions';
+import * as config from 'config/Api';
+import { buildQFilter } from 'buildQFilter';
+import { buildFilterParams } from 'buildFilterParams';
+import { supportedActions, setDefaultOptions } from 'supportedActions';
 import HuntRestError from '../components/HuntRestError';
 
 const { Option } = Select;
