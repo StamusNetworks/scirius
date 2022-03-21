@@ -1,6 +1,8 @@
 import React from 'react';
-import { Link } from 'ui/helpers/Link';
+import { PAGE_STATE } from 'constants';
 import UIBreadcrumb from 'ui/components/UIBreadcrumb';
+import { Link } from 'ui/helpers/Link';
+import HuntApp from 'ui/containers/HuntApp';
 
 const Policies = () => (
   <div>
@@ -11,6 +13,7 @@ const Policies = () => (
       ]}
     />
     Policies
+    <HuntApp page={PAGE_STATE.filters_list} />
   </div>
 );
 Policies.metadata = {
