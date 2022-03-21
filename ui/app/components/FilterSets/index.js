@@ -16,8 +16,8 @@ import {
 } from './store';
 
 import FilterSets from './FilterSets';
-import { addFilter, clearFilters, setTag } from '../../containers/App/stores/global';
-import { withPermissions } from '../../containers/App/stores/withPermissions';
+import { addFilter, clearFilters, setTag } from 'ui/containers/App/stores/global';
+import { withPermissions } from 'ui/containers/App/stores/withPermissions';
 
 const mapDispatchToProps = (dispatch) => ({
   addFilter: (filterType, filter) => dispatch(addFilter(filterType, filter)),

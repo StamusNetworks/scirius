@@ -6,7 +6,7 @@ import { sections } from 'constants';
 import { Tooltip } from 'antd';
 import { InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import ErrorHandler from './Error';
-import { addFilter } from '../containers/App/stores/global';
+import { addFilter } from 'ui/containers/App/stores/global';
 import isIP from '../helpers/isIP';
 
 // put all the sections where we want to inlclude `virus total links` for ip addresses and domains

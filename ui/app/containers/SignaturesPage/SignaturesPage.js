@@ -28,14 +28,14 @@ import * as config from 'config/Api';
 import { buildQFilter } from 'buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
 import RuleToggleModal from 'RuleToggleModal';
+import List from 'ui/components/List/index';
+import ErrorHandler from 'ui/components/Error';
 import HuntFilter from '../../HuntFilter';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import RuleCard from '../../RuleCard';
 import DashboardPage from '../DashboardPage';
 import RulePage from '../../RulePage';
 import RuleInList from '../../RuleInList';
-import List from '../../components/List/index';
-import ErrorHandler from '../../components/Error';
 import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction, buildFilter } from '../../helpers/common';
 import { updateHitsStats } from '../../helpers/updateHitsStats';
 

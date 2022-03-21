@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { Button, Col, Form, Input, InputNumber, Modal, Row } from 'antd';
 import * as config from 'config/Api';
-import HuntRestError from './components/HuntRestError';
+import HuntRestError from 'ui/components/HuntRestError';
 
 export default class FilterToggleModal extends React.Component {
   constructor(props) {

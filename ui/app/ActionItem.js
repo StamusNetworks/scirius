@@ -5,7 +5,7 @@ import { Menu } from 'antd';
 import { CloseCircleOutlined, MailOutlined, MinusCircleOutlined, UploadOutlined } from '@ant-design/icons';
 import * as config from 'config/Api';
 import { buildFilterParams } from 'buildFilterParams';
-import FilterEditKebab from './components/FilterEditKebab';
+import FilterEditKebab from 'ui/components/FilterEditKebab';
 
 export default class FilterItem extends React.Component {
   constructor(props) {

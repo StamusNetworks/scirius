@@ -4,8 +4,8 @@ import axios from 'axios';
 import * as config from 'config/Api';
 import { buildQFilter } from 'buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
-import ErrorHandler from './components/Error';
-import DonutChart from './components/DonutChart';
+import ErrorHandler from 'ui/components/Error';
+import DonutChart from 'ui/components/DonutChart';
 
 export default class HuntTrend extends React.Component {
   constructor(props) {

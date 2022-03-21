@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { PAGE_STATE } from 'constants';
-import SignaturesPage from '../../containers/SignaturesPage';
-import DashboardPage from '../../containers/DashboardPage';
-import HistoryPage from '../../containers/HistoryPage';
-import AlertsPage from '../../containers/AlertsPage';
-import ActionsPage from '../../containers/ActionsPage';
+import SignaturesPage from 'ui/containers/SignaturesPage';
+import DashboardPage from 'ui/containers/DashboardPage';
+import HistoryPage from 'ui/containers/HistoryPage';
+import AlertsPage from 'ui/containers/AlertsPage';
+import ActionsPage from 'ui/containers/ActionsPage';
 
 const DisplayPage = (props) => {
   let displayedPage = null;

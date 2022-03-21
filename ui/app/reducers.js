@@ -7,7 +7,7 @@ import { connectRouter } from 'connected-react-router';
 
 import history from 'utils/history';
 import globalReducer from 'ui/containers/App/reducer';
-import { reducer as huntReducer } from './containers/HuntApp/stores/global';
+import { reducer as huntReducer } from 'ui/containers/HuntApp/stores/global';
 
 /**
  * Merges the main reducer with the router state and dynamically injected reducers

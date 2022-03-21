@@ -6,7 +6,7 @@ import axios from 'axios';
 import * as config from 'config/Api';
 import { buildQFilter } from 'buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
-import EventValue from './components/EventValue';
+import EventValue from 'ui/components/EventValue';
 
 export default class HuntStat extends React.Component {
   constructor(props) {

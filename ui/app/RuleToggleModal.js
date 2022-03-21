@@ -6,7 +6,7 @@ import * as config from 'config/Api';
 import { buildQFilter } from 'buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
 import { supportedActions, setDefaultOptions } from 'supportedActions';
-import HuntRestError from '../components/HuntRestError';
+import HuntRestError from 'ui/components/HuntRestError';
 
 const { Option } = Select;
 

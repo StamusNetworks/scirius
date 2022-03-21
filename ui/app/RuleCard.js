@@ -4,10 +4,10 @@ import { connect } from 'react-redux';
 import { Spin } from 'antd';
 import { ZoomInOutlined } from '@ant-design/icons';
 import { sections } from 'constants';
-import RuleEditKebab from './components/RuleEditKebab';
-import SciriusChart from './components/SciriusChart';
-import ErrorHandler from './components/Error';
-import { addFilter } from './containers/HuntApp/stores/global';
+import RuleEditKebab from 'ui/components/RuleEditKebab';
+import SciriusChart from 'ui/components/SciriusChart';
+import ErrorHandler from 'ui/components/Error';
+import { addFilter } from 'ui/containers/HuntApp/stores/global';
 
 const RuleCard = (props) => {
   const { category } = props.data;

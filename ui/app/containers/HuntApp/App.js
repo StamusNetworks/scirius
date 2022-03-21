@@ -32,7 +32,7 @@ import '../../pygments.css';
 import '../../css/HuntApp.css';
 import sciriusLogo from '../../img/stamus.png';
 import keymap from '../../Keymap';
-import ErrorHandler from '../../components/Error';
+import ErrorHandler from 'ui/components/Error';
 import storage from '../../helpers/storage';
 
 const shortcutManager = new ShortcutManager(keymap);

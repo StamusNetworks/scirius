@@ -4,8 +4,8 @@ import axios from 'axios';
 import * as config from 'config/Api';
 import { buildQFilter } from 'buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
-import SciriusChart from './components/SciriusChart';
-import ErrorHandler from './components/Error';
+import SciriusChart from 'ui/components/SciriusChart';
+import ErrorHandler from 'ui/components/Error';
 
 export default class HuntTimeline extends React.Component {
   constructor(props) {

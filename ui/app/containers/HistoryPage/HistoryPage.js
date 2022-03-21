@@ -25,9 +25,9 @@ import axios from 'axios';
 import * as config from 'config/Api';
 import { sections } from 'constants';
 import HuntFilter from '../../HuntFilter';
-import HistoryItem from '../../components/HistoryItem';
+import HistoryItem from 'ui/components/HistoryItem';
 import HuntPaginationRow from '../../HuntPaginationRow';
-import ErrorHandler from '../../components/Error';
+import ErrorHandler from 'ui/components/Error';
 import { buildFilter, buildListUrlParams } from '../../helpers/common';
 
 const HistorySortFields = [

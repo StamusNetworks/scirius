@@ -38,10 +38,10 @@ import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
 import { actionsButtons, loadActions, createAction, closeAction } from '../../helpers/common';
 import HuntFilter from '../../HuntFilter';
-import EventValue from '../../components/EventValue';
+import EventValue from 'ui/components/EventValue';
 import '../../../node_modules/react-grid-layout/css/styles.css';
 import '../../../node_modules/react-resizable/css/styles.css';
-import ErrorHandler from '../../components/Error';
+import ErrorHandler from 'ui/components/Error';
 import copyTextToClipboard from '../../helpers/copyTextToClipboard';
 import storage from '../../helpers/storage';
 

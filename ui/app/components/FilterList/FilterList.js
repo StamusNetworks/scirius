@@ -5,7 +5,7 @@ import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Row } from 'ant
 import FilterItem from 'components/FilterItem/index';
 import isNumeric from '../../helpers/isNumeric';
 import './style.css';
-import { editFilter, removeFilter } from '../../containers/App/stores/global';
+import { editFilter, removeFilter } from 'ui/containers/App/stores/global';
 
 export const IP_FIELDS = [
   'src_ip',

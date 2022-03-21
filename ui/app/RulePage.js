@@ -5,11 +5,11 @@ import { List, Modal, Spin } from 'antd';
 import * as config from 'config/Api';
 import { buildQFilter } from 'buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
-import RuleEditKebab from './components/RuleEditKebab';
-import SciriusChart from './components/SciriusChart';
+import RuleEditKebab from 'ui/components/RuleEditKebab';
+import SciriusChart from 'ui/components/SciriusChart';
 import RuleStatus from './RuleStatus';
 import HuntStat from './HuntStat';
-import EventValue from './components/EventValue';
+import EventValue from 'ui/components/EventValue';
 import { updateHitsStats } from './helpers/updateHitsStats';
 
 export default class RulePage extends React.Component {

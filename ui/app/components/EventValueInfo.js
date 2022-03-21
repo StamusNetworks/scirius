@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Tooltip } from 'antd';
 import { InfoCircleFilled } from '@ant-design/icons';
-import EventIPInfo from '../../components/EventIPInfo';
+import EventIPInfo from 'ui/components/EventIPInfo';
 
 const EventValueInfo = (props) => {
   if (!props.magnifiers) {

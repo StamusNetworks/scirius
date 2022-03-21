@@ -13,8 +13,8 @@ import FilterToggleModal from '../FilterToggleModal';
 import ErrorHandler from './Error';
 import FilterSetSave from './FilterSetSaveModal';
 import { loadFilterSets } from './FilterSets/store';
-import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag } from '../containers/App/stores/global';
-import { withPermissions } from '../containers/App/stores/withPermissions';
+import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag } from 'ui/containers/App/stores/global';
+import { withPermissions } from 'ui/containers/App/stores/withPermissions';
 
 class FilterEditKebab extends React.Component {
   constructor(props) {

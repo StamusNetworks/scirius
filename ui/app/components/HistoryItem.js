@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { Menu } from 'antd';
 import { MailOutlined, TableOutlined, UserOutlined } from '@ant-design/icons';
 import { PAGE_STATE, sections } from 'constants';
-import { addFilter } from '../containers/App/stores/global';
+import { addFilter } from 'ui/containers/App/stores/global';
 
 const HistoryItem = (props) => {
   const date = moment(props.data.date).format('YYYY-MM-DD, hh:mm:ss a');

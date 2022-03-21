@@ -4,10 +4,10 @@ import { connect } from 'react-redux';
 import { List, Menu, Spin } from 'antd';
 import { SafetyOutlined, ZoomInOutlined } from '@ant-design/icons';
 import { sections } from 'constants';
-import RuleEditKebab from './components/RuleEditKebab';
-import SciriusChart from './components/SciriusChart';
-import EventValue from './components/EventValue';
-import { addFilter } from './containers/HuntApp/stores/global';
+import RuleEditKebab from 'ui/components/RuleEditKebab';
+import SciriusChart from 'ui/components/SciriusChart';
+import EventValue from 'ui/components/EventValue';
+import { addFilter } from 'ui/containers/HuntApp/stores/global';
 
 const RuleInList = (props) => {
   const { SubMenu } = Menu;
