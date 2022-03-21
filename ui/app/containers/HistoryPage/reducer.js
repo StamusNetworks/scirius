@@ -1,21 +1,20 @@
-import { fromJS } from 'immutable';
 import { ACTION_TYPES_LOADING, ACTION_TYPES_SUCCESS, ACTION_TYPES_FAIL } from './constants';
 
-export const initialState = fromJS({
+export const initialState = {
   actionTypesList: [],
   actionTypesLoading: false,
   actionTypesStatus: false,
   actionTypesMessage: '',
-});
+};
 
 function historyReducer(state = initialState, action) {
   switch (action.type) {
     case ACTION_TYPES_LOADING:
-      return state
-        .set('actionTypesList', fromJS([]))
-        .set('actionTypesLoading', true)
-        .set('actionTypesStatus', false)
-        .set('actionTypesMessage', 'loading...');
+      stte.actionTypesList = [];
+      stte.actionTypesLoading = true;
+      stte.actionTypesStatus = false;
+      stte.actionTypesMessage = 'loading...';
+      return state;
 
     case ACTION_TYPES_SUCCESS: {
       const actionTypeList = Object.keys(action.actionTypesList);
@@ -24,14 +23,18 @@ function historyReducer(state = initialState, action) {
         const item = actionTypeList[i];
         actions.push({ id: item, title: action.actionTypesList[item] });
       }
-      return state
-        .set('actionTypesList', fromJS(actions))
-        .set('actionTypesLoading', false)
-        .set('actionTypesStatus', true)
-        .set('actionTypesMessage', '');
+      state.actionTypesList = actions;
+      state.actionTypesLoading = false;
+      state.actionTypesStatus = true;
+      state.actionTypesMessage = '';
+      return state;
     }
     case ACTION_TYPES_FAIL:
-      return state.set('actionTypesList', fromJS([])).set('actionTypesLoading', false).set('actionTypesStatus', false).set('actionTypesMessage', ''); // @TODO: Set proper fail message
+      state.actionTypesList = [];
+      state.actionTypesLoading = false;
+      state.actionTypesStatus = false;
+      state.actionTypesMessage = ''; // @TODO: Set proper fail message
+      return state;
 
     default:
       return state;

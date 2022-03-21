@@ -1,4 +1,3 @@
-import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
 import { call, put, takeLatest } from 'redux-saga/effects';
 import * as config from 'config/Api';
@@ -46,7 +45,7 @@ export const deleteFilterSetFail = (error) => ({
 });
 
 // REDUCER
-export const initialState = fromJS({
+export const initialState = {
   filterSets: {
     global: [],
     private: [],
@@ -56,18 +55,18 @@ export const initialState = fromJS({
   filterSetsLoading: false,
   filterSetsStatus: false,
   filterSetsMessage: '',
-});
+};
 
 export const filterSetsReducer = (state = initialState, action) => {
   switch (action.type) {
     case FILTER_SETS_LOADING:
-      return state
-        .setIn(['filterSets', 'global'], fromJS([]))
-        .setIn(['filterSets', 'private'], fromJS([]))
-        .setIn(['filterSets', 'static'], fromJS([]))
-        .set('filterSetsLoading', true)
-        .set('filterSetsStatus', false)
-        .set('filterSetsMessage', 'loading...');
+      state.filterSets.global = [];
+      state.filterSets.private = [];
+      state.filterSets.static = [];
+      state.filterSetsLoading = true;
+      state.filterSetsStatus = false;
+      state.filterSetsMessage = 'loading...';
+      return state;
 
     case FILTER_SETS_SUCCESS: {
       const { loadedFilterSets } = action;
@@ -76,35 +75,34 @@ export const filterSetsReducer = (state = initialState, action) => {
 
         row.pageTitle = huntTabs[page];
         // eslint-disable-next-line no-param-reassign
-        state = state.updateIn(['filterSets', row.share], (list) => list.push(row));
+        state = state.filterSets[row.share].push(row);
       }
-      return state.set('filterSetsLoading', false).set('filterSetsStatus', true).set('filterSetsMessage', '');
+      state.filterSetsLoading = false;
+      state.filterSetsStatus = true;
+      state.filterSetsMessage = '';
+      return state;
     }
     case FILTER_SETS_FAIL:
-      return state
-        .set('filterSetsList', fromJS([]))
-        .set('filterSetsLoading', false)
-        .set('filterSetsStatus', false)
-        .set('filterSetsMessage', 'Filter sets could not be loaded');
+      state.filterSetsList = [];
+      state.filterSetsLoading = false;
+      state.filterSetsStatus = false;
+      state.filterSetsMessage = 'Filter sets could not be loaded';
+      return state;
 
     case DELETE_FILTER_SET:
-      return state.set('filterSetsLoading', true).set('filterSetsStatus', false).set('filterSetsMessage', 'deleting filter set...');
+      state.filterSetsLoading = true;
+      state.filterSetsStatus = false;
+      state.filterSetsMessage = 'deleting filter set...';
+      return state;
 
     case DELETE_FILTER_SET_SUCCESS:
-      return state
-        .set('filterSetDeleteIdx', null)
-        .set('filterSetsLoading', false)
-        .set('filterSetsStatus', true)
-        .set('filterSetsMessage', 'filter set deleted successfully')
-        .setIn(
-          ['filterSets', action.filterSetType],
-          fromJS(
-            state
-              .getIn(['filterSets', action.filterSetType])
-              .toJS()
-              .filter((f) => f.id !== action.filterSetIdx),
-          ),
-        );
+      state.filterSetDeleteIdx = null;
+      state.filterSetsLoading = false;
+      state.filterSetsStatus = true;
+      state.filterSetsMessage = 'filter set deleted successfully';
+      state.filterSets[action.filterSetType] = state.filterSets[action.filterSetType]
+              .filter((f) => f.id !== action.filterSetIdx);
+      return state;
 
     default:
       return state;
@@ -112,15 +110,15 @@ export const filterSetsReducer = (state = initialState, action) => {
 };
 
 // SELECTORS
-const makeSelectFiltersSetsStore = (state) => state.get('filterSets', initialState);
+const makeSelectFiltersSetsStore = (state) => state.filterSets || initialState;
 export const makeSelectGlobalFilterSets = () =>
-  createSelector(makeSelectFiltersSetsStore, (filterSetsState) => filterSetsState.getIn(['filterSets', 'global']).toJS());
+  createSelector(makeSelectFiltersSetsStore, (filterSetsState) => filterSetsState.filterSets.global);
 export const makeSelectPrivateFilterSets = () =>
-  createSelector(makeSelectFiltersSetsStore, (filterSetsState) => filterSetsState.getIn(['filterSets', 'private']).toJS());
+  createSelector(makeSelectFiltersSetsStore, (filterSetsState) => filterSetsState.filterSets.private);
 export const makeSelectStaticFilterSets = () =>
-  createSelector(makeSelectFiltersSetsStore, (filterSetsState) => filterSetsState.getIn(['filterSets', 'static']).toJS());
+  createSelector(makeSelectFiltersSetsStore, (filterSetsState) => filterSetsState.filterSets.static);
 export const makeSelectFilterSetsLoading = () =>
-  createSelector(makeSelectFiltersSetsStore, (filterSetsState) => filterSetsState.get('filterSetsLoading'));
+  createSelector(makeSelectFiltersSetsStore, (filterSetsState) => filterSetsState.filterSetsLoading);
 
 // SAGA
 export function* getFilterSets() {

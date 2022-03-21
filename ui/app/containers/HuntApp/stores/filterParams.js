@@ -1,7 +1,5 @@
 import moment from 'moment';
-import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
-import storage from '../../../helpers/storage';
 
 export const FILTER_PARAMS_SET = 'Hunt/HuntApp/FILTER_PARAM_SET';
 export const FILTER_TIMESPAN_SET = 'Hunt/HuntApp/FILTER_TIMESPAN_SET';
@@ -35,7 +33,7 @@ export function reload() {
   };
 }
 
-const initialState = fromJS({});
+const initialState = {};
 
 export const absolute = {
   from: {
@@ -55,36 +53,30 @@ export const absolute = {
 export const reducer = (state = initialState, action) => {
   switch (action.type) {
     case FILTER_PARAMS_SET: {
-      const param = state.setIn([action.paramName], action.paramValue);
-      storage.setItem(`filterParams.${action.paramName}`, action.paramValue);
-      return param;
+      state[action.paramName] = action.paramValue;
+      return state;
     }
 
     case FILTER_TIMESPAN_SET: {
-      const timespan = state
-        .set('fromDate', action.timeSpan.fromDate)
-        .set('toDate', action.timeSpan.toDate)
-        .set('absolute', fromJS(typeof action.timeSpan.absolute !== 'undefined' ? action.timeSpan.absolute : absolute))
-        .set('duration', null);
-      storage.setItem('timespan', JSON.stringify(timespan.toJS()));
-      return timespan;
+      state.fromDate = action.timeSpan.fromDate;
+      state.toDate = action.timeSpan.toDate;
+      state.absolute = typeof action.timeSpan.absolute !== 'undefined' ? action.timeSpan.absolute : absolute;
+      state.duration = null;
+      return state;
     }
 
     case FILTER_DURATION_SET: {
-      const timespan = state
-        .set('duration', action.duration)
-        .set('fromDate', Date.now() - action.duration)
-        .set('toDate', Date.now())
-        .set('absolute', fromJS(absolute));
-      storage.setItem('timespan', JSON.stringify(timespan.toJS()));
-      return timespan;
+      state.duration = action.duration;
+      state.fromDate = Date.now() - action.duration;
+      state.toDate = Date.now();
+      state.absolute = absolute;
+      return state;
     }
 
     case TIMESTAMP_RELOAD: {
-      if (state.get('duration')) {
-        const timespan = state.set('fromDate', Math.round(Date.now() - state.get('duration'))).set('toDate', Date.now());
-        storage.setItem('timespan', JSON.stringify(timespan.toJS()));
-        return timespan;
+      if (state.duration) {
+        state.fromDate = Math.round(Date.now() - state.duration)
+        state.toDate = Date.now();
       } // else absolute/relative no refresh
       return state;
     }
@@ -94,7 +86,7 @@ export const reducer = (state = initialState, action) => {
   }
 };
 
-export const selectFilterParamsStore = (state) => state.get('filterParams', initialState);
-export const makeSelectFilterParam = (paramName) => createSelector(selectFilterParamsStore, (globalState) => globalState.getIn([paramName]));
-export const makeSelectFilterAbsolute = () => createSelector(selectFilterParamsStore, (globalState) => globalState.get('absolute').toJS());
-export const makeSelectFilterParams = () => createSelector(selectFilterParamsStore, (globalState) => globalState.toJS());
+export const selectFilterParamsStore = (state) => state.filterParams || {};
+export const makeSelectFilterParam = (paramName) => createSelector(selectFilterParamsStore, (globalState) => globalState[paramName]);
+export const makeSelectFilterAbsolute = () => createSelector(selectFilterParamsStore, (globalState) => globalState.absolute);
+export const makeSelectFilterParams = () => createSelector(selectFilterParamsStore, (globalState) => globalState);

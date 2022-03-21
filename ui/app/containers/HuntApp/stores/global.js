@@ -1,5 +1,4 @@
 // CONSTANTS
-import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
 import { sections } from 'constants';
 import storage from '../../../helpers/storage';
@@ -101,7 +100,7 @@ export function enableOnly(filterType) {
 }
 
 // REDUCER
-const initialState = fromJS({
+const initialState = {
   filters: {
     [sections.GLOBAL]: loadStorage(sections.GLOBAL) || [],
     [sections.HISTORY]: loadStorage(sections.HISTORY) || [],
@@ -111,7 +110,7 @@ const initialState = fromJS({
     data: loadStorage(sections.USER) || {},
     ...generateDefaultRequest(),
   },
-});
+};
 
 function indexOfFilter(filter, allFilters) {
   for (let idx = 0; idx < allFilters.length; idx += 1) {
@@ -133,7 +132,7 @@ export const reducer = (state = initialState, action) => {
   switch (action.type) {
     case ADD_FILTER: {
       const { filter } = action;
-      const globalFilters = state.getIn(['filters', action.filterType]).toJS();
+      const globalFilters = state.filters[action.filterType];
       // When an array of filters is passed
       if (Array.isArray(filter)) {
         for (let i = 0; i < filter.length; i += 1) {
@@ -146,13 +145,14 @@ export const reducer = (state = initialState, action) => {
         globalFilters.push(filter);
       }
       updateStorage(action.filterType, globalFilters);
-      return state.setIn(['filters', action.filterType], fromJS(globalFilters));
+      state.filters[action.filterType] = globalFilters;
+      return state;
     }
     case EDIT_FILTER: {
       if (!validateFilter(action.filterUpdated)) {
         return state;
       }
-      const globalFilters = state.getIn(['filters', action.filterType]).toJS();
+      const globalFilters = state.filters[action.filterType];
       const idx = indexOfFilter(action.filter, globalFilters);
 
       /* eslint-disable-next-line */
@@ -164,10 +164,11 @@ export const reducer = (state = initialState, action) => {
       );
 
       updateStorage(action.filterType, updatedGlobalFilters);
-      return state.setIn(['filters', action.filterType], fromJS(updatedGlobalFilters));
+      state.filters[action.filterType] = updatedGlobalFilters;
+      return state;
     }
     case REMOVE_FILTER: {
-      const globalFilters = state.getIn(['filters', action.filterType]).toJS();
+      const globalFilters = state.filters[action.filterType];
 
       const idx = indexOfFilter(action.filter, globalFilters);
       const before = globalFilters.slice(0, idx);
@@ -175,40 +176,36 @@ export const reducer = (state = initialState, action) => {
 
       const updatedGlobalFilters = [...before, ...after];
       updateStorage(action.filterType, updatedGlobalFilters);
-      return state.setIn(['filters', action.filterType], fromJS(updatedGlobalFilters));
+      state.filters[action.filterType] = updatedGlobalFilters;
+      return state;
     }
     case CLEAR_FILTERS: {
       updateStorage(action.filterType, []);
-      return state.setIn(['filters', action.filterType], fromJS([]));
+      state.filters[action.filterType] = [];
+      return state;
     }
     case SET_ALERT: {
-      let updatedAlert;
       // If an entire object is passed
       if (typeof action.tagType === 'object' && action.tagType !== null) {
-        updatedAlert = state.setIn(['filters', sections.ALERT], fromJS(action.tagType));
+        state.filters[sections.ALERT] = action.tagType;
         // Or a single alert tag value
       } else {
-        updatedAlert = state.setIn(['filters', sections.ALERT, 'value', action.tagType], action.tagState);
+        state.filters[sections.ALERT].value[action.tagType] = action.tagState;
       }
-      updateStorage(sections.ALERT, updatedAlert.getIn(['filters', sections.ALERT]).toJS());
-      return updatedAlert;
+      updateStorage(sections.ALERT, state.filters[sections.ALERT]);
+      return state;
     }
     case SET_ONLY_ONE_ALERT: {
       const { filterType } = action;
-      const updatedAlert = state.setIn(
-        ['filters', sections.ALERT],
-        fromJS(
-          generateAlert(
-            filterType === 'informational' || filterType === 'all',
-            filterType === 'relevant' || filterType === 'all',
-            filterType === 'untagged' || filterType === 'all',
-            filterType === 'alerts' || filterType === 'all',
-            filterType === 'sightings' || filterType === 'all',
-          ),
-        ),
+      state.filters[sections.ALERT] = generateAlert(
+        filterType === 'informational' || filterType === 'all',
+        filterType === 'relevant' || filterType === 'all',
+        filterType === 'untagged' || filterType === 'all',
+        filterType === 'alerts' || filterType === 'all',
+        filterType === 'sightings' || filterType === 'all',
       );
-      updateStorage(sections.ALERT, updatedAlert.getIn(['filters', sections.ALERT]).toJS());
-      return updatedAlert;
+      updateStorage(sections.ALERT, state.filters[sections.ALERT]);
+      return state;
     }
     default:
       return state;
@@ -216,17 +213,17 @@ export const reducer = (state = initialState, action) => {
 };
 
 // SELECTORS
-export const selectGlobal = (state) => state.get('global');
+export const selectGlobal = (state) => state.hunt;
 export const makeSelectGlobalFilters = (includeAlertTag = false) =>
   createSelector(selectGlobal, (globalState) => {
-    let result = globalState.getIn(['filters', sections.GLOBAL]).toJS();
+    let result = globalState.filters[sections.GLOBAL];
     if (includeAlertTag) {
-      result = [...result, globalState.getIn(['filters', sections.ALERT]).toJS()];
+      result = [...result, globalState.filters[sections.ALERT]];
     }
     return result;
   });
-export const makeSelectHistoryFilters = () => createSelector(selectGlobal, (globalState) => globalState.getIn(['filters', sections.HISTORY]).toJS());
-export const makeSelectAlertTag = () => createSelector(selectGlobal, (globalState) => globalState.getIn(['filters', sections.ALERT]).toJS());
+export const makeSelectHistoryFilters = () => createSelector(selectGlobal, (globalState) => globalState.filters[sections.HISTORY]);
+export const makeSelectAlertTag = () => createSelector(selectGlobal, (globalState) => globalState.filters[sections.ALERT]);
 export const makeSelectUserData = () => () => {
   const userDetails = window.current_user || {};
   const {
@@ -256,4 +253,4 @@ export const makeSelectUserData = () => () => {
     allTenant,
   };
 };
-export const makeSelectUserRequest = () => createSelector(selectGlobal, (globalState) => globalState.getIn(['user']).toJS().request);
+export const makeSelectUserRequest = () => createSelector(selectGlobal, (globalState) => globalState.user.request);
