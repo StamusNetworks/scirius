@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
 import storage from '../../../helpers/storage';
