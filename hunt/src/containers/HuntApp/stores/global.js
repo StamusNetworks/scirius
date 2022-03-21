@@ -4,12 +4,12 @@ import { createSelector } from 'reselect';
 import { sections } from 'hunt_common/constants';
 import storage from '../../../helpers/storage';
 
-export const ADD_FILTER = 'Hunt/App/ADD_FILTER';
-export const REMOVE_FILTER = 'Hunt/App/REMOVE_FILTER';
-export const EDIT_FILTER = 'Hunt/App/EDIT_FILTER';
-export const CLEAR_FILTERS = 'Hunt/App/CLEAR_FILTERS';
-export const SET_ALERT = 'Hunt/App/SET_ALERT';
-export const SET_ONLY_ONE_ALERT = 'Hunt/App/SET_ONLY_ONE_ALERT';
+export const ADD_FILTER = 'Hunt/HuntApp/ADD_FILTER';
+export const REMOVE_FILTER = 'Hunt/HuntApp/REMOVE_FILTER';
+export const EDIT_FILTER = 'Hunt/HuntApp/EDIT_FILTER';
+export const CLEAR_FILTERS = 'Hunt/HuntApp/CLEAR_FILTERS';
+export const SET_ALERT = 'Hunt/HuntApp/SET_ALERT';
+export const SET_ONLY_ONE_ALERT = 'Hunt/HuntApp/SET_ONLY_ONE_ALERT';
 
 export const validateFilter = (filter) => {
   if (filter.id === 'alert.tag') {

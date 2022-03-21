@@ -1,10 +1,10 @@
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import { compose } from 'redux';
-import { addFilter, makeSelectGlobalFilters } from '../App/stores/global';
-import { makeSelectFilterParams } from '../App/stores/filterParams';
+import { addFilter, makeSelectGlobalFilters } from '../HuntApp/stores/global';
+import { makeSelectFilterParams } from '../HuntApp/stores/filterParams';
 import { AlertsPage } from './AlertsPage';
-import { withPermissions } from '../App/stores/withPermissions';
+import { withPermissions } from '../HuntApp/stores/withPermissions';
 
 const mapStateToProps = createStructuredSelector({
   filters: makeSelectGlobalFilters(),

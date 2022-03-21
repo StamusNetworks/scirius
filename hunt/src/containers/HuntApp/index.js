@@ -3,7 +3,7 @@ import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 import injectReducer from '../../util/injectReducer';
 import { filterParamsSet, makeSelectFilterParam, reducer, reload } from './stores/filterParams';
-import App from './App';
+import HuntApp from './HuntApp';
 import { withPermissions } from './stores/withPermissions';
 
 const mapStateToProps = createStructuredSelector({
@@ -21,4 +21,4 @@ const mapDispatchToProps = (dispatch) => ({
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
 const withReducer = injectReducer({ key: 'filterParams', reducer });
 
-export default compose(withReducer, withConnect, withPermissions)(App);
+export default compose(withReducer, withConnect, withPermissions)(HuntApp);

@@ -33,7 +33,7 @@ import 'antd/dist/antd.min.css';
 import EmitEvent from '../../helpers/EmitEvent';
 import '../../pygments.css';
 // eslint-disable-next-line import/no-unresolved
-import '../../css/App.css';
+import '../../css/HuntApp.css';
 import sciriusLogo from '../../img/stamus.png';
 import keymap from '../../Keymap';
 import ErrorHandler from '../../components/Error';
@@ -42,7 +42,7 @@ import Breadcrumb from '../../components/Breadcrumb';
 
 const shortcutManager = new ShortcutManager(keymap);
 
-export default class App extends Component {
+export default class HuntApp extends Component {
   constructor(props) {
     super(props);
     this.timer = null;
@@ -354,11 +354,11 @@ export default class App extends Component {
   }
 }
 
-App.childContextTypes = {
+HuntApp.childContextTypes = {
   shortcuts: PropTypes.object.isRequired,
 };
 
-App.propTypes = {
+HuntApp.propTypes = {
   reload: PropTypes.func.isRequired,
   duration: PropTypes.any,
   user: PropTypes.shape({

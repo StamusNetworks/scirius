@@ -10,7 +10,7 @@ import OutsideAlerter from '../../../components/OutsideAlerter';
 import sciriusLogo from '../../../img/stamus_logo.png';
 import ErrorHandler from '../../../components/Error';
 import TimeSpanItem from '../../../components/TimeSpanItem';
-import { withPermissions } from '../../../containers/App/stores/withPermissions';
+import { withPermissions } from '../../../containers/HuntApp/stores/withPermissions';
 
 const REFRESH_INTERVAL = {
   '': 'Off',

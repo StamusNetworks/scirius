@@ -29,7 +29,7 @@ import { ConnectedRouter } from 'connected-react-router/immutable';
 import history from './util/history';
 
 // Import root app
-import App from './containers/App';
+import HuntApp from './containers/HuntApp';
 
 import configureStore from './configureStore';
 import registerServiceWorker from './registerServiceWorker';
@@ -42,7 +42,7 @@ const render = () => {
   ReactDOM.render(
     <Provider store={store}>
       <ConnectedRouter history={history}>
-        <App />
+        <HuntApp />
       </ConnectedRouter>
     </Provider>,
     MOUNT_NODE,

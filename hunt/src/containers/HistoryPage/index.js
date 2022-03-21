@@ -6,7 +6,7 @@ import injectReducer from '../../util/injectReducer';
 import injectSaga from '../../util/injectSaga';
 import { actionTypes } from './actions';
 import { makeSelectActionTypesList, makeSelectHistoryList } from './selectors';
-import { makeSelectHistoryFilters } from '../App/stores/global';
+import { makeSelectHistoryFilters } from '../HuntApp/stores/global';
 import reducer from './reducer';
 import saga from './saga';
 

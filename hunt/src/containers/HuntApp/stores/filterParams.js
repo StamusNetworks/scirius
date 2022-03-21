@@ -3,10 +3,10 @@ import { createSelector } from 'reselect';
 import { absolute, defaultFilterParams } from 'hunt_common/stores/filterParamsDefault';
 import storage from '../../../helpers/storage';
 
-export const FILTER_PARAMS_SET = 'Hunt/App/FILTER_PARAM_SET';
-export const FILTER_TIMESPAN_SET = 'Hunt/App/FILTER_TIMESPAN_SET';
-export const FILTER_DURATION_SET = 'Hunt/App/FILTER_DURATION_SET';
-export const TIMESTAMP_RELOAD = 'Hunt/App/TIMESTAMP_RELOAD';
+export const FILTER_PARAMS_SET = 'Hunt/HuntApp/FILTER_PARAM_SET';
+export const FILTER_TIMESPAN_SET = 'Hunt/HuntApp/FILTER_TIMESPAN_SET';
+export const FILTER_DURATION_SET = 'Hunt/HuntApp/FILTER_DURATION_SET';
+export const TIMESTAMP_RELOAD = 'Hunt/HuntApp/TIMESTAMP_RELOAD';
 
 export function filterParamsSet(paramName, paramValue) {
   return {

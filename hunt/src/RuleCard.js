@@ -7,7 +7,7 @@ import { sections } from 'hunt_common/constants';
 import RuleEditKebab from './components/RuleEditKebab';
 import SciriusChart from './components/SciriusChart';
 import ErrorHandler from './components/Error';
-import { addFilter } from './containers/App/stores/global';
+import { addFilter } from './containers/HuntApp/stores/global';
 
 const RuleCard = (props) => {
   const { category } = props.data;

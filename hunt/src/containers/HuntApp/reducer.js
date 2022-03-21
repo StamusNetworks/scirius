@@ -2,7 +2,7 @@ import { fromJS } from 'immutable';
 
 import { PLACEHOLDER } from './constants';
 
-// The initial state of the App. This is the global reducer
+// The initial state of the HuntApp. This is the global reducer
 const initialState = fromJS({
   placeholder: false,
 });
