@@ -51,7 +51,7 @@ if (module.hot) {
   // have to be constants at compile-time
   // 2 apps in one React app, hence two entry points to watch
   try {
-    module.hot.accept(['containers/App', 'appliance/containers/App'], () => {
+    module.hot.accept(['containers/App'], () => {
       ReactDOM.unmountComponentAtNode(MOUNT_NODE);
       render();
     });
