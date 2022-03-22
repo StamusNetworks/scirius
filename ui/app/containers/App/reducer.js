@@ -75,7 +75,7 @@ export const initialState = {
 };
 
 /* eslint-disable default-case */
-const appReducer = (state = initialState, action) =>
+export const appReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
       case constants.GET_SETTINGS_REQUEST:
