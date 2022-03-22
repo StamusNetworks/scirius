@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import EventValueInfo from 'components/EventValueInfo';
+import EventValueInfo from 'ui/components/EventValueInfo';
 import { sections } from 'ui/constants';
 import { Tooltip } from 'antd';
 import { InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
-import ErrorHandler from './Error';
+import ErrorHandler from 'ui/components/Error';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
-import isIP from '../helpers/isIP';
+import isIP from 'ui/helpers/isIP';
 
 // put all the sections where we want to inlclude `virus total links` for ip addresses and domains
 const virusTotalLinks = ['hostname_info.domain', 'http.hostname', 'dns.query.rrname', 'http.http_refer_info.domain', 'tls.sni'];

@@ -22,7 +22,7 @@ import React, { Component } from 'react';
 import { ShortcutManager } from 'react-shortcuts';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import DisplayPage from 'components/DisplayPage';
+import DisplayPage from 'ui/components/DisplayPage';
 import { PAGE_STATE } from 'ui/constants';
 import * as config from 'config/Api';
 import 'antd/dist/antd.min.css';

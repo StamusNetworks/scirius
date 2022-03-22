@@ -9,10 +9,10 @@ import * as config from 'config/Api';
 import { sections } from 'ui/constants';
 import { dashboard } from 'config/Dashboard';
 import { compose } from 'redux';
-import FilterToggleModal from '../FilterToggleModal';
-import ErrorHandler from './Error';
-import FilterSetSave from './FilterSetSaveModal';
-import { loadFilterSets } from './FilterSets/store';
+import FilterToggleModal from 'ui/FilterToggleModal';
+import ErrorHandler from 'ui/components/Error';
+import FilterSetSave from 'ui/components/FilterSetSaveModal';
+import { loadFilterSets } from 'ui/components/FilterSets/store';
 import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag } from 'ui/containers/HuntApp/stores/global';
 import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
 

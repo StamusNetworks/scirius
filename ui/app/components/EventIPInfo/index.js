@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { Button, Modal } from 'antd';
 import { InfoCircleFilled } from '@ant-design/icons';
-import EventIPGeoloc from './EventIPGeoloc';
-import EventIPDatascan from './EventIPDatascan';
-import EventIPSynscan from './EventIPSynscan';
-import EventIPThreatlist from './EventIPThreatlist';
-import EventIPResolver from './EventIPResolver';
-import EventIPPastries from './EventIPPastries';
-import ErrorHandler from './Error';
+import EventIPGeoloc from 'ui/components/EventIPGeoloc';
+import EventIPDatascan from 'ui/components/EventIPDatascan';
+import EventIPSynscan from 'ui/components/EventIPSynscan';
+import EventIPThreatlist from 'ui/components/EventIPThreatlist';
+import EventIPResolver from 'ui/components/EventIPResolver';
+import EventIPPastries from 'ui/components/EventIPPastries';
+import ErrorHandler from 'ui/components/Error';
 
 export default class EventIPInfo extends React.Component {
   constructor(props) {

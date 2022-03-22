@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { List as ListView } from 'antd';
-import CardView from '../CardView';
-import ErrorHandler from '../Error';
+import CardView from 'ui/components/CardView';
+import ErrorHandler from 'ui/components/Error';
 
 const List = (props) => {
   const ItemComponent = props.type === 'list' ? props.component.list : props.component.card;

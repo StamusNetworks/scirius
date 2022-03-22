@@ -4,7 +4,7 @@ import { Dropdown, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import RuleToggleModal from 'RuleToggleModal';
 import { APP_NAME_SHORT } from 'ui/constants';
-import ErrorHandler from './Error';
+import ErrorHandler from 'ui/components/Error';
 
 export default class RuleEditKebab extends React.Component {
   constructor(props) {

@@ -32,11 +32,11 @@ import axios from 'axios';
 import { compose } from 'redux';
 import * as config from 'config/Api';
 import { huntTabs, sections } from 'ui/constants';
-import { HuntSort } from './Sort';
-import ErrorHandler from './components/Error';
+import { HuntSort } from 'ui/Sort';
+import ErrorHandler from 'ui/components/Error';
 import FilterList from 'ui/components/FilterList/index';
 import FilterSetSave from 'ui/components/FilterSetSaveModal';
-import FilterSets from './components/FilterSets';
+import FilterSets from 'ui/components/FilterSets';
 import {
   makeSelectGlobalFilters,
   makeSelectAlertTag,

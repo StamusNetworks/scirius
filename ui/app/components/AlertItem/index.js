@@ -8,8 +8,8 @@ import { dashboard } from 'config/Dashboard';
 import { buildFilterParams } from 'buildFilterParams';
 import axios from 'axios';
 import ReactJson from 'react-json-view';
-import EventField from './EventField';
-import ErrorHandler from './Error';
+import EventField from 'ui/components/EventField';
+import ErrorHandler from 'ui/components/Error';
 import './AlertItem.css';
 
 export default class AlertItem extends React.Component {
@@ -866,7 +866,6 @@ export default class AlertItem extends React.Component {
                           title={`Related ${key}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''} (${
                             Object.keys(events[key]).length
                           })`}
-                          key={`events-${key}`}
                         >
                           {Object.keys(events[key])
                             .sort()
