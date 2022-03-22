@@ -9,7 +9,9 @@ const FilterItem = (props) => {
   return (
     <li>
       <span className={`hunt-filter label label-info ${negated}`}>
-        <div className="label-content">{displayValue}</div>
+        <div className="label-content" data-test="hunt-filter__filtered">
+          {displayValue}
+        </div>
         <div>
           {props.filterType !== sections.HISTORY && (
             <a

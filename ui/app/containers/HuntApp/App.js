@@ -30,6 +30,7 @@ import EmitEvent from '../../helpers/EmitEvent';
 import '../../pygments.css';
 // eslint-disable-next-line import/no-unresolved
 import sciriusLogo from '../../img/stamus.png';
+import 'antd/dist/antd.min.css';
 import keymap from '../../Keymap';
 import ErrorHandler from 'ui/components/Error';
 import storage from '../../helpers/storage';

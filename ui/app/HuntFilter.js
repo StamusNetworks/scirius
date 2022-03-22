@@ -23,7 +23,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
-import { Filter, FormControl, FormGroup, Toolbar, Button, Icon, Switch } from 'patternfly-react';
+import { Filter, FormControl, FormGroup, Icon } from 'patternfly-react';
+import { Button, Switch, Menu, Dropdown } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
 import { Shortcuts } from 'react-shortcuts';
 import Select from 'react-select';
 import axios from 'axios';
@@ -31,8 +33,10 @@ import { compose } from 'redux';
 import * as config from 'config/Api';
 import { huntTabs, sections } from 'ui/constants';
 import { HuntSort } from './Sort';
+import ErrorHandler from './components/Error';
 import FilterList from 'ui/components/FilterList/index';
 import FilterSetSave from 'ui/components/FilterSetSaveModal';
+import FilterSets from './components/FilterSets';
 import {
   makeSelectGlobalFilters,
   makeSelectAlertTag,
@@ -44,6 +48,7 @@ import {
 } from 'ui/containers/HuntApp/stores/global';
 import { loadFilterSets } from 'ui/components/FilterSets/store';
 import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
+import './HuntFilter.css';
 
 // https://www.regextester.com/104038
 const IP_REGEXP = /((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))/;
@@ -68,15 +73,18 @@ class HuntFilter extends React.Component {
     this.state = {
       // eslint-disable-next-line react/no-unused-state
       filterFields: this.props.filterFields,
-      currentFilterType: this.props.filterFields[0],
+      currentFilterType: this.props.filterFields[0] || {},
       currentValue: '',
       filterSets: { showModal: false, shared: false, description: '' },
       filterSetName: '',
       errors: undefined,
+      showNotifications: false,
     };
     this.loadHuntFilterSetsModal = this.loadHuntFilterSetsModal.bind(this);
     this.setSharedFilter = this.setSharedFilter.bind(this);
     this.closeHuntFilterSetsModal = this.closeHuntFilterSetsModal.bind(this);
+    this.toggleHuntFilterSetsModal2 = this.toggleHuntFilterSetsModal2.bind(this);
+    this.closeHuntFilterSetsModal2 = this.closeHuntFilterSetsModal2.bind(this);
     this.submitFilterSets = this.submitFilterSets.bind(this);
     this.handleFieldChange = this.handleFieldChange.bind(this);
     this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
@@ -318,6 +326,18 @@ class HuntFilter extends React.Component {
     this.setState({ filterSets: { showModal: false, shared: false, description: '' } });
   }
 
+  closeHuntFilterSetsModal2() {
+    if (this.state.showNotifications) {
+      this.setState({ showNotifications: false });
+    }
+  }
+
+  toggleHuntFilterSetsModal2() {
+    this.setState((prevState) => ({
+      showNotifications: !prevState.showNotifications,
+    }));
+  }
+
   loadHuntFilterSetsModal() {
     this.setState({ filterSets: { showModal: true, shared: false } });
   }
@@ -458,7 +478,7 @@ class HuntFilter extends React.Component {
             />
           )}
           {filterCategory && filterSubCategory && (
-            <FormGroup controlId="input-filter" validationState={this.getValidationState()}>
+            <FormGroup controlId="input-filter" validationState={this.getValidationState()} data-test="hunt-filter__input">
               <FormControl
                 type={filterSubCategory.filterType}
                 value={currentValue}
@@ -469,7 +489,7 @@ class HuntFilter extends React.Component {
             </FormGroup>
           )}
           {filterCategory && filterCategory.valueType && (
-            <FormGroup controlId="input-filter" validationState={this.getValidationState()}>
+            <FormGroup controlId="input-filter" validationState={this.getValidationState()} data-test="hunt-filter__input">
               <FormControl
                 type={currentFilterType.filterType}
                 value={currentValue}
@@ -483,7 +503,7 @@ class HuntFilter extends React.Component {
       );
     } else if (currentFilterType.valueType === 'positiveint') {
       return (
-        <FormGroup controlId="input-filter" validationState={this.getValidationState()}>
+        <FormGroup controlId="input-filter" validationState={this.getValidationState()} data-test="hunt-filter__input">
           <FormControl
             type={currentFilterType.filterType}
             value={currentValue}
@@ -496,7 +516,7 @@ class HuntFilter extends React.Component {
       );
     }
     return (
-      <FormGroup controlId="input-filter" validationState={this.getValidationState()}>
+      <FormGroup controlId="input-filter" validationState={this.getValidationState()} data-test="hunt-filter__input">
         <FormControl
           type={currentFilterType.filterType}
           value={currentValue}
@@ -602,146 +622,189 @@ class HuntFilter extends React.Component {
       }
     });
 
+      const menu = (
+      <Menu onClick={(e) => this.selectFilterType(menuFilters.find((item) => item.id === e.key))} selectedKeys={[currentFilterType.title]}>
+        {menuFilters.map((item) => (
+          <Menu.Item key={item.id}>
+            <a href="#" data-test={`filter-main-dropdown-${item.title}`}>
+              {item.title}
+            </a>
+          </Menu.Item>
+        ))}
+      </Menu>
+    );
+
     return (
-      <Shortcuts name="HUNT_FILTER" handler={this.handleShortcuts} isolate targetNodeSelector="body">
-        <Toolbar>
-          <div>
-            <Filter>
-              <Filter.TypeSelector filterTypes={menuFilters} currentFilterType={currentFilterType} onFilterTypeSelected={this.selectFilterType} />
-              {this.renderInput()}
-            </Filter>
-            {this.props.sort_config && this.props.config && (
-              <HuntSort
-                config={this.props.sort_config}
-                itemsList={this.props.config}
-                itemsListUpdate={this.props.itemsListUpdate}
-                disabled={this.props.disable_sort ? this.props.disable_sort : false}
-              />
-            )}
-            {this.props.gotAlertTag && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
-              <div className="form-group" style={{ paddingTop: '3px', height: '25px' }}>
-                <ul className="list-inline">
-                  <li>
-                    <span>Informational </span>
-                    <Switch
-                      bsSize="small"
-                      onColor="info"
-                      value={this.props.alertTag.value.informational}
-                      onChange={() => this.props.setTag('informational', !this.props.alertTag.value.informational)}
-                    />
-                  </li>
-                  <li className="filter-middle-switch">
-                    <span>Relevant </span>
-                    <Switch
-                      bsSize="small"
-                      onColor="warning"
-                      value={this.props.alertTag.value.relevant}
-                      onChange={() => this.props.setTag('relevant', !this.props.alertTag.value.relevant)}
-                    />
-                  </li>
-                  <li>
-                    <span>Untagged </span>
-                    <Switch
-                      bsSize="small"
-                      onColor="primary"
-                      value={this.props.alertTag.value.untagged}
-                      onChange={() => this.props.setTag('untagged', !this.props.alertTag.value.untagged)}
-                    />
-                  </li>
-                </ul>
+     <div>
+       {this.state.showNotifications && (
+         <ErrorHandler>
+           <FilterSets switchPage={this.props.switchPage} close={this.closeHuntFilterSetsModal2} reload={this.props.needReload} />
+         </ErrorHandler>
+       )}
+       <Shortcuts name="HUNT_FILTER" handler={this.handleShortcuts} isolate targetNodeSelector="body">
+         <div className="hunt-filter__container" data-test="hunt-filter__container">
+           <div className="hunt-filter__filters">
+             <h4>Filters</h4>
+             <div className="hunt-filter__filters--1">
+               {/* <Filter.TypeSelector filterTypes={menuFilters} currentFilterType={currentFilterType} onFilterTypeSelected={this.selectFilterType} /> */}
+               <Dropdown overlay={menu} trigger={['click']}>
+                 <Button data-test="filter-main-dropdown">
+                   <span data-test={`filter-main-dropdown__${currentFilterType.title}`}>{currentFilterType.title}</span> <DownOutlined />
+                 </Button>
+               </Dropdown>
+               {this.renderInput()}
               </div>
-            )}
-          </div>
+             <div className="hunt-filter__filters--3">
+               {this.props.sort_config && this.props.config && (
+                 <HuntSort
+                   config={this.props.sort_config}
+                   itemsList={this.props.config}
+                   itemsListUpdate={this.props.itemsListUpdate}
+                   disabled={this.props.disable_sort ? this.props.disable_sort : false}
+                 />
+               )}
+               {this.props.displayToggle && (
+                 <div>
+                   <Button
+                     title="List View"
+                     type="text"
+                     className={{ active: this.props.config.view_type === 'list' }}
+                     onClick={() => {
+                       this.setViewType('list');
+                     }}
+                   >
+                     <Icon type="fa" name="th-list" />
+                   </Button>
+                   <Button
+                     title="Card View"
+                     type="text"
+                     className={{ active: this.props.config.view_type === 'card' }}
+                     onClick={() => {
+                       this.setViewType('card');
+                     }}
+                   >
+                     <Icon type="fa" name="th" />
+                   </Button>
+                 </div>
+               )}
+             </div>
+             {activeFilters && activeFilters.length > 0 && (
+               <div className="hunt-filter__filters--2">
+                 <FilterList filters={activeFilters} filterType={this.props.filterType} />
+               </div>
+             )}
+           </div>
 
-          <Toolbar.RightContent style={{ display: 'flex' }}>
-            {this.props.systemSettings && this.props.systemSettings.license && this.props.systemSettings.license.nta && (
-              <React.Fragment>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <span style={{ paddingRight: '3px' }}>Alerts</span>
-                  <Switch
-                    bsSize="small"
-                    onColor="primary"
-                    value={this.props.alertTag.value.alerts}
-                    onChange={() => this.props.setTag('alerts', !this.props.alertTag.value.alerts)}
-                  />
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '20px' }}>
-                  <span style={{ paddingRight: '3px' }}>Sightings </span>
-                  <Switch
-                    bsSize="small"
-                    onColor="primary"
-                    value={this.props.alertTag.value.sightings}
-                    onChange={() => this.props.setTag('sightings', !this.props.alertTag.value.sightings)}
-                  />
-                </div>
-              </React.Fragment>
+           {this.props.gotAlertTag && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
+             <div className="hunt-filter__tags-filters">
+               <h4>Tags Filters</h4>
+               <div>
+                 <Switch
+                   size="small"
+                   checkedChildren="ON"
+                   unCheckedChildren="OFF"
+                   defaultChecked={this.props.alertTag.value.informational}
+                   // onColor="info"
+                   // value={this.props.alertTag.value.informational}
+                   onChange={() => this.props.setTag('informational', !this.props.alertTag.value.informational)}
+                   data-test="filter-tag-informational"
+                 />
+                 <span>Informational</span>
+               </div>
+               <div>
+                 <Switch
+                   size="small"
+                   checkedChildren="ON"
+                   unCheckedChildren="OFF"
+                   defaultChecked={this.props.alertTag.value.relevant}
+                   // onColor="warning"
+                   // value={this.props.alertTag.value.relevant}
+                   onChange={() => this.props.setTag('relevant', !this.props.alertTag.value.relevant)}
+                   data-test="filter-tag-relevant"
+                 />
+                 <span>Relevant</span>
+               </div>
+               <div>
+                 <Switch
+                   size="small"
+                   checkedChildren="ON"
+                   unCheckedChildren="OFF"
+                   defaultChecked={this.props.alertTag.value.untagged}
+                   // onColor="primary"
+                   // value={this.props.alertTag.value.untagged}
+                   onChange={() => this.props.setTag('untagged', !this.props.alertTag.value.untagged)}
+                   data-test="filter-tag-untagged"
+                 />
+                 <span>Untagged</span>
+               </div>
+             </div>
             )}
-            {this.props.actionsButtons && this.props.actionsButtons()}
-            {this.props.displayToggle && (
-              <Toolbar.ViewSelector>
-                <Button
-                  title="List View"
-                  bsStyle="link"
-                  className={{ active: this.props.config.view_type === 'list' }}
-                  onClick={() => {
-                    this.setViewType('list');
-                  }}
-                >
-                  <Icon type="fa" name="th-list" />
-                </Button>
-                <Button
-                  title="Card View"
-                  bsStyle="link"
-                  className={{ active: this.props.config.view_type === 'card' }}
-                  onClick={() => {
-                    this.setViewType('card');
-                  }}
-                >
-                  <Icon type="fa" name="th" />
-                </Button>
-              </Toolbar.ViewSelector>
-            )}
-          </Toolbar.RightContent>
 
-          {activeFilters && activeFilters.length > 0 && (
-            <Toolbar.Results>
-              <Filter.ActiveLabel>Active Filters:</Filter.ActiveLabel>
-              <FilterList filters={activeFilters} filterType={this.props.filterType} />
-              <a
+           <div className="hunt-filter__actions">
+             <h4>Actions</h4>
+             <div
                 data-toggle="tooltip"
                 data-placement="top"
+                data-test="clear-filters"
                 title="Clear All Filters"
                 id="clear"
                 role="button"
-                onClick={(e) => {
-                  e.preventDefault();
+                onClick={() => {
                   this.props.clearFilters(this.props.filterType);
                 }}
                 style={{ cursor: 'pointer' }}
               >
-                Clear
-              </a>
+               <svg height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                 <path d="M0 0h24v24H0V0z" fill="none" />
+                 <path d="M5 13h14v-2H5v2zm-2 4h14v-2H3v2zM7 7v2h14V7H7z" />
+               </svg>
+               <span>Clear Filters</span>
+             </div>
+             <div
+               tabIndex={0}
+               data-toggle="tooltip"
+               title="Filter Sets"
+               onClick={() => {
+                 this.toggleHuntFilterSetsModal2();
+               }}
+               role="button"
+               style={{ cursor: 'pointer' }}
+             >
+               <svg height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                 <path d="M0 0h24v24H0V0z" fill="none" />
+                 <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+               </svg>
+               <span>Load Filter Set</span>
+             </div>
               {this.props.page !== 'HISTORY' && (
-                <a
+               <div
                   data-toggle="tooltip"
                   data-placement="top"
                   title="Save Filter Set"
                   id="saveall"
                   role="button"
-                  onClick={(e) => {
-                    e.preventDefault();
+                  onClick={() => {
                     this.loadHuntFilterSetsModal();
                   }}
                   style={{ cursor: 'pointer' }}
                 >
-                  |&nbsp;&nbsp;Save
-                </a>
+                 <svg enableBackground="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                   <g>
+                     <rect fill="none" height="24" width="24" />
+                   </g>
+                   <g>
+                     <path d="M14,10H3v2h11V10z M14,6H3v2h11V6z M18,14v-4h-2v4h-4v2h4v4h2v-4h4v-2H18z M3,16h7v-2H3V16z" />
+                   </g>
+                 </svg>
+                 <span>Save Filter Set</span>
+               </div>
               )}
-            </Toolbar.Results>
-          )}
-        </Toolbar>
-        {this.renderInputHuntFilterSetsModal()}
-      </Shortcuts>
+              {this.props.actionsButtons && this.props.actionsButtons()}
+            </div>
+          </div>
+          {this.renderInputHuntFilterSetsModal()}
+        </Shortcuts>
+      </div>
     );
   }
 }
