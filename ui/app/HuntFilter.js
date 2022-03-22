@@ -23,7 +23,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
-import { Filter, FormControl, FormGroup, Icon } from 'patternfly-react';
+//import { Filter, FormControl, FormGroup, Icon } from 'patternfly-react';
 import { Button, Switch, Menu, Dropdown } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import { Shortcuts } from 'react-shortcuts';
@@ -354,12 +354,15 @@ class HuntFilter extends React.Component {
 
     if (currentFilterType.filterType === 'select') {
       return (
+        null
+        /*
         <Filter.ValueSelector
           filterValues={currentFilterType.filterValues}
           placeholder={currentFilterType.placeholder}
           currentValue={currentValue}
           onFilterValueSelected={this.selectFilterValue}
         />
+        */
       );
     } else if (currentFilterType.filterType === 'complex-select') {
       const customStyles = {
@@ -428,7 +431,8 @@ class HuntFilter extends React.Component {
       };
 
       if (currentFilterType.filterCategories) {
-        return (
+        return (null
+          /*
           <Filter.CategorySelector
             filterCategories={currentFilterType.filterCategories}
             currentCategory={filterCategory}
@@ -447,6 +451,7 @@ class HuntFilter extends React.Component {
               />
             )}
           </Filter.CategorySelector>
+        */
         );
       } else {
         return (
@@ -462,7 +467,8 @@ class HuntFilter extends React.Component {
         );
       }
     } else if (currentFilterType.filterType === 'complex-select-text') {
-      return (
+      return (null
+        /*
         <Filter.CategorySelector
           filterCategories={currentFilterType.filterCategories}
           currentCategory={filterCategory}
@@ -500,9 +506,11 @@ class HuntFilter extends React.Component {
             </FormGroup>
           )}
         </Filter.CategorySelector>
+        */
       );
     } else if (currentFilterType.valueType === 'positiveint') {
-      return (
+      return (null
+        /*
         <FormGroup controlId="input-filter" validationState={this.getValidationState()} data-test="hunt-filter__input">
           <FormControl
             type={currentFilterType.filterType}
@@ -513,9 +521,11 @@ class HuntFilter extends React.Component {
             onKeyPress={(e) => this.onValueKeyPress(e)}
           />
         </FormGroup>
+        */
       );
     }
-    return (
+    return (null
+      /*
       <FormGroup controlId="input-filter" validationState={this.getValidationState()} data-test="hunt-filter__input">
         <FormControl
           type={currentFilterType.filterType}
@@ -525,6 +535,7 @@ class HuntFilter extends React.Component {
           onKeyPress={(e) => this.onValueKeyPress(e)}
         />
       </FormGroup>
+    */
     );
   }
 
@@ -673,7 +684,8 @@ class HuntFilter extends React.Component {
                        this.setViewType('list');
                      }}
                    >
-                     <Icon type="fa" name="th-list" />
+                    TH-LIST
+                     {/* <Icon type="fa" name="th-list" />*/}
                    </Button>
                    <Button
                      title="Card View"
@@ -683,7 +695,8 @@ class HuntFilter extends React.Component {
                        this.setViewType('card');
                      }}
                    >
-                     <Icon type="fa" name="th" />
+                    TH
+                     {/*<Icon type="fa" name="th" />*/}
                    </Button>
                  </div>
                )}
