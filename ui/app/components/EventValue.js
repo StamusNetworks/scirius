@@ -79,7 +79,7 @@ const EventValue = (props) => {
           {/* 256 chars max on ES queries */}
           {props.magnifiers && ((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
             <Tooltip title="add a filter on value" trigger="hover" id="tooltip-top">
-              <a
+              <span
                 onClick={() =>
                   props.addFilter(sections.GLOBAL, {
                     id: props.field,
@@ -92,13 +92,13 @@ const EventValue = (props) => {
               >
                 {' '}
                 <ZoomInOutlined />
-              </a>
+              </span>
             </Tooltip>
           )}
           {/* 256 chars max on ES queries */}
           {props.magnifiers && ((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
             <Tooltip title="add negated filter on value" trigger="hover" id="tooltip-top">
-              <a
+              <span
                 onClick={() =>
                   props.addFilter(sections.GLOBAL, {
                     id: props.field,
@@ -111,7 +111,7 @@ const EventValue = (props) => {
               >
                 {' '}
                 <ZoomOutOutlined />
-              </a>
+              </span>
             </Tooltip>
           )}
         </ErrorHandler>
