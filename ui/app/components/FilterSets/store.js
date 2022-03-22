@@ -73,7 +73,7 @@ export const filterSetsReducer = (state = initialState, action) => {
       for (let idx = 0; idx < loadedFilterSets.length; idx += 1) {
         const row = loadedFilterSets[idx];
 
-        row.pageTitle = huntTabs[page];
+        row.pageTitle = huntTabs[row.page];
         // eslint-disable-next-line no-param-reassign
         state = state.filterSets[row.share].push(row);
       }
