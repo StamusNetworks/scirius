@@ -1,3 +1,4 @@
+import produce from 'immer';
 import moment from 'moment';
 import { default as globalSelectors } from 'ui/containers/App/selectors';
 import { createSelector } from 'reselect';
@@ -51,41 +52,41 @@ export const absolute = {
   },
 };
 
-export const reducer = (state = initialState, action) => {
-  switch (action.type) {
-    case FILTER_PARAMS_SET: {
-      state[action.paramName] = action.paramValue;
-      return state;
-    }
+/* eslint-disable default-case */
+export const reducer = (state = initialState, action) =>
+  produce(state, draft => {
+    switch (action.type) {
+      case FILTER_PARAMS_SET: {
+        draft[action.paramName] = action.paramValue;
+        break;
+      }
 
-    case FILTER_TIMESPAN_SET: {
-      state.fromDate = action.timeSpan.fromDate;
-      state.toDate = action.timeSpan.toDate;
-      state.absolute = typeof action.timeSpan.absolute !== 'undefined' ? action.timeSpan.absolute : absolute;
-      state.duration = null;
-      return state;
-    }
+      case FILTER_TIMESPAN_SET: {
+        draft.fromDate = action.timeSpan.fromDate;
+        draft.toDate = action.timeSpan.toDate;
+        draft.absolute = typeof action.timeSpan.absolute !== 'undefined' ? action.timeSpan.absolute : absolute;
+        draft.duration = null;
+        break;
+      }
 
-    case FILTER_DURATION_SET: {
-      state.duration = action.duration;
-      state.fromDate = Date.now() - action.duration;
-      state.toDate = Date.now();
-      state.absolute = absolute;
-      return state;
-    }
+      case FILTER_DURATION_SET: {
+        draft.duration = action.duration;
+        draft.fromDate = Date.now() - action.duration;
+        draft.toDate = Date.now();
+        draft.absolute = absolute;
+        break;
+      }
 
-    case TIMESTAMP_RELOAD: {
-      if (state.duration) {
-        state.fromDate = Math.round(Date.now() - state.duration)
-        state.toDate = Date.now();
-      } // else absolute/relative no refresh
-      return state;
+      case TIMESTAMP_RELOAD: {
+        if (draft.duration) {
+          draft.fromDate = Math.round(Date.now() - state.duration)
+          draft.toDate = Date.now();
+        } // else absolute/relative no refresh
+        break;
+      }
     }
+  });
 
-    default:
-      return state;
-  }
-};
 
 export const selectFilterParamsStore = (state) => state.filterParams || {};
 export const makeSelectFilterParam = (paramName) => createSelector(selectFilterParamsStore, (globalState) => globalState[paramName]);

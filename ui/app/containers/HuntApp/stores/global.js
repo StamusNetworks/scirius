@@ -1,3 +1,4 @@
+import produce from 'immer';
 // CONSTANTS
 import { createSelector } from 'reselect';
 import { sections } from 'ui/constants';
@@ -128,89 +129,89 @@ function indexOfFilter(filter, allFilters) {
   return -1;
 }
 
-export const reducer = (state = initialState, action) => {
-  switch (action.type) {
-    case ADD_FILTER: {
-      const { filter } = action;
-      const globalFilters = state.filters[action.filterType];
-      // When an array of filters is passed
-      if (Array.isArray(filter)) {
-        for (let i = 0; i < filter.length; i += 1) {
-          if (validateFilter(filter[i])) {
-            globalFilters.push(filter[i]);
+/* eslint-disable default-case */
+export const reducer = (state = initialState, action) =>
+  produce(state, draft => {
+    switch (action.type) {
+      case ADD_FILTER: {
+        const { filter } = action;
+        const globalFilters = draft.filters[action.filterType];
+        // When an array of filters is passed
+        if (Array.isArray(filter)) {
+          for (let i = 0; i < filter.length; i += 1) {
+            if (validateFilter(filter[i])) {
+              globalFilters.push(filter[i]);
+            }
           }
+          // When a single filter is passed
+        } else if (validateFilter(filter)) {
+          globalFilters.push(filter);
         }
-        // When a single filter is passed
-      } else if (validateFilter(filter)) {
-        globalFilters.push(filter);
+        updateStorage(action.filterType, globalFilters);
+        draft.filters[action.filterType] = globalFilters;
+        break;
       }
-      updateStorage(action.filterType, globalFilters);
-      state.filters[action.filterType] = globalFilters;
-      return state;
-    }
-    case EDIT_FILTER: {
-      if (!validateFilter(action.filterUpdated)) {
-        return state;
-      }
-      const globalFilters = state.filters[action.filterType];
-      const idx = indexOfFilter(action.filter, globalFilters);
+      case EDIT_FILTER: {
+        if (!validateFilter(action.filterUpdated)) {
+          return draft;
+        }
+        const globalFilters = draft.filters[action.filterType];
+        const idx = indexOfFilter(action.filter, globalFilters);
 
-      /* eslint-disable-next-line */
-      const updatedGlobalFilters = globalFilters.map((filter, i) => (i === idx) ? {
+        /* eslint-disable-next-line */
+        const updatedGlobalFilters = globalFilters.map((filter, i) => (i === idx) ? {
               ...filter,
               ...action.filterUpdated,
             }
-          : filter,
-      );
+            : filter,
+        );
 
-      updateStorage(action.filterType, updatedGlobalFilters);
-      state.filters[action.filterType] = updatedGlobalFilters;
-      return state;
-    }
-    case REMOVE_FILTER: {
-      const globalFilters = state.filters[action.filterType];
-
-      const idx = indexOfFilter(action.filter, globalFilters);
-      const before = globalFilters.slice(0, idx);
-      const after = globalFilters.slice(idx + 1);
-
-      const updatedGlobalFilters = [...before, ...after];
-      updateStorage(action.filterType, updatedGlobalFilters);
-      state.filters[action.filterType] = updatedGlobalFilters;
-      return state;
-    }
-    case CLEAR_FILTERS: {
-      updateStorage(action.filterType, []);
-      state.filters[action.filterType] = [];
-      return state;
-    }
-    case SET_ALERT: {
-      // If an entire object is passed
-      if (typeof action.tagType === 'object' && action.tagType !== null) {
-        state.filters[sections.ALERT] = action.tagType;
-        // Or a single alert tag value
-      } else {
-        state.filters[sections.ALERT].value[action.tagType] = action.tagState;
+        updateStorage(action.filterType, updatedGlobalFilters);
+        draft.filters[action.filterType] = updatedGlobalFilters;
+        break;
       }
-      updateStorage(sections.ALERT, state.filters[sections.ALERT]);
-      return state;
+      case REMOVE_FILTER: {
+        const globalFilters = draft.filters[action.filterType];
+
+        const idx = indexOfFilter(action.filter, globalFilters);
+        const before = globalFilters.slice(0, idx);
+        const after = globalFilters.slice(idx + 1);
+
+        const updatedGlobalFilters = [...before, ...after];
+        updateStorage(action.filterType, updatedGlobalFilters);
+        draft.filters[action.filterType] = updatedGlobalFilters;
+        break;
+      }
+      case CLEAR_FILTERS: {
+        updateStorage(action.filterType, []);
+        draft.filters[action.filterType] = [];
+        break;
+      }
+      case SET_ALERT: {
+        // If an entire object is passed
+        if (typeof action.tagType === 'object' && action.tagType !== null) {
+          draft.filters[sections.ALERT] = action.tagType;
+          // Or a single alert tag value
+        } else {
+          draft.filters[sections.ALERT].value[action.tagType] = action.tagState;
+        }
+        updateStorage(sections.ALERT, draft.filters[sections.ALERT]);
+        break;
+      }
+      case SET_ONLY_ONE_ALERT: {
+        const { filterType } = action;
+        draft.filters[sections.ALERT] = generateAlert(
+          filterType === 'informational' || filterType === 'all',
+          filterType === 'relevant' || filterType === 'all',
+          filterType === 'untagged' || filterType === 'all',
+          filterType === 'alerts' || filterType === 'all',
+          filterType === 'sightings' || filterType === 'all',
+        );
+        updateStorage(sections.ALERT, draft.filters[sections.ALERT]);
+        return draft;
+      }
     }
-    case SET_ONLY_ONE_ALERT: {
-      const { filterType } = action;
-      state.filters[sections.ALERT] = generateAlert(
-        filterType === 'informational' || filterType === 'all',
-        filterType === 'relevant' || filterType === 'all',
-        filterType === 'untagged' || filterType === 'all',
-        filterType === 'alerts' || filterType === 'all',
-        filterType === 'sightings' || filterType === 'all',
-      );
-      updateStorage(sections.ALERT, state.filters[sections.ALERT]);
-      return state;
-    }
-    default:
-      return state;
-  }
-};
+  });
 
 // SELECTORS
 export const selectGlobal = (state) => state.hunt;

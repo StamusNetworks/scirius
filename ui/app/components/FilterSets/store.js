@@ -1,3 +1,4 @@
+import produce from 'immer';
 import { createSelector } from 'reselect';
 import { call, put, takeLatest } from 'redux-saga/effects';
 import * as config from 'config/Api';
@@ -57,57 +58,55 @@ export const initialState = {
   filterSetsMessage: '',
 };
 
-export const filterSetsReducer = (state = initialState, action) => {
-  switch (action.type) {
-    case FILTER_SETS_LOADING:
-      state.filterSets.global = [];
-      state.filterSets.private = [];
-      state.filterSets.static = [];
-      state.filterSetsLoading = true;
-      state.filterSetsStatus = false;
-      state.filterSetsMessage = 'loading...';
-      return state;
+/* eslint-disable default-case */
+export const filterSetsReducer = (state = initialState, action) =>
+  produce(state, draft => {
+    switch (action.type) {
+      case FILTER_SETS_LOADING:
+        draft.filterSets.global = [];
+        draft.filterSets.private = [];
+        draft.filterSets.static = [];
+        draft.filterSetsLoading = true;
+        draft.filterSetsStatus = false;
+        draft.filterSetsMessage = 'loading...';
+        break;
 
-    case FILTER_SETS_SUCCESS: {
-      const { loadedFilterSets } = action;
-      for (let idx = 0; idx < loadedFilterSets.length; idx += 1) {
-        const row = loadedFilterSets[idx];
+      case FILTER_SETS_SUCCESS: {
+        const { loadedFilterSets } = action;
+        for (let idx = 0; idx < loadedFilterSets.length; idx += 1) {
+          const row = loadedFilterSets[idx];
 
-        row.pageTitle = huntTabs[row.page];
-        // eslint-disable-next-line no-param-reassign
-        state = state.filterSets[row.share].push(row);
+          row.pageTitle = huntTabs[row.page];
+          // eslint-disable-next-line no-param-reassign
+          draft.filterSets[row.share].push(row);
+        }
+        draft.filterSetsLoading = false;
+        draft.filterSetsStatus = true;
+        draft.filterSetsMessage = '';
+        break;
       }
-      state.filterSetsLoading = false;
-      state.filterSetsStatus = true;
-      state.filterSetsMessage = '';
-      return state;
+      case FILTER_SETS_FAIL:
+        draft.filterSetsList = [];
+        draft.filterSetsLoading = false;
+        draft.filterSetsStatus = false;
+        draft.filterSetsMessage = 'Filter sets could not be loaded';
+        break;
+
+      case DELETE_FILTER_SET:
+        draft.filterSetsLoading = true;
+        draft.filterSetsStatus = false;
+        draft.filterSetsMessage = 'deleting filter set...';
+        break;
+
+      case DELETE_FILTER_SET_SUCCESS:
+        draft.filterSetDeleteIdx = null;
+        draft.filterSetsLoading = false;
+        draft.filterSetsStatus = true;
+        draft.filterSetsMessage = 'filter set deleted successfully';
+        draft.filterSets[action.filterSetType].filter((f) => f.id !== action.filterSetIdx);
+        break;
     }
-    case FILTER_SETS_FAIL:
-      state.filterSetsList = [];
-      state.filterSetsLoading = false;
-      state.filterSetsStatus = false;
-      state.filterSetsMessage = 'Filter sets could not be loaded';
-      return state;
-
-    case DELETE_FILTER_SET:
-      state.filterSetsLoading = true;
-      state.filterSetsStatus = false;
-      state.filterSetsMessage = 'deleting filter set...';
-      return state;
-
-    case DELETE_FILTER_SET_SUCCESS:
-      state.filterSetDeleteIdx = null;
-      state.filterSetsLoading = false;
-      state.filterSetsStatus = true;
-      state.filterSetsMessage = 'filter set deleted successfully';
-      state.filterSets[action.filterSetType] = state.filterSets[action.filterSetType]
-              .filter((f) => f.id !== action.filterSetIdx);
-      return state;
-
-    default:
-      return state;
-  }
-};
+  });
 
 // SELECTORS
 const makeSelectFiltersSetsStore = (state) => state.filterSets || initialState;
