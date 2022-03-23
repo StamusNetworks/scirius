@@ -22,17 +22,11 @@ import React, { Component } from 'react';
 import { ShortcutManager } from 'react-shortcuts';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import DisplayPage from 'ui/components/DisplayPage';
-import { PAGE_STATE } from 'ui/constants';
-import * as config from 'config/Api';
-import 'antd/dist/antd.min.css';
-import EmitEvent from '../../helpers/EmitEvent';
-import '../../pygments.css';
-// eslint-disable-next-line import/no-unresolved
-import sciriusLogo from '../../img/stamus.png';
-import 'antd/dist/antd.min.css';
-import keymap from '../../Keymap';
 import ErrorHandler from 'ui/components/Error';
+import DisplayPage from 'ui/components/DisplayPage';
+import * as config from 'config/Api';
+import EmitEvent from '../../helpers/EmitEvent';
+import keymap from '../../Keymap';
 import storage from '../../helpers/storage';
 
 const shortcutManager = new ShortcutManager(keymap);
