@@ -7,17 +7,33 @@ const CardStyled = styled(Card)`
   background-color: white;
   border-radius: 5px;
   position: relative;
-  box-shadow: ${p => !p.flat ? '3px 3px 10px #c9c9c9' : 'none'};
+  box-shadow: ${p => !p.flat ? '2px 3px 6px 0px #00000005' : 'none'};
+  border: 1px solid #ececec;
+  .ant-card-body {
+    padding: ${p => p.noPadding ? '0' : '10px'};
+  }
+  .ant-card-head {
+    padding: 0 10px;
+    min-height: 40px;
+  }
+  .ant-card-head-title,
+  .ant-card-extra {
+    padding: 7px 0;
+  }
 `;
-
-const UICard = ({ children, ...props }) => (
-    <CardStyled {...props}>
+const UICard = ({ children, noPadding, ...props }) => (
+    <CardStyled {...props} noPadding={noPadding}>
       {children}
     </CardStyled>
   )
 
+UICard.defaultProps = {
+  noPadding: false,
+}
+
 UICard.propTypes = {
-  children: PropTypes.object,
+  children: PropTypes.any,
+  noPadding: PropTypes.bool,
 }
 
 export default UICard;
