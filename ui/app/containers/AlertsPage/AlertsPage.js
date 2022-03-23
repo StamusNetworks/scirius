@@ -29,7 +29,7 @@ import { buildQFilter } from 'buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
 import RuleToggleModal from 'RuleToggleModal';
 import HuntFilter from '../../HuntFilter';
-import AlertItem from 'ui/components/AlertItem';
+import AlertItem from './components/AlertItem';
 import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction } from '../../helpers/common';
 import ErrorHandler from 'ui/components/Error';
 import HuntRestError from 'ui/components/HuntRestError';
