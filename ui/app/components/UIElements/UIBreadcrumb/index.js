@@ -8,9 +8,8 @@ const StyledBreadcrumb = styled(Breadcrumb)`
   text-transform: uppercase;
   height: 30px;
   padding: 10px 20px;
-  margin-bottom: 15px;
-  margin-left: -20px;
-  margin-right: -20px;
+  margin: 5px -20px;
+  border-bottom: 0 !important;
 `;
 
 const UIBreadcrumb = ({ items, children }) => (
