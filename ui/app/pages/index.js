@@ -7,6 +7,7 @@ import Alerts from './Alerts/Alerts';
 import Dashboards from './Dashboards/Dashboards';
 import Policies from './Policies/Policies';
 import Signatures from './Signatures/Signatures';
+import History from './History/History';
 
 export default {
   NotFoundPage,
@@ -23,4 +24,5 @@ export default {
   Dashboards,
   Policies,
   Signatures,
+  History,
 }
