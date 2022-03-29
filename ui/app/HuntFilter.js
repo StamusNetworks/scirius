@@ -1,4 +1,4 @@
-/* eslint-disable react/sort-comp,no-else-return */
+/* eslint-disable react/sort-comp,no-else-return,react/no-access-state-in-setstate */
 /*
 Copyright(C) 2018 Stamus Networks
 Written by Eric Leblond <eleblond@stamus-networks.com>
@@ -23,7 +23,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
-//import { Filter, FormControl, FormGroup, Icon } from 'patternfly-react';
 import { Button, Switch, Menu, Dropdown } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import { Shortcuts } from 'react-shortcuts';
@@ -347,6 +346,7 @@ class HuntFilter extends React.Component {
   }
 
   renderInput() {
+    // eslint-disable-next-line no-unused-vars
     const { currentFilterType, currentValue, filterCategory, filterSubCategory } = this.state;
     if (!currentFilterType) {
       return null;
@@ -649,7 +649,7 @@ class HuntFilter extends React.Component {
      <div>
        {this.state.showNotifications && (
          <ErrorHandler>
-           <FilterSets switchPage={this.props.switchPage} close={this.closeHuntFilterSetsModal2} reload={this.props.needReload} />
+           <FilterSets close={this.closeHuntFilterSetsModal2} />
          </ErrorHandler>
        )}
        <Shortcuts name="HUNT_FILTER" handler={this.handleShortcuts} isolate targetNodeSelector="body">
@@ -685,7 +685,7 @@ class HuntFilter extends React.Component {
                      }}
                    >
                     TH-LIST
-                     {/* <Icon type="fa" name="th-list" />*/}
+                     {/* <Icon type="fa" name="th-list" /> */}
                    </Button>
                    <Button
                      title="Card View"
@@ -696,7 +696,7 @@ class HuntFilter extends React.Component {
                      }}
                    >
                     TH
-                     {/*<Icon type="fa" name="th" />*/}
+                     {/* <Icon type="fa" name="th" /> */}
                    </Button>
                  </div>
                )}
@@ -867,7 +867,6 @@ HuntFilter.propTypes = {
     dateJoined: PropTypes.any,
     permissions: PropTypes.any,
   }),
-  systemSettings: PropTypes.any,
 };
 
 const mapStateToProps = createStructuredSelector({

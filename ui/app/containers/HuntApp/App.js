@@ -35,7 +35,6 @@ export default class HuntApp extends Component {
   constructor(props) {
     super(props);
     this.timer = null;
-    const interval = storage.getItem('interval');
     let rulesListConf = storage.getItem('rules_list');
     let alertsListConf = storage.getItem('alerts_list');
     let historyConf = storage.getItem('history');

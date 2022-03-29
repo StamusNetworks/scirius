@@ -28,11 +28,11 @@ import * as config from 'config/Api';
 import { buildQFilter } from 'buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
 import RuleToggleModal from 'RuleToggleModal';
+import ErrorHandler from 'ui/components/Error';
+import HuntRestError from 'ui/components/HuntRestError';
 import HuntFilter from '../../HuntFilter';
 import AlertItem from './components/AlertItem';
 import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction } from '../../helpers/common';
-import ErrorHandler from 'ui/components/Error';
-import HuntRestError from 'ui/components/HuntRestError';
 
 export class AlertsPage extends React.Component {
   constructor(props) {

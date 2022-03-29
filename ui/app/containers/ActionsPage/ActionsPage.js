@@ -23,9 +23,9 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { List, Spin } from 'antd';
 import * as config from 'config/Api';
+import ErrorHandler from 'ui/components/Error';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ActionItem from '../../ActionItem';
-import ErrorHandler from 'ui/components/Error';
 import { actionsButtons, buildListUrlParams, createAction, closeAction, buildFilter } from '../../helpers/common';
 
 export class ActionsPage extends React.Component {

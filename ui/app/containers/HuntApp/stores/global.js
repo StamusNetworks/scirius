@@ -131,6 +131,7 @@ function indexOfFilter(filter, allFilters) {
 
 /* eslint-disable default-case */
 export const reducer = (state = initialState, action) =>
+  // eslint-disable-next-line consistent-return
   produce(state, draft => {
     switch (action.type) {
       case ADD_FILTER: {

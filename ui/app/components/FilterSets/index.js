@@ -4,6 +4,8 @@ import { createStructuredSelector } from 'reselect';
 
 import injectReducer from 'ui/utils/injectReducer';
 import injectSaga from 'ui/utils/injectSaga';
+import { addFilter, clearFilters, setTag } from 'ui/containers/HuntApp/stores/global';
+import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
 import {
   filterSetsReducer as reducer,
   filterSetsSaga as saga,
@@ -16,8 +18,6 @@ import {
 } from './store';
 
 import FilterSets from './FilterSets';
-import { addFilter, clearFilters, setTag } from 'ui/containers/HuntApp/stores/global';
-import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
 
 const mapDispatchToProps = (dispatch) => ({
   addFilter: (filterType, filter) => dispatch(addFilter(filterType, filter)),

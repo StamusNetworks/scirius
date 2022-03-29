@@ -19,6 +19,7 @@ export default class RuleEditKebab extends React.Component {
   }
 
   hideToggle() {
+    // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({ toggle: { show: false, action: this.state.toggle.action } });
   }
 

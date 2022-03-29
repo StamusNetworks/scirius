@@ -183,6 +183,7 @@ export default class AlertItem extends React.Component {
               }
               this.setState({
                 files: {
+                  // eslint-disable-next-line react/no-access-state-in-setstate
                   ...this.state.files,
                   [fileinfo.sha256]: {
                     loading: true,
@@ -199,6 +200,7 @@ export default class AlertItem extends React.Component {
                 if (status === 'available') {
                   this.setState({
                     files: {
+                      // eslint-disable-next-line react/no-access-state-in-setstate
                       ...this.state.files,
                       [fileinfo.sha256]: {
                         file_id: fileinfo.file_id,
@@ -222,11 +224,13 @@ export default class AlertItem extends React.Component {
         }
       });
     }
+    // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({ showTabs: !this.state.showTabs });
   }
 
   async downloadFile(file) {
     // show spinner
+    // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({ files: { ...this.state.files, [file.sha256]: { ...this.state.files[file.sha256], downloading: true } } });
 
     // the request downloads the file from the host
@@ -236,6 +240,7 @@ export default class AlertItem extends React.Component {
 
     if (retrieve === 'done') {
       // hide the spinner
+      // eslint-disable-next-line react/no-access-state-in-setstate
       this.setState({ files: { ...this.state.files, [file.sha256]: { ...this.state.files[file.sha256], downloading: false } } });
 
       // trigger the download dialog
@@ -352,11 +357,6 @@ export default class AlertItem extends React.Component {
         </div>,
       );
       iconclass = data.alert.tag;
-    }
-
-    let dnsQuery;
-    if (data.dns && data.dns.query) {
-      [dnsQuery] = data.dns.query;
     }
 
     return (

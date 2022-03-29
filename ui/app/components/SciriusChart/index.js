@@ -74,10 +74,12 @@ export default class SciriusChart extends React.Component {
     this.mountChart();
   }
 
+  // eslint-disable-next-line react/no-deprecated
   componentWillReceiveProps(nextProps) {
     const labelsLimit = this.getLabelsLimit();
     if (this.state.labelsCount !== labelsLimit) {
       this.setState({
+        // eslint-disable-next-line react/no-access-state-in-setstate
         ...this.state,
         labelsCount: labelsLimit,
       });

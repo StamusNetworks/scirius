@@ -24,10 +24,10 @@ import { List, Spin } from 'antd';
 import axios from 'axios';
 import * as config from 'config/Api';
 import { sections } from 'ui/constants';
-import HuntFilter from '../../HuntFilter';
 import HistoryItem from 'ui/components/HistoryItem';
-import HuntPaginationRow from '../../HuntPaginationRow';
 import ErrorHandler from 'ui/components/Error';
+import HuntFilter from '../../HuntFilter';
+import HuntPaginationRow from '../../HuntPaginationRow';
 import { buildFilter, buildListUrlParams } from '../../helpers/common';
 
 const HistorySortFields = [
@@ -104,6 +104,7 @@ export default class HistoryPage extends React.Component {
       this.fetchData();
     }
     if (prevProps.actionTypesList.length !== this.props.actionTypesList.length) {
+      // eslint-disable-next-line react/no-access-state-in-setstate
       const filterFields = [...this.state.filterFields];
       filterFields.find((field) => field.id === 'action_type').filterValues = this.props.actionTypesList;
       // eslint-disable-next-line react/no-did-update-set-state

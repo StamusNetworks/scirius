@@ -34,14 +34,14 @@ import { buildQFilter } from 'buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
 import RuleToggleModal from 'RuleToggleModal';
 import { sections } from 'ui/constants';
+import EventValue from 'ui/components/EventValue';
+import ErrorHandler from 'ui/components/Error';
 import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
 import { actionsButtons, loadActions, createAction, closeAction } from '../../helpers/common';
 import HuntFilter from '../../HuntFilter';
-import EventValue from 'ui/components/EventValue';
 import '../../../node_modules/react-grid-layout/css/styles.css';
 import '../../../node_modules/react-resizable/css/styles.css';
-import ErrorHandler from 'ui/components/Error';
 import copyTextToClipboard from '../../helpers/copyTextToClipboard';
 import storage from '../../helpers/storage';
 
@@ -285,8 +285,10 @@ export class HuntDashboard extends React.Component {
 
   /* reset panel to it's initial state - no data into blocks and the default height for the panel with empty blocks */
   resetPanelHeights = () => {
+    // eslint-disable-next-line react/no-access-state-in-setstate
     const reset = Object.assign({}, ...Object.keys(this.state.dashboard).map((k) => this.resetPanelHeight(k)));
     this.setState({
+      // eslint-disable-next-line react/no-access-state-in-setstate
       ...this.state,
       dashboard: reset,
     });
@@ -411,6 +413,7 @@ export class HuntDashboard extends React.Component {
               this.panelsBooted = 'yes';
             }
             this.setState({
+              // eslint-disable-next-line react/no-access-state-in-setstate
               ...this.state,
               ...this.panelState,
             });
@@ -419,8 +422,10 @@ export class HuntDashboard extends React.Component {
       })
       .catch(() => {
         this.setState({
+          // eslint-disable-next-line react/no-access-state-in-setstate
           ...this.state,
           dashboard: {
+            // eslint-disable-next-line react/no-access-state-in-setstate
             ...this.state.dashboard,
             ...this.resetPanelHeight(panel, []),
           },
@@ -561,6 +566,7 @@ export class HuntDashboard extends React.Component {
   };
 
   switchEditMode = (e) => {
+    // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({ editMode: !this.state.editMode });
     e.preventDefault();
   };
@@ -608,7 +614,7 @@ export class HuntDashboard extends React.Component {
 
   onChangeMacroLayout = (macroLayout) => {
     store.set('dashboardMacroLayout', macroLayout);
-    let tmpState = this.state.dashboard;
+    let { dashboard: tmpState } = this.state;
     for (let k = 0; k < macroLayout.length; k += 1) {
       tmpState = {
         ...tmpState,
@@ -705,6 +711,7 @@ export class HuntDashboard extends React.Component {
     });
   };
 
+  // eslint-disable-next-line react/no-access-state-in-setstate
   hideMoreModal = () => this.setState({ ...this.state, moreModal: null });
 
   onChangeChartTarget = (chartTarget) => {
