@@ -31,7 +31,7 @@ from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponse
 
 import django_tables2 as tables
 
-from rules.models import UserAction
+from rules.models import UserAction, get_system_settings
 from rules.forms import CommentForm
 
 from scirius.utils import scirius_render, scirius_listing, get_middleware_module
@@ -74,6 +74,7 @@ def loginview(request, target):
                     request=request,
                     force_insert=True
                 )
+                session_activity(request)
                 if target:
                     return redirect("/" + target)
                 return redirect(get_middleware_module('common').login_redirection_url(request))
@@ -503,3 +504,15 @@ def current_user(request):
         'var current_user = %s' % json.dumps(request.user.sciriususer.to_dict(json_compatible=True)),
         content_type='application/x-javascript'
     )
+
+
+def session_activity(request):
+    timeout = int(request.POST.get('timeout', '0'))
+    cookie_age = get_system_settings().custom_cookie_age
+    disconnect = timeout >= cookie_age * 3600
+    if disconnect:
+        logout(request)
+    else:
+        expiry = cookie_age * 3600 - timeout
+        request.session.set_expiry(expiry)
+    return JsonResponse({'disconnect': disconnect})

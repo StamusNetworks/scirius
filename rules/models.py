@@ -782,6 +782,7 @@ class SystemSettings(models.Model):
         default='http://elasticsearch:9200/'
     )
     use_proxy_for_es = models.BooleanField(default=False)
+    custom_cookie_age = models.FloatField('Age of session cookies', default=360)
 
     def get_proxy_params(self):
         if self.use_http_proxy:

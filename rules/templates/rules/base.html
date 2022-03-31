@@ -679,6 +679,35 @@ function start_down_check() {
    status_interval = setInterval(get_scirius_status, 10000);
 }
 
+var idleTime = 0;
+function timerIncrement(timeout) {
+    idleTime = idleTime + timeout;
+    $.ajax({
+        type:"POST",
+        url:"{% url 'session_activity' %}",
+        data: {'timeout': idleTime},
+        success: function(data) {
+            if (data.disconnect) {
+                console.log('disconnect');
+                window.location = "{{ settings.LOGIN_URL }}";
+            }
+        },
+    });
+}
+
+$(document).ready(function () {
+    // Increment the idle time counter every 30sec.
+    var timeout = 30000;
+    var idleInterval = setInterval(timerIncrement, timeout, timeout / 1000);
+
+    $(this).mousemove(function (e) {
+        idleTime = 0;
+    });
+    $(this).keypress(function (e) {
+        idleTime = 0;
+    });
+});
+
 $( 'document' ).ready(start_interval_check());
 
 $(function (){

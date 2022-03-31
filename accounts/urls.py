@@ -39,6 +39,7 @@ urlpatterns = [
     re_path(r'^priorities/$', views.edit_priorities, name='edit_priorities'),
     re_path(r'^sort_priorities/$', views.sort_priorities, name='sort_priorities'),
     re_path(r'^current_user/$', views.current_user, name='current_user'),
+    re_path(r'^session_activity/$', views.session_activity, name='session_activity'),
 
     # TODO PERMS: split into different views
     re_path(r'^edit/(?P<action>.*)$', views.editview, name='accounts_edit'),

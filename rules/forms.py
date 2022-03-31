@@ -23,6 +23,7 @@ import tarfile
 import json
 from io import BytesIO
 from django import forms
+from django.core import validators
 from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import F
@@ -92,6 +93,13 @@ class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelFor
     http_proxy = forms.CharField(max_length=200, required=False, help_text='Proxy address of the form "http://username:password@hostname:port/"')
     elasticsearch_url = forms.CharField(max_length=200, empty_value='http://elasticsearch:9200/', required=False)
     use_proxy_for_es = forms.BooleanField(label='Use elasticsearch with system proxy', required=False)
+    custom_cookie_age = forms.FloatField(
+        label='Age of session cookies (in hours)',
+        required=True,
+        validators=[validators.MinValueValidator(0.5)],
+        min_value=0.5,
+        help_text='Automatic logout after inactivity timeout'
+    )
 
     class Meta:
         model = SystemSettings

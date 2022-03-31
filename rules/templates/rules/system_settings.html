@@ -54,6 +54,7 @@
                                         </button>
                                     </div>
                                 </div>
+                                {% bootstrap_field main_form.custom_cookie_age %}
                                 {% if perms.rules.configuration_edit %}
                                     {% bootstrap_field  main_form.comment %}
                                     {% buttons %}
