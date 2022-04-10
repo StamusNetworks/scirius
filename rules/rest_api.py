@@ -41,7 +41,7 @@ from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
 from rules.es_analytics import ESGetUniqueFields
-from rules.es_analytics import ESGraphAgg
+from rules.es_analytics import ESGraphAgg, ESFieldUniqAgg
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD, USE_CYBERCHEF, CYBERCHEF_URL
@@ -3056,6 +3056,23 @@ class ESUniqueFieldViewSet(ESBaseViewSet):
         return Response(ESGetUniqueFields(request).get(request.query_params.get("event_type", None)))
 
 
+class ESFieldUniqViewSet(ESBaseViewSet):
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
+
+    def _get(self, request, format) -> object:
+        data = ESFieldUniqAgg(request).get()
+        values = data.get("aggregations", {}).get("fields", {}).get("buckets", [])
+        resp = []
+        if "counts" in request.GET and request.GET["counts"] == "yes":
+            resp = [{"key": b["key"], "doc_count": b["doc_count"]} for b in values]
+        else:
+            resp = [b["key"] for b in values]
+            resp = sorted(resp)
+        return Response(resp)
+
+
 class ESGraphAggViewSet(ESBaseViewSet):
     REQUIRED_GROUPS = {
         'READ': ('rules.events_view',),
@@ -3162,6 +3179,7 @@ def get_custom_urls():
     urls.append(url(r'rules/scirius_context/$', SciriusContextAPIView.as_view(), name='scirius_context'))
     urls.append(url(r'rules/es/unique_fields/$', ESUniqueFieldViewSet.as_view(), name='es_unique_fields'))
     urls.append(url(r'rules/es/graph_agg/$', ESGraphAggViewSet.as_view(), name='es_graph_agg'))
+    urls.append(url(r'rules/es/unique_values/$', ESFieldUniqViewSet.as_view(), name='es_unique_values'))
 
     return urls
 

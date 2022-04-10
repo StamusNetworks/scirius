@@ -99,6 +99,30 @@ class ESAnalyticsBaseQuery(ESQuery):
         return q
 
 
+class ESFieldUniqAgg(ESAnalyticsBaseQuery):
+
+    def _get_field(self) -> str:
+        return self.request.GET.get("field", "src_ip")
+
+    def _get_size(self) -> int:
+        return self.request.GET.get("size", 1000)
+
+    def _get_query(self) -> dict:
+        q = {
+            "size": 0,
+            "query": self._build_query(),
+            "aggs": {
+                "fields": {
+                    "terms": {
+                        "field": self._prepare_es_field(self._get_field()),
+                        "size": self._get_size()
+                    },
+                },
+            }
+        }
+        return q
+
+
 class ESGraphAgg(ESAnalyticsBaseQuery):
 
     def get_col_src(self) -> str:
