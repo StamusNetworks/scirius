@@ -98,6 +98,7 @@ def scirius_render(request, template, context):
     context['scirius_short_title'] = get_middleware_module('common').get_homepage_context()['short_title']
     context['common_name'] = get_middleware_module('common').get_homepage_context()['common_name']
     context['common_long_name'] = get_middleware_module('common').get_homepage_context()['common_long_name']
+    context['use_stamuslogger'] = get_middleware_module('common').use_stamuslogger()
     gsettings = get_system_settings()
     if settings.USE_INFLUXDB:
         context['influxdb'] = 1
@@ -109,6 +110,7 @@ def scirius_render(request, template, context):
         context['netinfo_agg'] = 1
     if gsettings.use_elasticsearch:
         context['elasticsearch'] = 1
+        context['custom_elasticsearch'] = gsettings.custom_elasticsearch
         if settings.USE_KIBANA:
             context['kibana'] = 1
             if settings.KIBANA_PROXY:

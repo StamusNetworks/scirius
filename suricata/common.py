@@ -40,7 +40,7 @@ class Info():
             try:
                 sc.connect()
             except:
-                return 'danger'
+                return {'probe': 'danger'}
             res = sc.send_command('uptime', None)
             if res['return'] == 'OK':
                 suri_running = 'success'
@@ -55,7 +55,7 @@ class Info():
                     if pinfo['name'] == 'Suricata-Main':
                         suri_running = 'success'
                         break
-        return suri_running
+        return {'probe': suri_running}
 
     def disk(self):
         return psutil.disk_usage('/')
@@ -268,3 +268,11 @@ def changelog_ruleset(request, ruleset):
 
 def es_version_changed():
     pass
+
+
+def sn_loggers():
+    return {}
+
+
+def use_stamuslogger():
+    return False

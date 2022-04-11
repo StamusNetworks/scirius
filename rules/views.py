@@ -210,6 +210,8 @@ class Reference:
 
 
 def elasticsearch(request):
+    from scirius.utils import get_middleware_module
+
     RULE_FIELDS_MAPPING = {
         'rule_src': 'src_ip',
         'rule_dest': 'dest_ip',
@@ -219,6 +221,7 @@ def elasticsearch(request):
         'field_stats': None
     }
     context = {'es2x': get_es_major_version() >= 2}
+    context.update(get_middleware_module('common').sn_loggers())
 
     def check_perms(query):
         PERM_CONF_VIEW = ('indices', 'rule_probe', 'field_stats', None)
@@ -1935,7 +1938,7 @@ def info(request):
         info = PROBE.common.Info()
         query = request.GET.get('query', 'status')
         if query == 'status':
-            data = {'running': info.status()}
+            data = info.status()
         elif query == 'disk':
             data = info.disk()
         elif query == 'memory':

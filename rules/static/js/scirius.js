@@ -232,117 +232,140 @@ function draw_timeline(from_date, hosts, filter, ylegend=undefined) {
 }
 window.draw_timeline = draw_timeline;
 
-function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, autorange, ylegend=undefined) {
+function draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, autorange, ylegend=undefined, stacked=false) {
 
-        if (hosts) {
-            var hosts_list  = "&hosts=" + hosts.join();
-        } else {
-            hosts_list = "";
-            hosts = ['global'];
-        }
-        var esurl = "/rest/rules/es/logstash_eve/?from_date=" + from_date + "&value=" + value + hosts_list
-        $.ajax(
-                        {
-                        type:"GET",
-                        url:esurl,
-                        success: function(data) {
-                        if (data == null) {
-                            $("#logstash span").text("Unable to get data.");
-                            $("#error").text("Unable to get data from Elasticsearch");
-                            $("#error").parent().toggle();
-                            return null;
+    if (hosts) {
+        var hosts_list  = "&hosts=" + hosts.join();
+    } else {
+        hosts_list = "";
+        hosts = ['global'];
+    }
+    var esurl = "/rest/rules/es/logstash_eve/?from_date=" + from_date + "&value=" + value + hosts_list
+
+    $.ajax({
+        type:"GET",
+        url:esurl,
+        success: function(data) {
+            if (data == null) {
+                $("#logstash span").text("Unable to get data.");
+                $("#error").text("Unable to get data from Elasticsearch");
+                $("#error").parent().toggle();
+                return null;
+            }
+            if (!data.hasOwnProperty("from_date")) {
+                $("#logstash span").text("No data for period.");
+                return null;
+            }
+
+            if (hosts[0] === '*') {
+                let excludes = ['from_date', 'interval']
+                hosts = Object.keys(data);
+                hosts = hosts.filter(val => !excludes.includes(val));
+            }
+
+            $(tdiv +" span").hide();
+            nv.addGraph(function() {
+                var chart;
+                if (!stacked) {
+                    chart = nv.models.lineChart()
+                        .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+                        .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+                        .duration(350)  //how fast do you want the lines to transition?
+                        .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                        .showYAxis(true)        //Show the y-axis
+                        .showXAxis(true)        //Show the x-axis
+                    ;
+                } else {
+                    chart = nv.models.stackedAreaChart()
+                        .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+                        .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+                        .duration(350)  //how fast do you want the lines to transition?
+                        .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                        .showYAxis(true)        //Show the y-axis
+                        .showXAxis(true)        //Show the x-axis
+                    ;
+                }
+                chart.xAxis.tickFormat(function(d) {
+                    return d3.time.format('%m/%d %H:%M')(new Date(d))
+                });
+
+                chart.yAxis
+                    .tickFormat(d3.format(',.1f'));
+
+                if (ylegend) {
+                    $(tdiv + '_title').text(ylegend);
+                }
+
+                if (!autorange) {
+                    chart.forceY([0, 1]);
+                }
+
+                var end_interval = new Date().getTime();
+                chart.forceX([from_date, end_interval]);
+                var sdata = []
+                var starti = 0;
+
+                for (var hi = 0; hi < hosts.length; hi++) {
+                    if (!data[hosts[hi]]) {
+                        continue;
+                    }
+
+                    var entries = data[hosts[hi]]['entries']
+                    var gdata = []
+
+                    if (speed) {
+                        for (var i = 1; i < entries.length; i++) {
+                            gdata.push({
+                                x: entries[i]["time"],
+                                y: Math.max((entries[i]["mean"] - entries[i-1]["mean"])/(data['interval']/1000), 0)
+                            });
                         }
-                        if (!data.hasOwnProperty("from_date")) {
-                            $("#logstash span").text("No data for period.");
-                            return null;
-                        }
-			            $(tdiv +" span").hide();
-                            nv.addGraph(function() {
-                              var chart = nv.models.lineChart()
-                                            .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
-                                            .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
-                                            .duration(350)  //how fast do you want the lines to transition?
-                                            .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
-                                            .showYAxis(true)        //Show the y-axis
-                                            .showXAxis(true)        //Show the x-axis
-                              ;
-                                chart.xAxis.tickFormat(function(d) {
-                                    return d3.time.format('%m/%d %H:%M')(new Date(d))
-                                });
-
-                                chart.yAxis
-                                .tickFormat(d3.format(',.1f'));
-
-                                if (ylegend) {
-                                    $(tdiv + '_title').text(ylegend);
-                                }
-
-                                if (!autorange) {
-                                    chart.forceY([0, 1]);
-                                }
-
-                                var end_interval = new Date().getTime();
-                                chart.forceX([from_date, end_interval]);
-                                var sdata = []
-                                var gdata = []
-                                var starti = 0;
-                                var iter = 0;
-                                for (var hi = 0; hi < hosts.length; hi++) {
-                                    if (!data[hosts[hi]]) {
-                                        continue;
-                                    }
-                                    var entries = data[hosts[hi]]['entries']
-                                    if (speed) {
-                                        for (var i = 1; i < entries.length; i++) {
-                                                gdata.push({x: entries[i]["time"], y: Math.max((entries[i]["mean"] - entries[i-1]["mean"])/(data['interval']/1000), 0) });
-                                        }
-                                        sdata.push(
-                                        {
-                                            values: gdata,
-                                            key: hosts[hi] + " speed",
-                                            //color: '#AD9C9B',  //color - optional: choose your own line color.
-
-                                            area: true
-                                        }
-                                        );
-                                    } else {
-                                        for (i = starti; i < entries.length; i++) {
-                                                gdata.push({x: entries[i]["time"], y: entries[i]["mean"]});
-                                        }
-                                        sdata.push(
-                                        {
-                                            values: gdata,
-                                            key: hosts[hi],
-                                            //color: '#AD9C9B',  //color - optional: choose your own line color.
-                                            area: true
-                                        });
-                                    }
-                                }
-
-                                d3.select(tdiv + ' svg')
-                                        .datum(sdata)
-                                        .call(chart);
-
-                                nv.utils.windowResize(function() { chart.update(); });
-                                $("[role='tab']").on('shown.bs.tab', function() {
-                                    chart.duration(0);
-                                    chart.update();
-                                    chart.duration(350);
-                                });
-                                return chart;
+                        sdata.push({
+                            values: gdata,
+                            key: hosts[hi] + " speed",
+                            //color: '#AD9C9B',  //color - optional: choose your own line color.
+                            area: true
                         });
-                },
-	    error: function(data) {
-             $(tdiv).text("Unable to get data.");
-             $("#error").text("Unable to get data from Elasticsearch");
-             $("#error").parent().toggle();
-	    }
-        });
+                    } else {
+                        for (var i = starti; i < entries.length; i++) {
+                            gdata.push({
+                                x: entries[i]["time"],
+                                y: entries[i]["mean"]
+                            });
+                        }
+                        sdata.push({
+                            values: gdata,
+                            key: hosts[hi],
+                            //color: '#AD9C9B',  //color - optional: choose your own line color.
+                            area: true
+                        });
+                    }
+                }
+
+                d3.select(tdiv + ' svg')
+                    .datum(sdata)
+                    .call(chart);
+
+                nv.utils.windowResize(function() { chart.update(); });
+                $("[role='tab']").on('shown.bs.tab', function() {
+                    chart.duration(0);
+                    chart.update();
+                    chart.duration(350);
+                });
+                return chart;
+            });
+        },
+        error: function(data) {
+            $(tdiv).text("Unable to get data.");
+            $("#error").text("Unable to get data from Elasticsearch");
+            $("#error").parent().toggle();
+        }
+    });
 }
 window.draw_stats_timeline_with_range = draw_stats_timeline_with_range;
 
-function draw_stats_timeline(from_date, value, tdiv, speed, hosts, ylegend=undefined) {
-     draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, false, ylegend);
+function draw_stats_timeline(from_date, value, tdiv, speed, hosts, ylegend=undefined, stacked = false) {
+     draw_stats_timeline_with_range(from_date, value, tdiv, speed, hosts, false, ylegend, stacked);
 }
 window.draw_stats_timeline = draw_stats_timeline;
 

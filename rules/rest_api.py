@@ -2314,7 +2314,15 @@ class ESLogstashEveViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         value = request.GET.get('value', None)
-        return Response(ESMetricsTimeline(request, value).get())
+        hosts = self.request.GET.get('hosts', 'global')
+        hosts = hosts.split(',')
+
+        res = {}
+        for host in hosts:
+            data = ESMetricsTimeline(request, value).get(host=host)
+            res.update(data)
+
+        return Response(res)
 
 
 class ESHealthViewSet(ESBaseViewSet):

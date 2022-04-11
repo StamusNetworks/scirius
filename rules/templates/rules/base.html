@@ -131,10 +131,12 @@
                         </div>
                         <div class="panel-body">
                             {% if perms.rules.configuration_view %}
-                                <div id="suri-status" class="label label-default space-add">
-                                    <a href="/{{ generator }}/">Suricata</a>
-                                </div>
-                                {% if elasticsearch %}
+                                {% if generator == 'suricata' %}
+                                    <div id="probe-status" class="label label-default space-add">
+                                        <a href="/{{ generator }}/">Suricata</a>
+                                    </div>
+                                {% endif %}
+                                {% if elasticsearch and not custom_elasticsearch %}
                                     <div id="health" class="label label-default space-add">
                                         <a href="{% url 'elasticsearch' %}">Elasticsearch</a>
                                     </div>
@@ -148,6 +150,30 @@
                             {% endif %}
                         </div>
                     </div>
+                    {% if generator != 'suricata' %}
+                        <div class="panel panel-default" id="platform-status">
+                            <div class="panel-heading">
+                                <h2 class="panel-title">Platform status</h2>
+                            </div>
+                            <div class="panel-body">
+                                {% if perms.rules.configuration_view %}
+                                    <div id="probe-status" class="label label-default space-add">
+                                        <a href="/{{ generator }}/">Probes</a>
+                                    </div>
+                                    {% if use_stamuslogger %}
+                                        <div id="logger-status" class="label label-default space-add">
+                                            <a href="/{{ generator }}/">Loggers</a>
+                                        </div>
+                                    {% endif %}
+                                    {% if elasticsearch and custom_elasticsearch %}
+                                        <div id="health" class="label label-default space-add">
+                                            <a href="{% url 'elasticsearch' %}">Elasticsearch</a>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
                     <div class="panel panel-default" id="sidebar">
                         {% block sidebar %}
                             <div class="panel-heading">
@@ -485,14 +511,26 @@ function get_suricata_health() {
         type:"GET",
         url:"{% url 'info' %}?query=status",
         success: function(data) {
-            $("#suri-status").removeClass("label-danger");
-            $("#suri-status").removeClass("label-default");
-            $("#suri-status").removeClass("label-success");
-            $("#suri-status").removeClass("label-warning");
+            $("#probe-status").removeClass("label-danger");
+            $("#probe-status").removeClass("label-default");
+            $("#probe-status").removeClass("label-success");
+            $("#probe-status").removeClass("label-warning");
+
+            {% if generator != 'suricata' and use_stamuslogger %}
+                $("#logger-status").removeClass("label-danger");
+                $("#logger-status").removeClass("label-default");
+                $("#logger-status").removeClass("label-success");
+                $("#logger-status").removeClass("label-warning");
+            {% endif %}
+
             if (!data) {
-                $("#suri-status").addClass("label-danger");
+                $("#probe-status").addClass("label-danger");
+                $("#logger-status").addClass("label-danger");
             } else {
-                $("#suri-status").addClass("label-" + data['running']);
+                $("#probe-status").addClass("label-" + data['probe']);
+                {% if generator != 'suricata' and use_stamuslogger %}
+                    $("#logger-status").addClass("label-" + data['logger']);
+                {% endif %}
             }
         },
         error: function(data) {

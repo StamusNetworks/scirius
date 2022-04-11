@@ -459,20 +459,19 @@ class ESMetricsTimeline(ESQuery):
     def __init__(self, request, value='eve.total.rate_1m'):
         super().__init__(request)
         self.value = value
-        hosts = self.request.GET.get('hosts', 'global')
-        self.hosts = hosts.split(',')
 
     def _get_index_name(self):
         if self.value.startswith('stats.'):
             return settings.ELASTICSEARCH_LOGSTASH_INDEX
         return 'metricbeat-'
 
-    def _get_query(self):
+    def _get_query(self, host, *args, **kwargs):
+        query = ''
         if self.value.startswith('eve_insert.'):
-            query = 'tags:metric'
-        else:
-            query = ' '.join(['host:%s' % h for h in self.hosts])
-            query += self._qfilter()
+            query = 'tags:metric AND '
+
+        query += f'host:{host}'
+        query += self._qfilter()
 
         q = {
             'size': 0,
@@ -481,7 +480,11 @@ class ESMetricsTimeline(ESQuery):
                     'date_histogram': {
                         'field': ES_TIMESTAMP,
                         self._es_interval_kw(): self._es_interval(),
-                        'min_doc_count': 0
+                        'min_doc_count': 0,
+                        'extended_bounds': {
+                            'min': self._from_date(),
+                            'max': self._to_date()
+                        }
                     },
                     'aggs': {
                         'stat': {
@@ -513,8 +516,9 @@ class ESMetricsTimeline(ESQuery):
         q['query']['bool'].update(self._es_bool_clauses())
         return q
 
-    def get(self):
-        data = super().get()
+    def get(self, *args, **kwargs):
+        host = kwargs.get('host')
+        data = super().get(*args, **kwargs)
 
         # total number of results
         try:
@@ -522,10 +526,10 @@ class ESMetricsTimeline(ESQuery):
             rdata = {}
             for elt in data:
                 date = elt['key']
-                if self.hosts[0] not in rdata:
-                    rdata[self.hosts[0]] = {'entries': [{'time': date, 'mean': elt['stat']['value']}]}
+                if host not in rdata:
+                    rdata[host] = {'entries': [{'time': date, 'mean': elt['stat']['value']}]}
                 else:
-                    rdata[self.hosts[0]]['entries'].append({'time': date, 'mean': elt['stat']['value']})
+                    rdata[host]['entries'].append({'time': date, 'mean': elt['stat']['value']})
             data = rdata
         except:
             return {}
