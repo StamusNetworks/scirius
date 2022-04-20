@@ -230,7 +230,7 @@ SCIRIUS_HAS_DOC = True
 SCIRIUS_IN_SELKS = True
 
 # Sources update
-DEFAULT_SOURCE_INDEX_URL = "https://www.openinfosecfoundation.org/rules/index.yaml"
+DEFAULT_SOURCE_INDEX_URL = "https://ti.stamus-networks.io/index.yaml"
 
 # Elastic search
 
