@@ -18,6 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+if ! python manage.py diffsettings --all | grep -F 'USE_KIBANA' | grep -qiF 'true'; then
+  echo 'Found USE_KIBANA=False, skipping Kibana dashboards reset'
+  exit 0
+fi
+
 cd /opt/scirius/
 
 KIBANA_LOADED="/data/kibana_dashboards"

@@ -21,6 +21,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+if ! python manage.py diffsettings --all | grep -F 'USE_ELASTICSEARCH' | grep -qiF 'true'; then
+  echo 'Found USE_ELASTICSEARCH=False, not creating ILM policy'
+  exit 0
+fi
+
 while true
 do
   ELASTICSEARCH_ADDRESS=$(python manage.py diffsettings --all |grep 'ELASTICSEARCH_ADDRESS' | cut -d"'" -f 2)
