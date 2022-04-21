@@ -2,7 +2,7 @@
 from .suripyg import SuriHTMLFormat
 
 from django.conf import settings
-from django.conf.urls import url
+from django.urls import re_path
 from django.utils import timezone
 from django.db import models
 from collections import OrderedDict
@@ -3148,7 +3148,7 @@ class ESGraphAggViewSet(ESBaseViewSet):
 
 def get_custom_urls():
     urls = []
-    url_ = url(r'rules/system_settings/$', SystemSettingsViewSet.as_view({
+    url_ = re_path(r'rules/system_settings/$', SystemSettingsViewSet.as_view({
         'get': 'retrieve',
         'put': 'update',
         'patch': 'partial_update',
@@ -3156,40 +3156,40 @@ def get_custom_urls():
 
     urls.append(url_)
 
-    url_ = url(r'rules/hunt-filter/$', HuntFilterAPIView.as_view(), name='hunt_filter')
+    url_ = re_path(r'rules/hunt-filter/$', HuntFilterAPIView.as_view(), name='hunt_filter')
     urls.append(url_)
 
-    urls.append(url(r'rules/es/rules/$', ESRulesViewSet.as_view(), name='es_rules'))
-    urls.append(url(r'rules/es/rule/$', ESRuleViewSet.as_view(), name='es_rule'))
-    urls.append(url(r'rules/es/filter_ip/$', ESFilterIPViewSet.as_view(), name='es_filter_ip'))
-    urls.append(url(r'rules/es/field_stats/$', ESFieldStatsViewSet.as_view(), name='es_field_stats'))
-    urls.append(url(r'rules/es/fields_stats/$', ESFieldsStatsViewSet.as_view(), name='es_fields_stats'))
-    urls.append(url(r'rules/es/poststats_summary/$', ESPostStatsViewSet.as_view(), name='es_poststats_summary'))
-    urls.append(url(r'rules/es/sigs_list/$', ESSigsListViewSet.as_view(), name='es_sigs_list'))
-    urls.append(url(r'rules/es/top_rules/$', ESTopRulesViewSet.as_view(), name='es_top_rules'))
-    urls.append(url(r'rules/es/timeline/$', ESTimelineViewSet.as_view(), name='es_timeline'))
-    urls.append(url(r'rules/es/logstash_eve/$', ESLogstashEveViewSet.as_view(), name='es_logstash_eve'))
-    urls.append(url(r'rules/es/health/$', ESHealthViewSet.as_view(), name='es_health'))
-    urls.append(url(r'rules/es/stats/$', ESStatsViewSet.as_view(), name='es_stats'))
-    urls.append(url(r'rules/es/check_version/$', ESCheckVersionViewSet.as_view(), name='es_check_version'))
-    urls.append(url(r'rules/es/rules_per_category/$', ESRulesPerCategoryViewSet.as_view(), name='es_rules_per_category'))
-    urls.append(url(r'rules/es/alerts_count/$', ESAlertsCountViewSet.as_view(), name='es_alerts_count'))
-    urls.append(url(r'rules/es/alerts_timerange/$', ESTimeRangeAllAlertsViewSet.as_view(), name='es_alerts_timerange'))
-    urls.append(url(r'rules/es/latest_stats/$', ESLatestStatsViewSet.as_view(), name='es_latest_stats'))
-    urls.append(url(r'rules/es/ip_pair_alerts/$', ESIPPairAlertsViewSet.as_view(), name='es_ip_pair_alerts'))
-    urls.append(url(r'rules/es/ip_pair_network_alerts/$', ESIPPairNetworkAlertsViewSet.as_view(), name='es_ip_pair_network_alerts'))
-    urls.append(url(r'rules/es/alerts_tail/$', ESAlertsTailViewSet.as_view(), name='es_alerts_tail'))
-    urls.append(url(r'rules/es/events_tail/$', ESEventsTailViewSet.as_view(), name='es_events_tail'))
-    urls.append(url(r'rules/es/tls_tail/$', ESTLSTailViewSet.as_view(), name='es_tls_tail'))
-    urls.append(url(r'rules/es/events_timeline/$', ESEventsTimelineViewSet.as_view(), name='es_events_timeline'))
-    urls.append(url(r'rules/es/flow_timeline/$', ESFlowTimelineViewSet.as_view(), name='es_flow_timeline'))
-    urls.append(url(r'rules/es/events_from_flow_id/$', ESEventsFromFlowIDViewSet.as_view(), name='es_events_from_flow_id'))
-    urls.append(url(r'rules/es/suri_log_tail/$', ESSuriLogTailViewSet.as_view(), name='es_suri_log_tail'))
-    urls.append(url(r'rules/es/delete_logs/$', ESDeleteLogsViewSet.as_view(), name='es_delete_logs'))
-    urls.append(url(r'rules/scirius_context/$', SciriusContextAPIView.as_view(), name='scirius_context'))
-    urls.append(url(r'rules/es/unique_fields/$', ESUniqueFieldViewSet.as_view(), name='es_unique_fields'))
-    urls.append(url(r'rules/es/graph_agg/$', ESGraphAggViewSet.as_view(), name='es_graph_agg'))
-    urls.append(url(r'rules/es/unique_values/$', ESFieldUniqViewSet.as_view(), name='es_unique_values'))
+    urls.append(re_path(r'rules/es/rules/$', ESRulesViewSet.as_view(), name='es_rules'))
+    urls.append(re_path(r'rules/es/rule/$', ESRuleViewSet.as_view(), name='es_rule'))
+    urls.append(re_path(r'rules/es/filter_ip/$', ESFilterIPViewSet.as_view(), name='es_filter_ip'))
+    urls.append(re_path(r'rules/es/field_stats/$', ESFieldStatsViewSet.as_view(), name='es_field_stats'))
+    urls.append(re_path(r'rules/es/fields_stats/$', ESFieldsStatsViewSet.as_view(), name='es_fields_stats'))
+    urls.append(re_path(r'rules/es/poststats_summary/$', ESPostStatsViewSet.as_view(), name='es_poststats_summary'))
+    urls.append(re_path(r'rules/es/sigs_list/$', ESSigsListViewSet.as_view(), name='es_sigs_list'))
+    urls.append(re_path(r'rules/es/top_rules/$', ESTopRulesViewSet.as_view(), name='es_top_rules'))
+    urls.append(re_path(r'rules/es/timeline/$', ESTimelineViewSet.as_view(), name='es_timeline'))
+    urls.append(re_path(r'rules/es/logstash_eve/$', ESLogstashEveViewSet.as_view(), name='es_logstash_eve'))
+    urls.append(re_path(r'rules/es/health/$', ESHealthViewSet.as_view(), name='es_health'))
+    urls.append(re_path(r'rules/es/stats/$', ESStatsViewSet.as_view(), name='es_stats'))
+    urls.append(re_path(r'rules/es/check_version/$', ESCheckVersionViewSet.as_view(), name='es_check_version'))
+    urls.append(re_path(r'rules/es/rules_per_category/$', ESRulesPerCategoryViewSet.as_view(), name='es_rules_per_category'))
+    urls.append(re_path(r'rules/es/alerts_count/$', ESAlertsCountViewSet.as_view(), name='es_alerts_count'))
+    urls.append(re_path(r'rules/es/alerts_timerange/$', ESTimeRangeAllAlertsViewSet.as_view(), name='es_alerts_timerange'))
+    urls.append(re_path(r'rules/es/latest_stats/$', ESLatestStatsViewSet.as_view(), name='es_latest_stats'))
+    urls.append(re_path(r'rules/es/ip_pair_alerts/$', ESIPPairAlertsViewSet.as_view(), name='es_ip_pair_alerts'))
+    urls.append(re_path(r'rules/es/ip_pair_network_alerts/$', ESIPPairNetworkAlertsViewSet.as_view(), name='es_ip_pair_network_alerts'))
+    urls.append(re_path(r'rules/es/alerts_tail/$', ESAlertsTailViewSet.as_view(), name='es_alerts_tail'))
+    urls.append(re_path(r'rules/es/events_tail/$', ESEventsTailViewSet.as_view(), name='es_events_tail'))
+    urls.append(re_path(r'rules/es/tls_tail/$', ESTLSTailViewSet.as_view(), name='es_tls_tail'))
+    urls.append(re_path(r'rules/es/events_timeline/$', ESEventsTimelineViewSet.as_view(), name='es_events_timeline'))
+    urls.append(re_path(r'rules/es/flow_timeline/$', ESFlowTimelineViewSet.as_view(), name='es_flow_timeline'))
+    urls.append(re_path(r'rules/es/events_from_flow_id/$', ESEventsFromFlowIDViewSet.as_view(), name='es_events_from_flow_id'))
+    urls.append(re_path(r'rules/es/suri_log_tail/$', ESSuriLogTailViewSet.as_view(), name='es_suri_log_tail'))
+    urls.append(re_path(r'rules/es/delete_logs/$', ESDeleteLogsViewSet.as_view(), name='es_delete_logs'))
+    urls.append(re_path(r'rules/scirius_context/$', SciriusContextAPIView.as_view(), name='scirius_context'))
+    urls.append(re_path(r'rules/es/unique_fields/$', ESUniqueFieldViewSet.as_view(), name='es_unique_fields'))
+    urls.append(re_path(r'rules/es/graph_agg/$', ESGraphAggViewSet.as_view(), name='es_graph_agg'))
+    urls.append(re_path(r'rules/es/unique_values/$', ESFieldUniqViewSet.as_view(), name='es_unique_values'))
 
     return urls
 

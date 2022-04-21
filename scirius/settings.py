@@ -104,6 +104,8 @@ ROOT_URLCONF = 'scirius.urls'
 
 WSGI_APPLICATION = 'scirius.wsgi.application'
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
@@ -305,8 +307,8 @@ PROXY_PARAMS = {'http': "http://proxy:3128", 'https': "http://proxy:3128"}
 
 GIT_SOURCES_BASE_DIRECTORY = os.path.join(BASE_DIR, 'git-sources/')
 
-DBBACKUP_STORAGE = 'dbbackup.storage.filesystem_storage'
-# DBBACKUP_STORAGE_OPTIONS = {'location': '/var/backups'}
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': '/var/backups'}
 
 # Ruleset generator framework
 RULESET_MIDDLEWARE = 'suricata'

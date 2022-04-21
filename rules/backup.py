@@ -28,8 +28,10 @@ import sys
 import json
 import git
 
-from dbbackup.dbcommands import DBCommands
-from dbbackup.storage.base import BaseStorage
+from dbbackup.db.base import get_connector
+from dbbackup.storage import get_storage
+from dbbackup.management.commands.dbbackup import Command as DBBackupCommands
+from dbbackup.management.commands.dbrestore import Command as DBRestoreCommand
 from dbbackup.utils import filename_generate
 
 from django.core.management import call_command
@@ -86,9 +88,9 @@ class SCOperation(object):
 
 class SCBackup(SCOperation):
     def __init__(self, no_history=False):
-        self.storage = BaseStorage.storage_factory()
-        self.servername = DB_SERVERNAME
         self.no_history = no_history
+        self.dbcommands = DBBackupCommands()
+        self.database = settings.DATABASES['default']
 
     def backup_git_sources(self):
         # Create a tar of the git sources in the target directory
@@ -117,10 +119,17 @@ class SCBackup(SCOperation):
             shutil.rmtree(sources_path)
 
     def backup_db(self):
-        database = settings.DATABASES['default']
-        self.dbcommands = DBCommands(database)
-        with open(os.path.join(self.directory, 'dbbackup'), 'w') as outputfile:
-            self.dbcommands.run_backup_commands(outputfile)
+        self.dbcommands.servername = DB_SERVERNAME
+        self.dbcommands.clean = True
+        self.dbcommands.encrypt = False
+        self.dbcommands.compress = False
+        self.dbcommands.database = self.database['NAME']
+        self.dbcommands.storage = get_storage()
+        self.dbcommands.connector = get_connector()
+        self.dbcommands.connector.drop = False
+        self.dbcommands.path = os.path.join(self.directory, 'dbbackup')
+        self.dbcommands.filename = 'dbbackup'
+        self.dbcommands._save_new_backup(self.database)
 
     def backup_ruleset_middleware(self):
         try:
@@ -147,7 +156,7 @@ class SCBackup(SCOperation):
         # create tar archive of dir
         call_dir = os.getcwd()
         os.chdir(self.directory)
-        filename = filename_generate('tar.bz2', self.dbcommands.settings.database['NAME'], self.servername)
+        filename = filename_generate('tar.bz2', self.dbcommands.database, self.dbcommands.servername)
         outputfile = tempfile.SpooledTemporaryFile()
         ts = tarfile.open(filename, 'w:bz2', fileobj=outputfile)
 
@@ -155,19 +164,27 @@ class SCBackup(SCOperation):
             ts.add(dfile)
 
         ts.close()
-        self.storage.write_file(outputfile, filename)
+        self.dbcommands.storage.write_file(outputfile, filename)
         shutil.rmtree(self.directory)
         os.chdir(call_dir)
+        sys.stdout.write('Backup done: %s\n' % filename)
 
 
 class SCRestore(SCOperation):
     def __init__(self, filepath=None):
-        self.storage = BaseStorage.storage_factory()
-        if filepath:
-            self.filepath = filepath
-        else:
-            self.filepath = self.storage.get_latest_backup()
-        self.servername = DB_SERVERNAME
+        self.database = settings.DATABASES['default']
+        self.dbcommands = DBRestoreCommand()
+        self.dbcommands.uncompress = False
+        self.dbcommands.decrypt = False
+        self.dbcommands.storage = get_storage()
+        self.dbcommands.connector = get_connector()
+        self.dbcommands.servername = DB_SERVERNAME
+        self.dbcommands.interactive = False
+        self.dbcommands.passphrase = None
+        self.dbcommands.database_name = 'default'
+        self.dbcommands.database = self.database
+        self.dbcommands.filename = filepath
+        self.filepath = filepath
 
     def restore_git_sources(self):
         sys.stdout.write("Restoring to %s from %s\n" % (settings.GIT_SOURCES_BASE_DIRECTORY, self.directory))
@@ -181,11 +198,8 @@ class SCRestore(SCOperation):
         ts.extractall()
 
     def restore_db(self):
-        database = settings.DATABASES['default']
-        self.dbcommands = DBCommands(database)
-        filepath = os.path.join(self.directory, 'dbbackup')
-        with open(filepath, 'r') as inputfile:
-            self.dbcommands.run_restore_commands(inputfile)
+        self.dbcommands.path = os.path.join(self.directory, 'dbbackup')
+        self.dbcommands._restore_backup()
 
     def restore_ruleset_middleware(self):
         try:
@@ -203,9 +217,9 @@ class SCRestore(SCOperation):
 
     def run(self):
         # extract archive in tmp directory
-        inputfile = self.storage.read_file(self.filepath)
+        inputfile = self.dbcommands.storage.read_file(self.dbcommands.filename)
         call_dir = os.getcwd()
-        ts = tarfile.open(self.filepath, 'r', fileobj=inputfile)
+        ts = tarfile.open(self.dbcommands.filename, 'r', fileobj=inputfile)
         tmpdir = tempfile.mkdtemp()
         os.chdir(tmpdir)
         ts.extractall()

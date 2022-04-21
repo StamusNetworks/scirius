@@ -1,9 +1,9 @@
 daemon
-Django<3
+Django<4
 django-bootstrap3
 django-revproxy
 django-tables2
-django-dbbackup<3.0
+django-dbbackup<4
 django-auth-ldap
 django-csp
 gitdb

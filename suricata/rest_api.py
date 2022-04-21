@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from suricata.models import Suricata
 from django.utils import timezone
 from django.conf import settings
-from django.conf.urls import url
+from django.urls import re_path
 from django.http import HttpResponse
 
 
@@ -63,10 +63,10 @@ class SuricataViewSet(APIView):
 
 def get_custom_urls():
     urls = [
-        url(r'suricata/update_push_all/$', SuricataViewSet.as_view(), name='suricata'),
-        url(r'suricata/filestore/(?P<sha256>[0-9a-f]{64})/status/$', FilestoreViewSet.as_view({'get': 'status'}), name='filestore_status'),
-        url(r'suricata/filestore/(?P<sha256>[0-9a-f]{64})/retrieve/$', FilestoreViewSet.as_view({'get': 'retrieve_'}), name='filestore_retrieve'),
-        url(r'suricata/filestore/(?P<sha256>[0-9a-f]{64})/download/$', FilestoreViewSet.as_view({'get': 'download'}), name='filestore_download'),
+        re_path(r'suricata/update_push_all/$', SuricataViewSet.as_view(), name='suricata'),
+        re_path(r'suricata/filestore/(?P<sha256>[0-9a-f]{64})/status/$', FilestoreViewSet.as_view({'get': 'status'}), name='filestore_status'),
+        re_path(r'suricata/filestore/(?P<sha256>[0-9a-f]{64})/retrieve/$', FilestoreViewSet.as_view({'get': 'retrieve_'}), name='filestore_retrieve'),
+        re_path(r'suricata/filestore/(?P<sha256>[0-9a-f]{64})/download/$', FilestoreViewSet.as_view({'get': 'download'}), name='filestore_download'),
     ]
     return urls
 
