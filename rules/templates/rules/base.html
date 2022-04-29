@@ -393,6 +393,21 @@
                                     </span>
                                 </div>
                             {% endif %}
+                            {% if warning %}
+                                <div class="alert alert-warning alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert">
+                                        <span aria-hidden="true">
+                                            &times;
+                                        </span>
+                                        <span class="sr-only">
+                                            Close
+                                        </span>
+                                    </button>
+                                    <span id="error">
+                                        {{ warning }}
+                                    </span>
+                                </div>
+                            {% endif %}
                         {% endblock error %}
                         {% block content %}{% endblock content %}
                     </div>
