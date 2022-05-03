@@ -1,7 +1,5 @@
 import selectors from 'ui/containers/App/selectors';
-import { createStore } from 'redux';
-import createReducer from '../reducers';
-const store = createStore(createReducer());
+import { store } from '../store';
 
 const translateUrl = (path, parameters = {}) => {
   const state = store.getState();

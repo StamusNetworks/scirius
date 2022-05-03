@@ -1,4 +1,4 @@
-import configureStore from './configureStore';
-import history from './utils/history';
-const store = configureStore({}, history);
-export default store;
+import configureStore from "./configureStore";
+import history from "./utils/history";
+
+export const store = configureStore({}, history);

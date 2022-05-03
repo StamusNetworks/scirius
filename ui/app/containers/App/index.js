@@ -6,6 +6,7 @@
  * contain code that should be seen on all pages. (e.g. navigation bar)
  */
 import React, { useEffect, useState } from 'react';
+import withSaga from 'utils/injectSaga';
 import { Switch, Redirect, Route } from 'react-router-dom';
 import { Layout } from 'antd';
 import pages from 'ui/pages';
@@ -26,6 +27,7 @@ import actions from 'ui/containers/App/actions';
 import selectors from 'ui/containers/App/selectors';
 import ErrorHandler from 'ui/components/ErrorHandler';
 import ProxyRoute from 'ui/components/ProxyRoute';
+import saga from "ui/containers/App/saga";
 
 const pagesList = Object.keys(pages);
 
@@ -125,4 +127,4 @@ const withConnect = connect(
   mapStateToProps,
   mapDispatchToProps,
 );
-export default compose(withConnect)(App);
+export default withSaga({key: 'root', saga})(compose(withConnect)(App));

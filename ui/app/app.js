@@ -19,9 +19,7 @@ import App from 'ui/containers/App';
 
 // Load the favicon and the .htaccess file
 import '!file-loader?name=[name].[ext]!./images/favicon.ico';
-
-import configureStore from './configureStore';
-const store = configureStore({}, history);
+import { store } from "./store";
 
 // Observe loading of Open Sans (to remove open sans, remove the <link> tag in
 // the index.html file and this observer)
