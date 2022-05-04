@@ -27,6 +27,16 @@ urlpatterns = [
     # Kibana 5.2 specific
     url(r'^(?P<path>ui/fonts.*)$', KibanaProxyView.as_view()),
     url(r'^(?P<path>es_admin.*)$', KibanaProxyView.as_view()),
+    # Kibana 7 specific
+    url(r'^(?P<path>ui/.*)$', KibanaProxyView.as_view()),
+    url(r'^(?P<path>dlls/.*)$', KibanaProxyView.as_view()),
+    url(r'^(?P<path>translations/.*)$', KibanaProxyView.as_view()),
+    url(r'^(?P<path>internal/.*)$', KibanaProxyView.as_view()),
+    url(r'^(?P<path>goto/.*)$', KibanaProxyView.as_view()),
+    url(r'^(?P<path>[\d]{5}/.*)$', KibanaProxyView.as_view()),
+    url(r'^(?P<path>bootstrap\.js$)', KibanaProxyView.as_view()),
+    url(r'^(?P<path>spaces/.*$)', KibanaProxyView.as_view()),
+    url(r'^(?P<path>node_modules/.*$)', KibanaProxyView.as_view()),
 
     # Moloch proxy
     url(r'^moloch/(?P<path>.*)$', MolochProxyView.as_view()),
