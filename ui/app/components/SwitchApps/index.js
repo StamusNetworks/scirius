@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import { createStructuredSelector } from 'reselect';
 import styled from 'styled-components';
 import { Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
 import LaunchRounded from "@material-ui/icons/LaunchRounded";
 
 import * as config from 'ui/config';
@@ -79,7 +78,7 @@ function SwitchApps({ user }) {
             <LaunchRounded style={{ color: "currentColor", strokeWidth: 1.5, fill: "#005792" }} />
           </AppItem>
         )}
-        {loading && <Spin indicator={<LoadingOutlined spin />} />}
+        {loading && <Spin />}
       </AppsContainer>
     </React.Fragment>
   );

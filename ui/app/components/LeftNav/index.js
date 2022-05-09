@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Layout, Menu, Spin } from 'antd';
 import { useLocation, withRouter } from 'react-router-dom';
-import { LoadingOutlined } from '@ant-design/icons';
 import { default as Icon } from 'ui/components/IconAntd';
 import pages from 'ui/pages';
 import { APP_URL } from 'ui/config';
@@ -71,7 +70,7 @@ function LeftNav({ user, systemSettings }) {
         {renderSubMenus}
         {loading && (
           <Menu.Item key='loading'>
-            <Spin indicator={<LoadingOutlined spin />} />
+            <Spin />
           </Menu.Item>
         )}
       </Menu>
