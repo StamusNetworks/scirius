@@ -30,7 +30,8 @@ import { buildFilterParams } from 'buildFilterParams';
 import RuleToggleModal from 'RuleToggleModal';
 import ErrorHandler from 'ui/components/Error';
 import HuntRestError from 'ui/components/HuntRestError';
-import HuntFilter from '../../HuntFilter';
+import { sections } from 'ui/constants';
+import Filters from 'ui/components/Filters';
 import AlertItem from './components/AlertItem';
 import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction } from '../../helpers/common';
 
@@ -38,8 +39,6 @@ export class AlertsPage extends React.Component {
   constructor(props) {
     super(props);
 
-    const huntFilters = store.get('huntFilters');
-    const rulesFilters = typeof huntFilters !== 'undefined' && typeof huntFilters.alertslist !== 'undefined' ? huntFilters.alertslist.data : [];
     this.state = {
       alerts: [],
       rulesets: [],
@@ -47,7 +46,6 @@ export class AlertsPage extends React.Component {
       action: { view: false, type: 'suppress' },
       // eslint-disable-next-line react/no-unused-state
       net_error: undefined,
-      rulesFilters,
       // eslint-disable-next-line react/no-unused-state
       supported_actions: [],
       errors: null,
@@ -93,7 +91,6 @@ export class AlertsPage extends React.Component {
             data: fdata,
           },
         });
-        this.setState({ rulesFilters: fdata });
       }
     });
     if (this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
@@ -145,16 +142,10 @@ export class AlertsPage extends React.Component {
       <div className="AlertsList HuntList">
         {this.state.errors && <HuntRestError errors={this.state.errors} />}
         <ErrorHandler>
-          <HuntFilter
-            config={this.props.rules_list}
-            ActiveSort={this.props.rules_list.sort}
-            UpdateSort={this.UpdateSort}
-            filterFields={this.state.rulesFilters}
-            sort_config={undefined}
-            actionsButtons={this.actionsButtons}
-            queryType={['filter', 'filter_host_id']}
-            page={this.props.page}
-            systemSettings={this.props.systemSettings}
+          <Filters
+            page='ALERTS'
+            section={sections.GLOBAL}
+            queryTypes={['filter', 'filter_host_id']}
           />
         </ErrorHandler>
         <Spin spinning={this.state.loading} />
@@ -206,7 +197,6 @@ AlertsPage.propTypes = {
   filtersWithAlert: PropTypes.any,
   systemSettings: PropTypes.any,
   updateListState: PropTypes.any,
-  page: PropTypes.any,
   addFilter: PropTypes.func,
   filterParams: PropTypes.object.isRequired,
   user: PropTypes.shape({

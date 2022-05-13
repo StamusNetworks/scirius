@@ -36,10 +36,10 @@ import RuleToggleModal from 'RuleToggleModal';
 import { sections } from 'ui/constants';
 import EventValue from 'ui/components/EventValue';
 import ErrorHandler from 'ui/components/Error';
+import Filters from 'ui/components/Filters';
 import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
 import { actionsButtons, loadActions, createAction, closeAction } from '../../helpers/common';
-import HuntFilter from '../../HuntFilter';
 import '../../../node_modules/react-grid-layout/css/styles.css';
 import '../../../node_modules/react-resizable/css/styles.css';
 import copyTextToClipboard from '../../helpers/copyTextToClipboard';
@@ -734,17 +734,10 @@ export class HuntDashboard extends React.Component {
     return (
       <div className="HuntList">
         <ErrorHandler>
-          <HuntFilter
-            config={this.props.rules_list}
-            ActiveSort={this.props.rules_list.sort}
-            UpdateSort={this.UpdateSort}
-            filterFields={this.state.rulesFilters}
-            sort_config={undefined}
-            actionsButtons={this.actionsButtons}
-            queryType={['filter', 'filter_host_id']}
-            page={this.props.page}
-            filterType={sections.GLOBAL}
-            systemSettings={this.props.systemSettings}
+          <Filters
+            page='DASHBOARD'
+            section={sections.GLOBAL}
+            queryTypes={['filter', 'filter_host_id']}
           />
         </ErrorHandler>
 
@@ -926,7 +919,6 @@ HuntDashboard.propTypes = {
   children: PropTypes.any,
   rules_list: PropTypes.any,
   updateListState: PropTypes.any,
-  page: PropTypes.any,
   filtersWithAlert: PropTypes.array,
   filterParams: PropTypes.object.isRequired,
   user: PropTypes.shape({

@@ -24,32 +24,11 @@ import { List, Spin } from 'antd';
 import axios from 'axios';
 import * as config from 'config/Api';
 import { sections } from 'ui/constants';
+import Filters from 'ui/components/Filters';
 import HistoryItem from 'ui/components/HistoryItem';
 import ErrorHandler from 'ui/components/Error';
-import HuntFilter from '../../HuntFilter';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import { buildFilter, buildListUrlParams } from '../../helpers/common';
-
-const HistorySortFields = [
-  {
-    id: 'date',
-    title: 'Date',
-    isNumeric: true,
-    defaultAsc: false,
-  },
-  {
-    id: 'username',
-    title: 'User',
-    isNumeric: false,
-    defaultAsc: false,
-  },
-  {
-    id: 'client_ip',
-    title: 'Client IP',
-    isNumeric: false,
-    defaultAsc: false,
-  },
-];
 
 export default class HistoryPage extends React.Component {
   constructor(props) {
@@ -147,16 +126,10 @@ export default class HistoryPage extends React.Component {
     return (
       <div className="HistoryList HuntList">
         <ErrorHandler>
-          <HuntFilter
-            config={this.props.rules_list}
-            itemsListUpdate={this.updateHistoryListState}
-            filterFields={this.state.filterFields}
-            sort_config={HistorySortFields}
-            queryType={['all']}
-            gotAlertTag={false}
-            page={this.props.page}
-            filterType={sections.HISTORY}
-            systemSettings={this.props.systemSettings}
+          <Filters
+            page='HISTORY'
+            section={sections.HISTORY}
+            queryTypes={['all']}
           />
         </ErrorHandler>
         <Spin spinning={this.state.loading} />
@@ -189,8 +162,6 @@ HistoryPage.propTypes = {
   updateListState: PropTypes.any,
   getActionTypes: PropTypes.func,
   actionTypesList: PropTypes.array,
-  systemSettings: PropTypes.any,
-  page: PropTypes.any,
   user: PropTypes.shape({
     pk: PropTypes.any,
     timezone: PropTypes.any,

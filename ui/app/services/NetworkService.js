@@ -8,6 +8,9 @@ const NetworkService = {
   fetchSystemSettings: async () => Api.get(ENDPOINT.SYSTEM_SETTINGS),
   fetchSources: async () => Api.get(ENDPOINT.SOURCES),
   fetchAllPeriod: async (params) => Api.get(ENDPOINT.ALL_PERIOD, params),
+  fetchRuleSets: async () => Api.get(ENDPOINT.RULE_SETS),
+  fetchHuntFilter: async () => Api.get(ENDPOINT.HUNT_FILTER),
+  fetchSupportedActions: async (params, options) => Api.post(ENDPOINT.SUPPORTED_ACTIONS, params, options),
 }
 
 export default NetworkService;

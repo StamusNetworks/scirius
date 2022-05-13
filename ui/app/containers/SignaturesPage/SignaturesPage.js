@@ -22,7 +22,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Spin } from 'antd';
 import axios from 'axios';
-import store from 'store';
 import md5 from 'md5';
 import * as config from 'config/Api';
 import { buildQFilter } from 'buildQFilter';
@@ -30,7 +29,8 @@ import { buildFilterParams } from 'buildFilterParams';
 import RuleToggleModal from 'RuleToggleModal';
 import List from 'ui/components/List/index';
 import ErrorHandler from 'ui/components/Error';
-import HuntFilter from '../../HuntFilter';
+import { sections } from 'ui/constants';
+import Filters from 'ui/components/Filters';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import RuleCard from '../../RuleCard';
 import DashboardPage from '../DashboardPage';
@@ -74,17 +74,13 @@ export class SignaturesPage extends React.Component {
   constructor(props) {
     super(props);
 
-    const huntFilters = store.get('huntFilters');
-    const rulesFilters = typeof huntFilters !== 'undefined' && typeof huntFilters.ruleslist !== 'undefined' ? huntFilters.ruleslist.data : [];
     this.state = {
       rules: [],
       sources: [],
-      rulesets: [],
       count: 0,
       loading: true,
       action: { view: false, type: 'suppress' },
       net_error: undefined,
-      rulesFilters,
       // eslint-disable-next-line react/no-unused-state
       supported_actions: [],
       updateCache: true,
@@ -105,41 +101,10 @@ export class SignaturesPage extends React.Component {
 
   componentDidMount() {
     const sid = this.findSID(this.props.filters);
-    if (this.state.rulesets.length === 0) {
-      axios.get(config.API_URL + config.RULESET_PATH).then((res) => {
-        this.setState({ rulesets: res.data.results });
-      });
-    }
     if (sid !== undefined) {
       this.setState({ loading: false });
     } else {
       this.fetchData();
-    }
-    const huntFilters = store.get('huntFilters');
-    axios.get(config.API_URL + config.HUNT_FILTER_PATH).then((res) => {
-      const fdata = [];
-      for (let i = 0; i < res.data.length; i += 1) {
-        /* Allow ES and rest filters */
-        if (['filter', 'rest'].indexOf(res.data[i].queryType) !== -1) {
-          if (res.data[i].filterType !== 'hunt') {
-            fdata.push(res.data[i]);
-          }
-        }
-      }
-      const currentCheckSum = md5(JSON.stringify(fdata));
-      if (typeof huntFilters === 'undefined' || typeof huntFilters.ruleslist === 'undefined' || huntFilters.ruleslist.checkSum !== currentCheckSum) {
-        store.set('huntFilters', {
-          ...huntFilters,
-          ruleslist: {
-            checkSum: currentCheckSum,
-            data: fdata,
-          },
-        });
-        this.setState({ rulesFilters: fdata });
-      }
-    });
-    if (this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
-      this.loadActions();
     }
   }
 
@@ -285,16 +250,10 @@ export class SignaturesPage extends React.Component {
       <div className="RulesList HuntList">
         {this.state.net_error !== undefined && <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>}
         <ErrorHandler>
-          <HuntFilter
-            config={this.props.rules_list}
-            itemsListUpdate={this.updateSignatureListState}
-            filterFields={this.state.rulesFilters}
-            sort_config={RuleSortFields}
-            displayToggle={view === 'rules_list'}
-            actionsButtons={this.actionsButtons}
-            queryType={['filter', 'rest', 'filter_host_id']}
-            page={this.props.page}
-            systemSettings={this.props.systemSettings}
+          <Filters
+            page='SIGNATURES'
+            section={sections.GLOBAL}
+            queryTypes={['filter', 'rest', 'filter_host_id']}
           />
         </ErrorHandler>
 
@@ -308,7 +267,7 @@ export class SignaturesPage extends React.Component {
             itemProps={{
               sources: this.state.sources,
               filterParams: this.props.filterParams,
-              rulesets: this.state.rulesets,
+              rulesets: this.props.rulesets,
             }}
           />
         )}
@@ -328,7 +287,7 @@ export class SignaturesPage extends React.Component {
               config={this.props.rules_list}
               filters={this.props.filters}
               filterParams={this.props.filterParams}
-              rulesets={this.state.rulesets}
+              rulesets={this.props.rulesets}
             />
           )}
           {view === 'dashboard' && <DashboardPage />}
@@ -342,7 +301,7 @@ export class SignaturesPage extends React.Component {
               config={this.props.rules_list}
               filters={this.props.filters}
               close={this.closeAction}
-              rulesets={this.state.rulesets}
+              rulesets={this.props.rulesets}
               systemSettings={this.props.systemSettings}
               filterParams={this.props.filterParams}
             />
@@ -354,6 +313,7 @@ export class SignaturesPage extends React.Component {
 }
 
 SignaturesPage.propTypes = {
+  rulesets: PropTypes.array,
   systemSettings: PropTypes.any,
   filters: PropTypes.any,
   filtersWithAlert: PropTypes.any,
