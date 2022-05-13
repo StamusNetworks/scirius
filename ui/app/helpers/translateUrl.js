@@ -1,4 +1,4 @@
-import selectors from 'ui/containers/App/selectors';
+import { getMap } from 'ui/helpers/translateMap';
 import { store } from '../store';
 
 const translateUrl = (path, parameters = {}) => {
@@ -14,12 +14,7 @@ const translateUrl = (path, parameters = {}) => {
   const urlParams = path.match(paramRegex) || [];
   const url = path
     .replace(paramRegex, '') // Clean params placeholders
-  const map = {
-    ':filters': selectors.makeSelectFilters()(state),
-    ':dates': selectors.makeSelectURLDates(state),
-    ':datesEs': selectors.makeSelectURLDatesES(state),
-    ':tenant': selectors.makeSelectURLTenant(state),
-  }
+  const map = getMap(state);
   const params = { ...parameters };
   urlParams
     .filter(m => Boolean(map[m]))
