@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { EditOutlined, CloseOutlined } from '@ant-design/icons';
 import { sections } from 'ui/constants';
 import './style.css';
 
@@ -8,35 +9,33 @@ const FilterItem = (props) => {
   const displayValue = props.filter.label ? props.filter.label : `${props.filter.id}:${props.filter.value}`;
   return (
     <li>
-      <span className={`hunt-filter label label-info ${negated}`}>
+      <span className={`hunt-filter ${negated}`}>
         <div className="label-content" data-test="hunt-filter__filtered">
           {displayValue}
         </div>
-        <div>
+        <div className='label-actions'>
           {props.filterType !== sections.HISTORY && (
             <a
               href="#"
-              className="pf-edit-button filter-action edit"
+              className="filter-action edit"
               onClick={(e) => {
                 e.preventDefault();
                 props.onEdit();
               }}
             >
-              <span className="pficon pficon-edit" aria-hidden="true" />
-              <span className="sr-only">Edit</span>
+              <EditOutlined />
             </a>
           )}
           {props.children}
           <a
             href="#"
-            className="pf-remove-button filter-action delete"
+            className="filter-action delete"
             onClick={(e) => {
               e.preventDefault();
               props.onRemove();
             }}
           >
-            <span className="pficon pficon-close" aria-hidden="true" />
-            <span className="sr-only">Remove</span>
+            <CloseOutlined />
           </a>
         </div>
       </span>
