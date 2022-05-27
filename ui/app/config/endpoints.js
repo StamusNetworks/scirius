@@ -34,6 +34,10 @@ const ENDPOINT = {
     name: 'Fetching supported actions',
     url: `${RULES_URL}/processing-filter/test_actions/`,
   },
+  HISTORY_FILTERS: {
+    name: 'Fetching history filters',
+    url: `${RULES_URL}/history/get_action_type_list/`,
+  },
 }
 
 export default ENDPOINT;

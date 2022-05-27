@@ -35,6 +35,14 @@ const appReducer = (state = initialState, action) =>
         draft.supportedActions = [];
         break;
       }
+      case constants.HISTORY_FILTERS_SUCCESS: {
+        draft.historyFilters = action.payload.data;
+        break;
+      }
+      case constants.HISTORY_FILTERS_FAILURE: {
+        draft.historyFilters = []
+        break;
+      }
     }
   })
 

@@ -5,7 +5,7 @@ const selectRules = state => state.ruleSet || initialState;
 const makeSelectRuleSets = () => createSelector(selectRules, subState => subState.filterSet);
 const makeSelectFilterOptions = (section) => createSelector(selectRules, subState => {
   if (section === 'history_filters') {
-    return [];
+    return subState.historyFilters;
   }
   return subState.filterList.filter(f => (f.queryType === 'filter' || f.queryType === 'rest') && f.filterType !== 'hunt')
 });

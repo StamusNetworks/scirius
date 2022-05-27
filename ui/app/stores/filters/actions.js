@@ -43,6 +43,20 @@ const supportedActionsFailure = (error) => ({
   payload: { error }
 })
 
+const historyFiltersRequest = () => ({
+  type: constants.HISTORY_FILTERS_REQUEST,
+})
+
+const historyFiltersSuccess = (data) => ({
+  type: constants.HISTORY_FILTERS_SUCCESS,
+  payload: {data}
+})
+
+const historyFiltersFailure = (error) => ({
+  type: constants.HISTORY_FILTERS_FAILURE,
+  payload: { error }
+})
+
 export default {
   ruleSetsRequest,
   ruleSetsSuccess,
@@ -53,4 +67,7 @@ export default {
   supportedActionsRequest,
   supportedActionsSuccess,
   supportedActionsFailure,
+  historyFiltersRequest,
+  historyFiltersSuccess,
+  historyFiltersFailure,
 }
