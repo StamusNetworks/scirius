@@ -12,6 +12,7 @@ import strGlobalSelectors from 'ui/containers/App/selectors';
 import * as huntGlobalStore from 'ui/containers/HuntApp/stores/global';
 import FilterList from 'ui/components/FilterList/index';
 import FilterSets from 'ui/components/FilterSets';
+import { sections } from 'ui/constants';
 
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -67,6 +68,7 @@ const Filter = ({ page, section, queryTypes }) => {
   // Selectors handlers
   const user = useSelector(strGlobalSelectors.makeSelectUser());
   const filters = useSelector(huntGlobalStore.makeSelectGlobalFilters());
+  const historyFilters = useSelector(huntGlobalStore.makeSelectHistoryFilters());
   const alertTag = useSelector(huntGlobalStore.makeSelectAlertTag());
   const filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(section));
   const supportedActions = useSelector(ruleSetsSelectors.makeSelectSupportedActions());
@@ -132,15 +134,21 @@ const Filter = ({ page, section, queryTypes }) => {
   const filterSubCategory = (filterCategory && filterCategory.filterValues || []).find(fv => selectedItems.find(si => fv.id === si.id));
 
   useEffect(() => {
-
-  })
-
-  const activeFilters = [];
-  filters.forEach((item) => {
-    if (!item.query || queryTypes.indexOf(item.query) !== -1) {
-      activeFilters.push(item);
+    if (filterType === 'select' && selectedItems.length > 0) {
+      filterAdded(field, selectedItems[1], false);
     }
-  });
+  }, [selectedItems]);
+
+  const activeFilters = useMemo(() => {
+    const stack = section === sections.HISTORY ? historyFilters : filters;
+    const result = [];
+    stack.forEach((item) => {
+      if (!item.query || queryTypes.indexOf(item.query) !== -1) {
+        result.push(item);
+      }
+    });
+    return result;
+  }, [filters, historyFilters, section]);
 
   const displayRender = (labels, selectedOptions) =>
     labels.map((label, i) => {
