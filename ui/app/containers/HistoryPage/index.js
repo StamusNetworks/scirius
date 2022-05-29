@@ -4,28 +4,25 @@ import { createStructuredSelector } from 'reselect';
 
 import injectReducer from 'ui/utils/injectReducer';
 import injectSaga from 'ui/utils/injectSaga';
-import { actionTypes } from './actions';
-import { makeSelectActionTypesList, makeSelectHistoryList } from './selectors';
+import filtersActions from 'ui/stores/filters/actions';
+import reducer from 'ui/stores/filters/reducer';
+import saga from 'ui/stores/filters/saga';
 import { makeSelectHistoryFilters } from '../HuntApp/stores/global';
-import reducer from './reducer';
-import saga from './saga';
 
 import HistoryPage from './HistoryPage';
 
 const mapDispatchToProps = (dispatch) => ({
-  getActionTypes: () => dispatch(actionTypes()),
+  getActionTypes: () => dispatch(filtersActions.historyFiltersRequest()),
 });
 
 const mapStateToProps = createStructuredSelector({
-  actionTypesList: makeSelectActionTypesList(),
-  historyList: makeSelectHistoryList(),
   filters: makeSelectHistoryFilters(),
 });
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
-const withReducer = injectReducer({ key: 'history', reducer });
-const withSaga = injectSaga({ key: 'history', saga });
+const withReducer = injectReducer({ key: 'filters', reducer });
+const withSaga = injectSaga({ key: 'filters', saga });
 
 export default compose(withReducer, withSaga, withConnect)(HistoryPage);
 export { mapDispatchToProps };

@@ -222,7 +222,7 @@ const Filter = ({ page, section, queryTypes }) => {
                 onChange={(value) => onChange(value)}
               />
             </div>
-            {filterType !== 'complex-select' && (
+            {filterType !== 'complex-select' && filterType !== 'select' && (
               <div style={{ display: 'flex', flex: 1 }}>
                 <Input
                   placeholder={placeholder}

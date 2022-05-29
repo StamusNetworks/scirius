@@ -34,13 +34,13 @@ function* getSupportedActions(action) {
   }
 }
 
-function* getHistoryFilters(action) {
+function* getHistoryFilters() {
   try {
     const response = yield call(NetworkService.fetchHistoryFilters);
-    const { actions: data = [] } = response;
-    yield put(actions.supportedActionsSuccess(data));
+    const { action_type_list: data = [] } = response;
+    yield put(actions.historyFiltersSuccess(data));
   } catch (e) {
-    yield put(actions.supportedActionsFailure(e));
+    yield put(actions.historyFiltersFailure(e));
   }
 }
 
@@ -49,4 +49,5 @@ export default function* rootSaga() {
   yield takeEvery(constants.RULE_SETS_REQUEST, getRuleSets);
   yield takeEvery(constants.HUNT_FILTER_REQUEST, getHuntFilters);
   yield takeEvery(constants.SUPPORTED_ACTIONS_REQUEST, getSupportedActions);
+  yield takeEvery(constants.HISTORY_FILTERS_REQUEST, getHistoryFilters);
 }

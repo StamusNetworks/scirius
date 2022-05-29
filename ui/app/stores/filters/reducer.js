@@ -5,6 +5,7 @@ export const initialState = {
   filterSet: [],
   filterList: [],
   supportedActions: [],
+  historyFilters: [],
 }
 
 /* eslint-disable default-case */
@@ -36,7 +37,13 @@ const appReducer = (state = initialState, action) =>
         break;
       }
       case constants.HISTORY_FILTERS_SUCCESS: {
-        draft.historyFilters = action.payload.data;
+        const actionTypeList = Object.keys(action.payload.data);
+        const actions = [];
+        for (let i = 0; i < actionTypeList.length; i += 1) {
+          const item = actionTypeList[i];
+          actions.push({ id: item, title: action.payload.data[item] });
+        }
+        draft.historyFilters = actions;
         break;
       }
       case constants.HISTORY_FILTERS_FAILURE: {

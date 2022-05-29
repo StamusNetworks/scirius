@@ -33,39 +33,7 @@ import { buildFilter, buildListUrlParams } from '../../helpers/common';
 export default class HistoryPage extends React.Component {
   constructor(props) {
     super(props);
-    const HistoryFilterFields = [
-      {
-        id: 'username',
-        title: 'User',
-        placeholder: 'Filter by User',
-        filterType: 'text',
-        queryType: 'all',
-      },
-      {
-        id: 'comment',
-        title: 'Comment',
-        placeholder: 'Filter by Comment',
-        filterType: 'text',
-        queryType: 'all',
-      },
-      {
-        id: 'action_type',
-        title: 'Action Type',
-        placeholder: 'Filter by Action Type',
-        filterType: 'select',
-        filterValues: [],
-        queryType: 'all',
-      },
-      {
-        id: 'client_ip',
-        title: 'Client IP',
-        placeholder: 'Filter by Client IP',
-        filterType: 'text',
-        filterValues: [],
-        queryType: 'all',
-      },
-    ];
-    this.state = { data: [], count: 0, filterFields: HistoryFilterFields };
+    this.state = { data: [], count: 0 };
     this.fetchData = this.fetchData.bind(this);
     this.buildFilter = buildFilter;
     this.buildListUrlParams = buildListUrlParams.bind(this);
@@ -81,15 +49,6 @@ export default class HistoryPage extends React.Component {
   componentDidUpdate(prevProps) {
     if (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
       this.fetchData();
-    }
-    if (prevProps.actionTypesList.length !== this.props.actionTypesList.length) {
-      // eslint-disable-next-line react/no-access-state-in-setstate
-      const filterFields = [...this.state.filterFields];
-      filterFields.find((field) => field.id === 'action_type').filterValues = this.props.actionTypesList;
-      // eslint-disable-next-line react/no-did-update-set-state
-      this.setState({
-        filterFields,
-      });
     }
   }
 
@@ -161,7 +120,6 @@ HistoryPage.propTypes = {
   switchPage: PropTypes.any,
   updateListState: PropTypes.any,
   getActionTypes: PropTypes.func,
-  actionTypesList: PropTypes.array,
   user: PropTypes.shape({
     pk: PropTypes.any,
     timezone: PropTypes.any,
