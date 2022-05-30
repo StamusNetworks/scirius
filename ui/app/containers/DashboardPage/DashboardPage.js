@@ -165,7 +165,6 @@ export class HuntDashboard extends React.Component {
     }
 
     const detectspecialkeys = (e, keyDown) => {
-      console.log(e.keyCode);
       if (e.keyCode === 17) {
         if (this.state.copyMode !== keyDown) {
           this.setState({ copyMode: keyDown });

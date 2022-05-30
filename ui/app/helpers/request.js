@@ -29,16 +29,16 @@ const request = async (endpoint, method, params, options) => {
     notify(`${endpoint.name} has failed`, error);
     throw new Error(error);
   } finally {
-    if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
-      console.group(`%c${endpoint.name}`, 'color: #0088ff');
-      for (let i = 0; i < log.length; i += 1) {
-        // eslint-disable-next-line no-console
-        console.log(...log[i]);
-      }
-      // eslint-disable-next-line no-console
-      console.groupEnd();
-    }
+    // if (process.env.NODE_ENV === 'development') {
+    //   // eslint-disable-next-line no-console
+    //   console.group(`%c${endpoint.name}`, 'color: #0088ff');
+    //   for (let i = 0; i < log.length; i += 1) {
+    //     // eslint-disable-next-line no-console
+    //     console.log(...log[i]);
+    //   }
+    //   // eslint-disable-next-line no-console
+    //   console.groupEnd();
+    // }
   }
 }
 

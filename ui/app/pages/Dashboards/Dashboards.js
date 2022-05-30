@@ -12,7 +12,6 @@ const Dashboards = () => (
         <Link app to='hunting/dashboards'>Dashboards</Link>,
       ]}
     />
-    Dashboards
     <HuntApp page={PAGE_STATE.dashboards} />
   </div>
 );

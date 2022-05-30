@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Spin } from 'antd';
+import { Card, Row, Col, Spin, Tooltip, Space } from 'antd';
 import { ZoomInOutlined } from '@ant-design/icons';
 import { sections } from 'ui/constants';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
@@ -23,69 +23,57 @@ const RuleCard = (props) => {
 
   const kebabConfig = { rule: props.data };
   return (
-    <div className="col-xs-6 col-sm-4 col-md-4">
-      <div className="card-pf rule-card">
-        <div className="card-pf-heading">
-          <h2 className="card-pf-title truncate-overflow" data-toggle="tooltip" title={props.data.msg}>
-            {props.data.msg}
-          </h2>
-          <RuleEditKebab key={`kebab-${props.data.sid}`} config={kebabConfig} rulesets={props.rulesets} />
-        </div>
-        <div className="card-pf-body">
-          <div className="container-fluid">
-            <div className="row">
-              <div className="col-md-5 truncate-overflow" data-toggle="tooltip" title={catTooltip}>
-                Cat: {category.name}
-              </div>
-              <div className="col-md-4">
-                {props.data.created && <p>Created: {props.data.created}</p>}
-                {!props.data.created && <p>Imported: {imported}</p>}
-              </div>
-              <div className="col-md-3">
-                Alerts
-                <Spin spinning={props.data.hits === undefined}>
-                  <span className="badge">{props.data.hits}</span>
-                </Spin>
-              </div>
-            </div>
-          </div>
+    <Card title={props.data.msg} extra={<RuleEditKebab key={`kebab-${props.data.sid}`} config={kebabConfig} rulesets={props.rulesets} />} style={{ margin: '8px 0px' }}>
+      <Row>
+        <Col md={5}>
+          <Tooltip overlay={catTooltip}>Cat: {category.name}</Tooltip>
+        </Col>
+        <Col md={4}>
+          {props.data.created && <p>Created: {props.data.created}</p>}
+          {!props.data.created && <p>Imported: {imported}</p>}
+        </Col>
+        <Col md={3}>
+          Alerts
           <Spin spinning={props.data.hits === undefined}>
-            {props.data.timeline && (
-              <div className="chart-pf-sparkline">
-                <ErrorHandler>
-                  <SciriusChart
-                    data={props.data.timeline}
-                    axis={{
-                      x: { show: false, min: props.filterParams.fromDate, max: props.filterParams.toDate },
-                      y: { show: false },
-                    }}
-                    legend={{ show: false }}
-                    size={{ height: 60 }}
-                    point={{ show: false }}
-                  />
-                </ErrorHandler>
-              </div>
-            )}
-            {!props.data.timeline && (
-              <div className="no-sparkline">
-                <p>No alert</p>
-              </div>
-            )}
+            <span className="badge">{props.data.hits}</span>
           </Spin>
-          <div>
-            SID: <strong>{props.data.sid}</strong>
-            <span className="pull-right">
-              <a
-                onClick={() => props.addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: props.data.sid, negated: false })}
-                style={{ cursor: 'pointer' }}
-              >
-                <ZoomInOutlined />
-              </a>
-            </span>
+        </Col>
+      </Row>
+      <Spin spinning={props.data.hits === undefined}>
+        {props.data.timeline && (
+          <div className="chart-pf-sparkline">
+            <ErrorHandler>
+              <SciriusChart
+                data={props.data.timeline}
+                axis={{
+                  x: { show: false, min: props.filterParams.fromDate, max: props.filterParams.toDate },
+                  y: { show: false },
+                }}
+                legend={{ show: false }}
+                size={{ height: 60 }}
+                point={{ show: false }}
+              />
+            </ErrorHandler>
           </div>
-        </div>
-      </div>
-    </div>
+        )}
+        {!props.data.timeline && (
+          <div className="no-sparkline">
+            <p>No alert</p>
+          </div>
+        )}
+      </Spin>
+      <Space>
+        <span>
+        SID: <strong>{props.data.sid}</strong>
+        </span>
+        <a
+          onClick={() => props.addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: props.data.sid, negated: false })}
+          style={{ cursor: 'pointer' }}
+        >
+          <ZoomInOutlined />
+        </a>
+      </Space>
+    </Card>
   );
 };
 
