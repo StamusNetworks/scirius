@@ -12,7 +12,6 @@ const Alerts = () => (
         <Link app to='hunting/alerts'>Alerts</Link>,
       ]}
     />
-    Alerts
     <HuntApp page={PAGE_STATE.alerts_list} />
   </div>
 );

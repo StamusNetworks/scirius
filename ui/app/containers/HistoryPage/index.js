@@ -7,12 +7,13 @@ import injectSaga from 'ui/utils/injectSaga';
 import filtersActions from 'ui/stores/filters/actions';
 import reducer from 'ui/stores/filters/reducer';
 import saga from 'ui/stores/filters/saga';
-import { makeSelectHistoryFilters } from '../HuntApp/stores/global';
+import { addFilter , makeSelectHistoryFilters } from 'ui/containers/HuntApp/stores/global';
 
 import HistoryPage from './HistoryPage';
 
 const mapDispatchToProps = (dispatch) => ({
   getActionTypes: () => dispatch(filtersActions.historyFiltersRequest()),
+  addFilter,
 });
 
 const mapStateToProps = createStructuredSelector({

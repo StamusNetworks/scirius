@@ -57,6 +57,12 @@ const historyFiltersFailure = (error) => ({
   payload: { error }
 })
 
+const saveFiltersModal = (value) => ({
+  type: constants.MODAL_SAVE_FILTERS,
+  payload: { value }
+})
+
+
 export default {
   ruleSetsRequest,
   ruleSetsSuccess,
@@ -70,4 +76,5 @@ export default {
   historyFiltersRequest,
   historyFiltersSuccess,
   historyFiltersFailure,
+  saveFiltersModal,
 }

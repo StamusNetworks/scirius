@@ -12,7 +12,6 @@ const Signatures = () => (
         <Link app to='hunting/signatures'>Signatures</Link>,
       ]}
     />
-    Signatures
     <HuntApp page={PAGE_STATE.rules_list} />
   </div>
 );
