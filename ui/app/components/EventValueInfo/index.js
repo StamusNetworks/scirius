@@ -16,7 +16,6 @@ const EventValueInfo = (props) => {
     return (
       <Tooltip key="virustotal_link" title="external info" trigger="hover" id="tooltip-top">
         <a href={`https://www.virustotal.com/gui/ip-address/${props.value}`} target="_blank">
-          {' '}
           <InfoCircleFilled />
         </a>
       </Tooltip>
@@ -26,7 +25,6 @@ const EventValueInfo = (props) => {
     return (
       <Tooltip key="dshield_link" title="external info456" trigger="hover" id="tooltip-top">
         <a href={`https://www.dshield.org/port.html?port=${props.value}`} target="_blank">
-          {' '}
           <InfoCircleFilled />
         </a>
       </Tooltip>

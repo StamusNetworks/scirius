@@ -21,8 +21,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Dropdown, List, Menu, Modal, Spin, Tooltip } from 'antd';
-import { MenuOutlined } from '@ant-design/icons';
+import { Card, Dropdown, List, Menu, Modal, Spin, Tooltip, Button, Row, Col } from 'antd';
+import { MenuOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { WidthProvider, Responsive } from 'react-grid-layout';
 import store from 'store';
 import md5 from 'md5';
@@ -165,6 +165,7 @@ export class HuntDashboard extends React.Component {
     }
 
     const detectspecialkeys = (e, keyDown) => {
+      console.log(e.keyCode);
       if (e.keyCode === 17) {
         if (this.state.copyMode !== keyDown) {
           this.setState({ copyMode: keyDown });
@@ -463,67 +464,42 @@ export class HuntDashboard extends React.Component {
     const filterParams = buildFilterParams(this.props.filterParams);
     const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${block.i}&${filterParams}&page_size=30${this.qFilter}`;
     return (
-      <div key={block.i} style={{ background: 'white' }}>
-        {this.props.children}
-        <h3 className={`hunt-stat-title ${this.state.editMode ? 'dashboard-editable-mode' : ''}`} data-toggle="tooltip" title={block.title}>
-          {block.title}
-        </h3>
-        {block.data !== null && block.data.length === 5 && (
-          <div className="dropdown-kebab-pf open btn-group">
-            <Tooltip title="Load more results" id="tooltip-top">
-              <button role="button" type="button" className="btn btn-link" onClick={() => this.loadMore(block, url)}>
-                <span className="fa fa-ellipsis-v" />
-              </button>
-            </Tooltip>
+      <Card
+        key={block.i}
+        title={(
+          <div
+            className={`hunt-stat-title ${this.state.editMode ? 'dashboard-editable-mode' : ''}`}
+            data-toggle="tooltip"
+            title={block.title}
+          >
+            {block.title}
           </div>
         )}
-        <div className="hunt-stat-body">
-          {block.data === null && <Spin />}
-          {block.data !== null && (
-            <List
-              size="small"
-              header={null}
-              footer={null}
-              dataSource={block.data}
-              loading={block.data === null}
-              renderItem={(item) => {
-                const itemPath = `${block.title}-${block.i}-${item.key}`;
-                let classes = 'dashboard-list-item';
-                let clickHandler = null;
-                classes += this.state.copiedItem === itemPath ? ' copied' : '';
-
-                if (this.state.copyMode && this.state.hoveredItem === itemPath) {
-                  // Only set clickHandler during copy mode to let click events reach the magnifiers in EventValue
-                  // otherwise hover and click on magnifiers breaks on Firefox
-                  clickHandler = (event) => this.itemCopyModeOnClick(event, itemPath, item.key);
-                  classes += ' copy-mode';
-                }
-
-                return (
-                  <List.Item
-                    key={item.key}
-                    onClick={clickHandler}
-                    onMouseMove={(event) => this.onMouseMove(event, itemPath)}
-                    onMouseLeave={(event) => this.onMouseLeave(event, itemPath)}
-                    className={classes}
-                  >
-                    <ErrorHandler>
-                      <EventValue
-                        field={block.i}
-                        value={item.key}
-                        format={block.format}
-                        magnifiers={(!this.state.copyMode || this.state.hoveredItem !== itemPath) && item.key !== 'Unknown'}
-                        right_info={<span className="badge">{item.doc_count}</span>}
-                        hasCopyShortcut
-                      />
-                    </ErrorHandler>
-                  </List.Item>
-                );
-              }}
+        bodyStyle={{ padding: '0px 10px' }}
+        extra={
+          <>
+            {block.data === null && <div style={{ marginBottom: 20 }}><Spin size='small' /></div>}
+            {block.data !== null && block.data.length === 5 && (
+              <Tooltip title="Load more results" id="tooltip-top">
+                <Button icon={<UnorderedListOutlined />} onClick={() => this.loadMore(block, url)} />
+              </Tooltip>
+            )}
+          </>
+        }
+      >
+        {this.props.children}
+        {block.data !== null && block.data.map(item => (
+            <EventValue
+              field={block.i}
+              value={item.key}
+              format={block.format}
+              copyMode={this.state.copyMode}
+              right_info={<>{item.doc_count}</>}
+              hasCopyShortcut
             />
-          )}
-        </div>
-      </div>
+          )
+        )}
+      </Card>
     );
   };
 
@@ -741,8 +717,8 @@ export class HuntDashboard extends React.Component {
           />
         </ErrorHandler>
 
-        <div className="row">
-          <div className="col-lg-10 col-md-9 col-sm-12 col-xs-12" style={{ paddingRight: '0px' }}>
+        <Row className="row" style={{ marginTop: 10 }}>
+          <Col lg={20} md={18} sm={24} xs={24} style={{ paddingRight: '0px' }}>
             <HuntTimeline
               style={{ marginTop: '15px' }}
               filterParams={this.props.filterParams}
@@ -750,8 +726,8 @@ export class HuntDashboard extends React.Component {
               filters={this.props.filtersWithAlert}
               systemSettings={this.props.systemSettings}
             />
-          </div>
-          <div className="col-lg-2 col-md-3 col-sm-12 col-xs-12" style={{ paddingLeft: '0px' }}>
+          </Col>
+          <Col lg={4} md={6} sm={24} xs={24} style={{ paddingLeft: '0px' }}>
             <HuntTrend filterParams={this.props.filterParams} filters={this.props.filtersWithAlert} systemSettings={this.props.systemSettings} />
             {typeof this.state.chartTarget !== 'undefined' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
               <div style={{ position: 'absolute', zIndex: 10, top: 0, right: '30px' }}>
@@ -762,11 +738,11 @@ export class HuntDashboard extends React.Component {
                 </Dropdown>
               </div>
             )}
-          </div>
-        </div>
-        <div className="row drag-and-drop-container">
-          <div className="col-md-12">
-            <div className="pull-right">
+          </Col>
+        </Row>
+        <div className="drag-and-drop-container">
+          <Row>
+            <Col style={{ marginLeft: 'auto' }}>
               <a href="#edit" onClick={this.switchEditMode}>
                 {this.state.editMode ? 'switch off edit mode' : 'edit'}
               </a>
@@ -774,69 +750,69 @@ export class HuntDashboard extends React.Component {
               <a href="#reset" onClick={this.resetDashboard}>
                 reset
               </a>
-            </div>
-            <div className="clearfix" />
+            </Col>
+          </Row>
+          <div className="clearfix" />
 
-            {this.panelsBooted !== 'no' && (
-              <ResponsiveReactGridLayout
-                margin={[0, 0.01]}
-                compactType="vertical"
-                isResizable={false}
-                rowHeight={1}
-                draggableHandle=".hunt-row-title"
-                cols={{
-                  lg: 1,
-                  md: 1,
-                  sm: 1,
-                  xs: 1,
-                  xxs: 1,
-                }}
-                layouts={{
-                  lg: this.getMacroLayouts(),
-                  md: this.getMacroLayouts(),
-                  sm: this.getMacroLayouts(),
-                  xs: this.getMacroLayouts(),
-                }}
-                onLayoutChange={this.onChangeMacroLayout}
-              >
-                {this.panelsBooted !== 'no' &&
-                  this.state.load.map((panel) => (
-                    <div className="hunt-row" key={panel} id={`panel-${panel}`}>
-                      <h2 className={`hunt-row-title ${this.state.editMode ? 'dashboard-editable-mode' : ''}`}>
-                        {this.state.dashboard[panel].title}
-                      </h2>
-                      <ResponsiveReactGridLayout
-                        margin={[5, 5]}
-                        compactType="vertical"
-                        layouts={{
-                          lg: this.getMicroLayouts(panel, 'lg'),
-                          md: this.getMicroLayouts(panel, 'md'),
-                          sm: this.getMicroLayouts(panel, 'sm'),
-                          xs: this.getMicroLayouts(panel, 'xs'),
-                        }}
-                        onDragStart={this.onDragStartMicro}
-                        onBreakpointChange={(breakPoint, cols) => this.onBreakPointChange(breakPoint, cols, panel)}
-                        onLayoutChange={(e) => this.onChangeMicroLayout(panel, e)}
-                        onResizeStart={this.onResizeStartMicro}
-                        isDraggable={this.state.editMode}
-                        isResizable={this.state.editMode}
-                        rowHeight={10}
-                        draggableHandle=".hunt-stat-title"
-                        cols={{
-                          lg: 32,
-                          md: 24,
-                          sm: 16,
-                          xs: 8,
-                          xxs: 4,
-                        }}
-                      >
-                        {this.state.dashboard[panel].items.map((block) => this.createElement(block))}
-                      </ResponsiveReactGridLayout>
-                    </div>
-                  ))}
-              </ResponsiveReactGridLayout>
-            )}
-          </div>
+          {this.panelsBooted !== 'no' && (
+            <ResponsiveReactGridLayout
+              margin={[0, 0.01]}
+              compactType="vertical"
+              isResizable={false}
+              rowHeight={1}
+              draggableHandle=".hunt-row-title"
+              cols={{
+                lg: 1,
+                md: 1,
+                sm: 1,
+                xs: 1,
+                xxs: 1,
+              }}
+              layouts={{
+                lg: this.getMacroLayouts(),
+                md: this.getMacroLayouts(),
+                sm: this.getMacroLayouts(),
+                xs: this.getMacroLayouts(),
+              }}
+              onLayoutChange={this.onChangeMacroLayout}
+            >
+              {this.panelsBooted !== 'no' &&
+                this.state.load.map((panel) => (
+                  <div className="hunt-row" key={panel} id={`panel-${panel}`}>
+                    <h2 className={`hunt-row-title ${this.state.editMode ? 'dashboard-editable-mode' : ''}`}>
+                      {this.state.dashboard[panel].title}
+                    </h2>
+                    <ResponsiveReactGridLayout
+                      margin={[5, 5]}
+                      compactType="vertical"
+                      layouts={{
+                        lg: this.getMicroLayouts(panel, 'lg'),
+                        md: this.getMicroLayouts(panel, 'md'),
+                        sm: this.getMicroLayouts(panel, 'sm'),
+                        xs: this.getMicroLayouts(panel, 'xs'),
+                      }}
+                      onDragStart={this.onDragStartMicro}
+                      onBreakpointChange={(breakPoint, cols) => this.onBreakPointChange(breakPoint, cols, panel)}
+                      onLayoutChange={(e) => this.onChangeMicroLayout(panel, e)}
+                      onResizeStart={this.onResizeStartMicro}
+                      isDraggable={this.state.editMode}
+                      isResizable={this.state.editMode}
+                      rowHeight={10}
+                      draggableHandle=".hunt-stat-title"
+                      cols={{
+                        lg: 32,
+                        md: 24,
+                        sm: 16,
+                        xs: 8,
+                        xxs: 4,
+                      }}
+                    >
+                      {this.state.dashboard[panel].items.map((block) => this.createElement(block))}
+                    </ResponsiveReactGridLayout>
+                  </div>
+                ))}
+            </ResponsiveReactGridLayout>
+          )}
         </div>
         <ErrorHandler>
           {this.state.action.view && (
