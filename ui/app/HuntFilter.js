@@ -25,7 +25,7 @@ import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import { Button, Switch, Menu, Dropdown } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
-import { Shortcuts } from 'react-shortcuts';
+// import { Shortcuts } from 'react-shortcuts';
 import Select from 'react-select';
 import axios from 'axios';
 import { compose } from 'redux';
@@ -652,7 +652,7 @@ class HuntFilter extends React.Component {
            <FilterSets close={this.closeHuntFilterSetsModal2} />
          </ErrorHandler>
        )}
-       <Shortcuts name="HUNT_FILTER" handler={this.handleShortcuts} isolate targetNodeSelector="body">
+       {/* <Shortcuts name="HUNT_FILTER" handler={this.handleShortcuts} isolate targetNodeSelector="body"> */}
          <div className="hunt-filter__container" data-test="hunt-filter__container">
            <div className="hunt-filter__filters">
              <h4>Filters</h4>
@@ -816,7 +816,7 @@ class HuntFilter extends React.Component {
             </div>
           </div>
           {this.renderInputHuntFilterSetsModal()}
-        </Shortcuts>
+        {/* </Shortcuts> */}
       </div>
     );
   }
