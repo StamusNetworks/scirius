@@ -41,11 +41,9 @@ const makeSelectFilterOptions = (section) => createSelector(selectRules, subStat
   return subState.filterList.filter(f => (f.queryType === 'filter' || f.queryType === 'rest') && f.filterType !== 'hunt')
 });
 const makeSelectSupportedActions = () => createSelector(selectRules, subState => subState.supportedActions);
-const makeSelectSaveFiltersModal = () => createSelector(selectRules, subState => subState.saveFiltersModal);
 
 export default {
   makeSelectRuleSets,
   makeSelectFilterOptions,
   makeSelectSupportedActions,
-  makeSelectSaveFiltersModal,
 }

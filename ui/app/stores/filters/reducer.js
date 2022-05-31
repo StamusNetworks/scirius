@@ -6,7 +6,6 @@ export const initialState = {
   filterList: [],
   supportedActions: [],
   historyFilters: [],
-  saveFiltersModal: false,
 }
 
 /* eslint-disable default-case */
@@ -49,10 +48,6 @@ const appReducer = (state = initialState, action) =>
       }
       case constants.HISTORY_FILTERS_FAILURE: {
         draft.historyFilters = []
-        break;
-      }
-      case constants.MODAL_SAVE_FILTERS: {
-        draft.saveFiltersModal = action.payload.value
         break;
       }
     }

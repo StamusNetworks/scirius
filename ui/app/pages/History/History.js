@@ -12,6 +12,7 @@ const History = () => (
         <Link app to='hunting/history'>History</Link>,
       ]}
     />
+    History
     <HuntApp page={PAGE_STATE.history} />
   </div>
 );

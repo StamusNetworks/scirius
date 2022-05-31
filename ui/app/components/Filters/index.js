@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Cascader, Col, Divider, Input, Row, Space, Switch } from 'antd';
-import { TagOutlined, CloseOutlined } from '@ant-design/icons';
 import UICard from 'ui/components/UIElements/UICard';
 import styled from 'styled-components';
 import { useInjectSaga } from 'utils/injectSaga';
@@ -14,15 +13,10 @@ import * as huntGlobalStore from 'ui/containers/HuntApp/stores/global';
 import FilterList from 'ui/components/FilterList/index';
 import FilterSets from 'ui/components/FilterSets';
 import { sections } from 'ui/constants';
-import ErrorHandler from 'ui/components/Error';
-import FilterSetSave from 'ui/components/FilterSetSaveModal';
-import { HUNT_FILTER_SETS } from 'ui/config/Api';
 
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { loadFilterSets } from 'ui/components/FilterSets/store';
 import ActionsButtons from '../ActionsButtons';
-import request from '../../utils/request';
 
 const Title = styled.div`
   padding: 0px 0px 5px 0px;
@@ -78,7 +72,6 @@ const Filter = ({ page, section, queryTypes }) => {
   const alertTag = useSelector(huntGlobalStore.makeSelectAlertTag());
   const filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(section));
   const supportedActions = useSelector(ruleSetsSelectors.makeSelectSupportedActions());
-  const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());
   const supportedActionsPermissions = user && user.data && user.data.permissions && user.data.permissions.includes('rules.ruleset_policy_edit');
 
   // State handlers
@@ -92,7 +85,7 @@ const Filter = ({ page, section, queryTypes }) => {
     if (supportedActionsPermissions) {
       dispatch(ruleSetsActions.supportedActionsRequest(filters));
     }
-  }, [filters, supportedActionsPermissions]);
+  }, []);
 
   const getTreeOptions = useCallback((data) => data.map(o => ({
       label: `${o.title || o.label}`,
@@ -223,58 +216,11 @@ const Filter = ({ page, section, queryTypes }) => {
     }));
   };
 
-  const [errors, setErrors] = useState([]);
-  const [filterSetName, setFilterSetName] = useState('');
-  const [filterSetShared, setFilterSetShared] = useState(false);
-  const [filterSetDescription, setFilterSetDescription] = useState(false);
-
-  const submitFilterSets = () => {
-    setErrors([])
-
-    const filtersCopy = [...filters];
-
-    if (process.env.REACT_APP_HAS_TAG === '1') {
-      filtersCopy.push(alertTag);
-    }
-
-    request(`/${HUNT_FILTER_SETS}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name: filterSetName,
-        page,
-        content: filtersCopy,
-        share: filterSetShared,
-        description: filterSetDescription,
-      })
-    }).then(() => {
-      // this.props.loadFilterSets();
-      dispatch(loadFilterSets());
-      dispatch(ruleSetsActions.saveFiltersModal(false));
-      setErrors([]);
-      setFilterSetName('');
-      setFilterSetShared(false);
-      setFilterSetDescription(false);
-    }).catch((error) => {
-      let errors = error.response.data;
-
-      if (error.response.status === 403) {
-        const noRights = user.isActive && !user.permissions.includes('rules.events_edit') && filterSetShared;
-        if (noRights) {
-          errors = { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
-        }
-      }
-      setErrors(errors);
-    })
-  }
-
   return (
     <UICard>
       {filterSets && (<FilterSets close={() => setFilterSets(false)} />)}
       <Row gutter={[15,15]}>
-        <Col flex='auto'>
+        <Col md={18}>
           <Title>Filters</Title>
           <div style={{ display: 'flex', flex: 1, gap: 8 }}>
             <div style={{ display: 'flex' }}>
@@ -298,40 +244,25 @@ const Filter = ({ page, section, queryTypes }) => {
               </div>
             )}
           </div>
-          <Divider style={{ margin: '15px 0'}} />
+          <Divider style={{ margin: '18px 0'}} />
+
           <Row>
-            <Col md={24}>
+            <Col md={12}>
+
               {activeFilters && activeFilters.length > 0 && (
-                <FilterList filters={activeFilters} filterType={section} />
+                <div>
+                  <FilterList filters={activeFilters} filterType={section} />
+                </div>
               )}
+
+
+            </Col>
+            <Col md={12}>
+
             </Col>
           </Row>
         </Col>
-        <Col md={3}>
-          <Title>Additional</Title>
-          <Space direction='vertical'>
-            <Space>
-              <Switch
-                size="small"
-                checkedChildren="ON"
-                unCheckedChildren="OFF"
-                defaultChecked={alertTag.value.alerts}
-                onChange={() => dispatch(huntGlobalStore.setTag('alerts', !alertTag.value.alerts))}
-              /> Alerts
-              </Space>
-              <Space>
-              <Switch
-                size="small"
-                checkedChildren="ON"
-                unCheckedChildren="OFF"
-                defaultChecked={alertTag.value.sightings}
-                onChange={() => dispatch(huntGlobalStore.setTag('sightings', !alertTag.value.sightings))}
-              /> Sightings
-            </Space>
-          </Space>
-        </Col>
-        {/* {page !== 'HISTORY' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && ( */}
-        {page !== 'HISTORY' && (
+        {page !== 'HISTORY' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
           <Col md={3}>
             <Title>Tags Filters</Title>
             <Space direction='vertical'>
@@ -365,10 +296,18 @@ const Filter = ({ page, section, queryTypes }) => {
             </Space>
           </Col>
         )}
-        {page !== 'HISTORY' && (
         <Col md={3}>
           <Title>Actions</Title>
           <ActionsSpace direction='vertical'>
+            <Space>
+              <svg height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                <path d="M0 0h24v24H0V0z" fill="none" />
+                <path d="M5 13h14v-2H5v2zm-2 4h14v-2H3v2zM7 7v2h14V7H7z" />
+              </svg>
+              <a href='#' onClick={() => dispatch(huntGlobalStore.clearFilters(section)) }>
+                Clear Filters
+              </a>
+            </Space>
             <Space>
               <svg height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                 <path d="M0 0h24v24H0V0z" fill="none" />
@@ -376,6 +315,7 @@ const Filter = ({ page, section, queryTypes }) => {
               </svg>
               <a href='#' onClick={() => setFilterSets(true)}>Load Filter Set</a>
             </Space>
+            {page !== 'HISTORY' && (
               <Space>
                 <svg enableBackground="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                   <g>
@@ -385,47 +325,23 @@ const Filter = ({ page, section, queryTypes }) => {
                     <path d="M14,10H3v2h11V10z M14,6H3v2h11V6z M18,14v-4h-2v4h-4v2h4v4h2v-4h4v-2H18z M3,16h7v-2H3V16z" />
                   </g>
                 </svg>
-                {filters.length > 0 && (
-                  <a href='#' onClick={() => dispatch(ruleSetsActions.saveFiltersModal(true))}>Save Filter Set</a>
-                )}
-                {filters.length === 0 && (
-                  <>Save Filter Set</>
-                )}
+                Save Filter Set
               </Space>
+            )}
             <Space>
-              <TagOutlined style={{ width: 24 }} />
-              <ErrorHandler>
-                <ActionsButtons supportedActions={supportedActions} />
-              </ErrorHandler>
-            </Space>
-            <Space>
-              <CloseOutlined style={{ width: 24 }} />
-              {filters.length > 0 && (
-                <a href='#' onClick={() => dispatch(huntGlobalStore.clearFilters(section)) }>
-                  Clear Filters
-                </a>
-              )}
-              {filters.length === 0 && (
-                <>Clear Filters</>
-              )}
+              <svg enableBackground="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                <g>
+                  <rect fill="none" height="24" width="24" />
+                </g>
+                <g>
+                  <path d="M14,10H3v2h11V10z M14,6H3v2h11V6z M18,14v-4h-2v4h-4v2h4v4h2v-4h4v-2H18z M3,16h7v-2H3V16z" />
+                </g>
+              </svg>
+              <ActionsButtons supportedActions={supportedActions} />
             </Space>
           </ActionsSpace>
         </Col>
-        )}
       </Row>
-      <FilterSetSave
-        title="Create new Filter Set"
-        showModal={saveFiltersModal}
-        close={() => { dispatch(ruleSetsActions.saveFiltersModal(false)) }}
-        errors={errors}
-        handleDescriptionChange={(event) => setFilterSetDescription(event.target.value)}
-        handleComboChange={undefined}
-        handleFieldChange={(event) => setFilterSetName(event.target.value)}
-        setSharedFilter={(event) => setFilterSetShared(event.target.checked)}
-        submit={() => submitFilterSets()}
-        page={page}
-        noRights={false}
-      />
     </UICard>
   )
 }

@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Spin, Collapse } from 'antd';
+import { List, Spin } from 'antd';
 import axios from 'axios';
 import store from 'store';
 import md5 from 'md5';
@@ -32,11 +32,8 @@ import ErrorHandler from 'ui/components/Error';
 import HuntRestError from 'ui/components/HuntRestError';
 import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
-import { InfoCircleOutlined, FileOutlined } from '@ant-design/icons';
-import moment from 'moment';
 import AlertItem from './components/AlertItem';
 import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction } from '../../helpers/common';
-const { Panel } = Collapse;
 
 export class AlertsPage extends React.Component {
   constructor(props) {
@@ -151,65 +148,17 @@ export class AlertsPage extends React.Component {
             queryTypes={['filter', 'filter_host_id']}
           />
         </ErrorHandler>
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }}>
-            {this.state.loading && (
-              <Spin />
-            )}
-          </div>
+        <Spin spinning={this.state.loading} />
         {this.state.alerts && (
-          <Collapse>
-            {this.state.alerts.map(rule => {
+          <List
+            size="small"
+            header={null}
+            footer={null}
+            dataSource={this.state.alerts}
+            renderItem={(rule) => {
               const { _id: ruleId, _source: ruleSource } = rule;
-
-              const ipParams = (
-                <div>
-                  {ruleSource.src_ip} <span className="glyphicon glyphicon-arrow-right"></span> {ruleSource.dest_ip}
-                </div>
-              );
-
-              const addInfo = [
-                <div key="timestamp" style={{ paddingLeft: 10 }}>
-                  {moment(ruleSource.timestamp).format('YYYY-MM-DD, hh:mm:ss a')}
-                </div>,
-                <div key="app_proto" style={{ paddingLeft: 10 }}>
-                  Proto: {ruleSource.app_proto}
-                </div>,
-                <div key="host" style={{ paddingLeft: 10 }}>
-                  Probe: {ruleSource.host}
-                </div>,
-              ];
-              if (ruleSource.alert.category) {
-                addInfo.push(
-                  <div key="category" style={{ paddingLeft: 10 }}>
-                    Category: {ruleSource.alert.category}
-                  </div>
-                );
-              }
-              let iconclass = <FileOutlined />;
-              if (ruleSource.alert.tag) {
-                addInfo.push(
-                  <div key="tag" style={{ paddingLeft: 10 }}>
-                    Tag: {ruleSource.alert.tag}
-                  </div>,
-                );
-                iconclass = <InfoCircleOutlined />;
-              }
-
               return (
-                <Panel
-                  showArrow={false}
-                  key={this.props.id}
-                  header={
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <div style={{paddingRight: 10}}>{iconclass}</div>
-                      <div>{ipParams}</div>
-                      <div data-toggle="tooltip" title={ruleSource.alert.signature} style={{ marginLeft: 10 }}>
-                        {ruleSource.alert.signature}
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-around', marginLeft: 'auto', alignItems: 'center' }}>{addInfo}</div>
-                    </div>
-                  }
-                >
+                <ErrorHandler key={ruleId}>
                   <AlertItem
                     key={ruleId}
                     id={ruleId}
@@ -218,10 +167,10 @@ export class AlertsPage extends React.Component {
                     filters={this.props.filters}
                     addFilter={this.props.addFilter}
                   />
-                </Panel>
+                </ErrorHandler>
               );
-            })}
-          </Collapse>
+            }}
+          />
         )}
         <ErrorHandler>
           {this.state.action.view && (
@@ -243,7 +192,6 @@ export class AlertsPage extends React.Component {
 }
 
 AlertsPage.propTypes = {
-  id: PropTypes.any,
   rules_list: PropTypes.any,
   filters: PropTypes.any,
   filtersWithAlert: PropTypes.any,

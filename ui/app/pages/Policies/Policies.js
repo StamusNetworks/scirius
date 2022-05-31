@@ -12,6 +12,7 @@ const Policies = () => (
         <Link app to='hunting/policies'>Policies</Link>,
       ]}
     />
+    Policies
     <HuntApp page={PAGE_STATE.filters_list} />
   </div>
 );

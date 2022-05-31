@@ -36,8 +36,8 @@ export default class HuntPaginationRow extends React.Component {
         <Pagination
           defaultCurrent={1}
           total={this.props.itemsCount - 1}
-          showSizeChanger={false}
-          showQuickJumper={false}
+          showSizeChanger
+          showQuickJumper
           showTotal={(total) => `Total ${total} items`}
           onChange={this.onChange}
         />
