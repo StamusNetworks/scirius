@@ -150,7 +150,7 @@ const Filter = ({ page, section, queryTypes }) => {
     const stack = section === sections.HISTORY ? historyFilters : filters;
     const result = [];
     stack.forEach((item) => {
-      if (!item.query || queryTypes.indexOf(item.query) !== -1) {
+      if (!item.query || queryTypes.indexOf('all') > -1 || queryTypes.indexOf(item.query) !== -1) {
         result.push(item);
       }
     });
