@@ -32,7 +32,7 @@ import ErrorHandler from 'ui/components/Error';
 import HuntRestError from 'ui/components/HuntRestError';
 import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
-import { InfoCircleOutlined, FileOutlined } from '@ant-design/icons';
+import { ArrowRightOutlined, InfoCircleOutlined, FileOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import AlertItem from './components/AlertItem';
 import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction } from '../../helpers/common';
@@ -163,7 +163,7 @@ export class AlertsPage extends React.Component {
 
               const ipParams = (
                 <div>
-                  {ruleSource.src_ip} <span className="glyphicon glyphicon-arrow-right"></span> {ruleSource.dest_ip}
+                  {ruleSource.src_ip} <ArrowRightOutlined /> {ruleSource.dest_ip}
                 </div>
               );
 
