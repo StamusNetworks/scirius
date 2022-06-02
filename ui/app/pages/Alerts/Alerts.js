@@ -18,6 +18,7 @@ const Alerts = () => (
 Alerts.metadata = {
   category: 'STAMUS_ND',
   url: 'hunting/alerts',
+  position: 1,
 }
 
 export default Alerts;

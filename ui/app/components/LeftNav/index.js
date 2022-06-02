@@ -23,8 +23,7 @@ const getGroupPages = (category, permissions, systemSettings) => pagesList
   .filter(page => pages[page].metadata &&
     pages[page].metadata.category === category &&
     (!pages[page].metadata.access || pages[page].metadata.access(permissions, systemSettings)))
-  .sort((a, b) => a - b)
-
+  .sort((a, b) => pages[a].metadata.position - pages[b].metadata.position);
 
 function LeftNav({ user, systemSettings }) {
   const {

@@ -18,6 +18,7 @@ const Policies = () => (
 Policies.metadata = {
   category: 'STAMUS_ND',
   url: 'hunting/policies',
+  position: 4,
 }
 
 export default Policies;

@@ -18,6 +18,7 @@ const Signatures = () => (
 Signatures.metadata = {
   category: 'STAMUS_ND',
   url: 'hunting/signatures',
+  position: 2,
 }
 
 export default Signatures;

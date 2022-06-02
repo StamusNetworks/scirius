@@ -17,7 +17,8 @@ const Dashboards = () => (
 );
 Dashboards.metadata = {
   category: 'STAMUS_ND',
-  url: 'hunting/dashboards'
+  url: 'hunting/dashboards',
+  position: 0,
 }
 
 export default Dashboards;
