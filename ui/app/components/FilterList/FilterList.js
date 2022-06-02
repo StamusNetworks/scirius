@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Row } from 'antd';
-import FilterItem from 'components/FilterItem/index';
+import FilterItem from 'ui/components/FilterItem/index';
 import { editFilter, removeFilter } from 'ui/containers/HuntApp/stores/global';
 import isNumeric from '../../helpers/isNumeric';
 import './style.css';
