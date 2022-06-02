@@ -117,7 +117,7 @@ const EventValue = (props) => {
       {magnifiers && (
         <Extra>
           <ErrorHandler>
-            <EventValueInfo field={props.field} value={props.value} />
+            <EventValueInfo field={props.field} value={props.value} magnifiers={magnifiers} />
             {getLink()}
             {/* 256 chars max on ES queries */}
             {((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
