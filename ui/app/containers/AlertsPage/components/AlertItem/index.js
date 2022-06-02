@@ -737,7 +737,32 @@ export default class AlertItem extends React.Component {
               </Col>
             )}
           </Row>
-      </Tabs.TabPane>
+          {data.payload_printable && (
+            <Row>
+              <Card title='Payload printable'>
+                <pre style={{ maxHeight: '12pc' }}>{data.payload_printable}</pre>
+              </Card>
+            </Row>
+          )}
+          {data.http && (
+            <Row>
+              {data.http.http_request_body_printable && (
+                <Col md={12}>
+                  <Card title='HTTP request body'>
+                    <pre style={{ maxHeight: '12pc' }}>{data.http.http_request_body_printable}</pre>
+                  </Card>
+                </Col>
+              )}
+              {data.http.http_response_body_printable && (
+                <Col md={12}>
+                  <Card title='HTTP response body'>
+                      <pre style={{ maxHeight: '12pc' }}>{data.http.http_response_body_printable}</pre>
+                  </Card>
+                </Col>
+              )}
+            </Row>
+          )}
+        </Tabs.TabPane>
 
         {showTabs && (
           <Tabs.TabPane key="json-alert" tab="JSON View">
@@ -806,29 +831,6 @@ export default class AlertItem extends React.Component {
                   ))}
                 {Object.keys(events).length === 0 && <strong>No related events</strong>}
               </Tabs>
-            )}
-            {data.payload_printable && (
-              <Card title='Payload printable'>
-                <pre style={{ maxHeight: '12pc' }}>{data.payload_printable}</pre>
-              </Card>
-            )}
-            {data.http && (
-              <Row>
-                {data.http.http_request_body_printable && (
-                  <Col md={12}>
-                    <Card title='HTTP request body'>
-                      <pre style={{ maxHeight: '12pc' }}>{data.http.http_request_body_printable}</pre>
-                    </Card>
-                  </Col>
-                )}
-                {data.http.http_response_body_printable && (
-                  <Col md={12}>
-                    <Card title='HTTP response body'>
-                        <pre style={{ maxHeight: '12pc' }}>{data.http.http_response_body_printable}</pre>
-                    </Card>
-                  </Col>
-                )}
-              </Row>
             )}
           </Tabs.TabPane>
         )}
