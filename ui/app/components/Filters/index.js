@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Cascader, Col, Divider, Input, Row, Space, Switch } from 'antd';
-import { TagOutlined, CloseOutlined } from '@ant-design/icons';
+import {Cascader, Col, Divider, Input, Row, Space, Switch} from 'antd';
+import {TagOutlined, CloseOutlined} from '@ant-design/icons';
 import UICard from 'ui/components/UIElements/UICard';
 import styled from 'styled-components';
 import { useInjectSaga } from 'utils/injectSaga';

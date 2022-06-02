@@ -68,7 +68,7 @@ export class ActionsPage extends React.Component {
   }
 
   componentDidMount() {
-    if (this.state.rulesets.length === 0) {
+    if (  this.state.rulesets.length === 0) {
       axios.get(`${config.API_URL}${config.RULESET_PATH}`).then((res) => {
         const rulesets = {};
         for (let index = 0; index < res.data.results.length; index += 1) {

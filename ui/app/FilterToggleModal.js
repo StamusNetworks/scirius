@@ -159,11 +159,11 @@ export default class FilterToggleModal extends React.Component {
               </Row>
             )}
             <Row>
-              <Col span={24}>
-                <Form.Item name="textarea-comment">
+              <Col md={24}>
                   <strong>Optional comment</strong>
-                  <Input.TextArea value={this.state.comment} onChange={this.handleCommentChange} />
-                </Form.Item>
+              </Col>
+              <Col md={24}>
+                <Input.TextArea value={this.state.comment} onChange={this.handleCommentChange} />
               </Col>
             </Row>
           </Form>

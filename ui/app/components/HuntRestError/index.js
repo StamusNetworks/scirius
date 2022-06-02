@@ -35,7 +35,7 @@ const HuntRestError = (props) => {
                 if (typeof error === 'object') {
                   return (
                     <div key={1} className="alert alert-danger">
-                      {field}: {JSON.stringify(error)}
+                      {field}: <pre style={{ fontSize: 12, color: '#FF0000' }}>{JSON.stringify(error, null, 2)}</pre>
                     </div>
                   );
                 }

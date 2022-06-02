@@ -2,11 +2,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Select } from 'antd';
+import {Button, Checkbox, Col, Form, Input, InputNumber, Modal, Row, Select} from 'antd';
 import * as config from 'config/Api';
 import { buildQFilter } from 'buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
-import { supportedActions, setDefaultOptions } from 'supportedActions';
+import { supportedActions, setDefaultOptions } from 'ui/supportedActions';
 import HuntRestError from 'ui/components/HuntRestError';
 
 const { Option } = Select;
@@ -232,9 +232,9 @@ export default class RuleToggleModal extends React.Component {
     this.setState({ supported_filters: sfilters });
   }
 
-  handleOptionsChange(event) {
+  handleOptionsChange(id, value) {
     const options = Object.assign({}, this.state.options);
-    options[event.target.id] = event.target.value;
+    options[id] = value;
     this.setState({ options });
   }
 
@@ -281,7 +281,7 @@ export default class RuleToggleModal extends React.Component {
             {this.state.supported_filters &&
               this.state.supported_filters.map((item, i) => (
                 <Form.Item key={item.id}>
-                  <Col span={4}>
+                  <Col md={8}>
                     <Checkbox defaultChecked onChange={() => this.toggleFilter(i)}>
                       <strong>
                         {item.negated && 'Not '}
@@ -289,7 +289,7 @@ export default class RuleToggleModal extends React.Component {
                       </strong>
                     </Checkbox>
                   </Col>
-                  <Col span={8}>
+                  <Col span={16}>
                     <Input
                       type={item.id}
                       disabled={!item.isChecked}
@@ -303,27 +303,27 @@ export default class RuleToggleModal extends React.Component {
             {this.props.action === 'threshold' && (
               <React.Fragment>
                 <Form.Item key="count">
-                  <Col span={4}>
+                  <Col md={8}>
                     <strong>Count</strong>
                   </Col>
-                  <Col span={8}>
-                    <InputNumber defaultValue={1} onChange={this.handleOptionsChange} />
+                  <Col span={16}>
+                    <InputNumber defaultValue={1} onChange={(value) => this.handleOptionsChange("count", value)} />
                   </Col>
                 </Form.Item>
                 <Form.Item key="seconds">
-                  <Col span={4}>
+                  <Col md={8}>
                     <strong>Seconds</strong>
                   </Col>
-                  <Col span={8}>
-                    <InputNumber defaultValue={60} onChange={this.handleOptionsChange} />
+                  <Col span={16}>
+                    <InputNumber defaultValue={60} onChange={(v) => this.handleOptionsChange("seconds", v)} />
                   </Col>
                 </Form.Item>
                 <Form.Item key="track">
-                  <Col span={4}>
+                  <Col md={8}>
                     <strong>Track by</strong>
                   </Col>
-                  <Col span={8}>
-                    <Select placeholder="By Source" onChange={this.handleOptionsChange} allowClear>
+                  <Col span={16}>
+                    <Select placeholder="By Source" onChange={(v) => this.handleOptionsChange("by_src", v)} allowClear>
                       <Option value="by_src">By Source</Option>
                       <Option value="by_dst">By Destination</Option>
                     </Select>
@@ -360,12 +360,14 @@ export default class RuleToggleModal extends React.Component {
             }
             <hr />
 
-            <div className="form-group">
-              <div className="col-sm-9">
+            <Row>
+              <Col md={24}>
                 <strong>Optional comment</strong>
-                <textarea value={this.state.comment} cols={70} onChange={this.handleCommentChange} />
-              </div>
-            </div>
+              </Col>
+              <Col span={24}>
+                <Input.TextArea value={this.state.comment} onChange={this.handleCommentChange} />
+              </Col>
+            </Row>
           </Form>
         )}
         {this.state.noaction && <p>You need enough permissions and at least a filter supported by the ruleset backend to define an action</p>}

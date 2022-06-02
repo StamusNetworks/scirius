@@ -1,43 +1,106 @@
-import React from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import { Dropdown, Menu, Space } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
+import RuleToggleModal from 'ui/RuleToggleModal';
 import PropTypes from 'prop-types';
+import request from "ui/utils/request";
+import * as config from 'config/Api';
+import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
+import {createStructuredSelector} from "reselect";
+import {connect} from "react-redux";
+import {makeSelectGlobalFilters} from "ui/containers/HuntApp/stores/global";
+import ErrorHandler from 'ui/components/Error';
 
-const ActionsButtons = ({ supportedActions }) => {
-  if (process.env.REACT_APP_HAS_ACTION === '1' || process.env.NODE_ENV === 'development') {
-    if (supportedActions.length === 0) {
-      return (
-        <Dropdown id="dropdown-basic-actions" overlay={null} disabled>
-          <Space>
-            Policy Actions
-          </Space>
-        </Dropdown>
-      );
-    }
-    const actions = [];
+const ActionsButtons = ({ supportedActions, filterParams, filters }) => {
+  const [visible, setVisible] = useState(false);
+  const [type, setType] = useState(false);
+  const [rulesets, setRulesets] = useState([]);
+  const [systemSettings, setSystemSettings] = useState([]);
+  const rulesList = {
+    pagination: {
+      page: 1,
+      perPage: 6,
+      perPageOptions: [6, 10, 15, 25],
+    },
+    sort: {id: 'created', asc: false},
+    view_type: 'list',
+  };
+
+  useEffect(() => {
+    request(config.API_URL + config.RULESET_PATH).then((res) => {
+      setRulesets(res.results);
+    });
+    request(config.API_URL + config.SYSTEM_SETTINGS_PATH).then((systemSettings) => {
+      setSystemSettings(systemSettings);
+    });
+  }, []);
+
+
+  const actions = useMemo(() => {
+    const result = [];
     for (let i = 0; i < supportedActions.length; i += 1) {
       const action = supportedActions[i];
       if (action[0] === '-') {
-        actions.push(<Menu.Divider />);
+        result.push(<Menu.Divider key={`divider-${i}`}/>);
       } else {
-        actions.push(
-          <Menu.Item key={action[0]} onClick={() => { /* this.createAction(action[0]); */ }}>{action[1]}</Menu.Item>
+        result.push(
+          <Menu.Item
+            key={action[0]}
+            onClick={() => {
+              setVisible(true);
+              setType(action[0]);
+            }}>
+            {action[1]}
+          </Menu.Item>
         );
       }
     }
+    return result;
+  }, [supportedActions]);
+
+  if (process.env.REACT_APP_HAS_ACTION === '1' || process.env.NODE_ENV === 'development') {
+
     return (
-      <Dropdown id="dropdown-basic-actions" overlay={<Menu>{actions}</Menu>} trigger={['hover']}>
-        <Space>
-          <a href='#'>Policy Actions <DownOutlined /></a>
-        </Space>
-      </Dropdown>
+      <>
+        <ErrorHandler>
+          <Dropdown
+            overlay={<Menu>{actions}</Menu>}
+            disabled={actions.length === 0}
+            trigger={['hover']}
+          >
+            <Space>
+              {actions.length === 0 ? <span>Policy Actions</span> : <a href='#'>Policy Actions <DownOutlined/></a>}
+            </Space>
+          </Dropdown>
+        </ErrorHandler>
+        <ErrorHandler>
+          <RuleToggleModal
+            show={visible}
+            action={type}
+            config={rulesList}
+            filters={filters}
+            close={() => setVisible(false)}
+            rulesets={rulesets}
+            systemSettings={systemSettings}
+            filterParams={filterParams}
+            supportedActions={supportedActions}
+          />
+        </ErrorHandler>
+      </>
     );
   }
-  return null;
+  return <div />;
 }
 
 ActionsButtons.propTypes = {
-  supportedActions: PropTypes.array.isRequired
+  supportedActions: PropTypes.array.isRequired,
+  filterParams: PropTypes.any,
+  filters: PropTypes.any,
 }
 
-export default ActionsButtons;
+const mapStateToProps = createStructuredSelector({
+  filterParams: makeSelectFilterParams(),
+  filters: makeSelectGlobalFilters(),
+});
+
+export default connect(mapStateToProps)(ActionsButtons);

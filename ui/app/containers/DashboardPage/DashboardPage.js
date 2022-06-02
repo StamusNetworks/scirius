@@ -32,7 +32,6 @@ import * as config from 'config/Api';
 import { dashboard } from 'config/Dashboard';
 import { buildQFilter } from 'buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
-import RuleToggleModal from 'RuleToggleModal';
 import { sections } from 'ui/constants';
 import EventValue from 'ui/components/EventValue';
 import ErrorHandler from 'ui/components/Error';
@@ -813,20 +812,6 @@ export class HuntDashboard extends React.Component {
             </ResponsiveReactGridLayout>
           )}
         </div>
-        <ErrorHandler>
-          {this.state.action.view && (
-            <RuleToggleModal
-              show={this.state.action.view}
-              action={this.state.action.type}
-              config={this.props.rules_list}
-              filters={this.props.filters}
-              close={this.closeAction}
-              rulesets={this.state.rulesets}
-              systemSettings={this.props.systemSettings}
-              filterParams={this.props.filterParams}
-            />
-          )}
-        </ErrorHandler>
         <Modal
           title="More results"
           footer={null}
@@ -892,7 +877,6 @@ HuntDashboard.propTypes = {
   systemSettings: PropTypes.any,
   filters: PropTypes.any,
   children: PropTypes.any,
-  rules_list: PropTypes.any,
   updateListState: PropTypes.any,
   filtersWithAlert: PropTypes.array,
   filterParams: PropTypes.object.isRequired,
