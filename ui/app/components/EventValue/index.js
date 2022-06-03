@@ -26,6 +26,9 @@ const Container = styled.div`
   background: ${p => p.hover ? '#e5e5e5' : 'none'};
   cursor: ${p => p.hover ? 'pointer' : 'default'};
   padding: 7px 0px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `
 const Value = styled.div`
   flex: 1;
