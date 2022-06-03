@@ -23,7 +23,7 @@ const EventValueInfo = (props) => {
   }
   if (['src_port', 'dest_port', 'host_id.services.port'].indexOf(props.field) > -1) {
     return (
-      <Tooltip key="dshield_link" title="external info456" trigger="hover" id="tooltip-top">
+      <Tooltip key="dshield_link" title="external info" trigger="hover" id="tooltip-top">
         <a href={`https://www.dshield.org/port.html?port=${props.value}`} target="_blank">
           <InfoCircleFilled />
         </a>
