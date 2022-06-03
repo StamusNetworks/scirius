@@ -33,3 +33,20 @@
     color: #0297a9;
     transform: scale(1.2);
 }
+
+.dl-horizontal .dl-item {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    align-items: center;
+}
+.dl-horizontal dt {
+    justify-self: end;
+}
+.dl-horizontal dd {
+    overflow: hidden;
+    -o-text-overflow: ellipsis;
+    text-overflow: ellipsis;
+    margin-left: 20px;
+    margin-bottom: 0;
+
+}
