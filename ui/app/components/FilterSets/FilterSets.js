@@ -22,9 +22,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Drawer, Dropdown, Input, Menu, Spin } from 'antd';
 import { BellOutlined, DashboardOutlined, IdcardOutlined, InfoCircleOutlined, MenuOutlined, SafetyOutlined, UploadOutlined } from '@ant-design/icons';
-import { sections } from 'ui/constants';
+import { sections, huntUrls } from 'ui/constants';
+import {compose} from "redux";
+import {connect} from "react-redux";
+import { reload } from '../../containers/HuntApp/stores/filterParams';
+import history from "../../utils/history";
 
-export default class FilterSets extends React.Component {
+class FilterSets extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -93,7 +97,7 @@ export default class FilterSets extends React.Component {
       this.props.setTag(alertTag);
     }
 
-    this.props.switchPage(row.page);
+    history.push(`/stamus/${huntUrls[row.page]}`);
     this.props.reload();
   }
 
@@ -297,7 +301,6 @@ export default class FilterSets extends React.Component {
 }
 
 FilterSets.propTypes = {
-  switchPage: PropTypes.any,
   close: PropTypes.any,
   reload: PropTypes.any,
   addFilter: PropTypes.func,
@@ -321,3 +324,11 @@ FilterSets.propTypes = {
     permissions: PropTypes.any,
   }),
 };
+
+const mapDispatchToProps = (dispatch) => ({
+  reload: () => dispatch(reload()),
+});
+
+const withConnect = connect(null, mapDispatchToProps);
+
+export default compose(withConnect)(FilterSets);
