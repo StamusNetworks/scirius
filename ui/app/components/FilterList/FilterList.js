@@ -78,7 +78,7 @@ class FilterList extends React.Component {
       negated: this.state.newFilterNegated,
       fullString: !this.state.wildcardMode,
     });
-    this.closeHandler();
+    this.setState({ editForm: false });
   };
 
   negateHandler = (e) => {
