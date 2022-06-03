@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import {Button, Checkbox, Col, Form, Input, InputNumber, Modal, Row, Select} from 'antd';
 import * as config from 'config/Api';
-import { buildQFilter } from 'buildQFilter';
+import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
 import { supportedActions, setDefaultOptions } from 'ui/supportedActions';
 import HuntRestError from 'ui/components/HuntRestError';

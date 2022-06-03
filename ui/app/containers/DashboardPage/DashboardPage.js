@@ -30,7 +30,7 @@ import map from 'lodash/map';
 import find from 'lodash/find';
 import * as config from 'config/Api';
 import { dashboard } from 'config/Dashboard';
-import { buildQFilter } from 'buildQFilter';
+import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
 import { sections } from 'ui/constants';
 import EventValue from 'ui/components/EventValue';

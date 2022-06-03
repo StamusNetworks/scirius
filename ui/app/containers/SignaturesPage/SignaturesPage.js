@@ -24,7 +24,7 @@ import { Spin } from 'antd';
 import axios from 'axios';
 import md5 from 'md5';
 import * as config from 'config/Api';
-import { buildQFilter } from 'buildQFilter';
+import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
 import RuleToggleModal from 'RuleToggleModal';
 import List from 'ui/components/List/index';

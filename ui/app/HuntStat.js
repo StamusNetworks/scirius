@@ -4,7 +4,7 @@ import { Dropdown, List, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import * as config from 'config/Api';
-import { buildQFilter } from 'buildQFilter';
+import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
 import EventValue from 'ui/components/EventValue';
 

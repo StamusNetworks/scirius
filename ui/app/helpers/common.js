@@ -3,7 +3,7 @@ import { Button, Dropdown, Menu } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import * as config from 'config/Api';
-import { buildQFilter } from 'buildQFilter';
+import { buildQFilter } from 'ui/buildQFilter';
 
 export function actionsButtons() {
   if (process.env.REACT_APP_HAS_ACTION === '1' || process.env.NODE_ENV === 'development') {
