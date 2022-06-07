@@ -315,6 +315,32 @@ class ESQuery:
             # Ignore 404 to prevent an exception when the query exceeded scroll_duration
             self.es.clear_scroll(scroll_id=scroll_id, ignore=[404])
 
+    def _search_after(self, *args, **kwargs):
+        index = self._get_index()
+        body = self._get_query(*args, **kwargs)
+
+        while True:
+            data = self.es.search(
+                body=body,
+                index=index,
+                ignore_unavailable=True,
+                _source=True,
+                request_timeout=self.TIMEOUT,
+                size=self.MAX_RESULT_WINDOW,
+            )
+
+            count = len(data['hits']['hits'])
+            if count > 0:
+                yield data
+
+            if count < self.MAX_RESULT_WINDOW:
+                break
+
+            last_item = data['hits']['hits'][-1]
+            next_timestamp = last_item['sort'][0]
+            next_id = last_item['sort'][1]
+            body['search_after'] = [next_timestamp, next_id]
+
     def _scroll_composite(self, index, body):
         if 'aggregations' not in body:
             raise Exception('Missing aggregation')
