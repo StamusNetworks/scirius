@@ -1,3 +1,4 @@
+import cookie from "cookie";
 /**
  * Parses the JSON returned by a network request
  *
@@ -38,9 +39,15 @@ function checkStatus(response) {
  * @return {object}           The response data
  */
 export default function request(url, options) {
+  const parsedCookie = cookie.parse(document.cookie);
   if (options === undefined) {
     options = {};
   }
+  options = {
+    ...(['POST', 'PUT', 'DELETE', 'PATCH'].indexOf(options.method) > -1 ? { headers: {
+        'X-CSRFToken': parsedCookie.csrftoken,
+      } } : {})
+  };
   options.credentials = 'same-origin'; // force sending cookie on older browsers
   return fetch(url, options)
     .then(checkStatus)

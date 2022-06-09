@@ -31,6 +31,9 @@ import storage from '../../helpers/storage';
 
 const shortcutManager = new ShortcutManager(keymap);
 
+axios.defaults.xsrfCookieName = 'csrftoken';
+axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+
 export default class HuntApp extends Component {
   constructor(props) {
     super(props);
