@@ -2609,7 +2609,8 @@ class ESAlertsTailViewSet(ESBaseViewSet):
 
         index = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + '*'
         data = ESEventsTail(request, index).get(es_params=es_params, ordering=ordering is not None, event_type='alert')
-        return pagination.get_paginated_response(data, full=True)
+        res = pagination.get_paginated(data)
+        return Response(res)
 
 
 class ESEventsTailViewSet(ESBaseViewSet):
@@ -2642,12 +2643,7 @@ class ESEventsTailViewSet(ESBaseViewSet):
 
         index = settings.ELASTICSEARCH_LOGSTASH_INDEX + '*'
         data = ESEventsTail(request, index).get(es_params=es_params, ordering=ordering is not None, event_type=None)
-        res = pagination.get_paginated(data, full=True)
-
-        for idx, item in enumerate(res['results']):
-            item['_source']['_id'] = item['_id']
-            res['results'][idx] = item['_source']
-
+        res = pagination.get_paginated(data)
         return Response(res)
 
 

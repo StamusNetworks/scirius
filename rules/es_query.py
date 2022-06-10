@@ -67,21 +67,26 @@ class ESPaginator(SciriusSetPagination):
             'sort_order': order_sort
         }
 
-    def get_paginated(self, data, full=False):
+    def get_paginated(self, data):
         from rules.es_graphs import get_es_major_version
         total = data['hits']['total']
         if get_es_major_version() >= 7:
             total = total['value']
 
+        res = []
+        for item in data['hits']['hits']:
+            item['_source']['_id'] = item['_id']
+            res.append(item['_source'])
+
         return OrderedDict([
             ('count', total),
             ('next', self.get_next_link(total)),
             ('previous', self.get_previous_link()),
-            ('results', [entry['_source'] if not full else entry for entry in data['hits']['hits']])
+            ('results', res)
         ])
 
-    def get_paginated_response(self, data, full=False):
-        return Response(self.get_paginated(data, full))
+    def get_paginated_response(self, data):
+        return Response(self.get_paginated(data))
 
     def get_next_link(self, total):
         if self._get_current_page() * self.get_page_size(self.request) >= total:
