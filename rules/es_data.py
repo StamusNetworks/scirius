@@ -22,7 +22,6 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import json
 import os
-import sys
 import tarfile
 import tempfile
 from shutil import rmtree
@@ -43,43 +42,7 @@ ES_LOGGER.setLevel(logging.INFO)
 
 # Mapping
 def get_kibana_mappings():
-    if get_es_major_version() < 6:
-        return {
-            "dashboard": {
-                "properties": {
-                    "title": {"type": "string"},
-                    "hits": {"type": "integer"},
-                    "description": {"type": "string"},
-                    "panelsJSON": {"type": "string"},
-                    "optionsJSON": {"type": "string"},
-                    "uiStateJSON": {"type": "string"},
-                    "version": {"type": "integer"},
-                    "timeRestore": {"type": "boolean"},
-                    "timeTo": {"type": "string"},
-                    "timeFrom": {"type": "string"},
-                }
-            },
-            "search": {
-                "properties": {
-                    "title": {"type": "string"},
-                    "description": {"type": "string"},
-                    "hits": {"type": "integer"},
-                    "columns": {"type": "string"},
-                    "sort": {"type": "string"},
-                    "version": {"type": "integer"}
-                }
-            },
-            "visualization": {
-                "properties": {
-                    "title": {"type": "string"},
-                    "uiStateJSON": {"type": "string"},
-                    "description": {"type": "string"},
-                    "savedSearchId": {"type": "string"},
-                    "version": {"type": "integer"}
-                }
-            }
-        }
-    elif get_es_major_version() < 7:
+    if get_es_major_version() < 7:
         return {
             "doc": {
                 "properties": {
@@ -1726,12 +1689,9 @@ class ESData(ESQuery):
 
     def __init__(self):
         super().__init__(None)
-        self.doc_type = None
-
+        self.doc_type = '_doc'
         if get_es_major_version() == 6:
             self.doc_type = 'doc'
-        elif get_es_major_version() == 7:
-            self.doc_type = '_doc'
 
     @staticmethod
     def _kibana_request(url, data, method='GET'):
@@ -1749,16 +1709,14 @@ class ESData(ESQuery):
         i = 0
         ids = []
 
-        if get_es_major_version() >= 6:
-            query = body['query']['query_string']['query']
-            if query:
-                query += ' AND '
-            query += 'type:%s' % _type
-            body['query']['query_string']['query'] = query
-            _type = self.doc_type
+        query = body['query']['query_string']['query']
+        if query:
+            query += ' AND '
+        query += 'type:%s' % _type
+        body['query']['query_string']['query'] = query
 
         while True:
-            res = self.es.search(index='.kibana', from_=i, doc_type=_type, body=body, request_cache=False)
+            res = self.es.search(index='.kibana', from_=i, doc_type=self.doc_type, body=body, request_cache=False)
             if len(res['hits']['hits']) == 0:
                 break
             i += 10
@@ -1767,7 +1725,7 @@ class ESData(ESQuery):
             ids += _ids
 
         for _id in ids:
-            self.es.delete(index='.kibana', doc_type=_type, id=_id, refresh=True, ignore=[404])
+            self.es.delete(index='.kibana', doc_type=self.doc_type, id=_id, refresh=True, ignore=[404])
 
     def _kibana_export_obj(self, dest, _type, body):
         i = 0
@@ -1776,10 +1734,7 @@ class ESData(ESQuery):
         os.makedirs(dest)
 
         while True:
-            if get_es_major_version() < 6:
-                res = self.es.search(index='.kibana', from_=i, doc_type=_type, body=body)
-            else:
-                res = self.es.search(index='.kibana', from_=i, body=body)
+            res = self.es.search(index='.kibana', from_=i, body=body)
 
             if len(res['hits']['hits']) == 0:
                 break
@@ -1791,10 +1746,7 @@ class ESData(ESQuery):
                 filename = os.path.join(dest, _id)
                 filename += '.json'
 
-                if get_es_major_version() < 6:
-                    res = self.es.get(index='.kibana', doc_type=_type, id=_id)
-                else:
-                    res = self.es.get(index='.kibana', doc_type=self.doc_type, id=_id)
+                res = self.es.get(index='.kibana', doc_type=self.doc_type, id=_id)
 
                 with open(filename, 'w') as file_:
                     file_.write(json.dumps(res['_source'], separators=(',', ':')))
@@ -1807,34 +1759,22 @@ class ESData(ESQuery):
             _types = self.ALL_OBJ_TYPES
 
         for _type in _types:
-            if get_es_major_version() < 6:
-                if full:
-                    body = {'query': {'match_all': {}}}
-                else:
-                    body = {
-                        'query': {
-                            'query_string': {
-                                'query': 'NOT title: SN *'
-                            }
+            if full:
+                body = {
+                    'query': {
+                        'query_string': {
+                            'query': 'type: %s' % _type
                         }
                     }
+                }
             else:
-                if full:
-                    body = {
-                        'query': {
-                            'query_string': {
-                                'query': 'type: %s' % _type
-                            }
+                body = {
+                    'query': {
+                        'query_string': {
+                            'query': 'type: %s AND NOT %s.title: SN' % (_type, _type)
                         }
                     }
-                else:
-                    body = {
-                        'query': {
-                            'query_string': {
-                                'query': 'type: %s AND NOT %s.title: SN' % (_type, _type)
-                            }
-                        }
-                    }
+                }
             self._kibana_export_obj(dest, _type, body)
 
         file_ = tempfile.NamedTemporaryFile(delete=False)
@@ -1861,42 +1801,28 @@ class ESData(ESQuery):
             content = file_.read()
         name = _file.rsplit('/', 1)[1]
         name = name.rsplit('.', 1)[0]
-        if get_es_major_version() < 6:
-            doc_type = _type
-        else:
-            doc_type = self.doc_type
 
         # Delete the document first, to prevent an error when it's already there
-        self.es.delete(index='.kibana', doc_type=doc_type, id=name, refresh=True, ignore=[404])
+        self.es.delete(index='.kibana', doc_type=self.doc_type, id=name, refresh=True, ignore=[404])
 
         try:
-            self.es.create(index='.kibana', doc_type=doc_type, id=name, body=content, refresh=True)
+            self.es.create(index='.kibana', doc_type=self.doc_type, id=name, body=content, refresh=True)
         except Exception:
             print('While processing %s:\n' % _file)
             raise
 
     def _kibana_set_default_index(self, idx):
-        if get_es_major_version() < 6:
-            res = self.es.search(index='.kibana', doc_type='config', body={'query': {'match_all': {}}}, request_cache=False)
-        else:
-            body = {'query': {'query_string': {'query': 'type: config'}}}
-            res = self.es.search(index='.kibana', doc_type=self.doc_type, body=body, request_cache=False)
+        body = {'query': {'query_string': {'query': 'type: config'}}}
+        res = self.es.search(index='.kibana', doc_type=self.doc_type, body=body, request_cache=False)
 
         for hit in res['hits']['hits']:
             content = hit['_source']
 
-            if get_es_major_version() < 6:
-                content['defaultIndex'] = idx
-                self.es.update(index='.kibana', doc_type='config', id=hit['_id'], body={'doc': content}, refresh=True)
-            elif get_es_major_version() < 7:
-                content['config'] = content.get('config', {})
-                content['config']['defaultIndex'] = idx
-                self.es.update(index='.kibana', doc_type=self.doc_type, id=hit['_id'], body={'doc': content}, refresh=True)
+            content['config'] = content.get('config', {})
+            content['config']['defaultIndex'] = idx
+            self.es.update(index='.kibana', doc_type=self.doc_type, id=hit['_id'], body={'doc': content}, refresh=True)
 
-        if get_es_major_version() >= 6:
-            self._kibana_request('/api/kibana/settings/defaultIndex', {'value': 'logstash-*'}, method='POST')
-        else:
-            print("Warning: unknown ES version, not setting Kibana's defaultIndex", file=sys.stderr)  # noqa: E999
+        self._kibana_request('/api/kibana/settings/defaultIndex', {'value': 'logstash-*'}, method='POST')
 
     @staticmethod
     def _get_dashboard_dir():
@@ -1987,25 +1913,22 @@ class ESData(ESQuery):
         for _type in self.ALL_OBJ_TYPES:
             if _type == 'index-pattern':
                 pattern = ''
-            elif get_es_major_version() >= 6:
-                pattern = '%s.title: SN*' % _type
             else:
-                pattern = 'title: SN*' % _type
+                pattern = '%s.title: SN*' % _type
 
             self._kibana_remove(_type, {'query': {'query_string': {'query': pattern}}})
             for _file in self._get_kibana_subdirfiles(_type):
                 self._kibana_inject(_type, _file)
 
-        if get_es_major_version() >= 6:
-            try:
-                self._kibana_request('/api/spaces/space', KIBANA6_NAMESPACE, method='POST')
-            except urllib.error.HTTPError as e:
-                if e.code == 409:
-                    print('Default namespace already exist, skipping creation.')
-                elif e.code == 404:
-                    print('Kibana OSS is used, skipping namespace creation.')
-                else:
-                    raise
+        try:
+            self._kibana_request('/api/spaces/space', KIBANA6_NAMESPACE, method='POST')
+        except urllib.error.HTTPError as e:
+            if e.code == 409:
+                print('Default namespace already exist, skipping creation.')
+            elif e.code == 404:
+                print('Kibana OSS is used, skipping namespace creation.')
+            else:
+                raise
 
         self._kibana_set_default_index('logstash-*')
 

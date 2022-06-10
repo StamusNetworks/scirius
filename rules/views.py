@@ -220,8 +220,7 @@ def elasticsearch(request):
         'rule_probe': settings.ELASTICSEARCH_HOSTNAME,
         'field_stats': None
     }
-    context = {'es2x': get_es_major_version() >= 2}
-    context.update(get_middleware_module('common').sn_loggers())
+    context = get_middleware_module('common').sn_loggers()
 
     def check_perms(query):
         PERM_CONF_VIEW = ('indices', 'rule_probe', 'field_stats', None)

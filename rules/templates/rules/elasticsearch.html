@@ -365,11 +365,7 @@ function get_es_indices_stats() {
     {% if loggers %}
         loggers = {{ loggers|safe }};
     {% endif %}
-    {% if es2x %}
-        $( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve_insert.rate_1m', '#logstash', 0, loggers, 'Events per second', stacked=true));
-    {% else %}
-        $( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve.total.rate_1m', '#logstash', 0, loggers, 'Events per second', stacked=true));
-    {% endif %}
+    $( 'document' ).ready(draw_stats_timeline({{ from_date }}, 'eve_insert.rate_1m', '#logstash', 0, loggers, 'Events per second', stacked=true));
 {% endif %}
 </script>
     {% else %}

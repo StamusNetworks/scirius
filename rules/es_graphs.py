@@ -903,11 +903,8 @@ class ESLatestStats(ESQuery):
     INDEX = settings.ELASTICSEARCH_LOGSTASH_INDEX
 
     def _get_query(self):
-        size = 2
-        if get_es_major_version() < 6:
-            size = 1
         q = {
-            'size': size,
+            'size': 2,
             'sort': [{
                 ES_TIMESTAMP: {
                     'order': 'desc',
@@ -948,9 +945,6 @@ class ESLatestStats(ESQuery):
 
 class ESIppairAlerts(ESQuery):
     def _get_query(self):
-        aggs_kw = ''
-        if get_es_major_version() < 6:
-            aggs_kw = '.' + ES_KEYWORD
         q = {
             'size': 0,
             'query': {
@@ -973,7 +967,7 @@ class ESIppairAlerts(ESQuery):
             'aggs': {
                 'src_ip': {
                     'terms': {
-                        'field': 'src_ip' + aggs_kw,
+                        'field': 'src_ip',
                         'size': 20,
                         'order': {
                             '_count': 'desc'
@@ -982,7 +976,7 @@ class ESIppairAlerts(ESQuery):
                     'aggs': {
                         'dest_ip': {
                             'terms': {
-                                'field': 'dest_ip' + aggs_kw,
+                                'field': 'dest_ip',
                                 'size': 20,
                                 'order': {
                                     '_count': 'desc'
