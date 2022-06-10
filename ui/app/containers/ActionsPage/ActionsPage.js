@@ -21,24 +21,20 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Spin, Collapse } from 'antd';
+import { Helmet } from 'react-helmet';
+import { Spin } from 'antd';
 import * as config from 'config/Api';
+import { STAMUS } from 'ui/config';
 import ErrorHandler from 'ui/components/Error';
 import FilterEditKebab from 'ui/components/FilterEditKebab';
 import { CloseCircleOutlined, MailOutlined, MinusCircleOutlined, UploadOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
+import UICollapse from 'ui/components/UIElements/UICollapse';
+import UIPanel from 'ui/components/UIElements/UIPanel/UIPanel';
+import UIPanelHeader from 'ui/components/UIElements/UIPanel/UIPanelHeader';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ActionItem from '../../ActionItem';
 import { actionsButtons, buildListUrlParams, createAction, closeAction, buildFilter } from '../../helpers/common';
-const { Panel } = Collapse;
-
-const PanelStyled = styled(Panel)`
-  .ant-collapse-header {
-    display: flex;
-    flex: 1;
-    flex-direction: row;
-  }
-`
 
 const DescriptionItem = styled.div`
   padding: 0 10px;
@@ -111,33 +107,33 @@ export class ActionsPage extends React.Component {
   render() {
     return (
       <div style={{ marginTop: 15 }}>
-        <Spin spinning={this.state.loading} />
-        <Collapse>
+        <Helmet>
+          <title>{`${STAMUS} - Policies`}</title>
+        </Helmet>
+        <Spin spinning={this.state.loading} style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }} />
+        <UICollapse>
           {this.state.data.map(item => {
-
             // additional info
             const addinfo = [];
             for (let i = 0; i < item.filter_defs.length; i += 1) {
               let info = (
-                <DescriptionItem>
+                <DescriptionItem key={i}>
                   {item.filter_defs[i].operator === 'different' && 'Not '}
-                  {item.filter_defs[i].key}: {item.filter_defs[i].value}
+                  <strong>{item.filter_defs[i].key}</strong>: {item.filter_defs[i].value}
                 </DescriptionItem>
               );
               if (item.filter_defs[i].key === 'alert.signature_id' && item.filter_defs[i].msg) {
                 info = (
-                  <DescriptionItem>
+                  <DescriptionItem key={i}>
                     {item.filter_defs[i].operator === 'different' && 'Not '}
-                    {item.filter_defs[i].key}: {item.filter_defs[i].value} ({item.filter_defs[i].msg})
+                    <strong>{item.filter_defs[i].key}</strong>: {item.filter_defs[i].value} ({item.filter_defs[i].msg})
                   </DescriptionItem>
                 );
               }
               addinfo.push(info);
             }
             if (Object.keys(this.state.rulesets).length > 0) {
-              const rulesets = item.rulesets.map((item2) => (
-                <DescriptionItem>Ruleset: {this.state.rulesets[item2].name}</DescriptionItem>
-              ));
+              const rulesets = item.rulesets.map((item2) => <DescriptionItem key={Math.random()}><strong>ruleset</strong>: {this.state.rulesets[item2].name}</DescriptionItem>);
               addinfo.push(rulesets);
             }
 
@@ -148,13 +144,13 @@ export class ActionsPage extends React.Component {
                 if (option === 'all_tenants' || option === 'no_tenant' || option === 'tenants') return null;
                 if (option === 'tenants_str') {
                   return (
-                    <DescriptionItem>
+                    <DescriptionItem key='tenants_str'>
                       <strong>tenants</strong>: {item.options[option].join()}
                     </DescriptionItem>
                   );
                 }
                 return (
-                  <DescriptionItem>
+                  <DescriptionItem key={Math.random()}>
                     <strong>{option}</strong>: {item.options[option]}
                   </DescriptionItem>
                 );
@@ -163,7 +159,7 @@ export class ActionsPage extends React.Component {
 
             // actions menu
             const actionsMenu = [
-              <Count>{item.index}</Count>,
+              <Count key='count'>{item.index}</Count>,
             ];
             actionsMenu.push(
               <FilterEditKebab
@@ -181,19 +177,19 @@ export class ActionsPage extends React.Component {
             const icons = [];
             switch (item.action) {
               case 'suppress':
-                icon = <CloseCircleOutlined style={{ fontSize: '27px' }} key="suppress" />;
+                icon = <CloseCircleOutlined style={{ fontSize: '18px' }} key="suppress" />;
                 break;
               case 'threshold':
-                icon = <MinusCircleOutlined style={{ fontSize: '27px' }} key="threshold" />;
+                icon = <MinusCircleOutlined style={{ fontSize: '18px' }} key="threshold" />;
                 break;
               case 'tag':
-                icon = <MailOutlined style={{ fontSize: '27px' }} key="tag" />;
+                icon = <MailOutlined style={{ fontSize: '18px' }} key="tag" />;
                 break;
               case 'tagkeep':
-                icon = <MailOutlined style={{ fontSize: '27px' }} key="tagkeep" />;
+                icon = <MailOutlined style={{ fontSize: '18px' }} key="tagkeep" />;
                 break;
               default:
-                icon = <MailOutlined style={{ fontSize: '27px' }} key="tag" />;
+                icon = <MailOutlined style={{ fontSize: '18px' }} key="tag2" />;
                 break;
             }
             icons.push(icon);
@@ -202,19 +198,12 @@ export class ActionsPage extends React.Component {
               icons.push(<UploadOutlined key="imported" title="Imported" className="glyphicon glyphicon-upload" />);
             }
 
-            return (
-              <PanelStyled
+            return <UIPanel
                 key={item.pk}
                 showArrow={false}
-                extra={<div style={{ display: 'flex', flexDirection: 'row' }}>{actionsMenu}</div>}
-                header={
-                  <div style={{ display: 'flex', flex: 1, alignItems: 'center', columnGap: '20px' }}>
-                    {icons && <div>{icons}</div>}
-                    <div>{item.action}</div>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>{description}</div>
-                    <div style={{ display: 'flex' }}>{addinfo}</div>
-                  </div>
-                }>
+                extra={actionsMenu}
+                header={<UIPanelHeader sub1={icons} sub2={item.action} sub3={description} sub4={addinfo}/>}
+              >
                 <ActionItem
                   switchPage={this.props.switchPage}
                   key={item.pk}
@@ -224,12 +213,9 @@ export class ActionsPage extends React.Component {
                   rulesets={this.state.rulesets}
                   filterParams={this.props.filterParams}
                 />
-              </PanelStyled>
-            );
+              </UIPanel>
           })}
-        </Collapse>
-
-        <div style={{ marginTop: 15 }}>
+        </UICollapse>
           <ErrorHandler>
             <HuntPaginationRow
               viewType="list"
@@ -238,7 +224,6 @@ export class ActionsPage extends React.Component {
               itemsList={this.props.rules_list}
             />
           </ErrorHandler>
-        </div>
       </div>
     );
   }
