@@ -46,7 +46,7 @@ table.paleblue a:link {
 }
 
 table.paleblue a:visited {
-    font-weight: normal; 
+    font-weight: normal;
     color: grey;
 }
 
@@ -439,3 +439,124 @@ div#highlight_info {
 .navbar-nav .dropdown-menu {
     position: absolute;
 }
+
+/* Log In page start */
+.login {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    grid-template-rows: 20vh 60vh 20vh;
+    justify-items: center;
+    align-items: center;
+    height: 100vh;
+    background-image: linear-gradient(to right bottom, rgba(0, 87, 146, 0.6), transparent), url(./Stamus_Pattern_16x9.jpg);
+    background-size: cover;
+    background-position: center;
+    color: #fff;
+}
+
+.login__logo-box {
+    grid-row: 1/2;
+}
+.login__logo {
+    height: 50px;
+}
+
+.login__form-box {
+    grid-row: 2/3;
+    grid-column: 2/3;
+    display: grid;
+    grid-template-rows: 7vh 46vh 7vh;
+    align-items: center;
+}
+.login__form-box input[type=text], .login__form-box input[type=password] {
+    height: 50px;
+}
+
+.login__heading {
+    font-size: 30px;
+    letter-spacing: 6px;
+    margin: 0;
+    text-align: center;
+}
+
+.login__button-box {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: center;
+}
+
+.login__button-box  .form-group {
+    margin-bottom: 0px;
+}
+.login__checkbox {
+    display: grid;
+    grid-template-columns: min-content 1fr;
+    align-items: center;
+    justify-items: center;
+    margin-bottom: 0;
+    font-weight: inherit;
+    cursor: pointer;
+}
+.login__checkbox input {
+    margin: 0;
+    height: 25px;
+    width: 25px;
+    appearance: none;
+    border: 1px solid #bcccd1;
+    font-size: 0.8em;
+    text-align: center;
+    line-height: 1em;
+    background: transparent;
+    border-radius: 4px;
+    backdrop-filter: blur(0px);
+    cursor: inherit;
+    transition: all 0.2s;
+    position: relative;
+}
+.login__checkbox input:hover {
+    backdrop-filter: blur(3px);
+}
+.login__checkbox input:focus {
+    outline: none;
+}
+.login__checkbox input:checked:after {
+    content: '\2714';
+    font-size: 33px;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+}
+.login__checkbox span {
+    line-height: 25px;
+    font-size: 17px;
+}
+
+.login__button {
+    font-size: 18px;
+    height: 50px;
+    width: 100%;
+    background-color: transparent;
+    border: 1px solid #bcccd1;
+    border-radius: 4px;
+    backdrop-filter: blur(0px);
+    transition: all 0.2s;
+}
+.login__button:hover {
+    backdrop-filter: blur(3px);
+}
+.login__button:active {
+    backdrop-filter: blur(10px);
+    transform: translateY(1px);
+}
+
+.login__error > div {
+    margin-bottom: 0;
+    border: none;
+}
+
+.login__legal {
+    grid-row: 3/3;
+    grid-column: 2/3;
+    font-size: 15px;
+}
+/* Log In page end */
