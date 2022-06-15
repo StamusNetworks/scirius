@@ -22,17 +22,17 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Spin } from 'antd';
 import axios from 'axios';
+import { Helmet } from 'react-helmet';
 import md5 from 'md5';
 import * as config from 'config/Api';
+import { STAMUS } from 'ui/config';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
 import RuleToggleModal from 'RuleToggleModal';
-import List from 'ui/components/List/index';
 import ErrorHandler from 'ui/components/Error';
 import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
 import HuntPaginationRow from '../../HuntPaginationRow';
-import RuleCard from '../../RuleCard';
 import DashboardPage from '../DashboardPage';
 import RulePage from '../../RulePage';
 import RuleInList from '../../RuleInList';
@@ -70,7 +70,6 @@ export const RuleSortFields = [
 ];
 
 export class SignaturesPage extends React.Component {
-  // export class RulesList extends HuntList {
   constructor(props) {
     super(props);
 
@@ -176,6 +175,7 @@ export class SignaturesPage extends React.Component {
 
           this.cache[hash] = { RuleRes, SrcRes };
           this.processRulesData(RuleRes, SrcRes);
+          this.setState({rules: RuleRes.data.results});
         }),
       )
       .catch((e) => {
@@ -207,7 +207,6 @@ export class SignaturesPage extends React.Component {
     }
     this.setState({
       count: RuleRes.data.count,
-      rules: RuleRes.data.results,
       sources,
       loading: false,
     });
@@ -247,7 +246,10 @@ export class SignaturesPage extends React.Component {
     const displayRule = this.findSID(this.props.filters);
     const view = displayRule ? 'rule' : 'rules_list';
     return (
-      <div className="RulesList HuntList">
+      <div>
+        <Helmet>
+          <title>{`${STAMUS} - Signatures`}</title>
+        </Helmet>
         {this.state.net_error !== undefined && <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>}
         <ErrorHandler>
           <Filters
@@ -257,19 +259,10 @@ export class SignaturesPage extends React.Component {
           />
         </ErrorHandler>
 
-        {view === 'rules_list' && <Spin spinning={this.state.loading} />}
+        <Spin spinning={this.state.loading} style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }} />
 
         {view === 'rules_list' && (
-          <List
-            type={this.props.rules_list.view_type}
-            items={this.state.rules}
-            component={{ list: RuleInList, card: RuleCard }}
-            itemProps={{
-              sources: this.state.sources,
-              filterParams: this.props.filterParams,
-              rulesets: this.props.rulesets,
-            }}
-          />
+          <RuleInList rules={this.state.rules} sources={this.state.sources} filterParams={this.props.filterParams} rulesets={this.props.rulesets} />
         )}
         <ErrorHandler>
           {view === 'rules_list' && (
