@@ -9,7 +9,6 @@ from accounts.rest_api import router as accounts_router
 
 from .rest_utils import SciriusModelViewSet
 from rules.rest_api import router as rules_router, get_custom_urls
-from suricata.rest_api import get_custom_urls as suricata_custom_urls
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -45,7 +44,6 @@ class SciriusRouter(DefaultRouter):
     def get_urls(self):
         urls = super(SciriusRouter, self).get_urls()
         urls += get_custom_urls()
-        urls += suricata_custom_urls()
 
         try:
             urls += get_middleware_module('rest_api').get_custom_urls()

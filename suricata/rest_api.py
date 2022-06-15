@@ -64,9 +64,9 @@ class SuricataViewSet(APIView):
 def get_custom_urls():
     urls = [
         re_path(r'suricata/update_push_all/$', SuricataViewSet.as_view(), name='suricata'),
-        re_path(r'suricata/filestore/(?P<sha256>[0-9a-f]{64})/status/$', FilestoreViewSet.as_view({'get': 'status'}), name='filestore_status'),
-        re_path(r'suricata/filestore/(?P<sha256>[0-9a-f]{64})/retrieve/$', FilestoreViewSet.as_view({'get': 'retrieve_'}), name='filestore_retrieve'),
-        re_path(r'suricata/filestore/(?P<sha256>[0-9a-f]{64})/download/$', FilestoreViewSet.as_view({'get': 'download'}), name='filestore_download'),
+        re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/status/$', FilestoreViewSet.as_view({'get': 'status'}), name='filestore_status'),
+        re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/retrieve/$', FilestoreViewSet.as_view({'get': 'retrieve_'}), name='filestore_retrieve'),
+        re_path(r'rules/filestore/(?P<sha256>[0-9a-f]{64})/download/$', FilestoreViewSet.as_view({'get': 'download'}), name='filestore_download'),
     ]
     return urls
 
