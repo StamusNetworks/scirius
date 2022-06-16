@@ -20,8 +20,10 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Spin, Collapse } from 'antd';
+import { Spin } from 'antd';
 import axios from 'axios';
+import { Helmet } from 'react-helmet';
+import { STAMUS } from 'ui/config';
 import store from 'store';
 import md5 from 'md5';
 import * as config from 'config/Api';
@@ -34,9 +36,11 @@ import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
 import { ArrowRightOutlined, InfoCircleOutlined, FileOutlined } from '@ant-design/icons';
 import moment from 'moment';
+import UICollapse from 'ui/components/UIElements/UICollapse';
+import UIPanel from 'ui/components/UIElements/UIPanel/UIPanel';
+import UIPanelHeader from 'ui/components/UIElements/UIPanel/UIPanelHeader';
 import AlertItem from './components/AlertItem';
 import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction } from '../../helpers/common';
-const { Panel } = Collapse;
 
 export class AlertsPage extends React.Component {
   constructor(props) {
@@ -142,7 +146,11 @@ export class AlertsPage extends React.Component {
 
   render() {
     return (
-      <div className="AlertsList HuntList">
+      <div className="AlertsList">
+        <Helmet>
+          <title>{`${STAMUS} - Alerts`}</title>
+        </Helmet>
+
         {this.state.errors && <HuntRestError errors={this.state.errors} />}
         <ErrorHandler>
           <Filters
@@ -151,20 +159,18 @@ export class AlertsPage extends React.Component {
             queryTypes={['filter']}
           />
         </ErrorHandler>
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }}>
-            {this.state.loading && (
-              <Spin />
-            )}
-          </div>
+
+        <Spin spinning={this.state.loading} style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }} />
+
         {this.state.alerts && (
-          <Collapse>
+          <UICollapse>
             {this.state.alerts.map(rule => {
               const { _id: ruleId, src_ip: srcIp, dest_ip: destIp, timestamp, app_proto: appProto, host, alert } = rule;
 
               const ipParams = (
-                <div>
+                <React.Fragment>
                   {srcIp} <ArrowRightOutlined /> {destIp}
-                </div>
+                </React.Fragment>
               );
 
               const addInfo = [
@@ -172,16 +178,16 @@ export class AlertsPage extends React.Component {
                   {moment(timestamp).format('YYYY-MM-DD, hh:mm:ss a')}
                 </div>,
                 <div key="app_proto" style={{ paddingLeft: 10 }}>
-                  Proto: {appProto}
+                  <strong>proto</strong>: {appProto}
                 </div>,
                 <div key="host" style={{ paddingLeft: 10 }}>
-                  Probe: {host}
+                  <strong>probe</strong>: {host}
                 </div>,
               ];
               if (alert.category) {
                 addInfo.push(
                   <div key="category" style={{ paddingLeft: 10 }}>
-                    Category: {alert.category}
+                    <strong>category</strong>: {alert.category}
                   </div>
                 );
               }
@@ -189,26 +195,17 @@ export class AlertsPage extends React.Component {
               if (alert.tag) {
                 addInfo.push(
                   <div key="tag" style={{ paddingLeft: 10 }}>
-                    Tag: {alert.tag}
+                    <strong>tag</strong>: {alert.tag}
                   </div>,
                 );
                 iconclass = <InfoCircleOutlined />;
               }
 
-              return (
-                <Panel
+              return <UIPanel
+                  key={ruleId}
                   showArrow={false}
-                  key={this.props.id}
-                  header={
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <div style={{paddingRight: 10}}>{iconclass}</div>
-                      <div>{ipParams}</div>
-                      <div data-toggle="tooltip" title={alert.signature} style={{ marginLeft: 10 }}>
-                        {alert.signature}
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-around', marginLeft: 'auto', alignItems: 'center' }}>{addInfo}</div>
-                    </div>
-                  }
+                  extra={<React.Fragment></React.Fragment>}
+                  header={<UIPanelHeader sub1={iconclass} sub2={ipParams} sub3={<div>{alert.signature}</div>} sub4={addInfo}/>}
                 >
                   <AlertItem
                     key={ruleId}
@@ -218,10 +215,9 @@ export class AlertsPage extends React.Component {
                     filters={this.props.filters}
                     addFilter={this.props.addFilter}
                   />
-                </Panel>
-              );
+                </UIPanel>
             })}
-          </Collapse>
+          </UICollapse>
         )}
         <ErrorHandler>
           {this.state.action.view && (
@@ -243,7 +239,6 @@ export class AlertsPage extends React.Component {
 }
 
 AlertsPage.propTypes = {
-  id: PropTypes.any,
   rules_list: PropTypes.any,
   filters: PropTypes.any,
   filtersWithAlert: PropTypes.any,
