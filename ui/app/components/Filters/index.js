@@ -24,6 +24,12 @@ import { loadFilterSets } from 'ui/components/FilterSets/store';
 import ActionsButtons from '../ActionsButtons';
 import request from '../../utils/request';
 
+const FilterContainer = styled.div`
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: 1fr repeat(3, 135px);
+`
+
 const Title = styled.div`
   padding: 0px 0px 5px 0px;
   color: #005792;
@@ -273,8 +279,8 @@ const Filter = ({ page, section, queryTypes }) => {
   return (
     <UICard>
       {filterSets && (<FilterSets close={() => setFilterSets(false)} />)}
-      <Row gutter={[15,15]}>
-        <Col flex='auto'>
+      <FilterContainer>
+        <div>
           <Title>Filters</Title>
           <div style={{ display: 'flex', flex: 1, gap: 8 }}>
             <div style={{ display: 'flex' }}>
@@ -306,8 +312,8 @@ const Filter = ({ page, section, queryTypes }) => {
               )}
             </Col>
           </Row>
-        </Col>
-        <Col md={3}>
+        </div>
+        <div>
           <Title>Additional</Title>
           <Space direction='vertical'>
             <Space>
@@ -329,10 +335,10 @@ const Filter = ({ page, section, queryTypes }) => {
               /> Sightings
             </Space>
           </Space>
-        </Col>
+        </div>
         {/* {page !== 'HISTORY' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && ( */}
         {page !== 'HISTORY' && (
-          <Col md={3}>
+          <div>
             <Title>Tags Filters</Title>
             <Space direction='vertical'>
               <Space>
@@ -363,10 +369,10 @@ const Filter = ({ page, section, queryTypes }) => {
                 /> Untagged
               </Space>
             </Space>
-          </Col>
+          </div>
         )}
         {page !== 'HISTORY' && (
-        <Col md={3}>
+        <div>
           <Title>Actions</Title>
           <ActionsSpace direction='vertical'>
             <Space>
@@ -376,22 +382,22 @@ const Filter = ({ page, section, queryTypes }) => {
               </svg>
               <a href='#' onClick={() => setFilterSets(true)}>Load Filter Set</a>
             </Space>
-              <Space>
-                <svg enableBackground="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                  <g>
-                    <rect fill="none" height="24" width="24" />
-                  </g>
-                  <g>
-                    <path d="M14,10H3v2h11V10z M14,6H3v2h11V6z M18,14v-4h-2v4h-4v2h4v4h2v-4h4v-2H18z M3,16h7v-2H3V16z" />
-                  </g>
-                </svg>
-                {filters.length > 0 && (
-                  <a href='#' onClick={() => dispatch(ruleSetsActions.saveFiltersModal(true))}>Save Filter Set</a>
-                )}
-                {filters.length === 0 && (
-                  <>Save Filter Set</>
-                )}
-              </Space>
+            <Space>
+              <svg enableBackground="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                <g>
+                  <rect fill="none" height="24" width="24" />
+                </g>
+                <g>
+                  <path d="M14,10H3v2h11V10z M14,6H3v2h11V6z M18,14v-4h-2v4h-4v2h4v4h2v-4h4v-2H18z M3,16h7v-2H3V16z" />
+                </g>
+              </svg>
+              {filters.length > 0 && (
+                <a href='#' onClick={() => dispatch(ruleSetsActions.saveFiltersModal(true))}>Save Filter Set</a>
+              )}
+              {filters.length === 0 && (
+                <>Save Filter Set</>
+              )}
+            </Space>
             <Space>
               <TagOutlined style={{ width: 24 }} />
               <ErrorHandler>
@@ -410,9 +416,9 @@ const Filter = ({ page, section, queryTypes }) => {
               )}
             </Space>
           </ActionsSpace>
-        </Col>
+        </div>
         )}
-      </Row>
+      </FilterContainer>
       <FilterSetSave
         title="Create new Filter Set"
         showModal={saveFiltersModal}
