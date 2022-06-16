@@ -326,6 +326,60 @@ class ESEventsTimeline(ESQuery):
         return q
 
 
+class ESIPFlowTimeline(ESQuery):
+    INDEX = settings.ELASTICSEARCH_LOGSTASH_INDEX + 'flow-'
+
+    def _get_query(self, target, ip):
+        q = {
+            'size': 0,
+            'query': {
+                'bool': {
+                    'must': [{
+                        'query_string': {
+                            'query': 'event_type:* AND %s:%s' % (target, ip),
+                            'analyze_wildcard': False
+                        }
+                    }, {
+                        'range': {
+                            ES_TIMESTAMP: {
+                                'gte': self._from_date(),
+                                'lte': self._to_date(),
+                                'format': 'epoch_millis'
+                            }
+                        }
+                    }]
+                }
+            },
+            'aggs': {
+                'date': {
+                    'date_histogram': {
+                        'field': ES_TIMESTAMP,
+                        self._es_interval_kw(): self._es_interval(),
+                        'min_doc_count': 0,
+                        'extended_bounds': {
+                            'min': self._from_date(),
+                            'max': self._to_date()
+                        }
+                    },
+                    'aggs': {
+                        'tx_bytes': {
+                            'sum': {
+                                'field': 'flow.bytes_toserver'
+                            }
+                        },
+                        'rx_bytes': {
+                            'sum': {
+                                'field': 'flow.bytes_toclient'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        q['query']['bool'].update(self._es_bool_clauses())
+        return q
+
+
 class ESFlowTimeline(ESQuery):
     INDEX = settings.ELASTICSEARCH_LOGSTASH_INDEX + 'flow-'
 

@@ -36,7 +36,8 @@ from rules.es_data import ESData
 from rules.es_query import normalize_es_url, ESPaginator
 
 from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats
-from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend, ESTimeRangeAllAlerts, ESFlowTimeline
+from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend, ESTimeRangeAllAlerts, ESFlowTimeline, \
+    ESIPFlowTimeline
 from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESEventsTail, ESSuriLogTail, ESPoststats, ESEventsTimeline
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
@@ -2703,6 +2704,39 @@ class ESFlowTimelineViewSet(ESBaseViewSet):
         return Response(ESFlowTimeline(request).get())
 
 
+class ESIPFlowTimelineViewSet(ESBaseViewSet):
+    """
+    =============================================================================================================================================================
+    ==== GET ====\n
+    Show flow timeline:\n
+        curl -v -k https://x.x.x.x/rest/rules/es/flow_timeline_src_dest/?start_date=1655279226&end_date=1655365626&ip=10.7.5.5 -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X GET
+
+    Return:\n
+        HTTP/1.1 200 OK
+        {"took":5,"timed_out":false,"_shards":{"total":1,"successful":1,"skipped":0,"failed":0},"hits":{"total":{"value":33,"relation":"eq"},"max_score":null,"hits":[]},"aggregations":{"date":{"buckets":[{"key_as_string":"2022-06-15T07:41:36.480Z","key":1655278896480,"doc_count":0,"rx_bytes":{"value":0.0},"tx_bytes":{"value":0.0}},{"key_as_string":"2022-06-15T08:00:00.000Z","key":1655280000000,"doc_count":33,"rx_bytes":{"value":8010170.0},"tx_bytes":{"value":0.0}},{"key_as_string":"2022-06-15T08:18:23.520Z","key":1655281103520,"doc_count":0,"rx_bytes":{"value":0.0},"tx_bytes":{"value":0.0}}, ...]}}}
+
+    =============================================================================================================================================================
+    """
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+    }
+
+    def _get(self, request, format=None):
+        ip = request.GET.get('ip', None)
+        if ip is None:
+            raise serializers.ValidationError({'ip': ['This field is required']})
+
+        src_ip_res = ESIPFlowTimeline(request).get(target='src_ip', ip=ip)
+        dest_ip_res = ESIPFlowTimeline(request).get(target='dest_ip', ip=ip)
+
+        for idx, item in enumerate(src_ip_res.get('aggregations', {}).get('date', {}).get('buckets', [])):
+            item.pop('doc_count')
+            item['rx_bytes']['value'] += dest_ip_res['aggregations']['date']['buckets'][idx]['tx_bytes']['value']
+            item['tx_bytes']['value'] += dest_ip_res['aggregations']['date']['buckets'][idx]['rx_bytes']['value']
+
+        return Response(src_ip_res)
+
+
 class ESEventsTimelineViewSet(ESBaseViewSet):
     """
     =============================================================================================================================================================
@@ -3179,6 +3213,7 @@ def get_custom_urls():
     urls.append(re_path(r'rules/es/tls_tail/$', ESTLSTailViewSet.as_view(), name='es_tls_tail'))
     urls.append(re_path(r'rules/es/events_timeline/$', ESEventsTimelineViewSet.as_view(), name='es_events_timeline'))
     urls.append(re_path(r'rules/es/flow_timeline/$', ESFlowTimelineViewSet.as_view(), name='es_flow_timeline'))
+    urls.append(re_path(r'rules/es/ip_flow_timeline/$', ESIPFlowTimelineViewSet.as_view(), name='es_ip_flow_timeline'))
     urls.append(re_path(r'rules/es/events_from_flow_id/$', ESEventsFromFlowIDViewSet.as_view(), name='es_events_from_flow_id'))
     urls.append(re_path(r'rules/es/suri_log_tail/$', ESSuriLogTailViewSet.as_view(), name='es_suri_log_tail'))
     urls.append(re_path(r'rules/es/delete_logs/$', ESDeleteLogsViewSet.as_view(), name='es_delete_logs'))
