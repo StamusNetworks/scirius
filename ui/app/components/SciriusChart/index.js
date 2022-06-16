@@ -152,6 +152,9 @@ export default class SciriusChart extends React.Component {
       7 * 24 * 60 * 60 * 1000 /* 7  days */,
       14 * 24 * 60 * 60 * 1000 /* 14  days */,
       30 * 24 * 60 * 60 * 1000 /* 30  days */,
+      60 * 24 * 60 * 60 * 1000 /* 60  days */,
+      90 * 24 * 60 * 60 * 1000 /* 90  days */,
+      180 * 24 * 60 * 60 * 1000 /* 180  days */,
     ];
     const ticks = [];
     let yAxis = [];
