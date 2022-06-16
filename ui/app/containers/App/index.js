@@ -5,7 +5,7 @@
  * This component is the skeleton around the actual pages, and should only
  * contain code that should be seen on all pages. (e.g. navigation bar)
  */
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import withSaga from 'utils/injectSaga';
 import { Switch, Redirect, Route } from 'react-router-dom';
 import { Layout } from 'antd';
@@ -30,8 +30,15 @@ import ProxyRoute from 'ui/components/ProxyRoute';
 import saga from 'ui/containers/App/saga';
 
 const pagesList = Object.keys(pages);
+const SESSION_INTERVAL = 30000;
 
-const App = ({ source, getSettings, getUser, getSource, getAllPeriodRequest }) => {
+const App = ({ source, getSettings, getUser, getSource, getAllPeriodRequest, setSessionActivity }) => {
+  const idle = useRef(0);
+
+  const setIdle = useCallback(() => {
+    idle.current = 0;
+  }, [idle]);
+
   useEffect(() => {
     if (source.data.length === 0) {
       getSource();
@@ -40,6 +47,18 @@ const App = ({ source, getSettings, getUser, getSource, getAllPeriodRequest }) =
     syncUrl();
     getUser();
     getAllPeriodRequest();
+
+    const interval = setInterval(() => {
+      idle.current += SESSION_INTERVAL;
+      setSessionActivity(idle.current / 1000);
+    }, SESSION_INTERVAL);
+    document.addEventListener('mousemove', setIdle);
+    document.addEventListener('keypress', setIdle);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('mousemove', setIdle);
+      document.removeEventListener('keypress', setIdle);
+    };
   }, []);
 
   const [errorMsg, setErrorMsg] = useState(null);
@@ -102,6 +121,7 @@ App.propTypes = {
   getUser: PropTypes.func,
   getSource: PropTypes.any,
   getAllPeriodRequest: PropTypes.any,
+  setSessionActivity: PropTypes.func,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -118,6 +138,7 @@ export const mapDispatchToProps = dispatch =>
       getUser: actions.getUser,
       getSource: actions.getSource,
       getAllPeriodRequest: actions.getAllPeriodRequest,
+      setSessionActivity: actions.setSessionActivityRequest,
     },
     dispatch,
   );

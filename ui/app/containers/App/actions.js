@@ -82,6 +82,17 @@ const getAllPeriodFailure = () => ({
   type: constants.GET_PERIOD_ALL_FAILURE,
 });
 
+const setSessionActivityRequest = idle => ({
+  type: constants.SET_SESSION_ACTIVITY_REQUEST,
+  payload: {
+    timeout: idle,
+  },
+});
+
+const setSessionActivityFailure = () => ({
+  type: constants.SET_SESSION_ACTIVITY_FAILURE,
+});
+
 export default {
   getUser,
   getUserSuccess,
@@ -99,4 +110,6 @@ export default {
   getAllPeriodRequest,
   getAllPeriodSuccess,
   getAllPeriodFailure,
+  setSessionActivityRequest,
+  setSessionActivityFailure,
 };

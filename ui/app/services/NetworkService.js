@@ -2,6 +2,8 @@ import ENDPOINT from 'ui/config/endpoints';
 import Api from 'ui/helpers/Api';
 
 const NetworkService = {
+  // POST
+  setSessionActivity: async (params, options) => Api.post(ENDPOINT.SESSION_ACTIVITY, params, options),
   // GET
   fetchUser: async () => Api.get(ENDPOINT.CURRENT_USER),
   fetchGlobalSettings: async () => Api.get(ENDPOINT.GLOBAL_SETTINGS),

@@ -38,6 +38,10 @@ const ENDPOINT = {
     name: 'Fetching history filters',
     url: `${RULES_URL}/history/get_action_type_list/`,
   },
+  SESSION_ACTIVITY: {
+    name: 'Set session activity idle time',
+    url: `/accounts/session_activity/`,
+  },
 };
 
 export default ENDPOINT;
