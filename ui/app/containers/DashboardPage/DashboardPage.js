@@ -706,7 +706,7 @@ export class HuntDashboard extends React.Component {
 
   render() {
     return (
-      <div className="HuntList">
+      <div>
         <ErrorHandler>
           <Filters
             page='DASHBOARD'

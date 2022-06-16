@@ -87,7 +87,7 @@ export default class HistoryPage extends React.Component {
       }
     }
     return (
-      <div className="HistoryList HuntList">
+      <div>
         <ErrorHandler>
           <Filters
             page='HISTORY'
