@@ -159,37 +159,37 @@ export class AlertsPage extends React.Component {
         {this.state.alerts && (
           <Collapse>
             {this.state.alerts.map(rule => {
-              const { _id: ruleId, _source: ruleSource } = rule;
+              const { _id: ruleId, src_ip: srcIp, dest_ip: destIp, timestamp, app_proto: appProto, host, alert } = rule;
 
               const ipParams = (
                 <div>
-                  {ruleSource.src_ip} <ArrowRightOutlined /> {ruleSource.dest_ip}
+                  {srcIp} <ArrowRightOutlined /> {destIp}
                 </div>
               );
 
               const addInfo = [
                 <div key="timestamp" style={{ paddingLeft: 10 }}>
-                  {moment(ruleSource.timestamp).format('YYYY-MM-DD, hh:mm:ss a')}
+                  {moment(timestamp).format('YYYY-MM-DD, hh:mm:ss a')}
                 </div>,
                 <div key="app_proto" style={{ paddingLeft: 10 }}>
-                  Proto: {ruleSource.app_proto}
+                  Proto: {appProto}
                 </div>,
                 <div key="host" style={{ paddingLeft: 10 }}>
-                  Probe: {ruleSource.host}
+                  Probe: {host}
                 </div>,
               ];
-              if (ruleSource.alert.category) {
+              if (alert.category) {
                 addInfo.push(
                   <div key="category" style={{ paddingLeft: 10 }}>
-                    Category: {ruleSource.alert.category}
+                    Category: {alert.category}
                   </div>
                 );
               }
               let iconclass = <FileOutlined />;
-              if (ruleSource.alert.tag) {
+              if (alert.tag) {
                 addInfo.push(
                   <div key="tag" style={{ paddingLeft: 10 }}>
-                    Tag: {ruleSource.alert.tag}
+                    Tag: {alert.tag}
                   </div>,
                 );
                 iconclass = <InfoCircleOutlined />;
@@ -203,8 +203,8 @@ export class AlertsPage extends React.Component {
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <div style={{paddingRight: 10}}>{iconclass}</div>
                       <div>{ipParams}</div>
-                      <div data-toggle="tooltip" title={ruleSource.alert.signature} style={{ marginLeft: 10 }}>
-                        {ruleSource.alert.signature}
+                      <div data-toggle="tooltip" title={alert.signature} style={{ marginLeft: 10 }}>
+                        {alert.signature}
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-around', marginLeft: 'auto', alignItems: 'center' }}>{addInfo}</div>
                     </div>
@@ -213,7 +213,7 @@ export class AlertsPage extends React.Component {
                   <AlertItem
                     key={ruleId}
                     id={ruleId}
-                    data={ruleSource}
+                    data={rule}
                     filterParams={this.props.filterParams}
                     filters={this.props.filters}
                     addFilter={this.props.addFilter}
