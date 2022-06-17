@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {Cascader, Col, Divider, Input, Row, Space, Switch} from 'antd';
+import {Cascader, Col, Divider, Input, Row, Space, Switch, Select} from 'antd';
 import {TagOutlined, CloseOutlined} from '@ant-design/icons';
 import UICard from 'ui/components/UIElements/UICard';
 import styled from 'styled-components';
@@ -23,6 +23,7 @@ import PropTypes from 'prop-types';
 import { loadFilterSets } from 'ui/components/FilterSets/store';
 import ActionsButtons from '../ActionsButtons';
 import request from '../../utils/request';
+const { Option } = Select;
 
 const FilterContainer = styled.div`
   display: grid;
@@ -88,6 +89,8 @@ const Filter = ({ page, section, queryTypes }) => {
   const supportedActionsPermissions = user && user.data && user.data.permissions && user.data.permissions.includes('rules.ruleset_policy_edit');
 
   // State handlers
+  const [ searchString, setSearchString ] = useState('');
+  const [ selectedIds, setSelectedIds ] = useState([]);
   const [ selectedItems, setSelectedItems ] = useState([]);
   const [ filterSets, setFilterSets ] = useState(false);
 
@@ -100,10 +103,10 @@ const Filter = ({ page, section, queryTypes }) => {
     }
   }, [filters, supportedActionsPermissions]);
 
-  const getTreeOptions = useCallback((data) => data.map(o => ({
+  const getTreeOptions = useCallback((data, parentType, level = 0) => data.map(o => ({
       label: `${o.title || o.label}`,
       value: o.id,
-      children: getTreeOptions(o.filterCategories || o.filterValues || [])
+      children: parentType !== 'complex-select' ? getTreeOptions(o.filterCategories || o.filterValues || [], o.filterType, level + 1) : []
     })), [filterFields]);
 
   const getFlatOptions = useCallback((data) => data.reduce((prev, cur) => [
@@ -118,6 +121,7 @@ const Filter = ({ page, section, queryTypes }) => {
   const onChange = useCallback((value) => {
     const item = flatOptions.filter(d => value.indexOf(d.id) > -1);
     setSelectedItems(item);
+    setSelectedIds(value);
   }, [filterFields, flatOptions]);
 
   const field = useMemo(() => selectedItems.find(s => flatOptions.find(f => f.id === s.id)), [selectedItems]);
@@ -227,6 +231,9 @@ const Filter = ({ page, section, queryTypes }) => {
       query: field.queryType,
       fullString,
     }));
+    setSelectedItems([]);
+    setSelectedIds([]);
+    setSearchString('');
   };
 
   const [errors, setErrors] = useState([]);
@@ -285,14 +292,17 @@ const Filter = ({ page, section, queryTypes }) => {
           <div style={{ display: 'flex', flex: 1, gap: 8 }}>
             <div style={{ display: 'flex' }}>
               <CascaderStyled
+                value={selectedIds}
                 options={treeOptions}
                 displayRender={displayRender}
                 onChange={(value) => onChange(value)}
               />
             </div>
-            {filterType !== 'complex-select' && filterType !== 'select' && (
+            {field && filterType !== 'complex-select' && filterType !== 'select' && (
               <div style={{ display: 'flex', flex: 1 }}>
                 <Input
+                  value={searchString}
+                  onChange={(e) => setSearchString(e.target.value)}
                   placeholder={placeholder}
                   onPressEnter={(event) => {
                     const { value } = event.target;
@@ -302,6 +312,20 @@ const Filter = ({ page, section, queryTypes }) => {
                   }}
                 />
               </div>
+            )}
+            {filterType === 'complex-select' && (
+              <Select
+                style={{ width: 200 }}
+                showSearch
+                placeholder={field && field.placeholder}
+                optionFilterProp="children"
+                onChange={(value) => {
+                  filterAdded(filterCategory, value, false);
+                }}
+                filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
+              >
+                {filterCategory && filterCategory.filterValues.map(v => <Option value={v.id}>{v.label}</Option>)}
+              </Select>
             )}
           </div>
           <Divider style={{ margin: '15px 0'}} />
