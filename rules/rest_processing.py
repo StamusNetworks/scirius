@@ -107,7 +107,11 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
         if not instance.options:
             from scirius.utils import get_middleware_module
             instance = get_middleware_module('common').update_processing_filter_action_options(instance)
-        return super(RuleProcessingFilterSerializer, self).to_representation(instance)
+        res = super(RuleProcessingFilterSerializer, self).to_representation(instance)
+        user_action = UserAction.objects.filter(action_type='create_rule_filter', user_action_objects__object_id=instance.pk).distinct().first()
+        if user_action:
+            res['comment'] = user_action.comment
+        return res
 
     def to_internal_value(self, data):
         from scirius.utils import get_middleware_module
