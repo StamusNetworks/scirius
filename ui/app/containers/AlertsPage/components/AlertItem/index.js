@@ -775,51 +775,46 @@ export default class AlertItem extends React.Component {
             {this.state.fileInfo && !this.state.fileInfoLoading && this.renderFiles()}
           </Tabs.TabPane>
         )}
-        {showTabs && (
-          <Tabs.TabPane key="json-related" tab={this.formatString('Related events {0}', this.nbEvents(events))}>
-            {events && (
-              <Tabs id="related-tabs">
-                {Object.keys(events)
-                  .sort()
-                  .map((key) => (
-                    <Tabs.TabPane
-                      key={`events-${key}`}
-                      tab={`Related ${key}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''} (${
-                        Object.keys(events[key]).length
-                      })`}
-                    >
-                      {Object.keys(events[key])
-                        .sort()
-                        .map((key2) => (
-                          <div key={key2} style={{ paddingTop: '10px' }}>
-                            <Button onClick={() => this.toggleCollapse(`${key}-${key2}`)} key={key2}>
-                              {`${key}-${key2}` in this.state.collapsed && !this.state.collapsed[`${key}-${key2}`] && (
-                                <span className="fa fa-angle-right fa-angle-down"></span>
-                              )}
-                              {!(`${key}-${key2}` in this.state.collapsed && !this.state.collapsed[`${key}-${key2}`]) && (
-                                <span className="fa fa-angle-right fa-angle-right"></span>
-                              )}
-                              <strong>{`  ${this.getTitle(events[key][key2])}`}</strong>
-                            </Button>
-                            {`${key}-${key2}` in this.state.collapsed && !this.state.collapsed[`${key}-${key2}`] && (
-                              <ReactJson
-                                name={false}
-                                src={events[key][key2]}
-                                displayDataTypes={false}
-                                displayObjectSize={false}
-                                collapseStringsAfterLength={150}
-                                collapsed={false}
-                              />
-                            )}
-                          </div>
-                        ))}
-                    </Tabs.TabPane>
-                  ))}
-                {Object.keys(events).length === 0 && <strong>No related events</strong>}
-              </Tabs>
-            )}
-          </Tabs.TabPane>
-        )}
+        {!events && <Tabs.TabPane key="events" tab={<Spin size="small" />}/>}
+        {showTabs && events && <React.Fragment key="json-related">
+            {Object.keys(events)
+              .sort()
+              .map((key) => (
+                <Tabs.TabPane
+                  key={`events-${key}`}
+                  tab={`Related ${key}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''} (${
+                    Object.keys(events[key]).length
+                  })`}
+                >
+                  {Object.keys(events[key])
+                    .sort()
+                    .map((key2) => (
+                      <div key={key2} style={{ paddingTop: '10px' }}>
+                        <Button onClick={() => this.toggleCollapse(`${key}-${key2}`)} key={key2}>
+                          {`${key}-${key2}` in this.state.collapsed && !this.state.collapsed[`${key}-${key2}`] && (
+                            <span className="fa fa-angle-right fa-angle-down"></span>
+                          )}
+                          {!(`${key}-${key2}` in this.state.collapsed && !this.state.collapsed[`${key}-${key2}`]) && (
+                            <span className="fa fa-angle-right fa-angle-right"></span>
+                          )}
+                          <strong>{`  ${this.getTitle(events[key][key2])}`}</strong>
+                        </Button>
+                        {`${key}-${key2}` in this.state.collapsed && !this.state.collapsed[`${key}-${key2}`] && (
+                          <ReactJson
+                            name={false}
+                            src={events[key][key2]}
+                            displayDataTypes={false}
+                            displayObjectSize={false}
+                            collapseStringsAfterLength={150}
+                            collapsed={false}
+                          />
+                        )}
+                      </div>
+                    ))}
+                </Tabs.TabPane>
+              ))}
+            {Object.keys(events).length === 0 && <strong>No related events</strong>}
+        </React.Fragment>}
         {showTabs && JSON.stringify(this.state.files) !== '{}' && (
           <Tabs.TabPane key="json-files" tab="Files">
             <div className="files-warning">
