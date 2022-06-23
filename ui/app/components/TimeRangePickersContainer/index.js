@@ -96,6 +96,7 @@ const TimeRangePickersContainer = ({
                   <RadioGroup size="default" value={duration}>
                     {Object.keys(PeriodEnum).map(p => (
                       <RadioButton
+                        style={{padding:'0 14px'}}
                         disabled={timeSpan.disableAll && PeriodEnum[p].name === 'All'}
                         value={p}
                         key={p}
