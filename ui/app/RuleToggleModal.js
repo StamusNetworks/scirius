@@ -2,7 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import {Button, Checkbox, Col, Form, Input, InputNumber, Modal, Row, Select} from 'antd';
+import {Button, Checkbox, Form, Input, InputNumber, Modal, Select} from 'antd';
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
@@ -280,16 +280,14 @@ export default class RuleToggleModal extends React.Component {
           <Form>
             {this.state.supported_filters &&
               this.state.supported_filters.map((item, i) => (
-                <Form.Item key={item.id}>
-                  <Col md={8}>
+                <Form.Item key={item.id} style={{ marginBottom: '10px' }}>
+                  <div style={{display:'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center'}}>
                     <Checkbox defaultChecked onChange={() => this.toggleFilter(i)}>
                       <strong>
                         {item.negated && 'Not '}
                         {item.key}
                       </strong>
                     </Checkbox>
-                  </Col>
-                  <Col span={16}>
                     <Input
                       type={item.id}
                       disabled={!item.isChecked}
@@ -297,37 +295,31 @@ export default class RuleToggleModal extends React.Component {
                       onChange={(e) => this.handleFieldChange(e, i)}
                       onKeyPress={(e) => this.onFieldKeyPress(e)}
                     />
-                  </Col>
+                  </div>
                 </Form.Item>
               ))}
             {this.props.action === 'threshold' && (
               <React.Fragment>
-                <Form.Item key="count">
-                  <Col md={8}>
+                <Form.Item key="count" style={{ marginBottom: '10px' }}>
+                  <div style={{display:'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center'}}>
                     <strong>Count</strong>
-                  </Col>
-                  <Col span={16}>
-                    <InputNumber defaultValue={1} onChange={(value) => this.handleOptionsChange("count", value)} />
-                  </Col>
+                    <InputNumber defaultValue={1} onChange={(value) => this.handleOptionsChange("count", value)} style={{width: '100%'}}/>
+                  </div>
                 </Form.Item>
-                <Form.Item key="seconds">
-                  <Col md={8}>
+                <Form.Item key="seconds" style={{ marginBottom: '10px' }}>
+                  <div style={{display:'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center'}}>
                     <strong>Seconds</strong>
-                  </Col>
-                  <Col span={16}>
-                    <InputNumber defaultValue={60} onChange={(v) => this.handleOptionsChange("seconds", v)} />
-                  </Col>
+                    <InputNumber defaultValue={60} onChange={(v) => this.handleOptionsChange("seconds", v)} style={{width: '100%'}}/>
+                  </div>
                 </Form.Item>
-                <Form.Item key="track">
-                  <Col md={8}>
+                <Form.Item key="track" style={{ marginBottom: '10px' }}>
+                  <div style={{display:'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center'}}>
                     <strong>Track by</strong>
-                  </Col>
-                  <Col span={16}>
                     <Select placeholder="By Source" onChange={(v) => this.handleOptionsChange("by_src", v)} allowClear>
                       <Option value="by_src">By Source</Option>
                       <Option value="by_dst">By Destination</Option>
                     </Select>
-                  </Col>
+                  </div>
                 </Form.Item>
               </React.Fragment>
             )}
@@ -335,39 +327,31 @@ export default class RuleToggleModal extends React.Component {
             <hr />
             {
               <Form.Item>
-                <Col span={12}>
-                  <label>
-                    <strong>Ruleset{this.props.rulesets.length > 1 && 's'}:</strong>
-                  </label>
-                  {this.props.rulesets &&
-                    this.props.rulesets.map((ruleset) => (
-                      <div className="row" key={ruleset.pk}>
-                        <div className="col-sm-9">
-                          <label htmlFor={ruleset.pk}>
-                            <input type="checkbox" id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange} /> {ruleset.name}
-                          </label>
-                          {ruleset.warnings && <div style={{ marginLeft: '5%' }}>• {ruleset.warnings}</div>} {/* ignore_utf8_check 8226 8214 */}
+                <React.Fragment>
+                  <strong>Ruleset{this.props.rulesets.length > 1 && 's'}:</strong>
+                  <div style={{display:'grid', gridTemplateColumns: '2fr max-content', alignItems: 'center', justifyContent: 'space-around'}}>
+                    {this.props.rulesets &&
+                      this.props.rulesets.map((ruleset) => (
+                        <React.Fragment key={ruleset.pk}>
+                          <label htmlFor={ruleset.pk}>{ruleset.name}</label>
+                          <Checkbox id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange} style={{justifySelf: 'right'}}/>
+                          {ruleset.warnings && <React.Fragment><div>•</div><div>{ruleset.warnings}</div></React.Fragment>} {/* ignore_utf8_check 8226 8214 */}
                           {ruleset[`warnings_${this.props.action}`] && (
                             <React.Fragment>
-                              <div style={{ marginLeft: '5%' }}>• {ruleset[`warnings_${this.props.action}`]}</div> {/* ignore_utf8_check 8226 */}
+                              <div>•</div><div>{ruleset[`warnings_${this.props.action}`]}</div> {/* ignore_utf8_check 8226 */}
                             </React.Fragment>
-                          )}{' '}
-                        </div>
-                      </div>
-                    ))}
-                </Col>
+                          )}
+                        </React.Fragment>
+                      ))}
+                  </div>
+                </React.Fragment>
               </Form.Item>
             }
             <hr />
-
-            <Row>
-              <Col md={24}>
+              <div style={{display:'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center'}}>
                 <strong>Optional comment</strong>
-              </Col>
-              <Col span={24}>
                 <Input.TextArea value={this.state.comment} onChange={this.handleCommentChange} />
-              </Col>
-            </Row>
+              </div>
           </Form>
         )}
         {this.state.noaction && <p>You need enough permissions and at least a filter supported by the ruleset backend to define an action</p>}
