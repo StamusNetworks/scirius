@@ -44,9 +44,10 @@ export default function request(url, options) {
     options = {};
   }
   options = {
-    ...(['POST', 'PUT', 'DELETE', 'PATCH'].indexOf(options.method) > -1 ? { headers: {
+    ...(['POST', 'PUT', 'DELETE', 'PATCH'].indexOf(options.method) > -1 ? { ...options, headers: {
+        ...options.headers,
         'X-CSRFToken': parsedCookie.csrftoken,
-      } } : {})
+      } } : options)
   };
   options.credentials = 'same-origin'; // force sending cookie on older browsers
   return fetch(url, options)
