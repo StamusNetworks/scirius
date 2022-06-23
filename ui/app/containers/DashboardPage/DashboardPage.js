@@ -795,6 +795,7 @@ export class HuntDashboard extends React.Component {
                       onResizeStart={this.onResizeStartMicro}
                       isDraggable={this.state.editMode}
                       isResizable={this.state.editMode}
+                      resizeHandles={this.state.editMode ? ['se'] : []}
                       rowHeight={10}
                       draggableHandle=".hunt-stat-title"
                       cols={{
