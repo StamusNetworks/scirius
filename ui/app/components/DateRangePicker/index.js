@@ -10,7 +10,6 @@ const SubmitDate = styled(Button)`
   width: 100%;
   text-align: center;
   border-top: 1px solid #d9d9d9;
-  padding-top: 11px;
 `;
 
 const Index = props => {
