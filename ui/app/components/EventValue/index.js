@@ -71,7 +71,7 @@ const EventValue = (props) => {
       return (
         <Tooltip key="mitre_link" title="external info" trigger="hover" id="tooltip-top">
           <a
-            href={() => {
+            href={function(){
               if (props.field === mitreLinks[0]) {
                 return `https://attack.mitre.org/tactics/${props.value}`;
               }
@@ -79,7 +79,7 @@ const EventValue = (props) => {
                 return `https://attack.mitre.org/techniques/${props.value}`;
               }
               return `https://attack.mitre.org/techniques/${props.value.split('.')[0]}/${props.value.split('.')[1]}`;
-            }}
+            }()}
             target="_blank"
           >
             {' '}
