@@ -711,7 +711,7 @@ export class HuntDashboard extends React.Component {
           <Filters
             page='DASHBOARD'
             section={sections.GLOBAL}
-            queryTypes={['filter', 'filter_host_id']}
+            queryTypes={['filter']}
           />
         </ErrorHandler>
 

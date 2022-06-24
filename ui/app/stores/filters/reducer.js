@@ -44,7 +44,38 @@ const appReducer = (state = initialState, action) =>
           const item = actionTypeList[i];
           actions.push({ id: item, title: action.payload.data[item] });
         }
-        draft.historyFilters = actions;
+        draft.filterList = [
+          {
+            id: 'username',
+            title: 'User',
+            placeholder: 'Filter by User',
+            filterType: 'text',
+            queryType: 'all',
+          },
+          {
+            id: 'comment',
+            title: 'Comment',
+            placeholder: 'Filter by Comment',
+            filterType: 'text',
+            queryType: 'all',
+          },
+          {
+            id: 'action_type',
+            title: 'Action Type',
+            placeholder: 'Filter by Action Type',
+            filterType: 'select',
+            filterValues: actions,
+            queryType: 'all',
+          },
+          {
+            id: 'client_ip',
+            title: 'Client IP',
+            placeholder: 'Filter by Client IP',
+            filterType: 'text',
+            filterValues: [],
+            queryType: 'all',
+          },
+        ];
         break;
       }
       case constants.HISTORY_FILTERS_FAILURE: {

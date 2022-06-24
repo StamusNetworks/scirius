@@ -253,7 +253,7 @@ export class SignaturesPage extends React.Component {
           <Filters
             page='SIGNATURES'
             section={sections.GLOBAL}
-            queryTypes={['filter', 'rest', 'filter_host_id']}
+            queryTypes={['filter', 'rest']}
           />
         </ErrorHandler>
 

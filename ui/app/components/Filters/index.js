@@ -83,7 +83,7 @@ const Filter = ({ page, section, queryTypes }) => {
   const filters = useSelector(huntGlobalStore.makeSelectGlobalFilters());
   const historyFilters = useSelector(huntGlobalStore.makeSelectHistoryFilters());
   const alertTag = useSelector(huntGlobalStore.makeSelectAlertTag());
-  const filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(section));
+  const filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(queryTypes));
   const supportedActions = useSelector(ruleSetsSelectors.makeSelectSupportedActions());
   const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());
   const supportedActionsPermissions = user && user.data && user.data.permissions && user.data.permissions.includes('rules.ruleset_policy_edit');
@@ -97,7 +97,9 @@ const Filter = ({ page, section, queryTypes }) => {
   // Effects handlers
   useEffect(() => {
     dispatch(ruleSetsActions.ruleSetsRequest());
-    dispatch(ruleSetsActions.huntFilterRequest());
+    if (page !== 'HISTORY') {
+      dispatch(ruleSetsActions.huntFilterRequest());
+    }
     if (supportedActionsPermissions) {
       dispatch(ruleSetsActions.supportedActionsRequest(filters));
     }

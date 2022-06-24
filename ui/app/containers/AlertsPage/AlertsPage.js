@@ -148,7 +148,7 @@ export class AlertsPage extends React.Component {
           <Filters
             page='ALERTS'
             section={sections.GLOBAL}
-            queryTypes={['filter', 'filter_host_id']}
+            queryTypes={['filter']}
           />
         </ErrorHandler>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }}>

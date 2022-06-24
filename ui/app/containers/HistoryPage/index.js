@@ -22,8 +22,8 @@ const mapStateToProps = createStructuredSelector({
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
-const withReducer = injectReducer({ key: 'filters', reducer });
-const withSaga = injectSaga({ key: 'filters', saga });
+const withReducer = injectReducer({ key: 'ruleSet', reducer });
+const withSaga = injectSaga({ key: 'ruleSet', saga });
 
 export default compose(withReducer, withSaga, withConnect)(HistoryPage);
 export { mapDispatchToProps };
