@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Card, Col, Row, Spin, Tabs } from 'antd';
+import { Button, Card, Col, Empty, Row, Spin, Tabs } from 'antd';
 import * as config from 'config/Api';
 import { dashboard } from 'config/Dashboard';
 import { buildFilterParams } from 'buildFilterParams';
@@ -465,6 +465,13 @@ export default class AlertItem extends React.Component {
             <Col span={8}>
               <Card title='Enrichment'>
                 <dl className="dl-horizontal">
+                  {
+                    !hasTarget &&
+                    !hasLateral &&
+                    (!data.fqdn || !data.fqdn.src) &&
+                    (!data.fqdn || !data.fqdn.dest) &&
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
+                  }
                   {hasTarget && (
                     <React.Fragment>
                       {sourceNetwork}
