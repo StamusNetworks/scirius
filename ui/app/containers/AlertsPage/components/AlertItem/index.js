@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Card, Col, Empty, Row, Spin, Tabs } from 'antd';
+import { Button, Empty, Spin, Tabs } from 'antd';
+import UICard from 'ui/components/UIElements/UICard';
 import * as config from 'config/Api';
 import { dashboard } from 'config/Dashboard';
 import { buildFilterParams } from 'buildFilterParams';
@@ -335,439 +336,417 @@ export default class AlertItem extends React.Component {
     return (
       <Tabs id="alert-tabs">
         <Tabs.TabPane key="alert" tab="Synthetic view">
-          <Row gutter={[15, 15]}>
-            <Col span={8}>
-              <Card title='Signature'>
-                <dl className="dl-horizontal">
+          <div style={{display:'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gridGap: '10px', paddingBottom: '10px'}}>
+            <UICard title='Signature'>
+              <dl className="dl-horizontal">
+                <ErrorHandler>
+                  <EventField field_name="Signature" field="alert.signature" value={data.alert.signature} addFilter={this.addFilter} />
+                </ErrorHandler>
+                <ErrorHandler>
+                  <EventField field_name="SID" field="alert.signature_id" value={data.alert.signature_id} addFilter={this.addFilter} />
+                </ErrorHandler>
+                <ErrorHandler>
+                  <EventField field_name="Category" field="alert.category" value={data.alert.category} addFilter={this.addFilter} />
+                </ErrorHandler>
+                <ErrorHandler>
+                  <EventField
+                    field_name="Severity"
+                    field="alert.severity"
+                    value={data.alert.severity}
+                    addFilter={this.addFilter}
+                    format={(dashboard.sections.basic.items.find((o) => o.i === 'alert.severity') || {}).format}
+                  />
+                </ErrorHandler>
+                <ErrorHandler>
+                  <EventField field_name="Revision" field="alert.rev" value={data.alert.rev} addFilter={this.addFilter} />
+                </ErrorHandler>
+                {data.alert.tag && (
                   <ErrorHandler>
-                    <EventField field_name="Signature" field="alert.signature" value={data.alert.signature} addFilter={this.addFilter} />
+                    <EventField field_name="Tagged" field="alert.tag" value={data.alert.tag} addFilter={this.addFilter} />
                   </ErrorHandler>
-                  <ErrorHandler>
-                    <EventField field_name="SID" field="alert.signature_id" value={data.alert.signature_id} addFilter={this.addFilter} />
-                  </ErrorHandler>
-                  <ErrorHandler>
-                    <EventField field_name="Category" field="alert.category" value={data.alert.category} addFilter={this.addFilter} />
-                  </ErrorHandler>
+                )}
+              </dl>
+            </UICard>
+
+            <UICard title='IP and basic information'>
+              <dl className="dl-horizontal">
+                {data.net_info && data.net_info.src_agg && (
                   <ErrorHandler>
                     <EventField
-                      field_name="Severity"
-                      field="alert.severity"
-                      value={data.alert.severity}
+                      field_name="Source Network"
+                      field="net_info.src_agg"
+                      value={data.net_info.src_agg}
                       addFilter={this.addFilter}
-                      format={(dashboard.sections.basic.items.find((o) => o.i === 'alert.severity') || {}).format}
                     />
                   </ErrorHandler>
+                )}
+                <ErrorHandler>
+                  <EventField field_name="Source IP" field="src_ip" value={data.src_ip} addFilter={this.addFilter} />
+                </ErrorHandler>
+                <ErrorHandler>
+                  <EventField field_name="Source port" field="src_port" value={data.src_port} addFilter={this.addFilter} />
+                </ErrorHandler>
+                {data.net_info && data.net_info.dest_agg && (
                   <ErrorHandler>
-                    <EventField field_name="Revision" field="alert.rev" value={data.alert.rev} addFilter={this.addFilter} />
+                    <EventField
+                      field_name="Destination Network"
+                      field="net_info.dest_agg"
+                      value={data.net_info.dest_agg}
+                      addFilter={this.addFilter}
+                    />
                   </ErrorHandler>
-                  {data.alert.tag && (
-                    <ErrorHandler>
-                      <EventField field_name="Tagged" field="alert.tag" value={data.alert.tag} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                  )}
-                </dl>
-              </Card>
-            </Col>
+                )}
+                <ErrorHandler>
+                  <EventField field_name="Destination IP" field="dest_ip" value={data.dest_ip} addFilter={this.addFilter} />
+                </ErrorHandler>
+                <ErrorHandler>
+                  <EventField field_name="Destination port" field="dest_port" value={data.dest_port} addFilter={this.addFilter} />
+                </ErrorHandler>
+                <ErrorHandler>
+                  <EventField field_name="IP protocol" field="proto" value={data.proto} addFilter={this.addFilter} />
+                </ErrorHandler>
+                {data.app_proto && (
+                  <ErrorHandler>
+                    <EventField field_name="Application protocol" field="app_proto" value={data.app_proto} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                )}
+                {data.app_proto_orig && (
+                  <ErrorHandler>
+                    <EventField
+                      field_name="Original application protocol"
+                      field="app_proto_orig"
+                      value={data.app_proto_orig}
+                      addFilter={this.addFilter}
+                    />
+                  </ErrorHandler>
+                )}
+                <ErrorHandler>
+                  <EventField field_name="Probe" field="host" value={data.host} addFilter={this.addFilter} />
+                </ErrorHandler>
+                <ErrorHandler>
+                  <EventField field_name="Network interface" field="in_iface" value={data.in_iface} addFilter={this.addFilter} />
+                </ErrorHandler>
+                {data.vlan && (
+                  <ErrorHandler>
+                    <EventField field_name="Vlan" field="vlan" value={data.vlan} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                )}
+                {data.tunnel && data.tunnel.src_ip && (
+                  <ErrorHandler>
+                    <EventField field_name="Tunnel Source IP" field="tunnel.src_ip" value={data.tunnel.src_ip} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                )}
+                {data.tunnel && data.tunnel.dest_ip && (
+                  <ErrorHandler>
+                    <EventField
+                      field_name="Tunnel Destination IP"
+                      field="tunnel.dest_ip"
+                      value={data.tunnel.dest_ip}
+                      addFilter={this.addFilter}
+                    />
+                  </ErrorHandler>
+                )}
+                {data.tunnel && data.tunnel.proto && (
+                  <ErrorHandler>
+                    <EventField field_name="Tunnel Protocol" field="tunnel.proto" value={data.tunnel.proto} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                )}
+                {data.tunnel && data.tunnel.depth && (
+                  <ErrorHandler>
+                    <EventField field_name="Tunnel Depth" field="tunnel.depth" value={data.tunnel.depth} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                )}
+              </dl>
+            </UICard>
 
-            <Col span={8}>
-              <Card title='IP and basic information'>
-                <dl className="dl-horizontal">
-                  {data.net_info && data.net_info.src_agg && (
+            <UICard title='Enrichment'>
+              <dl className="dl-horizontal">
+                {
+                  !hasTarget &&
+                  !hasLateral &&
+                  (!data.fqdn || !data.fqdn.src) &&
+                  (!data.fqdn || !data.fqdn.dest) &&
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
+                }
+                {hasTarget && (
+                  <React.Fragment>
+                    {sourceNetwork}
+                    <ErrorHandler>
+                      <EventField field_name="Source IP" field="alert.source.ip" value={data.alert.source.ip} addFilter={this.addFilter} />
+                    </ErrorHandler>
                     <ErrorHandler>
                       <EventField
-                        field_name="Source Network"
-                        field="net_info.src_agg"
-                        value={data.net_info.src_agg}
+                        field_name="Source port"
+                        field="alert.source.port"
+                        value={data.alert.source.port}
                         addFilter={this.addFilter}
                       />
                     </ErrorHandler>
-                  )}
-                  <ErrorHandler>
-                    <EventField field_name="Source IP" field="src_ip" value={data.src_ip} addFilter={this.addFilter} />
-                  </ErrorHandler>
-                  <ErrorHandler>
-                    <EventField field_name="Source port" field="src_port" value={data.src_port} addFilter={this.addFilter} />
-                  </ErrorHandler>
-                  {data.net_info && data.net_info.dest_agg && (
+                    {targetNetwork}
+                    <ErrorHandler>
+                      <EventField field_name="Target IP" field="alert.target.ip" value={data.alert.target.ip} addFilter={this.addFilter} />
+                    </ErrorHandler>
                     <ErrorHandler>
                       <EventField
-                        field_name="Destination Network"
-                        field="net_info.dest_agg"
-                        value={data.net_info.dest_agg}
+                        field_name="Target port"
+                        field="alert.target.port"
+                        value={data.alert.target.port}
                         addFilter={this.addFilter}
                       />
                     </ErrorHandler>
-                  )}
+                  </React.Fragment>
+                )}
+                {hasLateral && (
                   <ErrorHandler>
-                    <EventField field_name="Destination IP" field="dest_ip" value={data.dest_ip} addFilter={this.addFilter} />
+                    <EventField field_name="Lateral movement" field="alert.lateral" value={data.alert.lateral} addFilter={this.addFilter} />
                   </ErrorHandler>
+                )}
+                {data.fqdn && data.fqdn.src && (
                   <ErrorHandler>
-                    <EventField field_name="Destination port" field="dest_port" value={data.dest_port} addFilter={this.addFilter} />
+                    <EventField field_name="FQDN Source" field="fqdn.src" value={data.fqdn.src} addFilter={this.addFilter} />
                   </ErrorHandler>
+                )}
+                {data.fqdn && data.fqdn.dest && (
                   <ErrorHandler>
-                    <EventField field_name="IP protocol" field="proto" value={data.proto} addFilter={this.addFilter} />
+                    <EventField field_name="FQDN Destination" field="fqdn.dest" value={data.fqdn.dest} addFilter={this.addFilter} />
                   </ErrorHandler>
-                  {data.app_proto && (
-                    <ErrorHandler>
-                      <EventField field_name="Application protocol" field="app_proto" value={data.app_proto} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                  )}
-                  {data.app_proto_orig && (
-                    <ErrorHandler>
-                      <EventField
-                        field_name="Original application protocol"
-                        field="app_proto_orig"
-                        value={data.app_proto_orig}
-                        addFilter={this.addFilter}
-                      />
-                    </ErrorHandler>
-                  )}
-                  <ErrorHandler>
-                    <EventField field_name="Probe" field="host" value={data.host} addFilter={this.addFilter} />
-                  </ErrorHandler>
-                  <ErrorHandler>
-                    <EventField field_name="Network interface" field="in_iface" value={data.in_iface} addFilter={this.addFilter} />
-                  </ErrorHandler>
-                  {data.vlan && (
-                    <ErrorHandler>
-                      <EventField field_name="Vlan" field="vlan" value={data.vlan} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                  )}
-                  {data.tunnel && data.tunnel.src_ip && (
-                    <ErrorHandler>
-                      <EventField field_name="Tunnel Source IP" field="tunnel.src_ip" value={data.tunnel.src_ip} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                  )}
-                  {data.tunnel && data.tunnel.dest_ip && (
-                    <ErrorHandler>
-                      <EventField
-                        field_name="Tunnel Destination IP"
-                        field="tunnel.dest_ip"
-                        value={data.tunnel.dest_ip}
-                        addFilter={this.addFilter}
-                      />
-                    </ErrorHandler>
-                  )}
-                  {data.tunnel && data.tunnel.proto && (
-                    <ErrorHandler>
-                      <EventField field_name="Tunnel Protocol" field="tunnel.proto" value={data.tunnel.proto} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                  )}
-                  {data.tunnel && data.tunnel.depth && (
-                    <ErrorHandler>
-                      <EventField field_name="Tunnel Depth" field="tunnel.depth" value={data.tunnel.depth} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                  )}
-                </dl>
-              </Card>
-            </Col>
-
-            <Col span={8}>
-              <Card title='Enrichment'>
-                <dl className="dl-horizontal">
-                  {
-                    !hasTarget &&
-                    !hasLateral &&
-                    (!data.fqdn || !data.fqdn.src) &&
-                    (!data.fqdn || !data.fqdn.dest) &&
-                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
-                  }
-                  {hasTarget && (
-                    <React.Fragment>
-                      {sourceNetwork}
-                      <ErrorHandler>
-                        <EventField field_name="Source IP" field="alert.source.ip" value={data.alert.source.ip} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                      <ErrorHandler>
-                        <EventField
-                          field_name="Source port"
-                          field="alert.source.port"
-                          value={data.alert.source.port}
-                          addFilter={this.addFilter}
-                        />
-                      </ErrorHandler>
-                      {targetNetwork}
-                      <ErrorHandler>
-                        <EventField field_name="Target IP" field="alert.target.ip" value={data.alert.target.ip} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                      <ErrorHandler>
-                        <EventField
-                          field_name="Target port"
-                          field="alert.target.port"
-                          value={data.alert.target.port}
-                          addFilter={this.addFilter}
-                        />
-                      </ErrorHandler>
-                    </React.Fragment>
-                  )}
-                  {hasLateral && (
-                    <ErrorHandler>
-                      <EventField field_name="Lateral movement" field="alert.lateral" value={data.alert.lateral} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                  )}
-                  {data.fqdn && data.fqdn.src && (
-                    <ErrorHandler>
-                      <EventField field_name="FQDN Source" field="fqdn.src" value={data.fqdn.src} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                  )}
-                  {data.fqdn && data.fqdn.dest && (
-                    <ErrorHandler>
-                      <EventField field_name="FQDN Destination" field="fqdn.dest" value={data.fqdn.dest} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                  )}
-                </dl>
-              </Card>
-            </Col>
+                )}
+              </dl>
+            </UICard>
 
             {data.geoip && (
-              <Col span={8}>
-                <Card title='Geoip'>
-                  <dl className="dl-horizontal">
-                    {data.geoip.country_name && (
-                      <ErrorHandler>
-                        <EventField
-                          field_name="Country"
-                          field="geoip.country_name"
-                          value={data.geoip.country_name}
-                          addFilter={this.addFilter}
-                        />
-                      </ErrorHandler>
-                    )}
-                    {data.geoip.city_name && (
-                      <ErrorHandler>
-                        <EventField
-                          field_name="Country Code"
-                          field="geoip.country_code2"
-                          value={data.geoip.country_code2}
-                          addFilter={this.addFilter}
-                        />
-                      </ErrorHandler>
-                    )}
-                    {data.geoip.provider && data.geoip.provider.autonomous_system_number && (
-                      <ErrorHandler>
-                        <EventField
-                          field_name="AS Number"
-                          field="geoip.provider.autonomous_system_number"
-                          value={data.geoip.provider.autonomous_system_number}
-                          addFilter={this.addFilter}
-                        />
-                      </ErrorHandler>
-                    )}
-                    {data.geoip.provider && data.geoip.provider.autonomous_system_organization && (
-                      <ErrorHandler>
-                        <EventField
-                          field_name="AS Organization"
-                          field="geoip.provider.autonomous_system_organization"
-                          value={data.geoip.provider.autonomous_system_organization}
-                          addFilter={this.addFilter}
-                        />
-                      </ErrorHandler>
-                    )}
-                  </dl>
-                </Card>
-              </Col>
+              <UICard title='Geoip'>
+                <dl className="dl-horizontal">
+                  {data.geoip.country_name && (
+                    <ErrorHandler>
+                      <EventField
+                        field_name="Country"
+                        field="geoip.country_name"
+                        value={data.geoip.country_name}
+                        addFilter={this.addFilter}
+                      />
+                    </ErrorHandler>
+                  )}
+                  {data.geoip.city_name && (
+                    <ErrorHandler>
+                      <EventField
+                        field_name="Country Code"
+                        field="geoip.country_code2"
+                        value={data.geoip.country_code2}
+                        addFilter={this.addFilter}
+                      />
+                    </ErrorHandler>
+                  )}
+                  {data.geoip.provider && data.geoip.provider.autonomous_system_number && (
+                    <ErrorHandler>
+                      <EventField
+                        field_name="AS Number"
+                        field="geoip.provider.autonomous_system_number"
+                        value={data.geoip.provider.autonomous_system_number}
+                        addFilter={this.addFilter}
+                      />
+                    </ErrorHandler>
+                  )}
+                  {data.geoip.provider && data.geoip.provider.autonomous_system_organization && (
+                    <ErrorHandler>
+                      <EventField
+                        field_name="AS Organization"
+                        field="geoip.provider.autonomous_system_organization"
+                        value={data.geoip.provider.autonomous_system_organization}
+                        addFilter={this.addFilter}
+                      />
+                    </ErrorHandler>
+                  )}
+                </dl>
+              </UICard>
             )}
 
             {data.http !== undefined && (
-              <Col span={8}>
-                <Card title='HTTP'>
-                    <dl className="dl-horizontal">
+              <UICard title='HTTP'>
+                  <dl className="dl-horizontal">
+                    <ErrorHandler>
+                      <EventField field_name="Host" field="http.hostname" value={data.http.hostname} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField field_name="URL" field="http.url" value={data.http.url} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                    {data.http.status !== undefined && (
                       <ErrorHandler>
-                        <EventField field_name="Host" field="http.hostname" value={data.http.hostname} addFilter={this.addFilter} />
+                        <EventField field_name="Status" field="http.status" value={data.http.status} addFilter={this.addFilter} />
                       </ErrorHandler>
+                    )}
+                    <ErrorHandler>
+                      <EventField field_name="Method" field="http.http_method" value={data.http.http_method} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField
+                        field_name="User Agent"
+                        field="http.http_user_agent"
+                        value={data.http.http_user_agent}
+                        addFilter={this.addFilter}
+                      />
+                    </ErrorHandler>
+                    {data.http.http_refer !== undefined && (
                       <ErrorHandler>
-                        <EventField field_name="URL" field="http.url" value={data.http.url} addFilter={this.addFilter} />
+                        <EventField field_name="Referrer" field="http.http_refer" value={data.http.http_refer} addFilter={this.addFilter} />
                       </ErrorHandler>
-                      {data.http.status !== undefined && (
-                        <ErrorHandler>
-                          <EventField field_name="Status" field="http.status" value={data.http.status} addFilter={this.addFilter} />
-                        </ErrorHandler>
-                      )}
+                    )}
+                    {data.http.http_port !== undefined && (
                       <ErrorHandler>
-                        <EventField field_name="Method" field="http.http_method" value={data.http.http_method} addFilter={this.addFilter} />
+                        <EventField field_name="Port" field="http.http_port" value={data.http.http_port} addFilter={this.addFilter} />
                       </ErrorHandler>
+                    )}
+                    {data.http.http_content_type !== undefined && (
                       <ErrorHandler>
                         <EventField
-                          field_name="User Agent"
-                          field="http.http_user_agent"
-                          value={data.http.http_user_agent}
+                          field_name="Content Type"
+                          field="http.http_content_type"
+                          value={data.http.http_content_type}
                           addFilter={this.addFilter}
                         />
                       </ErrorHandler>
-                      {data.http.http_refer !== undefined && (
-                        <ErrorHandler>
-                          <EventField field_name="Referrer" field="http.http_refer" value={data.http.http_refer} addFilter={this.addFilter} />
-                        </ErrorHandler>
-                      )}
-                      {data.http.http_port !== undefined && (
-                        <ErrorHandler>
-                          <EventField field_name="Port" field="http.http_port" value={data.http.http_port} addFilter={this.addFilter} />
-                        </ErrorHandler>
-                      )}
-                      {data.http.http_content_type !== undefined && (
-                        <ErrorHandler>
-                          <EventField
-                            field_name="Content Type"
-                            field="http.http_content_type"
-                            value={data.http.http_content_type}
-                            addFilter={this.addFilter}
-                          />
-                        </ErrorHandler>
-                      )}
-                      {data.http.length !== undefined && (
-                        <ErrorHandler>
-                          <EventField field_name="Length" field="http.length" value={data.http.length} addFilter={this.addFilter} />
-                        </ErrorHandler>
-                      )}
-                    </dl>
-                </Card>
-              </Col>
-            )}
-            {data.tls !== undefined && (
-              <Col span={8}>
-                <Card title='TLS'>
-                  <dl className="dl-horizontal">
-                    <ErrorHandler>
-                      <EventField field_name="Subject" field="tls.subject" value={data.tls.subject} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    <ErrorHandler>
-                      <EventField field_name="Issuer" field="tls.issuerdn" value={data.tls.issuerdn} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    <ErrorHandler>
-                      <EventField field_name="Server Name Indication" field="tls.sni" value={data.tls.sni} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    <ErrorHandler>
-                      <EventField field_name="Not Before" field="tls.notbefore" value={data.tls.notbefore} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    <ErrorHandler>
-                      <EventField field_name="Not After" field="tls.notafter" value={data.tls.notafter} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    {data.tls.ja3 && data.tls.ja3.hash !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="JA3" field="tls.ja3.hash" value={data.tls.ja3.hash} addFilter={this.addFilter} />
-                      </ErrorHandler>
                     )}
-                    {data.tls.ja3 &&
-                      data.tls.ja3.agent !== undefined &&
-                      data.tls.ja3.agent.map((agent) => (
-                        <ErrorHandler key={Math.random()}>
-                          {/* eslint-disable-next-line react/no-array-index-key */}
-                          <EventField
-                            field_name="User-Agent"
-                            field="tls.ja3.agent"
-                            value={agent}
-                            addFilter={this.addFilter}
-                            key={`to-${agent}`}
-                          />
-                        </ErrorHandler>
-                      ))}
-                    {data.tls.ja3s && data.tls.ja3s.hash !== undefined && (
+                    {data.http.length !== undefined && (
                       <ErrorHandler>
-                        <EventField field_name="JA3S" field="tls.ja3s.hash" value={data.tls.ja3s.hash} addFilter={this.addFilter} />
+                        <EventField field_name="Length" field="http.length" value={data.http.length} addFilter={this.addFilter} />
                       </ErrorHandler>
                     )}
                   </dl>
-                </Card>
-              </Col>
+              </UICard>
+            )}
+            {data.tls !== undefined && (
+              <UICard title='TLS'>
+                <dl className="dl-horizontal">
+                  <ErrorHandler>
+                    <EventField field_name="Subject" field="tls.subject" value={data.tls.subject} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                  <ErrorHandler>
+                    <EventField field_name="Issuer" field="tls.issuerdn" value={data.tls.issuerdn} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                  <ErrorHandler>
+                    <EventField field_name="Server Name Indication" field="tls.sni" value={data.tls.sni} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                  <ErrorHandler>
+                    <EventField field_name="Not Before" field="tls.notbefore" value={data.tls.notbefore} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                  <ErrorHandler>
+                    <EventField field_name="Not After" field="tls.notafter" value={data.tls.notafter} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                  {data.tls.ja3 && data.tls.ja3.hash !== undefined && (
+                    <ErrorHandler>
+                      <EventField field_name="JA3" field="tls.ja3.hash" value={data.tls.ja3.hash} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                  )}
+                  {data.tls.ja3 &&
+                    data.tls.ja3.agent !== undefined &&
+                    data.tls.ja3.agent.map((agent) => (
+                      <ErrorHandler key={Math.random()}>
+                        {/* eslint-disable-next-line react/no-array-index-key */}
+                        <EventField
+                          field_name="User-Agent"
+                          field="tls.ja3.agent"
+                          value={agent}
+                          addFilter={this.addFilter}
+                          key={`to-${agent}`}
+                        />
+                      </ErrorHandler>
+                    ))}
+                  {data.tls.ja3s && data.tls.ja3s.hash !== undefined && (
+                    <ErrorHandler>
+                      <EventField field_name="JA3S" field="tls.ja3s.hash" value={data.tls.ja3s.hash} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                  )}
+                </dl>
+              </UICard>
             )}
             {data.smtp !== undefined && (
-              <Col span={8}>
-                <Card title='SMTP'>
-                  <dl className="dl-horizontal">
-                      {data.smtp.mail_from !== undefined && (
-                        <ErrorHandler>
-                          <EventField field_name="From" field="smtp.mail_from" value={data.smtp.mail_from} addFilter={this.addFilter} />
+              <UICard title='SMTP'>
+                <dl className="dl-horizontal">
+                    {data.smtp.mail_from !== undefined && (
+                      <ErrorHandler>
+                        <EventField field_name="From" field="smtp.mail_from" value={data.smtp.mail_from} addFilter={this.addFilter} />
+                      </ErrorHandler>
+                    )}
+                    {data.smtp.rcpt_to !== undefined &&
+                      data.smtp.rcpt_to.map((mail, idx) => (
+                        <ErrorHandler key={Math.random()}>
+                          {/* eslint-disable-next-line react/no-array-index-key */}
+                          <EventField field_name="To" field="smtp.rcpt_to" value={mail} addFilter={this.addFilter} key={`to-${idx}`} />
                         </ErrorHandler>
-                      )}
-                      {data.smtp.rcpt_to !== undefined &&
-                        data.smtp.rcpt_to.map((mail, idx) => (
-                          <ErrorHandler key={Math.random()}>
-                            {/* eslint-disable-next-line react/no-array-index-key */}
-                            <EventField field_name="To" field="smtp.rcpt_to" value={mail} addFilter={this.addFilter} key={`to-${idx}`} />
-                          </ErrorHandler>
-                        ))}
-                      {data.smtp.helo !== undefined && (
-                        <ErrorHandler>
-                          <EventField field_name="Helo" field="smtp.helo" value={data.smtp.helo} addFilter={this.addFilter} />
-                        </ErrorHandler>
-                      )}
-                    </dl>
-                </Card>
-              </Col>
+                      ))}
+                    {data.smtp.helo !== undefined && (
+                      <ErrorHandler>
+                        <EventField field_name="Helo" field="smtp.helo" value={data.smtp.helo} addFilter={this.addFilter} />
+                      </ErrorHandler>
+                    )}
+                  </dl>
+              </UICard>
             )}
             {data.ssh !== undefined && (
-              <Col span={8}>
-                <Card title='SSH'>
-                  <dl className="dl-horizontal">
-                      {data.ssh.client && (
-                        <React.Fragment>
-                          <ErrorHandler>
-                            <EventField
-                              field_name="Client Software"
-                              field="ssh.client.software_version"
-                              value={data.ssh.client.software_version}
-                              addFilter={this.addFilter}
-                            />
-                          </ErrorHandler>
-                          <ErrorHandler>
-                            <EventField
-                              field_name="Client Version"
-                              field="ssh.client.proto_version"
-                              value={data.ssh.client.proto_version}
-                              addFilter={this.addFilter}
-                            />
-                          </ErrorHandler>
-                        </React.Fragment>
-                      )}
-                      {data.ssh.server && (
-                        <React.Fragment>
-                          <ErrorHandler>
-                            <EventField
-                              field_name="Server Software"
-                              field="ssh.server.software_version"
-                              value={data.ssh.server.software_version}
-                              addFilter={this.addFilter}
-                            />
-                          </ErrorHandler>
-                          <ErrorHandler>
-                            <EventField
-                              field_name="Server Version"
-                              field="ssh.server.proto_version"
-                              value={data.ssh.server.proto_version}
-                              addFilter={this.addFilter}
-                            />
-                          </ErrorHandler>
-                        </React.Fragment>
-                      )}
-                    </dl>
-                </Card>
-              </Col>
+              <UICard title='SSH'>
+                <dl className="dl-horizontal">
+                    {data.ssh.client && (
+                      <React.Fragment>
+                        <ErrorHandler>
+                          <EventField
+                            field_name="Client Software"
+                            field="ssh.client.software_version"
+                            value={data.ssh.client.software_version}
+                            addFilter={this.addFilter}
+                          />
+                        </ErrorHandler>
+                        <ErrorHandler>
+                          <EventField
+                            field_name="Client Version"
+                            field="ssh.client.proto_version"
+                            value={data.ssh.client.proto_version}
+                            addFilter={this.addFilter}
+                          />
+                        </ErrorHandler>
+                      </React.Fragment>
+                    )}
+                    {data.ssh.server && (
+                      <React.Fragment>
+                        <ErrorHandler>
+                          <EventField
+                            field_name="Server Software"
+                            field="ssh.server.software_version"
+                            value={data.ssh.server.software_version}
+                            addFilter={this.addFilter}
+                          />
+                        </ErrorHandler>
+                        <ErrorHandler>
+                          <EventField
+                            field_name="Server Version"
+                            field="ssh.server.proto_version"
+                            value={data.ssh.server.proto_version}
+                            addFilter={this.addFilter}
+                          />
+                        </ErrorHandler>
+                      </React.Fragment>
+                    )}
+                  </dl>
+              </UICard>
             )}
-          </Row>
+          </div>
           {data.payload_printable && (
-            <Row>
-              <Card title='Payload printable'>
-                <pre style={{ maxHeight: '12pc' }}>{data.payload_printable}</pre>
-              </Card>
-            </Row>
+            <UICard title='Payload printable'>
+              <pre style={{ maxHeight: '12pc' }}>{data.payload_printable}</pre>
+            </UICard>
           )}
           {data.http && (
-            <Row>
+            <div style={{display:'grid', gridTemplateColumns: '1fr 1fr', gridGap: '10px', paddingTop: '10px'}}>
               {data.http.http_request_body_printable && (
-                <Col md={12}>
-                  <Card title='HTTP request body'>
-                    <pre style={{ maxHeight: '12pc' }}>{data.http.http_request_body_printable}</pre>
-                  </Card>
-                </Col>
+                <UICard title='HTTP request body'>
+                  <pre style={{ maxHeight: '12pc' }}>{data.http.http_request_body_printable}</pre>
+                </UICard>
               )}
               {data.http.http_response_body_printable && (
-                <Col md={12}>
-                  <Card title='HTTP response body'>
-                      <pre style={{ maxHeight: '12pc' }}>{data.http.http_response_body_printable}</pre>
-                  </Card>
-                </Col>
+                <UICard title='HTTP response body'>
+                    <pre style={{ maxHeight: '12pc' }}>{data.http.http_response_body_printable}</pre>
+                </UICard>
               )}
-            </Row>
+            </div>
           )}
         </Tabs.TabPane>
 
