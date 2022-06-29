@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 import PropTypes from 'prop-types';
-import { Layout, Menu, Popover, Progress, Tooltip } from 'antd';
+import { Layout, Menu, Popover, Tooltip } from 'antd';
 import styled from 'styled-components';
-import { ClockCircleOutlined, QuestionCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import selectors from 'ui/containers/App/selectors';
 import { createStructuredSelector } from 'reselect';
 import AccountCircleRounded from "@material-ui/icons/AccountCircleRounded";
@@ -17,25 +17,16 @@ import StamusLogo from 'ui/images/stamus.png';
 import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
 import HelpMenu from 'ui/components/HelpMenu';
 import UserMenu from 'ui/components/UserMenu';
-import { COLOR_ANT_MENU, COLOR_BRAND_BLUE, COLOR_ANT_MENU_FONT_HOVER } from 'ui/constants/colors';
+import { COLOR_ANT_MENU } from 'ui/constants/colors';
 import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
 import constants from 'ui/constants';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import actions from 'ui/containers/App/actions';
-import ReloadPicker from 'ui/components/ReloadPicker';
 
 const { DATE_TIME_FORMAT } = constants;
 const { Header: AntdHeader } = Layout;
 let reloadTimeout = null;
 let animateTimeout = null;
-
-const ProgressStyled = styled(Progress)`
-  line-height: 1em;
-  margin-right: 5px;
-  .ant-progress-inner {
-    vertical-align: top;
-  }
-`
 
 const RangePreviewStyled = styled.table`
   font-size: 12px;
@@ -57,7 +48,6 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
   const [helpPopOver, setHelpPopOver] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [userPopOver, setUserPopOver] = useState(false);
-  const [reloadPopOver, setReloadPopOver] = useState(false);
   const [progress, setProgress] = useState(0);
 
   const timePreview =
@@ -127,13 +117,6 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
                 <ClockCircleOutlined /> {timePreview}
               </Tooltip>
             )}
-          </Popover>
-        </Menu.Item>
-        <Menu.Item key="reload" className="reload-dropdown">
-          <Popover placement="bottomRight" content={<ReloadPicker />} trigger="click" visible={reloadPopOver} onVisibleChange={setReloadPopOver}>
-            {reloadData.period.seconds > 0 && (<ProgressStyled type="circle" width={20} strokeColor={COLOR_BRAND_BLUE} trailColor={COLOR_ANT_MENU_FONT_HOVER} percent={100-(progress/reloadData.period.seconds*100)} strokeWidth={8} showInfo={false} />)}
-            {reloadData.period.seconds === 0 && (<ReloadOutlined />)} Reload
-            {reloadData.period.seconds > 0 && (<React.Fragment> every {reloadData.period.title}</React.Fragment>)}
           </Popover>
         </Menu.Item>
         <Menu.Item key="help" className="help-dropdown">

@@ -1,6 +1,6 @@
 import React  from 'react';
 import PropTypes from 'prop-types';
-import { Row, Radio, notification } from 'antd';
+import { Row, notification, Col } from 'antd';
 import styled from 'styled-components';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
@@ -10,9 +10,8 @@ import selectors from 'ui/containers/App/selectors';
 import actions from 'ui/containers/App/actions';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import UITabs from 'ui/components/UIElements/UITabs';
-// eslint-disable-next-line import/named
-const RadioButton = Radio.Button;
-const RadioGroup = Radio.Group;
+import PeriodsList from 'ui/components/PeriodsList';
+import Refresh from 'ui/components/Refresh';
 
 const PickersWrapper = styled.div`
   width: 600px;
@@ -20,32 +19,9 @@ const PickersWrapper = styled.div`
   flex-direction: column;
 `;
 
-const QuicksWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  & label {
-    color: rgba(0, 0, 0, 0.85) !important;
-    border: 1px #bcccd1 solid !important;
-    margin-right: 1px;
-  }
-
-  & label:hover {
-    background: #f0f2f5;
-    border: 1px #005792 solid !important;
-  }
-
-  & .ant-radio-button-wrapper-checked {
-    background: #bcccd1 !important;
-    border-color: #005792 !important;
-  }
-
-  .ant-radio-button-wrapper-checked::before, .ant-radio-button-wrapper::before {
-    background-color: transparent;
-    border-color: transparent;
-  }
-`;
+const Label = styled.div`
+  color: #979797;
+`
 
 const TimeRangePickersContainer = ({
   startDate,
@@ -54,7 +30,9 @@ const TimeRangePickersContainer = ({
   setDuration,
   setTimeSpan,
   timePicker,
-  timeSpan,
+  setReload,
+  doReload,
+  reloadPeriod,
 }) => {
 
   const validateTimeSpan = (startDateIn, endDateIn) => {
@@ -80,6 +58,23 @@ const TimeRangePickersContainer = ({
     }
   };
 
+  const hours = {
+    H1: PeriodEnum.H1,
+    H6: PeriodEnum.H6,
+    H24: PeriodEnum.H24,
+  }
+
+  const days = {
+    D2: PeriodEnum.D2,
+    D7: PeriodEnum.D7,
+    D30: PeriodEnum.D30,
+  }
+
+  const more = {
+    Y1: PeriodEnum.Y1,
+    All: PeriodEnum.ALL,
+  }
+
   return (
     <PickersWrapper>
       <UITabs
@@ -88,34 +83,31 @@ const TimeRangePickersContainer = ({
         tabs={[
           {
             key: "0",
-            tab: "Quick",
+            tab: "Presets",
             children: (
-              <Row type="flex" justify="center" style={{ padding: '40px 0px' }}>
-                <QuicksWrapper>
-                  <h4><strong>Last:</strong></h4>
-                  <RadioGroup size="default" value={duration}>
-                    {Object.keys(PeriodEnum).map(p => (
-                      <RadioButton
-                        style={{padding:'0 14px'}}
-                        disabled={timeSpan.disableAll && PeriodEnum[p].name === 'All'}
-                        value={p}
-                        key={p}
-                        name={PeriodEnum[p].title}
-                        onClick={() => {
-                          setDuration(p);
-                        }}
-                      >
-                        {PeriodEnum[p].name}
-                      </RadioButton>
-                    ))}
-                  </RadioGroup>
-                </QuicksWrapper>
+              <Row type="flex" justify="center">
+                <Col md={5}>
+                  <Label>Hours</Label>
+                  <PeriodsList options={hours} value={duration} onChange={p => setDuration(p)} />
+                </Col>
+                <Col md={5}>
+                  <Label>Days</Label>
+                  <PeriodsList options={days} value={duration} onChange={p => setDuration(p)} />
+                </Col>
+                <Col md={5}>
+                  <Label>More</Label>
+                  <PeriodsList options={more} value={duration} onChange={p => setDuration(p)} />
+                </Col>
+                <Col md={9}>
+                  <Label>Refresh Interval</Label>
+                  <Refresh onChange={(value) => setReload(value)} onRefresh={() => doReload()} value={reloadPeriod.period.seconds} />
+                </Col>
               </Row>
             )
           },
           {
             key: "1",
-            tab: "Absolute",
+            tab: "Date & Time Range",
             children: (
               <DateRangePicker selectedFromDate={startDate} selectedToDate={endDate} onOk={validateTimeSpan} />
             )
@@ -132,8 +124,10 @@ TimeRangePickersContainer.propTypes = {
   duration: PropTypes.any,
   setDuration: PropTypes.any,
   setTimeSpan: PropTypes.any,
+  setReload: PropTypes.any,
+  doReload: PropTypes.any,
   timePicker: PropTypes.any,
-  timeSpan: PropTypes.any,
+  reloadPeriod: PropTypes.any,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -141,7 +135,7 @@ const mapStateToProps = createStructuredSelector({
   endDate: selectors.makeSelectEndDate(),
   duration: selectors.makeSelectDuration(),
   timePicker: selectors.makeSelectTimePicker(),
-  timeSpan: selectors.makeSelectTimespan(),
+  reloadPeriod: selectors.makeSelectReload(),
 });
 
 export const mapDispatchToProps = dispatch =>
@@ -149,6 +143,8 @@ export const mapDispatchToProps = dispatch =>
     {
       setTimeSpan: actions.setTimeSpan,
       setDuration: actions.setDuration,
+      setReload: actions.setReload,
+      doReload: actions.doReload,
     },
     dispatch,
   );
