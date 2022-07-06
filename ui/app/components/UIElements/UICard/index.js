@@ -10,7 +10,7 @@ const CardStyled = styled(Card)`
   box-shadow: ${p => !p.flat ? '2px 3px 6px 0px #00000005' : 'none'};
   border: 1px solid #ececec;
   .ant-card-body {
-    padding: ${p => p.noPadding ? '0' : '10px'};
+    padding: ${p => p.nopadding === 'true' ? '0' : '10px'};
   }
   .ant-card-head {
     padding: 0 10px;
@@ -22,7 +22,7 @@ const CardStyled = styled(Card)`
   }
 `;
 const UICard = ({ children, noPadding, ...props }) => (
-    <CardStyled {...props} noPadding={noPadding}>
+    <CardStyled {...props} nopadding={noPadding.toString()}>
       {children}
     </CardStyled>
   )
