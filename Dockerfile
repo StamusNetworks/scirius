@@ -116,7 +116,8 @@ RUN \
     libldap2-dev \
     libssl-dev \
     python-pip \
-    python-dev
+    python-dev \
+    git
 RUN \
   echo "**** install Python dependencies for Scirius ****" && \
   cd /opt/scirius && \
