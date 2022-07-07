@@ -85,20 +85,23 @@ RUN \
         nodejs
         
 COPY --from=source /opt/scirius/*.js* /opt/scirius/.eslintrc /opt/scirius/
-COPY --from=source /opt/scirius/hunt /opt/scirius/hunt
+COPY --from=source /opt/scirius/ui /opt/scirius/ui
 COPY --from=source /opt/scirius/npm /opt/scirius/npm
 COPY --from=source /opt/scirius/scss /opt/scirius/scss
 COPY --from=source /opt/scirius/rules /opt/scirius/rules
+
+ENV REACT_APP_HAS_ACTION 1
 
 WORKDIR /opt/scirius
 RUN echo "**** install Node.js dependencies for Scirius ****" && \
     npm install && \
     npm install -g webpack@3.11 && \
     webpack && \
-    cd hunt && \
+    cd ui && \
+    npm rebuild node-sass && \
     npm install && \
-    npm run build
-    
+    npm run build && mv webpack-stats-ui.prod.json ../rules/static/
+
 # Install python packages
 FROM base as python_modules
 COPY --from=source /opt/scirius/requirements.txt /opt/scirius/requirements.txt
