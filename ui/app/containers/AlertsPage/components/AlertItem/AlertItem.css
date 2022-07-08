@@ -1,39 +1,3 @@
-.AlertsList .list-group-item .files-warning {
-    margin: 20px 0; 
-    color: #cc0000; 
-    text-align: center;
-}
-
-.AlertsList .list-group-item .file-item {
-    display: grid;
-    grid-template-columns: repeat(2, min-content) 270px repeat(2, min-content);
-    justify-content: space-around;
-    justify-items: center;
-    align-items: center;
-    margin: 20px 0;
-}
-
-@media only screen and (max-width: 1150px) {
-    .AlertsList .list-group-item .file-item {
-        grid-template-columns: min-content 270px repeat(2, min-content);
-    }
-    .AlertsList .list-group-item .file-item > div:first-child {
-        grid-column: 1/-1;
-    }
-}
-
-.AlertsList .list-group-item .file-item .glyphicon {
-    color: #005792;
-    cursor: pointer;
-    font-size: large;
-    transition: all .2s;
-}
-
-.AlertsList .list-group-item .file-item .glyphicon:hover {
-    color: #0297a9;
-    transform: scale(1.2);
-}
-
 .dl-horizontal .dl-item {
     display: grid;
     grid-template-columns: 1fr 2fr;
@@ -48,5 +12,4 @@
     text-overflow: ellipsis;
     margin-left: 20px;
     margin-bottom: 0;
-
 }

@@ -334,7 +334,7 @@ export default class AlertItem extends React.Component {
     const hasLateral = data.alert.lateral !== undefined;
 
     return (
-      <Tabs id="alert-tabs">
+      <Tabs style={{ width: 'calc(100vw - 280px)' }}>
         <Tabs.TabPane key="alert" tab="Synthetic view">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gridGap: '10px', paddingBottom: '10px' }}>
             <UICard title="Signature">
@@ -724,9 +724,7 @@ export default class AlertItem extends React.Component {
                 <Spin size="small" />
               </div>
             )}
-            {!this.state.fileInfo && !this.state.fileInfoLoading && (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>No data</div>
-            )}
+            {!this.state.fileInfo && !this.state.fileInfoLoading && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
             {this.state.fileInfo && !this.state.fileInfoLoading && this.renderFiles()}
           </Tabs.TabPane>
         )}
@@ -743,8 +741,8 @@ export default class AlertItem extends React.Component {
                   {Object.keys(events[key])
                     .sort()
                     .map(key2 => (
-                      <div key={key2} style={{ paddingTop: '10px' }}>
-                        <Button onClick={() => this.toggleCollapse(`${key}-${key2}`)} key={key2}>
+                      <div key={key2}>
+                        <Button onClick={() => this.toggleCollapse(`${key}-${key2}`)} key={key2} style={{ width: 'calc(100vw - 280px)' }}>
                           {`${key}-${key2}` in this.state.collapsed && !this.state.collapsed[`${key}-${key2}`] && (
                             <span className="fa fa-angle-right fa-angle-down"></span>
                           )}

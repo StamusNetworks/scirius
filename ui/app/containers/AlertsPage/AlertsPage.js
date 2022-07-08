@@ -20,7 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Spin } from 'antd';
+import { Table } from 'antd';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import { STAMUS } from 'ui/config';
@@ -34,28 +34,13 @@ import ErrorHandler from 'ui/components/Error';
 import HuntRestError from 'ui/components/HuntRestError';
 import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
-import { ArrowRightOutlined, InfoCircleOutlined, FileOutlined } from '@ant-design/icons';
 import moment from 'moment';
-import UICollapse from 'ui/components/UIElements/UICollapse';
-import UIPanel from 'ui/components/UIElements/UIPanel/UIPanel';
-import UIPanelHeader from 'ui/components/UIElements/UIPanel/UIPanelHeader';
-import buildListParams from 'ui/helpers/buildListParams';
 import AlertItem from './components/AlertItem';
 import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction } from '../../helpers/common';
 
 export class AlertsPage extends React.Component {
   constructor(props) {
     super(props);
-
-    const alertsListConf = buildListParams(JSON.parse(localStorage.getItem('alerts_list')), {
-      pagination: {
-        page: 1,
-        perPage: 100,
-        perPageOptions: [20, 50, 100],
-      },
-      sort: { id: 'timestamp', asc: false },
-      view_type: 'list',
-    });
 
     this.state = {
       alerts: [],
@@ -67,10 +52,11 @@ export class AlertsPage extends React.Component {
       // eslint-disable-next-line react/no-unused-state
       supported_actions: [],
       errors: null,
-      alertsList: alertsListConf,
+      page: 1,
     };
     this.fetchData = this.fetchData.bind(this);
     this.actionsButtons = actionsButtons.bind(this);
+    this.buildListUrlParams = buildListUrlParams.bind(this);
     this.loadActions = loadActions.bind(this);
     this.createAction = createAction.bind(this);
     this.closeAction = closeAction.bind(this);
@@ -126,15 +112,10 @@ export class AlertsPage extends React.Component {
     }
   }
 
-  updateAlertListState(alertsListState, fetchDataCallback) {
-    this.setState({ alertsList: alertsListState }, fetchDataCallback);
-    localStorage.setItem('alerts_list', JSON.stringify(alertsListState));
-  }
-
   fetchData() {
     const stringFilters = buildQFilter(this.props.filtersWithAlert, this.props.systemSettings);
     const filterParams = buildFilterParams(this.props.filterParams);
-    const listParams = buildListUrlParams(this.state.alertsList);
+    const listParams = this.buildListUrlParams(this.props.rules_list);
     this.setState({ loading: true });
 
     const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?${listParams}&${filterParams}${stringFilters}`;
@@ -157,12 +138,61 @@ export class AlertsPage extends React.Component {
   }
 
   updateRuleListState(rulesListState, fetchDataCallback) {
-    this.updateAlertListState(rulesListState, fetchDataCallback);
+    this.props.updateListState(rulesListState, fetchDataCallback);
   }
 
+  columns = [
+    {
+      title: 'Source IP',
+      dataIndex: 'source_ip',
+    },
+    {
+      title: 'Destination IP',
+      dataIndex: 'destination_ip',
+    },
+    {
+      title: 'Signature',
+      dataIndex: 'signature',
+    },
+    {
+      title: 'Timestamp',
+      dataIndex: 'timestamp',
+    },
+    {
+      title: 'Proto',
+      dataIndex: 'proto',
+    },
+    {
+      title: 'Probe',
+      dataIndex: 'probe',
+    },
+    {
+      title: 'Category',
+      dataIndex: 'category',
+    },
+    {
+      title: 'Tag',
+      dataIndex: 'tag',
+    },
+  ];
+
   render() {
+    const dataSource = this.state.alerts.map(rule => ({
+      // eslint-disable-next-line no-underscore-dangle
+      key: rule._id,
+      source_ip: rule.src_ip,
+      destination_ip: rule.dest_ip,
+      signature: rule.alert.signature,
+      timestamp: moment(rule.timestamp).format('YYYY-MM-DD, hh:mm:ss a'),
+      proto: rule.app_proto,
+      probe: rule.host,
+      category: rule.alert.category,
+      tag: rule.alert.tag,
+      rule, // we need this to access the rule data in the `expandedRowRender` below
+    }));
+
     return (
-      <div className="AlertsList">
+      <div>
         <Helmet>
           <title>{`${STAMUS} - Alerts`}</title>
         </Helmet>
@@ -172,73 +202,38 @@ export class AlertsPage extends React.Component {
           <Filters page="ALERTS" section={sections.GLOBAL} queryTypes={['filter']} />
         </ErrorHandler>
 
-        <Spin spinning={this.state.loading} style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }} />
-
         {this.state.alerts && (
-          <UICollapse>
-            {this.state.alerts.map(rule => {
-              const { _id: ruleId, src_ip: srcIp, dest_ip: destIp, timestamp, app_proto: appProto, host, alert } = rule;
-
-              const ipParams = (
-                <React.Fragment>
-                  {srcIp} <ArrowRightOutlined /> {destIp}
-                </React.Fragment>
-              );
-
-              const addInfo = [
-                <div key="timestamp" style={{ paddingLeft: 10 }}>
-                  {moment(timestamp).format('YYYY-MM-DD, hh:mm:ss a')}
-                </div>,
-                <div key="app_proto" style={{ paddingLeft: 10 }}>
-                  <strong>proto</strong>: {appProto}
-                </div>,
-                <div key="host" style={{ paddingLeft: 10 }}>
-                  <strong>probe</strong>: {host}
-                </div>,
-              ];
-              if (alert.category) {
-                addInfo.push(
-                  <div key="category" style={{ paddingLeft: 10 }}>
-                    <strong>category</strong>: {alert.category}
-                  </div>,
-                );
-              }
-              let iconclass = <FileOutlined />;
-              if (alert.tag) {
-                addInfo.push(
-                  <div key="tag" style={{ paddingLeft: 10 }}>
-                    <strong>tag</strong>: {alert.tag}
-                  </div>,
-                );
-                iconclass = <InfoCircleOutlined />;
-              }
-
-              return (
-                <UIPanel
-                  key={ruleId}
-                  showArrow={false}
-                  extra={<React.Fragment></React.Fragment>}
-                  header={<UIPanelHeader sub1={iconclass} sub2={ipParams} sub3={<div>{alert.signature}</div>} sub4={addInfo} />}
-                >
-                  <AlertItem
-                    key={ruleId}
-                    id={ruleId}
-                    data={rule}
-                    filterParams={this.props.filterParams}
-                    filters={this.props.filters}
-                    addFilter={this.props.addFilter}
-                  />
-                </UIPanel>
-              );
-            })}
-          </UICollapse>
+          <Table
+            style={{ marginTop: '10px' }}
+            size="small"
+            loading={this.state.loading}
+            dataSource={dataSource}
+            columns={this.columns}
+            expandable={{
+              columnWidth: 5,
+              expandRowByClick: true,
+              expandedRowRender: alert => (
+                <AlertItem data={alert.rule} filterParams={this.props.filterParams} filters={this.props.filters} addFilter={this.props.addFilter} />
+              ),
+              rowExpandable: () => true,
+            }}
+            pagination={{
+              showSizeChanger: false,
+              current: this.state.page,
+              pageSize: 30,
+              total: this.state.alerts.length,
+              onChange: current => this.setState({ page: current }),
+              position: ['bottomLeft'],
+            }}
+          />
         )}
+
         <ErrorHandler>
           {this.state.action.view && (
             <RuleToggleModal
               show={this.state.action.view}
               action={this.state.action.type}
-              config={this.state.alertsList}
+              config={this.props.rules_list}
               filters={this.props.filters}
               close={this.closeAction}
               rulesets={this.state.rulesets}
@@ -253,9 +248,11 @@ export class AlertsPage extends React.Component {
 }
 
 AlertsPage.propTypes = {
+  rules_list: PropTypes.any,
   filters: PropTypes.any,
   filtersWithAlert: PropTypes.any,
   systemSettings: PropTypes.any,
+  updateListState: PropTypes.any,
   addFilter: PropTypes.func,
   filterParams: PropTypes.object.isRequired,
   user: PropTypes.shape({
