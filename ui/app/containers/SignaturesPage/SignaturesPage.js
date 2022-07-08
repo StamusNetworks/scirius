@@ -20,7 +20,6 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Spin } from 'antd';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import md5 from 'md5';
@@ -286,10 +285,14 @@ export class SignaturesPage extends React.Component {
           />
         </ErrorHandler>
 
-        <Spin spinning={this.state.loading} style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }} />
-
         {view === 'rules_list' && (
-          <RuleInList rules={this.state.rules} sources={this.state.sources} filterParams={this.props.filterParams} rulesets={this.props.rulesets} />
+          <RuleInList
+            loading={this.state.loading}
+            rules={this.state.rules}
+            sources={this.state.sources}
+            filterParams={this.props.filterParams}
+            rulesets={this.props.rulesets}
+          />
         )}
         <ErrorHandler>
           {view === 'rules_list' && (
