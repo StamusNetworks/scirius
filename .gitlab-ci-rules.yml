@@ -36,6 +36,19 @@ npm-ui:
   - node node_modules/eslint/bin/eslint.js app/ --max-warnings 0
   - cd "$CI_PROJECT_DIR" && mv ui/webpack-stats-ui.prod.json rules/static/
 
+npm-ui-eslint:
+  image: node:12.22.5
+  stage: build
+  before_script:
+    - echo "skip"
+  script:
+  - cd ui
+  - export NODE_OPTIONS=--max_old_space_size=4096
+  - 'test -e .env ||: && set -a && source .env && set +a'  # load and export env variables
+  - npm install
+  - npm run eslint:fix
+  - git diff --exit-code
+
 test-static:
   stage: test
   script:
