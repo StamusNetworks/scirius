@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal } from 'antd';
 
-const RuleContentModal = (props) => (
+const RuleContentModal = props => (
   <Modal
     title={<div>Transformed rule content in {props.rule_status.name}</div>}
     visible={props.display}

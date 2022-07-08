@@ -38,15 +38,15 @@ import { actionsButtons, buildListUrlParams, createAction, closeAction, buildFil
 
 const DescriptionItem = styled.div`
   padding: 0 10px;
-`
+`;
 
 const Count = styled.div`
-  color: #FFF;
+  color: #fff;
   font-size: 12px;
   background: #838383;
   margin-right: 10px;
   padding: 2px 7px;
-`
+`;
 
 export class ActionsPage extends React.Component {
   constructor(props) {
@@ -64,8 +64,8 @@ export class ActionsPage extends React.Component {
   }
 
   componentDidMount() {
-    if (  this.state.rulesets.length === 0) {
-      axios.get(`${config.API_URL}${config.RULESET_PATH}`).then((res) => {
+    if (this.state.rulesets.length === 0) {
+      axios.get(`${config.API_URL}${config.RULESET_PATH}`).then(res => {
         const rulesets = {};
         for (let index = 0; index < res.data.results.length; index += 1) {
           rulesets[res.data.results[index].pk] = res.data.results[index];
@@ -92,7 +92,7 @@ export class ActionsPage extends React.Component {
     this.setState({ loading: true });
     axios
       .get(`${config.API_URL}${config.PROCESSING_PATH}?${listParams}`)
-      .then((res) => {
+      .then(res => {
         this.setState({ data: res.data.results, count: res.data.count, loading: false });
       })
       .catch(() => {
@@ -133,18 +133,22 @@ export class ActionsPage extends React.Component {
               addinfo.push(info);
             }
             if (Object.keys(this.state.rulesets).length > 0) {
-              const rulesets = item.rulesets.map((item2) => <DescriptionItem key={Math.random()}><strong>ruleset</strong>: {this.state.rulesets[item2].name}</DescriptionItem>);
+              const rulesets = item.rulesets.map(item2 => (
+                <DescriptionItem key={Math.random()}>
+                  <strong>ruleset</strong>: {this.state.rulesets[item2].name}
+                </DescriptionItem>
+              ));
               addinfo.push(rulesets);
             }
 
             // description
             let description = [];
             if (item.action !== 'suppress') {
-              description = Object.keys(item.options).map((option) => {
+              description = Object.keys(item.options).map(option => {
                 if (option === 'all_tenants' || option === 'no_tenant' || option === 'tenants') return null;
                 if (option === 'tenants_str') {
                   return (
-                    <DescriptionItem key='tenants_str'>
+                    <DescriptionItem key="tenants_str">
                       <strong>tenants</strong>: {item.options[option].join()}
                     </DescriptionItem>
                   );
@@ -154,13 +158,11 @@ export class ActionsPage extends React.Component {
                     <strong>{option}</strong>: {item.options[option]}
                   </DescriptionItem>
                 );
-              })
+              });
             }
 
             // actions menu
-            const actionsMenu = [
-              <Count key='count'>{item.index}</Count>,
-            ];
+            const actionsMenu = [<Count key="count">{item.index}</Count>];
             actionsMenu.push(
               <FilterEditKebab
                 switchPage={this.props.switchPage}
@@ -198,11 +200,12 @@ export class ActionsPage extends React.Component {
               icons.push(<UploadOutlined key="imported" title="Imported" className="glyphicon glyphicon-upload" />);
             }
 
-            return <UIPanel
+            return (
+              <UIPanel
                 key={item.pk}
                 showArrow={false}
                 extra={actionsMenu}
-                header={<UIPanelHeader sub1={icons} sub2={item.action} sub3={description} sub4={addinfo}/>}
+                header={<UIPanelHeader sub1={icons} sub2={item.action} sub3={description} sub4={addinfo} />}
               >
                 <ActionItem
                   switchPage={this.props.switchPage}
@@ -214,16 +217,17 @@ export class ActionsPage extends React.Component {
                   filterParams={this.props.filterParams}
                 />
               </UIPanel>
+            );
           })}
         </UICollapse>
-          <ErrorHandler>
-            <HuntPaginationRow
-              viewType="list"
-              onPaginationChange={this.updateActionListState}
-              itemsCount={this.state.count}
-              itemsList={this.props.rules_list}
-            />
-          </ErrorHandler>
+        <ErrorHandler>
+          <HuntPaginationRow
+            viewType="list"
+            onPaginationChange={this.updateActionListState}
+            itemsCount={this.state.count}
+            itemsList={this.props.rules_list}
+          />
+        </ErrorHandler>
       </div>
     );
   }

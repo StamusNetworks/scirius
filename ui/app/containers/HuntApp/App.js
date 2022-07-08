@@ -143,7 +143,7 @@ export default class HuntApp extends Component {
   }
 
   componentDidMount() {
-    axios.get(config.API_URL + config.SYSTEM_SETTINGS_PATH).then((systemSettings) => {
+    axios.get(config.API_URL + config.SYSTEM_SETTINGS_PATH).then(systemSettings => {
       this.setState({ systemSettings: systemSettings.data });
     });
   }

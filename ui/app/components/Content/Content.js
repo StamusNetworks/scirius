@@ -8,14 +8,10 @@ const StyledOuterWrapper = styled(AntdContent)`
   padding: 0 20px 20px 20px;
 `;
 
-const Content = ({children}) => (
-  <StyledOuterWrapper>
-    {children}
-  </StyledOuterWrapper>
-)
+const Content = ({ children }) => <StyledOuterWrapper>{children}</StyledOuterWrapper>;
 
 Content.propTypes = {
   children: PropTypes.any,
-}
+};
 
 export default Content;

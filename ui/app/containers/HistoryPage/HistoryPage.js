@@ -62,7 +62,7 @@ export default class HistoryPage extends React.Component {
     this.setState({ loading: true });
     axios
       .get(`${config.API_URL}${config.HISTORY_PATH}?${listParams}${stringFilters}`)
-      .then((res) => {
+      .then(res => {
         this.setState({
           data: res.data,
           count: res.data.count,
@@ -89,28 +89,24 @@ export default class HistoryPage extends React.Component {
     return (
       <div>
         <ErrorHandler>
-          <Filters
-            page='HISTORY'
-            section={sections.HISTORY}
-            queryTypes={['all']}
-          />
+          <Filters page="HISTORY" section={sections.HISTORY} queryTypes={['all']} />
         </ErrorHandler>
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }}>
-          {this.state.loading && (
-            <Spin />
-          )}
-        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }}>{this.state.loading && <Spin />}</div>
         {this.state.data.results && (
           <Collapse>
             {this.state.data.results.map(item => {
               const date = moment(item.date).format('YYYY-MM-DD, hh:mm:ss a');
               const info = [
                 <Col>Date: {date}</Col>,
-                <Col style={{ paddingLeft: 15 }}><UserOutlined /> {item.username}</Col>
+                <Col style={{ paddingLeft: 15 }}>
+                  <UserOutlined /> {item.username}
+                </Col>,
               ];
               if (item.ua_objects.ruleset && item.ua_objects.ruleset.pk) {
                 info.push(
-                  <Col style={{ paddingLeft: 15 }}><TableOutlined /> {item.ua_objects.ruleset.value}</Col>,
+                  <Col style={{ paddingLeft: 15 }}>
+                    <TableOutlined /> {item.ua_objects.ruleset.value}
+                  </Col>,
                 );
               }
               if (item.ua_objects.rule && item.ua_objects.rule.sid) {
@@ -132,14 +128,17 @@ export default class HistoryPage extends React.Component {
                 <Panel
                   key={item.pk}
                   showArrow={false}
-                  header={(
+                  header={
                     <Row>
-                      <Col md={1}><MailOutlined /></Col>
+                      <Col md={1}>
+                        <MailOutlined />
+                      </Col>
                       <Col md={2}>{item.title}</Col>
-                      <Col flex='auto'>{item.description}</Col>
+                      <Col flex="auto">{item.description}</Col>
                       {info}
                     </Row>
-                  )}>
+                  }
+                >
                   <HistoryItem key={item.pk} data={item} switchPage={this.props.switchPage} expand_row={expand} />
                 </Panel>
               );

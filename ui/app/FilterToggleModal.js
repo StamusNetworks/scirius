@@ -72,7 +72,7 @@ export default class FilterToggleModal extends React.Component {
           this.props.needUpdate();
           this.close();
         })
-        .catch((error) => {
+        .catch(error => {
           this.setState({ errors: error.response.data });
         });
     }
@@ -87,7 +87,7 @@ export default class FilterToggleModal extends React.Component {
           this.props.needUpdate();
           this.close();
         })
-        .catch((error) => {
+        .catch(error => {
           this.setState({ errors: error.response.data });
         });
     }
@@ -151,7 +151,7 @@ export default class FilterToggleModal extends React.Component {
                       max={50000}
                       defaultValue={0}
                       onChange={this.handleChange}
-                      onKeyPress={(e) => this.onFieldKeyPress(e)}
+                      onKeyPress={e => this.onFieldKeyPress(e)}
                       style={{ width: '100%' }}
                     />
                   </Form.Item>
@@ -160,7 +160,7 @@ export default class FilterToggleModal extends React.Component {
             )}
             <Row>
               <Col md={24}>
-                  <strong>Optional comment</strong>
+                <strong>Optional comment</strong>
               </Col>
               <Col md={24}>
                 <Input.TextArea value={this.state.comment} onChange={this.handleCommentChange} />

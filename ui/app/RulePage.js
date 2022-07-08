@@ -51,20 +51,20 @@ export default class RulePage extends React.Component {
     const filterParams = buildFilterParams(this.props.filterParams);
     if (typeof rule !== 'undefined') {
       updateHitsStats([rule], filterParams, this.updateRuleState, qfilter);
-      axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${this.props.rule.sid}`).then((res) => {
+      axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${this.props.rule.sid}`).then(res => {
         this.updateExtInfo(res.data);
       });
       this.fetchRuleStatus(rule.sid);
     } else {
       axios
         .get(`${config.API_URL}${config.RULE_PATH}${sid}/?highlight=true`)
-        .then((res) => {
+        .then(res => {
           updateHitsStats([res.data], filterParams, this.updateRuleState, qfilter);
-          axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${sid}`).then((res2) => {
+          axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${sid}`).then(res2 => {
             this.updateExtInfo(res2.data);
           });
         })
-        .catch((error) => {
+        .catch(error => {
           if (error.response.status === 404) {
             this.setState({ errors: { signature: ['Signature not found'] }, rule: null });
             return;
@@ -91,7 +91,7 @@ export default class RulePage extends React.Component {
   }
 
   loadMore = (item, url) => {
-    axios.get(url).then((json) => {
+    axios.get(url).then(json => {
       this.setState({ ...this.state, moreModal: item, moreResults: json.data });
     });
   };
@@ -131,7 +131,7 @@ export default class RulePage extends React.Component {
       .then(([res, rescontent, referencesContent]) => {
         const rstatus = [];
 
-        Object.keys(res.data).forEach((key) => {
+        Object.keys(res.data).forEach(key => {
           res.data[key].pk = key;
           res.data[key].content = key in rescontent.data ? rescontent.data[key] : 'Rule not included in Ruleset';
           rstatus.push(res.data[key]);
@@ -193,7 +193,7 @@ export default class RulePage extends React.Component {
                             References
                           </h2>
                           <div className="card-pf-body">
-                            {this.state.rule_references.map((reference) => {
+                            {this.state.rule_references.map(reference => {
                               if (reference.url !== undefined) {
                                 return (
                                   <p key={reference.url}>
@@ -223,7 +223,7 @@ export default class RulePage extends React.Component {
                   </div>
                   {this.state.rule_status !== undefined && (
                     <div style={{ minHeight: '150px' }}>
-                      {this.state.rule_status.map((rstatus) => (
+                      {this.state.rule_status.map(rstatus => (
                         <RuleStatus rule={this.state.rule} key={rstatus.pk} rule_status={rstatus} />
                       ))}
                     </div>
@@ -381,7 +381,7 @@ export default class RulePage extends React.Component {
               header={null}
               footer={null}
               dataSource={this.state.moreResults}
-              renderItem={(item) => (
+              renderItem={item => (
                 <List.Item key={item.key}>
                   {this.state.moreModal && (
                     <EventValue

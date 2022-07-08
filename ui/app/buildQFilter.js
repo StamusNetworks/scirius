@@ -6,7 +6,7 @@ export function esEscape(str) {
   const result = str.replace(/[<>]/g, '');
 
   // Escape other reserved characters
-  return result.replace(/[=+\-&|!(){}[\]^"~:\\/]/g, (c) => `\\${c}`);
+  return result.replace(/[=+\-&|!(){}[\]^"~:\\/]/g, c => `\\${c}`);
 }
 
 export function buildQFilter(filters, systemSettings) {

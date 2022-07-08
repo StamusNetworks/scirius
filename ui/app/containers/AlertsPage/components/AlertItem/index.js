@@ -30,10 +30,10 @@ export default class AlertItem extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchData(this.props.data.flow_id)
+    this.fetchData(this.props.data.flow_id);
   }
 
-  getTitle = (ev) => {
+  getTitle = ev => {
     let msg = '';
 
     if (ev.event_type === 'alert') {
@@ -51,8 +51,8 @@ export default class AlertItem extends React.Component {
         } else if ('answers' in ev.dns) {
           msg += ' - ';
           msg += ev.dns.answers
-            .map((dns) => dns[dns.rrtype])
-            .filter((a) => a || false)
+            .map(dns => dns[dns.rrtype])
+            .filter(a => a || false)
             .join(', ');
         }
       } else {
@@ -113,10 +113,10 @@ export default class AlertItem extends React.Component {
     return msg;
   };
 
-  nbEvents = (events) => {
+  nbEvents = events => {
     let nb = 0;
     if (events) {
-      Object.keys(events).forEach((key) => {
+      Object.keys(events).forEach(key => {
         nb += Object.keys(events[key]).length;
       });
 
@@ -156,7 +156,7 @@ export default class AlertItem extends React.Component {
       this.setState({ files: {}, fileInfo: false, fileInfoLoading: false });
       const filterParams = buildFilterParams(this.props.filterParams);
       const url = `${config.API_URL + config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId}&${filterParams}`;
-      axios.get(url).then((res) => {
+      axios.get(url).then(res => {
         if (res.data !== null) {
           if ('Alert' in res.data) {
             for (let idx = 0; idx < Object.keys(res.data.Alert).length; idx += 1) {
@@ -177,7 +177,7 @@ export default class AlertItem extends React.Component {
       });
 
       const fileUrl = `${config.API_URL}${config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId} AND fileinfo.stored:true&${filterParams}`;
-      axios.get(fileUrl).then((res) => {
+      axios.get(fileUrl).then(res => {
         if (res.data !== null) {
           if ('Fileinfo' in res.data) {
             this.setState({ fileInfo: true, fileInfoLoading: true });
@@ -265,7 +265,7 @@ export default class AlertItem extends React.Component {
             downloading them.
           </div>
         )}
-        {Object.values(this.state.files).map((file) => (
+        {Object.values(this.state.files).map(file => (
           <div key={file.sha256} className="file-item">
             <div>{file.sha256}</div>
             <div>{file.filename}</div>
@@ -336,8 +336,8 @@ export default class AlertItem extends React.Component {
     return (
       <Tabs id="alert-tabs">
         <Tabs.TabPane key="alert" tab="Synthetic view">
-          <div style={{display:'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gridGap: '10px', paddingBottom: '10px'}}>
-            <UICard title='Signature'>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gridGap: '10px', paddingBottom: '10px' }}>
+            <UICard title="Signature">
               <dl className="dl-horizontal">
                 <ErrorHandler>
                   <EventField field_name="Signature" field="alert.signature" value={data.alert.signature} addFilter={this.addFilter} />
@@ -354,7 +354,7 @@ export default class AlertItem extends React.Component {
                     field="alert.severity"
                     value={data.alert.severity}
                     addFilter={this.addFilter}
-                    format={(dashboard.sections.basic.items.find((o) => o.i === 'alert.severity') || {}).format}
+                    format={(dashboard.sections.basic.items.find(o => o.i === 'alert.severity') || {}).format}
                   />
                 </ErrorHandler>
                 <ErrorHandler>
@@ -368,16 +368,11 @@ export default class AlertItem extends React.Component {
               </dl>
             </UICard>
 
-            <UICard title='IP and basic information'>
+            <UICard title="IP and basic information">
               <dl className="dl-horizontal">
                 {data.net_info && data.net_info.src_agg && (
                   <ErrorHandler>
-                    <EventField
-                      field_name="Source Network"
-                      field="net_info.src_agg"
-                      value={data.net_info.src_agg}
-                      addFilter={this.addFilter}
-                    />
+                    <EventField field_name="Source Network" field="net_info.src_agg" value={data.net_info.src_agg} addFilter={this.addFilter} />
                   </ErrorHandler>
                 )}
                 <ErrorHandler>
@@ -438,12 +433,7 @@ export default class AlertItem extends React.Component {
                 )}
                 {data.tunnel && data.tunnel.dest_ip && (
                   <ErrorHandler>
-                    <EventField
-                      field_name="Tunnel Destination IP"
-                      field="tunnel.dest_ip"
-                      value={data.tunnel.dest_ip}
-                      addFilter={this.addFilter}
-                    />
+                    <EventField field_name="Tunnel Destination IP" field="tunnel.dest_ip" value={data.tunnel.dest_ip} addFilter={this.addFilter} />
                   </ErrorHandler>
                 )}
                 {data.tunnel && data.tunnel.proto && (
@@ -459,15 +449,11 @@ export default class AlertItem extends React.Component {
               </dl>
             </UICard>
 
-            <UICard title='Enrichment'>
+            <UICard title="Enrichment">
               <dl className="dl-horizontal">
-                {
-                  !hasTarget &&
-                  !hasLateral &&
-                  (!data.fqdn || !data.fqdn.src) &&
-                  (!data.fqdn || !data.fqdn.dest) &&
-                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>
-                }
+                {!hasTarget && !hasLateral && (!data.fqdn || !data.fqdn.src) && (!data.fqdn || !data.fqdn.dest) && (
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                )}
                 {hasTarget && (
                   <React.Fragment>
                     {sourceNetwork}
@@ -475,24 +461,14 @@ export default class AlertItem extends React.Component {
                       <EventField field_name="Source IP" field="alert.source.ip" value={data.alert.source.ip} addFilter={this.addFilter} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField
-                        field_name="Source port"
-                        field="alert.source.port"
-                        value={data.alert.source.port}
-                        addFilter={this.addFilter}
-                      />
+                      <EventField field_name="Source port" field="alert.source.port" value={data.alert.source.port} addFilter={this.addFilter} />
                     </ErrorHandler>
                     {targetNetwork}
                     <ErrorHandler>
                       <EventField field_name="Target IP" field="alert.target.ip" value={data.alert.target.ip} addFilter={this.addFilter} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField
-                        field_name="Target port"
-                        field="alert.target.port"
-                        value={data.alert.target.port}
-                        addFilter={this.addFilter}
-                      />
+                      <EventField field_name="Target port" field="alert.target.port" value={data.alert.target.port} addFilter={this.addFilter} />
                     </ErrorHandler>
                   </React.Fragment>
                 )}
@@ -515,26 +491,16 @@ export default class AlertItem extends React.Component {
             </UICard>
 
             {data.geoip && (
-              <UICard title='Geoip'>
+              <UICard title="Geoip">
                 <dl className="dl-horizontal">
                   {data.geoip.country_name && (
                     <ErrorHandler>
-                      <EventField
-                        field_name="Country"
-                        field="geoip.country_name"
-                        value={data.geoip.country_name}
-                        addFilter={this.addFilter}
-                      />
+                      <EventField field_name="Country" field="geoip.country_name" value={data.geoip.country_name} addFilter={this.addFilter} />
                     </ErrorHandler>
                   )}
                   {data.geoip.city_name && (
                     <ErrorHandler>
-                      <EventField
-                        field_name="Country Code"
-                        field="geoip.country_code2"
-                        value={data.geoip.country_code2}
-                        addFilter={this.addFilter}
-                      />
+                      <EventField field_name="Country Code" field="geoip.country_code2" value={data.geoip.country_code2} addFilter={this.addFilter} />
                     </ErrorHandler>
                   )}
                   {data.geoip.provider && data.geoip.provider.autonomous_system_number && (
@@ -562,60 +528,55 @@ export default class AlertItem extends React.Component {
             )}
 
             {data.http !== undefined && (
-              <UICard title='HTTP'>
-                  <dl className="dl-horizontal">
+              <UICard title="HTTP">
+                <dl className="dl-horizontal">
+                  <ErrorHandler>
+                    <EventField field_name="Host" field="http.hostname" value={data.http.hostname} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                  <ErrorHandler>
+                    <EventField field_name="URL" field="http.url" value={data.http.url} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                  {data.http.status !== undefined && (
                     <ErrorHandler>
-                      <EventField field_name="Host" field="http.hostname" value={data.http.hostname} addFilter={this.addFilter} />
+                      <EventField field_name="Status" field="http.status" value={data.http.status} addFilter={this.addFilter} />
                     </ErrorHandler>
+                  )}
+                  <ErrorHandler>
+                    <EventField field_name="Method" field="http.http_method" value={data.http.http_method} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                  <ErrorHandler>
+                    <EventField field_name="User Agent" field="http.http_user_agent" value={data.http.http_user_agent} addFilter={this.addFilter} />
+                  </ErrorHandler>
+                  {data.http.http_refer !== undefined && (
                     <ErrorHandler>
-                      <EventField field_name="URL" field="http.url" value={data.http.url} addFilter={this.addFilter} />
+                      <EventField field_name="Referrer" field="http.http_refer" value={data.http.http_refer} addFilter={this.addFilter} />
                     </ErrorHandler>
-                    {data.http.status !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="Status" field="http.status" value={data.http.status} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
+                  )}
+                  {data.http.http_port !== undefined && (
                     <ErrorHandler>
-                      <EventField field_name="Method" field="http.http_method" value={data.http.http_method} addFilter={this.addFilter} />
+                      <EventField field_name="Port" field="http.http_port" value={data.http.http_port} addFilter={this.addFilter} />
                     </ErrorHandler>
+                  )}
+                  {data.http.http_content_type !== undefined && (
                     <ErrorHandler>
                       <EventField
-                        field_name="User Agent"
-                        field="http.http_user_agent"
-                        value={data.http.http_user_agent}
+                        field_name="Content Type"
+                        field="http.http_content_type"
+                        value={data.http.http_content_type}
                         addFilter={this.addFilter}
                       />
                     </ErrorHandler>
-                    {data.http.http_refer !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="Referrer" field="http.http_refer" value={data.http.http_refer} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
-                    {data.http.http_port !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="Port" field="http.http_port" value={data.http.http_port} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
-                    {data.http.http_content_type !== undefined && (
-                      <ErrorHandler>
-                        <EventField
-                          field_name="Content Type"
-                          field="http.http_content_type"
-                          value={data.http.http_content_type}
-                          addFilter={this.addFilter}
-                        />
-                      </ErrorHandler>
-                    )}
-                    {data.http.length !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="Length" field="http.length" value={data.http.length} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
-                  </dl>
+                  )}
+                  {data.http.length !== undefined && (
+                    <ErrorHandler>
+                      <EventField field_name="Length" field="http.length" value={data.http.length} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                  )}
+                </dl>
               </UICard>
             )}
             {data.tls !== undefined && (
-              <UICard title='TLS'>
+              <UICard title="TLS">
                 <dl className="dl-horizontal">
                   <ErrorHandler>
                     <EventField field_name="Subject" field="tls.subject" value={data.tls.subject} addFilter={this.addFilter} />
@@ -639,16 +600,10 @@ export default class AlertItem extends React.Component {
                   )}
                   {data.tls.ja3 &&
                     data.tls.ja3.agent !== undefined &&
-                    data.tls.ja3.agent.map((agent) => (
+                    data.tls.ja3.agent.map(agent => (
                       <ErrorHandler key={Math.random()}>
                         {/* eslint-disable-next-line react/no-array-index-key */}
-                        <EventField
-                          field_name="User-Agent"
-                          field="tls.ja3.agent"
-                          value={agent}
-                          addFilter={this.addFilter}
-                          key={`to-${agent}`}
-                        />
+                        <EventField field_name="User-Agent" field="tls.ja3.agent" value={agent} addFilter={this.addFilter} key={`to-${agent}`} />
                       </ErrorHandler>
                     ))}
                   {data.tls.ja3s && data.tls.ja3s.hash !== undefined && (
@@ -660,90 +615,90 @@ export default class AlertItem extends React.Component {
               </UICard>
             )}
             {data.smtp !== undefined && (
-              <UICard title='SMTP'>
+              <UICard title="SMTP">
                 <dl className="dl-horizontal">
-                    {data.smtp.mail_from !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="From" field="smtp.mail_from" value={data.smtp.mail_from} addFilter={this.addFilter} />
+                  {data.smtp.mail_from !== undefined && (
+                    <ErrorHandler>
+                      <EventField field_name="From" field="smtp.mail_from" value={data.smtp.mail_from} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                  )}
+                  {data.smtp.rcpt_to !== undefined &&
+                    data.smtp.rcpt_to.map((mail, idx) => (
+                      <ErrorHandler key={Math.random()}>
+                        {/* eslint-disable-next-line react/no-array-index-key */}
+                        <EventField field_name="To" field="smtp.rcpt_to" value={mail} addFilter={this.addFilter} key={`to-${idx}`} />
                       </ErrorHandler>
-                    )}
-                    {data.smtp.rcpt_to !== undefined &&
-                      data.smtp.rcpt_to.map((mail, idx) => (
-                        <ErrorHandler key={Math.random()}>
-                          {/* eslint-disable-next-line react/no-array-index-key */}
-                          <EventField field_name="To" field="smtp.rcpt_to" value={mail} addFilter={this.addFilter} key={`to-${idx}`} />
-                        </ErrorHandler>
-                      ))}
-                    {data.smtp.helo !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="Helo" field="smtp.helo" value={data.smtp.helo} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
-                  </dl>
+                    ))}
+                  {data.smtp.helo !== undefined && (
+                    <ErrorHandler>
+                      <EventField field_name="Helo" field="smtp.helo" value={data.smtp.helo} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                  )}
+                </dl>
               </UICard>
             )}
             {data.ssh !== undefined && (
-              <UICard title='SSH'>
+              <UICard title="SSH">
                 <dl className="dl-horizontal">
-                    {data.ssh.client && (
-                      <React.Fragment>
-                        <ErrorHandler>
-                          <EventField
-                            field_name="Client Software"
-                            field="ssh.client.software_version"
-                            value={data.ssh.client.software_version}
-                            addFilter={this.addFilter}
-                          />
-                        </ErrorHandler>
-                        <ErrorHandler>
-                          <EventField
-                            field_name="Client Version"
-                            field="ssh.client.proto_version"
-                            value={data.ssh.client.proto_version}
-                            addFilter={this.addFilter}
-                          />
-                        </ErrorHandler>
-                      </React.Fragment>
-                    )}
-                    {data.ssh.server && (
-                      <React.Fragment>
-                        <ErrorHandler>
-                          <EventField
-                            field_name="Server Software"
-                            field="ssh.server.software_version"
-                            value={data.ssh.server.software_version}
-                            addFilter={this.addFilter}
-                          />
-                        </ErrorHandler>
-                        <ErrorHandler>
-                          <EventField
-                            field_name="Server Version"
-                            field="ssh.server.proto_version"
-                            value={data.ssh.server.proto_version}
-                            addFilter={this.addFilter}
-                          />
-                        </ErrorHandler>
-                      </React.Fragment>
-                    )}
-                  </dl>
+                  {data.ssh.client && (
+                    <React.Fragment>
+                      <ErrorHandler>
+                        <EventField
+                          field_name="Client Software"
+                          field="ssh.client.software_version"
+                          value={data.ssh.client.software_version}
+                          addFilter={this.addFilter}
+                        />
+                      </ErrorHandler>
+                      <ErrorHandler>
+                        <EventField
+                          field_name="Client Version"
+                          field="ssh.client.proto_version"
+                          value={data.ssh.client.proto_version}
+                          addFilter={this.addFilter}
+                        />
+                      </ErrorHandler>
+                    </React.Fragment>
+                  )}
+                  {data.ssh.server && (
+                    <React.Fragment>
+                      <ErrorHandler>
+                        <EventField
+                          field_name="Server Software"
+                          field="ssh.server.software_version"
+                          value={data.ssh.server.software_version}
+                          addFilter={this.addFilter}
+                        />
+                      </ErrorHandler>
+                      <ErrorHandler>
+                        <EventField
+                          field_name="Server Version"
+                          field="ssh.server.proto_version"
+                          value={data.ssh.server.proto_version}
+                          addFilter={this.addFilter}
+                        />
+                      </ErrorHandler>
+                    </React.Fragment>
+                  )}
+                </dl>
               </UICard>
             )}
           </div>
           {data.payload_printable && (
-            <UICard title='Payload printable'>
+            <UICard title="Payload printable">
               <pre style={{ maxHeight: '12pc' }}>{data.payload_printable}</pre>
             </UICard>
           )}
           {data.http && (
-            <div style={{display:'grid', gridTemplateColumns: '1fr 1fr', gridGap: '10px', paddingTop: '10px'}}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridGap: '10px', paddingTop: '10px' }}>
               {data.http.http_request_body_printable && (
-                <UICard title='HTTP request body'>
+                <UICard title="HTTP request body">
                   <pre style={{ maxHeight: '12pc' }}>{data.http.http_request_body_printable}</pre>
                 </UICard>
               )}
               {data.http.http_response_body_printable && (
-                <UICard title='HTTP response body'>
-                    <pre style={{ maxHeight: '12pc' }}>{data.http.http_response_body_printable}</pre>
+                <UICard title="HTTP response body">
+                  <pre style={{ maxHeight: '12pc' }}>{data.http.http_response_body_printable}</pre>
                 </UICard>
               )}
             </div>
@@ -775,20 +730,19 @@ export default class AlertItem extends React.Component {
             {this.state.fileInfo && !this.state.fileInfoLoading && this.renderFiles()}
           </Tabs.TabPane>
         )}
-        {!events && <Tabs.TabPane key="events" tab={<Spin size="small" />}/>}
-        {showTabs && events && <React.Fragment key="json-related">
+        {!events && <Tabs.TabPane key="events" tab={<Spin size="small" />} />}
+        {showTabs && events && (
+          <React.Fragment key="json-related">
             {Object.keys(events)
               .sort()
-              .map((key) => (
+              .map(key => (
                 <Tabs.TabPane
                   key={`events-${key}`}
-                  tab={`Related ${key}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''} (${
-                    Object.keys(events[key]).length
-                  })`}
+                  tab={`Related ${key}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''} (${Object.keys(events[key]).length})`}
                 >
                   {Object.keys(events[key])
                     .sort()
-                    .map((key2) => (
+                    .map(key2 => (
                       <div key={key2} style={{ paddingTop: '10px' }}>
                         <Button onClick={() => this.toggleCollapse(`${key}-${key2}`)} key={key2}>
                           {`${key}-${key2}` in this.state.collapsed && !this.state.collapsed[`${key}-${key2}`] && (
@@ -814,7 +768,8 @@ export default class AlertItem extends React.Component {
                 </Tabs.TabPane>
               ))}
             {Object.keys(events).length === 0 && <strong>No related events</strong>}
-        </React.Fragment>}
+          </React.Fragment>
+        )}
         {showTabs && JSON.stringify(this.state.files) !== '{}' && (
           <Tabs.TabPane key="json-files" tab="Files">
             <div className="files-warning">

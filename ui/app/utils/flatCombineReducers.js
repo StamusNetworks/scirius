@@ -2,7 +2,7 @@
  * Documentation here https://github.com/SanCoder-Q/flat-combine-reducers
  */
 const defaultOptions = {
-  mergePrevState: true
+  mergePrevState: true,
 };
 
 function partitionArgs(args) {
@@ -21,9 +21,7 @@ export default function flatCombineReducers() {
 
   const options = Object.assign({}, defaultOptions, inputOptions);
 
-  const reducers = options.mergePrevState ? [x=>x].concat(inputReducers) : inputReducers;
+  const reducers = options.mergePrevState ? [x => x].concat(inputReducers) : inputReducers;
 
-  return (prevState, action) => reducers.reduce((state, reducer) =>
-    Object.assign({}, state, reducer(prevState, action)), {}
-  );
+  return (prevState, action) => reducers.reduce((state, reducer) => Object.assign({}, state, reducer(prevState, action)), {});
 }

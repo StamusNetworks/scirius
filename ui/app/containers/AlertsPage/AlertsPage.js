@@ -68,12 +68,12 @@ export class AlertsPage extends React.Component {
   componentDidMount() {
     this.fetchData();
     if (this.state.rulesets.length === 0) {
-      axios.get(config.API_URL + config.RULESET_PATH).then((res) => {
+      axios.get(config.API_URL + config.RULESET_PATH).then(res => {
         this.setState({ rulesets: res.data.results });
       });
     }
     const huntFilters = store.get('huntFilters');
-    axios.get(config.API_URL + config.HUNT_FILTER_PATH).then((res) => {
+    axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(res => {
       const fdata = [];
       const keys = Object.keys(res.data);
       const values = Object.values(res.data);
@@ -124,14 +124,14 @@ export class AlertsPage extends React.Component {
     const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?${listParams}&${filterParams}${stringFilters}`;
     axios
       .get(url)
-      .then((res) => {
+      .then(res => {
         if (res.data !== null && res.data.results && typeof res.data.results !== 'string') {
           this.setState({ alerts: res.data.results, loading: false });
         } else {
           this.setState({ loading: false });
         }
       })
-      .catch((error) => {
+      .catch(error => {
         if (error.response.status === 500) {
           this.setState({ errors: [`${error.response.data[0].slice(0, 160)}...`], loading: false });
           return;
@@ -153,11 +153,7 @@ export class AlertsPage extends React.Component {
 
         {this.state.errors && <HuntRestError errors={this.state.errors} />}
         <ErrorHandler>
-          <Filters
-            page='ALERTS'
-            section={sections.GLOBAL}
-            queryTypes={['filter']}
-          />
+          <Filters page="ALERTS" section={sections.GLOBAL} queryTypes={['filter']} />
         </ErrorHandler>
 
         <Spin spinning={this.state.loading} style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }} />
@@ -188,7 +184,7 @@ export class AlertsPage extends React.Component {
                 addInfo.push(
                   <div key="category" style={{ paddingLeft: 10 }}>
                     <strong>category</strong>: {alert.category}
-                  </div>
+                  </div>,
                 );
               }
               let iconclass = <FileOutlined />;
@@ -201,11 +197,12 @@ export class AlertsPage extends React.Component {
                 iconclass = <InfoCircleOutlined />;
               }
 
-              return <UIPanel
+              return (
+                <UIPanel
                   key={ruleId}
                   showArrow={false}
                   extra={<React.Fragment></React.Fragment>}
-                  header={<UIPanelHeader sub1={iconclass} sub2={ipParams} sub3={<div>{alert.signature}</div>} sub4={addInfo}/>}
+                  header={<UIPanelHeader sub1={iconclass} sub2={ipParams} sub3={<div>{alert.signature}</div>} sub4={addInfo} />}
                 >
                   <AlertItem
                     key={ruleId}
@@ -216,6 +213,7 @@ export class AlertsPage extends React.Component {
                     addFilter={this.props.addFilter}
                   />
                 </UIPanel>
+              );
             })}
           </UICollapse>
         )}

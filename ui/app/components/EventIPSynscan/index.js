@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const EventIPSynscan = (props) => (
+const EventIPSynscan = props => (
   <div>
     <h4>SYN scanner result</h4>
     <dl>

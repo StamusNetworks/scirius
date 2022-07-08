@@ -44,7 +44,7 @@ export class HuntSort extends React.Component {
     this.updateSort = this.updateSort.bind(this);
   }
 
-  updateSort = (sort) => {
+  updateSort = sort => {
     this.props.itemsListUpdate({
       ...this.props.itemsList,
       sort: {
@@ -54,7 +54,7 @@ export class HuntSort extends React.Component {
     });
   };
 
-  updateCurrentSortType = (sortType) => {
+  updateCurrentSortType = sortType => {
     const { currentSortType } = this.state;
     if (currentSortType !== sortType) {
       this.setState({
@@ -67,12 +67,12 @@ export class HuntSort extends React.Component {
 
   toggleCurrentSortDirection = () => {
     this.updateSort({ id: this.state.currentSortType.id, asc: !this.state.isSortAscending });
-    this.setState((prevState) => ({ isSortAscending: !prevState.isSortAscending }));
+    this.setState(prevState => ({ isSortAscending: !prevState.isSortAscending }));
   };
 
   menu = () => (
     <Menu selectedKeys={[this.state.currentSortType.id]}>
-      {this.props.config.map((conf) => (
+      {this.props.config.map(conf => (
         <Menu.Item
           key={conf.id}
           onClick={() => {

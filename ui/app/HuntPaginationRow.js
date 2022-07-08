@@ -9,7 +9,7 @@ export default class HuntPaginationRow extends React.Component {
     this.onChange = this.onChange.bind(this);
   }
 
-  updatePagination = (pagin) => {
+  updatePagination = pagin => {
     const pagination = {
       ...this.props.itemsList,
       pagination: {
@@ -38,7 +38,7 @@ export default class HuntPaginationRow extends React.Component {
           total={this.props.itemsCount - 1}
           showSizeChanger={false}
           showQuickJumper={false}
-          showTotal={(total) => `Total ${total} items`}
+          showTotal={total => `Total ${total} items`}
           onChange={this.onChange}
         />
       </React.Fragment>

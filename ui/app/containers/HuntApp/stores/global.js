@@ -11,7 +11,7 @@ export const CLEAR_FILTERS = 'Hunt/HuntApp/CLEAR_FILTERS';
 export const SET_ALERT = 'Hunt/HuntApp/SET_ALERT';
 export const SET_ONLY_ONE_ALERT = 'Hunt/HuntApp/SET_ONLY_ONE_ALERT';
 
-export const validateFilter = (filter) => {
+export const validateFilter = filter => {
   if (filter.id === 'alert.tag') {
     // eslint-disable-next-line no-console
     console.error('Tags must go in a separate store');
@@ -22,7 +22,7 @@ export const validateFilter = (filter) => {
 
   const filterKeys = Object.keys(filter);
   for (let i = 0; i < filterKeys.length; i += 1) {
-    if (!filterProps.find((filterProp) => filterProp === filterProps[i])) {
+    if (!filterProps.find(filterProp => filterProp === filterProps[i])) {
       return false;
     }
   }
@@ -46,7 +46,7 @@ export const updateStorage = (filterType, filters) => {
   storage.setItem(filterType, JSON.stringify(filters));
 };
 
-export const loadStorage = (filtersType) => {
+export const loadStorage = filtersType => {
   const initialFilterSet = undefined;
   let result;
   try {
@@ -161,9 +161,9 @@ export const reducer = (state = initialState, action) =>
 
         /* eslint-disable-next-line */
         const updatedGlobalFilters = globalFilters.map((filter, i) => (i === idx) ? {
-              ...filter,
-              ...action.filterUpdated,
-            }
+                ...filter,
+                ...action.filterUpdated,
+              }
             : filter,
         );
 
@@ -215,17 +215,17 @@ export const reducer = (state = initialState, action) =>
   });
 
 // SELECTORS
-export const selectGlobal = (state) => state.hunt;
+export const selectGlobal = state => state.hunt;
 export const makeSelectGlobalFilters = (includeAlertTag = false) =>
-  createSelector(selectGlobal, (globalState) => {
+  createSelector(selectGlobal, globalState => {
     let result = globalState.filters[sections.GLOBAL];
     if (includeAlertTag) {
       result = [...result, globalState.filters[sections.ALERT]];
     }
     return result;
   });
-export const makeSelectHistoryFilters = () => createSelector(selectGlobal, (globalState) => globalState.filters[sections.HISTORY]);
-export const makeSelectAlertTag = () => createSelector(selectGlobal, (globalState) => globalState.filters[sections.ALERT]);
+export const makeSelectHistoryFilters = () => createSelector(selectGlobal, globalState => globalState.filters[sections.HISTORY]);
+export const makeSelectAlertTag = () => createSelector(selectGlobal, globalState => globalState.filters[sections.ALERT]);
 export const makeSelectUserData = () => () => {
   const userDetails = window.current_user || {};
   const {
@@ -255,4 +255,4 @@ export const makeSelectUserData = () => () => {
     allTenant,
   };
 };
-export const makeSelectUserRequest = () => createSelector(selectGlobal, (globalState) => globalState.user.request);
+export const makeSelectUserRequest = () => createSelector(selectGlobal, globalState => globalState.user.request);

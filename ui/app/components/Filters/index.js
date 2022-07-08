@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {Cascader, Col, Divider, Input, Row, Space, Switch, Select} from 'antd';
-import {TagOutlined, CloseOutlined} from '@ant-design/icons';
+import { Cascader, Col, Divider, Input, Row, Space, Switch, Select } from 'antd';
+import { TagOutlined, CloseOutlined } from '@ant-design/icons';
 import UICard from 'ui/components/UIElements/UICard';
 import styled from 'styled-components';
 import { useInjectSaga } from 'utils/injectSaga';
@@ -29,7 +29,7 @@ const FilterContainer = styled.div`
   display: grid;
   grid-gap: 10px;
   grid-template-columns: 1fr repeat(3, 135px);
-`
+`;
 
 const Title = styled.div`
   padding: 0px 0px 5px 0px;
@@ -44,7 +44,6 @@ const ActionsSpace = styled(Space)`
 `;
 
 const CascaderStyled = styled(Cascader)`
-
   width: max-content;
   position: relative;
   line-height: 2.2715;
@@ -63,14 +62,14 @@ const CascaderStyled = styled(Cascader)`
     line-height: initial;
     white-space: initial;
     text-overflow: initial;
-}
+  }
 
-.ant-cascader-input {
-  width: 100%;
-  position: absolute;
-  left: 0;
-}
-`
+  .ant-cascader-input {
+    width: 100%;
+    position: absolute;
+    left: 0;
+  }
+`;
 
 const Filter = ({ page, section, queryTypes }) => {
   // Component setup
@@ -89,10 +88,10 @@ const Filter = ({ page, section, queryTypes }) => {
   const supportedActionsPermissions = user && user.data && user.data.permissions && user.data.permissions.includes('rules.ruleset_policy_edit');
 
   // State handlers
-  const [ searchString, setSearchString ] = useState('');
-  const [ selectedIds, setSelectedIds ] = useState([]);
-  const [ selectedItems, setSelectedItems ] = useState([]);
-  const [ filterSets, setFilterSets ] = useState(false);
+  const [searchString, setSearchString] = useState('');
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [filterSets, setFilterSets] = useState(false);
 
   // Effects handlers
   useEffect(() => {
@@ -105,26 +104,32 @@ const Filter = ({ page, section, queryTypes }) => {
     }
   }, [filters, supportedActionsPermissions]);
 
-  const getTreeOptions = useCallback((data, parentType, level = 0) => data.map(o => ({
-      label: `${o.title || o.label}`,
-      value: o.id,
-      children: parentType !== 'complex-select' ? getTreeOptions(o.filterCategories || o.filterValues || [], o.filterType, level + 1) : []
-    })), [filterFields]);
+  const getTreeOptions = useCallback(
+    (data, parentType, level = 0) =>
+      data.map(o => ({
+        label: `${o.title || o.label}`,
+        value: o.id,
+        children: parentType !== 'complex-select' ? getTreeOptions(o.filterCategories || o.filterValues || [], o.filterType, level + 1) : [],
+      })),
+    [filterFields],
+  );
 
-  const getFlatOptions = useCallback((data) => data.reduce((prev, cur) => [
-        ...prev,
-        cur,
-        ...getFlatOptions(cur.filterCategories || cur.filterValues || [])
-      ], []), [filterFields]);
+  const getFlatOptions = useCallback(
+    data => data.reduce((prev, cur) => [...prev, cur, ...getFlatOptions(cur.filterCategories || cur.filterValues || [])], []),
+    [filterFields],
+  );
 
   const treeOptions = useMemo(() => getTreeOptions(filterFields), [filterFields]);
   const flatOptions = useMemo(() => getFlatOptions(filterFields), [filterFields]);
 
-  const onChange = useCallback((value) => {
-    const item = flatOptions.filter(d => value.indexOf(d.id) > -1);
-    setSelectedItems(item);
-    setSelectedIds(value);
-  }, [filterFields, flatOptions]);
+  const onChange = useCallback(
+    value => {
+      const item = flatOptions.filter(d => value.indexOf(d.id) > -1);
+      setSelectedItems(item);
+      setSelectedIds(value);
+    },
+    [filterFields, flatOptions],
+  );
 
   const field = useMemo(() => selectedItems.find(s => flatOptions.find(f => f.id === s.id)), [selectedItems]);
 
@@ -150,7 +155,7 @@ const Filter = ({ page, section, queryTypes }) => {
 
   // Second level category
   const filterCategory = (filterCategories || []).find(fc => selectedItems.find(si => fc.id === si.id));
-  const filterSubCategory = (filterCategory && filterCategory.filterValues || []).find(fv => selectedItems.find(si => fv.id === si.id));
+  const filterSubCategory = ((filterCategory && filterCategory.filterValues) || []).find(fv => selectedItems.find(si => fv.id === si.id));
 
   useEffect(() => {
     if (filterType === 'select' && selectedItems.length > 0) {
@@ -161,7 +166,7 @@ const Filter = ({ page, section, queryTypes }) => {
   const activeFilters = useMemo(() => {
     const stack = section === sections.HISTORY ? historyFilters : filters;
     const result = [];
-    stack.forEach((item) => {
+    stack.forEach(item => {
       if (!item.query || queryTypes.indexOf('all') > -1 || queryTypes.indexOf(item.query) !== -1) {
         result.push(item);
       }
@@ -173,7 +178,7 @@ const Filter = ({ page, section, queryTypes }) => {
     labels.map((label, i) => {
       const option = selectedOptions[i];
       if (i === labels.length - 1) {
-        return (<span key={option.value}>{label}</span>);
+        return <span key={option.value}>{label}</span>;
       }
       return <span key={option.value}>{label} / </span>;
     });
@@ -225,14 +230,16 @@ const Filter = ({ page, section, queryTypes }) => {
       fvalue = value;
     }
 
-    dispatch(huntGlobalStore.addFilter(section, {
-      label: filterText,
-      id: fieldId,
-      value: fvalue,
-      negated: false,
-      query: field.queryType,
-      fullString,
-    }));
+    dispatch(
+      huntGlobalStore.addFilter(section, {
+        label: filterText,
+        id: fieldId,
+        value: fvalue,
+        negated: false,
+        query: field.queryType,
+        fullString,
+      }),
+    );
     setSelectedItems([]);
     setSelectedIds([]);
     setSearchString('');
@@ -244,7 +251,7 @@ const Filter = ({ page, section, queryTypes }) => {
   const [filterSetDescription, setFilterSetDescription] = useState(false);
 
   const submitFilterSets = () => {
-    setErrors([])
+    setErrors([]);
 
     const filtersCopy = [...filters];
 
@@ -255,7 +262,7 @@ const Filter = ({ page, section, queryTypes }) => {
     request(`/${HUNT_FILTER_SETS}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         name: filterSetName,
@@ -263,50 +270,47 @@ const Filter = ({ page, section, queryTypes }) => {
         content: filtersCopy,
         share: filterSetShared,
         description: filterSetDescription,
-      })
-    }).then(() => {
-      // this.props.loadFilterSets();
-      dispatch(loadFilterSets());
-      dispatch(ruleSetsActions.saveFiltersModal(false));
-      setErrors([]);
-      setFilterSetName('');
-      setFilterSetShared(false);
-      setFilterSetDescription(false);
-    }).catch((error) => {
-      let errors = error.response.data;
-
-      if (error.response.status === 403) {
-        const noRights = user.isActive && !user.permissions.includes('rules.events_edit') && filterSetShared;
-        if (noRights) {
-          errors = { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
-        }
-      }
-      setErrors(errors);
+      }),
     })
-  }
+      .then(() => {
+        // this.props.loadFilterSets();
+        dispatch(loadFilterSets());
+        dispatch(ruleSetsActions.saveFiltersModal(false));
+        setErrors([]);
+        setFilterSetName('');
+        setFilterSetShared(false);
+        setFilterSetDescription(false);
+      })
+      .catch(error => {
+        let errors = error.response.data;
+
+        if (error.response.status === 403) {
+          const noRights = user.isActive && !user.permissions.includes('rules.events_edit') && filterSetShared;
+          if (noRights) {
+            errors = { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
+          }
+        }
+        setErrors(errors);
+      });
+  };
 
   return (
     <UICard>
-      {filterSets && (<FilterSets close={() => setFilterSets(false)} />)}
+      {filterSets && <FilterSets close={() => setFilterSets(false)} />}
       <FilterContainer>
         <div>
           <Title>Filters</Title>
           <div style={{ display: 'flex', flex: 1, gap: 8 }}>
             <div style={{ display: 'flex' }}>
-              <CascaderStyled
-                value={selectedIds}
-                options={treeOptions}
-                displayRender={displayRender}
-                onChange={(value) => onChange(value)}
-              />
+              <CascaderStyled value={selectedIds} options={treeOptions} displayRender={displayRender} onChange={value => onChange(value)} />
             </div>
             {field && filterType !== 'complex-select' && filterType !== 'select' && (
               <div style={{ display: 'flex', flex: 1 }}>
                 <Input
                   value={searchString}
-                  onChange={(e) => setSearchString(e.target.value)}
+                  onChange={e => setSearchString(e.target.value)}
                   placeholder={placeholder}
-                  onPressEnter={(event) => {
+                  onPressEnter={event => {
                     const { value } = event.target;
                     if (value && value.length > 0) {
                       filterAdded(field, value, false);
@@ -321,7 +325,7 @@ const Filter = ({ page, section, queryTypes }) => {
                 showSearch
                 placeholder={field && field.placeholder}
                 optionFilterProp="children"
-                onChange={(value) => {
+                onChange={value => {
                   filterAdded(filterCategory, value, false);
                 }}
                 filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
@@ -330,18 +334,14 @@ const Filter = ({ page, section, queryTypes }) => {
               </Select>
             )}
           </div>
-          <Divider style={{ margin: '15px 0'}} />
+          <Divider style={{ margin: '15px 0' }} />
           <Row>
-            <Col md={24}>
-              {activeFilters && activeFilters.length > 0 && (
-                <FilterList filters={activeFilters} filterType={section} />
-              )}
-            </Col>
+            <Col md={24}>{activeFilters && activeFilters.length > 0 && <FilterList filters={activeFilters} filterType={section} />}</Col>
           </Row>
         </div>
         <div>
           <Title>Additional</Title>
-          <Space direction='vertical'>
+          <Space direction="vertical">
             <Space>
               <Switch
                 size="small"
@@ -349,16 +349,18 @@ const Filter = ({ page, section, queryTypes }) => {
                 unCheckedChildren="OFF"
                 defaultChecked={alertTag.value.alerts}
                 onChange={() => dispatch(huntGlobalStore.setTag('alerts', !alertTag.value.alerts))}
-              /> Alerts
-              </Space>
-              <Space>
+              />{' '}
+              Alerts
+            </Space>
+            <Space>
               <Switch
                 size="small"
                 checkedChildren="ON"
                 unCheckedChildren="OFF"
                 defaultChecked={alertTag.value.sightings}
                 onChange={() => dispatch(huntGlobalStore.setTag('sightings', !alertTag.value.sightings))}
-              /> Sightings
+              />{' '}
+              Sightings
             </Space>
           </Space>
         </div>
@@ -366,7 +368,7 @@ const Filter = ({ page, section, queryTypes }) => {
         {page !== 'HISTORY' && (
           <div>
             <Title>Tags Filters</Title>
-            <Space direction='vertical'>
+            <Space direction="vertical">
               <Space>
                 <Switch
                   size="small"
@@ -374,7 +376,8 @@ const Filter = ({ page, section, queryTypes }) => {
                   unCheckedChildren="OFF"
                   defaultChecked={alertTag.value.informational}
                   onChange={() => dispatch(huntGlobalStore.setTag('informational', !alertTag.value.informational))}
-                /> Informational
+                />{' '}
+                Informational
               </Space>
               <Space>
                 <Switch
@@ -383,7 +386,8 @@ const Filter = ({ page, section, queryTypes }) => {
                   unCheckedChildren="OFF"
                   defaultChecked={alertTag.value.relevant}
                   onChange={() => dispatch(huntGlobalStore.setTag('relevant', !alertTag.value.relevant))}
-                /> Relevant
+                />{' '}
+                Relevant
               </Space>
               <Space>
                 <Switch
@@ -392,80 +396,83 @@ const Filter = ({ page, section, queryTypes }) => {
                   unCheckedChildren="OFF"
                   defaultChecked={alertTag.value.untagged}
                   onChange={() => dispatch(huntGlobalStore.setTag('untagged', !alertTag.value.untagged))}
-                /> Untagged
+                />{' '}
+                Untagged
               </Space>
             </Space>
           </div>
         )}
         {page !== 'HISTORY' && (
-        <div>
-          <Title>Actions</Title>
-          <ActionsSpace direction='vertical'>
-            <Space>
-              <svg height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                <path d="M0 0h24v24H0V0z" fill="none" />
-                <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
-              </svg>
-              <a href='#' onClick={() => setFilterSets(true)}>Load Filter Set</a>
-            </Space>
-            <Space>
-              <svg enableBackground="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                <g>
-                  <rect fill="none" height="24" width="24" />
-                </g>
-                <g>
-                  <path d="M14,10H3v2h11V10z M14,6H3v2h11V6z M18,14v-4h-2v4h-4v2h4v4h2v-4h4v-2H18z M3,16h7v-2H3V16z" />
-                </g>
-              </svg>
-              {filters.length > 0 && (
-                <a href='#' onClick={() => dispatch(ruleSetsActions.saveFiltersModal(true))}>Save Filter Set</a>
-              )}
-              {filters.length === 0 && (
-                <>Save Filter Set</>
-              )}
-            </Space>
-            <Space>
-              <TagOutlined style={{ width: 24 }} />
-              <ErrorHandler>
-                <ActionsButtons supportedActions={supportedActions} />
-              </ErrorHandler>
-            </Space>
-            <Space>
-              <CloseOutlined style={{ width: 24 }} />
-              {filters.length > 0 && (
-                <a href='#' onClick={() => dispatch(huntGlobalStore.clearFilters(section)) }>
-                  Clear Filters
+          <div>
+            <Title>Actions</Title>
+            <ActionsSpace direction="vertical">
+              <Space>
+                <svg height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+                </svg>
+                <a href="#" onClick={() => setFilterSets(true)}>
+                  Load Filter Set
                 </a>
-              )}
-              {filters.length === 0 && (
-                <>Clear Filters</>
-              )}
-            </Space>
-          </ActionsSpace>
-        </div>
+              </Space>
+              <Space>
+                <svg enableBackground="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                  <g>
+                    <rect fill="none" height="24" width="24" />
+                  </g>
+                  <g>
+                    <path d="M14,10H3v2h11V10z M14,6H3v2h11V6z M18,14v-4h-2v4h-4v2h4v4h2v-4h4v-2H18z M3,16h7v-2H3V16z" />
+                  </g>
+                </svg>
+                {filters.length > 0 && (
+                  <a href="#" onClick={() => dispatch(ruleSetsActions.saveFiltersModal(true))}>
+                    Save Filter Set
+                  </a>
+                )}
+                {filters.length === 0 && <>Save Filter Set</>}
+              </Space>
+              <Space>
+                <TagOutlined style={{ width: 24 }} />
+                <ErrorHandler>
+                  <ActionsButtons supportedActions={supportedActions} />
+                </ErrorHandler>
+              </Space>
+              <Space>
+                <CloseOutlined style={{ width: 24 }} />
+                {filters.length > 0 && (
+                  <a href="#" onClick={() => dispatch(huntGlobalStore.clearFilters(section))}>
+                    Clear Filters
+                  </a>
+                )}
+                {filters.length === 0 && <>Clear Filters</>}
+              </Space>
+            </ActionsSpace>
+          </div>
         )}
       </FilterContainer>
       <FilterSetSave
         title="Create new Filter Set"
         showModal={saveFiltersModal}
-        close={() => { dispatch(ruleSetsActions.saveFiltersModal(false)) }}
+        close={() => {
+          dispatch(ruleSetsActions.saveFiltersModal(false));
+        }}
         errors={errors}
-        handleDescriptionChange={(event) => setFilterSetDescription(event.target.value)}
+        handleDescriptionChange={event => setFilterSetDescription(event.target.value)}
         handleComboChange={undefined}
-        handleFieldChange={(event) => setFilterSetName(event.target.value)}
-        setSharedFilter={(event) => setFilterSetShared(event.target.checked)}
+        handleFieldChange={event => setFilterSetName(event.target.value)}
+        setSharedFilter={event => setFilterSetShared(event.target.checked)}
         submit={() => submitFilterSets()}
         page={page}
         noRights={false}
       />
     </UICard>
-  )
-}
+  );
+};
 
 Filter.propTypes = {
   page: PropTypes.oneOf(['SIGNATURES', 'DASHBOARD', 'ALERTS', 'HISTORY']),
   section: PropTypes.string.isRequired,
   queryTypes: PropTypes.array.isRequired,
-}
+};
 
 export default Filter;

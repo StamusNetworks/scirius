@@ -9,7 +9,9 @@ const Policies = () => (
     <UIBreadcrumb
       items={[
         'Hunting',
-        <Link app to='hunting/policies'>Policies</Link>,
+        <Link app to="hunting/policies">
+          Policies
+        </Link>,
       ]}
     />
     <HuntApp page={PAGE_STATE.filters_list} />
@@ -19,6 +21,6 @@ Policies.metadata = {
   category: 'STAMUS_ND',
   url: 'hunting/policies',
   position: 4,
-}
+};
 
 export default Policies;

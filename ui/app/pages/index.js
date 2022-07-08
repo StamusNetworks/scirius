@@ -25,4 +25,4 @@ export default {
   Policies,
   Signatures,
   History,
-}
+};

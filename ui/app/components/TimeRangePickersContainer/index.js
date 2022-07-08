@@ -1,4 +1,4 @@
-import React  from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Row, notification, Col } from 'antd';
 import styled from 'styled-components';
@@ -21,20 +21,9 @@ const PickersWrapper = styled.div`
 
 const Label = styled.div`
   color: #979797;
-`
+`;
 
-const TimeRangePickersContainer = ({
-  startDate,
-  endDate,
-  duration,
-  setDuration,
-  setTimeSpan,
-  timePicker,
-  setReload,
-  doReload,
-  reloadPeriod,
-}) => {
-
+const TimeRangePickersContainer = ({ startDate, endDate, duration, setDuration, setTimeSpan, timePicker, setReload, doReload, reloadPeriod }) => {
   const validateTimeSpan = (startDateIn, endDateIn) => {
     let error = '';
     if (startDateIn.unix() === endDateIn.unix()) {
@@ -62,28 +51,29 @@ const TimeRangePickersContainer = ({
     H1: PeriodEnum.H1,
     H6: PeriodEnum.H6,
     H24: PeriodEnum.H24,
-  }
+  };
 
   const days = {
     D2: PeriodEnum.D2,
     D7: PeriodEnum.D7,
     D30: PeriodEnum.D30,
-  }
+  };
 
   const more = {
     Y1: PeriodEnum.Y1,
     All: PeriodEnum.ALL,
-  }
+  };
 
   return (
     <PickersWrapper>
       <UITabs
         defaultActiveKey={timePicker.toString()}
-        size="small" className="tabs-time-frames"
+        size="small"
+        className="tabs-time-frames"
         tabs={[
           {
-            key: "0",
-            tab: "Presets",
+            key: '0',
+            tab: 'Presets',
             children: (
               <Row type="flex" justify="center">
                 <Col md={5}>
@@ -100,18 +90,16 @@ const TimeRangePickersContainer = ({
                 </Col>
                 <Col md={9}>
                   <Label>Refresh Interval</Label>
-                  <Refresh onChange={(value) => setReload(value)} onRefresh={() => doReload()} value={reloadPeriod.period.seconds} />
+                  <Refresh onChange={value => setReload(value)} onRefresh={() => doReload()} value={reloadPeriod.period.seconds} />
                 </Col>
               </Row>
-            )
+            ),
           },
           {
-            key: "1",
-            tab: "Date & Time Range",
-            children: (
-              <DateRangePicker selectedFromDate={startDate} selectedToDate={endDate} onOk={validateTimeSpan} />
-            )
-          }
+            key: '1',
+            tab: 'Date & Time Range',
+            children: <DateRangePicker selectedFromDate={startDate} selectedToDate={endDate} onOk={validateTimeSpan} />,
+          },
         ]}
       />
     </PickersWrapper>
@@ -149,9 +137,6 @@ export const mapDispatchToProps = dispatch =>
     dispatch,
   );
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
 export default compose(withConnect)(TimeRangePickersContainer);

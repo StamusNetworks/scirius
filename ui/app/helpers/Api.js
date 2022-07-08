@@ -14,18 +14,21 @@ import request from 'ui/helpers/request';
 
 const Api = {
   get: async (endpoint, params, options) => request(endpoint, 'GET', params, options),
-  post: async (endpoint, params, options) => request(endpoint, 'POST', params, {
-    ...crcf(),
-    ...options
-  }),
-  patch: async (endpoint, params, options) => request(endpoint, 'PATCH', params, {
-    ...crcf(),
-    ...options
-  }),
-  delete: async (endpoint, params, options) => request(endpoint, 'DELETE', params, {
-    ...crcf(),
-    ...options
-  }),
-}
+  post: async (endpoint, params, options) =>
+    request(endpoint, 'POST', params, {
+      ...crcf(),
+      ...options,
+    }),
+  patch: async (endpoint, params, options) =>
+    request(endpoint, 'PATCH', params, {
+      ...crcf(),
+      ...options,
+    }),
+  delete: async (endpoint, params, options) =>
+    request(endpoint, 'DELETE', params, {
+      ...crcf(),
+      ...options,
+    }),
+};
 
 export default Api;

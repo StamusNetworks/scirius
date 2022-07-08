@@ -50,14 +50,7 @@ const Index = props => {
                 value={startDate}
                 onChange={a => {
                   onChange(a);
-                  setStartDate(
-                    startDate
-                      .year(a.year())
-                      .month(a.month())
-                      .hours(a.hours())
-                      .minute(a.minute())
-                      .seconds(a.seconds()),
-                  );
+                  setStartDate(startDate.year(a.year()).month(a.month()).hours(a.hours()).minute(a.minute()).seconds(a.seconds()));
                 }}
               />
             )}
@@ -76,14 +69,7 @@ const Index = props => {
                 value={endDate}
                 onChange={a => {
                   onChange(a);
-                  setEndDate(
-                    endDate
-                      .year(a.year())
-                      .month(a.month())
-                      .hour(a.hour())
-                      .minute(a.minute())
-                      .second(a.second()),
-                  );
+                  setEndDate(endDate.year(a.year()).month(a.month()).hour(a.hour()).minute(a.minute()).second(a.second()));
                 }}
               />
             )}

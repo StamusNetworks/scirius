@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import EventValue from 'ui/components/EventValue';
 
-const EventField = (props) =>
+const EventField = props =>
   props.value && props.value.toString().length > 0 ? (
     <div className="dl-item">
       <dt>{props.field_name}</dt>

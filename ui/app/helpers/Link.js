@@ -27,12 +27,17 @@ const CustomLink = props => {
   }
   const search = parseObjectToUrl(params);
   const questionMark = search.length > 0 ? '?' : '';
-  return <RouterLink {...omit(props, 'app', 'filterParam', 'dispatch', 'eventKey', 'extendParams', 'replaceParams')} to={`${appUrl}${to}${questionMark}${search}`} />;
+  return (
+    <RouterLink
+      {...omit(props, 'app', 'filterParam', 'dispatch', 'eventKey', 'extendParams', 'replaceParams')}
+      to={`${appUrl}${to}${questionMark}${search}`}
+    />
+  );
 };
 
 CustomLink.defaultTypes = {
   app: false,
-}
+};
 
 CustomLink.propTypes = {
   app: PropTypes.bool,

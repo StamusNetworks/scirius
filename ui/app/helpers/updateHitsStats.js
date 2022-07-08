@@ -44,13 +44,13 @@ function processHitsStats(res, rules, updateCallback) {
 }
 
 export function updateHitsStats(rules, filterParams, updateCallback, qfilter) {
-  const sids = Array.from(rules, (x) => x.sid).join();
+  const sids = Array.from(rules, x => x.sid).join();
   const url = `${config.API_URL + config.ES_SIGS_LIST_PATH + sids}&${filterParams + qfilter}`;
   if (typeof statsCache[encodeURI(url)] !== 'undefined') {
     processHitsStats(statsCache[encodeURI(url)], rules, updateCallback);
     return;
   }
-  axios.get(url).then((res) => {
+  axios.get(url).then(res => {
     /* we are going O(n2), we should fix that */
     statsCache[encodeURI(url)] = res;
     processHitsStats(res, rules, updateCallback);

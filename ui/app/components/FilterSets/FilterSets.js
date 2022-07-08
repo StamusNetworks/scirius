@@ -23,10 +23,10 @@ import PropTypes from 'prop-types';
 import { Drawer, Dropdown, Input, Menu, Spin } from 'antd';
 import { BellOutlined, DashboardOutlined, IdcardOutlined, InfoCircleOutlined, MenuOutlined, SafetyOutlined, UploadOutlined } from '@ant-design/icons';
 import { sections, huntUrls } from 'ui/constants';
-import {compose} from "redux";
-import {connect} from "react-redux";
+import { compose } from 'redux';
+import { connect } from 'react-redux';
 import { reload } from '../../containers/HuntApp/stores/filterParams';
-import history from "../../utils/history";
+import history from '../../utils/history';
 
 class FilterSets extends React.Component {
   constructor(props) {
@@ -48,16 +48,16 @@ class FilterSets extends React.Component {
     document.removeEventListener('keydown', this.escFunction, false);
   }
 
-  togglePanel = (key) => {
+  togglePanel = key => {
     if (this.state.expandedPanel === key) this.setState({ expandedPanel: false });
     else this.setState({ expandedPanel: key });
   };
 
-  handleSearchValue = (event) => {
+  handleSearchValue = event => {
     this.setState({ searchValue: event.target.value });
   };
 
-  getIcons = (item) => {
+  getIcons = item => {
     const icons = [];
     if (item.page === 'DASHBOARDS') {
       icons.push(<DashboardOutlined key="0" />);
@@ -89,11 +89,11 @@ class FilterSets extends React.Component {
   loadFilterSets(row) {
     this.props.clearFilters(sections.GLOBAL);
 
-    const filters = row.content.filter((f) => f.id !== 'alert.tag');
+    const filters = row.content.filter(f => f.id !== 'alert.tag');
     this.props.addFilter(sections.GLOBAL, filters);
 
     if (process.env.REACT_APP_HAS_TAG) {
-      const alertTag = row.content.filter((f) => f.id === 'alert.tag')[0];
+      const alertTag = row.content.filter(f => f.id === 'alert.tag')[0];
       this.props.setTag(alertTag);
     }
 
@@ -106,13 +106,13 @@ class FilterSets extends React.Component {
     const privatE = 'private';
     const statiC = 'static';
     const rowsGlobal = this.props.globalSet
-      ? this.props.globalSet.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase()))
+      ? this.props.globalSet.filter(item => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase()))
       : [];
     const rowsPrivate = this.props.privateSet
-      ? this.props.privateSet.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase()))
+      ? this.props.privateSet.filter(item => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase()))
       : [];
     const rowsStatic = this.props.staticSet
-      ? this.props.staticSet.filter((item) => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase()))
+      ? this.props.staticSet.filter(item => item.name.toLowerCase().includes(this.state.searchValue.toLowerCase()))
       : [];
     const noRights = this.props.user.isActive && !this.props.user.permissions.includes('rules.events_edit');
 
@@ -143,7 +143,7 @@ class FilterSets extends React.Component {
               </Menu.Item>
             )}
             {rowsGlobal &&
-              rowsGlobal.map((item) => (
+              rowsGlobal.map(item => (
                 <Menu.Item
                   key={item.id}
                   style={{ height: '100%' }}
@@ -173,7 +173,7 @@ class FilterSets extends React.Component {
                         }
                         trigger={['click']}
                       >
-                        <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+                        <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
                           <MenuOutlined />
                         </a>
                       </Dropdown>
@@ -203,7 +203,7 @@ class FilterSets extends React.Component {
               </Menu.Item>
             )}
             {rowsPrivate &&
-              rowsPrivate.map((item) => (
+              rowsPrivate.map(item => (
                 <Menu.Item
                   key={item.id}
                   style={{ height: '100%' }}
@@ -231,7 +231,7 @@ class FilterSets extends React.Component {
                         }
                         trigger={['click']}
                       >
-                        <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+                        <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
                           <MenuOutlined />
                         </a>
                       </Dropdown>
@@ -261,7 +261,7 @@ class FilterSets extends React.Component {
               </Menu.Item>
             )}
             {rowsStatic &&
-              rowsStatic.map((item) => (
+              rowsStatic.map(item => (
                 <Menu.Item key={item.id} style={{ height: '100%' }} onClick={() => this.loadFilterSets(item)} title={item.description}>
                   <div id={statiC}>
                     <div key="containsNotifications">
@@ -280,7 +280,7 @@ class FilterSets extends React.Component {
                         }
                         trigger={['click']}
                       >
-                        <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+                        <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
                           <MenuOutlined />
                         </a>
                       </Dropdown>
@@ -325,7 +325,7 @@ FilterSets.propTypes = {
   }),
 };
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = dispatch => ({
   reload: () => dispatch(reload()),
 });
 

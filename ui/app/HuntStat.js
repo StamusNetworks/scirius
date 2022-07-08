@@ -36,7 +36,7 @@ export default class HuntStat extends React.Component {
 
     this.url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&${filterParams}&page_size=30${qfilter}`;
 
-    axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&${filterParams}&page_size=5${qfilter}`).then((res) => {
+    axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&${filterParams}&page_size=5${qfilter}`).then(res => {
       this.setState({ data: res.data });
     });
   }
@@ -70,7 +70,7 @@ export default class HuntStat extends React.Component {
             <span>{this.props.title}</span>
             {this.state.data.length === 5 && (
               <Dropdown id={`more-${this.props.item}`} overlay={this.menu} trigger={['click']}>
-                <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+                <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
                   <MenuOutlined />
                 </a>
               </Dropdown>
@@ -82,7 +82,7 @@ export default class HuntStat extends React.Component {
               header={null}
               footer={null}
               dataSource={this.state.data}
-              renderItem={(item) => (
+              renderItem={item => (
                 <List.Item key={item.key}>
                   <EventValue
                     field={this.props.item}

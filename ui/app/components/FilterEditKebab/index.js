@@ -67,7 +67,7 @@ class FilterEditKebab extends React.Component {
       const val = Number(this.props.data.filter_defs[idx].value)
         ? Number(this.props.data.filter_defs[idx].value)
         : this.props.data.filter_defs[idx].value;
-      const { format } = dashboard.sections.basic.items.find((o) => o.i === this.props.data.filter_defs[idx].key) || {};
+      const { format } = dashboard.sections.basic.items.find(o => o.i === this.props.data.filter_defs[idx].key) || {};
       const label = `${this.props.data.filter_defs[idx].key}: ${
         format ? format(this.props.data.filter_defs[idx].value) : this.props.data.filter_defs[idx].value
       }`;
@@ -162,7 +162,7 @@ class FilterEditKebab extends React.Component {
         this.closeActionToFilterSet();
         this.setState({ errors: undefined });
       })
-      .catch((error) => {
+      .catch(error => {
         let errors = error.response.data;
 
         if (error.response.status === 403) {
@@ -254,7 +254,7 @@ class FilterEditKebab extends React.Component {
           noRights={noRights}
         />
         <Dropdown id="filterActions" overlay={this.menu} trigger={['click']}>
-          <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+          <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
             <MenuOutlined />
           </a>
         </Dropdown>

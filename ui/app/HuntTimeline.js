@@ -27,7 +27,7 @@ export default class HuntTimeline extends React.Component {
   fetchData() {
     const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
     const filterParams = buildFilterParams(this.props.filterParams);
-    axios.get(`${config.API_URL}${config.ES_BASE_PATH}timeline/?hosts=*&target=${this.props.chartTarget}&${filterParams}${qfilter}`).then((res) => {
+    axios.get(`${config.API_URL}${config.ES_BASE_PATH}timeline/?hosts=*&target=${this.props.chartTarget}&${filterParams}${qfilter}`).then(res => {
       /* iterate on actual row: build x array, for each row build hash x -> value */
       /* sort x array */
       /* for key in x array, build each row, value if exists, 0 if not */

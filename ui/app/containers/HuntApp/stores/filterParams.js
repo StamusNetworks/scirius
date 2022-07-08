@@ -79,7 +79,7 @@ export const reducer = (state = initialState, action) =>
 
       case TIMESTAMP_RELOAD: {
         if (draft.duration) {
-          draft.fromDate = Math.round(Date.now() - state.duration)
+          draft.fromDate = Math.round(Date.now() - state.duration);
           draft.toDate = Date.now();
         } // else absolute/relative no refresh
         break;
@@ -87,12 +87,12 @@ export const reducer = (state = initialState, action) =>
     }
   });
 
-
-export const selectFilterParamsStore = (state) => state.filterParams || {};
-export const makeSelectFilterParam = (paramName) => createSelector(selectFilterParamsStore, (globalState) => globalState[paramName]);
-export const makeSelectFilterAbsolute = () => createSelector(selectFilterParamsStore, (globalState) => globalState.absolute);
-export const makeSelectFilterParams = () => createSelector([globalSelectors.makeSelectStartDate(), globalSelectors.makeSelectEndDate()], (startDate, endDate) => ({
+export const selectFilterParamsStore = state => state.filterParams || {};
+export const makeSelectFilterParam = paramName => createSelector(selectFilterParamsStore, globalState => globalState[paramName]);
+export const makeSelectFilterAbsolute = () => createSelector(selectFilterParamsStore, globalState => globalState.absolute);
+export const makeSelectFilterParams = () =>
+  createSelector([globalSelectors.makeSelectStartDate(), globalSelectors.makeSelectEndDate()], (startDate, endDate) => ({
     fromDate: startDate.unix() * 1000.0,
     toDate: endDate.unix() * 1000.0,
-    duration: 0
+    duration: 0,
   }));

@@ -12,35 +12,35 @@ const Wrapper = styled.div`
 `;
 
 const Item = styled(Button)`
-    display: grid;
-    grid-template-columns: min-content 1fr;
-    align-items: center;
-    padding: 0;
-    border: none;
+  display: grid;
+  grid-template-columns: min-content 1fr;
+  align-items: center;
+  padding: 0;
+  border: none;
 
-    &:hover {
-      background: #f0f2f5;
-    }
-    &:active {
-      background: #bcccd1;
-    }
-    &:hover svg {
-      color: rgba(0, 0, 0, 0.85);
-    }
+  &:hover {
+    background: #f0f2f5;
+  }
+  &:active {
+    background: #bcccd1;
+  }
+  &:hover svg {
+    color: rgba(0, 0, 0, 0.85);
+  }
 
-    & > span {
-      display: flex;
-      padding: 5px 8px;
-      margin: 0px !important;
-      color: rgba(0, 0, 0, 0.85);
-    }
+  & > span {
+    display: flex;
+    padding: 5px 8px;
+    margin: 0px !important;
+    color: rgba(0, 0, 0, 0.85);
+  }
 
-    & svg {
-      height: 22px;
-      width: 22px;
-      color: #d9d9d9;
-      transition: all .6s;
-    }
+  & svg {
+    height: 22px;
+    width: 22px;
+    color: #d9d9d9;
+    transition: all 0.6s;
+  }
 `;
 
 const AboutModal = styled(Modal)`

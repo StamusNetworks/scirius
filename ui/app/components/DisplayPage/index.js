@@ -7,7 +7,7 @@ import HistoryPage from 'ui/containers/HistoryPage';
 import AlertsPage from 'ui/containers/AlertsPage';
 import ActionsPage from 'ui/containers/ActionsPage';
 
-const DisplayPage = (props) => {
+const DisplayPage = props => {
   let displayedPage = null;
   switch (props.page) {
     case PAGE_STATE.rules_list:

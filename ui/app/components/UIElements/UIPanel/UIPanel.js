@@ -16,12 +16,12 @@ const PanelStyled = styled(Panel)`
   .ant-collapse-header {
     display: flex;
   }
-  .ant-collapse-header[aria-expanded="true"] {
+  .ant-collapse-header[aria-expanded='true'] {
     background: #bcccd1;
   }
   &.ant-collapse-item-active {
     border: #bcccd1 1px solid;
-    border-image: linear-gradient( 180deg, #bcccd1 0%, #005792 100% ) 0 100%;
+    border-image: linear-gradient(180deg, #bcccd1 0%, #005792 100%) 0 100%;
     border-top-width: 0px;
     outline: solid 1px #bcccd1;
   }
@@ -32,14 +32,10 @@ const PanelStyled = styled(Panel)`
   }
 `;
 
-const UIPanel = ({ children, ...props }) => (
-    <PanelStyled {...props}>
-      {children}
-    </PanelStyled>
-  )
+const UIPanel = ({ children, ...props }) => <PanelStyled {...props}>{children}</PanelStyled>;
 
 UIPanel.propTypes = {
   children: PropTypes.any,
-}
+};
 
 export default UIPanel;

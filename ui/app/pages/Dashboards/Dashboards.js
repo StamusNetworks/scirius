@@ -9,7 +9,9 @@ const Dashboards = () => (
     <UIBreadcrumb
       items={[
         'Hunting',
-        <Link app to='hunting/dashboards'>Dashboards</Link>,
+        <Link app to="hunting/dashboards">
+          Dashboards
+        </Link>,
       ]}
     />
     <HuntApp page={PAGE_STATE.dashboards} />
@@ -19,6 +21,6 @@ Dashboards.metadata = {
   category: 'STAMUS_ND',
   url: 'hunting/dashboards',
   position: 0,
-}
+};
 
 export default Dashboards;

@@ -1,67 +1,66 @@
 import constants from 'ui/stores/filters/constants';
 
 const ruleSetsRequest = () => ({
-  type: constants.RULE_SETS_REQUEST
-})
+  type: constants.RULE_SETS_REQUEST,
+});
 
-const ruleSetsSuccess = (data) => ({
+const ruleSetsSuccess = data => ({
   type: constants.RULE_SETS_SUCCESS,
-  payload: {data}
-})
+  payload: { data },
+});
 
-const ruleSetsFailure = (error) => ({
+const ruleSetsFailure = error => ({
   type: constants.RULE_SETS_FAILURE,
-  payload: { error }
-})
+  payload: { error },
+});
 
 const huntFilterRequest = () => ({
-  type: constants.HUNT_FILTER_REQUEST
-})
+  type: constants.HUNT_FILTER_REQUEST,
+});
 
-const huntFilterSuccess = (data) => ({
+const huntFilterSuccess = data => ({
   type: constants.HUNT_FILTER_SUCCESS,
-  payload: {data}
-})
+  payload: { data },
+});
 
-const huntFilterFailure = (error) => ({
+const huntFilterFailure = error => ({
   type: constants.HUNT_FILTER_FAILURE,
-  payload: { error }
-})
+  payload: { error },
+});
 
-const supportedActionsRequest = (filters) => ({
+const supportedActionsRequest = filters => ({
   type: constants.SUPPORTED_ACTIONS_REQUEST,
-  payload: { filters }
-})
+  payload: { filters },
+});
 
-const supportedActionsSuccess = (data) => ({
+const supportedActionsSuccess = data => ({
   type: constants.SUPPORTED_ACTIONS_SUCCESS,
-  payload: {data}
-})
+  payload: { data },
+});
 
-const supportedActionsFailure = (error) => ({
+const supportedActionsFailure = error => ({
   type: constants.SUPPORTED_ACTIONS_FAILURE,
-  payload: { error }
-})
+  payload: { error },
+});
 
 const historyFiltersRequest = () => ({
   type: constants.HISTORY_FILTERS_REQUEST,
-})
+});
 
-const historyFiltersSuccess = (data) => ({
+const historyFiltersSuccess = data => ({
   type: constants.HISTORY_FILTERS_SUCCESS,
-  payload: {data}
-})
+  payload: { data },
+});
 
-const historyFiltersFailure = (error) => ({
+const historyFiltersFailure = error => ({
   type: constants.HISTORY_FILTERS_FAILURE,
-  payload: { error }
-})
+  payload: { error },
+});
 
-const saveFiltersModal = (value) => ({
+const saveFiltersModal = value => ({
   type: constants.MODAL_SAVE_FILTERS,
-  payload: { value }
-})
-
+  payload: { value },
+});
 
 export default {
   ruleSetsRequest,
@@ -77,4 +76,4 @@ export default {
   historyFiltersSuccess,
   historyFiltersFailure,
   saveFiltersModal,
-}
+};

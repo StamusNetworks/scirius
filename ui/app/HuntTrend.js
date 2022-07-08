@@ -27,7 +27,7 @@ export default class HuntTrend extends React.Component {
   fetchData() {
     const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
     const filterParams = buildFilterParams(this.props.filterParams);
-    axios.get(`${config.API_URL}${config.ES_BASE_PATH}alerts_count/?prev=1&hosts=*&${filterParams}${qfilter}`).then((res) => {
+    axios.get(`${config.API_URL}${config.ES_BASE_PATH}alerts_count/?prev=1&hosts=*&${filterParams}${qfilter}`).then(res => {
       if (typeof res.data !== 'string') {
         this.setState({ data: res.data });
       }

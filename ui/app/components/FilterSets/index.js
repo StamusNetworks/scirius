@@ -19,9 +19,9 @@ import {
 
 import FilterSets from './FilterSets';
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = dispatch => ({
   addFilter: (filterType, filter) => dispatch(addFilter(filterType, filter)),
-  clearFilters: (filterType) => dispatch(clearFilters(filterType)),
+  clearFilters: filterType => dispatch(clearFilters(filterType)),
   loadFilterSets: () => dispatch(loadFilterSets()),
   deleteFilterSet: (filterType, filter) => dispatch(deleteFilterSet(filterType, filter)),
   setTag: (tagType, tagState) => dispatch(setTag(tagType, tagState)),

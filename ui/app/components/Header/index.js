@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import { ClockCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import selectors from 'ui/containers/App/selectors';
 import { createStructuredSelector } from 'reselect';
-import AccountCircleRounded from "@material-ui/icons/AccountCircleRounded";
+import AccountCircleRounded from '@material-ui/icons/AccountCircleRounded';
 // icon select: https://fonts.google.com/icons?selected=Material+Icons
 // React name for icon: select checkbox, click the icon and see the name for the import: https://mui.com/components/material-icons
 
@@ -42,7 +42,7 @@ const RangePreviewStyled = styled.table`
     display: inline-block;
     content: ':';
   }
-`
+`;
 
 const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePicker, doReload, reloadData, menuItems = [], user }) => {
   const [helpPopOver, setHelpPopOver] = useState(false);
@@ -55,15 +55,18 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
       ? `${startDate.format(DATE_TIME_FORMAT)} - ${endDate.format(DATE_TIME_FORMAT)}`
       : PeriodEnum[duration].title;
 
-  const decrease = useCallback((seconds) => {
-    animateTimeout = setTimeout(() => {
-      const v = seconds - 1000;
-      setProgress(v);
-      if (v > 0) {
-        decrease(v);
-      }
-    }, 1000);
-  }, [progress]);
+  const decrease = useCallback(
+    seconds => {
+      animateTimeout = setTimeout(() => {
+        const v = seconds - 1000;
+        setProgress(v);
+        if (v > 0) {
+          decrease(v);
+        }
+      }, 1000);
+    },
+    [progress],
+  );
 
   useEffect(() => {
     clearInterval(reloadTimeout);
@@ -84,7 +87,11 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
       </Link>
 
       <Menu theme="dark" mode="horizontal">
-        {menuItems.map((menuItem) => (<Menu.Item key={menuItem.key} className="tenant-dropdown">{menuItem.content}</Menu.Item>))}
+        {menuItems.map(menuItem => (
+          <Menu.Item key={menuItem.key} className="tenant-dropdown">
+            {menuItem.content}
+          </Menu.Item>
+        ))}
         <Menu.Item key="timerange-dropdown" className="timerange-dropdown" data-test="timerange-dropdown">
           <Popover
             placement="bottomRight"
@@ -101,18 +108,18 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
             {timePicker === TimePickerEnum.QUICK && (
               <Tooltip
                 placement="bottom"
-                title={(
+                title={
                   <RangePreviewStyled>
                     <tr>
-                      <td className='col'>From</td>
+                      <td className="col">From</td>
                       <td>{startDate.format(DATE_TIME_FORMAT)}</td>
                     </tr>
                     <tr>
-                      <td className='col'>To</td>
+                      <td className="col">To</td>
                       <td>{endDate.format(DATE_TIME_FORMAT)}</td>
                     </tr>
                   </RangePreviewStyled>
-                )}
+                }
               >
                 <ClockCircleOutlined /> {timePreview}
               </Tooltip>
@@ -127,7 +134,7 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
         <Menu.Item key="user-dropdown" className="user-dropdown" style={{ height: '100%' }}>
           <Popover placement="bottomRight" content={<UserMenu />} trigger="click" visible={userPopOver} onVisibleChange={setUserPopOver}>
             <span>
-              <AccountCircleRounded style={{color: "currentColor", strokeWidth: 1.5 }} /> {user.data.username}
+              <AccountCircleRounded style={{ color: 'currentColor', strokeWidth: 1.5 }} /> {user.data.username}
             </span>
           </Popover>
         </Menu.Item>
@@ -171,9 +178,6 @@ export const mapDispatchToProps = dispatch =>
     dispatch,
   );
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
 export default compose(withConnect)(Header);

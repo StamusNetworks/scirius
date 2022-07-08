@@ -1,4 +1,4 @@
-const EmitEvent = (eventType) => {
+const EmitEvent = eventType => {
   let evt;
   if (typeof Event === 'function') {
     // modern browsers

@@ -66,7 +66,7 @@ export const CalendarHeader = ({ value, type, onChange, onTypeChange }) => {
           </Select>
         </Col>
         <Col md={8}>
-          <TimePicker format='HH:mm' size="small" onChange={onChange} defaultValue={value} allowClear={false} />
+          <TimePicker format="HH:mm" size="small" onChange={onChange} defaultValue={value} allowClear={false} />
         </Col>
       </Row>
     </div>

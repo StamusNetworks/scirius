@@ -4,47 +4,47 @@ import PropTypes from 'prop-types';
 import { createStructuredSelector } from 'reselect';
 import styled from 'styled-components';
 import { Spin } from 'antd';
-import LaunchRounded from "@material-ui/icons/LaunchRounded";
+import LaunchRounded from '@material-ui/icons/LaunchRounded';
 
 import * as config from 'ui/config';
 import request from 'utils/request';
 import selectors from 'ui/containers/App/selectors';
 
 const AppsContainer = styled.div`
-   width: 100px;
-   height: 96px;
-   display: flex;
-   flex-direction: column;
- 
-   & > .ant-spin {
-     height: 96px;
-     display: flex;
-     align-items: center;
-     justify-content: center;
-   }
- `;
+  width: 100px;
+  height: 96px;
+  display: flex;
+  flex-direction: column;
+
+  & > .ant-spin {
+    height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+`;
 
 const AppItem = styled.a`
-   height: 32px;
-   display: flex;
-   justify-content: space-between;
-   align-items: center;
-   padding: 0 5px;
-   transition: all 0.3s;
- 
-   &:hover {
-     background-color: #f0f0f0 !important;
-   }
- 
-   & > img {
-     width: 14px;
-     height: 14px;
-   }
- `;
+  height: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 5px;
+  transition: all 0.3s;
+
+  &:hover {
+    background-color: #f0f0f0 !important;
+  }
+
+  & > img {
+    width: 14px;
+    height: 14px;
+  }
+`;
 
 const IconLabel = styled.div`
-   color: #005792;
- `;
+  color: #005792;
+`;
 
 function SwitchApps({ user }) {
   const {
@@ -63,19 +63,19 @@ function SwitchApps({ user }) {
         {systemSettings.kibana && permissions.includes('rules.events_kibana') && (
           <AppItem href={systemSettings.kibana_url} target="_blank">
             <IconLabel>Kibana</IconLabel>
-            <LaunchRounded style={{ color: "currentColor", strokeWidth: 1.5, fill: "#005792" }} />
+            <LaunchRounded style={{ color: 'currentColor', strokeWidth: 1.5, fill: '#005792' }} />
           </AppItem>
         )}
         {systemSettings.evebox && permissions.includes('rules.events_evebox') && (
           <AppItem href={systemSettings.evebox_url} target="_blank">
             <IconLabel>EveBox</IconLabel>
-            <LaunchRounded style={{ color: "currentColor", strokeWidth: 1.5, fill: "#005792" }} />
+            <LaunchRounded style={{ color: 'currentColor', strokeWidth: 1.5, fill: '#005792' }} />
           </AppItem>
         )}
         {systemSettings.cyberchef && (
           <AppItem href={systemSettings.cyberchef_url} target="_blank">
             <IconLabel>CyberChef</IconLabel>
-            <LaunchRounded style={{ color: "currentColor", strokeWidth: 1.5, fill: "#005792" }} />
+            <LaunchRounded style={{ color: 'currentColor', strokeWidth: 1.5, fill: '#005792' }} />
           </AppItem>
         )}
         {loading && <Spin />}
@@ -95,6 +95,4 @@ const mapStateToProps = createStructuredSelector({
   user: selectors.makeSelectUser(),
 });
 
-export default connect(
-  mapStateToProps
-)(SwitchApps);
+export default connect(mapStateToProps)(SwitchApps);

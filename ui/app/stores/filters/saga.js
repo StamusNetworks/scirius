@@ -24,9 +24,9 @@ function* getHuntFilters() {
 
 function* getSupportedActions(action) {
   const { filters = [] } = action.payload;
-  const fields = filters.map((f) => f.id)
+  const fields = filters.map(f => f.id);
   try {
-    const response = yield call(NetworkService.fetchSupportedActions, {}, { body: JSON.stringify({fields}) });
+    const response = yield call(NetworkService.fetchSupportedActions, {}, { body: JSON.stringify({ fields }) });
     const { actions: data = [] } = response;
     yield put(actions.supportedActionsSuccess(data));
   } catch (e) {
@@ -43,7 +43,6 @@ function* getHistoryFilters() {
     yield put(actions.historyFiltersFailure(e));
   }
 }
-
 
 export default function* rootSaga() {
   yield takeEvery(constants.RULE_SETS_REQUEST, getRuleSets);

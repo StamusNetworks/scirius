@@ -71,9 +71,9 @@ export function loadActions(filtersIn) {
   if (typeof filtersIn !== 'undefined') {
     filters = filtersIn;
   }
-  filters = filters.map((f) => f.id);
+  filters = filters.map(f => f.id);
   const reqData = { fields: filters };
-  axios.post(`${config.API_URL}${config.PROCESSING_PATH}test_actions/`, reqData).then((res) => {
+  axios.post(`${config.API_URL}${config.PROCESSING_PATH}test_actions/`, reqData).then(res => {
     this.setState({ supported_actions: res.data.actions });
   });
 }

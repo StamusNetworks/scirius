@@ -9,7 +9,7 @@ import SciriusChart from 'ui/components/SciriusChart';
 import ErrorHandler from 'ui/components/Error';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
 
-const RuleCard = (props) => {
+const RuleCard = props => {
   const { category } = props.data;
   const source = props.sources[category.source];
   let catTooltip = category.name;
@@ -23,7 +23,11 @@ const RuleCard = (props) => {
 
   const kebabConfig = { rule: props.data };
   return (
-    <Card title={props.data.msg} extra={<RuleEditKebab key={`kebab-${props.data.sid}`} config={kebabConfig} rulesets={props.rulesets} />} style={{ margin: '8px 0px' }}>
+    <Card
+      title={props.data.msg}
+      extra={<RuleEditKebab key={`kebab-${props.data.sid}`} config={kebabConfig} rulesets={props.rulesets} />}
+      style={{ margin: '8px 0px' }}
+    >
       <Row>
         <Col md={5}>
           <Tooltip overlay={catTooltip}>Cat: {category.name}</Tooltip>
@@ -64,7 +68,7 @@ const RuleCard = (props) => {
       </Spin>
       <Space>
         <span>
-        SID: <strong>{props.data.sid}</strong>
+          SID: <strong>{props.data.sid}</strong>
         </span>
         <a
           onClick={() => props.addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: props.data.sid, negated: false })}

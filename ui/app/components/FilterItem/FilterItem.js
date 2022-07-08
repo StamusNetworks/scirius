@@ -4,7 +4,7 @@ import { EditOutlined, CloseOutlined } from '@ant-design/icons';
 import { sections } from 'ui/constants';
 import './style.css';
 
-const FilterItem = (props) => {
+const FilterItem = props => {
   const negated = props.filter.negated ? 'label-not' : '';
   const displayValue = props.filter.label ? props.filter.label : `${props.filter.id}:${props.filter.value}`;
   return (
@@ -13,12 +13,12 @@ const FilterItem = (props) => {
         <div className="label-content" data-test="hunt-filter__filtered">
           {displayValue}
         </div>
-        <div className='label-actions'>
+        <div className="label-actions">
           {props.filterType !== sections.HISTORY && (
             <a
               href="#"
               className="filter-action edit"
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault();
                 props.onEdit();
               }}
@@ -30,7 +30,7 @@ const FilterItem = (props) => {
           <a
             href="#"
             className="filter-action delete"
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault();
               props.onRemove();
             }}

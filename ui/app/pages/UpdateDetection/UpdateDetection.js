@@ -7,7 +7,9 @@ const UpdateDetection = () => (
     <UIBreadcrumb
       items={[
         'Stamus ND',
-        <Link app to='stamus-nd/update-detection'>Update Detection</Link>,
+        <Link app to="stamus-nd/update-detection">
+          Update Detection
+        </Link>,
       ]}
     />
     UpdateDetection
@@ -15,7 +17,7 @@ const UpdateDetection = () => (
 );
 UpdateDetection.metadata = {
   category: 'STAMUS_ND',
-  url: 'stamus-nd/update-detection'
-}
+  url: 'stamus-nd/update-detection',
+};
 
 export default UpdateDetection;

@@ -27,8 +27,8 @@ const getYear = (fromDate, toDate) =>
   fromDate.year() === toDate.year() ? [fromDate.format('YYYY')] : [fromDate.format('YYYY'), toDate.format('YYYY')];
 
 const omitZeroes = (hour, minute, second) =>
-  hour.filter((v) => v !== '00').length === 0 && minute.filter((v) => v !== '00').length === 0 && second.filter((v) => v !== '00').length === 0;
-const dayName = (n) => `${n}${['st', 'nd', 'rd'][((((parseInt(n, 10) + 90) % 100) - 10) % 10) - 1] || 'th'}`;
+  hour.filter(v => v !== '00').length === 0 && minute.filter(v => v !== '00').length === 0 && second.filter(v => v !== '00').length === 0;
+const dayName = n => `${n}${['st', 'nd', 'rd'][((((parseInt(n, 10) + 90) % 100) - 10) % 10) - 1] || 'th'}`;
 
 export const periodShortener = (fromDate, toDate, duration) => {
   const from = moment(fromDate);

@@ -21,17 +21,17 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const HuntRestError = (props) => {
+const HuntRestError = props => {
   if (props.errors === undefined) {
     return null;
   }
   return (
     <div>
-      {Object.keys(props.errors).map((field) => {
+      {Object.keys(props.errors).map(field => {
         if (typeof props.errors[field] === 'object') {
           return (
             <div key={field}>
-              {props.errors[field].map((error) => {
+              {props.errors[field].map(error => {
                 if (typeof error === 'object') {
                   return (
                     <div key={1} className="alert alert-danger">

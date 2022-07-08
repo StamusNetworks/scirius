@@ -14,9 +14,7 @@ import { isBooted, setBooted } from 'ui/helpers/isBooted';
 import constants from 'ui/containers/App/constants';
 
 const initialTimeSpanStorage = {
-  startDate: moment()
-    .subtract(1, 'day')
-    .format(),
+  startDate: moment().subtract(1, 'day').format(),
   endDate: moment().format(),
   duration: 'H1',
   timePicker: TimePickerEnum.QUICK,
@@ -24,14 +22,14 @@ const initialTimeSpanStorage = {
   maxTimestamp: null,
   // Disable All option by default. If the request returns good values then enable it in the reducer.
   disableAll: true,
-  ...store.get(StorageEnum.TIMESPAN)
+  ...store.get(StorageEnum.TIMESPAN),
 };
 
 const initialSettingsStorage = {
   system: {},
   global: {},
-  ...store.get(StorageEnum.SETTINGS)
-}
+  ...store.get(StorageEnum.SETTINGS),
+};
 
 const initialSourceStorage = store.get(StorageEnum.SOURCE) || [];
 
@@ -89,14 +87,14 @@ export const appReducer = (state = initialState, action) =>
         // D7 period is the default one if min/max timestamp boundaries are incorrect
         draft.timespan.minTimestamp = minTimestamp;
         draft.timespan.maxTimestamp = maxTimestamp;
-        draft.timespan.duration = (!correct && draft.timespan.duration === 'All') ? 'D7' : draft.timespan.duration;
+        draft.timespan.duration = !correct && draft.timespan.duration === 'All' ? 'D7' : draft.timespan.duration;
         draft.timespan.disableAll = !correct;
 
         store.set(StorageEnum.TIMESPAN, {
-          ...({
+          ...{
             ...initialTimeSpanStorage,
-            ...store.get(StorageEnum.TIMESPAN)
-          }),
+            ...store.get(StorageEnum.TIMESPAN),
+          },
           duration: draft.timespan.duration,
           minTimestamp,
           maxTimestamp,
@@ -111,10 +109,10 @@ export const appReducer = (state = initialState, action) =>
         draft.settings.request.loading = false;
         draft.settings.request.status = true;
         store.set(StorageEnum.SETTINGS, {
-          ...({
+          ...{
             ...initialSettingsStorage,
-            ...store.get(StorageEnum.SETTINGS)
-          }),
+            ...store.get(StorageEnum.SETTINGS),
+          },
           system: action.payload.systemSettings,
           global: action.payload.globalSettings,
         });

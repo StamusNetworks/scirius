@@ -1,3 +1,3 @@
-const selectGlobal = (state) => state.get('global');
+const selectGlobal = state => state.get('global');
 
 export { selectGlobal };

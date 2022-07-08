@@ -4,7 +4,7 @@ import { List as ListView } from 'antd';
 import CardView from 'ui/components/CardView';
 import ErrorHandler from 'ui/components/Error';
 
-const List = (props) => {
+const List = props => {
   const ItemComponent = props.type === 'list' ? props.component.list : props.component.card;
   const ListComponent = props.type === 'list' ? ListView : CardView;
 
@@ -14,7 +14,7 @@ const List = (props) => {
       header={null}
       footer={null}
       dataSource={props.items}
-      renderItem={(rule) => (
+      renderItem={rule => (
         <ErrorHandler key={Math.random()}>
           <ItemComponent key={rule.sid} data={rule} {...props.itemProps} />
         </ErrorHandler>

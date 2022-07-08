@@ -26,7 +26,7 @@ export default class EventIPInfo extends React.Component {
   displayIPInfo() {
     this.setState({ show_ip_info: true });
     if (this.state.ipinfo === null) {
-      axios.get(`https://www.onyphe.io/api/v2/summary/ip/${this.props.value}?apikey=${process.env.REACT_APP_ONYPHE_API_KEY}`).then((res) => {
+      axios.get(`https://www.onyphe.io/api/v2/summary/ip/${this.props.value}?apikey=${process.env.REACT_APP_ONYPHE_API_KEY}`).then(res => {
         this.setState({ ipinfo: res.data.results });
       });
     }
@@ -36,7 +36,7 @@ export default class EventIPInfo extends React.Component {
     const pastries = [];
     const resolvers = [];
     if (this.state.ipinfo) {
-      this.state.ipinfo.map((item) => {
+      this.state.ipinfo.map(item => {
         if (item['@category'] === 'pastries') {
           pastries.push(item);
         }
@@ -72,7 +72,7 @@ export default class EventIPInfo extends React.Component {
         >
           {this.state.ipinfo && (
             <div>
-              {this.state.ipinfo.map((item) => {
+              {this.state.ipinfo.map(item => {
                 if (item['@category'] === 'geoloc') {
                   return (
                     <ErrorHandler>

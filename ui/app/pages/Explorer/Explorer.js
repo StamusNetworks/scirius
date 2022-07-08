@@ -7,14 +7,16 @@ const Explorer = () => (
     <UIBreadcrumb
       items={[
         'Stamus ND',
-        <Link app to='stamus-nd/explorer'>Explorer</Link>,
+        <Link app to="stamus-nd/explorer">
+          Explorer
+        </Link>,
       ]}
     />
     Explorer
   </div>
 );
 Explorer.metadata = {
-  category: 'STAMUS_ND'
-}
+  category: 'STAMUS_ND',
+};
 
 export default Explorer;

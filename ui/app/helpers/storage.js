@@ -6,7 +6,7 @@ const getType = () => (params.has('session') && params.get('session') === 'tempo
 
 const storage = getType() === 'temporary' ? sessionStorage : localStorage;
 
-const setPage = (page) => {
+const setPage = page => {
   storage.setItem('page_display', JSON.stringify({ page }));
 };
 
@@ -31,7 +31,7 @@ if (getType() === 'temporary' && !isInit()) {
     let existingFilters = storage.getItem(sections.GLOBAL) || '[]';
     try {
       existingFilters = JSON.parse(existingFilters);
-      existingFilters = existingFilters.filter((o) => o.id !== 'host_id.ip');
+      existingFilters = existingFilters.filter(o => o.id !== 'host_id.ip');
       setFilter(sections.GLOBAL, [{ id: 'host_id.ip', value: ip, negated: false }, ...existingFilters]);
     } catch (e) {
       setFilter(sections.GLOBAL, []);

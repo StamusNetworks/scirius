@@ -354,7 +354,7 @@ export const dashboard = {
           i: 'alert.severity',
           title: 'Severities',
           data: null,
-          format: (value) => {
+          format: value => {
             switch (value.toString()) {
               case '1':
                 return 'Severe';

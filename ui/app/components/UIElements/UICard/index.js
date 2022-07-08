@@ -7,10 +7,10 @@ const CardStyled = styled(Card)`
   background-color: white;
   border-radius: 5px;
   position: relative;
-  box-shadow: ${p => !p.flat ? '2px 3px 6px 0px #00000005' : 'none'};
+  box-shadow: ${p => (!p.flat ? '2px 3px 6px 0px #00000005' : 'none')};
   border: 1px solid #ececec;
   .ant-card-body {
-    padding: ${p => p.nopadding === 'true' ? '0' : '10px'};
+    padding: ${p => (p.nopadding === 'true' ? '0' : '10px')};
   }
   .ant-card-head {
     padding: 0 10px;
@@ -22,18 +22,18 @@ const CardStyled = styled(Card)`
   }
 `;
 const UICard = ({ children, noPadding, ...props }) => (
-    <CardStyled {...props} nopadding={noPadding.toString()}>
-      {children}
-    </CardStyled>
-  )
+  <CardStyled {...props} nopadding={noPadding.toString()}>
+    {children}
+  </CardStyled>
+);
 
 UICard.defaultProps = {
   noPadding: false,
-}
+};
 
 UICard.propTypes = {
   children: PropTypes.any,
   noPadding: PropTypes.bool,
-}
+};
 
 export default UICard;

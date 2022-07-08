@@ -18,12 +18,12 @@ export const loadFilterSets = () => ({
   type: FILTER_SETS_LOADING,
 });
 
-export const filterSetsSuccess = (loadedFilterSets) => ({
+export const filterSetsSuccess = loadedFilterSets => ({
   type: FILTER_SETS_SUCCESS,
   loadedFilterSets,
 });
 
-export const filterSetsFail = (error) => ({
+export const filterSetsFail = error => ({
   type: FILTER_SETS_FAIL,
   error,
 });
@@ -40,7 +40,7 @@ export const deleteFilterSetSuccess = (filterSetType, filterSetIdx) => ({
   filterSetIdx,
 });
 
-export const deleteFilterSetFail = (error) => ({
+export const deleteFilterSetFail = error => ({
   type: DELETE_FILTER_SET_FAIL,
   error,
 });
@@ -103,21 +103,17 @@ export const filterSetsReducer = (state = initialState, action) =>
         draft.filterSetsLoading = false;
         draft.filterSetsStatus = true;
         draft.filterSetsMessage = 'filter set deleted successfully';
-        draft.filterSets[action.filterSetType].filter((f) => f.id !== action.filterSetIdx);
+        draft.filterSets[action.filterSetType].filter(f => f.id !== action.filterSetIdx);
         break;
     }
   });
 
 // SELECTORS
-const makeSelectFiltersSetsStore = (state) => state.filterSets || initialState;
-export const makeSelectGlobalFilterSets = () =>
-  createSelector(makeSelectFiltersSetsStore, (filterSetsState) => filterSetsState.filterSets.global);
-export const makeSelectPrivateFilterSets = () =>
-  createSelector(makeSelectFiltersSetsStore, (filterSetsState) => filterSetsState.filterSets.private);
-export const makeSelectStaticFilterSets = () =>
-  createSelector(makeSelectFiltersSetsStore, (filterSetsState) => filterSetsState.filterSets.static);
-export const makeSelectFilterSetsLoading = () =>
-  createSelector(makeSelectFiltersSetsStore, (filterSetsState) => filterSetsState.filterSetsLoading);
+const makeSelectFiltersSetsStore = state => state.filterSets || initialState;
+export const makeSelectGlobalFilterSets = () => createSelector(makeSelectFiltersSetsStore, filterSetsState => filterSetsState.filterSets.global);
+export const makeSelectPrivateFilterSets = () => createSelector(makeSelectFiltersSetsStore, filterSetsState => filterSetsState.filterSets.private);
+export const makeSelectStaticFilterSets = () => createSelector(makeSelectFiltersSetsStore, filterSetsState => filterSetsState.filterSets.static);
+export const makeSelectFilterSetsLoading = () => createSelector(makeSelectFiltersSetsStore, filterSetsState => filterSetsState.filterSetsLoading);
 
 // SAGA
 export function* getFilterSets() {

@@ -11,17 +11,17 @@ const notify = (message, error) => {
         response = await error.response.text().then(t => t);
         code = error.response.status;
       }
-    })()
+    })();
   } catch (e) {
     // do nothing
   }
 
-  const description = (code && response) ? DOMPurify.sanitize(`[${code}] ${response}`, { ALLOWED_TAGS: [] }) : undefined;
+  const description = code && response ? DOMPurify.sanitize(`[${code}] ${response}`, { ALLOWED_TAGS: [] }) : undefined;
   notification.error({
     message,
     duration: 4.5,
-    description
-  })
-}
+    description,
+  });
+};
 
 export default notify;

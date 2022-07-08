@@ -27,17 +27,11 @@ import actions from 'ui/containers/App/actions';
 import selectors from 'ui/containers/App/selectors';
 import ErrorHandler from 'ui/components/ErrorHandler';
 import ProxyRoute from 'ui/components/ProxyRoute';
-import saga from "ui/containers/App/saga";
+import saga from 'ui/containers/App/saga';
 
 const pagesList = Object.keys(pages);
 
-const App = ({
-  source,
-  getSettings,
-  getUser,
-  getSource,
-  getAllPeriodRequest,
-}) => {
+const App = ({ source, getSettings, getUser, getSource, getAllPeriodRequest }) => {
   useEffect(() => {
     if (source.data.length === 0) {
       getSource();
@@ -83,10 +77,15 @@ const App = ({
             <Switch>
               {pagesList
                 .filter(page => typeof pages[page].metadata.url !== 'function')
-                .map(page => <Route key={page} exact path={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`} component={pages[page]} />)
-              }
-              <Route exact path={["/", APP_URL]}>
-                {pages.OperationalCenter ? <Redirect to={`${APP_URL}/security-posture/operational-center`} /> : <Redirect to={`${APP_URL}/explorer`} />}
+                .map(page => (
+                  <Route key={page} exact path={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`} component={pages[page]} />
+                ))}
+              <Route exact path={['/', APP_URL]}>
+                {pages.OperationalCenter ? (
+                  <Redirect to={`${APP_URL}/security-posture/operational-center`} />
+                ) : (
+                  <Redirect to={`${APP_URL}/explorer`} />
+                )}
               </Route>
               <ProxyRoute />
             </Switch>
@@ -95,7 +94,7 @@ const App = ({
       </Layout>
     </Layout>
   );
-}
+};
 
 App.propTypes = {
   source: PropTypes.object,
@@ -118,13 +117,10 @@ export const mapDispatchToProps = dispatch =>
       getSettings: actions.getSettings,
       getUser: actions.getUser,
       getSource: actions.getSource,
-      getAllPeriodRequest: actions.getAllPeriodRequest
+      getAllPeriodRequest: actions.getAllPeriodRequest,
     },
     dispatch,
   );
 
-const withConnect = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-);
-export default withSaga({key: 'root', saga})(compose(withConnect)(App));
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
+export default withSaga({ key: 'root', saga })(compose(withConnect)(App));

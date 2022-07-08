@@ -1,4 +1,4 @@
-import cookie from "cookie";
+import cookie from 'cookie';
 /**
  * Parses the JSON returned by a network request
  *
@@ -44,13 +44,16 @@ export default function request(url, options) {
     options = {};
   }
   options = {
-    ...(['POST', 'PUT', 'DELETE', 'PATCH'].indexOf(options.method) > -1 ? { ...options, headers: {
-        ...options.headers,
-        'X-CSRFToken': parsedCookie.csrftoken,
-      } } : options)
+    ...(['POST', 'PUT', 'DELETE', 'PATCH'].indexOf(options.method) > -1
+      ? {
+          ...options,
+          headers: {
+            ...options.headers,
+            'X-CSRFToken': parsedCookie.csrftoken,
+          },
+        }
+      : options),
   };
   options.credentials = 'same-origin'; // force sending cookie on older browsers
-  return fetch(url, options)
-    .then(checkStatus)
-    .then(parseJSON);
+  return fetch(url, options).then(checkStatus).then(parseJSON);
 }

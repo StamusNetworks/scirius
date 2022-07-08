@@ -64,7 +64,7 @@ class DonutChart extends React.Component {
     }
   }
 
-  bigNumFormatter = (number) => {
+  bigNumFormatter = number => {
     let res = number.toString();
     if (number > 999999999) {
       res = `${(number / 1000000000).toFixed(1)}B`;
@@ -76,12 +76,12 @@ class DonutChart extends React.Component {
     return res;
   };
 
-  setTitle = (title) => {
+  setTitle = title => {
     d3.select('.donut-title-line1').text(title);
     d3.select('.donut-title-line2').text(this.props.title.line2);
   };
 
-  makeTitle = (type) => {
+  makeTitle = type => {
     let title = '';
     const sum = this.props.data.columns.reduce((acc, x) => acc + x[1], 0);
 

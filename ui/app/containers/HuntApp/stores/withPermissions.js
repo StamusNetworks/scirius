@@ -4,8 +4,8 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { makeSelectUserData, makeSelectUserRequest } from './global';
 
-export const withPermissions = (WrappedComponent) => {
-  const Enhancer = (props) => <WrappedComponent {...props} />;
+export const withPermissions = WrappedComponent => {
+  const Enhancer = props => <WrappedComponent {...props} />;
   const mapStateToProps = createStructuredSelector({
     user: makeSelectUserData(),
     userRequest: makeSelectUserRequest(),

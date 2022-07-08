@@ -9,7 +9,9 @@ const History = () => (
     <UIBreadcrumb
       items={[
         'Administration',
-        <Link app to='administration/history'>History</Link>,
+        <Link app to="administration/history">
+          History
+        </Link>,
       ]}
     />
     <HuntApp page={PAGE_STATE.history} />
@@ -18,6 +20,6 @@ const History = () => (
 History.metadata = {
   category: 'ADMINISTRATION',
   url: 'administration/history',
-}
+};
 
 export default History;

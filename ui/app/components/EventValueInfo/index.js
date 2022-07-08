@@ -4,7 +4,7 @@ import { Tooltip } from 'antd';
 import { InfoCircleFilled } from '@ant-design/icons';
 import EventIPInfo from 'ui/components/EventIPInfo';
 
-const EventValueInfo = (props) => {
+const EventValueInfo = props => {
   if (!props.magnifiers) {
     return null;
   }

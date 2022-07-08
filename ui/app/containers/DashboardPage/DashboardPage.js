@@ -107,12 +107,12 @@ export class HuntDashboard extends React.Component {
 
   componentDidMount() {
     if (this.state.rulesets.length === 0) {
-      axios.get(config.API_URL + config.RULESET_PATH).then((res) => {
+      axios.get(config.API_URL + config.RULESET_PATH).then(res => {
         this.setState({ rulesets: res.data.results });
       });
     }
     const huntFilters = store.get('huntFilters');
-    axios.get(config.API_URL + config.HUNT_FILTER_PATH).then((res) => {
+    axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(res => {
       const fdata = [];
       for (let i = 0; i < res.data.length; i += 1) {
         /* Only ES filter are allowed for Alert page */
@@ -136,7 +136,7 @@ export class HuntDashboard extends React.Component {
     });
 
     let timeout = false;
-    window.addEventListener('resize', (e) => {
+    window.addEventListener('resize', e => {
       // Trigger a second resize, to work-around panels not rearranging
       if (e.huntEvent) {
         // work-around to prevent infinite resize
@@ -171,8 +171,8 @@ export class HuntDashboard extends React.Component {
       }
     };
 
-    document.onkeydown = (e) => detectspecialkeys(e, true);
-    document.onkeyup = (e) => detectspecialkeys(e, false);
+    document.onkeydown = e => detectspecialkeys(e, true);
+    document.onkeyup = e => detectspecialkeys(e, false);
   }
 
   componentDidUpdate(prevProps) {
@@ -218,7 +218,7 @@ export class HuntDashboard extends React.Component {
     return result;
   };
 
-  getPanelFromLS = (panel) => {
+  getPanelFromLS = panel => {
     let result = {};
     if (typeof this.storedMacroLayout !== 'undefined' && typeof this.storedMacroLayout[panel] !== 'undefined') {
       result = find(this.storedMacroLayout, { i: panel });
@@ -239,7 +239,7 @@ export class HuntDashboard extends React.Component {
     const storedMacroLayout = store.get('dashboardMacroLayout');
     return Object.assign(
       {},
-      ...Object.keys(dashboard.sections).map((k) => {
+      ...Object.keys(dashboard.sections).map(k => {
         const storedPanel = find(storedMacroLayout, { i: k });
         if (typeof storedPanel === 'undefined') {
           return {
@@ -285,7 +285,7 @@ export class HuntDashboard extends React.Component {
   /* reset panel to it's initial state - no data into blocks and the default height for the panel with empty blocks */
   resetPanelHeights = () => {
     // eslint-disable-next-line react/no-access-state-in-setstate
-    const reset = Object.assign({}, ...Object.keys(this.state.dashboard).map((k) => this.resetPanelHeight(k)));
+    const reset = Object.assign({}, ...Object.keys(this.state.dashboard).map(k => this.resetPanelHeight(k)));
     this.setState({
       // eslint-disable-next-line react/no-access-state-in-setstate
       ...this.state,
@@ -298,10 +298,10 @@ export class HuntDashboard extends React.Component {
     this.panelsBooted = 'booting';
     this.panelState.dashboard = { ...this.state.dashboard };
     this.resetPanelHeights();
-    map(this.state.load, (panel) => this.bootPanel(panel));
+    map(this.state.load, panel => this.bootPanel(panel));
   };
 
-  bootPanel = (panel) => {
+  bootPanel = panel => {
     // Count the number of the blocks
     let blocksLoaded = 0;
     let newHeight = 0;
@@ -313,7 +313,7 @@ export class HuntDashboard extends React.Component {
     }
     axios
       .get(`${config.API_URL + config.ES_BASE_PATH}fields_stats/?fields=${filterList}&${filterParams}&page_size=5${this.qFilter}`)
-      .then((jsonResponse) => {
+      .then(jsonResponse => {
         const gjson = jsonResponse;
         // Validation of the data property
         if (typeof gjson.data === 'undefined' || gjson.data === null) {
@@ -333,9 +333,9 @@ export class HuntDashboard extends React.Component {
           const panelHeight = json.length
             ? 10 + json.length * dashboard.block.defaultItemHeight + dashboard.block.defaultHeadHeight + dashboard.panel.defaultHeadHeight
             : dashboard.panel.defaultHeadHeight;
-          const isPanelLoaded = !this.state.dashboard[panel].items.find((itm) => itm.data !== null && itm.data.length === 0);
+          const isPanelLoaded = !this.state.dashboard[panel].items.find(itm => itm.data !== null && itm.data.length === 0);
 
-          const items = this.panelState.dashboard[panel].items.map((el) => {
+          const items = this.panelState.dashboard[panel].items.map(el => {
             if (el.i === block.i) {
               const data = json.length ? json : [];
 
@@ -458,25 +458,25 @@ export class HuntDashboard extends React.Component {
     }
   };
 
-  createElement = (block) => {
+  createElement = block => {
     const filterParams = buildFilterParams(this.props.filterParams);
     const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${block.i}&${filterParams}&page_size=30${this.qFilter}`;
     return (
       <Card
         key={block.i}
-        title={(
-          <div
-            className={`hunt-stat-title ${this.state.editMode ? 'dashboard-editable-mode' : ''}`}
-            data-toggle="tooltip"
-            title={block.title}
-          >
+        title={
+          <div className={`hunt-stat-title ${this.state.editMode ? 'dashboard-editable-mode' : ''}`} data-toggle="tooltip" title={block.title}>
             {block.title}
           </div>
-        )}
+        }
         bodyStyle={{ padding: '0px 10px' }}
         extra={
           <>
-            {block.data === null && <div style={{ marginBottom: 20 }}><Spin size='small' /></div>}
+            {block.data === null && (
+              <div style={{ marginBottom: 20 }}>
+                <Spin size="small" />
+              </div>
+            )}
             {block.data !== null && block.data.length === 5 && (
               <Tooltip title="Load more results" id="tooltip-top">
                 <Button icon={<UnorderedListOutlined />} onClick={() => this.loadMore(block, url)} />
@@ -486,7 +486,8 @@ export class HuntDashboard extends React.Component {
         }
       >
         {this.props.children}
-        {block.data !== null && block.data.map(item => (
+        {block.data !== null &&
+          block.data.map(item => (
             <EventValue
               field={block.i}
               value={item.key}
@@ -495,14 +496,13 @@ export class HuntDashboard extends React.Component {
               right_info={<>{item.doc_count}</>}
               hasCopyShortcut
             />
-          )
-        )}
+          ))}
       </Card>
     );
   };
 
   getMacroLayouts = () =>
-    this.state.load.map((panel) => ({
+    this.state.load.map(panel => ({
       ...this.state.dashboard[panel].dimensions,
       isDraggable: this.state.editMode,
       i: panel.toString(),
@@ -510,7 +510,7 @@ export class HuntDashboard extends React.Component {
 
   getMicroLayouts = (panel, bp) => {
     const tallestBlock = this.makeHeightsEqual(panel, bp);
-    return this.state.dashboard[panel].items.map((item) => ({
+    return this.state.dashboard[panel].items.map(item => ({
       ...item.dimensions[bp],
       h: tallestBlock,
       maxH: tallestBlock,
@@ -528,7 +528,7 @@ export class HuntDashboard extends React.Component {
     return h;
   };
 
-  resetDashboard = (e) => {
+  resetDashboard = e => {
     e.preventDefault();
     // eslint-disable-next-line no-alert
     const ask = window.confirm('Confirm reset positions of the dashboard panels?');
@@ -539,7 +539,7 @@ export class HuntDashboard extends React.Component {
     }
   };
 
-  switchEditMode = (e) => {
+  switchEditMode = e => {
     // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({ editMode: !this.state.editMode });
     e.preventDefault();
@@ -582,11 +582,11 @@ export class HuntDashboard extends React.Component {
     }
   };
 
-  getPanelSize = (panel) => parseInt(document.querySelector(`#panel-${panel}`).style.height.replace('px', ''), 10);
+  getPanelSize = panel => parseInt(document.querySelector(`#panel-${panel}`).style.height.replace('px', ''), 10);
 
-  getPanelBodySize = (panel) => parseInt(document.querySelector(`#panel-${panel} div.react-grid-layout`).style.height.replace('px', ''), 10);
+  getPanelBodySize = panel => parseInt(document.querySelector(`#panel-${panel} div.react-grid-layout`).style.height.replace('px', ''), 10);
 
-  onChangeMacroLayout = (macroLayout) => {
+  onChangeMacroLayout = macroLayout => {
     store.set('dashboardMacroLayout', macroLayout);
     let { dashboard: tmpState } = this.state;
     for (let k = 0; k < macroLayout.length; k += 1) {
@@ -636,7 +636,7 @@ export class HuntDashboard extends React.Component {
               ...this.state.dashboard,
               [panel]: {
                 ...this.state.dashboard[panel],
-                items: this.state.dashboard[panel].items.map((vv) => {
+                items: this.state.dashboard[panel].items.map(vv => {
                   const innerItem = { ...vv };
                   if (microLayout[j].i === vv.i) {
                     innerItem.dimensions[this.state.breakPoint] = microLayout[j];
@@ -662,7 +662,7 @@ export class HuntDashboard extends React.Component {
     }
   };
 
-  onBreakPointChange = (breakpoint) => {
+  onBreakPointChange = breakpoint => {
     if (this.state.breakPoint !== breakpoint) {
       this.breakPointChanged = true;
       this.setState({ breakPoint: breakpoint });
@@ -670,7 +670,7 @@ export class HuntDashboard extends React.Component {
   };
 
   loadMore = (item, url) => {
-    axios.get(url).then((json) => {
+    axios.get(url).then(json => {
       const data = json.data.length ? json.data : null;
 
       if (data) {
@@ -688,7 +688,7 @@ export class HuntDashboard extends React.Component {
   // eslint-disable-next-line react/no-access-state-in-setstate
   hideMoreModal = () => this.setState({ ...this.state, moreModal: null });
 
-  onChangeChartTarget = (chartTarget) => {
+  onChangeChartTarget = chartTarget => {
     this.setState({
       chartTarget,
     });
@@ -708,11 +708,7 @@ export class HuntDashboard extends React.Component {
     return (
       <div>
         <ErrorHandler>
-          <Filters
-            page='DASHBOARD'
-            section={sections.GLOBAL}
-            queryTypes={['filter']}
-          />
+          <Filters page="DASHBOARD" section={sections.GLOBAL} queryTypes={['filter']} />
         </ErrorHandler>
 
         <Row className="row" style={{ marginTop: 10 }}>
@@ -730,7 +726,7 @@ export class HuntDashboard extends React.Component {
             {typeof this.state.chartTarget !== 'undefined' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
               <div style={{ position: 'absolute', zIndex: 10, top: 0, right: '30px' }}>
                 <Dropdown id="more-actions" overlay={this.menu} trigger={['click']}>
-                  <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+                  <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
                     <MenuOutlined />
                   </a>
                 </Dropdown>
@@ -775,11 +771,9 @@ export class HuntDashboard extends React.Component {
               onLayoutChange={this.onChangeMacroLayout}
             >
               {this.panelsBooted !== 'no' &&
-                this.state.load.map((panel) => (
+                this.state.load.map(panel => (
                   <div className="hunt-row" key={panel} id={`panel-${panel}`}>
-                    <h2 className={`hunt-row-title ${this.state.editMode ? 'dashboard-editable-mode' : ''}`}>
-                      {this.state.dashboard[panel].title}
-                    </h2>
+                    <h2 className={`hunt-row-title ${this.state.editMode ? 'dashboard-editable-mode' : ''}`}>{this.state.dashboard[panel].title}</h2>
                     <ResponsiveReactGridLayout
                       margin={[5, 5]}
                       compactType="vertical"
@@ -791,7 +785,7 @@ export class HuntDashboard extends React.Component {
                       }}
                       onDragStart={this.onDragStartMicro}
                       onBreakpointChange={(breakPoint, cols) => this.onBreakPointChange(breakPoint, cols, panel)}
-                      onLayoutChange={(e) => this.onChangeMicroLayout(panel, e)}
+                      onLayoutChange={e => this.onChangeMicroLayout(panel, e)}
                       onResizeStart={this.onResizeStartMicro}
                       isDraggable={this.state.editMode}
                       isResizable={this.state.editMode}
@@ -806,7 +800,7 @@ export class HuntDashboard extends React.Component {
                         xxs: 4,
                       }}
                     >
-                      {this.state.dashboard[panel].items.map((block) => this.createElement(block))}
+                      {this.state.dashboard[panel].items.map(block => this.createElement(block))}
                     </ResponsiveReactGridLayout>
                   </div>
                 ))}
@@ -829,7 +823,7 @@ export class HuntDashboard extends React.Component {
                 footer={null}
                 dataSource={this.state.moreResults}
                 // loading={block.data === null}
-                renderItem={(item) => {
+                renderItem={item => {
                   const itemPath = `modal-${this.state.moreModal.title}-${this.state.moreModal.i}-${item.key}`;
                   let classes = 'dashboard-list-item';
                   let clickHandler = null;
@@ -839,7 +833,7 @@ export class HuntDashboard extends React.Component {
                     // Only set clickHandler during copy mode to let click events reach the magnifiers in EventValue
                     // otherwise hover and click on magnifiers breaks on Firefox
                     const moreResultModal = document.getElementById('more-result-modal');
-                    clickHandler = (event) => this.itemCopyModeOnClick(event, itemPath, item.key, moreResultModal);
+                    clickHandler = event => this.itemCopyModeOnClick(event, itemPath, item.key, moreResultModal);
                     classes += ' copy-mode';
                   }
 
@@ -847,8 +841,8 @@ export class HuntDashboard extends React.Component {
                     <List.Item
                       key={item.key}
                       onClick={clickHandler}
-                      onMouseMove={(event) => this.onMouseMove(event, itemPath)}
-                      onMouseLeave={(event) => this.onMouseLeave(event, itemPath)}
+                      onMouseMove={event => this.onMouseMove(event, itemPath)}
+                      onMouseLeave={event => this.onMouseLeave(event, itemPath)}
                       className={classes}
                     >
                       {this.state.moreModal && (

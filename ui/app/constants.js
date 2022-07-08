@@ -35,17 +35,17 @@ export const PAGE_STATE = {
 };
 
 export const huntTabs = {
-  [ PAGE_STATE.dashboards ]: 'Dashboard',
-  [ PAGE_STATE.alerts_list ]: 'Alerts',
-  [ PAGE_STATE.rules_list ]: 'Signatures',
-  [ PAGE_STATE.filters_list ]: 'Policy',
+  [PAGE_STATE.dashboards]: 'Dashboard',
+  [PAGE_STATE.alerts_list]: 'Alerts',
+  [PAGE_STATE.rules_list]: 'Signatures',
+  [PAGE_STATE.filters_list]: 'Policy',
 };
 
 export const huntUrls = {
-  [ PAGE_STATE.dashboards ]: 'hunting/dashboards',
-  [ PAGE_STATE.alerts_list ]: 'hunting/alerts',
-  [ PAGE_STATE.rules_list ]: 'hunting/signatures',
-  [ PAGE_STATE.filters_list ]: 'hunting/policies',
+  [PAGE_STATE.dashboards]: 'hunting/dashboards',
+  [PAGE_STATE.alerts_list]: 'hunting/alerts',
+  [PAGE_STATE.rules_list]: 'hunting/signatures',
+  [PAGE_STATE.filters_list]: 'hunting/policies',
 };
 
 export const APP_NAME_SHORT = 'Scirius CE';
@@ -57,5 +57,5 @@ const DATE_FORMAT = 'YYYY-MM-DD';
 
 export default {
   DATE_TIME_FORMAT,
-  DATE_FORMAT
-}
+  DATE_FORMAT,
+};

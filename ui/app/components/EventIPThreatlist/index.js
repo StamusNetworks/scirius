@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const EventIPThreatlist = (props) => (
+const EventIPThreatlist = props => (
   <div>
     <h4>Threat list info</h4>
     <dl>

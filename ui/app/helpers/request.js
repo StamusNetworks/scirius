@@ -40,6 +40,6 @@ const request = async (endpoint, method, params, options) => {
     //   console.groupEnd();
     // }
   }
-}
+};
 
 export default request;

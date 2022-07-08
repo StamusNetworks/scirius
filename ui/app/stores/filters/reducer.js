@@ -7,7 +7,7 @@ export const initialState = {
   supportedActions: [],
   historyFilters: [],
   saveFiltersModal: false,
-}
+};
 
 /* eslint-disable default-case */
 const appReducer = (state = initialState, action) =>
@@ -79,14 +79,14 @@ const appReducer = (state = initialState, action) =>
         break;
       }
       case constants.HISTORY_FILTERS_FAILURE: {
-        draft.historyFilters = []
+        draft.historyFilters = [];
         break;
       }
       case constants.MODAL_SAVE_FILTERS: {
-        draft.saveFiltersModal = action.payload.value
+        draft.saveFiltersModal = action.payload.value;
         break;
       }
     }
-  })
+  });
 
 export default appReducer;

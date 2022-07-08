@@ -81,7 +81,7 @@ class FilterList extends React.Component {
     this.setState({ editForm: false });
   };
 
-  negateHandler = (e) => {
+  negateHandler = e => {
     this.setState({
       newFilterNegated: e.target.checked,
     });
@@ -94,13 +94,13 @@ class FilterList extends React.Component {
     });
   };
 
-  wildcardHandler = (e) => {
+  wildcardHandler = e => {
     this.setState({
       wildcardMode: e.target.checked,
     });
   };
 
-  keyListener = (e) => {
+  keyListener = e => {
     const newFilterValue = this.state.newFilterValue.toString();
     // Enter key handler
     if (e.keyCode === 13) {
@@ -114,8 +114,7 @@ class FilterList extends React.Component {
   render() {
     const newFilterValue = this.state.newFilterValue.toString();
     const isInteger =
-      INTERGER_FIELDS_ENDS_WITH.findIndex((item) => this.state.filter.id.endsWith(item)) !== -1 ||
-      INTERGER_FIELDS_EXACT.includes(this.state.filter.id);
+      INTERGER_FIELDS_ENDS_WITH.findIndex(item => this.state.filter.id.endsWith(item)) !== -1 || INTERGER_FIELDS_EXACT.includes(this.state.filter.id);
     const controlType = !isInteger ? 'text' : 'number';
 
     let enableWildcard = !['msg', 'not_in_msg', 'content', 'not_in_content', 'hits_min', 'hits_max', 'es_filter'].includes(this.state.filter.id);
@@ -187,7 +186,7 @@ class FilterList extends React.Component {
                         id="input-value-filter"
                         value={newFilterValue}
                         onKeyDown={this.keyListener}
-                        onChange={(e) => this.changeHandler(e, this.state.filter.id)}
+                        onChange={e => this.changeHandler(e, this.state.filter.id)}
                         style={{ width: '100%' }}
                       />
                     ) : (
@@ -195,7 +194,7 @@ class FilterList extends React.Component {
                         id="input-value-filter"
                         value={newFilterValue}
                         onKeyDown={this.keyListener}
-                        onChange={(e) => this.setState({ newFilterValue: e.target.value.trim() })}
+                        onChange={e => this.setState({ newFilterValue: e.target.value.trim() })}
                         style={{ width: '100%' }}
                       />
                     )}

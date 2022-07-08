@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const EventIPResolver = (props) => (
+const EventIPResolver = props => (
   <div>
     <h4>Resolver info</h4>
     <dl>
-      {props.data.map((item) => {
+      {props.data.map(item => {
         let value = 'unknown';
         if (item.type === 'forward') {
           value = item.forward;

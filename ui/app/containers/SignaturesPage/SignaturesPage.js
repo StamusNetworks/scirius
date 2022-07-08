@@ -125,7 +125,7 @@ export class SignaturesPage extends React.Component {
     }
   }
 
-  buildTimelineDataSet = (tdata) => {
+  buildTimelineDataSet = tdata => {
     const timeline = { x: 'x', type: 'area', columns: [['x'], ['alerts']] };
     for (let key = 0; key < tdata.length; key += 1) {
       timeline.columns[0].push(tdata[key].date);
@@ -134,7 +134,7 @@ export class SignaturesPage extends React.Component {
     return timeline;
   };
 
-  findSID = (filters) => {
+  findSID = filters => {
     let foundSid;
     for (let i = 0; i < filters.length; i += 1) {
       if (filters[i].id === 'alert.signature_id' && filters[i].negated === false) {
@@ -175,10 +175,10 @@ export class SignaturesPage extends React.Component {
 
           this.cache[hash] = { RuleRes, SrcRes };
           this.processRulesData(RuleRes, SrcRes);
-          this.setState({rules: RuleRes.data.results});
+          this.setState({ rules: RuleRes.data.results });
         }),
       )
-      .catch((e) => {
+      .catch(e => {
         // handle the case when non-existent page is requested
         if (e.response.status === 404 && this.props.rules_list.pagination.page !== 1) {
           const sigsListState = {
@@ -252,11 +252,7 @@ export class SignaturesPage extends React.Component {
         </Helmet>
         {this.state.net_error !== undefined && <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>}
         <ErrorHandler>
-          <Filters
-            page='SIGNATURES'
-            section={sections.GLOBAL}
-            queryTypes={['filter', 'rest']}
-          />
+          <Filters page="SIGNATURES" section={sections.GLOBAL} queryTypes={['filter', 'rest']} />
         </ErrorHandler>
 
         <Spin spinning={this.state.loading} style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }} />

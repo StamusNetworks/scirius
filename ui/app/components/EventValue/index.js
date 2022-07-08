@@ -23,20 +23,20 @@ const mitreLinks = [
 const Container = styled.div`
   display: flex;
   align-items: center;
-  background: ${p => p.hover ? '#e5e5e5' : 'none'};
-  cursor: ${p => p.hover ? 'pointer' : 'default'};
+  background: ${p => (p.hover ? '#e5e5e5' : 'none')};
+  cursor: ${p => (p.hover ? 'pointer' : 'default')};
   padding: 7px 0px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-`
+`;
 const Value = styled.div`
   flex: 1;
   min-width: 0; /* or some value */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-`
+`;
 
 const Extra = styled.div`
   white-space: nowrap;
@@ -45,15 +45,15 @@ const Extra = styled.div`
   span {
     margin-right: 3px;
   }
-`
+`;
 
 const Badge = styled.span`
   background: #e5e5e5;
   padding: 0px 5px;
   font-size: 12px;
-`
+`;
 
-const EventValue = (props) => {
+const EventValue = props => {
   const getLink = () => {
     if (virusTotalLinks.includes(props.field)) {
       return (
@@ -71,7 +71,7 @@ const EventValue = (props) => {
       return (
         <Tooltip key="mitre_link" title="external info" trigger="hover" id="tooltip-top">
           <a
-            href={function(){
+            href={(function () {
               if (props.field === mitreLinks[0]) {
                 return `https://attack.mitre.org/tactics/${props.value}`;
               }
@@ -79,7 +79,7 @@ const EventValue = (props) => {
                 return `https://attack.mitre.org/techniques/${props.value}`;
               }
               return `https://attack.mitre.org/techniques/${props.value.split('.')[0]}/${props.value.split('.')[1]}`;
-            }()}
+            })()}
             target="_blank"
           >
             {' '}
@@ -102,7 +102,7 @@ const EventValue = (props) => {
   };
 
   const [hover, setHover] = useState(false);
-  const magnifiers = (!props.copyMode && hover) && props.value !== 'Unknown'
+  const magnifiers = !props.copyMode && hover && props.value !== 'Unknown';
   return (
     <Container
       onMouseEnter={() => setHover(true)}
@@ -114,9 +114,7 @@ const EventValue = (props) => {
         }
       }}
     >
-      <Value title={props.value + (props.hasCopyShortcut ? '\nCtrl + left click to copy' : '')}>
-        {printValue()}
-      </Value>
+      <Value title={props.value + (props.hasCopyShortcut ? '\nCtrl + left click to copy' : '')}>{printValue()}</Value>
       {magnifiers && (
         <Extra>
           <ErrorHandler>
@@ -134,7 +132,7 @@ const EventValue = (props) => {
                       fullString: true,
                       negated: false,
                     })
-                }
+                  }
                 />
               </Tooltip>
             )}
@@ -176,7 +174,7 @@ EventValue.propTypes = {
   copyMode: PropTypes.bool,
 };
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = dispatch => ({
   addFilter: (section, filter) => dispatch(addFilter(section, filter)),
 });
 

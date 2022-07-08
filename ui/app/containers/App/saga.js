@@ -39,7 +39,7 @@ function* getSources() {
 function* getAllPeriod() {
   try {
     const timeRange = yield call(NetworkService.fetchAllPeriod, { event: false });
-    const { max_timestamp: maxTimestamp = 0, min_timestamp: minTimestamp = 0 } = timeRange
+    const { max_timestamp: maxTimestamp = 0, min_timestamp: minTimestamp = 0 } = timeRange;
     yield put(actions.getAllPeriodSuccess(minTimestamp, maxTimestamp));
   } catch (e) {
     yield put(actions.getAllPeriodFailure());

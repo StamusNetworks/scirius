@@ -13,7 +13,7 @@ const mapStateToProps = createStructuredSelector({
   duration: makeSelectFilterParam('duration'),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = dispatch => ({
   filterParamsSet: (paramName, paramValue) => dispatch(filterParamsSet(paramName, paramValue)),
   reload: () => dispatch(reload()),
 });

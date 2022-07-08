@@ -9,7 +9,9 @@ const Alerts = () => (
     <UIBreadcrumb
       items={[
         'Hunting',
-        <Link app to='hunting/alerts'>Alerts</Link>,
+        <Link app to="hunting/alerts">
+          Alerts
+        </Link>,
       ]}
     />
     <HuntApp page={PAGE_STATE.alerts_list} />
@@ -19,6 +21,6 @@ Alerts.metadata = {
   category: 'STAMUS_ND',
   url: 'hunting/alerts',
   position: 1,
-}
+};
 
 export default Alerts;

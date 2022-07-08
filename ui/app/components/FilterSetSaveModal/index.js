@@ -4,7 +4,7 @@ import { Button, Checkbox, Col, Form, Input, Modal, Row, Select } from 'antd';
 import { huntTabs } from 'ui/constants';
 import HuntRestError from 'ui/components/HuntRestError';
 
-const FilterSetSaveModal = (props) => (
+const FilterSetSaveModal = props => (
   <Modal
     title={props.title}
     visible={props.showModal}
@@ -24,7 +24,7 @@ const FilterSetSaveModal = (props) => (
       onClick={
         // Stopping event propagation is required since the modal is the children of a list item that
         // will also react to clicks
-        (e) => {
+        e => {
           e.stopPropagation();
         }
       }
@@ -40,7 +40,7 @@ const FilterSetSaveModal = (props) => (
               <Input
                 defaultValue=""
                 onChange={props.handleFieldChange}
-                onKeyDown={(e) => {
+                onKeyDown={e => {
                   if (e.keyCode === 13) {
                     e.preventDefault();
                     props.submit();
@@ -59,11 +59,13 @@ const FilterSetSaveModal = (props) => (
             {!props.page && (
               <Form.Item name="select-page">
                 <Select style={{ width: '100%' }} placeholder="Please select page" onChange={props.handleComboChange}>
-                  {Object.keys(huntTabs).filter((key) => huntTabs[key] !== 'Policies').map((key) => (
-                    <Select.Option key={huntTabs[key]} value={key}>
-                      {huntTabs[key]}
-                    </Select.Option> // eslint-disable-line indent
-                  ))}
+                  {Object.keys(huntTabs)
+                    .filter(key => huntTabs[key] !== 'Policies')
+                    .map(key => (
+                      <Select.Option key={huntTabs[key]} value={key}>
+                        {huntTabs[key]}
+                      </Select.Option> // eslint-disable-line indent
+                    ))}
                 </Select>
               </Form.Item>
             )}

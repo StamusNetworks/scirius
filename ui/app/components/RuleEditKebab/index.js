@@ -53,7 +53,7 @@ export default class RuleEditKebab extends React.Component {
     return (
       <React.Fragment>
         <Dropdown id="ruleActions" overlay={this.menu} trigger={['click']}>
-          <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+          <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
             <MenuOutlined />
           </a>
         </Dropdown>

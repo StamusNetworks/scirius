@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const EventIPGeoloc = (props) => (
+const EventIPGeoloc = props => (
   <div>
     <h4>Geo localization result</h4>
     <dl>

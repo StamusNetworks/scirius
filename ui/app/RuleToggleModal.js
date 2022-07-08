@@ -2,7 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import {Button, Checkbox, Form, Input, InputNumber, Modal, Select} from 'antd';
+import { Button, Checkbox, Form, Input, InputNumber, Modal, Select } from 'antd';
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'buildFilterParams';
@@ -46,7 +46,7 @@ export default class RuleToggleModal extends React.Component {
     }
   }
 
-  onFieldKeyPress = (keyEvent) => {
+  onFieldKeyPress = keyEvent => {
     if (keyEvent.key === 'Enter') {
       keyEvent.stopPropagation();
       keyEvent.preventDefault();
@@ -80,11 +80,11 @@ export default class RuleToggleModal extends React.Component {
       return;
     }
     if (this.props.filters && this.props.filters.length > 0) {
-      const wantedFilters = Array.from(this.props.filters, (x) => x.id);
+      const wantedFilters = Array.from(this.props.filters, x => x.id);
       const reqData = { fields: wantedFilters, action: this.props.action };
       axios
         .post(`${config.API_URL + config.PROCESSING_PATH}test/`, reqData)
-        .then((res) => {
+        .then(res => {
           const suppFilters = [];
           let notfound = true;
           for (let i = 0; i < this.props.filters.length; i += 1) {
@@ -122,7 +122,7 @@ export default class RuleToggleModal extends React.Component {
           }
           this.setState({ supported_filters: suppFilters, noaction: notfound, errors });
         })
-        .catch((error) => {
+        .catch(error => {
           if (error.response.status === 403) {
             this.setState({ errors: { permission: ['Insufficient permissions'] }, noaction: true });
           }
@@ -141,7 +141,7 @@ export default class RuleToggleModal extends React.Component {
     this.setState({ submitting: true });
 
     if (['enable', 'disable'].indexOf(this.props.action) !== -1) {
-      this.state.selected.map((ruleset) => {
+      this.state.selected.map(ruleset => {
         const data = { ruleset };
         if (this.state.comment.length > 0) {
           data.comment = this.state.comment;
@@ -161,7 +161,7 @@ export default class RuleToggleModal extends React.Component {
             }
             this.close();
           })
-          .catch((error) => {
+          .catch(error => {
             this.setState({ errors: error.response.data });
           });
         return true;
@@ -198,7 +198,7 @@ export default class RuleToggleModal extends React.Component {
           this.setState({ submitting: false });
           this.close();
         })
-        .catch((error) => {
+        .catch(error => {
           this.setState({ errors: error.response.data, submitting: false });
         });
     }
@@ -246,6 +246,7 @@ export default class RuleToggleModal extends React.Component {
 
   render() {
     let title = null;
+    const middleDot = '•'; /* ignore_utf8_check 8226 */
 
     if (this.props.action === 'threat') {
       title = 'Define custom Declaration(s) of Compromise';
@@ -281,7 +282,7 @@ export default class RuleToggleModal extends React.Component {
             {this.state.supported_filters &&
               this.state.supported_filters.map((item, i) => (
                 <Form.Item key={item.id} style={{ marginBottom: '10px' }}>
-                  <div style={{display:'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center'}}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center' }}>
                     <Checkbox defaultChecked onChange={() => this.toggleFilter(i)}>
                       <strong>
                         {item.negated && 'Not '}
@@ -292,8 +293,8 @@ export default class RuleToggleModal extends React.Component {
                       type={item.id}
                       disabled={!item.isChecked}
                       defaultValue={item.value}
-                      onChange={(e) => this.handleFieldChange(e, i)}
-                      onKeyPress={(e) => this.onFieldKeyPress(e)}
+                      onChange={e => this.handleFieldChange(e, i)}
+                      onKeyPress={e => this.onFieldKeyPress(e)}
                     />
                   </div>
                 </Form.Item>
@@ -301,21 +302,21 @@ export default class RuleToggleModal extends React.Component {
             {this.props.action === 'threshold' && (
               <React.Fragment>
                 <Form.Item key="count" style={{ marginBottom: '10px' }}>
-                  <div style={{display:'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center'}}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center' }}>
                     <strong>Count</strong>
-                    <InputNumber defaultValue={1} onChange={(value) => this.handleOptionsChange("count", value)} style={{width: '100%'}}/>
+                    <InputNumber defaultValue={1} onChange={value => this.handleOptionsChange('count', value)} style={{ width: '100%' }} />
                   </div>
                 </Form.Item>
                 <Form.Item key="seconds" style={{ marginBottom: '10px' }}>
-                  <div style={{display:'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center'}}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center' }}>
                     <strong>Seconds</strong>
-                    <InputNumber defaultValue={60} onChange={(v) => this.handleOptionsChange("seconds", v)} style={{width: '100%'}}/>
+                    <InputNumber defaultValue={60} onChange={v => this.handleOptionsChange('seconds', v)} style={{ width: '100%' }} />
                   </div>
                 </Form.Item>
                 <Form.Item key="track" style={{ marginBottom: '10px' }}>
-                  <div style={{display:'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center'}}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center' }}>
                     <strong>Track by</strong>
-                    <Select placeholder="By Source" onChange={(v) => this.handleOptionsChange("by_src", v)} allowClear>
+                    <Select placeholder="By Source" onChange={v => this.handleOptionsChange('by_src', v)} allowClear>
                       <Option value="by_src">By Source</Option>
                       <Option value="by_dst">By Destination</Option>
                     </Select>
@@ -325,33 +326,37 @@ export default class RuleToggleModal extends React.Component {
             )}
             {this.props.children && this.props.children(this)}
             <hr />
-            {
-              <Form.Item>
-                <React.Fragment>
-                  <strong>Ruleset{this.props.rulesets.length > 1 && 's'}:</strong>
-                  <div style={{display:'grid', gridTemplateColumns: '2fr max-content', alignItems: 'center', justifyContent: 'space-around'}}>
-                    {this.props.rulesets &&
-                      this.props.rulesets.map((ruleset) => (
-                        <React.Fragment key={ruleset.pk}>
-                          <label htmlFor={ruleset.pk}>{ruleset.name}</label>
-                          <Checkbox id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange} style={{justifySelf: 'right'}}/>
-                          {ruleset.warnings && <React.Fragment><div>•</div><div>{ruleset.warnings}</div></React.Fragment>} {/* ignore_utf8_check 8226 8214 */}
-                          {ruleset[`warnings_${this.props.action}`] && (
-                            <React.Fragment>
-                              <div>•</div><div>{ruleset[`warnings_${this.props.action}`]}</div> {/* ignore_utf8_check 8226 */}
-                            </React.Fragment>
-                          )}
-                        </React.Fragment>
-                      ))}
-                  </div>
-                </React.Fragment>
-              </Form.Item>
-            }
+            <Form.Item>
+              <React.Fragment>
+                <strong>Ruleset{this.props.rulesets.length > 1 && 's'}:</strong>
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr max-content', alignItems: 'center', justifyContent: 'space-around' }}>
+                  {this.props.rulesets &&
+                    this.props.rulesets.map(ruleset => (
+                      <React.Fragment key={ruleset.pk}>
+                        <label htmlFor={ruleset.pk}>{ruleset.name}</label>
+                        <Checkbox id={ruleset.pk} name={ruleset.pk} onChange={this.handleChange} style={{ justifySelf: 'right' }} />
+                        {ruleset.warnings && (
+                          <React.Fragment>
+                            <div>{middleDot}</div>
+                            <div>{ruleset.warnings}</div>
+                          </React.Fragment>
+                        )}{' '}
+                        {ruleset[`warnings_${this.props.action}`] && (
+                          <React.Fragment>
+                            <div>{middleDot}</div>
+                            <div>{ruleset[`warnings_${this.props.action}`]}</div>
+                          </React.Fragment>
+                        )}
+                      </React.Fragment>
+                    ))}
+                </div>
+              </React.Fragment>
+            </Form.Item>
             <hr />
-              <div style={{display:'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center'}}>
-                <strong>Optional comment</strong>
-                <Input.TextArea value={this.state.comment} onChange={this.handleCommentChange} />
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center' }}>
+              <strong>Optional comment</strong>
+              <Input.TextArea value={this.state.comment} onChange={this.handleCommentChange} />
+            </div>
           </Form>
         )}
         {this.state.noaction && <p>You need enough permissions and at least a filter supported by the ruleset backend to define an action</p>}

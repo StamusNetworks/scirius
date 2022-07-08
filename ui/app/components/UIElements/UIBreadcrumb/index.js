@@ -16,10 +16,10 @@ const UIBreadcrumb = ({ items, children }) => (
   <StyledBreadcrumb separator=">">
     {!items && children}
     {/* eslint-disable-next-line react/no-array-index-key */}
-    {!children && items.map((item, i) => (<Breadcrumb.Item key={i}>{item}</Breadcrumb.Item>))}
-    {items && children && (<Breadcrumb.Item>items and children props can&quot;t be used together</Breadcrumb.Item>)}
+    {!children && items.map((item, i) => <Breadcrumb.Item key={i}>{item}</Breadcrumb.Item>)}
+    {items && children && <Breadcrumb.Item>items and children props can&quot;t be used together</Breadcrumb.Item>}
   </StyledBreadcrumb>
-)
+);
 
 UIBreadcrumb.propTypes = {
   items: PropTypes.array,

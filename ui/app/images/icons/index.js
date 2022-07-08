@@ -3,5 +3,5 @@ import readMore from './read_more.svg';
 
 export default {
   hunting,
-  readMore
+  readMore,
 };

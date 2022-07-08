@@ -38,6 +38,6 @@ const ENDPOINT = {
     name: 'Fetching history filters',
     url: `${RULES_URL}/history/get_action_type_list/`,
   },
-}
+};
 
 export default ENDPOINT;
