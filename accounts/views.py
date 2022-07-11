@@ -76,7 +76,7 @@ def loginview(request, target):
                 )
                 if target:
                     return redirect("/" + target)
-                return redirect(get_middleware_module('common').login_redirection_url())
+                return redirect(get_middleware_module('common').login_redirection_url(request))
             else:
                 form = LoginForm()
                 context = {'form': form, 'error': 'Disabled account'}

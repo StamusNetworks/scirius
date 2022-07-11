@@ -39,8 +39,8 @@ revproxy_logger = logging.getLogger('revproxy')
 revproxy_logger.setLevel(logging.WARNING)
 
 
-def homepage(_):
-    return redirect(get_middleware_module('common').login_redirection_url())
+def homepage(request):
+    return redirect(get_middleware_module('common').login_redirection_url(request))
 
 
 # Proxy

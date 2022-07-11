@@ -278,5 +278,5 @@ def use_stamuslogger():
     return False
 
 
-def login_redirection_url():
+def login_redirection_url(_):
     return '/stamus/hunting/dashboards'
