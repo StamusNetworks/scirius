@@ -23,9 +23,9 @@ import PropTypes from 'prop-types';
 import { Drawer, Dropdown, Input, Menu, Spin } from 'antd';
 import { BellOutlined, DashboardOutlined, IdcardOutlined, InfoCircleOutlined, MenuOutlined, SafetyOutlined, UploadOutlined } from '@ant-design/icons';
 import { sections, huntUrls } from 'ui/constants';
-import { compose } from 'redux';
+import { bindActionCreators, compose } from 'redux';
 import { connect } from 'react-redux';
-import { reload } from '../../containers/HuntApp/stores/filterParams';
+import actions from 'ui/containers/App/actions';
 import history from '../../utils/history';
 
 class FilterSets extends React.Component {
@@ -325,9 +325,13 @@ FilterSets.propTypes = {
   }),
 };
 
-const mapDispatchToProps = dispatch => ({
-  reload: () => dispatch(reload()),
-});
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(
+    {
+      reload: actions.doReload,
+    },
+    dispatch,
+  );
 
 const withConnect = connect(null, mapDispatchToProps);
 
