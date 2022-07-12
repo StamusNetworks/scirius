@@ -33,14 +33,7 @@ export default class HuntPaginationRow extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <Pagination
-          defaultCurrent={1}
-          total={this.props.itemsCount - 1}
-          showSizeChanger={false}
-          showQuickJumper={false}
-          showTotal={total => `Total ${total} items`}
-          onChange={this.onChange}
-        />
+        <Pagination defaultCurrent={1} total={this.props.itemsCount - 1} showSizeChanger={false} showQuickJumper={false} onChange={this.onChange} />
       </React.Fragment>
     );
   }

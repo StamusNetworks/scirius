@@ -1,16 +1,30 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
+import { Tabs } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, SafetyOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import * as config from 'config/Api';
 import { buildFilterParams } from 'ui/buildFilterParams';
 import FilterEditKebab from 'ui/components/FilterEditKebab';
+import UICard from 'ui/components/UIElements/UICard';
+
+const { TabPane } = Tabs;
+const TabPaneStyled = styled(TabPane)`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-gap: 10px;
+  padding-bottom: 10px;
+`;
 
 const ActionItemContainer = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, 200px);
   grid-gap: 20px;
+  justify-items: center;
+  &:not(:last-child) {
+    margin-bottom: 20px;
+  }
 `;
 
 const Actionitem = styled.div`
@@ -92,27 +106,38 @@ export default class ActionItem extends React.Component {
     );
 
     return (
-      <ActionItemContainer>
-        {this.state.data &&
-          this.state.data.map(item => (
-            <Actionitem key={item.key}>
-              <ActionSubItemOne>
-                <SafetyOutlined style={{ fontSize: '21px', color: '#005792' }} />
-                <span>{item.key}</span>
-              </ActionSubItemOne>
-              <ActionSubItemTwo>
-                <ActionSubItemTwoItem>
-                  <CheckCircleOutlined style={{ fontSize: '18px', color: '#3f9c35' }} />
-                  <span>{item.seen.value}</span>
-                </ActionSubItemTwoItem>
-                <ActionSubItemTwoItem>
-                  <CloseCircleOutlined style={{ fontSize: '18px', color: '#cc0000' }} />
-                  <span>{item.drop.value}</span>
-                </ActionSubItemTwoItem>
-              </ActionSubItemTwo>
-            </Actionitem>
-          ))}
-      </ActionItemContainer>
+      <React.Fragment>
+        <Tabs defaultActiveKey="1">
+          <TabPaneStyled tab="Policy" key="1">
+            <UICard title="Filters">{this.props.filters}</UICard>
+            <UICard title="Parameters">{this.props.expandedDescription}</UICard>
+            <UICard title="Rulesets">{this.props.expandedRulesets}</UICard>
+          </TabPaneStyled>
+          <TabPane tab="Statistics" key="2">
+            <ActionItemContainer>
+              {this.state.data &&
+                this.state.data.map(item => (
+                  <Actionitem key={item.key}>
+                    <ActionSubItemOne>
+                      <SafetyOutlined style={{ fontSize: '21px', color: '#005792' }} />
+                      <span>{item.key}</span>
+                    </ActionSubItemOne>
+                    <ActionSubItemTwo>
+                      <ActionSubItemTwoItem>
+                        <CheckCircleOutlined style={{ fontSize: '18px', color: '#3f9c35' }} />
+                        <span>{item.seen.value}</span>
+                      </ActionSubItemTwoItem>
+                      <ActionSubItemTwoItem>
+                        <CloseCircleOutlined style={{ fontSize: '18px', color: '#cc0000' }} />
+                        <span>{item.drop.value}</span>
+                      </ActionSubItemTwoItem>
+                    </ActionSubItemTwo>
+                  </Actionitem>
+                ))}
+            </ActionItemContainer>
+          </TabPane>
+        </Tabs>
+      </React.Fragment>
     );
   }
 }
@@ -122,4 +147,7 @@ ActionItem.propTypes = {
   last_index: PropTypes.any,
   switchPage: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
+  expandedDescription: PropTypes.any,
+  filters: PropTypes.any,
+  expandedRulesets: PropTypes.any,
 };
