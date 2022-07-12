@@ -27,7 +27,6 @@ import DisplayPage from 'ui/components/DisplayPage';
 import * as config from 'config/Api';
 import EmitEvent from '../../helpers/EmitEvent';
 import keymap from '../../Keymap';
-import storage from '../../helpers/storage';
 
 const shortcutManager = new ShortcutManager(keymap);
 
@@ -38,11 +37,11 @@ export default class HuntApp extends Component {
   constructor(props) {
     super(props);
     this.timer = null;
-    let rulesListConf = storage.getItem('rules_list');
-    let alertsListConf = storage.getItem('alerts_list');
-    let historyConf = storage.getItem('history');
-    let filtersListConf = storage.getItem('filters_list');
-    let historyFilters = storage.getItem('history_filters');
+    let rulesListConf = localStorage.getItem('rules_list');
+    let alertsListConf = localStorage.getItem('alerts_list');
+    let historyConf = localStorage.getItem('history');
+    let filtersListConf = localStorage.getItem('filters_list');
+    let historyFilters = localStorage.getItem('history_filters');
 
     if (!rulesListConf) {
       rulesListConf = {
@@ -54,10 +53,10 @@ export default class HuntApp extends Component {
         sort: { id: 'created', asc: false },
         view_type: 'list',
       };
-      storage.setItem('rules_list', JSON.stringify(rulesListConf));
+      localStorage.setItem('rules_list', JSON.stringify(rulesListConf));
     } else {
       rulesListConf = JSON.parse(rulesListConf);
-      // Sanity checks for the object retrieved from local storage
+      // Sanity checks for the object retrieved from local localStorage
       if (typeof rulesListConf.pagination === 'undefined') {
         rulesListConf.pagination = {};
       }
@@ -82,7 +81,7 @@ export default class HuntApp extends Component {
         sort: { id: 'timestamp', asc: false },
         view_type: 'list',
       };
-      storage.setItem('alerts_list', JSON.stringify(alertsListConf));
+      localStorage.setItem('alerts_list', JSON.stringify(alertsListConf));
     } else {
       alertsListConf = JSON.parse(alertsListConf);
     }
@@ -97,7 +96,7 @@ export default class HuntApp extends Component {
         sort: { id: 'timestamp', asc: false },
         view_type: 'list',
       };
-      storage.setItem('filters_list', JSON.stringify(filtersListConf));
+      localStorage.setItem('filters_list', JSON.stringify(filtersListConf));
     } else {
       filtersListConf = JSON.parse(filtersListConf);
     }
@@ -112,14 +111,14 @@ export default class HuntApp extends Component {
         sort: { id: 'date', asc: false },
         view_type: 'list',
       };
-      storage.setItem('history', JSON.stringify(historyConf));
+      localStorage.setItem('history', JSON.stringify(historyConf));
     } else {
       historyConf = JSON.parse(historyConf);
     }
 
     if (!historyFilters) {
       historyFilters = [];
-      storage.setItem('history_filters', JSON.stringify(historyFilters));
+      localStorage.setItem('history_filters', JSON.stringify(historyFilters));
     } else {
       historyFilters = JSON.parse(historyFilters);
     }
@@ -150,27 +149,27 @@ export default class HuntApp extends Component {
 
   updateRuleListState(rulesListState, fetchDataCallback) {
     this.setState({ rules_list: rulesListState }, fetchDataCallback);
-    storage.setItem('rules_list', JSON.stringify(rulesListState));
+    localStorage.setItem('rules_list', JSON.stringify(rulesListState));
   }
 
   updateAlertListState(alertsListState, fetchDataCallback) {
     this.setState({ alerts_list: alertsListState }, fetchDataCallback);
-    storage.setItem('alerts_list', JSON.stringify(alertsListState));
+    localStorage.setItem('alerts_list', JSON.stringify(alertsListState));
   }
 
   updateFilterListState(filtersListState, fetchDataCallback) {
     this.setState({ filters_list: filtersListState }, fetchDataCallback);
-    storage.setItem('filters_list', JSON.stringify(filtersListState));
+    localStorage.setItem('filters_list', JSON.stringify(filtersListState));
   }
 
   updateHistoryFilterState(filters, fetchDataCallback) {
     this.setState({ historyFilters: filters }, fetchDataCallback);
-    storage.setItem('history_filters', JSON.stringify(filters));
+    localStorage.setItem('history_filters', JSON.stringify(filters));
   }
 
   updateHistoryListState(historyState, fetchDataCallback) {
     this.setState({ history: historyState }, fetchDataCallback);
-    storage.setItem('history', JSON.stringify(historyState));
+    localStorage.setItem('history', JSON.stringify(historyState));
   }
 
   adjustDashboardWidth = () => {

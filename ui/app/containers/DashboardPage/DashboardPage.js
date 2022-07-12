@@ -42,7 +42,6 @@ import { actionsButtons, loadActions, createAction, closeAction } from '../../he
 import '../../../node_modules/react-grid-layout/css/styles.css';
 import '../../../node_modules/react-resizable/css/styles.css';
 import copyTextToClipboard from '../../helpers/copyTextToClipboard';
-import storage from '../../helpers/storage';
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
@@ -50,7 +49,7 @@ export class HuntDashboard extends React.Component {
   constructor(props) {
     super(props);
 
-    let onlyHits = storage.getItem('rules_list.only_hits');
+    let onlyHits = localStorage.getItem('rules_list.only_hits');
     if (!onlyHits) {
       onlyHits = false;
     }
@@ -234,7 +233,7 @@ export class HuntDashboard extends React.Component {
     return qfilter;
   };
 
-  /* default panel properties should be extended with the stored equivalent into the local storage */
+  /* default panel properties should be extended with the stored equivalent into the localStorage */
   extendDefaultPanels = () => {
     const storedMacroLayout = store.get('dashboardMacroLayout');
     return Object.assign(

@@ -2,7 +2,6 @@ import produce from 'immer';
 // CONSTANTS
 import { createSelector } from 'reselect';
 import { sections } from 'ui/constants';
-import storage from '../../../helpers/storage';
 
 export const ADD_FILTER = 'Hunt/HuntApp/ADD_FILTER';
 export const REMOVE_FILTER = 'Hunt/HuntApp/REMOVE_FILTER';
@@ -43,14 +42,14 @@ export const generateDefaultRequest = () => ({
 });
 
 export const updateStorage = (filterType, filters) => {
-  storage.setItem(filterType, JSON.stringify(filters));
+  localStorage.setItem(filterType, JSON.stringify(filters));
 };
 
 export const loadStorage = filtersType => {
   const initialFilterSet = undefined;
   let result;
   try {
-    const cached = JSON.parse(storage.getItem(filtersType));
+    const cached = JSON.parse(localStorage.getItem(filtersType));
     result = typeof cached === 'undefined' ? initialFilterSet : cached;
   } catch (e) {
     result = initialFilterSet;
