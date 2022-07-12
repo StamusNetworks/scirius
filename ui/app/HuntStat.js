@@ -5,7 +5,7 @@ import { MenuOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
-import { buildFilterParams } from 'buildFilterParams';
+import { buildFilterParams } from 'ui/buildFilterParams';
 import EventValue from 'ui/components/EventValue';
 
 export default class HuntStat extends React.Component {

@@ -31,7 +31,7 @@ import find from 'lodash/find';
 import * as config from 'config/Api';
 import { dashboard } from 'config/Dashboard';
 import { buildQFilter } from 'ui/buildQFilter';
-import { buildFilterParams } from 'buildFilterParams';
+import { buildFilterParams } from 'ui/buildFilterParams';
 import { sections } from 'ui/constants';
 import EventValue from 'ui/components/EventValue';
 import ErrorHandler from 'ui/components/Error';

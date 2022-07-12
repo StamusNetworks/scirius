@@ -5,7 +5,7 @@ import axios from 'axios';
 import { List, Modal, Spin } from 'antd';
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
-import { buildFilterParams } from 'buildFilterParams';
+import { buildFilterParams } from 'ui/buildFilterParams';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
 import SciriusChart from 'ui/components/SciriusChart';
 import EventValue from 'ui/components/EventValue';

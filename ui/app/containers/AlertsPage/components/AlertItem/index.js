@@ -4,7 +4,7 @@ import { Button, Empty, Spin, Tabs } from 'antd';
 import UICard from 'ui/components/UIElements/UICard';
 import * as config from 'config/Api';
 import { dashboard } from 'config/Dashboard';
-import { buildFilterParams } from 'buildFilterParams';
+import { buildFilterParams } from 'ui/buildFilterParams';
 import axios from 'axios';
 import ReactJson from 'react-json-view';
 import EventField from 'ui/components/EventField';

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { CheckCircleOutlined, CloseCircleOutlined, SafetyOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import * as config from 'config/Api';
-import { buildFilterParams } from 'buildFilterParams';
+import { buildFilterParams } from 'ui/buildFilterParams';
 import FilterEditKebab from 'ui/components/FilterEditKebab';
 
 const ActionItemContainer = styled.div`

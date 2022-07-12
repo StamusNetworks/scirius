@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
-import { makeSelectFilterParams } from '../HuntApp/stores/filterParams';
+import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import { ActionsPage } from './ActionsPage';
 
 const mapStateToProps = createStructuredSelector({

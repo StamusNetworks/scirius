@@ -28,7 +28,7 @@ import store from 'store';
 import md5 from 'md5';
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
-import { buildFilterParams } from 'buildFilterParams';
+import { buildFilterParams } from 'ui/buildFilterParams';
 import RuleToggleModal from 'RuleToggleModal';
 import ErrorHandler from 'ui/components/Error';
 import HuntRestError from 'ui/components/HuntRestError';

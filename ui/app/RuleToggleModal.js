@@ -5,7 +5,7 @@ import axios from 'axios';
 import { Button, Checkbox, Form, Input, InputNumber, Modal, Select } from 'antd';
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
-import { buildFilterParams } from 'buildFilterParams';
+import { buildFilterParams } from 'ui/buildFilterParams';
 import { supportedActions, setDefaultOptions } from 'ui/supportedActions';
 import HuntRestError from 'ui/components/HuntRestError';
 
