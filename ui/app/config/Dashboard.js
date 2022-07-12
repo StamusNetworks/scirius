@@ -20,7 +20,7 @@ export const dashboard = {
       items: [
         {
           i: 'alert.metadata.affected_product',
-          title: 'Affected product',
+          title: 'Affected products',
           data: null,
           dimensions: {
             lg: {
@@ -51,7 +51,7 @@ export const dashboard = {
         },
         {
           i: 'alert.metadata.attack_target',
-          title: 'Attack target',
+          title: 'Attack targets',
           data: null,
           dimensions: {
             lg: {
@@ -82,7 +82,7 @@ export const dashboard = {
         },
         {
           i: 'alert.metadata.malware_family',
-          title: 'Malware family',
+          title: 'Malware families',
           data: null,
           dimensions: {
             lg: {
@@ -113,7 +113,7 @@ export const dashboard = {
         },
         {
           i: 'alert.metadata.signature_severity',
-          title: 'Signature severity',
+          title: 'Signature severities',
           data: null,
           dimensions: {
             lg: {
@@ -155,7 +155,7 @@ export const dashboard = {
       items: [
         {
           i: 'alert.metadata.mitre_tactic_id',
-          title: 'Tactic ID',
+          title: 'Tactic IDs',
           data: null,
           dimensions: {
             lg: {
@@ -186,7 +186,7 @@ export const dashboard = {
         },
         {
           i: 'alert.metadata.mitre_tactic_name',
-          title: 'Tactic Name',
+          title: 'Tactic Names',
           data: null,
           dimensions: {
             lg: {
@@ -217,7 +217,7 @@ export const dashboard = {
         },
         {
           i: 'alert.metadata.mitre_technique_id',
-          title: 'Technique ID',
+          title: 'Technique IDs',
           data: null,
           dimensions: {
             lg: {
@@ -248,7 +248,7 @@ export const dashboard = {
         },
         {
           i: 'alert.metadata.mitre_technique_name',
-          title: 'Technique Name',
+          title: 'Technique Names',
           data: null,
           dimensions: {
             lg: {
@@ -499,7 +499,7 @@ export const dashboard = {
         },
         {
           i: 'alert.lateral',
-          title: 'Lateral',
+          title: 'Laterals',
           data: null,
           dimensions: {
             lg: {
@@ -530,7 +530,7 @@ export const dashboard = {
         },
         {
           i: 'alert.source.net_info_agg',
-          title: 'Sources Network',
+          title: 'Sources Networks',
           data: null,
           dimensions: {
             lg: {
@@ -561,7 +561,7 @@ export const dashboard = {
         },
         {
           i: 'alert.target.net_info_agg',
-          title: 'Targets Network',
+          title: 'Targets Networks',
           data: null,
           dimensions: {
             lg: {
@@ -592,7 +592,7 @@ export const dashboard = {
         },
         {
           i: 'fqdn.src',
-          title: 'FQDN Source',
+          title: 'FQDN Sources',
           data: null,
           dimensions: {
             lg: {
@@ -623,7 +623,7 @@ export const dashboard = {
         },
         {
           i: 'fqdn.dest',
-          title: 'FQDN Destination',
+          title: 'FQDN Destinations',
           data: null,
           dimensions: {
             lg: {
@@ -654,7 +654,7 @@ export const dashboard = {
         },
         {
           i: 'geoip.provider.autonomous_system_number',
-          title: 'AS Number',
+          title: 'AS Numbers',
           data: null,
           dimensions: {
             lg: {
@@ -685,7 +685,7 @@ export const dashboard = {
         },
         {
           i: 'geoip.provider.autonomous_system_organization',
-          title: 'AS Organization',
+          title: 'AS Organizations',
           data: null,
           dimensions: {
             lg: {
@@ -716,7 +716,7 @@ export const dashboard = {
         },
         {
           i: 'geoip.country_name',
-          title: 'Country Name',
+          title: 'Country Names',
           data: null,
           dimensions: {
             lg: {
@@ -747,7 +747,7 @@ export const dashboard = {
         },
         {
           i: 'geoip.city_name',
-          title: 'City Name',
+          title: 'City Names',
           data: null,
           dimensions: {
             lg: {
@@ -945,7 +945,7 @@ export const dashboard = {
         },
         {
           i: 'vlan',
-          title: 'Vlan',
+          title: 'Vlans',
           position: 5,
           data: null,
           dimensions: {
@@ -1112,7 +1112,7 @@ export const dashboard = {
       items: [
         {
           i: 'http.hostname',
-          title: 'Hostname',
+          title: 'Hostnames',
           data: null,
           dimensions: {
             lg: {
@@ -1143,7 +1143,7 @@ export const dashboard = {
         },
         {
           i: 'http.url',
-          title: 'URL',
+          title: 'URLs',
           data: null,
           dimensions: {
             lg: {
@@ -1174,7 +1174,7 @@ export const dashboard = {
         },
         {
           i: 'http.http_user_agent',
-          title: 'Useragent',
+          title: 'Useragents',
           data: null,
           dimensions: {
             lg: {
@@ -1205,7 +1205,7 @@ export const dashboard = {
         },
         {
           i: 'http.status',
-          title: 'Status',
+          title: 'Statuses',
           data: null,
           dimensions: {
             lg: {
@@ -1236,7 +1236,7 @@ export const dashboard = {
         },
         {
           i: 'http.http_refer',
-          title: 'Referer',
+          title: 'Referers',
           data: null,
           dimensions: {
             lg: {
@@ -1278,7 +1278,7 @@ export const dashboard = {
       items: [
         {
           i: 'dns.query.rrname',
-          title: 'Name',
+          title: 'Names',
           data: null,
           dimensions: {
             lg: {
@@ -1309,7 +1309,7 @@ export const dashboard = {
         },
         {
           i: 'dns.query.rrtype',
-          title: 'Type',
+          title: 'Types',
           data: null,
           dimensions: {
             lg: {
@@ -1351,7 +1351,7 @@ export const dashboard = {
       items: [
         {
           i: 'tls.sni',
-          title: 'Server Name Indication',
+          title: 'Server Names Indication',
           data: null,
           dimensions: {
             lg: {
@@ -1382,7 +1382,7 @@ export const dashboard = {
         },
         {
           i: 'tls.subject',
-          title: 'Subject DN',
+          title: 'Subjects DN',
           data: null,
           dimensions: {
             lg: {
@@ -1413,7 +1413,7 @@ export const dashboard = {
         },
         {
           i: 'tls.issuerdn',
-          title: 'Issuer DN',
+          title: 'Issuers DN',
           data: null,
           dimensions: {
             lg: {
@@ -1444,7 +1444,7 @@ export const dashboard = {
         },
         {
           i: 'tls.fingerprint',
-          title: 'Fingerprint',
+          title: 'Fingerprints',
           data: null,
           dimensions: {
             lg: {
@@ -1475,7 +1475,7 @@ export const dashboard = {
         },
         {
           i: 'tls.ja3.hash',
-          title: 'JA3 Hash',
+          title: 'JA3 Hashes',
           data: null,
           dimensions: {
             lg: {
@@ -1506,7 +1506,7 @@ export const dashboard = {
         },
         {
           i: 'tls.ja3.agent',
-          title: 'JA3 User-Agent',
+          title: 'JA3 User-Agents',
           data: null,
           dimensions: {
             lg: {
@@ -1537,7 +1537,7 @@ export const dashboard = {
         },
         {
           i: 'tls.ja3s.hash',
-          title: 'JA3S Hash',
+          title: 'JA3S Hashes',
           data: null,
           dimensions: {
             lg: {
@@ -1683,7 +1683,7 @@ export const dashboard = {
       items: [
         {
           i: 'smb.command',
-          title: 'Command',
+          title: 'Commands',
           data: null,
           dimensions: {
             lg: {
@@ -1714,7 +1714,7 @@ export const dashboard = {
         },
         {
           i: 'smb.status',
-          title: 'Status',
+          title: 'Statuses',
           data: null,
           dimensions: {
             lg: {
@@ -1745,7 +1745,7 @@ export const dashboard = {
         },
         {
           i: 'smb.filename',
-          title: 'Filename',
+          title: 'Filenames',
           data: null,
           dimensions: {
             lg: {
@@ -1776,7 +1776,7 @@ export const dashboard = {
         },
         {
           i: 'smb.share',
-          title: 'Share',
+          title: 'Shares',
           data: null,
           dimensions: {
             lg: {
@@ -1818,7 +1818,7 @@ export const dashboard = {
       items: [
         {
           i: 'ssh.client.software_version',
-          title: 'Client Software',
+          title: 'Client Softwares',
           position: 1,
           data: null,
           dimensions: {
@@ -1850,7 +1850,7 @@ export const dashboard = {
         },
         {
           i: 'ssh.server.software_version',
-          title: 'Server Software',
+          title: 'Server Softwares',
           data: null,
           dimensions: {
             lg: {
