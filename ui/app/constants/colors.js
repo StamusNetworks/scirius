@@ -3,6 +3,7 @@ export const COLOR_BRAND_GREEN = '#0297A9';
 export const COLOR_BACKGROUND_BLACK = '#414042';
 export const COLOR_LIGHT_BACKGROUND = '#dcddde';
 export const COLOR_MENU_FONT = '#747276';
+export const COLOR_ERROR = '#CC0000';
 
 const COLOR_NEW = '#815517';
 const COLOR_FIXED = '#0297A9';

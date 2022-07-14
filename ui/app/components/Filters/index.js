@@ -17,6 +17,8 @@ import { sections } from 'ui/constants';
 import ErrorHandler from 'ui/components/Error';
 import FilterSetSave from 'ui/components/FilterSetSaveModal';
 import { HUNT_FILTER_SETS } from 'ui/config/Api';
+import { COLOR_ERROR } from 'ui/constants/colors';
+import isIP from 'ui/helpers/isIP';
 
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -24,6 +26,11 @@ import { loadFilterSets } from 'ui/components/FilterSets/store';
 import ActionsButtons from '../ActionsButtons';
 import request from '../../utils/request';
 const { Option } = Select;
+
+const FilterError = styled.span`
+  color: ${COLOR_ERROR};
+  font-size: 10px;
+`;
 
 const FilterContainer = styled.div`
   display: grid;
@@ -88,6 +95,7 @@ const Filter = ({ page, section, queryTypes }) => {
   const supportedActionsPermissions = user && user.data && user.data.permissions && user.data.permissions.includes('rules.ruleset_policy_edit');
 
   // State handlers
+  const [valid, setValid] = useState('');
   const [searchString, setSearchString] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -127,6 +135,7 @@ const Filter = ({ page, section, queryTypes }) => {
       const item = flatOptions.filter(d => value.indexOf(d.id) > -1);
       setSelectedItems(item);
       setSelectedIds(value);
+      setValid('');
     },
     [filterFields, flatOptions],
   );
@@ -140,7 +149,7 @@ const Filter = ({ page, section, queryTypes }) => {
     placeholder, // <string>
     filterType, // <hunt | select | text | complex-select-text | complex-select | complex-select-text | number>
     // filterValues, // undefined || if filterType IS select/complex-select-text/complex-select => FilterValue[{id,label]
-    // valueType, // undefined || if filterType NOT select/complex-select-text/complex-select => text || positiveint || ip
+    valueType, // undefined || if filterType NOT select/complex-select-text/complex-select => text || positiveint || ip
     // queryType, // undefined || filter_host_id || rest || filter ||
     filterCategories, // undefined || if filterType IS complex-select-text =>
     /*
@@ -294,6 +303,19 @@ const Filter = ({ page, section, queryTypes }) => {
       });
   };
 
+  const validate = (type, value) => {
+    if (value.length > 0) {
+      if (type === 'ip') {
+        setValid(isIP(value) ? '' : 'Enter a valid IP address');
+      }
+      if (type === 'positiveint') {
+        setValid(parseInt(value, 10) >= 0 ? '' : 'Enter a positive integer');
+      }
+    } else {
+      setValid('');
+    }
+  };
+
   return (
     <UICard>
       {filterSets && <FilterSets close={() => setFilterSets(false)} />}
@@ -301,23 +323,27 @@ const Filter = ({ page, section, queryTypes }) => {
         <div>
           <Title>Filters</Title>
           <div style={{ display: 'flex', flex: 1, gap: 8 }}>
-            <div style={{ display: 'flex' }}>
+            <div>
               <CascaderStyled value={selectedIds} options={treeOptions} displayRender={displayRender} onChange={value => onChange(value)} />
             </div>
             {field && filterType !== 'complex-select' && filterType !== 'select' && (
-              <div style={{ display: 'flex', flex: 1 }}>
+              <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
                 <Input
                   type={filterType === 'number' ? 'number' : 'text'}
                   value={searchString}
-                  onChange={e => setSearchString(e.target.value)}
+                  onChange={e => {
+                    validate(valueType, e.target.value);
+                    setSearchString(e.target.value);
+                  }}
                   placeholder={placeholder}
                   onPressEnter={event => {
                     const value = filterType === 'number' ? parseInt(event.target.value, 10) : event.target.value;
-                    if ((value && typeof value === 'string' && value.length > 0) || typeof value === 'number') {
+                    if (valid.length === 0 && ((value && typeof value === 'string' && value.length > 0) || typeof value === 'number')) {
                       filterAdded(field, value, false);
                     }
                   }}
                 />
+                <FilterError>{valid}</FilterError>
               </div>
             )}
             {filterType === 'complex-select' && (
