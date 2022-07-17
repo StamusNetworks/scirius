@@ -20,13 +20,20 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Drawer, Dropdown, Input, Menu, Spin } from 'antd';
-import { BellOutlined, DashboardOutlined, IdcardOutlined, InfoCircleOutlined, MenuOutlined, SafetyOutlined, UploadOutlined } from '@ant-design/icons';
+import styled from 'styled-components';
+import { Drawer, Input, Spin, Collapse } from 'antd';
 import { sections, huntUrls } from 'ui/constants';
+import FilterSetList from 'ui/components/FilterSetList';
 import { bindActionCreators, compose } from 'redux';
 import { connect } from 'react-redux';
 import actions from 'ui/containers/App/actions';
 import history from '../../utils/history';
+
+const Panel = styled(Collapse.Panel)`
+  .ant-collapse-content-box {
+    padding: 0;
+  }
+`;
 
 class FilterSets extends React.Component {
   constructor(props) {
@@ -55,27 +62,6 @@ class FilterSets extends React.Component {
 
   handleSearchValue = event => {
     this.setState({ searchValue: event.target.value });
-  };
-
-  getIcons = item => {
-    const icons = [];
-    if (item.page === 'DASHBOARDS') {
-      icons.push(<DashboardOutlined key="0" />);
-    }
-    if (item.page === 'RULES_LIST') {
-      icons.push(<SafetyOutlined key="1" />);
-    }
-    if (item.page === 'ALERTS_LIST') {
-      icons.push(<BellOutlined key="2" />);
-    }
-    if (item.page === 'HOSTS_LIST') {
-      icons.push(<IdcardOutlined key="3" />);
-    }
-
-    if (item.imported) {
-      icons.push(<UploadOutlined key="4" />);
-    }
-    return icons;
   };
 
   escFunction(event) {
@@ -126,175 +112,56 @@ class FilterSets extends React.Component {
             <Input value={this.state.searchValue} onChange={this.handleSearchValue} />
           </div>
         </div>
-        <Menu defaultOpenKeys={[this.state.expandedPanel]} mode="inline">
-          <Menu.SubMenu
+        <Collapse defaultOpenKeys={[this.state.expandedPanel]} mode="inline">
+          <Panel
             key="global"
             onTitleClick={() => this.togglePanel(globaL)}
-            title={
-              <div style={{ lineHeight: '20px' }}>
-                <div className={this.state.expandedPanel === globaL ? '' : 'collapsed'}>Global Filter Sets</div>
-                <div>{`${rowsGlobal ? rowsGlobal.length : 0} Filter Sets`}</div>
-              </div>
-            }
+            header={<span className={this.state.expandedPanel === globaL ? '' : 'collapsed'}>Global Filter Sets</span>}
+            extra={`${rowsGlobal ? rowsGlobal.length : 0} Filter Sets`}
           >
-            {this.props.loading && (
-              <Menu.Item key="1">
-                <Spin>Loading more</Spin>
-              </Menu.Item>
-            )}
+            {this.props.loading && <Spin>Loading more</Spin>}
             {rowsGlobal &&
               rowsGlobal.map(item => (
-                <Menu.Item
-                  key={item.id}
-                  style={{ height: '100%' }}
-                  onClick={() => this.props.deleteFilterSet('global', item)}
-                  title={item.description}
-                >
-                  <div id={globaL}>
-                    <div key="containsNotifications">
-                      {this.getIcons(item)}
-
-                      <span>
-                        <b>{item.name}</b>
-                      </span>
-                      <Dropdown
-                        id="Dropdown1"
-                        overlay={
-                          <Menu>
-                            <Menu.Item key="load" onClick={() => this.loadFilterSets(item)}>
-                              Load
-                            </Menu.Item>
-                            {!noRights && (
-                              <Menu.Item key="delete" onClick={() => this.props.deleteFilterSet('global', item)}>
-                                Delete
-                              </Menu.Item>
-                            )}
-                          </Menu>
-                        }
-                        trigger={['click']}
-                      >
-                        <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
-                          <MenuOutlined />
-                        </a>
-                      </Dropdown>
-                      <div>
-                        <span>{`${item.pageTitle} Page | `}</span>
-                        <span>Shared</span>
-                      </div>
-                    </div>
-                    {!rowsGlobal && <InfoCircleOutlined />}
-                  </div>
-                </Menu.Item>
+                <FilterSetList
+                  item={item}
+                  loadFilterSets={() => this.loadFilterSets(item)}
+                  deleteFilterSet={() => this.props.deleteFilterSet('global', item)}
+                  info={rowsGlobal}
+                  noRights={noRights}
+                />
               ))}
-          </Menu.SubMenu>
-          <Menu.SubMenu
+          </Panel>
+          <Panel
             key="private"
             onTitleClick={() => this.togglePanel(privatE)}
-            title={
-              <div style={{ lineHeight: '20px' }}>
-                <div className={this.state.expandedPanel === privatE ? '' : 'collapsed'}>Private Filter Sets</div>
-                <div>{`${rowsPrivate ? rowsPrivate.length : 0} Filter Sets`}</div>
-              </div>
-            }
+            header={<span className={this.state.expandedPanel === privatE ? '' : 'collapsed'}>Private Filter Sets</span>}
+            extra={<span>{`${rowsPrivate ? rowsPrivate.length : 0} Filter Sets`}</span>}
           >
-            {this.props.loading && (
-              <Menu.Item key="2">
-                <Spin>Loading more</Spin>
-              </Menu.Item>
-            )}
+            {this.props.loading && <Spin>Loading more</Spin>}
             {rowsPrivate &&
               rowsPrivate.map(item => (
-                <Menu.Item
-                  key={item.id}
-                  style={{ height: '100%' }}
-                  onClick={() => this.props.deleteFilterSet('private', item)}
-                  title={item.description}
-                >
-                  <div id={privatE}>
-                    <div key="containsNotifications">
-                      {this.getIcons(item)}
-
-                      <span>
-                        <b>{item.name}</b>
-                      </span>
-                      <Dropdown
-                        id="Dropdown2"
-                        overlay={
-                          <Menu>
-                            <Menu.Item key="load" onClick={() => this.loadFilterSets(item)}>
-                              Load
-                            </Menu.Item>
-                            <Menu.Item key="delete" onClick={() => this.props.deleteFilterSet('private', item)}>
-                              Delete
-                            </Menu.Item>
-                          </Menu>
-                        }
-                        trigger={['click']}
-                      >
-                        <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
-                          <MenuOutlined />
-                        </a>
-                      </Dropdown>
-                      <div>
-                        <span>{`${item.pageTitle} Page | `}</span>
-                        <span>Private</span>
-                      </div>
-                    </div>
-                    {!rowsPrivate && <InfoCircleOutlined />}
-                  </div>
-                </Menu.Item>
+                <FilterSetList
+                  item={item}
+                  loadFilterSets={() => this.loadFilterSets(item)}
+                  deleteFilterSet={() => this.props.deleteFilterSet('private', item)}
+                  info={rowsPrivate}
+                  noRights={noRights}
+                />
               ))}
-          </Menu.SubMenu>
-          <Menu.SubMenu
+          </Panel>
+          <Panel
             key="static"
             onTitleClick={() => this.togglePanel(statiC)}
-            title={
-              <div style={{ lineHeight: '20px' }}>
-                <div className={this.state.expandedPanel === statiC ? '' : 'collapsed'}>Stamus Predefined Filter Sets</div>
-                <div>{`${rowsStatic ? rowsStatic.length : 0} Filter Sets`}</div>
-              </div>
-            }
+            header={<span className={this.state.expandedPanel === statiC ? '' : 'collapsed'}>Stamus Predefined Filter Sets</span>}
+            extra={<span>{`${rowsStatic ? rowsStatic.length : 0} Filter Sets`}</span>}
           >
-            {this.props.loading && (
-              <Menu.Item key="3">
-                <Spin>Loading more</Spin>
-              </Menu.Item>
-            )}
+            {this.props.loading && <Spin>Loading more</Spin>}
             {rowsStatic &&
               rowsStatic.map(item => (
-                <Menu.Item key={item.id} style={{ height: '100%' }} onClick={() => this.loadFilterSets(item)} title={item.description}>
-                  <div id={statiC}>
-                    <div key="containsNotifications">
-                      {this.getIcons(item)}
-                      <span>
-                        <b>{item.name}</b>
-                      </span>
-                      <Dropdown
-                        id="Dropdown3"
-                        overlay={
-                          <Menu>
-                            <Menu.Item key="load" onClick={() => this.loadFilterSets(item)}>
-                              Load
-                            </Menu.Item>
-                          </Menu>
-                        }
-                        trigger={['click']}
-                      >
-                        <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
-                          <MenuOutlined />
-                        </a>
-                      </Dropdown>
-                      <div>
-                        <span>{`${item.pageTitle} Page | `}</span>
-                        <span>Static</span>
-                      </div>
-                    </div>
-                    {!rowsStatic && <InfoCircleOutlined />}
-                  </div>
-                </Menu.Item>
+                <FilterSetList item={item} loadFilterSets={() => this.loadFilterSets(item)} info={rowsStatic} noRights={noRights} />
               ))}
-          </Menu.SubMenu>
-        </Menu>
+          </Panel>
+        </Collapse>
       </Drawer>
     );
   }
