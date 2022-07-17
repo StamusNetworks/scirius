@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Card, Dropdown, List, Menu, Modal, Spin, Tooltip, Button, Row, Col } from 'antd';
+import { Card, Dropdown, Menu, Modal, Spin, Tooltip, Button, Row, Col } from 'antd';
 import { MenuOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { WidthProvider, Responsive } from 'react-grid-layout';
 import store from 'store';
@@ -484,7 +484,6 @@ export class HuntDashboard extends React.Component {
           </>
         }
       >
-        {this.props.children}
         {block.data !== null &&
           block.data.map(item => (
             <EventValue
@@ -815,51 +814,18 @@ export class HuntDashboard extends React.Component {
           }}
         >
           <div className="hunt-stat-body" id="more-result-modal">
-            {this.state.moreModal && (
-              <List
-                size="small"
-                header={null}
-                footer={null}
-                dataSource={this.state.moreResults}
-                // loading={block.data === null}
-                renderItem={item => {
-                  const itemPath = `modal-${this.state.moreModal.title}-${this.state.moreModal.i}-${item.key}`;
-                  let classes = 'dashboard-list-item';
-                  let clickHandler = null;
-                  classes += this.state.copiedItem === itemPath ? ' copied' : '';
-
-                  if (this.state.copyMode && this.state.hoveredItem === itemPath) {
-                    // Only set clickHandler during copy mode to let click events reach the magnifiers in EventValue
-                    // otherwise hover and click on magnifiers breaks on Firefox
-                    const moreResultModal = document.getElementById('more-result-modal');
-                    clickHandler = event => this.itemCopyModeOnClick(event, itemPath, item.key, moreResultModal);
-                    classes += ' copy-mode';
-                  }
-
-                  return (
-                    <List.Item
-                      key={item.key}
-                      onClick={clickHandler}
-                      onMouseMove={event => this.onMouseMove(event, itemPath)}
-                      onMouseLeave={event => this.onMouseLeave(event, itemPath)}
-                      className={classes}
-                    >
-                      {this.state.moreModal && (
-                        <ErrorHandler>
-                          <EventValue
-                            field={this.state.moreModal.i}
-                            value={item.key}
-                            magnifiers={!this.state.copyMode || this.state.hoveredItem !== itemPath}
-                            right_info={<span className="badge">{item.doc_count}</span>}
-                            hasCopyShortcut
-                          />
-                        </ErrorHandler>
-                      )}
-                    </List.Item>
-                  );
-                }}
-              />
-            )}
+            {this.state.moreModal &&
+              this.state.moreResults.map(item => (
+                <ErrorHandler>
+                  <EventValue
+                    field={this.state.moreModal.i}
+                    value={item.key}
+                    right_info={<span className="badge">{item.doc_count}</span>}
+                    copyMode={this.state.copyMode}
+                    hasCopyShortcut
+                  />
+                </ErrorHandler>
+              ))}
           </div>
         </Modal>
       </div>
@@ -870,7 +836,6 @@ export class HuntDashboard extends React.Component {
 HuntDashboard.propTypes = {
   systemSettings: PropTypes.any,
   filters: PropTypes.any,
-  children: PropTypes.any,
   updateListState: PropTypes.any,
   filtersWithAlert: PropTypes.array,
   filterParams: PropTypes.object.isRequired,
