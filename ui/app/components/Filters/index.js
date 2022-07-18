@@ -307,12 +307,13 @@ const Filter = ({ page, section, queryTypes }) => {
             {field && filterType !== 'complex-select' && filterType !== 'select' && (
               <div style={{ display: 'flex', flex: 1 }}>
                 <Input
+                  type={filterType === 'number' ? 'number' : 'text'}
                   value={searchString}
                   onChange={e => setSearchString(e.target.value)}
                   placeholder={placeholder}
                   onPressEnter={event => {
-                    const { value } = event.target;
-                    if (value && value.length > 0) {
+                    const value = filterType === 'number' ? parseInt(event.target.value, 10) : event.target.value;
+                    if ((value && typeof value === 'string' && value.length > 0) || typeof value === 'number') {
                       filterAdded(field, value, false);
                     }
                   }}
