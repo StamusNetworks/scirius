@@ -43,15 +43,7 @@ const DisplayPage = props => {
       displayedPage = <AlertsPage systemSettings={props.systemSettings} />;
       break;
     case PAGE_STATE.filters_list:
-      displayedPage = (
-        <ActionsPage
-          systemSettings={props.systemSettings}
-          rules_list={props.filters_list}
-          updateListState={props.updateFilterListState}
-          updateFilterState={props.updateFiltersFilterState}
-          switchPage={props.switchPage}
-        />
-      );
+      displayedPage = <ActionsPage systemSettings={props.systemSettings} switchPage={props.switchPage} />;
       break;
   }
 
@@ -71,7 +63,6 @@ DisplayPage.propTypes = {
   updateHistoryFilterState: PropTypes.any,
   alerts_list: PropTypes.any,
   filters_list: PropTypes.any,
-  updateFilterListState: PropTypes.any,
   updateFiltersFilterState: PropTypes.any,
   updateHostListState: PropTypes.any,
 };

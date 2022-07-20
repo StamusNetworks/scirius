@@ -32,6 +32,7 @@ import styled from 'styled-components';
 import UICollapse from 'ui/components/UIElements/UICollapse';
 import UIPanel from 'ui/components/UIElements/UIPanel/UIPanel';
 import UIPanelHeader from 'ui/components/UIElements/UIPanel/UIPanelHeader';
+import buildListParams from 'ui/helpers/buildListParams';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ActionItem from '../../ActionItem';
 import { actionsButtons, buildListUrlParams, createAction, closeAction, buildFilter } from '../../helpers/common';
@@ -51,7 +52,18 @@ const Count = styled.div`
 export class ActionsPage extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { data: [], count: 0, rulesets: [] };
+
+    const filtersListConf = buildListParams(JSON.parse(localStorage.getItem('alerts_list')), {
+      pagination: {
+        page: 1,
+        perPage: 20,
+        perPageOptions: [20, 50, 100],
+      },
+      sort: { id: 'timestamp', asc: false },
+      view_type: 'list',
+    });
+
+    this.state = { data: [], count: 0, rulesets: [], filtersList: filtersListConf };
 
     this.buildFilter = buildFilter.bind(this);
     this.actionsButtons = actionsButtons.bind(this);
@@ -81,13 +93,18 @@ export class ActionsPage extends React.Component {
     }
   }
 
+  updateFilterListState(filtersListState, fetchDataCallback) {
+    this.setState({ filtersList: filtersListState }, fetchDataCallback);
+    localStorage.setItem('filters_list', JSON.stringify(filtersListState));
+  }
+
   updateActionListState(rulesListState) {
-    this.props.updateListState(rulesListState, () => this.fetchData());
+    this.updateFilterListState(rulesListState, () => this.fetchData());
   }
 
   // eslint-disable-next-line no-unused-vars
   fetchData() {
-    const listParams = buildListUrlParams(this.props.rules_list);
+    const listParams = buildListUrlParams(this.state.filtersList);
     this.setState({ loading: true });
     axios
       .get(`${config.API_URL}${config.PROCESSING_PATH}?${listParams}`)
@@ -224,7 +241,7 @@ export class ActionsPage extends React.Component {
             viewType="list"
             onPaginationChange={this.updateActionListState}
             itemsCount={this.state.count}
-            itemsList={this.props.rules_list}
+            itemsList={this.state.filtersList}
           />
         </ErrorHandler>
       </div>
@@ -233,8 +250,6 @@ export class ActionsPage extends React.Component {
 }
 
 ActionsPage.propTypes = {
-  rules_list: PropTypes.any,
-  updateListState: PropTypes.func,
   switchPage: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
 };

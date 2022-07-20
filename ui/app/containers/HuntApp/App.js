@@ -38,23 +38,7 @@ export default class HuntApp extends Component {
     super(props);
     this.timer = null;
     let historyConf = localStorage.getItem('history');
-    let filtersListConf = localStorage.getItem('filters_list');
     let historyFilters = localStorage.getItem('history_filters');
-
-    if (!filtersListConf) {
-      filtersListConf = {
-        pagination: {
-          page: 1,
-          perPage: 20,
-          perPageOptions: [20, 50, 100],
-        },
-        sort: { id: 'timestamp', asc: false },
-        view_type: 'list',
-      };
-      localStorage.setItem('filters_list', JSON.stringify(filtersListConf));
-    } else {
-      filtersListConf = JSON.parse(filtersListConf);
-    }
 
     if (!historyConf) {
       historyConf = {
@@ -81,11 +65,9 @@ export default class HuntApp extends Component {
     this.state = {
       history: historyConf,
       historyFilters,
-      filters_list: filtersListConf,
     };
     this.updateHistoryListState = this.updateHistoryListState.bind(this);
     this.updateHistoryFilterState = this.updateHistoryFilterState.bind(this);
-    this.updateFilterListState = this.updateFilterListState.bind(this);
   }
 
   getChildContext() {
@@ -96,11 +78,6 @@ export default class HuntApp extends Component {
     axios.get(config.API_URL + config.SYSTEM_SETTINGS_PATH).then(systemSettings => {
       this.setState({ systemSettings: systemSettings.data });
     });
-  }
-
-  updateFilterListState(filtersListState, fetchDataCallback) {
-    this.setState({ filters_list: filtersListState }, fetchDataCallback);
-    localStorage.setItem('filters_list', JSON.stringify(filtersListState));
   }
 
   updateHistoryFilterState(filters, fetchDataCallback) {
@@ -134,8 +111,6 @@ export default class HuntApp extends Component {
                   historyFilters={this.state.historyFilters}
                   updateHistoryListState={this.updateHistoryListState}
                   updateHistoryFilterState={this.updateHistoryFilterState}
-                  filters_list={this.state.filters_list}
-                  updateFilterListState={this.updateFilterListState}
                   updateFiltersFilterState={this.updateFiltersFilterState}
                   updateHostListState={this.updateHostListState}
                   hosts_list={this.state.hosts_list}
