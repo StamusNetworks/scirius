@@ -30,6 +30,7 @@ import HistoryItem from 'ui/components/HistoryItem';
 import ErrorHandler from 'ui/components/Error';
 import moment from 'moment';
 import { TableOutlined, UserOutlined, MailOutlined } from '@ant-design/icons';
+import buildListParams from 'ui/helpers/buildListParams';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import { buildFilter, buildListUrlParams } from '../../helpers/common';
 
@@ -38,11 +39,28 @@ const { Panel } = Collapse;
 class HistoryPage extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { data: [], count: 0 };
+
+    const historyConf = buildListParams(JSON.parse(localStorage.getItem('history')), {
+      pagination: {
+        page: 1,
+        perPage: 6,
+        perPageOptions: [6, 10, 15, 25, 50],
+      },
+      sort: { id: 'date', asc: false },
+      view_type: 'list',
+    });
+
+    let historyFilters = localStorage.getItem('history_filters') || '[]';
+
+    if (!historyFilters) {
+      localStorage.setItem('history_filters', JSON.stringify(historyFilters));
+    } else {
+      historyFilters = JSON.parse(historyFilters);
+    }
+
+    this.state = { data: [], count: 0, history: historyConf, historyFilters };
     this.fetchData = this.fetchData.bind(this);
     this.buildFilter = buildFilter;
-    this.buildListUrlParams = buildListUrlParams.bind(this);
-    this.updateHistoryListState = this.updateHistoryListState.bind(this);
 
     this.props.getActionTypes();
   }
@@ -52,14 +70,24 @@ class HistoryPage extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
+    if (JSON.stringify(prevProps.filters) !== JSON.stringify(this.state.historyFilters)) {
       this.fetchData();
     }
   }
 
+  updateHistoryFilterState(filters, fetchDataCallback) {
+    this.setState({ historyFilters: filters }, fetchDataCallback);
+    localStorage.setItem('history_filters', JSON.stringify(filters));
+  }
+
+  updateHistoryListState(historyState) {
+    this.setState({ history: historyState }, () => this.fetchData());
+    localStorage.setItem('history', JSON.stringify(historyState));
+  }
+
   fetchData() {
-    const stringFilters = this.buildFilter(this.props.filters);
-    const listParams = this.buildListUrlParams(this.props.rules_list);
+    const stringFilters = this.buildFilter(this.state.historyFilters);
+    const listParams = buildListUrlParams(this.state.history);
     this.setState({ loading: true });
     axios
       .get(`${config.API_URL}${config.HISTORY_PATH}?${listParams}${stringFilters}`)
@@ -75,14 +103,10 @@ class HistoryPage extends React.Component {
       });
   }
 
-  updateHistoryListState(rulesListState) {
-    this.props.updateListState(rulesListState, () => this.fetchData());
-  }
-
   render() {
     let expand = false;
-    for (let filter = 0; filter < this.props.filters; filter += 1) {
-      if (this.props.filters[filter].id === 'comment' || this.props.filters[filter].id === 'client_ip') {
+    for (let filter = 0; filter < this.state.historyFilters; filter += 1) {
+      if (this.state.historyFilters[filter].id === 'comment' || this.state.historyFilters[filter].id === 'client_ip') {
         expand = true;
         break;
       }
@@ -90,7 +114,21 @@ class HistoryPage extends React.Component {
     return (
       <div>
         <ErrorHandler>
-          <Filters page="HISTORY" section={sections.HISTORY} queryTypes={['all']} />
+          <Filters
+            page="HISTORY"
+            section={sections.HISTORY}
+            queryTypes={['all']}
+            sortValues={{ option: this.state.history.sort.id, direction: this.state.history.sort.asc ? 'asc' : 'desc' }}
+            onSortChange={(option, direction) => {
+              this.updateHistoryListState({
+                ...this.state.history,
+                sort: {
+                  id: option || this.state.history.sort.id,
+                  asc: direction ? direction === 'asc' : this.state.history.sort.asc,
+                },
+              });
+            }}
+          />
         </ErrorHandler>
         <div style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }}>{this.state.loading && <Spin />}</div>
         {this.state.data.results && (
@@ -151,7 +189,7 @@ class HistoryPage extends React.Component {
             viewType="list"
             onPaginationChange={this.updateHistoryListState}
             itemsCount={this.state.count}
-            itemsList={this.props.rules_list}
+            itemsList={this.state.history}
           />
         </ErrorHandler>
       </div>
@@ -160,9 +198,7 @@ class HistoryPage extends React.Component {
 }
 
 HistoryPage.propTypes = {
-  rules_list: PropTypes.any,
   filters: PropTypes.any,
-  updateListState: PropTypes.any,
   getActionTypes: PropTypes.func,
   addFilter: PropTypes.func,
   user: PropTypes.shape({
