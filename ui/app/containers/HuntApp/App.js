@@ -64,12 +64,7 @@ export default class HuntApp extends Component {
           <div className="row row-cards-pf">
             <div className="col-xs-12 col-sm-12 col-md-12 no-col-gutter-right" id="app-content">
               <ErrorHandler>
-                <DisplayPage
-                  page={this.props.page}
-                  systemSettings={this.state.systemSettings}
-                  updateHostListState={this.updateHostListState}
-                  hosts_list={this.state.hosts_list}
-                />
+                <DisplayPage page={this.props.page} systemSettings={this.state.systemSettings} />
               </ErrorHandler>
             </div>
           </div>
