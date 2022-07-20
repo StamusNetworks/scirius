@@ -69,9 +69,14 @@ export default class HistoryPage extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
+    if (JSON.stringify(prevProps.filters) !== JSON.stringify(this.state.historyFilters)) {
       this.fetchData();
     }
+  }
+
+  updateHistoryFilterState(filters, fetchDataCallback) {
+    this.setState({ historyFilters: filters }, fetchDataCallback);
+    localStorage.setItem('history_filters', JSON.stringify(filters));
   }
 
   updateHistoryListState(historyState) {
@@ -80,7 +85,7 @@ export default class HistoryPage extends React.Component {
   }
 
   fetchData() {
-    const stringFilters = this.buildFilter(this.props.filters);
+    const stringFilters = this.buildFilter(this.state.historyFilters);
     const listParams = buildListUrlParams(this.state.history);
     this.setState({ loading: true });
     axios
@@ -99,8 +104,8 @@ export default class HistoryPage extends React.Component {
 
   render() {
     let expand = false;
-    for (let filter = 0; filter < this.props.filters; filter += 1) {
-      if (this.props.filters[filter].id === 'comment' || this.props.filters[filter].id === 'client_ip') {
+    for (let filter = 0; filter < this.state.historyFilters; filter += 1) {
+      if (this.state.historyFilters[filter].id === 'comment' || this.state.historyFilters[filter].id === 'client_ip') {
         expand = true;
         break;
       }

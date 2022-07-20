@@ -37,19 +37,7 @@ export default class HuntApp extends Component {
   constructor(props) {
     super(props);
     this.timer = null;
-    let historyFilters = localStorage.getItem('history_filters');
-
-    if (!historyFilters) {
-      historyFilters = [];
-      localStorage.setItem('history_filters', JSON.stringify(historyFilters));
-    } else {
-      historyFilters = JSON.parse(historyFilters);
-    }
-
-    this.state = {
-      historyFilters,
-    };
-    this.updateHistoryFilterState = this.updateHistoryFilterState.bind(this);
+    this.state = {};
   }
 
   getChildContext() {
@@ -60,11 +48,6 @@ export default class HuntApp extends Component {
     axios.get(config.API_URL + config.SYSTEM_SETTINGS_PATH).then(systemSettings => {
       this.setState({ systemSettings: systemSettings.data });
     });
-  }
-
-  updateHistoryFilterState(filters, fetchDataCallback) {
-    this.setState({ historyFilters: filters }, fetchDataCallback);
-    localStorage.setItem('history_filters', JSON.stringify(filters));
   }
 
   adjustDashboardWidth = () => {
@@ -84,8 +67,6 @@ export default class HuntApp extends Component {
                 <DisplayPage
                   page={this.props.page}
                   systemSettings={this.state.systemSettings}
-                  historyFilters={this.state.historyFilters}
-                  updateHistoryFilterState={this.updateHistoryFilterState}
                   updateHostListState={this.updateHostListState}
                   hosts_list={this.state.hosts_list}
                 />
