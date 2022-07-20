@@ -12,14 +12,7 @@ const DisplayPage = props => {
   switch (props.page) {
     case PAGE_STATE.rules_list:
     default:
-      displayedPage = (
-        <SignaturesPage
-          systemSettings={props.systemSettings}
-          rules_list={props.rules_list}
-          updateListState={props.updateRuleListState}
-          page={props.page}
-        />
-      );
+      displayedPage = <SignaturesPage systemSettings={props.systemSettings} />;
       break;
     case PAGE_STATE.dashboards:
       // FIXME remove or change updateRuleListState

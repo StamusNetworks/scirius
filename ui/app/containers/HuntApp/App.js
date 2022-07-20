@@ -37,39 +37,10 @@ export default class HuntApp extends Component {
   constructor(props) {
     super(props);
     this.timer = null;
-    let rulesListConf = localStorage.getItem('rules_list');
     let alertsListConf = localStorage.getItem('alerts_list');
     let historyConf = localStorage.getItem('history');
     let filtersListConf = localStorage.getItem('filters_list');
     let historyFilters = localStorage.getItem('history_filters');
-
-    if (!rulesListConf) {
-      rulesListConf = {
-        pagination: {
-          page: 1,
-          perPage: 6,
-          perPageOptions: [6, 10, 15, 25],
-        },
-        sort: { id: 'created', asc: false },
-        view_type: 'list',
-      };
-      localStorage.setItem('rules_list', JSON.stringify(rulesListConf));
-    } else {
-      rulesListConf = JSON.parse(rulesListConf);
-      // Sanity checks for the object retrieved from local localStorage
-      if (typeof rulesListConf.pagination === 'undefined') {
-        rulesListConf.pagination = {};
-      }
-      if (typeof rulesListConf.pagination.page === 'undefined') {
-        rulesListConf.pagination.page = 1;
-      }
-      if (typeof rulesListConf.pagination.perPage === 'undefined') {
-        rulesListConf.pagination.perPage = 6;
-      }
-      if (typeof rulesListConf.pagination.perPageOptions === 'undefined') {
-        rulesListConf.pagination.perPageOptions = [6, 10, 15, 25];
-      }
-    }
 
     if (!alertsListConf) {
       alertsListConf = {
@@ -124,13 +95,11 @@ export default class HuntApp extends Component {
     }
 
     this.state = {
-      rules_list: rulesListConf,
       alerts_list: alertsListConf,
       history: historyConf,
       historyFilters,
       filters_list: filtersListConf,
     };
-    this.updateRuleListState = this.updateRuleListState.bind(this);
     this.updateAlertListState = this.updateAlertListState.bind(this);
     this.updateHistoryListState = this.updateHistoryListState.bind(this);
     this.updateHistoryFilterState = this.updateHistoryFilterState.bind(this);
@@ -145,11 +114,6 @@ export default class HuntApp extends Component {
     axios.get(config.API_URL + config.SYSTEM_SETTINGS_PATH).then(systemSettings => {
       this.setState({ systemSettings: systemSettings.data });
     });
-  }
-
-  updateRuleListState(rulesListState, fetchDataCallback) {
-    this.setState({ rules_list: rulesListState }, fetchDataCallback);
-    localStorage.setItem('rules_list', JSON.stringify(rulesListState));
   }
 
   updateAlertListState(alertsListState, fetchDataCallback) {
@@ -189,8 +153,6 @@ export default class HuntApp extends Component {
                 <DisplayPage
                   page={this.props.page}
                   systemSettings={this.state.systemSettings}
-                  rules_list={this.state.rules_list}
-                  updateRuleListState={this.updateRuleListState}
                   history_list={this.state.history}
                   historyFilters={this.state.historyFilters}
                   updateHistoryListState={this.updateHistoryListState}

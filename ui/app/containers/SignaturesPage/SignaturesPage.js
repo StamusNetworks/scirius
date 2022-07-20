@@ -32,6 +32,7 @@ import RuleToggleModal from 'RuleToggleModal';
 import ErrorHandler from 'ui/components/Error';
 import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
+import buildListParams from 'ui/helpers/buildListParams';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import DashboardPage from '../DashboardPage';
 import RulePage from '../../RulePage';
@@ -73,6 +74,16 @@ export class SignaturesPage extends React.Component {
   constructor(props) {
     super(props);
 
+    const rulesListConf = buildListParams(JSON.parse(localStorage.getItem('rules_list')), {
+      pagination: {
+        page: 1,
+        perPage: 6,
+        perPageOptions: [6, 10, 15, 25],
+      },
+      view_type: 'list',
+      sort: { id: 'created', asc: false },
+    });
+
     this.state = {
       rules: [],
       sources: [],
@@ -83,6 +94,7 @@ export class SignaturesPage extends React.Component {
       // eslint-disable-next-line react/no-unused-state
       supported_actions: [],
       updateCache: true,
+      rulesList: rulesListConf,
     };
     this.cache = {};
     this.cachePage = 1;
@@ -124,6 +136,11 @@ export class SignaturesPage extends React.Component {
     }
   }
 
+  updateRuleListState(rulesListState, fetchDataCallback) {
+    this.setState({ rulesList: rulesListState }, fetchDataCallback);
+    localStorage.setItem('rules_list', JSON.stringify(rulesListState));
+  }
+
   buildTimelineDataSet = tdata => {
     const timeline = { x: 'x', type: 'area', columns: [['x'], ['alerts']] };
     for (let key = 0; key < tdata.length; key += 1) {
@@ -146,7 +163,7 @@ export class SignaturesPage extends React.Component {
 
   fetchData() {
     const stringFilters = this.buildFilter(this.props.filtersWithAlert);
-    const rulesStat = this.props.rules_list;
+    const rulesStat = this.state.rulesList;
     const hash = md5(
       `${rulesStat.pagination.page}|${rulesStat.pagination.perPage}|${JSON.stringify(this.props.filterParams)}|${rulesStat.sort.id}|${
         rulesStat.sort.asc
@@ -180,11 +197,11 @@ export class SignaturesPage extends React.Component {
       )
       .catch(e => {
         // handle the case when non-existent page is requested
-        if (e.response.status === 404 && this.props.rules_list.pagination.page !== 1) {
+        if (e.response.status === 404 && this.state.rulesList.pagination.page !== 1) {
           const sigsListState = {
-            ...this.props.rules_list,
+            ...this.state.rulesList,
             pagination: {
-              ...this.props.rules_list.pagination,
+              ...this.state.rulesList.pagination,
               page: 1,
             },
           };
@@ -239,7 +256,7 @@ export class SignaturesPage extends React.Component {
   }
 
   updateSignatureListState(sigsListState) {
-    this.props.updateListState(sigsListState, () => this.fetchData());
+    this.updateRuleListState(sigsListState, () => this.fetchData());
   }
 
   render() {
@@ -266,14 +283,14 @@ export class SignaturesPage extends React.Component {
               viewType="list"
               onPaginationChange={this.updateSignatureListState}
               itemsCount={this.state.count}
-              itemsList={this.props.rules_list}
+              itemsList={this.state.rulesList}
             />
           )}
           {view === 'rule' && (
             <RulePage
               systemSettings={this.props.systemSettings}
               rule={displayRule}
-              config={this.props.rules_list}
+              config={this.state.rulesList}
               filters={this.props.filters}
               filterParams={this.props.filterParams}
               rulesets={this.props.rulesets}
@@ -287,7 +304,7 @@ export class SignaturesPage extends React.Component {
             <RuleToggleModal
               show={this.state.action.view}
               action={this.state.action.type}
-              config={this.props.rules_list}
+              config={this.state.rulesList}
               filters={this.props.filters}
               close={this.closeAction}
               rulesets={this.props.rulesets}
@@ -306,9 +323,6 @@ SignaturesPage.propTypes = {
   systemSettings: PropTypes.any,
   filters: PropTypes.any,
   filtersWithAlert: PropTypes.any,
-  updateListState: PropTypes.any, // should be removed when redux is implemented
-  rules_list: PropTypes.any, // should be removed when redux is implemented
-  page: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
   user: PropTypes.shape({
     pk: PropTypes.any,
