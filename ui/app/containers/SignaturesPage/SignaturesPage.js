@@ -90,7 +90,6 @@ export class SignaturesPage extends React.Component {
     this.updateSignatureListState = this.updateSignatureListState.bind(this);
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
     this.actionsButtons = actionsButtons.bind(this);
-    this.buildListUrlParams = buildListUrlParams.bind(this);
     this.loadActions = loadActions.bind(this);
     this.createAction = createAction.bind(this);
     this.closeAction = closeAction.bind(this);
@@ -162,7 +161,7 @@ export class SignaturesPage extends React.Component {
     const filterParams = buildFilterParams(this.props.filterParams);
     axios
       .all([
-        axios.get(`${config.API_URL + config.RULE_PATH}?${this.buildListUrlParams(rulesStat)}&${filterParams}&highlight=true${stringFilters}`),
+        axios.get(`${config.API_URL + config.RULE_PATH}?${buildListUrlParams(rulesStat)}&${filterParams}&highlight=true${stringFilters}`),
         axios.get(`${config.API_URL + config.SOURCE_PATH}?page_size=100`),
       ])
       .then(

@@ -59,7 +59,6 @@ export class ActionsPage extends React.Component {
     this.closeAction = closeAction.bind(this);
     this.fetchData = this.fetchData.bind(this);
     this.needUpdate = this.needUpdate.bind(this);
-    this.buildListUrlParams = buildListUrlParams.bind(this);
     this.updateActionListState = this.updateActionListState.bind(this);
   }
 
@@ -88,7 +87,7 @@ export class ActionsPage extends React.Component {
 
   // eslint-disable-next-line no-unused-vars
   fetchData() {
-    const listParams = this.buildListUrlParams(this.props.rules_list);
+    const listParams = buildListUrlParams(this.props.rules_list);
     this.setState({ loading: true });
     axios
       .get(`${config.API_URL}${config.PROCESSING_PATH}?${listParams}`)

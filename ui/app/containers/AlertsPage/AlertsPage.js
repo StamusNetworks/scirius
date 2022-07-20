@@ -59,7 +59,6 @@ export class AlertsPage extends React.Component {
     };
     this.fetchData = this.fetchData.bind(this);
     this.actionsButtons = actionsButtons.bind(this);
-    this.buildListUrlParams = buildListUrlParams.bind(this);
     this.loadActions = loadActions.bind(this);
     this.createAction = createAction.bind(this);
     this.closeAction = closeAction.bind(this);
@@ -118,7 +117,7 @@ export class AlertsPage extends React.Component {
   fetchData() {
     const stringFilters = buildQFilter(this.props.filtersWithAlert, this.props.systemSettings);
     const filterParams = buildFilterParams(this.props.filterParams);
-    const listParams = this.buildListUrlParams(this.props.rules_list);
+    const listParams = buildListUrlParams(this.props.rules_list);
     this.setState({ loading: true });
 
     const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?${listParams}&${filterParams}${stringFilters}`;

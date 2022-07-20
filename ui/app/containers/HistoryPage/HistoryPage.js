@@ -40,7 +40,6 @@ export default class HistoryPage extends React.Component {
     this.state = { data: [], count: 0 };
     this.fetchData = this.fetchData.bind(this);
     this.buildFilter = buildFilter;
-    this.buildListUrlParams = buildListUrlParams.bind(this);
     this.updateHistoryListState = this.updateHistoryListState.bind(this);
 
     this.props.getActionTypes();
@@ -58,7 +57,7 @@ export default class HistoryPage extends React.Component {
 
   fetchData() {
     const stringFilters = this.buildFilter(this.props.filters);
-    const listParams = this.buildListUrlParams(this.props.rules_list);
+    const listParams = buildListUrlParams(this.props.rules_list);
     this.setState({ loading: true });
     axios
       .get(`${config.API_URL}${config.HISTORY_PATH}?${listParams}${stringFilters}`)
