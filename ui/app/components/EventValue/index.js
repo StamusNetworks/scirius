@@ -25,7 +25,7 @@ const Container = styled.div`
   align-items: center;
   background: ${p => (p.hover ? '#e5e5e5' : 'none')};
   cursor: ${p => (p.hover ? 'pointer' : 'default')};
-  padding: 7px 0px;
+  padding: 0px 0px 6px 0px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
