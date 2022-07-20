@@ -269,7 +269,21 @@ export class SignaturesPage extends React.Component {
         </Helmet>
         {this.state.net_error !== undefined && <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>}
         <ErrorHandler>
-          <Filters page="SIGNATURES" section={sections.GLOBAL} queryTypes={['filter', 'rest']} />
+          <Filters
+            page="SIGNATURES"
+            section={sections.GLOBAL}
+            queryTypes={['filter', 'rest']}
+            sortValues={{ option: this.state.rulesList.sort.id, direction: this.state.rulesList.sort.asc ? 'asc' : 'desc' }}
+            onSortChange={(option, direction) => {
+              this.updateSignatureListState({
+                ...this.state.rulesList,
+                sort: {
+                  id: option || this.state.rulesList.sort.id,
+                  asc: direction ? direction === 'asc' : this.state.rulesList.sort.asc,
+                },
+              });
+            }}
+          />
         </ErrorHandler>
 
         <Spin spinning={this.state.loading} style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }} />

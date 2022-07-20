@@ -113,7 +113,21 @@ export default class HistoryPage extends React.Component {
     return (
       <div>
         <ErrorHandler>
-          <Filters page="HISTORY" section={sections.HISTORY} queryTypes={['all']} />
+          <Filters
+            page="HISTORY"
+            section={sections.HISTORY}
+            queryTypes={['all']}
+            sortValues={{ option: this.state.history.sort.id, direction: this.state.history.sort.asc ? 'asc' : 'desc' }}
+            onSortChange={(option, direction) => {
+              this.updateHistoryListState({
+                ...this.state.history,
+                sort: {
+                  id: option || this.state.history.sort.id,
+                  asc: direction ? direction === 'asc' : this.state.history.sort.asc,
+                },
+              });
+            }}
+          />
         </ErrorHandler>
         <div style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }}>{this.state.loading && <Spin />}</div>
         {this.state.data.results && (
