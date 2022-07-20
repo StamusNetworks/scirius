@@ -16,6 +16,7 @@ import FilterSets from 'ui/components/FilterSets';
 import { sections } from 'ui/constants';
 import ErrorHandler from 'ui/components/Error';
 import FilterSetSave from 'ui/components/FilterSetSaveModal';
+import Sort from 'ui/components/Sort';
 import { HUNT_FILTER_SETS } from 'ui/config/Api';
 import { COLOR_ERROR } from 'ui/constants/colors';
 import isIP from 'ui/helpers/isIP';
@@ -78,7 +79,7 @@ const CascaderStyled = styled(Cascader)`
   }
 `;
 
-const Filter = ({ page, section, queryTypes }) => {
+const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
   // Component setup
   useInjectReducer({ key: 'ruleSet', reducer: ruleSetReducer });
   useInjectSaga({ key: 'ruleSet', saga: ruleSetSaga });
@@ -389,6 +390,9 @@ const Filter = ({ page, section, queryTypes }) => {
               />{' '}
               Sightings
             </Space>
+            {['SIGNATURES', 'HOSTS_LIST', 'HISTORY'].indexOf(page) > -1 && (
+              <Sort page={page} onChange={(option, direction) => onSortChange(option, direction)} value={sortValues} />
+            )}
           </Space>
         </div>
         {/* {page !== 'HISTORY' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && ( */}
@@ -497,9 +501,14 @@ const Filter = ({ page, section, queryTypes }) => {
 };
 
 Filter.propTypes = {
-  page: PropTypes.oneOf(['SIGNATURES', 'DASHBOARD', 'ALERTS', 'HISTORY']),
+  page: PropTypes.oneOf(['SIGNATURES', 'DASHBOARD', 'ALERTS', 'HISTORY', 'HOSTS_LIST']),
   section: PropTypes.string.isRequired,
   queryTypes: PropTypes.array.isRequired,
+  onSortChange: PropTypes.func.isRequired,
+  sortValues: PropTypes.shape({
+    option: PropTypes.string,
+    direction: PropTypes.string,
+  }),
 };
 
 export default Filter;
