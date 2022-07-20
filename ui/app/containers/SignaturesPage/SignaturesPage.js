@@ -159,9 +159,10 @@ export class SignaturesPage extends React.Component {
 
     this.setState({ loading: true });
     const filterParams = buildFilterParams(this.props.filterParams);
+    const listParams = buildListUrlParams(rulesStat);
     axios
       .all([
-        axios.get(`${config.API_URL + config.RULE_PATH}?${buildListUrlParams(rulesStat)}&${filterParams}&highlight=true${stringFilters}`),
+        axios.get(`${config.API_URL + config.RULE_PATH}?${listParams}&${filterParams}&highlight=true${stringFilters}`),
         axios.get(`${config.API_URL + config.SOURCE_PATH}?page_size=100`),
       ])
       .then(
