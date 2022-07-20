@@ -27,17 +27,7 @@ const DisplayPage = props => {
       );
       break;
     case PAGE_STATE.history:
-      displayedPage = (
-        <HistoryPage
-          systemSettings={props.systemSettings}
-          rules_list={props.history_list}
-          filters={props.historyFilters}
-          updateListState={props.updateHistoryListState}
-          switchPage={props.switchPage}
-          updateFilterState={props.updateHistoryFilterState}
-          page={props.page}
-        />
-      );
+      displayedPage = <HistoryPage systemSettings={props.systemSettings} filters={props.historyFilters} switchPage={props.switchPage} />;
       break;
     case PAGE_STATE.alerts_list:
       displayedPage = <AlertsPage systemSettings={props.systemSettings} />;
@@ -59,7 +49,6 @@ DisplayPage.propTypes = {
   needReload: PropTypes.any,
   history_list: PropTypes.any,
   historyFilters: PropTypes.any,
-  updateHistoryListState: PropTypes.any,
   updateHistoryFilterState: PropTypes.any,
   alerts_list: PropTypes.any,
   filters_list: PropTypes.any,
