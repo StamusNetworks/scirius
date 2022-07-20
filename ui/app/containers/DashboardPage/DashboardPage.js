@@ -100,7 +100,6 @@ export class HuntDashboard extends React.Component {
     this.createAction = createAction.bind(this);
     this.closeAction = closeAction.bind(this);
     this.loadActions = loadActions.bind(this);
-    this.updateRuleListState = props.updateListState.bind(this);
     this.fetchData = () => {};
   }
 
@@ -836,7 +835,6 @@ export class HuntDashboard extends React.Component {
 HuntDashboard.propTypes = {
   systemSettings: PropTypes.any,
   filters: PropTypes.any,
-  updateListState: PropTypes.any,
   filtersWithAlert: PropTypes.array,
   filterParams: PropTypes.object.isRequired,
   user: PropTypes.shape({

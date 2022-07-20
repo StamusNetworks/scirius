@@ -16,15 +16,7 @@ const DisplayPage = props => {
       break;
     case PAGE_STATE.dashboards:
       // FIXME remove or change updateRuleListState
-      displayedPage = (
-        <DashboardPage
-          systemSettings={props.systemSettings}
-          rules_list={props.rules_list}
-          updateListState={props.updateRuleListState}
-          needReload={props.needReload}
-          page={props.page}
-        />
-      );
+      displayedPage = <DashboardPage systemSettings={props.systemSettings} />;
       break;
     case PAGE_STATE.history:
       displayedPage = <HistoryPage systemSettings={props.systemSettings} switchPage={props.switchPage} />;
