@@ -37,25 +37,9 @@ export default class HuntApp extends Component {
   constructor(props) {
     super(props);
     this.timer = null;
-    let alertsListConf = localStorage.getItem('alerts_list');
     let historyConf = localStorage.getItem('history');
     let filtersListConf = localStorage.getItem('filters_list');
     let historyFilters = localStorage.getItem('history_filters');
-
-    if (!alertsListConf) {
-      alertsListConf = {
-        pagination: {
-          page: 1,
-          perPage: 100,
-          perPageOptions: [20, 50, 100],
-        },
-        sort: { id: 'timestamp', asc: false },
-        view_type: 'list',
-      };
-      localStorage.setItem('alerts_list', JSON.stringify(alertsListConf));
-    } else {
-      alertsListConf = JSON.parse(alertsListConf);
-    }
 
     if (!filtersListConf) {
       filtersListConf = {
@@ -95,12 +79,10 @@ export default class HuntApp extends Component {
     }
 
     this.state = {
-      alerts_list: alertsListConf,
       history: historyConf,
       historyFilters,
       filters_list: filtersListConf,
     };
-    this.updateAlertListState = this.updateAlertListState.bind(this);
     this.updateHistoryListState = this.updateHistoryListState.bind(this);
     this.updateHistoryFilterState = this.updateHistoryFilterState.bind(this);
     this.updateFilterListState = this.updateFilterListState.bind(this);
@@ -114,11 +96,6 @@ export default class HuntApp extends Component {
     axios.get(config.API_URL + config.SYSTEM_SETTINGS_PATH).then(systemSettings => {
       this.setState({ systemSettings: systemSettings.data });
     });
-  }
-
-  updateAlertListState(alertsListState, fetchDataCallback) {
-    this.setState({ alerts_list: alertsListState }, fetchDataCallback);
-    localStorage.setItem('alerts_list', JSON.stringify(alertsListState));
   }
 
   updateFilterListState(filtersListState, fetchDataCallback) {
@@ -157,8 +134,6 @@ export default class HuntApp extends Component {
                   historyFilters={this.state.historyFilters}
                   updateHistoryListState={this.updateHistoryListState}
                   updateHistoryFilterState={this.updateHistoryFilterState}
-                  alerts_list={this.state.alerts_list}
-                  updateAlertListState={this.updateAlertListState}
                   filters_list={this.state.filters_list}
                   updateFilterListState={this.updateFilterListState}
                   updateFiltersFilterState={this.updateFiltersFilterState}

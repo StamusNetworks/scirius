@@ -40,14 +40,7 @@ const DisplayPage = props => {
       );
       break;
     case PAGE_STATE.alerts_list:
-      displayedPage = (
-        <AlertsPage
-          systemSettings={props.systemSettings}
-          rules_list={props.alerts_list}
-          updateListState={props.updateAlertListState}
-          page={props.page}
-        />
-      );
+      displayedPage = <AlertsPage systemSettings={props.systemSettings} />;
       break;
     case PAGE_STATE.filters_list:
       displayedPage = (
@@ -77,7 +70,6 @@ DisplayPage.propTypes = {
   updateHistoryListState: PropTypes.any,
   updateHistoryFilterState: PropTypes.any,
   alerts_list: PropTypes.any,
-  updateAlertListState: PropTypes.any,
   filters_list: PropTypes.any,
   updateFilterListState: PropTypes.any,
   updateFiltersFilterState: PropTypes.any,

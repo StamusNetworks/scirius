@@ -39,12 +39,23 @@ import moment from 'moment';
 import UICollapse from 'ui/components/UIElements/UICollapse';
 import UIPanel from 'ui/components/UIElements/UIPanel/UIPanel';
 import UIPanelHeader from 'ui/components/UIElements/UIPanel/UIPanelHeader';
+import buildListParams from 'ui/helpers/buildListParams';
 import AlertItem from './components/AlertItem';
 import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction } from '../../helpers/common';
 
 export class AlertsPage extends React.Component {
   constructor(props) {
     super(props);
+
+    const alertsListConf = buildListParams(JSON.parse(localStorage.getItem('alerts_list')), {
+      pagination: {
+        page: 1,
+        perPage: 100,
+        perPageOptions: [20, 50, 100],
+      },
+      sort: { id: 'timestamp', asc: false },
+      view_type: 'list',
+    });
 
     this.state = {
       alerts: [],
@@ -56,6 +67,7 @@ export class AlertsPage extends React.Component {
       // eslint-disable-next-line react/no-unused-state
       supported_actions: [],
       errors: null,
+      alertsList: alertsListConf,
     };
     this.fetchData = this.fetchData.bind(this);
     this.actionsButtons = actionsButtons.bind(this);
@@ -114,10 +126,15 @@ export class AlertsPage extends React.Component {
     }
   }
 
+  updateAlertListState(alertsListState, fetchDataCallback) {
+    this.setState({ alertsList: alertsListState }, fetchDataCallback);
+    localStorage.setItem('alerts_list', JSON.stringify(alertsListState));
+  }
+
   fetchData() {
     const stringFilters = buildQFilter(this.props.filtersWithAlert, this.props.systemSettings);
     const filterParams = buildFilterParams(this.props.filterParams);
-    const listParams = buildListUrlParams(this.props.rules_list);
+    const listParams = buildListUrlParams(this.state.alertsList);
     this.setState({ loading: true });
 
     const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?${listParams}&${filterParams}${stringFilters}`;
@@ -140,7 +157,7 @@ export class AlertsPage extends React.Component {
   }
 
   updateRuleListState(rulesListState, fetchDataCallback) {
-    this.props.updateListState(rulesListState, fetchDataCallback);
+    this.updateAlertListState(rulesListState, fetchDataCallback);
   }
 
   render() {
@@ -221,7 +238,7 @@ export class AlertsPage extends React.Component {
             <RuleToggleModal
               show={this.state.action.view}
               action={this.state.action.type}
-              config={this.props.rules_list}
+              config={this.state.alertsList}
               filters={this.props.filters}
               close={this.closeAction}
               rulesets={this.state.rulesets}
@@ -236,11 +253,9 @@ export class AlertsPage extends React.Component {
 }
 
 AlertsPage.propTypes = {
-  rules_list: PropTypes.any,
   filters: PropTypes.any,
   filtersWithAlert: PropTypes.any,
   systemSettings: PropTypes.any,
-  updateListState: PropTypes.any,
   addFilter: PropTypes.func,
   filterParams: PropTypes.object.isRequired,
   user: PropTypes.shape({
