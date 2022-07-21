@@ -1890,7 +1890,9 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
     def get_queryset(self):
         actions_type = UserAction.get_allowed_actions_type(self.request)
         history = UserAction.objects.filter(action_type__in=actions_type)
-        history |= UserAction.objects.filter(user=self.request.user)
+        user = self.request.user
+        if user.__class__.__name__ != 'FakeUser':
+            history |= UserAction.objects.filter(user=user)
         return history
 
     @action(detail=False, methods=['get'])
