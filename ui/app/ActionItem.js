@@ -95,15 +95,7 @@ export default class ActionItem extends React.Component {
         {item.index}
       </span>,
     ];
-    actionsMenu.push(
-      <FilterEditKebab
-        switchPage={this.props.switchPage}
-        key={`${item.pk}-kebab`}
-        data={item}
-        last_index={this.props.last_index}
-        needUpdate={this.props.needUpdate}
-      />,
-    );
+    actionsMenu.push(<FilterEditKebab key={`${item.pk}-kebab`} data={item} last_index={this.props.last_index} needUpdate={this.props.needUpdate} />);
 
     return (
       <React.Fragment>
@@ -145,7 +137,6 @@ ActionItem.propTypes = {
   data: PropTypes.any,
   needUpdate: PropTypes.any,
   last_index: PropTypes.any,
-  switchPage: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
   expandedDescription: PropTypes.any,
   filters: PropTypes.any,
