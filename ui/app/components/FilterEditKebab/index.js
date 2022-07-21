@@ -2,6 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 import { Dropdown, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -87,27 +88,31 @@ class FilterEditKebab extends React.Component {
 
   displayToggle(action) {
     this.setState({ toggle: { show: true, action } });
+    this.props.setExpand(false);
   }
 
   hideToggle() {
     this.setState({ toggle: { show: false, action: this.state.toggle.action } });
+    this.props.setExpand(true);
   }
 
   closeAction() {
     this.setState({ toggle: { show: false, action: 'delete' } });
+    this.props.setExpand(true);
   }
 
   saveActionToFilterSet() {
     this.setState({ filterSets: { showModal: true, page: 'DASHBOARDS', shared: false, name: '', description: '' } });
+    this.props.setExpand(false);
   }
 
   convertActionToFilters() {
     this.props.clearFilters(sections.GLOBAL);
     this.props.addFilter(sections.GLOBAL, this.generateFilterSet());
-    this.props.switchPage('DASHBOARDS');
     if (process.env.REACT_APP_HAS_TAG === '1') {
       this.props.setTag(this.generateAlertTag());
     }
+    this.props.history.push('/stamus/hunting/dashboards');
   }
 
   handleComboChange(value) {
@@ -176,7 +181,8 @@ class FilterEditKebab extends React.Component {
   }
 
   menu = (
-    <Menu>
+    // eslint-disable-next-line no-unused-vars
+    <Menu onClick={({ item, key, keyPath, domEvent }) => domEvent.stopPropagation()}>
       {this.props.user.isActive && this.props.user.permissions.includes('rules.events_edit') && (
         <React.Fragment>
           {this.props.data.index !== 0 && (
@@ -254,7 +260,13 @@ class FilterEditKebab extends React.Component {
           noRights={noRights}
         />
         <Dropdown id="filterActions" overlay={this.menu} trigger={['click']}>
-          <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
+          <a
+            className="ant-dropdown-link"
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
             <MenuOutlined />
           </a>
         </Dropdown>
@@ -281,7 +293,6 @@ FilterEditKebab.propTypes = {
   setTag: PropTypes.func,
   clearFilters: PropTypes.func,
   alertTag: PropTypes.object,
-  switchPage: PropTypes.any,
   user: PropTypes.shape({
     pk: PropTypes.any,
     timezone: PropTypes.any,
@@ -293,6 +304,8 @@ FilterEditKebab.propTypes = {
     dateJoined: PropTypes.any,
     permissions: PropTypes.any,
   }),
+  setExpand: PropTypes.func,
+  history: PropTypes.object,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -307,4 +320,4 @@ const mapDispatchToProps = {
 };
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
-export default compose(withConnect, withPermissions)(FilterEditKebab);
+export default compose(withConnect, withPermissions)(withRouter(FilterEditKebab));
