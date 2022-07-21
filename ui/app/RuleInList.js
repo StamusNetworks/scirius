@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { List, Spin, Table } from 'antd';
@@ -10,6 +10,8 @@ import EventValue from 'ui/components/EventValue';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
 
 const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
+  const [expand, setExpand] = useState(true);
+
   const columns = [
     {
       title: 'SID',
@@ -52,7 +54,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
     {
       title: 'Ctrl',
       dataIndex: 'ctrl',
-      render: (text, rule) => <RuleEditKebab key={`kebab-${rule.sid}`} config={{ rule }} rulesets={rulesets} />,
+      render: (text, rule) => <RuleEditKebab key={`kebab-${rule.sid}`} config={{ rule }} rulesets={rulesets} setExpand={setExpand} />,
     },
   ];
 
@@ -103,7 +105,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
       columns={columns}
       expandable={{
         columnWidth: 5,
-        expandRowByClick: true,
+        expandRowByClick: expand,
         expandedRowRender: alert => alert.rule.timeline && renderContents(alert.rule),
         rowExpandable: () => true,
       }}

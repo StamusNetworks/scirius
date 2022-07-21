@@ -16,15 +16,18 @@ export default class RuleEditKebab extends React.Component {
 
   displayToggle(action) {
     this.setState({ toggle: { show: true, action } });
+    this.props.setExpand(false);
   }
 
   hideToggle() {
     // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({ toggle: { show: false, action: this.state.toggle.action } });
+    this.props.setExpand(true);
   }
 
   menu = (
-    <Menu>
+    // eslint-disable-next-line no-unused-vars
+    <Menu onClick={({ item, key, keyPath, domEvent }) => domEvent.stopPropagation()}>
       <Menu.Item
         key="enable"
         onClick={() => {
@@ -53,7 +56,13 @@ export default class RuleEditKebab extends React.Component {
     return (
       <React.Fragment>
         <Dropdown id="ruleActions" overlay={this.menu} trigger={['click']}>
-          <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
+          <a
+            className="ant-dropdown-link"
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
             <MenuOutlined />
           </a>
         </Dropdown>
@@ -77,4 +86,5 @@ RuleEditKebab.propTypes = {
   config: PropTypes.any,
   rulesets: PropTypes.any,
   refresh_callback: PropTypes.any,
+  setExpand: PropTypes.func,
 };
