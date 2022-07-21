@@ -29,7 +29,7 @@ import md5 from 'md5';
 import map from 'lodash/map';
 import find from 'lodash/find';
 import * as config from 'config/Api';
-import { dashboard } from 'config/Dashboard';
+import { dashboard } from 'ui/config/Dashboard';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
 import { sections } from 'ui/constants';
