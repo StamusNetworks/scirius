@@ -258,7 +258,7 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
   const [errors, setErrors] = useState([]);
   const [filterSetName, setFilterSetName] = useState('');
   const [filterSetShared, setFilterSetShared] = useState(false);
-  const [filterSetDescription, setFilterSetDescription] = useState(false);
+  const [filterSetDescription, setFilterSetDescription] = useState('');
 
   const submitFilterSets = () => {
     setErrors([]);
@@ -289,7 +289,7 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
         setErrors([]);
         setFilterSetName('');
         setFilterSetShared(false);
-        setFilterSetDescription(false);
+        setFilterSetDescription('');
       })
       .catch(error => {
         let errors = error.response.data;
