@@ -438,6 +438,15 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
             <Title>Actions</Title>
             <ActionsSpace direction="vertical">
               <Space>
+                <CloseOutlined style={{ width: 24 }} />
+                {filters.length > 0 && (
+                  <a href="#" onClick={() => dispatch(huntGlobalStore.clearFilters(section))}>
+                    Clear Filters
+                  </a>
+                )}
+                {filters.length === 0 && <>Clear Filters</>}
+              </Space>
+              <Space>
                 <svg height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                   <path d="M0 0h24v24H0V0z" fill="none" />
                   <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
@@ -467,15 +476,6 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
                 <ErrorHandler>
                   <ActionsButtons supportedActions={supportedActions} />
                 </ErrorHandler>
-              </Space>
-              <Space>
-                <CloseOutlined style={{ width: 24 }} />
-                {filters.length > 0 && (
-                  <a href="#" onClick={() => dispatch(huntGlobalStore.clearFilters(section))}>
-                    Clear Filters
-                  </a>
-                )}
-                {filters.length === 0 && <>Clear Filters</>}
               </Space>
             </ActionsSpace>
           </div>
