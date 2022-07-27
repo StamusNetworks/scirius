@@ -28,6 +28,9 @@ import store from 'store';
 import md5 from 'md5';
 import map from 'lodash/map';
 import find from 'lodash/find';
+import { createStructuredSelector } from 'reselect';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 import * as config from 'config/Api';
 import { dashboard } from 'ui/config/Dashboard';
 import { buildQFilter } from 'ui/buildQFilter';
@@ -36,12 +39,16 @@ import { sections } from 'ui/constants';
 import EventValue from 'ui/components/EventValue';
 import ErrorHandler from 'ui/components/Error';
 import Filters from 'ui/components/Filters';
+import globalSelectors from 'ui/containers/App/selectors';
+import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
+import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
 import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
 import { actionsButtons, loadActions, createAction, closeAction } from '../../helpers/common';
-import '../../../node_modules/react-grid-layout/css/styles.css';
-import '../../../node_modules/react-resizable/css/styles.css';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 import copyTextToClipboard from '../../helpers/copyTextToClipboard';
+import { makeSelectAlertTag, makeSelectGlobalFilters } from '../../containers/HuntApp/stores/global';
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
@@ -734,11 +741,11 @@ export class HuntDashboard extends React.Component {
         <div className="drag-and-drop-container">
           <Row>
             <Col style={{ marginLeft: 'auto' }}>
-              <a href="#edit" onClick={this.switchEditMode}>
+              <a href="app/pages/Dashboards/DashboardPage#edit" onClick={this.switchEditMode}>
                 {this.state.editMode ? 'switch off edit mode' : 'edit'}
               </a>
               <span> • </span> {/* ignore_utf8_check: 8226 */}
-              <a href="#reset" onClick={this.resetDashboard}>
+              <a href="app/pages/Dashboards/DashboardPage#reset" onClick={this.resetDashboard}>
                 reset
               </a>
             </Col>
@@ -849,3 +856,14 @@ HuntDashboard.propTypes = {
     permissions: PropTypes.any,
   }),
 };
+
+const mapStateToProps = createStructuredSelector({
+  filters: makeSelectGlobalFilters(),
+  filtersWithAlert: makeSelectGlobalFilters(true),
+  alertTag: makeSelectAlertTag(),
+  filterParams: makeSelectFilterParams(),
+  systemSettings: globalSelectors.makeSelectSystemSettings(),
+});
+
+const withConnect = connect(mapStateToProps);
+export default compose(withPermissions, withConnect)(HuntDashboard);

@@ -1,8 +1,7 @@
 import React from 'react';
-import { PAGE_STATE } from 'constants';
 import UIBreadcrumb from 'ui/components/UIElements/UIBreadcrumb';
 import { Link } from 'ui/helpers/Link';
-import HuntApp from 'ui/containers/HuntApp';
+import DashboardPage from './DashboardPage';
 
 const Dashboards = () => (
   <div>
@@ -14,7 +13,7 @@ const Dashboards = () => (
         </Link>,
       ]}
     />
-    <HuntApp page={PAGE_STATE.dashboards} />
+    <DashboardPage />
   </div>
 );
 Dashboards.metadata = {

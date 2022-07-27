@@ -22,6 +22,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
+import { connect } from 'react-redux';
 import { Table } from 'antd';
 import * as config from 'config/Api';
 import { STAMUS } from 'ui/config';
@@ -29,6 +30,8 @@ import ErrorHandler from 'ui/components/Error';
 import FilterEditKebab from 'ui/components/FilterEditKebab';
 import styled from 'styled-components';
 import buildListParams from 'ui/helpers/buildListParams';
+import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
+import { createStructuredSelector } from 'reselect';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ActionItem from '../../ActionItem';
 import { actionsButtons, buildListUrlParams, createAction, closeAction, buildFilter } from '../../helpers/common';
@@ -37,7 +40,7 @@ const DescriptionItem = styled.div`
   padding: 0 10px;
 `;
 
-export class ActionsPage extends React.Component {
+export class PoliciesPage extends React.Component {
   constructor(props) {
     super(props);
 
@@ -296,7 +299,13 @@ export class ActionsPage extends React.Component {
   }
 }
 
-ActionsPage.propTypes = {
+PoliciesPage.propTypes = {
   filterParams: PropTypes.object.isRequired,
   multiTenancy: PropTypes.bool.isRequired,
 };
+
+const mapStateToProps = createStructuredSelector({
+  filterParams: makeSelectFilterParams(),
+});
+
+export default connect(mapStateToProps)(PoliciesPage);

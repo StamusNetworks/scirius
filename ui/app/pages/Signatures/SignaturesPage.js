@@ -32,12 +32,20 @@ import ErrorHandler from 'ui/components/Error';
 import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
 import buildListParams from 'ui/helpers/buildListParams';
-import HuntPaginationRow from '../../HuntPaginationRow';
-import DashboardPage from '../DashboardPage';
-import RulePage from '../../RulePage';
-import RuleInList from '../../RuleInList';
-import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction, buildFilter } from '../../helpers/common';
+import DashboardPage from 'ui/pages/Dashboards/DashboardPage';
+import { createStructuredSelector } from 'reselect';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+import rulesSelectors from 'ui/stores/filters/selectors';
+import globalSelectors from 'ui/containers/App/selectors';
+import { makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
+import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
+import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
 import { updateHitsStats } from '../../helpers/updateHitsStats';
+import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction, buildFilter } from '../../helpers/common';
+import RuleInList from '../../RuleInList';
+import RulePage from '../../RulePage';
+import HuntPaginationRow from '../../HuntPaginationRow';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -353,3 +361,15 @@ SignaturesPage.propTypes = {
     permissions: PropTypes.any,
   }),
 };
+
+const mapStateToProps = createStructuredSelector({
+  filters: makeSelectGlobalFilters(),
+  filtersWithAlert: makeSelectGlobalFilters(true),
+  filterParams: makeSelectFilterParams(),
+  rulesets: rulesSelectors.makeSelectRuleSets(),
+  rulesFilters: rulesSelectors.makeSelectFilterOptions(sections.GLOBAL),
+  systemSettings: globalSelectors.makeSelectSystemSettings(),
+});
+
+const withConnect = connect(mapStateToProps);
+export default compose(withConnect, withPermissions)(SignaturesPage);

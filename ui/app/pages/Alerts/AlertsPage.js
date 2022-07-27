@@ -36,10 +36,17 @@ import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
 import moment from 'moment';
 import buildListParams from 'ui/helpers/buildListParams';
-import AlertItem from './components/AlertItem';
+import { addFilter, makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
+import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
+import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
+import globalSelectors from 'ui/containers/App/selectors';
+import { createStructuredSelector } from 'reselect';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction } from '../../helpers/common';
+import AlertItem from './components/AlertItem';
 
-export class AlertsPage extends React.Component {
+class AlertsPage extends React.Component {
   constructor(props) {
     super(props);
 
@@ -281,3 +288,17 @@ AlertsPage.propTypes = {
     permissions: PropTypes.any,
   }),
 };
+
+const mapStateToProps = createStructuredSelector({
+  filters: makeSelectGlobalFilters(),
+  filtersWithAlert: makeSelectGlobalFilters(true),
+  filterParams: makeSelectFilterParams(),
+  systemSettings: globalSelectors.makeSelectSystemSettings(),
+});
+
+const mapDispatchToProps = {
+  addFilter,
+};
+
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
+export default compose(withConnect, withPermissions)(AlertsPage);

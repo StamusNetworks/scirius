@@ -1,8 +1,7 @@
 import React from 'react';
-import { PAGE_STATE } from 'ui/constants';
 import UIBreadcrumb from 'ui/components/UIElements/UIBreadcrumb';
 import { Link } from 'ui/helpers/Link';
-import HuntApp from 'ui/containers/HuntApp';
+import AlertsPage from './AlertsPage';
 
 const Alerts = () => (
   <div>
@@ -14,7 +13,7 @@ const Alerts = () => (
         </Link>,
       ]}
     />
-    <HuntApp page={PAGE_STATE.alerts_list} />
+    <AlertsPage />
   </div>
 );
 Alerts.metadata = {
