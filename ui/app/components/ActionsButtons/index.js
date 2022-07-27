@@ -67,7 +67,7 @@ const ActionsButtons = ({ supportedActions, filterParams, filters }) => {
               {actions.length === 0 ? (
                 <span>Policy Actions</span>
               ) : (
-                <a href="#">
+                <a href="#" style={{ display: 'grid', gridTemplateColumns: '1fr min-content', alignItems: 'center' }}>
                   Policy Actions <DownOutlined />
                 </a>
               )}
