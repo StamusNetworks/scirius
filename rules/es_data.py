@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-
+import base64
 import logging
 import json
 import os
@@ -34,6 +34,7 @@ from elasticsearch import ConnectionError
 
 from rules.es_graphs import get_es_major_version, ESError
 from rules.es_query import ESQuery
+from rules.models import get_system_settings
 
 # Avoid logging every request
 ES_LOGGER = logging.getLogger('elasticsearch')
@@ -1695,10 +1696,13 @@ class ESData(ESQuery):
 
     @staticmethod
     def _kibana_request(url, data, method='GET'):
+        gsettings = get_system_settings()
         headers = {
             'content-type': 'application/json',
             'kbn-xsrf': True
         }
+        if gsettings.custom_elasticsearch and gsettings.elasticsearch_user and gsettings.elasticsearch_pass:
+            headers['authorization'] = b'Basic %s' % base64.b64encode(f'{gsettings.elasticsearch_user}:{gsettings.elasticsearch_pass}'.encode('utf-8'))
         data = json.dumps(data)
         kibana_url = settings.KIBANA_URL + url
         req = urllib.request.Request(kibana_url, data.encode('utf8'), headers=headers, method=method)

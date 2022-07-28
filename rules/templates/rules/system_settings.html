@@ -44,6 +44,8 @@
                                     {% bootstrap_field main_form.custom_elasticsearch %}
                                     <div id="es_custom_fields">
                                         {% bootstrap_field main_form.elasticsearch_url %}
+                                        {% bootstrap_field main_form.elasticsearch_user %}
+                                        {% bootstrap_field main_form.elasticsearch_pass %}
                                         {% bootstrap_field main_form.use_proxy_for_es %}
                                         <div id="es_msg_version"></div>
                                         <button class="btn btn-secondary"
@@ -244,10 +246,20 @@ checkbox_toggle_div('#id_use_elasticsearch', '#es_fields');
 checkbox_toggle_div('#id_custom_elasticsearch', '#es_custom_fields');
 
 function es_check_version() {
+    const es_url = $('#id_elasticsearch_url').val().trim();
+    const es_user = $('#id_elasticsearch_user').val().trim();
+    const es_pass = $('#id_elasticsearch_pass').val().trim();
+
+    if (es_url.indexOf('@') !== -1) {
+        msg = '<strong style="color: #cb4a62">Error: please provide credentials in the dedicated fields</strong>';
+        $("#es_msg_version").html(msg);
+        return;
+    }
+
     $.ajax({
         url: "{% url 'es_check_version' %}",
         type: 'POST',
-        data: {"es_url": $('#id_elasticsearch_url').val().trim()},
+        data: {es_url, es_user, es_pass},
         success: function(data) {
             if (!data.error) {
                 var msg = "<strong>Connected to ES " + data.es_version + "</strong>";

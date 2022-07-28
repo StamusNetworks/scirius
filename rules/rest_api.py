@@ -2396,6 +2396,18 @@ class ESCheckVersionViewSet(APIView):
         try:
             es_url = self.request.data.get('es_url', '')
             es_url = normalize_es_url(es_url)
+            es_user = self.request.data.get('es_user', '')
+            es_pass = self.request.data.get('es_pass', '')
+            if es_user:
+                urls = []
+                for url in es_url.split(','):
+                    if '://' in url:
+                        scheme, addr = url.split('://', 1)
+                        url = f'{scheme}://{es_user}:{es_pass}@{addr}'
+                    else:
+                        url = f'{es_user}:{es_pass}@{url}'
+                    urls.append(url)
+                es_url = ','.join(urls)
 
             res = get_middleware_module('common').check_es_version(request, es_url)
         except (ValueError, ValidationError) as error:
@@ -2846,6 +2858,11 @@ class ESDeleteLogsViewSet(APIView):
 
 
 class SystemSettingsSerializer(serializers.ModelSerializer):
+    def to_representation(self, data):
+        data = super().to_representation(data)
+        data.pop('elasticsearch_pass')
+        return data
+
     class Meta:
         model = SystemSettings
         fields = '__all__'

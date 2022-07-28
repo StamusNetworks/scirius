@@ -232,13 +232,32 @@ class ESQuery:
         return es_params
 
     @classmethod
-    def get_es_address(cls):
+    def get_es_address(cls, username=None, password=None):
         gsettings = get_system_settings()
         es_address = 'http://%s/' % settings.ELASTICSEARCH_ADDRESS
-
         if gsettings.custom_elasticsearch:
-            addr = gsettings.elasticsearch_url
-            es_address = normalize_es_url(addr)
+            # Username / password can be an empty string to return the url
+            # without credentials
+            if username is None:
+                username = gsettings.elasticsearch_user
+            if password is None:
+                password = gsettings.elasticsearch_pass
+
+            addrs = gsettings.elasticsearch_url
+            if username:
+                _urls = gsettings.elasticsearch_url.split(',')
+                urls = []
+                for url in _urls:
+                    if '://' in url:
+                        scheme, url = url.split('://', 1)
+                        url = f'{scheme}://{username}:{password}@{url}'
+                    else:
+                        url = f'{username}:{password}@{url}'
+                    urls.append(url)
+
+                addrs = ','.join(urls)
+
+            es_address = normalize_es_url(addrs)
 
         return es_address
 

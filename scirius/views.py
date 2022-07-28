@@ -50,6 +50,12 @@ class KibanaProxyView(PermissionRequiredMixin, ProxyView):
     permission_required = ['rules.events_kibana']
 
     def dispatch(self, request, path):
+        # redirecting to / breaks authentication
+        if path == 'login' and request.GET.get('next', '/') == '/':
+            query_dict = request.GET.copy()
+            query_dict['next'] = '/app/home'
+            return redirect('/login?' + query_dict.urlencode())
+
         if (path == 'api/infra/graphql' or path.startswith('api/infra/graphql/')) and \
                 not settings.KIBANA_ALLOW_GRAPHQL:
             raise PermissionDenied()

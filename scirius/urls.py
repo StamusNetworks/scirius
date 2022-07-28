@@ -34,9 +34,11 @@ urlpatterns = [
     re_path(r'^(?P<path>internal/.*)$', KibanaProxyView.as_view()),
     re_path(r'^(?P<path>goto/.*)$', KibanaProxyView.as_view()),
     re_path(r'^(?P<path>[\d]{5}/.*)$', KibanaProxyView.as_view()),
-    re_path(r'^(?P<path>bootstrap\.js$)', KibanaProxyView.as_view()),
+    re_path(r'^(?P<path>bootstrap(-anonymous)?\.js$)', KibanaProxyView.as_view()),
     re_path(r'^(?P<path>spaces/.*$)', KibanaProxyView.as_view()),
     re_path(r'^(?P<path>node_modules/.*$)', KibanaProxyView.as_view()),
+    re_path(r'^(?P<path>login/?.*$)', KibanaProxyView.as_view()),
+    re_path(r'^(?P<path>logout/?.*$)', KibanaProxyView.as_view()),
 
     # Moloch proxy
     re_path(r'^moloch/(?P<path>.*)$', MolochProxyView.as_view()),

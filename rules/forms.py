@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
 import tarfile
 import json
 from io import BytesIO
@@ -100,10 +99,20 @@ class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelFor
         min_value=0.5,
         help_text='Automatic logout after inactivity timeout'
     )
+    elasticsearch_user = forms.CharField(required=False, help_text='Elasticsearch username for Scirius')
+    elasticsearch_pass = forms.CharField(required=False,
+                                         label='Elasticsearch password',
+                                         help_text='Elasticsearch password for Scirius',
+                                         widget=forms.PasswordInput(render_value=True))
 
     class Meta:
         model = SystemSettings
         exclude = []
+
+    def clean_elasticsearch_url(self):
+        if self.cleaned_data['custom_elasticsearch'] and '@' in self.cleaned_data['elasticsearch_url']:
+            raise forms.ValidationError('Credentials must be set in the dedicated fields')
+        return self.cleaned_data['elasticsearch_url']
 
 
 class KibanaDataForm(forms.Form):

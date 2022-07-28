@@ -779,10 +779,13 @@ class SystemSettings(models.Model):
         validators=[validate_url_list],
         blank=False,
         null=False,
-        default='http://elasticsearch:9200/'
+        default='http://elasticsearch:9200/',
+        help_text='Comma separated list of elasticsearch url'
     )
     use_proxy_for_es = models.BooleanField(default=False)
     custom_cookie_age = models.FloatField('Age of session cookies', default=360)
+    elasticsearch_user = models.CharField('Elasticsearch username', max_length=4096, blank=True, default='')
+    elasticsearch_pass = models.CharField('Elasticsearch password', max_length=4096, blank=True, default='')
 
     def get_proxy_params(self):
         if self.use_http_proxy:
