@@ -48,7 +48,7 @@ export default class SciriusChart extends React.Component {
             format: '%Y-%m-%d %H:%M',
             multiline: true,
             multilineMax: 5,
-            width: labelWidth,
+            width: labelWidth * 1.2,
             fit: true,
             values: [],
           },
