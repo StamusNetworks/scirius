@@ -741,11 +741,11 @@ export class HuntDashboard extends React.Component {
         <div className="drag-and-drop-container">
           <Row>
             <Col style={{ marginLeft: 'auto' }}>
-              <a href="app/pages/Dashboards/DashboardPage#edit" onClick={this.switchEditMode}>
+              <a href="#edit" onClick={this.switchEditMode}>
                 {this.state.editMode ? 'switch off edit mode' : 'edit'}
               </a>
               <span> • </span> {/* ignore_utf8_check: 8226 */}
-              <a href="app/pages/Dashboards/DashboardPage#reset" onClick={this.resetDashboard}>
+              <a href="#reset" onClick={this.resetDashboard}>
                 reset
               </a>
             </Col>
