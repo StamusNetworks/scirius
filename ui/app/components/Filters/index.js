@@ -501,7 +501,7 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
 };
 
 Filter.propTypes = {
-  page: PropTypes.oneOf(['SIGNATURES', 'DASHBOARD', 'ALERTS', 'HISTORY', 'HOSTS_LIST']),
+  page: PropTypes.oneOf(['SIGNATURES', 'DASHBOARDS', 'ALERTS', 'HISTORY', 'HOSTS_LIST']),
   section: PropTypes.string.isRequired,
   queryTypes: PropTypes.array.isRequired,
   onSortChange: PropTypes.func.isRequired,

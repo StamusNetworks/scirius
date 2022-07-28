@@ -83,7 +83,8 @@ class FilterSets extends React.Component {
       this.props.setTag(alertTag);
     }
 
-    history.push(`/stamus/${huntUrls[row.page]}`);
+    const { search } = window.location;
+    history.push(`/stamus/${huntUrls[row.page]}${search}`);
     this.props.reload();
   }
 

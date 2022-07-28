@@ -712,7 +712,7 @@ export class HuntDashboard extends React.Component {
     return (
       <div>
         <ErrorHandler>
-          <Filters page="DASHBOARD" section={sections.GLOBAL} queryTypes={['filter']} />
+          <Filters page="DASHBOARDS" section={sections.GLOBAL} queryTypes={['filter']} />
         </ErrorHandler>
 
         <Row className="row" style={{ marginTop: 10 }}>
