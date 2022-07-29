@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { List, Spin, Table } from 'antd';
-import { ZoomInOutlined } from '@ant-design/icons';
+import { ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import { sections } from 'ui/constants';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
 import SciriusChart from 'ui/components/SciriusChart';
@@ -41,14 +41,18 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
       title: 'Filter',
       dataIndex: 'filter',
       render: (text, rule) => (
-        <a
-          role="button"
-          key={`actions-${rule.sid}`}
-          style={{ margin: '0 10px 0 10px' }}
-          onClick={() => addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: rule.sid, negated: false })}
-        >
-          <ZoomInOutlined />
-        </a>
+        <React.Fragment>
+          <ZoomInOutlined
+            style={{ marginRight: '10px' }}
+            onClick={() => addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: rule.sid, negated: false })}
+          />
+          <ZoomOutOutlined
+            onClick={e => {
+              e.stopPropagation();
+              addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: rule.sid, negated: true });
+            }}
+          />
+        </React.Fragment>
       ),
     },
     {
