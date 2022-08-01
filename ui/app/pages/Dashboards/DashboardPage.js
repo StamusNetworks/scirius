@@ -49,6 +49,7 @@ import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import copyTextToClipboard from '../../helpers/copyTextToClipboard';
 import { makeSelectAlertTag, makeSelectGlobalFilters } from '../../containers/HuntApp/stores/global';
+import '../../../../rules/static/rules/c3.min.css';
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
