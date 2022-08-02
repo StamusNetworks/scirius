@@ -7,7 +7,8 @@ import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
 import EventValue from 'ui/components/EventValue';
-
+import UICard from 'ui/components/UIElements/UICard';
+import { COLOR_BOX_HEADER } from 'ui/constants/colors';
 export default class HuntStat extends React.Component {
   constructor(props) {
     super(props);
@@ -54,47 +55,38 @@ export default class HuntStat extends React.Component {
   );
 
   render() {
-    let colVal = 'col-md-3';
-    if (this.props.col) {
-      colVal = `col-md-${this.props.col}`;
-    }
     if (this.state.data && this.state.data.length) {
       return (
-        <div className={colVal}>
-          <h3
-            className="hunt-stat-title truncate-overflow"
-            data-toggle="tooltip"
-            title={this.props.title}
-            style={{ display: 'flex', justifyContent: 'space-between' }}
-          >
-            <span>{this.props.title}</span>
-            {this.state.data.length === 5 && (
-              <Dropdown id={`more-${this.props.item}`} overlay={this.menu} trigger={['click']}>
-                <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
-                  <MenuOutlined />
-                </a>
-              </Dropdown>
+        <UICard
+          title={
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr min-content' }}>
+              <div>{this.props.title}</div>
+              <div>
+                {this.state.data.length === 5 && (
+                  <Dropdown id={`more-${this.props.item}`} overlay={this.menu} trigger={['click']}>
+                    <a className="ant-dropdown-link" style={{ color: '#fff' }} onClick={e => e.preventDefault()}>
+                      <MenuOutlined />
+                    </a>
+                  </Dropdown>
+                )}
+              </div>
+            </div>
+          }
+          headStyle={{ background: COLOR_BOX_HEADER, color: '#FFF', textAlign: 'center' }}
+          noPadding
+        >
+          <List
+            size="small"
+            header={null}
+            footer={null}
+            dataSource={this.state.data}
+            renderItem={item => (
+              <List.Item key={item.key} style={{ padding: '8px 10px' }}>
+                <EventValue field={this.props.item} value={item.key} addFilter={this.addFilter} right_info={item.doc_count} />
+              </List.Item>
             )}
-          </h3>
-          <div className="hunt-stat-body">
-            <List
-              size="small"
-              header={null}
-              footer={null}
-              dataSource={this.state.data}
-              renderItem={item => (
-                <List.Item key={item.key}>
-                  <EventValue
-                    field={this.props.item}
-                    value={item.key}
-                    addFilter={this.addFilter}
-                    right_info={<span className="badge">{item.doc_count}</span>}
-                  />
-                </List.Item>
-              )}
-            />
-          </div>
-        </div>
+          />
+        </UICard>
       );
     }
     return null;
@@ -103,7 +95,6 @@ export default class HuntStat extends React.Component {
 HuntStat.propTypes = {
   title: PropTypes.any,
   filters: PropTypes.any,
-  col: PropTypes.any,
   item: PropTypes.any,
   systemSettings: PropTypes.any,
   loadMore: PropTypes.func,

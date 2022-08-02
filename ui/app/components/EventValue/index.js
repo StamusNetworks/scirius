@@ -3,13 +3,14 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import EventValueInfo from 'ui/components/EventValueInfo';
 import { sections } from 'ui/constants';
-import { Tooltip, message } from 'antd';
+import { message, Tooltip } from 'antd';
 import { InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import ErrorHandler from 'ui/components/Error';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import isIP from 'ui/helpers/isIP';
 import styled from 'styled-components';
 import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
+import { COLOR_BOX_HEADER } from 'ui/constants/colors';
 
 // put all the sections where we want to inlclude `virus total links` for ip addresses and domains
 const virusTotalLinks = ['hostname_info.domain', 'http.hostname', 'dns.query.rrname', 'http.http_refer_info.domain', 'tls.sni'];
@@ -21,18 +22,21 @@ const mitreLinks = [
 ];
 
 const Container = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr min-content;
   align-items: center;
-  background: ${p => (p.hover ? '#f0f2f5' : 'none')};
+  width: 100%;
+  background: ${p => (p.hover ? '#e5e5e5' : 'none')};
   cursor: ${p => (p.hover ? 'pointer' : 'default')};
-  padding: 0px 10px;
-  margin: 5px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transform: translateX(-10px);
-  width: calc(100% + 20px);
+  &:hover .extra {
+    visibility: visible;
+    opacity: 1;
+  }
 `;
+
 const Value = styled.div`
   flex: 1;
   min-width: 0; /* or some value */
@@ -45,14 +49,18 @@ const Extra = styled.div`
   white-space: nowrap;
   display: flex;
   align-items: center;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.2s;
   span {
     margin-right: 3px;
   }
 `;
 
-const Badge = styled.span`
-  background: #e5e5e5;
-  padding: 0px 5px;
+const Count = styled.div`
+  background: ${COLOR_BOX_HEADER};
+  color: #fff;
+  padding: 0 5px;
   font-size: 12px;
 `;
 
@@ -122,47 +130,45 @@ const EventValue = props => {
       }}
     >
       <Value title={props.value + (props.hasCopyShortcut ? '\nCtrl + left click to copy' : '')}>{printValue()}</Value>
-      {magnifiers && (
-        <Extra>
-          <ErrorHandler>
-            <EventValueInfo field={props.field} value={props.value} magnifiers={magnifiers} />
-            {getLink()}
-            {/* 256 chars max on ES queries */}
-            {((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
-              <Tooltip title="add a filter on value" trigger="hover" id="tooltip-top">
-                <ZoomInOutlined
-                  onClick={() =>
-                    props.addFilter(sections.GLOBAL, {
-                      id: props.field,
-                      value: props.value,
-                      label: `${props.field}: ${props.format ? props.format(props.value) : props.value}`,
-                      fullString: true,
-                      negated: false,
-                    })
-                  }
-                />
-              </Tooltip>
-            )}
-            {/* 256 chars max on ES queries */}
-            {((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
-              <Tooltip title="add negated filter on value" trigger="hover" id="tooltip-top">
-                <ZoomOutOutlined
-                  onClick={() =>
-                    props.addFilter(sections.GLOBAL, {
-                      id: props.field,
-                      value: props.value,
-                      label: `${props.field}: ${props.format ? props.format(props.value) : props.value}`,
-                      fullString: true,
-                      negated: true,
-                    })
-                  }
-                />
-              </Tooltip>
-            )}
-          </ErrorHandler>
-        </Extra>
-      )}
-      {props.right_info && !(props.copyMode && hover) && <Badge>{props.right_info}</Badge>}
+      <Extra className="extra">
+        <ErrorHandler>
+          <EventValueInfo field={props.field} value={props.value} magnifiers={magnifiers} />
+          {getLink()}
+          {/* 256 chars max on ES queries */}
+          {((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
+            <Tooltip title="add a filter on value" trigger="hover" id="tooltip-top">
+              <ZoomInOutlined
+                onClick={() =>
+                  props.addFilter(sections.GLOBAL, {
+                    id: props.field,
+                    value: props.value,
+                    label: `${props.field}: ${props.format ? props.format(props.value) : props.value}`,
+                    fullString: true,
+                    negated: false,
+                  })
+                }
+              />
+            </Tooltip>
+          )}
+          {/* 256 chars max on ES queries */}
+          {((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
+            <Tooltip title="add negated filter on value" trigger="hover" id="tooltip-top">
+              <ZoomOutOutlined
+                onClick={() =>
+                  props.addFilter(sections.GLOBAL, {
+                    id: props.field,
+                    value: props.value,
+                    label: `${props.field}: ${props.format ? props.format(props.value) : props.value}`,
+                    fullString: true,
+                    negated: true,
+                  })
+                }
+              />
+            </Tooltip>
+          )}
+        </ErrorHandler>
+      </Extra>
+      {props.right_info && !(props.copyMode && hover) && <Count>{props.right_info}</Count>}
     </Container>
   );
 };

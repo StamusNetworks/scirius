@@ -9,9 +9,35 @@ import { buildFilterParams } from 'ui/buildFilterParams';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
 import SciriusChart from 'ui/components/SciriusChart';
 import EventValue from 'ui/components/EventValue';
+import UICard from 'ui/components/UIElements/UICard';
+import { COLOR_BOX_HEADER } from 'ui/constants/colors';
+import styled from 'styled-components';
 import RuleStatus from './RuleStatus';
 import HuntStat from './HuntStat';
 import { updateHitsStats } from './helpers/updateHitsStats';
+import { SigContent } from './RuleInList';
+
+const Row = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-gap: 10px;
+  margin-bottom: 10px;
+`;
+
+const RuleMsg = styled.div`
+  font-size: 24px;
+  font-weight: 300;
+  display: grid;
+  grid-template-columns: 1fr max-content min-content;
+  grid-column-gap: 30px;
+  padding: 10px;
+`;
+
+const RuleHits = styled.div`
+  background: ${COLOR_BOX_HEADER};
+  color: #fff;
+  padding: 0 10px;
+`;
 
 export default class RulePage extends React.Component {
   constructor(props) {
@@ -151,217 +177,192 @@ export default class RulePage extends React.Component {
       <div>
         <Spin spinning={this.state.rule === undefined}>
           {this.state.rule && (
-            <div className="row">
-              <div className="col-xs-12 col-sm-12 col-md-12">
-                <h1>
-                  {this.state.rule.msg}
-                  <span className="pull-right">
-                    {this.state.rule && this.state.rule.hits !== undefined && (
-                      <span className="label label-primary">
-                        {this.state.rule.hits} hit{this.state.rule.hits > 1 && 's'}
-                      </span>
-                    )}
-                    <RuleEditKebab config={this.state} rulesets={this.props.rulesets} refresh_callback={this.updateRuleStatus} />
-                  </span>
-                </h1>
-              </div>
+            <div>
+              <RuleMsg>
+                <div>{this.state.rule.msg}</div>
+                {this.state.rule && this.state.rule.hits !== undefined && (
+                  <RuleHits>
+                    {this.state.rule.hits} hit{this.state.rule.hits > 1 && 's'}
+                  </RuleHits>
+                )}
+                <RuleEditKebab config={this.state} rulesets={this.props.rulesets} refresh_callback={this.updateRuleStatus} />
+              </RuleMsg>
+
               <div>
-                <div className="container-fluid container-cards-pf">
-                  <div className="row">
-                    <div
-                      className={
-                        this.state.rule_references !== undefined && this.state.rule_references.length > 0
-                          ? 'col-xs-9 col-sm-9 col-md-9'
-                          : 'col-xs-12 col-sm-12 col-md-12'
-                      }
-                    >
-                      {/* eslint-disable-next-line react/no-danger */}
-                      <div className="SigContent" dangerouslySetInnerHTML={{ __html: this.state.rule.content }}></div>
-                    </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr max-content', gridGap: '10px' }}>
+                  {/* eslint-disable-next-line react/no-danger */}
+                  <SigContent dangerouslySetInnerHTML={{ __html: this.state.rule.content }} />
 
-                    <div
-                      className={
-                        this.state.rule_references !== undefined && this.state.rule_references.length > 0
-                          ? 'col-xs-3 col-sm-3 col-md-3'
-                          : 'col-xs-0 col-sm-0 col-md-0'
-                      }
+                  {this.state.rule_references && this.state.rule_references.length > 0 && (
+                    <UICard
+                      title={<div>References</div>}
+                      headStyle={{ background: COLOR_BOX_HEADER, color: '#fff', textAlign: 'center' }}
+                      bodyStyle={{ display: 'grid', padding: '8px 10px' }}
+                      noPadding
                     >
-                      {this.state.rule_references && this.state.rule_references.length > 0 && (
-                        <div className="card-pf card-pf-accented card-pf-aggregate-status">
-                          <h2 className="card-pf-title">
-                            <span className="fa" />
-                            References
-                          </h2>
-                          <div className="card-pf-body">
-                            {this.state.rule_references.map(reference => {
-                              if (reference.url !== undefined) {
-                                return (
-                                  <p key={reference.url}>
-                                    <a href={reference.url} target="_blank">{`${
-                                      reference.key[0].toUpperCase() + reference.key.substring(1)
-                                    }: ${reference.value.substring(0, 45)}...`}</a>
-                                  </p>
-                                );
-                              }
-                              return null;
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="row">
-                    {this.state.rule.timeline && (
-                      <SciriusChart
-                        data={this.state.rule.timeline}
-                        axis={{ x: { min: this.props.filterParams.fromDate, max: this.props.filterParams.toDate } }}
-                        legend={{ show: false }}
-                        padding={{ bottom: 10 }}
-                      />
-                    )}
-                  </div>
-                  {this.state.rule_status !== undefined && (
-                    <div style={{ minHeight: '150px' }}>
-                      {this.state.rule_status.map(rstatus => (
-                        <RuleStatus rule={this.state.rule} key={rstatus.pk} rule_status={rstatus} />
-                      ))}
-                    </div>
-                  )}
-                  <div className="row">
-                    <HuntStat
-                      systemSettings={this.state.systemSettings}
-                      title="Sources"
-                      rule={this.state.rule}
-                      config={this.props.config}
-                      filters={this.props.filters}
-                      item="src_ip"
-                      filterParams={this.props.filterParams}
-                      addFilter={this.props.addFilter}
-                      loadMore={this.loadMore}
-                    />
-                    <HuntStat
-                      title="Destinations"
-                      rule={this.state.rule}
-                      config={this.props.config}
-                      filters={this.props.filters}
-                      item="dest_ip"
-                      filterParams={this.props.filterParams}
-                      addFilter={this.props.addFilter}
-                      loadMore={this.loadMore}
-                    />
-                    <HuntStat
-                      title="Probes"
-                      rule={this.state.rule}
-                      config={this.props.config}
-                      filters={this.props.filters}
-                      item="host"
-                      filterParams={this.props.filterParams}
-                      addFilter={this.props.addFilter}
-                      loadMore={this.loadMore}
-                    />
-                  </div>
-                  {this.state.extinfo.http && (
-                    <div className="row">
-                      <HuntStat
-                        systemSettings={this.state.systemSettings}
-                        title="Hostname"
-                        rule={this.state.rule}
-                        config={this.props.config}
-                        filters={this.props.filters}
-                        item="http.hostname"
-                        filterParams={this.props.filterParams}
-                        addFilter={this.props.addFilter}
-                        loadMore={this.loadMore}
-                      />
-                      <HuntStat
-                        systemSettings={this.state.systemSettings}
-                        title="URL"
-                        rule={this.state.rule}
-                        config={this.props.config}
-                        filters={this.props.filters}
-                        item="http.url"
-                        filterParams={this.props.filterParams}
-                        addFilter={this.props.addFilter}
-                        loadMore={this.loadMore}
-                      />
-                      <HuntStat
-                        systemSettings={this.state.systemSettings}
-                        title="User agent"
-                        rule={this.state.rule}
-                        config={this.props.config}
-                        filters={this.props.filters}
-                        item="http.http_user_agent"
-                        filterParams={this.props.filterParams}
-                        addFilter={this.props.addFilter}
-                        loadMore={this.loadMore}
-                      />
-                    </div>
-                  )}
-                  {this.state.extinfo.dns && (
-                    <div className="row">
-                      <HuntStat
-                        systemSettings={this.state.systemSettings}
-                        title="Name"
-                        rule={this.state.rule}
-                        config={this.props.config}
-                        filters={this.props.filters}
-                        item="dns.query.rrname"
-                        filterParams={this.props.filterParams}
-                        addFilter={this.props.addFilter}
-                        loadMore={this.loadMore}
-                      />
-                      <HuntStat
-                        systemSettings={this.state.systemSettings}
-                        title="Type"
-                        rule={this.state.rule}
-                        config={this.props.config}
-                        filters={this.props.filters}
-                        item="dns.query.rrtype"
-                        filterParams={this.props.filterParams}
-                        addFilter={this.props.addFilter}
-                        loadMore={this.loadMore}
-                      />
-                    </div>
-                  )}
-                  {this.state.extinfo.tls && (
-                    <div className="row">
-                      <HuntStat
-                        systemSettings={this.state.systemSettings}
-                        title="Subject DN"
-                        rule={this.state.rule}
-                        config={this.props.config}
-                        filters={this.props.filters}
-                        item="tls.subject"
-                        filterParams={this.props.filterParams}
-                        addFilter={this.props.addFilter}
-                        loadMore={this.loadMore}
-                      />
-                      <HuntStat
-                        systemSettings={this.state.systemSettings}
-                        title="SNI"
-                        rule={this.state.rule}
-                        config={this.props.config}
-                        filters={this.props.filters}
-                        item="tls.sni"
-                        filterParams={this.props.filterParams}
-                        addFilter={this.props.addFilter}
-                        loadMore={this.loadMore}
-                      />
-                      <HuntStat
-                        systemSettings={this.state.systemSettings}
-                        title="Fingerprint"
-                        rule={this.state.rule}
-                        config={this.props.config}
-                        filters={this.props.filters}
-                        item="tls.fingerprint"
-                        filterParams={this.props.filterParams}
-                        addFilter={this.props.addFilter}
-                        loadMore={this.loadMore}
-                      />
-                    </div>
+                      {this.state.rule_references.map(reference => {
+                        if (reference.url !== undefined) {
+                          return (
+                            <a key={reference.url} href={reference.url} target="_blank">{`${
+                              reference.key[0].toUpperCase() + reference.key.substring(1)
+                            }: ${reference.value.substring(0, 45)}...`}</a>
+                          );
+                        }
+                        return null;
+                      })}
+                    </UICard>
                   )}
                 </div>
+
+                {this.state.rule.timeline && (
+                  <SciriusChart
+                    data={this.state.rule.timeline}
+                    axis={{ x: { min: this.props.filterParams.fromDate, max: this.props.filterParams.toDate } }}
+                    legend={{ show: false }}
+                    padding={{ bottom: 10 }}
+                  />
+                )}
+
+                {this.state.rule_status !== undefined && (
+                  <Row>
+                    {this.state.rule_status.map(rstatus => (
+                      <RuleStatus rule={this.state.rule} key={rstatus.pk} rule_status={rstatus} />
+                    ))}
+                  </Row>
+                )}
+                <Row>
+                  <HuntStat
+                    systemSettings={this.state.systemSettings}
+                    title="Sources"
+                    rule={this.state.rule}
+                    config={this.props.config}
+                    filters={this.props.filters}
+                    item="src_ip"
+                    filterParams={this.props.filterParams}
+                    addFilter={this.props.addFilter}
+                    loadMore={this.loadMore}
+                  />
+                  <HuntStat
+                    title="Destinations"
+                    rule={this.state.rule}
+                    config={this.props.config}
+                    filters={this.props.filters}
+                    item="dest_ip"
+                    filterParams={this.props.filterParams}
+                    addFilter={this.props.addFilter}
+                    loadMore={this.loadMore}
+                  />
+                  <HuntStat
+                    title="Probes"
+                    rule={this.state.rule}
+                    config={this.props.config}
+                    filters={this.props.filters}
+                    item="host"
+                    filterParams={this.props.filterParams}
+                    addFilter={this.props.addFilter}
+                    loadMore={this.loadMore}
+                  />
+                </Row>
+                {this.state.extinfo.http && (
+                  <Row>
+                    <HuntStat
+                      systemSettings={this.state.systemSettings}
+                      title="Hostname"
+                      rule={this.state.rule}
+                      config={this.props.config}
+                      filters={this.props.filters}
+                      item="http.hostname"
+                      filterParams={this.props.filterParams}
+                      addFilter={this.props.addFilter}
+                      loadMore={this.loadMore}
+                    />
+                    <HuntStat
+                      systemSettings={this.state.systemSettings}
+                      title="URL"
+                      rule={this.state.rule}
+                      config={this.props.config}
+                      filters={this.props.filters}
+                      item="http.url"
+                      filterParams={this.props.filterParams}
+                      addFilter={this.props.addFilter}
+                      loadMore={this.loadMore}
+                    />
+                    <HuntStat
+                      systemSettings={this.state.systemSettings}
+                      title="User agent"
+                      rule={this.state.rule}
+                      config={this.props.config}
+                      filters={this.props.filters}
+                      item="http.http_user_agent"
+                      filterParams={this.props.filterParams}
+                      addFilter={this.props.addFilter}
+                      loadMore={this.loadMore}
+                    />
+                  </Row>
+                )}
+                {this.state.extinfo.dns && (
+                  <Row>
+                    <HuntStat
+                      systemSettings={this.state.systemSettings}
+                      title="Name"
+                      rule={this.state.rule}
+                      config={this.props.config}
+                      filters={this.props.filters}
+                      item="dns.query.rrname"
+                      filterParams={this.props.filterParams}
+                      addFilter={this.props.addFilter}
+                      loadMore={this.loadMore}
+                    />
+                    <HuntStat
+                      systemSettings={this.state.systemSettings}
+                      title="Type"
+                      rule={this.state.rule}
+                      config={this.props.config}
+                      filters={this.props.filters}
+                      item="dns.query.rrtype"
+                      filterParams={this.props.filterParams}
+                      addFilter={this.props.addFilter}
+                      loadMore={this.loadMore}
+                    />
+                  </Row>
+                )}
+                {this.state.extinfo.tls && (
+                  <Row>
+                    <HuntStat
+                      systemSettings={this.state.systemSettings}
+                      title="Subject DN"
+                      rule={this.state.rule}
+                      config={this.props.config}
+                      filters={this.props.filters}
+                      item="tls.subject"
+                      filterParams={this.props.filterParams}
+                      addFilter={this.props.addFilter}
+                      loadMore={this.loadMore}
+                    />
+                    <HuntStat
+                      systemSettings={this.state.systemSettings}
+                      title="SNI"
+                      rule={this.state.rule}
+                      config={this.props.config}
+                      filters={this.props.filters}
+                      item="tls.sni"
+                      filterParams={this.props.filterParams}
+                      addFilter={this.props.addFilter}
+                      loadMore={this.loadMore}
+                    />
+                    <HuntStat
+                      systemSettings={this.state.systemSettings}
+                      title="Fingerprint"
+                      rule={this.state.rule}
+                      config={this.props.config}
+                      filters={this.props.filters}
+                      item="tls.fingerprint"
+                      filterParams={this.props.filterParams}
+                      addFilter={this.props.addFilter}
+                      loadMore={this.loadMore}
+                    />
+                  </Row>
+                )}
               </div>
             </div>
           )}
@@ -375,26 +376,19 @@ export default class RulePage extends React.Component {
             this.hideMoreModal();
           }}
         >
-          <div className="hunt-stat-body">
-            <List
-              size="small"
-              header={null}
-              footer={null}
-              dataSource={this.state.moreResults}
-              renderItem={item => (
-                <List.Item key={item.key}>
-                  {this.state.moreModal && (
-                    <EventValue
-                      field={this.state.moreModal}
-                      value={item.key}
-                      addFilter={this.props.addFilter}
-                      right_info={<span className="badge">{item.doc_count}</span>}
-                    />
-                  )}
-                </List.Item>
-              )}
-            />
-          </div>
+          <List
+            size="small"
+            header={null}
+            footer={null}
+            dataSource={this.state.moreResults}
+            renderItem={item => (
+              <List.Item key={item.key}>
+                {this.state.moreModal && (
+                  <EventValue field={this.state.moreModal} value={item.key} addFilter={this.props.addFilter} right_info={item.doc_count} />
+                )}
+              </List.Item>
+            )}
+          />
         </Modal>
       </div>
     );

@@ -1,6 +1,24 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import {
+  CloseCircleOutlined,
+  DoubleRightOutlined,
+  MinusCircleOutlined,
+  PoweroffOutlined,
+  SelectOutlined,
+  TableOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons';
 import RuleContentModal from 'ui/components/RuleContentModal';
+import UICard from 'ui/components/UIElements/UICard';
+import { COLOR_BOX_HEADER } from 'ui/constants/colors';
+import styled from 'styled-components';
+
+const UICardBody = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  padding: 8px 10px;
+`;
 
 export default class RuleStatus extends React.Component {
   constructor(props) {
@@ -20,72 +38,84 @@ export default class RuleStatus extends React.Component {
   render() {
     const { valid } = this.props.rule_status;
     let validity = (
-      <span className="card-pf-aggregate-status-notification">
-        <span className="pficon pficon-ok"></span>Valid
-      </span>
+      <div>
+        <CheckCircleOutlined style={{ color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+        Valid
+      </div>
     );
     if (valid.status !== true) {
       validity = (
-        <span className="card-pf-aggregate-status-notification">
-          <span className="pficon pficon-error-circle-o"></span>Valid
-        </span>
+        <div>
+          <CloseCircleOutlined style={{ color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+          Invalid
+        </div>
       );
     }
     const trans = this.props.rule_status.transformations;
     let action = (
-      <span className="card-pf-aggregate-status-notification">
-        <span className="pficon pficon-ok" title="Action transformation"></span>Action: {trans.action}
-      </span>
+      <div>
+        <CheckCircleOutlined style={{ color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+        <span>Action: {trans.action}</span>
+      </div>
     );
     if (trans.action === null) {
       action = undefined;
     }
     let target = (
-      <span className="card-pf-aggregate-status-notification">
-        <span className="pficon pficon-import" title="Target transformation"></span>Target: {trans.target}
-      </span>
+      <div>
+        <SelectOutlined style={{ color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+        <span>Target: {trans.target}</span>
+      </div>
     );
     if (trans.target == null) {
       target = undefined;
     }
     let lateral = (
-      <span className="card-pf-aggregate-status-notification">
-        <span className="pficon pficon-integration" title="Lateral transformation"></span>Lateral: {trans.lateral}
-      </span>
+      <div>
+        <DoubleRightOutlined style={{ color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+        <span>Lateral: {trans.lateral}</span>
+      </div>
     );
     if (trans.lateral == null) {
       lateral = undefined;
     }
     let active = (
-      <span className="card-pf-aggregate-status-notification">
-        <span className="pficon pficon-on"></span>Active
-      </span>
+      <div>
+        <PoweroffOutlined style={{ color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+        Active
+      </div>
     );
     if (!this.props.rule_status.active) {
       active = (
-        <span className="card-pf-aggregate-status-notification">
-          <span className="pficon pficon-off"></span>Disabled
-        </span>
+        <div>
+          <MinusCircleOutlined style={{ transform: 'rotateZ(90deg)', color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+          Disabled
+        </div>
       );
     }
 
     return (
-      <div className="col-xs-6 col-sm-4 col-md-4">
-        <div className="card-pf card-pf-accented card-pf-aggregate-status" onClick={this.showRuleContent} style={{ cursor: 'pointer' }}>
-          <h2 className="card-pf-title">
-            <span className="fa fa-th" />
-            {this.props.rule_status.name}
-          </h2>
-          <div className="card-pf-body">
-            <p className="card-pf-aggregate-status-notifications">
-              {active}
-              {validity}
-              {action}
-              {target}
-              {lateral}
-            </p>
-          </div>
-        </div>
+      <React.Fragment>
+        <UICard
+          title={
+            <div>
+              <TableOutlined style={{ background: COLOR_BOX_HEADER, marginRight: '10px' }} />
+              <span>{this.props.rule_status.name}</span>
+            </div>
+          }
+          onClick={this.showRuleContent}
+          style={{ cursor: 'pointer' }}
+          headStyle={{ background: COLOR_BOX_HEADER, color: '#FFF', textAlign: 'center' }}
+          noPadding
+        >
+          <UICardBody>
+            {active}
+            {validity}
+            {action}
+            {target}
+            {lateral}
+          </UICardBody>
+        </UICard>
 
         <RuleContentModal
           display={this.state.display_content}
@@ -93,7 +123,7 @@ export default class RuleStatus extends React.Component {
           close={this.hideRuleContent}
           rule_status={this.props.rule_status}
         />
-      </div>
+      </React.Fragment>
     );
   }
 }

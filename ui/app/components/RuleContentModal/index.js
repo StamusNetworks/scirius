@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal } from 'antd';
+import { SigContent } from 'ui/RuleInList';
 
 const RuleContentModal = props => (
   <Modal
@@ -11,7 +12,7 @@ const RuleContentModal = props => (
     aria-labelledby="contained-modal-title-lg"
   >
     {/* eslint-disable-next-line react/no-danger */}
-    <div className="SigContent" dangerouslySetInnerHTML={{ __html: props.rule_status.content }}></div>
+    <SigContent dangerouslySetInnerHTML={{ __html: props.rule_status.content }} />
   </Modal>
 );
 
