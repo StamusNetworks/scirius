@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 import { Button, Modal } from 'antd';
 import { QuestionOutlined, ReadOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
@@ -104,7 +106,7 @@ const VersionsList = styled.ul`
 `;
 const loadingIndicator = <LoadingIndicator style={{ display: 'inline-block', margin: '0', height: '20px' }} />;
 
-const HelpMenu = () => {
+const HelpMenu = ({ isEnterpriseEdition }) => {
   const [loading, setLoading] = useState({ details: false, sources: false });
   const [visible, setVisible] = useState(false);
   const [details, setDetails] = useState({
@@ -161,29 +163,50 @@ const HelpMenu = () => {
           </div>
         }
       >
-        <H1>{details.title}</H1>
-        <VersionTitle>Versions</VersionTitle>
-        <VersionsList>
-          <Version>
-            <strong>Scirius Security Platform:</strong> {loading.details ? loadingIndicator : details.version}
-          </Version>
-          <Version>
-            <strong>Stamus Threat Intelligence:</strong>
-            {loading.sources ? loadingIndicator : source.version ? `v${source.version}` : <i>rules update needed</i>}
-          </Version>
-        </VersionsList>
+        <H1>{isEnterpriseEdition ? details.title : 'Scirius Community Edition'}</H1>
+        <VersionTitle>
+          {isEnterpriseEdition ? (
+            'Versions'
+          ) : (
+            <div>
+              <strong>Version </strong>
+              <span>Scirius CE v{loading.details ? loadingIndicator : /\d+\.\d+\.\d+/.exec(details.version)}</span>
+            </div>
+          )}
+        </VersionTitle>
+        {isEnterpriseEdition && (
+          <VersionsList>
+            <Version>
+              <strong>Scirius Security Platform:</strong> {loading.details ? loadingIndicator : details.version}
+            </Version>
+            <Version>
+              <strong>Stamus Threat Intelligence:</strong>
+              {loading.sources ? loadingIndicator : source.version ? `v${source.version}` : <i>rules update needed</i>}
+            </Version>
+          </VersionsList>
+        )}
         <CopyRight>Copyright 2014-{new Date().getFullYear()}, Stamus Networks</CopyRight>
       </AboutModal>
-      <Item block type="link" icon={<ReadOutlined />} onClick={() => window.open('/static/doc/stamus-security-platform/security-posture.html')}>
+
+      <Item
+        block
+        type="link"
+        icon={<ReadOutlined />}
+        onClick={() => window.open(`${isEnterpriseEdition ? '/static/doc/stamus-security-platform/security-posture.html' : '/static/doc/hunt.html'}`)}
+      >
         User manual
       </Item>
       <Item block type="link" icon={<QuestionOutlined />} onClick={() => setVisible(true)}>
-        About SSP
+        {isEnterpriseEdition ? 'About SSP' : 'About Scirius CE'}
       </Item>
     </Wrapper>
   );
 };
 
-HelpMenu.propTypes = {};
+HelpMenu.propTypes = {
+  isEnterpriseEdition: PropTypes.bool,
+};
 
-export default HelpMenu;
+const mapStateToProps = ({ global }) => ({ isEnterpriseEdition: !!global.ee });
+
+export default connect(mapStateToProps)(HelpMenu);
