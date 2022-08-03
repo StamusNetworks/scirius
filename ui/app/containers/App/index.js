@@ -103,7 +103,7 @@ const App = ({ source, getSettings, getUser, getSource, getAllPeriodRequest, set
                 {pages.OperationalCenter ? (
                   <Redirect to={`${APP_URL}/security-posture/operational-center`} />
                 ) : (
-                  <Redirect to={`${APP_URL}/explorer`} />
+                  <Redirect to={`${APP_URL}/hunting/dashboards`} />
                 )}
               </Route>
               <ProxyRoute />
