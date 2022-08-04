@@ -103,7 +103,7 @@ export const filterSetsReducer = (state = initialState, action) =>
         draft.filterSetsLoading = false;
         draft.filterSetsStatus = true;
         draft.filterSetsMessage = 'filter set deleted successfully';
-        draft.filterSets[action.filterSetType].filter(f => f.id !== action.filterSetIdx);
+        draft.filterSets[action.filterSetType] = draft.filterSets[action.filterSetType].filter(f => f.id !== action.filterSetIdx);
         break;
     }
   });
