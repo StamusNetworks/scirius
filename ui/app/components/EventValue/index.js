@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import EventValueInfo from 'ui/components/EventValueInfo';
 import { sections } from 'ui/constants';
-import { Tooltip } from 'antd';
+import { Tooltip, message } from 'antd';
 import { InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import ErrorHandler from 'ui/components/Error';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
@@ -23,12 +23,15 @@ const mitreLinks = [
 const Container = styled.div`
   display: flex;
   align-items: center;
-  background: ${p => (p.hover ? '#e5e5e5' : 'none')};
+  background: ${p => (p.hover ? '#f0f2f5' : 'none')};
   cursor: ${p => (p.hover ? 'pointer' : 'default')};
-  padding: 0px 0px 6px 0px;
+  padding: 0px 10px;
+  margin: 5px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transform: translateX(-10px);
+  width: calc(100% + 20px);
 `;
 const Value = styled.div`
   flex: 1;
@@ -111,6 +114,10 @@ const EventValue = props => {
       onClick={() => {
         if (props.copyMode && hover) {
           copyTextToClipboard(printValue());
+          message.success({
+            duration: 1,
+            content: 'Copied!',
+          });
         }
       }}
     >
