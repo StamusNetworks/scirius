@@ -21,9 +21,10 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { Drawer, Input, Spin, Collapse } from 'antd';
+import { Drawer, Input, Collapse } from 'antd';
 import { sections, huntUrls } from 'ui/constants';
 import FilterSetList from 'ui/components/FilterSetList';
+import LoadingIndicator from 'ui/components/LoadingIndicator';
 import { bindActionCreators, compose } from 'redux';
 import { connect } from 'react-redux';
 import actions from 'ui/containers/App/actions';
@@ -103,6 +104,7 @@ class FilterSets extends React.Component {
       : [];
     const noRights = this.props.user.isActive && !this.props.user.permissions.includes('rules.events_edit');
 
+    const loading = this.props.loading ? <LoadingIndicator style={{ width: 22, height: 22, margin: 0 }} /> : null;
     return (
       <Drawer visible onClose={() => this.props.close()} title={<div>Filter Sets</div>} placement="right" zIndex={10000} width={450} size="large">
         <div>
@@ -118,9 +120,8 @@ class FilterSets extends React.Component {
             key="global"
             onTitleClick={() => this.togglePanel(globaL)}
             header={<span className={this.state.expandedPanel === globaL ? '' : 'collapsed'}>Global Filter Sets</span>}
-            extra={`${rowsGlobal ? rowsGlobal.length : 0} Filter Sets`}
+            extra={loading || `${rowsGlobal.length} Filter Sets`}
           >
-            {this.props.loading && <Spin>Loading more</Spin>}
             {rowsGlobal &&
               rowsGlobal.map(item => (
                 <FilterSetList
@@ -136,9 +137,8 @@ class FilterSets extends React.Component {
             key="private"
             onTitleClick={() => this.togglePanel(privatE)}
             header={<span className={this.state.expandedPanel === privatE ? '' : 'collapsed'}>Private Filter Sets</span>}
-            extra={<span>{`${rowsPrivate ? rowsPrivate.length : 0} Filter Sets`}</span>}
+            extra={loading || `${rowsPrivate.length} Filter Sets`}
           >
-            {this.props.loading && <Spin>Loading more</Spin>}
             {rowsPrivate &&
               rowsPrivate.map(item => (
                 <FilterSetList
@@ -154,12 +154,17 @@ class FilterSets extends React.Component {
             key="static"
             onTitleClick={() => this.togglePanel(statiC)}
             header={<span className={this.state.expandedPanel === statiC ? '' : 'collapsed'}>Stamus Predefined Filter Sets</span>}
-            extra={<span>{`${rowsStatic ? rowsStatic.length : 0} Filter Sets`}</span>}
+            extra={loading || `${rowsStatic.length} Filter Sets`}
           >
-            {this.props.loading && <Spin>Loading more</Spin>}
             {rowsStatic &&
               rowsStatic.map(item => (
-                <FilterSetList item={item} loadFilterSets={() => this.loadFilterSets(item)} info={rowsStatic} noRights={noRights} />
+                <FilterSetList
+                  loading={this.props.loading}
+                  item={item}
+                  loadFilterSets={() => this.loadFilterSets(item)}
+                  info={rowsStatic}
+                  noRights={noRights}
+                />
               ))}
           </Panel>
         </Collapse>
