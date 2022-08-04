@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { Drawer, Input, Collapse } from 'antd';
+import { Drawer, Input, Collapse, Empty } from 'antd';
 import { sections, huntUrls } from 'ui/constants';
 import FilterSetList from 'ui/components/FilterSetList';
 import LoadingIndicator from 'ui/components/LoadingIndicator';
@@ -122,6 +122,7 @@ class FilterSets extends React.Component {
             header={<span className={this.state.expandedPanel === globaL ? '' : 'collapsed'}>Global Filter Sets</span>}
             extra={loading || `${rowsGlobal.length} Filter Sets`}
           >
+            {rowsGlobal.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
             {rowsGlobal &&
               rowsGlobal.map(item => (
                 <FilterSetList
@@ -139,6 +140,7 @@ class FilterSets extends React.Component {
             header={<span className={this.state.expandedPanel === privatE ? '' : 'collapsed'}>Private Filter Sets</span>}
             extra={loading || `${rowsPrivate.length} Filter Sets`}
           >
+            {rowsPrivate.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
             {rowsPrivate &&
               rowsPrivate.map(item => (
                 <FilterSetList
@@ -156,6 +158,7 @@ class FilterSets extends React.Component {
             header={<span className={this.state.expandedPanel === statiC ? '' : 'collapsed'}>Stamus Predefined Filter Sets</span>}
             extra={loading || `${rowsStatic.length} Filter Sets`}
           >
+            {rowsStatic.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
             {rowsStatic &&
               rowsStatic.map(item => (
                 <FilterSetList
