@@ -28,7 +28,23 @@ import LoadingIndicator from 'ui/components/LoadingIndicator';
 import { bindActionCreators, compose } from 'redux';
 import { connect } from 'react-redux';
 import actions from 'ui/containers/App/actions';
+import { SearchOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import history from '../../utils/history';
+const { Search } = Input;
+
+const SearchStyled = styled(Search)`
+  margin-bottom: 10px;
+  .ant-input-group-addon {
+    display: none;
+  }
+`;
+
+const NoResults = styled.div`
+  color: #6d6d6d;
+  margin-bottom: 10px;
+  font-style: italic;
+  text-align: center;
+`;
 
 const Panel = styled(Collapse.Panel)`
   .ant-collapse-content-box {
@@ -40,7 +56,7 @@ class FilterSets extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      expandedPanel: 'static',
+      expandedPanels: [],
       searchValue: '',
     };
 
@@ -55,11 +71,6 @@ class FilterSets extends React.Component {
   componentWillUnmount() {
     document.removeEventListener('keydown', this.escFunction, false);
   }
-
-  togglePanel = key => {
-    if (this.state.expandedPanel === key) this.setState({ expandedPanel: false });
-    else this.setState({ expandedPanel: key });
-  };
 
   handleSearchValue = event => {
     this.setState({ searchValue: event.target.value });
@@ -112,13 +123,33 @@ class FilterSets extends React.Component {
             <span className="input-group-addon">
               <i className="fa fa-search"></i>
             </span>
-            <Input value={this.state.searchValue} onChange={this.handleSearchValue} />
+            <SearchStyled
+              disabled={this.props.loading}
+              allowClear
+              enterButton={null}
+              size="large"
+              prefix={<SearchOutlined />}
+              placeholder="Search for filter set"
+              value={this.state.searchValue}
+              onChange={this.handleSearchValue}
+            />
+            {rowsGlobal.length === 0 && rowsPrivate.length === 0 && rowsStatic.length === 0 && (
+              <NoResults>
+                <InfoCircleOutlined /> No results match your search criteria
+              </NoResults>
+            )}
           </div>
         </div>
-        <Collapse defaultOpenKeys={[this.state.expandedPanel]} mode="inline">
+        <Collapse
+          onChange={key => this.setState({ expandedPanels: key })}
+          activeKey={
+            this.state.searchValue.length > 0
+              ? [rowsGlobal.length > 0 ? 'global' : null, rowsPrivate.length > 0 ? 'private' : null, rowsStatic.length > 0 ? 'static' : null]
+              : this.state.expandedPanels
+          }
+        >
           <Panel
             key="global"
-            onTitleClick={() => this.togglePanel(globaL)}
             header={<span className={this.state.expandedPanel === globaL ? '' : 'collapsed'}>Global Filter Sets</span>}
             extra={loading || `${rowsGlobal.length} Filter Sets`}
           >
@@ -136,7 +167,6 @@ class FilterSets extends React.Component {
           </Panel>
           <Panel
             key="private"
-            onTitleClick={() => this.togglePanel(privatE)}
             header={<span className={this.state.expandedPanel === privatE ? '' : 'collapsed'}>Private Filter Sets</span>}
             extra={loading || `${rowsPrivate.length} Filter Sets`}
           >
@@ -154,7 +184,6 @@ class FilterSets extends React.Component {
           </Panel>
           <Panel
             key="static"
-            onTitleClick={() => this.togglePanel(statiC)}
             header={<span className={this.state.expandedPanel === statiC ? '' : 'collapsed'}>Stamus Predefined Filter Sets</span>}
             extra={loading || `${rowsStatic.length} Filter Sets`}
           >
