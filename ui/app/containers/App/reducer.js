@@ -27,7 +27,6 @@ const initialTimeSpanStorage = {
 
 const initialSettingsStorage = {
   system: {},
-  global: {},
   ...store.get(StorageEnum.SETTINGS),
 };
 
@@ -76,10 +75,6 @@ export const initialState = {
 export const appReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
-      case constants.GET_SETTINGS_REQUEST:
-        draft.settings.request.loading = true;
-        draft.settings.request.status = null;
-        break;
       case constants.GET_PERIOD_ALL_SUCCESS: {
         const { minTimestamp, maxTimestamp } = action.payload;
         const correct = !Number.isNaN(parseInt(minTimestamp, 10)) && !Number.isNaN(parseInt(maxTimestamp, 10));
@@ -101,26 +96,6 @@ export const appReducer = (state = initialState, action) =>
           disableAll: !correct,
         });
 
-        break;
-      }
-      case constants.GET_SETTINGS_SUCCESS: {
-        draft.settings.data.system = action.payload.systemSettings;
-        draft.settings.data.global = action.payload.globalSettings;
-        draft.settings.request.loading = false;
-        draft.settings.request.status = true;
-        store.set(StorageEnum.SETTINGS, {
-          ...{
-            ...initialSettingsStorage,
-            ...store.get(StorageEnum.SETTINGS),
-          },
-          system: action.payload.systemSettings,
-          global: action.payload.globalSettings,
-        });
-        break;
-      }
-      case constants.GET_SETTINGS_FAILURE: {
-        draft.settings.request.loading = false;
-        draft.settings.request.status = false;
         break;
       }
       case constants.GET_USER_REQUEST:

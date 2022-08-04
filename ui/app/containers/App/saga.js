@@ -14,19 +14,6 @@ function* retrieveUser() {
   }
 }
 
-function* retrieveSettings() {
-  try {
-    // Get global settings
-    const globalSettings = yield call(NetworkService.fetchGlobalSettings);
-    // Get system settings
-    const systemSettings = yield call(NetworkService.fetchSystemSettings);
-
-    yield put(actions.getSettingsSuccess(globalSettings, systemSettings));
-  } catch (err) {
-    yield put(actions.getSettingsFailure());
-  }
-}
-
 function* getSources() {
   try {
     const data = yield call(NetworkService.fetchSources, { datatype: 'threat' });
@@ -61,7 +48,6 @@ function* setSessionActivity(action) {
 
 export default function* rootSage() {
   yield takeEvery(constants.GET_USER_REQUEST, retrieveUser);
-  yield takeEvery(constants.GET_SETTINGS_REQUEST, retrieveSettings);
   yield takeEvery(constants.GET_SOURCE_REQUEST, getSources);
   yield takeEvery(constants.GET_PERIOD_ALL_REQUEST, getAllPeriod);
   yield takeEvery(constants.SET_SESSION_ACTIVITY_REQUEST, setSessionActivity);

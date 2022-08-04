@@ -13,22 +13,6 @@ const getUserFailure = () => ({
   type: constants.GET_USER_FAILURE,
 });
 
-const getSettings = () => ({
-  type: constants.GET_SETTINGS_REQUEST,
-});
-
-const getSettingsSuccess = (globalSettings, systemSettings) => ({
-  type: constants.GET_SETTINGS_SUCCESS,
-  payload: {
-    globalSettings,
-    systemSettings,
-  },
-});
-
-const getSettingsFailure = () => ({
-  type: constants.GET_SETTINGS_FAILURE,
-});
-
 const getSource = () => ({
   type: constants.GET_SOURCE_REQUEST,
 });
@@ -97,9 +81,6 @@ export default {
   getUser,
   getUserSuccess,
   getUserFailure,
-  getSettings,
-  getSettingsSuccess,
-  getSettingsFailure,
   getSource,
   getSourceSuccess,
   getSourceFailure,

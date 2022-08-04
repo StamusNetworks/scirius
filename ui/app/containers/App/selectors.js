@@ -17,8 +17,6 @@ const selectRouter = state => state.router || { location: {} };
 
 const makeSelectLocation = () => createSelector(selectRouter, routerState => routerState.location);
 
-const makeSelectGlobalSettings = () => createSelector(selectGlobal, subState => subState.settings.data.global);
-
 const makeSelectSystemSettings = () => createSelector(selectGlobal, subState => subState.settings.data.system);
 
 const makeSelectUser = () => createSelector(selectGlobal, ({ user }) => user);
@@ -62,18 +60,12 @@ const makeSelectReloadFlag = () => createSelector(selectGlobal, subState => subS
 const makeSelectFilters = () => createSelector(selectGlobal, subState => subState.filters);
 
 const makeSelectFiltersParam = (prefix = '&', skipStatus = false) =>
-  createSelector(selectGlobal, makeSelectGlobalSettings(), (subState, globalSettingsState) => {
+  createSelector(selectGlobal, subState => {
     const filters = Object.assign({}, subState.filters);
     if (skipStatus === true) {
       delete filters.status;
     }
-    const { multi_tenancy: multiTenancy = false } = globalSettingsState;
-    if (multiTenancy && !filters.tenant) {
-      filters.tenant = 0;
-    }
-    if (!multiTenancy && filters.tenant) {
-      delete filters.tenant;
-    }
+
     const urlParams = parseObjectToUrl(filters);
     return urlParams.length > 0 ? `${prefix}${urlParams}` : '';
   });
@@ -109,7 +101,6 @@ export default {
   selectGlobal,
   makeSelectLocation,
   makeSelectSystemSettings,
-  makeSelectGlobalSettings,
   makeSelectStartDate,
   makeSelectEndDate,
   makeSelectTimespan,
