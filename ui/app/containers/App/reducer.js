@@ -69,6 +69,7 @@ export const initialState = {
       status: null,
     },
   },
+  filterSets: false,
 };
 
 /* eslint-disable default-case */
@@ -179,6 +180,10 @@ export const appReducer = (state = initialState, action) =>
         // #4351 - Case: reload button case
         draft.timespan.now = new Date().getTime();
         draft.reload.now = new Date().getTime();
+        break;
+      }
+      case constants.SET_FILTER_SETS: {
+        draft.filterSets = action.payload;
         break;
       }
       case constants.LOCATION_CHANGE: {

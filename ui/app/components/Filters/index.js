@@ -10,9 +10,9 @@ import ruleSetSaga from 'ui/stores/filters/saga';
 import ruleSetsActions from 'ui/stores/filters/actions';
 import ruleSetsSelectors from 'ui/stores/filters/selectors';
 import strGlobalSelectors from 'ui/containers/App/selectors';
+import strGlobalActions from 'ui/containers/App/actions';
 import * as huntGlobalStore from 'ui/containers/HuntApp/stores/global';
 import FilterList from 'ui/components/FilterList/index';
-import FilterSets from 'ui/components/FilterSets';
 import { sections } from 'ui/constants';
 import ErrorHandler from 'ui/components/Error';
 import FilterSetSave from 'ui/components/FilterSetSaveModal';
@@ -100,7 +100,6 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
   const [searchString, setSearchString] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
-  const [filterSets, setFilterSets] = useState(false);
 
   // Effects handlers
   useEffect(() => {
@@ -319,7 +318,6 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
 
   return (
     <UICard>
-      {filterSets && <FilterSets close={() => setFilterSets(false)} />}
       <FilterContainer>
         <div>
           <Title>Filters</Title>
@@ -451,7 +449,7 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
                   <path d="M0 0h24v24H0V0z" fill="none" />
                   <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
                 </svg>
-                <a href="#" onClick={() => setFilterSets(true)}>
+                <a href="#" onClick={() => dispatch(strGlobalActions.setFilterSets(true))}>
                   Load Filter Set
                 </a>
               </Space>

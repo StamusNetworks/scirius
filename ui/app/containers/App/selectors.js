@@ -59,6 +59,8 @@ const makeSelectReloadFlag = () => createSelector(selectGlobal, subState => subS
 
 const makeSelectFilters = () => createSelector(selectGlobal, subState => subState.filters);
 
+const makeSelectFilterSetsState = () => createSelector(selectGlobal, subState => subState.filterSets);
+
 const makeSelectFiltersParam = (prefix = '&', skipStatus = false) =>
   createSelector(selectGlobal, subState => {
     const filters = Object.assign({}, subState.filters);
@@ -110,6 +112,7 @@ export default {
   makeSelectReload,
   makeSelectReloadFlag,
   makeSelectFilters,
+  makeSelectFilterSetsState,
   makeSelectFiltersParam,
   makeSelectSource,
   // Network parameters selectors

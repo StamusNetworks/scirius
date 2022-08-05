@@ -28,11 +28,12 @@ import selectors from 'ui/containers/App/selectors';
 import ErrorHandler from 'ui/components/ErrorHandler';
 import ProxyRoute from 'ui/components/ProxyRoute';
 import saga from 'ui/containers/App/saga';
+import FilterSets from 'ui/components/FilterSets';
 
 const pagesList = Object.keys(pages);
 const SESSION_INTERVAL = 30000;
 
-const App = ({ source, getSettings, getUser, getSource, getAllPeriodRequest, setSessionActivity }) => {
+const App = ({ source, getSettings, getUser, getSource, getAllPeriodRequest, setSessionActivity, filterSetsState, onCloseFilterSets }) => {
   const idle = useRef(0);
 
   const setIdle = useCallback(() => {
@@ -108,6 +109,7 @@ const App = ({ source, getSettings, getUser, getSource, getAllPeriodRequest, set
               </Route>
               <ProxyRoute />
             </Switch>
+            {filterSetsState && <FilterSets close={() => onCloseFilterSets(false)} />}
           </Content>
         </ErrorHandler>
       </Layout>
@@ -122,6 +124,8 @@ App.propTypes = {
   getSource: PropTypes.any,
   getAllPeriodRequest: PropTypes.any,
   setSessionActivity: PropTypes.func,
+  filterSetsState: PropTypes.bool,
+  onCloseFilterSets: PropTypes.func,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -129,6 +133,7 @@ const mapStateToProps = createStructuredSelector({
   endDate: selectors.makeSelectEndDate(),
   filtersParam: selectors.makeSelectFiltersParam(),
   source: selectors.makeSelectSource(),
+  filterSetsState: selectors.makeSelectFilterSetsState(),
 });
 
 export const mapDispatchToProps = dispatch =>
@@ -139,6 +144,7 @@ export const mapDispatchToProps = dispatch =>
       getSource: actions.getSource,
       getAllPeriodRequest: actions.getAllPeriodRequest,
       setSessionActivity: actions.setSessionActivityRequest,
+      onCloseFilterSets: actions.setFilterSets,
     },
     dispatch,
   );

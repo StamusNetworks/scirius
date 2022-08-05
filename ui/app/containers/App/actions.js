@@ -46,6 +46,11 @@ const setReload = reloadPeriod => ({
   },
 });
 
+const setFilterSets = value => ({
+  type: constants.SET_FILTER_SETS,
+  payload: value,
+});
+
 const doReload = () => ({
   type: constants.DO_RELOAD,
 });
@@ -87,6 +92,7 @@ export default {
   setTimeSpan,
   setDuration,
   setReload,
+  setFilterSets,
   doReload,
   getAllPeriodRequest,
   getAllPeriodSuccess,
