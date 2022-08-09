@@ -16,7 +16,7 @@ import FilterList from 'ui/components/FilterList/index';
 import { sections } from 'ui/constants';
 import ErrorHandler from 'ui/components/Error';
 import FilterSetSave from 'ui/components/FilterSetSaveModal';
-import Sort from 'ui/components/Sort';
+import AdditionalFilters from 'ui/components/AdditionalFilters';
 import { HUNT_FILTER_SETS } from 'ui/config/Api';
 import { COLOR_ERROR } from 'ui/constants/colors';
 import isIP from 'ui/helpers/isIP';
@@ -26,6 +26,7 @@ import PropTypes from 'prop-types';
 import { loadFilterSets } from 'ui/components/FilterSets/store';
 import ActionsButtons from '../ActionsButtons';
 import request from '../../utils/request';
+import Title from './Title.styled';
 const { Option } = Select;
 
 const FilterError = styled.span`
@@ -37,12 +38,6 @@ const FilterContainer = styled.div`
   display: grid;
   grid-gap: 10px;
   grid-template-columns: 1fr repeat(3, 135px);
-`;
-
-const Title = styled.div`
-  padding: 0px 0px 5px 0px;
-  color: #005792;
-  font-weight: bold;
 `;
 
 const ActionsSpace = styled(Space)`
@@ -365,36 +360,8 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
             <Col md={24}>{activeFilters && activeFilters.length > 0 && <FilterList filters={activeFilters} filterType={section} />}</Col>
           </Row>
         </div>
-        <div>
-          <Title>Additional</Title>
-          <Space direction="vertical">
-            <Space>
-              <Switch
-                size="small"
-                checkedChildren="ON"
-                unCheckedChildren="OFF"
-                defaultChecked={alertTag.value.alerts}
-                onChange={() => dispatch(huntGlobalStore.setTag('alerts', !alertTag.value.alerts))}
-              />{' '}
-              Alerts
-            </Space>
-            <Space>
-              <Switch
-                size="small"
-                checkedChildren="ON"
-                unCheckedChildren="OFF"
-                defaultChecked={alertTag.value.sightings}
-                onChange={() => dispatch(huntGlobalStore.setTag('sightings', !alertTag.value.sightings))}
-              />{' '}
-              Sightings
-            </Space>
-            {['SIGNATURES', 'HOSTS_LIST', 'HISTORY'].indexOf(page) > -1 && (
-              <Sort page={page} onChange={(option, direction) => onSortChange(option, direction)} value={sortValues} />
-            )}
-          </Space>
-        </div>
-        {/* {page !== 'HISTORY' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && ( */}
-        {page !== 'HISTORY' && (
+        <AdditionalFilters page={page} onSortChange={onSortChange} sortValues={sortValues} />
+        {page !== 'HISTORY' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
           <div>
             <Title>Tags Filters</Title>
             <Space direction="vertical">
