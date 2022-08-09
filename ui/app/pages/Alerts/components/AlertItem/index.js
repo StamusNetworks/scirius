@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Empty, Spin, Tabs } from 'antd';
+import { Empty, Spin, Tabs } from 'antd';
 import UICard from 'ui/components/UIElements/UICard';
 import * as config from 'config/Api';
 import { dashboard } from 'config/Dashboard';
@@ -12,6 +12,7 @@ import ErrorHandler from 'ui/components/Error';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
 
 import './AlertItem.css';
+import AlertRelatedData from '../../../../components/AlertRelatedData';
 
 export default class AlertItem extends React.Component {
   constructor(props) {
@@ -33,86 +34,6 @@ export default class AlertItem extends React.Component {
   componentDidMount() {
     this.fetchData(this.props.data.flow_id);
   }
-
-  getTitle = ev => {
-    let msg = '';
-
-    if (ev.event_type === 'alert') {
-      msg = ev.alert.signature;
-    } else if (ev.event_type === 'dns') {
-      if (ev.dns.type === 'answer') {
-        if (ev.dns.grouped) {
-          Object.keys(ev.dns.grouped).forEach((key, idx) => {
-            if (idx > 0) {
-              msg += ` / ${key} ${ev.dns.type} ${ev.dns.rrname} - ${ev.dns.grouped[key].join(', ')}`;
-            } else {
-              msg = `${key} ${ev.dns.type} ${ev.dns.rrname} - ${ev.dns.grouped[key].join(', ')}`;
-            }
-          });
-        } else if ('answers' in ev.dns) {
-          msg += ' - ';
-          msg += ev.dns.answers
-            .map(dns => dns[dns.rrtype])
-            .filter(a => a || false)
-            .join(', ');
-        }
-      } else {
-        msg = `${ev.dns.rrtype} ${ev.dns.type} ${ev.dns.rrname}`;
-      }
-    } else if (ev.event_type === 'fileinfo') {
-      msg = ev.fileinfo.filename;
-
-      if (ev.fileinfo.magic) {
-        msg += ` ${ev.fileinfo.magic}`;
-      }
-    } else if (ev.event_type === 'http') {
-      if (ev.http.http_method) {
-        msg = ev.http.http_method;
-      }
-
-      msg += ' http://';
-      if (ev.http.hostname) {
-        msg += ev.http.hostname;
-      } else {
-        msg += ev.dest_ip;
-      }
-
-      if (ev.http.url) {
-        msg += ev.http.url;
-      }
-
-      if (ev.http.status) {
-        msg += ` - ${ev.http.status}`;
-      }
-    } else if (ev.event_type === 'tls') {
-      if (ev.tls.sni) {
-        msg += ev.tls.sni;
-        if (ev.tls.subject) {
-          msg += ' - ';
-        }
-      }
-      if (ev.tls.subject) {
-        msg += ev.tls.subject;
-      }
-    } else if (ev.event_type === 'flow') {
-      msg += `${ev.flow.start} / ${ev.flow.end}`;
-    }
-
-    if (!msg) {
-      let info = ev;
-      if (ev[ev.event_type]) {
-        info = ev[ev.event_type];
-      }
-      msg = JSON.stringify(info);
-    }
-
-    if (msg.length > 200) {
-      msg = `${msg.substr(0, 200)}…`; /* ignore_utf8_check: 8230 */
-    }
-
-    msg = `${ev.event_type.charAt(0).toUpperCase()}${ev.event_type.substr(1).toLowerCase()}: ${msg}`;
-    return msg;
-  };
 
   nbEvents = events => {
     let nb = 0;
@@ -740,34 +661,9 @@ export default class AlertItem extends React.Component {
                   key={`events-${key}`}
                   tab={`Related ${key}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''} (${Object.keys(events[key]).length})`}
                 >
-                  {Object.keys(events[key])
-                    .sort()
-                    .map(key2 => (
-                      <div key={key2}>
-                        <Button onClick={() => this.toggleCollapse(`${key}-${key2}`)} key={key2} style={{ width: 'calc(100vw - 280px)' }}>
-                          {`${key}-${key2}` in this.state.collapsed && !this.state.collapsed[`${key}-${key2}`] && (
-                            <span className="fa fa-angle-right fa-angle-down"></span>
-                          )}
-                          {!(`${key}-${key2}` in this.state.collapsed && !this.state.collapsed[`${key}-${key2}`]) && (
-                            <span className="fa fa-angle-right fa-angle-right"></span>
-                          )}
-                          <strong>{`  ${this.getTitle(events[key][key2])}`}</strong>
-                        </Button>
-                        {`${key}-${key2}` in this.state.collapsed && !this.state.collapsed[`${key}-${key2}`] && (
-                          <ReactJson
-                            name={false}
-                            src={events[key][key2]}
-                            displayDataTypes={false}
-                            displayObjectSize={false}
-                            collapseStringsAfterLength={150}
-                            collapsed={false}
-                          />
-                        )}
-                      </div>
-                    ))}
+                  <AlertRelatedData type={key} data={events[key]} />
                 </Tabs.TabPane>
               ))}
-            {Object.keys(events).length === 0 && <strong>No related events</strong>}
           </React.Fragment>
         )}
         {showTabs && JSON.stringify(this.state.files) !== '{}' && (
