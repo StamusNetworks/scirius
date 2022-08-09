@@ -1687,7 +1687,7 @@ export const dashboard = {
           data: null,
           dimensions: {
             lg: {
-              w: 8,
+              w: 11,
               h: 7,
               x: 0,
               y: 0,
@@ -1718,9 +1718,9 @@ export const dashboard = {
           data: null,
           dimensions: {
             lg: {
-              w: 8,
+              w: 10,
               h: 7,
-              x: 8,
+              x: 11,
               y: 0,
             },
             md: {
@@ -1749,9 +1749,9 @@ export const dashboard = {
           data: null,
           dimensions: {
             lg: {
-              w: 8,
+              w: 11,
               h: 7,
-              x: 16,
+              x: 21,
               y: 0,
             },
             md: {
@@ -1780,22 +1780,22 @@ export const dashboard = {
           data: null,
           dimensions: {
             lg: {
-              w: 8,
+              w: 11,
               h: 7,
-              x: 24,
-              y: 0,
+              x: 0,
+              y: 4,
             },
             md: {
               w: 8,
               h: 7,
               x: 0,
-              y: 1,
+              y: 4,
             },
             sm: {
               w: 8,
               h: 7,
               x: 8,
-              y: 1,
+              y: 2,
             },
             xs: {
               w: 8,
