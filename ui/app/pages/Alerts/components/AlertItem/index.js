@@ -9,6 +9,7 @@ import axios from 'axios';
 import ReactJson from 'react-json-view';
 import EventField from 'ui/components/EventField';
 import ErrorHandler from 'ui/components/Error';
+import SMBAlertCard from 'ui/components/SMBAlertCard';
 
 import './AlertItem.css';
 
@@ -683,6 +684,7 @@ export default class AlertItem extends React.Component {
                 </dl>
               </UICard>
             )}
+            <SMBAlertCard data={data} addFilter={this.addFilter} />
           </div>
           {data.payload_printable && (
             <UICard title="Payload printable">
