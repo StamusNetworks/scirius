@@ -945,8 +945,8 @@ class Source(models.Model):
             config = repo.config_writer()
             config.set_value("user", "email", "scirius@stamus-networks.com")
             config.set_value("user", "name", "Scirius")
-            del(config)
-            del(repo)
+            del config
+            del repo
             repo = git.Repo(source_git_dir)
             self.first_run = True
         else:
