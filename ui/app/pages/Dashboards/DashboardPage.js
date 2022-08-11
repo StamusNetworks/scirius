@@ -475,7 +475,7 @@ export class HuntDashboard extends React.Component {
             {block.title}
           </div>
         }
-        bodyStyle={{ padding: '0px 10px' }}
+        bodyStyle={{ padding: '10px 20px' }}
         extra={
           <>
             {block.data === null && (
