@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'antd';
+import { BellFilled } from '@ant-design/icons';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import { STAMUS } from 'ui/config';
@@ -164,7 +165,21 @@ class AlertsPage extends React.Component {
     this.updateAlertListState(rulesListState, fetchDataCallback);
   }
 
+  getIconColor(key) {
+    if (key === 'informational') return '#675d5c';
+    if (key === 'relevant') return '#ec7a08';
+    return '#005792';
+  }
+
   columns = [
+    {
+      title: '',
+      render: (e, row) => (
+        <div>
+          <BellFilled style={{ color: this.getIconColor(row.tag) }} />
+        </div>
+      ),
+    },
     {
       title: 'Source IP',
       dataIndex: 'source_ip',
