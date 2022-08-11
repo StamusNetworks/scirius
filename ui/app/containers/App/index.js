@@ -129,9 +129,6 @@ App.propTypes = {
 };
 
 const mapStateToProps = createStructuredSelector({
-  startDate: selectors.makeSelectStartDate(),
-  endDate: selectors.makeSelectEndDate(),
-  filtersParam: selectors.makeSelectFiltersParam(),
   source: selectors.makeSelectSource(),
   filterSetsState: selectors.makeSelectFilterSetsState(),
 });
