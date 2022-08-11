@@ -17,6 +17,7 @@ import FilterList from 'ui/components/FilterList/index';
 import { sections } from 'ui/constants';
 import ErrorHandler from 'ui/components/Error';
 import FilterSetSave from 'ui/components/FilterSetSaveModal';
+import UISwitch from 'ui/components/UIElements/UISwitch';
 import AdditionalFilters from 'ui/components/AdditionalFilters';
 import { HUNT_FILTER_SETS } from 'ui/config/Api';
 import { COLOR_ERROR } from 'ui/constants/colors';
@@ -371,7 +372,11 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
             <Title>Tags Filters</Title>
             <Space direction="vertical">
               <Space>
-                <Switch
+                <UISwitch
+                  activeColor="#000"
+                  activeHandlerColor="#005792"
+                  activeBackgroundColor="#FFF"
+                  activeBorderColor="#005792"
                   size="small"
                   checkedChildren="ON"
                   unCheckedChildren="OFF"
@@ -381,7 +386,10 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
                 Informational
               </Space>
               <Space>
-                <Switch
+                <UISwitch
+                  activeBackgroundColor="#ec7a08"
+                  // activeBorderColor="#005792"
+
                   size="small"
                   checkedChildren="ON"
                   unCheckedChildren="OFF"
