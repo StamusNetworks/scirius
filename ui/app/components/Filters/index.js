@@ -5,6 +5,7 @@ import UICard from 'ui/components/UIElements/UICard';
 import styled from 'styled-components';
 import { useInjectSaga } from 'utils/injectSaga';
 import { useInjectReducer } from 'utils/injectReducer';
+import { useHotkeys } from 'react-hotkeys-hook';
 import ruleSetReducer from 'ui/stores/filters/reducer';
 import ruleSetSaga from 'ui/stores/filters/saga';
 import ruleSetsActions from 'ui/stores/filters/actions';
@@ -106,6 +107,10 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
       dispatch(ruleSetsActions.supportedActionsRequest(filters));
     }
   }, [filters, supportedActionsPermissions]);
+
+  useHotkeys('shift+i', () => dispatch(huntGlobalStore.setTag('informational', !alertTag.value.informational)), [alertTag.value.informational]);
+  useHotkeys('shift+r', () => dispatch(huntGlobalStore.setTag('relevant', !alertTag.value.relevant)), [alertTag.value.relevant]);
+  useHotkeys('shift+u', () => dispatch(huntGlobalStore.setTag('untagged', !alertTag.value.untagged)), [alertTag.value.untagged]);
 
   const getTreeOptions = useCallback(
     (data, parentType, level = 0) =>
@@ -370,7 +375,7 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
                   size="small"
                   checkedChildren="ON"
                   unCheckedChildren="OFF"
-                  defaultChecked={alertTag.value.informational}
+                  checked={alertTag.value.informational}
                   onChange={() => dispatch(huntGlobalStore.setTag('informational', !alertTag.value.informational))}
                 />{' '}
                 Informational
@@ -380,7 +385,7 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
                   size="small"
                   checkedChildren="ON"
                   unCheckedChildren="OFF"
-                  defaultChecked={alertTag.value.relevant}
+                  checked={alertTag.value.relevant}
                   onChange={() => dispatch(huntGlobalStore.setTag('relevant', !alertTag.value.relevant))}
                 />{' '}
                 Relevant
@@ -390,7 +395,7 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
                   size="small"
                   checkedChildren="ON"
                   unCheckedChildren="OFF"
-                  defaultChecked={alertTag.value.untagged}
+                  checked={alertTag.value.untagged}
                   onChange={() => dispatch(huntGlobalStore.setTag('untagged', !alertTag.value.untagged))}
                 />{' '}
                 Untagged

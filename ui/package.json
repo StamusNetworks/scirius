@@ -103,6 +103,7 @@
     "react-force-graph-2d": "^1.23.7",
     "react-grid-layout": "^1.3.4",
     "react-helmet": "6.1.0",
+    "react-hotkeys-hook": "^3.4.7",
     "react-items-carousel": "^2.8.0",
     "react-json-view": "^1.21.3",
     "react-redux": "7.2.4",
