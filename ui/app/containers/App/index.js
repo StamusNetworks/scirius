@@ -33,7 +33,17 @@ import FilterSets from 'ui/components/FilterSets';
 const pagesList = Object.keys(pages);
 const SESSION_INTERVAL = 30000;
 
-const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodRequest, setSessionActivity, filterSetsState, onCloseFilterSets }) => {
+const App = ({
+  source,
+  getSystemSettings,
+  getUser,
+  getSource,
+  getAllPeriodRequest,
+  setSessionActivity,
+  filterSetsState,
+  onCloseFilterSets,
+  timeSpan,
+}) => {
   const idle = useRef(0);
 
   const setIdle = useCallback(() => {
@@ -61,6 +71,10 @@ const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodReques
       document.removeEventListener('keypress', setIdle);
     };
   }, []);
+
+  useEffect(() => {
+    getAllPeriodRequest();
+  }, [timeSpan.now]);
 
   const [errorMsg, setErrorMsg] = useState(null);
 
@@ -126,11 +140,13 @@ App.propTypes = {
   setSessionActivity: PropTypes.func,
   filterSetsState: PropTypes.bool,
   onCloseFilterSets: PropTypes.func,
+  timeSpan: PropTypes.object,
 };
 
 const mapStateToProps = createStructuredSelector({
   source: selectors.makeSelectSource(),
   filterSetsState: selectors.makeSelectFilterSetsState(),
+  timeSpan: selectors.makeSelectTimespan(),
 });
 
 export const mapDispatchToProps = dispatch =>
