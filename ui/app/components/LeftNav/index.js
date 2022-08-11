@@ -52,7 +52,7 @@ function LeftNav({ user, systemSettings }) {
           </Menu.Item>
         );
       }),
-    [systemSettings],
+    [systemSettings, permissions],
   );
 
   const renderSubMenus = useMemo(
@@ -70,7 +70,7 @@ function LeftNav({ user, systemSettings }) {
           {renderMenuItems(group.id)}
         </SubMenu>
       )),
-    [systemSettings],
+    [systemSettings, permissions],
   );
 
   return (

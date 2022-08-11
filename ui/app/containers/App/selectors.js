@@ -17,7 +17,7 @@ const selectRouter = state => state.router || { location: {} };
 
 const makeSelectLocation = () => createSelector(selectRouter, routerState => routerState.location);
 
-const makeSelectSystemSettings = () => createSelector(selectGlobal, subState => subState.settings.data.system);
+const makeSelectSystemSettings = () => createSelector(selectGlobal, subState => subState.settings.data);
 
 const makeSelectUser = () => createSelector(selectGlobal, ({ user }) => user);
 

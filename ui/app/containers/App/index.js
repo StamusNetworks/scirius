@@ -33,7 +33,7 @@ import FilterSets from 'ui/components/FilterSets';
 const pagesList = Object.keys(pages);
 const SESSION_INTERVAL = 30000;
 
-const App = ({ source, getSettings, getUser, getSource, getAllPeriodRequest, setSessionActivity, filterSetsState, onCloseFilterSets }) => {
+const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodRequest, setSessionActivity, filterSetsState, onCloseFilterSets }) => {
   const idle = useRef(0);
 
   const setIdle = useCallback(() => {
@@ -44,7 +44,7 @@ const App = ({ source, getSettings, getUser, getSource, getAllPeriodRequest, set
     if (source.data.length === 0) {
       getSource();
     }
-    getSettings();
+    getSystemSettings();
     syncUrl();
     getUser();
     getAllPeriodRequest();
@@ -119,7 +119,7 @@ const App = ({ source, getSettings, getUser, getSource, getAllPeriodRequest, set
 
 App.propTypes = {
   source: PropTypes.object,
-  getSettings: PropTypes.any,
+  getSystemSettings: PropTypes.func,
   getUser: PropTypes.func,
   getSource: PropTypes.any,
   getAllPeriodRequest: PropTypes.any,
@@ -139,7 +139,7 @@ const mapStateToProps = createStructuredSelector({
 export const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
-      getSettings: actions.getSettings,
+      getSystemSettings: actions.getSystemSettingsRequest,
       getUser: actions.getUser,
       getSource: actions.getSource,
       getAllPeriodRequest: actions.getAllPeriodRequest,

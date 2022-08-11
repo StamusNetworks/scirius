@@ -46,7 +46,18 @@ function* setSessionActivity(action) {
   }
 }
 
+function* retrieveSystemSettings() {
+  try {
+    // Get system settings
+    const systemSettings = yield call(NetworkService.fetchSystemSettings);
+    yield put(actions.getSystemSettingsSuccess(systemSettings));
+  } catch (err) {
+    yield put(actions.getSystemSettingsFailure());
+  }
+}
+
 export default function* rootSage() {
+  yield takeEvery(constants.GET_SYSTEM_SETTINGS_REQUEST, retrieveSystemSettings);
   yield takeEvery(constants.GET_USER_REQUEST, retrieveUser);
   yield takeEvery(constants.GET_SOURCE_REQUEST, getSources);
   yield takeEvery(constants.GET_PERIOD_ALL_REQUEST, getAllPeriod);

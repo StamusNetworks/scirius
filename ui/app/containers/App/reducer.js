@@ -25,10 +25,7 @@ const initialTimeSpanStorage = {
   ...store.get(StorageEnum.TIMESPAN),
 };
 
-const initialSettingsStorage = {
-  system: {},
-  ...store.get(StorageEnum.SETTINGS),
-};
+const initialSystemSettingsStorage = store.get(StorageEnum.SYSTEM_SETTINGS) || {};
 
 const initialSourceStorage = store.get(StorageEnum.SOURCE) || [];
 
@@ -42,7 +39,7 @@ export const initialState = {
     ...initialTimeSpanStorage,
   },
   settings: {
-    data: initialSettingsStorage,
+    data: initialSystemSettingsStorage,
     request: {
       loading: null,
       status: null,
@@ -76,6 +73,25 @@ export const initialState = {
 export const appReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
+      case constants.GET_SYSTEM_SETTINGS_REQUEST:
+        draft.settings.request.loading = true;
+        draft.settings.request.status = null;
+        break;
+      case constants.GET_SYSTEM_SETTINGS_SUCCESS: {
+        draft.settings.data = action.payload.data;
+        draft.settings.request.loading = false;
+        draft.settings.request.status = true;
+        store.set(StorageEnum.SYSTEM_SETTINGS, {
+          ...initialSystemSettingsStorage,
+          ...action.payload.data,
+        });
+        break;
+      }
+      case constants.GET_SYSTEM_SETTINGS_FAILURE: {
+        draft.settings.request.loading = false;
+        draft.settings.request.status = false;
+        break;
+      }
       case constants.GET_PERIOD_ALL_SUCCESS: {
         const { minTimestamp, maxTimestamp } = action.payload;
         const correct = !Number.isNaN(parseInt(minTimestamp, 10)) && !Number.isNaN(parseInt(maxTimestamp, 10));
