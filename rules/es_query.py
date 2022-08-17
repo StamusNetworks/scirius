@@ -23,13 +23,22 @@ from scirius.rest_utils import SciriusSetPagination
 es_logger = logging.getLogger('elasticsearch')
 
 
-def normalize_es_url(es_url):
-    es_urls = []
+def build_es_url(es_url, es_user, es_pass):
+    urls = []
     for url in es_url.split(','):
+        if es_user:
+            if '://' in url:
+                scheme, url = url.split('://', 1)
+                url = f'{scheme}://{es_user}:{es_pass}@{url}'
+            else:
+                url = f'{es_user}:{es_pass}@{url}'
+
         if not url.endswith('/'):
             url = url + '/'
-        es_urls.append(url)
-    return ','.join(es_urls)
+
+        urls.append(url)
+
+    return ','.join(urls)
 
 
 def get_ordering(request, default):
@@ -243,21 +252,7 @@ class ESQuery:
             if password is None:
                 password = gsettings.elasticsearch_pass
 
-            addrs = gsettings.elasticsearch_url
-            if username:
-                _urls = gsettings.elasticsearch_url.split(',')
-                urls = []
-                for url in _urls:
-                    if '://' in url:
-                        scheme, url = url.split('://', 1)
-                        url = f'{scheme}://{username}:{password}@{url}'
-                    else:
-                        url = f'{username}:{password}@{url}'
-                    urls.append(url)
-
-                addrs = ','.join(urls)
-
-            es_address = normalize_es_url(addrs)
+            es_address = build_es_url(gsettings.elasticsearch_url, username, password)
 
         return es_address
 

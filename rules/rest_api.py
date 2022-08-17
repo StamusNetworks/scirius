@@ -33,7 +33,7 @@ from rules.models import Source, SourceAtVersion, SourceUpdate, UserAction, User
 from rules.views import get_public_sources, fetch_public_sources, extract_rule_references
 from rules.rest_processing import RuleProcessingFilterViewSet
 from rules.es_data import ESData
-from rules.es_query import normalize_es_url, ESPaginator
+from rules.es_query import build_es_url, ESPaginator
 
 from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats
 from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend, ESTimeRangeAllAlerts, ESFlowTimeline, \
@@ -2395,20 +2395,10 @@ class ESCheckVersionViewSet(APIView):
         res = {}
         try:
             es_url = self.request.data.get('es_url', '')
-            es_url = normalize_es_url(es_url)
             es_user = self.request.data.get('es_user', '')
             es_pass = self.request.data.get('es_pass', '')
-            if es_user:
-                urls = []
-                for url in es_url.split(','):
-                    if '://' in url:
-                        scheme, addr = url.split('://', 1)
-                        url = f'{scheme}://{es_user}:{es_pass}@{addr}'
-                    else:
-                        url = f'{es_user}:{es_pass}@{url}'
-                    urls.append(url)
-                es_url = ','.join(urls)
 
+            es_url = build_es_url(es_url, es_user, es_pass)
             res = get_middleware_module('common').check_es_version(request, es_url)
         except (ValueError, ValidationError) as error:
             res['error'] = 'Invalid hostname or IP, %s' % error
