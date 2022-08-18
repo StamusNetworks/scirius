@@ -1,9 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import './DonutChart.css';
+import styled from 'styled-components';
 
 const c3 = require('c3');
 const d3 = require('d3');
+
+const Container = styled.div`
+  .c3-chart-arcs-title {
+    fill: black;
+    font-size: 22px !important;
+  }
+`;
 
 class DonutChart extends React.Component {
   constructor(props) {
@@ -98,7 +105,7 @@ class DonutChart extends React.Component {
   };
 
   render() {
-    return <div id={this.chartId} style={{ width: this.props.width, height: this.props.height, ...this.props.style }} />;
+    return <Container id={this.chartId} style={{ width: this.props.width, height: this.props.height, ...this.props.style }} />;
   }
 }
 
