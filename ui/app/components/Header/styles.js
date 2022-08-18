@@ -1,17 +1,15 @@
-.header {
+import styled from 'styled-components';
+import { Layout } from 'antd';
+import { Link } from 'react-router-dom';
+import { COLOR_ANT_MENU } from 'ui/constants/colors';
+
+const { Header } = Layout;
+
+export const HeaderStyled = styled(Header)`
+  background: ${COLOR_ANT_MENU};
   padding: 0;
   height: 40px;
   line-height: 40px;
-
-  & .logo {
-    float: left;
-    padding-left: 14px;
-  }
-
-  & .logo img {
-    height: 30px;
-    padding-bottom: 3px;
-  }
 
   .tenant-dropdown {
     & i {
@@ -28,7 +26,8 @@
     }
   }
 
-  .help-dropdown, .reload-dropdown {
+  .help-dropdown,
+  .reload-dropdown {
     & svg {
       height: 22px;
       width: 22px;
@@ -79,9 +78,35 @@
     padding: 0 20px;
   }
 
-  & .ant-menu-title-content > span > span { 
+  & .ant-menu-title-content > span > span {
     display: flex;
     align-items: center;
     margin-right: 5px;
   }
-}
+`;
+
+export const Logo = styled(Link)`
+  float: left;
+  padding-left: 14px;
+
+  & img {
+    height: 30px;
+    padding-bottom: 3px;
+  }
+`;
+
+export const RangePreview = styled.table`
+  font-size: 12px;
+  border: 0;
+  & td {
+    border: 0;
+  }
+  & td.col {
+    padding-right: 10px;
+    text-align: right;
+  }
+  & td.col::after {
+    display: inline-block;
+    content: ':';
+  }
+`;

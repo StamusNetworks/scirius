@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 import PropTypes from 'prop-types';
-import { Layout, Menu, Popover, Tooltip } from 'antd';
-import styled from 'styled-components';
+import { Menu, Popover, Tooltip } from 'antd';
 import { ClockCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import selectors from 'ui/containers/App/selectors';
 import { createStructuredSelector } from 'reselect';
@@ -12,37 +10,19 @@ import AccountCircleRounded from '@material-ui/icons/AccountCircleRounded';
 // icon select: https://fonts.google.com/icons?selected=Material+Icons
 // React name for icon: select checkbox, click the icon and see the name for the import: https://mui.com/components/material-icons
 
-import './style.scss';
 import StamusLogo from 'ui/images/stamus.png';
 import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
 import HelpMenu from 'ui/components/HelpMenu';
 import UserMenu from 'ui/components/UserMenu';
-import { COLOR_ANT_MENU } from 'ui/constants/colors';
 import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
 import constants from 'ui/constants';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import actions from 'ui/containers/App/actions';
+import { HeaderStyled, Logo, RangePreview } from './styles';
 
 const { DATE_TIME_FORMAT } = constants;
-const { Header: AntdHeader } = Layout;
 let reloadTimeout = null;
 let animateTimeout = null;
-
-const RangePreviewStyled = styled.table`
-  font-size: 12px;
-  border: 0;
-  & td {
-    border: 0;
-  }
-  & td.col {
-    padding-right: 10px;
-    text-align: right;
-  }
-  & td.col::after {
-    display: inline-block;
-    content: ':';
-  }
-`;
 
 const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePicker, doReload, reloadData, menuItems = [], user }) => {
   const [helpPopOver, setHelpPopOver] = useState(false);
@@ -81,10 +61,10 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
   }, [reloadData.period.seconds]);
 
   return (
-    <AntdHeader className="header" style={{ background: COLOR_ANT_MENU }}>
-      <Link to="/stamus" className="logo">
+    <HeaderStyled>
+      <Logo to="/stamus">
         <img src={StamusLogo} alt="Scirius UI" />
-      </Link>
+      </Logo>
 
       <Menu theme="dark" mode="horizontal">
         {menuItems.map(menuItem => (
@@ -109,7 +89,7 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
               <Tooltip
                 placement="bottom"
                 title={
-                  <RangePreviewStyled>
+                  <RangePreview>
                     <tr>
                       <td className="col">From</td>
                       <td>{startDate.format(DATE_TIME_FORMAT)}</td>
@@ -118,7 +98,7 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
                       <td className="col">To</td>
                       <td>{endDate.format(DATE_TIME_FORMAT)}</td>
                     </tr>
-                  </RangePreviewStyled>
+                  </RangePreview>
                 }
               >
                 <ClockCircleOutlined /> {timePreview}
@@ -139,7 +119,7 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
           </Popover>
         </Menu.Item>
       </Menu>
-    </AntdHeader>
+    </HeaderStyled>
   );
 };
 
