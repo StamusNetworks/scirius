@@ -4,12 +4,31 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { Calendar, Button } from 'antd';
 import { CalendarHeader } from 'ui/components/CalendarHeader';
-import './style.scss';
 
 const SubmitDate = styled(Button)`
   width: 100%;
   text-align: center;
   border-top: 1px solid #d9d9d9;
+`;
+
+const CalendarStyled = styled(Calendar)`
+  & .ant-fullcalendar-table {
+    height: 200px;
+    thead {
+      .ant-fullcalendar-column-header {
+        .ant-fullcalendar-column-header-inner {
+          font-weight: bold;
+        }
+      }
+    }
+  }
+  & .ant-fullcalendar-value {
+    width: 32px;
+    padding: 0 8px;
+  }
+  & .ant-select {
+    width: 100%;
+  }
 `;
 
 const Index = props => {
@@ -39,8 +58,7 @@ const Index = props => {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <div style={{ marginRight: '10px' }}>
-          <Calendar
-            className="calendar-start-date"
+          <CalendarStyled
             defaultValue={moment(startDate)}
             selectedValue={moment(startDate)}
             disabledDate={value => disabledDate('startDate', value)}
@@ -58,8 +76,7 @@ const Index = props => {
           />
         </div>
         <div style={{ marginLeft: '10px' }}>
-          <Calendar
-            className="calendar-end-date"
+          <CalendarStyled
             defaultValue={moment(endDate)}
             selectedValue={moment(endDate)}
             disabledDate={value => disabledDate('endDate', value)}
