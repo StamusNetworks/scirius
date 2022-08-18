@@ -4,8 +4,40 @@ import { connect } from 'react-redux';
 import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Row } from 'antd';
 import FilterItem from 'ui/components/FilterItem/index';
 import { editFilter, removeFilter } from 'ui/containers/HuntApp/stores/global';
+import styled from 'styled-components';
 import isNumeric from '../../helpers/isNumeric';
-import './style.css';
+
+const ListInline = styled.span`
+  list-style: none;
+  display: inline-block;
+  margin: 0;
+  margin-block-start: 0;
+  margin-block-end: 0;
+  padding-inline-start: 0;
+
+  & li {
+    box-sizing: border-box;
+    color: rgb(65, 64, 66);
+    display: inline-block;
+    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    height: 23.5px;
+    line-height: 40px;
+    list-style: none outside none;
+    padding-left: 5px;
+    padding-right: 5px;
+    text-align: left;
+  }
+`;
+
+const ModalHuntFilter = styled(Modal)`
+  & .modal-body {
+    padding-bottom: 0;
+  }
+  & .modal-footer {
+    margin-top: 0;
+  }
+`;
 
 export const IP_FIELDS = [
   'src_ip',
@@ -145,7 +177,7 @@ class FilterList extends React.Component {
     return (
       <React.Fragment>
         {/* eslint-disable react/no-array-index-key */}
-        <ul className="list-inline">
+        <ListInline>
           {this.props.filters.map((filter, idx) => (
             <FilterItem
               key={idx}
@@ -157,8 +189,8 @@ class FilterList extends React.Component {
               filter={filter}
             />
           ))}
-        </ul>
-        <Modal
+        </ListInline>
+        <ModalHuntFilter
           title="Edit filter"
           visible={this.state.editForm}
           onCancel={() => this.setState({ editForm: false })}
@@ -232,7 +264,7 @@ class FilterList extends React.Component {
               </Form.Item>
             )}
           </Form>
-        </Modal>
+        </ModalHuntFilter>
       </React.Fragment>
     );
   }
