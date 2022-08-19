@@ -11,7 +11,7 @@ import EventField from 'ui/components/EventField';
 import ErrorHandler from 'ui/components/Error';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
 
-import './AlertItem.css';
+import { DlHorizontal } from './styles';
 import AlertRelatedData from '../../../../components/AlertRelatedData';
 
 export default class AlertItem extends React.Component {
@@ -260,7 +260,7 @@ export default class AlertItem extends React.Component {
         <Tabs.TabPane key="alert" tab="Synthetic view">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gridGap: '10px', paddingBottom: '10px' }}>
             <UICard title="Signature">
-              <dl className="dl-horizontal">
+              <DlHorizontal>
                 <ErrorHandler>
                   <EventField field_name="Signature" field="alert.signature" value={data.alert.signature} addFilter={this.addFilter} />
                 </ErrorHandler>
@@ -287,11 +287,11 @@ export default class AlertItem extends React.Component {
                     <EventField field_name="Tagged" field="alert.tag" value={data.alert.tag} addFilter={this.addFilter} />
                   </ErrorHandler>
                 )}
-              </dl>
+              </DlHorizontal>
             </UICard>
 
             <UICard title="IP and basic information">
-              <dl className="dl-horizontal">
+              <DlHorizontal>
                 {data.net_info && data.net_info.src_agg && (
                   <ErrorHandler>
                     <EventField field_name="Source Network" field="net_info.src_agg" value={data.net_info.src_agg} addFilter={this.addFilter} />
@@ -368,11 +368,11 @@ export default class AlertItem extends React.Component {
                     <EventField field_name="Tunnel Depth" field="tunnel.depth" value={data.tunnel.depth} addFilter={this.addFilter} />
                   </ErrorHandler>
                 )}
-              </dl>
+              </DlHorizontal>
             </UICard>
 
             <UICard title="Enrichment">
-              <dl className="dl-horizontal">
+              <DlHorizontal>
                 {!hasTarget && !hasLateral && (!data.fqdn || !data.fqdn.src) && (!data.fqdn || !data.fqdn.dest) && (
                   <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
                 )}
@@ -409,12 +409,12 @@ export default class AlertItem extends React.Component {
                     <EventField field_name="FQDN Destination" field="fqdn.dest" value={data.fqdn.dest} addFilter={this.addFilter} />
                   </ErrorHandler>
                 )}
-              </dl>
+              </DlHorizontal>
             </UICard>
 
             {data.geoip && (
               <UICard title="Geoip">
-                <dl className="dl-horizontal">
+                <DlHorizontal>
                   {data.geoip.country_name && (
                     <ErrorHandler>
                       <EventField field_name="Country" field="geoip.country_name" value={data.geoip.country_name} addFilter={this.addFilter} />
@@ -445,13 +445,13 @@ export default class AlertItem extends React.Component {
                       />
                     </ErrorHandler>
                   )}
-                </dl>
+                </DlHorizontal>
               </UICard>
             )}
 
             {data.http !== undefined && (
               <UICard title="HTTP">
-                <dl className="dl-horizontal">
+                <DlHorizontal>
                   <ErrorHandler>
                     <EventField field_name="Host" field="http.hostname" value={data.http.hostname} addFilter={this.addFilter} />
                   </ErrorHandler>
@@ -494,12 +494,12 @@ export default class AlertItem extends React.Component {
                       <EventField field_name="Length" field="http.length" value={data.http.length} addFilter={this.addFilter} />
                     </ErrorHandler>
                   )}
-                </dl>
+                </DlHorizontal>
               </UICard>
             )}
             {data.tls !== undefined && (
               <UICard title="TLS">
-                <dl className="dl-horizontal">
+                <DlHorizontal>
                   <ErrorHandler>
                     <EventField field_name="Subject" field="tls.subject" value={data.tls.subject} addFilter={this.addFilter} />
                   </ErrorHandler>
@@ -533,12 +533,12 @@ export default class AlertItem extends React.Component {
                       <EventField field_name="JA3S" field="tls.ja3s.hash" value={data.tls.ja3s.hash} addFilter={this.addFilter} />
                     </ErrorHandler>
                   )}
-                </dl>
+                </DlHorizontal>
               </UICard>
             )}
             {data.smtp !== undefined && (
               <UICard title="SMTP">
-                <dl className="dl-horizontal">
+                <DlHorizontal>
                   {data.smtp.mail_from !== undefined && (
                     <ErrorHandler>
                       <EventField field_name="From" field="smtp.mail_from" value={data.smtp.mail_from} addFilter={this.addFilter} />
@@ -556,12 +556,12 @@ export default class AlertItem extends React.Component {
                       <EventField field_name="Helo" field="smtp.helo" value={data.smtp.helo} addFilter={this.addFilter} />
                     </ErrorHandler>
                   )}
-                </dl>
+                </DlHorizontal>
               </UICard>
             )}
             {data.ssh !== undefined && (
               <UICard title="SSH">
-                <dl className="dl-horizontal">
+                <DlHorizontal>
                   {data.ssh.client && (
                     <React.Fragment>
                       <ErrorHandler>
@@ -602,7 +602,7 @@ export default class AlertItem extends React.Component {
                       </ErrorHandler>
                     </React.Fragment>
                   )}
-                </dl>
+                </DlHorizontal>
               </UICard>
             )}
             <SMBAlertCard data={data} addFilter={this.addFilter} />
