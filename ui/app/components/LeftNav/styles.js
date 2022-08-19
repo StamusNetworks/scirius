@@ -1,23 +1,15 @@
-.left-nav {
+import styled from 'styled-components';
+import { Layout } from 'antd';
+
+const { Sider } = Layout;
+
+export const LeftNavStyled = styled(Sider)`
   background: #fff;
   min-height: calc(100vh - 40px);
 
   & * {
     /*decrease height of menus*/
     margin: 0 !important;
-  }
-
-  &-link {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    & svg {
-      height: 16px;
-      visibility: hidden;
-      opacity: 0;
-      transition: all 0.2s;
-    }
   }
 
   .ant-menu {
@@ -66,8 +58,21 @@
     background: #f0f2f5;
   }
 
-  .ant-menu-item:hover &-link > svg {
+  .ant-menu-item:hover .left-nav-link > svg {
     visibility: visible;
     opacity: 1;
   }
-}
+`;
+
+export const LeftNavLink = styled.a`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  & svg {
+    height: 16px;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.2s;
+  }
+`;

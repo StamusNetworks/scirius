@@ -1,21 +1,20 @@
 import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Layout, Menu, Spin } from 'antd';
+import { Menu, Spin } from 'antd';
 import { useLocation, withRouter } from 'react-router-dom';
 import { default as Icon } from 'ui/components/IconAntd';
 import pages from 'ui/pages';
 import { APP_URL } from 'ui/config';
 import { CamelCaseToNormal } from 'ui/helpers';
-import './style.scss';
 import { LeftNavMap } from 'ui/maps/LeftNavMap';
 import { Link } from 'ui/helpers/Link';
 import selectors from 'ui/containers/App/selectors';
 import { createStructuredSelector } from 'reselect';
 import LaunchRounded from '@material-ui/icons/LaunchRounded';
+import { LeftNavStyled, LeftNavLink } from './styles';
 
 const { SubMenu } = Menu;
-const { Sider } = Layout;
 
 const pagesList = Object.keys(pages);
 
@@ -42,10 +41,10 @@ function LeftNav({ user, systemSettings }) {
         return (
           <Menu.Item key={`${APP_URL}/${pages[page].metadata.url}`}>
             {typeof pages[page].metadata.url === 'function' ? (
-              <a href={pages[page].metadata.url(systemSettings)} target="_blank" className="left-nav-link">
+              <LeftNavLink href={pages[page].metadata.url(systemSettings)} target="_blank" className="left-nav-link">
                 <div>{title}</div>
                 <LaunchRounded />
-              </a>
+              </LeftNavLink>
             ) : (
               <Link to={`${APP_URL}/${pages[page].metadata.url}`}>{title}</Link>
             )}
@@ -74,7 +73,7 @@ function LeftNav({ user, systemSettings }) {
   );
 
   return (
-    <Sider width={200} className="left-nav">
+    <LeftNavStyled width={200}>
       <Menu
         mode="inline"
         selectedKeys={[useLocation().pathname.split('/').slice(0, 4).join('/')]}
@@ -87,7 +86,7 @@ function LeftNav({ user, systemSettings }) {
           </Menu.Item>
         )}
       </Menu>
-    </Sider>
+    </LeftNavStyled>
   );
 }
 
