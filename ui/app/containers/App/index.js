@@ -11,7 +11,6 @@ import { Switch, Redirect, Route } from 'react-router-dom';
 import { Layout } from 'antd';
 import pages from 'ui/pages';
 import { APP_URL } from 'ui/config';
-import './style.scss'; // please dont move it! should be loaded before all components
 import { CamelCaseToDashCase } from 'ui/helpers';
 import { Content } from 'ui/components';
 import Header from 'ui/components/Header';
