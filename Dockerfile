@@ -55,13 +55,7 @@ RUN \
 
 RUN echo  "**** COPY Scirius ****"
 COPY . /opt/scirius
-RUN mv /opt/scirius/docker/scirius/ /tmp/
-RUN ls /tmp/scirius
-RUN echo "**** install util scripts ****"
-RUN cp -Rf /tmp/scirius/* /opt/scirius
-RUN ls /opt/scirius
-RUN chmod ugo+x /opt/scirius/bin/*
-
+RUN chmod ugo+x /opt/scirius/docker/scirius/bin/*
     
 
 # BUILD JS stuff
@@ -188,4 +182,4 @@ VOLUME /rules /data /static /logs
 
 EXPOSE 8000
 
-ENTRYPOINT ["/opt/scirius/bin/start-scirius.sh"]
+ENTRYPOINT ["/bin/bash", "/opt/scirius/docker/scirius/bin/start-scirius.sh"]
