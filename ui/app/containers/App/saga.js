@@ -14,6 +14,15 @@ function* retrieveUser() {
   }
 }
 
+function* retrieveContext() {
+  try {
+    const data = yield call(NetworkService.fetchContext);
+    yield put(actions.getContextSuccess(data));
+  } catch (e) {
+    yield put(actions.getContextFailure(e));
+  }
+}
+
 function* getSources() {
   try {
     const data = yield call(NetworkService.fetchSources, { datatype: 'threat' });
@@ -59,6 +68,7 @@ function* retrieveSystemSettings() {
 export default function* rootSage() {
   yield takeEvery(constants.GET_SYSTEM_SETTINGS_REQUEST, retrieveSystemSettings);
   yield takeEvery(constants.GET_USER_REQUEST, retrieveUser);
+  yield takeEvery(constants.GET_CONTEXT_REQUEST, retrieveContext);
   yield takeEvery(constants.GET_SOURCE_REQUEST, getSources);
   yield takeEvery(constants.GET_PERIOD_ALL_REQUEST, getAllPeriod);
   yield takeEvery(constants.SET_SESSION_ACTIVITY_REQUEST, setSessionActivity);

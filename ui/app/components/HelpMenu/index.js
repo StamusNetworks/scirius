@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
+import { connect, useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Button, Modal } from 'antd';
 import { QuestionOutlined, ReadOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
-import request from 'ui/utils/request';
 import LoadingIndicator from 'ui/components/LoadingIndicator';
+import actions from 'ui/containers/App/actions';
+import selectors from 'ui/containers/App/selectors';
 
 const Wrapper = styled.div`
   display: grid;
@@ -107,49 +108,23 @@ const VersionsList = styled.ul`
 const loadingIndicator = <LoadingIndicator style={{ display: 'inline-block', margin: '0', height: '20px' }} />;
 
 const HelpMenu = ({ isEnterpriseEdition }) => {
-  const [loading, setLoading] = useState({ details: false, sources: false });
+  const dispatch = useDispatch();
   const [visible, setVisible] = useState(false);
-  const [details, setDetails] = useState({
-    content_lead: '',
-    admin_title: '',
-    version: '',
-    title: '',
-    content_minor1: '',
-    nb_probes: 0,
-    content_minor3: '',
-    content_minor2: '',
-    icon: '',
-  });
-  const [source, setSource] = useState({
-    pk: null,
-    name: '',
-    created_date: '',
-    updated_date: '',
-    method: '',
-    datatype: '',
-    uri: '',
-    cert_verif: null,
-    cats_count: null,
-    rules_count: null,
-    use_iprep: null,
-    version: null,
-    authkey: null,
-  });
+
+  const { data: context, request: contextRequest } = useSelector(selectors.makeSelectContext());
+  const { loading: contextLoading } = contextRequest;
+
+  const { data, request: sourceRequest } = useSelector(selectors.makeSelectSource());
+  const [source] = data;
+  const { loading: sourceLoading } = sourceRequest;
+
   useEffect(() => {
     if (visible) {
-      setLoading({ details: true, sources: true });
-      request(`/rest/rules/scirius_context/`).then(v => {
-        setDetails(v);
-        setLoading({ ...loading, details: false });
-      });
-      request(`/rest/rules/source/?datatype=threat`).then(v => {
-        if (v.results.length > 0) {
-          setSource(v.results[0]);
-          setLoading({ ...loading, sources: false });
-        }
-      });
+      dispatch(actions.getContextRequest());
+      dispatch(actions.getSource());
     }
   }, [visible]);
+
   return (
     <Wrapper>
       <AboutModal
@@ -163,25 +138,25 @@ const HelpMenu = ({ isEnterpriseEdition }) => {
           </div>
         }
       >
-        <H1>{isEnterpriseEdition ? details.title : 'Scirius Community Edition'}</H1>
+        <H1>{isEnterpriseEdition ? context.title : 'Scirius Community Edition'}</H1>
         <VersionTitle>
           {isEnterpriseEdition ? (
             'Versions'
           ) : (
             <div>
               <strong>Version </strong>
-              <span>Scirius CE v{loading.details ? loadingIndicator : /\d+\.\d+\.\d+/.exec(details.version)}</span>
+              <span>Scirius CE v{contextLoading ? loadingIndicator : /\d+\.\d+\.\d+/.exec(context.version)}</span>
             </div>
           )}
         </VersionTitle>
         {isEnterpriseEdition && (
           <VersionsList>
             <Version>
-              <strong>Scirius Security Platform:</strong> {loading.details ? loadingIndicator : details.version}
+              <strong>Scirius Security Platform:</strong> {contextLoading ? loadingIndicator : context.version}
             </Version>
             <Version>
               <strong>Stamus Threat Intelligence:</strong>
-              {loading.sources ? loadingIndicator : source.version ? `v${source.version}` : <i>rules update needed</i>}
+              {sourceLoading ? loadingIndicator : source.version ? ` v${source.version}` : <i>rules update needed</i>}
             </Version>
           </VersionsList>
         )}

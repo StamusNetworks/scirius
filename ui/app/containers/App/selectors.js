@@ -21,6 +21,8 @@ const makeSelectSystemSettings = () => createSelector(selectGlobal, subState => 
 
 const makeSelectUser = () => createSelector(selectGlobal, ({ user }) => user);
 
+const makeSelectContext = () => createSelector(selectGlobal, subState => subState.context);
+
 const makeSelectStartDate = () =>
   createSelector(selectGlobal, subState => {
     if (subState.timespan.timePicker === TimePickerEnum.ABSOLUTE) {
@@ -115,6 +117,7 @@ export default {
   makeSelectFilterSetsState,
   makeSelectFiltersParam,
   makeSelectSource,
+  makeSelectContext,
   // Network parameters selectors
   makeSelectURLDates,
   makeSelectURLDatesES,

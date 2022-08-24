@@ -6,6 +6,10 @@ const ENDPOINT = {
     name: 'Fetching user data',
     url: CURRENT_USER_PATH,
   },
+  SCIRIUS_CONTEXT: {
+    name: 'Fetching scirius context',
+    url: '/rest/rules/scirius_context',
+  },
   SYSTEM_SETTINGS: {
     name: 'Fetching system settings data',
     url: `${RULES_URL}/system_settings/`,

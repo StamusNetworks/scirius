@@ -13,6 +13,20 @@ const getUserFailure = () => ({
   type: constants.GET_USER_FAILURE,
 });
 
+const getContextRequest = () => ({
+  type: constants.GET_CONTEXT_REQUEST,
+});
+
+const getContextSuccess = data => ({
+  type: constants.GET_CONTEXT_SUCCESS,
+  payload: { data },
+});
+
+const getContextFailure = error => ({
+  type: constants.GET_CONTEXT_FAILURE,
+  error,
+});
+
 const getSource = () => ({
   type: constants.GET_SOURCE_REQUEST,
 });
@@ -99,6 +113,9 @@ export default {
   getUser,
   getUserSuccess,
   getUserFailure,
+  getContextRequest,
+  getContextSuccess,
+  getContextFailure,
   getSource,
   getSourceSuccess,
   getSourceFailure,

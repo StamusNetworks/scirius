@@ -6,6 +6,7 @@ const NetworkService = {
   setSessionActivity: async (params, options) => Api.post(ENDPOINT.SESSION_ACTIVITY, params, options),
   // GET
   fetchUser: async () => Api.get(ENDPOINT.CURRENT_USER),
+  fetchContext: async () => Api.get(ENDPOINT.SCIRIUS_CONTEXT),
   fetchSystemSettings: async () => Api.get(ENDPOINT.SYSTEM_SETTINGS),
   fetchSources: async () => Api.get(ENDPOINT.SOURCES),
   fetchAllPeriod: async params => Api.get(ENDPOINT.ALL_PERIOD, params),

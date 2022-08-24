@@ -67,6 +67,10 @@ export const initialState = {
     },
   },
   filterSets: false,
+  context: {
+    data: {},
+    request: { loading: false, status: null },
+  },
 };
 
 /* eslint-disable default-case */
@@ -142,6 +146,20 @@ export const appReducer = (state = initialState, action) =>
         draft.user.data = {};
         draft.user.request.loading = false;
         draft.user.request.status = false;
+        break;
+      }
+      case constants.GET_CONTEXT_REQUEST: {
+        draft.context.data = {};
+        draft.context.request = { loading: true, status: null };
+        break;
+      }
+      case constants.GET_CONTEXT_SUCCESS: {
+        draft.context.data = action.payload.data;
+        draft.context.request = { loading: false, status: true };
+        break;
+      }
+      case constants.GET_CONTEXT_FAILURE: {
+        draft.context.request = { loading: false, status: false };
         break;
       }
       case constants.GET_SOURCE_REQUEST:
