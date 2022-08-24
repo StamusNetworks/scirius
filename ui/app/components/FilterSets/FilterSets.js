@@ -117,7 +117,16 @@ class FilterSets extends React.Component {
 
     const loading = this.props.loading ? <LoadingIndicator style={{ width: 22, height: 22, margin: 0 }} /> : null;
     return (
-      <Drawer visible onClose={() => this.props.close()} title={<div>Filter Sets</div>} placement="right" zIndex={10000} width={450} size="large">
+      <Drawer
+        mask={false}
+        visible
+        onClose={() => this.props.close()}
+        title={<div>Filter Sets</div>}
+        placement="right"
+        zIndex={10000}
+        width={450}
+        size="large"
+      >
         <div>
           <div className="input-group">
             <span className="input-group-addon">
