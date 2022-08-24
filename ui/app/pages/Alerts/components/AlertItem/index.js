@@ -623,7 +623,7 @@ export default class AlertItem extends React.Component {
           </div>
           {data.payload_printable && (
             <UICard title="Payload printable">
-              <pre style={{ maxHeight: '12pc' }}>{data.payload_printable}</pre>
+              <pre style={{ maxHeight: '215px', overflowY: 'auto', whiteSpace: 'pre-wrap' }}>{data.payload_printable}</pre>
             </UICard>
           )}
           {data.http && (
