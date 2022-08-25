@@ -1,120 +1,135 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Checkbox, Col, Form, Input, Modal, Row, Select } from 'antd';
+import { Checkbox, Form, Input, Modal, Select } from 'antd';
 import { huntTabs } from 'ui/constants';
 import HuntRestError from 'ui/components/HuntRestError';
+import { useDispatch, useSelector } from 'react-redux';
+import { useInjectSaga } from 'utils/injectSaga';
+import { useInjectReducer } from 'utils/injectReducer';
+import globalSelectors from 'ui/containers/App/selectors';
+import saga from './saga';
+import reducer from './reducer';
+import selectors from './selectors';
 
-const FilterSetSaveModal = props => (
-  <Modal
-    title={props.title}
-    visible={props.showModal}
-    onCancel={props.close}
-    footer={
-      <React.Fragment>
-        <Button bsStyle="default" className="btn-cancel" onClick={props.close}>
-          Cancel
-        </Button>
-        <Button bsStyle="primary" onClick={props.submit}>
-          Save
-        </Button>
-      </React.Fragment>
+import actions from './actions';
+
+const layout = {
+  labelCol: {
+    span: 5,
+  },
+  wrapperCol: {
+    span: 19,
+  },
+};
+
+const FilterSetSaveModal = ({ content, page, title, close, noRights }) => {
+  useInjectReducer({ key: 'filterSetSave', reducer });
+  useInjectSaga({ key: 'filterSetSave', saga });
+  const dispatch = useDispatch();
+  const [form] = Form.useForm();
+  const user = useSelector(globalSelectors.makeSelectUser());
+  const request = useSelector(selectors.makeSelectForm());
+  const { error } = request;
+
+  const onFinish = async values => {
+    if (await form.validateFields()) {
+      dispatch(actions.saveFilterSetRequest({ ...values, content }));
+      close();
     }
-  >
-    <div
-      onClick={
-        // Stopping event propagation is required since the modal is the children of a list item that
-        // will also react to clicks
-        e => {
-          e.stopPropagation();
-        }
+  };
+
+  useEffect(() => {
+    form.setFieldsValue({ share: false });
+    if (page) {
+      form.setFieldsValue({ page });
+    }
+  }, []);
+
+  const errors = useMemo(() => {
+    if (error.response.status === 403) {
+      const noRights = user.isActive && !user.permissions.includes('rules.events_edit') && form.getFieldValue('share');
+      if (noRights) {
+        return { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
       }
+    }
+    return {};
+  }, [error, form]);
+
+  return (
+    <Modal
+      title={title}
+      visible
+      onCancel={close}
+      okText="Save"
+      okButtonProps={{
+        onClick: async () => {
+          await form.submit();
+        },
+      }}
     >
-      <HuntRestError errors={props.errors} />
-      <Form>
-        <Row>
-          <Col span={6}>
-            <strong>Name</strong>
-          </Col>
-          <Col span={18}>
-            <Form.Item name="input-name">
-              <Input
-                defaultValue=""
-                onChange={props.handleFieldChange}
-                onKeyDown={e => {
-                  if (e.keyCode === 13) {
-                    e.preventDefault();
-                    props.submit();
-                  }
-                }}
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-        <Row>
-          <Col span={6}>
-            <strong>Page</strong>
-          </Col>
-          <Col span={18}>
-            {!props.page && (
-              <Form.Item name="select-page">
-                <Select style={{ width: '100%' }} placeholder="Please select page" onChange={props.handleComboChange}>
-                  {Object.keys(huntTabs)
-                    .filter(key => huntTabs[key] !== 'Policies')
-                    .map(key => (
-                      <Select.Option key={huntTabs[key]} value={key}>
-                        {huntTabs[key]}
-                      </Select.Option> // eslint-disable-line indent
-                    ))}
-                </Select>
-              </Form.Item>
-            )}
-            {props.page && <Input disabled defaultValue={props.page} />}
-          </Col>
-        </Row>
-        {!props.noRights && (
-          <Row>
-            <Col span={6}>
-              <Form.Item name="checkbox">
-                <Checkbox onChange={props.setSharedFilter}>
-                  <strong>Shared</strong>
-                </Checkbox>
-              </Form.Item>
-            </Col>
-            <Col span={18}>
-              <span
-                className="pficon-help"
-                data-toggle="tooltip"
-                title="Enable: Create Filter Set with All Users&#10;Disable: Create Filter Set only for you"
-              />
-            </Col>
-          </Row>
+      <HuntRestError errors={errors} />
+      <Form form={form} {...layout} onFinish={onFinish}>
+        <Form.Item
+          label="Name"
+          name="name"
+          required
+          rules={[
+            {
+              required: true,
+              message: 'Please enter a name',
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
+
+        {!page && (
+          <Form.Item label="Page" name="page">
+            <Select placeholder="Please select page">
+              {Object.keys(huntTabs)
+                .filter(key => huntTabs[key] !== 'Policies')
+                .map(key => (
+                  <Select.Option key={huntTabs[key]} value={key}>
+                    {huntTabs[key]}
+                  </Select.Option> // eslint-disable-line indent
+                ))}
+            </Select>
+          </Form.Item>
         )}
-        <Row>
-          <Col span={6}>
-            <strong>Description:</strong>
-          </Col>
-          <Col span={18}>
-            <Form.Item name="textarea-description">
-              <Input.TextArea onChange={props.handleDescriptionChange} />
-            </Form.Item>
-          </Col>
-        </Row>
+        {page && (
+          <Form.Item label="Page" name="page">
+            <Input disabled defaultValue={huntTabs[page]} />
+          </Form.Item>
+        )}
+
+        {!noRights && (
+          <Form.Item
+            label="Shared"
+            name="share"
+            valuePropName="checked"
+            help={
+              <span>
+                Enable: Create Filter Set with All Users
+                <br />
+                Disable: Create Filter Set only for you
+              </span>
+            }
+          >
+            <Checkbox />
+          </Form.Item>
+        )}
+        <Form.Item label="Description" name="description">
+          <Input.TextArea />
+        </Form.Item>
       </Form>
-    </div>
-  </Modal>
-);
+    </Modal>
+  );
+};
 
 FilterSetSaveModal.propTypes = {
   title: PropTypes.any,
-  showModal: PropTypes.any,
   close: PropTypes.any,
-  errors: PropTypes.any,
-  handleDescriptionChange: PropTypes.any,
-  handleComboChange: PropTypes.any,
-  handleFieldChange: PropTypes.any,
-  setSharedFilter: PropTypes.any,
-  submit: PropTypes.any,
+  content: PropTypes.any,
   page: PropTypes.any,
   noRights: PropTypes.bool.isRequired,
 };

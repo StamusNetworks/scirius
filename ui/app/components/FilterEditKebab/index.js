@@ -5,9 +5,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { Dropdown, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
-import axios from 'axios';
 import { createStructuredSelector } from 'reselect';
-import * as config from 'config/Api';
 import { sections } from 'ui/constants';
 import { dashboard } from 'config/Dashboard';
 import { compose } from 'redux';
@@ -26,7 +24,6 @@ class FilterEditKebab extends React.Component {
     this.state = {
       toggle: { show: false, action: 'delete' },
       filterSets: { showModal: false, page: '', shared: false, name: '' },
-      errors: undefined,
     };
     this.closeAction = this.closeAction.bind(this);
     this.convertActionToFilters = this.convertActionToFilters.bind(this);
@@ -151,35 +148,6 @@ class FilterEditKebab extends React.Component {
     });
   }
 
-  submitActionToFilterSet() {
-    const filters = process.env.REACT_APP_HAS_TAG === '1' ? [...this.generateFilterSet(), this.generateAlertTag()] : this.generateFilterSet();
-
-    axios
-      .post(config.API_URL + config.HUNT_FILTER_SETS, {
-        name: this.state.filterSets.name,
-        page: this.state.filterSets.page,
-        content: filters,
-        share: this.state.filterSets.shared,
-        description: this.state.filterSets.description,
-      })
-      .then(() => {
-        this.props.loadFilterSets();
-        this.closeActionToFilterSet();
-        this.setState({ errors: undefined });
-      })
-      .catch(error => {
-        let errors = error.response.data;
-
-        if (error.response.status === 403) {
-          const noRights = this.props.user.isActive && !this.props.user.permissions.includes('rules.events_edit') && this.state.filterSets.shared;
-          if (noRights) {
-            errors = { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
-          }
-        }
-        this.setState({ errors });
-      });
-  }
-
   menu = (
     // eslint-disable-next-line no-unused-vars
     <Menu onClick={({ item, key, keyPath, domEvent }) => domEvent.stopPropagation()}>
@@ -247,18 +215,9 @@ class FilterEditKebab extends React.Component {
     const noRights = this.props.user.isActive && !this.props.user.permissions.includes('rules.events_edit');
     return (
       <React.Fragment>
-        <FilterSetSave
-          title="Create new Filter Set From Action"
-          showModal={this.state.filterSets.showModal}
-          close={this.closeActionToFilterSet}
-          errors={this.state.errors}
-          handleDescriptionChange={this.handleDescriptionChange}
-          handleComboChange={this.handleComboChange}
-          handleFieldChange={this.handleFieldChange}
-          setSharedFilter={this.setSharedFilter}
-          submit={this.submitActionToFilterSet}
-          noRights={noRights}
-        />
+        {this.state.filterSets.showModal && (
+          <FilterSetSave title="Create new Filter Set From Action" close={this.closeActionToFilterSet} noRights={noRights} />
+        )}
         <Dropdown id="filterActions" overlay={this.menu} trigger={['click']}>
           <a
             className="ant-dropdown-link"
@@ -289,7 +248,6 @@ FilterEditKebab.propTypes = {
   last_index: PropTypes.any,
   needUpdate: PropTypes.any,
   addFilter: PropTypes.any,
-  loadFilterSets: PropTypes.func,
   setTag: PropTypes.func,
   clearFilters: PropTypes.func,
   alertTag: PropTypes.object,

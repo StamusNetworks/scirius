@@ -19,15 +19,12 @@ import ErrorHandler from 'ui/components/Error';
 import FilterSetSave from 'ui/components/FilterSetSaveModal';
 import UISwitch from 'ui/components/UIElements/UISwitch';
 import AdditionalFilters from 'ui/components/AdditionalFilters';
-import { HUNT_FILTER_SETS } from 'ui/config/Api';
 import { COLOR_ERROR } from 'ui/constants/colors';
 import isIP from 'ui/helpers/isIP';
 
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { loadFilterSets } from 'ui/components/FilterSets/store';
 import ActionsButtons from '../ActionsButtons';
-import request from '../../utils/request';
 import Title from './Title.styled';
 const { Option } = Select;
 
@@ -255,53 +252,13 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
     setSearchString('');
   };
 
-  const [errors, setErrors] = useState([]);
-  const [filterSetName, setFilterSetName] = useState('');
-  const [filterSetShared, setFilterSetShared] = useState(false);
-  const [filterSetDescription, setFilterSetDescription] = useState('');
-
-  const submitFilterSets = () => {
-    setErrors([]);
-
+  const getFiltersCopy = () => {
     const filtersCopy = [...filters];
 
     if (process.env.REACT_APP_HAS_TAG === '1') {
       filtersCopy.push(alertTag);
     }
-
-    request(`/${HUNT_FILTER_SETS}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: filterSetName,
-        page,
-        content: filtersCopy,
-        share: filterSetShared,
-        description: filterSetDescription,
-      }),
-    })
-      .then(() => {
-        // this.props.loadFilterSets();
-        dispatch(loadFilterSets());
-        dispatch(ruleSetsActions.saveFiltersModal(false));
-        setErrors([]);
-        setFilterSetName('');
-        setFilterSetShared(false);
-        setFilterSetDescription('');
-      })
-      .catch(error => {
-        let errors = error.response.data;
-
-        if (error.response.status === 403) {
-          const noRights = user.isActive && !user.permissions.includes('rules.events_edit') && filterSetShared;
-          if (noRights) {
-            errors = { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
-          }
-        }
-        setErrors(errors);
-      });
+    return filtersCopy;
   };
 
   const validate = (type, value) => {
@@ -459,21 +416,17 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
           </div>
         )}
       </FilterContainer>
-      <FilterSetSave
-        title="Create new Filter Set"
-        showModal={saveFiltersModal}
-        close={() => {
-          dispatch(ruleSetsActions.saveFiltersModal(false));
-        }}
-        errors={errors}
-        handleDescriptionChange={event => setFilterSetDescription(event.target.value)}
-        handleComboChange={undefined}
-        handleFieldChange={event => setFilterSetName(event.target.value)}
-        setSharedFilter={event => setFilterSetShared(event.target.checked)}
-        submit={() => submitFilterSets()}
-        page={page}
-        noRights={false}
-      />
+      {saveFiltersModal && (
+        <FilterSetSave
+          title="Create new Filter Set"
+          close={() => {
+            dispatch(ruleSetsActions.saveFiltersModal(false));
+          }}
+          page={page}
+          content={getFiltersCopy()}
+          noRights={false}
+        />
+      )}
     </UICard>
   );
 };

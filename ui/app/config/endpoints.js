@@ -38,6 +38,10 @@ const ENDPOINT = {
     name: 'Fetching history filters',
     url: `${RULES_URL}/history/get_action_type_list/`,
   },
+  FILTER_SET_SAVE: {
+    name: 'Saving filter set',
+    url: '/rest/rules/hunt_filter_sets/',
+  },
   SESSION_ACTIVITY: {
     name: 'Set session activity idle time',
     url: `/accounts/session_activity/`,
