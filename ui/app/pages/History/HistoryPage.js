@@ -226,7 +226,7 @@ HistoryPage.propTypes = {
 
 const mapDispatchToProps = dispatch => ({
   getActionTypes: () => dispatch(filtersActions.historyFiltersRequest()),
-  addFilter,
+  addFilter: (section, filter) => dispatch(addFilter(section, filter)),
 });
 
 const mapStateToProps = createStructuredSelector({
