@@ -614,7 +614,10 @@ class UserAction(models.Model):
 
     @staticmethod
     def _get_request_info(request):
-        return request.user, get_client_ip(request)[0]
+        user = request.user
+        if user.__class__.__name__ == 'FakeUser' and settings.DEBUG:
+            user = User.objects.first()
+        return user, get_client_ip(request)[0]
 
     @classmethod
     def create(cls, **kwargs):
