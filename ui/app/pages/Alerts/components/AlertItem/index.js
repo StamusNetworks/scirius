@@ -605,6 +605,20 @@ export default class AlertItem extends React.Component {
                 </DlHorizontal>
               </UICard>
             )}
+            {data.ether !== undefined && (
+              <UICard title="Ethernet">
+                <DlHorizontal>
+                  <React.Fragment>
+                    <ErrorHandler>
+                      <EventField field_name="Source MAC" field="ether.src_mac" value={data.ether.src_mac} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField field_name="Destination MAC" field="ether.dest_mac" value={data.ether.dest_mac} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                  </React.Fragment>
+                </DlHorizontal>
+              </UICard>
+            )}
             <SMBAlertCard data={data} addFilter={this.addFilter} />
           </div>
           {data.payload_printable && (
