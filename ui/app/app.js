@@ -16,9 +16,11 @@ import './fonts/fonts.css';
 
 // Import root app
 import App from 'ui/containers/App';
+import notify from 'ui/helpers/notify';
 
 // Load the favicon and the .htaccess file
 import '!file-loader?name=[name].[ext]!./images/favicon.ico';
+import axios from 'axios';
 import { store } from './store';
 
 // Observe loading of Open Sans (to remove open sans, remove the <link> tag in
@@ -31,6 +33,14 @@ openSansObserver.load().then(() => {
 });
 
 const MOUNT_NODE = document.getElementById('app');
+
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    notify('Request has failed', error);
+    return Promise.reject(error);
+  },
+);
 
 const render = () => {
   ReactDOM.render(
