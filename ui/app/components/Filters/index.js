@@ -294,7 +294,8 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
                   }}
                   placeholder={placeholder}
                   onPressEnter={event => {
-                    const value = filterType === 'number' ? parseInt(event.target.value, 10) : event.target.value;
+                    const { value: raw = '' } = event.target;
+                    const value = filterType === 'number' && raw.length > 0 ? parseInt(raw, 10) : raw;
                     if (valid.length === 0 && ((value && typeof value === 'string' && value.length > 0) || typeof value === 'number')) {
                       filterAdded(field, value, false);
                     }
