@@ -121,7 +121,23 @@ RUN \
     suricatactl &&\
   python -m pip install --user -r requirements.txt
 
-#BUILD doc 
+FROM base as gophercap
+RUN \
+  echo "**** install tools to get gophercap ****" && \
+  apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    wget \
+    curl \
+    jq \
+    gzip
+RUN \
+  echo "**** install gopherCap ****" && \
+  cd /tmp && \
+  wget -q -O gopherCap.gz $(curl --silent "https://api.github.com/repos/StamusNetworks/gophercap/releases/latest" | jq -r '.assets[] | select(.name|startswith("gopherCap-debian-buster-")) | .browser_download_url') && \
+  gunzip -c gopherCap.gz > /usr/local/bin/gopherCap && \
+  chmod +x /usr/local/bin/gopherCap
+
+#BUILD doc
 FROM base as build_docs
 RUN \
     echo "**** install packages ****" && \
@@ -169,6 +185,7 @@ RUN pip install --no-cache-dir gunicorn
 
 COPY --from=build_js /opt/scirius/rules/static /opt/scirius/rules/static
 COPY --from=python_modules /root/.local /root/.local
+COPY --from=gophercap /usr/local/bin/gopherCap /usr/local/bin/gopherCap
 COPY --from=build_docs /opt/scirius/doc/_build/html /static/doc
 COPY --from=source /opt/kibana7-dashboards /opt/kibana7-dashboards
 COPY --from=source /tmp/cyberchef /static/cyberchef/
