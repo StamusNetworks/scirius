@@ -914,7 +914,7 @@ class Source(models.Model):
         self.updated_rules["deleted"] = list(set(self.updated_rules["deleted"]).union(set(update["deleted"])))
         self.updated_rules["updated"] = list(set(self.updated_rules["updated"]).union(set(update["updated"])))
 
-    def get_categories(self):
+    def get_categories(self, sversion):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
         catname = re.compile(r"(.+)\.rules$")
         existing_rules_hash = {}
@@ -932,6 +932,9 @@ class Source(models.Model):
                         created_date=timezone.now(),
                         filename=os.path.join('rules', f)
                     )
+                    for ruleset in sversion.ruleset_set.all():
+                        if ruleset.activate_categories:
+                            ruleset.categories.add(category)
                 else:
                     category = category[0]
                 category.get_rules(self, existing_rules_hash=existing_rules_hash)
@@ -969,16 +972,19 @@ class Source(models.Model):
         # look for SourceAtVersion with name and HEAD
         # Update updated_date
         sversions = SourceAtVersion.objects.filter(source=self, version=version)
-        if sversions:
-            sversions[0].updated_date = self.updated_date
-            sversions[0].save()
+        sversion = sversions.first()
+        if sversion:
+            sversion.updated_date = self.updated_date
+            sversion.save()
         else:
-            SourceAtVersion.objects.create(
+            sversion = SourceAtVersion.objects.create(
                 source=self,
                 version=version,
                 updated_date=self.updated_date,
                 git_version=version
             )
+
+        return sversion
 
     def _check_category_ids(self, f, filename, field_no):
         # Check the file object in argument does not contain category ids < 20
@@ -1068,9 +1074,9 @@ class Source(models.Model):
         self.save()
         # Now we must update SourceAtVersion for this source
         # or create it if needed
-        self.create_sourceatversion()
+        sversion = self.create_sourceatversion()
         # Get categories
-        self.get_categories()
+        self.get_categories(sversion)
 
     def handle_other_file(self, f, b64encode=False):
         self.updated_date = timezone.now()
@@ -2944,6 +2950,7 @@ class Ruleset(models.Model, Transformable):
     errors = models.TextField(blank=True)
     rules_count = models.IntegerField(default=0)
     suppressed_sids = models.TextField(verbose_name='Suppress events', default='', blank=True)
+    activate_categories = models.BooleanField(default=True)
 
     editable = True
 
@@ -3409,6 +3416,7 @@ class Ruleset(models.Model, Transformable):
             name=name,
             created_date=timezone.now(),
             updated_date=timezone.now(),
+            activate_categories=activate_categories
         )
 
         for src in sources:
