@@ -3,11 +3,19 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { Button, Checkbox, Form, Input, InputNumber, Modal, Select } from 'antd';
+import styled from 'styled-components';
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
 import { supportedActions, setDefaultOptions } from 'ui/supportedActions';
-import HuntRestError from 'ui/components/HuntRestError';
+
+const RulesetMsg = styled.div`
+  color: #ff4d4f;
+  height: 22px;
+  opacity: ${p => (p.errors && p.errors.rulesets && p.rulesets.length === 0 ? 1 : 0)};
+  visibility: ${p => (p.errors && p.errors.rulesets && p.rulesets.length === 0 ? 'visible' : 'hidden')};
+  transition: all 0.3s;
+`;
 
 const { Option } = Select;
 
@@ -15,7 +23,7 @@ export default class RuleToggleModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      selected: [],
+      rulesets: [],
       supported_filters: [],
       comment: '',
       options: {},
@@ -133,7 +141,7 @@ export default class RuleToggleModal extends React.Component {
   }
 
   close() {
-    this.setState({ errors: undefined, selected: [] });
+    this.setState({ errors: undefined, rulesets: [] });
     this.props.close();
   }
 
@@ -141,7 +149,7 @@ export default class RuleToggleModal extends React.Component {
     this.setState({ submitting: true });
 
     if (['enable', 'disable'].indexOf(this.props.action) !== -1) {
-      this.state.selected.map(ruleset => {
+      this.state.rulesets.map(ruleset => {
         const data = { ruleset };
         if (this.state.comment.length > 0) {
           data.comment = this.state.comment;
@@ -181,7 +189,7 @@ export default class RuleToggleModal extends React.Component {
       const data = {
         filter_defs: filters,
         action: this.props.action,
-        rulesets: this.state.selected,
+        rulesets: this.state.rulesets,
         comment: this.state.comment,
       };
       if (supportedActions.indexOf(this.props.action) !== -1) {
@@ -208,17 +216,17 @@ export default class RuleToggleModal extends React.Component {
     const { target } = event;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const { name } = target;
-    const selList = this.state.selected;
+    const selList = this.state.rulesets;
     if (value === false) {
       // pop element
       const index = selList.indexOf(name);
       if (index >= 0) {
         selList.splice(index, 1);
-        this.setState({ selected: selList });
+        this.setState({ rulesets: selList });
       }
     } else if (selList.indexOf(name) < 0) {
       selList.push(name);
-      this.setState({ selected: selList });
+      this.setState({ rulesets: selList });
     }
   }
 
@@ -276,7 +284,6 @@ export default class RuleToggleModal extends React.Component {
         {this.props.action === 'threat' && (
           <div style={{ marginBottom: '30px' }}> These Declaration(s) of Compromise (DoC) will appear in the Custom Threats family</div>
         )}
-        <HuntRestError errors={this.state.errors} />
         {!this.state.noaction && (
           <Form>
             {this.state.supported_filters &&
@@ -326,7 +333,7 @@ export default class RuleToggleModal extends React.Component {
             )}
             {this.props.children && this.props.children(this)}
             <hr />
-            <Form.Item>
+            <Form.Item style={{ marginBottom: '0' }}>
               <React.Fragment>
                 <strong>Ruleset{this.props.rulesets.length > 1 && 's'}:</strong>
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr max-content', alignItems: 'center', justifyContent: 'space-around' }}>
@@ -350,6 +357,9 @@ export default class RuleToggleModal extends React.Component {
                       </React.Fragment>
                     ))}
                 </div>
+                <RulesetMsg errors={this.state.errors} rulesets={this.state.rulesets}>
+                  {this.state.rulesets.length === 0 && this.state.errors && this.state.errors.rulesets && this.state.errors.rulesets[0]}
+                </RulesetMsg>
               </React.Fragment>
             </Form.Item>
             <hr />
