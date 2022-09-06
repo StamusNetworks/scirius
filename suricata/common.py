@@ -278,5 +278,7 @@ def use_stamuslogger():
     return False
 
 
-def login_redirection_url(_):
-    return '/stamus/hunting/dashboards'
+def login_redirection_url(request):
+    if request.user.has_perm('rules.events_view'):
+        return '/stamus/hunting/dashboards'
+    return '/rules'
