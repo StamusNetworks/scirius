@@ -12,7 +12,7 @@ const SpaceStyled = styled(Space)`
 
 const Refresh = ({ onChange, onRefresh }) => (
   <SpaceStyled>
-    <Select onChange={value => onChange(ReloadPeriodEnum[value])} style={{ width: 160 }}>
+    <Select onChange={value => onChange(ReloadPeriodEnum[value])} defaultValue="NONE" style={{ width: 160 }}>
       {Object.keys(ReloadPeriodEnum).map(p => (
         <Select.Option key={p} value={p}>
           {ReloadPeriodEnum[p].title}
