@@ -21,8 +21,8 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Card, Dropdown, Menu, Modal, Spin, Tooltip, Button, Row, Col } from 'antd';
-import { MenuOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { Dropdown, Menu, Modal, Spin, Row, Col } from 'antd';
+import { MenuOutlined } from '@ant-design/icons';
 import { WidthProvider, Responsive } from 'react-grid-layout';
 import store from 'store';
 import md5 from 'md5';
@@ -36,6 +36,8 @@ import { dashboard } from 'ui/config/Dashboard';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
 import { sections } from 'ui/constants';
+import UICard from 'ui/components/UIElements/UICard';
+import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import EventValue from 'ui/components/EventValue';
 import ErrorHandler from 'ui/components/Error';
 import Filters from 'ui/components/Filters';
@@ -467,33 +469,42 @@ export class HuntDashboard extends React.Component {
   createElement = block => {
     const filterParams = buildFilterParams(this.props.filterParams);
     const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${block.i}&${filterParams}&page_size=30${this.qFilter}`;
+    const menu = (
+      <Menu>
+        <Menu.Item key="menu" onClick={() => this.loadMore(block, url)} data-toggle="modal">
+          Load more results
+        </Menu.Item>
+      </Menu>
+    );
     return (
-      <Card
+      <UICard
         key={block.i}
         title={
-          <div className={`hunt-stat-title ${this.state.editMode ? 'dashboard-editable-mode' : ''}`} data-toggle="tooltip" title={block.title}>
-            {block.title}
+          <div
+            className={`hunt-stat-title ${this.state.editMode ? 'dashboard-editable-mode' : ''}`}
+            data-toggle="tooltip"
+            title={block.title}
+            style={{ display: 'grid', gridTemplateColumns: '1fr min-content' }}
+          >
+            <div>{block.title}</div>
+            <div>
+              {block.data === null && <Spin size="small" />}
+              {block.data !== null && block.data.length === 5 && (
+                <Dropdown overlay={menu} trigger={['click']}>
+                  <a className="ant-dropdown-link" style={{ color: COLOR_BRAND_BLUE }} onClick={e => e.preventDefault()}>
+                    <MenuOutlined />
+                  </a>
+                </Dropdown>
+              )}
+            </div>
           </div>
         }
-        bodyStyle={{ padding: '10px 20px' }}
-        extra={
-          <>
-            {block.data === null && (
-              <div style={{ marginBottom: 20 }}>
-                <Spin size="small" />
-              </div>
-            )}
-            {block.data !== null && block.data.length === 5 && (
-              <Tooltip title="Load more results" id="tooltip-top">
-                <Button icon={<UnorderedListOutlined />} onClick={() => this.loadMore(block, url)} />
-              </Tooltip>
-            )}
-          </>
-        }
+        headStyle={{ color: COLOR_BRAND_BLUE, textAlign: 'center' }}
       >
         {block.data !== null &&
           block.data.map(item => (
             <EventValue
+              key={item.key}
               field={block.i}
               value={item.key}
               format={block.format}
@@ -502,7 +513,7 @@ export class HuntDashboard extends React.Component {
               hasCopyShortcut
             />
           ))}
-      </Card>
+      </UICard>
     );
   };
 
@@ -716,7 +727,7 @@ export class HuntDashboard extends React.Component {
           <Filters page="DASHBOARDS" section={sections.GLOBAL} queryTypes={['filter']} />
         </ErrorHandler>
 
-        <Row className="row" style={{ marginTop: 10 }}>
+        <Row style={{ marginTop: 10 }}>
           <Col lg={20} md={18} sm={24} xs={24} style={{ paddingRight: '0px' }}>
             <HuntTimeline
               style={{ marginTop: '15px' }}
@@ -777,7 +788,7 @@ export class HuntDashboard extends React.Component {
             >
               {this.panelsBooted !== 'no' &&
                 this.state.load.map(panel => (
-                  <div className="hunt-row" key={panel} id={`panel-${panel}`}>
+                  <div key={panel} id={`panel-${panel}`}>
                     <h2 className={`hunt-row-title ${this.state.editMode ? 'dashboard-editable-mode' : ''}`}>{this.state.dashboard[panel].title}</h2>
                     <ResponsiveReactGridLayout
                       margin={[5, 5]}
@@ -820,10 +831,10 @@ export class HuntDashboard extends React.Component {
             this.hideMoreModal();
           }}
         >
-          <div className="hunt-stat-body" id="more-result-modal">
+          <div id="more-result-modal">
             {this.state.moreModal &&
               this.state.moreResults.map(item => (
-                <ErrorHandler>
+                <ErrorHandler key={item.key}>
                   <EventValue
                     field={this.state.moreModal.i}
                     value={item.key}
