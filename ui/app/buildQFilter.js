@@ -46,6 +46,9 @@ export function buildQFilter(filters, systemSettings) {
         if (filters[i].value.relevant === true) {
           tagFilters.push('alert.tag:"relevant"');
         }
+        if (filters[i].value.untagged === false && filters[i].value.informational === false && filters[i].value.relevant === false) {
+          tagFilters.push('alert.tag:"none"');
+        }
         if (tagFilters.length !== 0) {
           qfilter.push(`(${tagFilters.join(' OR ')})`);
         }
