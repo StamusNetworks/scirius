@@ -84,11 +84,6 @@ class HistoryPage extends React.Component {
     }
   }
 
-  updateHistoryFilterState(filters, fetchDataCallback) {
-    this.setState({ historyFilters: filters }, fetchDataCallback);
-    localStorage.setItem('history_filters', JSON.stringify(filters));
-  }
-
   updateHistoryListState(historyState) {
     this.setState({ history: historyState }, () => this.fetchData());
     localStorage.setItem('history', JSON.stringify(historyState));
