@@ -134,7 +134,7 @@ $(function (){
                     <li class="applauncher-pf-item" role="presentation">
                         <a class="applauncher-pf-link"
                            {% if generator == 'appliances' and license and license.etl and perms.rules.events_view or generator == 'suricata' and perms.rules.events_view %}
-                                href="/rules/hunt" style="color: inherit"
+                                href="/stamus/hunting/dashboards" style="color: inherit"
                             {% else %}
                                 style="pointer-events: none"
                             {% endif %}
