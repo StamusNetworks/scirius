@@ -59,15 +59,7 @@ class HistoryPage extends React.Component {
       view_type: 'list',
     });
 
-    let historyFilters = localStorage.getItem('history_filters') || '[]';
-
-    if (!historyFilters) {
-      localStorage.setItem('history_filters', JSON.stringify(historyFilters));
-    } else {
-      historyFilters = JSON.parse(historyFilters);
-    }
-
-    this.state = { data: [], count: 0, history: historyConf, historyFilters };
+    this.state = { data: [], count: 0, history: historyConf };
     this.fetchData = this.fetchData.bind(this);
     this.buildFilter = buildFilter;
 
@@ -79,7 +71,7 @@ class HistoryPage extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (JSON.stringify(prevProps.filters) !== JSON.stringify(this.state.historyFilters)) {
+    if (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
       this.fetchData();
     }
   }
@@ -90,7 +82,7 @@ class HistoryPage extends React.Component {
   }
 
   fetchData() {
-    const stringFilters = this.buildFilter(this.state.historyFilters);
+    const stringFilters = this.buildFilter(this.props.filters);
     const listParams = buildListUrlParams(this.state.history);
     this.setState({ loading: true });
     axios
@@ -109,8 +101,8 @@ class HistoryPage extends React.Component {
 
   render() {
     let expand = false;
-    for (let filter = 0; filter < this.state.historyFilters; filter += 1) {
-      if (this.state.historyFilters[filter].id === 'comment' || this.state.historyFilters[filter].id === 'client_ip') {
+    for (let filter = 0; filter < this.props.filters; filter += 1) {
+      if (this.props.filters[filter].id === 'comment' || this.props.filters[filter].id === 'client_ip') {
         expand = true;
         break;
       }
