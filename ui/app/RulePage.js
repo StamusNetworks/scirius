@@ -10,7 +10,7 @@ import RuleEditKebab from 'ui/components/RuleEditKebab';
 import SciriusChart from 'ui/components/SciriusChart';
 import EventValue from 'ui/components/EventValue';
 import UICard from 'ui/components/UIElements/UICard';
-import { COLOR_BOX_HEADER } from 'ui/constants/colors';
+import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import styled from 'styled-components';
 import RuleStatus from './RuleStatus';
 import HuntStat from './HuntStat';
@@ -34,8 +34,7 @@ const RuleMsg = styled.div`
 `;
 
 const RuleHits = styled.div`
-  background: ${COLOR_BOX_HEADER};
-  color: #fff;
+  color: ${COLOR_BRAND_BLUE};
   padding: 0 10px;
 `;
 
@@ -196,7 +195,7 @@ export default class RulePage extends React.Component {
                   {this.state.rule_references && this.state.rule_references.length > 0 && (
                     <UICard
                       title={<div>References</div>}
-                      headStyle={{ background: COLOR_BOX_HEADER, color: '#fff', textAlign: 'center' }}
+                      headStyle={{ color: COLOR_BRAND_BLUE, textAlign: 'center' }}
                       bodyStyle={{ display: 'grid', padding: '8px 10px' }}
                       noPadding
                     >

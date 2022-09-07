@@ -8,7 +8,7 @@ import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
 import EventValue from 'ui/components/EventValue';
 import UICard from 'ui/components/UIElements/UICard';
-import { COLOR_BOX_HEADER } from 'ui/constants/colors';
+import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 export default class HuntStat extends React.Component {
   constructor(props) {
     super(props);
@@ -64,7 +64,7 @@ export default class HuntStat extends React.Component {
               <div>
                 {this.state.data.length === 5 && (
                   <Dropdown id={`more-${this.props.item}`} overlay={this.menu} trigger={['click']}>
-                    <a className="ant-dropdown-link" style={{ color: '#fff' }} onClick={e => e.preventDefault()}>
+                    <a className="ant-dropdown-link" style={{ color: COLOR_BRAND_BLUE }} onClick={e => e.preventDefault()}>
                       <MenuOutlined />
                     </a>
                   </Dropdown>
@@ -72,7 +72,7 @@ export default class HuntStat extends React.Component {
               </div>
             </div>
           }
-          headStyle={{ background: COLOR_BOX_HEADER, color: '#FFF', textAlign: 'center' }}
+          headStyle={{ color: COLOR_BRAND_BLUE, textAlign: 'center' }}
           noPadding
         >
           <List

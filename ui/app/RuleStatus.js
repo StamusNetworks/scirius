@@ -11,7 +11,7 @@ import {
 } from '@ant-design/icons';
 import RuleContentModal from 'ui/components/RuleContentModal';
 import UICard from 'ui/components/UIElements/UICard';
-import { COLOR_BOX_HEADER } from 'ui/constants/colors';
+import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import styled from 'styled-components';
 
 const UICardBody = styled.div`
@@ -39,14 +39,14 @@ export default class RuleStatus extends React.Component {
     const { valid } = this.props.rule_status;
     let validity = (
       <div>
-        <CheckCircleOutlined style={{ color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+        <CheckCircleOutlined style={{ color: COLOR_BRAND_BLUE, marginRight: '3px' }} />
         Valid
       </div>
     );
     if (valid.status !== true) {
       validity = (
         <div>
-          <CloseCircleOutlined style={{ color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+          <CloseCircleOutlined style={{ color: COLOR_BRAND_BLUE, marginRight: '3px' }} />
           Invalid
         </div>
       );
@@ -54,7 +54,7 @@ export default class RuleStatus extends React.Component {
     const trans = this.props.rule_status.transformations;
     let action = (
       <div>
-        <CheckCircleOutlined style={{ color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+        <CheckCircleOutlined style={{ color: COLOR_BRAND_BLUE, marginRight: '3px' }} />
         <span>Action: {trans.action}</span>
       </div>
     );
@@ -63,7 +63,7 @@ export default class RuleStatus extends React.Component {
     }
     let target = (
       <div>
-        <SelectOutlined style={{ color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+        <SelectOutlined style={{ color: COLOR_BRAND_BLUE, marginRight: '3px' }} />
         <span>Target: {trans.target}</span>
       </div>
     );
@@ -72,7 +72,7 @@ export default class RuleStatus extends React.Component {
     }
     let lateral = (
       <div>
-        <DoubleRightOutlined style={{ color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+        <DoubleRightOutlined style={{ color: COLOR_BRAND_BLUE, marginRight: '3px' }} />
         <span>Lateral: {trans.lateral}</span>
       </div>
     );
@@ -81,14 +81,14 @@ export default class RuleStatus extends React.Component {
     }
     let active = (
       <div>
-        <PoweroffOutlined style={{ color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+        <PoweroffOutlined style={{ color: COLOR_BRAND_BLUE, marginRight: '3px' }} />
         Active
       </div>
     );
     if (!this.props.rule_status.active) {
       active = (
         <div>
-          <MinusCircleOutlined style={{ transform: 'rotateZ(90deg)', color: COLOR_BOX_HEADER, marginRight: '3px' }} />
+          <MinusCircleOutlined style={{ transform: 'rotateZ(90deg)', color: COLOR_BRAND_BLUE, marginRight: '3px' }} />
           Disabled
         </div>
       );
@@ -99,13 +99,13 @@ export default class RuleStatus extends React.Component {
         <UICard
           title={
             <div>
-              <TableOutlined style={{ background: COLOR_BOX_HEADER, marginRight: '10px' }} />
+              <TableOutlined style={{ color: COLOR_BRAND_BLUE, marginRight: '10px' }} />
               <span>{this.props.rule_status.name}</span>
             </div>
           }
           onClick={this.showRuleContent}
           style={{ cursor: 'pointer' }}
-          headStyle={{ background: COLOR_BOX_HEADER, color: '#FFF', textAlign: 'center' }}
+          headStyle={{ color: COLOR_BRAND_BLUE, textAlign: 'center' }}
           noPadding
         >
           <UICardBody>

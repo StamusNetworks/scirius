@@ -10,7 +10,7 @@ import SciriusChart from 'ui/components/SciriusChart';
 import EventValue from 'ui/components/EventValue';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import UICard from 'ui/components/UIElements/UICard';
-import { COLOR_BOX_HEADER } from 'ui/constants/colors';
+import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 
 export const SigContent = styled.div`
   & pre {
@@ -115,7 +115,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
       <UICard
         title={<div>Probes</div>}
         style={{ width: '300px' }}
-        headStyle={{ background: COLOR_BOX_HEADER, color: '#FFF', textAlign: 'center' }}
+        headStyle={{ color: COLOR_BRAND_BLUE, textAlign: 'center' }}
         bodyStyle={{ padding: '8px 10px' }}
         noPadding
       >
