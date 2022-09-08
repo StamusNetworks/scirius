@@ -2687,7 +2687,7 @@ class Rule(models.Model, Transformable, Cache):
                 if 'noalert' in content:
                     content = re.sub(r"; noalert;", "; noalert; bypass;", content)
                 else:
-                    content = re.sub(r"; *\)", "; noalert; bypass;)", content)
+                    content = re.sub(r"; *\)$", "; noalert; bypass;)", content)
                 content = re.sub(r"^ *\S+", "pass", content)
 
         elif key == Transformation.LATERAL or key == Transformation.TARGET:
