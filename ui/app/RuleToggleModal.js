@@ -259,7 +259,8 @@ export default class RuleToggleModal extends React.Component {
     if (this.props.action === 'threat') {
       title = 'Define custom Declaration(s) of Compromise';
     } else if (this.props.config.rule) {
-      title = `${this.props.action} Rule ${this.props.config.rule.sid}`;
+      const action = this.props.action === 'enable' ? 'Enable' : 'Disable';
+      title = `${action} rule ${this.props.config.rule.sid}`;
     } else {
       title = `Add a ${this.props.action} action`;
     }
