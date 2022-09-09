@@ -84,8 +84,8 @@ export class SignaturesPage extends React.Component {
     const rulesListConf = buildListParams(JSON.parse(localStorage.getItem('rules_list')), {
       pagination: {
         page: 1,
-        perPage: 6,
-        perPageOptions: [6, 10, 15, 25],
+        perPage: 10,
+        perPageOptions: [10, 20, 50, 100],
       },
       view_type: 'list',
       sort: { id: 'created', asc: false },

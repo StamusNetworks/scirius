@@ -279,7 +279,7 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
   };
 
   return (
-    <UICard>
+    <UICard style={{ marginBottom: '10px' }}>
       <FilterContainer>
         <div>
           <Title>Filters</Title>

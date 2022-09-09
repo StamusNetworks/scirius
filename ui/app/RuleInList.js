@@ -128,7 +128,6 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
 
   return (
     <Table
-      style={{ marginTop: '10px', marginBottom: '10px' }}
       size="small"
       loading={loading}
       dataSource={dataSource}

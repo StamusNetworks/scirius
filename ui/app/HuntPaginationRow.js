@@ -34,12 +34,12 @@ export default class HuntPaginationRow extends React.Component {
     return (
       <React.Fragment>
         <Pagination
-          defaultCurrent={1}
+          current={this.props.itemsList.pagination.page}
+          pageSize={this.props.itemsList.pagination.perPage}
           total={this.props.itemsCount - 1}
-          showSizeChanger={false}
-          showQuickJumper={false}
+          showSizeChanger
           onChange={this.onChange}
-          hideOnSinglePage
+          style={{ display: 'flex', justifyContent: 'end', marginTop: '10px' }}
         />
       </React.Fragment>
     );

@@ -49,8 +49,8 @@ class HistoryPage extends React.Component {
     const historyConf = buildListParams(JSON.parse(localStorage.getItem('history')), {
       pagination: {
         page: 1,
-        perPage: 6,
-        perPageOptions: [6, 10, 15, 25, 50],
+        perPage: 10,
+        perPageOptions: [10, 20, 50, 100],
       },
       sort: { id: 'date', asc: false },
       view_type: 'list',
@@ -73,10 +73,10 @@ class HistoryPage extends React.Component {
     }
   }
 
-  updateHistoryListState(historyState) {
+  updateHistoryListState = historyState => {
     this.setState({ history: historyState }, () => this.fetchData());
     localStorage.setItem('history', JSON.stringify(historyState));
-  }
+  };
 
   fetchData() {
     const stringFilters = this.buildFilter(this.props.filters);

@@ -19,8 +19,8 @@ const ActionsButtons = ({ supportedActions, filterParams, filters }) => {
   const rulesList = {
     pagination: {
       page: 1,
-      perPage: 6,
-      perPageOptions: [6, 10, 15, 25],
+      perPage: 10,
+      perPageOptions: [10, 20, 50, 100],
     },
     sort: { id: 'created', asc: false },
     view_type: 'list',

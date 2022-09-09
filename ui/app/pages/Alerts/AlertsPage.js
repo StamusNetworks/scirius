@@ -46,6 +46,7 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction } from '../../helpers/common';
 import AlertItem from './components/AlertItem';
+import HuntPaginationRow from '../../HuntPaginationRow';
 
 class AlertsPage extends React.Component {
   constructor(props) {
@@ -54,8 +55,8 @@ class AlertsPage extends React.Component {
     const alertsListConf = buildListParams(JSON.parse(localStorage.getItem('alerts_list')), {
       pagination: {
         page: 1,
-        perPage: 100,
-        perPageOptions: [20, 50, 100],
+        perPage: 10,
+        perPageOptions: [10, 20, 50, 100],
       },
       sort: { id: 'timestamp', asc: false },
       view_type: 'list',
@@ -71,14 +72,15 @@ class AlertsPage extends React.Component {
       // eslint-disable-next-line react/no-unused-state
       supported_actions: [],
       errors: null,
+      count: 0,
       alertsList: alertsListConf,
-      page: 1,
     };
     this.fetchData = this.fetchData.bind(this);
     this.actionsButtons = actionsButtons.bind(this);
     this.loadActions = loadActions.bind(this);
     this.createAction = createAction.bind(this);
     this.closeAction = closeAction.bind(this);
+    this.updateAlertListState = this.updateAlertListState.bind(this);
   }
 
   componentDidMount() {
@@ -136,6 +138,10 @@ class AlertsPage extends React.Component {
     localStorage.setItem('alerts_list', JSON.stringify(alertsListState));
   }
 
+  updateRuleListState = rulesListState => {
+    this.updateAlertListState(rulesListState, () => this.fetchData());
+  };
+
   fetchData() {
     const stringFilters = buildQFilter(this.props.filtersWithAlert, this.props.systemSettings);
     const filterParams = buildFilterParams(this.props.filterParams);
@@ -147,7 +153,7 @@ class AlertsPage extends React.Component {
       .get(url)
       .then(res => {
         if (res.data !== null && res.data.results && typeof res.data.results !== 'string') {
-          this.setState({ alerts: res.data.results, loading: false });
+          this.setState({ alerts: res.data.results, count: res.data.count, loading: false });
         } else {
           this.setState({ loading: false });
         }
@@ -159,10 +165,6 @@ class AlertsPage extends React.Component {
         }
         this.setState({ errors: null, loading: false });
       });
-  }
-
-  updateRuleListState(rulesListState, fetchDataCallback) {
-    this.updateAlertListState(rulesListState, fetchDataCallback);
   }
 
   getIconColor(key) {
@@ -242,7 +244,6 @@ class AlertsPage extends React.Component {
 
         {this.state.alerts && (
           <Table
-            style={{ marginTop: '10px' }}
             size="small"
             loading={this.state.loading}
             dataSource={dataSource}
@@ -255,16 +256,17 @@ class AlertsPage extends React.Component {
               ),
               rowExpandable: () => true,
             }}
-            pagination={{
-              showSizeChanger: false,
-              current: this.state.page,
-              pageSize: 30,
-              total: this.state.alerts.length,
-              onChange: current => this.setState({ page: current }),
-              position: ['bottomLeft'],
-            }}
+            pagination={false}
           />
         )}
+        <ErrorHandler>
+          <HuntPaginationRow
+            viewType="list"
+            onPaginationChange={this.updateRuleListState}
+            itemsCount={this.state.count}
+            itemsList={this.state.alertsList}
+          />
+        </ErrorHandler>
 
         <ErrorHandler>
           {this.state.action.view && (

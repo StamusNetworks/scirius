@@ -44,11 +44,11 @@ export class PoliciesPage extends React.Component {
   constructor(props) {
     super(props);
 
-    const filtersListConf = buildListParams(JSON.parse(localStorage.getItem('alerts_list')), {
+    const filtersListConf = buildListParams(JSON.parse(localStorage.getItem('filters_list')), {
       pagination: {
         page: 1,
-        perPage: 20,
-        perPageOptions: [20, 50, 100],
+        perPage: 10,
+        perPageOptions: [10, 20, 50, 100],
       },
       sort: { id: 'timestamp', asc: false },
       view_type: 'list',
@@ -261,7 +261,6 @@ export class PoliciesPage extends React.Component {
         </Helmet>
 
         <Table
-          style={{ marginTop: '10px', marginBottom: '10px' }}
           size="small"
           loading={this.state.loading}
           dataSource={dataSource}

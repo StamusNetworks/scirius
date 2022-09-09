@@ -14,7 +14,7 @@ const buildListParams = (params, def) => {
     params.pagination.perPage = def?.pagination?.perPage || 6;
   }
   if (!params?.pagination?.perPageOptions) {
-    params.pagination.perPageOptions = def?.pagination?.perPageOptions || [6, 10, 15, 25];
+    params.pagination.perPageOptions = def?.pagination?.perPageOptions || [10, 20, 50, 100];
   }
   /* eslint-disable camelcase */
   if (!params?.view_type) {
