@@ -27,6 +27,8 @@ import { WidthProvider, Responsive } from 'react-grid-layout';
 import store from 'store';
 import md5 from 'md5';
 import map from 'lodash/map';
+import { Helmet } from 'react-helmet';
+import { STAMUS } from 'ui/config';
 import find from 'lodash/find';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
@@ -723,6 +725,10 @@ export class HuntDashboard extends React.Component {
   render() {
     return (
       <div>
+        <Helmet>
+          <title>{`${STAMUS} - Dashboards`}</title>
+        </Helmet>
+
         <ErrorHandler>
           <Filters page="DASHBOARDS" section={sections.GLOBAL} queryTypes={['filter']} />
         </ErrorHandler>
