@@ -15,9 +15,11 @@ from django import get_version
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-SCIRIUS_FLAVOR = "Scirius CE"
+APP_LONG_NAME = 'Scirius Community Edition'
+APP_MEDIUM_NAME = 'Scirius CE'
+APP_SHORT_NAME = APP_MEDIUM_NAME
+APP_MNGT_NAME = 'Suricata Management'
 SCIRIUS_VERSION = "3.8.0"
-SCIRIUS_LONG_NAME = "Suricata Management"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/

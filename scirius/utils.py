@@ -92,11 +92,10 @@ def complete_context(request, context):
 def scirius_render(request, template, context):
     context['generator'] = settings.RULESET_MIDDLEWARE
     context['path_info'] = build_path_info(request)
-    context['scirius_release'] = settings.SCIRIUS_FLAVOR + " v" + settings.SCIRIUS_VERSION
-    context['scirius_long_name'] = settings.SCIRIUS_LONG_NAME
+    context['scirius_release'] = settings.APP_LONG_NAME + " v" + settings.SCIRIUS_VERSION
+    context['app_mngt_name'] = settings.APP_MNGT_NAME
     context['scirius_title'] = get_middleware_module('common').get_homepage_context()['title']
     context['scirius_short_title'] = get_middleware_module('common').get_homepage_context()['short_title']
-    context['common_name'] = get_middleware_module('common').get_homepage_context()['common_name']
     context['common_long_name'] = get_middleware_module('common').get_homepage_context()['common_long_name']
     context['use_stamuslogger'] = get_middleware_module('common').use_stamuslogger()
     gsettings = get_system_settings()

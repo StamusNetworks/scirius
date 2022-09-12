@@ -152,16 +152,15 @@ def update_processing_filter_action_options(rule_processing):
 
 def get_homepage_context():
     context = {
-        'title': 'Scirius Community Edition',
-        'short_title': 'Scirius CE',
-        'common_name': 'Scirius',
-        'common_long_name': 'Scirius Community Edition',
-        'content_lead': 'Scirius CE is a web application for threat hunting and Suricata ruleset management of one sensor.',
-        'content_minor1': 'Scirius CE is developed by Stamus Networks and is available under the GNU GPLv3 license.',
+        'title': settings.APP_LONG_NAME,
+        'short_title': settings.APP_MEDIUM_NAME,
+        'common_long_name': settings.APP_LONG_NAME,
+        'content_lead': '%s is a web application for threat hunting and Suricata ruleset management of one sensor.' % settings.APP_MEDIUM_NAME,
+        'content_minor1': '%s is developed by Stamus Networks and is available under the GNU GPLv3 license.' % settings.APP_MEDIUM_NAME,
         'content_minor2': 'Manage multiple rulesets and rules sources. Upload and manage custom rules and any data files. Handle thresholding and suppression to limit verbosity of noisy alerts. Get suricata performance statistics and information about rules activity.',
         'content_minor3': 'Interact with Elasticsearch, Kibana and other interfaces such as EveBox.',
         'admin_title': 'Ruleset setup and Suricata management',
-        'version': settings.SCIRIUS_FLAVOR + " v" + settings.SCIRIUS_VERSION,
+        'version': settings.APP_LONG_NAME + " v" + settings.SCIRIUS_VERSION,
         'icon': False,
         'nb_probes': 1
     }

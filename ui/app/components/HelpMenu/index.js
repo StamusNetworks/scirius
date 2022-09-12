@@ -134,7 +134,7 @@ const HelpMenu = ({ isEnterpriseEdition }) => {
         onCancel={() => setVisible(false)}
         footer={
           <div className="about-footer">
-            <img src="/static/bundles/media/stamus_logo.4bca432d.png" alt="SSP Logo" />
+            <img src="/static/bundles/media/stamus_logo.4bca432d.png" alt="SCS Logo" />
           </div>
         }
       >
@@ -172,7 +172,7 @@ const HelpMenu = ({ isEnterpriseEdition }) => {
         User manual
       </Item>
       <Item block type="link" icon={<QuestionOutlined />} onClick={() => setVisible(true)}>
-        {isEnterpriseEdition ? 'About SSP' : 'About Scirius CE'}
+        {isEnterpriseEdition ? 'About SCS' : 'About Scirius CE'}
       </Item>
     </Wrapper>
   );

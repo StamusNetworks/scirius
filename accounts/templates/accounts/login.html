@@ -5,11 +5,7 @@
     <head>
         <title>
             {% block title %}
-                {% if generator == 'suricata' %}
-                    Scirius
-                {% else %}
-                    Stamus Security Platform
-                {% endif %}
+                {{ common_long_name }}
             {% endblock %}
         </title>
         <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
@@ -27,11 +23,7 @@
 
             <div class="login__form-box">
                 <h1 class="login__heading">
-                    {% if generator == 'suricata' %}
-                        Scirius
-                    {% else %}
-                        Stamus Security Platform
-                    {% endif %}
+                    {{ common_long_name }}
                 </h1>
                 <form action="{{ request.get_full_path }}" method="post" class="form">
                     {% csrf_token %}
