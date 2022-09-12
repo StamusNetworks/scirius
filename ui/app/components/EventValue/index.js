@@ -23,7 +23,7 @@ const mitreLinks = [
 
 const Container = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr min-content;
+  grid-template-columns: 1fr repeat(2, min-content);
   align-items: center;
   width: 100%;
   background: ${p => (p.hover ? '#e5e5e5' : 'none')};
