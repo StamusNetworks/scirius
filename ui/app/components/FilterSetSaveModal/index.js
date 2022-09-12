@@ -46,7 +46,7 @@ const FilterSetSaveModal = ({ content, page, title, close, noRights }) => {
   }, []);
 
   const errors = useMemo(() => {
-    if (error.response.status === 403) {
+    if (error?.response?.status === 403) {
       const noRights = user.isActive && !user.permissions.includes('rules.events_edit') && form.getFieldValue('share');
       if (noRights) {
         return { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
