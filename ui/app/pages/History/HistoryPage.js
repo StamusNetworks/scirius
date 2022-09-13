@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
-import { Spin, Collapse, Row, Col } from 'antd';
+import { Table } from 'antd';
 import axios from 'axios';
 import * as config from 'config/Api';
 import { sections } from 'ui/constants';
@@ -29,7 +29,6 @@ import Filters from 'ui/components/Filters';
 import HistoryItem from 'ui/components/HistoryItem';
 import ErrorHandler from 'ui/components/Error';
 import moment from 'moment';
-import { TableOutlined, UserOutlined, MailOutlined } from '@ant-design/icons';
 import buildListParams from 'ui/helpers/buildListParams';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -42,8 +41,6 @@ import saga from 'ui/stores/filters/saga';
 import { addFilter, makeSelectHistoryFilters } from 'ui/containers/HuntApp/stores/global';
 import { buildFilter, buildListUrlParams } from '../../helpers/common';
 import HuntPaginationRow from '../../HuntPaginationRow';
-
-const { Panel } = Collapse;
 
 class HistoryPage extends React.Component {
   constructor(props) {
@@ -99,6 +96,37 @@ class HistoryPage extends React.Component {
       });
   }
 
+  columns = [
+    {
+      title: 'Operation',
+      dataIndex: 'operation',
+    },
+    {
+      title: 'Message',
+      dataIndex: 'message',
+    },
+    {
+      title: 'Date',
+      dataIndex: 'date',
+    },
+    {
+      title: 'User',
+      dataIndex: 'user',
+    },
+    {
+      title: 'IP',
+      dataIndex: 'ip',
+    },
+    {
+      title: 'Ruleset',
+      dataIndex: 'ruleset',
+    },
+    {
+      title: 'Signature',
+      dataIndex: 'signature',
+    },
+  ];
+
   render() {
     let expand = false;
     for (let filter = 0; filter < this.props.filters; filter += 1) {
@@ -107,6 +135,28 @@ class HistoryPage extends React.Component {
         break;
       }
     }
+
+    const dataSource = this.state.data.results?.map(item => ({
+      key: item.pk,
+      operation: item.title,
+      message: item.description,
+      date: moment(item.date).format('YYYY-MM-DD, hh:mm:ss a'),
+      user: item.username,
+      ip: item.client_ip,
+      ruleset: item.ua_objects.ruleset?.value,
+      signature: item.ua_objects.rule?.sid && (
+        <a
+          onClick={() => {
+            this.props.addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: item.ua_objects.rule.sid, negated: false });
+            this.props.history.push('/stamus/hunting/signatures', item.ua_objects.rule.sid);
+          }}
+        >
+          {item.ua_objects.rule.sid}
+        </a>
+      ),
+      item, // we need this to access the item data in the `expandedRowRender` below
+    }));
+
     return (
       <div>
         <ErrorHandler>
@@ -126,59 +176,20 @@ class HistoryPage extends React.Component {
             }}
           />
         </ErrorHandler>
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '15px 0 10px 0' }}>{this.state.loading && <Spin />}</div>
         {this.state.data.results && (
-          <Collapse>
-            {this.state.data.results.map(item => {
-              const date = moment(item.date).format('YYYY-MM-DD, hh:mm:ss a');
-              const info = [
-                <Col>Date: {date}</Col>,
-                <Col style={{ paddingLeft: 15 }}>
-                  <UserOutlined /> {item.username}
-                </Col>,
-              ];
-              if (item.ua_objects.ruleset && item.ua_objects.ruleset.pk) {
-                info.push(
-                  <Col style={{ paddingLeft: 15 }}>
-                    <TableOutlined /> {item.ua_objects.ruleset.value}
-                  </Col>,
-                );
-              }
-              if (item.ua_objects.rule && item.ua_objects.rule.sid) {
-                info.push(
-                  <Col style={{ paddingLeft: 15 }}>
-                    <a
-                      onClick={() => {
-                        this.props.addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: item.ua_objects.rule.sid, negated: false });
-                        this.props.history.push('/stamus/hunting/signatures', item.ua_objects.rule.sid);
-                      }}
-                    >
-                      <i className="pficon-security" /> {item.ua_objects.rule.sid}
-                    </a>
-                  </Col>,
-                );
-              }
-
-              return (
-                <Panel
-                  key={item.pk}
-                  showArrow={false}
-                  header={
-                    <Row>
-                      <Col md={1}>
-                        <MailOutlined />
-                      </Col>
-                      <Col md={2}>{item.title}</Col>
-                      <Col flex="auto">{item.description}</Col>
-                      {info}
-                    </Row>
-                  }
-                >
-                  <HistoryItem key={item.pk} data={item} expand_row={expand} />
-                </Panel>
-              );
-            })}
-          </Collapse>
+          <Table
+            size="small"
+            loading={this.state.loading}
+            dataSource={dataSource}
+            columns={this.columns}
+            expandable={{
+              columnWidth: 5,
+              expandRowByClick: true,
+              expandedRowRender: ({ item }) => <HistoryItem key={item.pk} data={item} expand_row={expand} />,
+              rowExpandable: () => true,
+            }}
+            pagination={false}
+          />
         )}
         <ErrorHandler>
           <HuntPaginationRow
