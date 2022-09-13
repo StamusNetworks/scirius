@@ -32,7 +32,6 @@ class FilterEditKebab extends React.Component {
     this.handleComboChange = this.handleComboChange.bind(this);
     this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
     this.setSharedFilter = this.setSharedFilter.bind(this);
-    this.submitActionToFilterSet = this.submitActionToFilterSet.bind(this);
   }
 
   setSharedFilter(e) {
