@@ -35,17 +35,17 @@ export const PAGE_STATE = {
 };
 
 export const huntTabs = {
-  DASHBOARDS: 'Dashboard',
-  ALERTS: 'Alerts',
-  SIGNATURES: 'Signatures',
-  POLICIES: 'Policy',
+  [PAGE_STATE.dashboards]: 'Dashboard',
+  [PAGE_STATE.alerts_list]: 'Alerts',
+  [PAGE_STATE.rules_list]: 'Signatures',
+  [PAGE_STATE.filters_list]: 'Policy',
 };
 
 export const huntUrls = {
-  DASHBOARDS: 'hunting/dashboards',
-  ALERTS: 'hunting/alerts',
-  SIGNATURES: 'hunting/signatures',
-  POLICIES: 'hunting/policies',
+  [PAGE_STATE.dashboards]: 'hunting/dashboards',
+  [PAGE_STATE.alerts_list]: 'hunting/alerts',
+  [PAGE_STATE.rules_list]: 'hunting/signatures',
+  [PAGE_STATE.filters_list]: 'hunting/policies',
 };
 
 export const APP_NAME_SHORT = 'Scirius CE';
