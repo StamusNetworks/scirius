@@ -440,7 +440,7 @@ class ESTimeline(ESQuery):
                 'bool': {
                     'must': [{
                         'query_string': {
-                            'query': 'event_type:alert ' + self._qfilter(),
+                            'query': 'event_type:alert AND %s %s' % (self._hosts(), self._qfilter()),
                             'analyze_wildcard': False
                         }
                     }, {
