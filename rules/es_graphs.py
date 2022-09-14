@@ -495,6 +495,14 @@ class ESTimeline(ESQuery):
             rdata = {}
             for elt in data:
                 date = elt['key']
+                others = int(elt['host']['sum_other_doc_count'])
+
+                if others > 0:
+                    if 'others' not in rdata:
+                        rdata['others'] = {'entries': [{"time": date, "count": others}]}
+                    else:
+                        rdata['others']['entries'].append({"time": date, "count": others})
+
                 for host in elt["host"]['buckets']:
                     if host["key"] not in rdata:
                         rdata[host["key"]] = {'entries': [{"time": date, "count": host["doc_count"]}]}

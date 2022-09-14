@@ -139,6 +139,9 @@ function draw_timeline(from_date, hosts, filter, ylegend=undefined) {
                             $("#timeline p").addClass("svgcenter");
                             return null;
                         }
+                        if (data.hasOwnProperty("others")) {
+                          hosts.push("others")
+                        }
 			            $("#timeline p").hide();
                             nv.addGraph(function() {
 		            /* starting from 4 hosts multibar is unreadable */
