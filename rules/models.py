@@ -1175,6 +1175,7 @@ class Source(models.Model):
         self.updated_date = timezone.now()
         repo = self.get_git_repo(delete=True)
         sources_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
+        version_path = os.path.join(sources_dir, 'rules', 'version.txt')
 
         # create rules dir if needed
         if not os.path.isdir(sources_dir):
@@ -1192,6 +1193,9 @@ class Source(models.Model):
             index.add(['rules'])
             message = 'source version at %s' % self.updated_date
             index.commit(message)
+
+        with open(version_path, 'r') as f:
+            self.version = int(f.read())
 
         self.save()
         # Now we must update SourceAtVersion for this source
