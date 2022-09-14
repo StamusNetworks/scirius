@@ -450,7 +450,7 @@ def delete_group(request, group_id):
         action_type='delete_group',
         comment=comment_form.cleaned_data['comment'],
         request=request,
-        group=group.group
+        group=group
     )
     return JsonResponse({'redirect': '/accounts/role/'})
 

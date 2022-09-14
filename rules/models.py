@@ -355,18 +355,18 @@ class UserAction(models.Model):
             'perm': 'rules.configuration_auth'
         }),
         ('create_group', {
-            'description': '{user} has created new group {new_group}',
-            'title': 'Create Group',
+            'description': '{user} has created new role {new_group}',
+            'title': 'Create Role',
             'perm': 'rules.configuration_auth'
         }),
         ('edit_group', {
-            'description': '{user} has edited group {group}',
-            'title': 'Edit Group',
+            'description': '{user} has edited role {group}',
+            'title': 'Edit Role',
             'perm': 'rules.configuration_auth'
         }),
         ('delete_group', {
-            'description': '{user} has deleted group {group}',
-            'title': 'Delete User',
+            'description': '{user} has deleted role {group}',
+            'title': 'Delete Role',
             'perm': 'rules.configuration_auth'
         }),
         ('login', {
