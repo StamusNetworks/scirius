@@ -48,7 +48,7 @@ def loginview(request, target):
         form = LoginForm(request.POST)
         if not form.is_valid():  # All validation rules pass
             form = LoginForm()
-            context = {'form': form, 'error': 'Invalid form'}
+            context = {'form': form, 'error_login': 'Invalid form'}
             return scirius_render(request, 'accounts/login.html', context)
 
         username = form.cleaned_data['username']
@@ -80,13 +80,13 @@ def loginview(request, target):
                 return redirect(get_middleware_module('common').login_redirection_url(request))
             else:
                 form = LoginForm()
-                context = {'form': form, 'error': 'Disabled account'}
+                context = {'form': form, 'error_login': 'Disabled account'}
                 logger = logging.getLogger('authentication')
                 logger.error("Invalid login attempt for disabled account '%s' from '%s'", username, get_client_ip(request))
                 return scirius_render(request, 'accounts/login.html', context)
         else:
             form = LoginForm()
-            context = {'form': form, 'error': 'Invalid login'}
+            context = {'form': form, 'error_login': 'Invalid login'}
             logger = logging.getLogger('authentication')
             logger.error("Invalid login attempt for '%s' from '%s'", username, get_client_ip(request))
             return scirius_render(request, 'accounts/login.html', context)
