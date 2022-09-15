@@ -133,7 +133,7 @@ RUN \
 RUN \
   echo "**** install gopherCap ****" && \
   cd /tmp && \
-  wget -q -O gopherCap.gz $(curl --silent "https://api.github.com/repos/StamusNetworks/gophercap/releases/latest" | jq -r '.assets[] | select(.name|startswith("gopherCap-debian-buster-")) | .browser_download_url') && \
+  wget -q -O gopherCap.gz $(curl --silent "https://api.github.com/repos/StamusNetworks/gophercap/releases/latest" | jq -r '.assets[] | select(.name=="gopherCap.gz") | .browser_download_url') && \
   gunzip -c gopherCap.gz > /usr/local/bin/gopherCap && \
   chmod +x /usr/local/bin/gopherCap
 
