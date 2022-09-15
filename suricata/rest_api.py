@@ -105,7 +105,7 @@ class PcapFilestoreViewSet(viewsets.ViewSet):
         content = self._extract_file(request)
         json_file = json.loads(content.decode())
         filename = json_file['_id']
-        json_file = json_file['_source']
+        json_file = json_file.get('_source', json_file)
         src_path = os.path.join('/tmp', '%s.json' % filename)
 
         with open(src_path, 'w') as f:
