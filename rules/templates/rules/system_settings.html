@@ -264,7 +264,9 @@ function es_check_version() {
             if (!data.error) {
                 var msg = "<strong>Connected to ES " + data.es_version + "</strong>";
                 if (!data.es_is_good_version) {
-                    msg = "<strong style=\"color: #d5ab81\">Warning: this ES version " + data.es_version + " is not supported. Please install ES version " + data.es_good_version + ".x</strong>";
+                    msg =   '<div style="color: #d5ab81"><p>Minimum supported version: <strong>' + data.es_min_version + '.x</strong><br>';
+                    msg +=  'Recommended version: <strong>' + data.es_good_version + 'x</strong></br>';
+                    msg +=  '<strong>Warning</strong>: This ES version (<strong>' + data.es_version + '</strong>) is not supported</div>';
                 }
                 $("#es_msg_version").html(msg);
             } else {
