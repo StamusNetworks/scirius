@@ -87,7 +87,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
     {
       title: 'Ctrl',
       dataIndex: 'ctrl',
-      render: (text, rule) => <RuleEditKebab key={`kebab-${rule.sid}`} config={{ rule }} rulesets={rulesets} setExpand={setExpand} />,
+      render: (text, row) => <RuleEditKebab key={`kebab-${row.sid}`} config={{ rule: row.rule }} rulesets={rulesets} setExpand={setExpand} />,
     },
   ];
 
