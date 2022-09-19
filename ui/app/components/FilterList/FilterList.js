@@ -226,7 +226,7 @@ class FilterList extends React.Component {
                         id="input-value-filter"
                         value={newFilterValue}
                         onKeyDown={this.keyListener}
-                        onChange={newFilterValue => this.setState({ newFilterValue })}
+                        onChange={newFilterValue => this.setState({ newFilterValue: newFilterValue || '' })}
                         style={{ width: '100%' }}
                       />
                     )}
