@@ -208,7 +208,10 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
       }
     } else {
       if (filterCategory) {
-        filterText = `${filterCategory.id}.${filterSubCategory?.id}`;
+        filterText = `${filterCategory.id}`;
+        if (filterSubCategory && filterSubCategory.id) {
+          filterText += `.${filterSubCategory.id}`;
+        }
       } else {
         filterText = `${filterCategory.id}`;
       }
