@@ -742,14 +742,17 @@ class UserAction(models.Model):
                 lb = action.action_value
 
                 icon = klass.get_icon()
-                instances = klass.objects.filter(pk=action.object_id).all()
+                instance = klass.objects.filter(pk=action.object_id).first()
 
-                if len(instances):
-                    if isinstance(instances[0], Source):
-                        icon = Source.get_icon(instances[0])
+                if instance:
+                    if isinstance(instance, Source):
+                        icon = Source.get_icon(instance)
 
-                    if isinstance(instances[0], Rule):
-                        lb = instances[0].pk
+                    if isinstance(instance, Rule):
+                        lb = instance.pk
+
+                    if isinstance(instance, RuleProcessingFilter) and instance.action == 'threat':
+                        lb = instance.threatmethod.threat.name
 
                 icons.append((icon, lb))
 
