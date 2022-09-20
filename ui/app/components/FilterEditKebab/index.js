@@ -211,12 +211,9 @@ class FilterEditKebab extends React.Component {
   );
 
   render() {
-    const noRights = this.props.user.isActive && !this.props.user.permissions.includes('rules.events_edit');
     return (
       <React.Fragment>
-        {this.state.filterSets.showModal && (
-          <FilterSetSave title="Create new Filter Set From Action" close={this.closeActionToFilterSet} noRights={noRights} />
-        )}
+        {this.state.filterSets.showModal && <FilterSetSaveModal title="Create new Filter Set From Action" close={this.closeActionToFilterSet} />}
         <Dropdown id="filterActions" overlay={this.menu} trigger={['click']}>
           <a
             className="ant-dropdown-link"

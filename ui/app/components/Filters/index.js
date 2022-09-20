@@ -428,7 +428,6 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
           }}
           page={page}
           content={getFiltersCopy()}
-          noRights={false}
         />
       )}
     </UICard>

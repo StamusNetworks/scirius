@@ -22,7 +22,7 @@ const layout = {
   },
 };
 
-const FilterSetSaveModal = ({ content, page, title, close, noRights }) => {
+const FilterSetSaveModal = ({ content, page, title, close }) => {
   useInjectReducer({ key: 'filterSetSave', reducer });
   useInjectSaga({ key: 'filterSetSave', saga });
   const dispatch = useDispatch();
@@ -45,10 +45,10 @@ const FilterSetSaveModal = ({ content, page, title, close, noRights }) => {
     }
   }, []);
 
+  const noRights = user.data.isActive && !user.data.permissions.includes('rules.events_edit');
   const errors = useMemo(() => {
     if (error?.response?.status === 403) {
-      const noRights = user.isActive && !user.permissions.includes('rules.events_edit') && form.getFieldValue('share');
-      if (noRights) {
+      if (noRights && form.getFieldValue('share')) {
         return { permission: ['Insufficient permissions. "Shared" is not allowed.'] };
       }
     }
