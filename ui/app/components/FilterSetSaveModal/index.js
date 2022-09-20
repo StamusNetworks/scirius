@@ -57,6 +57,7 @@ const FilterSetSaveModal = ({ content, page, title, close, noRights }) => {
 
   return (
     <Modal
+      data-test="filter-set-save-modal"
       title={title}
       visible
       onCancel={close}
