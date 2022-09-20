@@ -3040,7 +3040,7 @@ class Ruleset(models.Model, Transformable):
                 action_type__in=actions_type,
                 user_action_objects__action_key='ruleset',
                 user_action_objects__object_id=self.pk
-            )
+            ).order_by('-date')
         return qs, user_has_all_ua
 
     @staticmethod
