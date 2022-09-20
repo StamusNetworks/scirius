@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Dropdown, Menu, Modal, Spin, Row, Col } from 'antd';
+import { Dropdown, Menu, Modal, Spin, Row, Col, message } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import { WidthProvider, Responsive } from 'react-grid-layout';
 import store from 'store';
@@ -46,6 +46,7 @@ import Filters from 'ui/components/Filters';
 import globalSelectors from 'ui/containers/App/selectors';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
+import downloadData from 'ui/helpers/downloadData';
 import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
 import { actionsButtons, loadActions, createAction, closeAction } from '../../helpers/common';
@@ -473,8 +474,11 @@ export class HuntDashboard extends React.Component {
     const url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${block.i}&${filterParams}&page_size=30${this.qFilter}`;
     const menu = (
       <Menu>
-        <Menu.Item key="menu" onClick={() => this.loadMore(block, url)} data-toggle="modal">
+        <Menu.Item key="load-more" onClick={() => this.loadMore(block, url)} data-toggle="modal">
           Load more results
+        </Menu.Item>
+        <Menu.Item key="download-data" onClick={() => this.download(url, block.title)} data-toggle="modal">
+          Download
         </Menu.Item>
       </Menu>
     );
@@ -491,7 +495,7 @@ export class HuntDashboard extends React.Component {
             <div>{block.title}</div>
             <div>
               {block.data === null && <Spin size="small" />}
-              {block.data !== null && block.data.length === 5 && (
+              {block.data !== null && block.data.length > 0 && (
                 <Dropdown overlay={menu} trigger={['click']}>
                   <a className="ant-dropdown-link" style={{ color: COLOR_BRAND_BLUE }} onClick={e => e.preventDefault()}>
                     <MenuOutlined />
@@ -700,6 +704,14 @@ export class HuntDashboard extends React.Component {
       }
 
       this.setState({ moreModal: item, moreResults: json.data });
+    });
+  };
+
+  download = (url, fileName) => {
+    const name = fileName.toLowerCase();
+    message.success(`Downloading ${name}`);
+    axios.get(url).then(json => {
+      downloadData.text(json.data.map(o => o.key).join('\n'), name);
     });
   };
 
