@@ -18,3 +18,4 @@ export const SCIRIUS_CONTEXT = 'rest/rules/scirius_context/';
 export const HUNT_DOC = '/static/doc/hunt.html';
 export const HUNT_FILTER_SETS = 'rest/rules/hunt_filter_sets/';
 export const FILESTORE_PATH = 'rest/rules/filestore/';
+export const FILESTORE_PCAP = 'rest/rules/filestore_pcap/';

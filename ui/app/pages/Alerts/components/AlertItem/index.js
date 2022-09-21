@@ -4,13 +4,15 @@ import { Badge, Empty, Spin, Tabs } from 'antd';
 import axios from 'axios';
 import ReactJson from 'react-json-view';
 
-import UICard from 'ui/components/UIElements/UICard';
 import * as config from 'config/Api';
 import { dashboard } from 'config/Dashboard';
 import { buildFilterParams } from 'ui/buildFilterParams';
+import UICard from 'ui/components/UIElements/UICard';
 import EventField from 'ui/components/EventField';
 import ErrorHandler from 'ui/components/Error';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
+import PCAPFile from 'ui/components/PCAPFile';
+
 import { DlHorizontal, Numbers, Pre } from './styles';
 import AlertRelatedData from '../../../../components/AlertRelatedData';
 export default class AlertItem extends React.Component {
@@ -642,7 +644,29 @@ export default class AlertItem extends React.Component {
             </UICard>
           )}
         </Tabs.TabPane>
-
+        {showTabs && events && (
+          <React.Fragment key="json-related">
+            {Object.keys(events)
+              .sort()
+              .map(key => (
+                <Tabs.TabPane
+                  key={`events-${key}`}
+                  tab={
+                    <Numbers>
+                      <span>{`Related ${key}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''}`}</span>
+                      <Badge
+                        count={Object.keys(events[key]).length || <span className="ant-badge-count">0</span>}
+                        overflowCount={99999}
+                        style={{ background: '#5b595c' }}
+                      />
+                    </Numbers>
+                  }
+                >
+                  <AlertRelatedData type={key} data={events[key]} />
+                </Tabs.TabPane>
+              ))}
+          </React.Fragment>
+        )}
         {showTabs && (
           <Tabs.TabPane key="json-alert" tab="JSON View">
             <ReactJson
@@ -678,30 +702,12 @@ export default class AlertItem extends React.Component {
             {this.state.fileInfo && !this.state.fileInfoLoading && this.renderFiles()}
           </Tabs.TabPane>
         )}
-        {!events && <Tabs.TabPane key="events" tab={<Spin size="small" />} />}
-        {showTabs && events && (
-          <React.Fragment key="json-related">
-            {Object.keys(events)
-              .sort()
-              .map(key => (
-                <Tabs.TabPane
-                  key={`events-${key}`}
-                  tab={
-                    <Numbers>
-                      <span>{`Related ${key}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''}`}</span>
-                      <Badge
-                        count={Object.keys(events[key]).length || <span className="ant-badge-count">0</span>}
-                        overflowCount={99999}
-                        style={{ background: '#5b595c' }}
-                      />
-                    </Numbers>
-                  }
-                >
-                  <AlertRelatedData type={key} data={events[key]} />
-                </Tabs.TabPane>
-              ))}
-          </React.Fragment>
+        {showTabs && (
+          <Tabs.TabPane key="json-pcap" tab="PCAP File">
+            <PCAPFile alertData={this.props.data} />
+          </Tabs.TabPane>
         )}
+        {!events && <Tabs.TabPane key="events" tab={<Spin size="small" />} />}
         {showTabs && JSON.stringify(this.state.files) !== '{}' && (
           <Tabs.TabPane key="json-files" tab="Files">
             <div className="files-warning">
