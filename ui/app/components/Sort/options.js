@@ -32,7 +32,7 @@ const options = [
     title: 'Created',
     isNumeric: true,
     defaultAsc: false,
-    page: 'SIGNATURES',
+    page: 'RULES_LIST',
   },
   {
     icon: <AlertOutlined />,
@@ -40,7 +40,7 @@ const options = [
     title: 'Alerts',
     isNumeric: true,
     defaultAsc: false,
-    page: 'SIGNATURES',
+    page: 'RULES_LIST',
   },
   {
     icon: <MessageOutlined />,
@@ -48,7 +48,7 @@ const options = [
     title: 'Message',
     isNumeric: false,
     defaultAsc: true,
-    page: 'SIGNATURES',
+    page: 'RULES_LIST',
   },
   {
     icon: <CalendarOutlined />,
@@ -56,7 +56,7 @@ const options = [
     title: 'Updated',
     isNumeric: true,
     defaultAsc: false,
-    page: 'SIGNATURES',
+    page: 'RULES_LIST',
   },
 ];
 

@@ -277,7 +277,7 @@ export class SignaturesPage extends React.Component {
         {this.state.net_error !== undefined && <div className="alert alert-danger">Problem with backend: {this.state.net_error.message}</div>}
         <ErrorHandler>
           <Filters
-            page="SIGNATURES"
+            page="RULES_LIST"
             section={sections.GLOBAL}
             queryTypes={['filter', 'rest']}
             sortValues={{ option: this.state.rulesList.sort.id, direction: this.state.rulesList.sort.asc ? 'asc' : 'desc' }}
