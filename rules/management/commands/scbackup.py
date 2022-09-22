@@ -29,13 +29,13 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '-n', '--no-history',
+            '-a', '--all-history',
             default=False,
             action='store_true',
-            dest='no_history',
+            dest='all_history',
             help='Backup with all git history'
         )
 
     def handle(self, *_, **options):
-        backup = SCBackup(no_history=options['no_history'])
+        backup = SCBackup(all_history=options['all_history'])
         backup.run()

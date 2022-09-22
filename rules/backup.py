@@ -87,8 +87,8 @@ class SCOperation(object):
 
 
 class SCBackup(SCOperation):
-    def __init__(self, no_history=False):
-        self.no_history = no_history
+    def __init__(self, all_history=False):
+        self.no_history = not all_history
         self.dbcommands = DBBackupCommands()
         self.database = settings.DATABASES['default']
 
