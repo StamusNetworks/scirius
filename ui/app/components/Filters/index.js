@@ -165,7 +165,7 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
   const filterSubCategory = ((filterCategory && filterCategory.filterValues) || []).find(fv => selectedItems.find(si => fv.id === si.id));
 
   useEffect(() => {
-    if (filterType === 'select' && selectedItems.length > 0) {
+    if ((filterType === 'select' || (filterType === 'complex-select' && !filterCategories)) && selectedItems.length > 0) {
       filterAdded(field, selectedItems[1], false);
     }
   }, [selectedItems]);
@@ -307,7 +307,7 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
                 <FilterError>{valid}</FilterError>
               </div>
             )}
-            {filterType === 'complex-select' && (
+            {filterType === 'complex-select' && filterCategory && (
               <Select
                 style={{ width: 200 }}
                 showSearch
