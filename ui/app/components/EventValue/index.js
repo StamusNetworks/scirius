@@ -140,8 +140,8 @@ const EventValue = props => {
               <ZoomInOutlined
                 onClick={() =>
                   props.addFilter(sections.GLOBAL, {
-                    id: props.field,
-                    value: props.value,
+                    id: props.field || '',
+                    value: props.value || '',
                     label: `${props.field}: ${props.format ? props.format(props.value) : props.value}`,
                     fullString: true,
                     negated: false,
