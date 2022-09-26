@@ -11,7 +11,7 @@ import { dashboard } from 'config/Dashboard';
 import { compose } from 'redux';
 import FilterToggleModal from 'ui/FilterToggleModal';
 import ErrorHandler from 'ui/components/Error';
-import FilterSetSave from 'ui/components/FilterSetSaveModal';
+import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
 import { loadFilterSets } from 'ui/components/FilterSets/store';
 import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag } from 'ui/containers/HuntApp/stores/global';
 import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';

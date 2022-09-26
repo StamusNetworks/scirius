@@ -16,7 +16,7 @@ import * as huntGlobalStore from 'ui/containers/HuntApp/stores/global';
 import FilterList from 'ui/components/FilterList/index';
 import { sections } from 'ui/constants';
 import ErrorHandler from 'ui/components/Error';
-import FilterSetSave from 'ui/components/FilterSetSaveModal';
+import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
 import UISwitch from 'ui/components/UIElements/UISwitch';
 import AdditionalFilters from 'ui/components/AdditionalFilters';
 import { COLOR_ERROR } from 'ui/constants/colors';
@@ -421,7 +421,7 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
         )}
       </FilterContainer>
       {saveFiltersModal && (
-        <FilterSetSave
+        <FilterSetSaveModal
           title="Create new Filter Set"
           close={() => {
             dispatch(ruleSetsActions.saveFiltersModal(false));
