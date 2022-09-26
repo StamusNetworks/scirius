@@ -104,6 +104,15 @@ class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelFor
                                          label='Elasticsearch password',
                                          help_text='Elasticsearch password for Scirius',
                                          widget=forms.PasswordInput(render_value=True))
+    custom_login_banner = forms.CharField(
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                'rows': 3,
+                'style': 'resize: none;',
+            }
+        )
+    )
 
     class Meta:
         model = SystemSettings

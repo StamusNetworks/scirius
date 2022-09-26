@@ -479,6 +479,16 @@ div#highlight_info {
     text-align: center;
 }
 
+.custom_banner {
+    text-align: center;
+    grid-row: 1/2;
+    grid-column: 2/3;
+}
+
+.custom_banner h2 {
+  color: white;
+}
+
 .login__button-box {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

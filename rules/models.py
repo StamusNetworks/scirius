@@ -789,6 +789,7 @@ class SystemSettings(models.Model):
     custom_cookie_age = models.FloatField('Age of session cookies', default=360)
     elasticsearch_user = models.CharField('Elasticsearch username', max_length=4096, blank=True, default='')
     elasticsearch_pass = models.CharField('Elasticsearch password', max_length=4096, blank=True, default='')
+    custom_login_banner = models.TextField('Add your own banner on login page', blank=True, default='')
 
     def get_proxy_params(self):
         if self.use_http_proxy:
