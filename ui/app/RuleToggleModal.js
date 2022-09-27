@@ -271,11 +271,11 @@ export default class RuleToggleModal extends React.Component {
         onCancel={this.close}
         footer={
           <React.Fragment>
-            <Button className="btn-cancel" onClick={this.close}>
+            <Button className="btn-cancel" onClick={this.close} data-test="policy-actions-cancel">
               Cancel
             </Button>
             {!this.state.noaction && (
-              <Button type="primary" onClick={this.submit} disabled={this.state.submitting}>
+              <Button type="primary" onClick={this.submit} disabled={this.state.submitting} data-test="policy-actions-submit">
                 Submit
               </Button>
             )}

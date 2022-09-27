@@ -45,6 +45,7 @@ const ActionsButtons = ({ supportedActions, filterParams, filters }) => {
         result.push(
           <Menu.Item
             key={action[0]}
+            data-test={`policy-actions-${action[1].toLowerCase().replaceAll(' ', '-')}`}
             onClick={() => {
               setVisible(true);
               setType(action[0]);
@@ -67,7 +68,7 @@ const ActionsButtons = ({ supportedActions, filterParams, filters }) => {
               {actions.length === 0 ? (
                 <span>Policy Actions</span>
               ) : (
-                <a href="#" style={{ display: 'grid', gridTemplateColumns: '1fr min-content', alignItems: 'center' }}>
+                <a href="#" style={{ display: 'grid', gridTemplateColumns: '1fr min-content', alignItems: 'center' }} data-test="policy-actions">
                   Policy Actions <DownOutlined />
                 </a>
               )}

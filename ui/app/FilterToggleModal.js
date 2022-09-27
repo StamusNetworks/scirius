@@ -129,10 +129,12 @@ export default class FilterToggleModal extends React.Component {
         onCancel={this.close}
         footer={
           <React.Fragment>
-            <Button className="btn-cancel" onClick={this.close}>
+            <Button className="btn-cancel" onClick={this.close} data-test="policies-cancel">
               Cancel
             </Button>
-            <Button onClick={this.submit}>Submit</Button>
+            <Button onClick={this.submit} data-test="policies-submit">
+              Submit
+            </Button>
           </React.Fragment>
         }
       >
@@ -153,6 +155,7 @@ export default class FilterToggleModal extends React.Component {
                       onChange={this.handleChange}
                       onKeyPress={e => this.onFieldKeyPress(e)}
                       style={{ width: '100%' }}
+                      data-test="new-index"
                     />
                   </Form.Item>
                 </Col>

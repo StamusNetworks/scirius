@@ -155,6 +155,7 @@ class FilterEditKebab extends React.Component {
           {this.props.data.index !== 0 && (
             <Menu.Item
               key="1"
+              data-test="send-action-to-top"
               onClick={() => {
                 this.displayToggle('movetop');
               }}
@@ -164,6 +165,7 @@ class FilterEditKebab extends React.Component {
           )}
           <Menu.Item
             key="2"
+            data-test="move-action"
             onClick={() => {
               this.displayToggle('move');
             }}
@@ -172,6 +174,7 @@ class FilterEditKebab extends React.Component {
           </Menu.Item>
           <Menu.Item
             key="3"
+            data-test="send-action-to-bottom"
             onClick={() => {
               this.displayToggle('movebottom');
             }}
@@ -180,6 +183,7 @@ class FilterEditKebab extends React.Component {
           </Menu.Item>
           <Menu.Item
             key="4"
+            data-test="delete-action"
             onClick={() => {
               this.displayToggle('delete');
             }}
@@ -191,6 +195,7 @@ class FilterEditKebab extends React.Component {
 
       <Menu.Item
         key="5"
+        data-test="convert-action-to-filters"
         onClick={() => {
           this.convertActionToFilters();
         }}
@@ -200,6 +205,7 @@ class FilterEditKebab extends React.Component {
       {this.props.user.isActive && this.props.user.permissions.includes('rules.events_edit') && (
         <Menu.Item
           key="6"
+          data-test="save-action-as-filter-set"
           onClick={() => {
             this.saveActionToFilterSet();
           }}
