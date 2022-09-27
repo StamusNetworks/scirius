@@ -35,7 +35,7 @@ from rules.rest_processing import RuleProcessingFilterViewSet
 from rules.es_data import ESData
 from rules.es_query import build_es_url, ESPaginator
 
-from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats
+from rules.es_graphs import ESStats, ESRulesStats, ESSidByHosts, ESFieldStats, ESShardStats
 from rules.es_graphs import ESTimeline, ESMetricsTimeline, ESHealth, ESRulesPerCategory, ESAlertsCount, ESAlertsTrend, ESTimeRangeAllAlerts, ESFlowTimeline, \
     ESIPFlowTimeline
 from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts, ESEventsTail, ESSuriLogTail, ESPoststats, ESEventsTimeline
@@ -2383,6 +2383,15 @@ class ESStatsViewSet(ESBaseViewSet):
         return Response(ESStats(request).get())
 
 
+class ESShardStatsViewSet(ESBaseViewSet):
+    REQUIRED_GROUPS = {
+        'READ': ('rules.configuration_view',),
+    }
+
+    def _get(self, request, format=None):
+        return Response(ESShardStats(request).get())
+
+
 class ESCheckVersionViewSet(APIView):
     """
     """
@@ -3210,6 +3219,7 @@ def get_custom_urls():
     urls.append(re_path(r'rules/es/logstash_eve/$', ESLogstashEveViewSet.as_view(), name='es_logstash_eve'))
     urls.append(re_path(r'rules/es/health/$', ESHealthViewSet.as_view(), name='es_health'))
     urls.append(re_path(r'rules/es/stats/$', ESStatsViewSet.as_view(), name='es_stats'))
+    urls.append(re_path(r'rules/es/shard_stats/$', ESShardStatsViewSet.as_view(), name='es_shard_stats'))
     urls.append(re_path(r'rules/es/check_version/$', ESCheckVersionViewSet.as_view(), name='es_check_version'))
     urls.append(re_path(r'rules/es/rules_per_category/$', ESRulesPerCategoryViewSet.as_view(), name='es_rules_per_category'))
     urls.append(re_path(r'rules/es/alerts_count/$', ESAlertsCountViewSet.as_view(), name='es_alerts_count'))

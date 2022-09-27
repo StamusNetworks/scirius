@@ -20,6 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import math
+import json
 
 from django.conf import settings
 
@@ -667,9 +668,33 @@ class ESHealth(ESQuery):
 class ESStats(ESQuery):
     def get(self):
         stats = self.es.cluster.stats()
+        stats['read_only'] = False
+
         if self.is_read_only():
             stats['status'] = 'red'
+            stats['read_only'] = True
         return stats
+
+
+class ESShardStats(ESQuery):
+    def get(self):
+        res = {'explains': []}
+        shards = self.es.cat.shards(format='json', s='state', v=True)
+        res['shards'] = self.es.cat.shards(s='state', v=True)
+
+        for row in shards:
+            if row['state'] != 'STARTED':
+                body = {
+                    'index': row['index'],
+                    'shard': row['shard'],
+                    'primary': row['prirep'] == 'p'
+                }
+                params = {'filter_path': 'index,node_allocation_decisions.node_name,node_allocation_decisions.deciders.*'}
+                content = self.es.cluster.allocation_explain(body=body, params=params)
+                res['explains'].append(json.dumps(content))
+        res['explains'] = '\n'.join(res['explains'])
+
+        return res
 
 
 class ESVersion(ESQuery):

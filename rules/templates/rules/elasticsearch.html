@@ -34,6 +34,9 @@ $(document).ready(function(){
                                data-toggle="tab">Logstash insertion speed</a>
                         </li>
                     {% endif %}
+                    <li role="presentation">
+                        <a href="#errors" aria-controls="errors" role="tab" data-toggle="tab">Shards</a>
+                    </li>
                 </ul>
                 <div class="tab-content">
                     <div role="tabpanel" class="tab-pane fade in active" id="cluster">
@@ -189,6 +192,27 @@ $(document).ready(function(){
                             <!-- row -->
                         </div>
                     {% endif %}
+                    <div role="tabpanel" class="tab-pane fade in" id="errors">
+                        <div id="read_only" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <h3 class="text-danger">ES is in Read Only mode</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h2>Shards</h2>
+                                <pre id="es_shards">
+                                    Fetching data
+                                </pre>
+                                <h2>Explain Unassigned Shards</h2>
+                                <pre id="es_explains" style="white-space: pre-wrap;">
+                                    Fetching data
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <script>
@@ -230,6 +254,11 @@ function get_es_stats() {
                     $("#es_status").addClass("label-warning");
                 } else if (data['status'] == 'red') {
                     $("#es_status").addClass("label-danger");
+                }
+                if (data['read_only']) {
+                    $("#read_only").show();
+                } else {
+                    $("#read_only").hide();
                 }
                 var c3ChartDefaults = $().c3ChartDefaults();
 
@@ -283,7 +312,35 @@ function get_es_stats() {
         timeout: 15000,
     });
 }
-$( 'document' ).ready(get_es_stats());
+
+function get_es_shard_stats() {
+    $.ajax({
+        type:"GET",
+        url: "{% url 'es_shard_stats' %}",
+        success: function(data) {
+            if (data) {
+                if (data.shards.length > 0) {
+                    $("#es_shards").text(data.shards);
+                } else {
+                    $("#es_shards").text('No data');
+                }
+
+                if (data.explains.length > 0) {
+                    $("#es_explains").text(data.explains);
+                } else {
+                    $("#es_explains").text('No data');
+                }
+            }
+        },
+        complete: function() {
+            setTimeout(get_es_shard_stats, 120000);
+        }
+    });
+}
+$( 'document' ).ready(function() {
+    get_es_stats();
+    get_es_shard_stats();
+});
 
 
 function set_critical_value(data, selector) {
