@@ -116,7 +116,43 @@ export class PoliciesPage extends React.Component {
     this.setState({ expand });
   }
 
-  getDescriptionAddinfo(item) {
+  getRowRuleSets(item) {
+    let rulesets = [];
+    if (Object.keys(this.state.rulesets).length > 0) {
+      rulesets = item.rulesets.map(item2 => <DescriptionItem key={Math.random()}>{this.state.rulesets[item2].name}</DescriptionItem>);
+    }
+    return rulesets;
+  }
+
+  getRowDescription(item) {
+    let description;
+    if (item.action !== 'suppress') {
+      // first handle the item.action `threshold` & `threat`
+      if (item.action === 'threshold') {
+        description = (
+          <DescriptionItem key={Math.random()}>
+            <strong>track</strong>: {item.options.track}
+          </DescriptionItem>
+        );
+      } else if (item.action === 'threat') {
+        description = (
+          <DescriptionItem key={Math.random()}>
+            <strong>threat</strong>: {item.options.threat}
+          </DescriptionItem>
+        );
+      } else {
+        // for all the other item.action types
+        description = Object.keys(item.options).map(option => (
+          <DescriptionItem key={Math.random()}>
+            <strong>{option}</strong>: {item.options[option]}
+          </DescriptionItem>
+        ));
+      }
+    }
+    return description;
+  }
+
+  getRowFilters(item) {
     const filters = [];
     for (let i = 0; i < item.filter_defs.length; i += 1) {
       let info = (
@@ -135,24 +171,15 @@ export class PoliciesPage extends React.Component {
       }
       filters.push(info);
     }
+    return filters;
+  }
 
-    let rulesets = [];
-    if (Object.keys(this.state.rulesets).length > 0) {
-      rulesets = item.rulesets.map(item2 => <DescriptionItem key={Math.random()}>{this.state.rulesets[item2].name}</DescriptionItem>);
-    }
-
+  getRowExpandedDescription(item) {
     // description
-    let description;
     let expandedDescription = [];
     if (item.action !== 'suppress') {
       // first handle the item.action `threshold` & `threat`
       if (item.action === 'threshold') {
-        description = (
-          <DescriptionItem key={Math.random()}>
-            <strong>track</strong>: {item.options.track}
-          </DescriptionItem>
-        );
-
         expandedDescription = Object.keys(item.options).map(option => {
           if (option === 'all_tenants' || option === 'no_tenant' || option === 'tenants') return null;
           if (option === 'tenants_str' && this.props.multiTenancy) {
@@ -169,12 +196,6 @@ export class PoliciesPage extends React.Component {
           );
         });
       } else if (item.action === 'threat') {
-        description = (
-          <DescriptionItem key={Math.random()}>
-            <strong>threat</strong>: {item.options.threat}
-          </DescriptionItem>
-        );
-
         expandedDescription = Object.keys(item.options).map(option => {
           if (option === 'all_tenants' || option === 'no_tenant' || option === 'tenants') return null;
           if (option === 'tenants_str' && this.props.multiTenancy) {
@@ -192,68 +213,44 @@ export class PoliciesPage extends React.Component {
         });
       } else {
         // for all the other item.action types
-        description = Object.keys(item.options).map(option => (
-          <DescriptionItem key={Math.random()}>
-            <strong>{option}</strong>: {item.options[option]}
-          </DescriptionItem>
-        ));
-        expandedDescription = description;
+        expandedDescription = this.getRowDescription(item);
       }
     }
 
-    return { description, filters, rulesets, expandedDescription };
+    return expandedDescription;
   }
 
   columns = [
     {
       title: 'Action',
-      dataIndex: 'action',
+      dataIndex: ['action'],
     },
     {
       title: 'Parameters',
-      dataIndex: 'parameters',
+      render: (value, item) => this.getRowDescription(item),
     },
     {
       title: 'Filters',
-      dataIndex: 'filters',
+      render: (value, item) => this.getRowFilters(item),
     },
     {
       title: 'Rulesets',
-      dataIndex: 'rulesets',
+      render: (value, item) => this.getRowRuleSets(item),
     },
     {
       title: 'Index',
-      dataIndex: 'index',
+      dataIndex: ['index'],
     },
     {
       title: 'Ctrl',
       dataIndex: 'ctrl',
+      render: (value, item) => (
+        <FilterEditKebab key={`${item.pk}-kebab`} data={item} last_index={this.state.count} needUpdate={this.needUpdate} setExpand={this.setExpand} />
+      ),
     },
   ];
 
   render() {
-    const dataSource = this.state.data.map(item => {
-      const { description, filters, rulesets, expandedDescription } = this.getDescriptionAddinfo(item);
-      return {
-        key: item.pk,
-        action: item.action,
-        parameters: description,
-        filters,
-        rulesets,
-        index: item.index,
-        ctrl: (
-          <FilterEditKebab
-            key={`${item.pk}-kebab`}
-            data={item}
-            last_index={this.state.count}
-            needUpdate={this.needUpdate}
-            setExpand={this.setExpand}
-          />
-        ),
-        expandedDescription,
-      };
-    });
-
     return (
       <div style={{ marginTop: 15 }}>
         <Helmet>
@@ -261,16 +258,18 @@ export class PoliciesPage extends React.Component {
         </Helmet>
 
         <Table
+          rowKey={item => this.state.data?.findIndex(d => d.pk === item.pk)}
+          style={{ marginTop: '10px', marginBottom: '10px' }}
           size="small"
           loading={this.state.loading}
-          dataSource={dataSource}
+          dataSource={this.state.data}
           columns={this.columns}
           expandable={{
             columnWidth: 5,
             expandRowByClick: this.state.expand,
             expandedRowRender: item => (
               <ActionItem
-                expandedDescription={item.expandedDescription}
+                expandedDescription={this.getRowExpandedDescription(item)}
                 filters={item.filters}
                 expandedRulesets={item.rulesets}
                 key={item.pk}
