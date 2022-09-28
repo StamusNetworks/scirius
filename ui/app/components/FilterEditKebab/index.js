@@ -13,8 +13,7 @@ import FilterToggleModal from 'ui/FilterToggleModal';
 import ErrorHandler from 'ui/components/Error';
 import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
 import { loadFilterSets } from 'ui/components/FilterSets/store';
-import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag } from 'ui/containers/HuntApp/stores/global';
-import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
+import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag, makeSelectUserData } from 'ui/containers/HuntApp/stores/global';
 
 class FilterEditKebab extends React.Component {
   constructor(props) {
@@ -272,6 +271,7 @@ FilterEditKebab.propTypes = {
 
 const mapStateToProps = createStructuredSelector({
   alertTag: makeSelectAlertTag(),
+  user: makeSelectUserData(),
 });
 
 const mapDispatchToProps = {
@@ -282,4 +282,4 @@ const mapDispatchToProps = {
 };
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
-export default compose(withConnect, withPermissions)(withRouter(FilterEditKebab));
+export default compose(withConnect)(withRouter(FilterEditKebab));
