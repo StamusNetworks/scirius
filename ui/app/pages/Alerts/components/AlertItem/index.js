@@ -83,6 +83,7 @@ export default class AlertItem extends React.Component {
           if ('Alert' in res.data) {
             for (let idx = 0; idx < Object.keys(res.data.Alert).length; idx += 1) {
               const item = res.data.Alert[idx];
+              item.key = idx;
 
               if (JSON.stringify(item) === JSON.stringify(this.props.data)) {
                 res.data.Alert.splice(idx, 1);
