@@ -627,19 +627,15 @@ export default class AlertItem extends React.Component {
               <pre style={{ maxHeight: '215px', overflowY: 'auto', whiteSpace: 'pre-wrap' }}>{data.payload_printable}</pre>
             </UICard>
           )}
-          {data.http && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridGap: '10px', paddingTop: '10px' }}>
-              {data.http.http_request_body_printable && (
-                <UICard title="HTTP request body">
-                  <pre style={{ maxHeight: '12pc' }}>{data.http.http_request_body_printable}</pre>
-                </UICard>
-              )}
-              {data.http.http_response_body_printable && (
-                <UICard title="HTTP response body">
-                  <pre style={{ maxHeight: '12pc' }}>{data.http.http_response_body_printable}</pre>
-                </UICard>
-              )}
-            </div>
+          {data.http && data.http.http_request_body_printable && (
+            <UICard title="HTTP request body">
+              <pre style={{ maxHeight: '12pc', overflowY: 'auto', whiteSpace: 'pre-wrap' }}>{data.http.http_request_body_printable}</pre>
+            </UICard>
+          )}
+          {data.http && data.http.http_response_body_printable && (
+            <UICard title="HTTP response body">
+              <pre style={{ maxHeight: '12pc', overflowY: 'auto', whiteSpace: 'pre-wrap' }}>{data.http.http_response_body_printable}</pre>
+            </UICard>
           )}
         </Tabs.TabPane>
 
