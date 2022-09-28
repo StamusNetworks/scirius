@@ -168,7 +168,7 @@ class AlertsPage extends React.Component {
   }
 
   getIconColor(key) {
-    if (key === 'informational') return '#675d5c';
+    if (key === 'informational') return '#7b1244';
     if (key === 'relevant') return '#ec7a08';
     return '#005792';
   }

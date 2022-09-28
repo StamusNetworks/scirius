@@ -340,10 +340,7 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
             <Space direction="vertical">
               <Space>
                 <UISwitch
-                  activeColor="#000"
-                  activeHandlerColor="#005792"
-                  activeBackgroundColor="#FFF"
-                  activeBorderColor="#005792"
+                  activeBackgroundColor="#7b1244"
                   size="small"
                   checkedChildren="ON"
                   unCheckedChildren="OFF"
