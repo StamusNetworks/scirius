@@ -394,7 +394,13 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
                   <path d="M0 0h24v24H0V0z" fill="none" />
                   <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
                 </svg>
-                <a href="#" onClick={() => dispatch(strGlobalActions.setFilterSets(true))}>
+                <a
+                  href="#"
+                  onClick={e => {
+                    e.preventDefault();
+                    dispatch(strGlobalActions.setFilterSets(true));
+                  }}
+                >
                   Load Filter Set
                 </a>
               </Space>
