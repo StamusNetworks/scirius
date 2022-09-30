@@ -16,13 +16,11 @@ export default class RuleEditKebab extends React.Component {
 
   displayToggle(action) {
     this.setState({ toggle: { show: true, action } });
-    this.props.setExpand(false);
   }
 
   hideToggle() {
     // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({ toggle: { show: false, action: this.state.toggle.action } });
-    this.props.setExpand(true);
   }
 
   menu = (
@@ -89,5 +87,4 @@ RuleEditKebab.propTypes = {
   config: PropTypes.any,
   rulesets: PropTypes.any,
   refresh_callback: PropTypes.any,
-  setExpand: PropTypes.func,
 };

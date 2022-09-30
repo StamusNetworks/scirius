@@ -149,6 +149,9 @@ export default class RuleToggleModal extends React.Component {
     this.setState({ submitting: true });
 
     if (['enable', 'disable'].indexOf(this.props.action) !== -1) {
+      if (this.state.rulesets.length === 0) {
+        this.setState({ errors: { rulesets: ['Please select a rule set'] } });
+      }
       this.state.rulesets.map(ruleset => {
         const data = { ruleset };
         if (this.state.comment.length > 0) {
@@ -174,6 +177,7 @@ export default class RuleToggleModal extends React.Component {
           });
         return true;
       });
+      this.setState({ submitting: false });
     } else if (supportedActions.concat(['suppress']).indexOf(this.props.action) !== -1) {
       // {"filter_defs": [{"key": "src_ip", "value": "192.168.0.1", "operator": "equal"}], "action": "suppress", "rulesets": [1]}
 

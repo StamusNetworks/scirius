@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Empty, Spin, Table } from 'antd';
@@ -39,8 +39,6 @@ export const SigContent = styled.div`
 `;
 
 const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
-  const [expand, setExpand] = useState(true);
-
   const columns = [
     {
       title: '',
@@ -91,7 +89,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
     {
       title: 'Ctrl',
       dataIndex: 'ctrl',
-      render: (text, row) => <RuleEditKebab key={`kebab-${row.sid}`} config={{ rule: row.rule }} rulesets={rulesets} setExpand={setExpand} />,
+      render: (text, row) => <RuleEditKebab key={`kebab-${row.sid}`} config={{ rule: row.rule }} rulesets={rulesets} />,
     },
   ];
 
@@ -139,7 +137,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
       columns={columns}
       expandable={{
         columnWidth: 5,
-        expandRowByClick: expand,
+        expandRowByClick: true,
         expandedRowRender: alert => alert.rule.timeline && renderContents(alert.rule),
         rowExpandable: () => true,
       }}
