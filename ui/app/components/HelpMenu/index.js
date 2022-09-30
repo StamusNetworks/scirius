@@ -143,7 +143,7 @@ const HelpMenu = ({ isEnterpriseEdition }) => {
         onCancel={() => setVisible(false)}
         footer={
           <div className="about-footer">
-            <img src="/static/bundles/media/stamus_logo.4bca432d.png" alt="SCS Logo" />
+            <img src="/static/rules/stamus_logo.png" alt="SCS Logo" />
           </div>
         }
       >
