@@ -109,9 +109,9 @@ module.exports = require('./webpack.base.babel')({
     }),
 
     new WebpackPwaManifest({
-      name: 'Scirius Threat Radar',
+      name: 'Stamus Threat Radar',
       short_name: 'STR',
-      description: 'Scirius Threat Radar',
+      description: 'Stamus Threat Radar',
       background_color: '#fafafa',
       theme_color: '#b1624d',
       inject: true,

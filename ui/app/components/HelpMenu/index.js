@@ -114,6 +114,15 @@ const HelpMenu = ({ isEnterpriseEdition }) => {
   const { data: context, request: contextRequest } = useSelector(selectors.makeSelectContext());
   const { loading: contextLoading } = contextRequest;
 
+  let labelSCS = '';
+  let version = 0;
+  if (!contextLoading && context && context.version) {
+    if (isEnterpriseEdition) {
+      [labelSCS] = /(\w+ ){2}(\w+)/.exec(context.version);
+    }
+    version = /\d+\.\d+\.\d+/.exec(context.version);
+  }
+
   const { data, request: sourceRequest } = useSelector(selectors.makeSelectSource());
   const [source] = data;
   const { loading: sourceLoading } = sourceRequest;
@@ -145,14 +154,15 @@ const HelpMenu = ({ isEnterpriseEdition }) => {
           ) : (
             <div>
               <strong>Version </strong>
-              <span>Scirius CE v{contextLoading ? loadingIndicator : /\d+\.\d+\.\d+/.exec(context.version)}</span>
+              <span>Scirius CE v{contextLoading ? loadingIndicator : version}</span>
             </div>
           )}
         </VersionTitle>
         {isEnterpriseEdition && (
           <VersionsList>
             <Version>
-              <strong>Scirius Security Platform:</strong> {contextLoading ? loadingIndicator : context.version}
+              <strong>{contextLoading ? loadingIndicator : `${labelSCS}:`}</strong>
+              {` v${version}`}
             </Version>
             <Version>
               <strong>Stamus Threat Intelligence:</strong>
@@ -167,7 +177,7 @@ const HelpMenu = ({ isEnterpriseEdition }) => {
         block
         type="link"
         icon={<ReadOutlined />}
-        onClick={() => window.open(`${isEnterpriseEdition ? '/static/doc/stamus-security-platform/security-posture.html' : '/static/doc/hunt.html'}`)}
+        onClick={() => window.open(`${isEnterpriseEdition ? '/static/doc/stamus-central-server/security-posture.html' : '/static/doc/hunt.html'}`)}
       >
         User manual
       </Item>
