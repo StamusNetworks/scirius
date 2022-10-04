@@ -24,6 +24,7 @@ from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.mixins import UpdateModelMixin, RetrieveModelMixin
 from rules.rest_permissions import NoPermission
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import get_object_or_404
 
 from django_filters import rest_framework as filters
 from elasticsearch.exceptions import ConnectionError
@@ -512,14 +513,18 @@ class RuleHitsOrderingFilter(OrderingFilter):
         hits_by_sid = dict(hits_order)
 
         min_hits = self.get_query_param(request, 'hits_min')
-        if min_hits is not None:
-            queryset = [x for x in queryset if hits_by_sid.get(x.sid, 0) >= min_hits]
-
         max_hits = self.get_query_param(request, 'hits_max')
-        if max_hits is not None:
-            queryset = [x for x in queryset if hits_by_sid.get(x.sid, 0) <= max_hits]
+        sids = list(queryset.values_list('sid', flat=True))
 
-        return queryset
+        if min_hits is not None or max_hits is not None:
+            if min_hits is not None:
+                queryset = [sid for sid in sids if hits_by_sid.get(sid, 0) >= min_hits]
+
+            if max_hits is not None:
+                queryset = [sid for sid in sids if hits_by_sid.get(sid, 0) <= max_hits]
+            return queryset
+
+        return list(queryset.values_list('sid', flat=True))
 
     def filter_queryset(self, request, queryset, view):
         ordering = self.get_ordering(request, queryset, view)
@@ -528,7 +533,7 @@ class RuleHitsOrderingFilter(OrderingFilter):
             if ordering[0] not in ('hits', '-hits'):
                 raise ParseError('hits ordering can only be the first ordering term')
 
-            hits_order = ordering[0]
+            hits_ordering = ordering[0]
             ordering = ordering[1:]
 
             if ordering:
@@ -536,25 +541,21 @@ class RuleHitsOrderingFilter(OrderingFilter):
                 queryset = queryset.order_by(*ordering)
 
             # Sorting
-            order = 'asc' if hits_order == 'hits' else 'desc'
+            order = 'asc' if hits_ordering == 'hits' else 'desc'
             hits_order = self._get_hits_order(request, order)
+            rules = self._filter_min_max(request, queryset, hits_order)
 
-            queryset = self._filter_min_max(request, queryset, hits_order)
+            sids = []
+            for sid, _ in hits_order:
+                if sid in rules:
+                    sids.append(sid)
+                    rules.remove(sid)
 
-            # Index rules by sid
-            rules = OrderedDict([(r.sid, r) for r in queryset])
-
-            queryset = []
-            for sid, count in hits_order:
-                try:
-                    queryset.append(rules.pop(sid))
-                except KeyError:
-                    pass
-
+            # We add rules with no hits
             if order == 'desc':
-                queryset += list(rules.values())
+                sids += rules
             else:
-                queryset = list(rules.values()) + queryset
+                sids = rules + sids
 
         else:
             if ordering:
@@ -564,9 +565,11 @@ class RuleHitsOrderingFilter(OrderingFilter):
             if self.get_query_param(request, 'hits_min') is not None \
                     or self.get_query_param(request, 'hits_max') is not None:
                 hits_order = self._get_hits_order(request, 'asc')
-                queryset = self._filter_min_max(request, queryset, hits_order)
+                return self._filter_min_max(request, queryset, hits_order)
 
-        return queryset
+            sids = list(queryset.values_list('sid', flat=True))
+
+        return sids
 
 
 class RuleViewSet(SciriusReadOnlyModelViewSet):
@@ -972,9 +975,32 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
                 })
         return data
 
+    def get_object(self):
+        sids = self.filter_queryset(self.get_queryset())
+        queryset = Rule.objects.filter(sid__in=sids)
+
+        # Perform the lookup filtering.
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+
+        assert lookup_url_kwarg in self.kwargs, (
+            'Expected view %s to be called with a URL keyword argument '
+            'named "%s". Fix your URL conf, or set the `.lookup_field` '
+            'attribute on the view correctly.' %
+            (self.__class__.__name__, lookup_url_kwarg)
+        )
+
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+        obj = get_object_or_404(queryset, **filter_kwargs)
+
+        # May raise a permission denied
+        self.check_object_permissions(self.request, obj)
+
+        return obj
+
     def list(self, request):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
+        sids = self.filter_queryset(self.get_queryset())
+        pks = self.paginate_queryset(sids)
+        page = [Rule.objects.get(pk=pk) for pk in pks]
         serializer = self.get_serializer(page, many=True)
         self._add_hits(request, serializer.data)
         return self.get_paginated_response(serializer.data)
