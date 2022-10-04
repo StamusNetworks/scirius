@@ -48,7 +48,7 @@ const Item = styled(Button)`
 
 const AboutModal = styled(Modal)`
   background-color: #292e34;
-  background-image: url(/static/bundles/media/bg-modal-about-pf.19515f0d.png);
+  background-image: url(/static/rules/about-modal-pf.png);
   background-position: right bottom;
   background-repeat: no-repeat;
   padding-bottom: 0px !important;
