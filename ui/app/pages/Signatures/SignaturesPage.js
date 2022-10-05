@@ -368,7 +368,6 @@ const mapStateToProps = createStructuredSelector({
   filtersWithAlert: makeSelectGlobalFilters(true),
   filterParams: makeSelectFilterParams(),
   rulesets: rulesSelectors.makeSelectRuleSets(),
-  rulesFilters: rulesSelectors.makeSelectFilterOptions(sections.GLOBAL),
   systemSettings: globalSelectors.makeSelectSystemSettings(),
 });
 
