@@ -280,6 +280,7 @@ export class SignaturesPage extends React.Component {
             page="RULES_LIST"
             section={sections.GLOBAL}
             queryTypes={['filter', 'rest', 'filter_host_id']}
+            filterTypes={['filter', 'rest']}
             sortValues={{ option: this.state.rulesList.sort.id, direction: this.state.rulesList.sort.asc ? 'asc' : 'desc' }}
             onSortChange={(option, direction) => {
               this.updateSignatureListState({

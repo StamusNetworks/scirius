@@ -75,7 +75,7 @@ const CascaderStyled = styled(Cascader)`
   }
 `;
 
-const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
+const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValues }) => {
   // Component setup
   useInjectReducer({ key: 'ruleSet', reducer: ruleSetReducer });
   useInjectSaga({ key: 'ruleSet', saga: ruleSetSaga });
@@ -86,7 +86,7 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
   const filters = useSelector(huntGlobalStore.makeSelectGlobalFilters());
   const historyFilters = useSelector(huntGlobalStore.makeSelectHistoryFilters());
   const alertTag = useSelector(huntGlobalStore.makeSelectAlertTag());
-  const filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(queryTypes));
+  const filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(filterTypes));
   const supportedActions = useSelector(ruleSetsSelectors.makeSelectSupportedActions());
   const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());
   const supportedActionsPermissions = user && user.data && user.data.permissions && user.data.permissions.includes('rules.ruleset_policy_edit');
@@ -448,6 +448,7 @@ Filter.propTypes = {
   page: PropTypes.oneOf(['RULES_LIST', 'DASHBOARDS', 'ALERTS_LIST', 'HISTORY', 'HOSTS_LIST']),
   section: PropTypes.string.isRequired,
   queryTypes: PropTypes.array.isRequired,
+  filterTypes: PropTypes.array.isRequired,
   onSortChange: PropTypes.func.isRequired,
   sortValues: PropTypes.shape({
     option: PropTypes.string,

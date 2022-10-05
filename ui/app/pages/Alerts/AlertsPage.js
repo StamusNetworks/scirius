@@ -239,7 +239,7 @@ class AlertsPage extends React.Component {
 
         {this.state.errors && <HuntRestError errors={this.state.errors} />}
         <ErrorHandler>
-          <Filters page="ALERTS_LIST" section={sections.GLOBAL} queryTypes={['filter', 'filter_host_id']} />
+          <Filters page="ALERTS_LIST" section={sections.GLOBAL} queryTypes={['filter', 'filter_host_id']} filterTypes={['filter']} />
         </ErrorHandler>
 
         {this.state.alerts && (
