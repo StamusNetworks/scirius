@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Spin, Table } from 'antd';
-import { ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
+import { Empty, Spin, Table } from 'antd';
+import { SafetyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import { sections } from 'ui/constants';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
 import SciriusChart from 'ui/components/SciriusChart';
-import EventValue from 'ui/components/EventValue';
+import EventValue, { Count } from 'ui/components/EventValue';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
@@ -18,12 +18,12 @@ export const SigContent = styled.div`
     display: block;
     padding: 10px;
     height: 100%;
-    font-size: 11px;
+    font-size: 14px;
     line-height: 1.66667;
     word-break: break-all;
     word-wrap: break-word;
     color: #747276;
-    background-color: #fafafa;
+    background-color: white;
     border: 1px solid #ccc;
     border-radius: 1px;
     margin-bottom: 0;
@@ -42,6 +42,10 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
   const [expand, setExpand] = useState(true);
 
   const columns = [
+    {
+      title: '',
+      render: () => <SafetyOutlined style={{ color: 'grey' }} />,
+    },
     {
       title: 'SID',
       dataIndex: 'sid',
@@ -98,7 +102,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
     created: rule.created,
     updated: rule.updated,
     category: rule.category.name,
-    alerts: !rule.hits && rule.hits !== 0 ? <Spin size="small" /> : rule.hits,
+    alerts: !rule.hits && rule.hits !== 0 ? <Spin size="small" /> : <Count>{rule.hits}</Count>,
     rule, // we need this to access the rule data in the `expandedRowRender` below
   }));
 
@@ -122,6 +126,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
         {rule.probes.map(probe => (
           <EventValue field="host" value={probe.probe} right_info={probe.hits} />
         ))}
+        {rule.probes.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
       </UICard>
     </div>
   );

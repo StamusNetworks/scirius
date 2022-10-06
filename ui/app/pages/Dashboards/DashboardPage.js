@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Dropdown, Menu, Modal, Spin, Row, Col, message } from 'antd';
+import { Dropdown, Empty, Menu, Modal, Spin, Row, Col, message } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import { WidthProvider, Responsive } from 'react-grid-layout';
 import store from 'store';
@@ -526,6 +526,7 @@ export class HuntDashboard extends React.Component {
               hasCopyShortcut
             />
           ))}
+        {block.data !== null && block.data.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
       </UICard>
     );
   };

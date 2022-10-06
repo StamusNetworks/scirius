@@ -37,10 +37,11 @@ const FilterError = styled.span`
 const FilterContainer = styled.div`
   display: grid;
   grid-gap: 10px;
-  grid-template-columns: 1fr repeat(3, 135px);
+  grid-template-columns: 1fr repeat(3, 150px);
 `;
 
 const ActionsSpace = styled(Space)`
+  width: 100%;
   .ant-space-item {
     height: 14px;
   }

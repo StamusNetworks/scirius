@@ -333,7 +333,7 @@ export default class RuleToggleModal extends React.Component {
               </React.Fragment>
             )}
             {this.props.children && this.props.children(this)}
-            <hr />
+
             <Form.Item style={{ marginBottom: '0' }}>
               <React.Fragment>
                 <strong>Ruleset{this.props.rulesets.length > 1 && 's'}:</strong>
@@ -363,7 +363,7 @@ export default class RuleToggleModal extends React.Component {
                 </RulesetMsg>
               </React.Fragment>
             </Form.Item>
-            <hr />
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center' }}>
               <strong>Optional comment</strong>
               <Input.TextArea value={this.state.comment} onChange={this.handleCommentChange} />

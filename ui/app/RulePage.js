@@ -19,7 +19,7 @@ import { SigContent } from './RuleInList';
 
 const Row = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 0.5fr));
   grid-gap: 10px;
   margin-bottom: 10px;
 `;
@@ -187,7 +187,7 @@ export default class RulePage extends React.Component {
               </RuleMsg>
 
               <div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr max-content', gridGap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr max-content', gridGap: '10px', marginBottom: '10px' }}>
                   {/* eslint-disable-next-line react/no-danger */}
                   <SigContent dangerouslySetInnerHTML={{ __html: this.state.rule.content }} />
 

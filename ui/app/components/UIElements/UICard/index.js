@@ -3,6 +3,8 @@ import { Card } from 'antd';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
+import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
+
 const CardStyled = styled(Card)`
   background-color: white;
   border-radius: 5px;
@@ -19,6 +21,9 @@ const CardStyled = styled(Card)`
   .ant-card-head-title,
   .ant-card-extra {
     padding: 7px 0;
+  }
+  .ant-card-head-title {
+    color: ${COLOR_BRAND_BLUE};
   }
 `;
 const UICard = ({ children, noPadding, ...props }) => (

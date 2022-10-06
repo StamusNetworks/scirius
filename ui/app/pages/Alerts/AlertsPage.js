@@ -183,20 +183,20 @@ class AlertsPage extends React.Component {
       ),
     },
     {
-      title: 'Source IP',
-      dataIndex: 'source_ip',
-    },
-    {
-      title: 'Destination IP',
-      dataIndex: 'destination_ip',
+      title: 'Timestamp',
+      dataIndex: 'timestamp',
     },
     {
       title: 'Signature',
       dataIndex: 'signature',
     },
     {
-      title: 'Timestamp',
-      dataIndex: 'timestamp',
+      title: 'Source IP',
+      dataIndex: 'source_ip',
+    },
+    {
+      title: 'Destination IP',
+      dataIndex: 'destination_ip',
     },
     {
       title: 'Proto',
@@ -220,14 +220,14 @@ class AlertsPage extends React.Component {
     const dataSource = this.state.alerts.map(rule => ({
       // eslint-disable-next-line no-underscore-dangle
       key: rule._id,
+      timestamp: moment(rule.timestamp).format('YYYY-MM-DD, hh:mm:ss a'),
+      signature: rule.alert.signature,
       source_ip: rule.src_ip,
       destination_ip: rule.dest_ip,
-      signature: rule.alert.signature,
-      timestamp: moment(rule.timestamp).format('YYYY-MM-DD, hh:mm:ss a'),
       proto: rule.app_proto,
       probe: rule.host,
       category: rule.alert.category,
-      tag: rule.alert.tag,
+      tag: rule.alert.tag || 'untagged',
       rule, // we need this to access the rule data in the `expandedRowRender` below
     }));
 

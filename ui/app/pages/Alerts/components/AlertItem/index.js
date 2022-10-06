@@ -1,19 +1,18 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Empty, Spin, Tabs } from 'antd';
+import { Badge, Empty, Spin, Tabs } from 'antd';
+import axios from 'axios';
+import ReactJson from 'react-json-view';
+
 import UICard from 'ui/components/UIElements/UICard';
 import * as config from 'config/Api';
 import { dashboard } from 'config/Dashboard';
 import { buildFilterParams } from 'ui/buildFilterParams';
-import axios from 'axios';
-import ReactJson from 'react-json-view';
 import EventField from 'ui/components/EventField';
 import ErrorHandler from 'ui/components/Error';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
-
-import { DlHorizontal } from './styles';
+import { DlHorizontal, Numbers, Pre } from './styles';
 import AlertRelatedData from '../../../../components/AlertRelatedData';
-
 export default class AlertItem extends React.Component {
   constructor(props) {
     super(props);
@@ -94,6 +93,11 @@ export default class AlertItem extends React.Component {
                 break;
               }
             }
+          }
+          if ('Stamus' in res.data) {
+            res.data.Stamus.forEach(obj => {
+              obj.stamus.threat_name = { threatName: obj.stamus.threat_name, familyId: obj.stamus.family_id, threatId: obj.stamus.threat_id };
+            });
           }
           this.setState({ events: res.data });
         }
@@ -624,7 +628,7 @@ export default class AlertItem extends React.Component {
           </div>
           {data.payload_printable && (
             <UICard title="Payload printable">
-              <pre style={{ maxHeight: '215px', overflowY: 'auto', whiteSpace: 'pre-wrap' }}>{data.payload_printable}</pre>
+              <Pre>{data.payload_printable}</Pre>
             </UICard>
           )}
           {data.http && data.http.http_request_body_printable && (
@@ -652,7 +656,19 @@ export default class AlertItem extends React.Component {
           </Tabs.TabPane>
         )}
         {showTabs && (
-          <Tabs.TabPane key="json-files" tab={`Files (${Object.values(this.state.files).length})`}>
+          <Tabs.TabPane
+            key="json-files"
+            tab={
+              <Numbers>
+                <span>Files</span>
+                <Badge
+                  count={Object.values(this.state.files).length || <span className="ant-badge-count">0</span>}
+                  overflowCount={99999}
+                  style={{ background: '#5b595c' }}
+                />
+              </Numbers>
+            }
+          >
             {this.state.fileInfo && this.state.fileInfoLoading && (
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
                 <Spin size="small" />
@@ -670,7 +686,16 @@ export default class AlertItem extends React.Component {
               .map(key => (
                 <Tabs.TabPane
                   key={`events-${key}`}
-                  tab={`Related ${key}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''} (${Object.keys(events[key]).length})`}
+                  tab={
+                    <Numbers>
+                      <span>{`Related ${key}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''}`}</span>
+                      <Badge
+                        count={Object.keys(events[key]).length || <span className="ant-badge-count">0</span>}
+                        overflowCount={99999}
+                        style={{ background: '#5b595c' }}
+                      />
+                    </Numbers>
+                  }
                 >
                   <AlertRelatedData type={key} data={events[key]} />
                 </Tabs.TabPane>

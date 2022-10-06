@@ -57,7 +57,7 @@ const Extra = styled.div`
   }
 `;
 
-const Count = styled.div`
+export const Count = styled.span`
   background: ${COLOR_BOX_HEADER};
   color: #fff;
   padding: 0 5px;
