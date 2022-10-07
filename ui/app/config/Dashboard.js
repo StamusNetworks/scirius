@@ -789,7 +789,7 @@ export const dashboard = {
       items: [
         {
           i: 'src_ip',
-          title: 'Sources IP',
+          title: 'Source IPs',
           data: null,
           dimensions: {
             lg: {
@@ -977,7 +977,7 @@ export const dashboard = {
         },
         {
           i: 'tunnel.src_ip',
-          title: 'Tunnel Sources IP',
+          title: 'Tunnel Source IPs',
           data: null,
           dimensions: {
             lg: {
@@ -1236,7 +1236,7 @@ export const dashboard = {
         },
         {
           i: 'http.http_refer',
-          title: 'Referers',
+          title: 'Referrers',
           data: null,
           dimensions: {
             lg: {
@@ -1382,7 +1382,7 @@ export const dashboard = {
         },
         {
           i: 'tls.subject',
-          title: 'Subjects DN',
+          title: 'Subject DNs',
           data: null,
           dimensions: {
             lg: {
