@@ -204,8 +204,8 @@ def custom_source_datatype(check_conf=False):
     return tuple()
 
 
-def update_source_content_type(content_type, source=None):
-    return content_type
+def update_source_content_type(source=None):
+    return []
 
 
 def update_custom_source(source_path):

@@ -228,8 +228,8 @@ class SourceForm(forms.ModelForm, CommentForm):
         super(SourceForm, self).__init__(*args, **kwargs)
 
         from scirius.utils import get_middleware_module
-        choices = get_middleware_module('common').update_source_content_type(Source.CONTENT_TYPE, source)
-        self.fields['datatype'] = forms.ChoiceField(choices=choices)
+        extra_choices = get_middleware_module('common').update_source_content_type(source)
+        self.fields['datatype'] = forms.ChoiceField(choices=Source.CONTENT_TYPE + extra_choices)
 
 
 class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
@@ -247,8 +247,8 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
             self.fields['rulesets'].required = False
 
         from scirius.utils import get_middleware_module
-        choices = get_middleware_module('common').update_source_content_type(Source.CONTENT_TYPE)
-        self.fields['datatype'] = forms.ChoiceField(choices=choices)
+        extra_choices = get_middleware_module('common').update_source_content_type()
+        self.fields['datatype'] = forms.ChoiceField(choices=Source.CONTENT_TYPE + extra_choices)
 
 
 class AddPublicSourceForm(forms.ModelForm, RulesetChoiceForm):
