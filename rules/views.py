@@ -128,7 +128,7 @@ def sources(request):
     from scirius.utils import get_middleware_module
     sources = get_middleware_module('common').get_sources().order_by('name')
 
-    for source_ in sources:
+    for source_ in sources.filter(datatype__in=dict(Source.CONTENT_TYPE).keys()):
         if source_.cats_count == 0:
             source_.build_counters()
 
@@ -138,11 +138,26 @@ def sources(request):
 
 @permission_required('rules.ruleset_policy_view', raise_exception=True)
 def source(request, source_id, error=None, update=False, activate=False, rulesets=None):
+    from scirius.utils import get_middleware_module
+
     source = get_object_or_404(Source, pk=source_id)
-    cats = CategoryTable(Category.objects.filter(source=source).order_by('name'))
-    tables.RequestConfig(request).configure(cats)
-    context = {'source': source, 'categories': cats,
-               'update': update, 'activate': activate, 'rulesets': rulesets}
+
+    context = {
+        'source': source,
+        'update': update,
+        'activate': activate,
+        'rulesets': rulesets
+    }
+
+    if source.datatype in dict(Source.CONTENT_TYPE).keys():
+        cats = CategoryTable(Category.objects.filter(source=source).order_by('name'))
+        tables.RequestConfig(request).configure(cats)
+        context.update({'categories': cats})
+    else:
+        sources = get_middleware_module('common').get_sources_with_extra_info()
+        source = sources.filter(pk=source.pk).first()
+        context.update({'source': source})
+
     if error:
         context['error'] = error
     if hasattr(PROBE.common, 'update_source'):
@@ -1053,6 +1068,10 @@ def build_source_diff(request, diff):
 @permission_required('rules.source_view', raise_exception=True)
 def changelog_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
+
+    if source.datatype not in dict(Source.CONTENT_TYPE).keys():
+        raise PermissionDenied()
+
     supdate = SourceUpdate.objects.filter(source=source).order_by('-created_date')
     # get last for now
     if len(supdate) == 0:

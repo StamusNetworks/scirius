@@ -221,6 +221,10 @@ def get_sources():
     return Source.objects.all()
 
 
+def get_sources_with_extra_info():
+    return get_sources()
+
+
 def update_settings(data):
     pass
 
