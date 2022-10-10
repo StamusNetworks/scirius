@@ -306,34 +306,6 @@ class ESQuery:
     def _es_interval(self):
         return '%sms' % self._interval()
 
-    def _scroll_query(self, scroll_duration, *args, **kwargs):
-        index = self._get_index()
-
-        body = self._get_query(*args, **kwargs)
-        if 'size' in body:
-            raise Exception('size parameter cannot be used in scroll queries')
-        data = self.es.search(body=body,
-                              index=index,
-                              ignore_unavailable=True,
-                              _source=True,
-                              request_timeout=self.TIMEOUT,
-                              size=self.MAX_RESULT_WINDOW,
-                              scroll=scroll_duration)
-
-        scroll_id = data.get('_scroll_id')
-        count = self._parse_total_hits(data) - self.MAX_RESULT_WINDOW
-        yield data
-
-        while count > 0:
-            data = self.es.scroll(scroll_id=scroll_id, scroll=scroll_duration)
-            yield data
-
-            count -= self.MAX_RESULT_WINDOW
-
-        if scroll_id:
-            # Ignore 404 to prevent an exception when the query exceeded scroll_duration
-            self.es.clear_scroll(scroll_id=scroll_id, ignore=[404])
-
     def _search_after(self, *args, **kwargs):
         index = self._get_index()
         body = self._get_query(*args, **kwargs)
