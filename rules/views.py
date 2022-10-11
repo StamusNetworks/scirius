@@ -789,9 +789,9 @@ def delete_alerts(request, rule_id):
             if hasattr(PROBE.common, 'es_delete_alerts_by_sid'):
                 PROBE.common.es_delete_alerts_by_sid(rule_id, request=request)
             else:
-                result = ESDeleteAlertsBySid(request).get(rule_id)
-                if 'status' in result and result['status'] != 200:
-                    context = {'object': rule_object, 'error': result['msg']}
+                errors = ESDeleteAlertsBySid(request).get(rule_id)
+                if errors:
+                    context = {'object': rule_object, 'error': ', '. join(errors)}
                     try:
                         context['probes'] = ['"' + x + '"' for x in PROBE.models.get_probe_hostnames()]
                     except:

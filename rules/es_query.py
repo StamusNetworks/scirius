@@ -10,6 +10,8 @@ import json
 import re
 
 from elasticsearch import Elasticsearch, Transport, ElasticsearchException, TransportError, ConnectionError, ConnectionTimeout, RequestsHttpConnection
+from elasticsearch.helpers import bulk
+
 from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.utils.urls import replace_query_param, remove_query_param
@@ -331,6 +333,21 @@ class ESQuery:
             next_timestamp = last_item['sort'][0]
             next_id = last_item['sort'][1]
             body['search_after'] = [next_timestamp, next_id]
+
+    def _delete_by_search(self, *args, **kwargs):
+        # https://stackoverflow.com/questions/26808239/elasticsearch-python-api-delete-documents-by-query
+        errors = []
+        for items in self._search_after(*args, **kwargs):
+            bulk_deletes = []
+
+            for item in items['hits']['hits']:
+                item['_op_type'] = 'delete'
+                bulk_deletes.append(item)
+
+            _, errs = bulk(self.es, bulk_deletes)
+            errors += errs
+
+        return errors
 
     def _scroll_composite(self, index, body):
         if 'aggregations' not in body:

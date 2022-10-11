@@ -713,9 +713,9 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         if hasattr(Probe.common, 'es_delete_alerts_by_sid'):
             result = Probe.common.es_delete_alerts_by_sid(pk, request=request)
         else:
-            result = ESDeleteAlertsBySid(request).get(pk)
-            if result.get('failures', []):
-                return Response({'details': '\n'.join(result['failures'])}, status=500)
+            errors = ESDeleteAlertsBySid(request).get(pk)
+            if errors:
+                return Response({'details': '\n'.join(errors)}, status=500)
             return Response({'delete_alerts': 'ok'})
         return Response(result)
 

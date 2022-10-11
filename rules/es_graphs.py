@@ -806,10 +806,17 @@ class ESRulesPerCategory(ESQuery):
 
 
 class ESDeleteAlertsBySid(ESQuery):
+    def _get_query(self, sid):
+        return {
+            'query': {'match': {'alert.signature_id': sid}},
+            'sort': [{
+                ES_TIMESTAMP: {'order': 'desc', 'unmapped_type': 'boolean'},
+                '_id': {'order': 'desc'}
+            }]
+        }
+
     def get(self, sid):
-        body = {"query": {"match": {"alert.signature_id": sid}}}
-        req = self.es.delete_by_query(body=body, index='logstash-alert-*')
-        return req
+        return self._delete_by_search(sid)
 
 
 class ESEventsCount(ESQuery):
