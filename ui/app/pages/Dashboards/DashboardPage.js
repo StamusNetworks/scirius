@@ -146,29 +146,7 @@ export class HuntDashboard extends React.Component {
       }
     });
 
-    let timeout = false;
-    window.addEventListener('resize', e => {
-      // Trigger a second resize, to work-around panels not rearranging
-      if (e.huntEvent) {
-        // work-around to prevent infinite resize
-        return;
-      }
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        let evt;
-        if (typeof Event === 'function') {
-          // modern browsers
-          evt = new Event('resize');
-        } else {
-          // for IE and other old browsers
-          // causes deprecation warning on modern browsers
-          evt = window.document.createEvent('UIEvents');
-          evt.initUIEvent('resize', true, false, window, 0);
-        }
-        evt.huntEvent = true;
-        window.dispatchEvent(evt);
-      }, 250);
-    });
+    window.addEventListener('resize', this.resizeWindow);
 
     if (this.props.filters.length && this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
       this.loadActions(this.props.filters);
@@ -216,6 +194,35 @@ export class HuntDashboard extends React.Component {
       }
     }
   }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.resizeWindow);
+  }
+
+  timeout = false;
+
+  resizeWindow = e => {
+    // Trigger a second resize, to work-around panels not rearranging
+    if (e.huntEvent) {
+      // work-around to prevent infinite resize
+      return;
+    }
+    clearTimeout(this.timeout);
+    this.timeout = setTimeout(() => {
+      let evt;
+      if (typeof Event === 'function') {
+        // modern browsers
+        evt = new Event('resize');
+      } else {
+        // for IE and other old browsers
+        // causes deprecation warning on modern browsers
+        evt = window.document.createEvent('UIEvents');
+        evt.initUIEvent('resize', true, false, window, 0);
+      }
+      evt.huntEvent = true;
+      window.dispatchEvent(evt);
+    }, 250);
+  };
 
   getBlockFromLS = (panel, block, breakPoint) => {
     let result = {};
