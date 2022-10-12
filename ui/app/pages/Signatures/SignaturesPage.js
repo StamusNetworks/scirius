@@ -27,7 +27,7 @@ import * as config from 'config/Api';
 import { STAMUS } from 'ui/config';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
-import RuleToggleModal from 'RuleToggleModal';
+import RuleToggleModal from 'ui/RuleToggleModal';
 import ErrorHandler from 'ui/components/Error';
 import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
