@@ -106,10 +106,9 @@ export default class RulePage extends React.Component {
       JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams) ||
       JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)
     ) {
-      const rule = JSON.parse(JSON.stringify(this.state.rule));
-      const filterParams = buildFilterParams(this.props.filterParams);
-
-      if (typeof rule !== 'undefined') {
+      if (this.state.rule) {
+        const rule = JSON.parse(JSON.stringify(this.state.rule));
+        const filterParams = buildFilterParams(this.props.filterParams);
         updateHitsStats([rule], filterParams, this.updateRuleState, qfilter);
       }
     }
