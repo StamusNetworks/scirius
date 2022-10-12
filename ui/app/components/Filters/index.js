@@ -21,6 +21,7 @@ import UISwitch from 'ui/components/UIElements/UISwitch';
 import AdditionalFilters from 'ui/components/AdditionalFilters';
 import { COLOR_ERROR } from 'ui/constants/colors';
 import isIP from 'ui/helpers/isIP';
+import Sort from 'ui/components/Sort';
 
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -327,7 +328,12 @@ const Filter = ({ page, section, queryTypes, onSortChange, sortValues }) => {
             <Col md={24}>{activeFilters && activeFilters.length > 0 && <FilterList filters={activeFilters} filterType={section} />}</Col>
           </Row>
         </div>
-        <AdditionalFilters page={page} onSortChange={onSortChange} sortValues={sortValues} />
+        <Space direction="vertical">
+          <AdditionalFilters page={page} onSortChange={onSortChange} sortValues={sortValues} />
+          {['RULES_LIST', 'HOSTS_LIST', 'HISTORY'].indexOf(page) > -1 && (
+            <Sort page={page} onChange={(option, direction) => onSortChange(option, direction)} value={sortValues} />
+          )}
+        </Space>
         {page !== 'HISTORY' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
           <div>
             <Title>Tags Filters</Title>
