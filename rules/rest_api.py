@@ -2995,11 +2995,12 @@ class FilterSetSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         try:
-            data['content'] = json.dumps(data['content'])
+            if 'content' in data:
+                data['content'] = json.dumps(data['content'])
         except ValueError:
             raise serializers.ValidationError({'content': 'Not a JSON format.'})
 
-        if not data['share']:
+        if not data.get('share', False):
             data['user'] = self.context['request'].user.pk
 
         return super(FilterSetSerializer, self).to_internal_value(data)
