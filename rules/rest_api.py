@@ -2160,6 +2160,10 @@ class ESFieldStatsViewSet(ESBaseViewSet):
         errors = {}
         field = request.GET.get('field', None)
         sid = request.GET.get('sid', None)
+        ordering = request.GET.get('ordering', 'desc')
+
+        if ordering not in ('asc', 'desc'):
+            raise serializers.ValidationError({'ordering': ['Wrong value, "asc" or "desc" must be used']})
 
         if field is None:
             errors = {'field': ['This field is required.']}
@@ -2175,6 +2179,7 @@ class ESFieldStatsViewSet(ESBaseViewSet):
             sid,
             filter_ip,
             count=count,
+            ordering=ordering,
             dict_format=True
         )
 

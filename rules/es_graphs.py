@@ -99,12 +99,19 @@ class ESFieldsStats(ESQuery):
             }
         }
         for field in fields:
+            # ordering is reversed to keep compatibility
+            ordering = 'desc'
+            if field['name'].startswith('-'):
+                ordering = 'asc'
+                field['name'] = field['name'][1:]
+                field['key'] = field['key'][1:]
+
             q['aggs'][field['name']] = {
                 'terms': {
                     'field': field['key'],
                     'size': count,
                     'order': {
-                        '_count': 'desc'
+                        '_count': ordering
                     }
                 }
             }
@@ -130,7 +137,7 @@ class ESFieldsStats(ESQuery):
 
 
 class ESFieldStats(ESQuery):
-    def _get_query(self, field, count, sid=None):
+    def _get_query(self, field, count, ordering, sid=None):
         qfilter = 'event_type: alert AND '
         if sid:
             qfilter += 'alert.signature_id:%s AND ' % sid
@@ -144,7 +151,7 @@ class ESFieldStats(ESQuery):
                         'field': field,
                         'size': count,
                         'order': {
-                            '_count': 'desc'
+                            '_count': ordering
                         }
                     }
                 }
@@ -170,8 +177,8 @@ class ESFieldStats(ESQuery):
         q['query']['bool'].update(self._es_bool_clauses())
         return q
 
-    def get(self, sid, field, count=20, dict_format=False):
-        data = super().get(field, count, sid)
+    def get(self, sid, field, count=20, ordering='desc', dict_format=False):
+        data = super().get(field, count, ordering, sid)
 
         # total number of results
         try:
