@@ -104,11 +104,19 @@
                                     <div class="list-view-pf-additional-info">
                                         <div class="list-view-pf-additional-info-item">
                                             <span class="fa fa-list-alt"></span>
-                                            <strong>{{ source.cats_count }}</strong> Categor{{ source.cats_count|pluralize:"y,ies" }}
+                                            {% if source.datatype != 'threat' %}
+                                                <strong>{{ source.cats_count }}</strong> Categor{{ source.cats_count|pluralize:"y,ies" }}
+                                            {% else %}
+                                                <strong>{{ source.threats }}</strong> Threat{{ source.threats|pluralize }}
+                                            {% endif %}
                                         </div>
                                         <div class="list-view-pf-additional-info-item">
                                             <span class="pficon pficon-security"></span>
-                                            <strong>{{ source.rules_count }}</strong> Rule{{ source.rules_count|pluralize }}
+                                            {% if source.datatype != 'threat' %}
+                                                <strong>{{ source.rules_count }}</strong> Rule{{ source.rules_count|pluralize }}
+                                            {% else %}
+                                                <strong>{{ source.methods }}</strong> Method{{ source.rules_count|pluralize }}
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
