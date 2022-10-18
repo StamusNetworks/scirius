@@ -219,7 +219,9 @@ class FilterEditKebab extends React.Component {
   render() {
     return (
       <React.Fragment>
-        {this.state.filterSets.showModal && <FilterSetSaveModal title="Create new Filter Set From Action" close={this.closeActionToFilterSet} />}
+        {this.state.filterSets.showModal && (
+          <FilterSetSaveModal title="Create new Filter Set From Action" close={this.closeActionToFilterSet} content={this.generateFilterSet()} />
+        )}
         <Dropdown id="filterActions" overlay={this.menu} trigger={['click']}>
           <a
             className="ant-dropdown-link"

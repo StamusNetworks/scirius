@@ -130,7 +130,7 @@ const FilterSetSaveModal = ({ content, page, title, close }) => {
 FilterSetSaveModal.propTypes = {
   title: PropTypes.any,
   close: PropTypes.any,
-  content: PropTypes.any,
+  content: PropTypes.any.isRequired,
   page: PropTypes.any,
   noRights: PropTypes.bool.isRequired,
 };
