@@ -61,7 +61,8 @@ const FilterSetSaveModal = ({ content, page, title, close }) => {
       title={title}
       visible
       onCancel={close}
-      okText="Save"
+      cancelText={<div data-test="filter-set-save-modal-cancel">Cancel</div>}
+      okText={<div data-test="filter-set-save-modal-save">Save</div>}
       okButtonProps={{
         onClick: async () => {
           await form.submit();
@@ -81,16 +82,16 @@ const FilterSetSaveModal = ({ content, page, title, close }) => {
             },
           ]}
         >
-          <Input />
+          <Input data-test="filter-set-save-modal-name" />
         </Form.Item>
 
         {!page && (
           <Form.Item label="Page" name="page">
-            <Select placeholder="Please select page">
+            <Select placeholder="Please select page" data-test="filter-set-save-modal-page">
               {Object.keys(huntTabs)
                 .filter(key => huntTabs[key] !== 'Policies')
                 .map(key => (
-                  <Select.Option key={huntTabs[key]} value={key}>
+                  <Select.Option key={huntTabs[key]} value={key} data-test={`filter-set-save-modal-page-${huntTabs[key].toLowerCase()}`}>
                     {huntTabs[key]}
                   </Select.Option> // eslint-disable-line indent
                 ))}
@@ -99,7 +100,7 @@ const FilterSetSaveModal = ({ content, page, title, close }) => {
         )}
         {page && (
           <Form.Item label="Page" name="page">
-            <Input disabled defaultValue={huntTabs[page]} />
+            <Input disabled defaultValue={huntTabs[page]} data-test="filter-set-save-modal-page-disabled" />
           </Form.Item>
         )}
 
@@ -116,7 +117,7 @@ const FilterSetSaveModal = ({ content, page, title, close }) => {
               </span>
             }
           >
-            <Checkbox />
+            <Checkbox data-test="filter-set-save-modal-shared" />
           </Form.Item>
         )}
         <Form.Item label="Description" name="description">
