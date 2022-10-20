@@ -6,21 +6,21 @@
  * contain code that should be seen on all pages. (e.g. navigation bar)
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import withSaga from 'utils/injectSaga';
 import { Switch, Redirect, Route } from 'react-router-dom';
-import { Layout } from 'antd';
+import PropTypes from 'prop-types';
+import { bindActionCreators, compose } from 'redux';
+import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
+import { Layout, Spin } from 'antd';
+
+import withSaga from 'utils/injectSaga';
 import pages from 'ui/pages';
 import { APP_URL } from 'ui/config';
 import { CamelCaseToDashCase } from 'ui/helpers';
 import { Content } from 'ui/components';
 import Header from 'ui/components/Header';
 import LeftNav from 'ui/components/LeftNav';
-import { connect } from 'react-redux';
-import { createStructuredSelector } from 'reselect';
 import { syncUrl } from 'ui/helpers/syncUrl';
-
-import { bindActionCreators, compose } from 'redux';
-import PropTypes from 'prop-types';
 import GlobalStyle from 'ui/global-styles';
 import actions from 'ui/containers/App/actions';
 import selectors from 'ui/containers/App/selectors';
@@ -28,9 +28,17 @@ import ErrorHandler from 'ui/components/ErrorHandler';
 import ProxyRoute from 'ui/components/ProxyRoute';
 import saga from 'ui/containers/App/saga';
 import FilterSets from 'ui/components/FilterSets';
+import styled from 'styled-components';
 
 const pagesList = Object.keys(pages);
 const SESSION_INTERVAL = 30000;
+
+const SpinSC = styled(Spin)`
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
 
 const App = ({
   source,
@@ -42,6 +50,7 @@ const App = ({
   filterSetsState,
   onCloseFilterSets,
   timeSpan,
+  systemSettings,
 }) => {
   const idle = useRef(0);
 
@@ -94,6 +103,11 @@ const App = ({
     }
   });
 
+  // do not render the app if systemSettings are not yet fetched
+  if (!systemSettings) {
+    return <SpinSC />;
+  }
+
   return (
     <Layout>
       {errorMsg && <pre id="rf_js_error">{errorMsg}</pre>}
@@ -110,9 +124,13 @@ const App = ({
             <Switch>
               {pagesList
                 .filter(page => typeof pages[page].metadata.url !== 'function')
-                .map(page => (
-                  <Route key={page} exact path={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`} component={pages[page]} />
-                ))}
+                .map(page => {
+                  if (!systemSettings.license.nta && pages[page].metadata.nta) return null;
+                  return (
+                    <Route key={page} exact path={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`} component={pages[page]} />
+                  );
+                })
+                .filter(route => route)}
               <Route exact path={['/', APP_URL]}>
                 {pages.OperationalCenter ? (
                   <Redirect to={`${APP_URL}/security-posture/operational-center`} />
@@ -140,12 +158,14 @@ App.propTypes = {
   filterSetsState: PropTypes.bool,
   onCloseFilterSets: PropTypes.func,
   timeSpan: PropTypes.object,
+  systemSettings: PropTypes.object,
 };
 
 const mapStateToProps = createStructuredSelector({
   source: selectors.makeSelectSource(),
   filterSetsState: selectors.makeSelectFilterSetsState(),
   timeSpan: selectors.makeSelectTimespan(),
+  systemSettings: selectors.makeSelectSystemSettings(),
 });
 
 export const mapDispatchToProps = dispatch =>

@@ -25,7 +25,7 @@ const initialTimeSpanStorage = {
   ...store.get(StorageEnum.TIMESPAN),
 };
 
-const initialSystemSettingsStorage = store.get(StorageEnum.SYSTEM_SETTINGS) || {};
+const initialSystemSettingsStorage = store.get(StorageEnum.SYSTEM_SETTINGS) || null;
 
 const initialSourceStorage = store.get(StorageEnum.SOURCE) || [];
 

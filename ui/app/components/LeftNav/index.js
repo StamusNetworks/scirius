@@ -56,19 +56,22 @@ function LeftNav({ user, systemSettings }) {
 
   const renderSubMenus = useMemo(
     () =>
-      LeftNavMap.map(group => (
-        <SubMenu
-          key={group.id}
-          title={
-            <React.Fragment>
-              <Icon component={group.icon} />
-              {group.title}
-            </React.Fragment>
-          }
-        >
-          {renderMenuItems(group.id)}
-        </SubMenu>
-      )),
+      LeftNavMap.map(group => {
+        if (!systemSettings.license.nta && group.nta) return null;
+        return (
+          <SubMenu
+            key={group.id}
+            title={
+              <React.Fragment>
+                <Icon component={group.icon} />
+                {group.title}
+              </React.Fragment>
+            }
+          >
+            {renderMenuItems(group.id)}
+          </SubMenu>
+        );
+      }).filter(submenu => submenu),
     [systemSettings, permissions],
   );
 
