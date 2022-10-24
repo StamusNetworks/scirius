@@ -33,6 +33,7 @@ export default class RuleEditKebab extends React.Component {
         onClick={() => {
           this.displayToggle('enable');
         }}
+        data-test="enable-rule"
       >
         {' '}
         Enable Rule{' '}
@@ -42,11 +43,12 @@ export default class RuleEditKebab extends React.Component {
         onClick={() => {
           this.displayToggle('disable');
         }}
+        data-test="disable-rule"
       >
         {' '}
         Disable Rule{' '}
       </Menu.Item>
-      <Menu.Item key="rpis">
+      <Menu.Item key="rpis" data-test="rule-page-in-scs">
         <a href={`/rules/rule/pk/${this.props.config.rule.pk}/`}> Rule page in {APP_NAME_SHORT} </a>
       </Menu.Item>
     </Menu>
@@ -62,6 +64,7 @@ export default class RuleEditKebab extends React.Component {
               e.preventDefault();
               e.stopPropagation();
             }}
+            data-test="rule-edit-kebab-menu"
           >
             <MenuOutlined />
           </a>
