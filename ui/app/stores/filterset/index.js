@@ -3,10 +3,9 @@ import { createSelector } from 'reselect';
 import { call, put, takeLatest } from 'redux-saga/effects';
 import * as config from 'config/Api';
 import axios from 'axios';
-import { huntTabs } from 'ui/constants';
 
 // CONSTANTS
-const FILTER_SETS_LOADING = 'Hunt/components/FilterSets/FILTER_SETS_LOADING';
+const FILTER_SETS_REQUEST = 'Hunt/components/FilterSets/FILTER_SETS_REQUEST';
 const FILTER_SETS_SUCCESS = 'Hunt/components/FilterSets/FILTER_SETS_SUCCESS';
 const FILTER_SETS_FAIL = 'Hunt/components/FilterSets/FILTER_SETS_FAIL';
 const DELETE_FILTER_SET = 'Hunt/components/FilterSets/DELETE_FILTER_SET';
@@ -14,8 +13,8 @@ const DELETE_FILTER_SET_SUCCESS = 'Hunt/components/FilterSets/DELETE_FILTER_SET_
 const DELETE_FILTER_SET_FAIL = 'Hunt/components/FilterSets/DELETE_FILTER_SET_FAIL';
 
 // ACTIONS
-export const loadFilterSets = () => ({
-  type: FILTER_SETS_LOADING,
+export const loadFilterSetsRequest = () => ({
+  type: FILTER_SETS_REQUEST,
 });
 
 export const filterSetsSuccess = loadedFilterSets => ({
@@ -54,55 +53,46 @@ export const initialState = {
   },
   filterSetDeleteIdx: null,
   filterSetsLoading: false,
-  filterSetsStatus: false,
-  filterSetsMessage: '',
+  filterSetsStatus: null,
 };
 
 /* eslint-disable default-case */
 export const filterSetsReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
-      case FILTER_SETS_LOADING:
-        draft.filterSets.global = [];
-        draft.filterSets.private = [];
-        draft.filterSets.static = [];
+      case FILTER_SETS_REQUEST:
         draft.filterSetsLoading = true;
-        draft.filterSetsStatus = false;
-        draft.filterSetsMessage = 'loading...';
+        draft.filterSetsStatus = null;
         break;
 
       case FILTER_SETS_SUCCESS: {
         const { loadedFilterSets } = action;
         for (let idx = 0; idx < loadedFilterSets.length; idx += 1) {
           const row = loadedFilterSets[idx];
-
-          row.pageTitle = huntTabs[row.page];
           // eslint-disable-next-line no-param-reassign
-          draft.filterSets[row.share].push(row);
+          if (!draft.filterSets[row.share].find(f => f.id === row.id)) {
+            draft.filterSets[row.share].push(row);
+          }
         }
         draft.filterSetsLoading = false;
         draft.filterSetsStatus = true;
-        draft.filterSetsMessage = '';
         break;
       }
       case FILTER_SETS_FAIL:
         draft.filterSetsList = [];
         draft.filterSetsLoading = false;
         draft.filterSetsStatus = false;
-        draft.filterSetsMessage = 'Filter sets could not be loaded';
         break;
 
       case DELETE_FILTER_SET:
         draft.filterSetsLoading = true;
         draft.filterSetsStatus = false;
-        draft.filterSetsMessage = 'deleting filter set...';
         break;
 
       case DELETE_FILTER_SET_SUCCESS:
         draft.filterSetDeleteIdx = null;
         draft.filterSetsLoading = false;
         draft.filterSetsStatus = true;
-        draft.filterSetsMessage = 'filter set deleted successfully';
         draft.filterSets[action.filterSetType] = draft.filterSets[action.filterSetType].filter(f => f.id !== action.filterSetIdx);
         break;
     }
@@ -138,6 +128,6 @@ export function* delFilterSet(action) {
 }
 
 export function* filterSetsSaga() {
-  yield takeLatest(FILTER_SETS_LOADING, getFilterSets);
+  yield takeLatest(FILTER_SETS_REQUEST, getFilterSets);
   yield takeLatest(DELETE_FILTER_SET, delFilterSet);
 }

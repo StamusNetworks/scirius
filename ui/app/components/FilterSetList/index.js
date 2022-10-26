@@ -6,11 +6,11 @@ import {
   IdcardOutlined,
   SafetyOutlined,
   UploadOutlined,
-  InfoCircleOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import { huntTabs } from 'ui/constants';
 
 const getIcons = item => {
   const icons = [];
@@ -78,9 +78,8 @@ const FilterSetList = ({ item, info, loadFilterSets, deleteFilterSet, noRights }
       {item.description && <Description>{item.description}</Description>}
       <FilterSetFooter>
         <Space split="|">
-          <span>{`${item.pageTitle} Page`}</span>
+          <span>{`${huntTabs[item.page]} Page`}</span>
           <span>Shared</span>
-          {!info && <InfoCircleOutlined />}
         </Space>
       </FilterSetFooter>
     </Container>

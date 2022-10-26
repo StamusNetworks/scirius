@@ -40,18 +40,7 @@ const SpinSC = styled(Spin)`
   justify-content: center;
 `;
 
-const App = ({
-  source,
-  getSystemSettings,
-  getUser,
-  getSource,
-  getAllPeriodRequest,
-  setSessionActivity,
-  filterSetsState,
-  onCloseFilterSets,
-  timeSpan,
-  systemSettings,
-}) => {
+const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodRequest, setSessionActivity, timeSpan, systemSettings }) => {
   const idle = useRef(0);
 
   const setIdle = useCallback(() => {
@@ -140,7 +129,7 @@ const App = ({
               </Route>
               <ProxyRoute />
             </Switch>
-            {filterSetsState && <FilterSets close={() => onCloseFilterSets(false)} />}
+            <FilterSets />
           </Content>
         </ErrorHandler>
       </Layout>
@@ -155,15 +144,12 @@ App.propTypes = {
   getSource: PropTypes.any,
   getAllPeriodRequest: PropTypes.any,
   setSessionActivity: PropTypes.func,
-  filterSetsState: PropTypes.bool,
-  onCloseFilterSets: PropTypes.func,
   timeSpan: PropTypes.object,
   systemSettings: PropTypes.object,
 };
 
 const mapStateToProps = createStructuredSelector({
   source: selectors.makeSelectSource(),
-  filterSetsState: selectors.makeSelectFilterSetsState(),
   timeSpan: selectors.makeSelectTimespan(),
   systemSettings: selectors.makeSelectSystemSettings(),
 });
@@ -176,7 +162,6 @@ export const mapDispatchToProps = dispatch =>
       getSource: actions.getSource,
       getAllPeriodRequest: actions.getAllPeriodRequest,
       setSessionActivity: actions.setSessionActivityRequest,
-      onCloseFilterSets: actions.setFilterSets,
     },
     dispatch,
   );

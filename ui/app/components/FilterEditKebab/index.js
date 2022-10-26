@@ -12,7 +12,7 @@ import { compose } from 'redux';
 import FilterToggleModal from 'ui/FilterToggleModal';
 import ErrorHandler from 'ui/components/Error';
 import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
-import { loadFilterSets } from 'ui/components/FilterSets/store';
+import { loadFilterSetsRequest } from 'ui/stores/filterset';
 import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag, makeSelectUserData } from 'ui/containers/HuntApp/stores/global';
 
 class FilterEditKebab extends React.Component {
@@ -275,7 +275,7 @@ const mapStateToProps = createStructuredSelector({
 });
 
 const mapDispatchToProps = {
-  loadFilterSets,
+  loadFilterSetsRequest,
   addFilter,
   clearFilters,
   setTag,
