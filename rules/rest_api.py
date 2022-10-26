@@ -2347,7 +2347,7 @@ class ESLogstashEveViewSet(ESBaseViewSet):
     }
 
     def _get(self, request, format=None):
-        value = request.GET.get('value', None)
+        value = request.GET.get('value', 'eve.total.rate_1m')
         hosts = self.request.GET.get('hosts', 'global')
         hosts = hosts.split(',')
 
