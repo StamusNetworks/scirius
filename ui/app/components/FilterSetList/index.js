@@ -6,7 +6,6 @@ import {
   IdcardOutlined,
   SafetyOutlined,
   UploadOutlined,
-  CaretRightOutlined,
   InfoCircleOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
@@ -33,6 +32,16 @@ const getIcons = item => {
   }
   return icons;
 };
+
+const Container = styled.div`
+  cursor: pointer;
+  margin: -10px;
+  padding: 10px;
+  &:hover {
+    background-color: #f6f6f6;
+    text-shadow: 0 1px #ffffff;
+  }
+`;
 
 const Description = styled.div`
   font-size: 12px;
@@ -65,20 +74,16 @@ const FilterSetList = ({ item, info, loadFilterSets, deleteFilterSet, noRights }
       </>
     }
   >
-    <div id="container" />
-    <Description>{item.description}</Description>
-    <FilterSetFooter>
-      <Space>
-        <Tooltip title="Load" getPopupContainer={() => document.getElementById('container')}>
-          <Button size="small" type="primary" icon={<CaretRightOutlined />} onClick={() => loadFilterSets(item)} />
-        </Tooltip>
-      </Space>
-      <Space split="|">
-        <span>{`${item.pageTitle} Page`}</span>
-        <span>Shared</span>
-        {!info && <InfoCircleOutlined />}
-      </Space>
-    </FilterSetFooter>
+    <Container onClick={() => loadFilterSets(item)}>
+      {item.description && <Description>{item.description}</Description>}
+      <FilterSetFooter>
+        <Space split="|">
+          <span>{`${item.pageTitle} Page`}</span>
+          <span>Shared</span>
+          {!info && <InfoCircleOutlined />}
+        </Space>
+      </FilterSetFooter>
+    </Container>
   </Card>
 );
 
