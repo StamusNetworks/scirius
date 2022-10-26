@@ -5,6 +5,7 @@ const NetworkService = {
   // POST
   setSessionActivity: async (params, options) => Api.post(ENDPOINT.SESSION_ACTIVITY, params, options),
   saveFilterSet: async (params, options) => Api.post(ENDPOINT.FILTER_SET_SAVE, params, options),
+  updatePushRuleset: async () => Api.post(ENDPOINT.UPDATE_PUSH_RULESET),
   // GET
   fetchUser: async () => Api.get(ENDPOINT.CURRENT_USER),
   fetchContext: async () => Api.get(ENDPOINT.SCIRIUS_CONTEXT),

@@ -109,6 +109,18 @@ const getSystemSettingsFailure = () => ({
   type: constants.GET_SYSTEM_SETTINGS_FAILURE,
 });
 
+const updatePushRulesetRequest = () => ({
+  type: constants.UPDATE_PUSH_RULESET_REQUEST,
+});
+
+const updatePushRulesetSuccess = () => ({
+  type: constants.UPDATE_PUSH_RULESET_SUCCESS,
+});
+
+const updatePushRulesetFailure = () => ({
+  type: constants.UPDATE_PUSH_RULESET_FAILURE,
+});
+
 export default {
   getUser,
   getUserSuccess,
@@ -132,4 +144,7 @@ export default {
   getSystemSettingsRequest,
   getSystemSettingsSuccess,
   getSystemSettingsFailure,
+  updatePushRulesetRequest,
+  updatePushRulesetSuccess,
+  updatePushRulesetFailure,
 };

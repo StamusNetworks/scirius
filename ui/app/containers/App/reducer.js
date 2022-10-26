@@ -71,6 +71,9 @@ export const initialState = {
     data: {},
     request: { loading: false, status: null },
   },
+  updatePushRuleset: {
+    request: { loading: false, state: null },
+  },
 };
 
 /* eslint-disable default-case */
@@ -234,6 +237,18 @@ export const appReducer = (state = initialState, action) =>
         }
         break;
       }
+      case constants.UPDATE_PUSH_RULESET_REQUEST:
+        draft.updatePushRuleset.request.loading = true;
+        draft.updatePushRuleset.request.state = null;
+        break;
+      case constants.UPDATE_PUSH_RULESET_SUCCESS:
+        draft.updatePushRuleset.request.loading = false;
+        draft.updatePushRuleset.request.state = true;
+        break;
+      case constants.UPDATE_PUSH_RULESET_FAILURE:
+        draft.updatePushRuleset.request.loading = false;
+        draft.updatePushRuleset.request.state = false;
+        break;
     }
   });
 

@@ -8,6 +8,7 @@ import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
 import { supportedActions, setDefaultOptions } from 'ui/supportedActions';
+import history from 'ui/utils/history';
 
 const RulesetMsg = styled.div`
   color: #ff4d4f;
@@ -209,6 +210,7 @@ export default class RuleToggleModal extends React.Component {
         .then(() => {
           this.setState({ submitting: false });
           this.close();
+          history.push('/stamus/hunting/policies');
         })
         .catch(error => {
           this.setState({ errors: error.response.data, submitting: false });

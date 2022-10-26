@@ -23,6 +23,8 @@ const makeSelectUser = () => createSelector(selectGlobal, ({ user }) => user);
 
 const makeSelectContext = () => createSelector(selectGlobal, subState => subState.context);
 
+const makeSelectUpdatePushRuleset = () => createSelector(selectGlobal, subState => subState.updatePushRuleset);
+
 const makeSelectStartDate = () =>
   createSelector(selectGlobal, subState => {
     if (subState.timespan.timePicker === TimePickerEnum.ABSOLUTE) {
@@ -118,6 +120,7 @@ export default {
   makeSelectFiltersParam,
   makeSelectSource,
   makeSelectContext,
+  makeSelectUpdatePushRuleset,
   // Network parameters selectors
   makeSelectURLDates,
   makeSelectURLDatesES,

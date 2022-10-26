@@ -46,6 +46,10 @@ const ENDPOINT = {
     name: 'Set session activity idle time',
     url: `/accounts/session_activity/`,
   },
+  UPDATE_PUSH_RULESET: {
+    name: 'Update / Push ruleset',
+    url: process.env.REACT_APP_HAS_TAG === '1' ? 'rest/appliances/appliance/update_push_all/' : 'rest/suricata/update_push_all',
+  },
 };
 
 export default ENDPOINT;

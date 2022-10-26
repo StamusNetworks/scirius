@@ -65,6 +65,15 @@ function* retrieveSystemSettings() {
   }
 }
 
+function* updatePushRuleset() {
+  try {
+    yield call(NetworkService.updatePushRuleset);
+    yield put(actions.updatePushRulesetSuccess());
+  } catch (err) {
+    yield put(actions.updatePushRulesetFailure());
+  }
+}
+
 export default function* rootSage() {
   yield takeEvery(constants.GET_SYSTEM_SETTINGS_REQUEST, retrieveSystemSettings);
   yield takeEvery(constants.GET_USER_REQUEST, retrieveUser);
@@ -72,4 +81,5 @@ export default function* rootSage() {
   yield takeEvery(constants.GET_SOURCE_REQUEST, getSources);
   yield takeEvery(constants.GET_PERIOD_ALL_REQUEST, getAllPeriod);
   yield takeEvery(constants.SET_SESSION_ACTIVITY_REQUEST, setSessionActivity);
+  yield takeEvery(constants.UPDATE_PUSH_RULESET_REQUEST, updatePushRuleset);
 }

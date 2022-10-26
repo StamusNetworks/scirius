@@ -252,7 +252,7 @@ export class PoliciesPage extends React.Component {
 
   render() {
     return (
-      <div style={{ marginTop: 15 }}>
+      <div>
         <Helmet>
           <title>{`${STAMUS} - Policies`}</title>
         </Helmet>
