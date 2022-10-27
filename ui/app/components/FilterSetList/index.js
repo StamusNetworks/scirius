@@ -1,6 +1,6 @@
 import React from 'react';
 import { Space, Card, Tooltip, Button } from 'antd';
-import { BellOutlined, DashboardOutlined, IdcardOutlined, SafetyOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { BellOutlined, DashboardOutlined, IdcardOutlined, SafetyOutlined, UploadOutlined, DeleteOutlined, LoadingOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { huntTabs } from 'ui/constants';
@@ -47,7 +47,7 @@ const FilterSetFooter = styled.div`
   flex: 1;
   justify-content: space-between;
 `;
-const FilterSetList = ({ item, loadFilterSets, deleteFilterSet, noRights }) => (
+const FilterSetList = ({ item, loadFilterSets, onDelete, noRights, loading }) => (
   <Card
     size="small"
     bordered={false}
@@ -59,9 +59,9 @@ const FilterSetList = ({ item, loadFilterSets, deleteFilterSet, noRights }) => (
     headStyle={{ background: '#efefef' }}
     extra={
       <>
-        {!noRights && deleteFilterSet && (
+        {!noRights && onDelete && (
           <Tooltip title="Delete" getPopupContainer={() => document.getElementById('container')}>
-            <Button size="small" type="danger" icon={<DeleteOutlined />} onClick={() => deleteFilterSet()} />
+            <Button size="small" type="danger" icon={loading ? <LoadingOutlined /> : <DeleteOutlined />} onClick={() => onDelete()} />
           </Tooltip>
         )}
       </>
@@ -80,9 +80,10 @@ const FilterSetList = ({ item, loadFilterSets, deleteFilterSet, noRights }) => (
 );
 
 FilterSetList.propTypes = {
+  loading: PropTypes.bool.isRequired,
   item: PropTypes.object.isRequired,
   loadFilterSets: PropTypes.func.isRequired,
-  deleteFilterSet: PropTypes.func,
+  onDelete: PropTypes.func,
   noRights: PropTypes.bool,
 };
 

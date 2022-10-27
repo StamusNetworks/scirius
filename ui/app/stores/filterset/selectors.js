@@ -9,10 +9,12 @@ const makeSelectPrivateFilterSets = () =>
 const makeSelectStaticFilterSets = () =>
   createSelector(makeSelectFiltersSetsStore, filterSetsState => filterSetsState.data.filter(f => f.share === 'static'));
 const makeSelectFilterSetsRequest = type => createSelector(makeSelectFiltersSetsStore, filterSetsState => filterSetsState.request[type]);
+const makeSelectDeleteFilterSetId = () => createSelector(makeSelectFiltersSetsStore, filterSetsState => filterSetsState.request.delete.confirmId);
 
 export default {
   makeSelectGlobalFilterSets,
   makeSelectPrivateFilterSets,
   makeSelectStaticFilterSets,
   makeSelectFilterSetsRequest,
+  makeSelectDeleteFilterSetId,
 };

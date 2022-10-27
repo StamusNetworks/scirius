@@ -14,7 +14,12 @@ const filterSetsFail = error => ({
   error,
 });
 
-const deleteFilterSet = id => ({
+const deleteFilterSetConfirm = id => ({
+  type: constants.DELETE_FILTER_SET_CONFIRM,
+  id,
+});
+
+const deleteFilterSetRequest = id => ({
   type: constants.DELETE_FILTER_SET_REQUEST,
   id,
 });
@@ -25,7 +30,7 @@ const deleteFilterSetSuccess = (filterSetType, filterSetIdx) => ({
   filterSetIdx,
 });
 
-const deleteFilterSetFail = error => ({
+const deleteFilterSetFailure = error => ({
   type: constants.DELETE_FILTER_SET_FAILURE,
   error,
 });
@@ -34,7 +39,8 @@ export default {
   loadFilterSetsRequest,
   filterSetsSuccess,
   filterSetsFail,
-  deleteFilterSet,
+  deleteFilterSetConfirm,
+  deleteFilterSetRequest,
   deleteFilterSetSuccess,
-  deleteFilterSetFail,
+  deleteFilterSetFailure,
 };

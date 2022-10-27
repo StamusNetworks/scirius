@@ -9,6 +9,7 @@ export const initialState = {
       status: null,
     },
     delete: {
+      confirmId: null,
       loading: false,
       status: null,
     },
@@ -40,6 +41,10 @@ const reducer = (state = initialState, action) =>
         draft.filterSetsList = [];
         draft.request.get.loading = false;
         draft.request.get.status = false;
+        break;
+
+      case constants.DELETE_FILTER_SET_CONFIRM:
+        draft.request.delete.confirmId = action.id;
         break;
 
       case constants.DELETE_FILTER_SET_REQUEST:

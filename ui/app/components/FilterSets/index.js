@@ -23,7 +23,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { Drawer, Collapse, Empty, Modal } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import { DeleteOutlined, InfoCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useInjectReducer } from 'ui/utils/injectReducer';
 import { useInjectSaga } from 'ui/utils/injectSaga';
 import { sections, huntUrls } from 'ui/constants';
@@ -64,6 +64,8 @@ const FilterSets = () => {
   const privateSet = useSelector(filterSetSelectors.makeSelectPrivateFilterSets());
   const staticSet = useSelector(filterSetSelectors.makeSelectStaticFilterSets());
   const { loading } = useSelector(filterSetSelectors.makeSelectFilterSetsRequest('get'));
+  const { loading: deleteLoading } = useSelector(filterSetSelectors.makeSelectFilterSetsRequest('delete'));
+  const confirmDelete = useSelector(filterSetSelectors.makeSelectDeleteFilterSetId());
   const visible = useSelector(selectors.makeSelectFilterSetsState());
   const user = useSelector(makeSelectUserData());
 
@@ -108,18 +110,19 @@ const FilterSets = () => {
       type: 'global',
       title: 'Global Filter Sets',
       data: rowsGlobal,
-      delete: id => dispatch(filterSetActions.deleteFilterSet(id)),
+      delete: true,
     },
     {
       type: 'private',
       title: 'Private Filter Sets',
       data: rowsPrivate,
-      delete: id => dispatch(filterSetActions.deleteFilterSet(id)),
+      delete: true,
     },
     {
       type: 'static',
       title: 'Stamus Predefined Filter Sets',
       data: rowsStatic,
+      delete: false,
     },
   ];
 
@@ -149,17 +152,34 @@ const FilterSets = () => {
           >
             {item.data.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
             {item.data.map(filterSetItem => (
-              <FilterSetList
-                key={`${item.type}-${filterSetItem?.id}`}
-                item={filterSetItem}
-                loadFilterSets={() => loadFilterSets(filterSetItem)}
-                deleteFilterSet={item.delete ? () => item.delete(filterSetItem.id) : undefined}
-                noRights={noRights}
-              />
+              <>
+                <FilterSetList
+                  key={`${item.type}-${filterSetItem?.id}-${deleteLoading.toString()}`}
+                  item={filterSetItem}
+                  loadFilterSets={() => loadFilterSets(filterSetItem)}
+                  onDelete={item.delete ? () => dispatch(filterSetActions.deleteFilterSetConfirm(filterSetItem.id)) : undefined}
+                  noRights={noRights}
+                  loading={deleteLoading && confirmDelete === filterSetItem.id}
+                />
+              </>
             ))}
           </Panel>
         ))}
       </Collapse>
+      <Modal
+        title="Deleting a filter set"
+        visible={Boolean(confirmDelete)}
+        zIndex={11000}
+        onCancel={() => dispatch(filterSetActions.deleteFilterSetConfirm(undefined))}
+        onOk={() => {
+          dispatch(filterSetActions.deleteFilterSetRequest(confirmDelete));
+        }}
+        cancelButtonProps={{ disabled: deleteLoading }}
+        okButtonProps={{ danger: true, disabled: deleteLoading, icon: deleteLoading ? <LoadingOutlined /> : <DeleteOutlined /> }}
+        okText={deleteLoading ? 'Please wait...' : 'Delete'}
+      >
+        Delete this filter set?
+      </Modal>
     </Drawer>
   );
 };

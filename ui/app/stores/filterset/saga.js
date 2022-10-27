@@ -18,7 +18,9 @@ function* deleteFilterSet(action) {
     yield call(NetworkService.deleteFilterSet, { $id: id });
     yield put(actions.deleteFilterSetSuccess(id));
   } catch (err) {
-    yield put(actions.deleteFilterSetFail(err));
+    yield put(actions.deleteFilterSetFailure(err));
+  } finally {
+    yield put(actions.deleteFilterSetConfirm(undefined));
   }
 }
 
