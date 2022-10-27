@@ -1,13 +1,6 @@
 import React from 'react';
 import { Space, Card, Tooltip, Button } from 'antd';
-import {
-  BellOutlined,
-  DashboardOutlined,
-  IdcardOutlined,
-  SafetyOutlined,
-  UploadOutlined,
-  DeleteOutlined,
-} from '@ant-design/icons';
+import { BellOutlined, DashboardOutlined, IdcardOutlined, SafetyOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { huntTabs } from 'ui/constants';
@@ -54,7 +47,7 @@ const FilterSetFooter = styled.div`
   flex: 1;
   justify-content: space-between;
 `;
-const FilterSetList = ({ item, info, loadFilterSets, deleteFilterSet, noRights }) => (
+const FilterSetList = ({ item, loadFilterSets, deleteFilterSet, noRights }) => (
   <Card
     size="small"
     bordered={false}
@@ -90,7 +83,6 @@ FilterSetList.propTypes = {
   item: PropTypes.object.isRequired,
   loadFilterSets: PropTypes.func.isRequired,
   deleteFilterSet: PropTypes.func,
-  info: PropTypes.bool,
   noRights: PropTypes.bool,
 };
 

@@ -34,16 +34,10 @@ import { addFilter, clearFilters, setTag, makeSelectUserData } from 'ui/containe
 import history from 'ui/utils/history';
 import FilterSetSearch from 'ui/components/FilterSetSearch';
 import selectors from 'ui/containers/App/selectors';
-import {
-  filterSetsReducer,
-  filterSetsSaga,
-  loadFilterSetsRequest,
-  deleteFilterSet,
-  makeSelectFilterSetsLoading,
-  makeSelectGlobalFilterSets,
-  makeSelectPrivateFilterSets,
-  makeSelectStaticFilterSets,
-} from 'ui/stores/filterset/index';
+import filterSetActions from 'ui/stores/filterset/actions';
+import filterSetSelectors from 'ui/stores/filterset/selectors';
+import saga from 'ui/stores/filterset/saga';
+import reducer from 'ui/stores/filterset/reducer';
 
 const NoResults = styled.div`
   color: #6d6d6d;
@@ -59,23 +53,23 @@ const Panel = styled(Collapse.Panel)`
 `;
 
 const FilterSets = () => {
-  useInjectReducer({ key: 'filterSets', reducer: filterSetsReducer });
-  useInjectSaga({ key: 'filterSets', saga: filterSetsSaga });
+  useInjectReducer({ key: 'filterSets', reducer });
+  useInjectSaga({ key: 'filterSets', saga });
   const dispatch = useDispatch();
 
   const [expandedPanels, setExpandedPanels] = useState([]);
   const [searchValue, setSearchValue] = useState('');
 
-  const globalSet = useSelector(makeSelectGlobalFilterSets());
-  const privateSet = useSelector(makeSelectPrivateFilterSets());
-  const staticSet = useSelector(makeSelectStaticFilterSets());
-  const loading = useSelector(makeSelectFilterSetsLoading());
+  const globalSet = useSelector(filterSetSelectors.makeSelectGlobalFilterSets());
+  const privateSet = useSelector(filterSetSelectors.makeSelectPrivateFilterSets());
+  const staticSet = useSelector(filterSetSelectors.makeSelectStaticFilterSets());
+  const loading = useSelector(filterSetSelectors.makeSelectFilterSetsLoading());
   const visible = useSelector(selectors.makeSelectFilterSetsState());
   const user = useSelector(makeSelectUserData());
 
   useEffect(() => {
     if (visible) {
-      dispatch(loadFilterSetsRequest());
+      dispatch(filterSetActions.loadFilterSetsRequest());
     }
   }, [visible]);
 
@@ -108,19 +102,19 @@ const FilterSets = () => {
   const rowsPrivate = privateSet?.filter(item => item.name.toLowerCase().includes(searchValue.toLowerCase())) || [];
   const rowsStatic = staticSet?.filter(item => item.name.toLowerCase().includes(searchValue.toLowerCase())) || [];
   const noRights = user.isActive && !user.permissions.includes('rules.events_edit');
-  console.log({ user });
+
   const map = [
     {
       type: 'global',
       title: 'Global Filter Sets',
       data: rowsGlobal,
-      delete: filterSetItem => dispatch(deleteFilterSet('global', filterSetItem)),
+      delete: filterSetItem => dispatch(filterSetActions.deleteFilterSet('global', filterSetItem)),
     },
     {
       type: 'private',
       title: 'Private Filter Sets',
       data: rowsPrivate,
-      delete: filterSetItem => dispatch(deleteFilterSet('private', filterSetItem)),
+      delete: filterSetItem => dispatch(filterSetActions.deleteFilterSet('private', filterSetItem)),
     },
     {
       type: 'static',
