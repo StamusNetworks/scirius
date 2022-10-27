@@ -1,25 +1,22 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
-import axios from 'axios';
+import NetworkService from 'ui/services/NetworkService';
 import constants from 'ui/stores/filterset/constants';
-import * as config from 'config/Api';
 import actions from './actions';
 
 function* getFilterSets() {
-  const requestURL = `${config.API_URL}${config.HUNT_FILTER_SETS}`;
   try {
-    const filterSetsResponse = yield call(axios.get, requestURL);
-    yield put(actions.filterSetsSuccess(filterSetsResponse.data));
+    const response = yield call(NetworkService.fetchFilterSets);
+    yield put(actions.filterSetsSuccess(response));
   } catch (err) {
     yield put(actions.filterSetsFail(err));
   }
 }
 
-function* delFilterSet(action) {
-  const { filterSet, filterSetType } = action;
-  const requestURL = `${config.API_URL}${config.HUNT_FILTER_SETS}${filterSet.id}`;
+function* deleteFilterSet(action) {
+  const { id } = action;
   try {
-    yield call(axios.delete, requestURL);
-    yield put(actions.deleteFilterSetSuccess(filterSetType, filterSet.id));
+    yield call(NetworkService.deleteFilterSet, { $id: id });
+    yield put(actions.deleteFilterSetSuccess(id));
   } catch (err) {
     yield put(actions.deleteFilterSetFail(err));
   }
@@ -27,5 +24,5 @@ function* delFilterSet(action) {
 
 export default function* filterSetsSaga() {
   yield takeLatest(constants.FILTER_SETS_REQUEST, getFilterSets);
-  yield takeLatest(constants.DELETE_FILTER_SET, delFilterSet);
+  yield takeLatest(constants.DELETE_FILTER_SET_REQUEST, deleteFilterSet);
 }

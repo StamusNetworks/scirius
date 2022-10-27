@@ -42,9 +42,17 @@ const ENDPOINT = {
     name: 'Saving filter set',
     url: '/rest/rules/hunt_filter_sets/',
   },
+  FILTER_SET_DELETE: {
+    name: 'Deleting filter set',
+    url: `/rest/rules/hunt_filter_sets/$id`,
+  },
   SESSION_ACTIVITY: {
     name: 'Set session activity idle time',
     url: `/accounts/session_activity/`,
+  },
+  FILTER_SETS: {
+    name: 'Fetching filter sets',
+    url: `/rest/rules/hunt_filter_sets`,
   },
   UPDATE_PUSH_RULESET: {
     name: 'Update / Push ruleset',

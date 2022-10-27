@@ -22,7 +22,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { Drawer, Collapse, Empty } from 'antd';
+import { Drawer, Collapse, Empty, Modal } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { useInjectReducer } from 'ui/utils/injectReducer';
 import { useInjectSaga } from 'ui/utils/injectSaga';
@@ -63,7 +63,7 @@ const FilterSets = () => {
   const globalSet = useSelector(filterSetSelectors.makeSelectGlobalFilterSets());
   const privateSet = useSelector(filterSetSelectors.makeSelectPrivateFilterSets());
   const staticSet = useSelector(filterSetSelectors.makeSelectStaticFilterSets());
-  const loading = useSelector(filterSetSelectors.makeSelectFilterSetsLoading());
+  const { loading } = useSelector(filterSetSelectors.makeSelectFilterSetsRequest('get'));
   const visible = useSelector(selectors.makeSelectFilterSetsState());
   const user = useSelector(makeSelectUserData());
 
@@ -108,13 +108,13 @@ const FilterSets = () => {
       type: 'global',
       title: 'Global Filter Sets',
       data: rowsGlobal,
-      delete: filterSetItem => dispatch(filterSetActions.deleteFilterSet('global', filterSetItem)),
+      delete: id => dispatch(filterSetActions.deleteFilterSet(id)),
     },
     {
       type: 'private',
       title: 'Private Filter Sets',
       data: rowsPrivate,
-      delete: filterSetItem => dispatch(filterSetActions.deleteFilterSet('private', filterSetItem)),
+      delete: id => dispatch(filterSetActions.deleteFilterSet(id)),
     },
     {
       type: 'static',
@@ -153,7 +153,7 @@ const FilterSets = () => {
                 key={`${item.type}-${filterSetItem?.id}`}
                 item={filterSetItem}
                 loadFilterSets={() => loadFilterSets(filterSetItem)}
-                deleteFilterSet={item.delete ? () => item.delete(filterSetItem) : undefined}
+                deleteFilterSet={item.delete ? () => item.delete(filterSetItem.id) : undefined}
                 noRights={noRights}
               />
             ))}

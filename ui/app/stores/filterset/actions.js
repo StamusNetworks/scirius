@@ -4,9 +4,9 @@ const loadFilterSetsRequest = () => ({
   type: constants.FILTER_SETS_REQUEST,
 });
 
-const filterSetsSuccess = loadedFilterSets => ({
+const filterSetsSuccess = data => ({
   type: constants.FILTER_SETS_SUCCESS,
-  loadedFilterSets,
+  data,
 });
 
 const filterSetsFail = error => ({
@@ -14,10 +14,9 @@ const filterSetsFail = error => ({
   error,
 });
 
-const deleteFilterSet = (filterSetType, filterSet) => ({
-  type: constants.DELETE_FILTER_SET,
-  filterSetType,
-  filterSet,
+const deleteFilterSet = id => ({
+  type: constants.DELETE_FILTER_SET_REQUEST,
+  id,
 });
 
 const deleteFilterSetSuccess = (filterSetType, filterSetIdx) => ({
@@ -27,7 +26,7 @@ const deleteFilterSetSuccess = (filterSetType, filterSetIdx) => ({
 });
 
 const deleteFilterSetFail = error => ({
-  type: constants.DELETE_FILTER_SET_FAIL,
+  type: constants.DELETE_FILTER_SET_FAILURE,
   error,
 });
 

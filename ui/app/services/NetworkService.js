@@ -16,6 +16,9 @@ const NetworkService = {
   fetchHuntFilter: async () => Api.get(ENDPOINT.HUNT_FILTER),
   fetchSupportedActions: async (params, options) => Api.post(ENDPOINT.SUPPORTED_ACTIONS, params, options),
   fetchHistoryFilters: async () => Api.get(ENDPOINT.HISTORY_FILTERS),
+  fetchFilterSets: async () => Api.get(ENDPOINT.FILTER_SETS),
+  // DELETE
+  deleteFilterSet: async (params, options) => Api.delete(ENDPOINT.FILTER_SET_DELETE, params, options),
 };
 
 export default NetworkService;

@@ -61,7 +61,7 @@ const FilterSetList = ({ item, loadFilterSets, deleteFilterSet, noRights }) => (
       <>
         {!noRights && deleteFilterSet && (
           <Tooltip title="Delete" getPopupContainer={() => document.getElementById('container')}>
-            <Button size="small" type="danger" icon={<DeleteOutlined />} onClick={() => deleteFilterSet('global', item)} />
+            <Button size="small" type="danger" icon={<DeleteOutlined />} onClick={() => deleteFilterSet()} />
           </Tooltip>
         )}
       </>

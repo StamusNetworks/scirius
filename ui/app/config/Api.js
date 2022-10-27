@@ -15,6 +15,5 @@ export const ES_BASE_PATH = 'rest/rules/es/';
 export const ES_SIGS_LIST_PATH = `${ES_BASE_PATH}sigs_list/?hosts=*&offset=0&sids=`;
 export const SCIRIUS_CONTEXT = 'rest/rules/scirius_context/';
 export const HUNT_DOC = '/static/doc/hunt.html';
-export const HUNT_FILTER_SETS = 'rest/rules/hunt_filter_sets/';
 export const FILESTORE_PATH = 'rest/rules/filestore/';
 export const FILESTORE_PCAP = 'rest/rules/filestore_pcap/';

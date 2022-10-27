@@ -2,14 +2,17 @@ import produce from 'immer';
 import constants from 'ui/stores/filterset/constants';
 
 export const initialState = {
-  filterSets: {
-    global: [],
-    private: [],
-    static: [],
+  data: [],
+  request: {
+    get: {
+      loading: false,
+      status: null,
+    },
+    delete: {
+      loading: false,
+      status: null,
+    },
   },
-  filterSetDeleteIdx: null,
-  filterSetsLoading: false,
-  filterSetsStatus: null,
 };
 
 /* eslint-disable default-case */
@@ -17,39 +20,42 @@ const reducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
       case constants.FILTER_SETS_REQUEST:
-        draft.filterSetsLoading = true;
-        draft.filterSetsStatus = null;
+        draft.request.get.loading = true;
+        draft.request.get.status = null;
         break;
 
       case constants.FILTER_SETS_SUCCESS: {
-        const { loadedFilterSets } = action;
-        for (let idx = 0; idx < loadedFilterSets.length; idx += 1) {
-          const row = loadedFilterSets[idx];
-          // eslint-disable-next-line no-param-reassign
-          if (!draft.filterSets[row.share].find(f => f.id === row.id)) {
-            draft.filterSets[row.share].push(row);
+        const { data = [] } = action;
+        for (let idx = 0; idx < data.length; idx += 1) {
+          const row = data[idx];
+          if (!draft.data.find(f => f.id === row.id)) {
+            draft.data.push(row);
           }
         }
-        draft.filterSetsLoading = false;
-        draft.filterSetsStatus = true;
+        draft.request.get.loading = false;
+        draft.request.get.status = true;
         break;
       }
       case constants.FILTER_SETS_FAIL:
         draft.filterSetsList = [];
-        draft.filterSetsLoading = false;
-        draft.filterSetsStatus = false;
+        draft.request.get.loading = false;
+        draft.request.get.status = false;
         break;
 
-      case constants.DELETE_FILTER_SET:
-        draft.filterSetsLoading = true;
-        draft.filterSetsStatus = false;
+      case constants.DELETE_FILTER_SET_REQUEST:
+        draft.request.delete.loading = true;
+        draft.request.delete.status = null;
         break;
 
       case constants.DELETE_FILTER_SET_SUCCESS:
-        draft.filterSetDeleteIdx = null;
-        draft.filterSetsLoading = false;
-        draft.filterSetsStatus = true;
-        draft.filterSets[action.filterSetType] = draft.filterSets[action.filterSetType].filter(f => f.id !== action.filterSetIdx);
+        draft.request.delete.loading = false;
+        draft.request.delete.status = true;
+        draft.data = draft.data.filter(f => f.id !== action.id);
+        break;
+
+      case constants.DELETE_FILTER_SET_FAILURE:
+        draft.request.delete.loading = false;
+        draft.request.delete.status = false;
         break;
     }
   });
