@@ -27,6 +27,7 @@ from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import F
 from django.db import transaction
+from django.conf import settings
 from rules.models import (
     Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold, Transformation,
     RuleProcessingFilter, RuleProcessingFilterDef, FilterSet
@@ -99,10 +100,10 @@ class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelFor
         min_value=0.5,
         help_text='Automatic logout after inactivity timeout'
     )
-    elasticsearch_user = forms.CharField(required=False, help_text='Elasticsearch username for Scirius')
+    elasticsearch_user = forms.CharField(required=False, help_text='Elasticsearch username for %s' % settings.APP_SHORT_NAME)
     elasticsearch_pass = forms.CharField(required=False,
                                          label='Elasticsearch password',
-                                         help_text='Elasticsearch password for Scirius',
+                                         help_text='Elasticsearch password for %s' % settings.APP_SHORT_NAME,
                                          widget=forms.PasswordInput(render_value=True))
     custom_login_banner = forms.CharField(
         required=False,
