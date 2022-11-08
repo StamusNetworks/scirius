@@ -88,7 +88,7 @@ export class SignaturesPage extends React.Component {
         perPageOptions: [10, 20, 50, 100],
       },
       view_type: 'list',
-      sort: { id: 'created', asc: false },
+      sort: { id: 'alerts', asc: false },
     });
 
     this.state = {
@@ -279,7 +279,7 @@ export class SignaturesPage extends React.Component {
           <Filters
             page="RULES_LIST"
             section={sections.GLOBAL}
-            queryTypes={['filter', 'rest']}
+            queryTypes={['filter', 'rest', 'filter_host_id']}
             sortValues={{ option: this.state.rulesList.sort.id, direction: this.state.rulesList.sort.asc ? 'asc' : 'desc' }}
             onSortChange={(option, direction) => {
               this.updateSignatureListState({

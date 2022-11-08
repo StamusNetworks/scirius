@@ -750,7 +750,7 @@ export class HuntDashboard extends React.Component {
         </Helmet>
 
         <ErrorHandler>
-          <Filters page="DASHBOARDS" section={sections.GLOBAL} queryTypes={['filter']} />
+          <Filters page="DASHBOARDS" section={sections.GLOBAL} queryTypes={['filter', 'filter_host_id']} />
         </ErrorHandler>
 
         <Row style={{ marginTop: 10 }}>
