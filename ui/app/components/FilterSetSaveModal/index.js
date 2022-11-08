@@ -33,16 +33,13 @@ const FilterSetSaveModal = ({ content, page, title, close }) => {
 
   const onFinish = async values => {
     if (await form.validateFields()) {
-      dispatch(actions.saveFilterSetRequest({ ...values, content }));
+      dispatch(actions.saveFilterSetRequest({ ...values, page, content }));
       close();
     }
   };
 
   useEffect(() => {
     form.setFieldsValue({ share: false });
-    if (page) {
-      form.setFieldsValue({ page });
-    }
   }, []);
 
   const noRights = user.data.isActive && !user.data.permissions.includes('rules.events_edit');
@@ -99,7 +96,7 @@ const FilterSetSaveModal = ({ content, page, title, close }) => {
           </Form.Item>
         )}
         {page && (
-          <Form.Item label="Page" name="page">
+          <Form.Item label="Page">
             <Input disabled defaultValue={huntTabs[page]} data-test="filter-set-save-modal-page-disabled" />
           </Form.Item>
         )}
