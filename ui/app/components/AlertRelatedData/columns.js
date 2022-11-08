@@ -43,6 +43,14 @@ const columns = {
     { title: 'User Agent', dataIndex: ['http', 'http_user_agent'] },
     { title: 'Status', dataIndex: ['http', 'status'] },
   ],
+  Dns: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Protocol', dataIndex: ['proto'] },
+    { title: 'RRName', dataIndex: ['dns', 'rrname'] },
+    { title: 'RRType', dataIndex: ['dns', 'rrtype'] },
+    { title: 'RCode', dataIndex: ['dns', 'rcode'] },
+    { title: 'Type', dataIndex: ['dns', 'type'] },
+  ],
   Tls: [
     { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
     { title: 'SNI', dataIndex: ['tls', 'sni'] },
