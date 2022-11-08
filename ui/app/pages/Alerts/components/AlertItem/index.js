@@ -501,6 +501,21 @@ export default class AlertItem extends React.Component {
                       <EventField field_name="Length" field="http.length" value={data.http.length} addFilter={this.addFilter} />
                     </ErrorHandler>
                   )}
+                  {data.http.server !== undefined && (
+                    <ErrorHandler>
+                      <EventField field_name="Server" field="http.server" value={data.http.server} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                  )}
+                  {data.http.accept_language !== undefined && (
+                    <ErrorHandler>
+                      <EventField field_name="Accept Language" field="http.accept_language" value={data.http.accept_language} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                  )}
+                  {data.http.protocol !== undefined && (
+                    <ErrorHandler>
+                      <EventField field_name="Protocol" field="http.protocol" value={data.http.protocol} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                  )}
                 </DlHorizontal>
               </UICard>
             )}

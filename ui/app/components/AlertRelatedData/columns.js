@@ -42,6 +42,7 @@ const columns = {
     { title: 'URL', dataIndex: ['http', 'url'] },
     { title: 'User Agent', dataIndex: ['http', 'http_user_agent'] },
     { title: 'Status', dataIndex: ['http', 'status'] },
+    { title: 'HTTP Method', dataIndex: ['http', 'http_method'] },
   ],
   Dns: [
     { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
