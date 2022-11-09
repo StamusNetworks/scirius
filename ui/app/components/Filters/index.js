@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Cascader, Col, Divider, Input, Row, Space, Switch, Select } from 'antd';
-import { TagOutlined, CloseOutlined } from '@ant-design/icons';
 import UICard from 'ui/components/UIElements/UICard';
 import styled from 'styled-components';
 import { useInjectSaga } from 'utils/injectSaga';
@@ -11,11 +10,9 @@ import ruleSetSaga from 'ui/stores/filters/saga';
 import ruleSetsActions from 'ui/stores/filters/actions';
 import ruleSetsSelectors from 'ui/stores/filters/selectors';
 import strGlobalSelectors from 'ui/containers/App/selectors';
-import strGlobalActions from 'ui/containers/App/actions';
 import * as huntGlobalStore from 'ui/containers/HuntApp/stores/global';
 import FilterList from 'ui/components/FilterList/index';
 import { sections } from 'ui/constants';
-import ErrorHandler from 'ui/components/Error';
 import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
 import UISwitch from 'ui/components/UIElements/UISwitch';
 import AdditionalFilters from 'ui/components/AdditionalFilters';
@@ -25,8 +22,8 @@ import Sort from 'ui/components/Sort';
 
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import ActionsButtons from '../ActionsButtons';
 import Title from './Title.styled';
+import Actions from './components/Actions';
 const { Option } = Select;
 
 const FilterError = styled.span`
@@ -38,13 +35,6 @@ const FilterContainer = styled.div`
   display: grid;
   grid-gap: 10px;
   grid-template-columns: 1fr repeat(3, 150px);
-`;
-
-const ActionsSpace = styled(Space)`
-  width: 100%;
-  .ant-space-item {
-    height: 14px;
-  }
 `;
 
 const CascaderStyled = styled(Cascader)`
@@ -87,7 +77,6 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
   const historyFilters = useSelector(huntGlobalStore.makeSelectHistoryFilters());
   const alertTag = useSelector(huntGlobalStore.makeSelectAlertTag());
   const filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(filterTypes));
-  const supportedActions = useSelector(ruleSetsSelectors.makeSelectSupportedActions());
   const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());
   const supportedActionsPermissions = user && user.data && user.data.permissions && user.data.permissions.includes('rules.ruleset_policy_edit');
 
@@ -376,71 +365,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
             </Space>
           </div>
         )}
-        {page !== 'HISTORY' && (
-          <div>
-            <Title>Actions</Title>
-            <ActionsSpace direction="vertical">
-              <Space>
-                <CloseOutlined style={{ width: 24 }} />
-                {filters.length > 0 && (
-                  <a
-                    href="#"
-                    onClick={e => {
-                      e.preventDefault();
-                      dispatch(huntGlobalStore.clearFilters(section));
-                    }}
-                  >
-                    Clear Filters
-                  </a>
-                )}
-                {filters.length === 0 && <>Clear Filters</>}
-              </Space>
-              <Space>
-                <svg height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                  <path d="M0 0h24v24H0V0z" fill="none" />
-                  <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
-                </svg>
-                <a
-                  href="#"
-                  onClick={e => {
-                    e.preventDefault();
-                    dispatch(strGlobalActions.setFilterSets(true));
-                  }}
-                >
-                  Load Filter Set
-                </a>
-              </Space>
-              <Space>
-                <svg enableBackground="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                  <g>
-                    <rect fill="none" height="24" width="24" />
-                  </g>
-                  <g>
-                    <path d="M14,10H3v2h11V10z M14,6H3v2h11V6z M18,14v-4h-2v4h-4v2h4v4h2v-4h4v-2H18z M3,16h7v-2H3V16z" />
-                  </g>
-                </svg>
-                {filters.length > 0 && (
-                  <a
-                    href="#"
-                    onClick={e => {
-                      e.preventDefault();
-                      dispatch(ruleSetsActions.saveFiltersModal(true));
-                    }}
-                  >
-                    Save Filter Set
-                  </a>
-                )}
-                {filters.length === 0 && <>Save Filter Set</>}
-              </Space>
-              <Space>
-                <TagOutlined style={{ width: 24 }} />
-                <ErrorHandler>
-                  <ActionsButtons supportedActions={supportedActions} />
-                </ErrorHandler>
-              </Space>
-            </ActionsSpace>
-          </div>
-        )}
+        {page !== 'HISTORY' && <Actions section={section} />}
       </FilterContainer>
       {saveFiltersModal && (
         <FilterSetSaveModal
