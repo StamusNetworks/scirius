@@ -23,6 +23,7 @@ import psutil
 from rest_framework import serializers
 
 from django.conf import settings
+from django.db.models import Count
 
 
 if settings.SURICATA_UNIX_SOCKET:
@@ -218,7 +219,10 @@ def extract_custom_source(f, source_path):
 
 def get_sources():
     from rules.models import Source
-    return Source.objects.all()
+    return Source.objects.annotate(
+        cats_count=Count('category', distinct=True),
+        rules_count=Count('category__rule')
+    )
 
 
 def get_sources_with_extra_info():

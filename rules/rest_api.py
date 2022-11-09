@@ -1445,9 +1445,8 @@ class BaseSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Source
         fields = ('pk', 'name', 'created_date', 'updated_date', 'method', 'datatype', 'uri', 'cert_verif',
-                  'cats_count', 'rules_count', 'use_iprep', 'version', 'use_sys_proxy')
-        read_only_fields = ('pk', 'created_date', 'updated_date', 'method', 'datatype', 'cert_verif',
-                            'cats_count', 'rules_count',)
+                  'use_iprep', 'version', 'use_sys_proxy')
+        read_only_fields = ('pk', 'created_date', 'updated_date', 'method', 'datatype', 'cert_verif')
 
     def create(self, validated_data):
         validated_data['created_date'] = timezone.now()
@@ -1610,12 +1609,6 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
 
         return Response(response)
 
-    @action(detail=True, methods=['post'])
-    def build_counter(self, request, pk):
-        instance = self.get_object()
-        instance.build_counters()
-        return Response({'build_counter': 'ok'})
-
 
 class PublicSourceSerializer(BaseSourceSerializer):
     public_source = serializers.CharField(required=True)
@@ -1661,12 +1654,12 @@ class PublicSourceViewSet(BaseSourceViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
-    List all used sources: (if cats_count == 0 and/or rules_count == 0 call update_source THEN build_counter api)\n
+    List all used sources:\n
         curl -k https://x.x.x.x/rest/rules/public_source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":1,"name":"Source1","created_date":"2018-05-04T10:15:46.216023+02:00","updated_date":"2018-05-04T15:22:15.267123+02:00","method":"http","datatype":"sigs","uri":"https://rules.emergingthreats.net/open/suricata-4.0/emerging.rules.tar.gz","cert_verif":true,"cats_count":47,"rules_count":25490}
+        {"pk":1,"name":"Source1","created_date":"2018-05-04T10:15:46.216023+02:00","updated_date":"2018-05-04T15:22:15.267123+02:00","method":"http","datatype":"sigs","uri":"https://rules.emergingthreats.net/open/suricata-4.0/emerging.rules.tar.gz","cert_verif":true}
 
     List available public sources:\n
         curl -k https://x.x.x.x/rest/rules/public_source/list_sources/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
@@ -1693,7 +1686,7 @@ class PublicSourceViewSet(BaseSourceViewSet):
 
     Return:\n
         HTTP/1.1 201 Created
-        {"pk":4,"name":"sonic public source","created_date":"2018-05-07T11:54:56.450782+02:00","updated_date":"2018-05-07T11:54:56.450791+02:00","method":"http","datatype":"sig","uri":"https://raw.githubusercontent.com/jasonish/suricata-trafficid/master/rules/traffic-id.rules","cert_verif":true,"cats_count":0,"rules_count":0,"public_source":"oisf/trafficid"}
+        {"pk":4,"name":"sonic public source","created_date":"2018-05-07T11:54:56.450782+02:00","updated_date":"2018-05-07T11:54:56.450791+02:00","method":"http","datatype":"sig","uri":"https://raw.githubusercontent.com/jasonish/suricata-trafficid/master/rules/traffic-id.rules","cert_verif":true,"public_source":"oisf/trafficid"}
 
     Update public source:\n
         curl -k https://x.x.x.x/rest/rules/public_source/<pk-public-source>/update_source/?async=true -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
@@ -1723,7 +1716,7 @@ class PublicSourceViewSet(BaseSourceViewSet):
     queryset = Source.objects.all()
     serializer_class = PublicSourceSerializer
     ordering = ('name',)
-    ordering_fields = ('name', 'created_date', 'updated_date', 'cats_count', 'rules_count',)
+    ordering_fields = ('name', 'created_date', 'updated_date')
     filterset_fields = ('name', 'method')
     search_fields = ('name', 'method')
 
@@ -1748,12 +1741,11 @@ class SourceViewSet(BaseSourceViewSet):
     =============================================================================================================================================================
     ==== GET ====\n
     List all used sources:\n
-    List all used sources: (if cats_count == 0 and/or rules_count == 0 call update_source (if method==http) THEN build_counter api)\n
         curl -k https://x.x.x.x/rest/rules/source/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     Return:\n
         HTTP/1.1 200 OK
-        {"pk":1,"name":"Source1","created_date":"2018-05-04T10:15:46.216023+02:00","updated_date":"2018-05-04T15:22:15.267123+02:00","method":"http","datatype":"sigs","uri":"https://rules.emergingthreats.net/open/suricata-4.0/emerging.rules.tar.gz","cert_verif":true,"cats_count":47,"rules_count":25490,"authkey":"123456789"}
+        {"pk":1,"name":"Source1","created_date":"2018-05-04T10:15:46.216023+02:00","updated_date":"2018-05-04T15:22:15.267123+02:00","method":"http","datatype":"sigs","uri":"https://rules.emergingthreats.net/open/suricata-4.0/emerging.rules.tar.gz","cert_verif":true,"authkey":"123456789"}
 
     ==== POST ====\n
     Create custom source:\n
@@ -1761,7 +1753,7 @@ class SourceViewSet(BaseSourceViewSet):
 
     Return:\n
         HTTP/1.1 201 Created
-        {"pk":5,"name":"sonic Custom source","created_date":"2018-05-07T12:01:00.658118+02:00","updated_date":"2018-05-07T12:01:00.658126+02:00","method":"local","datatype":"sigs","uri":null,"cert_verif":true,"cats_count":0,"rules_count":0,"authkey":"123456789","use_sys_proxy":true}
+        {"pk":5,"name":"sonic Custom source","created_date":"2018-05-07T12:01:00.658118+02:00","updated_date":"2018-05-07T12:01:00.658126+02:00","method":"local","datatype":"sigs","uri":null,"cert_verif":true,"authkey":"123456789","use_sys_proxy":true}
 
     Update custom (only for {method: http}):\n
         curl -k "https://x.x.x.x/rest/rules/source/<pk-source>/update_source/?async=true" -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST
@@ -1800,7 +1792,7 @@ class SourceViewSet(BaseSourceViewSet):
     serializer_class = SourceSerializer
     parser_classes = (MultiPartParser, JSONParser)
     ordering = ('name',)
-    ordering_fields = ('name', 'created_date', 'updated_date', 'cats_count', 'rules_count', 'datatype')
+    ordering_fields = ('name', 'created_date', 'updated_date', 'datatype')
     filterset_fields = ('name', 'method', 'datatype')
     search_fields = ('name', 'method', 'datatype')
 

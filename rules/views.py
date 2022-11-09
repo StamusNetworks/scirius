@@ -128,10 +128,6 @@ def sources(request):
     from scirius.utils import get_middleware_module
     sources = get_middleware_module('common').get_sources().order_by('name')
 
-    for source_ in sources.filter(datatype__in=dict(Source.CONTENT_TYPE).keys()):
-        if source_.cats_count == 0:
-            source_.build_counters()
-
     context = {'sources': sources}
     return scirius_render(request, 'rules/sources.html', context)
 
