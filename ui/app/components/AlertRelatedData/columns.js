@@ -81,6 +81,13 @@ const columns = {
     { title: 'Severity', dataIndex: ['smb', 'ext_status', 'severity'] },
     { title: 'Interface', dataIndex: ['smb', 'dcerpc', 'interface'] },
     { title: 'Endpoint', dataIndex: ['smb', 'dcerpc', 'endpoint'] },
+    { title: 'Uuid', dataIndex: ['smb', 'dcerpc', 'interface', 'uuid'] },
+    { title: 'Opnum', dataIndex: ['smb', 'dcerpc', 'opnum'] },
+    { title: 'Status', dataIndex: ['smb', 'status'] },
+    { title: 'Share', dataIndex: ['smb', 'share'] },
+    { title: 'Filename', dataIndex: ['smb', 'filename'] },
+    { title: 'Host', dataIndex: ['smb', 'ntlmssp', 'host'] },
+    { title: 'User', dataIndex: ['smb', 'ntlmssp', 'user'] },
   ],
 };
 
