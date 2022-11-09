@@ -1872,6 +1872,7 @@ def system_settings(request):
         'form_id': 'main',
         'main_form': main_form,
         'kibana_form': kibana_form,
+        'use_loggers': PROBE.common.use_stamuslogger()
     }
 
     if request.method == 'POST':

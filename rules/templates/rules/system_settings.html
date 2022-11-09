@@ -31,7 +31,7 @@
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-md-6">
-                            <form class="form" action="{% url 'system_settings' %}" method="post">
+                            <form class="form" action="{% url 'system_settings' %}" method="post" id="system_settings">
                                 {% csrf_token %}
                                 <input type='hidden' name='form_id' value='main'>
                                 {% bootstrap_field main_form.use_http_proxy show_label=False %}
@@ -61,7 +61,7 @@
                                 {% if perms.rules.configuration_edit %}
                                     {% bootstrap_field  main_form.comment %}
                                     {% buttons %}
-                                        <button type="submit" class="btn btn-primary">{% bootstrap_icon "ok" %} Submit</button>
+                                        <button onclick="show_confirmation(); return false;" class="btn btn-primary">{% bootstrap_icon "ok" %} Submit</button>
                                     {% endbuttons %}
                                 {% endif %}
                             </form>
@@ -241,6 +241,21 @@ $("#clear_dashboards").click(function() {
 $("#reset_dashboards").click(function() {
 	$("#reset_modal").modal('show');
 });
+
+function show_confirmation() {
+    let use_loggers = {{ use_loggers|yesno:"true,false" }};
+    if (!$('#id_custom_elasticsearch').is(':checked') && use_loggers) {
+        confirmModal({
+            title: "Disable loggers",
+            msg: "Switching to default ES configuration will disable external loggers, do you want to continue ?",
+            cb: function() {
+                $('#system_settings').submit();
+            }
+        });
+    } else {
+        $('#system_settings').submit();
+    }
+}
 
 checkbox_toggle_div('#id_use_http_proxy', '#proxy_fields');
 checkbox_toggle_div('#id_use_elasticsearch', '#es_fields');
