@@ -508,7 +508,12 @@ export default class AlertItem extends React.Component {
                   )}
                   {data.http.accept_language !== undefined && (
                     <ErrorHandler>
-                      <EventField field_name="Accept Language" field="http.accept_language" value={data.http.accept_language} addFilter={this.addFilter} />
+                      <EventField
+                        field_name="Accept Language"
+                        field="http.accept_language"
+                        value={data.http.accept_language}
+                        addFilter={this.addFilter}
+                      />
                     </ErrorHandler>
                   )}
                   {data.http.protocol !== undefined && (
