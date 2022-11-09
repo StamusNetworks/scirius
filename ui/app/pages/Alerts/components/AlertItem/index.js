@@ -555,6 +555,11 @@ export default class AlertItem extends React.Component {
                       <EventField field_name="JA3S" field="tls.ja3s.hash" value={data.tls.ja3s.hash} addFilter={this.addFilter} />
                     </ErrorHandler>
                   )}
+                  {data.tls.version !== undefined && (
+                    <ErrorHandler>
+                      <EventField field_name="Version" field="tls.version" value={data.tls.version} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                  )}
                 </DlHorizontal>
               </UICard>
             )}
