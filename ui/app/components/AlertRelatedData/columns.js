@@ -1,3 +1,4 @@
+import React from 'react';
 import constants from 'ui/constants';
 import moment from 'moment';
 const { DATE_TIME_FORMAT } = constants;
@@ -57,6 +58,13 @@ const columns = {
     { title: 'SNI', dataIndex: ['tls', 'sni'] },
     { title: 'Subject', dataIndex: ['tls', 'subject'] },
     { title: 'Issuer', dataIndex: ['tls', 'issuerdn'] },
+  ],
+  Ftp: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Command', dataIndex: ['ftp', 'command'] },
+    { title: 'Command data', dataIndex: ['ftp', 'command_data'] },
+    { title: 'Reply', dataIndex: ['ftp', 'reply'], render: val => val && val.map(str => <div>{str}</div>) },
+    { title: 'Completion code', dataIndex: ['ftp', 'completion_code'], render: val => val && val.map(str => <div>{str}</div>) },
   ],
   Flow: [
     { title: 'Start time', dataIndex: ['flow', 'start'], render: val => moment(val).format(DATE_TIME_FORMAT) },
