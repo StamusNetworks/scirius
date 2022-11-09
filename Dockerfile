@@ -55,6 +55,7 @@ RUN \
 
 RUN echo  "**** COPY Scirius ****"
 COPY . /opt/scirius
+RUN mv /opt/scirius/docker/scirius/scirius/local_settings.py /opt/scirius/scirius/local_settings.py
 RUN chmod ugo+x /opt/scirius/docker/scirius/bin/*
     
 
