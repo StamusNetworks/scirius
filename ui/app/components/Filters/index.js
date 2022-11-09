@@ -383,7 +383,13 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
               <Space>
                 <CloseOutlined style={{ width: 24 }} />
                 {filters.length > 0 && (
-                  <a href="#" onClick={() => dispatch(huntGlobalStore.clearFilters(section))}>
+                  <a
+                    href="#"
+                    onClick={e => {
+                      e.preventDefault();
+                      dispatch(huntGlobalStore.clearFilters(section));
+                    }}
+                  >
                     Clear Filters
                   </a>
                 )}
@@ -414,7 +420,13 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                   </g>
                 </svg>
                 {filters.length > 0 && (
-                  <a href="#" onClick={() => dispatch(ruleSetsActions.saveFiltersModal(true))}>
+                  <a
+                    href="#"
+                    onClick={e => {
+                      e.preventDefault();
+                      dispatch(ruleSetsActions.saveFiltersModal(true));
+                    }}
+                  >
                     Save Filter Set
                   </a>
                 )}
