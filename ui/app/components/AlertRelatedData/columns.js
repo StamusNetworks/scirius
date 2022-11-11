@@ -202,6 +202,13 @@ const columns = {
     { title: 'Mode', dataIndex: ['tftp', 'mode'] },
     { title: 'Packet', dataIndex: ['tftp', 'packet'] },
   ],
+  Ssh: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Server proto version', dataIndex: ['ssh', 'server', 'proto_version'] },
+    { title: 'Server software versin', dataIndex: ['ssh', 'server', 'software_version'] },
+    { title: 'Client proto version', dataIndex: ['ssh', 'client', 'proto_version'] },
+    { title: 'Client software version', dataIndex: ['ssh', 'client', 'software_version'] },
+  ],
 };
 
 export default columns;
