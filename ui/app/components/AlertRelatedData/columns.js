@@ -209,6 +209,13 @@ const columns = {
     { title: 'Client proto version', dataIndex: ['ssh', 'client', 'proto_version'] },
     { title: 'Client software version', dataIndex: ['ssh', 'client', 'software_version'] },
   ],
+  Sip: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Version', dataIndex: ['sip', 'version'] },
+    { title: 'Code', dataIndex: ['sip', 'code'] },
+    { title: 'Method', dataIndex: ['sip', 'method'] },
+    { title: 'Uri', dataIndex: ['sip', 'uri'] },
+  ],
 };
 
 export default columns;
