@@ -137,6 +137,58 @@ const columns = {
     { title: 'Host', dataIndex: ['smb', 'ntlmssp', 'host'] },
     { title: 'User', dataIndex: ['smb', 'ntlmssp', 'user'] },
   ],
+  Netflow: [
+    { title: 'Start time', dataIndex: ['netflow', 'start'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'End time', dataIndex: ['netflow', 'end'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    {
+      title: 'Duration',
+      render: val => {
+        if (val.netflow && val.netflow.end && val.netflow.start) {
+          return moment.duration(moment(val.netflow.end).unix() - moment(val.netflow.start).unix(), 'seconds').humanize();
+        }
+        return 'n/a';
+      },
+    },
+    { title: 'Packets', dataIndex: ['netflow', 'pkts'] },
+    { title: 'Bytes', dataIndex: ['netflow', 'bytes'] },
+    { title: 'Age', dataIndex: ['netflow', 'age'] },
+  ],
+  Fileinfo: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    {
+      title: 'Mimetype',
+      render: val => {
+        if (val.fileinfo && val.fileinfo.mimetype) {
+          return val.fileinfo.mimetype;
+        }
+        if (val.fileinfo && val.fileinfo.type) {
+          return val.fileinfo.type;
+        }
+        return null;
+      },
+    },
+    { title: 'Size', dataIndex: ['fileinfo', 'size'] },
+    { title: 'Filename', dataIndex: ['fileinfo', 'filename'] },
+    {
+      title: 'Stored',
+      render: val => {
+        if (val.fileinfo && !val.fileinfo.stored) {
+          return 'no';
+        }
+        if (val.fileinfo && val.fileinfo.stored) {
+          return 'yes';
+        }
+        return null;
+      },
+    },
+  ],
+  Rdp: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Event type', dataIndex: ['rdp', 'event_type'] },
+    { title: 'Client version', dataIndex: ['rdp', 'client', 'version'] },
+    { title: 'Client keyboard layout', dataIndex: ['rdp', 'client', 'keyboard_layout'] },
+    { title: 'Client name', dataIndex: ['rdp', 'client', 'client_name'] },
+  ],
 };
 
 export default columns;
