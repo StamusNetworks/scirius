@@ -73,6 +73,13 @@ const columns = {
     { title: 'Mail to', dataIndex: ['smtp', 'rcpt_to'], render: val => val && val.map(str => <div>{str.replace(/^<|>$/g, '')}</div>) },
     { title: 'Attachment', dataIndex: ['email', 'attachment'], render: val => val && val.map(str => <div>{str}</div>) },
   ],
+  Dcerpc: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Request', dataIndex: ['dcerpc', 'request'] },
+    { title: 'Response', dataIndex: ['dcerpc', 'response'] },
+    { title: 'Opnum', dataIndex: ['dcerpc', 'req', 'opnum'] },
+    { title: 'Uuid', dataIndex: ['dcerpc', 'interfaces'], render: val => val && val.map(obj => <div>{obj.uuid}</div>) },
+  ],
   Flow: [
     { title: 'Start time', dataIndex: ['flow', 'start'], render: val => moment(val).format(DATE_TIME_FORMAT) },
     { title: 'End time', dataIndex: ['flow', 'end'], render: val => moment(val).format(DATE_TIME_FORMAT) },
