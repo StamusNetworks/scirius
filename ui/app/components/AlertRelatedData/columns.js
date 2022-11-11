@@ -80,6 +80,18 @@ const columns = {
     { title: 'Opnum', dataIndex: ['dcerpc', 'req', 'opnum'] },
     { title: 'Uuid', dataIndex: ['dcerpc', 'interfaces'], render: val => val && val.map(obj => <div>{obj.uuid}</div>) },
   ],
+  Krb5: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Source IP', dataIndex: ['src_ip'] },
+    { title: 'Source port', dataIndex: ['src_port'] },
+    { title: 'Destination IP', dataIndex: ['dest_ip'] },
+    { title: 'Destination port', dataIndex: ['dest_port'] },
+    { title: 'Cname', dataIndex: ['krb5', 'cname'], render: val => val && val.replace(/^<|>$/g, '') },
+    { title: 'Message type', dataIndex: ['krb5', 'msg_type'] },
+    { title: 'Realm', dataIndex: ['krb5', 'realm'], render: val => val && val.replace(/^<|>$/g, '') },
+    { title: 'Sname', dataIndex: ['krb5', 'sname'] },
+    { title: 'Weak encryption', dataIndex: ['krb5', 'weak_encryption'], render: bool => (bool ? 'Yes' : 'No') },
+  ],
   Flow: [
     { title: 'Start time', dataIndex: ['flow', 'start'], render: val => moment(val).format(DATE_TIME_FORMAT) },
     { title: 'End time', dataIndex: ['flow', 'end'], render: val => moment(val).format(DATE_TIME_FORMAT) },
