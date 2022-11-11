@@ -97,6 +97,15 @@ const columns = {
     { title: 'Protocol', dataIndex: ['proto'] },
     { title: 'Event', dataIndex: ['anomaly', 'event'] },
   ],
+  Dhcp: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Client MAC', dataIndex: ['dhcp', 'client_mac'] },
+    { title: 'DHCP type', dataIndex: ['dhcp', 'dhcp_type'] },
+    { title: 'DNS Servers', dataIndex: ['dhcp', 'dns_servers'], render: ips => ips && ips.map(ip => <div>{ip}</div>) },
+    { title: 'Hostname', dataIndex: ['dhcp', 'hostname'] },
+    { title: 'Client IP', dataIndex: ['dhcp', 'client_ip'] },
+    { title: 'Lease time', dataIndex: ['dhcp', 'lease_time'], render: microseconds => moment(microseconds / 1000).format(DATE_TIME_FORMAT) },
+  ],
   Flow: [
     { title: 'Start time', dataIndex: ['flow', 'start'], render: val => moment(val).format(DATE_TIME_FORMAT) },
     { title: 'End time', dataIndex: ['flow', 'end'], render: val => moment(val).format(DATE_TIME_FORMAT) },
