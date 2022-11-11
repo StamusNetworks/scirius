@@ -196,6 +196,12 @@ const columns = {
     { title: 'Vars', dataIndex: ['snmp', 'vars'], render: val => val && val.map(str => <div>{str}</div>) },
     { title: 'Version', dataIndex: ['snmp', 'version'] },
   ],
+  Tftp: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'File', dataIndex: ['tftp', 'file'] },
+    { title: 'Mode', dataIndex: ['tftp', 'mode'] },
+    { title: 'Packet', dataIndex: ['tftp', 'packet'] },
+  ],
 };
 
 export default columns;
