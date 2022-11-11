@@ -189,6 +189,13 @@ const columns = {
     { title: 'Client keyboard layout', dataIndex: ['rdp', 'client', 'keyboard_layout'] },
     { title: 'Client name', dataIndex: ['rdp', 'client', 'client_name'] },
   ],
+  Snmp: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Community', dataIndex: ['snmp', 'community'] },
+    { title: 'Pdu type', dataIndex: ['snmp', 'pdu_type'] },
+    { title: 'Vars', dataIndex: ['snmp', 'vars'], render: val => val && val.map(str => <div>{str}</div>) },
+    { title: 'Version', dataIndex: ['snmp', 'version'] },
+  ],
 };
 
 export default columns;
