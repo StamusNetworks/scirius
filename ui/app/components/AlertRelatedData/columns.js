@@ -92,6 +92,11 @@ const columns = {
     { title: 'Sname', dataIndex: ['krb5', 'sname'] },
     { title: 'Weak encryption', dataIndex: ['krb5', 'weak_encryption'], render: bool => (bool ? 'Yes' : 'No') },
   ],
+  Anomaly: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Protocol', dataIndex: ['proto'] },
+    { title: 'Event', dataIndex: ['anomaly', 'event'] },
+  ],
   Flow: [
     { title: 'Start time', dataIndex: ['flow', 'start'], render: val => moment(val).format(DATE_TIME_FORMAT) },
     { title: 'End time', dataIndex: ['flow', 'end'], render: val => moment(val).format(DATE_TIME_FORMAT) },
