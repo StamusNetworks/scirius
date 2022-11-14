@@ -216,6 +216,13 @@ const columns = {
     { title: 'Method', dataIndex: ['sip', 'method'] },
     { title: 'Uri', dataIndex: ['sip', 'uri'] },
   ],
+  Rfb: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Client protocol version, major', dataIndex: ['rfb', 'client_protocol_version', 'major'] },
+    { title: 'Server protocol version, major', dataIndex: ['rfb', 'server_protocol_version', 'major'] },
+    { title: 'Security type', dataIndex: ['rfb', 'authentication', 'security_type'] },
+    { title: 'Server security failure reason', dataIndex: ['rfb', 'server_security_failure_reason'] },
+  ],
 };
 
 export default columns;
