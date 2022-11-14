@@ -223,6 +223,13 @@ const columns = {
     { title: 'Security type', dataIndex: ['rfb', 'authentication', 'security_type'] },
     { title: 'Server security failure reason', dataIndex: ['rfb', 'server_security_failure_reason'] },
   ],
+  Mqtt: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Topic', dataIndex: ['mqtt', 'publish', 'topic'] },
+    { title: 'Username', dataIndex: ['mqtt', 'connect', 'username'] },
+    { title: 'Protocol strng', dataIndex: ['mqtt', 'connect', 'protocol_string'] },
+    { title: 'Protocol version', dataIndex: ['mqtt', 'connect', 'protocol_version'] },
+  ],
 };
 
 export default columns;
