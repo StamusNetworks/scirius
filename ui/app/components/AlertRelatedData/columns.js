@@ -230,6 +230,13 @@ const columns = {
     { title: 'Protocol strng', dataIndex: ['mqtt', 'connect', 'protocol_string'] },
     { title: 'Protocol version', dataIndex: ['mqtt', 'connect', 'protocol_version'] },
   ],
+  Nfs: [
+    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Filename', dataIndex: ['nfs', 'filename'] },
+    { title: 'Procedure', dataIndex: ['nfs', 'procedure'] },
+    { title: 'Type', dataIndex: ['nfs', 'type'] },
+    { title: 'Version', dataIndex: ['nfs', 'version'] },
+  ],
 };
 
 export default columns;
