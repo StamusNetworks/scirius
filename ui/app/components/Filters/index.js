@@ -373,7 +373,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
           close={() => {
             dispatch(ruleSetsActions.saveFiltersModal(false));
           }}
-          page={page}
+          fromPage={page}
           content={getFiltersCopy()}
         />
       )}

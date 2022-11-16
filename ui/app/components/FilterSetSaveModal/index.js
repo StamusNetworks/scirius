@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Checkbox, Form, Input, Modal, Select } from 'antd';
-import { huntTabs } from 'ui/constants';
+import { huntTabs, PAGE_STATE } from 'ui/constants';
 import HuntRestError from 'ui/components/HuntRestError';
 import { useDispatch, useSelector } from 'react-redux';
 import { useInjectSaga } from 'utils/injectSaga';
@@ -22,7 +22,7 @@ const layout = {
   },
 };
 
-const FilterSetSaveModal = ({ content, page, title, close }) => {
+const FilterSetSaveModal = ({ content, fromPage, title, close }) => {
   useInjectReducer({ key: 'filterSetSave', reducer });
   useInjectSaga({ key: 'filterSetSave', saga });
   const dispatch = useDispatch();
@@ -30,9 +30,9 @@ const FilterSetSaveModal = ({ content, page, title, close }) => {
   const user = useSelector(globalSelectors.makeSelectUser());
   const request = useSelector(selectors.makeSelectForm());
   const { error } = request;
-
   const onFinish = async values => {
     if (await form.validateFields()) {
+      const page = fromPage || form.getFieldValue('page');
       dispatch(actions.saveFilterSetRequest({ ...values, page, content }));
       close();
     }
@@ -82,11 +82,21 @@ const FilterSetSaveModal = ({ content, page, title, close }) => {
           <Input data-test="filter-set-save-modal-name" />
         </Form.Item>
 
-        {!page && (
-          <Form.Item label="Page" name="page">
+        {!fromPage && (
+          <Form.Item
+            label="Page"
+            name="page"
+            shouldUpdate
+            rules={[
+              {
+                required: true,
+                message: 'Please choose a page',
+              },
+            ]}
+          >
             <Select placeholder="Please select page" data-test="filter-set-save-modal-page">
               {Object.keys(huntTabs)
-                .filter(key => huntTabs[key] !== 'Policies')
+                .filter(key => key !== PAGE_STATE.filters_list)
                 .map(key => (
                   <Select.Option key={huntTabs[key]} value={key} data-test={`filter-set-save-modal-page-${huntTabs[key].toLowerCase()}`}>
                     {huntTabs[key]}
@@ -95,9 +105,9 @@ const FilterSetSaveModal = ({ content, page, title, close }) => {
             </Select>
           </Form.Item>
         )}
-        {page && (
+        {fromPage && (
           <Form.Item label="Page">
-            <Input disabled defaultValue={huntTabs[page]} data-test="filter-set-save-modal-page-disabled" />
+            <Input disabled defaultValue={huntTabs[fromPage]} data-test="filter-set-save-modal-page-disabled" />
           </Form.Item>
         )}
 
@@ -129,7 +139,7 @@ FilterSetSaveModal.propTypes = {
   title: PropTypes.any,
   close: PropTypes.any,
   content: PropTypes.any.isRequired,
-  page: PropTypes.any,
+  fromPage: PropTypes.any,
   noRights: PropTypes.bool.isRequired,
 };
 
