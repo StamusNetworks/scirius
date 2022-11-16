@@ -52,7 +52,6 @@ import HuntTrend from '../../HuntTrend';
 import { actionsButtons, loadActions, createAction, closeAction } from '../../helpers/common';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
-import copyTextToClipboard from '../../helpers/copyTextToClipboard';
 import { makeSelectAlertTag, makeSelectGlobalFilters } from '../../containers/HuntApp/stores/global';
 import '../../../../rules/static/rules/c3.min.css';
 
@@ -236,14 +235,6 @@ export class HuntDashboard extends React.Component {
     return result;
   };
 
-  getPanelFromLS = panel => {
-    let result = {};
-    if (typeof this.storedMacroLayout !== 'undefined' && typeof this.storedMacroLayout[panel] !== 'undefined') {
-      result = find(this.storedMacroLayout, { i: panel });
-    }
-    return result;
-  };
-
   generateQFilter = () => {
     let qfilter = buildQFilter(this.props.filtersWithAlert, this.props.systemSettings);
     if (!qfilter) {
@@ -413,11 +404,6 @@ export class HuntDashboard extends React.Component {
               [panel]: {
                 ...this.panelState.dashboard[panel],
                 loaded: isPanelLoaded,
-                dimensions: {
-                  ...this.panelState.dashboard[panel].dimensions,
-                  h: newHeight,
-                  minH: newHeight,
-                },
                 items,
               },
             },
@@ -449,31 +435,6 @@ export class HuntDashboard extends React.Component {
         });
         this.panelsBooted = 'yes';
       });
-  };
-
-  itemCopyModeOnClick = (event, itemPath, key, parentElem) => {
-    if (event.ctrlKey) {
-      this.setState({ copiedItem: itemPath });
-      setTimeout(() => {
-        this.setState({ copiedItem: '' });
-      }, 1500);
-      copyTextToClipboard(key, parentElem);
-    }
-  };
-
-  onMouseMove = (event, itemPath) => {
-    if (this.state.hoveredItem !== itemPath) {
-      this.setState({ hoveredItem: itemPath });
-    }
-    if (this.state.copyMode !== event.ctrlKey) {
-      this.setState({ copyMode: event.ctrlKey });
-    }
-  };
-
-  onMouseLeave = (event, itemPath) => {
-    if (this.state.hoveredItem === itemPath) {
-      this.setState({ hoveredItem: null });
-    }
   };
 
   createElement = block => {
