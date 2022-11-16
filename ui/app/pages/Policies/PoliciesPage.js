@@ -40,6 +40,11 @@ const DescriptionItem = styled.div`
   padding: 0 10px;
 `;
 
+const FiltersCell = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
 export class PoliciesPage extends React.Component {
   constructor(props) {
     super(props);
@@ -152,9 +157,10 @@ export class PoliciesPage extends React.Component {
     return description;
   }
 
-  getRowFilters(item) {
+  getRowFilters(item, size) {
     const filters = [];
-    for (let i = 0; i < item.filter_defs.length; i += 1) {
+    const limit = size || item.filter_defs.length;
+    for (let i = 0; i < limit; i += 1) {
       let info = (
         <DescriptionItem key={i}>
           {item.filter_defs[i].operator === 'different' && 'Not '}
@@ -170,6 +176,9 @@ export class PoliciesPage extends React.Component {
         );
       }
       filters.push(info);
+    }
+    if (size && size < item.filter_defs.length) {
+      filters.push(<span key="more">and {item.filter_defs.length - size} more...</span>);
     }
     return filters;
   }
@@ -231,7 +240,7 @@ export class PoliciesPage extends React.Component {
     },
     {
       title: 'Filters',
-      render: (value, item) => this.getRowFilters(item),
+      render: (value, item) => <FiltersCell>{this.getRowFilters(item, 1)}</FiltersCell>,
     },
     {
       title: 'Rulesets',
@@ -270,8 +279,8 @@ export class PoliciesPage extends React.Component {
             expandedRowRender: item => (
               <ActionItem
                 expandedDescription={this.getRowExpandedDescription(item)}
-                filters={item.filters}
-                expandedRulesets={item.rulesets}
+                filters={this.getRowFilters(item)}
+                expandedRulesets={this.getRowRuleSets(item)}
                 key={item.pk}
                 data={item}
                 last_index={this.state.count}
