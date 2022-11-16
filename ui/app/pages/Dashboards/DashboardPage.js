@@ -513,6 +513,7 @@ export class HuntDashboard extends React.Component {
           </div>
         }
         headStyle={{ color: COLOR_BRAND_BLUE, textAlign: 'center' }}
+        style={{ overflow: 'hidden' }}
       >
         {block.data !== null &&
           block.data.map(item => (
@@ -526,7 +527,7 @@ export class HuntDashboard extends React.Component {
               hasCopyShortcut
             />
           ))}
-        {block.data !== null && block.data.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+        {block.data !== null && block.data.length === 0 && <Empty style={{ margin: 0 }} image={Empty.PRESENTED_IMAGE_SIMPLE} />}
       </UICard>
     );
   };
