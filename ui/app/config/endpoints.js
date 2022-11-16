@@ -56,7 +56,7 @@ const ENDPOINT = {
   },
   UPDATE_PUSH_RULESET: {
     name: 'Update / Push ruleset',
-    url: process.env.REACT_APP_HAS_TAG === '1' ? 'rest/appliances/appliance/update_push_all/' : 'rest/suricata/update_push_all',
+    url: process.env.REACT_APP_HAS_TAG === '1' ? '/rest/appliances/probe/update_push_all/' : '/rest/suricata/update_push_all/',
   },
 };
 

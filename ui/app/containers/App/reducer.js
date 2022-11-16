@@ -72,7 +72,7 @@ export const initialState = {
     request: { loading: false, status: null },
   },
   updatePushRuleset: {
-    request: { loading: false, state: null },
+    request: { loading: false, status: null },
   },
 };
 
@@ -239,15 +239,15 @@ export const appReducer = (state = initialState, action) =>
       }
       case constants.UPDATE_PUSH_RULESET_REQUEST:
         draft.updatePushRuleset.request.loading = true;
-        draft.updatePushRuleset.request.state = null;
+        draft.updatePushRuleset.request.status = null;
         break;
       case constants.UPDATE_PUSH_RULESET_SUCCESS:
         draft.updatePushRuleset.request.loading = false;
-        draft.updatePushRuleset.request.state = true;
+        draft.updatePushRuleset.request.status = true;
         break;
       case constants.UPDATE_PUSH_RULESET_FAILURE:
         draft.updatePushRuleset.request.loading = false;
-        draft.updatePushRuleset.request.state = false;
+        draft.updatePushRuleset.request.status = false;
         break;
     }
   });
