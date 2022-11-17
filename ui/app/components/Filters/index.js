@@ -305,7 +305,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                 placeholder={field && field.placeholder}
                 optionFilterProp="children"
                 onChange={value => {
-                  filterAdded(filterCategory, value, false);
+                  filterAdded(field, value, true);
                 }}
                 filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
               >
