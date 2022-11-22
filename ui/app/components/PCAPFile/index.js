@@ -84,12 +84,7 @@ const PCAPFile = ({ alertData }) => {
 
     const downloadPCAP = async () => {
       try {
-        const { data } = await axios.get(`${config.API_URL + config.FILESTORE_PCAP}${alertId}/download/`);
-
-        const json = JSON.stringify(data);
-        const blob = new Blob([json], { type: 'octet/stream' });
-        const href = window.URL.createObjectURL(blob);
-
+        const href = `${config.API_URL + config.FILESTORE_PCAP}${alertId}/download/`;
         const element = document.createElement('a');
         element.setAttribute('href', href);
         element.setAttribute('download', `${element.href.split('/')[element.href.split('/').length - 1]}.pcap`);
@@ -188,10 +183,6 @@ const PCAPFile = ({ alertData }) => {
       {!alertData.capture_file && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
       {alertData.capture_file && (
         <div>
-          <Warning>
-            WARNING: These files are dangerous! We are not responsible for any damage to your system that might occur as a consequence of downloading
-            them.
-          </Warning>
           <Container>
             <div>
               <strong>Probe: </strong>
@@ -218,6 +209,11 @@ const PCAPFile = ({ alertData }) => {
               {pcapDownloading && <Spin size="small" />}
             </Download>
           </Container>
+          <Warning>
+            WARNING: The PCAP trace can contain malicious files or payloads inside ! DO NOT execute, run or activate the extracted contents in non
+            protected or non sand boxed environments. Stamus Networks is not responsible for any damage to your systems and infrastructure that might
+            occur as a consequence of downloading them.
+          </Warning>
           <Modal
             title="PCAP file download progress"
             visible={showPCAPdownloadProgress}
