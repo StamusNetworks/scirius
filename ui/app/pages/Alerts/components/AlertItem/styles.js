@@ -33,3 +33,16 @@ export const Pre = styled.pre`
   padding: 5px 10px;
   margin-bottom: 0;
 `;
+
+export const Warning = styled.div`
+  text-align: center;
+  color: red;
+  padding-bottom: 10px;
+`;
+
+export const Container = styled.div`
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 0.5fr 0.5fr;
+  justify-items: center;
+  grid-gap: 20px;
+`;

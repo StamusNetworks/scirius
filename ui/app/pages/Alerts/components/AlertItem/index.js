@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Badge, Empty, Spin, Tabs } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import ReactJson from 'react-json-view';
 
@@ -13,7 +14,7 @@ import ErrorHandler from 'ui/components/Error';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
 import PCAPFile from 'ui/components/PCAPFile';
 
-import { DlHorizontal, Numbers, Pre } from './styles';
+import { DlHorizontal, Container, Warning, Numbers, Pre } from './styles';
 import AlertRelatedData from '../../../../components/AlertRelatedData';
 export default class AlertItem extends React.Component {
   constructor(props) {
@@ -188,25 +189,31 @@ export default class AlertItem extends React.Component {
   renderFiles() {
     return (
       <Fragment>
-        {JSON.stringify(this.state.files) !== '{}' && (
-          <div className="files-warning">
-            WARNING: These files are potentially dangerous! We are not responsible for any damage to your system that might occur as a consequence of
-            downloading them.
-          </div>
-        )}
         {Object.values(this.state.files).map(file => (
-          <div key={file.sha256} className="file-item">
+          <Container key={file.sha256}>
             <div>{file.sha256}</div>
             <div>{file.filename}</div>
             <div>{file.magic}</div>
             <div>{(file.size / 1000).toFixed(1)}KB</div>
             {!this.state.files[file.sha256].downloading ? (
-              <i className="glyphicon glyphicon-download-alt" onClick={() => this.downloadFile(file)}></i>
+              <a
+                onClick={e => {
+                  e.preventDefault();
+                  this.downloadFile(file);
+                }}
+              >
+                <DownloadOutlined />
+              </a>
             ) : (
               <Spin size="small" />
             )}
-          </div>
+          </Container>
         ))}
+        <Warning>
+          WARNING: These extracted files can contain malware or malicious payloads! DO NOT execute, run or activate those in non protected or non sand
+          boxed environments. Stamus Networks is not responsible for any damage to your systems and infrastructure that might occur as a consequence
+          of downloading them.
+        </Warning>
       </Fragment>
     );
   }
@@ -704,7 +711,7 @@ export default class AlertItem extends React.Component {
             />
           </Tabs.TabPane>
         )}
-        {showTabs && (
+        {showTabs && JSON.stringify(this.state.files) !== '{}' && (
           <Tabs.TabPane
             key="json-files"
             tab={
@@ -733,15 +740,6 @@ export default class AlertItem extends React.Component {
           </Tabs.TabPane>
         )}
         {!events && <Tabs.TabPane key="events" tab={<Spin size="small" />} />}
-        {showTabs && JSON.stringify(this.state.files) !== '{}' && (
-          <Tabs.TabPane key="json-files" tab="Files">
-            <div className="files-warning">
-              WARNING: These files are dangerous! We are not responsible for any damage to your system that might occur as a consequence of
-              downloading them.
-            </div>
-            {this.renderFiles()}
-          </Tabs.TabPane>
-        )}
       </Tabs>
     );
   }
