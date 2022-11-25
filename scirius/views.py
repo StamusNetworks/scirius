@@ -61,6 +61,13 @@ class KibanaProxyView(PermissionRequiredMixin, ProxyView):
             raise PermissionDenied()
         return super().dispatch(request, path)
 
+    def get_proxy_request_headers(self, request):
+        headers = super().get_proxy_request_headers(request)
+        for header in list(headers.keys()):
+            if header.lower() == 'connection':
+                headers.pop(header)
+        return headers
+
 
 class EveboxProxyView(PermissionRequiredMixin, ProxyView):
     upstream = "http://" + settings.EVEBOX_ADDRESS
