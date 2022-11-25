@@ -97,11 +97,6 @@ export default class AlertItem extends React.Component {
               }
             }
           }
-          if ('Stamus' in res.data) {
-            res.data.Stamus.forEach(obj => {
-              obj.stamus.threat_name = { threatName: obj.stamus.threat_name, familyId: obj.stamus.family_id, threatId: obj.stamus.threat_id };
-            });
-          }
           this.setState({ events: res.data });
         }
       });
