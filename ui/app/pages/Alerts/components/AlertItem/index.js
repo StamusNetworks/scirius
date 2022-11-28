@@ -37,18 +37,6 @@ export default class AlertItem extends React.Component {
     this.fetchData(this.props.data.flow_id);
   }
 
-  nbEvents = events => {
-    let nb = 0;
-    if (events) {
-      Object.keys(events).forEach(key => {
-        nb += Object.keys(events[key]).length;
-      });
-
-      return `(${nb})`;
-    }
-    return '';
-  };
-
   formatString = (str, ...params) => {
     let result = str;
     for (let i = 0; i < params.length; i += 1) {
@@ -85,7 +73,6 @@ export default class AlertItem extends React.Component {
           if ('Alert' in res.data) {
             for (let idx = 0; idx < Object.keys(res.data.Alert).length; idx += 1) {
               const item = res.data.Alert[idx];
-              item.key = idx;
 
               if (JSON.stringify(item) === JSON.stringify(this.props.data)) {
                 res.data.Alert.splice(idx, 1);
@@ -97,7 +84,13 @@ export default class AlertItem extends React.Component {
               }
             }
           }
-          this.setState({ events: res.data });
+
+          // key needed in dataSource for antd table in each tab
+          const events = {};
+          Object.keys(res.data).forEach(key => {
+            events[key] = res.data[key].map((obj, i) => ({ key: i, rawJson: obj }));
+          });
+          this.setState({ events });
         }
       });
 

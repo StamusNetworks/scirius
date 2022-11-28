@@ -18,164 +18,168 @@ const showMitreInfo = (mtn, mti) => {
 
 const columns = {
   Alert: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Signature', dataIndex: ['alert', 'signature'] },
-    { title: 'SignatureID', dataIndex: ['alert', 'signature_id'] },
-    { title: 'Category', dataIndex: ['alert', 'category'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Signature', dataIndex: ['rawJson', 'alert', 'signature'] },
+    { title: 'SignatureID', dataIndex: ['rawJson', 'alert', 'signature_id'] },
+    { title: 'Category', dataIndex: ['rawJson', 'alert', 'category'] },
     {
       title: 'Mitre Tactic',
-      render: val => {
-        const { mitre_tactic_name: mtn, mitre_tactic_id: mti } = val.alert?.metadata || {};
+      render: ({ rawJson }) => {
+        const { mitre_tactic_name: mtn, mitre_tactic_id: mti } = rawJson.alert?.metadata || {};
         return showMitreInfo(mtn, mti);
       },
     },
     {
       title: 'Mitre Technique',
-      render: val => {
-        const { mitre_technique_name: mtn, mitre_technique_id: mti } = val.alert?.metadata || {};
+      render: ({ rawJson }) => {
+        const { mitre_technique_name: mtn, mitre_technique_id: mti } = rawJson.alert?.metadata || {};
         return showMitreInfo(mtn, mti);
       },
     },
   ],
   Http: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Host', dataIndex: ['http', 'hostname'] },
-    { title: 'URL', dataIndex: ['http', 'url'] },
-    { title: 'User Agent', dataIndex: ['http', 'http_user_agent'] },
-    { title: 'Status', dataIndex: ['http', 'status'] },
-    { title: 'HTTP Method', dataIndex: ['http', 'http_method'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Host', dataIndex: ['rawJson', 'http', 'hostname'] },
+    { title: 'URL', dataIndex: ['rawJson', 'http', 'url'] },
+    { title: 'User Agent', dataIndex: ['rawJson', 'http', 'http_user_agent'] },
+    { title: 'Status', dataIndex: ['rawJson', 'http', 'status'] },
+    { title: 'HTTP Method', dataIndex: ['rawJson', 'http', 'http_method'] },
   ],
   Dns: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Protocol', dataIndex: ['proto'] },
-    { title: 'RRName', dataIndex: ['dns', 'rrname'] },
-    { title: 'RRType', dataIndex: ['dns', 'rrtype'] },
-    { title: 'RCode', dataIndex: ['dns', 'rcode'] },
-    { title: 'Type', dataIndex: ['dns', 'type'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Protocol', dataIndex: ['rawJson', 'proto'] },
+    { title: 'RRName', dataIndex: ['rawJson', 'dns', 'rrname'] },
+    { title: 'RRType', dataIndex: ['rawJson', 'dns', 'rrtype'] },
+    { title: 'RCode', dataIndex: ['rawJson', 'dns', 'rcode'] },
+    { title: 'Type', dataIndex: ['rawJson', 'dns', 'type'] },
   ],
   Tls: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'SNI', dataIndex: ['tls', 'sni'] },
-    { title: 'Subject', dataIndex: ['tls', 'subject'] },
-    { title: 'Issuer', dataIndex: ['tls', 'issuerdn'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'SNI', dataIndex: ['rawJson', 'tls', 'sni'] },
+    { title: 'Subject', dataIndex: ['rawJson', 'tls', 'subject'] },
+    { title: 'Issuer', dataIndex: ['rawJson', 'tls', 'issuerdn'] },
   ],
   Ftp: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Command', dataIndex: ['ftp', 'command'] },
-    { title: 'Command data', dataIndex: ['ftp', 'command_data'] },
-    { title: 'Reply', dataIndex: ['ftp', 'reply'], render: val => val && val.map(str => <div>{str}</div>) },
-    { title: 'Completion code', dataIndex: ['ftp', 'completion_code'], render: val => val && val.map(str => <div>{str}</div>) },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Command', dataIndex: ['rawJson', 'ftp', 'command'] },
+    { title: 'Command data', dataIndex: ['rawJson', 'ftp', 'command_data'] },
+    { title: 'Reply', dataIndex: ['rawJson', 'ftp', 'reply'], render: val => val && val.map(str => <div>{str}</div>) },
+    { title: 'Completion code', dataIndex: ['rawJson', 'ftp', 'completion_code'], render: val => val && val.map(str => <div>{str}</div>) },
   ],
   Smtp: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Helo', dataIndex: ['smtp', 'helo'] },
-    { title: 'Mail from', dataIndex: ['smtp', 'mail_from'], render: val => val && val.replace(/^<|>$/g, '') },
-    { title: 'Mail to', dataIndex: ['smtp', 'rcpt_to'], render: val => val && val.map(str => <div>{str.replace(/^<|>$/g, '')}</div>) },
-    { title: 'Attachment', dataIndex: ['email', 'attachment'], render: val => val && val.map(str => <div>{str}</div>) },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Helo', dataIndex: ['rawJson', 'smtp', 'helo'] },
+    { title: 'Mail from', dataIndex: ['rawJson', 'smtp', 'mail_from'], render: val => val && val.replace(/^<|>$/g, '') },
+    { title: 'Mail to', dataIndex: ['rawJson', 'smtp', 'rcpt_to'], render: val => val && val.map(str => <div>{str.replace(/^<|>$/g, '')}</div>) },
+    { title: 'Attachment', dataIndex: ['rawJson', 'email', 'attachment'], render: val => val && val.map(str => <div>{str}</div>) },
   ],
   Dcerpc: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Request', dataIndex: ['dcerpc', 'request'] },
-    { title: 'Response', dataIndex: ['dcerpc', 'response'] },
-    { title: 'Opnum', dataIndex: ['dcerpc', 'req', 'opnum'] },
-    { title: 'Uuid', dataIndex: ['dcerpc', 'interfaces'], render: val => val && val.map(obj => <div>{obj.uuid}</div>) },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Request', dataIndex: ['rawJson', 'dcerpc', 'request'] },
+    { title: 'Response', dataIndex: ['rawJson', 'dcerpc', 'response'] },
+    { title: 'Opnum', dataIndex: ['rawJson', 'dcerpc', 'req', 'opnum'] },
+    { title: 'Uuid', dataIndex: ['rawJson', 'dcerpc', 'interfaces'], render: val => val && val.map(obj => <div>{obj.uuid}</div>) },
   ],
   Krb5: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Source IP', dataIndex: ['src_ip'] },
-    { title: 'Source port', dataIndex: ['src_port'] },
-    { title: 'Destination IP', dataIndex: ['dest_ip'] },
-    { title: 'Destination port', dataIndex: ['dest_port'] },
-    { title: 'Cname', dataIndex: ['krb5', 'cname'], render: val => val && val.replace(/^<|>$/g, '') },
-    { title: 'Message type', dataIndex: ['krb5', 'msg_type'] },
-    { title: 'Realm', dataIndex: ['krb5', 'realm'], render: val => val && val.replace(/^<|>$/g, '') },
-    { title: 'Sname', dataIndex: ['krb5', 'sname'] },
-    { title: 'Weak encryption', dataIndex: ['krb5', 'weak_encryption'], render: bool => (bool ? 'Yes' : 'No') },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Source IP', dataIndex: ['rawJson', 'src_ip'] },
+    { title: 'Source port', dataIndex: ['rawJson', 'src_port'] },
+    { title: 'Destination IP', dataIndex: ['rawJson', 'dest_ip'] },
+    { title: 'Destination port', dataIndex: ['rawJson', 'dest_port'] },
+    { title: 'Cname', dataIndex: ['rawJson', 'krb5', 'cname'], render: val => val && val.replace(/^<|>$/g, '') },
+    { title: 'Message type', dataIndex: ['rawJson', 'krb5', 'msg_type'] },
+    { title: 'Realm', dataIndex: ['rawJson', 'krb5', 'realm'], render: val => val && val.replace(/^<|>$/g, '') },
+    { title: 'Sname', dataIndex: ['rawJson', 'krb5', 'sname'] },
+    { title: 'Weak encryption', dataIndex: ['rawJson', 'krb5', 'weak_encryption'], render: bool => (bool ? 'Yes' : 'No') },
   ],
   Anomaly: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Protocol', dataIndex: ['proto'] },
-    { title: 'Event', dataIndex: ['anomaly', 'event'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Protocol', dataIndex: ['rawJson', 'proto'] },
+    { title: 'Event', dataIndex: ['rawJson', 'anomaly', 'event'] },
   ],
   Dhcp: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Client MAC', dataIndex: ['dhcp', 'client_mac'] },
-    { title: 'DHCP type', dataIndex: ['dhcp', 'dhcp_type'] },
-    { title: 'DNS Servers', dataIndex: ['dhcp', 'dns_servers'], render: ips => ips && ips.map(ip => <div>{ip}</div>) },
-    { title: 'Hostname', dataIndex: ['dhcp', 'hostname'] },
-    { title: 'Client IP', dataIndex: ['dhcp', 'client_ip'] },
-    { title: 'Lease time', dataIndex: ['dhcp', 'lease_time'], render: microseconds => moment(microseconds / 1000).format(DATE_TIME_FORMAT) },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Client MAC', dataIndex: ['rawJson', 'dhcp', 'client_mac'] },
+    { title: 'DHCP type', dataIndex: ['rawJson', 'dhcp', 'dhcp_type'] },
+    { title: 'DNS Servers', dataIndex: ['rawJson', 'dhcp', 'dns_servers'], render: ips => ips && ips.map(ip => <div>{ip}</div>) },
+    { title: 'Hostname', dataIndex: ['rawJson', 'dhcp', 'hostname'] },
+    { title: 'Client IP', dataIndex: ['rawJson', 'dhcp', 'client_ip'] },
+    {
+      title: 'Lease time',
+      dataIndex: ['rawJson', 'dhcp', 'lease_time'],
+      render: microseconds => moment(microseconds / 1000).format(DATE_TIME_FORMAT),
+    },
   ],
   Flow: [
-    { title: 'Start time', dataIndex: ['flow', 'start'], render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'End time', dataIndex: ['flow', 'end'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Start time', dataIndex: ['rawJson', 'flow', 'start'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'End time', dataIndex: ['rawJson', 'flow', 'end'], render: val => moment(val).format(DATE_TIME_FORMAT) },
     {
       title: 'Duration',
-      render: val => {
-        if (val.flow && val.flow.end && val.flow.start) {
-          return moment.duration(moment(val.flow.end).unix() - moment(val.flow.start).unix(), 'seconds').humanize();
+      render: ({ rawJson }) => {
+        if (rawJson.flow && rawJson.flow.end && rawJson.flow.start) {
+          return moment.duration(moment(rawJson.flow.end).unix() - moment(rawJson.flow.start).unix(), 'seconds').humanize();
         }
         return 'n/a';
       },
     },
-    { title: 'Bytes to server', dataIndex: ['flow', 'bytes_toserver'] },
-    { title: 'Bytes to client ', dataIndex: ['flow', 'bytes_toclient'] },
-    { title: 'Pkt to server', dataIndex: ['flow', 'pkts_toserver'] },
-    { title: 'Pkt to client', dataIndex: ['flow', 'pkts_toclient'] },
+    { title: 'Bytes to server', dataIndex: ['rawJson', 'flow', 'bytes_toserver'] },
+    { title: 'Bytes to client ', dataIndex: ['rawJson', 'flow', 'bytes_toclient'] },
+    { title: 'Pkt to server', dataIndex: ['rawJson', 'flow', 'pkts_toserver'] },
+    { title: 'Pkt to client', dataIndex: ['rawJson', 'flow', 'pkts_toclient'] },
   ],
   Smb: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Command', dataIndex: ['smb', 'command'] },
-    { title: 'Severity', dataIndex: ['smb', 'ext_status', 'severity'] },
-    { title: 'Interface', dataIndex: ['smb', 'dcerpc', 'interface'] },
-    { title: 'Endpoint', dataIndex: ['smb', 'dcerpc', 'endpoint'] },
-    { title: 'Uuid', dataIndex: ['smb', 'dcerpc', 'interface', 'uuid'] },
-    { title: 'Opnum', dataIndex: ['smb', 'dcerpc', 'opnum'] },
-    { title: 'Status', dataIndex: ['smb', 'status'] },
-    { title: 'Share', dataIndex: ['smb', 'share'] },
-    { title: 'Filename', dataIndex: ['smb', 'filename'] },
-    { title: 'Host', dataIndex: ['smb', 'ntlmssp', 'host'] },
-    { title: 'User', dataIndex: ['smb', 'ntlmssp', 'user'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Command', dataIndex: ['rawJson', 'smb', 'command'] },
+    { title: 'Severity', dataIndex: ['rawJson', 'smb', 'ext_status', 'severity'] },
+    { title: 'Interface', dataIndex: ['rawJson', 'smb', 'dcerpc', 'interface'] },
+    { title: 'Endpoint', dataIndex: ['rawJson', 'smb', 'dcerpc', 'endpoint'] },
+    { title: 'Uuid', dataIndex: ['rawJson', 'smb', 'dcerpc', 'interface', 'uuid'] },
+    { title: 'Opnum', dataIndex: ['rawJson', 'smb', 'dcerpc', 'opnum'] },
+    { title: 'Status', dataIndex: ['rawJson', 'smb', 'status'] },
+    { title: 'Share', dataIndex: ['rawJson', 'smb', 'share'] },
+    { title: 'Filename', dataIndex: ['rawJson', 'smb', 'filename'] },
+    { title: 'Host', dataIndex: ['rawJson', 'smb', 'ntlmssp', 'host'] },
+    { title: 'User', dataIndex: ['rawJson', 'smb', 'ntlmssp', 'user'] },
   ],
   Netflow: [
-    { title: 'Start time', dataIndex: ['netflow', 'start'], render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'End time', dataIndex: ['netflow', 'end'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Start time', dataIndex: ['rawJson', 'netflow', 'start'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'End time', dataIndex: ['rawJson', 'netflow', 'end'], render: val => moment(val).format(DATE_TIME_FORMAT) },
     {
       title: 'Duration',
-      render: val => {
-        if (val.netflow && val.netflow.end && val.netflow.start) {
-          return moment.duration(moment(val.netflow.end).unix() - moment(val.netflow.start).unix(), 'seconds').humanize();
+      render: ({ rawJson }) => {
+        if (rawJson.netflow && rawJson.netflow.end && rawJson.netflow.start) {
+          return moment.duration(moment(rawJson.netflow.end).unix() - moment(rawJson.netflow.start).unix(), 'seconds').humanize();
         }
         return 'n/a';
       },
     },
-    { title: 'Packets', dataIndex: ['netflow', 'pkts'] },
-    { title: 'Bytes', dataIndex: ['netflow', 'bytes'] },
-    { title: 'Age', dataIndex: ['netflow', 'age'] },
+    { title: 'Packets', dataIndex: ['rawJson', 'netflow', 'pkts'] },
+    { title: 'Bytes', dataIndex: ['rawJson', 'netflow', 'bytes'] },
+    { title: 'Age', dataIndex: ['rawJson', 'netflow', 'age'] },
   ],
   Fileinfo: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
     {
       title: 'Mimetype',
-      render: val => {
-        if (val.fileinfo && val.fileinfo.mimetype) {
-          return val.fileinfo.mimetype;
+      render: ({ rawJson }) => {
+        if (rawJson.fileinfo && rawJson.fileinfo.mimetype) {
+          return rawJson.fileinfo.mimetype;
         }
-        if (val.fileinfo && val.fileinfo.type) {
-          return val.fileinfo.type;
+        if (rawJson.fileinfo && rawJson.fileinfo.type) {
+          return rawJson.fileinfo.type;
         }
         return null;
       },
     },
-    { title: 'Size', dataIndex: ['fileinfo', 'size'] },
-    { title: 'Filename', dataIndex: ['fileinfo', 'filename'] },
+    { title: 'Size', dataIndex: ['rawJson', 'fileinfo', 'size'] },
+    { title: 'Filename', dataIndex: ['rawJson', 'fileinfo', 'filename'] },
     {
       title: 'Stored',
-      render: val => {
-        if (val.fileinfo && !val.fileinfo.stored) {
+      render: ({ rawJson }) => {
+        if (rawJson.fileinfo && !rawJson.fileinfo.stored) {
           return 'no';
         }
-        if (val.fileinfo && val.fileinfo.stored) {
+        if (rawJson.fileinfo && rawJson.fileinfo.stored) {
           return 'yes';
         }
         return null;
@@ -183,59 +187,59 @@ const columns = {
     },
   ],
   Rdp: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Event type', dataIndex: ['rdp', 'event_type'] },
-    { title: 'Client version', dataIndex: ['rdp', 'client', 'version'] },
-    { title: 'Client keyboard layout', dataIndex: ['rdp', 'client', 'keyboard_layout'] },
-    { title: 'Client name', dataIndex: ['rdp', 'client', 'client_name'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Event type', dataIndex: ['rawJson', 'rdp', 'event_type'] },
+    { title: 'Client version', dataIndex: ['rawJson', 'rdp', 'client', 'version'] },
+    { title: 'Client keyboard layout', dataIndex: ['rawJson', 'rdp', 'client', 'keyboard_layout'] },
+    { title: 'Client name', dataIndex: ['rawJson', 'rdp', 'client', 'client_name'] },
   ],
   Snmp: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Community', dataIndex: ['snmp', 'community'] },
-    { title: 'Pdu type', dataIndex: ['snmp', 'pdu_type'] },
-    { title: 'Vars', dataIndex: ['snmp', 'vars'], render: val => val && val.map(str => <div>{str}</div>) },
-    { title: 'Version', dataIndex: ['snmp', 'version'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Community', dataIndex: ['rawJson', 'snmp', 'community'] },
+    { title: 'Pdu type', dataIndex: ['rawJson', 'snmp', 'pdu_type'] },
+    { title: 'Vars', dataIndex: ['rawJson', 'snmp', 'vars'], render: val => val && val.map(str => <div>{str}</div>) },
+    { title: 'Version', dataIndex: ['rawJson', 'snmp', 'version'] },
   ],
   Tftp: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'File', dataIndex: ['tftp', 'file'] },
-    { title: 'Mode', dataIndex: ['tftp', 'mode'] },
-    { title: 'Packet', dataIndex: ['tftp', 'packet'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'File', dataIndex: ['rawJson', 'tftp', 'file'] },
+    { title: 'Mode', dataIndex: ['rawJson', 'tftp', 'mode'] },
+    { title: 'Packet', dataIndex: ['rawJson', 'tftp', 'packet'] },
   ],
   Ssh: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Server proto version', dataIndex: ['ssh', 'server', 'proto_version'] },
-    { title: 'Server software versin', dataIndex: ['ssh', 'server', 'software_version'] },
-    { title: 'Client proto version', dataIndex: ['ssh', 'client', 'proto_version'] },
-    { title: 'Client software version', dataIndex: ['ssh', 'client', 'software_version'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Server proto version', dataIndex: ['rawJson', 'ssh', 'server', 'proto_version'] },
+    { title: 'Server software versin', dataIndex: ['rawJson', 'ssh', 'server', 'software_version'] },
+    { title: 'Client proto version', dataIndex: ['rawJson', 'ssh', 'client', 'proto_version'] },
+    { title: 'Client software version', dataIndex: ['rawJson', 'ssh', 'client', 'software_version'] },
   ],
   Sip: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Version', dataIndex: ['sip', 'version'] },
-    { title: 'Code', dataIndex: ['sip', 'code'] },
-    { title: 'Method', dataIndex: ['sip', 'method'] },
-    { title: 'Uri', dataIndex: ['sip', 'uri'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Version', dataIndex: ['rawJson', 'sip', 'version'] },
+    { title: 'Code', dataIndex: ['rawJson', 'sip', 'code'] },
+    { title: 'Method', dataIndex: ['rawJson', 'sip', 'method'] },
+    { title: 'Uri', dataIndex: ['rawJson', 'sip', 'uri'] },
   ],
   Rfb: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Client protocol version, major', dataIndex: ['rfb', 'client_protocol_version', 'major'] },
-    { title: 'Server protocol version, major', dataIndex: ['rfb', 'server_protocol_version', 'major'] },
-    { title: 'Security type', dataIndex: ['rfb', 'authentication', 'security_type'] },
-    { title: 'Server security failure reason', dataIndex: ['rfb', 'server_security_failure_reason'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Client protocol version, major', dataIndex: ['rawJson', 'rfb', 'client_protocol_version', 'major'] },
+    { title: 'Server protocol version, major', dataIndex: ['rawJson', 'rfb', 'server_protocol_version', 'major'] },
+    { title: 'Security type', dataIndex: ['rawJson', 'rfb', 'authentication', 'security_type'] },
+    { title: 'Server security failure reason', dataIndex: ['rawJson', 'rfb', 'server_security_failure_reason'] },
   ],
   Mqtt: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Topic', dataIndex: ['mqtt', 'publish', 'topic'] },
-    { title: 'Username', dataIndex: ['mqtt', 'connect', 'username'] },
-    { title: 'Protocol strng', dataIndex: ['mqtt', 'connect', 'protocol_string'] },
-    { title: 'Protocol version', dataIndex: ['mqtt', 'connect', 'protocol_version'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Topic', dataIndex: ['rawJson', 'mqtt', 'publish', 'topic'] },
+    { title: 'Username', dataIndex: ['rawJson', 'mqtt', 'connect', 'username'] },
+    { title: 'Protocol strng', dataIndex: ['rawJson', 'mqtt', 'connect', 'protocol_string'] },
+    { title: 'Protocol version', dataIndex: ['rawJson', 'mqtt', 'connect', 'protocol_version'] },
   ],
   Nfs: [
-    { title: 'Timestamp', dataIndex: '@timestamp', render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Filename', dataIndex: ['nfs', 'filename'] },
-    { title: 'Procedure', dataIndex: ['nfs', 'procedure'] },
-    { title: 'Type', dataIndex: ['nfs', 'type'] },
-    { title: 'Version', dataIndex: ['nfs', 'version'] },
+    { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
+    { title: 'Filename', dataIndex: ['rawJson', 'nfs', 'filename'] },
+    { title: 'Procedure', dataIndex: ['rawJson', 'nfs', 'procedure'] },
+    { title: 'Type', dataIndex: ['rawJson', 'nfs', 'type'] },
+    { title: 'Version', dataIndex: ['rawJson', 'nfs', 'version'] },
   ],
 };
 

@@ -16,7 +16,7 @@ const AlertRelatedData = ({ type, data }) => (
           expandedRowRender: record => (
             <ReactJson
               name={false}
-              src={record}
+              src={record.rawJson}
               displayDataTypes={false}
               displayObjectSize={false}
               collapseStringsAfterLength={150}
