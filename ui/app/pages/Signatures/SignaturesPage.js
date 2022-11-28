@@ -88,7 +88,7 @@ export class SignaturesPage extends React.Component {
         perPageOptions: [10, 20, 50, 100],
       },
       view_type: 'list',
-      sort: { id: 'alerts', asc: false },
+      sort: { id: 'hits', asc: false },
     });
 
     this.state = {
