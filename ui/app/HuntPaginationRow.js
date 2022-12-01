@@ -30,11 +30,19 @@ export default class HuntPaginationRow extends React.Component {
     }
   };
 
+  getCurrentPage = () => {
+    const { page, perPage } = this.props.itemsList.pagination;
+    // show page 1 when we dont have data for the currently selected page
+    // (for example when we are currently at page 300 and then filter is applied and the result is 1 page but we still stay on page 300)
+    if (page > 1 && Math.ceil(this.props.itemsCount / perPage) < page) this.updatePagination({ page: 1, perPage });
+    return page;
+  };
+
   render() {
     return (
       <React.Fragment>
         <Pagination
-          current={this.props.itemsList.pagination.page}
+          current={this.getCurrentPage()}
           pageSize={this.props.itemsList.pagination.perPage}
           total={this.props.itemsCount - 1}
           showSizeChanger
