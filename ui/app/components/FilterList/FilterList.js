@@ -187,6 +187,7 @@ class FilterList extends React.Component {
               filters={this.props.filters}
               filterType={this.props.filterType}
               filter={filter}
+              disabled={this.props.page === 'HOST_INSIGHT'}
             />
           ))}
         </ListInline>
@@ -271,6 +272,7 @@ class FilterList extends React.Component {
 }
 
 FilterList.propTypes = {
+  page: PropTypes.oneOf(['RULES_LIST', 'DASHBOARDS', 'ALERTS_LIST', 'HISTORY', 'HOSTS_LIST']),
   filters: PropTypes.array,
   editFilter: PropTypes.func,
   removeFilter: PropTypes.func,

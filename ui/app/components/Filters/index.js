@@ -315,11 +315,11 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
           </div>
           <Divider style={{ margin: '15px 0' }} />
           <Row>
-            <Col md={24}>{activeFilters && activeFilters.length > 0 && <FilterList filters={activeFilters} filterType={section} />}</Col>
+            <Col md={24}>{activeFilters && activeFilters.length > 0 && <FilterList page={page} filters={activeFilters} filterType={section} />}</Col>
           </Row>
         </div>
         <Space direction="vertical">
-          <AdditionalFilters page={page} onSortChange={onSortChange} sortValues={sortValues} />
+          <AdditionalFilters page={page} />
           {['RULES_LIST', 'HOSTS_LIST', 'HISTORY'].indexOf(page) > -1 && (
             <Sort page={page} onChange={(option, direction) => onSortChange(option, direction)} value={sortValues} />
           )}
@@ -336,6 +336,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                   unCheckedChildren="OFF"
                   checked={alertTag.value.informational}
                   onChange={() => dispatch(huntGlobalStore.setTag('informational', !alertTag.value.informational))}
+                  disabled={page === 'HOST_INSIGHT'}
                 />{' '}
                 Informational
               </Space>
@@ -349,6 +350,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                   unCheckedChildren="OFF"
                   checked={alertTag.value.relevant}
                   onChange={() => dispatch(huntGlobalStore.setTag('relevant', !alertTag.value.relevant))}
+                  disabled={page === 'HOST_INSIGHT'}
                 />{' '}
                 Relevant
               </Space>
@@ -359,6 +361,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                   unCheckedChildren="OFF"
                   checked={alertTag.value.untagged}
                   onChange={() => dispatch(huntGlobalStore.setTag('untagged', !alertTag.value.untagged))}
+                  disabled={page === 'HOST_INSIGHT'}
                 />{' '}
                 Untagged
               </Space>
