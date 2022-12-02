@@ -251,7 +251,7 @@ class AccountSerializer(serializers.ModelSerializer):
         instance.timezone = timezone
         instance.save()
         user.save()
-        get_middleware_module('common').update_scirius_user_class(user, validated_data)
+        get_middleware_module('common').update_scirius_user_class(user, validated_data.get('sciriususerapp', {}))
         return instance
 
 
