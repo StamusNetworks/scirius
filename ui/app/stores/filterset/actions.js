@@ -24,10 +24,9 @@ const deleteFilterSetRequest = id => ({
   id,
 });
 
-const deleteFilterSetSuccess = (filterSetType, filterSetIdx) => ({
+const deleteFilterSetSuccess = id => ({
   type: constants.DELETE_FILTER_SET_SUCCESS,
-  filterSetType,
-  filterSetIdx,
+  id,
 });
 
 const deleteFilterSetFailure = error => ({
