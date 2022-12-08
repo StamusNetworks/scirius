@@ -322,6 +322,9 @@ RULESET_TRANSFORMATIONS = (('reject', 'Reject'), ('drop', 'Drop'), ('filestore',
 # For an IDS without reject
 # RULESET_TRANSFORMATIONS = (('filestore', 'Filestore'),)
 
+GENERATED_BASE_DIR = '/data/'
+FLOCK_PATH = os.path.join(GENERATED_BASE_DIR, 'lock')
+
 LOGIN_URL = '/accounts/login/'
 
 IPWARE_PRIVATE_IP_PREFIX = ()

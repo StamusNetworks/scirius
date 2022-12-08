@@ -18,13 +18,13 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import fcntl
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.conf import settings
 from django.core.exceptions import FieldError, SuspiciousOperation, ValidationError
 from django.core.validators import validate_ipv4_address
-from django.core.cache import cache
 from django.db import transaction
 from django.urls import reverse
 from django.utils import timezone
@@ -42,7 +42,6 @@ import shutil
 import json
 import IPy
 import base64
-import time
 from datetime import date as datetime_date
 import logging
 from ipware.ip import get_client_ip
@@ -1235,8 +1234,12 @@ class Source(models.Model):
     # This method cannot be called twice consecutively
     @transaction.atomic
     def update(self):
-        while not cache.add('%s-%s' % (Source.REFRESH_LOCK_ID, self.pk), 'true', Source.REFRESH_LOCK_EXPIRE):
-            time.sleep(5)
+        # lock
+        if not os.path.exists(settings.FLOCK_PATH):
+            os.makedirs(settings.FLOCK_PATH)
+        source_lock_path = os.path.join(settings.FLOCK_PATH, 'source_%s' % self.pk)
+        source_lock = open(source_lock_path, 'w')
+        fcntl.flock(source_lock, fcntl.LOCK_EX)
 
         try:
             # look for categories list: if none, first import
@@ -1279,7 +1282,7 @@ class Source(models.Model):
                     rule.delete()
                 self.needs_test()
         finally:
-            cache.delete('%s-%s' % (Source.REFRESH_LOCK_ID, self.pk))
+            source_lock.close()
 
     def diff(self):
         source_git_dir = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, str(self.pk))
