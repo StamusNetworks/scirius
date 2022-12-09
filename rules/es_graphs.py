@@ -540,7 +540,7 @@ class ESMetricsTimeline(ESQuery):
         if self.value.startswith('eve_insert.'):
             query = 'tags:metric AND '
 
-        query += f'logger:{host}'
+        query += '%s %s' % (self._hosts(), self._qfilter())
         query += self._qfilter()
 
         q = {
