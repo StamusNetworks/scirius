@@ -30,8 +30,8 @@
                 </h1>
                 <form action="{{ request.get_full_path }}" method="post" class="form">
                     {% csrf_token %}
-                    {% bootstrap_field form.username show_label=False %}
-                    {% bootstrap_field form.password show_label=False %}
+                    {% bootstrap_field form.username placeholder='Username' %}
+                    {% bootstrap_field form.password placeholder='Password' %}
                     <div class="login__button-box">
                         <label for="id_persistent" class="login__checkbox">
                             <input type="checkbox" name="persistent" id="id_persistent">

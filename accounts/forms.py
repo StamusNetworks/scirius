@@ -132,8 +132,8 @@ class GroupEditForm(forms.ModelForm, CommentForm):
 
 
 class LoginForm(forms.Form):
-    username = forms.CharField(max_length=150)
-    password = forms.CharField(widget=forms.PasswordInput)
+    username = forms.CharField(max_length=150, label='')
+    password = forms.CharField(widget=forms.PasswordInput, label='')
     persistent = forms.BooleanField(label="Remember this browser.", required=False)
 
 
