@@ -459,7 +459,7 @@ function get_scirius_status() {
         error: function(data) {
             if (scirius_status != 'red') {
                 scirius_status = 'red';
-                $("#scirius_down_text").text("No connection with scirius. This pop-up will disappear if connection is restored.");
+                $("#scirius_down_text").text("No connection with {{ common_long_name }}. This pop-up will disappear if connection is restored.");
                 $("#sys-status").hide(1000);
                 $("#scirius_down_label").show(duration=200);
                 if (scirius_modal == false) {
