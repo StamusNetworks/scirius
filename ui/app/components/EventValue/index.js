@@ -116,6 +116,7 @@ const EventValue = props => {
   const magnifiers = !props.copyMode && hover && props.value !== 'Unknown';
   return (
     <Container
+      data-test="event-value"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       hover={props.copyMode && hover}

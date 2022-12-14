@@ -58,6 +58,10 @@ const ENDPOINT = {
     name: 'Update / Push ruleset',
     url: process.env.REACT_APP_HAS_TAG === '1' ? '/rest/appliances/probe/update_push_all/' : '/rest/suricata/update_push_all/',
   },
+  DASHBOARD_PANEL: {
+    name: 'Fetch dashboard panel',
+    url: '/rest/rules/es/fields_stats/:datesEs:tenant',
+  },
 };
 
 export default ENDPOINT;

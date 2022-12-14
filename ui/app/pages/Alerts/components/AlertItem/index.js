@@ -280,7 +280,7 @@ export default class AlertItem extends React.Component {
                       field="alert.severity"
                       value={data.alert.severity}
                       addFilter={this.addFilter}
-                      format={(dashboard.sections.basic.items.find(o => o.i === 'alert.severity') || {}).format}
+                      format={(dashboard.basic.items.find(o => o.i === 'alert.severity') || {}).format}
                     />
                   </ErrorHandler>
                   <ErrorHandler>

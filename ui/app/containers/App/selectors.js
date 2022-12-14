@@ -99,7 +99,7 @@ const makeSelectURLDatesES = createSelector(makeSelectURLDates, dates => ({
  * It's intended to be used only in useEffect and other hooks
  * */
 const makeSelectGlobalFiltersDependency = createSelector(selectGlobal, subState =>
-  [subState.reload.now, ...Object.values(subState.filters)].join(', '),
+  [subState.reload.now, subState.timespan.now, ...Object.values(subState.filters)].join(','),
 );
 
 const makeSelectHasLicense = () => createSelector(selectGlobal, () => () => false);

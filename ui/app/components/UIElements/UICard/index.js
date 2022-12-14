@@ -26,6 +26,7 @@ const CardStyled = styled(Card)`
   .ant-card-head-title {
     color: ${COLOR_BRAND_BLUE};
   }
+  ${p => (p.flex ? "display: 'flex'; flex: 1; flex-direction: 'column';" : '')}
 `;
 const UICard = ({ children, noPadding, fullHeight, ...props }) => (
   <CardStyled {...props} noPadding={noPadding.toString()} fullHeight={fullHeight.toString()}>
