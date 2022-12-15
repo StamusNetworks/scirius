@@ -31,6 +31,7 @@ import urllib.request
 
 from django.conf import settings
 from elasticsearch import ConnectionError
+from elasticsearch.exceptions import RequestError
 
 from rules.es_graphs import get_es_major_version, ESError
 from rules.es_query import ESQuery
@@ -1949,9 +1950,19 @@ class ESData(ESQuery):
 
     def es_clear(self):
         indexes = self.get_indexes()
+        errors = []
         for idx in indexes:
-            self.es.indices.delete(index=idx)
-        return len(indexes)
+            try:
+                self.es.indices.delete(index=idx)
+            except ESError as e:
+                exc = e.initial_exception
+                if isinstance(exc, RequestError):
+                    error = exc.info.get('error', {}).get('reason', None)
+                    if error:
+                        errors.append(error)
+                        continue
+                raise
+        return len(indexes), errors
 
     def wait_until_up(self):
         for _ in range(1024):

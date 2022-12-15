@@ -1889,7 +1889,9 @@ def system_settings(request):
         elif form_id == 'es':
             es_data = ESData()
             try:
-                es_data.es_clear()
+                _, errors = es_data.es_clear()
+                if errors:
+                    context['warning'] = ', '.join(errors)
                 context['success'] = 'Done'
             except ESConnectionError:
                 context['error'] = 'Could not connect to Elasticsearch'

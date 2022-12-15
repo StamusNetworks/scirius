@@ -2865,9 +2865,11 @@ class ESDeleteLogsViewSet(APIView):
     def post(self, request, format=None):
         es_data = ESData()
         msg = None
+        errors = None
 
         try:
             es_data.es_clear()
+            _, errors = es_data.es_clear()
         except ConnectionError:
             msg = 'Could not connect to Elasticsearch'
         except Exception as e:
@@ -2876,7 +2878,10 @@ class ESDeleteLogsViewSet(APIView):
         if msg is not None:
             raise serializers.ValidationError({'delete_es_logs': [msg]})
 
-        return Response({'delete_es_logs': 'ok'})
+        res = {'delete_es_logs': 'ok'}
+        if errors:
+            res.update({'warning': ', '.join(errors)})
+        return Response(res)
 
 
 class SystemSettingsSerializer(serializers.ModelSerializer):

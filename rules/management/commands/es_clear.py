@@ -34,7 +34,9 @@ class Command(BaseCommand, ESData):
 
     def handle(self, *args, **options):
         try:
-            count = self.es_clear()
+            count, errors = self.es_clear()
+            if errors:
+                self.stdout.write(', '.join(errors))
         except ConnectionError as e:
             self.stderr.write('Could not connect to Elasticsearch, please retry later.')
             raise CommandError(repr(e))
