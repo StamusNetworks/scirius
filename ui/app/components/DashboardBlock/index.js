@@ -1,13 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, Empty, Menu } from 'antd';
-import { MenuOutlined } from '@ant-design/icons';
+import { LoadingOutlined, MenuOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import DashboardBlockData from 'ui/components/DashboardBlockData';
 import dashboardSelectors from 'ui/stores/dashboard/selectors';
-import LoadingIndicator from 'ui/components/LoadingIndicator';
 import styled from 'styled-components';
 
 const Title = styled.div`
@@ -17,6 +16,14 @@ const Title = styled.div`
 
 const DashboardBlock = ({ block, data, loading, onLoadMore, onDownload, emptyPanel }) => {
   const copyMode = useSelector(dashboardSelectors.makeSelectCopyMode());
+
+  const [loadingVisible, setLoadingVisible] = useState(false);
+
+  // Loading flag debounce
+  useEffect(() => {
+    setTimeout(() => setLoadingVisible(loading), loading ? 0 : 500);
+  }, [loading]);
+
   const menu = (
     <Menu>
       {onLoadMore && (
@@ -38,20 +45,21 @@ const DashboardBlock = ({ block, data, loading, onLoadMore, onDownload, emptyPan
       data-test={`dashboard-block-${block.title}`}
       title={block.title && <Title>{block.title}</Title>}
       extra={
-        data?.length > 0 &&
-        (onLoadMore || onDownload) && (
-          <Dropdown overlay={menu} trigger={['click']}>
-            <a className="ant-dropdown-link" style={{ color: COLOR_BRAND_BLUE }} onClick={e => e.preventDefault()}>
-              <MenuOutlined />
-            </a>
-          </Dropdown>
-        )
+        <>
+          {loadingVisible && <LoadingOutlined />}
+          {!loadingVisible && data?.length > 0 && (onLoadMore || onDownload) && (
+            <Dropdown overlay={menu} trigger={['click']}>
+              <a className="ant-dropdown-link" style={{ color: COLOR_BRAND_BLUE }} onClick={e => e.preventDefault()}>
+                <MenuOutlined />
+              </a>
+            </Dropdown>
+          )}
+        </>
       }
       bodyStyle={emptyPanel ? { display: 'none' } : {}}
     >
-      {loading && <LoadingIndicator />}
       {!loading && data.length === 0 && !emptyPanel && <Empty style={{ margin: '20px 0' }} image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-      {!loading && data.length > 0 && <DashboardBlockData block={block} data={data} copyMode={copyMode} />}
+      <DashboardBlockData block={block} data={data} copyMode={copyMode} />
     </UICard>
   );
 };

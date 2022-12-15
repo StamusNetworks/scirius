@@ -113,6 +113,7 @@
     "react-simple-maps": "^2.3.0",
     "react-syntax-highlighter": "^15.4.3",
     "react-tooltip": "^4.2.21",
+    "react-transition-group": "^4.4.5",
     "react-world-flags": "^1.4.0",
     "redux": "4.1.0",
     "redux-saga": "1.1.3",
