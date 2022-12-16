@@ -219,6 +219,7 @@ class SourceForm(forms.ModelForm, CommentForm):
                               label="Optional authorization key",
                               required=False,
                               widget=forms.PasswordInput(render_value=True))
+    untrusted = forms.BooleanField(label='Supply chain attack protection', required=False, help_text='If you uncheck the box then signatures can potentially modify the probe or run arbitrary code.', initial=True)
 
     class Meta:
         model = Source
@@ -237,6 +238,7 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
     file = forms.FileField(required=False)
     authkey = forms.CharField(max_length=100, label="Optional authorization key", required=False)
     rulesets_label = "Add source to the following ruleset(s)"
+    untrusted = forms.BooleanField(label='Supply chain attack protection', required=False, help_text='If you uncheck the box then signatures can potentially modify the probe or run arbitrary code.', initial=True)
 
     class Meta:
         model = Source
@@ -256,6 +258,7 @@ class AddPublicSourceForm(forms.ModelForm, RulesetChoiceForm):
     source_id = forms.CharField(max_length=100)
     secret_code = forms.CharField(max_length=100, required=False)
     use_iprep = forms.BooleanField(required=False)
+    untrusted = forms.BooleanField(label='Supply chain attack protection', required=False, help_text='If you uncheck the box then signatures can potentially modify the probe or run arbitrary code.', initial=True)
 
     class Meta:
         model = Source

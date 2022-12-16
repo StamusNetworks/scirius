@@ -1101,7 +1101,8 @@ def add_source(request):
                     datatype=form.cleaned_data['datatype'],
                     cert_verif=form.cleaned_data['cert_verif'],
                     use_iprep=form.cleaned_data['use_iprep'],
-                    use_sys_proxy=form.cleaned_data['use_sys_proxy']
+                    use_sys_proxy=form.cleaned_data['use_sys_proxy'],
+                    untrusted=form.cleaned_data.get('untrusted', False)
                 )
 
                 if src.method == 'local':
@@ -1248,7 +1249,8 @@ def add_public_source(request):
                     datatype=source['datatype'],
                     cert_verif=True,
                     public_source=source_id,
-                    use_iprep=form.cleaned_data['use_iprep']
+                    use_iprep=form.cleaned_data['use_iprep'],
+                    untrusted=form.cleaned_data.get('untrusted', False)
                 )
             except IntegrityError as error:
                 return scirius_render(request, 'rules/add_public_source.html', {'form': form, 'error': error})

@@ -858,6 +858,7 @@ class Source(models.Model):
     use_iprep = models.BooleanField('Use IP reputation for group signatures', default=True)
     version = models.IntegerField(default=1)
     use_sys_proxy = models.BooleanField(default=True, verbose_name='Use system proxy')
+    untrusted = models.BooleanField(default=True, verbose_name='Supply chain attack protection')
 
     editable = True
     # git repo where we store the physical thing
@@ -2817,8 +2818,24 @@ class Rule(models.Model, Transformable, Cache):
         ruleset.needs_test()
         ruleset.save()
 
+    def is_untrusted(self):
+        try:
+            return self.untrusted
+        except:
+            pass
+        return self.category.source.untrusted
+
+    def match_dataset(self, content):
+        return re.match(r'.* \(.*dataset:.*(save|state) .*;\)$', content)
+
+    def match_luajit(self, content):
+        return re.match(r'.* \(.*(luajit|lua):.*;\)$', content)
+
     def generate_content(self, ruleset):
         content = self.content
+
+        if self.is_untrusted() and (self.match_luajit(content) or self.match_dataset(content)):
+            return 'disabled as source is untrusted: %s' % content
 
         # explicitely set prio on transformation here
         # Action
@@ -3227,7 +3244,13 @@ class Ruleset(models.Model, Transformable):
         S_SUPPRESSED = Transformation.S_SUPPRESSED
 
         sources = self.sources.values_list('source', flat=True)
-        rules = Rule.objects.select_related('category')
+        rules = Rule.objects.select_related('category').annotate(
+            untrusted=models.Case(
+                models.When(category__source__untrusted=False, then=False),
+                models.When(category__source__untrusted=True, then=True),
+                default=True,
+                output_field=models.BooleanField()
+            ))
         rules = rules.filter(category__source__pk__in=sources, category__in=self.categories.all(), state=True)
         rules = rules.exclude(ruletransformation__value=S_SUPPRESSED.value)
         return rules.order_by('sid')
@@ -3571,7 +3594,14 @@ class RuleProcessingFilter(models.Model):
                 alert_source_ip = None
 
             if alert_source_ip or alert_target_ip:
-                rules = Rule.objects.filter(sid__in=sids)
+                rules = Rule.objects.filter(sid__in=sids).annotate(
+                    untrusted=models.Case(
+                        models.When(category__source__untrusted=False, then=False),
+                        models.When(category__source__untrusted=True, then=True),
+                        default=True,
+                        output_field=models.BooleanField()
+                    ))
+
                 alert_ip = alert_source_ip if alert_source_ip is not None else alert_target_ip
 
                 for rule in rules:
