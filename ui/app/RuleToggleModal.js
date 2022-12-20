@@ -210,7 +210,7 @@ export default class RuleToggleModal extends React.Component {
         .then(() => {
           this.setState({ submitting: false });
           this.close();
-          history.push('/stamus/hunting/policies');
+          this.props.policiesRedirect();
         })
         .catch(error => {
           this.setState({ errors: error.response.data, submitting: false });
@@ -387,6 +387,11 @@ export default class RuleToggleModal extends React.Component {
     );
   }
 }
+
+RuleToggleModal.defaultProps = {
+  policiesRedirect: () => history.push('/stamus/hunting/policies'),
+};
+
 RuleToggleModal.propTypes = {
   filters: PropTypes.any,
   action: PropTypes.any,
@@ -398,4 +403,5 @@ RuleToggleModal.propTypes = {
   children: PropTypes.any,
   systemSettings: PropTypes.any,
   filterParams: PropTypes.any,
+  policiesRedirect: PropTypes.func,
 };
