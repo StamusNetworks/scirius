@@ -653,6 +653,21 @@ export default class AlertItem extends React.Component {
                 </DlHorizontal>
               </UICard>
             )}
+            {data.alert.metadata && (
+              <UICard title="Signature metadata">
+                <DlHorizontal>
+                  {Object.entries(data.alert.metadata).map(field => {
+                    const value = field[1] === null ? '' : field[1].join(', ');
+                    const key = field[0] === null ? '' : field[0];
+                    return (
+                      <ErrorHandler key={key}>
+                        <EventField field_name={key} field={`alert.metadata.${key}`} value={value} addFilter={this.addFilter} />
+                      </ErrorHandler>
+                    );
+                  })}
+                </DlHorizontal>
+              </UICard>
+            )}
             <SMBAlertCard data={data} addFilter={this.addFilter} />
           </div>
           {data.payload_printable && (
