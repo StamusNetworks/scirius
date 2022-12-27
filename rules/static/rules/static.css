@@ -554,6 +554,9 @@ div#highlight_info {
     border-radius: 4px;
     backdrop-filter: blur(0px);
     transition: all 0.2s;
+    float: right;
+    width: 50%;
+    color: inherit;
 }
 .login__button:hover {
     backdrop-filter: blur(3px);

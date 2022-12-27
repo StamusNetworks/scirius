@@ -5,7 +5,7 @@
     <head>
         <title>
             {% block title %}
-                {{ common_long_name }}
+                {{ product_long_name }}
             {% endblock %}
         </title>
         <link rel="stylesheet" href="{% static 'rules/bootstrap.min.css' %}" />
@@ -26,7 +26,7 @@
             </div>
             <div class="login__form-box">
                 <h1 class="login__heading">
-                    {{ common_long_name }}
+                    {{ product_long_name }}
                 </h1>
                 <form action="{{ request.get_full_path }}" method="post" class="form">
                     {% csrf_token %}
