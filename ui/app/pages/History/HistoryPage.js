@@ -164,6 +164,7 @@ class HistoryPage extends React.Component {
             page="HISTORY"
             section={sections.HISTORY}
             queryTypes={['all']}
+            filterTypes={['all']}
             sortValues={{ option: this.state.history.sort.id, direction: this.state.history.sort.asc ? 'asc' : 'desc' }}
             onSortChange={(option, direction) => {
               this.updateHistoryListState({
