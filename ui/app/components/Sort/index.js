@@ -73,7 +73,7 @@ const Sort = ({ page, onChange, value }) => {
               {options
                 .filter(o => o.page === page)
                 .map(o => (
-                  <Menu.Item icon={o.icon}>
+                  <Menu.Item icon={o.icon} key={o.page}>
                     <a onClick={() => setOption(o)}>{o.title}</a>
                   </Menu.Item>
                 ))}
