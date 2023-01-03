@@ -27,12 +27,13 @@ const OptionContainer = styled.div`
   padding-right: 5px;
 `;
 
-const OptionHandler = styled.a`
+const OptionHandler = styled.div`
   display: flex;
   flex: 1;
+  cursor: default;
 `;
 
-const HandlerContainer = styled.a`
+const HandlerContainer = styled.div`
   display: flex;
   gap: 5px;
   align-items: center;
@@ -72,9 +73,10 @@ const Sort = ({ page, onChange, value }) => {
             <Menu>
               {options
                 .filter(o => o.page === page)
-                .map(o => (
-                  <Menu.Item icon={o.icon} key={o.page}>
-                    <a onClick={() => setOption(o)}>{o.title}</a>
+                .map((o, i) => (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <Menu.Item icon={o.icon} key={i} onClick={() => setOption(o)}>
+                    {o.title}
                   </Menu.Item>
                 ))}
             </Menu>
@@ -94,28 +96,28 @@ const Sort = ({ page, onChange, value }) => {
         <Dropdown
           overlay={
             <Menu>
-              <Menu.Item icon={<ArrowUpOutlined />}>
-                <a
-                  onClick={() => {
-                    setDirection('asc');
-                  }}
-                >
-                  Ascending
-                </a>
+              <Menu.Item
+                key="asc"
+                icon={<ArrowUpOutlined />}
+                onClick={() => {
+                  setDirection('asc');
+                }}
+              >
+                Ascending
               </Menu.Item>
-              <Menu.Item icon={<ArrowDownOutlined />}>
-                <a
-                  onClick={() => {
-                    setDirection('desc');
-                  }}
-                >
-                  Descending
-                </a>
+              <Menu.Item
+                key="desc"
+                icon={<ArrowDownOutlined />}
+                onClick={() => {
+                  setDirection('desc');
+                }}
+              >
+                Descending
               </Menu.Item>
             </Menu>
           }
         >
-          <a onClick={e => e.preventDefault()}>{direction === 'asc' ? <ArrowUpOutlined /> : <ArrowDownOutlined />}</a>
+          {direction === 'asc' ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
         </Dropdown>
       </DirectionContainer>
     </Container>
