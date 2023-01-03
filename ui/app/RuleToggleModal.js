@@ -62,27 +62,6 @@ export default class RuleToggleModal extends React.Component {
     }
   };
 
-  setDefaultOptions() {
-    let options = {};
-    switch (this.props.action) {
-      case 'threshold':
-        options = {
-          type: 'both',
-          count: 1,
-          seconds: 60,
-          track: 'by_src',
-        };
-        break;
-      case 'tag':
-      case 'tagkeep':
-        options = { tag: 'relevant' };
-        break;
-      default:
-        break;
-    }
-    this.setState({ options });
-  }
-
   updateActionDialog() {
     if (['enable', 'disable'].indexOf(this.props.action) !== -1) {
       this.setState({ supported_filters: [], noaction: false, errors: undefined });

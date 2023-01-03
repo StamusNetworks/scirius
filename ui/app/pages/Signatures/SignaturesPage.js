@@ -27,12 +27,10 @@ import * as config from 'config/Api';
 import { STAMUS } from 'ui/config';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
-import RuleToggleModal from 'ui/RuleToggleModal';
 import ErrorHandler from 'ui/components/Error';
 import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
 import buildListParams from 'ui/helpers/buildListParams';
-import DashboardPage from 'ui/pages/Dashboards/DashboardPage';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -42,7 +40,7 @@ import { makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
 import { updateHitsStats } from '../../helpers/updateHitsStats';
-import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction, buildFilter } from '../../helpers/common';
+import { buildListUrlParams, loadActions, buildFilter } from '../../helpers/common';
 import RuleInList from '../../RuleInList';
 import RulePage from '../../RulePage';
 import HuntPaginationRow from '../../HuntPaginationRow';
@@ -96,7 +94,6 @@ export class SignaturesPage extends React.Component {
       sources: [],
       count: 0,
       loading: true,
-      action: { view: false, type: 'suppress' },
       net_error: undefined,
       // eslint-disable-next-line react/no-unused-state
       supported_actions: [],
@@ -108,10 +105,7 @@ export class SignaturesPage extends React.Component {
     this.updateRulesState = this.updateRulesState.bind(this);
     this.updateSignatureListState = this.updateSignatureListState.bind(this);
     this.fetchHitsStats = this.fetchHitsStats.bind(this);
-    this.actionsButtons = actionsButtons.bind(this);
     this.loadActions = loadActions.bind(this);
-    this.createAction = createAction.bind(this);
-    this.closeAction = closeAction.bind(this);
     this.buildFilter = buildFilter.bind(this);
     this.fetchData = this.fetchData.bind(this);
   }
@@ -320,22 +314,6 @@ export class SignaturesPage extends React.Component {
               filters={this.props.filters}
               filterParams={this.props.filterParams}
               rulesets={this.props.rulesets}
-            />
-          )}
-          {view === 'dashboard' && <DashboardPage />}
-        </ErrorHandler>
-
-        <ErrorHandler>
-          {this.state.action.view && (
-            <RuleToggleModal
-              show={this.state.action.view}
-              action={this.state.action.type}
-              config={this.state.rulesList}
-              filters={this.props.filters}
-              close={this.closeAction}
-              rulesets={this.props.rulesets}
-              systemSettings={this.props.systemSettings}
-              filterParams={this.props.filterParams}
             />
           )}
         </ErrorHandler>

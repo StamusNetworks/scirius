@@ -49,7 +49,7 @@ import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
 import downloadData from 'ui/helpers/downloadData';
 import HuntTimeline from '../../HuntTimeline';
 import HuntTrend from '../../HuntTrend';
-import { actionsButtons, loadActions, createAction, closeAction } from '../../helpers/common';
+import { loadActions } from '../../helpers/common';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { makeSelectAlertTag, makeSelectGlobalFilters } from '../../containers/HuntApp/stores/global';
@@ -108,9 +108,6 @@ export class HuntDashboard extends React.Component {
       hoveredItem: null,
       copiedItem: '',
     };
-    this.actionsButtons = actionsButtons.bind(this);
-    this.createAction = createAction.bind(this);
-    this.closeAction = closeAction.bind(this);
     this.loadActions = loadActions.bind(this);
     this.fetchData = () => {};
   }

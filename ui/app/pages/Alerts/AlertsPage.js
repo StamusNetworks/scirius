@@ -30,7 +30,6 @@ import md5 from 'md5';
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
-import RuleToggleModal from 'RuleToggleModal';
 import ErrorHandler from 'ui/components/Error';
 import HuntRestError from 'ui/components/HuntRestError';
 import { sections } from 'ui/constants';
@@ -44,7 +43,7 @@ import globalSelectors from 'ui/containers/App/selectors';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import { actionsButtons, buildListUrlParams, loadActions, createAction, closeAction } from '../../helpers/common';
+import { buildListUrlParams, loadActions } from '../../helpers/common';
 import AlertItem from './components/AlertItem';
 import HuntPaginationRow from '../../HuntPaginationRow';
 
@@ -66,7 +65,6 @@ class AlertsPage extends React.Component {
       alerts: [],
       rulesets: [],
       loading: true,
-      action: { view: false, type: 'suppress' },
       // eslint-disable-next-line react/no-unused-state
       net_error: undefined,
       // eslint-disable-next-line react/no-unused-state
@@ -76,10 +74,7 @@ class AlertsPage extends React.Component {
       alertsList: alertsListConf,
     };
     this.fetchData = this.fetchData.bind(this);
-    this.actionsButtons = actionsButtons.bind(this);
     this.loadActions = loadActions.bind(this);
-    this.createAction = createAction.bind(this);
-    this.closeAction = closeAction.bind(this);
     this.updateAlertListState = this.updateAlertListState.bind(this);
   }
 
@@ -266,21 +261,6 @@ class AlertsPage extends React.Component {
             itemsCount={this.state.count}
             itemsList={this.state.alertsList}
           />
-        </ErrorHandler>
-
-        <ErrorHandler>
-          {this.state.action.view && (
-            <RuleToggleModal
-              show={this.state.action.view}
-              action={this.state.action.type}
-              config={this.state.alertsList}
-              filters={this.props.filters}
-              close={this.closeAction}
-              rulesets={this.state.rulesets}
-              systemSettings={this.props.systemSettings}
-              filterParams={this.props.filterParams}
-            />
-          )}
         </ErrorHandler>
       </div>
     );

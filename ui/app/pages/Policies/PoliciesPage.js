@@ -34,7 +34,7 @@ import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParam
 import { createStructuredSelector } from 'reselect';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ActionItem from '../../ActionItem';
-import { actionsButtons, buildListUrlParams, createAction, closeAction, buildFilter } from '../../helpers/common';
+import { buildListUrlParams } from '../../helpers/common';
 
 const DescriptionItem = styled.div`
   padding: 0 10px;
@@ -61,10 +61,6 @@ export class PoliciesPage extends React.Component {
 
     this.state = { data: [], count: 0, rulesets: [], filtersList: filtersListConf, expand: true };
 
-    this.buildFilter = buildFilter.bind(this);
-    this.actionsButtons = actionsButtons.bind(this);
-    this.createAction = createAction.bind(this);
-    this.closeAction = closeAction.bind(this);
     this.fetchData = this.fetchData.bind(this);
     this.needUpdate = this.needUpdate.bind(this);
     this.updateActionListState = this.updateActionListState.bind(this);
