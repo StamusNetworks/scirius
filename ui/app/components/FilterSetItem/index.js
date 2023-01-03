@@ -47,7 +47,7 @@ const FilterSetFooter = styled.div`
   flex: 1;
   justify-content: space-between;
 `;
-const FilterSetList = ({ item, loadFilterSets, onDelete, noRights, loading }) => (
+const FilterSetItem = ({ item, loadFilterSets, onDelete, hasRights, loading, type }) => (
   <Card
     size="small"
     bordered={false}
@@ -58,13 +58,12 @@ const FilterSetList = ({ item, loadFilterSets, onDelete, noRights, loading }) =>
     }
     headStyle={{ background: '#efefef' }}
     extra={
-      <>
-        {!noRights && onDelete && (
-          <Tooltip title="Delete" getPopupContainer={() => document.getElementById('container')}>
-            <Button size="small" type="danger" icon={loading ? <LoadingOutlined /> : <DeleteOutlined />} onClick={() => onDelete()} />
-          </Tooltip>
-        )}
-      </>
+      // we always show delete icon for private filtersets
+      (type === 'private' || hasRights) && (
+        <Tooltip title="Delete" getPopupContainer={() => document.getElementById('container')}>
+          <Button size="small" type="danger" icon={loading ? <LoadingOutlined /> : <DeleteOutlined />} onClick={() => onDelete()} />
+        </Tooltip>
+      )
     }
   >
     <Container onClick={() => loadFilterSets(item)}>
@@ -79,12 +78,13 @@ const FilterSetList = ({ item, loadFilterSets, onDelete, noRights, loading }) =>
   </Card>
 );
 
-FilterSetList.propTypes = {
+FilterSetItem.propTypes = {
   loading: PropTypes.bool.isRequired,
   item: PropTypes.object.isRequired,
   loadFilterSets: PropTypes.func.isRequired,
   onDelete: PropTypes.func,
-  noRights: PropTypes.bool,
+  hasRights: PropTypes.bool,
+  type: PropTypes.string,
 };
 
-export default FilterSetList;
+export default FilterSetItem;

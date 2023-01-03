@@ -225,33 +225,37 @@ export const makeSelectGlobalFilters = (includeAlertTag = false) =>
   });
 export const makeSelectHistoryFilters = () => createSelector(selectGlobal, globalState => globalState.filters[sections.HISTORY]);
 export const makeSelectAlertTag = () => createSelector(selectGlobal, globalState => globalState.filters[sections.ALERT]);
-export const makeSelectUserData = () => () => {
-  const userDetails = window.current_user || {};
-  const {
-    pk = '',
-    timezone = '',
-    username = '',
-    first_name: firstName = '',
-    last_name: lastName = '',
-    is_active: isActive = false,
-    email = '',
-    date_joined: dateJoined = '',
-    perms: permissions = [],
-    no_tenant: noTenant = false,
-    all_tenant: allTenant = false,
-  } = userDetails;
-  return {
-    pk,
-    timezone,
-    username,
-    firstName,
-    lastName,
-    isActive,
-    email,
-    dateJoined,
-    permissions,
-    noTenant,
-    allTenant,
-  };
-};
+export const makeSelectUserData = () =>
+  createSelector(
+    state => state.global.ce.user.data,
+    user => {
+      const {
+        pk = '',
+        timezone = '',
+        username = '',
+        firstName = '',
+        lastName = '',
+        isActive = false,
+        email = '',
+        dateJoined = '',
+        permissions = [],
+        noTenant = false,
+        allTenant = false,
+      } = user;
+      return {
+        pk,
+        timezone,
+        username,
+        firstName,
+        lastName,
+        isActive,
+        email,
+        dateJoined,
+        permissions,
+        noTenant,
+        allTenant,
+      };
+    },
+  );
+
 export const makeSelectUserRequest = () => createSelector(selectGlobal, globalState => globalState.user.request);

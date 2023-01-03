@@ -27,7 +27,7 @@ import { DeleteOutlined, InfoCircleOutlined, LoadingOutlined } from '@ant-design
 import { useInjectReducer } from 'ui/utils/injectReducer';
 import { useInjectSaga } from 'ui/utils/injectSaga';
 import { sections, huntUrls } from 'ui/constants';
-import FilterSetList from 'ui/components/FilterSetList';
+import FilterSetItem from 'ui/components/FilterSetItem';
 import LoadingIndicator from 'ui/components/LoadingIndicator';
 import actions from 'ui/containers/App/actions';
 import { addFilter, clearFilters, setTag, makeSelectUserData } from 'ui/containers/HuntApp/stores/global';
@@ -103,7 +103,7 @@ const FilterSets = () => {
   const rowsGlobal = globalSet?.filter(item => item.name.toLowerCase().includes(searchValue.toLowerCase())) || [];
   const rowsPrivate = privateSet?.filter(item => item.name.toLowerCase().includes(searchValue.toLowerCase())) || [];
   const rowsStatic = staticSet?.filter(item => item.name.toLowerCase().includes(searchValue.toLowerCase())) || [];
-  const noRights = user.isActive && !user.permissions.includes('rules.events_edit');
+  const hasRights = user.isActive && user.permissions.includes('rules.events_edit');
 
   const map = [
     {
@@ -152,16 +152,15 @@ const FilterSets = () => {
           >
             {item.data.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
             {item.data.map(filterSetItem => (
-              <>
-                <FilterSetList
-                  key={`${item.type}-${filterSetItem?.id}-${deleteLoading.toString()}`}
-                  item={filterSetItem}
-                  loadFilterSets={() => loadFilterSets(filterSetItem)}
-                  onDelete={item.delete ? () => dispatch(filterSetActions.deleteFilterSetConfirm(filterSetItem.id)) : undefined}
-                  noRights={noRights}
-                  loading={deleteLoading && confirmDelete === filterSetItem.id}
-                />
-              </>
+              <FilterSetItem
+                key={`${item.type}-${filterSetItem?.id}-${deleteLoading.toString()}`}
+                item={filterSetItem}
+                loadFilterSets={() => loadFilterSets(filterSetItem)}
+                onDelete={item.delete ? () => dispatch(filterSetActions.deleteFilterSetConfirm(filterSetItem.id)) : undefined}
+                hasRights={hasRights}
+                loading={deleteLoading && confirmDelete === filterSetItem.id}
+                type={item.type}
+              />
             ))}
           </Panel>
         ))}

@@ -79,7 +79,7 @@ const FilterSetSaveModal = ({ content, fromPage, title, close }) => {
             },
           ]}
         >
-          <Input data-test="filter-set-save-modal-name" />
+          <Input autoFocus data-test="filter-set-save-modal-name" />
         </Form.Item>
 
         {!fromPage && (
@@ -140,7 +140,6 @@ FilterSetSaveModal.propTypes = {
   close: PropTypes.any,
   content: PropTypes.any.isRequired,
   fromPage: PropTypes.any,
-  noRights: PropTypes.bool.isRequired,
 };
 
 export default FilterSetSaveModal;
