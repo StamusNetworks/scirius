@@ -40,7 +40,7 @@ const SpinSC = styled(Spin)`
   justify-content: center;
 `;
 
-const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodRequest, setSessionActivity, timeSpan, systemSettings }) => {
+const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodRequest, setSessionActivity, timeSpan, systemSettings, hasLicense }) => {
   const idle = useRef(0);
 
   const setIdle = useCallback(() => {
@@ -114,7 +114,7 @@ const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodReques
               {pagesList
                 .filter(page => typeof pages[page].metadata.url !== 'function')
                 .map(page => {
-                  if (!systemSettings.license.nta && pages[page].metadata.nta) return null;
+                  if (!hasLicense('nta') && pages[page].metadata.nta) return null;
                   return (
                     <Route key={page} exact path={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`} component={pages[page]} />
                   );
@@ -146,12 +146,14 @@ App.propTypes = {
   setSessionActivity: PropTypes.func,
   timeSpan: PropTypes.object,
   systemSettings: PropTypes.object,
+  hasLicense: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
   source: selectors.makeSelectSource(),
   timeSpan: selectors.makeSelectTimespan(),
   systemSettings: selectors.makeSelectSystemSettings(),
+  hasLicense: selectors.makeSelectHasLicense(),
 });
 
 export const mapDispatchToProps = dispatch =>

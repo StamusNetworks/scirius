@@ -102,6 +102,8 @@ const makeSelectGlobalFiltersDependency = createSelector(selectGlobal, subState 
   [subState.reload.now, ...Object.values(subState.filters)].join(', '),
 );
 
+const makeSelectHasLicense = () => createSelector(selectGlobal, () => () => false);
+
 export default {
   // General selectors
   selectGlobal,
@@ -125,4 +127,5 @@ export default {
   makeSelectURLDates,
   makeSelectURLDatesES,
   makeSelectGlobalFiltersDependency,
+  makeSelectHasLicense,
 };

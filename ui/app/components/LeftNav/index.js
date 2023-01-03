@@ -28,7 +28,7 @@ const getGroupPages = (category, permissions, systemSettings) =>
     )
     .sort((a, b) => pages[a].metadata.position - pages[b].metadata.position);
 
-function LeftNav({ user, systemSettings }) {
+function LeftNav({ user, systemSettings, hasLicense }) {
   const {
     data: { permissions = [] },
     request: { loading = true },
@@ -57,7 +57,7 @@ function LeftNav({ user, systemSettings }) {
   const renderSubMenus = useMemo(
     () =>
       LeftNavMap.map(group => {
-        if (!systemSettings.license.nta && group.nta) return null;
+        if (!hasLicense('nta') && group.nta) return null;
         return (
           <SubMenu
             key={group.id}
@@ -99,11 +99,13 @@ LeftNav.propTypes = {
     request: PropTypes.object,
   }).isRequired,
   systemSettings: PropTypes.object,
+  hasLicense: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
   systemSettings: selectors.makeSelectSystemSettings(),
   user: selectors.makeSelectUser(),
+  hasLicense: selectors.makeSelectHasLicense(),
 });
 
 export default connect(mapStateToProps)(withRouter(LeftNav));
