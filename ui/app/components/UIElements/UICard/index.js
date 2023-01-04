@@ -11,8 +11,9 @@ const CardStyled = styled(Card)`
   position: relative;
   box-shadow: ${p => (!p.flat ? '2px 3px 6px 0px #00000005' : 'none')};
   border: 1px solid #ececec;
+  height: ${p => (p.fullHeight === 'true' ? '100%' : 'auto')};
   .ant-card-body {
-    padding: ${p => (p.nopadding === 'true' ? '0' : '10px')};
+    padding: ${p => (p.noPadding === 'true' ? '0' : '10px')};
   }
   .ant-card-head {
     padding: 0 10px;
@@ -26,19 +27,21 @@ const CardStyled = styled(Card)`
     color: ${COLOR_BRAND_BLUE};
   }
 `;
-const UICard = ({ children, noPadding, ...props }) => (
-  <CardStyled {...props} nopadding={noPadding.toString()}>
+const UICard = ({ children, noPadding, fullHeight, ...props }) => (
+  <CardStyled {...props} noPadding={noPadding.toString()} fullHeight={fullHeight.toString()}>
     {children}
   </CardStyled>
 );
 
 UICard.defaultProps = {
   noPadding: false,
+  fullHeight: false,
 };
 
 UICard.propTypes = {
   children: PropTypes.any,
   noPadding: PropTypes.bool,
+  fullHeight: PropTypes.bool,
 };
 
 export default UICard;
