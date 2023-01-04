@@ -49,7 +49,7 @@ export default class RuleToggleModal extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.filters !== this.props.filters || prevProps.action !== this.props.action) {
+    if (prevProps.filters !== this.props.filters || prevProps.action !== this.props.action || prevProps.show !== this.props.show) {
       this.updateActionDialog();
       this.setDefaultOptions();
     }
@@ -63,6 +63,7 @@ export default class RuleToggleModal extends React.Component {
   };
 
   updateActionDialog() {
+    if (!this.props.show) return;
     if (['enable', 'disable'].indexOf(this.props.action) !== -1) {
       this.setState({ supported_filters: [], noaction: false, errors: undefined });
       return;
