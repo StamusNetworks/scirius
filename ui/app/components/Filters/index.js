@@ -337,6 +337,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                   checked={alertTag.value.informational}
                   onChange={() => dispatch(huntGlobalStore.setTag('informational', !alertTag.value.informational))}
                   disabled={page === 'HOST_INSIGHT'}
+                  data-test="Informational-switch"
                 />{' '}
                 Informational
               </Space>
@@ -351,6 +352,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                   checked={alertTag.value.relevant}
                   onChange={() => dispatch(huntGlobalStore.setTag('relevant', !alertTag.value.relevant))}
                   disabled={page === 'HOST_INSIGHT'}
+                  data-test="Relevant-switch"
                 />{' '}
                 Relevant
               </Space>
@@ -362,6 +364,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                   checked={alertTag.value.untagged}
                   onChange={() => dispatch(huntGlobalStore.setTag('untagged', !alertTag.value.untagged))}
                   disabled={page === 'HOST_INSIGHT'}
+                  data-test="Untagged-switch"
                 />{' '}
                 Untagged
               </Space>

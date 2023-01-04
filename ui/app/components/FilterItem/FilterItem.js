@@ -82,7 +82,7 @@ const FilterItem = props => {
   return (
     <li>
       <Tooltip title={props.disabled ? 'Filters are not applicable' : null}>
-        <HuntFilter className={`${negated}`} disabled={props.disabled}>
+        <HuntFilter className={`${negated}`} disabled={props.disabled} data-test="filter-item">
           <LabelContent data-test="hunt-filter__filtered">{displayValue}</LabelContent>
           <div style={{ display: 'flex' }}>
             {props.filterType !== sections.HISTORY && (
