@@ -1,5 +1,5 @@
 import React from 'react';
-import { Space, Card, Tooltip, Button } from 'antd';
+import { Card, Tooltip, Button } from 'antd';
 import { BellOutlined, DashboardOutlined, IdcardOutlined, SafetyOutlined, UploadOutlined, DeleteOutlined, LoadingOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
@@ -68,12 +68,7 @@ const FilterSetItem = ({ item, loadFilterSets, onDelete, hasRights, loading, typ
   >
     <Container onClick={() => loadFilterSets(item)}>
       {item.description && <Description>{item.description}</Description>}
-      <FilterSetFooter>
-        <Space split="|">
-          <span>{`${huntTabs[item.page]} Page`}</span>
-          <span>Shared</span>
-        </Space>
-      </FilterSetFooter>
+      <FilterSetFooter data-test={`${huntTabs[item.page]} Page`}>{`${huntTabs[item.page]} Page`}</FilterSetFooter>
     </Container>
   </Card>
 );
