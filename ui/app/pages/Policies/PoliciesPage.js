@@ -32,6 +32,7 @@ import styled from 'styled-components';
 import buildListParams from 'ui/helpers/buildListParams';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import { createStructuredSelector } from 'reselect';
+import PolicyParameters from 'ui/pages/Policies/PolicyParameters';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ActionItem from '../../ActionItem';
 import { buildListUrlParams } from '../../helpers/common';
@@ -179,52 +180,6 @@ export class PoliciesPage extends React.Component {
     return filters;
   }
 
-  getRowExpandedDescription(item) {
-    // description
-    let expandedDescription = [];
-    if (item.action !== 'suppress') {
-      // first handle the item.action `threshold` & `threat`
-      if (item.action === 'threshold') {
-        expandedDescription = Object.keys(item.options).map(option => {
-          if (option === 'all_tenants' || option === 'no_tenant' || option === 'tenants') return null;
-          if (option === 'tenants_str' && this.props.multiTenancy) {
-            return (
-              <DescriptionItem key="tenants_str">
-                <strong>tenants</strong>: {item.options[option].join()}
-              </DescriptionItem>
-            );
-          }
-          return (
-            <DescriptionItem key={Math.random()}>
-              <strong>{option}</strong>: {item.options[option]}
-            </DescriptionItem>
-          );
-        });
-      } else if (item.action === 'threat') {
-        expandedDescription = Object.keys(item.options).map(option => {
-          if (option === 'all_tenants' || option === 'no_tenant' || option === 'tenants') return null;
-          if (option === 'tenants_str' && this.props.multiTenancy) {
-            return (
-              <DescriptionItem key="tenants_str">
-                <strong>tenants</strong>: {item.options[option].join()}
-              </DescriptionItem>
-            );
-          }
-          return (
-            <DescriptionItem key={Math.random()}>
-              <strong>{option}</strong>: {item.options[option]}
-            </DescriptionItem>
-          );
-        });
-      } else {
-        // for all the other item.action types
-        expandedDescription = this.getRowDescription(item);
-      }
-    }
-
-    return expandedDescription;
-  }
-
   columns = [
     {
       title: 'Action',
@@ -274,7 +229,7 @@ export class PoliciesPage extends React.Component {
             expandRowByClick: this.state.expand,
             expandedRowRender: item => (
               <ActionItem
-                expandedDescription={this.getRowExpandedDescription(item)}
+                expandedDescription={<PolicyParameters policy={item} />}
                 filters={this.getRowFilters(item)}
                 expandedRulesets={this.getRowRuleSets(item)}
                 key={item.pk}
@@ -304,7 +259,6 @@ export class PoliciesPage extends React.Component {
 
 PoliciesPage.propTypes = {
   filterParams: PropTypes.object.isRequired,
-  multiTenancy: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
