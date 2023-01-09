@@ -100,7 +100,7 @@ fi
 
 if [ "$sync" == 1 ]
 then
-    rsync -v -a -e ssh --chmod=ugo=rwX --exclude=scirius/local_settings.py --exclude=.git --exclude=\*.swp --exclude=venv --exclude=vprod --exclude=db* --exclude=generated --exclude=git-sources --exclude=node_modules --exclude=tests/robotframework --rsync-path="sudo rsync" ./ "$host":$SCIRIUS_DIR
+    rsync -v -a -e ssh --chmod=ugo=rwX --exclude=.git --exclude=\*.swp --exclude=venv --exclude=vprod --exclude=db* --exclude=generated --exclude=git-sources --exclude=node_modules --exclude=tests/robotframework --rsync-path="sudo rsync" ./ "$host":$SCIRIUS_DIR
     rsync -v -a -e ssh --chmod=ugo=rwX --rsync-path="sudo rsync" ./docker/scirius/scirius/local_settings.py "$host":$SCIRIUS_DIR/scirius/
 fi
 
