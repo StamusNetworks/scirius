@@ -26,3 +26,4 @@ idstools
 enum34
 django-webpack-loader
 django-cprofile-middleware
+pyinotify
