@@ -41,8 +41,9 @@ const Progress = styled.div`
 
 const ModalFooter = styled.div`
   text-align: center;
-  opacity: ${({ pcapDownloading, pcapUploadingError, pcapExtractingError, pcapRetrievingError, pcapAutoDownloadingError }) =>
-    !pcapDownloading && !pcapUploadingError && !pcapExtractingError && !pcapRetrievingError && !pcapAutoDownloadingError ? 1 : 0};
+  color: ${({ pcapUploadingError, pcapExtractingError, pcapRetrievingError, pcapAutoDownloadingError }) =>
+    pcapUploadingError || pcapExtractingError || pcapRetrievingError || pcapAutoDownloadingError ? 'red' : '#3f9c35'};
+  opacity: ${({ pcapDownloading }) => (!pcapDownloading ? 1 : 0)};
   transition: all 1s;
 `;
 
@@ -100,7 +101,7 @@ const PCAPFile = ({ alertData }) => {
       } catch (e) {
         setPcapDownloading(false);
         setPcapAutoDownloading(false);
-        setPcapAutoDownloadingError('Downloading PCAP from SSP to browser failed. Please try again.');
+        setPcapAutoDownloadingError(e.response?.data?.error || 'Downloading PCAP from SSP to browser failed');
       }
     };
 
@@ -115,7 +116,7 @@ const PCAPFile = ({ alertData }) => {
     } catch (e) {
       setPcapDownloading(false);
       setPcapUploading(false);
-      setPcapUploadingError('Uploading the alert to the Probe failed. Please try again.');
+      setPcapUploadingError(e.response?.data?.error || 'Uploading the alert to the Probe failed');
       return;
     }
 
@@ -132,7 +133,7 @@ const PCAPFile = ({ alertData }) => {
       } catch (e) {
         setPcapDownloading(false);
         setPcapExtracting(false);
-        setPcapExtractingError('Extracting the PCAP on the Probe failed. Please try again.');
+        setPcapExtractingError(e.response?.data?.error || 'Extracting the PCAP on the Probe failed');
         return;
       }
 
@@ -153,7 +154,7 @@ const PCAPFile = ({ alertData }) => {
           } catch (e) {
             setPcapDownloading(false);
             setPcapRetrieving(false);
-            setPcapRetrievingError('Retrieving PCAP from Probe to SSP failed. Please try again.');
+            setPcapRetrievingError(e.response?.data?.error || 'Retrieving PCAP from Probe to SSP failed');
             return;
           }
         }
@@ -226,7 +227,7 @@ const PCAPFile = ({ alertData }) => {
                 pcapRetrievingError={pcapRetrievingError}
                 pcapAutoDownloadingError={pcapAutoDownloadingError}
               >
-                <b>Download Complete</b>
+                {pcapUploadingError || pcapExtractingError || pcapRetrievingError || pcapAutoDownloadingError || <b>Download Complete</b>}
               </ModalFooter>
             }
           >
