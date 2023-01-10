@@ -89,16 +89,15 @@ class BaseEditForm:
 
 class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelForm, CommentForm):
     use_http_proxy = forms.BooleanField(label='Use a proxy', required=False)
-    custom_elasticsearch = forms.BooleanField(label='Use a custom Elasticsearch server', required=False)
+    custom_elasticsearch = forms.BooleanField(label='Use an external Elasticsearch server', required=False)
     http_proxy = forms.CharField(max_length=200, required=False, help_text='Proxy address of the form "http://username:password@hostname:port/"')
     elasticsearch_url = forms.CharField(max_length=200, empty_value='http://elasticsearch:9200/', required=False)
     use_proxy_for_es = forms.BooleanField(label='Use elasticsearch with system proxy', required=False)
     custom_cookie_age = forms.FloatField(
-        label='Age of session cookies (in hours)',
+        label='Automatic logout after inactivity timeout (in hours)',
         required=True,
         validators=[validators.MinValueValidator(0.5)],
         min_value=0.5,
-        help_text='Automatic logout after inactivity timeout'
     )
     elasticsearch_user = forms.CharField(required=False, help_text='Elasticsearch username for %s' % settings.APP_SHORT_NAME)
     elasticsearch_pass = forms.CharField(required=False,
@@ -107,10 +106,12 @@ class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelFor
                                          widget=forms.PasswordInput(render_value=True))
     custom_login_banner = forms.CharField(
         required=False,
+        label='Custom login page banner text',
         widget=forms.Textarea(
             attrs={
                 'rows': 3,
                 'style': 'resize: none;',
+                'placeholder': 'Enter the plain text that will be displayed on login page'
             }
         )
     )
