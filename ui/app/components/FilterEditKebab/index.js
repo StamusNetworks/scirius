@@ -50,10 +50,9 @@ class FilterEditKebab extends React.Component {
   };
 
   generateAlertTag = () => {
-    const { tag } = this.props.data.options;
     const { action } = this.props.data;
     return process.env.REACT_APP_HAS_TAG === '1' && (action === 'tag' || action === 'tagkeep')
-      ? generateAlert(tag === 'informational', tag === 'relevant', tag === 'untagged', true, true)
+      ? generateAlert(true, true, true, true, true)
       : this.props.alertTag;
   };
 
