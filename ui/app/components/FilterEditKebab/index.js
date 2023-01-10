@@ -200,7 +200,7 @@ class FilterEditKebab extends React.Component {
       >
         Convert Action to Filters
       </Menu.Item>
-      {this.props.user.isActive && this.props.user.permissions.includes('rules.events_edit') && (
+      {this.props.user.isActive && (
         <Menu.Item
           key="6"
           data-test="save-action-as-filter-set"
