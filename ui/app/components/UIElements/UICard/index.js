@@ -5,7 +5,9 @@ import styled from 'styled-components';
 
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 
-const CardStyled = styled(Card)`
+const CardStyled = styled(Card).withConfig({
+  shouldForwardProp: prop => !['fullHeight', 'noPadding'].includes(prop),
+})`
   background-color: white;
   border-radius: 5px;
   position: relative;
