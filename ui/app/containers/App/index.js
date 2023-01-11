@@ -11,7 +11,7 @@ import PropTypes from 'prop-types';
 import { bindActionCreators, compose } from 'redux';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
-import { Layout, Spin } from 'antd';
+import { Layout } from 'antd';
 
 import withSaga from 'utils/injectSaga';
 import pages from 'ui/pages';
@@ -28,17 +28,10 @@ import ErrorHandler from 'ui/components/ErrorHandler';
 import ProxyRoute from 'ui/components/ProxyRoute';
 import saga from 'ui/containers/App/saga';
 import FilterSets from 'ui/components/FilterSets';
-import styled from 'styled-components';
+import AppSpinner from 'ui/components/AppSpinner';
 
 const pagesList = Object.keys(pages);
 const SESSION_INTERVAL = 30000;
-
-const SpinSC = styled(Spin)`
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
 
 const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodRequest, setSessionActivity, timeSpan, systemSettings, hasLicense }) => {
   const idle = useRef(0);
@@ -94,7 +87,7 @@ const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodReques
 
   // do not render the app if systemSettings are not yet fetched
   if (!systemSettings) {
-    return <SpinSC />;
+    return <AppSpinner />;
   }
 
   return (
