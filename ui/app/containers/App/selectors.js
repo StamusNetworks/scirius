@@ -4,10 +4,13 @@ import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import { parseObjectToUrl } from 'ui/helpers/parseObjectToUrl';
 import { initialState } from 'ui/containers/App/reducer';
+import { getCurrentUser } from 'ui/helpers/getCurrentUser';
 
 const selectGlobal = state => state.global.ce || initialState;
 
 const selectRouter = state => state.router || { location: {} };
+
+const selectCurrentUser = () => getCurrentUser();
 
 /*
  * General selectors.
@@ -78,6 +81,8 @@ const makeSelectFiltersParam = (prefix = '&', skipStatus = false) =>
 
 const makeSelectSource = () => createSelector(selectGlobal, subState => subState.source);
 
+const makeSelectCurrentUser = (param, fallback) => createSelector(selectCurrentUser, subState => subState[param] || fallback);
+
 /*
  * Network parameters selectors.
  *
@@ -123,6 +128,7 @@ export default {
   makeSelectSource,
   makeSelectContext,
   makeSelectUpdatePushRuleset,
+  makeSelectCurrentUser,
   // Network parameters selectors
   makeSelectURLDates,
   makeSelectURLDatesES,

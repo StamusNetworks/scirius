@@ -12,6 +12,7 @@ import { parseUrl } from 'ui/helpers/parseUrl';
 import { getQueryObject } from 'ui/helpers/getQueryObject';
 import { isBooted, setBooted } from 'ui/helpers/isBooted';
 import constants from 'ui/containers/App/constants';
+import { getCurrentUser } from 'ui/helpers/getCurrentUser';
 
 const initialTimeSpanStorage = {
   startDate: moment().subtract(1, 'day').format(),
@@ -58,6 +59,9 @@ export const initialState = {
   },
   filters: {
     ...initialFiltersStorage,
+    ...(!initialFiltersStorage.tenant && getCurrentUser('multi_tenancy', false) && getCurrentUser('tenants', []).length > 0
+      ? { tenant: getCurrentUser('tenants')[0] }
+      : {}),
   },
   source: {
     data: [...initialSourceStorage],
