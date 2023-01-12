@@ -16,6 +16,46 @@ import PCAPFile from 'ui/components/PCAPFile';
 
 import { DlHorizontal, Container, Warning, Numbers, Pre } from './styles';
 import AlertRelatedData from '../../../../components/AlertRelatedData';
+
+// mapping between what comes from backend(here key) and what we want to show on the frontend(the value)
+const protoMap = {
+  Alert: 'Alert',
+  Anomaly: 'Anomaly',
+  Dcerpc: 'DCE/RPC',
+  Dhcp: 'DHCP',
+  Dnp3: 'DNP3',
+  Dns: 'DNS',
+  Enip: 'ENIP',
+  Fileinfo: 'File Info',
+  Flow: 'Flow',
+  Ftp: 'FTP',
+  Ftpdata: 'FTP data',
+  Geneve: 'Geneve',
+  Http: 'HTTP',
+  Http2: 'HTTP2',
+  Ikev2: 'IKEv2',
+  Imap: 'IMAP',
+  Krb5: 'KRB5',
+  Modbus: 'Modbus',
+  Mqtt: 'MQTT',
+  Msn: 'MSN',
+  Netflow: 'Netflow',
+  Nfs: 'NFS',
+  Ntp: 'NTP',
+  Rdp: 'RDP',
+  Rfb: 'RFB',
+  Sip: 'SIP',
+  Smb: 'SMB',
+  Smtp: 'SMTP',
+  Snmp: 'SNMP',
+  Ssh: 'SSH',
+  Stamus: 'Stamus',
+  Tftp: 'TFTP',
+  Tls: 'TLS',
+  Vntag: 'VN-Tag',
+  Vxlan: 'VXLAN',
+};
+
 export default class AlertItem extends React.Component {
   constructor(props) {
     super(props);
@@ -420,7 +460,7 @@ export default class AlertItem extends React.Component {
             </Col>
             {data.geoip && (
               <Col md={24} lg={12} xl={8} xxl={6} flex>
-                <UICard title="Geoip" fullHeight>
+                <UICard title="Geo IP" fullHeight>
                   <DlHorizontal>
                     {data.geoip.country_name && (
                       <ErrorHandler>
@@ -735,7 +775,7 @@ export default class AlertItem extends React.Component {
                   key={`events-${key}`}
                   tab={
                     <Numbers>
-                      <span>{`Related ${key}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''}`}</span>
+                      <span>{`Related ${protoMap[key]}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''}`}</span>
                       <Badge
                         count={Object.keys(events[key]).length || <span className="ant-badge-count">0</span>}
                         overflowCount={99999}
