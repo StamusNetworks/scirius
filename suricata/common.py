@@ -19,6 +19,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+import json
 import psutil
 from rest_framework import serializers
 
@@ -290,3 +291,7 @@ def login_redirection_url(request):
     if request.user.has_perm('rules.events_view'):
         return '/stamus/hunting/dashboards'
     return '/rules'
+
+
+def current_user_js(request):
+    return 'var current_user = %s;\n' % json.dumps(request.user.sciriususer.to_dict(json_compatible=True))

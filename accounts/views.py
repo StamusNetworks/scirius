@@ -501,10 +501,8 @@ def logoutview(request):
 
 
 def current_user(request):
-    return HttpResponse(
-        'var current_user = %s' % json.dumps(request.user.sciriususer.to_dict(json_compatible=True)),
-        content_type='application/x-javascript'
-    )
+    js = get_middleware_module('common').current_user_js(request)
+    return HttpResponse(js, content_type='application/x-javascript')
 
 
 def session_activity(request):
