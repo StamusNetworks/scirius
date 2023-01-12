@@ -168,11 +168,11 @@ const PCAPFile = ({ alertData }) => {
 
   const progressData = [
     { key: 1, text: 'Send PCAP extraction request to probe', data: pcapUploadingData, loading: pcapUploading, error: pcapUploadingError },
-    { key: 2, text: 'Extract pcap file from probe pcap store', data: pcapExtractingData, loading: pcapExtracting, error: pcapExtractingError },
-    { key: 3, text: 'Retrieve extracted pcap file from probe', data: pcapRetrievingData, loading: pcapRetrieving, error: pcapRetrievingError },
+    { key: 2, text: 'Extract PCAP from probe', data: pcapExtractingData, loading: pcapExtracting, error: pcapExtractingError },
+    { key: 3, text: 'Retrieve extracted PCAP from probe', data: pcapRetrievingData, loading: pcapRetrieving, error: pcapRetrievingError },
     {
       key: 4,
-      text: 'Starting download of extracted pcap file',
+      text: 'Starting download of extracted PCAP',
       data: pcapAutoDownloadingData,
       loading: pcapAutoDownloading,
       error: pcapAutoDownloadingError,
@@ -210,11 +210,7 @@ const PCAPFile = ({ alertData }) => {
               {pcapDownloading && <Spin size="small" />}
             </Download>
           </Container>
-          <Warning>
-            WARNING: The PCAP trace can contain malicious files or payloads inside ! DO NOT execute, run or activate the extracted contents in non
-            protected or non sand boxed environments. Stamus Networks is not responsible for any damage to your systems and infrastructure that might
-            occur as a consequence of downloading them.
-          </Warning>
+          <Warning>WARNING: Be careful when downloading. The PCAP can contain malicious, inappropriate, or illegal data!</Warning>
           <Modal
             title="PCAP file download progress"
             visible={showPCAPdownloadProgress}
