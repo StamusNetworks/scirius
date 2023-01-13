@@ -574,6 +574,21 @@ export default class AlertItem extends React.Component {
                         <EventField field_name="Version" field="tls.version" value={data.tls.version} addFilter={this.addFilter} />
                       </ErrorHandler>
                     )}
+                    {data.tls.cipher_suite !== undefined && (
+                      <ErrorHandler>
+                        <EventField field_name="Cipher Suite" field="tls.cipher_suite" value={data.tls.cipher_suite} addFilter={this.addFilter} />
+                      </ErrorHandler>
+                    )}
+                    {data.tls.cipher_security !== undefined && (
+                      <ErrorHandler>
+                        <EventField
+                          field_name="Cipher Security"
+                          field="tls.cipher_security"
+                          value={data.tls.cipher_security}
+                          addFilter={this.addFilter}
+                        />
+                      </ErrorHandler>
+                    )}
                   </DlHorizontal>
                 </UICard>
               </Col>
