@@ -170,7 +170,7 @@ const HelpMenu = ({ isEnterpriseEdition }) => {
             </Version>
           </VersionsList>
         )}
-        <CopyRight>Copyright 2014-{new Date().getFullYear()}, Stamus Networks</CopyRight>
+        <CopyRight>Copyright 2014-2023, Stamus Networks</CopyRight>
       </AboutModal>
 
       <Item
