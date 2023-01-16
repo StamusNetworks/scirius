@@ -858,7 +858,7 @@ class Source(models.Model):
     use_iprep = models.BooleanField('Use IP reputation for group signatures', default=True)
     version = models.IntegerField(default=1)
     use_sys_proxy = models.BooleanField(default=True, verbose_name='Use system proxy')
-    untrusted = models.BooleanField(default=True, verbose_name='Supply chain attack protection')
+    untrusted = models.BooleanField(default=True, verbose_name='Source sanitization')
 
     editable = True
     # git repo where we store the physical thing

@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='source',
             name='untrusted',
-            field=models.BooleanField(default=True, verbose_name='Supply chain attack protection'),
+            field=models.BooleanField(default=True, verbose_name='Source sanitization'),
         ),
     ]
