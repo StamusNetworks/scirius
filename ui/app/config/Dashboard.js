@@ -86,7 +86,7 @@ export const dashboard = {
       },
       {
         i: 'alert.target.net_info_agg',
-        title: 'Targets Networks',
+        title: 'Target Networks',
         dimensions: {
           xxl: 6,
           xl: 6,
