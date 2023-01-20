@@ -310,7 +310,7 @@ export default class RuleToggleModal extends React.Component {
                 <Form.Item key="track" style={{ marginBottom: '10px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center' }}>
                     <strong>Track by</strong>
-                    <Select placeholder="By Source" onChange={v => this.handleOptionsChange('by_src', v)} allowClear>
+                    <Select placeholder="By Source" onChange={v => this.handleOptionsChange('track', v)} allowClear>
                       <Option value="by_src">By Source</Option>
                       <Option value="by_dst">By Destination</Option>
                     </Select>
