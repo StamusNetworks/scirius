@@ -22,7 +22,7 @@ FILTER_SETS = [
         ],
         'name': 'Hunt: Low noise signature events',
         'page': 'RULES_LIST',
-        'description': 'Low noise signature alerts sometimes hide the path to good artifacts and discoveries.',
+        'description': 'This filter highlights the events which have rarely triggered. These low noise alerts can sometimes hide valuable artifacts and discoveries.',
         'share': 'static'
     },
     {
@@ -38,7 +38,7 @@ FILTER_SETS = [
         ],
         'name': 'Hunt: Trojan related events',
         'page': 'DASHBOARDS',
-        'description': 'This filter set results in Trojan related rules events being displayed.',
+        'description': 'This filter highlights the trojan-related events.',
         'share': 'static'
     },
     {
@@ -54,7 +54,7 @@ FILTER_SETS = [
         ],
         'name': 'Hunt: Malware related events',
         'page': 'DASHBOARDS',
-        'description': 'This filter set results in displaying Malware related rules events',
+        'description': 'This filter highlights the malware-related events.',
         'share': 'static'
     },
     {
@@ -70,7 +70,7 @@ FILTER_SETS = [
         ],
         'name': 'Hunt: HUNTING related events',
         'page': 'DASHBOARDS',
-        'description': 'This filter set results in displaying specifically designed hunting related rules events',
+        'description': 'This filter highlights all the events that are generated from  rules with the "hunting" designation.',
         'share': 'static'
     },
     {
@@ -86,7 +86,7 @@ FILTER_SETS = [
         ],
         'name': 'Hunt: Executable related events',
         'page': 'DASHBOARDS',
-        'description': 'This filter provides for Executable related events being displayed. Downloads/Posts and similar. It is usually interesting and advisable to investigate the results.',
+        'description': 'This filter highlights all the events related to executable files, including downloads, posts, and others. This usually provides interesting data that warrants further investigation.',
         'share': 'static'
     },
     {
@@ -110,7 +110,7 @@ FILTER_SETS = [
         ],
         'name': 'Hunt: HTTP Executable related events',
         'page': 'DASHBOARDS',
-        'description': 'This filter set provides results for any related events that are done via HTTP and either are posting or downloading executables.',
+        'description': 'This filter highlights all the events that take place via HTTP and are either posting or downloading executables.',
         'share': 'static'
     },
     {
@@ -133,7 +133,7 @@ FILTER_SETS = [
         ],
         "name": "Hunt: HTTP direct requests and replies to private IP",
         "page": "DASHBOARDS",
-        "description": "HTTP requests and responses directly to internal IP not domain. This is not traditional since usually a domain name is used to reach out to the servers inside. Though might be common in Dev environments  - it could also indicate later movement.",
+        "description": "This filter highlights all the events that include HTTP requests and responses directly to an internal IP address - not a domain name. This activity may be suspicious because a domain name is typically part of the transaction when communicating with servers inside the network. While common in some development environments, it could also indicate lateral movement.",
         "share": "static"
     },
     {
@@ -154,9 +154,9 @@ FILTER_SETS = [
                 "fullString": False
             },
         ],
-        "name": "Hunt: HTTP non internal  direct IP requests and replies",
+        "name": "Hunt: HTTP non-internal  direct IP requests and replies",
         "page": "DASHBOARDS",
-        "description": "HTTP requests and responses directly by IP not domain. This is not traditional since usually a domain name is used to reach out to the servers outside (non private/internal IPs).",
+        "description": "This filter highlights all the events that indicate HTTP requests and responses directly by IP - not using a domain name. This activity may be suspicious because a domain name is typically part of the transaction when communicating with servers outside the network (non private/internal IPs).",
         "share": "static"
     },
     {
@@ -179,7 +179,7 @@ FILTER_SETS = [
         ],
         "name": "Hunt: Admin payload search",
         "page": "DASHBOARDS",
-        "description": "Search for Admin or Administrator in the alert events payloads.",
+        "description": 'This filter highlights the events that include "Admin" or "Administrator" in their alert payload.',
         "share": "static"
     },
     {
@@ -202,7 +202,7 @@ FILTER_SETS = [
         ],
         "name": "Hunt: Root payload search",
         "page": "DASHBOARDS",
-        "description": "Search for root in the alert events payloads.",
+        "description": 'This filter highlights the events containing "root" in the payloads.',
         "share": "static"
     },
     {
@@ -248,7 +248,7 @@ FILTER_SETS = [
         ],
         "name": "Hunt: HTTP payloads containing admin",
         "page": "DASHBOARDS",
-        "description": "Hunt: HTTP payloads containing admin.",
+        "description": 'Hunt: This filter highlights all the events that indicate HTTP payloads containing "admin".',
         "share": "static"
     },
     {
@@ -271,7 +271,7 @@ FILTER_SETS = [
         ],
         "name": "Hunt: TLS payloads containing root or admin",
         "page": "DASHBOARDS",
-        "description": "Hunt: TLS payloads containing root or admin.",
+        "description": 'This filter highlights the events identifying "root" or "admin" in the TLS payload.',
         "share": "static"
     },
     {
@@ -294,7 +294,7 @@ FILTER_SETS = [
         ],
         "name": "Hunt: Old TLS versions alert events",
         "page": "DASHBOARDS",
-        "description": "Alert events with old or retired TLS versions.",
+        "description": "This filter highlights the events that identify old or retired TLS versions.",
         "share": "static"
     },
     {
@@ -310,7 +310,7 @@ FILTER_SETS = [
         ],
         'name': 'Hunt: HTTP POSTs',
         'page': 'DASHBOARDS',
-        'description': 'Displays events on HTTP POST requests. Those requests can hide malicious activity',
+        'description': 'This filter highlights all the events that include HTTP POST requests. This type of request can hide malicious activity.',
         'share': 'static'
     },
     {
@@ -398,7 +398,7 @@ FILTER_SETS = [
         ],
         'name': 'Hunt: Suspicious HTTP User Agents - 1',
         'page': 'DASHBOARDS',
-        'description': 'The filter set returns events that have HTTP user agents that are not usually seen too much. Hence making it a good candidate for further investigations.',
+        'description': 'This filter highlights events that are using HTTP application layer protocol but with an user agent that includes specific characters not common to user agents.',
         'share': 'static'
     },
     {
@@ -422,14 +422,14 @@ FILTER_SETS = [
         ],
         'name': 'Hunt: Suspicious HTTP User Agents -2',
         'page': 'DASHBOARDS',
-        'description': 'The filter set returns events that have HTTP user agents that are not usually seen too much. Hence making it a good candidate for further investigations. This is second hunt variant of the filter.',
+        'description': 'This filter highlights events that are using HTTP application layer protocol but with an user agent that is not common - aka not mozilla/firefox/opera/edge/wget and similar.',
         'share': 'static'
     },
     {
         'content': [
             {
                 'value': 'CURRENT_EVENTS',
-                'label': 'msg: CURRENT_EVENTS',
+                'label': 'Message: CURRENT_EVENTS',
                 'fullString': False,
                 'query': 'filter',
                 'negated': False,
@@ -438,7 +438,7 @@ FILTER_SETS = [
         ],
         'name': 'Hunt: Current events',
         'page': 'DASHBOARDS',
-        'description': 'This filter set provides results based on events/alerts from the CURRENT_EVENTS ET rules',
+        'description': 'This filter highlights the events that trigger based on the CURRENT_EVENTS ET rules',
         'share': 'static'
     },
     {
@@ -453,7 +453,7 @@ FILTER_SETS = [
         ],
         'name': 'Hunt: DNS related events',
         'page': 'DASHBOARDS',
-        'description': 'This filter set provides results for available DNS related metadata events.',
+        'description': 'This filter highlights all the events with DNS-related metadata.',
         'share': 'static'
     },
     {
@@ -468,7 +468,7 @@ FILTER_SETS = [
         ],
         'name': 'Hunt: Severity 1 events',
         'page': 'DASHBOARDS',
-        'description': 'Basic Severity 1 classified events by the rulesets.',
+        'description': 'This filter highlights the events classified as "Severity 1" by one of the rulesets.',
         'share': 'static'
     },
     {
@@ -491,7 +491,7 @@ FILTER_SETS = [
         ],
         'name': 'Hunt: Non lib/open ssh clients',
         'page': 'DASHBOARDS',
-        'description': 'This filter results in providing events that are SSH based but have no libssh or openssh client version. Usually good starting point for further investigations.',
+        'description': 'This filter highlights the SSH-related events that have no libssh or openssh client version. ',
         'share': 'static'
     },
     {
@@ -507,7 +507,7 @@ FILTER_SETS = [
         ],
         'name': 'Info: Python HTTP User Agents',
         'page': 'DASHBOARDS',
-        'description': 'Informational filter: Any Python HTTP User Agents seen.',
+        'description': 'This informational filter highlights the HTTP-based events that contain Python HTTP User Agents.',
         'share': 'static'
     },
     {
@@ -523,7 +523,7 @@ FILTER_SETS = [
         ],
         'name': 'Info: Curl HTTP User Agents',
         'page': 'DASHBOARDS',
-        'description': 'Informational filter: Any Curl HTTP User Agents seen.',
+        'description': 'This informational filter highlights the HTTP-based events that contain Curl HTTP User Agents.',
         'share': 'static'
     },
     {
@@ -539,7 +539,7 @@ FILTER_SETS = [
         ],
         'name': 'Info: Perl HTTP User Agents',
         'page': 'DASHBOARDS',
-        'description': 'Informational filter: Any Perl HTTP User Agents seen.',
+        'description': 'This informational filter highlights the HTTP-based events that contain Perl HTTP User Agents.',
         'share': 'static'
     },
     {
@@ -555,7 +555,7 @@ FILTER_SETS = [
         ],
         'name': 'Info: Wget HTTP User Agents',
         'page': 'DASHBOARDS',
-        'description': 'Informational filter: Any Wget HTTP User Agents seen.',
+        'description': 'This informational filter highlights the HTTP-based events that contain Wget HTTP User Agents.',
         'share': 'static'
     },
     {
@@ -570,7 +570,7 @@ FILTER_SETS = [
         ],
         "name": "Policy: Outdated software",
         "page": "DASHBOARDS",
-        "description": "Outdated or old software that needs upgrades or security patching. It presents a risk and policy violation.",
+        "description": "This filter highlights outdated or old software that should be upgraded or patched.",
         "share": "static"
     },
     {
@@ -585,7 +585,7 @@ FILTER_SETS = [
         ],
         "name": "Policy: Vulnerable software",
         "page": "DASHBOARDS",
-        "description": "Vulnerable software that needs upgrades or security patching. It presents a risk and policy violation.",
+        "description": "This filter highlights known-vulnerable software that should be upgraded or patched.",
         "share": "static"
     },
     {
@@ -600,7 +600,7 @@ FILTER_SETS = [
         ],
         "name": "Policy: CVE global detection",
         "page": "DASHBOARDS",
-        "description": "The guided filter set returns any CVE related events. It is a good starting point for policy violations review, CVE detection or threat hunting.",
+        "description": "This filter highlights events associated with publicly-identified vulnerabilities (CVE issued).",
         "share": "static"
     },
     {
@@ -615,7 +615,7 @@ FILTER_SETS = [
         ],
         "name": "Phishing: Phishing general detection",
         "page": "DASHBOARDS",
-        "description": "This guided filter set returns events related to possible attempts of phishing and policy violations.",
+        "description": 'This filter highlights events that contain the keyword "phishing", identifying all activity that may be considered possible phishing attempts.',
         "share": "static"
     },
     {
@@ -644,7 +644,7 @@ FILTER_SETS = [
     {
         "content": [
             {
-                "label": "msg: web_client",
+                "label": "Message: web_client",
                 "id": "msg",
                 "value": "web_client",
                 "negated": False,
@@ -661,13 +661,13 @@ FILTER_SETS = [
         ],
         "name": "Hunt: web client encoded values",
         "page": "DASHBOARDS",
-        "description": "This filter set returns encoded values found in the HTTP URLs or  payloads of the alert events. Needs investigation as to where from and why these events appear.",
+        "description": "This filter highlights the events that have encoded values in the client side HTTP URLs or payload.",
         "share": "static"
     },
     {
         "content": [
             {
-                "label": "msg: web_server",
+                "label": "Message: web_server",
                 "id": "msg",
                 "value": "web_server",
                 "negated": False,
@@ -684,13 +684,13 @@ FILTER_SETS = [
         ],
         "name": "Hunt: web server encoded values",
         "page": "DASHBOARDS",
-        "description": "This filter set returns encoded values found in the HTTP URLs or  payloads of the alert events. Needs investigation as to where from and why these events appear.",
+        "description": "This filter highlights the events that have encoded values in the server side HTTP URLs or payload.",
         "share": "static"
     },
     {
         "content": [
             {
-                "label": "msg: shellcode",
+                "label": "Message: shellcode",
                 "id": "msg",
                 "value": "shellcode",
                 "negated": False,
@@ -707,7 +707,7 @@ FILTER_SETS = [
         ],
         "name": "Hunt: possible encoded shell code strings",
         "page": "DASHBOARDS",
-        "description": "This filter set returns possible encoded shell code strings values found in the payloads of the alert events. Needs investigation as to where from and why these events appear.",
+        "description": "This filter highlights the events that have encoded shellcode string values in the payload.",
         "share": "static"
     },
     {
@@ -730,7 +730,7 @@ FILTER_SETS = [
         ],
         "name": "Hunt: Unusual in length http user agents",
         "page": "DASHBOARDS",
-        "description": "This filter set returns unusual in length HTTP user agents. A good starting point for revealing custom, scripting languages or add on software user agents.",
+        "description": "This filter highlights the events containing HTTP user agents which contain fewer than 55 characters.",
         "share": "static"
     },
     {
@@ -746,7 +746,7 @@ FILTER_SETS = [
         ],
         "name": "Info: Java HTTP User Agents",
         "page": "DASHBOARDS",
-        "description": "This filter set returns results of HTTP based signatures that have Java http user agent.  Mostly informational unless it comes from unexpected locations in the network.",
+        "description": "This informational filter highlights the HTTP-based events that contain Curl Java User Agents.",
         "share": "static"
     },
     {
@@ -761,7 +761,95 @@ FILTER_SETS = [
         ],
         "name": "Info: Shockwave Flash HTTP User Agents",
         "page": "DASHBOARDS",
-        "description": "This filter set returns results for Shockwave Flash HTTP user agents observed in alert events..",
+        "description": "This informational filter highlights the HTTP-based events that contain Shockwave Flash HTTP User Agents.",
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "label": "Message: url",
+                "id": "msg",
+                "value": "url",
+                "negated": False,
+                "query": "filter",
+                "fullString": False
+            },
+            {
+                "id": "alert.signature",
+                "value": "short*",
+                "label": "alert.signature: short*",
+                "fullString": False,
+                "negated": False
+            },
+        ],
+        "name": "Hunt: URL Shortener services",
+        "page": "DASHBOARDS",
+        "description": "This filter set returns requests made to known URL shortener services.",
+        "imported": False,
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "alert.metadata.stamus_classification",
+                "value": "stamus_critical_lateral",
+                "label": "alert.metadata.stamus_classification: stamus_critical_lateral",
+                "fullString": True,
+                "negated": False
+            },
+        ],
+        "name": "Hunt: Stamus critical lateral",
+        "page": "DASHBOARDS",
+        "description": "This filter set returns SMB/DCERPC  events that are actively changing, configuring, adding or deleting settings and services remotely.",
+        "imported": False,
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "alert.metadata.stamus_classification",
+                "value": "stamus_lateral",
+                "label": "alert.metadata.stamus_classification: stamus_lateral",
+                "fullString": True,
+                "negated": False
+            },
+        ],
+        "name": "Hunt: Stamus lateral",
+        "page": "DASHBOARDS",
+        "description": "This filter set returns lateral related events like scans or SMB/DCERPC MS protocol related queries.",
+        "imported": False,
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "alert.metadata.lateral_function",
+                "value": "OpenLocalMachine",
+                "label": "alert.metadata.lateral_function: OpenLocalMachine",
+                "fullString": True,
+                "negated": False
+            },
+        ],
+        "name": "Hunt: Remote Administration Console OpenLocalMachine",
+        "page": "DASHBOARDS",
+        "description": "This filter set returns events that are indicative of remotely opening the administration console of a Windows OS.",
+        "imported": False,
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "alert.metadata.lateral_function",
+                "value": "OpenClassesRoot",
+                "label": "alert.metadata.lateral_function: OpenClassesRoot",
+                "fullString": True,
+                "negated": False
+            },
+        ],
+        "name": "Hunt: Remote Administration Registry HKEY_CLASSES_ROOT",
+        "page": "DASHBOARDS",
+        "description": "This filter set returns events that are indicative of remotely opening the registry HKEY_CLASSES_ROOT  of a Windows OS.",
+        "imported": False,
         "share": "static"
     },
     {
@@ -783,7 +871,7 @@ FILTER_SETS = [
         ],
         "name": "Policy: Clear text password - 1",
         "page": "DASHBOARDS",
-        "description": "Policy violation. Clear text password.",
+        "description": "This filter highlights events associated with clear text passwords.",
         "share": "static"
     },
     {
@@ -797,7 +885,7 @@ FILTER_SETS = [
                 "fullString": False
             },
             {
-                "label": "msg: unencrypted",
+                "label": "Message: unencrypted",
                 "id": "msg",
                 "value": "unencrypted",
                 "negated": False,
@@ -814,7 +902,7 @@ FILTER_SETS = [
         ],
         "name": "Policy: Clear text password - 2",
         "page": "DASHBOARDS",
-        "description": "Policy violation. Unencrypted password.",
+        "description": "This filter highlights events associated with unencrypted passwords.",
         "share": "static"
     }
 ]
