@@ -5,7 +5,7 @@ FILTER_SETS = [
         'content': [
             {
                 'value': 1,
-                'label': 'Hits min: 1',
+                'label': 'Alerts min: 1',
                 'fullString': True,
                 'query': 'rest',
                 'negated': False,
@@ -13,7 +13,7 @@ FILTER_SETS = [
             },
             {
                 'value': 10,
-                'label': 'Hits max: 10',
+                'label': 'Alerts max: 10',
                 'fullString': True,
                 'query': 'rest',
                 'negated': False,

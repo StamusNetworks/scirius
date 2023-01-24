@@ -59,7 +59,7 @@ request_logger = logging.getLogger('django.request')
 _HUNT_FILTERS = [
     {
         'id': 'hits_min',
-        'title': 'Hits min',
+        'title': 'Alerts min',
         'placeholder': 'Minimum Hits Count',
         'filterType': 'number',
         'valueType': 'positiveint',
@@ -67,7 +67,7 @@ _HUNT_FILTERS = [
     },
     {
         'id': 'hits_max',
-        'title': 'Hits max',
+        'title': 'Alerts max',
         'placeholder': 'Maximum Hits Count',
         'filterType': 'number',
         'valueType': 'positiveint',

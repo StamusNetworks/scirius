@@ -3030,8 +3030,8 @@ class FilterSetViewSet(viewsets.ModelViewSet):
 
     Return:\n
         HTTP/1.1 200 OK
-        [{"id":1,"content":[{"id":"alert.tag","value":{"untagged":true,"relevant":true,"informational":true}},{"negated":false,"query":"rest","id":"hits_min","value":1,"label":"Hits min: 1"},
-        {"negated":false,"query":"rest","id":"hits_max","value":10,"label":"Hits max: 10"},
+        [{"id":1,"content":[{"id":"alert.tag","value":{"untagged":true,"relevant":true,"informational":true}},{"negated":false,"query":"rest","id":"hits_min","value":1,"label":"Alerts min: 1"},
+        {"negated":false,"query":"rest","id":"hits_max","value":10,"label":"Alerts max: 10"},
         {"value":2002025,"label":"alert.signature_id: 2002025","isChecked":true,"key":"alert.signature_id","negated":false,"query":"filter","id":"alert.signature_id"}],
         "name":"aze","page":"RULES_LIST","share":"global"}]
 
@@ -3114,8 +3114,8 @@ class HuntFilterAPIView(APIView):
         [{"filterType":"select","filterValues":[{"id":"untagged","title":"Untagged"},{"id":"relevant","title":"Relevant"},
         {"id":"informational","title":"Informational"}],"placeholder":"Filter hits by Tag","id":"alert.tag","title":"Tag"},
         {"filterType":"select","filterValues":[{"id":"Probe1","title":"Probe1"}],"placeholder":"Filter hits by Probe","id":"probe","title":"Probe"},
-        {"placeholder":"Minimum Hits Count","title":"Hits min","filterType":"integer","id":"hits_min","queryType":"rest"},
-        {"placeholder":"Maximum Hits Count","title":"Hits max","filterType":"integer","id":"hits_max","queryType":"rest"},
+        {"placeholder":"Minimum Hits Count","title":"Alerts min","filterType":"integer","id":"hits_min","queryType":"rest"},
+        {"placeholder":"Maximum Hits Count","title":"Alerts max","filterType":"integer","id":"hits_max","queryType":"rest"},
         {"placeholder":"Filter by Message","title":"Message","filterType":"text","id":"msg","queryType":"filter"},
         {"placeholder":"Filter by Content","title":"Content","filterType":"text","id":"search","queryType":"rest"},
         {"placeholder":"Filter by Signature","title":"Signature ID","filterType":"text","id":"sid","queryType":"filter"}]
