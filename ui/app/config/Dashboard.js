@@ -278,7 +278,7 @@ export const dashboard = {
       },
       {
         i: 'tunnel.dest_ip',
-        title: 'Tunnel Destinations IP',
+        title: 'Tunnel Destination IPs',
         dimensions: {
           xxl: 5,
           xl: 6,
@@ -304,7 +304,7 @@ export const dashboard = {
   },
   http: {
     id: 'http',
-    title: 'HTTP information',
+    title: 'HTTP Information',
     items: [
       {
         i: 'http.hostname',
@@ -350,7 +350,7 @@ export const dashboard = {
   },
   dns: {
     id: 'dns',
-    title: 'DNS information',
+    title: 'DNS Information',
     items: [
       {
         i: 'dns.query.rrname',
@@ -372,7 +372,7 @@ export const dashboard = {
   },
   tls: {
     id: 'tls',
-    title: 'TLS information',
+    title: 'TLS Information',
     items: [
       {
         i: 'tls.sni',
@@ -392,7 +392,7 @@ export const dashboard = {
       },
       {
         i: 'tls.issuerdn',
-        title: 'Issuers DN',
+        title: 'Issuer DNs',
         dimensions: {
           xxl: 8,
           xl: 9,
@@ -434,7 +434,7 @@ export const dashboard = {
   },
   smtp: {
     id: 'smtp',
-    title: 'SMTP information',
+    title: 'SMTP Information',
     items: [
       {
         i: 'smtp.mail_from',
@@ -464,7 +464,7 @@ export const dashboard = {
   },
   smb: {
     id: 'smb',
-    title: 'SMB information',
+    title: 'SMB Information',
     items: [
       {
         i: 'smb.command',
@@ -502,7 +502,7 @@ export const dashboard = {
   },
   ssh: {
     id: 'ssh',
-    title: 'SSH information',
+    title: 'SSH Information',
     items: [
       {
         i: 'ssh.client.software_version',
