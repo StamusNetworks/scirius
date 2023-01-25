@@ -506,7 +506,7 @@ export const dashboard = {
     items: [
       {
         i: 'ssh.client.software_version',
-        title: 'Client Softwares',
+        title: 'Client Software',
         dimensions: {
           xxl: 12,
           xl: 12,
@@ -514,7 +514,7 @@ export const dashboard = {
       },
       {
         i: 'ssh.server.software_version',
-        title: 'Server Softwares',
+        title: 'Server Software',
         dimensions: {
           xxl: 12,
           xl: 12,
