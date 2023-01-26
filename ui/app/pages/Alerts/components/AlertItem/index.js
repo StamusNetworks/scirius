@@ -458,6 +458,26 @@ export default class AlertItem extends React.Component {
                 </DlHorizontal>
               </UICard>
             </Col>
+            {data.dns && (
+              <Col md={24} lg={12} xl={8} xxl={6} flex>
+                <UICard title="DNS" fullHeight>
+                  {data.dns.query.map(query => (
+                    <>
+                      {query.rrname && (
+                        <ErrorHandler>
+                          <EventField field_name="Queried Name" field="dns.query.rrname" value={query.rrname} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      )}
+                      {query.rrtype && (
+                        <ErrorHandler>
+                          <EventField field_name="Queried Type" field="dns.query.rrtype" value={query.rrtype} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      )}
+                    </>
+                  ))}
+                </UICard>
+              </Col>
+            )}
             {data.geoip && (
               <Col md={24} lg={12} xl={8} xxl={6} flex>
                 <UICard title="Geo IP" fullHeight>
