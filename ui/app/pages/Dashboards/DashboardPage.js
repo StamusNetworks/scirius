@@ -33,7 +33,6 @@ import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParam
 import { makeSelectGlobalFilters, makeSelectUserData } from 'ui/containers/HuntApp/stores/global';
 import HuntTimeline from 'ui/HuntTimeline';
 import HuntTrend from 'ui/HuntTrend';
-import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import '../../../../rules/static/rules/c3.min.css';
 import DashboardMosaic from '../../components/DashboardMosaic';

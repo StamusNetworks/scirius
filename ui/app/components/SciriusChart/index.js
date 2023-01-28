@@ -20,8 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import DeepExtend from 'deep-extend';
-import { cloneDeep } from 'lodash';
+import _ from 'lodash';
 
 const c3 = require('c3');
 
@@ -68,7 +67,7 @@ export default class SciriusChart extends React.Component {
       data: {},
     };
     this.mounted = false;
-    DeepExtend(this.deepProps, { ...props });
+    _.merge(this.deepProps, { ...props });
   }
 
   componentDidMount() {
@@ -85,7 +84,7 @@ export default class SciriusChart extends React.Component {
         labelsCount: labelsLimit,
       });
     }
-    DeepExtend(this.deepProps, nextProps);
+    _.merge(this.deepProps, nextProps);
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -114,7 +113,7 @@ export default class SciriusChart extends React.Component {
 
   getChartProperties = () => {
     if (this.deepProps.axis.x.show) {
-      DeepExtend(this.deepProps, this.formatXLabels());
+      _.merge(this.deepProps, this.formatXLabels());
     }
     return this.deepProps;
   };
@@ -184,7 +183,7 @@ export default class SciriusChart extends React.Component {
 
       // Display pretty Y axis
       let xAxesMaxVal = 0;
-      const xAxesValues = cloneDeep(this.deepProps.data.columns);
+      const xAxesValues = _.cloneDeep(this.deepProps.data.columns);
       for (let x = 0; x < xAxesValues.length; x += 1) {
         if (xAxesValues[x][0] !== 'x') {
           xAxesValues[x].shift();

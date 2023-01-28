@@ -292,7 +292,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
               Filters {sticky ? <PushpinFilled onClick={() => setSticky(!sticky)} /> : <PushpinOutlined onClick={() => setSticky(!sticky)} />}
             </Title>
             <div style={{ display: 'flex', flex: 1, gap: 8 }}>
-              <FiltersSelector id="filters">
+              <FiltersSelector id="filters" data-test="filters-dropdown">
                 <CascaderStyled
                   value={selectedIds}
                   options={treeOptions}
@@ -332,6 +332,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     filterAdded(field, value, true);
                   }}
                   filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
+                  data-test="filters-dropdown-two"
                 >
                   {filterCategory && filterCategory.filterValues.map(v => <Option value={v.id}>{v.label}</Option>)}
                 </Select>
