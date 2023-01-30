@@ -1,6 +1,6 @@
 const path = require("path");
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 module.exports = {
     entry: "./npm/scirius-bundle.js",
@@ -17,11 +17,6 @@ module.exports = {
                 }
             },
             {
-                test: /\.js$/,
-                exclude: /node_modules/,
-                use: ['eslint-loader']
-            },
-            {
                 test: /\.(sa|sc|c)ss$/,
                 use: [
                     {
@@ -34,13 +29,9 @@ module.exports = {
                         }
 
                     },
-                    {
-                        loader: "css-loader",
-                    },
-                    {
-                        loader: "sass-loader",
-                    },
-                    /* ... Other loaders ... */
+                    "css-loader",
+                    "postcss-loader",
+                    "sass-loader",
                 ]
             },
             {
@@ -81,7 +72,8 @@ module.exports = {
     plugins: [
         new MiniCssExtractPlugin({
             filename: "styles.css"
-        })
+        }),
+        new ESLintPlugin({}),
     ],
     output: {
         path: path.resolve(__dirname, "rules/static/dist"),

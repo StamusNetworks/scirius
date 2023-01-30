@@ -1,6 +1,6 @@
 image: stamus/stamus-docker-qa:chromium
 npm:
-  image: node:10.23
+  image: node:18.13
   stage: build
   artifacts:
     expire_in: 1 day
@@ -12,12 +12,10 @@ npm:
   - echo "skip"
   script:
   - npm install
-  - cd ./node_modules/patternfly && npm install
-  - cd ../../
   - ./node_modules/webpack/bin/webpack.js
 
 npm-ui:
-  image: node:12.22.5
+  image: node:18.13
   stage: build
   artifacts:
     expire_in: 1 day
@@ -29,7 +27,6 @@ npm-ui:
     - echo "skip"
   script:
   - cd ui
-  - export NODE_OPTIONS=--max_old_space_size=4096
   - 'test -e .env ||: && set -a && source .env && set +a'  # load and export env variables
   - npm install
   - npm run build
@@ -37,13 +34,12 @@ npm-ui:
   - cd "$CI_PROJECT_DIR" && mv ui/webpack-stats-ui.prod.json rules/static/
 
 npm-ui-eslint:
-  image: node:12.22.5
+  image: node:18.13
   stage: build
   before_script:
     - echo "skip"
   script:
   - cd ui
-  - export NODE_OPTIONS=--max_old_space_size=4096
   - 'test -e .env ||: && set -a && source .env && set +a'  # load and export env variables
   - npm install
   - npm run eslint:fix
