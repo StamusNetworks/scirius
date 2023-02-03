@@ -65,6 +65,13 @@ const CascaderStyled = styled(Cascader)`
   }
 `;
 
+const FiltersSelector = styled.div`
+  .ant-cascader-menu {
+    height: 430px;
+    width: 150px;
+  }
+`;
+
 const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValues }) => {
   // Component setup
   useInjectReducer({ key: 'ruleSet', reducer: ruleSetReducer });
@@ -274,9 +281,15 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
         <div>
           <Title>Filters</Title>
           <div style={{ display: 'flex', flex: 1, gap: 8 }}>
-            <div>
-              <CascaderStyled value={selectedIds} options={treeOptions} displayRender={displayRender} onChange={value => onChange(value)} />
-            </div>
+            <FiltersSelector id="filters">
+              <CascaderStyled
+                value={selectedIds}
+                options={treeOptions}
+                displayRender={displayRender}
+                onChange={value => onChange(value)}
+                getPopupContainer={() => document.getElementById('filters')}
+              />
+            </FiltersSelector>
             {field && filterType !== 'complex-select' && filterType !== 'select' && (
               <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
                 <Input
