@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Cascader, Col, Divider, Input, Row, Space, Switch, Select } from 'antd';
+import { Cascader, Col, Divider, Input, Row, Space, Switch, Select, Affix } from 'antd';
+import { PushpinOutlined, PushpinFilled } from '@ant-design/icons';
 import UICard from 'ui/components/UIElements/UICard';
 import styled from 'styled-components';
 import { useInjectSaga } from 'utils/injectSaga';
@@ -72,6 +73,8 @@ const FiltersSelector = styled.div`
   }
 `;
 
+const Static = styled.div``;
+
 const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValues }) => {
   // Component setup
   useInjectReducer({ key: 'ruleSet', reducer: ruleSetReducer });
@@ -92,6 +95,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
   const [searchString, setSearchString] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
+  const [sticky, setSticky] = useState(false);
 
   // Effects handlers
   useEffect(() => {
@@ -275,128 +279,135 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
     }
   };
 
+  const Component = sticky ? Affix : Static;
   return (
-    <UICard style={{ marginBottom: '10px' }}>
-      <FilterContainer>
-        <div>
-          <Title>Filters</Title>
-          <div style={{ display: 'flex', flex: 1, gap: 8 }}>
-            <FiltersSelector id="filters">
-              <CascaderStyled
-                value={selectedIds}
-                options={treeOptions}
-                displayRender={displayRender}
-                onChange={value => onChange(value)}
-                getPopupContainer={() => document.getElementById('filters')}
-              />
-            </FiltersSelector>
-            {field && filterType !== 'complex-select' && filterType !== 'select' && (
-              <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
-                <Input
-                  type={filterType === 'number' ? 'number' : 'text'}
-                  value={searchString}
-                  onChange={e => {
-                    validate(valueType, e.target.value);
-                    setSearchString(e.target.value);
-                  }}
-                  placeholder={placeholder}
-                  onPressEnter={event => {
-                    const { value: raw = '' } = event.target;
-                    const value = filterType === 'number' && raw.length > 0 ? parseInt(raw, 10) : raw;
-                    if (valid.length === 0 && ((value && typeof value === 'string' && value.length > 0) || typeof value === 'number')) {
-                      filterAdded(field, value, false);
-                    }
-                  }}
-                />
-                <FilterError>{valid}</FilterError>
-              </div>
-            )}
-            {filterType === 'complex-select' && filterCategory && (
-              <Select
-                style={{ width: 200 }}
-                showSearch
-                placeholder={field && field.placeholder}
-                optionFilterProp="children"
-                onChange={value => {
-                  filterAdded(field, value, true);
-                }}
-                filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
-              >
-                {filterCategory && filterCategory.filterValues.map(v => <Option value={v.id}>{v.label}</Option>)}
-              </Select>
-            )}
-          </div>
-          <Divider style={{ margin: '15px 0' }} />
-          <Row>
-            <Col md={24}>{activeFilters && activeFilters.length > 0 && <FilterList page={page} filters={activeFilters} filterType={section} />}</Col>
-          </Row>
-        </div>
-        <Space direction="vertical">
-          <AdditionalFilters page={page} />
-          {['RULES_LIST', 'HOSTS_LIST', 'HISTORY'].indexOf(page) > -1 && (
-            <Sort page={page} onChange={(option, direction) => onSortChange(option, direction)} value={sortValues} />
-          )}
-        </Space>
-        {page !== 'HISTORY' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
+    <Component offsetTop={10}>
+      <UICard style={{ marginBottom: '10px' }}>
+        <FilterContainer>
           <div>
-            <Title>Tags Filters</Title>
-            <Space direction="vertical">
-              <Space>
-                <UISwitch
-                  activeBackgroundColor="#7b1244"
-                  size="small"
-                  checkedChildren="ON"
-                  unCheckedChildren="OFF"
-                  checked={alertTag.value.informational}
-                  onChange={() => dispatch(huntGlobalStore.setTag('informational', !alertTag.value.informational))}
-                  disabled={page === 'HOST_INSIGHT'}
-                  data-test="Informational-switch"
-                />{' '}
-                Informational
-              </Space>
-              <Space>
-                <UISwitch
-                  activeBackgroundColor="#ec7a08"
-                  // activeBorderColor="#005792"
-
-                  size="small"
-                  checkedChildren="ON"
-                  unCheckedChildren="OFF"
-                  checked={alertTag.value.relevant}
-                  onChange={() => dispatch(huntGlobalStore.setTag('relevant', !alertTag.value.relevant))}
-                  disabled={page === 'HOST_INSIGHT'}
-                  data-test="Relevant-switch"
-                />{' '}
-                Relevant
-              </Space>
-              <Space>
-                <Switch
-                  size="small"
-                  checkedChildren="ON"
-                  unCheckedChildren="OFF"
-                  checked={alertTag.value.untagged}
-                  onChange={() => dispatch(huntGlobalStore.setTag('untagged', !alertTag.value.untagged))}
-                  disabled={page === 'HOST_INSIGHT'}
-                  data-test="Untagged-switch"
-                />{' '}
-                Untagged
-              </Space>
-            </Space>
+            <Title>
+              Filters {sticky ? <PushpinFilled onClick={() => setSticky(!sticky)} /> : <PushpinOutlined onClick={() => setSticky(!sticky)} />}
+            </Title>
+            <div style={{ display: 'flex', flex: 1, gap: 8 }}>
+              <FiltersSelector id="filters">
+                <CascaderStyled
+                  value={selectedIds}
+                  options={treeOptions}
+                  displayRender={displayRender}
+                  onChange={value => onChange(value)}
+                  getPopupContainer={() => document.getElementById('filters')}
+                />
+              </FiltersSelector>
+              {field && filterType !== 'complex-select' && filterType !== 'select' && (
+                <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+                  <Input
+                    type={filterType === 'number' ? 'number' : 'text'}
+                    value={searchString}
+                    onChange={e => {
+                      validate(valueType, e.target.value);
+                      setSearchString(e.target.value);
+                    }}
+                    placeholder={placeholder}
+                    onPressEnter={event => {
+                      const { value: raw = '' } = event.target;
+                      const value = filterType === 'number' && raw.length > 0 ? parseInt(raw, 10) : raw;
+                      if (valid.length === 0 && ((value && typeof value === 'string' && value.length > 0) || typeof value === 'number')) {
+                        filterAdded(field, value, false);
+                      }
+                    }}
+                  />
+                  <FilterError>{valid}</FilterError>
+                </div>
+              )}
+              {filterType === 'complex-select' && filterCategory && (
+                <Select
+                  style={{ width: 200 }}
+                  showSearch
+                  placeholder={field && field.placeholder}
+                  optionFilterProp="children"
+                  onChange={value => {
+                    filterAdded(field, value, true);
+                  }}
+                  filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
+                >
+                  {filterCategory && filterCategory.filterValues.map(v => <Option value={v.id}>{v.label}</Option>)}
+                </Select>
+              )}
+            </div>
+            <Divider style={{ margin: '15px 0' }} />
+            <Row>
+              <Col md={24}>
+                {activeFilters && activeFilters.length > 0 && <FilterList page={page} filters={activeFilters} filterType={section} />}
+              </Col>
+            </Row>
           </div>
+          <Space direction="vertical">
+            <AdditionalFilters page={page} />
+            {['RULES_LIST', 'HOSTS_LIST', 'HISTORY'].indexOf(page) > -1 && (
+              <Sort page={page} onChange={(option, direction) => onSortChange(option, direction)} value={sortValues} />
+            )}
+          </Space>
+          {page !== 'HISTORY' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
+            <div>
+              <Title>Tags Filters</Title>
+              <Space direction="vertical">
+                <Space>
+                  <UISwitch
+                    activeBackgroundColor="#7b1244"
+                    size="small"
+                    checkedChildren="ON"
+                    unCheckedChildren="OFF"
+                    checked={alertTag.value.informational}
+                    onChange={() => dispatch(huntGlobalStore.setTag('informational', !alertTag.value.informational))}
+                    disabled={page === 'HOST_INSIGHT'}
+                    data-test="Informational-switch"
+                  />{' '}
+                  Informational
+                </Space>
+                <Space>
+                  <UISwitch
+                    activeBackgroundColor="#ec7a08"
+                    // activeBorderColor="#005792"
+
+                    size="small"
+                    checkedChildren="ON"
+                    unCheckedChildren="OFF"
+                    checked={alertTag.value.relevant}
+                    onChange={() => dispatch(huntGlobalStore.setTag('relevant', !alertTag.value.relevant))}
+                    disabled={page === 'HOST_INSIGHT'}
+                    data-test="Relevant-switch"
+                  />{' '}
+                  Relevant
+                </Space>
+                <Space>
+                  <Switch
+                    size="small"
+                    checkedChildren="ON"
+                    unCheckedChildren="OFF"
+                    checked={alertTag.value.untagged}
+                    onChange={() => dispatch(huntGlobalStore.setTag('untagged', !alertTag.value.untagged))}
+                    disabled={page === 'HOST_INSIGHT'}
+                    data-test="Untagged-switch"
+                  />{' '}
+                  Untagged
+                </Space>
+              </Space>
+            </div>
+          )}
+          {page !== 'HISTORY' && <Actions section={section} />}
+        </FilterContainer>
+        {saveFiltersModal && (
+          <FilterSetSaveModal
+            title="Create new Filter Set"
+            close={() => {
+              dispatch(ruleSetsActions.saveFiltersModal(false));
+            }}
+            fromPage={page}
+            content={getFiltersCopy()}
+          />
         )}
-        {page !== 'HISTORY' && <Actions section={section} />}
-      </FilterContainer>
-      {saveFiltersModal && (
-        <FilterSetSaveModal
-          title="Create new Filter Set"
-          close={() => {
-            dispatch(ruleSetsActions.saveFiltersModal(false));
-          }}
-          fromPage={page}
-          content={getFiltersCopy()}
-        />
-      )}
-    </UICard>
+      </UICard>
+    </Component>
   );
 };
 
