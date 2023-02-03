@@ -481,34 +481,36 @@ export default class AlertItem extends React.Component {
             {data.flow && (
               <Col md={24} lg={12} xl={8} xxl={6} flex>
                 <UICard title="Flow" fullHeight>
-                  <ErrorHandler>
-                    <EventField field_name="Flow ID" field="flow_id" value={data.flow_id} addFilter={this.addFilter} />
-                  </ErrorHandler>
-                  <ErrorHandler>
-                    <EventField field_name="Flow start" field="flow.start" value={data.flow?.start} addFilter={this.addFilter} magnifiers={false} />
-                  </ErrorHandler>
-                  <ErrorHandler>
-                    <EventField field_name="Pkts to server" field="flow.pkts_toserver" value={data.flow.pkts_toserver} addFilter={this.addFilter} />
-                  </ErrorHandler>
-                  <ErrorHandler>
-                    <EventField
-                      field_name="Bytes to server"
-                      field="flow.bytes_toserver"
-                      value={data.flow.bytes_toserver}
-                      addFilter={this.addFilter}
-                    />
-                  </ErrorHandler>
-                  <ErrorHandler>
-                    <EventField field_name="Pkts to client" field="flow.pkts_toclient" value={data.flow.pkts_toclient} addFilter={this.addFilter} />
-                  </ErrorHandler>
-                  <ErrorHandler>
-                    <EventField
-                      field_name="Bytes to client"
-                      field="flow.bytes_toclient"
-                      value={data.flow.bytes_toclient}
-                      addFilter={this.addFilter}
-                    />
-                  </ErrorHandler>
+                  <DlHorizontal>
+                    <ErrorHandler>
+                      <EventField field_name="Flow ID" field="flow_id" value={data.flow_id} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField field_name="Flow start" field="flow.start" value={data.flow?.start} addFilter={this.addFilter} magnifiers={false} />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField field_name="Pkts to server" field="flow.pkts_toserver" value={data.flow.pkts_toserver} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField
+                        field_name="Bytes to server"
+                        field="flow.bytes_toserver"
+                        value={data.flow.bytes_toserver}
+                        addFilter={this.addFilter}
+                      />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField field_name="Pkts to client" field="flow.pkts_toclient" value={data.flow.pkts_toclient} addFilter={this.addFilter} />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField
+                        field_name="Bytes to client"
+                        field="flow.bytes_toclient"
+                        value={data.flow.bytes_toclient}
+                        addFilter={this.addFilter}
+                      />
+                    </ErrorHandler>
+                  </DlHorizontal>
                 </UICard>
               </Col>
             )}
