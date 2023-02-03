@@ -9,6 +9,7 @@ import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
 import { supportedActions, setDefaultOptions } from 'ui/supportedActions';
 import history from 'ui/utils/history';
+import { cloneDeep } from 'lodash';
 
 const RulesetMsg = styled.div`
   color: #ff4d4f;
@@ -84,7 +85,7 @@ export default class RuleToggleModal extends React.Component {
             }
 
             if (res.data.fields.indexOf(this.props.filters[i].id) !== -1) {
-              const filter = JSON.parse(JSON.stringify(this.props.filters[i]));
+              const filter = cloneDeep(this.props.filters[i]);
 
               if (this.props.filters[i].negated === false) {
                 filter.operator = 'equal';

@@ -11,6 +11,7 @@ import SciriusChart from 'ui/components/SciriusChart';
 import EventValue from 'ui/components/EventValue';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
+import { cloneDeep } from 'lodash';
 import styled from 'styled-components';
 import RuleStatus from './RuleStatus';
 import HuntStat from './HuntStat';
@@ -41,7 +42,7 @@ const RuleHits = styled.div`
 export default class RulePage extends React.Component {
   constructor(props) {
     super(props);
-    const rule = JSON.parse(JSON.stringify(this.props.rule));
+    const rule = cloneDeep(this.props.rule);
     if (typeof rule === 'number') {
       this.state = {
         rule: undefined,
@@ -107,7 +108,7 @@ export default class RulePage extends React.Component {
       JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)
     ) {
       if (this.state.rule) {
-        const rule = JSON.parse(JSON.stringify(this.state.rule));
+        const rule = cloneDeep(this.state.rule);
         const filterParams = buildFilterParams(this.props.filterParams);
         updateHitsStats([rule], filterParams, this.updateRuleState, qfilter);
       }
