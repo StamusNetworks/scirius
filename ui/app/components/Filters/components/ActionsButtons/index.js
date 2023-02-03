@@ -6,16 +6,16 @@ import PropTypes from 'prop-types';
 import request from 'ui/utils/request';
 import * as config from 'config/Api';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
+import filtersSelectors from 'ui/stores/filters/selectors';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
 import { makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
 import ErrorHandler from 'ui/components/Error';
 import { ActionButton } from '../styles';
 
-const ActionsButtons = ({ supportedActions, filterParams, filters }) => {
+const ActionsButtons = ({ supportedActions, filterParams, filters, rulesets }) => {
   const [visible, setVisible] = useState(false);
   const [type, setType] = useState(false);
-  const [rulesets, setRulesets] = useState([]);
   const [systemSettings, setSystemSettings] = useState([]);
   const rulesList = {
     pagination: {
@@ -28,9 +28,6 @@ const ActionsButtons = ({ supportedActions, filterParams, filters }) => {
   };
 
   useEffect(() => {
-    request(config.API_URL + config.RULESET_PATH).then(res => {
-      setRulesets(res.results);
-    });
     request(config.API_URL + config.SYSTEM_SETTINGS_PATH).then(systemSettings => {
       setSystemSettings(systemSettings);
     });
@@ -100,11 +97,13 @@ ActionsButtons.propTypes = {
   supportedActions: PropTypes.array.isRequired,
   filterParams: PropTypes.any,
   filters: PropTypes.any,
+  rulesets: PropTypes.any,
 };
 
 const mapStateToProps = createStructuredSelector({
   filterParams: makeSelectFilterParams(),
   filters: makeSelectGlobalFilters(),
+  rulesets: filtersSelectors.makeSelectRuleSets(),
 });
 
 export default connect(mapStateToProps)(ActionsButtons);

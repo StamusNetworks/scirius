@@ -63,7 +63,6 @@ class AlertsPage extends React.Component {
 
     this.state = {
       alerts: [],
-      rulesets: [],
       loading: true,
       // eslint-disable-next-line react/no-unused-state
       net_error: undefined,
@@ -80,11 +79,6 @@ class AlertsPage extends React.Component {
 
   componentDidMount() {
     this.fetchData();
-    if (this.state.rulesets.length === 0) {
-      axios.get(config.API_URL + config.RULESET_PATH).then(res => {
-        this.setState({ rulesets: res.data.results });
-      });
-    }
     const huntFilters = store.get('huntFilters');
     axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(res => {
       const fdata = [];
