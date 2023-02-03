@@ -521,7 +521,7 @@ class RuleHitsOrderingFilter(OrderingFilter):
                 queryset = [sid for sid in sids if hits_by_sid.get(sid, 0) >= min_hits]
 
             if max_hits is not None:
-                queryset = [sid for sid in sids if hits_by_sid.get(sid, 0) <= max_hits]
+                queryset = [sid for sid in sids if hits_by_sid.get(sid, max_hits + 1) <= max_hits]
             return queryset
 
         return list(queryset.values_list('sid', flat=True))
