@@ -785,9 +785,10 @@ export default class AlertItem extends React.Component {
                     {Object.entries(data.alert.metadata).map(field => {
                       const value = field[1] === null ? '' : field[1].join(', ');
                       const key = field[0] === null ? '' : field[0];
+                      const fieldName = key.length > 0 ? key[0].toUpperCase() + key.slice(1).replace('_', ' ') : '';
                       return (
                         <ErrorHandler key={key}>
-                          <EventField field_name={key} field={`alert.metadata.${key}`} value={value} addFilter={this.addFilter} />
+                          <EventField field_name={fieldName} field={`alert.metadata.${key}`} value={value} addFilter={this.addFilter} />
                         </ErrorHandler>
                       );
                     })}
