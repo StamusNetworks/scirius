@@ -5,7 +5,6 @@ export const SOURCE_PATH = 'rest/rules/source/';
 export const CATEGORY_PATH = 'rest/rules/category/';
 export const HISTORY_PATH = 'rest/rules/history/';
 export const PROCESSING_PATH = 'rest/rules/processing-filter/';
-export const HUNT_FILTER_PATH = 'rest/rules/hunt-filter/';
 export const SYSTEM_SETTINGS_PATH = 'rest/rules/system_settings/';
 export const USER_PATH = 'rest/accounts/sciriususer/';
 // export const URL = process.env.API_URL;

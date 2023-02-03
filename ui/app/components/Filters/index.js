@@ -101,11 +101,11 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
   // Effects handlers
   useEffect(() => {
     dispatch(ruleSetsActions.ruleSetsRequest());
-  }, []);
-  useEffect(() => {
     if (page !== 'HISTORY') {
       dispatch(ruleSetsActions.huntFilterRequest());
     }
+  }, []);
+  useEffect(() => {
     if (supportedActionsPermissions) {
       dispatch(ruleSetsActions.supportedActionsRequest(filters));
     }
