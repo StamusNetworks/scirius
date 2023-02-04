@@ -63,7 +63,7 @@ const ActionsButtons = ({ supportedActions, filterParams, filters }) => {
   if (process.env.REACT_APP_HAS_ACTION === '1' || process.env.NODE_ENV === 'development') {
     return (
       <ErrorHandler>
-        <ActionButton>
+        <ActionButton active={actions.length > 0}>
           <TagOutlined style={{ width: 24 }} />
           <Dropdown overlay={<Menu>{actions}</Menu>} disabled={actions.length === 0} trigger={['hover']}>
             {actions.length === 0 ? (

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { ActionButton } from '../styles';
 
 const ClearFiltersButton = ({ filters, onClick }) => (
-  <ActionButton>
+  <ActionButton active={filters.length > 0}>
     <CloseOutlined style={{ width: 24 }} />
     {filters.length > 0 && (
       <a
