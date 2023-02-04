@@ -16,6 +16,7 @@ import FilterList from 'ui/components/FilterList/index';
 import { sections } from 'ui/constants';
 import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
 import UISwitch from 'ui/components/UIElements/UISwitch';
+import UISwitchLabel from 'ui/components/UIElements/UISwitchLabel';
 import AdditionalFilters from 'ui/components/AdditionalFilters';
 import { COLOR_ERROR } from 'ui/constants/colors';
 import isIP from 'ui/helpers/isIP';
@@ -361,14 +362,12 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     onChange={() => dispatch(huntGlobalStore.setTag('informational', !alertTag.value.informational))}
                     disabled={page === 'HOST_INSIGHT'}
                     data-test="Informational-switch"
-                  />{' '}
-                  Informational
+                  />
+                  <UISwitchLabel>Informational</UISwitchLabel>
                 </Space>
                 <Space>
                   <UISwitch
                     activeBackgroundColor="#ec7a08"
-                    // activeBorderColor="#005792"
-
                     size="small"
                     checkedChildren="ON"
                     unCheckedChildren="OFF"
@@ -376,8 +375,8 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     onChange={() => dispatch(huntGlobalStore.setTag('relevant', !alertTag.value.relevant))}
                     disabled={page === 'HOST_INSIGHT'}
                     data-test="Relevant-switch"
-                  />{' '}
-                  Relevant
+                  />
+                  <UISwitchLabel>Relevant</UISwitchLabel>
                 </Space>
                 <Space>
                   <Switch
@@ -388,8 +387,8 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     onChange={() => dispatch(huntGlobalStore.setTag('untagged', !alertTag.value.untagged))}
                     disabled={page === 'HOST_INSIGHT'}
                     data-test="Untagged-switch"
-                  />{' '}
-                  Untagged
+                  />
+                  <UISwitchLabel>Untagged</UISwitchLabel>
                 </Space>
               </Space>
             </div>
