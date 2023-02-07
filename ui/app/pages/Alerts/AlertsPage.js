@@ -213,7 +213,7 @@ class AlertsPage extends React.Component {
       signature: rule.alert.signature,
       source_ip: rule.src_ip,
       destination_ip: rule.dest_ip,
-      proto: rule.app_proto,
+      proto: rule.app_proto || rule.proto,
       probe: rule.host,
       category: rule.alert.category,
       tag: rule.alert.tag || 'untagged',
