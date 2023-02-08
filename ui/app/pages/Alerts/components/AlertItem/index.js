@@ -523,9 +523,14 @@ export default class AlertItem extends React.Component {
                         <EventField field_name="Country" field="geoip.country_name" value={data.geoip.country_name} addFilter={this.addFilter} />
                       </ErrorHandler>
                     )}
-                    {data.geoip.city_name && (
+                    {data.geoip.country && (
                       <ErrorHandler>
-                        <EventField field_name="Country Code" field="geoip.country_code" value={data.geoip.country_code} addFilter={this.addFilter} />
+                        <EventField
+                          field_name="Country Code"
+                          field="geoip.country.iso_code"
+                          value={data.geoip.country.iso_code}
+                          addFilter={this.addFilter}
+                        />
                       </ErrorHandler>
                     )}
                     {data.geoip.provider && data.geoip.provider.autonomous_system_number && (
