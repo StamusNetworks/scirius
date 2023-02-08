@@ -25,7 +25,7 @@ from django import forms
 from django.core import validators
 from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import F
+from django.db.models import F, fields
 from django.db import transaction
 from django.conf import settings
 from rules.models import (
@@ -80,11 +80,47 @@ class BaseEditForm:
             for key in self.fields.keys():
                 self.fields[key].disabled = True
 
+        self.fields_changed = []
+
     def clean(self):
         if not self.can_edit:
             raise PermissionDenied()
 
         return super().clean()
+
+    def model_has_changed(self):
+        if not hasattr(self, 'instance'):
+            raise Exception('Method allowed only for ModelForm')
+
+        if not hasattr(self, 'cleaned_data'):
+            raise Exception('"is_valid" must be called before calling this method')
+
+        pk = self.instance.pk
+        for field_name, new_value in self.cleaned_data.items():
+            if pk:
+                instance = self.instance.__class__.objects.filter(pk=pk).first()
+                if hasattr(instance, field_name):
+                    old_value = getattr(instance, field_name)
+                    # set empty string to None to be able to compare
+                    old_value = old_value if old_value else None
+                    new_value = new_value if new_value else None
+                    if old_value != new_value:
+                        self.fields_changed.append(field_name)
+                # else: form.field_name is different than model.field_name
+                # example: form.splunk_key and model.splunk_ssl_key
+                # we compare it manually in this case in the view
+            else:  # new form/model
+                if hasattr(self.instance.__class__, field_name):
+                    field = getattr(self.instance.__class__, field_name).field
+
+                    if isinstance(field, fields.CharField) and new_value:
+                        self.fields_changed.append(field_name)
+
+        return len(self.fields_changed) > 0
+
+    @property
+    def model_changed_data(self):
+        return self.fields_changed
 
 
 class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelForm, CommentForm):
