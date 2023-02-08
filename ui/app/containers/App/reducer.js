@@ -32,6 +32,27 @@ const initialSourceStorage = store.get(StorageEnum.SOURCE) || [];
 
 const initialFiltersStorage = getQueryObject();
 
+const hasMultiTenancy = getCurrentUser('multi_tenancy', false);
+const availableTenants = getCurrentUser('tenants', []);
+const firstAvailableTenant = availableTenants.length > 0 ? getCurrentUser('tenants')[0] : undefined;
+
+const validateTenantURLParam = tenantId => {
+  if (hasMultiTenancy) {
+    if (tenantId) {
+      return !availableTenants.includes(tenantId) ? firstAvailableTenant : tenantId;
+    }
+    return firstAvailableTenant;
+  }
+  return undefined;
+};
+
+if (hasMultiTenancy) {
+  const validTenant = validateTenantURLParam(initialFiltersStorage.tenant);
+  if (validTenant) {
+    initialFiltersStorage.tenant = validTenant;
+  }
+}
+
 // The initial state of the App
 export const initialState = {
   timespan: {
@@ -59,9 +80,6 @@ export const initialState = {
   },
   filters: {
     ...initialFiltersStorage,
-    ...(!initialFiltersStorage.tenant && getCurrentUser('multi_tenancy', false) && getCurrentUser('tenants', []).length > 0
-      ? { tenant: getCurrentUser('tenants')[0] }
-      : {}),
   },
   source: {
     data: [...initialSourceStorage],
@@ -231,8 +249,12 @@ export const appReducer = (state = initialState, action) =>
         // #4351 - Case: location change
         draft.timespan.now = new Date().getTime();
         if (isBooted()) {
-          draft.filters = parseUrl(history.location.search);
-          store.set(StorageEnum.FILTERS, parseUrl(history.location.search));
+          const parsedUrl = parseUrl(history.location.search);
+          if (parsedUrl.tenant) {
+            parsedUrl.tenant = validateTenantURLParam(parsedUrl.tenant);
+          }
+          draft.filters = parsedUrl;
+          store.set(StorageEnum.FILTERS, parsedUrl);
         } else {
           if (isEqual(parseUrl(history.location.search), initialFiltersStorage)) {
             store.set(StorageEnum.FILTERS, parseUrl(history.location.search));
