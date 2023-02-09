@@ -7,22 +7,19 @@ Appliances.metadata = {
   category: 'ADMINISTRATION',
   url: () => '/suricata',
   title: 'Suricata',
-  // eslint-disable-next-line camelcase
-  access: permissions => !!permissions.indexOf('rules.configuration_view') !== -1,
+  access: permissions => !!permissions.includes('rules.configuration_view'),
 };
 
 Users.metadata = {
   category: 'ADMINISTRATION',
   url: () => '/accounts',
-  // eslint-disable-next-line camelcase
-  access: permissions => !!permissions.indexOf('rules.configuration_auth') !== -1,
+  access: permissions => !!permissions.includes('rules.configuration_auth'),
 };
 
 Sources.metadata = {
   category: 'ADMINISTRATION',
   url: () => '/rules/source',
-  // eslint-disable-next-line camelcase
-  access: permissions => !!permissions.indexOf('rules.source_view') !== -1,
+  access: permissions => !!permissions.includes('rules.source_view'),
 };
 
 Other.metadata = {

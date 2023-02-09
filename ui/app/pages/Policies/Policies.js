@@ -24,6 +24,7 @@ Policies.metadata = {
   category: 'STAMUS_ND',
   url: 'hunting/policies',
   position: 4,
+  access: permissions => !!permissions.includes('rules.ruleset_policy_view'),
 };
 
 export default Policies;
