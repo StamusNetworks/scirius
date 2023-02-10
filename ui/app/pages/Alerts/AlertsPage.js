@@ -25,8 +25,6 @@ import { BellFilled } from '@ant-design/icons';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import { STAMUS } from 'ui/config';
-import store from 'store';
-import md5 from 'md5';
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
@@ -79,34 +77,6 @@ class AlertsPage extends React.Component {
 
   componentDidMount() {
     this.fetchData();
-    const huntFilters = store.get('huntFilters');
-    axios.get(config.API_URL + config.HUNT_FILTER_PATH).then(res => {
-      const fdata = [];
-      const keys = Object.keys(res.data);
-      const values = Object.values(res.data);
-      for (let i = 0; i < keys.length; i += 1) {
-        /* Only ES filter are allowed for Alert page */
-        if (['filter'].indexOf(values[i].queryType) !== -1) {
-          if (values[i].filterType !== 'hunt') {
-            fdata.push(values[i]);
-          }
-        }
-      }
-      const currentCheckSum = md5(JSON.stringify(fdata));
-      if (
-        typeof huntFilters === 'undefined' ||
-        typeof huntFilters.alertslist === 'undefined' ||
-        huntFilters.alertslist.checkSum !== currentCheckSum
-      ) {
-        store.set('huntFilters', {
-          ...huntFilters,
-          alertslist: {
-            checkSum: currentCheckSum,
-            data: fdata,
-          },
-        });
-      }
-    });
     if (this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
       this.loadActions();
     }
