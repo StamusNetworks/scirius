@@ -69,62 +69,6 @@ export const dashboard = {
         },
       },
       {
-        i: 'alert.lateral',
-        title: 'Laterals',
-        dimensions: {
-          xxl: 6,
-          xl: 6,
-        },
-      },
-      {
-        i: 'alert.source.net_info_agg',
-        title: 'Sources Networks',
-        dimensions: {
-          xxl: 6,
-          xl: 6,
-        },
-      },
-      {
-        i: 'alert.target.net_info_agg',
-        title: 'Target Networks',
-        dimensions: {
-          xxl: 6,
-          xl: 6,
-        },
-      },
-      {
-        i: 'fqdn.src',
-        title: 'FQDN Sources',
-        dimensions: {
-          xxl: 6,
-          xl: 6,
-        },
-      },
-      {
-        i: 'fqdn.dest',
-        title: 'FQDN Destinations',
-        dimensions: {
-          xxl: 6,
-          xl: 6,
-        },
-      },
-      {
-        i: 'geoip.provider.autonomous_system_number',
-        title: 'AS Numbers',
-        dimensions: {
-          xxl: 6,
-          xl: 6,
-        },
-      },
-      {
-        i: 'geoip.provider.autonomous_system_organization',
-        title: 'AS Organizations',
-        dimensions: {
-          xxl: 6,
-          xl: 6,
-        },
-      },
-      {
         i: 'geoip.country_name',
         title: 'Country Names',
         dimensions: {
