@@ -45,3 +45,10 @@ export const Container = styled.div`
   justify-items: center;
   grid-gap: 20px;
 `;
+
+export const TabPaneResponsive = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-gap: 10px;
+  padding-bottom: 10px;
+`;
