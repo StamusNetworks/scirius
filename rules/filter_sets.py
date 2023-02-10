@@ -284,17 +284,47 @@ FILTER_SETS = [
                 "negated": False
             },
             {
-                "label": "es_filter: tls.version.keyword: TLSv1* OR tls.version.keyword: SSL* AND NOT tls.version.keyword: TLSv1.3 AND NOT tls.version.keyword: TLSv1.2",
-                "id": "es_filter",
-                "value": "tls.version.keyword: TLSv1* OR tls.version.keyword: SSL* AND NOT tls.version.keyword: TLSv1.3 AND NOT tls.version.keyword: TLSv1.2",
-                "negated": False,
-                "query": "filter",
-                "fullString": False
+                "id": "tls.version",
+                "value": "TLS 1.2",
+                "label": "tls.version: TLS 1.2",
+                "fullString": True,
+                "negated": True
             },
+            {
+                "id": "tls.version",
+                "value": "TLS 1.3",
+                "label": "tls.version: TLS 1.3",
+                "fullString": True,
+                "negated": True
+            },
+            {
+                "id": "tls.version",
+                "value": "UNDETERMINED",
+                "label": "tls.version: UNDETERMINED",
+                "fullString": True,
+                "negated": True
+            }
         ],
-        "name": "Hunt: Old TLS versions alert events",
+        "name": "Policy: Old TLS versions",
         "page": "DASHBOARDS",
-        "description": "This filter highlights the events that identify old or retired TLS versions.",
+        "description": "This filter highlights events that identify the use of TLS encryption version prior to version 1.2.",
+        "imported": False,
+        "share": "static"
+    },
+    {
+        "content": [
+            {
+                "id": "app_proto",
+                "value": "ftp*",
+                "label": "app_proto: ftp*",
+                "fullString": False,
+                "negated": False
+            }
+        ],
+        "name": "Policy: FTP clear text alerts and sightings",
+        "page": "DASHBOARDS",
+        "description": "This filter set returns FTP and FTP based data alert events.",
+        "imported": False,
         "share": "static"
     },
     {
@@ -312,6 +342,22 @@ FILTER_SETS = [
         'page': 'DASHBOARDS',
         'description': 'This filter highlights all the events that include HTTP POST requests. This type of request can hide malicious activity.',
         'share': 'static'
+    },
+    {
+        "content": [
+            {
+                "id": "app_proto",
+                "value": "smtp",
+                "label": "app_proto: smtp",
+                "fullString": False,
+                "negated": False
+            }
+        ],
+        "name": "Policy: SMTP clear text events",
+        "page": "DASHBOARDS",
+        "description": "This filter set returns SMTP based alert events.",
+        "imported": False,
+        "share": "static"
     },
     {
         'content': [
@@ -792,13 +838,27 @@ FILTER_SETS = [
         "content": [
             {
                 "id": "alert.metadata.stamus_classification",
-                "value": "stamus_critical_lateral",
-                "label": "alert.metadata.stamus_classification: stamus_critical_lateral",
+                "value": "lateral",
+                "label": "alert.metadata.stamus_classification: lateral",
                 "fullString": True,
                 "negated": False
             },
+            {
+                "id": "alert.metadata.source",
+                "value": "smb_lateral",
+                "label": "alert.metadata.source: smb_lateral",
+                "fullString": True,
+                "negated": False
+            },
+            {
+                "id": "alert.metadata.signature_severity",
+                "value": "Critical",
+                "label": "alert.metadata.signature_severity: Critical",
+                "fullString": True,
+                "negated": False
+            }
         ],
-        "name": "Hunt: Stamus critical lateral",
+        "name": "Hunt: Stamus critical lateral SMB, DCERPC",
         "page": "DASHBOARDS",
         "description": "This filter set returns SMB/DCERPC  events that are actively changing, configuring, adding or deleting settings and services remotely.",
         "imported": False,
@@ -808,13 +868,27 @@ FILTER_SETS = [
         "content": [
             {
                 "id": "alert.metadata.stamus_classification",
-                "value": "stamus_lateral",
-                "label": "alert.metadata.stamus_classification: stamus_lateral",
+                "value": "lateral",
+                "label": "alert.metadata.stamus_classification: lateral",
                 "fullString": True,
                 "negated": False
             },
+            {
+                "id": "alert.metadata.source",
+                "value": "smb_lateral",
+                "label": "alert.metadata.source: smb_lateral",
+                "fullString": True,
+                "negated": False
+            },
+            {
+                "id": "alert.metadata.signature_severity",
+                "value": "Informational",
+                "label": "alert.metadata.signature_severity: Informational",
+                "fullString": True,
+                "negated": False
+            }
         ],
-        "name": "Hunt: Stamus lateral",
+        "name": "Hunt: Stamus lateral SMB, DCERPC",
         "page": "DASHBOARDS",
         "description": "This filter set returns lateral related events like scans or SMB/DCERPC MS protocol related queries.",
         "imported": False,
