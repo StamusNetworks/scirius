@@ -94,7 +94,6 @@
     "marked": "^4.2.12",
     "md5": "^2.3.0",
     "minimist": "^1.2.7",
-    "node-sass": "^8.0.0",
     "polished": "^4.2.2",
     "prop-types": "15.7.2",
     "punycode": "^2.3.0",
