@@ -59,7 +59,8 @@ const FilterSetItem = ({ item, loadFilterSets, onDelete, hasRights, loading, typ
     headStyle={{ background: '#efefef' }}
     extra={
       // we always show delete icon for private filtersets
-      (type === 'private' || hasRights) && (
+      (type === 'private' || hasRights) &&
+      onDelete && (
         <Tooltip title="Delete" getPopupContainer={() => document.getElementById('container')}>
           <Button size="small" type="danger" icon={loading ? <LoadingOutlined /> : <DeleteOutlined />} onClick={() => onDelete()} />
         </Tooltip>
