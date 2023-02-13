@@ -26,7 +26,7 @@ const CardStyled = styled(Card).withConfig({
     padding: 7px 0;
   }
   .ant-card-head-title {
-    color: ${COLOR_BRAND_BLUE};
+    color: ${p => p.color};
   }
   ${p => (p.flex ? "display: 'flex'; flex: 1; flex-direction: 'column';" : '')}
 `;
@@ -39,12 +39,14 @@ const UICard = ({ children, noPadding, fullHeight, ...props }) => (
 UICard.defaultProps = {
   noPadding: false,
   fullHeight: false,
+  color: COLOR_BRAND_BLUE,
 };
 
 UICard.propTypes = {
   children: PropTypes.any,
   noPadding: PropTypes.bool,
   fullHeight: PropTypes.bool,
+  color: PropTypes.string,
 };
 
 export default UICard;
