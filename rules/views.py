@@ -835,7 +835,7 @@ def toggle_availability(request, rule_id):
     rule_object = get_object_or_404(Rule, sid=rule_id)
 
     if not request.method == 'POST':
-        context = {'object': rule, 'error': 'Invalid action'}
+        context = {'object': rule_object, 'error': 'Invalid action'}
         return scirius_render(request, 'rules/rule.html', context)
 
     rule_object.toggle_availability()
