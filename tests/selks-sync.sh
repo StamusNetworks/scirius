@@ -5,7 +5,6 @@ SCIRIUS_DIR=/home/selks-user/scirius
 SCIRIUS_DOCKER_DIR=/opt/scirius
 SELKS_DIR=/opt/selksd/SELKS/docker
 MANAGE="/usr/local/bin/python3 /opt/scirius/manage.py"
-NPM_ENV="export NODE_OPTIONS=--max_old_space_size=4096"
 
 host=""
 dev=0
@@ -119,28 +118,28 @@ fi
 
 if [ "$dev_ui" == "1" ]
 then
-    # Force nodejs 10
+    # Force nodejs 18
     NODE_PREF='Package: nodejs
 Pin: origin ""
 Pin-Priority: -1
 
 Package: nodejs
-Pin: version 10*
+Pin: version 18*
 Pin-Priority: 999'
     ssh "$host" "sudo docker exec -t scirius bash -x -c 'echo \"$NODE_PREF\" > /etc/apt/preferences.d/nodejs'"
 
     ssh "$host" "sudo docker exec -t scirius bash -x -c 'apt-get --allow-releaseinfo-change update && apt-get install -y apt-transport-https gnupg2 &&
                     curl https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - &&
-                    echo deb\ https://deb.nodesource.com/node_10.x\ buster\ main > /etc/apt/sources.list.d/nodesource.list &&
+                    echo deb\ https://deb.nodesource.com/node_18.x\ buster\ main > /etc/apt/sources.list.d/nodesource.list &&
                     apt-get --allow-releaseinfo-change update && apt-get install -y nodejs'"
 
-    ssh "$host" "sudo docker exec -t scirius bash -x -c 'cd $SCIRIUS_DOCKER_DIR && $NPM_ENV && npm install --unsafe-perm'"
-    ssh "$host" "sudo docker exec -t scirius bash -x -c 'cd $SCIRIUS_DOCKER_DIR/ui && $NPM_ENV && npm install'"
+    ssh "$host" "sudo docker exec -t scirius bash -x -c 'cd $SCIRIUS_DOCKER_DIR && npm install'"
+    ssh "$host" "sudo docker exec -t scirius bash -x -c 'cd $SCIRIUS_DOCKER_DIR/ui && npm install'"
 fi
 
 if [ "$build_ui" == 1 ]
 then
-    ssh "$host" "sudo docker exec -t scirius bash -x -c 'cd $SCIRIUS_DOCKER_DIR/ui && set -a && source .env && set +a && $NPM_ENV && npm run build && cp webpack-stats-ui.prod.json ../rules/static/'"
+    ssh "$host" "sudo docker exec -t scirius bash -x -c 'cd $SCIRIUS_DOCKER_DIR/ui && set -a && source .env && set +a && npm run build && cp webpack-stats-ui.prod.json ../rules/static/'"
 fi
 
 if [ "$scirius_postsync" == 1 ]
