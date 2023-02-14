@@ -4,6 +4,7 @@ import { EditOutlined, CloseOutlined } from '@ant-design/icons';
 import { sections } from 'ui/constants';
 import styled from 'styled-components';
 import { Tooltip } from 'antd';
+import FilterActionButton from './FilterActionButton.styled';
 
 const HuntFilter = styled.span`
   display: flex !important;
@@ -52,16 +53,6 @@ const LabelContent = styled.div`
   text-size-adjust: 100%;
   white-space: normal;
   cursor: default;
-`;
-
-const FilterActionButton = styled.a`
-  padding: 5px !important;
-  margin: 0 !important;
-  color: #ffffff;
-  cursor: ${p => (p.disabled ? 'not-allowed' : 'pointer')};
-  &:hover {
-    color: #ffffff;
-  }
 `;
 
 const EditFilterButton = styled(FilterActionButton)`
