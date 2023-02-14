@@ -36,7 +36,13 @@ const FilterError = styled.span`
 const FilterContainer = styled.div`
   display: grid;
   grid-gap: 10px;
-  grid-template-columns: 1fr repeat(3, 150px);
+  grid-template-columns: 1fr repeat(2, 150px) 10px 150px;
+`;
+
+const Separator = styled.div`
+  background: #f0f2f5;
+  width: 4px;
+  margin: -10px 0px -10px -5px;
 `;
 
 const CascaderStyled = styled(Cascader)`
@@ -399,6 +405,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
               </Space>
             </div>
           )}
+          {page !== 'HISTORY' && <Separator />}
           {page !== 'HISTORY' && <Actions section={section} />}
         </FilterContainer>
         {saveFiltersModal && (
