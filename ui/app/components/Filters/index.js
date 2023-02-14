@@ -366,7 +366,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     disabled={page === 'HOST_INSIGHT'}
                     data-test="Informational-switch"
                   />
-                  <UISwitchLabel>Informational</UISwitchLabel>
+                  <UISwitchLabel disabled={page === 'HOST_INSIGHT'}>Informational</UISwitchLabel>
                 </Space>
                 <Space>
                   <UISwitch
@@ -379,7 +379,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     disabled={page === 'HOST_INSIGHT'}
                     data-test="Relevant-switch"
                   />
-                  <UISwitchLabel>Relevant</UISwitchLabel>
+                  <UISwitchLabel disabled={page === 'HOST_INSIGHT'}>Relevant</UISwitchLabel>
                 </Space>
                 <Space>
                   <Switch
@@ -391,7 +391,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     disabled={page === 'HOST_INSIGHT'}
                     data-test="Untagged-switch"
                   />
-                  <UISwitchLabel>Untagged</UISwitchLabel>
+                  <UISwitchLabel disabled={page === 'HOST_INSIGHT'}>Untagged</UISwitchLabel>
                 </Space>
               </Space>
             </div>
