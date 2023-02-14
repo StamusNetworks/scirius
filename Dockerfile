@@ -73,7 +73,7 @@ RUN \
         libc-dev
 RUN \
     echo "**** add NodeSource repository ****" && \
-    wget -O- https://deb.nodesource.com/setup_12.x | bash -
+    wget -O- https://deb.nodesource.com/setup_18.x | bash -
 RUN \
     echo "**** install Node.js ****" && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -90,10 +90,8 @@ ENV REACT_APP_HAS_ACTION 1
 WORKDIR /opt/scirius
 RUN echo "**** install Node.js dependencies for Scirius ****" && \
     npm install && \
-    npm install -g webpack@3.11 && \
     webpack && \
     cd ui && \
-    npm rebuild node-sass && \
     npm install && \
     npm run build && mv webpack-stats-ui.prod.json ../rules/static/
 
