@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Cascader, Col, Divider, Input, Row, Space, Switch, Select, Affix } from 'antd';
+import { Cascader, Col, Divider, Input, Row, Space, Switch, Select, Affix, Tooltip } from 'antd';
 import { PushpinOutlined, PushpinFilled } from '@ant-design/icons';
 import UICard from 'ui/components/UIElements/UICard';
 import styled from 'styled-components';
@@ -293,13 +293,16 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
             </Title>
             <div style={{ display: 'flex', flex: 1, gap: 8 }}>
               <FiltersSelector id="filters" data-test="filters-dropdown">
-                <CascaderStyled
-                  value={selectedIds}
-                  options={treeOptions}
-                  displayRender={displayRender}
-                  onChange={value => onChange(value)}
-                  getPopupContainer={() => document.getElementById('filters')}
-                />
+                <Tooltip title={page === 'HOST_INSIGHT' ? 'Filters are not applicable' : null}>
+                  <CascaderStyled
+                    disabled={page === 'HOST_INSIGHT'}
+                    value={selectedIds}
+                    options={treeOptions}
+                    displayRender={displayRender}
+                    onChange={value => onChange(value)}
+                    getPopupContainer={() => document.getElementById('filters')}
+                  />
+                </Tooltip>
               </FiltersSelector>
               {field && filterType !== 'complex-select' && filterType !== 'select' && (
                 <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
