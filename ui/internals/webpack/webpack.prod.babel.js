@@ -20,7 +20,6 @@ module.exports = require('./webpack.base.babel')({
   // In production, we skip all hot-reloading stuff
   entry: {
     ui: [
-      require.resolve('react-app-polyfill/ie11'),
       path.join(process.cwd(), 'app/app.js'),
     ],
   },
@@ -36,7 +35,7 @@ module.exports = require('./webpack.base.babel')({
   optimization: {
     minimize: true,
     minimizer: [
-      new TerserPlugin({
+      new TerserPlugin({ //delete comments, uglify & minify JS
         terserOptions: {
           warnings: false,
           compress: {
@@ -61,9 +60,8 @@ module.exports = require('./webpack.base.babel')({
     splitChunks: {
       chunks: 'all',
       maxInitialRequests: 10,
-      minSize: 0,
       cacheGroups: {
-        vendor: {
+        vendor: { //this extracts the 3rd party libraries in their own bundle.js files
           test: /[\\/]node_modules[\\/]/,
           name(module) {
             const packageName = module.context.match(
@@ -78,7 +76,7 @@ module.exports = require('./webpack.base.babel')({
 
   plugins: [
     new webpack.optimize.LimitChunkCountPlugin({
-      maxChunks: 1
+      maxChunks: 20, // max number of bundle chunks; increase to 200 & every npm library will be loaded in separate npm.* file
     }),
 
     // Minify and optimize the index.html

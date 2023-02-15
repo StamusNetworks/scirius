@@ -21,32 +21,39 @@ module.exports = options => ({
   module: {
     rules: [
       {
-        test: /\.jsx?$/, // Transform all .js and .jsx files required somewhere with Babel
-        exclude: /node_modules/,
-        use: {
+        test: /\.jsx?$/, // Transform all .js and .jsx files into ES5
+        exclude: /node_modules/, //everything in node_modules is already ES5
+        use: [{
           loader: 'babel-loader',
-          options: options.babelQuery,
-        },
+          options: {
+            presets: [
+              ['@babel/preset-env', { targets: "defaults" }],
+              '@babel/preset-react'
+            ],
+            plugins: [
+              "babel-plugin-styled-components",
+              ["import", { "libraryName": "antd", "libraryDirectory": "es", "style": true }]
+            ]
+          }
+        },{
+          loader: 'eslint-loader',
+          options: {
+            fix: true //will auto-format our js files on save to conform to the airbnb eslint style guide
+          }
+        }],
       },
       {
-        // Preprocess our own .css files
-        // This is the place to add your own loaders (e.g. sass/less etc.)
-        // for a list of loaders, see https://webpack.js.org/loaders/#styling
-        test: /\.(css|sass|scss)$/,
-        exclude: /node_modules/,
-        use: ['style-loader', 'css-loader', 'sass-loader'],
-      },
-      {
-        // Preprocess 3rd party .css files located in node_modules
         test: /\.css$/,
-        include: /node_modules/,
-        use: ['style-loader', 'css-loader'],
+        use: [
+          "style-loader",
+          "css-loader",
+        ],
       },
       {
         test: /\.less$/,
         use: [
-          'style-loader',
-          'css-loader',
+          "style-loader",
+          "css-loader",
           {
             loader: 'less-loader',
             options: {
@@ -58,36 +65,22 @@ module.exports = options => ({
             },
           },
         ],
-        include: /node_modules/,
       },
       {
         test: /\.(eot|otf|ttf|woff|woff2)$/,
         use: 'file-loader',
       },
       {
-        test: /\.(jpg|png|gif|svg)$/,
+        test: /\.(jpe?g|png|gif|svg)$/,
         use: [
           {
             loader: 'url-loader',
             options: {
-              // Inline files smaller than 10 kB
-              limit: 1,
+              // images smaller than 10000 bytes/10 kB will be encoded as base64 & included in the bundle.js
+              limit: 10000,
             },
           },
         ],
-      },
-      {
-        test: /\.html$/,
-        use: 'html-loader',
-      },
-      {
-        test: /\.(mp4|webm)$/,
-        use: {
-          loader: 'url-loader',
-          options: {
-            limit: 10000,
-          },
-        },
       },
     ],
   },
