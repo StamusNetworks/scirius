@@ -69,7 +69,7 @@ const CascaderStyled = styled(Cascader)`
 
 const FiltersSelector = styled.div`
   .ant-cascader-menu {
-    height: 430px;
+    height: fit-content;
     width: 150px;
   }
 `;
