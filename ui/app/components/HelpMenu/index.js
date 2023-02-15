@@ -165,8 +165,8 @@ const HelpMenu = ({ isEnterpriseEdition }) => {
               {` v${version}`}
             </Version>
             <Version>
-              <strong>Stamus Threat Intelligence:</strong>
-              {sourceLoading ? loadingIndicator : source.version ? ` v${source.version}` : <i>rules update needed</i>}
+              <strong>Stamus Threat Intelligence: </strong>
+              {sourceLoading ? loadingIndicator : source?.version ? `v${source.version}` : <i>rules update needed</i>}
             </Version>
           </VersionsList>
         )}
