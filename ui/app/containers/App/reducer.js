@@ -251,7 +251,7 @@ export const appReducer = (state = initialState, action) =>
         if (isBooted()) {
           const parsedUrl = parseUrl(history.location.search);
           if (parsedUrl.tenant) {
-            parsedUrl.tenant = validateTenantURLParam(parsedUrl.tenant);
+            parsedUrl.tenant = !(process.env.NODE_ENV === 'development') ? validateTenantURLParam(parsedUrl.tenant) : parsedUrl.tenant;
           }
           draft.filters = parsedUrl;
           store.set(StorageEnum.FILTERS, parsedUrl);
