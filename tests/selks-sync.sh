@@ -68,8 +68,12 @@ do
     -r|--build-ui)
         build_ui=1
         ;;
+    -R|--restart-scirius)
+        restart_scirius=1
+        ;;
     -o|--scirius-postsync)
         scirius_postsync=1
+        restart_scirius=1
         ;;
     *)
         host="$1"
@@ -150,4 +154,9 @@ fi
 if [ "$build_ui" == 1 ] || [ "$scirius_postsync" == 1 ]
 then
     ssh "$host" "sudo docker exec -t scirius $MANAGE collectstatic --noinput"
+fi
+
+if [ "$restart_scirius" == 1 ]
+then
+    ssh "$host" "sudo docker exec -t scirius bash -c 'kill -sHUP \$(pidof python)'"
 fi
