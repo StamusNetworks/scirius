@@ -2630,7 +2630,8 @@ class Rule(models.Model, Transformable, Cache):
                 'comment': item.comment,
                 'title': item.get_title(),
                 'date': item.date,
-                'icons': item.get_icons()
+                'icons': item.get_icons(),
+                'client_ip': item.client_ip
             })
         return res
 
