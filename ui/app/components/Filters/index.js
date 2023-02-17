@@ -356,7 +356,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
             </Row>
           </div>
           <Space direction="vertical">
-            <AdditionalFilters page={page} />
+            {page !== 'HISTORY' && <AdditionalFilters page={page} />}
             {['RULES_LIST', 'HOSTS_LIST', 'HISTORY'].indexOf(page) > -1 && (
               <Sort page={page} onChange={(option, direction) => onSortChange(option, direction)} value={sortValues} />
             )}
