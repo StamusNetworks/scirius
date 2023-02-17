@@ -23,14 +23,14 @@ import json
 from io import BytesIO
 from django import forms
 from django.core import validators
-from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied
+from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied, ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import F, fields
 from django.db import transaction
 from django.conf import settings
 from rules.models import (
     Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold, Transformation,
-    RuleProcessingFilter, RuleProcessingFilterDef, FilterSet
+    RuleProcessingFilter, RuleProcessingFilterDef, FilterSet, validate_source_datatype
 )
 
 
@@ -289,6 +289,17 @@ class AddSourceForm(forms.ModelForm, RulesetChoiceForm):
         from scirius.utils import get_middleware_module
         extra_choices = get_middleware_module('common').update_source_content_type()
         self.fields['datatype'] = forms.ChoiceField(choices=Source.CONTENT_TYPE + extra_choices)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        datatype = cleaned_data['datatype']
+
+        try:
+            validate_source_datatype(datatype)
+        except ValidationError as e:
+            self.add_error('datatype', e.message)
+
+        return cleaned_data
 
 
 class AddPublicSourceForm(forms.ModelForm, RulesetChoiceForm):

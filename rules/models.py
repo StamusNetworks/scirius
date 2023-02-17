@@ -850,7 +850,7 @@ class Source(models.Model):
     created_date = models.DateTimeField('date created')
     updated_date = models.DateTimeField('date updated', blank=True, null=True)
     method = models.CharField(max_length=10, choices=FETCH_METHOD)
-    datatype = models.CharField(max_length=10, validators=[validate_source_datatype])
+    datatype = models.CharField(max_length=10)
     uri = models.CharField(max_length=400, blank=True, null=True)
     cert_verif = models.BooleanField('Check certificates', default=True)
     authkey = models.CharField(max_length=400, blank=True, null=True)
@@ -872,6 +872,12 @@ class Source(models.Model):
     #    Use method to get new files and commit them
     #    Create a new SourceAtVersion when there is a real update
     #    In case of upload: simply propose user upload form
+
+    def save(self, *args, **kwargs) -> None:
+        # creation
+        if self._state.adding:
+            validate_source_datatype(self.datatype)
+        return super().save(*args, **kwargs)
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
