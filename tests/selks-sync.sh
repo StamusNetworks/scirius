@@ -130,7 +130,7 @@ Pin-Priority: 999'
 
     ssh "$host" "sudo docker exec -t scirius bash -x -c 'apt-get --allow-releaseinfo-change update && apt-get install -y apt-transport-https gnupg2 &&
                     curl https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - &&
-                    echo deb\ https://deb.nodesource.com/node_18.x\ buster\ main > /etc/apt/sources.list.d/nodesource.list &&
+                    echo deb\ https://deb.nodesource.com/node_18.x\ bullseye\ main > /etc/apt/sources.list.d/nodesource.list &&
                     apt-get --allow-releaseinfo-change update && apt-get install -y nodejs'"
 
     ssh "$host" "sudo docker exec -t scirius bash -x -c 'cd $SCIRIUS_DOCKER_DIR && npm install'"
