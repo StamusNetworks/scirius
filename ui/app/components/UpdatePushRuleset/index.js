@@ -13,6 +13,9 @@ const UpdatePushRuleset = () => {
     if (!loading && status) {
       message.success({ content: 'Successfully updated / pushed ruleset' });
     }
+    return () => {
+      dispatch(actions.updatePushRulesetReset());
+    };
   }, [loading, status]);
 
   return (

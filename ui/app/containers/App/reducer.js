@@ -263,6 +263,10 @@ export const appReducer = (state = initialState, action) =>
         }
         break;
       }
+      case constants.UPDATE_PUSH_RULESET_RESET:
+        draft.updatePushRuleset.request.loading = false;
+        draft.updatePushRuleset.request.status = null;
+        break;
       case constants.UPDATE_PUSH_RULESET_REQUEST:
         draft.updatePushRuleset.request.loading = true;
         draft.updatePushRuleset.request.status = null;
