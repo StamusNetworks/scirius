@@ -39,7 +39,7 @@ const firstAvailableTenant = availableTenants.length > 0 ? getCurrentUser('tenan
 const validateTenantURLParam = tenantId => {
   if (hasMultiTenancy) {
     if (tenantId) {
-      return !availableTenants.includes(tenantId) ? firstAvailableTenant : tenantId;
+      return !availableTenants.includes(parseInt(tenantId, 10)) ? firstAvailableTenant : tenantId;
     }
     return firstAvailableTenant;
   }
