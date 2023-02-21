@@ -23,7 +23,6 @@ FILTER_SETS = [
         'name': 'Hunt: Low noise signature events',
         'page': 'RULES_LIST',
         'description': 'This filter highlights the events which have rarely triggered. These low noise alerts can sometimes hide valuable artifacts and discoveries.',
-        'share': 'static'
     },
     {
         'content': [
@@ -39,7 +38,6 @@ FILTER_SETS = [
         'name': 'Hunt: Trojan related events',
         'page': 'DASHBOARDS',
         'description': 'This filter highlights the trojan-related events.',
-        'share': 'static'
     },
     {
         'content': [
@@ -55,7 +53,6 @@ FILTER_SETS = [
         'name': 'Hunt: Malware related events',
         'page': 'DASHBOARDS',
         'description': 'This filter highlights the malware-related events.',
-        'share': 'static'
     },
     {
         'content': [
@@ -71,7 +68,6 @@ FILTER_SETS = [
         'name': 'Hunt: HUNTING related events',
         'page': 'DASHBOARDS',
         'description': 'This filter highlights all the events that are generated from  rules with the "hunting" designation.',
-        'share': 'static'
     },
     {
         'content': [
@@ -87,7 +83,6 @@ FILTER_SETS = [
         'name': 'Hunt: Executable related events',
         'page': 'DASHBOARDS',
         'description': 'This filter highlights all the events related to executable files, including downloads, posts, and others. This usually provides interesting data that warrants further investigation.',
-        'share': 'static'
     },
     {
         'content': [
@@ -111,7 +106,6 @@ FILTER_SETS = [
         'name': 'Hunt: HTTP Executable related events',
         'page': 'DASHBOARDS',
         'description': 'This filter highlights all the events that take place via HTTP and are either posting or downloading executables.',
-        'share': 'static'
     },
     {
         "content": [
@@ -134,7 +128,6 @@ FILTER_SETS = [
         "name": "Hunt: HTTP direct requests and replies to private IP",
         "page": "DASHBOARDS",
         "description": "This filter highlights all the events that include HTTP requests and responses directly to an internal IP address - not a domain name. This activity may be suspicious because a domain name is typically part of the transaction when communicating with servers inside the network. While common in some development environments, it could also indicate lateral movement.",
-        "share": "static"
     },
     {
         "content": [
@@ -157,7 +150,6 @@ FILTER_SETS = [
         "name": "Hunt: HTTP non-internal  direct IP requests and replies",
         "page": "DASHBOARDS",
         "description": "This filter highlights all the events that indicate HTTP requests and responses directly by IP - not using a domain name. This activity may be suspicious because a domain name is typically part of the transaction when communicating with servers outside the network (non private/internal IPs).",
-        "share": "static"
     },
     {
         "content": [
@@ -180,7 +172,6 @@ FILTER_SETS = [
         "name": "Hunt: Admin payload search",
         "page": "DASHBOARDS",
         "description": 'This filter highlights the events that include "Admin" or "Administrator" in their alert payload.',
-        "share": "static"
     },
     {
         "content": [
@@ -203,7 +194,6 @@ FILTER_SETS = [
         "name": "Hunt: Root payload search",
         "page": "DASHBOARDS",
         "description": 'This filter highlights the events containing "root" in the payloads.',
-        "share": "static"
     },
     {
         "content": [
@@ -226,7 +216,6 @@ FILTER_SETS = [
         "name": "Hunt: HTTP payloads containing root",
         "page": "DASHBOARDS",
         "description": "Hunt: HTTP payloads containing root.",
-        "share": "static"
     },
     {
         "content": [
@@ -249,7 +238,6 @@ FILTER_SETS = [
         "name": "Hunt: HTTP payloads containing admin",
         "page": "DASHBOARDS",
         "description": 'Hunt: This filter highlights all the events that indicate HTTP payloads containing "admin".',
-        "share": "static"
     },
     {
         "content": [
@@ -272,7 +260,6 @@ FILTER_SETS = [
         "name": "Hunt: TLS payloads containing root or admin",
         "page": "DASHBOARDS",
         "description": 'This filter highlights the events identifying "root" or "admin" in the TLS payload.',
-        "share": "static"
     },
     {
         "content": [
@@ -308,7 +295,6 @@ FILTER_SETS = [
         "name": "Policy: Old TLS versions",
         "page": "DASHBOARDS",
         "description": "This filter highlights events that identify the use of TLS encryption version prior to version 1.2.",
-        "share": "static"
     },
     {
         "content": [
@@ -323,7 +309,6 @@ FILTER_SETS = [
         "name": "Policy: FTP clear text alerts and sightings",
         "page": "DASHBOARDS",
         "description": "This filter set returns FTP and FTP based data alert events.",
-        "share": "static"
     },
     {
         'content': [
@@ -339,7 +324,6 @@ FILTER_SETS = [
         'name': 'Hunt: HTTP POSTs',
         'page': 'DASHBOARDS',
         'description': 'This filter highlights all the events that include HTTP POST requests. This type of request can hide malicious activity.',
-        'share': 'static'
     },
     {
         "content": [
@@ -354,7 +338,6 @@ FILTER_SETS = [
         "name": "Policy: SMTP clear text events",
         "page": "DASHBOARDS",
         "description": "This filter set returns SMTP based alert events.",
-        "share": "static"
     },
     {
         'content': [
@@ -442,7 +425,6 @@ FILTER_SETS = [
         'name': 'Hunt: Suspicious HTTP User Agents - 1',
         'page': 'DASHBOARDS',
         'description': 'This filter highlights events that are using HTTP application layer protocol but with an user agent that includes specific characters not common to user agents.',
-        'share': 'static'
     },
     {
         'content': [
@@ -466,7 +448,6 @@ FILTER_SETS = [
         'name': 'Hunt: Suspicious HTTP User Agents -2',
         'page': 'DASHBOARDS',
         'description': 'This filter highlights events that are using HTTP application layer protocol but with an user agent that is not common - aka not mozilla/firefox/opera/edge/wget and similar.',
-        'share': 'static'
     },
     {
         'content': [
@@ -482,7 +463,6 @@ FILTER_SETS = [
         'name': 'Hunt: Current events',
         'page': 'DASHBOARDS',
         'description': 'This filter highlights the events that trigger based on the CURRENT_EVENTS ET rules',
-        'share': 'static'
     },
     {
         'content': [
@@ -497,7 +477,6 @@ FILTER_SETS = [
         'name': 'Hunt: DNS related events',
         'page': 'DASHBOARDS',
         'description': 'This filter highlights all the events with DNS-related metadata.',
-        'share': 'static'
     },
     {
         'content': [
@@ -512,7 +491,6 @@ FILTER_SETS = [
         'name': 'Hunt: Severity 1 events',
         'page': 'DASHBOARDS',
         'description': 'This filter highlights the events classified as "Severity 1" by one of the rulesets.',
-        'share': 'static'
     },
     {
         'content': [
@@ -535,7 +513,6 @@ FILTER_SETS = [
         'name': 'Hunt: Non lib/open ssh clients',
         'page': 'DASHBOARDS',
         'description': 'This filter highlights the SSH-related events that have no libssh or openssh client version. ',
-        'share': 'static'
     },
     {
         'content': [
@@ -551,7 +528,6 @@ FILTER_SETS = [
         'name': 'Info: Python HTTP User Agents',
         'page': 'DASHBOARDS',
         'description': 'This informational filter highlights the HTTP-based events that contain Python HTTP User Agents.',
-        'share': 'static'
     },
     {
         'content': [
@@ -567,7 +543,6 @@ FILTER_SETS = [
         'name': 'Info: Curl HTTP User Agents',
         'page': 'DASHBOARDS',
         'description': 'This informational filter highlights the HTTP-based events that contain Curl HTTP User Agents.',
-        'share': 'static'
     },
     {
         'content': [
@@ -583,7 +558,6 @@ FILTER_SETS = [
         'name': 'Info: Perl HTTP User Agents',
         'page': 'DASHBOARDS',
         'description': 'This informational filter highlights the HTTP-based events that contain Perl HTTP User Agents.',
-        'share': 'static'
     },
     {
         'content': [
@@ -599,7 +573,6 @@ FILTER_SETS = [
         'name': 'Info: Wget HTTP User Agents',
         'page': 'DASHBOARDS',
         'description': 'This informational filter highlights the HTTP-based events that contain Wget HTTP User Agents.',
-        'share': 'static'
     },
     {
         "content": [
@@ -614,7 +587,6 @@ FILTER_SETS = [
         "name": "Policy: Outdated software",
         "page": "DASHBOARDS",
         "description": "This filter highlights outdated or old software that should be upgraded or patched.",
-        "share": "static"
     },
     {
         "content": [
@@ -629,7 +601,6 @@ FILTER_SETS = [
         "name": "Policy: Vulnerable software",
         "page": "DASHBOARDS",
         "description": "This filter highlights known-vulnerable software that should be upgraded or patched.",
-        "share": "static"
     },
     {
         "content": [
@@ -644,7 +615,6 @@ FILTER_SETS = [
         "name": "Policy: CVE global detection",
         "page": "DASHBOARDS",
         "description": "This filter highlights events associated with publicly-identified vulnerabilities (CVE issued).",
-        "share": "static"
     },
     {
         "content": [
@@ -659,7 +629,6 @@ FILTER_SETS = [
         "name": "Phishing: Phishing general detection",
         "page": "DASHBOARDS",
         "description": 'This filter highlights events that contain the keyword "phishing", identifying all activity that may be considered possible phishing attempts.',
-        "share": "static"
     },
     {
         "content": [
@@ -682,7 +651,6 @@ FILTER_SETS = [
         "name": "Adware: PUP",
         "page": "DASHBOARDS",
         "description": "Potentially unwanted program detected. Usually indicative of policy violation on corporate network.",
-        "share": "static"
     },
     {
         "content": [
@@ -705,7 +673,6 @@ FILTER_SETS = [
         "name": "Hunt: web client encoded values",
         "page": "DASHBOARDS",
         "description": "This filter highlights the events that have encoded values in the client side HTTP URLs or payload.",
-        "share": "static"
     },
     {
         "content": [
@@ -728,7 +695,6 @@ FILTER_SETS = [
         "name": "Hunt: web server encoded values",
         "page": "DASHBOARDS",
         "description": "This filter highlights the events that have encoded values in the server side HTTP URLs or payload.",
-        "share": "static"
     },
     {
         "content": [
@@ -751,7 +717,6 @@ FILTER_SETS = [
         "name": "Hunt: possible encoded shell code strings",
         "page": "DASHBOARDS",
         "description": "This filter highlights the events that have encoded shellcode string values in the payload.",
-        "share": "static"
     },
     {
         "content": [
@@ -774,7 +739,6 @@ FILTER_SETS = [
         "name": "Hunt: Unusual in length http user agents",
         "page": "DASHBOARDS",
         "description": "This filter highlights the events containing HTTP user agents which contain fewer than 55 characters.",
-        "share": "static"
     },
     {
         "content": [
@@ -790,7 +754,6 @@ FILTER_SETS = [
         "name": "Info: Java HTTP User Agents",
         "page": "DASHBOARDS",
         "description": "This informational filter highlights the HTTP-based events that contain Curl Java User Agents.",
-        "share": "static"
     },
     {
         "content": [
@@ -805,7 +768,6 @@ FILTER_SETS = [
         "name": "Info: Shockwave Flash HTTP User Agents",
         "page": "DASHBOARDS",
         "description": "This informational filter highlights the HTTP-based events that contain Shockwave Flash HTTP User Agents.",
-        "share": "static"
     },
     {
         "content": [
@@ -828,7 +790,6 @@ FILTER_SETS = [
         "name": "Hunt: URL Shortener services",
         "page": "DASHBOARDS",
         "description": "This filter set returns requests made to known URL shortener services.",
-        "share": "static"
     },
     {
         "content": [
@@ -857,7 +818,6 @@ FILTER_SETS = [
         "name": "Hunt: Stamus critical lateral SMB, DCERPC",
         "page": "DASHBOARDS",
         "description": "This filter set returns SMB/DCERPC  events that are actively changing, configuring, adding or deleting settings and services remotely.",
-        "share": "static"
     },
     {
         "content": [
@@ -886,7 +846,6 @@ FILTER_SETS = [
         "name": "Hunt: Stamus lateral SMB, DCERPC",
         "page": "DASHBOARDS",
         "description": "This filter set returns lateral related events like scans or SMB/DCERPC MS protocol related queries.",
-        "share": "static"
     },
     {
         "content": [
@@ -901,7 +860,6 @@ FILTER_SETS = [
         "name": "Hunt: Remote Administration Console OpenLocalMachine",
         "page": "DASHBOARDS",
         "description": "This filter set returns events that are indicative of remotely opening the administration console of a Windows OS.",
-        "share": "static"
     },
     {
         "content": [
@@ -916,7 +874,6 @@ FILTER_SETS = [
         "name": "Hunt: Remote Administration Registry HKEY_CLASSES_ROOT",
         "page": "DASHBOARDS",
         "description": "This filter set returns events that are indicative of remotely opening the registry HKEY_CLASSES_ROOT  of a Windows OS.",
-        "share": "static"
     },
     {
         "content": [
@@ -938,7 +895,6 @@ FILTER_SETS = [
         "name": "Policy: Clear text password - 1",
         "page": "DASHBOARDS",
         "description": "This filter highlights events associated with clear text passwords.",
-        "share": "static"
     },
     {
         "content": [
@@ -969,6 +925,5 @@ FILTER_SETS = [
         "name": "Policy: Clear text password - 2",
         "page": "DASHBOARDS",
         "description": "This filter highlights events associated with unencrypted passwords.",
-        "share": "static"
     }
 ]
