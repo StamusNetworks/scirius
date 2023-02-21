@@ -13,7 +13,8 @@ import FilterToggleModal from 'ui/FilterToggleModal';
 import ErrorHandler from 'ui/components/Error';
 import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
 import filterSetActions from 'ui/stores/filterset/actions';
-import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag, makeSelectUserData } from 'ui/containers/HuntApp/stores/global';
+import globalSelectors from 'ui/containers/App/selectors';
+import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag } from 'ui/containers/HuntApp/stores/global';
 
 class FilterEditKebab extends React.Component {
   constructor(props) {
@@ -145,82 +146,83 @@ class FilterEditKebab extends React.Component {
     });
   }
 
-  menu = (
-    // eslint-disable-next-line no-unused-vars
-    <Menu onClick={({ item, key, keyPath, domEvent }) => domEvent.stopPropagation()}>
-      {this.props.user.isActive && this.props.user.permissions.includes('rules.events_edit') && (
-        <React.Fragment>
-          {this.props.data.index !== 0 && (
-            <Menu.Item
-              key="1"
-              data-test="send-action-to-top"
-              onClick={() => {
-                this.displayToggle('movetop');
-              }}
-            >
-              Send Action to top
-            </Menu.Item>
-          )}
-          <Menu.Item
-            key="2"
-            data-test="move-action"
-            onClick={() => {
-              this.displayToggle('move');
-            }}
-          >
-            Move Action
-          </Menu.Item>
-          <Menu.Item
-            key="3"
-            data-test="send-action-to-bottom"
-            onClick={() => {
-              this.displayToggle('movebottom');
-            }}
-          >
-            Send Action to bottom
-          </Menu.Item>
-          <Menu.Item
-            key="4"
-            data-test="delete-action"
-            onClick={() => {
-              this.displayToggle('delete');
-            }}
-          >
-            Delete Action
-          </Menu.Item>
-        </React.Fragment>
-      )}
-
-      <Menu.Item
-        key="5"
-        data-test="convert-action-to-filters"
-        onClick={() => {
-          this.convertActionToFilters();
-        }}
-      >
-        Convert Action to Filters
-      </Menu.Item>
-      {this.props.user.isActive && (
-        <Menu.Item
-          key="6"
-          data-test="save-action-as-filter-set"
-          onClick={() => {
-            this.saveActionToFilterSet();
-          }}
-        >
-          Save Action as Filter set
-        </Menu.Item>
-      )}
-    </Menu>
-  );
-
   render() {
     return (
       <React.Fragment>
         {this.state.filterSets.showModal && (
           <FilterSetSaveModal title="Create new Filter Set From Action" close={this.closeActionToFilterSet} content={this.generateFilterSet()} />
         )}
-        <Dropdown id="filterActions" overlay={this.menu} trigger={['click']}>
+        <Dropdown
+          id="filterActions"
+          overlay={
+            <Menu onClick={({ domEvent }) => domEvent.stopPropagation()}>
+              {this.props.user.data.isActive && this.props.user.data.permissions.includes('rules.events_edit') && (
+                <React.Fragment>
+                  {this.props.data.index !== 0 && (
+                    <Menu.Item
+                      key="1"
+                      data-test="send-action-to-top"
+                      onClick={() => {
+                        this.displayToggle('movetop');
+                      }}
+                    >
+                      Send Action to top
+                    </Menu.Item>
+                  )}
+                  <Menu.Item
+                    key="2"
+                    data-test="move-action"
+                    onClick={() => {
+                      this.displayToggle('move');
+                    }}
+                  >
+                    Move Action
+                  </Menu.Item>
+                  <Menu.Item
+                    key="3"
+                    data-test="send-action-to-bottom"
+                    onClick={() => {
+                      this.displayToggle('movebottom');
+                    }}
+                  >
+                    Send Action to bottom
+                  </Menu.Item>
+                  <Menu.Item
+                    key="4"
+                    data-test="delete-action"
+                    onClick={() => {
+                      this.displayToggle('delete');
+                    }}
+                  >
+                    Delete Action
+                  </Menu.Item>
+                </React.Fragment>
+              )}
+
+              <Menu.Item
+                key="5"
+                data-test="convert-action-to-filters"
+                onClick={() => {
+                  this.convertActionToFilters();
+                }}
+              >
+                Convert Action to Filters
+              </Menu.Item>
+              {this.props.user.data.isActive && (
+                <Menu.Item
+                  key="6"
+                  data-test="save-action-as-filter-set"
+                  onClick={() => {
+                    this.saveActionToFilterSet();
+                  }}
+                >
+                  Save Action as Filter set
+                </Menu.Item>
+              )}
+            </Menu>
+          }
+          trigger={['click']}
+        >
           <a
             className="ant-dropdown-link"
             onClick={e => {
@@ -254,15 +256,17 @@ FilterEditKebab.propTypes = {
   clearFilters: PropTypes.func,
   alertTag: PropTypes.object,
   user: PropTypes.shape({
-    pk: PropTypes.any,
-    timezone: PropTypes.any,
-    username: PropTypes.any,
-    firstName: PropTypes.any,
-    lastName: PropTypes.any,
-    isActive: PropTypes.any,
-    email: PropTypes.any,
-    dateJoined: PropTypes.any,
-    permissions: PropTypes.any,
+    data: PropTypes.shape({
+      pk: PropTypes.any,
+      timezone: PropTypes.any,
+      username: PropTypes.any,
+      firstName: PropTypes.any,
+      lastName: PropTypes.any,
+      isActive: PropTypes.any,
+      email: PropTypes.any,
+      dateJoined: PropTypes.any,
+      permissions: PropTypes.any,
+    }),
   }),
   setExpand: PropTypes.func,
   history: PropTypes.object,
@@ -270,7 +274,7 @@ FilterEditKebab.propTypes = {
 
 const mapStateToProps = createStructuredSelector({
   alertTag: makeSelectAlertTag(),
-  user: makeSelectUserData(),
+  user: globalSelectors.makeSelectUser(),
 });
 
 const mapDispatchToProps = {
