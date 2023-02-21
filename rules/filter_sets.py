@@ -308,7 +308,6 @@ FILTER_SETS = [
         "name": "Policy: Old TLS versions",
         "page": "DASHBOARDS",
         "description": "This filter highlights events that identify the use of TLS encryption version prior to version 1.2.",
-        "imported": False,
         "share": "static"
     },
     {
@@ -324,7 +323,6 @@ FILTER_SETS = [
         "name": "Policy: FTP clear text alerts and sightings",
         "page": "DASHBOARDS",
         "description": "This filter set returns FTP and FTP based data alert events.",
-        "imported": False,
         "share": "static"
     },
     {
@@ -356,7 +354,6 @@ FILTER_SETS = [
         "name": "Policy: SMTP clear text events",
         "page": "DASHBOARDS",
         "description": "This filter set returns SMTP based alert events.",
-        "imported": False,
         "share": "static"
     },
     {
@@ -831,7 +828,6 @@ FILTER_SETS = [
         "name": "Hunt: URL Shortener services",
         "page": "DASHBOARDS",
         "description": "This filter set returns requests made to known URL shortener services.",
-        "imported": False,
         "share": "static"
     },
     {
@@ -861,7 +857,6 @@ FILTER_SETS = [
         "name": "Hunt: Stamus critical lateral SMB, DCERPC",
         "page": "DASHBOARDS",
         "description": "This filter set returns SMB/DCERPC  events that are actively changing, configuring, adding or deleting settings and services remotely.",
-        "imported": False,
         "share": "static"
     },
     {
@@ -891,7 +886,6 @@ FILTER_SETS = [
         "name": "Hunt: Stamus lateral SMB, DCERPC",
         "page": "DASHBOARDS",
         "description": "This filter set returns lateral related events like scans or SMB/DCERPC MS protocol related queries.",
-        "imported": False,
         "share": "static"
     },
     {
@@ -907,7 +901,6 @@ FILTER_SETS = [
         "name": "Hunt: Remote Administration Console OpenLocalMachine",
         "page": "DASHBOARDS",
         "description": "This filter set returns events that are indicative of remotely opening the administration console of a Windows OS.",
-        "imported": False,
         "share": "static"
     },
     {
@@ -923,7 +916,6 @@ FILTER_SETS = [
         "name": "Hunt: Remote Administration Registry HKEY_CLASSES_ROOT",
         "page": "DASHBOARDS",
         "description": "This filter set returns events that are indicative of remotely opening the registry HKEY_CLASSES_ROOT  of a Windows OS.",
-        "imported": False,
         "share": "static"
     },
     {
