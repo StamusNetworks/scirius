@@ -22,7 +22,6 @@ import tarfile
 import json
 from io import BytesIO
 from django import forms
-from django.core import validators
 from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied, ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import F, fields
@@ -132,7 +131,6 @@ class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelFor
     custom_cookie_age = forms.FloatField(
         label='Automatic logout after inactivity timeout (in hours)',
         required=True,
-        validators=[validators.MinValueValidator(0.5)],
         min_value=0.5,
     )
     elasticsearch_user = forms.CharField(required=False, help_text='Elasticsearch username for %s' % settings.APP_SHORT_NAME)
