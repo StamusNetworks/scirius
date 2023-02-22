@@ -84,6 +84,9 @@ export default class SciriusChart extends React.Component {
         labelsCount: labelsLimit,
       });
     }
+    if (this.deepProps?.data?.columns) {
+      this.deepProps.data.columns = [];
+    }
     _.merge(this.deepProps, nextProps);
   }
 
