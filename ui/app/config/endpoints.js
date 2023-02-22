@@ -48,7 +48,7 @@ const ENDPOINT = {
   },
   SESSION_ACTIVITY: {
     name: 'Set session activity idle time',
-    url: `/accounts/session_activity/`,
+    url: `/rest/accounts/sciriususer/session_activity/`,
   },
   FILTER_SETS: {
     name: 'Fetching filter sets',

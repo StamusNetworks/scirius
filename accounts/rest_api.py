@@ -1,7 +1,7 @@
 
 from django.core import exceptions
 from django.contrib.auth.models import User
-from django.contrib.auth import password_validation
+from django.contrib.auth import password_validation, logout
 from django.conf import settings
 
 from rest_framework import serializers, viewsets
@@ -16,7 +16,7 @@ from rest_framework.exceptions import PermissionDenied
 
 from accounts.models import SciriusUser
 from rules.rest_api import CommentSerializer
-from rules.models import UserAction
+from rules.models import UserAction, get_system_settings
 from rules.rest_permissions import has_group_permission
 from scirius.utils import get_middleware_module
 
@@ -321,7 +321,7 @@ class AccountViewSet(viewsets.ModelViewSet):
     }
 
     def get_permissions(self):
-        if self.action == 'current_user':
+        if self.action in ('current_user', 'session_activity'):
             return [IsAuthenticated()]
         return super().get_permissions()
 
@@ -479,6 +479,18 @@ class AccountViewSet(viewsets.ModelViewSet):
         sciriususer = SciriusUser.objects.get(user=user)
         return Response(sciriususer.to_dict())
 
+    @action(detail=False, methods=['post'])
+    def session_activity(self, request, *args, **kwargs):
+        timeout = int(request.data.get('timeout', '0'))
+        cookie_age = get_system_settings().custom_cookie_age
+        disconnect = timeout >= cookie_age * 3600
+        if disconnect:
+            logout(request)
+        else:
+            expiry = cookie_age * 3600 - timeout
+            request.session.set_expiry(expiry)
+        return Response({'disconnect': disconnect})
+
 
 router = DefaultRouter()
-router.register('accounts/sciriususer', AccountViewSet)
+router.register('accounts/sciriususer', AccountViewSet, basename='sciriususer')

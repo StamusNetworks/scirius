@@ -684,14 +684,20 @@ function timerIncrement(timeout) {
     idleTime = idleTime + timeout;
     $.ajax({
         type:"POST",
-        url:"{% url 'session_activity' %}",
-        data: {'timeout': idleTime},
+        url:"{% url 'sciriususer-session-activity' %}",
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify({'timeout': idleTime}),
         success: function(data) {
             if (data.disconnect) {
-                console.log('disconnect');
-                window.location = "{{ settings.LOGIN_URL }}";
+                window.location = `{{ settings.LOGIN_URL }}${window.location.pathname.slice(1)}`;
             }
         },
+        error: function(data) {
+            if (data.status === 403) {
+                window.location = `{{ settings.LOGIN_URL }}${window.location.pathname.slice(1)}`;
+            }
+        }
     });
 }
 
