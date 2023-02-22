@@ -131,7 +131,7 @@ const columns = {
     { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
     { title: 'Command', dataIndex: ['rawJson', 'smb', 'command'] },
     { title: 'Severity', dataIndex: ['rawJson', 'smb', 'ext_status', 'severity'] },
-    { title: 'Interface', dataIndex: ['rawJson', 'smb', 'dcerpc', 'interface'] },
+    { title: 'Interface', dataIndex: ['rawJson', 'smb', 'dcerpc', 'interface', 'name'] },
     { title: 'Endpoint', dataIndex: ['rawJson', 'smb', 'dcerpc', 'endpoint'] },
     { title: 'Uuid', dataIndex: ['rawJson', 'smb', 'dcerpc', 'interface', 'uuid'] },
     { title: 'Opnum', dataIndex: ['rawJson', 'smb', 'dcerpc', 'opnum'] },
