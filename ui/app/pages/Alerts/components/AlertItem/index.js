@@ -302,6 +302,7 @@ export default class AlertItem extends React.Component {
       <Tabs style={{ width: 'calc(100vw - 280px)' }}>
         <Tabs.TabPane key="alert" tab="Synthetic view">
           <TabPaneResponsive>
+            {/* Signature should always be displayed */}
             <UICard title="Signature" fullHeight>
               <DlHorizontal>
                 <ErrorHandler>
@@ -333,6 +334,7 @@ export default class AlertItem extends React.Component {
               </DlHorizontal>
             </UICard>
 
+            {/* IP and basic information should always be displayed */}
             <UICard title="IP and basic information" fullHeight>
               <DlHorizontal>
                 {data.net_info && data.net_info.src_agg && (
@@ -414,6 +416,7 @@ export default class AlertItem extends React.Component {
               </DlHorizontal>
             </UICard>
 
+            {/* Enrichment should always be displayed */}
             <UICard title="Enrichment" fullHeight>
               <DlHorizontal>
                 {!hasTarget && !hasLateral && (!data.fqdn || !data.fqdn.src) && (!data.fqdn || !data.fqdn.dest) && (
@@ -455,29 +458,32 @@ export default class AlertItem extends React.Component {
               </DlHorizontal>
             </UICard>
 
-            <UICard title="DNS" fullHeight>
-              <DlHorizontal>
-                {!data.dns && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                {data.dns?.query.map(query => (
-                  <>
-                    {query.rrname && (
-                      <ErrorHandler>
-                        <EventField field_name="Queried Name" field="dns.query.rrname" value={query.rrname} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
-                    {query.rrtype && (
-                      <ErrorHandler>
-                        <EventField field_name="Queried Type" field="dns.query.rrtype" value={query.rrtype} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
-                  </>
-                ))}
-              </DlHorizontal>
-            </UICard>
+            {data.app_proto === 'dns' && (
+              <UICard title="DNS" fullHeight>
+                <DlHorizontal>
+                  {_.isEmpty(data.dns) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                  {data.dns?.query.map(query => (
+                    <>
+                      {query.rrname && (
+                        <ErrorHandler>
+                          <EventField field_name="Queried Name" field="dns.query.rrname" value={query.rrname} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      )}
+                      {query.rrtype && (
+                        <ErrorHandler>
+                          <EventField field_name="Queried Type" field="dns.query.rrtype" value={query.rrtype} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      )}
+                    </>
+                  ))}
+                </DlHorizontal>
+              </UICard>
+            )}
 
+            {/* Flow should always be displayed */}
             <UICard title="Flow" fullHeight>
               <DlHorizontal>
-                {!data.flow && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                {_.isEmpty(data.flow) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                 {data.flow && (
                   <React.Fragment>
                     <ErrorHandler>
@@ -513,9 +519,10 @@ export default class AlertItem extends React.Component {
               </DlHorizontal>
             </UICard>
 
+            {/* Geo IP should always be displayed */}
             <UICard title="Geo IP" fullHeight>
               <DlHorizontal>
-                {!data.geoip && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                {_.isEmpty(data.geoip) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                 {data.geoip?.country_name && (
                   <ErrorHandler>
                     <EventField field_name="Country" field="geoip.country_name" value={data.geoip.country_name} addFilter={this.addFilter} />
@@ -554,213 +561,227 @@ export default class AlertItem extends React.Component {
               </DlHorizontal>
             </UICard>
 
-            <UICard title="HTTP" fullHeight>
-              <DlHorizontal>
-                {!data.http && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                {data.http && (
-                  <React.Fragment>
-                    <ErrorHandler>
-                      <EventField field_name="Host" field="http.hostname" value={data.http.hostname} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    <ErrorHandler>
-                      <EventField field_name="URL" field="http.url" value={data.http.url} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    {data.http.status !== undefined && (
+            {data.app_proto === 'http' && (
+              <UICard title="HTTP" fullHeight>
+                <DlHorizontal>
+                  {_.isEmpty(data.http) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                  {data.http && (
+                    <React.Fragment>
                       <ErrorHandler>
-                        <EventField field_name="Status" field="http.status" value={data.http.status} addFilter={this.addFilter} />
+                        <EventField field_name="Host" field="http.hostname" value={data.http.hostname} addFilter={this.addFilter} />
                       </ErrorHandler>
-                    )}
-                    <ErrorHandler>
-                      <EventField field_name="Method" field="http.http_method" value={data.http.http_method} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    <ErrorHandler>
-                      <EventField field_name="User Agent" field="http.http_user_agent" value={data.http.http_user_agent} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    {data.http.http_refer !== undefined && (
                       <ErrorHandler>
-                        <EventField field_name="Referrer" field="http.http_refer" value={data.http.http_refer} addFilter={this.addFilter} />
+                        <EventField field_name="URL" field="http.url" value={data.http.url} addFilter={this.addFilter} />
                       </ErrorHandler>
-                    )}
-                    {data.http.http_port !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="Port" field="http.http_port" value={data.http.http_port} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
-                    {data.http.http_content_type !== undefined && (
-                      <ErrorHandler>
-                        <EventField
-                          field_name="Content Type"
-                          field="http.http_content_type"
-                          value={data.http.http_content_type}
-                          addFilter={this.addFilter}
-                        />
-                      </ErrorHandler>
-                    )}
-                    {data.http.length !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="Length" field="http.length" value={data.http.length} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
-                    {data.http.server !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="Server" field="http.server" value={data.http.server} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
-                    {data.http.accept_language !== undefined && (
-                      <ErrorHandler>
-                        <EventField
-                          field_name="Accept Language"
-                          field="http.accept_language"
-                          value={data.http.accept_language}
-                          addFilter={this.addFilter}
-                        />
-                      </ErrorHandler>
-                    )}
-                    {data.http.protocol !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="Protocol" field="http.protocol" value={data.http.protocol} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
-                  </React.Fragment>
-                )}
-              </DlHorizontal>
-            </UICard>
-
-            <UICard title="TLS" fullHeight>
-              <DlHorizontal>
-                {!data.tls && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                {data.tls && (
-                  <React.Fragment>
-                    <ErrorHandler>
-                      <EventField field_name="Subject" field="tls.subject" value={data.tls.subject} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    <ErrorHandler>
-                      <EventField field_name="Issuer" field="tls.issuerdn" value={data.tls.issuerdn} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    <ErrorHandler>
-                      <EventField field_name="Server Name Indication" field="tls.sni" value={data.tls.sni} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    <ErrorHandler>
-                      <EventField field_name="Not Before" field="tls.notbefore" value={data.tls.notbefore} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    <ErrorHandler>
-                      <EventField field_name="Not After" field="tls.notafter" value={data.tls.notafter} addFilter={this.addFilter} />
-                    </ErrorHandler>
-                    {data.tls.ja3 && data.tls.ja3.hash !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="JA3" field="tls.ja3.hash" value={data.tls.ja3.hash} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
-                    {data.tls.ja3 &&
-                      data.tls.ja3.agent !== undefined &&
-                      data.tls.ja3.agent.map(agent => (
-                        <ErrorHandler key={Math.random()}>
-                          {/* eslint-disable-next-line react/no-array-index-key */}
-                          <EventField field_name="User-Agent" field="tls.ja3.agent" value={agent} addFilter={this.addFilter} key={`to-${agent}`} />
+                      {data.http.status !== undefined && (
+                        <ErrorHandler>
+                          <EventField field_name="Status" field="http.status" value={data.http.status} addFilter={this.addFilter} />
                         </ErrorHandler>
-                      ))}
-                    {data.tls.ja3s && data.tls.ja3s.hash !== undefined && (
+                      )}
                       <ErrorHandler>
-                        <EventField field_name="JA3S" field="tls.ja3s.hash" value={data.tls.ja3s.hash} addFilter={this.addFilter} />
+                        <EventField field_name="Method" field="http.http_method" value={data.http.http_method} addFilter={this.addFilter} />
                       </ErrorHandler>
-                    )}
-                    {data.tls.version !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="Version" field="tls.version" value={data.tls.version} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
-                    {data.tls.cipher_suite !== undefined && (
-                      <ErrorHandler>
-                        <EventField field_name="Cipher Suite" field="tls.cipher_suite" value={data.tls.cipher_suite} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    )}
-                    {data.tls.cipher_security !== undefined && (
                       <ErrorHandler>
                         <EventField
-                          field_name="Cipher Security"
-                          field="tls.cipher_security"
-                          value={data.tls.cipher_security}
+                          field_name="User Agent"
+                          field="http.http_user_agent"
+                          value={data.http.http_user_agent}
                           addFilter={this.addFilter}
                         />
                       </ErrorHandler>
-                    )}
-                  </React.Fragment>
-                )}
-              </DlHorizontal>
-            </UICard>
+                      {data.http.http_refer !== undefined && (
+                        <ErrorHandler>
+                          <EventField field_name="Referrer" field="http.http_refer" value={data.http.http_refer} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      )}
+                      {data.http.http_port !== undefined && (
+                        <ErrorHandler>
+                          <EventField field_name="Port" field="http.http_port" value={data.http.http_port} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      )}
+                      {data.http.http_content_type !== undefined && (
+                        <ErrorHandler>
+                          <EventField
+                            field_name="Content Type"
+                            field="http.http_content_type"
+                            value={data.http.http_content_type}
+                            addFilter={this.addFilter}
+                          />
+                        </ErrorHandler>
+                      )}
+                      {data.http.length !== undefined && (
+                        <ErrorHandler>
+                          <EventField field_name="Length" field="http.length" value={data.http.length} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      )}
+                      {data.http.server !== undefined && (
+                        <ErrorHandler>
+                          <EventField field_name="Server" field="http.server" value={data.http.server} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      )}
+                      {data.http.accept_language !== undefined && (
+                        <ErrorHandler>
+                          <EventField
+                            field_name="Accept Language"
+                            field="http.accept_language"
+                            value={data.http.accept_language}
+                            addFilter={this.addFilter}
+                          />
+                        </ErrorHandler>
+                      )}
+                      {data.http.protocol !== undefined && (
+                        <ErrorHandler>
+                          <EventField field_name="Protocol" field="http.protocol" value={data.http.protocol} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      )}
+                    </React.Fragment>
+                  )}
+                </DlHorizontal>
+              </UICard>
+            )}
 
-            <UICard title="SMTP" fullHeight>
-              <DlHorizontal>
-                {!data.smtp && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                {data.smtp?.mail_from !== undefined && (
-                  <ErrorHandler>
-                    <EventField field_name="From" field="smtp.mail_from" value={data.smtp.mail_from} addFilter={this.addFilter} />
-                  </ErrorHandler>
-                )}
-                {data.smtp?.rcpt_to !== undefined &&
-                  data.smtp?.rcpt_to.map((mail, idx) => (
-                    <ErrorHandler key={Math.random()}>
-                      {/* eslint-disable-next-line react/no-array-index-key */}
-                      <EventField field_name="To" field="smtp.rcpt_to" value={mail} addFilter={this.addFilter} key={`to-${idx}`} />
-                    </ErrorHandler>
-                  ))}
-                {data.smtp?.helo !== undefined && (
-                  <ErrorHandler>
-                    <EventField field_name="Helo" field="smtp.helo" value={data.smtp.helo} addFilter={this.addFilter} />
-                  </ErrorHandler>
-                )}
-              </DlHorizontal>
-            </UICard>
+            {data.app_proto === 'tls' && (
+              <UICard title="TLS" fullHeight>
+                <DlHorizontal>
+                  {_.isEmpty(data.tls) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                  {data.tls && (
+                    <React.Fragment>
+                      <ErrorHandler>
+                        <EventField field_name="Subject" field="tls.subject" value={data.tls.subject} addFilter={this.addFilter} />
+                      </ErrorHandler>
+                      <ErrorHandler>
+                        <EventField field_name="Issuer" field="tls.issuerdn" value={data.tls.issuerdn} addFilter={this.addFilter} />
+                      </ErrorHandler>
+                      <ErrorHandler>
+                        <EventField field_name="Server Name Indication" field="tls.sni" value={data.tls.sni} addFilter={this.addFilter} />
+                      </ErrorHandler>
+                      <ErrorHandler>
+                        <EventField field_name="Not Before" field="tls.notbefore" value={data.tls.notbefore} addFilter={this.addFilter} />
+                      </ErrorHandler>
+                      <ErrorHandler>
+                        <EventField field_name="Not After" field="tls.notafter" value={data.tls.notafter} addFilter={this.addFilter} />
+                      </ErrorHandler>
+                      {data.tls.ja3 && data.tls.ja3.hash !== undefined && (
+                        <ErrorHandler>
+                          <EventField field_name="JA3" field="tls.ja3.hash" value={data.tls.ja3.hash} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      )}
+                      {data.tls.ja3 &&
+                        data.tls.ja3.agent !== undefined &&
+                        data.tls.ja3.agent.map(agent => (
+                          <ErrorHandler key={Math.random()}>
+                            {/* eslint-disable-next-line react/no-array-index-key */}
+                            <EventField field_name="User-Agent" field="tls.ja3.agent" value={agent} addFilter={this.addFilter} key={`to-${agent}`} />
+                          </ErrorHandler>
+                        ))}
+                      {data.tls.ja3s && data.tls.ja3s.hash !== undefined && (
+                        <ErrorHandler>
+                          <EventField field_name="JA3S" field="tls.ja3s.hash" value={data.tls.ja3s.hash} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      )}
+                      {data.tls.version !== undefined && (
+                        <ErrorHandler>
+                          <EventField field_name="Version" field="tls.version" value={data.tls.version} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      )}
+                      {data.tls.cipher_suite !== undefined && (
+                        <ErrorHandler>
+                          <EventField field_name="Cipher Suite" field="tls.cipher_suite" value={data.tls.cipher_suite} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      )}
+                      {data.tls.cipher_security !== undefined && (
+                        <ErrorHandler>
+                          <EventField
+                            field_name="Cipher Security"
+                            field="tls.cipher_security"
+                            value={data.tls.cipher_security}
+                            addFilter={this.addFilter}
+                          />
+                        </ErrorHandler>
+                      )}
+                    </React.Fragment>
+                  )}
+                </DlHorizontal>
+              </UICard>
+            )}
 
-            <UICard title="SSH" fullHeight>
-              <DlHorizontal>
-                {!data.ssh && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                {data.ssh?.client && (
-                  <React.Fragment>
+            {data.app_proto === 'smtp' && (
+              <UICard title="SMTP" fullHeight>
+                <DlHorizontal>
+                  {_.isEmpty(data.smtp) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                  {data.smtp?.mail_from !== undefined && (
                     <ErrorHandler>
-                      <EventField
-                        field_name="Client Software"
-                        field="ssh.client.software_version"
-                        value={data.ssh.client.software_version}
-                        addFilter={this.addFilter}
-                      />
+                      <EventField field_name="From" field="smtp.mail_from" value={data.smtp.mail_from} addFilter={this.addFilter} />
                     </ErrorHandler>
+                  )}
+                  {data.smtp?.rcpt_to !== undefined &&
+                    data.smtp?.rcpt_to.map((mail, idx) => (
+                      <ErrorHandler key={Math.random()}>
+                        {/* eslint-disable-next-line react/no-array-index-key */}
+                        <EventField field_name="To" field="smtp.rcpt_to" value={mail} addFilter={this.addFilter} key={`to-${idx}`} />
+                      </ErrorHandler>
+                    ))}
+                  {data.smtp?.helo !== undefined && (
                     <ErrorHandler>
-                      <EventField
-                        field_name="Client Version"
-                        field="ssh.client.proto_version"
-                        value={data.ssh.client.proto_version}
-                        addFilter={this.addFilter}
-                      />
+                      <EventField field_name="Helo" field="smtp.helo" value={data.smtp.helo} addFilter={this.addFilter} />
                     </ErrorHandler>
-                  </React.Fragment>
-                )}
-                {data.ssh?.server && (
-                  <React.Fragment>
-                    <ErrorHandler>
-                      <EventField
-                        field_name="Server Software"
-                        field="ssh.server.software_version"
-                        value={data.ssh.server.software_version}
-                        addFilter={this.addFilter}
-                      />
-                    </ErrorHandler>
-                    <ErrorHandler>
-                      <EventField
-                        field_name="Server Version"
-                        field="ssh.server.proto_version"
-                        value={data.ssh.server.proto_version}
-                        addFilter={this.addFilter}
-                      />
-                    </ErrorHandler>
-                  </React.Fragment>
-                )}
-              </DlHorizontal>
-            </UICard>
+                  )}
+                </DlHorizontal>
+              </UICard>
+            )}
 
+            {data.app_proto === 'ssh' && (
+              <UICard title="SSH" fullHeight>
+                <DlHorizontal>
+                  {_.isEmpty(data.ssh) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                  {data.ssh?.client && (
+                    <React.Fragment>
+                      <ErrorHandler>
+                        <EventField
+                          field_name="Client Software"
+                          field="ssh.client.software_version"
+                          value={data.ssh.client.software_version}
+                          addFilter={this.addFilter}
+                        />
+                      </ErrorHandler>
+                      <ErrorHandler>
+                        <EventField
+                          field_name="Client Version"
+                          field="ssh.client.proto_version"
+                          value={data.ssh.client.proto_version}
+                          addFilter={this.addFilter}
+                        />
+                      </ErrorHandler>
+                    </React.Fragment>
+                  )}
+                  {data.ssh?.server && (
+                    <React.Fragment>
+                      <ErrorHandler>
+                        <EventField
+                          field_name="Server Software"
+                          field="ssh.server.software_version"
+                          value={data.ssh.server.software_version}
+                          addFilter={this.addFilter}
+                        />
+                      </ErrorHandler>
+                      <ErrorHandler>
+                        <EventField
+                          field_name="Server Version"
+                          field="ssh.server.proto_version"
+                          value={data.ssh.server.proto_version}
+                          addFilter={this.addFilter}
+                        />
+                      </ErrorHandler>
+                    </React.Fragment>
+                  )}
+                </DlHorizontal>
+              </UICard>
+            )}
+
+            {/* Ethernet should always be displayed */}
             <UICard title="Ethernet" fullHeight>
               <DlHorizontal>
-                {!data.ether && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                {_.isEmpty(data.ether) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                 {data.ether && (
                   <React.Fragment>
                     <ErrorHandler>
@@ -774,9 +795,10 @@ export default class AlertItem extends React.Component {
               </DlHorizontal>
             </UICard>
 
+            {/* Signature metadata should always be displayed */}
             <UICard title="Signature metadata" fullHeight>
               <DlHorizontal>
-                {!data.alert.metadata && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                {_.isEmpty(data.alert.metadata) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                 {data.alert.metadata &&
                   Object.entries(data.alert.metadata).map(field => {
                     const value = field[1] === null ? '' : field[1].join(', ');
@@ -791,20 +813,26 @@ export default class AlertItem extends React.Component {
               </DlHorizontal>
             </UICard>
 
-            <SMBAlertCard data={data} addFilter={this.addFilter} />
+            {data.app_proto === 'smb' && <SMBAlertCard data={data} addFilter={this.addFilter} />}
           </TabPaneResponsive>
-          <UICard title="Payload printable" noPadding style={{ marginBottom: '10px' }}>
-            {!data.payload_printable && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-            {data.payload_printable && <Pre>{data.payload_printable}</Pre>}
-          </UICard>
-          <UICard title="HTTP request body" noPadding style={{ marginBottom: '10px' }}>
-            {!data.http?.http_request_body_printable && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-            {data.http?.http_request_body_printable && <Pre>{data.http.http_request_body_printable}</Pre>}
-          </UICard>
-          <UICard title="HTTP response body" noPadding>
-            {!data.http?.http_response_body_printable && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-            {data.http?.http_response_body_printable && <Pre>{data.http.http_response_body_printable}</Pre>}
-          </UICard>
+          {data.payload_printable && (
+            <UICard title="Payload printable" noPadding style={{ marginBottom: '10px' }}>
+              {_.isEmpty(data.payload_printable) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+              {data.payload_printable && <Pre>{data.payload_printable}</Pre>}
+            </UICard>
+          )}
+          {data.http?.http_request_body_printable && (
+            <UICard title="HTTP request body" noPadding style={{ marginBottom: '10px' }}>
+              {_.isEmpty(data.http.http_request_body_printable) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+              {data.http?.http_request_body_printable && <Pre>{data.http.http_request_body_printable}</Pre>}
+            </UICard>
+          )}
+          {data.http?.http_response_body_printable && (
+            <UICard title="HTTP response body" noPadding>
+              {_.isEmpty(data.http.http_response_body_printable) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+              {data.http?.http_response_body_printable && <Pre>{data.http.http_response_body_printable}</Pre>}
+            </UICard>
+          )}
         </Tabs.TabPane>
         {showTabs && events && (
           <React.Fragment key="json-related">
