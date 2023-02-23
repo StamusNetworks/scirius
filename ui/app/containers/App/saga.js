@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { takeEvery, put, call } from 'redux-saga/effects';
 import { LOGIN_PATH } from 'ui/config/index';
 import constants from 'ui/containers/App/constants';
@@ -51,7 +52,11 @@ function* setSessionActivity(action) {
       window.location = LOGIN_PATH;
     }
   } catch (e) {
-    yield put(actions.setSessionActivityFailure());
+    if (e.response.status === 403) {
+      window.location = LOGIN_PATH;
+    } else {
+      yield put(actions.setSessionActivityFailure());
+    }
   }
 }
 

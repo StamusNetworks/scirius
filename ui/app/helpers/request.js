@@ -27,7 +27,7 @@ const request = async (endpoint, method, params, options) => {
   } catch (error) {
     log.push([`%c[RES] Request has failed \n ${error.message}`, 'color: #CC0000']);
     notify(`${endpoint.name} has failed`, error);
-    throw new Error(error);
+    throw error;
   } finally {
     // if (process.env.NODE_ENV === 'development') {
     //   // eslint-disable-next-line no-console
