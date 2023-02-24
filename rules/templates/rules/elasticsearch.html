@@ -197,7 +197,7 @@ $(document).ready(function(){
                             <div class="row">
                                 <div class="col-md-12">
                                     <h3 class="text-danger">ES is in Read Only mode</h3>
-                                    {% if maintenance_tasks %}
+                                    {% if maintenance_tasks and perms.rules.configuration_edit %}
                                         Elasticsearch has exceeded the watermark parameter of free space (95%), please adapt log retention parameters in <a href="{% url 'global_settings' %}">Global settings </a> , then switch the cluster back to Read/Write mode in the <a href="{% url 'maintenance_tasks' %}">Maintenance page </a>.
                                     {% endif %}
                                 </div>
