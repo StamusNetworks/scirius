@@ -2,15 +2,12 @@ import produce from 'immer';
 import store from 'store';
 import moment from 'moment';
 import history from 'utils/history';
-import { isEqual } from 'lodash';
 import { combineReducers } from 'redux';
 
 import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
 import { StorageEnum } from 'ui/maps/StorageEnum';
 import { ReloadPeriodEnum } from 'ui/maps/ReloadPeriodEnum';
 import { parseUrl } from 'ui/helpers/parseUrl';
-import { getQueryObject } from 'ui/helpers/getQueryObject';
-import { isBooted, setBooted } from 'ui/helpers/isBooted';
 import constants from 'ui/containers/App/constants';
 import { getCurrentUser } from 'ui/helpers/getCurrentUser';
 
@@ -30,7 +27,7 @@ const initialSystemSettingsStorage = store.get(StorageEnum.SYSTEM_SETTINGS) || n
 
 const initialSourceStorage = store.get(StorageEnum.SOURCE) || [];
 
-const initialFiltersStorage = getQueryObject();
+const initialFiltersStorage = parseUrl();
 
 const hasMultiTenancy = getCurrentUser('multi_tenancy', false);
 const availableTenants = getCurrentUser('tenants', []);
@@ -45,13 +42,6 @@ const validateTenantURLParam = tenantId => {
   }
   return undefined;
 };
-
-if (hasMultiTenancy) {
-  const validTenant = validateTenantURLParam(initialFiltersStorage.tenant);
-  if (validTenant) {
-    initialFiltersStorage.tenant = validTenant;
-  }
-}
 
 // The initial state of the App
 export const initialState = {
@@ -248,19 +238,16 @@ export const appReducer = (state = initialState, action) =>
       case constants.LOCATION_CHANGE: {
         // #4351 - Case: location change
         draft.timespan.now = new Date().getTime();
-        if (isBooted()) {
-          const parsedUrl = parseUrl(history.location.search);
+        const parsedUrl = parseUrl(history.location.search);
+        if (hasMultiTenancy) {
           if (parsedUrl.tenant) {
-            parsedUrl.tenant = !(process.env.NODE_ENV === 'development') ? validateTenantURLParam(parsedUrl.tenant) : parsedUrl.tenant;
+            parsedUrl.tenant = validateTenantURLParam(parsedUrl.tenant);
           }
-          draft.filters = parsedUrl;
-          store.set(StorageEnum.FILTERS, parsedUrl);
-        } else {
-          if (isEqual(parseUrl(history.location.search), initialFiltersStorage)) {
-            store.set(StorageEnum.FILTERS, parseUrl(history.location.search));
-          }
-          setBooted(true);
+        } else if (parseUrl.tenant) {
+          delete parsedUrl.tenant;
         }
+        draft.filters = parsedUrl;
+        store.set(StorageEnum.FILTERS, parsedUrl);
         break;
       }
       case constants.UPDATE_PUSH_RULESET_RESET:

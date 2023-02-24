@@ -20,7 +20,6 @@ import { CamelCaseToDashCase } from 'ui/helpers';
 import { Content } from 'ui/components';
 import Header from 'ui/components/Header';
 import LeftNav from 'ui/components/LeftNav';
-import { syncUrl } from 'ui/helpers/syncUrl';
 import GlobalStyle from 'ui/global-styles';
 import actions from 'ui/containers/App/actions';
 import selectors from 'ui/containers/App/selectors';
@@ -45,7 +44,6 @@ const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodReques
       getSource();
     }
     getSystemSettings();
-    syncUrl();
     getUser();
     getAllPeriodRequest();
 

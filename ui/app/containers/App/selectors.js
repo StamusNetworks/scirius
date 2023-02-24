@@ -68,20 +68,25 @@ const makeSelectFilters = () => createSelector(selectGlobal, subState => subStat
 
 const makeSelectFilterSetsState = () => createSelector(selectGlobal, subState => subState.filterSets);
 
-const makeSelectFiltersParam = (prefix = '&', skipStatus = false) =>
+const makeSelectFiltersParam = () =>
   createSelector(selectGlobal, subState => {
     const filters = Object.assign({}, subState.filters);
-    if (skipStatus === true) {
-      delete filters.status;
-    }
-
     const urlParams = parseObjectToUrl(filters);
-    return urlParams.length > 0 ? `${prefix}${urlParams}` : '';
+    return urlParams.length > 0 ? urlParams : '';
   });
 
 const makeSelectSource = () => createSelector(selectGlobal, subState => subState.source);
 
-const makeSelectCurrentUser = (param, fallback) => createSelector(selectCurrentUser, subState => subState[param] || fallback);
+const makeSelectCurrentUser = (param, fallback) =>
+  createSelector(selectCurrentUser, currentUser => {
+    if (param) {
+      if (currentUser && typeof currentUser[param] !== 'undefined') {
+        return currentUser[param];
+      }
+      return fallback;
+    }
+    return currentUser;
+  });
 
 /*
  * Network parameters selectors.
