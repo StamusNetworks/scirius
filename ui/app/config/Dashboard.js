@@ -48,44 +48,6 @@ export const dashboard = {
       },
     ],
   },
-  organizational: {
-    id: 'organizational',
-    title: 'Organizational Information',
-    items: [
-      {
-        i: 'alert.source.ip',
-        title: 'Sources',
-        dimensions: {
-          xxl: 6,
-          xl: 6,
-        },
-      },
-      {
-        i: 'alert.target.ip',
-        title: 'Targets',
-        dimensions: {
-          xxl: 6,
-          xl: 6,
-        },
-      },
-      {
-        i: 'geoip.country_name',
-        title: 'Country Names',
-        dimensions: {
-          xxl: 6,
-          xl: 6,
-        },
-      },
-      {
-        i: 'geoip.city_name',
-        title: 'City Names',
-        dimensions: {
-          xxl: 6,
-          xl: 6,
-        },
-      },
-    ],
-  },
   metadata: {
     title: 'Metadata',
     items: [
@@ -156,6 +118,44 @@ export const dashboard = {
         dimensions: {
           xxl: 7,
           xl: 7,
+        },
+      },
+    ],
+  },
+  organizational: {
+    id: 'organizational',
+    title: 'Organizational Information',
+    items: [
+      {
+        i: 'alert.source.ip',
+        title: 'Sources',
+        dimensions: {
+          xxl: 6,
+          xl: 6,
+        },
+      },
+      {
+        i: 'alert.target.ip',
+        title: 'Targets',
+        dimensions: {
+          xxl: 6,
+          xl: 6,
+        },
+      },
+      {
+        i: 'geoip.country_name',
+        title: 'Country Names',
+        dimensions: {
+          xxl: 6,
+          xl: 6,
+        },
+      },
+      {
+        i: 'geoip.city_name',
+        title: 'City Names',
+        dimensions: {
+          xxl: 6,
+          xl: 6,
         },
       },
     ],
