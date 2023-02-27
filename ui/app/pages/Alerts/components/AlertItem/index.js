@@ -4,6 +4,7 @@ import { Badge, Empty, Spin, Tabs } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import ReactJson from 'react-json-view';
+import _ from 'lodash';
 
 import * as config from 'config/Api';
 import { dashboard } from 'config/Dashboard';
@@ -863,7 +864,7 @@ export default class AlertItem extends React.Component {
             {this.state.fileInfo && !this.state.fileInfoLoading && this.renderFiles()}
           </Tabs.TabPane>
         )}
-        {showTabs && (
+        {showTabs && !_.isEmpty(this.props.data.capture_file) && (
           <Tabs.TabPane key="json-pcap" tab="PCAP File">
             <PCAPFile alertData={this.props.data} />
           </Tabs.TabPane>
