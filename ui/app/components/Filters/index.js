@@ -97,13 +97,13 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
   const filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(filterTypes));
   const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());
   const supportedActionsPermissions = user && user.data && user.data.permissions && user.data.permissions.includes('rules.ruleset_policy_edit');
+  const filtersAreSticky = useSelector(({ ruleSet }) => ruleSet?.filtersAreSticky);
 
   // State handlers
   const [valid, setValid] = useState('');
   const [searchString, setSearchString] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
-  const [sticky, setSticky] = useState(false);
 
   // Effects handlers
   useEffect(() => {
@@ -289,14 +289,19 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
     }
   };
 
-  const Component = sticky ? Affix : Static;
+  const Component = filtersAreSticky ? Affix : Static;
   return (
     <Component offsetTop={10}>
       <UICard style={{ marginBottom: '10px' }}>
         <FilterContainer>
           <div>
             <Title>
-              Filters {sticky ? <PushpinFilled onClick={() => setSticky(!sticky)} /> : <PushpinOutlined onClick={() => setSticky(!sticky)} />}
+              Filters{' '}
+              {filtersAreSticky ? (
+                <PushpinFilled onClick={() => dispatch(ruleSetsActions.toggleStickyFilters())} />
+              ) : (
+                <PushpinOutlined onClick={() => dispatch(ruleSetsActions.toggleStickyFilters())} />
+              )}
             </Title>
             <div style={{ display: 'flex', flex: 1, gap: 8 }}>
               <FiltersSelector id="filters" data-test="filters-dropdown">
