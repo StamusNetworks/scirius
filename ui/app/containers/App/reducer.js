@@ -243,7 +243,7 @@ export const appReducer = (state = initialState, action) =>
           if (parsedUrl.tenant) {
             parsedUrl.tenant = validateTenantURLParam(parsedUrl.tenant);
           }
-        } else if (parseUrl.tenant) {
+        } else if (parsedUrl.tenant) {
           delete parsedUrl.tenant;
         }
         draft.filters = parsedUrl;
