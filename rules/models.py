@@ -231,7 +231,8 @@ def validate_source_datatype(datatype):
     extra_types = get_middleware_module('common').update_source_content_type()
     if datatype not in [ct[0] for ct in Source.CONTENT_TYPE + extra_types]:
         if datatype in get_middleware_module('common').custom_source_datatype():
-            raise ValidationError('You cannot add more than 1 "%s" source' % datatype)
+            if Source.objects.filter(datatype='threat').count() > 0:
+                raise ValidationError('You cannot add more than 1 "%s" source' % datatype)
         else:
             raise ValidationError('Invalid Source Type')
 
