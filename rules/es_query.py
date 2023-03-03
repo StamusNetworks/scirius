@@ -387,7 +387,7 @@ class ESQuery:
         idxs = list(indexes)
 
         for idx in idxs:
-            if idx.startswith('.kibana'):
+            if idx.startswith('.kibana') or idx.startswith('.geoip_databases'):
                 indexes.pop(indexes.index(idx))
 
         return indexes
