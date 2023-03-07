@@ -38,10 +38,6 @@ export const HeaderStyled = styled(Header)`
     & svg {
       width: 22px;
       height: 22px;
-      fill: transparent;
-      stroke: currentColor;
-      stroke-width: 2;
-      margin-right: 5px;
     }
   }
 

@@ -11,7 +11,7 @@ import { LeftNavMap } from 'ui/maps/LeftNavMap';
 import { Link } from 'ui/helpers/Link';
 import selectors from 'ui/containers/App/selectors';
 import { createStructuredSelector } from 'reselect';
-import LaunchRounded from '@material-ui/icons/LaunchRounded';
+import { LinkOutlined } from '@ant-design/icons';
 import { LeftNavStyled, LeftNavLink } from './styles';
 
 const { SubMenu } = Menu;
@@ -43,7 +43,7 @@ function LeftNav({ user, systemSettings, hasLicense }) {
             {typeof pages[page].metadata.url === 'function' ? (
               <LeftNavLink href={pages[page].metadata.url(systemSettings)} target="_blank" className="left-nav-link">
                 <div>{title}</div>
-                <LaunchRounded />
+                <LinkOutlined />
               </LeftNavLink>
             ) : (
               <Link to={`${APP_URL}/${pages[page].metadata.url}`}>{title}</Link>

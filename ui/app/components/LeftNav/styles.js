@@ -12,6 +12,11 @@ export const LeftNavStyled = styled(Sider)`
     margin: 0 !important;
   }
 
+  & svg {
+    height: 22px;
+    width: 22px;
+  }
+
   .ant-menu {
     background: #fff;
   }
@@ -33,7 +38,7 @@ export const LeftNavStyled = styled(Sider)`
   }
 
   .anticon {
-    margin-right: 5px !important;
+    margin-right: 3px !important;
   }
 
   .ant-menu-submenu-title .anticon > svg,
@@ -58,7 +63,7 @@ export const LeftNavStyled = styled(Sider)`
     background: #f0f2f5;
   }
 
-  .ant-menu-item:hover .left-nav-link > svg {
+  .ant-menu-item:hover .left-nav-link svg {
     visibility: visible;
     opacity: 1;
   }
