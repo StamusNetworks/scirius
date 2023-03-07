@@ -35,11 +35,6 @@ module.exports = options => ({
               ["import", { "libraryName": "antd", "libraryDirectory": "es", "style": true }]
             ]
           }
-        },{
-          loader: 'eslint-loader',
-          options: {
-            fix: true //will auto-format our js files on save to conform to the airbnb eslint style guide
-          }
         }],
       },
       {
