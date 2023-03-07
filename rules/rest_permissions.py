@@ -48,8 +48,12 @@ class HasGroupPermission(BasePermission):
             func = getattr(view, view.action)
             if hasattr(func, 'disable_main_check') and func.disable_main_check:
                 return True
+
+            event_view = request.query_params.get('event_view')
+            event_view = True if event_view not in ('false', '0') else False
+
             if hasattr(func, 'no_tenant_check'):
-                no_tenant_check = func.no_tenant_check
+                no_tenant_check = func.no_tenant_check and not event_view
 
         required_groups_mapping = getattr(view, "REQUIRED_GROUPS", {})
         action = None
