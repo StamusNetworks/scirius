@@ -4,9 +4,12 @@ import PropTypes from 'prop-types';
 import { Button, Modal } from 'antd';
 import { QuestionOutlined, ReadOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
+import moment from 'moment';
+import constants from 'ui/constants';
 import LoadingIndicator from 'ui/components/LoadingIndicator';
 import actions from 'ui/containers/App/actions';
 import selectors from 'ui/containers/App/selectors';
+const { DATE_FORMAT } = constants;
 
 const Wrapper = styled.div`
   display: grid;
@@ -167,6 +170,7 @@ const HelpMenu = ({ isEnterpriseEdition }) => {
             <Version>
               <strong>Stamus Threat Intelligence: </strong>
               {sourceLoading ? loadingIndicator : source?.version ? `v${source.version}` : <i>rules update needed</i>}
+              {sourceLoading ? loadingIndicator : source?.updated_date && ` (updated at ${moment(source.updated_date).format(DATE_FORMAT)})`}
             </Version>
           </VersionsList>
         )}
