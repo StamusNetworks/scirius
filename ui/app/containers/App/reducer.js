@@ -31,7 +31,7 @@ const initialFiltersStorage = parseUrl();
 
 const hasMultiTenancy = getCurrentUser('multi_tenancy', false);
 const availableTenants = getCurrentUser('tenants', []);
-const firstAvailableTenant = availableTenants.length > 0 ? getCurrentUser('tenants')[0] : undefined;
+const firstAvailableTenant = availableTenants.length > 0 ? availableTenants[0] : undefined;
 
 const validateTenantURLParam = tenantId => {
   if (hasMultiTenancy) {
@@ -239,12 +239,14 @@ export const appReducer = (state = initialState, action) =>
         // #4351 - Case: location change
         draft.timespan.now = new Date().getTime();
         const parsedUrl = parseUrl(history.location.search);
-        if (hasMultiTenancy) {
-          if (parsedUrl.tenant) {
-            parsedUrl.tenant = validateTenantURLParam(parsedUrl.tenant);
+        if (process.env.NODE_ENV === 'production') {
+          if (hasMultiTenancy) {
+            if (parsedUrl.tenant) {
+              parsedUrl.tenant = validateTenantURLParam(parsedUrl.tenant);
+            }
+          } else if (parsedUrl.tenant) {
+            delete parsedUrl.tenant;
           }
-        } else if (parsedUrl.tenant) {
-          delete parsedUrl.tenant;
         }
         draft.filters = parsedUrl;
         store.set(StorageEnum.FILTERS, parsedUrl);
