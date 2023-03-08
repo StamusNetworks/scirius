@@ -47,16 +47,21 @@ const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodReques
     getUser();
     getAllPeriodRequest();
 
-    const interval = setInterval(() => {
-      idle.current += SESSION_INTERVAL;
-      setSessionActivity(idle.current / 1000);
-    }, SESSION_INTERVAL);
-    document.addEventListener('mousemove', setIdle);
-    document.addEventListener('keypress', setIdle);
+    let interval = null;
+    if (process.env.NODE_ENV === 'production') {
+      interval = setInterval(() => {
+        idle.current += SESSION_INTERVAL;
+        setSessionActivity(idle.current / 1000);
+      }, SESSION_INTERVAL);
+      document.addEventListener('mousemove', setIdle);
+      document.addEventListener('keypress', setIdle);
+    }
     return () => {
-      clearInterval(interval);
-      document.removeEventListener('mousemove', setIdle);
-      document.removeEventListener('keypress', setIdle);
+      if (process.env.NODE_ENV === 'production') {
+        clearInterval(interval);
+        document.removeEventListener('mousemove', setIdle);
+        document.removeEventListener('keypress', setIdle);
+      }
     };
   }, []);
 
