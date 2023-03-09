@@ -229,12 +229,13 @@ def get_hunt_filters():
 def validate_source_datatype(datatype):
     from scirius.utils import get_middleware_module
     extra_types = get_middleware_module('common').update_source_content_type()
-    if datatype not in [ct[0] for ct in Source.CONTENT_TYPE + extra_types]:
+    datatypes = [ct[0] for ct in Source.CONTENT_TYPE + extra_types]
+    if datatype not in datatypes:
         if datatype in get_middleware_module('common').custom_source_datatype():
             if Source.objects.filter(datatype='threat').count() > 0:
                 raise ValidationError('You cannot add more than 1 "%s" source' % datatype)
         else:
-            raise ValidationError('Invalid Source Type')
+            raise ValidationError('Invalid data type "%s", must be one of %s' % (datatype, ', '.join(sorted(datatypes))))
 
 
 def validate_hostname(val):

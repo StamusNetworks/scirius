@@ -47,6 +47,7 @@ from rules.es_analytics import ESGraphAgg, ESFieldUniqAgg
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD, USE_CYBERCHEF, CYBERCHEF_URL
+from scirius.utils import get_middleware_module
 
 Probe = __import__(settings.RULESET_MIDDLEWARE)
 
@@ -1722,13 +1723,20 @@ class PublicSourceViewSet(BaseSourceViewSet):
 
 
 class SourceSerializer(BaseSourceSerializer):
-    datatype = serializers.ChoiceField(required=True, choices=Source.CONTENT_TYPE)
+    datatype = serializers.CharField(required=True)
     method = serializers.ChoiceField(required=True, choices=Source.FETCH_METHOD)
 
     class Meta(BaseSourceSerializer.Meta):
         model = BaseSourceSerializer.Meta.model
         fields = BaseSourceSerializer.Meta.fields + ('method', 'uri', 'authkey', 'comment')
         read_only_fields = BaseSourceSerializer.Meta.read_only_fields
+
+    def validate_datatype(self, value):
+        extra_types = get_middleware_module('common').update_source_content_type()
+        datatypes = [ct[0] for ct in Source.CONTENT_TYPE + extra_types]
+        if value not in datatypes:
+            raise serializers.ValidationError('Data type must be one of: %s' % (','.join(datatypes)))
+        return value
 
     def create(self, validated_data):
         validated_data['public_source'] = None
