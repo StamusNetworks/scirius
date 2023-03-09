@@ -10,7 +10,8 @@ import FilterEditKebab from 'ui/components/FilterEditKebab';
 import UICard from 'ui/components/UIElements/UICard';
 
 const { TabPane } = Tabs;
-const TabPaneStyled = styled(TabPane)`
+
+const Styled = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   grid-gap: 10px;
@@ -100,11 +101,13 @@ export default class ActionItem extends React.Component {
     return (
       <React.Fragment>
         <Tabs defaultActiveKey="1">
-          <TabPaneStyled tab="Policy" key="1">
-            <UICard title="Filters">{this.props.filters}</UICard>
-            <UICard title="Parameters">{this.props.expandedDescription}</UICard>
-            <UICard title="Rulesets">{this.props.expandedRulesets}</UICard>
-          </TabPaneStyled>
+          <TabPane tab="Policy" key="1">
+            <Styled>
+              <UICard title="Filters">{this.props.filters}</UICard>
+              <UICard title="Parameters">{this.props.expandedDescription}</UICard>
+              <UICard title="Rulesets">{this.props.expandedRulesets}</UICard>
+            </Styled>
+          </TabPane>
           <TabPane tab="Statistics" key="2">
             <ActionItemContainer>
               {this.state.data &&

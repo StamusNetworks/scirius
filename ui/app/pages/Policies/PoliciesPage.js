@@ -24,6 +24,7 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import { connect } from 'react-redux';
 import { Table } from 'antd';
+import _ from 'lodash';
 import * as config from 'config/Api';
 import { STAMUS } from 'ui/config';
 import ErrorHandler from 'ui/components/Error';
@@ -60,7 +61,7 @@ export class PoliciesPage extends React.Component {
       view_type: 'list',
     });
 
-    this.state = { data: [], count: 0, rulesets: [], filtersList: filtersListConf, expand: true };
+    this.state = { data: [], count: 0, rulesets: {}, filtersList: filtersListConf, expand: true };
 
     this.fetchData = this.fetchData.bind(this);
     this.needUpdate = this.needUpdate.bind(this);
@@ -69,16 +70,16 @@ export class PoliciesPage extends React.Component {
   }
 
   componentDidMount() {
-    if (this.state.rulesets.length === 0) {
+    if (_.isEmpty(this.state.rulesets)) {
       axios.get(`${config.API_URL}${config.RULESET_PATH}`).then(res => {
         const rulesets = {};
         for (let index = 0; index < res.data.results.length; index += 1) {
           rulesets[res.data.results[index].pk] = res.data.results[index];
         }
         this.setState({ rulesets });
+        this.fetchData();
       });
     }
-    this.fetchData();
   }
 
   componentDidUpdate(prevProps) {
