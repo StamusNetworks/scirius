@@ -18,10 +18,9 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table } from 'antd';
-import axios from 'axios';
-import * as config from 'config/Api';
+import { observer } from 'mobx-react-lite';
 import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
 import HistoryItem from 'ui/components/HistoryItem';
@@ -39,58 +38,43 @@ import history from 'ui/utils/history';
 import globalSelectors from 'ui/containers/App/selectors';
 import { buildFilter, buildListUrlParams } from '../../helpers/common';
 import HuntPaginationRow from '../../HuntPaginationRow';
+import { useStore } from '../../mobx/RootStoreProvider';
 
 const HistoryPage = () => {
   useInjectSaga({ key: 'ruleSet', saga });
   useInjectReducer({ key: 'ruleSet', reducer });
+  const { commonStore } = useStore();
 
   const dispatch = useDispatch();
-  const historyConf = useMemo(
-    () =>
-      buildListParams(JSON.parse(localStorage.getItem('history')), {
-        pagination: {
-          page: 1,
-          perPage: 10,
-          perPageOptions: [10, 20, 50, 100],
-        },
-        sort: { id: 'date', asc: false },
-        view_type: 'list',
-      }),
-    [],
-  );
 
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState([]);
-  const [count, setCount] = useState(0);
-  const [historyState, setHistoryState] = useState(historyConf);
+  const [historyState, setHistoryState] = useState(
+    buildListParams(JSON.parse(localStorage.getItem('history')), {
+      pagination: {
+        page: 1,
+        perPage: 10,
+        perPageOptions: [10, 20, 50, 100],
+      },
+      sort: { id: 'date', asc: false },
+      view_type: 'list',
+    }),
+  );
 
   useEffect(() => {
     dispatch(filtersActions.historyFiltersRequest());
   }, []);
 
   const filters = useSelector(makeSelectHistoryFilters());
-
   const systemSettings = useSelector(globalSelectors.makeSelectSystemSettings());
 
-  const fetchData = useCallback(() => {
-    const stringFilters = buildFilter(filters, systemSettings);
-    const listParams = buildListUrlParams(historyState);
-    setLoading(true);
-    axios
-      .get(`${config.API_URL}${config.HISTORY_PATH}?${listParams}${stringFilters}`)
-      .then(res => {
-        setData(res.data);
-        setCount(res.data.count);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
-  }, [filters, historyState, systemSettings]);
+  const stringFilters = buildFilter(filters, systemSettings);
+  const listParams = buildListUrlParams(historyState);
 
-  useEffect(() => {
-    fetchData();
-  }, [filters, historyState]);
+  useEffect(async () => {
+    setLoading(true);
+    await commonStore.fetchData(stringFilters, listParams);
+    setLoading(false);
+  }, [stringFilters, listParams]);
 
   const updateHistoryListState = historyState => {
     setHistoryState(historyState);
@@ -159,12 +143,12 @@ const HistoryPage = () => {
           }}
         />
       </ErrorHandler>
-      {data.results && (
+      {commonStore.historyItemsList && (
         <Table
           rowKey={item => item.pk}
           size="small"
           loading={loading}
-          dataSource={data.results}
+          dataSource={commonStore.historyItemsList}
           columns={columns}
           expandable={{
             columnWidth: 5,
@@ -176,10 +160,15 @@ const HistoryPage = () => {
         />
       )}
       <ErrorHandler>
-        <HuntPaginationRow viewType="list" onPaginationChange={updateHistoryListState} itemsCount={count} itemsList={historyState} />
+        <HuntPaginationRow
+          viewType="list"
+          onPaginationChange={updateHistoryListState}
+          itemsCount={commonStore.historyItemsCount}
+          itemsList={historyState}
+        />
       </ErrorHandler>
     </div>
   );
 };
 
-export default HistoryPage;
+export default observer(HistoryPage);
