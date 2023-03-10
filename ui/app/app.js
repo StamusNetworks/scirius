@@ -11,6 +11,8 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'connected-react-router';
 import FontFaceObserver from 'fontfaceobserver';
+import { SingletonHooksContainer } from 'react-singleton-hook';
+
 import history from 'utils/history';
 import './fonts/fonts.css';
 
@@ -21,6 +23,7 @@ import notify from 'ui/helpers/notify';
 // Load the favicon and the .htaccess file
 import '!file-loader?name=[name].[ext]!./images/favicon.ico';
 import axios from 'axios';
+import { RootStoreProvider } from './mobx/RootStoreProvider';
 import { store } from './store';
 
 // Observe loading of Open Sans (to remove open sans, remove the <link> tag in
@@ -44,11 +47,14 @@ axios.interceptors.response.use(
 
 const render = () => {
   ReactDOM.render(
-    <Provider store={store}>
-      <ConnectedRouter history={history}>
-        <App />
-      </ConnectedRouter>
-    </Provider>,
+    <RootStoreProvider>
+      <Provider store={store}>
+        <ConnectedRouter history={history}>
+          <App />
+          <SingletonHooksContainer />
+        </ConnectedRouter>
+      </Provider>
+    </RootStoreProvider>,
     MOUNT_NODE,
   );
 };
