@@ -94,6 +94,8 @@
     "marked": "^4.2.12",
     "md5": "^2.3.0",
     "minimist": "^1.2.7",
+    "mobx": "^6.8.0",
+    "mobx-react-lite": "^3.4.3",
     "polished": "^4.2.2",
     "prop-types": "15.7.2",
     "punycode": "^2.3.0",
