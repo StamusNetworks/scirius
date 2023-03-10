@@ -18,9 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
-import PropTypes from 'prop-types';
-import { withRouter } from 'react-router';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Table } from 'antd';
 import axios from 'axios';
 import * as config from 'config/Api';
@@ -30,211 +28,158 @@ import HistoryItem from 'ui/components/HistoryItem';
 import ErrorHandler from 'ui/components/Error';
 import moment from 'moment';
 import buildListParams from 'ui/helpers/buildListParams';
-import { connect } from 'react-redux';
-import { compose } from 'redux';
-import { createStructuredSelector } from 'reselect';
-import injectReducer from 'ui/utils/injectReducer';
-import injectSaga from 'ui/utils/injectSaga';
+import { useDispatch, useSelector } from 'react-redux';
+import { useInjectSaga } from 'ui/utils/injectSaga';
+import { useInjectReducer } from 'ui/utils/injectReducer';
 import filtersActions from 'ui/stores/filters/actions';
 import reducer from 'ui/stores/filters/reducer';
 import saga from 'ui/stores/filters/saga';
 import { addFilter, makeSelectHistoryFilters } from 'ui/containers/HuntApp/stores/global';
+import history from 'ui/utils/history';
+import globalSelectors from 'ui/containers/App/selectors';
 import { buildFilter, buildListUrlParams } from '../../helpers/common';
 import HuntPaginationRow from '../../HuntPaginationRow';
 
-class HistoryPage extends React.Component {
-  constructor(props) {
-    super(props);
+const HistoryPage = () => {
+  useInjectSaga({ key: 'ruleSet', saga });
+  useInjectReducer({ key: 'ruleSet', reducer });
 
-    const historyConf = buildListParams(JSON.parse(localStorage.getItem('history')), {
-      pagination: {
-        page: 1,
-        perPage: 10,
-        perPageOptions: [10, 20, 50, 100],
-      },
-      sort: { id: 'date', asc: false },
-      view_type: 'list',
-    });
+  const dispatch = useDispatch();
+  const historyConf = useMemo(
+    () =>
+      buildListParams(JSON.parse(localStorage.getItem('history')), {
+        pagination: {
+          page: 1,
+          perPage: 10,
+          perPageOptions: [10, 20, 50, 100],
+        },
+        sort: { id: 'date', asc: false },
+        view_type: 'list',
+      }),
+    [],
+  );
 
-    this.state = { data: [], count: 0, history: historyConf };
-    this.fetchData = this.fetchData.bind(this);
-    this.buildFilter = buildFilter;
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState([]);
+  const [count, setCount] = useState(0);
+  const [historyState, setHistoryState] = useState(historyConf);
 
-    this.props.getActionTypes();
-  }
+  useEffect(() => {
+    dispatch(filtersActions.historyFiltersRequest());
+  }, []);
 
-  componentDidMount() {
-    this.fetchData();
-  }
+  const filters = useSelector(makeSelectHistoryFilters());
 
-  componentDidUpdate(prevProps) {
-    if (JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)) {
-      this.fetchData();
-    }
-  }
+  const systemSettings = useSelector(globalSelectors.makeSelectSystemSettings());
 
-  updateHistoryListState = historyState => {
-    this.setState({ history: historyState }, () => this.fetchData());
-    localStorage.setItem('history', JSON.stringify(historyState));
-  };
-
-  fetchData() {
-    const stringFilters = this.buildFilter(this.props.filters);
-    const listParams = buildListUrlParams(this.state.history);
-    this.setState({ loading: true });
+  const fetchData = useCallback(() => {
+    const stringFilters = buildFilter(filters, systemSettings);
+    const listParams = buildListUrlParams(historyState);
+    setLoading(true);
     axios
       .get(`${config.API_URL}${config.HISTORY_PATH}?${listParams}${stringFilters}`)
       .then(res => {
-        this.setState({
-          data: res.data,
-          count: res.data.count,
-          loading: false,
-        });
+        setData(res.data);
+        setCount(res.data.count);
+        setLoading(false);
       })
       .catch(() => {
-        this.setState({ loading: false });
+        setLoading(false);
       });
-  }
+  }, [filters, historyState, systemSettings]);
 
-  columns = [
+  useEffect(() => {
+    fetchData();
+  }, [filters, historyState]);
+
+  const updateHistoryListState = historyState => {
+    setHistoryState(historyState);
+    localStorage.setItem('history', JSON.stringify(historyState));
+  };
+
+  const columns = [
     {
       title: 'Operation',
-      dataIndex: 'operation',
+      dataIndex: 'title',
     },
     {
       title: 'Message',
-      dataIndex: 'message',
+      dataIndex: 'description',
     },
     {
       title: 'Date',
       dataIndex: 'date',
+      render: value => moment(value).format('YYYY-MM-DD, hh:mm:ss a'),
     },
     {
       title: 'User',
-      dataIndex: 'user',
+      dataIndex: 'username',
     },
     {
       title: 'IP',
-      dataIndex: 'ip',
+      dataIndex: 'client_ip',
     },
     {
       title: 'Ruleset',
-      dataIndex: 'ruleset',
+      dataIndex: ['ua_objects', 'ruleset', 'value'],
     },
     {
       title: 'Signature',
-      dataIndex: 'signature',
+      render: value =>
+        value.ua_objects.rule?.sid && (
+          <a
+            onClick={() => {
+              dispatch(addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: value.ua_objects.rule.sid, negated: false }));
+              history.push('/stamus/hunting/signatures', value.ua_objects.rule.sid);
+            }}
+          >
+            {value.ua_objects.rule.sid}
+          </a>
+        ),
     },
   ];
 
-  render() {
-    let expand = false;
-    for (let filter = 0; filter < this.props.filters; filter += 1) {
-      if (this.props.filters[filter].id === 'comment' || this.props.filters[filter].id === 'client_ip') {
-        expand = true;
-        break;
-      }
-    }
-
-    const dataSource = this.state.data.results?.map(item => ({
-      key: item.pk,
-      operation: item.title,
-      message: item.description,
-      date: moment(item.date).format('YYYY-MM-DD, hh:mm:ss a'),
-      user: item.username,
-      ip: item.client_ip,
-      ruleset: item.ua_objects.ruleset?.value,
-      signature: item.ua_objects.rule?.sid && (
-        <a
-          onClick={() => {
-            this.props.addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: item.ua_objects.rule.sid, negated: false });
-            this.props.history.push('/stamus/hunting/signatures', item.ua_objects.rule.sid);
+  return (
+    <div>
+      <ErrorHandler>
+        <Filters
+          page="HISTORY"
+          section={sections.HISTORY}
+          queryTypes={['all']}
+          filterTypes={['all']}
+          sortValues={{ option: historyState.sort.id, direction: historyState.sort.asc ? 'asc' : 'desc' }}
+          onSortChange={(option, direction) => {
+            updateHistoryListState({
+              ...historyState,
+              sort: {
+                id: option || historyState.sort.id,
+                asc: direction ? direction === 'asc' : historyState.sort.asc,
+              },
+            });
           }}
-        >
-          {item.ua_objects.rule.sid}
-        </a>
-      ),
-      item, // we need this to access the item data in the `expandedRowRender` below
-    }));
-
-    return (
-      <div>
-        <ErrorHandler>
-          <Filters
-            page="HISTORY"
-            section={sections.HISTORY}
-            queryTypes={['all']}
-            filterTypes={['all']}
-            sortValues={{ option: this.state.history.sort.id, direction: this.state.history.sort.asc ? 'asc' : 'desc' }}
-            onSortChange={(option, direction) => {
-              this.updateHistoryListState({
-                ...this.state.history,
-                sort: {
-                  id: option || this.state.history.sort.id,
-                  asc: direction ? direction === 'asc' : this.state.history.sort.asc,
-                },
-              });
-            }}
-          />
-        </ErrorHandler>
-        {this.state.data.results && (
-          <Table
-            size="small"
-            loading={this.state.loading}
-            dataSource={dataSource}
-            columns={this.columns}
-            expandable={{
-              columnWidth: 5,
-              expandRowByClick: true,
-              expandedRowRender: ({ item }) => <HistoryItem key={item.pk} data={item} expand_row={expand} />,
-              rowExpandable: () => true,
-            }}
-            pagination={false}
-          />
-        )}
-        <ErrorHandler>
-          <HuntPaginationRow
-            viewType="list"
-            onPaginationChange={this.updateHistoryListState}
-            itemsCount={this.state.count}
-            itemsList={this.state.history}
-          />
-        </ErrorHandler>
-      </div>
-    );
-  }
-}
-
-HistoryPage.propTypes = {
-  filters: PropTypes.any,
-  getActionTypes: PropTypes.func,
-  addFilter: PropTypes.func,
-  user: PropTypes.shape({
-    pk: PropTypes.any,
-    timezone: PropTypes.any,
-    username: PropTypes.any,
-    firstName: PropTypes.any,
-    lastName: PropTypes.any,
-    isActive: PropTypes.any,
-    email: PropTypes.any,
-    dateJoined: PropTypes.any,
-    permissions: PropTypes.any,
-  }),
-  history: PropTypes.object,
+        />
+      </ErrorHandler>
+      {data.results && (
+        <Table
+          rowKey={item => item.pk}
+          size="small"
+          loading={loading}
+          dataSource={data.results}
+          columns={columns}
+          expandable={{
+            columnWidth: 5,
+            expandRowByClick: true,
+            expandedRowRender: item => <HistoryItem key={item.pk} data={item} />,
+            rowExpandable: () => true,
+          }}
+          pagination={false}
+        />
+      )}
+      <ErrorHandler>
+        <HuntPaginationRow viewType="list" onPaginationChange={updateHistoryListState} itemsCount={count} itemsList={historyState} />
+      </ErrorHandler>
+    </div>
+  );
 };
 
-const mapDispatchToProps = dispatch => ({
-  getActionTypes: () => dispatch(filtersActions.historyFiltersRequest()),
-  addFilter: (section, filter) => dispatch(addFilter(section, filter)),
-});
-
-const mapStateToProps = createStructuredSelector({
-  filters: makeSelectHistoryFilters(),
-});
-
-const withConnect = connect(mapStateToProps, mapDispatchToProps);
-
-const withReducer = injectReducer({ key: 'ruleSet', reducer });
-const withSaga = injectSaga({ key: 'ruleSet', saga });
-
-export default compose(withReducer, withSaga, withConnect, withRouter)(HistoryPage);
+export default HistoryPage;
