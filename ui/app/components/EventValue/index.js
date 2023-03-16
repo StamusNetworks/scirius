@@ -1,19 +1,14 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import EventValueInfo from 'ui/components/EventValueInfo';
+import { useDispatch } from 'react-redux';
 import { sections } from 'ui/constants';
-import { message, Tooltip } from 'antd';
 import { InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
-import ErrorHandler from 'ui/components/Error';
+import TypedValue from 'components/TypedValue';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
-import isIP from 'ui/helpers/isIP';
 import styled from 'styled-components';
-import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 import { COLOR_BOX_HEADER } from 'ui/constants/colors';
+import { IP_FIELDS } from 'components/FilterList/FilterList';
 
-// put all the sections where we want to inlclude `virus total links` for ip addresses and domains
-const virusTotalLinks = ['hostname_info.domain', 'http.hostname', 'dns.query.rrname', 'http.http_refer_info.domain', 'tls.sni'];
 const mitreLinks = [
   'alert.metadata.mitre_tactic_id',
   'alert.metadata.mitre_technique_id',
@@ -23,38 +18,14 @@ const mitreLinks = [
 
 const Container = styled.div`
   display: grid;
-  grid-template-columns: 1fr repeat(2, min-content);
+  grid-template-columns: 1fr min-content;
   align-items: center;
   width: 100%;
-  background: ${p => (p.hover ? '#e5e5e5' : 'none')};
-  cursor: ${p => (p.hover ? 'pointer' : 'default')};
+  background: ${p => (p.hover ? '#f0f2f5' : 'none')};
+  cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  &:hover .extra {
-    visibility: visible;
-    opacity: 1;
-  }
-`;
-
-const Value = styled.div`
-  flex: 1;
-  min-width: 0; /* or some value */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const Extra = styled.div`
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  visibility: hidden;
-  opacity: 0;
-  transition: all 0.2s;
-  span {
-    margin-right: 3px;
-  }
 `;
 
 export const Count = styled.span`
@@ -64,134 +35,136 @@ export const Count = styled.span`
   font-size: 12px;
 `;
 
-const EventValue = props => {
-  const getLink = () => {
-    if (virusTotalLinks.includes(props.field)) {
-      return (
-        <Tooltip key="virustotal_link" title="external info" trigger="hover" id="tooltip-top">
-          <a
-            href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(props.value)) ? 'ip-address' : 'domain'}/${props.value}`}
-            target="_blank"
-          >
-            <InfoCircleFilled />
-          </a>
-        </Tooltip>
-      );
-    }
-    if (props.field === mitreLinks[0] || props.field === mitreLinks[1]) {
-      return (
-        <Tooltip key="mitre_link" title="external info" trigger="hover" id="tooltip-top">
-          <a
-            href={(function () {
-              if (props.field === mitreLinks[0]) {
-                return `https://attack.mitre.org/tactics/${props.value}`;
-              }
-              if (!props.value.includes('.')) {
-                return `https://attack.mitre.org/techniques/${props.value}`;
-              }
-              return `https://attack.mitre.org/techniques/${props.value.split('.')[0]}/${props.value.split('.')[1]}`;
-            })()}
-            target="_blank"
-          >
-            {' '}
-            <InfoCircleFilled />
-          </a>
-        </Tooltip>
-      );
-    }
-    return false;
-  };
+const EventValue = ({ copyMode, field, format, right_info: rightInfo, value }) => {
+  const dispatch = useDispatch();
 
   const printValue = () => {
-    if (!mitreLinks.includes(props.field)) {
-      if (props.format) return props.format(props.value);
-      return props.value;
+    if (!mitreLinks.includes(field)) {
+      if (format) return format(value);
+      return value;
     }
-    if (!props.value.toString().includes('_')) return props.value;
+    if (!value.toString().includes('_')) return value;
 
-    return props.value.toString().replaceAll('_', ' ');
+    return value.toString().replaceAll('_', ' ');
   };
 
   const [hover, setHover] = useState(false);
-  const magnifiers = !props.copyMode && hover && props.value !== 'Unknown';
+
+  let type;
+  // additionalLinks apply to all fields - ip, port, hostname, username
+  let additionalLinks = [
+    {
+      key: 'eventValue1',
+      label: (
+        <div
+          onClick={() => {
+            dispatch(
+              addFilter(sections.GLOBAL, {
+                id: field || '',
+                value: value || '',
+                label: `${field}: ${format ? format(value) : value}`,
+                fullString: true,
+                negated: false,
+              }),
+            );
+          }}
+        >
+          <ZoomInOutlined /> <span data-test="filter-on-value">Filter on value</span>
+        </div>
+      ),
+    },
+    {
+      key: 'eventValue2',
+      label: (
+        <div
+          onClick={() => {
+            dispatch(
+              addFilter(sections.GLOBAL, {
+                id: field,
+                value: value || '',
+                label: `${field}: ${format ? format(value) : value}`,
+                fullString: true,
+                negated: true,
+              }),
+            );
+          }}
+        >
+          <ZoomOutOutlined /> <span data-test="negated-filter-on-value">Negated filter on value</span>
+        </div>
+      ),
+    },
+  ];
+
+  if (field === mitreLinks[0] || field === mitreLinks[1]) {
+    additionalLinks = [
+      ...additionalLinks,
+      {
+        key: 'eventValue3',
+        label: (field === mitreLinks[0] || field === mitreLinks[1]) && (
+          <a
+            href={(function () {
+              if (field === mitreLinks[0]) {
+                return `https://attack.mitre.org/tactics/${value}`;
+              }
+              if (!value.includes('.')) {
+                return `https://attack.mitre.org/techniques/${value}`;
+              }
+              return `https://attack.mitre.org/techniques/${value.split('.')[0]}/${value.split('.')[1]}`;
+            })()}
+            target="_blank"
+          >
+            <InfoCircleFilled /> <span>External info</span>
+          </a>
+        ),
+      },
+    ];
+  }
+
+  // IP
+  if (IP_FIELDS.includes(field)) {
+    type = 'ip';
+  }
+
+  // PORT
+  if (['src_port', 'dest_port', 'host_id.services.port'].includes(field)) {
+    type = 'port';
+  }
+
+  // HOSTNAME
+  if (
+    [
+      'hostname_info.domain',
+      'http.hostname',
+      'dns.query.rrname',
+      'http.http_refer_info.domain',
+      'tls.sni',
+      'http.http_refer_info.host',
+      'smtp.helo',
+      'hostname_info.host',
+    ].includes(field)
+  ) {
+    type = 'hostname';
+  }
+
+  // USERNAME
+  if (['smtp.mail_from', 'smtp.rcpt_to'].includes(field)) {
+    type = 'username';
+  }
+
   return (
-    <Container
-      data-test="event-value"
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      hover={props.copyMode && hover}
-      onClick={() => {
-        if (props.copyMode && hover) {
-          copyTextToClipboard(printValue());
-          message.success({
-            duration: 1,
-            content: 'Copied!',
-          });
-        }
-      }}
-    >
-      <Value title={props.value + (props.hasCopyShortcut ? '\nCtrl + left click to copy' : '')} data-test="event-field-value">
-        {printValue()}
-      </Value>
-      <Extra className="extra">
-        <ErrorHandler>
-          <EventValueInfo field={props.field} value={props.value} magnifiers={magnifiers} />
-          {getLink()}
-          {/* 256 chars max on ES queries */}
-          {((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
-            <Tooltip title="add a filter on value" trigger="hover" id="tooltip-top">
-              <ZoomInOutlined
-                onClick={() =>
-                  props.addFilter(sections.GLOBAL, {
-                    id: props.field || '',
-                    value: props.value || '',
-                    label: `${props.field}: ${props.format ? props.format(props.value) : props.value}`,
-                    fullString: true,
-                    negated: false,
-                  })
-                }
-              />
-            </Tooltip>
-          )}
-          {/* 256 chars max on ES queries */}
-          {((typeof props.value === 'string' && props.value.length < 256) || typeof props.value !== 'string') && (
-            <Tooltip title="add negated filter on value" trigger="hover" id="tooltip-top">
-              <ZoomOutOutlined
-                onClick={() =>
-                  props.addFilter(sections.GLOBAL, {
-                    id: props.field,
-                    value: props.value,
-                    label: `${props.field}: ${props.format ? props.format(props.value) : props.value}`,
-                    fullString: true,
-                    negated: true,
-                  })
-                }
-              />
-            </Tooltip>
-          )}
-        </ErrorHandler>
-      </Extra>
-      {props.right_info && !(props.copyMode && hover) && <Count>{props.right_info}</Count>}
+    <Container data-test="event-value" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} hover={hover}>
+      <TypedValue type={type} value={value} additionalLinks={additionalLinks} printedValue={printValue()} />
+      {rightInfo && !(copyMode && hover) && <Count>{rightInfo}</Count>}
     </Container>
   );
 };
 
-EventValue.defaultProps = {
-  hasCopyShortcut: false,
-};
-
 EventValue.propTypes = {
-  addFilter: PropTypes.any,
   right_info: PropTypes.any,
   field: PropTypes.any,
   value: PropTypes.any,
-  hasCopyShortcut: PropTypes.bool,
   format: PropTypes.func,
   copyMode: PropTypes.bool,
 };
 
-const mapDispatchToProps = dispatch => ({
-  addFilter: (section, filter) => dispatch(addFilter(section, filter)),
-});
-
-export default connect(null, mapDispatchToProps)(EventValue);
+export default EventValue;
