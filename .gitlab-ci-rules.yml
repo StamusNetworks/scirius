@@ -15,6 +15,8 @@ npm:
   - ./node_modules/webpack/bin/webpack.js
 
 npm-ui:
+  variables:
+    CYPRESS_CACHE_FOLDER: /tmp/cyress_cache # see https://github.com/cypress-io/cypress/issues/1281
   image: node:18.13
   stage: build
   artifacts:
@@ -23,17 +25,20 @@ npm-ui:
       - rules/static/dist
       - rules/static/bundles
       - rules/static/webpack-stats-ui.prod.json
+      - ui/node_modules
   before_script:
     - echo "skip"
   script:
   - cd ui
   - 'test -e .env ||: && set -a && source .env && set +a'  # load and export env variables
-  - npm install
+  - npm install --unsafe-perms # unsafe-perms required by cypress, see https://github.com/cypress-io/cypress/issues/1281
   - npm run build
   - node node_modules/eslint/bin/eslint.js app/ --max-warnings 0
   - cd "$CI_PROJECT_DIR" && mv ui/webpack-stats-ui.prod.json rules/static/
 
 npm-ui-eslint:
+  variables:
+    CYPRESS_CACHE_FOLDER: /tmp/cyress_cache # see https://github.com/cypress-io/cypress/issues/1281
   image: node:18.13
   stage: build
   before_script:
@@ -41,7 +46,7 @@ npm-ui-eslint:
   script:
   - cd ui
   - 'test -e .env ||: && set -a && source .env && set +a'  # load and export env variables
-  - npm install
+  - npm install --unsafe-perms # unsafe-perms required by cypress, see https://github.com/cypress-io/cypress/issues/1281
   - npm run eslint:fix
   - git diff --exit-code
 
