@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Dropdown, Menu } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
@@ -61,9 +61,14 @@ const Sort = ({ page, onChange, value }) => {
   const [option, setOption] = useState(options.find(o => o.id === value.option && o.page === page));
   const [direction, setDirection] = useState(value.direction);
 
+  const mount = useRef(true);
   useEffect(() => {
+    if (mount.current) {
+      mount.current = false;
+      return;
+    }
     onChange(option?.id, direction);
-  }, [option?.id, direction]);
+  }, [option?.id, direction, mount]);
 
   return (
     <Container>
