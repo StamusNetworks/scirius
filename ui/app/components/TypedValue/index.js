@@ -74,7 +74,7 @@ const TypedValue = props => {
       }}
       trigger={['click']}
       onClick={e => {
-        e.stopPropagation();
+        // e.stopPropagation();
       }}
     >
       {props.children || <a>{props.value}</a>}
