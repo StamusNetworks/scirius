@@ -1,14 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Dropdown } from 'antd';
+import { Dropdown, message } from 'antd';
 import { IdcardOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import _ from 'lodash';
 import { Link } from 'ui/helpers/Link';
 import history from 'ui/utils/history';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import { sections } from 'ui/constants';
-// import { IP_FIELDS } from 'components/FilterList/FilterList';
+import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 
 const TypedValue = props => {
   let listOfLinks = [];
@@ -73,8 +73,17 @@ const TypedValue = props => {
         items: listOfLinks,
       }}
       trigger={['click']}
-      onClick={e => {
-        // e.stopPropagation();
+      // onClick={e => {
+      // e.stopPropagation();
+      // }}
+      onClick={() => {
+        if (props.copyMode && props.hover) {
+          copyTextToClipboard(props.printedValue);
+          message.success({
+            duration: 1,
+            content: 'Copied!',
+          });
+        }
       }}
     >
       {props.children || <a>{props.value}</a>}
@@ -93,6 +102,9 @@ TypedValue.propTypes = {
   additionalLinks: PropTypes.arrayOf(PropTypes.object),
   addFilter: PropTypes.func,
   children: PropTypes.object,
+  printedValue: PropTypes.string,
+  hover: PropTypes.bool,
+  copyMode: PropTypes.bool,
 };
 
 export default connect(null, { addFilter })(TypedValue);
