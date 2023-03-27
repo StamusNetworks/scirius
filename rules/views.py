@@ -22,6 +22,7 @@ import re
 import os
 import yaml
 import json
+import tarfile
 from datetime import date
 
 from django.shortcuts import get_object_or_404, redirect
@@ -2070,6 +2071,8 @@ def policies(request):
                 PoliciesForm._import(request.FILES['file'], 'delete' in request.POST)
             except json.JSONDecodeError:
                 context['error'] = 'JSON is wrongly formatted'
+            except tarfile.ReadError as e:
+                context['error'] = str(e).title()
             else:
                 context['success'] = 'Successfully imported'
         elif 'export' in request.POST:
