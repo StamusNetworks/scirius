@@ -11,7 +11,7 @@ import { sections } from 'ui/constants';
 // import { IP_FIELDS } from 'components/FilterList/FilterList';
 
 const TypedValue = props => {
-  let listOfLinks;
+  let listOfLinks = [];
 
   if (props.type === 'ip') {
     listOfLinks = [
