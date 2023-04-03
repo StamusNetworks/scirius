@@ -9,6 +9,7 @@ import history from 'ui/utils/history';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import { sections } from 'ui/constants';
 import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
+import isIP from 'ui/helpers/isIP';
 
 const TypedValue = props => {
   let listOfLinks = [
@@ -100,6 +101,24 @@ const TypedValue = props => {
       },
       ...props.additionalLinks,
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
+  }
+
+  if (props.type === 'hostname') {
+    listOfLinks = [
+      ...listOfLinks,
+      {
+        key: 'typedValueHostname',
+        label: (
+          <a
+            href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(props.value)) ? 'ip-address' : 'domain'}/${props.value}`}
+            target="_blank"
+          >
+            <InfoCircleFilled /> <span>external info</span>
+          </a>
+        ),
+      },
+      ...props.additionalLinks,
+    ].filter(obj => !_.isEmpty(obj.label));
   }
 
   return (
