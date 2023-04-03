@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Dropdown, message } from 'antd';
-import { CopyOutlined, IdcardOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
+import { CopyOutlined, IdcardOutlined, InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import _ from 'lodash';
 import { Link } from 'ui/helpers/Link';
 import history from 'ui/utils/history';
@@ -82,6 +82,23 @@ const TypedValue = props => {
           </div>
         ),
       },
+    ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
+  }
+
+  if (props.type === 'port') {
+    listOfLinks = [
+      ...listOfLinks,
+      {
+        key: 'typedValuePort',
+        label: (
+          <a href={`https://www.dshield.org/port.html?port=${props.value}`} target="_blank">
+            <div>
+              <InfoCircleFilled /> <span>external info</span>
+            </div>
+          </a>
+        ),
+      },
+      ...props.additionalLinks,
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
   }
 
