@@ -67,7 +67,7 @@ const FilterSetItem = ({ item, loadFilterSets, onDelete, hasRights, loading, typ
       )
     }
   >
-    <Container onClick={() => loadFilterSets(item)}>
+    <Container onClick={() => loadFilterSets(item)} data-test={`filter-set-item-${item.id}`}>
       {item.description && <Description>{item.description}</Description>}
       <FilterSetFooter data-test={`${huntTabs[item.page]} Page`}>{`${huntTabs[item.page]} Page`}</FilterSetFooter>
     </Container>
