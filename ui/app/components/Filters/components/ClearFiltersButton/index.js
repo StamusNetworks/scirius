@@ -12,6 +12,7 @@ const ClearFiltersButton = ({ filters, onClick }) => (
           e.preventDefault();
           onClick();
         }}
+        data-test="clear-filters"
       >
         Clear Filters
       </a>
