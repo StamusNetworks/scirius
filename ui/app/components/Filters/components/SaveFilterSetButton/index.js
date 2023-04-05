@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { ActionButton } from '../styles';
 
 const SaveFilterSetButton = ({ filters, onClick }) => (
-  <ActionButton active={filters.length > 0}>
+  <ActionButton active={filters.length > 0}data-test="save-filter-set">
     <svg enableBackground="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
       <g>
         <rect fill="none" height="24" width="24" />
