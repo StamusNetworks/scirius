@@ -26,6 +26,7 @@ const FilterSetSearch = ({ disabled, value, onChange }) => (
       placeholder="Search for filter set"
       value={value}
       onChange={event => onChange(event.target.value)}
+      data-test="search-filter-set"
     />
   </div>
 );
