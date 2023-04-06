@@ -889,10 +889,6 @@ class Source(models.Model):
             self.update_ruleset = None
         self.first_run = False
         self.updated_rules = {"added": [], "deleted": [], "updated": []}
-        if len(Flowbit.objects.filter(source=self)) == 0:
-            self.init_flowbits = True
-        else:
-            self.init_flowbits = False
 
         from scirius.utils import get_middleware_module
         self.custom_data_type = get_middleware_module('common').custom_source_datatype()
@@ -3130,9 +3126,7 @@ class Ruleset(models.Model, Transformable):
 
     def get_transformed_categories(self,
                                    key=Transformation.ACTION,
-                                   value=Transformation.A_DROP,
-                                   excludes=[],
-                                   order_by=None):
+                                   value=Transformation.A_DROP):
 
         # All transformed categories from this ruleset
         if key is None:
@@ -3144,23 +3138,11 @@ class Ruleset(models.Model, Transformable):
             categorytransformation__value=value.value
         )
 
-        if order_by is not None:
-            categories = categories.order_by(order_by)
-
-        if excludes is not None:
-            if isinstance(excludes, (list, tuple, set)):
-                for exclude in excludes:
-                    categories = categories.exclude(pk__in=exclude)
-            elif isinstance(excludes, str):
-                categories = categories.exclude(pk__in=excludes)
-
         return categories
 
     def get_transformed_rules(self,
                               key=Transformation.ACTION,
-                              value=Transformation.A_DROP,
-                              excludes=[],
-                              order_by=None):
+                              value=Transformation.A_DROP):
 
         # All transformed rules from this ruleset
         if key is None:
@@ -3171,16 +3153,6 @@ class Ruleset(models.Model, Transformable):
             ruletransformation__key=key.value,
             ruletransformation__value=value.value
         )
-
-        if order_by is not None:
-            rules = rules.order_by(order_by)
-
-        if excludes is not None:
-            if isinstance(excludes, (list, tuple, set)):
-                for exclude in excludes:
-                    rules = rules.exclude(pk__in=exclude)
-            elif isinstance(excludes, str):
-                rules = rules.exclude(pk__in=excludes)
 
         return rules
 
