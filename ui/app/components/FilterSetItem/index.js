@@ -62,7 +62,7 @@ const FilterSetItem = ({ item, loadFilterSets, onDelete, hasRights, loading, typ
       (type === 'private' || hasRights) &&
       onDelete && (
         <Tooltip title="Delete" getPopupContainer={() => document.getElementById('container')}>
-          <Button size="small" type="danger" icon={loading ? <LoadingOutlined /> : <DeleteOutlined />} onClick={() => onDelete()} />
+          <Button size="small" type="danger" icon={loading ? <LoadingOutlined /> : <DeleteOutlined />} onClick={() => onDelete()} data-test={`filter-set-delete-${item.id}`}/>
         </Tooltip>
       )
     }
