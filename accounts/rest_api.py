@@ -28,7 +28,6 @@ TIMEZONES = [(x, x) for x in pytz.all_timezones]
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=False, validators=[UniqueValidator(queryset=User.objects.all())])
     password = serializers.CharField(required=False)
-    role = serializers.CharField(required=False, source='groups')
 
     class Meta:
         model = User
@@ -37,14 +36,7 @@ class UserSerializer(serializers.ModelSerializer):
             'date_joined': {'read_only': True}
         }
         read_only_fields = ('auth_token', 'date_joined',)
-        fields = ('username', 'role', 'password', 'first_name', 'last_name', 'is_active', 'email', 'date_joined')
-
-    def to_internal_value(self, data):
-        role = data.pop('role', None)
-        res = super().to_internal_value(data)
-        if role:
-            res['role'] = [role]
-        return res
+        fields = ('username', 'password', 'first_name', 'last_name', 'is_active', 'email', 'date_joined')
 
 
 class UserLightSerializer(serializers.ModelSerializer):
@@ -151,6 +143,7 @@ class AccountSerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         data = data.copy()
         timezone = data.pop('timezone', None)
+        role = data.pop('role', None)
         user_serializer = UserSerializer(data=data)
         user_serializer.is_valid(raise_exception=True)
 
@@ -158,6 +151,9 @@ class AccountSerializer(serializers.ModelSerializer):
 
         if timezone is not None:
             res['timezone'] = timezone
+
+        if role is not None:
+            res['user']['role'] = [role]
 
         if 'tenants' in data:
             if not isinstance(data['tenants'], (list, tuple)):
@@ -212,6 +208,7 @@ class AccountSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'timezone': ['Not a valid choice.']})
 
         password = user_data.pop('password')
+        role = user_data.pop('role', None)
         try:
             password_validation.validate_password(password=password, user=User)
         except exceptions.ValidationError as e:
@@ -220,6 +217,9 @@ class AccountSerializer(serializers.ModelSerializer):
         user = User.objects.create(**user_data)
         user.set_password(password)
         user.save()
+
+        if role:
+            user.groups.set(role)
 
         sciriususerapp_data = validated_data.pop('sciriususerapp', {})
         sciriususer = SciriusUser.objects.create(user=user, **validated_data)
@@ -234,7 +234,7 @@ class AccountSerializer(serializers.ModelSerializer):
             if key == 'password':
                 raise PermissionDenied({'password': 'You do not have permission to perform this action'})
 
-            if hasattr(user, key):
+            if hasattr(user, key) or key == 'role':
                 if key != 'role':
                     setattr(user, key, value)
                 else:
@@ -283,11 +283,11 @@ class AccountViewSet(viewsets.ModelViewSet):
 
     ==== POST ====\n
     Create Scirius User with super user:\n
-        curl -k https://x.x.x.x/rest/accounts/sciriususer/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"username": "sonic", "password": "69scirius69", "timezone": "UTC"}'
+        curl -k https://x.x.x.x/rest/accounts/sciriususer/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X POST -d '{"username": "sonic", "password": "69scirius69", "timezone": "UTC", "role": 1}'
 
     Return:\n
         HTTP/1.1 201 Created
-        {"pk":4,"timezone":"UTC","username":"sonic","first_name":"","last_name":"","is_staff":false,"is_active":true,"email":"","date_joined":"2018-05-24T16:44:06.811367+02:00"}
+        {"pk":4,"timezone":"UTC","username":"sonic","first_name":"","last_name":"","is_staff":false,"is_active":true,"email":"","date_joined":"2018-05-24T16:44:06.811367+02:00", "role": "Superuser"}
 
     Create/Get Token for a Scirius User :\n
         curl -v -k https://192.168.0.40/rest/accounts/sciriususer/<pk-sciriususer>/token/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
@@ -309,7 +309,7 @@ class AccountViewSet(viewsets.ModelViewSet):
 
     ==== PATCH/PUT ====\n
     Update Scirius user tenants:\n
-        curl -k https://x.x.x.x/rest/accounts/sciriususer/<pk-sciriususer>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"tenants": [1,3,5,6]}'
+        curl -k https://x.x.x.x/rest/accounts/sciriususer/<pk-sciriususer>/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X PATCH -d '{"tenants": [1,3,5,6], "role": 1}'
 
     =============================================================================================================================================================
     """
