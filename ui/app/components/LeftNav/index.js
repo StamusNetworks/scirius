@@ -39,7 +39,7 @@ function LeftNav({ user, systemSettings, hasLicense }) {
       getGroupPages(groupId, permissions, systemSettings).map(page => {
         const title = pages[page].metadata.title || CamelCaseToNormal(page);
         return (
-          <Menu.Item key={`${APP_URL}/${pages[page].metadata.url}`}>
+          <Menu.Item key={`${APP_URL}/${pages[page].metadata.url}`} data-test="left-nav-menu-link-item">
             {typeof pages[page].metadata.url === 'function' ? (
               <LeftNavLink href={pages[page].metadata.url(systemSettings)} target="_blank" className="left-nav-link">
                 <div>{title}</div>
