@@ -11,14 +11,14 @@ import { sections } from 'ui/constants';
 import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 import isIP from 'ui/helpers/isIP';
 
-const TypedValue = props => {
+const TypedValue = ({ addFilter, additionalLinks, children, printedValue, redirect, value, type }) => {
   let listOfLinks = [
     {
       key: 'copyTextToClipboard',
       label: (
         <div
           onClick={() => {
-            copyTextToClipboard(props.printedValue || props.value);
+            copyTextToClipboard(printedValue || value);
             message.success({
               duration: 1,
               content: 'Copied!',
@@ -31,36 +31,37 @@ const TypedValue = props => {
     },
   ];
 
-  if (props.type === 'ip') {
+  if (type === 'ip') {
     listOfLinks = [
       ...listOfLinks,
       {
         key: 'typedValueIP1',
         label: (
-          <Link to={`/stamus/hunting/hosts/host-insight/${props.value}`}>
+          <Link to={`/stamus/hunting/hosts/host-insight/${value}`}>
             <div>
-              <IdcardOutlined /> <span>host-insight</span>
+              <IdcardOutlined /> <span>Open Host Insight page for IP</span>
             </div>
           </Link>
         ),
       },
-      ...props.additionalLinks,
+      ...additionalLinks,
       {
         key: 'typedValueIP2',
         label: (
           <div
             onClick={() => {
-              props.addFilter(sections.GLOBAL, {
-                id: props.value || '',
-                value: props.value || '',
-                label: `IP: ${props.value}`,
+              addFilter(sections.GLOBAL, {
+                id: value || '',
+                value: value || '',
+                label: `IP: ${value}`,
                 fullString: true,
                 negated: false,
+                query: 'filter',
               });
-              if (props.redirect) history.push('/stamus/hunting/dashboards');
+              if (redirect) history.push('/stamus/hunting/dashboards');
             }}
           >
-            <ZoomInOutlined /> <span>filter on IP: {props.value}</span>
+            <ZoomInOutlined /> <span>Filter on IP: {value}</span>
           </div>
         ),
       },
@@ -69,59 +70,57 @@ const TypedValue = props => {
         label: (
           <div
             onClick={() => {
-              props.addFilter(sections.GLOBAL, {
-                id: props.value,
-                value: props.value,
-                label: `IP: ${props.value}`,
+              addFilter(sections.GLOBAL, {
+                id: value,
+                value: value,
+                label: `IP: ${value}`,
                 fullString: true,
                 negated: true,
+                query: 'filter',
               });
-              if (props.redirect) history.push('/stamus/hunting/dashboards');
+              if (redirect) history.push('/stamus/hunting/dashboards');
             }}
           >
-            <ZoomOutOutlined /> <span>negated filter on IP: {props.value}</span>
+            <ZoomOutOutlined /> <span>Negated filter on IP: {value}</span>
           </div>
         ),
       },
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
   }
 
-  if (props.type === 'port') {
+  if (type === 'port') {
     listOfLinks = [
       ...listOfLinks,
       {
         key: 'typedValuePort',
         label: (
-          <a href={`https://www.dshield.org/port.html?port=${props.value}`} target="_blank">
+          <a href={`https://www.dshield.org/port.html?port=${value}`} target="_blank">
             <div>
-              <InfoCircleFilled /> <span>external info</span>
+              <InfoCircleFilled /> <span>External info</span>
             </div>
           </a>
         ),
       },
-      ...props.additionalLinks,
+      ...additionalLinks,
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
   }
 
-  if (props.type === 'hostname') {
+  if (type === 'hostname') {
     listOfLinks = [
       ...listOfLinks,
       {
         key: 'typedValueHostname',
         label: (
-          <a
-            href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(props.value)) ? 'ip-address' : 'domain'}/${props.value}`}
-            target="_blank"
-          >
-            <InfoCircleFilled /> <span>external info</span>
+          <a href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(value)) ? 'ip-address' : 'domain'}/${value}`} target="_blank">
+            <InfoCircleFilled /> <span>External info</span>
           </a>
         ),
       },
-      ...props.additionalLinks,
+      ...additionalLinks,
     ].filter(obj => !_.isEmpty(obj.label));
   }
 
-  if (props.type === 'username') {
+  if (type === 'username') {
     listOfLinks = [
       ...listOfLinks,
       {
@@ -129,21 +128,25 @@ const TypedValue = props => {
         label: (
           <div
             onClick={() => {
-              props.addFilter(sections.GLOBAL, {
+              addFilter(sections.GLOBAL, {
                 id: 'host_id.username.user',
-                value: props.value || '',
-                label: `host_id.username.user: ${props.value}`,
+                value: value || '',
+                label: `host_id.username.user: ${value}`,
                 fullString: false,
                 negated: false,
               });
             }}
           >
-            <UserOutlined /> <span>filter on username</span>
+            <UserOutlined /> <span>Filter on username</span>
           </div>
         ),
       },
-      ...props.additionalLinks,
+      ...additionalLinks,
     ].filter(obj => !_.isEmpty(obj.label));
+  }
+
+  if (type !== 'ip' && type !== 'port' && type !== 'hostname' && type !== 'username') {
+    listOfLinks = [...listOfLinks, ...additionalLinks].filter(obj => !_.isEmpty(obj.label));
   }
 
   return (
@@ -153,7 +156,7 @@ const TypedValue = props => {
       }}
       trigger={['click']}
     >
-      {props.children || <a>{props.value}</a>}
+      {children || <a>{value}</a>}
     </Dropdown>
   );
 };
@@ -164,7 +167,7 @@ TypedValue.defaultProps = {
 
 TypedValue.propTypes = {
   type: PropTypes.string.isRequired, // 'ip|hostname|username|port'
-  value: PropTypes.string.isRequired, // '10.136.0.33',
+  value: PropTypes.string.isRequired,
   redirect: PropTypes.bool,
   additionalLinks: PropTypes.arrayOf(PropTypes.object),
   addFilter: PropTypes.func,
