@@ -330,11 +330,11 @@ export default class RuleToggleModal extends React.Component {
                       <React.Fragment key={ruleset.pk}>
                         <label htmlFor={ruleset.pk}>{ruleset.name}</label>
                         <Checkbox
+                          data-test="ruleset"
                           id={ruleset.pk}
                           name={ruleset.pk}
                           onChange={this.handleChange}
                           style={{ justifySelf: 'right' }}
-                          data-test={ruleset.name.replaceAll(' ', '-').toLowerCase()}
                         />
                         {ruleset.warnings && (
                           <React.Fragment>
