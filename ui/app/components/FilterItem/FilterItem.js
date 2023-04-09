@@ -69,11 +69,12 @@ const DeleteFilterButton = styled(FilterActionButton)`
 
 const FilterItem = props => {
   const negated = props.filter.negated ? 'label-not' : '';
+  const filterItemDataTest = props.filter.negated ? 'filter-item-not' : 'filter-item';
   const displayValue = props.filter.label ? props.filter.label : `${props.filter.id}:${props.filter.value}`;
   return (
     <li>
       <Tooltip title={props.disabled ? 'Filters are not applicable' : null}>
-        <HuntFilter className={`${negated}`} disabled={props.disabled} data-test="filter-item">
+        <HuntFilter className={`${negated}`} disabled={props.disabled} data-test={`${filterItemDataTest}`}>
           <LabelContent data-test="hunt-filter__filtered">{displayValue}</LabelContent>
           <div style={{ display: 'flex' }}>
             {props.filterType !== sections.HISTORY && (
