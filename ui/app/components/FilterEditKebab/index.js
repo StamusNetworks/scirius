@@ -225,6 +225,7 @@ class FilterEditKebab extends React.Component {
         >
           <a
             className="ant-dropdown-link"
+            data-test={`kebab-dropdown-${this.props.data.index}`}
             onClick={e => {
               e.preventDefault();
               e.stopPropagation();
