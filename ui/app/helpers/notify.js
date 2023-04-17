@@ -2,21 +2,20 @@ import { notification } from 'antd';
 import DOMPurify from 'dompurify';
 
 const notify = (message, error) => {
-  let code;
-  let response;
+  let description;
 
-  try {
-    (async () => {
+  (async () => {
+    try {
       if (error.response) {
-        response = await error.response.text().then(t => t);
-        code = error.response.status;
+        description = `${error.response.status} ${error.response.statusText}\n`;
+        const response = await error.response.text();
+        description += DOMPurify.sanitize(response, { ALLOWED_TAGS: [] });
       }
-    })();
-  } catch (e) {
-    // do nothing
-  }
+    } catch (e) {
+      // do nothing
+    }
+  })();
 
-  const description = code && response ? DOMPurify.sanitize(`[${code}] ${response}`, { ALLOWED_TAGS: [] }) : undefined;
   notification.error({
     message,
     duration: 4.5,

@@ -359,7 +359,7 @@ export default class RuleToggleModal extends React.Component {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', alignItems: 'center' }}>
               <strong>Optional comment</strong>
-              <Input.TextArea value={this.state.comment} onChange={this.handleCommentChange} />
+              <Input.TextArea value={this.state.comment} onChange={this.handleCommentChange} data-test="custom-threat-creation-optional-comment" />
             </div>
           </Form>
         )}
