@@ -66,6 +66,7 @@ const FilterSetItem = ({ item, loadFilterSets, onDelete, hasRights, loading, typ
         </Tooltip>
       )
     }
+    data-test={`filter-set-${item.name}`}    
   >
     <Container onClick={() => loadFilterSets(item)} data-test={`filter-set-item-${item.name}`}>
       {item.description && <Description>{item.description}</Description>}
