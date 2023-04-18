@@ -174,7 +174,7 @@ const FilterSets = () => {
           dispatch(filterSetActions.deleteFilterSetRequest(confirmDelete));
         }}
         cancelButtonProps={{ disabled: deleteLoading }}
-        okButtonProps={{ danger: true, disabled: deleteLoading, icon: deleteLoading ? <LoadingOutlined /> : <DeleteOutlined /> }}
+        okButtonProps={{ danger: true, disabled: deleteLoading, "data-test": "confirm-delete-filterset", icon: deleteLoading ? <LoadingOutlined /> : <DeleteOutlined /> }}
         okText={deleteLoading ? 'Please wait...' : 'Delete'}
       >
         Delete this filter set?
