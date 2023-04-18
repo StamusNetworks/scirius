@@ -192,14 +192,15 @@ class FilterList extends React.Component {
           ))}
         </ListInline>
         <ModalHuntFilter
+          data-test="edit-filter-button"
           title="Edit filter"
           visible={this.state.editForm}
           onCancel={() => this.setState({ editForm: false })}
           className="modal-hunt-filter"
           footer={
             <React.Fragment>
-              <Button onClick={() => this.setState({ editForm: false })}>Cancel</Button>
-              <Button type="primary" disabled={valid === 'error'} onClick={this.saveHandler}>
+              <Button data-test="cancel-edit-filter-button" onClick={() => this.setState({ editForm: false })}>Cancel</Button>
+              <Button data-test="save-edit-filter-button" type="primary" disabled={valid === 'error'} onClick={this.saveHandler}>
                 Save
               </Button>
             </React.Fragment>
@@ -216,6 +217,7 @@ class FilterList extends React.Component {
                     <span>{this.state.filter.id}</span>
                     {controlType === 'text' ? (
                       <Input
+                        data-test="edit-filter-input-field"
                         id="input-value-filter"
                         value={newFilterValue}
                         onKeyDown={this.keyListener}
@@ -243,6 +245,7 @@ class FilterList extends React.Component {
                 </Col>
                 <Col span={18}>
                   <Checkbox
+                    data-test="wildcard-checkbox"
                     onChange={this.wildcardHandler}
                     onKeyDown={this.keyListener}
                     checked={this.state.wildcardMode && enableWildcard}
@@ -259,7 +262,7 @@ class FilterList extends React.Component {
                     <label>Negated</label>
                   </Col>
                   <Col span={18}>
-                    <Checkbox onChange={this.negateHandler} onKeyDown={this.keyListener} checked={this.state.newFilterNegated} />
+                    <Checkbox data-test="negated-filter-checkbox" onChange={this.negateHandler} onKeyDown={this.keyListener} checked={this.state.newFilterNegated} />
                   </Col>
                 </Row>
               </Form.Item>
