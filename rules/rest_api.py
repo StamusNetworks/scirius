@@ -29,7 +29,7 @@ from rest_framework.generics import get_object_or_404
 from django_filters import rest_framework as filters
 from elasticsearch.exceptions import ConnectionError
 
-from rules.models import Rule, Category, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, FilterSet
+from rules.models import Rule, Category, RuleAtVersion, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, FilterSet
 from rules.models import Source, SourceAtVersion, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
 from rules.views import get_public_sources, fetch_public_sources, extract_rule_references
 from rules.rest_processing import RuleProcessingFilterViewSet
@@ -421,19 +421,13 @@ class ProbeEntry(serializers.Serializer):
     hits = serializers.IntegerField(read_only=True)
 
 
-class RuleSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
-    hits = serializers.IntegerField(read_only=True)
-    timeline_data = HitTimelineEntry(many=True, read_only=True)
-    probes = ProbeEntry(many=True, read_only=True)
-
+class RuleAtVersionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Rule
-        fields = ('pk', 'sid', 'category', 'msg', 'state', 'state_in_source', 'rev', 'content',
-                  'imported_date', 'updated_date', 'created', 'updated', 'hits', 'timeline_data', 'probes')
+        model = RuleAtVersion
+        exclude = ('rule',)
 
     def to_representation(self, instance):
-        data = super(RuleSerializer, self).to_representation(instance)
+        data = super().to_representation(instance)
         request = self.context['request']
         highlight_str = request.query_params.get('highlight', 'false')
 
@@ -446,6 +440,22 @@ class RuleSerializer(serializers.ModelSerializer):
             data['content'] = SuriHTMLFormat(data['content'])
 
         return data
+
+
+class RuleSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    hits = serializers.IntegerField(read_only=True)
+    timeline_data = HitTimelineEntry(many=True, read_only=True)
+    probes = ProbeEntry(many=True, read_only=True)
+    versions = RuleAtVersionSerializer(
+        source='ruleatversion_set',
+        many=True,
+        read_only=True
+    )
+
+    class Meta:
+        model = Rule
+        fields = ('pk', 'sid', 'category', 'msg', 'created', 'updated', 'hits', 'timeline_data', 'versions', 'probes')
 
 
 class ListFilter(filters.CharFilter):
@@ -469,18 +479,20 @@ class ListFilter(filters.CharFilter):
 
 
 class RuleFilter(filters.FilterSet):
-    min_created = filters.DateFilter(field_name="created", lookup_expr='gte')
-    max_created = filters.DateFilter(field_name="created", lookup_expr='lte')
-    min_updated = filters.DateFilter(field_name="updated", lookup_expr='gte')
-    max_updated = filters.DateFilter(field_name="updated", lookup_expr='lte')
+    min_created = filters.DateFilter(field_name="ruleatversion__created", lookup_expr='gte')
+    max_created = filters.DateFilter(field_name="ruleatversion__created", lookup_expr='lte')
+    created = filters.DateFilter(field_name="ruleatversion__created", lookup_expr='exact')
+    min_updated = filters.DateFilter(field_name="ruleatversion__updated", lookup_expr='gte')
+    max_updated = filters.DateFilter(field_name="ruleatversion__updated", lookup_expr='lte')
+    updated = filters.DateFilter(field_name="ruleatversion__updated", lookup_expr='exact')
     msg = ListFilter(field_name="msg", lookup_expr='icontains')
     not_in_msg = ListFilter(field_name="msg", lookup_expr='icontains', exclude=True)
-    content = ListFilter(field_name="content", lookup_expr='icontains')
-    not_in_content = ListFilter(field_name="content", lookup_expr='icontains', exclude=True)
+    content = ListFilter(field_name="ruleatversion__content", lookup_expr='icontains')
+    not_in_content = ListFilter(field_name="ruleatversion__content", lookup_expr='icontains', exclude=True)
 
     class Meta:
         model = Rule
-        fields = ['sid', 'category', 'msg', 'not_in_msg', 'content', 'not_in_content', 'created', 'updated']
+        fields = ['sid', 'category', 'msg', 'not_in_msg', 'content', 'not_in_content', 'ruleatversion__created', 'ruleatversion__updated']
         extra_kwargs = {
             'not_in_msg': {'source': 'msg'},
             'not_in_content': {'source': 'content'},
@@ -685,8 +697,13 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         HTTP/1.1 200 OK
         {"comment":"ok"}
 
-    Toggle availabililty:\n
+    Toggle availabililty on all versions of the rule:\n
         curl -v -k https://x.x.x.x/rest/rules/rule/<sid-rule>/toggle_availability/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"comment": "toggle rule"}'
+
+    Toggle availabililty on specific version of the rule:\n
+        curl -v -k https://x.x.x.x/rest/rules/rule/<sid-rule>/toggle_availability/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"comment": "toggle rule", "version": 39}'
+
+        curl -v -k https://x.x.x.x/rest/rules/rule/<sid-rule>/toggle_availability/ -H 'Authorization: Token <token>' -H 'Content-Type: application/json' -X POST -d '{"comment": "toggle rule", "version": 0}'
 
     Return:\n
         HTTP/1.1 200 OK
@@ -697,7 +714,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
     queryset = Rule.objects.all()
     serializer_class = RuleSerializer
     ordering = ('sid',)
-    ordering_fields = ('sid', 'category', 'msg', 'imported_date', 'updated_date', 'created', 'updated', 'hits')
+    ordering_fields = ('sid', 'category', 'msg', 'ruleatversion__imported_date', 'ruleatversion__updated_date', 'created', 'updated', 'hits')
     filter_backends = (DjangoFilterBackend, RuleHitsOrderingFilter)
     filterset_class = RuleFilter
     REQUIRED_GROUPS = {
@@ -841,7 +858,6 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
     def content(self, request, pk):
         rule = self.get_object()
         rulesets = Ruleset.objects.filter(categories__rule=rule)
-        res = {}
         highlight_str = request.query_params.get('highlight', 'false')
 
         def is_highlight(value):
@@ -849,9 +865,13 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
 
         highlight = is_highlight(highlight_str)
 
+        res = {}
         for ruleset in rulesets:
-            content = rule.generate_content(ruleset)
-            res[ruleset.pk] = content if not highlight else SuriHTMLFormat(content)
+            for rav in rule.ruleatversion_set.all():
+                if ruleset.pk not in res:
+                    res[ruleset.pk] = {}
+                content = rav.generate_content(ruleset)
+                res[ruleset.pk][rav.version] = content if not highlight else SuriHTMLFormat(content)
 
         return Response(res)
 
@@ -887,11 +907,12 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
     def toggle_availability(self, request, pk):
         rule = self.get_object()
         comment = request.data.get('comment', None)
+        version = request.data.get('version', None)
 
         comment_serializer = CommentSerializer(data={'comment': comment})
         comment_serializer.is_valid(raise_exception=True)
 
-        rule.toggle_availability()
+        rule.toggle_availability(version=version)
 
         UserAction.create(
             action_type='toggle_availability',
@@ -937,8 +958,13 @@ class RuleViewSet(SciriusReadOnlyModelViewSet):
         for ruleset in Ruleset.objects.all():
             res[ruleset.pk] = {}
             res[ruleset.pk]['name'] = ruleset.name
-            res[ruleset.pk]['active'] = rule.is_active(ruleset)
+            # is tested only on version 0
             res[ruleset.pk]['valid'] = rule.test(ruleset)
+
+            for rav in rule.ruleatversion_set.all():
+                res[ruleset.pk][rav.version] = {
+                    'active': rav.is_active(ruleset),
+                }
 
             res[ruleset.pk]['transformations'] = {}
             for key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):

@@ -147,7 +147,11 @@ var warn_on_exit = true;
               if (data['status'] == true) {
                   $("#init_details").append('<p class="text-success"> <span class="glyphicon glyphicon-ok"></span></span> Source updated</p>');
                   $('#source_progress').width("70%");
-                  test_source(src_pk, rulesets, ruleset_list);
+                  {% if test_source %}
+                      test_source(src_pk, rulesets, ruleset_list);
+                  {% else %}
+                      activate_ruleset_from(src_pk, rulesets, ruleset_list, rulesets.length)
+                  {% endif %}
               } else {
                   $('#source_progress').addClass("progress-bar-danger");
                   $('#source_progress').text("Could not test source.");
@@ -178,7 +182,7 @@ var warn_on_exit = true;
   $( 'document' ).ready(function() {
       {% if update %}
           {% if not rulesets %}
-              update_activate_source({{ source.pk }}, null);
+              update_activate_source({{ source.pk }}, []);
           {% else %}
               update_activate_source({{ source.pk }}, [ {{ rulesets|join:"," }} ], [ {{ ruleset_list|safeseq|join:"," }} ])
           {% endif %}

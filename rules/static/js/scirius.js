@@ -50,7 +50,7 @@ function confirmModal({ title, msg, cb, comment = false }) {
 }
 window.confirmModal = confirmModal;
 
-function prepare_rule_details() {
+function prepare_rule_details(hosts = ['*']) {
     $(".msg").click(function (event) {
         if ($(this).find(".detail").length) {
             $(this).find(".detail").slideUp(
@@ -62,7 +62,8 @@ function prepare_rule_details() {
             var sid = $(this).parent().find("a").html();
             $.ajax({
                 type: "GET",
-                url: "/rules/rule/" + sid,
+                data: {'hosts': hosts.join()},
+                url: `/rules/rule/${sid}/`,
                 success: function (data) {
                     var mylink = $('a').filter(function (index) { return $(this).text() == data.sid; });
                     var mytd = mylink.parent().parent().find(".msg");
@@ -94,7 +95,7 @@ function load_rules(from_date, hosts, filter, callback) {
             }
             $('#rules_table').empty();
             $('#rules_table').append(data);
-            prepare_rule_details();
+            prepare_rule_details(hosts);
             if (callback) {
                 callback();
             }

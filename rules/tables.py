@@ -21,6 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.template.defaultfilters import filesizeformat
 from django.utils.html import format_html
+from django.db.models import Max
 from django.urls import reverse
 from scirius.utils import SciriusTable
 from rules.models import Ruleset, Category, Rule, SourceAtVersion, SourceUpdate, Threshold, UserAction
@@ -33,10 +34,23 @@ class DefaultMeta:
 
 class RuleTable(SciriusTable):
     sid = tables.LinkColumn('rule', args=[tables.A('pk')])
+    updated_date = tables.DateTimeColumn(format='%m/%d/%Y %I:%M %p')
 
     class Meta(DefaultMeta):
         model = Rule
         fields = ("sid", "msg", "updated_date")
+
+    def render_updated_date(self, record):
+        return record.ruleatversion_set.annotate(
+            Max('updated_date')
+        ).first().updated_date__max.strftime('%m/%d/%Y %I:%M %p')
+
+    def order_updated_date(self, queryset, is_descending):
+        return (queryset.annotate(
+            updated_date=Max('ruleatversion__updated_date')
+        ).order_by(
+            '%s%s' % ('-' if is_descending else '', 'updated_date')
+        ), True)
 
 
 class ExtendedRuleTable(SciriusTable):

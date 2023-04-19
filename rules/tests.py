@@ -33,7 +33,7 @@ from django.db import models
 from rest_framework import status, mixins
 from rest_framework.test import APITestCase
 
-from .models import Category, Rule, Ruleset, Source, SourceAtVersion, Transformation, RuleTransformation, \
+from .models import Category, Rule, RuleAtVersion, Ruleset, Source, SourceAtVersion, SuppressedRuleAtVersion, Transformation, RuleTransformation, \
     RulesetTransformation, SourceUpdate, SystemSettings, UserAction, RuleProcessingFilter, RuleProcessingFilterDef, InvalidCategoryException
 from .rest_api import router
 from accounts.models import SciriusUser
@@ -433,15 +433,17 @@ flow:established,to_server; content:"|00|"; depth:1; content:"|FF|SMB2"; within:
 within:2; distance:56; flowbits:set,smb.trans2; flowbits:noalert; classtype:protocol-command-decode; sid:2103141; \
 rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23;)'
 
-        self.rule_commented = Rule.objects.create(sid=1, category=self.category, msg='test commented rule', content=content)
+        self.rule_commented = Rule.objects.create(sid=1, category=self.category, msg='test commented rule')
         self.rule_commented.save()
+        RuleAtVersion.objects.create(rule=self.rule_commented, content=content)
 
         # Lateral yes
         content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 143 (msg:"GPL IMAP Overflow Attempt"; flow:to_server,established; \
 content:"|E8 C0 FF FF FF|/bin/sh"; classtype:attempted-admin; sid:2100293; rev:8; metadata:created_at 2010_09_23, updated_at 2010_09_23;)'
 
-        self.rule_lateral_yes = Rule.objects.create(sid=2, category=self.category, msg='test lateral yes', content=content)
+        self.rule_lateral_yes = Rule.objects.create(sid=2, category=self.category, msg='test lateral yes')
         self.rule_lateral_yes.save()
+        RuleAtVersion.objects.create(rule=self.rule_lateral_yes, content=content)
 
         # Lateral auto
         content = 'alert dns $HOME_NET any -> any any (msg:"ET POLICY DNS Query to .onion proxy Domain (onion. sx)"; dns_query; \
@@ -450,16 +452,18 @@ reference:url,en.wikipedia.org/wiki/Tor_(anonymity_network); classtype:bad-unkno
 metadata:affected_product Windows_XP_Vista_7_8_10_Server_32_64_Bit, attack_target Client_Endpoint, \
 deployment Perimeter, signature_severity Minor, created_at 2018_03_28, performance_impact Moderate, updated_at 2018_03_30;)'
 
-        self.rule_lateral_auto_no_transfo = Rule.objects.create(sid=3, category=self.category, msg='test lateral auto => no transfo', content=content)
+        self.rule_lateral_auto_no_transfo = Rule.objects.create(sid=3, category=self.category, msg='test lateral auto => no transfo')
         self.rule_lateral_auto_no_transfo.save()
+        RuleAtVersion.objects.create(rule=self.rule_lateral_auto_no_transfo, content=content)
 
         content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
 flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtype:successful-user; sid:2014530; rev:3; \
 metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
 deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
 
-        self.rule_lateral_auto_transfo = Rule.objects.create(sid=4, category=self.category, msg='test lateral auto => transfo', content=content)
+        self.rule_lateral_auto_transfo = Rule.objects.create(sid=4, category=self.category, msg='test lateral auto => transfo')
         self.rule_lateral_auto_transfo.save()
+        RuleAtVersion.objects.create(rule=self.rule_lateral_auto_transfo, content=content)
 
         # Target Auto
         content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
@@ -467,8 +471,9 @@ flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtyp
 metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
 deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
 
-        self.rule_target_auto_transfo = Rule.objects.create(sid=5, category=self.category, msg='test target auto => transfo', content=content)
+        self.rule_target_auto_transfo = Rule.objects.create(sid=5, category=self.category, msg='test target auto => transfo')
         self.rule_target_auto_transfo.save()
+        RuleAtVersion.objects.create(rule=self.rule_target_auto_transfo, content=content)
 
         content = 'alert http $EXTERNAL_NET any -> $HOME_NET any (msg:"ET WEB_CLIENT HTA File Download Flowbit Set"; \
 flow:established,to_client; content:"Content-Type|3A| application/hta"; http_header; fast_pattern:12,16; flowbits:set,et.http.hta; \
@@ -476,8 +481,9 @@ flowbits:noalert; metadata: former_category WEB_CLIENT; classtype:not-suspicious
 metadata:affected_product Windows_XP_Vista_7_8_10_Server_32_64_Bit, attack_target Client_Endpoint, deployment Perimeter, \
 signature_severity Major, created_at 2017_04_10, performance_impact Low, updated_at 2017_04_10;)'
 
-        self.rule_target_auto_no_transfo = Rule.objects.create(sid=6, category=self.category, msg='test target auto => no transfo', content=content)
+        self.rule_target_auto_no_transfo = Rule.objects.create(sid=6, category=self.category, msg='test target auto => no transfo')
         self.rule_target_auto_no_transfo.save()
+        RuleAtVersion.objects.create(rule=self.rule_target_auto_no_transfo, content=content)
 
         # Target Source
         content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
@@ -485,8 +491,9 @@ flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtyp
 metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
 deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
 
-        self.rule_target_source_transfo = Rule.objects.create(sid=7, category=self.category, msg='test target source => transfo', content=content)
+        self.rule_target_source_transfo = Rule.objects.create(sid=7, category=self.category, msg='test target source => transfo')
         self.rule_target_source_transfo.save()
+        RuleAtVersion.objects.create(rule=self.rule_target_source_transfo, content=content)
 
         # Target Destination
         content = 'alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"ET TROJAN Metasploit Meterpreter stdapi_* Command Request"; \
@@ -494,47 +501,56 @@ flow:established; content:"|00 01 00 01|stdapi_"; offset:12; depth:11;  classtyp
 metadata:affected_product Any, attack_target Client_and_Server, deployment Perimeter, deployment Internet, deployment Internal, \
 deployment Datacenter, tag Metasploit, signature_severity Critical, created_at 2012_04_06, updated_at 2016_07_01;)'
 
-        self.rule_target_destination_transfo = Rule.objects.create(sid=8, category=self.category, msg='test target destination => transfo', content=content)
+        self.rule_target_destination_transfo = Rule.objects.create(sid=8, category=self.category, msg='test target destination => transfo')
         self.rule_target_destination_transfo.save()
+        RuleAtVersion.objects.create(rule=self.rule_target_destination_transfo, content=content)
 
     def tearDown(self):
         pass
 
     def test_001_commented_rule(self):
-        content = self.rule_commented.apply_lateral_target_transfo(self.rule_commented.content, Transformation.LATERAL, Transformation.L_YES)
-        self.assertEqual(self.rule_commented.content, content)
+        content = self.rule_commented.ruleatversion_set.first().content
+        content = self.rule_commented.apply_lateral_target_transfo(content, Transformation.LATERAL, Transformation.L_YES)
+        self.assertEqual(self.rule_commented.ruleatversion_set.first().content, content)
 
     def test_002_lateral_yes(self):
-        content = self.rule_lateral_yes.apply_lateral_target_transfo(self.rule_lateral_yes.content, key=Transformation.LATERAL, value=Transformation.L_YES)
+        content = self.rule_lateral_yes.ruleatversion_set.first().content
+        content = self.rule_lateral_yes.apply_lateral_target_transfo(content, key=Transformation.LATERAL, value=Transformation.L_YES)
         self.assertIn('alert tcp any any', content)
 
     def test_003_lateral_auto(self):
         # ET POLICY disbale transformation
-        content = self.rule_lateral_auto_no_transfo.apply_lateral_target_transfo(self.rule_lateral_auto_no_transfo.content, Transformation.LATERAL, Transformation.L_AUTO)
-        self.assertEqual(self.rule_lateral_auto_no_transfo.content, content)
+        content = self.rule_lateral_auto_no_transfo.ruleatversion_set.first().content
+        content = self.rule_lateral_auto_no_transfo.apply_lateral_target_transfo(content, Transformation.LATERAL, Transformation.L_AUTO)
+        self.assertEqual(self.rule_lateral_auto_no_transfo.ruleatversion_set.first().content, content)
 
         # deployment Interna enable Transformation
-        content = self.rule_lateral_auto_transfo.apply_lateral_target_transfo(self.rule_lateral_auto_transfo.content, Transformation.LATERAL, Transformation.L_AUTO)
+        content = self.rule_lateral_auto_transfo.ruleatversion_set.first().content
+        content = self.rule_lateral_auto_transfo.apply_lateral_target_transfo(content, Transformation.LATERAL, Transformation.L_AUTO)
         self.assertIn('alert tcp any any', content)
 
     def test_004_target_auto(self):
         # attack_target enable transformation
-        content = self.rule_target_auto_transfo.apply_lateral_target_transfo(self.rule_target_auto_transfo.content, Transformation.TARGET, Transformation.T_AUTO)
+        content = self.rule_target_auto_transfo.ruleatversion_set.first().content
+        content = self.rule_target_auto_transfo.apply_lateral_target_transfo(content, Transformation.TARGET, Transformation.T_AUTO)
         self.assertTrue(content.endswith('target:dest_ip;)'))
 
         # attack_target enable transformation
         # but not-suspicious disable it
-        content = self.rule_target_auto_no_transfo.apply_lateral_target_transfo(self.rule_target_auto_no_transfo.content, Transformation.TARGET, Transformation.T_AUTO)
-        self.assertEqual(self.rule_target_auto_no_transfo.content, content)
+        content = self.rule_target_auto_no_transfo.ruleatversion_set.first().content
+        content = self.rule_target_auto_no_transfo.apply_lateral_target_transfo(content, Transformation.TARGET, Transformation.T_AUTO)
+        self.assertEqual(self.rule_target_auto_no_transfo.ruleatversion_set.first().content, content)
 
     def test_005_target_source(self):
         # attack_target enable transformation
-        content = self.rule_target_source_transfo.apply_lateral_target_transfo(self.rule_target_source_transfo.content, Transformation.TARGET, Transformation.T_SOURCE)
+        content = self.rule_target_source_transfo.ruleatversion_set.first().content
+        content = self.rule_target_source_transfo.apply_lateral_target_transfo(content, Transformation.TARGET, Transformation.T_SOURCE)
         self.assertTrue(content.endswith('target:src_ip;)'))
 
     def test_005_target_destination(self):
         # attack_target enable transformation
-        content = self.rule_target_destination_transfo.apply_lateral_target_transfo(self.rule_target_destination_transfo.content, Transformation.TARGET, Transformation.T_DESTINATION)
+        content = self.rule_target_destination_transfo.ruleatversion_set.first().content
+        content = self.rule_target_destination_transfo.apply_lateral_target_transfo(content, Transformation.TARGET, Transformation.T_DESTINATION)
         self.assertTrue(content.endswith('target:dest_ip;)'))
 
 
@@ -675,7 +691,7 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         category = self.source.category_set.get(name='botcc')
         rules = list(category.rule_set.filter(msg__contains='ET CNC Shadowserver Reported CnC Server IP'))
         self.assertEqual(len(rules), 1)
-        self.assertIn('iprep', rules[0].content)
+        self.assertIn('iprep', rules[0].ruleatversion_set.first().content)
 
         response = self.http_patch(reverse('source-detail', args=(self.source.pk,)), {'use_iprep': False, 'version': 1})
         self.assertEqual(response['use_iprep'], False)
@@ -731,11 +747,14 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         self.assertDictContainsSubset({
             'sid': 2100498,
             'msg': 'Unicode test rule éàç',  # ignore_utf8_check: 233 224 231
+        }, rule)
+
+        self.assertDictContainsSubset({
             'state': True,
-            'state_in_source': True,
+            'commented_in_source': False,
             'content': RULE_CONTENT,
             'rev': 7
-        }, rule)
+        }, rule['versions'][0])
 
     def test_003_custom_source_bad_upload(self):
         self._create_custom_source('local', 'sigs')
@@ -790,7 +809,7 @@ class RestAPIRulesetTransformationTestCase(RestAPITestBase, APITestCase):
         self.category = Category.objects.create(name='test category', filename='test', source=self.source)
         self.category.save()
 
-        self.rule = Rule.objects.create(sid=1, category=self.category, msg='test rule', content='')
+        self.rule = Rule.objects.create(sid=1, category=self.category, msg='test rule')
         self.rule.save()
 
         self.ruleset = Ruleset.objects.create(name='test ruleset', descr='descr', created_date=timezone.now(), updated_date=timezone.now())
@@ -901,7 +920,7 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
         self.category = Category.objects.create(name='test category', filename='test', source=self.source)
         self.category.save()
 
-        self.rule = Rule.objects.create(sid=1, category=self.category, msg='test rule', content='')
+        self.rule = Rule.objects.create(sid=1, category=self.category, msg='test rule')
         self.rule.save()
 
     def test_001_ruleset_actions(self):
@@ -1091,10 +1110,10 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
         self.rule = Rule.objects.create(
             sid=1,
             category=self.category,
-            msg='test rule',
-            content=content
+            msg='test rule'
         )
         self.rule.save()
+        RuleAtVersion.objects.create(rule=self.rule, content=content)
         self.ruleset = Ruleset.objects.create(
             name='test ruleset',
             descr='descr',
@@ -1109,18 +1128,23 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
         self.http_get(reverse('rule-detail', args=(self.rule.pk,)))
 
     def test_002_rule_disable(self):
+        nb_items = SuppressedRuleAtVersion.objects.filter(ruleset=self.ruleset, rule_at_version=self.rule.ruleatversion_set.first()).count()
+        self.assertEqual(nb_items, 0)
+
         self.http_post(reverse('rule-disable', args=(self.rule.pk,)), {'ruleset': self.ruleset.pk})
         self.ruleset.refresh_from_db()
 
-        disabled = self.ruleset.get_transformed_rules(key=Transformation.SUPPRESSED, value=Transformation.S_SUPPRESSED)
-        self.assertEqual(len(disabled), 1)
-        self.assertEqual(disabled[0].pk, self.rule.pk)
+        nb_items = SuppressedRuleAtVersion.objects.filter(ruleset=self.ruleset, rule_at_version=self.rule.ruleatversion_set.first()).count()
+        item = SuppressedRuleAtVersion.objects.filter(ruleset=self.ruleset, rule_at_version=self.rule.ruleatversion_set.first()).first()
+        self.assertEqual(nb_items, 1)
+        self.assertEqual(item.rule_at_version.pk, self.rule.ruleatversion_set.first().pk)
+        self.assertEqual(item.rule_at_version.rule.pk, self.rule.pk)
 
         self.http_post(reverse('rule-enable', args=(self.rule.pk,)), {'ruleset': self.ruleset.pk})
         self.ruleset.refresh_from_db()
 
-        disabled = self.ruleset.get_transformed_rules(key=Transformation.SUPPRESSED, value=Transformation.S_SUPPRESSED)
-        self.assertEqual(len(disabled), 0)
+        nb_items = SuppressedRuleAtVersion.objects.filter(ruleset=self.ruleset, rule_at_version=self.rule.ruleatversion_set.first()).count()
+        self.assertEqual(nb_items, 0)
 
     def test_003_rule_permission(self):
         self.client.logout()
@@ -1222,6 +1246,7 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
         self.assertEqual(len(transformed), 0)
 
     def test_005_rule_transformation_content(self):
+        version = 0
         self.http_post(reverse('rulesettransformation-list'),
                        {'ruleset': self.ruleset.pk,
                            'transfo_type': Transformation.ACTION.value,
@@ -1229,7 +1254,7 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
                        status=status.HTTP_201_CREATED)
 
         content = self.http_get(reverse('rule-content', args=(self.rule.pk,)))
-        self.assertEqual('drop' in content[self.ruleset.pk], True)
+        self.assertEqual('drop' in content[self.ruleset.pk][version], True)
 
         self.http_post(reverse('categorytransformation-list'),
                        {'category': self.category.pk, 'ruleset': self.ruleset.pk,
@@ -1238,7 +1263,7 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
                        status=status.HTTP_201_CREATED)
 
         content = self.http_get(reverse('rule-content', args=(self.rule.pk,)))
-        self.assertEqual('reject' in content[self.ruleset.pk], True)
+        self.assertEqual('reject' in content[self.ruleset.pk][version], True)
 
         self.http_post(reverse('ruletransformation-list'),
                        {'rule': self.rule.pk, 'ruleset': self.ruleset.pk,
@@ -1247,7 +1272,7 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
                        status=status.HTTP_201_CREATED)
 
         content = self.http_get(reverse('rule-content', args=(self.rule.pk,)))
-        self.assertEqual('drop' in content[self.ruleset.pk], True)
+        self.assertEqual('drop' in content[self.ruleset.pk][version], True)
 
     def test_006_rule_status(self):
         self.http_post(reverse('rulesettransformation-list'),
@@ -1273,11 +1298,13 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
     def test_007_rule_toggle_availability(self):
         self.http_post(reverse('rule-toggle-availability', args=(self.rule.pk,)), {}, status=status.HTTP_200_OK)
         rule = Rule.objects.get(pk=self.rule.pk)
-        self.assertEqual(rule.state, False)
+        for rav in rule.ruleatversion_set.all():
+            self.assertEqual(rav.state, False)
 
         self.http_post(reverse('rule-toggle-availability', args=(self.rule.pk,)), {}, status=status.HTTP_200_OK)
         rule = Rule.objects.get(pk=self.rule.pk)
-        self.assertEqual(rule.state, True)
+        for rav in rule.ruleatversion_set.all():
+            self.assertEqual(rav.state, True)
 
     def test_008_rule_comment(self):
         comment = 'Need a comment for my test.'
@@ -1376,31 +1403,35 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
         self.rule = Rule.objects.create(
             sid=1,
             category=self.category,
-            msg='test rule',
-            content=content
+            msg='test rule'
         )
         self.rule.save()
+        RuleAtVersion.objects.create(rule=self.rule, content=content)
+
         self.rule2 = Rule.objects.create(
             sid=2,
             category=self.category,
-            msg='whatever DNS Query for whatever',
-            content=content
+            msg='whatever DNS Query for whatever'
         )
         self.rule2.save()
+        RuleAtVersion.objects.create(rule=self.rule2, content=content)
+
         self.rule3 = Rule.objects.create(
             sid=3,
             category=self.category,
-            msg='other content DNS Query for another content',
-            content=content2
+            msg='other content DNS Query for another content'
         )
         self.rule3.save()
+        RuleAtVersion.objects.create(rule=self.rule3, content=content2)
+
         self.rule4 = Rule.objects.create(
             sid=4,
             category=self.category,
-            msg='other content DNS Query for another content',
-            content=content3
+            msg='other content DNS Query for another content'
         )
         self.rule4.save()
+        RuleAtVersion.objects.create(rule=self.rule4, content=content3)
+
         self.ruleset = Ruleset.objects.create(
             name='test ruleset',
             descr='descr',

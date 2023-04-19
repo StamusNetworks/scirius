@@ -11,7 +11,7 @@
             <div class="row">
                 <div class="col-md-4">
                     {% for ruleset in rulesets %}
-                        {% if ruleset.deps_rules|length %}
+                        {% if ruleset.deps_ravs|length %}
                             In ruleset <strong>{{ ruleset.name }}</strong>, this will also
                             {% if operation == 'disable' %}
                                 disable
@@ -20,9 +20,9 @@
                             {% endif %}
                             the following rules due to flowbits dependencies:
                             <ul>
-                                {% for rule in ruleset.deps_rules %}
+                                {% for rav in ruleset.deps_ravs %}
                                     <li>
-                                        <a href="{% url 'rule' rule.pk %}">{{ rule.msg }}</a>
+                                        <a href="{% url 'rule' rav.rule.pk %}">{{ rav.rule.msg }} (Version: {% if rav.version < 39 %}< 39{% else %}{{ rav.version }}{% endif %})</a>
                                     </li>
                                 {% endfor %}
                             </ul>
@@ -52,7 +52,7 @@
     </div>
     <div class="panel-body">
         <ul class="action">
-            {% if rule.state %}
+            {% if rule_state %}
                 <li>
                     <a href="{% url 'edit_rule' rule.sid %}">Transform rule</a>
                 </li>

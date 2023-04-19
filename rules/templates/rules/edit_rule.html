@@ -10,7 +10,7 @@
     </div>
     <div class="panel-body">
         <ul class="action">
-            {% if rule.state %}
+            {% if rule_state %}
                 <li>
                     <a href="{% url 'edit_rule' rule.sid %}">Transform rule</a>
                 </li>
