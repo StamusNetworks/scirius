@@ -33,24 +33,61 @@
     </ul>
 {% endblock sidebar %}
 {% block content %}
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-6">
-                <h2 class="title">Rules</h2>
-                {% load render_table from django_tables2 %}
-                {% render_table rules %}
-            </div>
-            <div class="col-md-6">
+    <ul class="nav nav-tabs" id="category-info">
+        {% for version in versions %}
+            <li class="{% if forloop.first %}active{% endif %}">
+                <a href="#version_{{ version }}">
+                    {% if versions|length > 1 %}
+                        Version {% if version < 39 %}< 39 {% else %}= {{ version }}{% endif %}
+                    {% else %}
+                        Unique Version ({% if version < 39 %}< 39 {% else %}= {{ version }}{% endif %})
+                    {% endif %}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="tab-content">
+        {% for rule in rules %}
+            <div class="tab-pane fade {% if forloop.first %}active{% endif %} in" id="version_{{ rule.version }}">
                 <div class="container-fluid">
                     <div class="row">
-                        <h2 class="title">Status in rulesets</h2>
-                        {% load render_table from django_tables2 %}
-                        {% render_table rulesets %}
+                        <div class="col-md-6">
+                            <h2 class="title">Rules</h2>
+                            {% load render_table from django_tables2 %}
+                            {% render_table rule.active %}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <h2 class="title">Status in rulesets</h2>
+                                    {% load render_table from django_tables2 %}
+                                    {% render_table rule.rulesets %}
+                                </div>
+                                <h2 class="title">Commented rules</h2>
+                                <div class="row">{% render_table rule.commented_rules %}</div>
+                            </div>
+                        </div>
                     </div>
-                    <h2 class="title">Commented rules</h2>
-                    <div class="row">{% render_table commented_rules %}</div>
                 </div>
             </div>
-        </div>
+        {% endfor %}
     </div>
+    <script>
+$(document).ready(function(){
+    var activeTab = localStorage.getItem('categoryactiveTab');
+    if(activeTab){
+        $('#category-info li').siblings().removeClass('active');
+        $('#category-info a[href="' + activeTab + '"]').tab('show');
+        $('#category-info a[href="' + activeTab + '"]').closest('li').addClass('active');
+    }
+
+    $("ul.nav-tabs a").click(function (e) {
+        e.preventDefault();
+        $(this).closest('li').siblings().removeClass('active');
+        $(this).closest('li').addClass('active');
+        $(this).tab('show');
+        localStorage.setItem('categoryactiveTab', $(e.target).attr('href'));
+    });
+});
+    </script>
 {% endblock content %}

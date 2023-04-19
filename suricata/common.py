@@ -24,7 +24,6 @@ import psutil
 from rest_framework import serializers
 
 from django.conf import settings
-from django.db.models import Count
 
 
 if settings.SURICATA_UNIX_SOCKET:
@@ -203,7 +202,7 @@ def update_context(request):
     return {}
 
 
-def custom_source_datatype(check_conf=False):
+def custom_source_datatype():
     return tuple()
 
 
@@ -217,18 +216,6 @@ def update_custom_source(source_path):
 
 def extract_custom_source(f, source_path):
     pass
-
-
-def get_sources():
-    from rules.models import Source
-    return Source.objects.annotate(
-        cats_count=Count('category', distinct=True),
-        rules_count=Count('category__rule')
-    )
-
-
-def get_sources_with_extra_info():
-    return get_sources()
 
 
 def update_settings(data):
@@ -295,3 +282,7 @@ def login_redirection_url(request):
 
 def current_user_js(request):
     return 'var current_user = %s;\n' % json.dumps(request.user.sciriususer.to_dict(json_compatible=True))
+
+
+def rule_version(_):
+    return 0

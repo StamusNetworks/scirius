@@ -29,8 +29,8 @@ from scirius.utils import scirius_render
 
 from suricata.forms import SuricataForm, SuricataUpdateForm
 from suricata.models import Suricata
-from rules.models import dependencies_check
-from rules.models import UserAction, Transformation, Rule
+from rules.models import SuppressedRuleAtVersion, dependencies_check
+from rules.models import UserAction, Rule
 
 from rules.forms import CommentForm
 
@@ -57,10 +57,14 @@ def index(request, error=None):
         if error:
             context['error'] = error
         if suri.ruleset:
-            supp_rules = list(Rule.objects.filter(ruletransformation__ruleset=suri.ruleset, ruletransformation__key=Transformation.SUPPRESSED.value, ruletransformation__value=Transformation.S_SUPPRESSED.value))
+            suppr_rules = Rule.objects.filter(
+                pk__in=SuppressedRuleAtVersion.objects.filter(
+                    ruleset=suri.ruleset
+                ).values_list('rule_at_version__rule__pk', flat=True).distinct()
+            )
 
-            if len(supp_rules):
-                suppressed = ",".join([str(x.sid) for x in supp_rules])
+            if suppr_rules.count():
+                suppressed = ",".join([str(x.sid) for x in suppr_rules.all()])
                 context['suppressed'] = suppressed
 
         if settings.USE_ELASTICSEARCH:

@@ -39,7 +39,7 @@ import django_tables2 as tables
 from scirius.utils import scirius_render, scirius_listing, RequestsWrapper
 
 from rules.es_data import ESData
-from rules.models import Ruleset, Source, SourceUpdate, Category, Rule, dependencies_check, get_system_settings
+from rules.models import RuleAtVersion, Ruleset, Source, SourceUpdate, Category, Rule, SuppressedRuleAtVersion, dependencies_check, get_system_settings
 from rules.models import Threshold, Transformation, RulesetTransformation, UserAction, SourceAtVersion
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, SourceUpdateTable
 
@@ -85,7 +85,7 @@ def search(request):
         if 'search' in request.GET:
             search = request.GET['search']
     if search:
-        rules = Rule.objects.filter(content__icontains=search)
+        rules = Rule.objects.filter(ruleatversion__content__icontains=search)
         if len(rules) > 0:
             length += len(rules)
             rules = RuleTable(rules)
@@ -126,17 +126,15 @@ def search(request):
 
 @permission_required('rules.source_view', raise_exception=True)
 def sources(request):
-    from scirius.utils import get_middleware_module
-    sources = get_middleware_module('common').get_sources().order_by('name')
-
-    context = {'sources': sources}
-    return scirius_render(request, 'rules/sources.html', context)
+    return scirius_render(
+        request,
+        'rules/sources.html',
+        {'sources': Source.get_sources()}
+    )
 
 
 @permission_required('rules.ruleset_policy_view', raise_exception=True)
 def source(request, source_id, error=None, update=False, activate=False, rulesets=None):
-    from scirius.utils import get_middleware_module
-
     source = get_object_or_404(Source, pk=source_id)
 
     context = {
@@ -146,17 +144,13 @@ def source(request, source_id, error=None, update=False, activate=False, ruleset
         'rulesets': rulesets
     }
 
-    if source.datatype in dict(Source.CONTENT_TYPE).keys():
-        cats = CategoryTable(Category.objects.filter(source=source).order_by('name'))
-        tables.RequestConfig(request).configure(cats)
-        context.update({'categories': cats})
-    else:
-        sources = get_middleware_module('common').get_sources_with_extra_info()
-        source = sources.filter(pk=source.pk).first()
-        context.update({'source': source})
+    cats = CategoryTable(Category.objects.filter(source=source).order_by('name'))
+    tables.RequestConfig(request).configure(cats)
+    context.update({'categories': cats})
 
     if error:
         context['error'] = error
+
     if hasattr(PROBE.common, 'update_source'):
         context['middleware_has_update'] = True
 
@@ -179,38 +173,66 @@ def categories(request):
 @permission_required('rules.ruleset_policy_view', raise_exception=True)
 def category(request, cat_id):
     cat = get_object_or_404(Category, pk=cat_id)
-    rules = RuleTable(Rule.objects.filter(category=cat, state=True).order_by('sid'))
-    tables.RequestConfig(request).configure(rules)
-    commented_rules = RuleTable(Rule.objects.filter(category=cat, state=False))
-    tables.RequestConfig(request).configure(commented_rules)
-    category_path = [cat.source]
-    # build table of rulesets and display if category is active
-    rulesets = Ruleset.objects.all()
-    rulesets_status = []
 
-    for ruleset in rulesets:
-        status = 'Inactive'
-        if cat in ruleset.categories.all():
-            status = 'Active'
+    rules = Rule.objects.filter(category=cat)
+    versions = rules.values_list('ruleatversion__version', flat=True).distinct()
+    context = {
+        'versions': versions,
+        'object_path': [cat.source],
+        'category': cat,
+        'rules': [],
+    }
 
-        transformations = {}
-        for key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
-            trans = cat.get_transformation(ruleset, key, override=True)
-            if trans:
-                transformations[key] = "%s: %s" % (key.value.capitalize(), trans.value.capitalize())
+    for version in versions:
+        rulesets_status = []
+        rule_struct = {
+            'version': version,
+            'active': None,
+            'commented': None,
+            'rulesets': []
+        }
+        context['rules'].append(rule_struct)
 
-        rulesets_status.append({
-            'name': ruleset.name,
-            'pk': ruleset.pk,
-            'status': status,
-            'action': transformations[Transformation.ACTION] if Transformation.ACTION in transformations else '',
-            'lateral': transformations[Transformation.LATERAL] if Transformation.LATERAL in transformations else '',
-            'target': transformations[Transformation.TARGET] if Transformation.TARGET in transformations else '',
-        })
+        # active rules (at version=version)
+        rules_table = RuleTable(rules.filter(
+            ruleatversion__state=True,
+            ruleatversion__version=version).order_by('sid')
+        )
+        tables.RequestConfig(request).configure(rules_table)
+        rule_struct['active'] = rules_table
 
-    rulesets_status = CategoryRulesetTable(rulesets_status)
-    tables.RequestConfig(request).configure(rulesets_status)
-    context = {'category': cat, 'rules': rules, 'commented_rules': commented_rules, 'object_path': category_path, 'rulesets': rulesets_status}
+        # Commented rules (at version)
+        commented_rules_table = RuleTable(rules.filter(
+            ruleatversion__state=False,
+            ruleatversion__version=version).order_by('sid')
+        )
+        tables.RequestConfig(request).configure(commented_rules_table)
+        rule_struct['commented_rules'] = commented_rules_table
+
+        for ruleset in Ruleset.objects.all():
+            status = 'Inactive'
+            if cat in ruleset.categories.all():
+                status = 'Active'
+
+            transformations = {}
+            for key in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
+                trans = cat.get_transformation(ruleset, key, override=True)
+                if trans:
+                    transformations[key] = "%s: %s" % (key.value.capitalize(), trans.value.capitalize())
+
+            rulesets_status.append({
+                'name': ruleset.name,
+                'pk': ruleset.pk,
+                'status': status,
+                'action': transformations[Transformation.ACTION] if Transformation.ACTION in transformations else '',
+                'lateral': transformations[Transformation.LATERAL] if Transformation.LATERAL in transformations else '',
+                'target': transformations[Transformation.TARGET] if Transformation.TARGET in transformations else '',
+            })
+
+        rulesets_status = CategoryRulesetTable(rulesets_status)
+        tables.RequestConfig(request).configure(rulesets_status)
+        rule_struct['rulesets'] = rulesets_status
+
     return scirius_render(request, 'rules/category.html', context)
 
 
@@ -307,7 +329,7 @@ def elasticsearch(request):
 
 def extract_rule_references(rule):
     references = []
-    for ref in re.findall(r"reference: *(\w+), *(\S+);", rule.content):
+    for ref in re.findall(r"reference: *(\w+), *(\S+);", rule.ruleatversion_set.first().content):
         refer = Reference(ref[0], ref[1])
         if refer.key == 'url':
             if not refer.value.startswith("http"):
@@ -324,97 +346,112 @@ def extract_rule_references(rule):
 
 
 @permission_required('rules.ruleset_policy_view', raise_exception=True)
-def rule(request, rule_id, key='pk'):
+def rule(request, rule_id):
+    rule = get_object_or_404(Rule, pk=rule_id)
+
     if request.is_ajax():
-        rule = get_object_or_404(Rule, sid=rule_id)
-        rule.highlight_content = SuriHTMLFormat(rule.content)
-        data = {'msg': rule.msg, 'sid': rule.sid, 'content': rule.content,
-                'highlight_content': rule.highlight_content}
+        filters = {}
+        if rule.ruleatversion_set.count() > 1:
+            from scirius.utils import get_middleware_module
+
+            hosts = request.GET.get('hosts', None)
+            filters = {'version': get_middleware_module('common').rule_version(hosts)}
+
+        rule_at_v = rule.ruleatversion_set.filter(**filters).first()
+        content = rule_at_v.content
+        highlight_content = SuriHTMLFormat(rule_at_v.content)
+
+        data = {'msg': rule.msg, 'sid': rule.sid, 'content': content,
+                'highlight_content': highlight_content}
         return JsonResponse(data)
-    if key == 'pk':
-        rule = get_object_or_404(Rule, pk=rule_id)
-    else:
-        rule = get_object_or_404(Rule, sid=rule_id)
-    rule_path = [rule.category.source, rule.category]
 
-    rule.highlight_content = SuriHTMLFormat(rule.content)
-    references = extract_rule_references(rule)
+    context = build_rule_context(request, rule)
+    return scirius_render(request, 'rules/rule.html', context)
 
-    # build table of rulesets and display if rule is active
-    rulesets = Ruleset.objects.all()
-    rulesets_status = []
-    rule_transformations = False
 
-    SUPPRESSED = Transformation.SUPPRESSED
-    S_SUPPRESSED = Transformation.S_SUPPRESSED
-
-    for ruleset in rulesets:
-        status = 'Inactive'
-
-        if rule.state and rule.category in ruleset.categories.all() and rule not in ruleset.get_transformed_rules(key=SUPPRESSED, value=S_SUPPRESSED):
-            status = 'Active'
-
-        threshold = False
-        if Threshold.objects.filter(rule=rule, ruleset=ruleset, threshold_type='threshold'):
-            threshold = True
-
-        suppress = False
-        if Threshold.objects.filter(rule=rule, ruleset=ruleset, threshold_type='suppress'):
-            suppress = True
-
-        content = rule.generate_content(ruleset)
-        if content:
-            content = SuriHTMLFormat(rule.generate_content(ruleset))
-        ruleset_info = {'name': ruleset.name, 'pk': ruleset.pk, 'status': status,
-                        'threshold': threshold, 'suppress': suppress,
-                        'a_drop': False, 'a_filestore': False, 'a_bypass': False,
-                        'l_auto': False, 'l_yes': False,
-                        't_auto': False, 't_src': False, 't_dst': False,
-                        'content': content}
-
-        for TYPE in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
-            trans = rule.get_transformation(ruleset, TYPE, override=True)
-            prefix = 'a_'
-
-            if TYPE == Transformation.LATERAL:
-                prefix = 'l_'
-            if TYPE == Transformation.TARGET:
-                prefix = 't_'
-
-            if trans is not None:
-                ruleset_info[prefix + trans.value] = True
-                if content:
-                    rule_transformations = True
-        rulesets_status.append(ruleset_info)
-
-    comment_form = RuleCommentForm()
+def build_rule_context(request, rule):
     context = {
+        'reference': extract_rule_references(rule),
+        'comment_form': RuleCommentForm(),
         'rule': rule,
+        'show_rule_toggle': rule.are_ravs_synched() and rule.are_ravs_all_commented(),
         'history': rule.get_actions(request.user),
-        'references': references,
-        'object_path': rule_path,
-        'rulesets': rulesets_status,
-        'rule_transformations': rule_transformations,
-        'comment_form': comment_form
+        'object_path': [rule.category.source, rule.category],
+        'rules_at_version': [],
+        'rulesets': [],
     }
 
-    thresholds = Threshold.objects.filter(rule=rule, threshold_type='threshold')
-    if thresholds:
-        thresholds = RuleThresholdTable(thresholds)
-        tables.RequestConfig(request).configure(thresholds)
-        context['thresholds'] = thresholds
-    suppress = Threshold.objects.filter(rule=rule, threshold_type='suppress')
-    if suppress:
-        suppress = RuleSuppressTable(suppress)
-        tables.RequestConfig(request).configure(suppress)
-        context['suppress'] = suppress
-    try:
-        context['probes'] = ['"' + x + '"' for x in PROBE.models.get_probe_hostnames()]
-    except:
-        pass
+    for rav in rule.ruleatversion_set.all():
+        rav_struct = {
+            'instance': rav,
+            'content': SuriHTMLFormat(rav.content),
+            'rule_transformations': False,
+            'rulesets': [],
+            'thresholds': None,
+            'suppress': None
+        }
+        context['rules_at_version'].append(rav_struct)
+
+        for ruleset in Ruleset.objects.all():
+            status = 'Disabled'
+
+            is_suppressed = SuppressedRuleAtVersion.objects.filter(
+                ruleset=ruleset,
+                rule_at_version__in=rule.ruleatversion_set.all()
+            ).count() > 0
+
+            if rav.state and rule.category in ruleset.categories.all() and not is_suppressed:
+                status = 'Enabled'
+
+            threshold = False
+            if Threshold.objects.filter(rule=rule, ruleset=ruleset, threshold_type='threshold'):
+                threshold = True
+
+            suppress = False
+            if Threshold.objects.filter(rule=rule, ruleset=ruleset, threshold_type='suppress'):
+                suppress = True
+
+            content = SuriHTMLFormat(rav.generate_content(ruleset))
+            ruleset_info = {'name': ruleset.name, 'pk': ruleset.pk, 'status': status,
+                            'threshold': threshold, 'suppress': suppress,
+                            'a_drop': False, 'a_filestore': False, 'a_bypass': False,
+                            'l_auto': False, 'l_yes': False,
+                            't_auto': False, 't_src': False, 't_dst': False,
+                            'content': content}
+
+            # get rule transaformations
+            for TYPE in (Transformation.ACTION, Transformation.LATERAL, Transformation.TARGET):
+                trans = rule.get_transformation(ruleset, TYPE, override=True)
+                prefix = 'a_'
+
+                if TYPE == Transformation.LATERAL:
+                    prefix = 'l_'
+                if TYPE == Transformation.TARGET:
+                    prefix = 't_'
+
+                if trans is not None:
+                    ruleset_info[prefix + trans.value] = True
+                    rav_struct['rule_transformations'] = True
+
+            rav_struct['rulesets'].append(ruleset_info)
+
+        thresholds = Threshold.objects.filter(rule=rule, threshold_type='threshold')
+        if thresholds:
+            thresholds = RuleThresholdTable(thresholds)
+            tables.RequestConfig(request).configure(thresholds)
+            rav_struct['thresholds'] = thresholds
+        suppress = Threshold.objects.filter(rule=rule, threshold_type='suppress')
+        if suppress:
+            suppress = RuleSuppressTable(suppress)
+            tables.RequestConfig(request).configure(suppress)
+            rav_struct['suppress'] = suppress
+        try:
+            context['probes'] = ['"' + x + '"' for x in PROBE.models.get_probe_hostnames()]
+        except:
+            pass
 
     context['kibana_version'] = get_es_major_version()
-    return scirius_render(request, 'rules/rule.html', context)
+    return context
 
 
 @permission_required('rules.ruleset_policy_edit', raise_exception=True)
@@ -580,7 +617,14 @@ def edit_rule(request, rule_id):
         if len(trans_rulesets_values) > 0:
             ruleset_transforms.append({'ruleset': ruleset, 'trans': " | ".join(trans_rulesets_values)})
 
-    context = {'rulesets': rulesets, 'rule': rule_object, 'form': form, 'category_transforms': category_transforms, 'ruleset_transforms': ruleset_transforms}
+    context = {
+        'rulesets': rulesets,
+        'rule': rule_object,
+        'form': form,
+        'category_transforms': category_transforms,
+        'ruleset_transforms': ruleset_transforms,
+        'rule_state': True in rule_object.ruleatversion_set.values_list('state', flat=True)
+    }
     return scirius_render(request, 'rules/edit_rule.html', context)
 
 
@@ -734,11 +778,7 @@ def switch_rule(request, rule_id, operation='disable'):
         if form.is_valid():  # All validation rules pass
             rulesets = form.cleaned_data['rulesets']
             for ruleset in rulesets:
-
-                suppressed_rules = ruleset.get_transformed_rules(
-                    key=Transformation.SUPPRESSED,
-                    value=Transformation.S_SUPPRESSED
-                ).values_list('pk', flat=True)
+                suppressed_rules = SuppressedRuleAtVersion.objects.filter(ruleset=ruleset).values_list('rule_at_version__rule__pk', flat=True).distinct()
 
                 if rule_object.pk not in suppressed_rules and operation == 'disable':
                     rule_object.disable(ruleset, request=request, comment=form.cleaned_data['comment'])
@@ -752,9 +792,10 @@ def switch_rule(request, rule_id, operation='disable'):
     context = {'rule': rule_object, 'form': form}
     rulesets = Ruleset.objects.all()
     for ruleset in rulesets:
-        ruleset.deps_rules = rule_object.get_dependant_rules(ruleset)
+        ruleset.deps_ravs = rule_object.get_dependant_rules_at_version(ruleset)
     context['rulesets'] = rulesets
     context['operation'] = operation
+    context['rule_state'] = True in rule_object.ruleatversion_set.values_list('state', flat=True)
     return scirius_render(request, 'rules/disable_rule.html', context)
 
 
@@ -769,7 +810,7 @@ def enable_rule(request, rule_id):
 
 
 @permission_required('rules.ruleset_policy_view', raise_exception=True)
-def test_rule(request, rule_id, ruleset_id, key='pk'):
+def test_rule(request, rule_id, ruleset_id):
     rule_object = get_object_or_404(Rule, pk=rule_id)
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
     ret = rule_object.test(ruleset)
@@ -831,22 +872,45 @@ def comment_rule(request, rule_id):
 
 
 @permission_required('rules.ruleset_policy_edit', raise_exception=True)
-def toggle_availability(request, rule_id):
-    rule_object = get_object_or_404(Rule, sid=rule_id)
+def rule_toggle_availability(request, rule_id):
+    rule = get_object_or_404(Rule, pk=rule_id)
 
     if not request.method == 'POST':
-        context = {'object': rule_object, 'error': 'Invalid action'}
+        context = {'object': rule, 'error': 'Invalid action'}
         return scirius_render(request, 'rules/rule.html', context)
 
-    rule_object.toggle_availability()
+    for rav in rule.ruleatversion_set.all():
+        rav.toggle_availability()
 
     UserAction.create(
         action_type='toggle_availability',
         request=request,
-        rule=rule_object
+        rule=rule,
+        # version='all'
     )
 
-    return redirect(rule_object)
+    return redirect(rule)
+
+
+@permission_required('rules.ruleset_policy_edit', raise_exception=True)
+def rav_toggle_availability(request, rav_id):
+    rav = get_object_or_404(RuleAtVersion, pk=rav_id)
+    rule = Rule.objects.get(pk=rav.rule.sid)
+
+    if not request.method == 'POST':
+        context = {'object': rule, 'error': 'Invalid action'}
+        return scirius_render(request, 'rules/rule.html', context)
+
+    rav.toggle_availability()
+
+    UserAction.create(
+        action_type='toggle_availability',
+        request=request,
+        rule=rule,
+        # version=rav.version
+    )
+
+    return redirect(rule)
 
 
 @permission_required('rules.ruleset_policy_edit', raise_exception=True)
@@ -1058,9 +1122,6 @@ def build_source_diff(request, diff):
 def changelog_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
 
-    if source.datatype not in dict(Source.CONTENT_TYPE).keys():
-        raise PermissionDenied()
-
     supdate = SourceUpdate.objects.filter(source=source).order_by('-created_date')
     # get last for now
     if len(supdate) == 0:
@@ -1143,10 +1204,17 @@ def add_source(request):
                 )
 
             ruleset_list = ['"' + ruleset.name + '"' for ruleset in ruleset_list]
+            test_source = src.datatype not in src.custom_data_type
             return scirius_render(
                 request,
                 'rules/add_source.html',
-                {'source': src, 'update': True, 'rulesets': rulesets, 'ruleset_list': ruleset_list}
+                {
+                    'source': src,
+                    'update': True,
+                    'rulesets': rulesets,
+                    'ruleset_list': ruleset_list,
+                    'test_source': test_source
+                }
             )
     else:
         form = AddSourceForm()  # An unbound form
@@ -1416,31 +1484,38 @@ def ruleset(request, ruleset_id, mode='struct', error=None):
         if error:
             context['error'] = error
 
-        S_SUPPRESSED = Transformation.S_SUPPRESSED
         A_REJECT = Transformation.A_REJECT
         A_DROP = Transformation.A_DROP
         A_FILESTORE = Transformation.A_FILESTORE
 
-        for trans in (S_SUPPRESSED, A_REJECT, A_DROP, A_FILESTORE):
+        for trans in (A_REJECT, A_DROP, A_FILESTORE):
             # Rules transformation
             trans_rules = ruleset.rules_transformation.filter(ruletransformation__value=trans.value).all()
             if len(trans_rules):
                 trans_rules_t = RuleTable(trans_rules.order_by('sid'))
                 tables.RequestConfig(request).configure(trans_rules_t)
 
-                ctx_lb = '%s_rules' % trans.value if trans != S_SUPPRESSED else 'disabled_rules'
+                ctx_lb = '%s_rules' % trans.value
                 context[ctx_lb] = trans_rules_t
 
             # Categories Transformation
-            if trans != S_SUPPRESSED:  # SUPPRESSED cannot be applied on categories
-                trans_categories = ruleset.categories_transformation.filter(
-                    categorytransformation__value=trans.value
-                ).all()
+            trans_categories = ruleset.categories_transformation.filter(
+                categorytransformation__value=trans.value
+            ).all()
 
-                if len(trans_categories):
-                    trans_categories_t = CategoryTable(trans_categories.order_by('name'))
-                    tables.RequestConfig(request).configure(trans_categories_t)
-                    context['%s_categories' % trans.value] = trans_categories_t
+            if len(trans_categories):
+                trans_categories_t = CategoryTable(trans_categories.order_by('name'))
+                tables.RequestConfig(request).configure(trans_categories_t)
+                context['%s_categories' % trans.value] = trans_categories_t
+
+        suppr_rules_pk = SuppressedRuleAtVersion.objects.filter(
+            ruleset=ruleset
+        ).values_list('rule_at_version__rule__pk', flat=True).distinct()
+
+        suppr_rules = Rule.objects.filter(pk__in=suppr_rules_pk)
+        suppr_rules_t = RuleTable(suppr_rules.order_by('sid'))
+        tables.RequestConfig(request).configure(suppr_rules_t)
+        context['disabled_rules'] = suppr_rules_t
 
     elif mode == 'display':
         rules = RuleTable(ruleset.generate())
@@ -1593,10 +1668,6 @@ def edit_ruleset(request, ruleset_id):
 
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
 
-    # TODO: manage other types
-    SUPPRESSED = Transformation.SUPPRESSED
-    S_SUPPRESSED = Transformation.S_SUPPRESSED
-
     if request.method == 'POST':  # If the form has been submitted...
         # check if this is a categories edit
         # ID is unique so we can just look by indice and add
@@ -1626,7 +1697,11 @@ def edit_ruleset(request, ruleset_id):
 
             for rule in request.POST.getlist('rule_selection'):
                 rule_object = get_object_or_404(Rule, pk=rule)
-                if rule_object in ruleset.get_transformed_rules(key=SUPPRESSED, value=S_SUPPRESSED):
+                if SuppressedRuleAtVersion.objects.filter(
+                    ruleset=ruleset,
+                    rule_at_version__in=rule_object.ruleatversion_set.all()
+                ).count() > 0:
+
                     rule_object.enable(ruleset, request=request, comment=form.cleaned_data['comment'])
 
         elif 'sources' in request.POST:
@@ -1711,7 +1786,11 @@ def edit_ruleset(request, ruleset_id):
             cats = EditCategoryTable(src_cats)
             tables.RequestConfig(request, paginate=False).configure(cats)
             categories_list[sourceatversion.source.name] = cats
-        rules = EditRuleTable(ruleset.get_transformed_rules(key=SUPPRESSED, value=S_SUPPRESSED))
+
+        rules_pk = SuppressedRuleAtVersion.objects.filter(
+            ruleset=ruleset
+        ).values('rule_at_version__rule__pk').distinct()
+        rules = EditRuleTable(Rule.objects.filter(pk__in=rules_pk))
         tables.RequestConfig(request, paginate=False).configure(rules)
 
         context = {
@@ -1729,10 +1808,7 @@ def edit_ruleset(request, ruleset_id):
                 if not user.has_perm('rules.source_edit'):
                     raise PermissionDenied()
 
-                from scirius.utils import get_middleware_module
-                all_sources = SourceAtVersion.objects.exclude(
-                    source__datatype__in=get_middleware_module('common').custom_source_datatype(True)
-                )
+                all_sources = SourceAtVersion.objects.all()
 
                 sources_selection = []
                 for source_ in sources:
@@ -1793,7 +1869,9 @@ def ruleset_add_supprule(request, ruleset_id):
     if request.method == 'POST':  # If the form has been submitted...
         if 'search' in request.POST:
             # FIXME Protection on SQL injection ?
-            rules = EditRuleTable(Rule.objects.filter(content__icontains=request.POST['search']))
+            rules = EditRuleTable(
+                Rule.objects.filter(ruleatversion__content__icontains=request.POST['search']).distinct()
+            )
             tables.RequestConfig(request).configure(rules)
             context = {'ruleset': ruleset, 'rules': rules, 'form': CommentForm()}
             return scirius_render(request, 'rules/search_rule.html', context)

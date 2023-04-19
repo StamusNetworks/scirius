@@ -75,9 +75,25 @@ function select_fields() {
     $("#id_datatype").change(display_warning);
 }
 
-$('document').ready(function() {hide_fields();});
-$('document').ready(function() { select_fields();});
+$('document').ready(function() {
+    hide_fields();
+    select_fields();
 
+    $('#id_datatype').change(function() {
+        if ($(this).val() === 'threat') {
+            $('#id_use_iprep').attr("checked", false);
+            $('#id_use_iprep').parent().hide();
+            $('#id_untrusted').attr("checked", false);
+            $('#id_untrusted').parent().hide();
+        } else {
+            $('#id_use_iprep').attr("checked", true);
+            $('#id_use_iprep').parent().show();
+            $('#id_untrusted').attr("checked", true);
+            $('#id_untrusted').parent().show();
+        }
+    })
+
+});
         </script>
         <div class="alert alert-warning" id="name_warning">
             Warning: the name will be file name in Suricata rules directory

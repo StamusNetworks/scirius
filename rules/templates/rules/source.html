@@ -29,11 +29,9 @@
         <h2 class="panel-title">Action</h2>
     </div>
     <ul class="action panel-body">
-        {% if source.datatype != 'threat' %}
-            <li>
-                <a href="{% url 'changelog_source' source.id %}">Changelog</a>
-            </li>
-        {% endif %}
+        <li>
+            <a href="{% url 'changelog_source' source.id %}">Changelog</a>
+        </li>
         {% if perms.rules.ruleset_update_push %}
             <li>
                 <span id="update_source">
@@ -130,7 +128,7 @@
             {% render_table changelogs %}
         {% endif %}
     {% elif not error %}
-        {% if source.datatype != 'other' and source.datatype != 'threat' %}
+        {% if source.datatype != 'other' %}
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-6">
@@ -139,15 +137,6 @@
                         {% render_table categories %}
                     </div>
                 </div>
-            </div>
-        {% elif source.datatype == 'threat' %}
-            <h2 class="title">{{ source.name }} contents</h2>
-            <div>
-                {% if source.method == 'http' %}
-                    <p>Source fetched from {{ source.uri }}</p>
-                {% endif %}
-                <p><strong>{{ source.threats }}</strong> Threat{{ source.threats|pluralize }}</p>
-                <p><strong>{{ source.methods }}</strong> Method{{ source.methods|pluralize }}</p>
             </div>
         {% else %}
             {% if source.method == 'http' %}

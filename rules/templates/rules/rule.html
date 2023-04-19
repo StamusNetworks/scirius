@@ -8,28 +8,6 @@
     <div class="panel-body">
         <ul>
             <li>
-                <span class="type">Revision:</span>
-                {{ rule.rev }}
-            </li>
-            {% if not rule.state_in_source %}
-                <li>
-                    <span class="type">State in source:</span>
-                    commented
-                </li>
-            {% endif %}
-            <li>
-                <span class="type">Available:</span>
-                {{ rule.state }}
-            </li>
-            <li>
-                <span class="type">Imported:</span>
-                {{ rule.imported_date }}
-            </li>
-            <li>
-                <span class="type">Updated:</span>
-                {{ rule.updated_date }}
-            </li>
-            <li>
                 <span class="type">Group rule:</span>
                 {{ rule.group }}
             </li>
@@ -77,7 +55,7 @@
         </div>
         <div class="panel-body">
             <ul class="action">
-                {% if rule.state and rulesets|length %}
+                {% if rules_at_version.0.rulesets|length %}
                     <li>
                         <li>
                             <a href="{% url 'disable_rule' rule.sid %}">Disable rule</a>
@@ -93,15 +71,15 @@
                     </li>
                 {% endif %}
                 {# rule.state #}
-                {% if not rule.state_in_source %}
+                {% if show_rule_toggle %}
                     <li>
-                        <form id="toggle_availability_form"
+                        <form id="toggle_availability_form_1"
                               class="form"
-                              action="{% url 'toggle_availability' rule.sid %}"
+                              action="{% url 'rule_toggle_availability' rule.sid %}"
                               method="post">
                             {% csrf_token %}
                             <a href="javascript:{}"
-                               onclick="document.getElementById('toggle_availability_form').submit(); return false;">
+                               onclick="document.getElementById('toggle_availability_form_1').submit(); return false;">
                                 Toggle availability
                             </a>
                         </form>
@@ -149,10 +127,8 @@
                                 <h2 class="panel-title">Information</h2>
                             </div>
                             <div class="panel-body">
-                                {% if rule.get_comments %}
-                                    Comment
-                                    <span class="badge">{{ rule.get_comments|length }}</span>
-                                {% endif %}
+                                Comment
+                                <span class="badge">{{ rule.get_comments|length }}</span>
                             </div>
                         {% endif %}
                     </div>
@@ -176,8 +152,18 @@ $(document).ready(function(){
         $('#ruleinfo a[href="' + activeTab + '"]').closest('li').addClass('active');
     }
 
-    $('#toggle_availability').click(function () {
-        $('#toggle_availability_form').submit();
+    var subactiveTab = localStorage.getItem('rulesubactiveTab');
+    if(subactiveTab){
+        $('#rule-sub-info li').siblings().removeClass('active');
+        $('#rule-sub-info a[href="' + subactiveTab + '"]').tab('show');
+        $('#rule-sub-info a[href="' + subactiveTab + '"]').closest('li').addClass('active');
+    }
+    $("ul.nav-tabs a").click(function (e) {
+        e.preventDefault();
+        $(this).closest('li').siblings().removeClass('active');
+        $(this).closest('li').addClass('active');
+        $(this).tab('show');
+        localStorage.setItem('rulesubactiveTab', $(e.target).attr('href'));
     });
 });
         </script>
@@ -338,138 +324,295 @@ $(document).ready(function(){
                  class="tab-pane{% if not suricata_stats and not elasticsearch %} active{% endif %}"
                  id="rule_status">
                 <div class="container-fluid">
-                    <h2 class="title">
-                        Definition
-                    </h2>
-                    <div class="rule">
-                        {{ rule.highlight_content|safe }}
-                    </div>
-                    {% if rule_transformations %}
-                        <h2 class="title">
-                            Rule transformation(s)
-                        </h2>
-                        {% for ruleset in rulesets %}
-                            {% if ruleset.a_drop or ruleset.a_reject or ruleset.a_filestore or ruleset.a_bypass or ruleset.l_auto or ruleset.l_yes or ruleset.t_auto or ruleset.t_src or ruleset.t_dst %}
-                                <h3 class="title">
-                                    {{ ruleset.name }}
-                                </h3>
-                                <div class="rule">
-                                    {{ ruleset.content|safe }}
-                                </div>
-                            {% endif %}
+                    <ul class="nav nav-tabs" id="rule-sub-info">
+                        {% for rav in rules_at_version %}
+                            <li class="{% if forloop.first %}active{% endif %}">
+                                <a href="#rule_{{ rav.instance.version }}">
+                                    {% if rules_at_version|length > 1 %}
+                                        Version {% if rav.instance.version < 39 %}< 39 {% else %}= {{ rav.instance.version }}{% endif %}
+                                    {% else %}
+                                        Unique Version ({% if rav.instance.version < 39 %}< 39 {% else %}= {{ rav.instance.version }}{% endif %})
+                                    {% endif %}
+                                </a>
+                            </li>
                         {% endfor %}
-                    {% endif %}
-                    {# rule_transformation #}
-                    <div class="row">
-                        <div id="validity_error" class="col-md-12" style="display:none;">
-                            <h2 class="title">
-                                Rulesets error
-                            </h2>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h2 class="title">
-                                Status in rulesets
-                            </h2>
-                            <div class="container-fluid">
+                    </ul>
+
+                    <div class="tab-content">
+                        {% for rav in rules_at_version %}
+                            <div class="tab-pane fade {% if forloop.first %}active{% endif %} in" id="rule_{{ rav.instance.version }}">
+
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                        <div class="col-md-3">
+                                            <ul>
+                                                <li>
+                                                    <span class="type">State in source:</span>
+                                                    {% if rav.instance.commented_in_source %}
+                                                        Commented
+                                                    {% else %}
+                                                        Active
+                                                    {% endif %}
+                                                </li>
+                                                <li>
+                                                    <span class="type">Revision:</span>
+                                                    {{ rav.instance.rev }}
+                                                </li>
+                                                <li>
+                                                    <span class="type">Status:</span>
+                                                    {% if rav.instance.state %}
+                                                        Active
+                                                    {% else %}
+                                                        Inactive
+                                                    {% endif %}
+                                                </li>
+                                                <li>
+                                                    <span class="type">Imported:</span>
+                                                    {{ rav.instance.imported_date }}
+                                                </li>
+                                                <li>
+                                                    <span class="type">Updated:</span>
+                                                    {{ rav.instance.updated_date }}
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h2 class="title">
+                                    Definition
+                                </h2>
+                                <div class="rule">
+                                    {{ rav.content|safe }}
+                                </div>
+                                {% if rav.rule_transformations %}
+                                    <h2 class="title">
+                                        Rule transformation(s)
+                                    </h2>
+                                    {% for ruleset in rav.rulesets %}
+                                        {% if ruleset.a_drop or ruleset.a_reject or ruleset.a_filestore or ruleset.a_bypass or ruleset.l_auto or ruleset.l_yes or ruleset.t_auto or ruleset.t_src or ruleset.t_dst %}
+                                            <h3 class="title">
+                                                {{ ruleset.name }}
+                                            </h3>
+                                            <div class="rule">
+                                                {{ ruleset.content|safe }}
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+
                                 <div class="row">
-                                    {% for ruleset in rulesets %}
-                                        <div class="col-md-6">
-                                            <div class="panel panel-default">
-                                                <div class="panel-heading">
-                                                    <h2 class="panel-title">
-                                                        <a href="{% url 'ruleset' ruleset.pk %}">
-                                                            {{ ruleset.name }}
-                                                        </a>
-                                                    </h2>
-                                                </div>
-                                                <div class="panel-body ruleset-status" id="{{ ruleset.pk }}">
-                                                    <div class="space-add label {% if ruleset.status == "Active" %} label-info{% else %} label-default{% endif %}">
-                                                        {{ ruleset.status }}
+                                    <div class="col-md-6">
+                                        <h2 class="title">
+                                            State in source
+                                        </h2>
+                                        <div class="container-fluid">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="panel panel-default">
+                                                        <div class="panel-heading">
+                                                            <h2 class="panel-title">
+                                                                <a href="{% url 'source' rule.category.source.pk %}">
+                                                                    {{ rule.category.source.name }}
+                                                                </a>
+                                                            </h2>
+                                                        </div>
+                                                        <div class="panel-body rav-status_{{ rav.instance.version }}" id="{{ rav.pk }}">
+                                                            <div class="row">
+                                                                <div class="col-md-1" style="margin-right:0.7em;">
+                                                                    Status:
+                                                                </div>
+                                                                <div class="col-md-1">
+                                                                    <div class="label space-add {% if rav.instance.state %} label-info{% else %} label-default{% endif %}" style="margin:auto;">
+                                                                        <div class="custom-control custom-switch">
+                                                                            <form id="toggle_availability_form_{{ rav.instance.pk}}"
+                                                                                  class="form"
+                                                                                  action="{% url 'rav_toggle_availability' rav.instance.pk %}"
+                                                                                  method="post">
+                                                                                {% csrf_token %}
+                                                                                <a href="javascript:{}"
+                                                                                    onclick="document.getElementById('toggle_availability_form_{{ rav.instance.pk }}').submit(); return false;">
+                                                                                    <input type="checkbox"
+                                                                                           class="custom-control-input"
+                                                                                           id="customSwitch1"  {% if rav.instance.state %}checked{% endif %} />
+                                                                                    <p class="custom-control-label"
+                                                                                           for="customSwitch1" style="padding-top: 3px;">
+                                                                                        {% if not rav.instance.state %} Commented {% else %} Active {% endif %}
+                                                                                    </p>
+                                                                                </a>
+                                                                            </form>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="row">
+                                                                <div class="col-md-1" style="margin-right:0.7em;">
+                                                                    Revision:
+                                                                </div>
+                                                                <div class="col-md-1">
+                                                                    <div class="space-add label label-info" >
+                                                                        {{ rav.instance.rev }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
                                                     </div>
-                                                    <div class="label label-default" id="validity" style="margin-right: 1px;">
-                                                        Validity
-                                                    </div>
-                                                    {% if ruleset.threshold %}
-                                                        <div class="space-add label label-info" >
-                                                            Threshold
-                                                        </div>
-                                                    {% endif %}
-                                                    {% if ruleset.suppress %}
-                                                        <div class="space-add label label-info" >
-                                                            Suppress
-                                                        </div>
-                                                    {% endif %}
-                                                    {% if ruleset.a_reject %}
-                                                        <div class="space-add label label-info">
-                                                            Reject
-                                                        </div>
-                                                    {% endif %}
-                                                    {% if ruleset.a_drop %}
-                                                        <div class="space-add label label-info">
-                                                            Drop
-                                                        </div>
-                                                    {% endif %}
-                                                    {% if ruleset.a_filestore %}
-                                                        <div class="space-add label label-info">
-                                                            Filestore
-                                                        </div>
-                                                    {% endif %}
-                                                    {% if ruleset.l_auto %}
-                                                        <div class="space-add label label-info">
-                                                            Lateral Auto
-                                                        </div>
-                                                    {% endif %}
-                                                    {% if ruleset.l_yes %}
-                                                        <div class="space-add label label-info">
-                                                            Lateral Yes
-                                                        </div>
-                                                    {% endif %}
-                                                    {% if ruleset.t_auto %}
-                                                        <div class="space-add label label-info">
-                                                            Target Auto
-                                                        </div>
-                                                    {% endif %}
-                                                    {% if ruleset.t_src %}
-                                                        <div class="space-add label label-info">
-                                                            Target Src
-                                                        </div>
-                                                    {% endif %}
-                                                    {% if ruleset.t_dst %}
-                                                        <div class="space-add label label-info">
-                                                            Target Dst
-                                                        </div>
-                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </div>
-                                    {% endfor %}
+                                        <!-- container-fluid -->
+                                    </div>
+                                </div>
+
+
+                                {# rule_transformation #}
+                                <div class="row">
+                                    <div id="validity_error_{{ rav.instance.version }}" class="col-md-12" style="display:none;">
+                                        <h2 class="title">
+                                            Rulesets error
+                                        </h2>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h2 class="title">
+                                            State in rulesets
+                                        </h2>
+                                        <div class="container-fluid">
+                                            <div class="row">
+                                                {% for ruleset in rav.rulesets %}
+                                                    <div class="col-md-6">
+                                                        <div class="panel panel-default">
+                                                            <div class="panel-heading">
+                                                                <h2 class="panel-title">
+                                                                    <a href="{% url 'ruleset' ruleset.pk %}">
+                                                                        {{ ruleset.name }}
+                                                                    </a>
+                                                                </h2>
+                                                            </div>
+                                                            <div class="panel-body ruleset-status_{{ rav.instance.version }}" id="{{ ruleset.pk }}">
+                                                                <div class="row">
+                                                                    <div class="col-md-1" style="margin-right:0.7em;">
+                                                                        Status:
+                                                                    </div>
+                                                                    <div class="col-md-1">
+                                                                        <div class="label space-add {% if ruleset.status == "Enabled" %} label-info{% else %} label-default{% endif %}" style="margin:auto;">
+                                                                            <div class="custom-control custom-switch">
+                                                                                    <a href={% if ruleset.status == "Enabled" %}"{% url 'disable_rule' rule.sid %}"{% else %}{%  url 'enable_rule' rule.sid %}{% endif %} >
+                                                                                        <input type="checkbox"
+                                                                                               class="custom-control-input"
+                                                                                               id="customSwitch2"  {% if ruleset.status != "Disabled" %}checked{% endif %} />
+                                                                                        <p class="custom-control-label"
+                                                                                               for="customSwitch2" style="padding-top: 3px;">
+                                                                                            {{ ruleset.status }}
+                                                                                        </p>
+                                                                                    </a>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="row">
+                                                                    <div class="col-md-1" style="margin-right:0.7em;">
+                                                                        Validity:
+                                                                    </div>
+                                                                    <div class="col-md-1">
+                                                                        <div class="label label-default" id="validity_{{ rav.instance.version }}" style="margin-right: 1px;">
+                                                                            Valid
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-md-12" style="margin-right:0.7em;">
+                                                                        Transformations:
+                                                                        {% if ruleset.threshold %}
+                                                                            <div class="space-add label label-info" >
+                                                                                Threshold
+                                                                            </div>
+                                                                        {% endif %}
+                                                                        {% if ruleset.suppress %}
+                                                                            <div class="space-add label label-info" >
+                                                                                Suppress
+                                                                            </div>
+                                                                        {% endif %}
+                                                                        {% if ruleset.a_reject %}
+                                                                            <div class="space-add label label-info">
+                                                                                Reject
+                                                                            </div>
+                                                                        {% endif %}
+                                                                        {% if ruleset.a_drop %}
+                                                                            <div class="space-add label label-info">
+                                                                                Drop
+                                                                            </div>
+                                                                        {% endif %}
+                                                                        {% if ruleset.a_filestore %}
+                                                                            <div class="space-add label label-info">
+                                                                                Filestore
+                                                                            </div>
+                                                                        {% endif %}
+                                                                        {% if ruleset.l_auto %}
+                                                                            <div class="space-add label label-info">
+                                                                                Lateral Auto
+                                                                            </div>
+                                                                        {% endif %}
+                                                                        {% if ruleset.l_yes %}
+                                                                            <div class="space-add label label-info">
+                                                                                Lateral Yes
+                                                                            </div>
+                                                                        {% endif %}
+                                                                        {% if ruleset.t_auto %}
+                                                                            <div class="space-add label label-info">
+                                                                                Target Auto
+                                                                            </div>
+                                                                        {% endif %}
+                                                                        {% if ruleset.t_src %}
+                                                                            <div class="space-add label label-info">
+                                                                                Target Src
+                                                                            </div>
+                                                                        {% endif %}
+                                                                        {% if ruleset.t_dst %}
+                                                                            <div class="space-add label label-info">
+                                                                                Target Dst
+                                                                            </div>
+                                                                        {% endif %}
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <!-- container-fluid -->
+                                    </div>
+                                    <!-- col -->
+                                    {% if thresholds %}
+                                        <div class="col-md-6">
+                                            <h2 class="title">
+                                                Thresholds
+                                            </h2>
+                                            {% load render_table from django_tables2 %}
+                                            {% render_table thresholds %}
+                                        </div>
+                                        <!-- col -->
+                                    {% endif %}
+                                    {% if suppress %}
+                                        <div class="col-md-6">
+                                            <h2 class="title">
+                                                Suppressions
+                                            </h2>
+                                            {% render_table suppress %}
+                                        </div>
+                                        <!-- col -->
+                                    {% endif %}
                                 </div>
                             </div>
-                            <!-- container-fluid -->
-                        </div>
-                        <!-- col -->
-                        {% if thresholds %}
-                            <div class="col-md-6">
-                                <h2 class="title">
-                                    Thresholds
-                                </h2>
-                                {% load render_table from django_tables2 %}
-                                {% render_table thresholds %}
-                            </div>
-                            <!-- col -->
-                        {% endif %}
-                        {% if suppress %}
-                            <div class="col-md-6">
-                                <h2 class="title">
-                                    Suppressions
-                                </h2>
-                                {% render_table suppress %}
-                            </div>
-                            <!-- col -->
-                        {% endif %}
+                        {% endfor %}
                     </div>
+
+
                 </div>
             </div>
             <div role="tabpanel" class="tab-pane" id="rule_comments">
@@ -514,7 +657,7 @@ $(document).ready(function () {
                                 <h3 class="title">
                                     Add comment
                                 </h3>
-                                <form class="form" action="{% url 'comment_rule' rule.pk %}" method="post">
+                                <form class="form" action="{% url 'comment_rule' rule.sid %}" method="post">
                                     {% csrf_token %}
                                     {% bootstrap_form comment_form %}
                                     {% buttons %}
@@ -537,7 +680,7 @@ $(document).ready(function () {
 
 function load_stats() {
     $.ajax({
-       url: '{% url 'elasticsearch' %}?query=rule&sid={{ rule.pk }}&from_date={{ from_date }}',
+       url: '{% url 'elasticsearch' %}?query=rule&sid={{ rule.sid }}&from_date={{ from_date }}',
           success: function(data) {
              $('#stats_table').empty();
              $('#stats_table').append(data);
@@ -558,8 +701,8 @@ function populate_topip_actions(pdiv, field, direction) {
         function() {
             ip = $(this).parent("tr").children(".host").html();
             content = '<a href="https://www.onyphe.io/search/?query=' + ip + '" target="_blank"><span class="glyphicon glyphicon-question-sign"> </span></a>';
-            content = content + '<a href="{% url 'threshold_rule' rule.pk %}?action=threshold&dir=' + direction + '&net=' + ip + '"><span class="glyphicon glyphicon-arrow-down"> </span></a>';
-            content = content + ' <a href="{% url 'threshold_rule' rule.pk %}?action=suppress&dir=' + direction + '&net=' + ip + '"><span class="glyphicon glyphicon-remove"> </span></a>';
+            content = content + '<a href="{% url 'threshold_rule' rule.sid %}?action=threshold&dir=' + direction + '&net=' + ip + '"><span class="glyphicon glyphicon-arrow-down"> </span></a>';
+            content = content + ' <a href="{% url 'threshold_rule' rule.sid %}?action=suppress&dir=' + direction + '&net=' + ip + '"><span class="glyphicon glyphicon-remove"> </span></a>';
             $(this).empty();
             $(this).append(content);
 	        {% if evebox %}
@@ -579,7 +722,7 @@ function populate_topip_actions(pdiv, field, direction) {
 
 function load_ip_stats() {
     $.ajax({
-        url: '{% url 'elasticsearch' %}?query=rule_src&sid={{ rule.pk }}&from_date={{ from_date }}',
+        url: '{% url 'elasticsearch' %}?query=rule_src&sid={{ rule.sid }}&from_date={{ from_date }}',
         success: function(data) {
            $('#src_ip_table').empty();
            $('#src_ip_table').append(data);
@@ -593,7 +736,7 @@ function load_ip_stats() {
     });
 
     $.ajax({
-        url: '{% url 'elasticsearch' %}?query=rule_dest&sid={{ rule.pk }}&from_date={{ from_date }}',
+        url: '{% url 'elasticsearch' %}?query=rule_dest&sid={{ rule.sid }}&from_date={{ from_date }}',
         success: function(data) {
            $('#dest_ip_table').empty();
            $('#dest_ip_table').append(data);
@@ -607,12 +750,12 @@ function load_ip_stats() {
     });
 
     $.ajax({
-        url: '{% url 'elasticsearch' %}?query=rule_source&sid={{ rule.pk }}&from_date={{ from_date }}',
+        url: '{% url 'elasticsearch' %}?query=rule_source&sid={{ rule.sid }}&from_date={{ from_date }}',
         success: function(data) {
             $('#source_ip_table').empty();
             $('#source_ip_table').append(data);
             /* FIXME use real method */
-            {% if "dest_ip" in rule.content %}
+            {% if "dest_ip" in rules_at_version.0.content %}
                 populate_topip_actions($('#source_ip_table'), 'alert.source.ip', 'src');
             {% else %}
                 populate_topip_actions($('#source_ip_table'), 'alert.source.ip', 'dest');
@@ -626,12 +769,12 @@ function load_ip_stats() {
     });
 
     $.ajax({
-        url: '{% url 'elasticsearch' %}?query=rule_target&sid={{ rule.pk }}&from_date={{ from_date }}',
+        url: '{% url 'elasticsearch' %}?query=rule_target&sid={{ rule.sid }}&from_date={{ from_date }}',
         success: function(data) {
             $('#target_ip_table').empty();
             $('#target_ip_table').append(data);
             /* FIXME use real method */
-            {% if "dest_ip" in rule.content %}
+            {% if "dest_ip" in rules_at_version.0.content %}
                populate_topip_actions($('#target_ip_table'), 'alert.target.ip', 'dest');
             {% else %}
                populate_topip_actions($('#target_ip_table'), 'alert.target.ip', 'src');
@@ -653,45 +796,47 @@ function load_ip_stats() {
 <!-- container-fluid -->
 <script>
 function rule_validity_check() {
-    $("div.ruleset-status").each(
-        function() {
-            var ruleset_id = $(this).attr('id');
-            var ruleset_name = $(this).parent().find("h2").text();
-            var test_url = "{{ rule.get_absolute_url }}test/" + ruleset_id;
-            $.ajax({
-                type:"GET",
-                url: test_url,
-                context: $(this),
-                success: function(data) {
-                    if (data['status']) {
-                        vlabel = $(this).find("#validity");
-                        vlabel.text('Valid');
-                        vlabel.addClass('label-success');
-                        vlabel.removeClass('label-default');
-                    } else {
-                        vlabel = $(this).find("#validity")
-                        vlabel.addClass('label-danger');
-                        vlabel.text('Invalid');
-                        vlabel.removeClass('label-default');
-                        error_content = "";
-                        if (data['errors'][0] != undefined) {
-                            for (i = 0; i < data['errors'].length; i++) {
-                                error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
-                            }
+    {% for rav in rules_at_version %}
+        $("div.ruleset-status_{{ rav.instance.version }}").each(
+            function() {
+                var ruleset_id = $(this).attr('id');
+                var ruleset_name = $(this).parent().find("h2").text();
+                var test_url = "{{ rule.get_absolute_url }}test/" + ruleset_id + "?version={{ rav.instance.version }}";
+                $.ajax({
+                    type:"GET",
+                    url: test_url,
+                    context: $(this),
+                    success: function(data) {
+                        if (data['status']) {
+                            vlabel = $(this).find("#validity_{{ rav.instance.version }}");
+                            vlabel.text('Valid');
+                            vlabel.addClass('label-success');
+                            vlabel.removeClass('label-default');
                         } else {
-                            if (data['errors']['message'] != undefined) {
-                                error_content = data['errors']['message'];
+                            vlabel = $(this).find("#validity_{{ rav.instance.version }}")
+                            vlabel.addClass('label-danger');
+                            vlabel.text('Invalid');
+                            vlabel.removeClass('label-default');
+                            error_content = "";
+                            if (data['errors'][0] != undefined) {
+                                for (i = 0; i < data['errors'].length; i++) {
+                                    error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
+                                }
                             } else {
-                                error_content = "Unknown error";
+                                if (data['errors']['message'] != undefined) {
+                                    error_content = data['errors']['message'];
+                                } else {
+                                    error_content = "Unknown error";
+                                }
                             }
+                            $("#validity_error_{{ rav.instance.version }}").append('<h4 class="title">' + ruleset_name + '</h4><div id="errors"><ul>' + error_content + '</ul></div>');
+                            $("#validity_error_{{ rav.instance.version }}").show(duration=200);
                         }
-                        $("#validity_error").append('<h4 class="title">' + ruleset_name + '</h4><div id="errors"><ul>' + error_content + '</ul></div>');
-                        $("#validity_error").show(duration=200);
                     }
-                }
-            });
-        }
-    );
+                });
+            }
+        );
+    {% endfor %}
 }
 
 $( 'document' ).ready(function() {
