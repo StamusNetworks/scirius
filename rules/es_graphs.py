@@ -71,12 +71,73 @@ class ESError(Exception):
         self.initial_exception = initial_exception
 
 
-class ESFieldsStats(ESQuery):
+class ESManageMultipleESIndexes(ESQuery):
+    def __init__(self, request, view=None, *args, **kwargs) -> None:
+        self.request = request
+        self.view = view
+        super().__init__(request, *args, **kwargs)
+
+    def _get_index(self):
+        if self.view:
+            return self.build_index()
+        return super()._get_index()
+
+    def get_event_type(self, default):
+        if self.view:
+            return self.build_event_type()
+        return default
+
+    def _is_enabled(self, value):
+        return bool(value) and value.lower() not in ('false', '0')
+
+    def build_index(self):
+        indexes = set()
+        for index, val in self.view.INDEXES.items():
+            enable_str = self.request.query_params.get(index, val['default'])
+
+            if self._is_enabled(enable_str):
+                indexes.add(val['index'])
+
+        return ','.join(indexes)
+
+    def build_event_type(self):
+        alert = self.request.query_params.get('alert', self.view.INDEXES['alert']['default'])
+        stamus = self.request.query_params.get('stamus', self.view.INDEXES['stamus']['default'])
+        discovery = self.request.query_params.get('discovery', self.view.INDEXES['discovery']['default'])
+
+        events_type = []
+        alert_enabled = self._is_enabled(alert)
+        stamus_enabled = self._is_enabled(stamus)
+        discovery_enabled = self._is_enabled(discovery)
+
+        # xor
+        if alert_enabled ^ discovery_enabled:
+            if not alert_enabled:  # discovery enabled / alert disabled
+                events_type.append('(event_type:alert AND discovery:*)')
+            elif alert_enabled:  # alert enabled / discovery disabled
+                events_type.append('(event_type:alert AND NOT discovery:*)')
+        elif alert_enabled and discovery_enabled:
+            events_type.append('event_type:alert')
+        else:
+            pass
+
+        if stamus_enabled:
+            events_type.append('event_type:stamus')
+
+        type_filter = ' OR '.join(events_type)
+        if len(events_type) > 1:
+            type_filter = '(%s)' % type_filter
+
+        return type_filter
+
+
+class ESFieldsStats(ESManageMultipleESIndexes):
     def _get_query(self, sid, fields, count):
-        qfilter = 'event_type: alert AND '
+        qfilter = '%s AND ' % self.get_event_type(default='event_type:alert')
         if sid:
             qfilter += 'alert.signature_id:%s AND ' % sid
         qfilter += '%s %s' % (self._hosts(), self._qfilter())
+
         q = {
             'size': 0,
             'aggs': {},
@@ -136,9 +197,9 @@ class ESFieldsStats(ESQuery):
         return rdata
 
 
-class ESFieldStats(ESQuery):
+class ESFieldStats(ESManageMultipleESIndexes):
     def _get_query(self, field, count, ordering, sid=None):
-        qfilter = 'event_type: alert AND '
+        qfilter = '%s AND ' % self.get_event_type(default='event_type:alert')
         if sid:
             qfilter += 'alert.signature_id:%s AND ' % sid
         qfilter += '%s %s' % (self._hosts(), self._qfilter())
@@ -228,8 +289,10 @@ class ESFieldStatsAsTable(ESQuery):
         return objects
 
 
-class ESSidByHosts(ESQuery):
+class ESSidByHosts(ESManageMultipleESIndexes):
     def _get_query(self, sid, count):
+        event_type = self.get_event_type(default='event_type:alert')
+
         q = {
             'size': 0,
             'aggs': {
@@ -254,7 +317,7 @@ class ESSidByHosts(ESQuery):
                         }
                     }, {
                         'query_string': {
-                            'query': 'event_type:alert AND alert.signature_id:%s' % sid,
+                            'query': '%s AND alert.signature_id:%s' % (event_type, sid),
                             'analyze_wildcard': False
                         }
                     }]
@@ -440,15 +503,17 @@ class ESFlowTimeline(ESQuery):
         return q
 
 
-class ESTimeline(ESQuery):
+class ESTimeline(ESManageMultipleESIndexes):
     def _get_query(self, tags=False):
+        event_type = self.get_event_type(default='event_type:alert')
+
         q = {
             'size': 0,
             'query': {
                 'bool': {
                     'must': [{
                         'query_string': {
-                            'query': 'event_type:alert AND %s %s' % (self._hosts(), self._qfilter()),
+                            'query': '%s AND %s %s' % (event_type, self._hosts(), self._qfilter()),
                             'analyze_wildcard': False
                         }
                     }, {
@@ -741,8 +806,10 @@ def compact_tree(tree):
     return cdata
 
 
-class ESRulesPerCategory(ESQuery):
+class ESRulesPerCategory(ESManageMultipleESIndexes):
     def _get_query(self):
+        event_type = self.get_event_type(default='event_type:alert')
+
         q = {
             'size': 0,
             'aggs': {
@@ -789,7 +856,7 @@ class ESRulesPerCategory(ESQuery):
                         }
                     }, {
                         'query_string': {
-                            'query': 'event_type:alert AND %s %s' % (self._hosts(), self._qfilter()),
+                            'query': '%s AND %s %s' % (event_type, self._hosts(), self._qfilter()),
                             'analyze_wildcard': True
                         }
                     }]
@@ -879,11 +946,13 @@ class ESEventsCount(ESQuery):
         }
 
 
-class ESAlertsTrend(ESQuery):
+class ESAlertsTrend(ESManageMultipleESIndexes):
     def _from_date(self):
         return super()._from_date() - (super()._to_date(es_format=False) - super()._from_date())
 
     def _get_query(self):
+        event_type = self.get_event_type(default='event_type:alert')
+
         q = {
             'size': 0,
             'aggs': {
@@ -910,7 +979,7 @@ class ESAlertsTrend(ESQuery):
                         }
                     }, {
                         'query_string': {
-                            'query': 'event_type:alert AND %s %s' % (self._hosts(), self._qfilter()),
+                            'query': '%s AND %s %s' % (event_type, self._hosts(), self._qfilter()),
                             'analyze_wildcard': True
                         }
                     }]
@@ -929,15 +998,17 @@ class ESAlertsTrend(ESQuery):
         return {"prev_doc_count": countsdata[0]["doc_count"], "doc_count": countsdata[1]["doc_count"]}
 
 
-class ESTimeRangeAllAlerts(ESQuery):
+class ESTimeRangeAllAlerts(ESManageMultipleESIndexes):
     def _get_query(self, *args, **kwargs):
+        event_type = self.get_event_type(default='event_type:alert')
+
         q = {
             'size': 0,
             'query': {
                 'bool': {
                     'must': [{
                         'query_string': {
-                            'query': 'event_type:alert AND %s %s' % (self._hosts(), self._qfilter()),
+                            'query': '%s AND %s %s' % (event_type, self._hosts(), self._qfilter()),
                             'analyze_wildcard': True
                         }
                     }],
@@ -968,8 +1039,10 @@ class ESTimeRangeAllAlerts(ESQuery):
         }
 
 
-class ESAlertsCount(ESQuery):
+class ESAlertsCount(ESManageMultipleESIndexes):
     def _get_query(self):
+        event_type = self.get_event_type(default='event_type:alert')
+
         q = {
             'size': 0,
             'query': {
@@ -983,7 +1056,7 @@ class ESAlertsCount(ESQuery):
                         }
                     }, {
                         'query_string': {
-                            'query': 'event_type:alert AND %s %s' % (self._hosts(), self._qfilter()),
+                            'query': '%s AND %s %s' % (event_type, self._hosts(), self._qfilter()),
                             'analyze_wildcard': True
                         }
                     }],
@@ -1044,8 +1117,10 @@ class ESLatestStats(ESQuery):
             return None
 
 
-class ESIppairAlerts(ESQuery):
+class ESIppairAlerts(ESManageMultipleESIndexes):
     def _get_query(self):
+        event_type = self.get_event_type(default='event_type:alert')
+
         q = {
             'size': 0,
             'query': {
@@ -1059,7 +1134,7 @@ class ESIppairAlerts(ESQuery):
                         }
                     }, {
                         'query_string': {
-                            'query': 'event_type:alert AND %s %s' % (self._hosts(), self._qfilter()),
+                            'query': '%s AND %s %s' % (event_type, self._hosts(), self._qfilter()),
                             'analyze_wildcard': True
                         }
                     }]
@@ -1233,20 +1308,20 @@ class ESIppairNetworkAlerts(ESQuery):
         return {'nodes': nodes, 'links': links}
 
 
-class ESEventsTail(ESQuery):
-    def __init__(self, request, index, *args, **kwargs):
+class ESEventsTail(ESManageMultipleESIndexes):
+    def __init__(self, request, index, view=None, *args, **kwargs):
         self.index = index
-        super().__init__(request, *args, **kwargs)
+        super().__init__(request, view, *args, **kwargs)
 
     def _get_index(self):
+        if self.view:
+            return super()._get_index()
         return self.index
 
     def _get_query(self, es_params, event_type=None, ordering=False):
         qfilter = self._qfilter()
-        if event_type is not None:
-            qfilter = 'event_type:%s %s' % (event_type, qfilter)
-        else:
-            qfilter = 'event_type:* %s' % qfilter
+        event_type = self.get_event_type(default='event_type:%s' % event_type if event_type else '*')
+        qfilter = '%s %s' % (event_type, qfilter)
 
         q = {
             'size': es_params['size'],
@@ -1367,8 +1442,10 @@ class ESSuriLogTail(ESQuery):
         return data
 
 
-class ESTopRules(ESQuery):
+class ESTopRules(ESManageMultipleESIndexes):
     def _get_query(self, count, order='desc'):
+        event_type = self.get_event_type(default='event_type:alert')
+
         q = {
             'size': 0,
             'query': {
@@ -1382,7 +1459,7 @@ class ESTopRules(ESQuery):
                         }
                     }, {
                         'query_string': {
-                            'query': 'event_type:alert ' + self._qfilter(),
+                            'query': '%s %s' % (event_type, self._qfilter()),
                             'analyze_wildcard': True
                         }
                     }]
@@ -1417,9 +1494,11 @@ class ESTopRules(ESQuery):
         return data.get('aggregations', {}).get('alerts', {}).get('buckets', [])
 
 
-class ESSigsListHits(ESQuery):
+class ESSigsListHits(ESManageMultipleESIndexes):
     def _get_query(self, sids, order='desc'):
         sids = sids.split(',')
+        event_type = self.get_event_type(default='event_type:alert')
+
         q = {
             'size': 0,
             'query': {
@@ -1433,7 +1512,7 @@ class ESSigsListHits(ESQuery):
                         }
                     }, {
                         'query_string': {
-                            'query': 'event_type:alert ' + self._qfilter(),
+                            'query': '%s %s' % (event_type, self._qfilter()),
                             'analyze_wildcard': True
                         }
                     }, {

@@ -125,6 +125,23 @@ class RulesetSerializer(serializers.ModelSerializer):
         return data
 
 
+class ESManageMultipleESIndexesViewSet:
+    INDEXES = {
+        'alert': {
+            'index': settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + '*',
+            'default': 'true'
+        },
+        'stamus': {
+            'index': settings.ELASTICSEARCH_LOGSTASH_INDEX + 'stamus-*',
+            'default': 'false'
+        },
+        'discovery': {
+            'index': settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + '*',
+            'default': 'false'
+        }
+    }
+
+
 class RulesetViewSet(viewsets.ModelViewSet):
     """
     =============================================================================================================================================================
@@ -481,7 +498,7 @@ class UserActionFilter(filters.FilterSet):
         fields = ['username', 'date', 'action_type', 'comment', 'client_ip', 'user_action_objects__action_key', 'user_action_objects__action_value']
 
 
-class RuleHitsOrderingFilter(OrderingFilter):
+class RuleHitsOrderingFilter(OrderingFilter, ESManageMultipleESIndexesViewSet):
     def get_query_param(self, request, param):
         value = request.query_params.get(param)
         if value is not None:
@@ -500,7 +517,7 @@ class RuleHitsOrderingFilter(OrderingFilter):
 
     def _get_hits_order(self, request, order):
         try:
-            result = ESTopRules(request).get(count=Rule.objects.count(), order=order)
+            result = ESTopRules(request, view=self).get(count=Rule.objects.count(), order=order)
         except ESError:
             queryset = Rule.objects.order_by('sid')
             queryset = queryset.annotate(hits=models.Value(0, output_field=models.IntegerField()))
@@ -2030,7 +2047,7 @@ class ESRulesViewSet(ESBaseViewSet):
         return Response({'rules': ESRulesStats(request).get(dict_format=True)})
 
 
-class ESRuleViewSet(ESBaseViewSet):
+class ESRuleViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2057,10 +2074,10 @@ class ESRuleViewSet(ESBaseViewSet):
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        return Response({'rule': ESSidByHosts(request).get(sid, dict_format=True)})
+        return Response({'rule': ESSidByHosts(request, view=self).get(sid, dict_format=True)})
 
 
-class ESTopRulesViewSet(ESBaseViewSet):
+class ESTopRulesViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     """
     REQUIRED_GROUPS = {
@@ -2075,10 +2092,10 @@ class ESTopRulesViewSet(ESBaseViewSet):
             errors = {'hosts': ['This field is required.']}
             raise serializers.ValidationError(errors)
 
-        return Response(ESTopRules(request).get(count=count, order=order))
+        return Response(ESTopRules(request, view=self).get(count=count, order=order))
 
 
-class ESSigsListViewSet(ESBaseViewSet):
+class ESSigsListViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     """
     REQUIRED_GROUPS = {
@@ -2086,7 +2103,7 @@ class ESSigsListViewSet(ESBaseViewSet):
     }
 
     def _get(self, request, format=None):
-        sids = request.GET.get('sids', 20)
+        sids = request.GET.get('sids', None)
 
         errors = {}
         if sids is None:
@@ -2098,7 +2115,7 @@ class ESSigsListViewSet(ESBaseViewSet):
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
 
-        return Response(ESSigsListHits(request).get(sids))
+        return Response(ESSigsListHits(request, view=self).get(sids))
 
 
 class ESPostStatsViewSet(ESBaseViewSet):
@@ -2113,7 +2130,7 @@ class ESPostStatsViewSet(ESBaseViewSet):
         return Response(ESPoststats(request).get(value=value))
 
 
-class ESFieldsStatsViewSet(ESBaseViewSet):
+class ESFieldsStatsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     """
     REQUIRED_GROUPS = {
@@ -2139,7 +2156,7 @@ class ESFieldsStatsViewSet(ESBaseViewSet):
             else:
                 tmpl_fields.append({'name': field, 'key': field})
 
-        values = ESFieldsStats(request).get(
+        values = ESFieldsStats(request, view=self).get(
             sid,
             tmpl_fields,
             count=count,
@@ -2149,7 +2166,7 @@ class ESFieldsStatsViewSet(ESBaseViewSet):
         return Response(values)
 
 
-class ESFieldStatsViewSet(ESBaseViewSet):
+class ESFieldStatsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     """
     REQUIRED_GROUPS = {
@@ -2175,7 +2192,7 @@ class ESFieldStatsViewSet(ESBaseViewSet):
         if filter_ip not in ['src_port', 'dest_port', 'alert.signature_id', 'alert.severity', 'http.length', 'http.status', 'vlan', 'geoip.provider.autonomous_system_number', 'tunnel.depth']:
             filter_ip = filter_ip + '.' + settings.ELASTICSEARCH_KEYWORD
 
-        hosts = ESFieldStats(request).get(
+        hosts = ESFieldStats(request, view=self).get(
             sid,
             filter_ip,
             count=count,
@@ -2243,7 +2260,7 @@ class ESFilterIPViewSet(ESBaseViewSet):
         return Response(hosts)
 
 
-class ESTimelineViewSet(ESBaseViewSet):
+class ESTimelineViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2273,7 +2290,7 @@ class ESTimelineViewSet(ESBaseViewSet):
         if not request.user.has_perm('rules.events_view') and request.user.has_perm('rules.configuration_view') and tags:
             raise PermissionDenied()
 
-        return Response(ESTimeline(request).get(tags=tags))
+        return Response(ESTimeline(request, view=self).get(tags=tags))
 
 
 class ESLogstashEveViewSet(ESBaseViewSet):
@@ -2445,7 +2462,7 @@ class ESCheckVersionViewSet(APIView):
         return Response(res)
 
 
-class ESRulesPerCategoryViewSet(ESBaseViewSet):
+class ESRulesPerCategoryViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2473,10 +2490,10 @@ class ESRulesPerCategoryViewSet(ESBaseViewSet):
     }
 
     def _get(self, request, format=None):
-        return Response(ESRulesPerCategory(request).get())
+        return Response(ESRulesPerCategory(request, view=self).get())
 
 
-class ESAlertsCountViewSet(ESBaseViewSet):
+class ESAlertsCountViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2501,13 +2518,13 @@ class ESAlertsCountViewSet(ESBaseViewSet):
 
     def _get(self, request, format=None):
         if request.GET.get('prev') != 'false':
-            data = ESAlertsTrend(request).get()
+            data = ESAlertsTrend(request, view=self).get()
         else:
-            data = ESAlertsCount(request).get()
+            data = ESAlertsCount(request, view=self).get()
         return Response(data)
 
 
-class ESTimeRangeAllAlertsViewSet(ESBaseViewSet):
+class ESTimeRangeAllAlertsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2531,7 +2548,7 @@ class ESTimeRangeAllAlertsViewSet(ESBaseViewSet):
     }
 
     def _get(self, request, format=None):
-        data = ESTimeRangeAllAlerts(request).get()
+        data = ESTimeRangeAllAlerts(request, view=self).get()
         # ceil to 1 sec while we can loose alerts if not celing
         # timestamp has been truncated by frontend
         data['max_timestamp'] = data['max_timestamp'] + 1000
@@ -2571,7 +2588,7 @@ class ESLatestStatsViewSet(ESBaseViewSet):
         return Response(ESLatestStats(request).get())
 
 
-class ESIPPairAlertsViewSet(ESBaseViewSet):
+class ESIPPairAlertsViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2597,7 +2614,7 @@ class ESIPPairAlertsViewSet(ESBaseViewSet):
     }
 
     def _get(self, request, format=None):
-        return Response(ESIppairAlerts(request).get())
+        return Response(ESIppairAlerts(request, view=self).get())
 
 
 class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
@@ -2624,7 +2641,7 @@ class ESIPPairNetworkAlertsViewSet(ESBaseViewSet):
         return Response(ESIppairNetworkAlerts(request).get())
 
 
-class ESAlertsTailViewSet(ESBaseViewSet):
+class ESAlertsTailViewSet(ESBaseViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
@@ -2652,8 +2669,7 @@ class ESAlertsTailViewSet(ESBaseViewSet):
         if not pagination.validate_ordering(ordering):
             return Response("Wrong ordering value: %s" % ordering, status=status.HTTP_400_BAD_REQUEST)
 
-        index = settings.ELASTICSEARCH_LOGSTASH_ALERT_INDEX + '*'
-        data = ESEventsTail(request, index).get(es_params=es_params, ordering=ordering is not None, event_type='alert')
+        data = ESEventsTail(request, None, view=self).get(es_params=es_params, ordering=ordering is not None)
         res = pagination.get_paginated(data)
         return Response(res)
 
