@@ -60,6 +60,7 @@ const UserMenu = () => (
       onClick={() => {
         window.location = '/accounts/logout';
       }}
+      data-test="logout-button"
     >
       Log Out
     </Item>

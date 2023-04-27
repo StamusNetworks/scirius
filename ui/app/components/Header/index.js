@@ -110,7 +110,7 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
             <QuestionCircleOutlined /> Help
           </Popover>
         </Menu.Item>
-        <Menu.Item key="user-dropdown" className="user-dropdown" style={{ height: '100%' }}>
+        <Menu.Item data-test="username-link" key="user-dropdown" className="user-dropdown" style={{ height: '100%' }}>
           <Popover placement="bottomRight" content={<UserMenu />} trigger="click" visible={userPopOver} onVisibleChange={setUserPopOver}>
             <span>
               <UserOutlined /> {user.data.username}
