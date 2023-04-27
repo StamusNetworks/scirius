@@ -79,6 +79,7 @@ const FilterItem = props => {
           <div style={{ display: 'flex' }}>
             {props.filterType !== sections.HISTORY && (
               <EditFilterButton
+                data-test="filter-edit-button"
                 href="#"
                 onClick={e => {
                   e.preventDefault();

@@ -192,7 +192,6 @@ class FilterList extends React.Component {
           ))}
         </ListInline>
         <ModalHuntFilter
-          data-test="edit-filter-button"
           title="Edit filter"
           visible={this.state.editForm}
           onCancel={() => this.setState({ editForm: false })}
