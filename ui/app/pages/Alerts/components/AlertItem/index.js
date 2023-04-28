@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Badge, Empty, Spin, Tabs } from 'antd';
+import { Badge, Empty, Spin, Table, Tabs } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import ReactJson from 'react-json-view';
@@ -15,7 +15,7 @@ import ErrorHandler from 'ui/components/Error';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
 import PCAPFile from 'ui/components/PCAPFile';
 
-import { DlHorizontal, Container, Warning, Numbers, Pre, TabPaneResponsive } from './styles';
+import { DlHorizontal, Warning, Numbers, Pre, TabPaneResponsive } from './styles';
 import AlertRelatedData from '../../../../components/AlertRelatedData';
 
 // mapping between what comes from backend(here key) and what we want to show on the frontend(the value)
@@ -169,7 +169,7 @@ export default class AlertItem extends React.Component {
                         file_id: fileinfo.file_id,
                         filename: fileinfo.filename,
                         size: fileinfo.size,
-                        magic: fileinfo.magic,
+                        mimetype: fileinfo.mimetype,
                         sha256: fileinfo.sha256,
                         host,
                         downloading: false,
@@ -216,28 +216,65 @@ export default class AlertItem extends React.Component {
   }
 
   renderFiles() {
+    let dataSource = [];
+    Object.values(this.state.files).forEach((file, i) => {
+      dataSource = [
+        ...dataSource,
+        {
+          key: i,
+          sha256: file.sha256,
+          filename: file.filename,
+          mimetype: file.mimetype,
+          size: file.size,
+          download: file,
+        },
+      ];
+    });
+
+    const columns = [
+      {
+        title: 'Sha256',
+        dataIndex: 'sha256',
+        key: 'sha256',
+        width: 488,
+      },
+      {
+        title: 'Filename',
+        dataIndex: 'filename',
+        key: 'filename',
+      },
+      {
+        title: 'Mimetype',
+        dataIndex: 'mimetype',
+        key: 'mimetype',
+      },
+      {
+        title: 'Size',
+        dataIndex: 'size',
+        key: 'size',
+      },
+      {
+        title: 'Download',
+        dataIndex: 'download',
+        key: 'download',
+        render: file =>
+          !this.state.files[file.sha256].downloading ? (
+            <a
+              onClick={e => {
+                e.preventDefault();
+                this.downloadFile(file);
+              }}
+            >
+              <DownloadOutlined />
+            </a>
+          ) : (
+            <Spin size="small" />
+          ),
+      },
+    ];
     return (
       <Fragment>
-        {Object.values(this.state.files).map(file => (
-          <Container key={file.sha256}>
-            <div>{file.sha256}</div>
-            <div>{file.filename}</div>
-            <div>{file.magic}</div>
-            <div>{(file.size / 1000).toFixed(1)}KB</div>
-            {!this.state.files[file.sha256].downloading ? (
-              <a
-                onClick={e => {
-                  e.preventDefault();
-                  this.downloadFile(file);
-                }}
-              >
-                <DownloadOutlined />
-              </a>
-            ) : (
-              <Spin size="small" />
-            )}
-          </Container>
-        ))}
+        <Table columns={columns} dataSource={dataSource} />
         <Warning>
           WARNING: These extracted files can contain malware or malicious payloads! DO NOT execute, run or activate those in non protected or non sand
           boxed environments. Stamus Networks is not responsible for any damage to your systems and infrastructure that might occur as a consequence

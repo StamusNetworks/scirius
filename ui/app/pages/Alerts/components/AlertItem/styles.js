@@ -39,13 +39,6 @@ export const Warning = styled.div`
   padding-bottom: 10px;
 `;
 
-export const Container = styled.div`
-  display: grid;
-  grid-template-columns: 3fr 2fr 2fr 0.5fr 0.5fr;
-  justify-items: center;
-  grid-gap: 20px;
-`;
-
 export const TabPaneResponsive = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
