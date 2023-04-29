@@ -146,6 +146,7 @@ const FilterSets = () => {
       >
         {map.map(item => (
           <Panel
+            data-test={`${item.type}-filtersets`}
             key={item.type}
             header={item.title}
             extra={loading ? <LoadingIndicator style={{ width: 22, height: 22, margin: 0 }} /> : `${item.data.length} Filter Sets`}
