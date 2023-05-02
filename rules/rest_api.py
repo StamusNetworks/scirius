@@ -1926,7 +1926,7 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
     serializer_class = UserActionSerializer
     ordering = ('-pk',)
     ordering_fields = ('pk', 'date', 'username', 'action_type', 'client_ip')
-    filter_class = UserActionFilter
+    filterset_class = UserActionFilter
     filter_backends = (filters.DjangoFilterBackend, UserActionDateOrderingFilter)
     permission_classes = [IsAuthenticated]
 
