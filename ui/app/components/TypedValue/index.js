@@ -41,7 +41,8 @@ const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value,
       key: 'copyTextToClipboard',
       label: (
         <div
-          onClick={() => {
+          onClick={e => {
+            e.stopPropagation();
             copyTextToClipboard(printedValue || value);
             message.success({
               duration: 1,
@@ -73,7 +74,8 @@ const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value,
         key: 'typedValueIP2',
         label: (
           <div
-            onClick={() => {
+            onClick={e => {
+              e.stopPropagation();
               addFilter(sections.GLOBAL, {
                 id: value || '',
                 value: value || '',
@@ -93,7 +95,8 @@ const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value,
         key: 'typedValueIP3',
         label: (
           <div
-            onClick={() => {
+            onClick={e => {
+              e.stopPropagation();
               addFilter(sections.GLOBAL, {
                 id: value,
                 value: value,
@@ -141,7 +144,8 @@ const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value,
         key: 'typedValueUsername',
         label: (
           <div
-            onClick={() => {
+            onClick={e => {
+              e.stopPropagation();
               addFilter(sections.GLOBAL, {
                 id: 'host_id.username.user',
                 value: value || '',
@@ -168,6 +172,7 @@ const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value,
         items: listOfLinks,
       }}
       trigger={['click']}
+      onClick={e => e.stopPropagation()}
     >
       <Value data-test={printedValue || value}>{printedValue || value}</Value>
     </Dropdown>
