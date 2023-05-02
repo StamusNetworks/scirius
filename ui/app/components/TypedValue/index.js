@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Dropdown, message } from 'antd';
-import { CopyOutlined, IdcardOutlined, InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
+import { CopyOutlined, IdcardOutlined, InfoCircleFilled, UserOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import _ from 'lodash';
 import { Link } from 'ui/helpers/Link';
 import history from 'ui/utils/history';
@@ -18,7 +18,7 @@ const TypedValue = props => {
       label: (
         <div
           onClick={() => {
-            copyTextToClipboard(props.printedValue);
+            copyTextToClipboard(props.printedValue || props.value);
             message.success({
               duration: 1,
               content: 'Copied!',
@@ -115,6 +115,31 @@ const TypedValue = props => {
           >
             <InfoCircleFilled /> <span>external info</span>
           </a>
+        ),
+      },
+      ...props.additionalLinks,
+    ].filter(obj => !_.isEmpty(obj.label));
+  }
+
+  if (props.type === 'username') {
+    listOfLinks = [
+      ...listOfLinks,
+      {
+        key: 'typedValueUsername',
+        label: (
+          <div
+            onClick={() => {
+              props.addFilter(sections.GLOBAL, {
+                id: 'host_id.username.user',
+                value: props.value || '',
+                label: `host_id.username.user: ${props.value}`,
+                fullString: false,
+                negated: false,
+              });
+            }}
+          >
+            <UserOutlined /> <span>filter on username</span>
+          </div>
         ),
       },
       ...props.additionalLinks,
