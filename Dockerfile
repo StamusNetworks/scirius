@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #Base containers
-FROM python:3.9.5-slim-buster as base
+FROM python:3.9-slim-bullseye as base
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
     echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
 
@@ -90,6 +90,7 @@ ENV REACT_APP_HAS_ACTION 1
 WORKDIR /opt/scirius
 RUN echo "**** install Node.js dependencies for Scirius ****" && \
     npm install && \
+    npm install -g webpack webpack-cli && \
     webpack && \
     cd ui && \
     npm install && \
@@ -108,7 +109,7 @@ RUN \
     libsasl2-dev \
     libldap2-dev \
     libssl-dev \
-    python-pip \
+    python3-pip \
     python-dev \
     git
 RUN \
@@ -147,7 +148,7 @@ RUN \
         make \
         gcc \
         libc-dev \
-        python-sphinx
+        python3-sphinx
 COPY --from=source /opt/scirius/doc /opt/scirius/doc
 RUN \
     echo "**** build docs ****" && \
@@ -169,13 +170,13 @@ COPY --from=source /opt/scirius /opt/scirius
 
 RUN \
   echo "**** install packages ****" && \
-  echo "deb http://deb.debian.org/debian buster-backports main" > /etc/apt/sources.list.d/buster-backports.list && \
+  echo "deb http://deb.debian.org/debian bullseye-backports main" > /etc/apt/sources.list.d/bullseye-backports.list && \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
     curl \
     git \
     gunicorn && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -t buster-backports suricata -y && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -t bullseye-backports suricata -y && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
   
