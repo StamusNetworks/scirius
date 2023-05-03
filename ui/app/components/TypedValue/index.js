@@ -11,7 +11,25 @@ import { sections } from 'ui/constants';
 import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 import isIP from 'ui/helpers/isIP';
 
+// put all the sections where we want to inlclude `virus total links` for ip addresses and domains
+const virusTotalLinks = [
+  'hostname_info.domain',
+  'http.hostname',
+  'dns.query.rrname',
+  'http.http_refer_info.domain',
+  'tls.sni',
+  'http.http_refer_info.host',
+  'smtp.helo',
+  'hostname_info.host',
+];
+
 const TypedValue = ({ addFilter, additionalLinks, children, printedValue, redirect, value, type }) => {
+  const virusTotalLink = (
+    <a href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(value)) ? 'ip-address' : 'domain'}/${value}`} target="_blank">
+      <InfoCircleFilled /> <span>External info</span>
+    </a>
+  );
+
   let listOfLinks = [
     {
       key: 'copyTextToClipboard',
@@ -33,6 +51,7 @@ const TypedValue = ({ addFilter, additionalLinks, children, printedValue, redire
 
   if (type === 'ip') {
     listOfLinks = [
+      ...additionalLinks,
       ...listOfLinks,
       {
         key: 'typedValueIP1',
@@ -44,7 +63,6 @@ const TypedValue = ({ addFilter, additionalLinks, children, printedValue, redire
           </Link>
         ),
       },
-      ...additionalLinks,
       {
         key: 'typedValueIP2',
         label: (
@@ -85,11 +103,16 @@ const TypedValue = ({ addFilter, additionalLinks, children, printedValue, redire
           </div>
         ),
       },
+      {
+        key: 'typedValueIP4',
+        label: virusTotalLink,
+      },
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
   }
 
   if (type === 'port') {
     listOfLinks = [
+      ...additionalLinks,
       ...listOfLinks,
       {
         key: 'typedValuePort',
@@ -101,27 +124,12 @@ const TypedValue = ({ addFilter, additionalLinks, children, printedValue, redire
           </a>
         ),
       },
-      ...additionalLinks,
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
-  }
-
-  if (type === 'hostname') {
-    listOfLinks = [
-      ...listOfLinks,
-      {
-        key: 'typedValueHostname',
-        label: (
-          <a href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(value)) ? 'ip-address' : 'domain'}/${value}`} target="_blank">
-            <InfoCircleFilled /> <span>External info</span>
-          </a>
-        ),
-      },
-      ...additionalLinks,
-    ].filter(obj => !_.isEmpty(obj.label));
   }
 
   if (type === 'username') {
     listOfLinks = [
+      ...additionalLinks,
       ...listOfLinks,
       {
         key: 'typedValueUsername',
@@ -141,12 +149,11 @@ const TypedValue = ({ addFilter, additionalLinks, children, printedValue, redire
           </div>
         ),
       },
-      ...additionalLinks,
     ].filter(obj => !_.isEmpty(obj.label));
   }
 
-  if (type !== 'ip' && type !== 'port' && type !== 'hostname' && type !== 'username') {
-    listOfLinks = [...listOfLinks, ...additionalLinks].filter(obj => !_.isEmpty(obj.label));
+  if (type !== 'ip' && type !== 'port' && type !== 'username') {
+    listOfLinks = [...additionalLinks, ...listOfLinks].filter(obj => !_.isEmpty(obj.label));
   }
 
   return (
