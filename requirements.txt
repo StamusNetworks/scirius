@@ -1,7 +1,7 @@
 daemon
 Django<4
 django-bootstrap3
-django-revproxy @ git+https://github.com/jazzband/django-revproxy.git@d2234005135dc0771b7c4e0bb0465664ccfa5787
+django-revproxy @ git+https://github.com/jazzband/django-revproxy.git@0.11.0
 django-tables2
 django-dbbackup<4
 django-auth-ldap
