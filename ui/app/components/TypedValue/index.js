@@ -17,18 +17,6 @@ const Value = styled.a`
   text-overflow: ellipsis;
 `;
 
-// put all the sections where we want to inlclude `virus total links` for ip addresses and domains
-const virusTotalLinks = [
-  'hostname_info.domain',
-  'http.hostname',
-  'dns.query.rrname',
-  'http.http_refer_info.domain',
-  'tls.sni',
-  'http.http_refer_info.host',
-  'smtp.helo',
-  'hostname_info.host',
-];
-
 const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value, type }) => {
   const virusTotalLink = (
     <a href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(value)) ? 'ip-address' : 'domain'}/${value}`} target="_blank">
@@ -77,10 +65,10 @@ const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value,
             onClick={e => {
               e.stopPropagation();
               addFilter(sections.GLOBAL, {
-                id: value || '',
+                id: 'ip',
                 value: value || '',
                 label: `IP: ${value}`,
-                fullString: true,
+                fullString: false,
                 negated: false,
                 query: 'filter',
               });
@@ -98,10 +86,10 @@ const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value,
             onClick={e => {
               e.stopPropagation();
               addFilter(sections.GLOBAL, {
-                id: value,
-                value: value,
+                id: 'ip',
+                value: value || '',
                 label: `IP: ${value}`,
-                fullString: true,
+                fullString: false,
                 negated: true,
                 query: 'filter',
               });
@@ -136,6 +124,17 @@ const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value,
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
   }
 
+  if (type === 'hostname') {
+    listOfLinks = [
+      ...additionalLinks,
+      ...listOfLinks,
+      {
+        key: 'typedValueHostname',
+        label: virusTotalLink,
+      },
+    ].filter(obj => !_.isEmpty(obj.label));
+  }
+
   if (type === 'username') {
     listOfLinks = [
       ...additionalLinks,
@@ -162,7 +161,7 @@ const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value,
     ].filter(obj => !_.isEmpty(obj.label));
   }
 
-  if (type !== 'ip' && type !== 'port' && type !== 'username') {
+  if (type !== 'ip' && type !== 'port' && type !== 'username' && type !== 'hostname') {
     listOfLinks = [...additionalLinks, ...listOfLinks].filter(obj => !_.isEmpty(obj.label));
   }
 
@@ -172,6 +171,7 @@ const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value,
         items: listOfLinks,
       }}
       trigger={['click']}
+      destroyPopupOnHide // necessary for the tests! makes sure only one +/- magnifier exists at any time
       onClick={e => e.stopPropagation()}
     >
       <Value data-test={printedValue || value}>{printedValue || value}</Value>
