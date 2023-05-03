@@ -1523,15 +1523,35 @@ def ruleset(request, ruleset_id, mode='struct', error=None):
         context = {'ruleset': ruleset, 'rules': rules, 'mode': mode}
         if error:
             context['error'] = error
-    elif mode == 'export':
-        file_content = ruleset.to_buffer()
-        response = HttpResponse(file_content, content_type="text/plain")
-        response['Content-Disposition'] = 'attachment; filename=scirius.rules'
-        return response
 
     if hasattr(PROBE.common, 'update_ruleset'):
         context['middleware_has_update'] = True
+
+    rule_versions = PROBE.common.rules_version()
+    context['single_rule_version'] = True if rule_versions == [0] else False
     return scirius_render(request, 'rules/ruleset.html', context)
+
+
+@permission_required('rules.ruleset_policy_view', raise_exception=True)
+def ruleset_export(request, ruleset_id):
+    ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
+    rule_versions = PROBE.common.rules_version()
+
+    if request.method == 'POST':
+        version = request.POST['version']
+        file_tar_io = PROBE.common.ruleset_export(ruleset, int(version))
+        response = HttpResponse(file_tar_io.getvalue(), content_type='application/gzip')
+        filename = f'rules-v{version}-{date.today()}.tgz' if version != '0' else f'rules-{date.today()}.tgz'
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    if rule_versions == [0] and ruleset.sources.filter(source__datatype__in=PROBE.common.custom_source_datatype()).count() == 0:
+        file_tar_io = PROBE.common.ruleset_export(ruleset, 0)
+        response = HttpResponse(file_tar_io.getvalue(), content_type='application/gzip')
+        response['Content-Disposition'] = 'attachment; filename="rules-%s.tgz"' % str(date.today())
+        return response
+
+    return scirius_render(request, 'rules/ruleset_export.html', {'ruleset': ruleset, 'versions': rule_versions})
 
 
 @permission_required('rules.source_edit', raise_exception=True)

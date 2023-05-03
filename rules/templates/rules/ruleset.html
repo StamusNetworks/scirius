@@ -131,7 +131,7 @@ $("#update_ruleset").click(function() {
                 <a href="{% url 'display_ruleset' ruleset.id %}">Show rules</a>
             </li>
             <li>
-                <a href="{% url 'export_ruleset' ruleset.id %}" target="_blank">Export rules file</a>
+                <a href="{% url 'export_ruleset' ruleset.id %}" {% if single_rule_version %}target="_blank"{% endif %}>Export rules file</a>
             </li>
         </ul>
     {% endif %}

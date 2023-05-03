@@ -42,6 +42,7 @@ import shutil
 import json
 import IPy
 import base64
+from io import BytesIO
 from datetime import date as datetime_date
 import logging
 from ipware.ip import get_client_ip
@@ -3508,6 +3509,19 @@ class Ruleset(models.Model, Transformable):
                 else:
                     sdiff[sourceat.name] = srcdiff
         return sdiff
+
+    def export(self):
+        content = self.to_buffer()
+        tar_path_io = BytesIO()
+        try:
+            with tarfile.open(fileobj=tar_path_io, mode="w:gz") as tar:
+                file_info = tarfile.TarInfo('scirius.rules')
+                file_info.size = len(content)
+                tar.addfile(file_info, BytesIO(bytes(content, 'utf-8')))
+        except Exception as e:
+            request_logger.warning('Ruleset export failed: %s' % e)
+
+        return tar_path_io
 
     def to_buffer(self):
         from scirius.utils import get_middleware_module
