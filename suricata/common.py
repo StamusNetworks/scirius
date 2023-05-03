@@ -286,3 +286,11 @@ def current_user_js(request):
 
 def rule_version(_):
     return 0
+
+
+def rules_version():
+    return [0]
+
+
+def ruleset_export(ruleset, _):
+    return ruleset.export()
