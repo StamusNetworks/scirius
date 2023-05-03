@@ -4,12 +4,18 @@ import { connect } from 'react-redux';
 import { Dropdown, message } from 'antd';
 import { CopyOutlined, IdcardOutlined, InfoCircleFilled, UserOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import _ from 'lodash';
+import styled from 'styled-components';
 import { Link } from 'ui/helpers/Link';
 import history from 'ui/utils/history';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import { sections } from 'ui/constants';
 import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 import isIP from 'ui/helpers/isIP';
+
+const Value = styled.a`
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
 
 // put all the sections where we want to inlclude `virus total links` for ip addresses and domains
 const virusTotalLinks = [
@@ -23,7 +29,7 @@ const virusTotalLinks = [
   'hostname_info.host',
 ];
 
-const TypedValue = ({ addFilter, additionalLinks, children, printedValue, redirect, value, type }) => {
+const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value, type }) => {
   const virusTotalLink = (
     <a href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(value)) ? 'ip-address' : 'domain'}/${value}`} target="_blank">
       <InfoCircleFilled /> <span>External info</span>
@@ -163,7 +169,7 @@ const TypedValue = ({ addFilter, additionalLinks, children, printedValue, redire
       }}
       trigger={['click']}
     >
-      {children || <a>{value}</a>}
+      <Value data-test={printedValue || value}>{printedValue || value}</Value>
     </Dropdown>
   );
 };
@@ -178,7 +184,6 @@ TypedValue.propTypes = {
   redirect: PropTypes.bool,
   additionalLinks: PropTypes.arrayOf(PropTypes.object),
   addFilter: PropTypes.func,
-  children: PropTypes.object,
   printedValue: PropTypes.string,
 };
 
