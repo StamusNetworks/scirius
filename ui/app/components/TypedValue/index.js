@@ -1,23 +1,46 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import { Dropdown, message } from 'antd';
-import { CopyOutlined, IdcardOutlined, InfoCircleFilled, UserOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
+import { CopyOutlined, IdcardOutlined, InfoCircleFilled, RobotOutlined, UserOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import _ from 'lodash';
 import styled from 'styled-components';
 import { Link } from 'ui/helpers/Link';
 import history from 'ui/utils/history';
-import { addFilter } from 'ui/containers/HuntApp/stores/global';
+import { addFilter, clearFilters } from 'ui/containers/HuntApp/stores/global';
 import { sections } from 'ui/constants';
 import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 import isIP from 'ui/helpers/isIP';
+import selectors from 'ui/containers/App/selectors';
 
 const Value = styled.a`
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
 `;
 
-const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value, type }) => {
+const rolesMap = {
+  'Domain Controller': {
+    label: 'Domain controller',
+    value: 'domain controller',
+  },
+  'DHCP Server': {
+    label: 'DHCP',
+    value: 'dhcp',
+  },
+  'HTTP(s) Proxy': {
+    label: 'HTTP(S) proxy',
+    value: 'http proxy',
+  },
+  Printer: {
+    label: 'Printer',
+    value: 'printer',
+  },
+};
+
+const TypedValue = ({ addFilter, additionalLinks, clearFilters, printedValue, redirect, value, type }) => {
+  const tenantParam = useSelector(selectors.makeSelectTenantParam());
+
   const virusTotalLink = (
     <a href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(value)) ? 'ip-address' : 'domain'}/${value}`} target="_blank">
       <InfoCircleFilled /> <span>External info</span>
@@ -43,6 +66,43 @@ const TypedValue = ({ addFilter, additionalLinks, printedValue, redirect, value,
       ),
     },
   ];
+
+  const getRoleLabel = (location, removeFilters = false) => (
+    <div
+      onClick={e => {
+        e.stopPropagation();
+        if (removeFilters) clearFilters(sections.GLOBAL);
+        addFilter(sections.GLOBAL, {
+          id: 'host_id.roles.name',
+          value: rolesMap[value.props.name].value || '',
+          label: `Hosts: Roles: ${rolesMap[value.props.name].label}`,
+          fullString: false,
+          negated: false,
+          query: 'filter_host_id',
+        });
+        if (redirect) history.push(`/stamus/hunting/${location}?${tenantParam}`);
+      }}
+    >
+      <RobotOutlined /> <span>Filter on Role, go to {location}</span>
+    </div>
+  );
+
+  if (type === 'role') {
+    listOfLinks = [
+      {
+        key: 'typedValueRole1',
+        label: getRoleLabel('hosts'),
+      },
+      {
+        key: 'typedValueRole2',
+        label: getRoleLabel('dashboards', true),
+      },
+      {
+        key: 'typedValueRole3',
+        label: getRoleLabel('alerts'),
+      },
+    ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
+  }
 
   if (type === 'ip') {
     listOfLinks = [
@@ -185,11 +245,12 @@ TypedValue.defaultProps = {
 
 TypedValue.propTypes = {
   type: PropTypes.string.isRequired, // 'ip|hostname|username|port'
-  value: PropTypes.string.isRequired,
+  value: PropTypes.any.isRequired,
   redirect: PropTypes.bool,
   additionalLinks: PropTypes.arrayOf(PropTypes.object),
   addFilter: PropTypes.func,
-  printedValue: PropTypes.string,
+  clearFilters: PropTypes.func,
+  printedValue: PropTypes.any,
 };
 
-export default connect(null, { addFilter })(TypedValue);
+export default connect(null, { addFilter, clearFilters })(TypedValue);
