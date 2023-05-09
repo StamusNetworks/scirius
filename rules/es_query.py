@@ -82,7 +82,8 @@ class ESPaginator(SciriusSetPagination):
         from rules.es_graphs import get_es_major_version
         total = data['hits']['total']
         if get_es_major_version() >= 7:
-            total = total['value']
+            if isinstance(total, dict):
+                total = total['value']
 
         res = []
         for item in data['hits']['hits']:
