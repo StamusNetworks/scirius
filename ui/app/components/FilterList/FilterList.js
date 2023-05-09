@@ -198,7 +198,9 @@ class FilterList extends React.Component {
           className="modal-hunt-filter"
           footer={
             <React.Fragment>
-              <Button data-test="cancel-edit-filter-button" onClick={() => this.setState({ editForm: false })}>Cancel</Button>
+              <Button data-test="cancel-edit-filter-button" onClick={() => this.setState({ editForm: false })}>
+                Cancel
+              </Button>
               <Button data-test="save-edit-filter-button" type="primary" disabled={valid === 'error'} onClick={this.saveHandler}>
                 Save
               </Button>
@@ -261,7 +263,12 @@ class FilterList extends React.Component {
                     <label>Negated</label>
                   </Col>
                   <Col span={18}>
-                    <Checkbox data-test="negated-filter-checkbox" onChange={this.negateHandler} onKeyDown={this.keyListener} checked={this.state.newFilterNegated} />
+                    <Checkbox
+                      data-test="negated-filter-checkbox"
+                      onChange={this.negateHandler}
+                      onKeyDown={this.keyListener}
+                      checked={this.state.newFilterNegated}
+                    />
                   </Col>
                 </Row>
               </Form.Item>

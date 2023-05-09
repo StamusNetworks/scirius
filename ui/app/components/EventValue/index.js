@@ -130,7 +130,9 @@ const EventValue = props => {
         }
       }}
     >
-      <Value title={props.value + (props.hasCopyShortcut ? '\nCtrl + left click to copy' : '')}data-test="event-field-value">{printValue()}</Value>
+      <Value title={props.value + (props.hasCopyShortcut ? '\nCtrl + left click to copy' : '')} data-test="event-field-value">
+        {printValue()}
+      </Value>
       <Extra className="extra">
         <ErrorHandler>
           <EventValueInfo field={props.field} value={props.value} magnifiers={magnifiers} />
