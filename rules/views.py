@@ -1518,7 +1518,7 @@ def ruleset(request, ruleset_id, mode='struct', error=None):
         context['disabled_rules'] = suppr_rules_t
 
     elif mode == 'display':
-        rules = RuleTable(ruleset.generate())
+        rules = RuleTable(ruleset.generate(rules=True))
         tables.RequestConfig(request).configure(rules)
         context = {'ruleset': ruleset, 'rules': rules, 'mode': mode}
         if error:
