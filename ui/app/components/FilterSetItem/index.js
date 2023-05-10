@@ -67,7 +67,7 @@ const FilterSetItem = ({ item, loadFilterSets, onDelete, hasRights, loading, typ
             type="danger"
             icon={loading ? <LoadingOutlined /> : <DeleteOutlined />}
             onClick={() => onDelete()}
-            data-test={`filter-set-delete-${item.name}`}
+            data-test="filter-set-delete"
           />
         </Tooltip>
       )
