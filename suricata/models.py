@@ -55,10 +55,10 @@ class Suricata(models.Model):
     def generate(self):
         # FIXME extract archive file for sources
         # generate rule file
-        rules = self.ruleset.to_buffer()
+        ravs = self.ruleset.to_buffer()
         # write to file
         with open(self.output_directory + "/" + "scirius.rules", 'w') as rfile:
-            rfile.write(rules)
+            rfile.write(ravs)
         # export files at version
         cats_content, iprep_content = self.ruleset.export_files(self.output_directory)
         # FIXME gruick

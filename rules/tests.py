@@ -48,7 +48,7 @@ from rules.urls import urlpatterns
 import inspect
 
 
-ET_URL = 'https://rules.emergingthreats.net/open/suricata-4.0/emerging.rules.tar.gz'
+ET_URL = 'https://rules.emergingthreats.net/open/suricata-5.0/emerging.rules.tar.gz'
 
 RULE_CONTENT = 'alert ip any any -> any any (msg:"Unicode test rule éàç"; content:"uid=0|28|root|29|"; classtype:bad-unknown; sid:2100498; rev:7; metadata:created_at 2010_09_23, updated_at 2010_09_23;)\n'  # ignore_utf8_check: 233 224 231
 
@@ -676,7 +676,7 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
 
         self.source.update()
         category = self.source.category_set.get(name='botcc')
-        rules = list(category.rule_set.filter(msg__contains='ET CNC Shadowserver Reported CnC Server IP group'))
+        rules = list(category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server group'))
 
         size = len(rules)
         self.assertGreater(size, 1)
@@ -689,7 +689,7 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         self._set_source_from_name('sonic test custom source')
         self.source.update()
         category = self.source.category_set.get(name='botcc')
-        rules = list(category.rule_set.filter(msg__contains='ET CNC Shadowserver Reported CnC Server IP'))
+        rules = list(category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server'))
         self.assertEqual(len(rules), 1)
         self.assertIn('iprep', rules[0].ruleatversion_set.first().content)
 
@@ -699,7 +699,7 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         self._set_source_from_name('sonic test custom source')
         self.source.update()
         category = self.source.category_set.get(name='botcc')
-        rules = list(category.rule_set.filter(msg__contains='ET CNC Shadowserver Reported CnC Server IP group'))
+        rules = list(category.rule_set.filter(msg__contains='ET CNC Feodo Tracker Reported CnC Server'))
         self.assertEqual(size, len(rules))
 
     def test_001_public_source(self):
