@@ -8,7 +8,6 @@ export const REMOVE_FILTER = 'Hunt/HuntApp/REMOVE_FILTER';
 export const EDIT_FILTER = 'Hunt/HuntApp/EDIT_FILTER';
 export const CLEAR_FILTERS = 'Hunt/HuntApp/CLEAR_FILTERS';
 export const SET_ALERT = 'Hunt/HuntApp/SET_ALERT';
-export const SET_ONLY_ONE_ALERT = 'Hunt/HuntApp/SET_ONLY_ONE_ALERT';
 
 export const validateFilter = filter => {
   if (filter.id === 'alert.tag') {
@@ -90,12 +89,6 @@ export function setTag(tagType, tagState) {
     type: SET_ALERT,
     tagType,
     tagState,
-  };
-}
-export function enableOnly(filterType) {
-  return {
-    type: SET_ONLY_ONE_ALERT,
-    filterType,
   };
 }
 
@@ -197,18 +190,6 @@ export const reducer = (state = initialState, action) =>
         }
         updateStorage(sections.ALERT, draft.filters[sections.ALERT]);
         break;
-      }
-      case SET_ONLY_ONE_ALERT: {
-        const { filterType } = action;
-        draft.filters[sections.ALERT] = generateAlert(
-          filterType === 'informational' || filterType === 'all',
-          filterType === 'relevant' || filterType === 'all',
-          filterType === 'untagged' || filterType === 'all',
-          filterType === 'alerts' || filterType === 'all',
-          filterType === 'sightings' || filterType === 'all',
-        );
-        updateStorage(sections.ALERT, draft.filters[sections.ALERT]);
-        return draft;
       }
     }
   });
