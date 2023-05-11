@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
+import globalSelectors from 'ui/containers/App/selectors';
 
 export function buildListUrlParams(pageParams) {
   const { page, perPage } = pageParams.pagination;
@@ -44,7 +45,7 @@ export function buildFilter(filters, systemSettings) {
   for (let k = 0; k < objKeys.length; k += 1) {
     stringFilters += `&${objKeys[k]}=${lFilters[objKeys[k]]}`;
   }
-  const qfilter = buildQFilter(filters, systemSettings);
+  const qfilter = buildQFilter(filters, globalSelectors.makeSelectSystemSettings());
   if (qfilter) {
     stringFilters += qfilter;
   }
