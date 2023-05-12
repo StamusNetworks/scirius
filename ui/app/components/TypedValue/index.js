@@ -1,6 +1,7 @@
 import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { connect, useSelector } from 'react-redux';
+
 import { Dropdown, message } from 'antd';
 import { CopyOutlined, IdcardOutlined, InfoCircleFilled, RobotOutlined, UserOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import _ from 'lodash';
@@ -38,8 +39,9 @@ const rolesMap = {
   },
 };
 
-const TypedValue = ({ addFilter, additionalLinks, clearFilters, printedValue, redirect, value, type }) => {
+const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) => {
   const tenantParam = useSelector(selectors.makeSelectTenantParam());
+  const dispatch = useDispatch();
 
   const virusTotalLink = (
     <a href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(value)) ? 'ip-address' : 'domain'}/${value}`} target="_blank">
@@ -71,15 +73,17 @@ const TypedValue = ({ addFilter, additionalLinks, clearFilters, printedValue, re
     <div
       onClick={e => {
         e.stopPropagation();
-        if (removeFilters) clearFilters(sections.GLOBAL);
-        addFilter(sections.GLOBAL, {
-          id: 'host_id.roles.name',
-          value: rolesMap[value.props.name].value || '',
-          label: `Hosts: Roles: ${rolesMap[value.props.name].label}`,
-          fullString: false,
-          negated: false,
-          query: 'filter_host_id',
-        });
+        if (removeFilters) dispatch(clearFilters(sections.GLOBAL));
+        dispatch(
+          addFilter(sections.GLOBAL, {
+            id: 'host_id.roles.name',
+            value: rolesMap[value.props.name].value || '',
+            label: `Hosts: Roles: ${rolesMap[value.props.name].label}`,
+            fullString: false,
+            negated: false,
+            query: 'filter_host_id',
+          }),
+        );
         if (redirect) history.push(`/stamus/hunting/${location}?${tenantParam}`);
       }}
     >
@@ -124,14 +128,16 @@ const TypedValue = ({ addFilter, additionalLinks, clearFilters, printedValue, re
           <div
             onClick={e => {
               e.stopPropagation();
-              addFilter(sections.GLOBAL, {
-                id: 'ip',
-                value: value || '',
-                label: `IP: ${value}`,
-                fullString: false,
-                negated: false,
-                query: 'filter',
-              });
+              dispatch(
+                addFilter(sections.GLOBAL, {
+                  id: 'ip',
+                  value: value || '',
+                  label: `IP: ${value}`,
+                  fullString: false,
+                  negated: false,
+                  query: 'filter',
+                }),
+              );
               if (redirect) history.push('/stamus/hunting/dashboards');
             }}
           >
@@ -145,14 +151,16 @@ const TypedValue = ({ addFilter, additionalLinks, clearFilters, printedValue, re
           <div
             onClick={e => {
               e.stopPropagation();
-              addFilter(sections.GLOBAL, {
-                id: 'ip',
-                value: value || '',
-                label: `IP: ${value}`,
-                fullString: false,
-                negated: true,
-                query: 'filter',
-              });
+              dispatch(
+                addFilter(sections.GLOBAL, {
+                  id: 'ip',
+                  value: value || '',
+                  label: `IP: ${value}`,
+                  fullString: false,
+                  negated: true,
+                  query: 'filter',
+                }),
+              );
               if (redirect) history.push('/stamus/hunting/dashboards');
             }}
           >
@@ -205,13 +213,15 @@ const TypedValue = ({ addFilter, additionalLinks, clearFilters, printedValue, re
           <div
             onClick={e => {
               e.stopPropagation();
-              addFilter(sections.GLOBAL, {
-                id: 'host_id.username.user',
-                value: value || '',
-                label: `host_id.username.user: ${value}`,
-                fullString: false,
-                negated: false,
-              });
+              dispatch(
+                addFilter(sections.GLOBAL, {
+                  id: 'host_id.username.user',
+                  value: value || '',
+                  label: `host_id.username.user: ${value}`,
+                  fullString: false,
+                  negated: false,
+                }),
+              );
             }}
           >
             <UserOutlined /> <span>Filter on username</span>
@@ -248,9 +258,7 @@ TypedValue.propTypes = {
   value: PropTypes.any.isRequired,
   redirect: PropTypes.bool,
   additionalLinks: PropTypes.arrayOf(PropTypes.object),
-  addFilter: PropTypes.func,
-  clearFilters: PropTypes.func,
   printedValue: PropTypes.any,
 };
 
-export default connect(null, { addFilter, clearFilters })(TypedValue);
+export default TypedValue;
