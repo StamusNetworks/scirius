@@ -330,7 +330,7 @@ export default class RuleToggleModal extends React.Component {
                       <React.Fragment key={ruleset.pk}>
                         <label htmlFor={ruleset.pk}>{ruleset.name}</label>
                         <Checkbox
-                          data-test="ruleset"
+                          data-test={`${ruleset.name}`}
                           id={ruleset.pk}
                           name={ruleset.pk}
                           onChange={this.handleChange}
