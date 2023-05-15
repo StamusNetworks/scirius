@@ -30,21 +30,6 @@ const getBlockMoreResultsFailure = (blockId, error) => ({
   payload: { blockId, error },
 });
 
-const getDashboardPanelRequest = panelId => ({
-  type: constants.GET_DASHBOARD_PANEL_REQUEST,
-  payload: { panelId },
-});
-
-const getDashboardPanelSuccess = (panelId, data) => ({
-  type: constants.GET_DASHBOARD_PANEL_SUCCESS,
-  payload: { panelId, data },
-});
-
-const getDashboardPanelFailure = error => ({
-  type: constants.GET_DASHBOARD_PANEL_FAILURE,
-  payload: { error },
-});
-
 export default {
   setEditMode,
   downloadBlockData,
@@ -52,7 +37,4 @@ export default {
   getBlockMoreResultsRequest,
   getBlockMoreResultsSuccess,
   getBlockMoreResultsFailure,
-  getDashboardPanelRequest,
-  getDashboardPanelSuccess,
-  getDashboardPanelFailure,
 };

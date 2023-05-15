@@ -41,28 +41,6 @@ const appReducer = (state = initialState, action) =>
         draft.copyMode = action.payload.value;
         break;
       }
-      // Load panel data
-      case constants.GET_DASHBOARD_PANEL_REQUEST: {
-        if (!draft.panels[action.payload.panelId]) {
-          draft.panels[action.payload.panelId] = {
-            data: {},
-          };
-        }
-        draft.panels[action.payload.panelId].loading = true;
-        draft.panels[action.payload.panelId].status = false;
-        break;
-      }
-      case constants.GET_DASHBOARD_PANEL_SUCCESS: {
-        draft.panels[action.payload.panelId].data = sanitize(action.payload.data);
-        draft.panels[action.payload.panelId].loading = false;
-        draft.panels[action.payload.panelId].status = false;
-        break;
-      }
-      case constants.GET_DASHBOARD_PANEL_FAILURE: {
-        draft.panels[action.payload.panelId].loading = false;
-        draft.panels[action.payload.panelId].status = false;
-        break;
-      }
       // Load more block results
       case constants.SET_MODAL_MORE_RESULTS: {
         draft.more.visible = action.payload.visible;
