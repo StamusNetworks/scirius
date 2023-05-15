@@ -7,7 +7,6 @@ class RootStore {
   historyStore = null;
 
   constructor() {
-    console.log('RootStore CE');
     this.commonStore = new CommonStore(this);
     this.historyStore = new HistoryStore(this);
   }

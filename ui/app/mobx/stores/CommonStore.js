@@ -1,5 +1,9 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, toJS } from 'mobx';
 import moment from 'moment';
+import endpoints from 'ui/config/endpoints';
+import { isEqual } from 'lodash';
+import { validateFilter } from '../../containers/HuntApp/stores/global';
+import { api } from '../api';
 
 class CommonStore {
   root = null;
@@ -27,8 +31,22 @@ class CommonStore {
 
   ids = [];
 
+  alert = null;
+
+  systemSettings = null;
+
   constructor(root) {
     this.root = root;
+    this.alert = CommonStore.generateAlert();
+    this.startDate = localStorage.getItem('startDate') || moment().subtract(1, 'hours').unix();
+    this.endDate = localStorage.getItem('startDate') || moment().unix();
+    try {
+      this.systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
+      this.ids = JSON.parse(localStorage.getItem('ids_filters'));
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log('Error while parsing local storage data');
+    }
     makeAutoObservable(this, {
       root: false,
     });
@@ -69,6 +87,8 @@ class CommonStore {
     }
     this.endDate = moment().unix();
     this.timeRangeType = 'relative';
+    localStorage.setItem('startDate', this.startDate);
+    localStorage.setItem('endDate', this.endDate);
     this.relative = type;
   }
 
@@ -84,8 +104,83 @@ class CommonStore {
     }
   }
 
+  async fetchSystemSettings() {
+    const response = await api.get(endpoints.SYSTEM_SETTINGS.url);
+    if (response.ok) {
+      const localSystemSettings = localStorage.getItem('str-system-settings');
+      try {
+        if (!localSystemSettings || !isEqual(toJS(this.systemSettings), JSON.parse(localSystemSettings))) {
+          this.systemSettings = response.data;
+          localStorage.setItem('str-system-settings', JSON.stringify(response.data));
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('Error setting up system setting');
+      }
+    }
+    return response;
+  }
+
   addFilter(filter) {
-    this.ids = [...this.ids, filter];
+    const stack = (Array.isArray(filter) ? filter : [filter]).filter(f => validateFilter(f));
+    this.ids = [...this.ids, ...stack];
+    localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids)));
+  }
+
+  removeFilter(filter) {
+    const filterIndex = CommonStore.#indexOfFilter(filter, this.ids);
+    const before = this.ids.slice(0, filterIndex);
+    const after = this.ids.slice(filterIndex + 1);
+    this.ids = [...before, ...after];
+    localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids)));
+  }
+
+  getFilters(includeAlertTAg = false) {
+    if (includeAlertTAg) {
+      return [...toJS(this.ids), toJS(this.alert)].filter(Boolean);
+    }
+    return toJS(this.ids);
+  }
+
+  static #indexOfFilter(filter, allFilters) {
+    for (let idx = 0; idx < allFilters.length; idx += 1) {
+      if (
+        allFilters[idx].label === filter.label &&
+        allFilters[idx].id === filter.id &&
+        allFilters[idx].value === filter.value &&
+        allFilters[idx].negated === filter.negated &&
+        allFilters[idx].query === filter.query &&
+        allFilters[idx].fullString === filter.fullString
+      ) {
+        return idx;
+      }
+    }
+    return -1;
+  }
+
+  static generateAlert(informational = true, relevant = true, untagged = true, alerts = true, sightings = true) {
+    return {
+      id: 'alert.tag',
+      value: { informational, relevant, untagged, alerts, sightings },
+    };
+  }
+
+  static validateFilter(filter) {
+    if (filter.id === 'alert.tag') {
+      // eslint-disable-next-line no-console
+      console.error('Tags must go in a separate store');
+      return false;
+    }
+
+    const filterProps = ['id', 'value', 'negated', 'label', 'fullString', 'query'];
+
+    const filterKeys = Object.keys(filter);
+    for (let i = 0; i < filterKeys.length; i += 1) {
+      if (!filterProps.find(filterProp => filterProp === filterProps[i])) {
+        return false;
+      }
+    }
+    return true;
   }
 }
 

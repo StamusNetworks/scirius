@@ -7,6 +7,7 @@ import { store } from 'ui/mobx/stores/RootStore';
 const StoreContext = createContext(null);
 
 // create the provider component
+// eslint-disable-next-line arrow-body-style
 export const RootStoreProvider = ({ children }) => {
   // only create the store once ( store is a singleton)
   // const root = store ?? new RootStore();
@@ -17,7 +18,7 @@ RootStoreProvider.propTypes = {
   children: PropTypes.string,
 };
 
-// create the hook
+/* Hook to use store in any functional component */
 export const useStore = () => {
   const context = useContext(StoreContext);
   if (context === undefined) {
@@ -26,3 +27,6 @@ export const useStore = () => {
 
   return context;
 };
+
+/* HOC to inject store to any functional or class component */
+export const withStore = Component => props => <Component {...props} store={useStore()} />;

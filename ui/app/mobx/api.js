@@ -23,9 +23,9 @@ apiInstance.addRequestTransform(request => {
   request.url = result.replace(paramRegex, ''); // Clean params placeholders
 
   urlParams
-    .filter(m => Boolean(map[m]))
+    .filter(m => Boolean(map(m)))
     .forEach(match => {
-      request.params[match.substring(1)] = map[match];
+      request.params = { ...request.params, ...map(match) };
     });
 });
 
