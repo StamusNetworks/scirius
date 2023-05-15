@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Row, notification, Col, Button } from 'antd';
+import { Row, notification, Col } from 'antd';
 import styled from 'styled-components';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
@@ -69,7 +69,6 @@ const TimeRangePickersContainer = ({ startDate, endDate, duration, setDuration, 
 
   return (
     <PickersWrapper>
-      <Button onClick={() => commonStore.addFilter({ a: 'b' })}>ids</Button>
       <UITabs
         defaultActiveKey={timePicker.toString()}
         size="small"
