@@ -12,6 +12,9 @@ import { Link } from 'ui/helpers/Link';
 import selectors from 'ui/containers/App/selectors';
 import { createStructuredSelector } from 'reselect';
 import { LinkOutlined } from '@ant-design/icons';
+import { observer } from 'mobx-react-lite';
+import { toJS } from 'mobx';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 import { LeftNavStyled, LeftNavLink } from './styles';
 
 const { SubMenu } = Menu;
@@ -28,20 +31,21 @@ const getGroupPages = (category, permissions, systemSettings) =>
     )
     .sort((a, b) => pages[a].metadata.position - pages[b].metadata.position);
 
-function LeftNav({ user, systemSettings, hasLicense }) {
+function LeftNav({ user }) {
   const {
     data: { permissions = [] },
     request: { loading = true },
   } = user;
+  const { commonStore } = useStore();
 
   const renderMenuItems = useCallback(
     groupId =>
-      getGroupPages(groupId, permissions, systemSettings).map(page => {
+      getGroupPages(groupId, permissions, toJS(commonStore.systemSettings)).map(page => {
         const title = pages[page].metadata.title || CamelCaseToNormal(page);
         return (
           <Menu.Item key={`${APP_URL}/${pages[page].metadata.url}`} data-test="left-nav-menu-link-item">
             {typeof pages[page].metadata.url === 'function' ? (
-              <LeftNavLink href={pages[page].metadata.url(systemSettings)} target="_blank" className="left-nav-link">
+              <LeftNavLink href={pages[page].metadata.url(toJS(commonStore.systemSettings))} target="_blank" className="left-nav-link">
                 <div>{title}</div>
                 <LinkOutlined />
               </LeftNavLink>
@@ -51,13 +55,13 @@ function LeftNav({ user, systemSettings, hasLicense }) {
           </Menu.Item>
         );
       }),
-    [systemSettings, permissions],
+    [toJS(commonStore.systemSettings), permissions],
   );
 
   const renderSubMenus = useMemo(
     () =>
       LeftNavMap.map(group => {
-        if (!hasLicense('nta') && group.nta) return null;
+        if (!commonStore.systemSettings.license?.nta && group.nta) return null;
         return (
           <SubMenu
             key={group.id}
@@ -72,7 +76,7 @@ function LeftNav({ user, systemSettings, hasLicense }) {
           </SubMenu>
         );
       }).filter(submenu => submenu),
-    [systemSettings, permissions],
+    [toJS(commonStore.systemSettings), permissions],
   );
 
   return (
@@ -98,14 +102,10 @@ LeftNav.propTypes = {
     data: PropTypes.object,
     request: PropTypes.object,
   }).isRequired,
-  systemSettings: PropTypes.object,
-  hasLicense: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
-  systemSettings: selectors.makeSelectSystemSettings(),
   user: selectors.makeSelectUser(),
-  hasLicense: selectors.makeSelectHasLicense(),
 });
 
-export default connect(mapStateToProps)(withRouter(LeftNav));
+export default connect(mapStateToProps)(withRouter(observer(LeftNav)));

@@ -12,6 +12,7 @@ import { bindActionCreators, compose } from 'redux';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import { Layout } from 'antd';
+import { observer } from 'mobx-react-lite';
 
 import withSaga from 'utils/injectSaga';
 import pages from 'ui/pages';
@@ -28,16 +29,24 @@ import ProxyRoute from 'ui/components/ProxyRoute';
 import saga from 'ui/containers/App/saga';
 import FilterSets from 'ui/components/FilterSets';
 import AppSpinner from 'ui/components/AppSpinner';
+import useAutorun from 'ui/helpers/useAutorun';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 
 const pagesList = Object.keys(pages);
 const SESSION_INTERVAL = 30000;
 
-const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodRequest, setSessionActivity, timeSpan, systemSettings, hasLicense }) => {
+const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodRequest, setSessionActivity, timeSpan }) => {
   const idle = useRef(0);
 
   const setIdle = useCallback(() => {
     idle.current = 0;
   }, [idle]);
+
+  const { commonStore } = useStore();
+
+  useAutorun(async () => {
+    await commonStore.fetchSystemSettings();
+  }, []);
 
   useEffect(() => {
     if (source.data.length === 0) {
@@ -89,7 +98,7 @@ const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodReques
   });
 
   // do not render the app if systemSettings are not yet fetched
-  if (!systemSettings) {
+  if (!commonStore.systemSettings) {
     return <AppSpinner />;
   }
 
@@ -110,7 +119,7 @@ const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodReques
               {pagesList
                 .filter(page => typeof pages[page].metadata.url !== 'function')
                 .map(page => {
-                  if (!hasLicense('nta') && pages[page].metadata.nta) return null;
+                  if (!commonStore.systemSettings.license?.nta && pages[page].metadata.nta) return null;
                   return (
                     <Route key={page} exact path={`${APP_URL}/${pages[page].metadata.url || CamelCaseToDashCase(page)}`} component={pages[page]} />
                   );
@@ -141,15 +150,11 @@ App.propTypes = {
   getAllPeriodRequest: PropTypes.any,
   setSessionActivity: PropTypes.func,
   timeSpan: PropTypes.object,
-  systemSettings: PropTypes.object,
-  hasLicense: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
   source: selectors.makeSelectSource(),
   timeSpan: selectors.makeSelectTimespan(),
-  systemSettings: selectors.makeSelectSystemSettings(),
-  hasLicense: selectors.makeSelectHasLicense(),
 });
 
 export const mapDispatchToProps = dispatch =>
@@ -165,4 +170,4 @@ export const mapDispatchToProps = dispatch =>
   );
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
-export default withSaga({ key: 'root', saga })(compose(withConnect)(App));
+export default withSaga({ key: 'root', saga })(compose(withConnect)(observer(App)));
