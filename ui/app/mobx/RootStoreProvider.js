@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
 import PropTypes from 'prop-types';
-import RootStore from './store/RootStore';
+import RootStore from 'ui/mobx/store/RootStore';
 
 // holds a reference to the store (singleton)
 let store;

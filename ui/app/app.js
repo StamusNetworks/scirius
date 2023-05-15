@@ -23,7 +23,7 @@ import notify from 'ui/helpers/notify';
 // Load the favicon and the .htaccess file
 import '!file-loader?name=[name].[ext]!./images/favicon.ico';
 import axios from 'axios';
-import { RootStoreProvider } from './mobx/RootStoreProvider';
+import { RootStoreProvider } from 'ui/mobx/RootStoreProvider';
 import { store } from './store';
 
 // Observe loading of Open Sans (to remove open sans, remove the <link> tag in

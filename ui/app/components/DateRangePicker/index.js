@@ -4,6 +4,7 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { Calendar, Button } from 'antd';
 import { CalendarHeader } from 'ui/components/CalendarHeader';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 
 const SubmitDate = styled(Button)`
   width: 100%;
@@ -32,6 +33,7 @@ const CalendarStyled = styled(Calendar)`
 `;
 
 const Index = props => {
+  const { commonStore } = useStore();
   const [startDate, setStartDate] = useState(props.selectedFromDate === null ? moment() : moment(props.selectedFromDate));
   const [endDate, setEndDate] = useState(props.selectedToDate === null ? moment() : moment(props.selectedToDate));
 
@@ -68,6 +70,7 @@ const Index = props => {
                 value={startDate}
                 onChange={a => {
                   onChange(a);
+                  commonStore.setStartDate(a.timstamp());
                   setStartDate(startDate.year(a.year()).month(a.month()).hours(a.hours()).minute(a.minute()).seconds(a.seconds()));
                 }}
               />
