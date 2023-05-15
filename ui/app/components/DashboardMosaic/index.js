@@ -10,9 +10,6 @@ import dashboardSaga from 'ui/stores/dashboard/saga';
 import DashboardPanel from 'ui/components/DashboardPanel';
 import DashboardBlockMore from 'ui/components/DashboardBlockMore';
 import useKeyPress from 'ui/hooks/useKeyPress';
-import selectors from 'ui/containers/App/selectors';
-import { makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
-import { buildQFilter } from 'ui/buildQFilter';
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
@@ -41,29 +38,18 @@ const DashboardMosaic = () => {
   useInjectSaga({ key: 'dashboard', saga: dashboardSaga });
   const dispatch = useDispatch();
   const ctrl = useKeyPress('Control');
-  const reload = useSelector(selectors.makeSelectGlobalFiltersDependency);
-  const systemSettings = useSelector(selectors.makeSelectSystemSettings());
-  const filtersWithAlert = useSelector(makeSelectGlobalFilters(true));
-  const qfilter = buildQFilter(filtersWithAlert, systemSettings);
-
-  useEffect(() => {
-    Object.keys(dashboard).forEach(panelId => {
-      dispatch(dashboardActions.getDashboardPanelRequest(panelId));
-    });
-  }, [reload, qfilter, JSON.stringify(filtersWithAlert)]);
 
   useEffect(() => {
     dispatch(dashboardActions.setEditMode(ctrl));
   }, [ctrl]);
 
-  const panels = useSelector(dashboardSelectors.makeSelectDashboardPanels());
   const { visible, panelId, blockId } = useSelector(dashboardSelectors.makeSelectMoreResults());
 
   return (
     <div data-test="dashboard-mosaic">
       <GlobalStyle />
-      {Object.keys(panels).map(panelId => (
-        <DashboardPanel panelId={panelId} blocks={panels[panelId].data} loading={panels[panelId].loading} status={panels[panelId].status} />
+      {Object.keys(dashboard).map(panelId => (
+        <DashboardPanel panelId={panelId} />
       ))}
       <DashboardBlockMore
         visible={visible}

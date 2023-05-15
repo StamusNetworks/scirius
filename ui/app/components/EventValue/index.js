@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
-import { sections } from 'ui/constants';
 import { InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import TypedValue from 'components/TypedValue';
-import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import styled from 'styled-components';
 import { COLOR_BOX_HEADER } from 'ui/constants/colors';
 import { IP_FIELDS } from 'components/FilterList/FilterList';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 
 const mitreLinks = [
   'alert.metadata.mitre_tactic_id',
@@ -36,7 +34,7 @@ export const Count = styled.span`
 `;
 
 const EventValue = ({ copyMode, field, format, right_info: rightInfo, value }) => {
-  const dispatch = useDispatch();
+  const { commonStore } = useStore();
 
   const printValue = () => {
     if (!mitreLinks.includes(field)) {
@@ -58,15 +56,13 @@ const EventValue = ({ copyMode, field, format, right_info: rightInfo, value }) =
       label: (
         <div
           onClick={() => {
-            dispatch(
-              addFilter(sections.GLOBAL, {
-                id: field || '',
-                value: value || '',
-                label: `${field}: ${format ? format(value) : value}`,
-                fullString: true,
-                negated: false,
-              }),
-            );
+            commonStore.addFilter({
+              id: field || '',
+              value: value || '',
+              label: `${field}: ${format ? format(value) : value}`,
+              fullString: true,
+              negated: false,
+            });
           }}
         >
           <ZoomInOutlined /> <span data-test="filter-on-value">Filter on value</span>
@@ -78,15 +74,13 @@ const EventValue = ({ copyMode, field, format, right_info: rightInfo, value }) =
       label: (
         <div
           onClick={() => {
-            dispatch(
-              addFilter(sections.GLOBAL, {
-                id: field,
-                value: value || '',
-                label: `${field}: ${format ? format(value) : value}`,
-                fullString: true,
-                negated: true,
-              }),
-            );
+            commonStore.addFilter({
+              id: field,
+              value: value || '',
+              label: `${field}: ${format ? format(value) : value}`,
+              fullString: true,
+              negated: true,
+            });
           }}
         >
           <ZoomOutOutlined /> <span data-test="negated-filter-on-value">Negated filter on value</span>

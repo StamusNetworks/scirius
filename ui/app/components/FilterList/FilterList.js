@@ -5,6 +5,7 @@ import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Row } from 'ant
 import FilterItem from 'ui/components/FilterItem/index';
 import { editFilter, removeFilter } from 'ui/containers/HuntApp/stores/global';
 import styled from 'styled-components';
+import { withStore } from 'ui/mobx/RootStoreProvider';
 import isNumeric from '../../helpers/isNumeric';
 
 const ListInline = styled.span`
@@ -181,7 +182,10 @@ class FilterList extends React.Component {
           {this.props.filters.map((filter, idx) => (
             <FilterItem
               key={idx}
-              onRemove={() => this.props.removeFilter(this.props.filterType, filter)}
+              onRemove={() => {
+                this.props.removeFilter(this.props.filterType, filter);
+                this.props.store.commonStore.removeFilter(filter);
+              }}
               onEdit={() => this.editHandler(filter, filter.value, filter.negated, !filter.fullString)}
               editFilter={this.props.editFilter}
               filters={this.props.filters}
@@ -286,6 +290,7 @@ FilterList.propTypes = {
   editFilter: PropTypes.func,
   removeFilter: PropTypes.func,
   filterType: PropTypes.string,
+  store: PropTypes.object,
 };
 
 const mapDispatchToProps = {
@@ -293,4 +298,4 @@ const mapDispatchToProps = {
   removeFilter,
 };
 
-export default connect(null, mapDispatchToProps)(FilterList);
+export default connect(null, mapDispatchToProps)(withStore(FilterList));
