@@ -3,7 +3,7 @@ import { Appliances, Users, Sources, Other } from './Administration/Administrati
 import Kibana from './Kibana/Kibana';
 import EveBox from './EveBox/EveBox';
 import CyberChef from './CyberChef/CyberChef';
-import Alerts from './Alerts/Alerts';
+import Events from './Events/Events';
 import Dashboards from './Dashboards/Dashboards';
 import Policies from './Policies/Policies';
 import Signatures from './Signatures/Signatures';
@@ -18,7 +18,7 @@ export default {
   Kibana,
   EveBox,
   CyberChef,
-  Alerts,
+  Events,
   Dashboards,
   Policies,
   Signatures,

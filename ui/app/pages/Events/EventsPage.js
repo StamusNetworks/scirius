@@ -45,7 +45,7 @@ import { buildListUrlParams, loadActions } from '../../helpers/common';
 import AlertItem from './components/AlertItem';
 import HuntPaginationRow from '../../HuntPaginationRow';
 
-class AlertsPage extends React.Component {
+class EventsPage extends React.Component {
   constructor(props) {
     super(props);
 
@@ -193,7 +193,7 @@ class AlertsPage extends React.Component {
     return (
       <div>
         <Helmet>
-          <title>{`${STAMUS} - Alerts`}</title>
+          <title>{`${STAMUS} - Events`}</title>
         </Helmet>
 
         {this.state.errors && <HuntRestError errors={this.state.errors} />}
@@ -232,7 +232,7 @@ class AlertsPage extends React.Component {
   }
 }
 
-AlertsPage.propTypes = {
+EventsPage.propTypes = {
   filters: PropTypes.any,
   filtersWithAlert: PropTypes.any,
   store: PropTypes.object,
@@ -262,4 +262,4 @@ const mapDispatchToProps = {
 };
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
-export default compose(withConnect, withPermissions, withStore)(AlertsPage);
+export default compose(withConnect, withPermissions, withStore)(EventsPage);
