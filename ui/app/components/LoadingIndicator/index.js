@@ -4,7 +4,7 @@ import Circle from './Circle';
 import Wrapper from './Wrapper';
 
 const LoadingIndicator = props => (
-  <div className="loading-indicator-class-for-rf">
+  <div className="loading-indicator-class-for-rf" data-test="loading-indicator">
     <Wrapper {...props}>
       <Circle />
       <Circle rotate={30} delay={-1.1} />
