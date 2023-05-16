@@ -149,7 +149,13 @@ const FilterSets = () => {
             data-test={`${item.type}-filtersets`}
             key={item.type}
             header={item.title}
-            extra={loading ? <LoadingIndicator style={{ width: 22, height: 22, margin: 0 }} /> : `${item.data.length} Filter Sets`}
+            extra={
+              loading ? (
+                <LoadingIndicator style={{ width: 22, height: 22, margin: 0 }} />
+              ) : (
+                <span data-test={`${item.title.toLowerCase().replaceAll(' ', '-')}-count`}>{`${item.data.length} Filter Sets`}</span>
+              )
+            }
           >
             {item.data.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
             {item.data.map(filterSetItem => (
