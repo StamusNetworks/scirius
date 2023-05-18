@@ -52,12 +52,6 @@ export function buildQFilter(filters, systemSettings) {
         if (tagFilters.length !== 0) {
           qfilter.push(`(${tagFilters.join(' OR ')})`);
         }
-        if (filters[i].value.alerts === false) {
-          qfilter.push(`_exists_:discovery`);
-        }
-        if (filters[i].value.sightings === false) {
-          qfilter.push(`NOT _exists_:discovery`);
-        }
       } else if (filters[i].id === 'msg') {
         qfilter.push(`${fPrefix}alert.signature:"${filters[i].value}"`);
       } else if (filters[i].id === 'content' || filters[i].id === 'not_in_content') {
