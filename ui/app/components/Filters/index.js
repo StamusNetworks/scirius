@@ -120,9 +120,9 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
     }
   }, [filters, supportedActionsPermissions]);
 
-  useHotkeys('shift+i', () => dispatch(huntGlobalStore.setTag('informational', !alertTag.value.informational)), [alertTag.value.informational]);
-  useHotkeys('shift+r', () => dispatch(huntGlobalStore.setTag('relevant', !alertTag.value.relevant)), [alertTag.value.relevant]);
-  useHotkeys('shift+u', () => dispatch(huntGlobalStore.setTag('untagged', !alertTag.value.untagged)), [alertTag.value.untagged]);
+  useHotkeys('shift+i', () => dispatch(huntGlobalStore.setTag('informational')), [alertTag.value.informational]);
+  useHotkeys('shift+r', () => dispatch(huntGlobalStore.setTag('relevant')), [alertTag.value.relevant]);
+  useHotkeys('shift+u', () => dispatch(huntGlobalStore.setTag('untagged')), [alertTag.value.untagged]);
 
   const getTreeOptions = useCallback(
     (data, parentType, level = 0) =>
@@ -387,7 +387,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     checkedChildren="ON"
                     unCheckedChildren="OFF"
                     checked={alertTag.value.informational}
-                    onChange={() => dispatch(huntGlobalStore.setTag('informational', !alertTag.value.informational))}
+                    onChange={() => dispatch(huntGlobalStore.setTag('informational'))}
                     disabled={page === 'HOST_INSIGHT'}
                     data-test="Informational-switch"
                   />
@@ -400,7 +400,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     checkedChildren="ON"
                     unCheckedChildren="OFF"
                     checked={alertTag.value.relevant}
-                    onChange={() => dispatch(huntGlobalStore.setTag('relevant', !alertTag.value.relevant))}
+                    onChange={() => dispatch(huntGlobalStore.setTag('relevant'))}
                     disabled={page === 'HOST_INSIGHT'}
                     data-test="Relevant-switch"
                   />
@@ -412,7 +412,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     checkedChildren="ON"
                     unCheckedChildren="OFF"
                     checked={alertTag.value.untagged}
-                    onChange={() => dispatch(huntGlobalStore.setTag('untagged', !alertTag.value.untagged))}
+                    onChange={() => dispatch(huntGlobalStore.setTag('untagged'))}
                     disabled={page === 'HOST_INSIGHT'}
                     data-test="Untagged-switch"
                   />

@@ -84,11 +84,10 @@ export function clearFilters(filterType) {
     filterType,
   };
 }
-export function setTag(tagType, tagState) {
+export function setTag(tagType) {
   return {
     type: SET_ALERT,
     tagType,
-    tagState,
   };
 }
 
@@ -186,7 +185,7 @@ export const reducer = (state = initialState, action) =>
           draft.filters[sections.ALERT] = action.tagType;
           // Or a single alert tag value
         } else {
-          draft.filters[sections.ALERT].value[action.tagType] = action.tagState;
+          draft.filters[sections.ALERT].value[action.tagType] = !draft.filters[sections.ALERT].value[action.tagType];
         }
         updateStorage(sections.ALERT, draft.filters[sections.ALERT]);
         break;
