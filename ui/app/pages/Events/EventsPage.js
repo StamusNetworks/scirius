@@ -146,8 +146,8 @@ class EventsPage extends React.Component {
       dataIndex: 'timestamp',
     },
     {
-      title: 'Signature',
-      dataIndex: 'signature',
+      title: 'Method',
+      dataIndex: 'method',
     },
     {
       title: 'Source IP',
@@ -180,7 +180,7 @@ class EventsPage extends React.Component {
       // eslint-disable-next-line no-underscore-dangle
       key: rule._id,
       timestamp: moment(rule.timestamp).format('YYYY-MM-DD, hh:mm:ss a'),
-      signature: rule.alert.signature,
+      method: rule.alert.signature,
       source_ip: rule.src_ip,
       destination_ip: rule.dest_ip,
       proto: rule.app_proto || rule.proto,
