@@ -340,7 +340,7 @@ export default class AlertItem extends React.Component {
         <Tabs.TabPane key="alert" tab="Synthetic view">
           <TabPaneResponsive>
             {/* Signature should always be displayed */}
-            <UICard title="Signature" fullHeight>
+            <UICard data-test="alert-card" title="Signature" fullHeight>
               <DlHorizontal>
                 <ErrorHandler>
                   <EventField field_name="Signature" field="alert.signature" value={data.alert.signature} addFilter={this.addFilter} />
@@ -372,7 +372,7 @@ export default class AlertItem extends React.Component {
             </UICard>
 
             {/* IP and basic information should always be displayed */}
-            <UICard title="IP and basic information" fullHeight>
+            <UICard data-test="alert-card" title="IP and basic information" fullHeight>
               <DlHorizontal>
                 {data.net_info && data.net_info.src_agg && (
                   <ErrorHandler>
@@ -454,7 +454,7 @@ export default class AlertItem extends React.Component {
             </UICard>
 
             {/* Enrichment should always be displayed */}
-            <UICard title="Enrichment" fullHeight>
+            <UICard data-test="alert-card" title="Enrichment" fullHeight>
               <DlHorizontal>
                 {!hasTarget && !hasLateral && (!data.fqdn || !data.fqdn.src) && (!data.fqdn || !data.fqdn.dest) && (
                   <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -496,7 +496,7 @@ export default class AlertItem extends React.Component {
             </UICard>
 
             {data.app_proto === 'dns' && (
-              <UICard title="DNS" fullHeight>
+              <UICard data-test="alert-card" title="DNS" fullHeight>
                 <DlHorizontal>
                   {_.isEmpty(data.dns) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                   {data.dns?.query.map(query => (
@@ -518,7 +518,7 @@ export default class AlertItem extends React.Component {
             )}
 
             {/* Flow should always be displayed */}
-            <UICard title="Flow" fullHeight>
+            <UICard data-test="alert-card" title="Flow" fullHeight>
               <DlHorizontal>
                 {_.isEmpty(data.flow) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                 {data.flow && (
@@ -557,7 +557,7 @@ export default class AlertItem extends React.Component {
             </UICard>
 
             {/* Geo IP should always be displayed */}
-            <UICard title="Geo IP" fullHeight>
+            <UICard data-test="alert-card" title="Geo IP" fullHeight>
               <DlHorizontal>
                 {_.isEmpty(data.geoip) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                 {data.geoip?.country_name && (
@@ -599,7 +599,7 @@ export default class AlertItem extends React.Component {
             </UICard>
 
             {data.app_proto === 'http' && (
-              <UICard title="HTTP" fullHeight>
+              <UICard data-test="alert-card" title="HTTP" fullHeight>
                 <DlHorizontal>
                   {_.isEmpty(data.http) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                   {data.http && (
@@ -678,7 +678,7 @@ export default class AlertItem extends React.Component {
             )}
 
             {data.app_proto === 'tls' && (
-              <UICard title="TLS" fullHeight>
+              <UICard data-test="alert-card" title="TLS" fullHeight>
                 <DlHorizontal>
                   {_.isEmpty(data.tls) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                   {data.tls && (
@@ -743,7 +743,7 @@ export default class AlertItem extends React.Component {
             )}
 
             {data.app_proto === 'smtp' && (
-              <UICard title="SMTP" fullHeight>
+              <UICard data-test="alert-card" title="SMTP" fullHeight>
                 <DlHorizontal>
                   {_.isEmpty(data.smtp) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                   {data.smtp?.mail_from !== undefined && (
@@ -768,7 +768,7 @@ export default class AlertItem extends React.Component {
             )}
 
             {data.app_proto === 'ssh' && (
-              <UICard title="SSH" fullHeight>
+              <UICard data-test="alert-card" title="SSH" fullHeight>
                 <DlHorizontal>
                   {_.isEmpty(data.ssh) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                   {data.ssh?.client && (
@@ -816,7 +816,7 @@ export default class AlertItem extends React.Component {
             )}
 
             {/* Ethernet should always be displayed */}
-            <UICard title="Ethernet" fullHeight>
+            <UICard data-test="alert-card" title="Ethernet" fullHeight>
               <DlHorizontal>
                 {_.isEmpty(data.ether) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                 {data.ether && (
@@ -833,7 +833,7 @@ export default class AlertItem extends React.Component {
             </UICard>
 
             {/* Signature metadata should always be displayed */}
-            <UICard title="Signature metadata" fullHeight>
+            <UICard data-test="alert-card" title="Signature metadata" fullHeight>
               <DlHorizontal>
                 {_.isEmpty(data.alert.metadata) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                 {data.alert.metadata &&
@@ -853,19 +853,19 @@ export default class AlertItem extends React.Component {
             {data.app_proto === 'smb' && <SMBAlertCard data={data} addFilter={this.addFilter} />}
           </TabPaneResponsive>
           {data.payload_printable && (
-            <UICard title="Payload printable" noPadding style={{ marginBottom: '10px' }}>
+            <UICard data-test="alert-card" title="Payload printable" noPadding style={{ marginBottom: '10px' }}>
               {_.isEmpty(data.payload_printable) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
               {data.payload_printable && <Pre>{data.payload_printable}</Pre>}
             </UICard>
           )}
           {data.http?.http_request_body_printable && (
-            <UICard title="HTTP request body" noPadding style={{ marginBottom: '10px' }}>
+            <UICard data-test="alert-card" title="HTTP request body" noPadding style={{ marginBottom: '10px' }}>
               {_.isEmpty(data.http.http_request_body_printable) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
               {data.http?.http_request_body_printable && <Pre>{data.http.http_request_body_printable}</Pre>}
             </UICard>
           )}
           {data.http?.http_response_body_printable && (
-            <UICard title="HTTP response body" noPadding>
+            <UICard data-test="alert-card" title="HTTP response body" noPadding>
               {_.isEmpty(data.http.http_response_body_printable) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
               {data.http?.http_response_body_printable && <Pre>{data.http.http_response_body_printable}</Pre>}
             </UICard>
