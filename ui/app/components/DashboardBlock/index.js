@@ -46,7 +46,7 @@ const DashboardBlock = ({ block, data, loading, onLoadMore, onDownload, emptyPan
       title={block.title && <Title>{block.title}</Title>}
       extra={
         <>
-          {loadingVisible && <LoadingOutlined />}
+          {loadingVisible && <LoadingOutlined data-test="loading" />}
           {!loadingVisible && data?.length > 0 && (onLoadMore || onDownload) && (
             <Dropdown overlay={menu} trigger={['click']}>
               <a className="ant-dropdown-link" style={{ color: COLOR_BRAND_BLUE }} onClick={e => e.preventDefault()}>
