@@ -4,7 +4,7 @@ import EventValue from 'ui/components/EventValue';
 
 const EventField = props =>
   props.value && props.value.toString().length > 0 ? (
-    <div className="dl-item">
+    <div data-test={`event-item-${props.field_name}`} className="dl-item">
       <dt>{props.field_name}</dt>
       <dd>
         <EventValue format={props.format} field={props.field} value={props.value} magnifiers={props.magnifiers} addFilter={props.addFilter} />
