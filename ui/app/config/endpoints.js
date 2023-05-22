@@ -20,7 +20,7 @@ const ENDPOINT = {
   },
   ALL_PERIOD: {
     name: 'Fetching all period data',
-    url: `${RULES_URL}/es/alerts_timerange/:filters`,
+    url: `${RULES_URL}/es/alerts_timerange/:filters:eventTypes`,
   },
   RULE_SETS: {
     name: 'Fetching rule sets',
