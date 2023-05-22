@@ -34,7 +34,7 @@ import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
 import moment from 'moment';
 import buildListParams from 'ui/helpers/buildListParams';
-import { addFilter, makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
+import { addFilter, makeSelectGlobalFilters, makeSelectEventTypes } from 'ui/containers/HuntApp/stores/global';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
 import { withStore } from 'ui/mobx/RootStoreProvider';
@@ -107,7 +107,9 @@ class EventsPage extends React.Component {
     const listParams = buildListUrlParams(this.state.alertsList);
     this.setState({ loading: true });
 
-    const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?${listParams}&${filterParams}${stringFilters}`;
+    const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?${listParams}&${filterParams}${stringFilters}&alert=${
+      this.props.eventTypes.alert
+    }&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`;
     axios
       .get(url)
       .then(res => {
@@ -249,6 +251,7 @@ EventsPage.propTypes = {
     dateJoined: PropTypes.any,
     permissions: PropTypes.any,
   }),
+  eventTypes: PropTypes.object,
 };
 
 const mapStateToProps = createStructuredSelector({
