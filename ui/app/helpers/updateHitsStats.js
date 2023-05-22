@@ -1,6 +1,8 @@
 /* eslint-disable no-param-reassign */
 import axios from 'axios';
+
 import * as config from 'config/Api';
+import { store } from '../store';
 
 const statsCache = {};
 function buildProbesSet(data) {
@@ -44,8 +46,12 @@ function processHitsStats(res, rules, updateCallback) {
 }
 
 export function updateHitsStats(rules, filterParams, updateCallback, qfilter) {
+  const { stamus, alerts: alert, sightings } = store.getState()?.hunt?.filters?.alert_tag?.value || {};
+
   const sids = Array.from(rules, x => x.sid).join();
-  const url = `${config.API_URL + config.ES_SIGS_LIST_PATH + sids}&${filterParams + qfilter}`;
+  const url = `${config.API_URL + config.ES_SIGS_LIST_PATH + sids}&${
+    filterParams + qfilter
+  }&alert=${alert}&stamus=${stamus}$discovery=${!!sightings}`;
   if (typeof statsCache[encodeURI(url)] !== 'undefined') {
     processHitsStats(statsCache[encodeURI(url)], rules, updateCallback);
     return;
