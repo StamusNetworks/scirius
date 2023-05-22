@@ -1,13 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import axios from 'axios';
+import { createStructuredSelector } from 'reselect';
+
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
 import ErrorHandler from 'ui/components/Error';
 import DonutChart from 'ui/components/DonutChart';
+import { makeSelectEventTypes } from 'ui/containers/HuntApp/stores/global';
 
-export default class HuntTrend extends React.Component {
+class HuntTrend extends React.Component {
   constructor(props) {
     super(props);
     this.state = { data: undefined };
@@ -27,11 +31,15 @@ export default class HuntTrend extends React.Component {
   fetchData() {
     const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
     const filterParams = buildFilterParams(this.props.filterParams);
-    axios.get(`${config.API_URL}${config.ES_BASE_PATH}alerts_count/?prev=1&hosts=*&${filterParams}${qfilter}`).then(res => {
-      if (typeof res.data !== 'string') {
-        this.setState({ data: res.data });
-      }
-    });
+    axios
+      .get(
+        `${config.API_URL}${config.ES_BASE_PATH}alerts_count/?prev=1&hosts=*&${filterParams}${qfilter}&alert=${this.props.eventTypes.alert}&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`,
+      )
+      .then(res => {
+        if (typeof res.data !== 'string') {
+          this.setState({ data: res.data });
+        }
+      });
   }
 
   render() {
@@ -90,4 +98,11 @@ HuntTrend.propTypes = {
   filters: PropTypes.any,
   systemSettings: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
+  eventTypes: PropTypes.object,
 };
+
+const mapStateToProps = createStructuredSelector({
+  eventTypes: makeSelectEventTypes(),
+});
+
+export default connect(mapStateToProps)(HuntTrend);
