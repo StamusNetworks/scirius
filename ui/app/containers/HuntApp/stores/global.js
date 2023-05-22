@@ -205,6 +205,12 @@ export const makeSelectGlobalFilters = (includeAlertTag = false) =>
   });
 export const makeSelectHistoryFilters = () => createSelector(selectGlobal, globalState => globalState.filters[sections.HISTORY]);
 export const makeSelectAlertTag = () => createSelector(selectGlobal, globalState => globalState.filters[sections.ALERT]);
+export const makeSelectEventTypes = () =>
+  createSelector(selectGlobal, ({ filters }) => ({
+    alert: filters.alert_tag?.value?.alerts || false,
+    stamus: filters.alert_tag?.value?.stamus || false,
+    discovery: !!filters.alert_tag?.value?.sightings || false,
+  }));
 export const makeSelectUserData = () =>
   createSelector(
     state => state.global.ce.user.data,
