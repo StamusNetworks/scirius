@@ -43,7 +43,7 @@ from rules.es_graphs import ESLatestStats, ESIppairAlerts, ESIppairNetworkAlerts
 from rules.es_graphs import ESSigsListHits, ESTopRules, ESError, ESDeleteAlertsBySid, ESEventsFromFlowID, ESFieldsStats
 
 from rules.es_analytics import ESGetUniqueFields
-from rules.es_analytics import ESGraphAgg, ESFieldUniqAgg
+from rules.es_analytics import ESGraphAgg, ESFieldUniqAgg, ESGenericSearch
 
 from scirius.rest_utils import SciriusReadOnlyModelViewSet
 from scirius.settings import USE_EVEBOX, USE_KIBANA, KIBANA_PROXY, KIBANA_URL, ELASTICSEARCH_KEYWORD, USE_CYBERCHEF, CYBERCHEF_URL
@@ -3247,6 +3247,29 @@ class ESGraphAggViewSet(ESBaseViewSet):
         })
 
 
+class ESGenericSearchViewSet(ESBaseViewSet):
+    REQUIRED_GROUPS = {
+        'READ': ('rules.events_view',),
+        'WRITE': ('rules.events_view',),
+    }
+
+    def post(self, request, _=None):
+
+        index = self.request.data.get('index')
+        qfilter = self.request.data.get('qfilter')
+        aggs = self.request.data.get('aggs')
+        size = self.request.data.get('size')
+        time_filter = self.request.data.get('time_filter', '@timestamp')
+
+        if not index:
+            raise serializers.ValidationError({'index': ['is mandatory']})
+
+        if not qfilter:
+            raise serializers.ValidationError({'qfilter': ['is mandatory']})
+
+        return Response(ESGenericSearch(request, index, qfilter, size, aggs, time_filter).get())
+
+
 def get_custom_urls():
     urls = []
     url_ = re_path(r'rules/system_settings/$', SystemSettingsViewSet.as_view({
@@ -3293,6 +3316,7 @@ def get_custom_urls():
     urls.append(re_path(r'rules/es/unique_fields/$', ESUniqueFieldViewSet.as_view(), name='es_unique_fields'))
     urls.append(re_path(r'rules/es/graph_agg/$', ESGraphAggViewSet.as_view(), name='es_graph_agg'))
     urls.append(re_path(r'rules/es/unique_values/$', ESFieldUniqViewSet.as_view(), name='es_unique_values'))
+    urls.append(re_path(r'rules/es/search/$', ESGenericSearchViewSet.as_view(), name='es_search'))
 
     return urls
 

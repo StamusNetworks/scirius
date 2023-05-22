@@ -172,3 +172,51 @@ class ESGraphAgg(ESAnalyticsBaseQuery):
             }
         }
         return q
+
+
+class ESGenericSearch(ESQuery):
+    '''
+    =============================================================================================================================================================
+    ==== POST ====\n
+    Post ES query:\n
+        curl -k https://myssp2/rest/rules/es/search/ -H "Authorization: Token d16206ca40ce0cbbf3080eb1e662b17c5452d96f" -H 'Content-Type: application/json' -X  POST -d '{"index":"logstash-tls-*", "size":0, qfilter":"(event_type: tls AND (proto: UDP OR proto: TCP))", "aggs":"{'aggs': {'1': {'terms': {'field': 'tls.cipher_suite.keyword', 'order': {'_count': 'desc'}, 'size': 5}}}}"}'
+
+    =============================================================================================================================================================
+    '''
+    def __init__(self, request, index, qfilter, size, aggs=None, time_filter='@timestamp', *args, **kwargs):
+        self.index = index
+        self.qfilter_ = qfilter
+        self.aggs = aggs
+        self.size = size
+        self.time_filter = time_filter
+        super().__init__(request, *args, **kwargs)
+
+    def _get_index(self) -> str:
+        return self.index
+
+    def _get_query(self) -> dict:
+        q = {
+            'query': {
+                'bool': {
+                    'must': [{
+                        'query_string': {
+                            'analyze_wildcard': True,
+                            'query': self.qfilter_
+                        }
+                    }, {
+                        'range': {
+                            self.time_filter: {
+                                'from': self._from_date(),
+                                'to': self._to_date()
+                            }
+                        }
+                    }]
+                }
+            },
+            'size': self.size
+        }
+
+        if self.aggs:
+            q.update({'aggs': self.aggs.get('aggs', {})})
+
+        return q
