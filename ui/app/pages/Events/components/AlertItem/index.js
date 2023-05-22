@@ -1,10 +1,12 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import { Badge, Empty, Spin, Table, Tabs } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import ReactJson from 'react-json-view';
 import _ from 'lodash';
+import { createStructuredSelector } from 'reselect';
 
 import * as config from 'config/Api';
 import { dashboard } from 'config/Dashboard';
@@ -14,6 +16,7 @@ import EventField from 'ui/components/EventField';
 import ErrorHandler from 'ui/components/Error';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
 import PCAPFile from 'ui/components/PCAPFile';
+import { makeSelectEventTypes } from 'ui/containers/HuntApp/stores/global';
 
 import { DlHorizontal, Warning, Numbers, Pre, TabPaneResponsive } from './styles';
 import AlertRelatedData from '../../../../components/AlertRelatedData';
@@ -57,7 +60,7 @@ const protoMap = {
   Vxlan: 'VXLAN',
 };
 
-export default class AlertItem extends React.Component {
+class AlertItem extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -833,22 +836,24 @@ export default class AlertItem extends React.Component {
             </UICard>
 
             {/* Signature metadata should always be displayed */}
-            <UICard data-test="alert-card-Signature metadata" title="Signature metadata" fullHeight>
-              <DlHorizontal>
-                {_.isEmpty(data.alert.metadata) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                {data.alert.metadata &&
-                  Object.entries(data.alert.metadata).map(field => {
-                    const value = field[1] === null ? '' : field[1].join(', ');
-                    const key = field[0] === null ? '' : field[0];
-                    const fieldName = key.length > 0 ? key[0].toUpperCase() + key.slice(1).replace('_', ' ') : '';
-                    return (
-                      <ErrorHandler key={key}>
-                        <EventField field_name={fieldName} field={`alert.metadata.${key}`} value={value} addFilter={this.addFilter} />
-                      </ErrorHandler>
-                    );
-                  })}
-              </DlHorizontal>
-            </UICard>
+            {!this.props.eventTypes.stamus && (
+              <UICard data-test="alert-card-Signature metadata" title="Signature metadata" fullHeight>
+                <DlHorizontal>
+                  {_.isEmpty(data.alert.metadata) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                  {data.alert.metadata &&
+                    Object.entries(data.alert.metadata).map(field => {
+                      const value = field[1] === null ? '' : field[1].join(', ');
+                      const key = field[0] === null ? '' : field[0];
+                      const fieldName = key.length > 0 ? key[0].toUpperCase() + key.slice(1).replace('_', ' ') : '';
+                      return (
+                        <ErrorHandler key={key}>
+                          <EventField field_name={fieldName} field={`alert.metadata.${key}`} value={value} addFilter={this.addFilter} />
+                        </ErrorHandler>
+                      );
+                    })}
+                </DlHorizontal>
+              </UICard>
+            )}
 
             {data.app_proto === 'smb' && <SMBAlertCard data={data} addFilter={this.addFilter} />}
           </TabPaneResponsive>
@@ -943,4 +948,11 @@ AlertItem.propTypes = {
   data: PropTypes.any,
   addFilter: PropTypes.func,
   filterParams: PropTypes.object.isRequired,
+  eventTypes: PropTypes.object,
 };
+
+const mapStateToProps = createStructuredSelector({
+  eventTypes: makeSelectEventTypes(),
+});
+
+export default connect(mapStateToProps)(AlertItem);
