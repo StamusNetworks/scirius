@@ -1,15 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import { Dropdown, List, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import { createStructuredSelector } from 'reselect';
+
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
 import EventValue from 'ui/components/EventValue';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
-export default class HuntStat extends React.Component {
+import { makeSelectEventTypes } from 'ui/containers/HuntApp/stores/global';
+
+class HuntStat extends React.Component {
   constructor(props) {
     super(props);
     this.state = { data: [] };
@@ -35,11 +40,15 @@ export default class HuntStat extends React.Component {
     const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
     const filterParams = buildFilterParams(this.props.filterParams);
 
-    this.url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&${filterParams}&page_size=30${qfilter}`;
+    this.url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&${filterParams}&page_size=30${qfilter}&alert=${this.props.eventTypes.alert}&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`;
 
-    axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&${filterParams}&page_size=5${qfilter}`).then(res => {
-      this.setState({ data: res.data });
-    });
+    axios
+      .get(
+        `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&${filterParams}&page_size=5${qfilter}&alert=${this.props.eventTypes.alert}&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`,
+      )
+      .then(res => {
+        this.setState({ data: res.data });
+      });
   }
 
   addFilter(id, value, negated) {
@@ -100,4 +109,11 @@ HuntStat.propTypes = {
   loadMore: PropTypes.func,
   addFilter: PropTypes.func,
   filterParams: PropTypes.object.isRequired,
+  eventTypes: PropTypes.object,
 };
+
+const mapStateToProps = createStructuredSelector({
+  eventTypes: makeSelectEventTypes(),
+});
+
+export default connect(mapStateToProps)(HuntStat);

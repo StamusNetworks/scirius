@@ -1,8 +1,13 @@
 /* eslint-disable react/no-access-state-in-setstate */
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import axios from 'axios';
 import { List, Modal, Spin } from 'antd';
+import { cloneDeep } from 'lodash';
+import styled from 'styled-components';
+import { createStructuredSelector } from 'reselect';
+
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
@@ -11,8 +16,7 @@ import SciriusChart from 'ui/components/SciriusChart';
 import EventValue from 'ui/components/EventValue';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
-import { cloneDeep } from 'lodash';
-import styled from 'styled-components';
+import { makeSelectEventTypes } from 'ui/containers/HuntApp/stores/global';
 import RuleStatus from './RuleStatus';
 import HuntStat from './HuntStat';
 import { updateHitsStats } from './helpers/updateHitsStats';
@@ -39,7 +43,7 @@ const RuleHits = styled.div`
   padding: 0 10px;
 `;
 
-export default class RulePage extends React.Component {
+class RulePage extends React.Component {
   constructor(props) {
     super(props);
     const rule = cloneDeep(this.props.rule);
@@ -77,18 +81,26 @@ export default class RulePage extends React.Component {
     const filterParams = buildFilterParams(this.props.filterParams);
     if (typeof rule !== 'undefined') {
       updateHitsStats([rule], filterParams, this.updateRuleState, qfilter);
-      axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${this.props.rule.sid}`).then(res => {
-        this.updateExtInfo(res.data);
-      });
+      axios
+        .get(
+          `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${this.props.rule.sid}&alert=${this.props.eventTypes.alert}&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`,
+        )
+        .then(res => {
+          this.updateExtInfo(res.data);
+        });
       this.fetchRuleStatus(rule.sid);
     } else {
       axios
         .get(`${config.API_URL}${config.RULE_PATH}${sid}/?highlight=true`)
         .then(res => {
           updateHitsStats([res.data], filterParams, this.updateRuleState, qfilter);
-          axios.get(`${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${sid}`).then(res2 => {
-            this.updateExtInfo(res2.data);
-          });
+          axios
+            .get(
+              `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${sid}&alert=${this.props.eventTypes.alert}&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`,
+            )
+            .then(res2 => {
+              this.updateExtInfo(res2.data);
+            });
         })
         .catch(error => {
           if (error.response.status === 404) {
@@ -401,4 +413,11 @@ RulePage.propTypes = {
   addFilter: PropTypes.any,
   rulesets: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
+  eventTypes: PropTypes.object,
 };
+
+const mapStateToProps = createStructuredSelector({
+  eventTypes: makeSelectEventTypes(),
+});
+
+export default connect(mapStateToProps)(RulePage);
