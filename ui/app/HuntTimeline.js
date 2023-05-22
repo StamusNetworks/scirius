@@ -1,13 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import axios from 'axios';
+import { createStructuredSelector } from 'reselect';
+
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
 import SciriusChart from 'ui/components/SciriusChart';
 import ErrorHandler from 'ui/components/Error';
-
-export default class HuntTimeline extends React.Component {
+import { makeSelectEventTypes } from 'ui/containers/HuntApp/stores/global';
+class HuntTimeline extends React.Component {
   constructor(props) {
     super(props);
     this.state = { data: undefined };
@@ -27,64 +30,68 @@ export default class HuntTimeline extends React.Component {
   fetchData() {
     const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
     const filterParams = buildFilterParams(this.props.filterParams);
-    axios.get(`${config.API_URL}${config.ES_BASE_PATH}timeline/?hosts=*&target=${this.props.chartTarget}&${filterParams}${qfilter}`).then(res => {
-      /* iterate on actual row: build x array, for each row build hash x -> value */
-      /* sort x array */
-      /* for key in x array, build each row, value if exists, 0 if not */
-      const prows = { x: [] };
+    axios
+      .get(
+        `${config.API_URL}${config.ES_BASE_PATH}timeline/?hosts=*&target=${this.props.chartTarget}&${filterParams}${qfilter}&alert=${this.props.eventTypes.alert}&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`,
+      )
+      .then(res => {
+        /* iterate on actual row: build x array, for each row build hash x -> value */
+        /* sort x array */
+        /* for key in x array, build each row, value if exists, 0 if not */
+        const prows = { x: [] };
 
-      const keys = Object.keys(res.data);
-      const vals = Object.values(res.data);
-      let key;
-      for (let keyNum = 0; keyNum < keys.length; keyNum += 1) {
-        key = keys[keyNum];
-        if (!['interval', 'from_date'].includes(key)) {
-          prows[key] = {};
-          for (let entry = 0; entry < vals[keyNum].entries.length; entry += 1) {
-            if (prows.x.indexOf(vals[keyNum].entries[entry].time) === -1) {
-              prows.x.push(vals[keyNum].entries[entry].time);
-            }
-            prows[key][vals[keyNum].entries[entry].time] = vals[keyNum].entries[entry].count;
-          }
-        }
-      }
-
-      const pprows = prows.x.slice();
-      pprows.sort((a, b) => a - b);
-      let putindrows = [''];
-      putindrows[0] = pprows;
-      putindrows[0].unshift('x');
-      const pKeys = Object.keys(prows);
-      let k;
-      for (let pki = 0; pki < pKeys.length; pki += 1) {
-        k = pKeys[pki];
-        if (k !== 'x') {
-          const pvalue = [k];
-          for (let i = 1; i < putindrows[0].length; i += 1) {
-            if (putindrows[0][i] in prows[k]) {
-              pvalue.push(prows[k][putindrows[0][i]]);
-            } else {
-              pvalue.push(0);
+        const keys = Object.keys(res.data);
+        const vals = Object.values(res.data);
+        let key;
+        for (let keyNum = 0; keyNum < keys.length; keyNum += 1) {
+          key = keys[keyNum];
+          if (!['interval', 'from_date'].includes(key)) {
+            prows[key] = {};
+            for (let entry = 0; entry < vals[keyNum].entries.length; entry += 1) {
+              if (prows.x.indexOf(vals[keyNum].entries[entry].time) === -1) {
+                prows.x.push(vals[keyNum].entries[entry].time);
+              }
+              prows[key][vals[keyNum].entries[entry].time] = vals[keyNum].entries[entry].count;
             }
           }
-          putindrows.push(pvalue);
         }
-      }
-      if (putindrows.length === 1) {
-        putindrows = [];
-      }
 
-      const data = { data: { x: 'x', columns: putindrows } };
+        const pprows = prows.x.slice();
+        pprows.sort((a, b) => a - b);
+        let putindrows = [''];
+        putindrows[0] = pprows;
+        putindrows[0].unshift('x');
+        const pKeys = Object.keys(prows);
+        let k;
+        for (let pki = 0; pki < pKeys.length; pki += 1) {
+          k = pKeys[pki];
+          if (k !== 'x') {
+            const pvalue = [k];
+            for (let i = 1; i < putindrows[0].length; i += 1) {
+              if (putindrows[0][i] in prows[k]) {
+                pvalue.push(prows[k][putindrows[0][i]]);
+              } else {
+                pvalue.push(0);
+              }
+            }
+            putindrows.push(pvalue);
+          }
+        }
+        if (putindrows.length === 1) {
+          putindrows = [];
+        }
 
-      if (this.props.chartTarget) {
-        data.data.colors = {
-          relevant: '#ec7a08',
-          informational: '#7b1244',
-          untagged: '#005792',
-        };
-      }
-      this.setState(data);
-    });
+        const data = { data: { x: 'x', columns: putindrows } };
+
+        if (this.props.chartTarget) {
+          data.data.colors = {
+            relevant: '#ec7a08',
+            informational: '#7b1244',
+            untagged: '#005792',
+          };
+        }
+        this.setState(data);
+      });
   }
 
   render() {
@@ -115,4 +122,11 @@ HuntTimeline.propTypes = {
   style: PropTypes.object,
   chartTarget: PropTypes.bool,
   filterParams: PropTypes.object.isRequired,
+  eventTypes: PropTypes.object,
 };
+
+const mapStateToProps = createStructuredSelector({
+  eventTypes: makeSelectEventTypes(),
+});
+
+export default connect(mapStateToProps)(HuntTimeline);
