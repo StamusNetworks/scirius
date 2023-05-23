@@ -17,6 +17,7 @@ import ErrorHandler from 'ui/components/Error';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
 import PCAPFile from 'ui/components/PCAPFile';
 import { makeSelectEventTypes } from 'ui/containers/HuntApp/stores/global';
+import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
 
 import { DlHorizontal, Warning, Numbers, Pre, TabPaneResponsive } from './styles';
 import AlertRelatedData from '../../../../components/AlertRelatedData';
@@ -851,6 +852,36 @@ class AlertItem extends React.Component {
                         </ErrorHandler>
                       );
                     })}
+                </DlHorizontal>
+              </UICard>
+            )}
+
+            {this.props.eventTypes.stamus && (
+              <UICard title="Stamus Method" fullHeight>
+                <DlHorizontal>
+                  {_.isEmpty(data.stamus) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                  {data.stamus && (
+                    <React.Fragment>
+                      <ErrorHandler>
+                        <EventField field_name="Asset" field="stamus.asset" value={data.stamus.asset} />
+                      </ErrorHandler>
+                      <ErrorHandler>
+                        <EventField field_name="Offender" field="stamus.source" value={data.stamus.source} />
+                      </ErrorHandler>
+                      <ErrorHandler>
+                        <EventField field_name="Threat" field="stamus.threat_name" value={data.stamus.threat_name} />
+                      </ErrorHandler>
+                      <ErrorHandler>
+                        <EventField field_name="Family" field="stamus.family_name" value={data.stamus.family_name} />
+                      </ErrorHandler>
+                      <ErrorHandler>
+                        <EventField field_name="Kill Chain Phase" field="stamus.kill_chain" value={KillChainStepsEnum[data.stamus.kill_chain]} />
+                      </ErrorHandler>
+                      <ErrorHandler>
+                        <EventField field_name="Method ID" field="stamus.threat_id" value={data.stamus.threat_id} />
+                      </ErrorHandler>
+                    </React.Fragment>
+                  )}
                 </DlHorizontal>
               </UICard>
             )}
