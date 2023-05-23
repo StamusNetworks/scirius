@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import EventValue from 'ui/components/EventValue';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
 
 const DashboardBlockData = ({ block, data, copyMode }) => (
   <TransitionGroup>
@@ -11,7 +12,7 @@ const DashboardBlockData = ({ block, data, copyMode }) => (
           ref={item.nodeRef}
           key={item.key}
           field={block.i}
-          value={item.key}
+          value={(KillChainStepsEnum[item.key] && KillChainStepsEnum[item.key]) || item.key}
           right_info={<span className="badge">{item.doc_count}</span>}
           copyMode={copyMode}
           hasCopyShortcut
