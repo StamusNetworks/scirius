@@ -78,7 +78,7 @@ class EditSourceAtVersionTable(SciriusTable):
         attrs={"th__input": {"onclick": "tables2_toggle(this, 'source_selection')"}},
         orderable=False
     )
-    name = tables.LinkColumn('source', args=[tables.A('pk')])
+    name = tables.LinkColumn('source', args=[tables.A('source__pk')])
 
     class Meta(DefaultMeta):
         model = SourceAtVersion
