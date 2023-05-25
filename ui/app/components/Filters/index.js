@@ -19,6 +19,7 @@ import UISwitch from 'ui/components/UIElements/UISwitch';
 import UISwitchLabel from 'ui/components/UIElements/UISwitchLabel';
 import AdditionalFilters from 'ui/components/AdditionalFilters';
 import { COLOR_ERROR } from 'ui/constants/colors';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 import isIP from 'ui/helpers/isIP';
 import Sort from 'ui/components/Sort';
 
@@ -88,6 +89,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
   useInjectReducer({ key: 'ruleSet', reducer: ruleSetReducer });
   useInjectSaga({ key: 'ruleSet', saga: ruleSetSaga });
   const dispatch = useDispatch();
+  const { commonStore } = useStore();
 
   // Selectors handlers
   const user = useSelector(strGlobalSelectors.makeSelectUser());
@@ -262,6 +264,14 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
         fullString,
       }),
     );
+    commonStore.addFilter({
+      label: filterText,
+      id: fieldId,
+      value: fvalue,
+      negated: false,
+      query: field.queryType,
+      fullString,
+    });
     setSelectedItems([]);
     setSelectedIds([]);
     setSearchString('');
