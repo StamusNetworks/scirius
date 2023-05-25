@@ -407,10 +407,10 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     onChange={() => {
                       commonStore.toggleAlertTag('informational');
                     }}
-                    disabled={page === 'HOST_INSIGHT'}
+                    disabled={page === 'HOST_INSIGHT' || page === 'INVENTORY'}
                     data-test="Informational-switch"
                   />
-                  <UISwitchLabel disabled={page === 'HOST_INSIGHT'}>Informational</UISwitchLabel>
+                  <UISwitchLabel disabled={page === 'HOST_INSIGHT' || page === 'INVENTORY'}>Informational</UISwitchLabel>
                 </Space>
                 <Space>
                   <UISwitch
@@ -422,10 +422,10 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     onChange={() => {
                       commonStore.toggleAlertTag('relevant');
                     }}
-                    disabled={page === 'HOST_INSIGHT'}
+                    disabled={page === 'HOST_INSIGHT' || page === 'INVENTORY'}
                     data-test="Relevant-switch"
                   />
-                  <UISwitchLabel disabled={page === 'HOST_INSIGHT'}>Relevant</UISwitchLabel>
+                  <UISwitchLabel disabled={page === 'HOST_INSIGHT' || page === 'INVENTORY'}>Relevant</UISwitchLabel>
                 </Space>
                 <Space>
                   <Switch
@@ -436,10 +436,10 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     onChange={() => {
                       commonStore.toggleAlertTag('untagged');
                     }}
-                    disabled={page === 'HOST_INSIGHT'}
+                    disabled={page === 'HOST_INSIGHT' || page === 'INVENTORY'}
                     data-test="Untagged-switch"
                   />
-                  <UISwitchLabel disabled={page === 'HOST_INSIGHT'}>Untagged</UISwitchLabel>
+                  <UISwitchLabel disabled={page === 'HOST_INSIGHT' || page === 'INVENTORY'}>Untagged</UISwitchLabel>
                 </Space>
               </Space>
             </div>
