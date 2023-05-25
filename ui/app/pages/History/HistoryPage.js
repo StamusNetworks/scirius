@@ -43,7 +43,7 @@ import { useStore } from '../../mobx/RootStoreProvider';
 const HistoryPage = () => {
   useInjectSaga({ key: 'ruleSet', saga });
   useInjectReducer({ key: 'ruleSet', reducer });
-  const { commonStore } = useStore();
+  const { historyStore } = useStore();
 
   const dispatch = useDispatch();
 
@@ -72,7 +72,7 @@ const HistoryPage = () => {
 
   useEffect(async () => {
     setLoading(true);
-    await commonStore.fetchData(stringFilters, listParams);
+    await historyStore.fetchData(stringFilters, listParams);
     setLoading(false);
   }, [stringFilters, listParams]);
 
@@ -143,12 +143,12 @@ const HistoryPage = () => {
           }}
         />
       </ErrorHandler>
-      {commonStore.historyItemsList && (
+      {historyStore.historyItemsList && (
         <Table
           rowKey={item => item.pk}
           size="small"
           loading={loading}
-          dataSource={commonStore.historyItemsList}
+          dataSource={historyStore.historyItemsList}
           columns={columns}
           expandable={{
             columnWidth: 5,
@@ -163,7 +163,7 @@ const HistoryPage = () => {
         <HuntPaginationRow
           viewType="list"
           onPaginationChange={updateHistoryListState}
-          itemsCount={commonStore.historyItemsCount}
+          itemsCount={historyStore.historyItemsCount}
           itemsList={historyState}
         />
       </ErrorHandler>

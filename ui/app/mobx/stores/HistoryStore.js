@@ -17,7 +17,7 @@ class HistoryStore {
   }
 
   async fetchData(stringFilters, listParams) {
-    const response = await api.get(`${config.HISTORY_PATH}?${listParams}${stringFilters}`);
+    const response = await api.get(`rest/${config.HISTORY_PATH}?${listParams}${stringFilters}`);
     if (response.ok) {
       this.historyItemsList = response.data.results;
       this.historyItemsCount = response.data.count;
