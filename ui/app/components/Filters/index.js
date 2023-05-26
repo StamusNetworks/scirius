@@ -94,10 +94,13 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
   // Selectors handlers
   const { user, filters } = commonStore;
   const historyFilters = useSelector(huntGlobalStore.makeSelectHistoryFilters());
-  const filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(filterTypes));
   const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());
   const supportedActionsPermissions = user && user.permissions && user.permissions.includes('rules.ruleset_policy_edit');
   const filtersAreSticky = useSelector(({ ruleSet }) => ruleSet?.filtersAreSticky);
+  let filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(filterTypes));
+
+  // we dont want all filters in inventory
+  if (page === 'INVENTORY') filterFields = filterFields.filter(obj => obj.title.includes('Hosts:') || obj.title.includes('Network Def'));
 
   // State handlers
   const [valid, setValid] = useState('');
