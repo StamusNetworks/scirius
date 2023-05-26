@@ -104,14 +104,14 @@ class FilterList extends React.Component {
 
   saveHandler = () => {
     const newFilterValue = isNumeric(this.state.newFilterValue) ? parseInt(this.state.newFilterValue, 10) : this.state.newFilterValue;
-    this.props.editFilter(this.props.filterType, this.state.filter, {
+    this.props.store.commonStore.replaceFilter(this.state.filter, {
       id: this.state.filter.id,
       label: `${this.state.filter.id}: ${this.state.newFilterValue}`,
       value: newFilterValue,
       negated: this.state.newFilterNegated,
       fullString: !this.state.wildcardMode,
     });
-    this.props.store.commonStore.replaceFilter(this.state.filter, {
+    this.props.editFilter(this.props.filterType, this.state.filter, {
       id: this.state.filter.id,
       label: `${this.state.filter.id}: ${this.state.newFilterValue}`,
       value: newFilterValue,

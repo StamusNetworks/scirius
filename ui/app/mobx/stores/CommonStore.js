@@ -2,7 +2,6 @@ import { makeAutoObservable, toJS } from 'mobx';
 import moment from 'moment';
 import endpoints from 'ui/config/endpoints';
 import { isEqual } from 'lodash';
-import { validateFilter } from '../../containers/HuntApp/stores/global';
 import { api } from '../api';
 
 class CommonStore {
@@ -134,7 +133,7 @@ class CommonStore {
   }
 
   addFilter(filter) {
-    const stack = (Array.isArray(filter) ? filter : [filter]).filter(f => validateFilter(f));
+    const stack = (Array.isArray(filter) ? filter : [filter]).filter(f => CommonStore.#validateFilter(f));
     this.ids = [...this.ids, ...stack];
     localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids)));
   }
@@ -148,7 +147,7 @@ class CommonStore {
   }
 
   replaceFilter(oldFilter, newFilter) {
-    if (validateFilter(newFilter)) {
+    if (CommonStore.#validateFilter(newFilter)) {
       const idx = CommonStore.#indexOfFilter(oldFilter, this.ids);
 
       /* eslint-disable-next-line */
@@ -197,7 +196,7 @@ class CommonStore {
     };
   }
 
-  static validateFilter(filter) {
+  static #validateFilter(filter) {
     if (filter.id === 'alert.tag') {
       // eslint-disable-next-line no-console
       console.error('Tags must go in a separate store');
@@ -208,7 +207,7 @@ class CommonStore {
 
     const filterKeys = Object.keys(filter);
     for (let i = 0; i < filterKeys.length; i += 1) {
-      if (!filterProps.find(filterProp => filterProp === filterProps[i])) {
+      if (!filterProps.includes(filterKeys[i])) {
         return false;
       }
     }
