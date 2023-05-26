@@ -32,6 +32,7 @@ export const PAGE_STATE = {
   history: 'HISTORY',
   filters_list: 'FILTERS',
   setup: 'SETUP',
+  inventory: 'INVENTORY',
 };
 
 export const huntTabs = {
@@ -39,6 +40,7 @@ export const huntTabs = {
   [PAGE_STATE.alerts_list]: 'Events',
   [PAGE_STATE.rules_list]: 'Signatures',
   [PAGE_STATE.filters_list]: 'Policy',
+  [PAGE_STATE.inventory]: 'Inventory',
 };
 
 export const huntUrls = {
@@ -46,6 +48,7 @@ export const huntUrls = {
   [PAGE_STATE.alerts_list]: 'hunting/events',
   [PAGE_STATE.rules_list]: 'hunting/signatures',
   [PAGE_STATE.filters_list]: 'hunting/policies',
+  [PAGE_STATE.inventory]: 'analytics/inventory',
 };
 
 export const APP_NAME_SHORT = 'Scirius CE';

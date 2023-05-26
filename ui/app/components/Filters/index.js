@@ -466,7 +466,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
 };
 
 Filter.propTypes = {
-  page: PropTypes.oneOf(['RULES_LIST', 'DASHBOARDS', 'ALERTS_LIST', 'HISTORY', 'HOSTS_LIST']),
+  page: PropTypes.oneOf(['RULES_LIST', 'DASHBOARDS', 'ALERTS_LIST', 'HISTORY', 'HOSTS_LIST', 'INVENTORY']),
   section: PropTypes.string.isRequired,
   queryTypes: PropTypes.array.isRequired,
   filterTypes: PropTypes.array.isRequired,
