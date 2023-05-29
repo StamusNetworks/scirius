@@ -6,6 +6,7 @@ import * as huntGlobalStore from 'ui/containers/HuntApp/stores/global';
 import strGlobalActions from 'ui/containers/App/actions';
 import ruleSetsActions from 'ui/stores/filters/actions';
 import ruleSetsSelectors from 'ui/stores/filters/selectors';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 import SaveFilterSetButton from '../SaveFilterSetButton';
 import LoadFilterSetButton from '../LoadFilterSetButton';
 import ClearFiltersButton from '../ClearFiltersButton';
@@ -18,6 +19,7 @@ const ActionsContainer = styled.div`
 `;
 
 const Actions = ({ section }) => {
+  const { commonStore } = useStore();
   const dispatch = useDispatch();
   const supportedActions = useSelector(ruleSetsSelectors.makeSelectSupportedActions());
   const filters = useSelector(huntGlobalStore.makeSelectGlobalFilters());
@@ -25,7 +27,13 @@ const Actions = ({ section }) => {
     <div>
       <Title>Actions</Title>
       <ActionsContainer>
-        <ClearFiltersButton onClick={() => dispatch(huntGlobalStore.clearFilters(section))} filters={filters} />
+        <ClearFiltersButton
+          onClick={() => {
+            dispatch(huntGlobalStore.clearFilters(section));
+            commonStore.clearFilters();
+          }}
+          filters={filters}
+        />
         <LoadFilterSetButton onClick={() => dispatch(strGlobalActions.setFilterSets(true))} />
         <SaveFilterSetButton onClick={() => dispatch(ruleSetsActions.saveFiltersModal(true))} filters={filters} />
         <ActionsButtons supportedActions={supportedActions} />

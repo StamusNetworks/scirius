@@ -51,7 +51,7 @@ const DashboardPanel = ({ panelId }) => {
     const qfilter = (buildQFilter(commonStore.getFilters(true), toJS(commonStore.systemSettings)) || '').replace('&qfilter=', '');
     const response = await api.get(endpoints.DASHBOARD_PANEL.url, {
       fields,
-      qfilter,
+      qfilter: decodeURIComponent(qfilter),
       page_size: 5,
     });
     setBlockData(dashboardSanitizer(response.data));

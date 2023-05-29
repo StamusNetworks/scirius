@@ -111,6 +111,13 @@ class FilterList extends React.Component {
       negated: this.state.newFilterNegated,
       fullString: !this.state.wildcardMode,
     });
+    this.props.store.commonStore.replaceFilter(this.state.filter, {
+      id: this.state.filter.id,
+      label: `${this.state.filter.id}: ${this.state.newFilterValue}`,
+      value: newFilterValue,
+      negated: this.state.newFilterNegated,
+      fullString: !this.state.wildcardMode,
+    });
     this.setState({ editForm: false });
   };
 

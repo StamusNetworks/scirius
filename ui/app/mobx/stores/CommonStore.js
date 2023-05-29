@@ -38,11 +38,23 @@ class CommonStore {
   constructor(root) {
     this.root = root;
     this.alert = CommonStore.generateAlert();
-    this.startDate = localStorage.getItem('startDate') || moment().subtract(1, 'hours').unix();
-    this.endDate = localStorage.getItem('startDate') || moment().unix();
+    if (!localStorage.getItem('startDate')) {
+      const startDate = moment().subtract(1, 'hours').unix();
+      this.startDate = startDate;
+      localStorage.setItem('startDate', startDate);
+    } else {
+      this.startDate = localStorage.getItem('startDate');
+    }
+    if (!localStorage.getItem('endDate')) {
+      const endDate = moment().unix();
+      this.endDate = endDate;
+      localStorage.setItem('endDate', endDate);
+    } else {
+      this.endDate = localStorage.getItem('endDate');
+    }
     try {
       this.systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
-      this.ids = JSON.parse(localStorage.getItem('ids_filters'));
+      this.ids = JSON.parse(localStorage.getItem('ids_filters') || '[]');
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log('Error while parsing local storage data');
