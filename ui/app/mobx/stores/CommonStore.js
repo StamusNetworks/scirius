@@ -135,6 +135,26 @@ class CommonStore {
     localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids)));
   }
 
+  replaceFilter(oldFilter, newFilter) {
+    if (validateFilter(newFilter)) {
+      const idx = CommonStore.#indexOfFilter(oldFilter, this.ids);
+
+      /* eslint-disable-next-line */
+      const filtersUpdated = this.ids.map((filter, i) => (i === idx) ? {
+              ...filter,
+              ...newFilter,
+            }
+          : filter,
+      );
+      this.ids = filtersUpdated;
+      localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids)));
+    }
+  }
+
+  clearFilters() {
+    this.ids = [];
+  }
+
   getFilters(includeAlertTAg = false) {
     if (includeAlertTAg) {
       return [...toJS(this.ids), toJS(this.alert)].filter(Boolean);
