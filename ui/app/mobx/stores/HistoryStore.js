@@ -24,7 +24,6 @@ class HistoryStore {
     }
     return response;
   }
-
 }
 
 export default HistoryStore;

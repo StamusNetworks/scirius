@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Row, notification, Col } from 'antd';
+import { Row, notification, Col, Button } from 'antd';
 import styled from 'styled-components';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
@@ -12,6 +12,8 @@ import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import UITabs from 'ui/components/UIElements/UITabs';
 import PeriodsList from 'ui/components/PeriodsList';
 import Refresh from 'ui/components/Refresh';
+import { useStore } from 'ui/mobx/RootStoreProvider';
+import { observer } from 'mobx-react-lite';
 
 const PickersWrapper = styled.div`
   width: 600px;
@@ -24,6 +26,7 @@ const Label = styled.div`
 `;
 
 const TimeRangePickersContainer = ({ startDate, endDate, duration, setDuration, setTimeSpan, timePicker, setReload, doReload, reloadPeriod }) => {
+  const { commonStore } = useStore();
   const validateTimeSpan = (startDateIn, endDateIn) => {
     let error = '';
     if (startDateIn.unix() === endDateIn.unix()) {
@@ -66,6 +69,7 @@ const TimeRangePickersContainer = ({ startDate, endDate, duration, setDuration, 
 
   return (
     <PickersWrapper>
+      <Button onClick={() => commonStore.addFilter({ a: 'b' })}>ids</Button>
       <UITabs
         defaultActiveKey={timePicker.toString()}
         size="small"
@@ -78,15 +82,36 @@ const TimeRangePickersContainer = ({ startDate, endDate, duration, setDuration, 
               <Row type="flex" justify="center">
                 <Col md={5}>
                   <Label>Hours</Label>
-                  <PeriodsList options={hours} value={duration} onChange={p => setDuration(p)} />
+                  <PeriodsList
+                    options={hours}
+                    value={duration}
+                    onChange={p => {
+                      commonStore.setRelativeTimeRange(p);
+                      setDuration(p);
+                    }}
+                  />
                 </Col>
                 <Col md={5}>
                   <Label>Days</Label>
-                  <PeriodsList options={days} value={duration} onChange={p => setDuration(p)} />
+                  <PeriodsList
+                    options={days}
+                    value={duration}
+                    onChange={p => {
+                      commonStore.setRelativeTimeRange(p);
+                      setDuration(p);
+                    }}
+                  />
                 </Col>
                 <Col md={5}>
                   <Label>More</Label>
-                  <PeriodsList options={more} value={duration} onChange={p => setDuration(p)} />
+                  <PeriodsList
+                    options={more}
+                    value={duration}
+                    onChange={p => {
+                      commonStore.setRelativeTimeRange(p);
+                      setDuration(p);
+                    }}
+                  />
                 </Col>
                 <Col md={9}>
                   <Label>Refresh Interval</Label>
@@ -139,4 +164,4 @@ export const mapDispatchToProps = dispatch =>
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
-export default compose(withConnect)(TimeRangePickersContainer);
+export default compose(withConnect)(observer(TimeRangePickersContainer));
