@@ -35,10 +35,10 @@ import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import rulesSelectors from 'ui/stores/filters/selectors';
-import globalSelectors from 'ui/containers/App/selectors';
 import { makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
+import { withStore } from 'ui/mobx/RootStoreProvider';
 import { updateHitsStats } from '../../helpers/updateHitsStats';
 import { buildListUrlParams, loadActions, buildFilter } from '../../helpers/common';
 import RuleInList from '../../RuleInList';
@@ -238,7 +238,7 @@ export class SignaturesPage extends React.Component {
   }
 
   fetchHitsStats(rules) {
-    const qfilter = buildQFilter(this.props.filtersWithAlert, this.props.systemSettings);
+    const qfilter = buildQFilter(this.props.filtersWithAlert, this.props.store.commonStore.systemSettings);
     const filterParams = buildFilterParams(this.props.filterParams);
     updateHitsStats(rules, filterParams, this.updateRulesState, qfilter);
   }
@@ -308,7 +308,7 @@ export class SignaturesPage extends React.Component {
           )}
           {view === 'rule' && (
             <RulePage
-              systemSettings={this.props.systemSettings}
+              systemSettings={this.props.store.commonStore.systemSettings}
               rule={displayRule}
               config={this.state.rulesList}
               filters={this.props.filters}
@@ -324,7 +324,7 @@ export class SignaturesPage extends React.Component {
 
 SignaturesPage.propTypes = {
   rulesets: PropTypes.array,
-  systemSettings: PropTypes.any,
+  store: PropTypes.object,
   filters: PropTypes.any,
   filtersWithAlert: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
@@ -346,8 +346,7 @@ const mapStateToProps = createStructuredSelector({
   filtersWithAlert: makeSelectGlobalFilters(true),
   filterParams: makeSelectFilterParams(),
   rulesets: rulesSelectors.makeSelectRuleSets(),
-  systemSettings: globalSelectors.makeSelectSystemSettings(),
 });
 
 const withConnect = connect(mapStateToProps);
-export default compose(withConnect, withPermissions)(SignaturesPage);
+export default compose(withConnect, withPermissions, withStore)(SignaturesPage);
