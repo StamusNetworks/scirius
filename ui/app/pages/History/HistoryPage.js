@@ -35,15 +35,14 @@ import reducer from 'ui/stores/filters/reducer';
 import saga from 'ui/stores/filters/saga';
 import { addFilter, makeSelectHistoryFilters } from 'ui/containers/HuntApp/stores/global';
 import history from 'ui/utils/history';
-import globalSelectors from 'ui/containers/App/selectors';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 import { buildFilter, buildListUrlParams } from '../../helpers/common';
 import HuntPaginationRow from '../../HuntPaginationRow';
-import { useStore } from '../../mobx/RootStoreProvider';
 
 const HistoryPage = () => {
   useInjectSaga({ key: 'ruleSet', saga });
   useInjectReducer({ key: 'ruleSet', reducer });
-  const { historyStore } = useStore();
+  const { commonStore, historyStore } = useStore();
 
   const dispatch = useDispatch();
 
@@ -65,9 +64,8 @@ const HistoryPage = () => {
   }, []);
 
   const filters = useSelector(makeSelectHistoryFilters());
-  const systemSettings = useSelector(globalSelectors.makeSelectSystemSettings());
 
-  const stringFilters = buildFilter(filters, systemSettings);
+  const stringFilters = buildFilter(filters, commonStore.systemSettings);
   const listParams = buildListUrlParams(historyState);
 
   useEffect(async () => {
