@@ -37,7 +37,7 @@ import buildListParams from 'ui/helpers/buildListParams';
 import { addFilter, makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
-import globalSelectors from 'ui/containers/App/selectors';
+import { withStore } from 'ui/mobx/RootStoreProvider';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -102,7 +102,7 @@ class AlertsPage extends React.Component {
   };
 
   fetchData() {
-    const stringFilters = buildQFilter(this.props.filtersWithAlert, this.props.systemSettings);
+    const stringFilters = buildQFilter(this.props.filtersWithAlert, this.props.store.commonStore.systemSettings);
     const filterParams = buildFilterParams(this.props.filterParams);
     const listParams = buildListUrlParams(this.state.alertsList);
     this.setState({ loading: true });
@@ -235,7 +235,7 @@ class AlertsPage extends React.Component {
 AlertsPage.propTypes = {
   filters: PropTypes.any,
   filtersWithAlert: PropTypes.any,
-  systemSettings: PropTypes.any,
+  store: PropTypes.object,
   addFilter: PropTypes.func,
   filterParams: PropTypes.object.isRequired,
   user: PropTypes.shape({
@@ -255,7 +255,6 @@ const mapStateToProps = createStructuredSelector({
   filters: makeSelectGlobalFilters(),
   filtersWithAlert: makeSelectGlobalFilters(true),
   filterParams: makeSelectFilterParams(),
-  systemSettings: globalSelectors.makeSelectSystemSettings(),
 });
 
 const mapDispatchToProps = {
@@ -263,4 +262,4 @@ const mapDispatchToProps = {
 };
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
-export default compose(withConnect, withPermissions)(AlertsPage);
+export default compose(withConnect, withPermissions, withStore)(AlertsPage);
