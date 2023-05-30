@@ -1231,7 +1231,7 @@ class Source(models.Model):
         update["added"] = self.json_rules_list(self.updated_rules["added"])
         update["updated"] = self.json_rules_list(self.updated_rules["updated"])
         repo = self.get_git_repo(delete=False)
-        sha = repo.heads.master.log()[-1].newhexsha
+        sha = list(repo.iter_commits('master', max_count=1))[0].hexsha
         SourceUpdate.objects.create(
             source=self,
             created_date=timezone.now(),
