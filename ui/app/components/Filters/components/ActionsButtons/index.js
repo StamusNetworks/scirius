@@ -4,7 +4,7 @@ import { DownOutlined, TagOutlined } from '@ant-design/icons';
 import RuleToggleModal from 'ui/RuleToggleModal';
 import PropTypes from 'prop-types';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
-import globalSelectors from 'ui/containers/App/selectors';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 import filtersSelectors from 'ui/stores/filters/selectors';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
@@ -12,7 +12,8 @@ import { makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
 import ErrorHandler from 'ui/components/Error';
 import { ActionButton } from '../styles';
 
-const ActionsButtons = ({ supportedActions, filterParams, filters, rulesets, systemSettings }) => {
+const ActionsButtons = ({ supportedActions, filterParams, filters, rulesets }) => {
+  const { commonStore } = useStore();
   const [visible, setVisible] = useState(false);
   const [type, setType] = useState(false);
   const rulesList = {
@@ -75,7 +76,7 @@ const ActionsButtons = ({ supportedActions, filterParams, filters, rulesets, sys
           filters={filters}
           close={() => setVisible(false)}
           rulesets={rulesets}
-          systemSettings={systemSettings}
+          systemSettings={commonStore.systemSettings}
           filterParams={filterParams}
           supportedActions={supportedActions}
         />
@@ -90,14 +91,12 @@ ActionsButtons.propTypes = {
   filterParams: PropTypes.any,
   filters: PropTypes.any,
   rulesets: PropTypes.any,
-  systemSettings: PropTypes.any,
 };
 
 const mapStateToProps = createStructuredSelector({
   filterParams: makeSelectFilterParams(),
   filters: makeSelectGlobalFilters(),
   rulesets: filtersSelectors.makeSelectRuleSets(),
-  systemSettings: globalSelectors.makeSelectSystemSettings(),
 });
 
 export default connect(mapStateToProps)(ActionsButtons);
