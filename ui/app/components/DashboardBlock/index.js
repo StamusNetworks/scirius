@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, Empty, Menu, message } from 'antd';
 import { LoadingOutlined, MenuOutlined } from '@ant-design/icons';
-import { useSelector } from 'react-redux';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import DashboardBlockData from 'ui/components/DashboardBlockData';
-import dashboardSelectors from 'ui/stores/dashboard/selectors';
 import downloadData from 'ui/helpers/downloadData';
 import styled from 'styled-components';
+import DashboardContext from 'ui/context/DashboardContext';
 
 const Title = styled.div`
   text-align: center;
@@ -16,8 +15,7 @@ const Title = styled.div`
 `;
 
 const DashboardBlock = ({ block, data, loading, onLoadMore, emptyPanel }) => {
-  const copyMode = useSelector(dashboardSelectors.makeSelectCopyMode());
-
+  const copyMode = useContext(DashboardContext);
   const [loadingVisible, setLoadingVisible] = useState(false);
 
   // Loading flag debounce

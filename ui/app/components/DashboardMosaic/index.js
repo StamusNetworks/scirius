@@ -1,14 +1,9 @@
-import React, { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { useInjectSaga } from 'utils/injectSaga';
-import { useInjectReducer } from 'utils/injectReducer';
+import React from 'react';
 import { dashboard } from 'ui/config/Dashboard';
-import dashboardActions from 'ui/stores/dashboard/actions';
-import dashboardReducer from 'ui/stores/dashboard/reducer';
-import dashboardSaga from 'ui/stores/dashboard/saga';
 import DashboardPanel from 'ui/components/DashboardPanel';
 import useKeyPress from 'ui/hooks/useKeyPress';
 import { createGlobalStyle } from 'styled-components';
+import DashboardContext from 'ui/context/DashboardContext';
 
 const GlobalStyle = createGlobalStyle`
   .item-enter {
@@ -32,21 +27,15 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 const DashboardMosaic = () => {
-  useInjectReducer({ key: 'dashboard', reducer: dashboardReducer });
-  useInjectSaga({ key: 'dashboard', saga: dashboardSaga });
-  const dispatch = useDispatch();
   const ctrl = useKeyPress('Control');
-
-  useEffect(() => {
-    dispatch(dashboardActions.setEditMode(ctrl));
-  }, [ctrl]);
-
   return (
     <div data-test="dashboard-mosaic">
       <GlobalStyle />
-      {Object.keys(dashboard).map(panelId => (
-        <DashboardPanel panelId={panelId} />
-      ))}
+      <DashboardContext.Provider value={ctrl}>
+        {Object.keys(dashboard).map(panelId => (
+          <DashboardPanel panelId={panelId} />
+        ))}
+      </DashboardContext.Provider>
     </div>
   );
 };
