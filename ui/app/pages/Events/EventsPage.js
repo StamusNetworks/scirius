@@ -34,7 +34,7 @@ import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
 import moment from 'moment';
 import buildListParams from 'ui/helpers/buildListParams';
-import { addFilter, makeSelectGlobalFilters, makeSelectEventTypes } from 'ui/containers/HuntApp/stores/global';
+import { addFilter, makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
 import { withStore } from 'ui/mobx/RootStoreProvider';
@@ -108,8 +108,8 @@ class EventsPage extends React.Component {
     this.setState({ loading: true });
 
     const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?${listParams}&${filterParams}${stringFilters}&alert=${
-      this.props.eventTypes.alert
-    }&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`;
+      this.props.store.commonStore.eventTypes.alert
+    }&stamus=${this.props.store.commonStore.eventTypes.stamus}&discovery=${this.props.store.commonStore.eventTypes.discovery}`;
     axios
       .get(url)
       .then(res => {
@@ -214,7 +214,13 @@ class EventsPage extends React.Component {
               columnWidth: 5,
               expandRowByClick: true,
               expandedRowRender: alert => (
-                <AlertItem data={alert.rule} filterParams={this.props.filterParams} filters={this.props.filters} addFilter={this.props.addFilter} />
+                <AlertItem
+                  data={alert.rule}
+                  filterParams={this.props.filterParams}
+                  filters={this.props.filters}
+                  addFilter={this.props.addFilter}
+                  eventTypes={this.props.store.commonStore.eventTypes}
+                />
               ),
               rowExpandable: () => true,
             }}
@@ -251,7 +257,6 @@ EventsPage.propTypes = {
     dateJoined: PropTypes.any,
     permissions: PropTypes.any,
   }),
-  eventTypes: PropTypes.object,
 };
 
 const mapStateToProps = createStructuredSelector({

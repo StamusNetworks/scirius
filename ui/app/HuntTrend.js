@@ -1,15 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import axios from 'axios';
-import { createStructuredSelector } from 'reselect';
 
 import * as config from 'config/Api';
-import { buildQFilter } from 'ui/buildQFilter';
-import { buildFilterParams } from 'ui/buildFilterParams';
 import ErrorHandler from 'ui/components/Error';
 import DonutChart from 'ui/components/DonutChart';
-import { makeSelectEventTypes } from 'ui/containers/HuntApp/stores/global';
+import { buildQFilter } from 'ui/buildQFilter';
+import { buildFilterParams } from 'ui/buildFilterParams';
 
 class HuntTrend extends React.Component {
   constructor(props) {
@@ -101,8 +98,4 @@ HuntTrend.propTypes = {
   eventTypes: PropTypes.object,
 };
 
-const mapStateToProps = createStructuredSelector({
-  eventTypes: makeSelectEventTypes(),
-});
-
-export default connect(mapStateToProps)(HuntTrend);
+export default HuntTrend;

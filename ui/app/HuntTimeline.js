@@ -1,15 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import axios from 'axios';
-import { createStructuredSelector } from 'reselect';
 
 import * as config from 'config/Api';
-import { buildQFilter } from 'ui/buildQFilter';
-import { buildFilterParams } from 'ui/buildFilterParams';
 import SciriusChart from 'ui/components/SciriusChart';
 import ErrorHandler from 'ui/components/Error';
-import { makeSelectEventTypes } from 'ui/containers/HuntApp/stores/global';
+import { buildQFilter } from 'ui/buildQFilter';
+import { buildFilterParams } from 'ui/buildFilterParams';
+
 class HuntTimeline extends React.Component {
   constructor(props) {
     super(props);
@@ -125,8 +123,4 @@ HuntTimeline.propTypes = {
   eventTypes: PropTypes.object,
 };
 
-const mapStateToProps = createStructuredSelector({
-  eventTypes: makeSelectEventTypes(),
-});
-
-export default connect(mapStateToProps)(HuntTimeline);
+export default HuntTimeline;

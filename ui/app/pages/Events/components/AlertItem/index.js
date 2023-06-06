@@ -1,26 +1,22 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { Badge, Empty, Spin, Table, Tabs } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import ReactJson from 'react-json-view';
 import _ from 'lodash';
-import { createStructuredSelector } from 'reselect';
+import { Badge, Empty, Spin, Table, Tabs } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
 
 import * as config from 'config/Api';
-import { dashboard } from 'config/Dashboard';
-import { buildFilterParams } from 'ui/buildFilterParams';
 import UICard from 'ui/components/UIElements/UICard';
 import EventField from 'ui/components/EventField';
 import ErrorHandler from 'ui/components/Error';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
 import PCAPFile from 'ui/components/PCAPFile';
-import { makeSelectEventTypes } from 'ui/containers/HuntApp/stores/global';
 import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
-
-import { DlHorizontal, Warning, Numbers, Pre, TabPaneResponsive } from './styles';
+import { dashboard } from 'config/Dashboard';
+import { buildFilterParams } from 'ui/buildFilterParams';
 import AlertRelatedData from '../../../../components/AlertRelatedData';
+import { DlHorizontal, Warning, Numbers, Pre, TabPaneResponsive } from './styles';
 
 // mapping between what comes from backend(here key) and what we want to show on the frontend(the value)
 const protoMap = {
@@ -982,8 +978,4 @@ AlertItem.propTypes = {
   eventTypes: PropTypes.object,
 };
 
-const mapStateToProps = createStructuredSelector({
-  eventTypes: makeSelectEventTypes(),
-});
-
-export default connect(mapStateToProps)(AlertItem);
+export default AlertItem;

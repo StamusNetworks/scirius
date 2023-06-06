@@ -1,10 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import { Dropdown, List, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import { createStructuredSelector } from 'reselect';
 
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
@@ -12,7 +10,6 @@ import { buildFilterParams } from 'ui/buildFilterParams';
 import EventValue from 'ui/components/EventValue';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
-import { makeSelectEventTypes } from 'ui/containers/HuntApp/stores/global';
 
 class HuntStat extends React.Component {
   constructor(props) {
@@ -112,8 +109,4 @@ HuntStat.propTypes = {
   eventTypes: PropTypes.object,
 };
 
-const mapStateToProps = createStructuredSelector({
-  eventTypes: makeSelectEventTypes(),
-});
-
-export default connect(mapStateToProps)(HuntStat);
+export default HuntStat;

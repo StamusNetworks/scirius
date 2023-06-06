@@ -73,10 +73,16 @@ const DashboardPage = () => {
             chartTarget={chartTarget}
             filters={filtersWithAlert}
             systemSettings={commonStore.systemSettings}
+            eventTypes={commonStore.eventTypes}
           />
         </Col>
         <Col lg={4} md={6} sm={24} xs={24} style={{ paddingLeft: '0px' }}>
-          <HuntTrend filterParams={filterParams} filters={filtersWithAlert} systemSettings={commonStore.systemSettings} />
+          <HuntTrend
+            filterParams={filterParams}
+            filters={filtersWithAlert}
+            systemSettings={commonStore.systemSettings}
+            eventTypes={commonStore.eventTypes}
+          />
           {hasPermissions && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
             <div style={{ position: 'absolute', zIndex: 1, top: 0, right: '30px' }}>
               <Dropdown id="more-actions" overlay={menu} trigger={['click']}>

@@ -1,12 +1,10 @@
 /* eslint-disable react/no-access-state-in-setstate */
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import axios from 'axios';
 import { List, Modal, Spin } from 'antd';
 import { cloneDeep } from 'lodash';
 import styled from 'styled-components';
-import { createStructuredSelector } from 'reselect';
 
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
@@ -16,7 +14,7 @@ import SciriusChart from 'ui/components/SciriusChart';
 import EventValue from 'ui/components/EventValue';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
-import { makeSelectEventTypes } from 'ui/containers/HuntApp/stores/global';
+import { withStore } from 'ui/mobx/RootStoreProvider';
 import RuleStatus from './RuleStatus';
 import HuntStat from './HuntStat';
 import { updateHitsStats } from './helpers/updateHitsStats';
@@ -83,7 +81,7 @@ class RulePage extends React.Component {
       updateHitsStats([rule], filterParams, this.updateRuleState, qfilter);
       axios
         .get(
-          `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${this.props.rule.sid}&alert=${this.props.eventTypes.alert}&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`,
+          `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${this.props.rule.sid}&alert=${this.props.store.commonStore.eventTypes.alert}&stamus=${this.props.store.commonStore.eventTypes.stamus}&discovery=${this.props.store.commonStore.eventTypes.discovery}`,
         )
         .then(res => {
           this.updateExtInfo(res.data);
@@ -96,7 +94,7 @@ class RulePage extends React.Component {
           updateHitsStats([res.data], filterParams, this.updateRuleState, qfilter);
           axios
             .get(
-              `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${sid}&alert=${this.props.eventTypes.alert}&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`,
+              `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=app_proto&${filterParams}&sid=${sid}&alert=${this.props.store.commonStore.eventTypes.alert}&stamus=${this.props.store.commonStore.eventTypes.stamus}&discovery=${this.props.store.commonStore.eventTypes.discovery}`,
             )
             .then(res2 => {
               this.updateExtInfo(res2.data);
@@ -252,6 +250,7 @@ class RulePage extends React.Component {
                     filterParams={this.props.filterParams}
                     addFilter={this.props.addFilter}
                     loadMore={this.loadMore}
+                    eventTypes={this.props.store.commonStore.eventTypes}
                   />
                   <HuntStat
                     title="Destinations"
@@ -262,6 +261,7 @@ class RulePage extends React.Component {
                     filterParams={this.props.filterParams}
                     addFilter={this.props.addFilter}
                     loadMore={this.loadMore}
+                    eventTypes={this.props.store.commonStore.eventTypes}
                   />
                   <HuntStat
                     title="Probes"
@@ -272,6 +272,7 @@ class RulePage extends React.Component {
                     filterParams={this.props.filterParams}
                     addFilter={this.props.addFilter}
                     loadMore={this.loadMore}
+                    eventTypes={this.props.store.commonStore.eventTypes}
                   />
                 </Row>
                 {this.state.extinfo.http && (
@@ -286,6 +287,7 @@ class RulePage extends React.Component {
                       filterParams={this.props.filterParams}
                       addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
+                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
                       systemSettings={this.state.systemSettings}
@@ -297,6 +299,7 @@ class RulePage extends React.Component {
                       filterParams={this.props.filterParams}
                       addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
+                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
                       systemSettings={this.state.systemSettings}
@@ -308,6 +311,7 @@ class RulePage extends React.Component {
                       filterParams={this.props.filterParams}
                       addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
+                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                   </Row>
                 )}
@@ -323,6 +327,7 @@ class RulePage extends React.Component {
                       filterParams={this.props.filterParams}
                       addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
+                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
                       systemSettings={this.state.systemSettings}
@@ -334,6 +339,7 @@ class RulePage extends React.Component {
                       filterParams={this.props.filterParams}
                       addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
+                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                   </Row>
                 )}
@@ -349,6 +355,7 @@ class RulePage extends React.Component {
                       filterParams={this.props.filterParams}
                       addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
+                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
                       systemSettings={this.state.systemSettings}
@@ -360,6 +367,7 @@ class RulePage extends React.Component {
                       filterParams={this.props.filterParams}
                       addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
+                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
                       systemSettings={this.state.systemSettings}
@@ -371,6 +379,7 @@ class RulePage extends React.Component {
                       filterParams={this.props.filterParams}
                       addFilter={this.props.addFilter}
                       loadMore={this.loadMore}
+                      eventTypes={this.props.store.commonStore.eventTypes}
                     />
                   </Row>
                 )}
@@ -413,11 +422,7 @@ RulePage.propTypes = {
   addFilter: PropTypes.any,
   rulesets: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
-  eventTypes: PropTypes.object,
+  store: PropTypes.object,
 };
 
-const mapStateToProps = createStructuredSelector({
-  eventTypes: makeSelectEventTypes(),
-});
-
-export default connect(mapStateToProps)(RulePage);
+export default withStore(RulePage);
