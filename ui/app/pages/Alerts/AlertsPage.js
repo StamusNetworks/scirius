@@ -203,6 +203,7 @@ class AlertsPage extends React.Component {
 
         {this.state.alerts && (
           <Table
+            data-test="alerts-table"
             size="small"
             loading={this.state.loading}
             dataSource={dataSource}
