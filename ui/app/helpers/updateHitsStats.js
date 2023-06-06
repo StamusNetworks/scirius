@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 import * as config from 'config/Api';
-import { store } from '../store';
+import { store } from 'ui/mobx/stores/RootStore';
 
 const statsCache = {};
 function buildProbesSet(data) {
@@ -46,12 +46,10 @@ function processHitsStats(res, rules, updateCallback) {
 }
 
 export function updateHitsStats(rules, filterParams, updateCallback, qfilter) {
-  const { stamus, alerts: alert, sightings } = store.getState()?.hunt?.filters?.alert_tag?.value || {};
+  const { stamus, alert, discovery } = store?.commonStore?.eventTypes || {};
 
   const sids = Array.from(rules, x => x.sid).join();
-  const url = `${config.API_URL + config.ES_SIGS_LIST_PATH + sids}&${
-    filterParams + qfilter
-  }&alert=${alert}&stamus=${stamus}$discovery=${!!sightings}`;
+  const url = `${config.API_URL + config.ES_SIGS_LIST_PATH + sids}&${filterParams + qfilter}&alert=${alert}&stamus=${stamus}$discovery=${discovery}`;
   if (typeof statsCache[encodeURI(url)] !== 'undefined') {
     processHitsStats(statsCache[encodeURI(url)], rules, updateCallback);
     return;
