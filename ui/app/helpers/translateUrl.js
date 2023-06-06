@@ -1,4 +1,5 @@
 import { getMap } from 'ui/helpers/translateMap';
+import { store as mobxStore } from 'ui/mobx/stores/RootStore';
 import { store } from '../store';
 
 const translateUrl = (path, parameters = {}) => {
@@ -13,12 +14,13 @@ const translateUrl = (path, parameters = {}) => {
   const paramRegex = RegExp(':[a-zA-Z]+', 'g');
   const urlParams = path.match(paramRegex) || [];
   const url = path.replace(paramRegex, ''); // Clean params placeholders
-  const map = getMap(state);
+  const map = getMap(state, mobxStore);
   const params = { ...parameters };
   urlParams.filter(m => Boolean(map[m])).forEach(match => Object.assign(params, map[match]));
   const urlSearchParams = Object.entries(params)
     .map(pair => pair.join('='))
     .join('&');
+
   return `${url}${urlSearchParams ? `?${urlSearchParams}` : ''}`;
 };
 
