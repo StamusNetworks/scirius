@@ -30,13 +30,23 @@ class CommonStore {
 
   ids = [];
 
-  alert = null;
+  alert = {};
 
   systemSettings = null;
 
   constructor(root) {
     this.root = root;
-    this.alert = CommonStore.generateAlert();
+    if (!localStorage.getItem('alert_tag')) {
+      this.alert = CommonStore.generateAlert();
+      localStorage.setItem('alert_tag', JSON.stringify(toJS(this.alert)));
+    } else {
+      try {
+        this.alert = JSON.parse(localStorage.getItem('alert_tag'));
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('Error while parsing local storage data');
+      }
+    }
     if (!localStorage.getItem('startDate')) {
       const startDate = moment().subtract(1, 'hours').unix();
       this.startDate = startDate;
@@ -173,6 +183,15 @@ class CommonStore {
     return toJS(this.ids);
   }
 
+  toggleAlertTag(key) {
+    this.alert = { ...this.alert, value: { ...this.alert.value, [key]: !this.alert.value[key] } };
+    localStorage.setItem('alert_tag', JSON.stringify(toJS(this.alert)));
+  }
+
+  get eventTypes() {
+    return { alert: toJS(this.alert.value.alerts), stamus: toJS(this.alert.value.stamus), discovery: !!toJS(this.alert.value.sightings) };
+  }
+
   static #indexOfFilter(filter, allFilters) {
     for (let idx = 0; idx < allFilters.length; idx += 1) {
       if (
@@ -189,10 +208,10 @@ class CommonStore {
     return -1;
   }
 
-  static generateAlert(informational = true, relevant = true, untagged = true, alerts = true, sightings = true) {
+  static generateAlert(informational = true, relevant = true, untagged = true, alerts = true, sightings = true, stamus = false) {
     return {
       id: 'alert.tag',
-      value: { informational, relevant, untagged, alerts, sightings },
+      value: { informational, relevant, untagged, alerts, sightings, stamus },
     };
   }
 

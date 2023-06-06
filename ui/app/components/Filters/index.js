@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Cascader, Col, Divider, Input, Row, Space, Switch, Select, Affix, Tooltip } from 'antd';
 import { PushpinOutlined, PushpinFilled } from '@ant-design/icons';
+import { observer } from 'mobx-react-lite';
 import UICard from 'ui/components/UIElements/UICard';
 import styled from 'styled-components';
 import { useInjectSaga } from 'utils/injectSaga';
@@ -95,7 +96,6 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
   const user = useSelector(strGlobalSelectors.makeSelectUser());
   const filters = useSelector(huntGlobalStore.makeSelectGlobalFilters());
   const historyFilters = useSelector(huntGlobalStore.makeSelectHistoryFilters());
-  const alertTag = useSelector(huntGlobalStore.makeSelectAlertTag());
   const filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(filterTypes));
   const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());
   const supportedActionsPermissions = user && user.data && user.data.permissions && user.data.permissions.includes('rules.ruleset_policy_edit');
@@ -120,9 +120,27 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
     }
   }, [filters, supportedActionsPermissions]);
 
-  useHotkeys('shift+i', () => dispatch(huntGlobalStore.setTag('informational')), [alertTag.value.informational]);
-  useHotkeys('shift+r', () => dispatch(huntGlobalStore.setTag('relevant')), [alertTag.value.relevant]);
-  useHotkeys('shift+u', () => dispatch(huntGlobalStore.setTag('untagged')), [alertTag.value.untagged]);
+  useHotkeys(
+    'shift+i',
+    () => {
+      commonStore.toggleAlertTag('informational');
+    },
+    [commonStore.alert.value.informational],
+  );
+  useHotkeys(
+    'shift+r',
+    () => {
+      commonStore.toggleAlertTag('relevant');
+    },
+    [commonStore.alert.value.relevant],
+  );
+  useHotkeys(
+    'shift+u',
+    () => {
+      commonStore.toggleAlertTag('untagged');
+    },
+    [commonStore.alert.value.untagged],
+  );
 
   const getTreeOptions = useCallback(
     (data, parentType, level = 0) =>
@@ -281,7 +299,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
     const filtersCopy = [...filters];
 
     if (process.env.REACT_APP_HAS_TAG === '1') {
-      filtersCopy.push(alertTag);
+      filtersCopy.push(commonStore.alert);
     }
     return filtersCopy;
   };
@@ -300,6 +318,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
   };
 
   const Component = filtersAreSticky ? Affix : Static;
+
   return (
     <Component offsetTop={10}>
       <UICard style={{ marginBottom: '10px' }}>
@@ -386,8 +405,10 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     size="small"
                     checkedChildren="ON"
                     unCheckedChildren="OFF"
-                    checked={alertTag.value.informational}
-                    onChange={() => dispatch(huntGlobalStore.setTag('informational'))}
+                    checked={commonStore.alert.value.informational}
+                    onChange={() => {
+                      commonStore.toggleAlertTag('informational');
+                    }}
                     disabled={page === 'HOST_INSIGHT'}
                     data-test="Informational-switch"
                   />
@@ -399,8 +420,10 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     size="small"
                     checkedChildren="ON"
                     unCheckedChildren="OFF"
-                    checked={alertTag.value.relevant}
-                    onChange={() => dispatch(huntGlobalStore.setTag('relevant'))}
+                    checked={commonStore.alert.value.relevant}
+                    onChange={() => {
+                      commonStore.toggleAlertTag('relevant');
+                    }}
                     disabled={page === 'HOST_INSIGHT'}
                     data-test="Relevant-switch"
                   />
@@ -411,8 +434,10 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                     size="small"
                     checkedChildren="ON"
                     unCheckedChildren="OFF"
-                    checked={alertTag.value.untagged}
-                    onChange={() => dispatch(huntGlobalStore.setTag('untagged'))}
+                    checked={commonStore.alert.value.untagged}
+                    onChange={() => {
+                      commonStore.toggleAlertTag('untagged');
+                    }}
                     disabled={page === 'HOST_INSIGHT'}
                     data-test="Untagged-switch"
                   />
@@ -451,4 +476,4 @@ Filter.propTypes = {
   }),
 };
 
-export default Filter;
+export default observer(Filter);
