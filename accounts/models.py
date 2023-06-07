@@ -167,6 +167,22 @@ class SciriusUser(models.Model):
             return get_middleware_module('common').get_tenants(empty_queryset=True)
         return self.sciriususerapp.tenants.all()
 
+    def has_kibana_or_evebox_perm(self):
+        group = self.user.groups.first()
+        return group.permissions.filter(codename__in=('events_evebox', 'events_kibana')).count() > 0 if group else False
+
+    def _has_evebox_or_kibana_access(self):
+        from scirius.utils import get_middleware_module
+        if get_middleware_module('common').has_multitenant():
+            return self.has_no_tenant() and self.has_all_tenants()
+        return True
+
+    def has_kibana_access(self):
+        return self._has_evebox_or_kibana_access()
+
+    def has_evebox_access(self):
+        return self._has_evebox_or_kibana_access()
+
     def has_no_tenant(self):
         if not hasattr(self, 'sciriususerapp'):
             return False

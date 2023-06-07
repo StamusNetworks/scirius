@@ -59,6 +59,10 @@ class KibanaProxyView(PermissionRequiredMixin, ProxyView):
         if (path == 'api/infra/graphql' or path.startswith('api/infra/graphql/')) and \
                 not settings.KIBANA_ALLOW_GRAPHQL:
             raise PermissionDenied()
+
+        if not request.user.sciriususer.has_kibana_access():
+            raise PermissionDenied()
+
         return super().dispatch(request, path)
 
     def get_proxy_request_headers(self, request):
@@ -73,6 +77,12 @@ class EveboxProxyView(PermissionRequiredMixin, ProxyView):
     upstream = "http://" + settings.EVEBOX_ADDRESS
     add_remote_user = True
     permission_required = ['rules.events_evebox']
+
+    def dispatch(self, request, path):
+        if not request.user.sciriususer.has_evebox_access():
+            raise PermissionDenied()
+
+        return super().dispatch(request, path)
 
 
 class MolochProxyView(ProxyView):

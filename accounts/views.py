@@ -325,7 +325,9 @@ def edit_user(request, user_id):
     context = {
         'user': user,
         'username': json.dumps(user.username),
-        'current_action': f"Edit {method} user {user.username}"
+        'current_action': f"Edit {method} user {user.username}",
+        'is_from_ldap': user.sciriususer.is_from_ldap(),
+        'show_perm_warning': user.sciriususer.has_kibana_or_evebox_perm()
     }
 
     if request.method == 'POST':
@@ -424,7 +426,14 @@ def add_group(request):
 @permission_required('rules.configuration_auth', raise_exception=True)
 def edit_group(request, group_id):
     django_group = get_object_or_404(DjangoGroup, pk=group_id)
-    context = {'group': django_group, 'action': 'edit', 'group_name': json.dumps(django_group.name)}
+    scirius_user = request.user.sciriususer
+
+    context = {
+        'group': django_group,
+        'action': 'edit',
+        'group_name': json.dumps(django_group.name),
+        'show_perm_warning': scirius_user.has_all_tenants() and scirius_user.has_no_tenant()
+    }
 
     if request.method == 'POST':
         form = GroupEditForm(request.POST, instance=django_group)
