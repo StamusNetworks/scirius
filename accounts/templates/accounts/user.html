@@ -96,6 +96,11 @@ function del_user() {
                         {% bootstrap_field form.is_active %}
                         {% if form.no_tenant or form.all_tenants or form.tenants %}
                             <label class="control-label" for="id_tenants">Tenants</label>
+                            {% if show_perm_warning %}
+                                <div class="help-block">
+                                    To access Evebox and/or Kibana, user needs Evebox/Kibana role permissions and "All tenants"/"No tenant" user permissions.
+                                </div>
+                            {% endif %}
                             {% bootstrap_field form.no_tenant %}
                             {% bootstrap_field form.all_tenants %}
                             {% bootstrap_field form.tenants %}
