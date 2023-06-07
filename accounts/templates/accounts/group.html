@@ -64,6 +64,11 @@
             <div class="col-md-6">
                 <form action="{{ request.get_full_path }}" method="post" class="form">
                     {% csrf_token %}
+                    {% if show_perm_warning %}
+                        <div class="help-block">
+                            To access Evebox and/or Kibana, user needs Evebox/Kibana role permissions and "All tenants"/"No tenant" user permissions.
+                        </div>
+                    {% endif %}
                     {% bootstrap_form form %}
                     {% buttons %}
                         <button type="submit" class="btn btn-primary">
