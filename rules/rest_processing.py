@@ -89,11 +89,13 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
     filter_defs = RuleProcessingFilterDefSerializer(many=True)
     index = serializers.IntegerField(default=None, allow_null=True)
     options = JSONStringField(default=None, allow_null=True)
-    comment = serializers.CharField(required=False, allow_blank=True, write_only=True, allow_null=True)
+    comment = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    username = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    creation_date = serializers.DateTimeField(required=False)
 
     class Meta:
         model = RuleProcessingFilter
-        fields = ('pk', 'event_type', 'filter_defs', 'action', 'options', 'rulesets', 'index', 'description', 'enabled', 'imported', 'comment')
+        fields = ('pk', 'event_type', 'filter_defs', 'action', 'options', 'rulesets', 'index', 'description', 'enabled', 'imported', 'comment', 'username', 'creation_date')
 
     def __init__(self, *args, **kwargs):
         super(RuleProcessingFilterSerializer, self).__init__(*args, **kwargs)
@@ -111,6 +113,8 @@ class RuleProcessingFilterSerializer(serializers.ModelSerializer):
         user_action = UserAction.objects.filter(action_type='create_rule_filter', user_action_objects__object_id=instance.pk).distinct().first()
         if user_action:
             res['comment'] = user_action.comment
+            res['username'] = user_action.username
+            res['creation_date'] = user_action.date
         return res
 
     def to_internal_value(self, data):
