@@ -66,6 +66,10 @@ const ENDPOINT = {
     name: 'Fetch Elasticsearch field stats',
     url: '/rest/rules/es/field_stats/:datesEs:tenant:eventTypes',
   },
+  TIMELINE: {
+    name: 'Fetch Elasticsearch timeline',
+    url: '/rest/rules/es/timeline/?hosts=*:datesEs:tenant:eventTypes',
+  },
 };
 
 export default ENDPOINT;

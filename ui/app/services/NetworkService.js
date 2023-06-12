@@ -19,6 +19,7 @@ const NetworkService = {
   fetchFilterSets: async () => Api.get(ENDPOINT.FILTER_SETS),
   fetchDashboardPanel: async (params, options) => Api.get(ENDPOINT.DASHBOARD_PANEL, params, options),
   fetchFieldStats: async (params, options) => Api.get(ENDPOINT.FIELD_STATS, params, options),
+  fetchTimeline: async (params, options) => Api.get(ENDPOINT.TIMELINE, params, options),
   // DELETE
   deleteFilterSet: async (params, options) => Api.delete(ENDPOINT.FILTER_SET_DELETE, params, options),
 };

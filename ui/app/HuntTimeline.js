@@ -1,12 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import axios from 'axios';
 
-import * as config from 'config/Api';
 import SciriusChart from 'ui/components/SciriusChart';
 import ErrorHandler from 'ui/components/Error';
 import { buildQFilter } from 'ui/buildQFilter';
-import { buildFilterParams } from 'ui/buildFilterParams';
+import { withStore } from 'ui/mobx/RootStoreProvider';
 
 class HuntTimeline extends React.Component {
   constructor(props) {
@@ -20,76 +18,74 @@ class HuntTimeline extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (JSON.stringify(prevProps) !== JSON.stringify(this.props)) {
+    if (
+      JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams) ||
+      JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters) ||
+      JSON.stringify(prevProps.eventTypes) !== JSON.stringify(this.props.eventTypes) ||
+      prevProps.chartTarget !== this.props.chartTarget ||
+      JSON.stringify(prevProps.systemSettings) !== JSON.stringify(this.props.systemSettings)
+    ) {
       this.fetchData();
     }
   }
 
-  fetchData() {
+  async fetchData() {
     const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
-    const filterParams = buildFilterParams(this.props.filterParams);
-    axios
-      .get(
-        `${config.API_URL}${config.ES_BASE_PATH}timeline/?hosts=*&target=${this.props.chartTarget}&${filterParams}${qfilter}&alert=${this.props.eventTypes.alert}&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`,
-      )
-      .then(res => {
-        /* iterate on actual row: build x array, for each row build hash x -> value */
-        /* sort x array */
-        /* for key in x array, build each row, value if exists, 0 if not */
-        const prows = { x: [] };
 
-        const keys = Object.keys(res.data);
-        const vals = Object.values(res.data);
-        let key;
-        for (let keyNum = 0; keyNum < keys.length; keyNum += 1) {
-          key = keys[keyNum];
-          if (!['interval', 'from_date'].includes(key)) {
-            prows[key] = {};
-            for (let entry = 0; entry < vals[keyNum].entries.length; entry += 1) {
-              if (prows.x.indexOf(vals[keyNum].entries[entry].time) === -1) {
-                prows.x.push(vals[keyNum].entries[entry].time);
-              }
-              prows[key][vals[keyNum].entries[entry].time] = vals[keyNum].entries[entry].count;
-            }
+    const res = await this.props.store.esStore.fetchTimeline(this.props.chartTarget, qfilter);
+    const prows = { x: [] };
+
+    const keys = Object.keys(res);
+    const vals = Object.values(res);
+    let key;
+    for (let keyNum = 0; keyNum < keys.length; keyNum += 1) {
+      key = keys[keyNum];
+      if (!['interval', 'from_date'].includes(key)) {
+        prows[key] = {};
+        for (let entry = 0; entry < vals[keyNum].entries.length; entry += 1) {
+          if (prows.x.indexOf(vals[keyNum].entries[entry].time) === -1) {
+            prows.x.push(vals[keyNum].entries[entry].time);
+          }
+          prows[key][vals[keyNum].entries[entry].time] = vals[keyNum].entries[entry].count;
+        }
+      }
+    }
+
+    const pprows = prows.x.slice();
+    pprows.sort((a, b) => a - b);
+    let putindrows = [''];
+    putindrows[0] = pprows;
+    putindrows[0].unshift('x');
+    const pKeys = Object.keys(prows);
+    let k;
+    for (let pki = 0; pki < pKeys.length; pki += 1) {
+      k = pKeys[pki];
+      if (k !== 'x') {
+        const pvalue = [k];
+        for (let i = 1; i < putindrows[0].length; i += 1) {
+          if (putindrows[0][i] in prows[k]) {
+            pvalue.push(prows[k][putindrows[0][i]]);
+          } else {
+            pvalue.push(0);
           }
         }
+        putindrows.push(pvalue);
+      }
+    }
+    if (putindrows.length === 1) {
+      putindrows = [];
+    }
 
-        const pprows = prows.x.slice();
-        pprows.sort((a, b) => a - b);
-        let putindrows = [''];
-        putindrows[0] = pprows;
-        putindrows[0].unshift('x');
-        const pKeys = Object.keys(prows);
-        let k;
-        for (let pki = 0; pki < pKeys.length; pki += 1) {
-          k = pKeys[pki];
-          if (k !== 'x') {
-            const pvalue = [k];
-            for (let i = 1; i < putindrows[0].length; i += 1) {
-              if (putindrows[0][i] in prows[k]) {
-                pvalue.push(prows[k][putindrows[0][i]]);
-              } else {
-                pvalue.push(0);
-              }
-            }
-            putindrows.push(pvalue);
-          }
-        }
-        if (putindrows.length === 1) {
-          putindrows = [];
-        }
+    const data = { data: { x: 'x', columns: putindrows } };
 
-        const data = { data: { x: 'x', columns: putindrows } };
-
-        if (this.props.chartTarget) {
-          data.data.colors = {
-            relevant: '#ec7a08',
-            informational: '#7b1244',
-            untagged: '#005792',
-          };
-        }
-        this.setState(data);
-      });
+    if (this.props.chartTarget) {
+      data.data.colors = {
+        relevant: '#ec7a08',
+        informational: '#7b1244',
+        untagged: '#005792',
+      };
+    }
+    this.setState(data);
   }
 
   render() {
@@ -121,6 +117,7 @@ HuntTimeline.propTypes = {
   chartTarget: PropTypes.bool,
   filterParams: PropTypes.object.isRequired,
   eventTypes: PropTypes.object,
+  store: PropTypes.object,
 };
 
-export default HuntTimeline;
+export default withStore(HuntTimeline);

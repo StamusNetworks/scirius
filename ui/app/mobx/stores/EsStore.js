@@ -9,6 +9,8 @@ class EsStore {
 
   fieldStats = [];
 
+  timeline = {};
+
   constructor(rootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {
@@ -26,6 +28,18 @@ class EsStore {
 
     if (response.ok) {
       this.fieldStats = response.data;
+    }
+    return response.data;
+  }
+
+  async fetchTimeline(target, qfilter) {
+    const response = await api.get(`${endpoints.TIMELINE.url}`, {
+      target,
+      qfilter: decodeURIComponent(qfilter.replace('&qfilter=', '')),
+    });
+
+    if (response.ok) {
+      this.timeline = response.data;
     }
     return response.data;
   }
