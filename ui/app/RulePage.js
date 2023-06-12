@@ -125,10 +125,9 @@ class RulePage extends React.Component {
     }
   }
 
-  loadMore = (item, url) => {
-    axios.get(url).then(json => {
-      this.setState({ ...this.state, moreModal: item, moreResults: json.data });
-    });
+  loadMore = async (item, httpRequest) => {
+    const data = await httpRequest;
+    this.setState({ ...this.state, moreModal: item, moreResults: data });
   };
 
   hideMoreModal = () => this.setState({ ...this.state, moreModal: null });

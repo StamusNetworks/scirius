@@ -2,14 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, List, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import { toJS } from 'mobx';
 
-import * as config from 'config/Api';
-import { buildQFilter } from 'ui/buildQFilter';
-import { buildFilterParams } from 'ui/buildFilterParams';
 import EventValue from 'ui/components/EventValue';
 import UICard from 'ui/components/UIElements/UICard';
+import { buildQFilter } from 'ui/buildQFilter';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
+import { withStore } from 'ui/mobx/RootStoreProvider';
 
 class HuntStat extends React.Component {
   constructor(props) {
@@ -17,7 +16,7 @@ class HuntStat extends React.Component {
     this.state = { data: [] };
     this.url = '';
     this.updateData = this.updateData.bind(this);
-    this.addFilter = this.addFilter.bind(this);
+    this.qfilter = '';
   }
 
   componentDidMount() {
@@ -33,28 +32,24 @@ class HuntStat extends React.Component {
     }
   }
 
-  updateData() {
-    const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
-    const filterParams = buildFilterParams(this.props.filterParams);
-
-    this.url = `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&${filterParams}&page_size=30${qfilter}&alert=${this.props.eventTypes.alert}&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`;
-
-    axios
-      .get(
-        `${config.API_URL}${config.ES_BASE_PATH}field_stats/?field=${this.props.item}&${filterParams}&page_size=5${qfilter}&alert=${this.props.eventTypes.alert}&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`,
-      )
-      .then(res => {
-        this.setState({ data: res.data });
-      });
+  async updateData() {
+    this.qfilter = buildQFilter(this.props.store.commonStore.getFilters(), toJS(this.props.store.commonStore.systemSettings)) || '';
+    const data = await this.props.store.esStore.fetchFieldStats(this.props.item, 5, this.qfilter);
+    this.setState({ data });
   }
 
-  addFilter(id, value, negated) {
-    this.props.addFilter({ id, value, negated });
-  }
+  addFilter = (id, value, negated) => {
+    this.props.store.commonStore.addFilter({ id, value, negated });
+  };
 
   menu = (
     <Menu>
-      <Menu.Item onClick={() => this.props.loadMore(this.props.item, this.url)} data-toggle="modal">
+      <Menu.Item
+        onClick={() => {
+          this.props.loadMore(this.props.item, this.props.store.esStore.fetchFieldStats(this.props.item, 30, this.qfilter));
+        }}
+        data-toggle="modal"
+      >
         Load more results
       </Menu.Item>
     </Menu>
@@ -104,9 +99,8 @@ HuntStat.propTypes = {
   item: PropTypes.any,
   systemSettings: PropTypes.any,
   loadMore: PropTypes.func,
-  addFilter: PropTypes.func,
   filterParams: PropTypes.object.isRequired,
-  eventTypes: PropTypes.object,
+  store: PropTypes.object,
 };
 
-export default HuntStat;
+export default withStore(HuntStat);
