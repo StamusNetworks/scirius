@@ -20,12 +20,12 @@ RootStoreProvider.propTypes = {
 
 /* Hook to use store in any functional component */
 export const useStore = () => {
-  const context = useContext(StoreContext);
-  if (context === undefined) {
+  const store = useContext(StoreContext);
+  if (store === undefined) {
     throw new Error('useRootStore must be used within RootStoreProvider');
   }
 
-  return context;
+  return store;
 };
 
 /* HOC to inject store to any functional or class component */
