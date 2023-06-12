@@ -1,12 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import axios from 'axios';
 
-import * as config from 'config/Api';
 import ErrorHandler from 'ui/components/Error';
 import DonutChart from 'ui/components/DonutChart';
 import { buildQFilter } from 'ui/buildQFilter';
-import { buildFilterParams } from 'ui/buildFilterParams';
+import { withStore } from 'ui/mobx/RootStoreProvider';
 
 class HuntTrend extends React.Component {
   constructor(props) {
@@ -25,18 +23,12 @@ class HuntTrend extends React.Component {
     }
   }
 
-  fetchData() {
+  async fetchData() {
     const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
-    const filterParams = buildFilterParams(this.props.filterParams);
-    axios
-      .get(
-        `${config.API_URL}${config.ES_BASE_PATH}alerts_count/?prev=1&hosts=*&${filterParams}${qfilter}&alert=${this.props.eventTypes.alert}&stamus=${this.props.eventTypes.stamus}&discovery=${this.props.eventTypes.discovery}`,
-      )
-      .then(res => {
-        if (typeof res.data !== 'string') {
-          this.setState({ data: res.data });
-        }
-      });
+    const data = await this.props.store.esStore.fetchAlertsCount(qfilter);
+    if (typeof data !== 'string') {
+      this.setState({ data });
+    }
   }
 
   render() {
@@ -95,7 +87,7 @@ HuntTrend.propTypes = {
   filters: PropTypes.any,
   systemSettings: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
-  eventTypes: PropTypes.object,
+  store: PropTypes.object,
 };
 
-export default HuntTrend;
+export default withStore(HuntTrend);

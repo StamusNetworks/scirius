@@ -11,6 +11,8 @@ class EsStore {
 
   timeline = {};
 
+  alertsCount = {};
+
   constructor(rootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {
@@ -40,6 +42,17 @@ class EsStore {
 
     if (response.ok) {
       this.timeline = response.data;
+    }
+    return response.data;
+  }
+
+  async fetchAlertsCount(qfilter) {
+    const response = await api.get(`${endpoints.ALERTS_COUNT.url}`, {
+      qfilter: decodeURIComponent(qfilter.replace('&qfilter=', '')),
+    });
+
+    if (response.ok) {
+      this.alertsCount = response.data;
     }
     return response.data;
   }
