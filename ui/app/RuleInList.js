@@ -11,6 +11,7 @@ import EventValue, { Count } from 'ui/components/EventValue';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 
 export const SigContent = styled.div`
   & pre {
@@ -39,6 +40,7 @@ export const SigContent = styled.div`
 `;
 
 const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
+  const { commonStore } = useStore();
   const columns = [
     {
       title: '',
@@ -75,11 +77,15 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
         <React.Fragment>
           <ZoomInOutlined
             style={{ marginRight: '10px' }}
-            onClick={() => addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: rule.sid, negated: false })}
+            onClick={() => {
+              commonStore.addFilter({ id: 'alert.signature_id', value: rule.sid, negated: false });
+              addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: rule.sid, negated: false });
+            }}
           />
           <ZoomOutOutlined
             onClick={e => {
               e.stopPropagation();
+              commonStore.addFilter({ id: 'alert.signature_id', value: rule.sid, negated: true });
               addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: rule.sid, negated: true });
             }}
           />
