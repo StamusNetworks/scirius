@@ -1,4 +1,6 @@
 import { makeAutoObservable } from 'mobx';
+import qs from 'qs';
+
 import { api } from 'ui/mobx/api';
 import endpoints from 'ui/config/endpoints';
 
@@ -12,6 +14,8 @@ class EsStore {
   timeline = {};
 
   alertsCount = {};
+
+  alertsTail = {};
 
   constructor(rootStore) {
     this.rootStore = rootStore;
@@ -54,6 +58,19 @@ class EsStore {
     if (response.ok) {
       this.alertsCount = response.data;
     }
+    return response.data;
+  }
+
+  async fetchAlertsTail(paginationParams, qfilter) {
+    const response = await api.get(`${endpoints.ALERTS_TAIL.url}`, {
+      qfilter: decodeURIComponent(qfilter.replace('&qfilter=', '')),
+      ...qs.parse(paginationParams),
+    });
+
+    if (response.ok) {
+      this.alertsTail = response.data;
+    } else throw new Error(response.originalError);
+
     return response.data;
   }
 }

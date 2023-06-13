@@ -22,12 +22,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'antd';
 import { BellFilled } from '@ant-design/icons';
-import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import { STAMUS } from 'ui/config';
-import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
-import { buildFilterParams } from 'ui/buildFilterParams';
 import ErrorHandler from 'ui/components/Error';
 import HuntRestError from 'ui/components/HuntRestError';
 import { sections } from 'ui/constants';
@@ -101,31 +98,26 @@ class EventsPage extends React.Component {
     this.updateAlertListState(rulesListState, () => this.fetchData());
   };
 
-  fetchData() {
-    const stringFilters = buildQFilter(this.props.filtersWithAlert, this.props.store.commonStore.systemSettings);
-    const filterParams = buildFilterParams(this.props.filterParams);
-    const listParams = buildListUrlParams(this.state.alertsList);
+  async fetchData() {
+    const qfilter = buildQFilter(this.props.filtersWithAlert, this.props.store.commonStore.systemSettings);
+    const paginationParams = buildListUrlParams(this.state.alertsList);
+
     this.setState({ loading: true });
 
-    const url = `${config.API_URL + config.ES_BASE_PATH}alerts_tail/?${listParams}&${filterParams}${stringFilters}&alert=${
-      this.props.store.commonStore.eventTypes.alert
-    }&stamus=${this.props.store.commonStore.eventTypes.stamus}&discovery=${this.props.store.commonStore.eventTypes.discovery}`;
-    axios
-      .get(url)
-      .then(res => {
-        if (res.data !== null && res.data.results && typeof res.data.results !== 'string') {
-          this.setState({ alerts: res.data.results, count: res.data.count, loading: false });
-        } else {
-          this.setState({ loading: false });
-        }
-      })
-      .catch(error => {
-        if (error.response.status === 500) {
-          this.setState({ errors: [`${error.response.data[0].slice(0, 160)}...`], loading: false });
-          return;
-        }
-        this.setState({ errors: null, loading: false });
-      });
+    try {
+      const data = await this.props.store.esStore.fetchAlertsTail(paginationParams, qfilter);
+      if (data !== null && data.results && typeof data.results !== 'string') {
+        this.setState({ alerts: data.results, count: data.count, loading: false });
+      } else {
+        this.setState({ loading: false });
+      }
+    } catch (error) {
+      if (error.response.status === 500) {
+        this.setState({ errors: [`${error.response.data[0].slice(0, 160)}...`], loading: false });
+        return;
+      }
+      this.setState({ errors: null, loading: false });
+    }
   }
 
   getIconColor(key) {

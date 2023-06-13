@@ -74,6 +74,10 @@ const ENDPOINT = {
     name: 'Fetch Elasticsearch alerts count',
     url: '/rest/rules/es/alerts_count/?prev=1&hosts=*:datesEs:tenant:eventTypes',
   },
+  ALERTS_TAIL: {
+    name: 'Fetch Elasticsearch alerts tail',
+    url: '/rest/rules/es/alerts_tail/:datesEs:tenant:eventTypes',
+  },
 };
 
 export default ENDPOINT;
