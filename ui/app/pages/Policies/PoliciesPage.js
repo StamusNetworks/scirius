@@ -21,19 +21,22 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
+import _ from 'lodash';
+import moment from 'moment';
+import styled from 'styled-components';
+import { createStructuredSelector } from 'reselect';
 import { Helmet } from 'react-helmet';
 import { connect } from 'react-redux';
 import { Table } from 'antd';
-import _ from 'lodash';
+
 import * as config from 'config/Api';
-import { STAMUS } from 'ui/config';
+import constants from 'ui/constants';
 import ErrorHandler from 'ui/components/Error';
 import FilterEditKebab from 'ui/components/FilterEditKebab';
-import styled from 'styled-components';
 import buildListParams from 'ui/helpers/buildListParams';
-import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
-import { createStructuredSelector } from 'reselect';
 import PolicyParameters from 'ui/pages/Policies/PolicyParameters';
+import { STAMUS } from 'ui/config';
+import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import ActionItem from '../../ActionItem';
 import { buildListUrlParams } from '../../helpers/common';
@@ -124,6 +127,25 @@ export class PoliciesPage extends React.Component {
       rulesets = item.rulesets.map(item2 => <DescriptionItem key={Math.random()}>{this.state.rulesets[item2].name}</DescriptionItem>);
     }
     return rulesets;
+  }
+
+  getRowComment(item) {
+    return (
+      <React.Fragment>
+        <DescriptionItem key="1">
+          <b>username: </b>
+          {item.username}
+        </DescriptionItem>
+        <DescriptionItem key="2">
+          <b>creation date: </b>
+          {moment(item.creation_date).format(constants.DATE_TIME_FORMAT)}
+        </DescriptionItem>
+        <DescriptionItem key="3">
+          <b>comment: </b>
+          {item.comment}
+        </DescriptionItem>
+      </React.Fragment>
+    );
   }
 
   getRowDescription(item) {
@@ -232,6 +254,7 @@ export class PoliciesPage extends React.Component {
                 expandedDescription={<PolicyParameters policy={item} />}
                 filters={this.getRowFilters(item)}
                 expandedRulesets={this.getRowRuleSets(item)}
+                expandedComment={this.getRowComment(item)}
                 key={item.pk}
                 data={item}
                 last_index={this.state.count}

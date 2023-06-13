@@ -1,13 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
+import styled from 'styled-components';
 import { Tabs } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, SafetyOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
+
 import * as config from 'config/Api';
-import { buildFilterParams } from 'ui/buildFilterParams';
 import FilterEditKebab from 'ui/components/FilterEditKebab';
 import UICard from 'ui/components/UIElements/UICard';
+import { buildFilterParams } from 'ui/buildFilterParams';
 
 const { TabPane } = Tabs;
 
@@ -90,7 +91,6 @@ export default class ActionItem extends React.Component {
 
   render() {
     const item = this.props.data;
-
     const actionsMenu = [
       <span key={`${item.pk}-index`} className="badge badge-default">
         {item.index}
@@ -106,6 +106,7 @@ export default class ActionItem extends React.Component {
               <UICard title="Filters">{this.props.filters}</UICard>
               <UICard title="Parameters">{this.props.expandedDescription}</UICard>
               <UICard title="Rulesets">{this.props.expandedRulesets}</UICard>
+              <UICard title="Comment details">{this.props.expandedComment}</UICard>
             </Styled>
           </TabPane>
           <TabPane tab="Statistics" key="2">
@@ -137,11 +138,12 @@ export default class ActionItem extends React.Component {
   }
 }
 ActionItem.propTypes = {
-  data: PropTypes.any,
-  needUpdate: PropTypes.any,
-  last_index: PropTypes.any,
+  data: PropTypes.object,
+  needUpdate: PropTypes.func,
+  last_index: PropTypes.number,
   filterParams: PropTypes.object.isRequired,
-  expandedDescription: PropTypes.any,
-  filters: PropTypes.any,
-  expandedRulesets: PropTypes.any,
+  expandedDescription: PropTypes.element,
+  filters: PropTypes.arrayOf(PropTypes.element),
+  expandedRulesets: PropTypes.arrayOf(PropTypes.element),
+  expandedComment: PropTypes.element,
 };
