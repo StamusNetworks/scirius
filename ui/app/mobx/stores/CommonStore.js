@@ -34,6 +34,8 @@ class CommonStore {
 
   systemSettings = null;
 
+  sources = null;
+
   constructor(root) {
     this.root = root;
     if (!localStorage.getItem('alert_tag')) {
@@ -64,6 +66,7 @@ class CommonStore {
     try {
       this.systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
       this.ids = JSON.parse(localStorage.getItem('ids_filters') || '[]');
+      this.sources = JSON.parse(localStorage.getItem('str-sources') || '[]');
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log('Error while parsing local storage data');
@@ -130,13 +133,34 @@ class CommonStore {
     if (response.ok) {
       const localSystemSettings = localStorage.getItem('str-system-settings');
       try {
-        if (!localSystemSettings || !isEqual(toJS(this.systemSettings), JSON.parse(localSystemSettings))) {
+        if (!localSystemSettings || !isEqual(toJS(this.systemSettings), response.data)) {
           this.systemSettings = response.data;
           localStorage.setItem('str-system-settings', JSON.stringify(response.data));
         }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Error setting up system setting');
+      }
+    }
+    return response;
+  }
+
+  async fetchSources() {
+    const response = await api.get(endpoints.SOURCES.url, { datatype: 'threat' });
+    if (response.ok) {
+      const localSources = localStorage.getItem('str-sources');
+      try {
+        const object1 = this.getSources();
+        const object2 = response.data?.results;
+
+        if (!localSources || !isEqual(object1, object2)) {
+          this.sources = response.data?.results || [];
+          localStorage.setItem('str-sources', JSON.stringify(response.data?.results || []));
+          localStorage.setItem('str-refresh', 'true');
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('Error setting up sources');
       }
     }
     return response;
@@ -190,6 +214,10 @@ class CommonStore {
 
   get eventTypes() {
     return { alert: toJS(this.alert.value.alerts), stamus: toJS(this.alert.value.stamus), discovery: !!toJS(this.alert.value.sightings) };
+  }
+
+  getSources() {
+    return toJS(this.sources);
   }
 
   static #indexOfFilter(filter, allFilters) {
