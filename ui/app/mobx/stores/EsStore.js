@@ -29,7 +29,7 @@ class EsStore {
     const response = await api.get(`${endpoints.FIELD_STATS.url}`, {
       field,
       page_size: pageSize,
-      qfilter: decodeURIComponent(qfilter.replace('&qfilter=', '')),
+      ...qs.parse(decodeURIComponent(qfilter)),
     });
 
     if (response.ok) {
@@ -41,7 +41,7 @@ class EsStore {
   async fetchTimeline(target, qfilter) {
     const response = await api.get(`${endpoints.TIMELINE.url}`, {
       target,
-      qfilter: decodeURIComponent(qfilter.replace('&qfilter=', '')),
+      ...qs.parse(decodeURIComponent(qfilter)),
     });
 
     if (response.ok) {
@@ -51,9 +51,7 @@ class EsStore {
   }
 
   async fetchAlertsCount(qfilter) {
-    const response = await api.get(`${endpoints.ALERTS_COUNT.url}`, {
-      qfilter: decodeURIComponent(qfilter.replace('&qfilter=', '')),
-    });
+    const response = await api.get(`${endpoints.ALERTS_COUNT.url}`, qs.parse(decodeURIComponent(qfilter)));
 
     if (response.ok) {
       this.alertsCount = response.data;
@@ -63,7 +61,7 @@ class EsStore {
 
   async fetchAlertsTail(paginationParams, qfilter) {
     const response = await api.get(`${endpoints.ALERTS_TAIL.url}`, {
-      qfilter: decodeURIComponent(qfilter.replace('&qfilter=', '')),
+      ...qs.parse(decodeURIComponent(qfilter)),
       ...qs.parse(paginationParams),
     });
 
