@@ -2,8 +2,8 @@ const map = type => {
   switch (type) {
     case ':dates': {
       return {
-        from_date: localStorage.getItem('startDate'),
-        to_date: localStorage.getItem('startDate'),
+        start_date: localStorage.getItem('startDate'),
+        end_date: localStorage.getItem('endDate'),
       };
     }
     // should be used for all `/es/*` requests
