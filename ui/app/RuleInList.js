@@ -137,6 +137,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
 
   return (
     <Table
+      data-test="signatures-table"
       size="small"
       loading={loading}
       dataSource={dataSource}
