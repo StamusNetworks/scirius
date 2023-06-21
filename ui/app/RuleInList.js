@@ -76,6 +76,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
       render: (text, rule) => (
         <React.Fragment>
           <ZoomInOutlined
+            data-test="zoom-in-magnifier"
             style={{ marginRight: '10px' }}
             onClick={() => {
               commonStore.addFilter({ id: 'alert.signature_id', value: rule.sid, negated: false });
@@ -83,6 +84,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
             }}
           />
           <ZoomOutOutlined
+            data-test="zoom-out-magnifier"
             onClick={e => {
               e.stopPropagation();
               commonStore.addFilter({ id: 'alert.signature_id', value: rule.sid, negated: true });
