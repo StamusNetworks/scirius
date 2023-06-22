@@ -7,7 +7,7 @@ const makeSelectGlobalFilterSets = () =>
 const makeSelectPrivateFilterSets = () =>
   createSelector(makeSelectFiltersSetsStore, filterSetsState => filterSetsState.data.filter(f => f.share === 'private'));
 const makeSelectStaticFilterSets = () =>
-  createSelector(makeSelectFiltersSetsStore, filterSetsState => filterSetsState.data.filter(f => f.share === 'static'));
+  createSelector(makeSelectFiltersSetsStore, filterSetsState => filterSetsState.data.filter(f => f.share !== 'global' && f.share !== 'private'));
 const makeSelectFilterSetsRequest = type => createSelector(makeSelectFiltersSetsStore, filterSetsState => filterSetsState.request[type]);
 const makeSelectDeleteFilterSetId = () => createSelector(makeSelectFiltersSetsStore, filterSetsState => filterSetsState.request.delete.confirmId);
 
