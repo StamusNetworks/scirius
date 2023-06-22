@@ -399,7 +399,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
               <Sort page={page} onChange={(option, direction) => onSortChange(option, direction)} value={sortValues} />
             )}
           </Space>
-          {page !== 'HISTORY' && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
+          {page !== 'HISTORY' && commonStore.systemSettings.license?.nta && (
             <div>
               <Title>Tags Filters</Title>
               <Space direction="vertical">
