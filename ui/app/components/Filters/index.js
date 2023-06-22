@@ -399,57 +399,59 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
               <Sort page={page} onChange={(option, direction) => onSortChange(option, direction)} value={sortValues} />
             )}
           </Space>
-          {page !== 'HISTORY' && commonStore.systemSettings.license?.nta && (
-            <div>
-              <Title>Tags Filters</Title>
-              <Space direction="vertical">
-                <Space>
-                  <UISwitch
-                    activeBackgroundColor="#7b1244"
-                    size="small"
-                    checkedChildren="ON"
-                    unCheckedChildren="OFF"
-                    checked={commonStore.alert.value.informational}
-                    onChange={() => {
-                      commonStore.toggleAlertTag('informational');
-                    }}
-                    disabled={page === 'HOST_INSIGHT' || page === 'INVENTORY'}
-                    data-test="Informational-switch"
-                  />
-                  <UISwitchLabel disabled={page === 'HOST_INSIGHT' || page === 'INVENTORY'}>Informational</UISwitchLabel>
+          <div>
+            {page !== 'HISTORY' && commonStore.systemSettings?.license?.nta && (
+              <div>
+                <Title>Tags Filters</Title>
+                <Space direction="vertical">
+                  <Space>
+                    <UISwitch
+                      activeBackgroundColor="#7b1244"
+                      size="small"
+                      checkedChildren="ON"
+                      unCheckedChildren="OFF"
+                      checked={commonStore.alert.value.informational}
+                      onChange={() => {
+                        commonStore.toggleAlertTag('informational');
+                      }}
+                      disabled={page === 'HOST_INSIGHT'}
+                      data-test="Informational-switch"
+                    />
+                    <UISwitchLabel disabled={page === 'HOST_INSIGHT'}>Informational</UISwitchLabel>
+                  </Space>
+                  <Space>
+                    <UISwitch
+                      activeBackgroundColor="#ec7a08"
+                      size="small"
+                      checkedChildren="ON"
+                      unCheckedChildren="OFF"
+                      checked={commonStore.alert.value.relevant}
+                      onChange={() => {
+                        commonStore.toggleAlertTag('relevant');
+                      }}
+                      disabled={page === 'HOST_INSIGHT'}
+                      data-test="Relevant-switch"
+                    />
+                    <UISwitchLabel disabled={page === 'HOST_INSIGHT'}>Relevant</UISwitchLabel>
+                  </Space>
+                  <Space>
+                    <Switch
+                      size="small"
+                      checkedChildren="ON"
+                      unCheckedChildren="OFF"
+                      checked={commonStore.alert.value.untagged}
+                      onChange={() => {
+                        commonStore.toggleAlertTag('untagged');
+                      }}
+                      disabled={page === 'HOST_INSIGHT'}
+                      data-test="Untagged-switch"
+                    />
+                    <UISwitchLabel disabled={page === 'HOST_INSIGHT'}>Untagged</UISwitchLabel>
+                  </Space>
                 </Space>
-                <Space>
-                  <UISwitch
-                    activeBackgroundColor="#ec7a08"
-                    size="small"
-                    checkedChildren="ON"
-                    unCheckedChildren="OFF"
-                    checked={commonStore.alert.value.relevant}
-                    onChange={() => {
-                      commonStore.toggleAlertTag('relevant');
-                    }}
-                    disabled={page === 'HOST_INSIGHT' || page === 'INVENTORY'}
-                    data-test="Relevant-switch"
-                  />
-                  <UISwitchLabel disabled={page === 'HOST_INSIGHT' || page === 'INVENTORY'}>Relevant</UISwitchLabel>
-                </Space>
-                <Space>
-                  <Switch
-                    size="small"
-                    checkedChildren="ON"
-                    unCheckedChildren="OFF"
-                    checked={commonStore.alert.value.untagged}
-                    onChange={() => {
-                      commonStore.toggleAlertTag('untagged');
-                    }}
-                    disabled={page === 'HOST_INSIGHT' || page === 'INVENTORY'}
-                    data-test="Untagged-switch"
-                  />
-                  <UISwitchLabel disabled={page === 'HOST_INSIGHT' || page === 'INVENTORY'}>Untagged</UISwitchLabel>
-                </Space>
-              </Space>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
           {page !== 'HISTORY' && <Separator />}
           {page !== 'HISTORY' && <Actions section={section} />}
         </FilterContainer>
