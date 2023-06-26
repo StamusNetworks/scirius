@@ -8,11 +8,10 @@ import { useStore } from 'ui/mobx/RootStoreProvider';
 import filtersSelectors from 'ui/stores/filters/selectors';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
-import { makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
 import ErrorHandler from 'ui/components/Error';
 import { ActionButton } from '../styles';
 
-const ActionsButtons = ({ supportedActions, filterParams, filters, rulesets }) => {
+const ActionsButtons = ({ supportedActions, filterParams, rulesets }) => {
   const { commonStore } = useStore();
   const [visible, setVisible] = useState(false);
   const [type, setType] = useState(false);
@@ -73,7 +72,7 @@ const ActionsButtons = ({ supportedActions, filterParams, filters, rulesets }) =
           show={visible}
           action={type}
           config={rulesList}
-          filters={filters}
+          filters={commonStore.getFilters()}
           close={() => setVisible(false)}
           rulesets={rulesets}
           systemSettings={commonStore.systemSettings}
@@ -89,13 +88,11 @@ const ActionsButtons = ({ supportedActions, filterParams, filters, rulesets }) =
 ActionsButtons.propTypes = {
   supportedActions: PropTypes.array.isRequired,
   filterParams: PropTypes.any,
-  filters: PropTypes.any,
   rulesets: PropTypes.any,
 };
 
 const mapStateToProps = createStructuredSelector({
   filterParams: makeSelectFilterParams(),
-  filters: makeSelectGlobalFilters(),
   rulesets: filtersSelectors.makeSelectRuleSets(),
 });
 
