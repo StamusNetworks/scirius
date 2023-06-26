@@ -110,6 +110,7 @@
     "react-redux": "7.2.4",
     "react-router-dom": "5.2.0",
     "react-simple-maps": "^3.0.0",
+    "react-singleton-hook": "^3.4.0",
     "react-syntax-highlighter": "^15.5.0",
     "react-tooltip": "^4.5.1",
     "react-transition-group": "^4.4.5",
