@@ -20,8 +20,6 @@ const selectCurrentUser = () => getCurrentUser();
 
 const makeSelectLocation = () => createSelector(selectRouter, routerState => routerState.location);
 
-const makeSelectUser = () => createSelector(selectGlobal, ({ user }) => user);
-
 const makeSelectContext = () => createSelector(selectGlobal, subState => subState.context);
 
 const makeSelectUpdatePushRuleset = () => createSelector(selectGlobal, subState => subState.updatePushRuleset);
@@ -119,7 +117,6 @@ export default {
   makeSelectTimespan,
   makeSelectDuration,
   makeSelectTimePicker,
-  makeSelectUser,
   makeSelectReload,
   makeSelectReloadFlag,
   makeSelectFilters,

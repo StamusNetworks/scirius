@@ -1,18 +1,5 @@
 import constants from 'ui/containers/App/constants';
 
-const getUser = () => ({
-  type: constants.GET_USER_REQUEST,
-});
-
-const getUserSuccess = user => ({
-  type: constants.GET_USER_SUCCESS,
-  payload: user,
-});
-
-const getUserFailure = () => ({
-  type: constants.GET_USER_FAILURE,
-});
-
 const getContextRequest = () => ({
   type: constants.GET_CONTEXT_REQUEST,
 });
@@ -126,9 +113,6 @@ const updatePushRulesetFailure = () => ({
 });
 
 export default {
-  getUser,
-  getUserSuccess,
-  getUserFailure,
   getContextRequest,
   getContextSuccess,
   getContextFailure,

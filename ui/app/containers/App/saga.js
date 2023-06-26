@@ -5,16 +5,6 @@ import constants from 'ui/containers/App/constants';
 import actions from 'ui/containers/App/actions';
 import NetworkService from 'ui/services/NetworkService';
 
-function* retrieveUser() {
-  try {
-    // Call our request helper (see 'utils/request')
-    const user = yield call(NetworkService.fetchUser);
-    yield put(actions.getUserSuccess(user));
-  } catch (err) {
-    yield put(actions.getUserFailure());
-  }
-}
-
 function* retrieveContext() {
   try {
     const data = yield call(NetworkService.fetchContext);
@@ -81,7 +71,6 @@ function* updatePushRuleset() {
 
 export default function* rootSage() {
   yield takeEvery(constants.GET_SYSTEM_SETTINGS_REQUEST, retrieveSystemSettings);
-  yield takeEvery(constants.GET_USER_REQUEST, retrieveUser);
   yield takeEvery(constants.GET_CONTEXT_REQUEST, retrieveContext);
   yield takeEvery(constants.GET_SOURCE_REQUEST, getSources);
   yield takeEvery(constants.GET_PERIOD_ALL_REQUEST, getAllPeriod);

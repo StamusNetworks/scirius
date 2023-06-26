@@ -61,13 +61,6 @@ export const initialState = {
     period: ReloadPeriodEnum.NONE,
     now: 0,
   },
-  user: {
-    data: {},
-    request: {
-      loading: null,
-      status: null,
-    },
-  },
   filters: {
     ...initialFiltersStorage,
   },
@@ -132,35 +125,6 @@ export const appReducer = (state = initialState, action) =>
           disableAll: !correct,
         });
 
-        break;
-      }
-      case constants.GET_USER_REQUEST:
-        draft.user.request.loading = true;
-        draft.user.request.status = null;
-        break;
-      case constants.GET_USER_SUCCESS:
-        draft.user.data = {
-          allTenant: action.payload.all_tenant,
-          noTenant: action.payload.no_tenant,
-          tenants: action.payload.tenants,
-          pk: action.payload.pk,
-          timezone: action.payload.timezone,
-          username: action.payload.username,
-          firstName: action.payload.first_name,
-          lastName: action.payload.last_name,
-          isActive: action.payload.is_active,
-          email: action.payload.email,
-          dateJoined: action.payload.date_joined,
-          permissions: action.payload.perms,
-        };
-
-        draft.user.request.loading = false;
-        draft.user.request.status = true;
-        break;
-      case constants.GET_USER_FAILURE: {
-        draft.user.data = {};
-        draft.user.request.loading = false;
-        draft.user.request.status = false;
         break;
       }
       case constants.GET_CONTEXT_REQUEST: {
