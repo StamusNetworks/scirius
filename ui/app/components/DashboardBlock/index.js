@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Dropdown, Empty, Menu } from 'antd';
+import { Dropdown, Empty, Menu, message } from 'antd';
 import { LoadingOutlined, MenuOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import DashboardBlockData from 'ui/components/DashboardBlockData';
 import dashboardSelectors from 'ui/stores/dashboard/selectors';
+import downloadData from 'ui/helpers/downloadData';
 import styled from 'styled-components';
 
 const Title = styled.div`
@@ -14,7 +15,7 @@ const Title = styled.div`
   cursor: default;
 `;
 
-const DashboardBlock = ({ block, data, loading, onLoadMore, onDownload, emptyPanel }) => {
+const DashboardBlock = ({ block, data, loading, onLoadMore, emptyPanel }) => {
   const copyMode = useSelector(dashboardSelectors.makeSelectCopyMode());
 
   const [loadingVisible, setLoadingVisible] = useState(false);
@@ -24,6 +25,11 @@ const DashboardBlock = ({ block, data, loading, onLoadMore, onDownload, emptyPan
     setTimeout(() => setLoadingVisible(loading), loading ? 0 : 500);
   }, [loading]);
 
+  const onDownload = async () => {
+    message.success(`Downloading ${block.title}`);
+    await downloadData.text(data.map(o => o.key).join('\n'), block.title.toLowerCase());
+  };
+
   const menu = (
     <Menu>
       {onLoadMore && (
@@ -31,11 +37,9 @@ const DashboardBlock = ({ block, data, loading, onLoadMore, onDownload, emptyPan
           Load more results
         </Menu.Item>
       )}
-      {onDownload && (
-        <Menu.Item key="download-data" onClick={onDownload} data-toggle="modal">
-          Download
-        </Menu.Item>
-      )}
+      <Menu.Item key="download-data" onClick={onDownload} data-toggle="modal">
+        Download
+      </Menu.Item>
     </Menu>
   );
 
@@ -47,7 +51,7 @@ const DashboardBlock = ({ block, data, loading, onLoadMore, onDownload, emptyPan
       extra={
         <>
           {loadingVisible && <LoadingOutlined data-test="loading" />}
-          {!loadingVisible && data?.length > 0 && (onLoadMore || onDownload) && (
+          {!loadingVisible && data?.length > 0 && (
             <Dropdown overlay={menu} trigger={['click']}>
               <a className="ant-dropdown-link" style={{ color: COLOR_BRAND_BLUE }} onClick={e => e.preventDefault()}>
                 <MenuOutlined />
@@ -84,6 +88,5 @@ DashboardBlock.propTypes = {
   data: PropTypes.array,
   loading: PropTypes.bool,
   onLoadMore: PropTypes.func,
-  onDownload: PropTypes.func,
   emptyPanel: PropTypes.bool,
 };

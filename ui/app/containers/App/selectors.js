@@ -20,8 +20,6 @@ const selectCurrentUser = () => getCurrentUser();
 
 const makeSelectLocation = () => createSelector(selectRouter, routerState => routerState.location);
 
-const makeSelectSystemSettings = () => createSelector(selectGlobal, subState => subState.settings.data);
-
 const makeSelectUser = () => createSelector(selectGlobal, ({ user }) => user);
 
 const makeSelectContext = () => createSelector(selectGlobal, subState => subState.context);
@@ -116,7 +114,6 @@ export default {
   // General selectors
   selectGlobal,
   makeSelectLocation,
-  makeSelectSystemSettings,
   makeSelectStartDate,
   makeSelectEndDate,
   makeSelectTimespan,
