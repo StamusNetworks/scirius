@@ -36,6 +36,8 @@ class CommonStore {
 
   sources = null;
 
+  user = null;
+
   constructor(root) {
     this.root = root;
     if (!localStorage.getItem('alert_tag')) {
@@ -166,6 +168,27 @@ class CommonStore {
     return response;
   }
 
+  async fetchUser() {
+    const response = await api.get(endpoints.CURRENT_USER.url);
+    if (response.ok) {
+      this.user = {
+        allTenant: response.data.all_tenant,
+        noTenant: response.data.no_tenant,
+        tenants: response.data.tenants,
+        pk: response.data.pk,
+        timezone: response.data.timezone,
+        username: response.data.username,
+        firstName: response.data.first_name,
+        lastName: response.data.last_name,
+        isActive: response.data.is_active,
+        email: response.data.email,
+        dateJoined: response.data.date_joined,
+        permissions: response.data.perms,
+      };
+    }
+    return response;
+  }
+
   addFilter(filter) {
     const stack = (Array.isArray(filter) ? filter : [filter]).filter(f => CommonStore.#validateFilter(f));
     this.ids = [...this.ids, ...stack];
@@ -218,6 +241,10 @@ class CommonStore {
 
   getSources() {
     return toJS(this.sources);
+  }
+
+  getUser() {
+    return toJS(this.user);
   }
 
   static #indexOfFilter(filter, allFilters) {
