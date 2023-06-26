@@ -6,6 +6,7 @@ import { withRouter } from 'react-router';
 import { Dropdown, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import { createStructuredSelector } from 'reselect';
+import { withStore } from 'ui/mobx/RootStoreProvider';
 import { sections } from 'ui/constants';
 import { dashboard } from 'config/Dashboard';
 import { compose } from 'redux';
@@ -13,7 +14,6 @@ import FilterToggleModal from 'ui/FilterToggleModal';
 import ErrorHandler from 'ui/components/Error';
 import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
 import filterSetActions from 'ui/stores/filterset/actions';
-import globalSelectors from 'ui/containers/App/selectors';
 import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag } from 'ui/containers/HuntApp/stores/global';
 
 class FilterEditKebab extends React.Component {
@@ -156,7 +156,7 @@ class FilterEditKebab extends React.Component {
           id="filterActions"
           overlay={
             <Menu onClick={({ domEvent }) => domEvent.stopPropagation()}>
-              {this.props.user.data.isActive && this.props.user.data.permissions.includes('rules.events_edit') && (
+              {this.props.store.commonStore.user?.isActive && this.props.store.commonStore.user?.permissions.includes('rules.events_edit') && (
                 <React.Fragment>
                   {this.props.data.index !== 0 && (
                     <Menu.Item
@@ -208,7 +208,7 @@ class FilterEditKebab extends React.Component {
               >
                 Convert Action to Filters
               </Menu.Item>
-              {this.props.user.data.isActive && (
+              {this.props.store.commonStore.user?.isActive && (
                 <Menu.Item
                   key="6"
                   data-test="save-action-as-filter-set"
@@ -256,26 +256,13 @@ FilterEditKebab.propTypes = {
   setTag: PropTypes.func,
   clearFilters: PropTypes.func,
   alertTag: PropTypes.object,
-  user: PropTypes.shape({
-    data: PropTypes.shape({
-      pk: PropTypes.any,
-      timezone: PropTypes.any,
-      username: PropTypes.any,
-      firstName: PropTypes.any,
-      lastName: PropTypes.any,
-      isActive: PropTypes.any,
-      email: PropTypes.any,
-      dateJoined: PropTypes.any,
-      permissions: PropTypes.any,
-    }),
-  }),
   setExpand: PropTypes.func,
   history: PropTypes.object,
+  store: PropTypes.object,
 };
 
 const mapStateToProps = createStructuredSelector({
   alertTag: makeSelectAlertTag(),
-  user: globalSelectors.makeSelectUser(),
 });
 
 const mapDispatchToProps = {
@@ -286,4 +273,4 @@ const mapDispatchToProps = {
 };
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
-export default compose(withConnect)(withRouter(FilterEditKebab));
+export default compose(withConnect)(withRouter(withStore(FilterEditKebab)));
