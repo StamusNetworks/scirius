@@ -6,6 +6,7 @@ import { Menu, Popover, Tooltip } from 'antd';
 import { ClockCircleOutlined, QuestionCircleOutlined, UserOutlined } from '@ant-design/icons';
 import selectors from 'ui/containers/App/selectors';
 import { createStructuredSelector } from 'reselect';
+import { observer } from 'mobx-react-lite';
 // icon select: https://fonts.google.com/icons?selected=Material+Icons
 // React name for icon: select checkbox, click the icon and see the name for the import: https://mui.com/components/material-icons
 
@@ -17,17 +18,19 @@ import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
 import constants from 'ui/constants';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import actions from 'ui/containers/App/actions';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 import { HeaderStyled, Logo, RangePreview } from './styles';
 
 const { DATE_TIME_FORMAT } = constants;
 let reloadTimeout = null;
 let animateTimeout = null;
 
-const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePicker, doReload, reloadData, menuItems = [], user }) => {
+const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePicker, doReload, reloadData, menuItems = [] }) => {
   const [helpPopOver, setHelpPopOver] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [userPopOver, setUserPopOver] = useState(false);
   const [progress, setProgress] = useState(0);
+  const { commonStore } = useStore();
 
   const timePreview =
     timePicker === TimePickerEnum.ABSOLUTE
@@ -110,13 +113,15 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
             <QuestionCircleOutlined /> Help
           </Popover>
         </Menu.Item>
-        <Menu.Item data-test="username-link" key="user-dropdown" className="user-dropdown" style={{ height: '100%' }}>
-          <Popover placement="bottomRight" content={<UserMenu />} trigger="click" visible={userPopOver} onVisibleChange={setUserPopOver}>
-            <span>
-              <UserOutlined /> {user.data.username}
-            </span>
-          </Popover>
-        </Menu.Item>
+        {commonStore.user && (
+          <Menu.Item data-test="username-link" key="user-dropdown" className="user-dropdown" style={{ height: '100%' }}>
+            <Popover placement="bottomRight" content={<UserMenu />} trigger="click" visible={userPopOver} onVisibleChange={setUserPopOver}>
+              <span>
+                <UserOutlined /> {commonStore.user.username}
+              </span>
+            </Popover>
+          </Menu.Item>
+        )}
       </Menu>
     </HeaderStyled>
   );
@@ -132,10 +137,6 @@ Header.propTypes = {
   reloadData: PropTypes.object,
   doReload: PropTypes.func,
   menuItems: PropTypes.array, // not required! only used by EE
-  user: PropTypes.shape({
-    data: PropTypes.object,
-    request: PropTypes.object,
-  }).isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -144,7 +145,6 @@ const mapStateToProps = createStructuredSelector({
   startDate: selectors.makeSelectStartDate(),
   endDate: selectors.makeSelectEndDate(),
   reloadData: selectors.makeSelectReload(),
-  user: selectors.makeSelectUser(),
 });
 
 export const mapDispatchToProps = dispatch =>
@@ -159,4 +159,4 @@ export const mapDispatchToProps = dispatch =>
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
-export default compose(withConnect)(Header);
+export default compose(withConnect)(observer(Header));
