@@ -1,6 +1,4 @@
 import React, { useCallback, useMemo } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import { Menu, Spin } from 'antd';
 import { useLocation, withRouter } from 'react-router-dom';
 import { default as Icon } from 'ui/components/IconAntd';
@@ -9,8 +7,6 @@ import { APP_URL } from 'ui/config';
 import { CamelCaseToNormal } from 'ui/helpers';
 import { LeftNavMap } from 'ui/maps/LeftNavMap';
 import { Link } from 'ui/helpers/Link';
-import selectors from 'ui/containers/App/selectors';
-import { createStructuredSelector } from 'reselect';
 import { LinkOutlined } from '@ant-design/icons';
 import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
@@ -31,12 +27,9 @@ const getGroupPages = (category, permissions, systemSettings) =>
     )
     .sort((a, b) => pages[a].metadata.position - pages[b].metadata.position);
 
-function LeftNav({ user }) {
-  const {
-    data: { permissions = [] },
-    request: { loading = true },
-  } = user;
+function LeftNav() {
   const { commonStore } = useStore();
+  const { permissions = [] } = commonStore.user || {};
 
   const renderMenuItems = useCallback(
     groupId =>
@@ -87,7 +80,7 @@ function LeftNav({ user }) {
         defaultOpenKeys={LeftNavMap.map(group => group.id)}
       >
         {renderSubMenus}
-        {loading && (
+        {commonStore.user === null && (
           <Menu.Item key="loading">
             <Spin />
           </Menu.Item>
@@ -96,16 +89,4 @@ function LeftNav({ user }) {
     </LeftNavStyled>
   );
 }
-
-LeftNav.propTypes = {
-  user: PropTypes.shape({
-    data: PropTypes.object,
-    request: PropTypes.object,
-  }).isRequired,
-};
-
-const mapStateToProps = createStructuredSelector({
-  user: selectors.makeSelectUser(),
-});
-
-export default connect(mapStateToProps)(withRouter(observer(LeftNav)));
+export default withRouter(observer(LeftNav));
