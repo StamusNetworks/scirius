@@ -22,7 +22,6 @@ const Actions = ({ section }) => {
   const { commonStore } = useStore();
   const dispatch = useDispatch();
   const supportedActions = useSelector(ruleSetsSelectors.makeSelectSupportedActions());
-  const filters = useSelector(huntGlobalStore.makeSelectGlobalFilters());
   return (
     <div>
       <Title>Actions</Title>
@@ -32,10 +31,9 @@ const Actions = ({ section }) => {
             dispatch(huntGlobalStore.clearFilters(section));
             commonStore.clearFilters();
           }}
-          filters={filters}
         />
         <LoadFilterSetButton onClick={() => dispatch(strGlobalActions.setFilterSets(true))} />
-        <SaveFilterSetButton onClick={() => dispatch(ruleSetsActions.saveFiltersModal(true))} filters={filters} />
+        <SaveFilterSetButton onClick={() => dispatch(ruleSetsActions.saveFiltersModal(true))} />
         <ActionsButtons supportedActions={supportedActions} />
       </ActionsContainer>
     </div>
