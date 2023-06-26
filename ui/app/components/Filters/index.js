@@ -94,7 +94,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
 
   // Selectors handlers
   const user = useSelector(strGlobalSelectors.makeSelectUser());
-  const filters = useSelector(huntGlobalStore.makeSelectGlobalFilters());
+  const filters = commonStore.getFilters();
   const historyFilters = useSelector(huntGlobalStore.makeSelectHistoryFilters());
   const filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(filterTypes));
   const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());
@@ -118,7 +118,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
     if (supportedActionsPermissions) {
       dispatch(ruleSetsActions.supportedActionsRequest(filters));
     }
-  }, [filters, supportedActionsPermissions]);
+  }, [JSON.stringify(filters), supportedActionsPermissions]);
 
   useHotkeys(
     'shift+i',
