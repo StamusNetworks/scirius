@@ -47,6 +47,7 @@ const App = ({ source, getSystemSettings, getUser, getSource, getAllPeriodReques
   useAutorun(async () => {
     await commonStore.fetchSystemSettings();
     await commonStore.fetchSources();
+    await commonStore.fetchUser();
   }, []);
 
   useEffect(() => {
