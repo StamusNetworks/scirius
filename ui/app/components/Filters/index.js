@@ -11,7 +11,6 @@ import ruleSetReducer from 'ui/stores/filters/reducer';
 import ruleSetSaga from 'ui/stores/filters/saga';
 import ruleSetsActions from 'ui/stores/filters/actions';
 import ruleSetsSelectors from 'ui/stores/filters/selectors';
-import strGlobalSelectors from 'ui/containers/App/selectors';
 import * as huntGlobalStore from 'ui/containers/HuntApp/stores/global';
 import FilterList from 'ui/components/FilterList/index';
 import { sections } from 'ui/constants';
@@ -93,12 +92,12 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
   const { commonStore } = useStore();
 
   // Selectors handlers
-  const user = useSelector(strGlobalSelectors.makeSelectUser());
+  const user = commonStore.getUser();
   const filters = commonStore.getFilters();
   const historyFilters = useSelector(huntGlobalStore.makeSelectHistoryFilters());
   const filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(filterTypes));
   const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());
-  const supportedActionsPermissions = user && user.data && user.data.permissions && user.data.permissions.includes('rules.ruleset_policy_edit');
+  const supportedActionsPermissions = user && user.permissions && user.permissions.includes('rules.ruleset_policy_edit');
   const filtersAreSticky = useSelector(({ ruleSet }) => ruleSet?.filtersAreSticky);
 
   // State handlers
