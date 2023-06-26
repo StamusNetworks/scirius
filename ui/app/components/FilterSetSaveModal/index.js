@@ -6,7 +6,7 @@ import HuntRestError from 'ui/components/HuntRestError';
 import { useDispatch, useSelector } from 'react-redux';
 import { useInjectSaga } from 'utils/injectSaga';
 import { useInjectReducer } from 'utils/injectReducer';
-import globalSelectors from 'ui/containers/App/selectors';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 import saga from './saga';
 import reducer from './reducer';
 import selectors from './selectors';
@@ -25,9 +25,9 @@ const layout = {
 const FilterSetSaveModal = ({ content, fromPage, title, close }) => {
   useInjectReducer({ key: 'filterSetSave', reducer });
   useInjectSaga({ key: 'filterSetSave', saga });
+  const { commonStore } = useStore();
   const dispatch = useDispatch();
   const [form] = Form.useForm();
-  const user = useSelector(globalSelectors.makeSelectUser());
   const request = useSelector(selectors.makeSelectForm());
   const { error } = request;
   const onFinish = async values => {
@@ -42,7 +42,7 @@ const FilterSetSaveModal = ({ content, fromPage, title, close }) => {
     form.setFieldsValue({ share: false });
   }, []);
 
-  const noRights = user.data.isActive && !user.data.permissions.includes('rules.events_edit');
+  const noRights = commonStore.user?.isActive && !commonStore.user?.permissions.includes('rules.events_edit');
   const errors = useMemo(() => {
     if (error?.response?.status === 403) {
       if (noRights && form.getFieldValue('share')) {
