@@ -231,7 +231,6 @@ class EventsPage extends React.Component {
 }
 
 EventsPage.propTypes = {
-  filters: PropTypes.any,
   filtersWithAlert: PropTypes.any,
   store: PropTypes.object,
   addFilter: PropTypes.func,
