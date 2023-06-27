@@ -45,7 +45,7 @@ function processHitsStats(res, rules, updateCallback) {
   }
 }
 
-export function updateHitsStats(rules, filterParams, updateCallback, qfilter) {
+export async function updateHitsStats(rules, filterParams, updateCallback, qfilter) {
   const { stamus, alert, discovery } = store?.commonStore?.eventTypes || {};
 
   const sids = Array.from(rules, x => x.sid).join();
@@ -54,9 +54,8 @@ export function updateHitsStats(rules, filterParams, updateCallback, qfilter) {
     processHitsStats(statsCache[encodeURI(url)], rules, updateCallback);
     return;
   }
-  axios.get(url).then(res => {
-    /* we are going O(n2), we should fix that */
-    statsCache[encodeURI(url)] = res;
-    processHitsStats(res, rules, updateCallback);
-  });
+  const res = await axios.get(url);
+  /* we are going O(n2), we should fix that */
+  statsCache[encodeURI(url)] = res;
+  processHitsStats(res, rules, updateCallback);
 }
