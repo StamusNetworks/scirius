@@ -18,11 +18,11 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
 import { Table } from 'antd';
 import { BellFilled } from '@ant-design/icons';
 import { Helmet } from 'react-helmet';
+import { observer } from 'mobx-react-lite';
 import { STAMUS } from 'ui/config';
 import { buildQFilter } from 'ui/buildQFilter';
 import ErrorHandler from 'ui/components/Error';
@@ -31,21 +31,22 @@ import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
 import moment from 'moment';
 import buildListParams from 'ui/helpers/buildListParams';
-import { addFilter, makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
-import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
-import { withStore } from 'ui/mobx/RootStoreProvider';
-import { createStructuredSelector } from 'reselect';
-import { connect } from 'react-redux';
-import { compose } from 'redux';
-import { buildListUrlParams, loadActions } from '../../helpers/common';
+import { useStore } from 'ui/mobx/RootStoreProvider';
+import useAutorun from 'ui/helpers/useAutorun';
+import useFilterParams from 'ui/hooks/useFilterParams';
+import { buildListUrlParams } from '../../helpers/common';
 import AlertItem from './components/AlertItem';
 import HuntPaginationRow from '../../HuntPaginationRow';
 
-class EventsPage extends React.Component {
-  constructor(props) {
-    super(props);
-
-    const alertsListConf = buildListParams(JSON.parse(localStorage.getItem('alerts_list')), {
+const EventsPage = () => {
+  const { commonStore, esStore } = useStore();
+  const filterParams = useFilterParams();
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errors, setErrors] = useState(null);
+  const [count, setCount] = useState(0);
+  const [alertsList, setAlertList] = useState(
+    buildListParams(JSON.parse(localStorage.getItem('alerts_list')), {
       pagination: {
         page: 1,
         perPage: 10,
@@ -53,84 +54,54 @@ class EventsPage extends React.Component {
       },
       sort: { id: 'timestamp', asc: false },
       view_type: 'list',
-    });
+    }),
+  );
 
-    this.state = {
-      alerts: [],
-      loading: true,
-      // eslint-disable-next-line react/no-unused-state
-      net_error: undefined,
-      // eslint-disable-next-line react/no-unused-state
-      supported_actions: [],
-      errors: null,
-      count: 0,
-      alertsList: alertsListConf,
-    };
-    this.fetchData = this.fetchData.bind(this);
-    this.loadActions = loadActions.bind(this);
-    this.updateAlertListState = this.updateAlertListState.bind(this);
-  }
-
-  componentDidMount() {
-    this.fetchData();
-    if (this.props.store.commonStore.user?.permissions.includes('rules.ruleset_policy_edit')) {
-      this.loadActions();
-    }
-  }
-
-  componentDidUpdate(prevProps) {
-    const filtersChanged = JSON.stringify(prevProps.filtersWithAlert) !== JSON.stringify(this.props.filtersWithAlert);
-    if (JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams) || filtersChanged) {
-      this.fetchData();
-      if (filtersChanged && this.props.store.commonStore.user?.permissions.includes('rules.ruleset_policy_edit')) {
-        this.loadActions();
-      }
-    }
-  }
-
-  updateAlertListState(alertsListState, fetchDataCallback) {
-    this.setState({ alertsList: alertsListState }, fetchDataCallback);
-    localStorage.setItem('alerts_list', JSON.stringify(alertsListState));
-  }
-
-  updateRuleListState = rulesListState => {
-    this.updateAlertListState(rulesListState, () => this.fetchData());
+  const updateRuleListState = rulesListState => {
+    setAlertList(rulesListState);
+    localStorage.setItem('alerts_list', JSON.stringify(rulesListState));
   };
 
-  async fetchData() {
-    const qfilter = buildQFilter(this.props.filtersWithAlert, this.props.store.commonStore.systemSettings);
-    const paginationParams = buildListUrlParams(this.state.alertsList);
+  const qfilter = buildQFilter(commonStore.filters, commonStore.systemSettings);
+  const paginationParams = buildListUrlParams(alertsList);
 
-    this.setState({ loading: true });
-
+  const fetchData = async () => {
     try {
-      const data = await this.props.store.esStore.fetchAlertsTail(paginationParams, qfilter);
+      const data = await esStore.fetchAlertsTail(paginationParams, qfilter);
       if (data !== null && data.results && typeof data.results !== 'string') {
-        this.setState({ alerts: data.results, count: data.count, loading: false });
+        setAlerts(data.results);
+        setCount(data.count);
+        setLoading(false);
       } else {
-        this.setState({ loading: false });
+        setLoading(false);
       }
     } catch (error) {
       if (error.response.status === 500) {
-        this.setState({ errors: [`${error.response.data[0].slice(0, 160)}...`], loading: false });
+        setErrors([`${error.response.data[0].slice(0, 160)}...`]);
+        setLoading(false);
         return;
       }
-      this.setState({ errors: null, loading: false });
+      setErrors([]);
+      setLoading(false);
     }
-  }
+  };
 
-  getIconColor(key) {
+  useEffect(fetchData, [qfilter, paginationParams]);
+
+  useAutorun(fetchData, ['ids', 'date', 'tenant']);
+
+  const getIconColor = key => {
     if (key === 'informational') return '#7b1244';
     if (key === 'relevant') return '#ec7a08';
     return '#005792';
-  }
+  };
 
-  columns = [
+  const columns = [
     {
       title: '',
       render: (e, row) => (
         <div>
-          <BellFilled style={{ color: this.getIconColor(row.tag) }} />
+          <BellFilled style={{ color: getIconColor(row.tag) }} />
         </div>
       ),
     },
@@ -168,94 +139,50 @@ class EventsPage extends React.Component {
     },
   ];
 
-  render() {
-    const dataSource = this.state.alerts.map(rule => ({
-      // eslint-disable-next-line no-underscore-dangle
-      key: rule._id,
-      timestamp: moment(rule.timestamp).format('YYYY-MM-DD, hh:mm:ss a'),
-      method: rule.alert.signature,
-      source_ip: rule.src_ip,
-      destination_ip: rule.dest_ip,
-      proto: rule.app_proto || rule.proto,
-      probe: rule.host,
-      category: rule.alert.category,
-      tag: rule.alert.tag || 'untagged',
-      rule, // we need this to access the rule data in the `expandedRowRender` below
-    }));
+  const dataSource = alerts.map(rule => ({
+    key: rule._id,
+    timestamp: moment(rule.timestamp).format('YYYY-MM-DD, hh:mm:ss a'),
+    method: rule.alert.signature,
+    source_ip: rule.src_ip,
+    destination_ip: rule.dest_ip,
+    proto: rule.app_proto || rule.proto,
+    probe: rule.host,
+    category: rule.alert.category,
+    tag: rule.alert.tag || 'untagged',
+    rule, // we need this to access the rule data in the `expandedRowRender` below
+  }));
 
-    return (
-      <div>
-        <Helmet>
-          <title>{`${STAMUS} - Events`}</title>
-        </Helmet>
+  return (
+    <div>
+      <Helmet>
+        <title>{`${STAMUS} - Events`}</title>
+      </Helmet>
 
-        {this.state.errors && <HuntRestError errors={this.state.errors} />}
-        <ErrorHandler>
-          <Filters page="ALERTS_LIST" section={sections.GLOBAL} queryTypes={['filter', 'filter_host_id']} filterTypes={['filter']} />
-        </ErrorHandler>
+      {errors && <HuntRestError errors={errors} />}
+      <ErrorHandler>
+        <Filters page="ALERTS_LIST" section={sections.GLOBAL} queryTypes={['filter', 'filter_host_id']} filterTypes={['filter']} />
+      </ErrorHandler>
 
-        {this.state.alerts && (
-          <Table
-            data-test="alerts-table"
-            size="small"
-            loading={this.state.loading}
-            dataSource={dataSource}
-            columns={this.columns}
-            expandable={{
-              columnWidth: 5,
-              expandRowByClick: true,
-              expandedRowRender: alert => (
-                <AlertItem
-                  data={alert.rule}
-                  filterParams={this.props.filterParams}
-                  addFilter={this.props.addFilter}
-                  eventTypes={this.props.store.commonStore.eventTypes}
-                />
-              ),
-              rowExpandable: () => true,
-            }}
-            pagination={false}
-          />
-        )}
-        <ErrorHandler>
-          <HuntPaginationRow
-            viewType="list"
-            onPaginationChange={this.updateRuleListState}
-            itemsCount={this.state.count}
-            itemsList={this.state.alertsList}
-          />
-        </ErrorHandler>
-      </div>
-    );
-  }
-}
+      <Table
+        data-test="alerts-table"
+        size="small"
+        loading={loading}
+        dataSource={dataSource}
+        columns={columns}
+        expandable={{
+          columnWidth: 5,
+          expandRowByClick: true,
+          expandedRowRender: alert => <AlertItem data={alert.rule} filterParams={filterParams} eventTypes={commonStore.eventTypes} />,
+          rowExpandable: () => true,
+        }}
+        pagination={false}
+      />
 
-EventsPage.propTypes = {
-  filtersWithAlert: PropTypes.any,
-  store: PropTypes.object,
-  addFilter: PropTypes.func,
-  filterParams: PropTypes.object.isRequired,
-  user: PropTypes.shape({
-    pk: PropTypes.any,
-    timezone: PropTypes.any,
-    username: PropTypes.any,
-    firstName: PropTypes.any,
-    lastName: PropTypes.any,
-    isActive: PropTypes.any,
-    email: PropTypes.any,
-    dateJoined: PropTypes.any,
-    permissions: PropTypes.any,
-  }),
+      <ErrorHandler>
+        <HuntPaginationRow viewType="list" onPaginationChange={updateRuleListState} itemsCount={count} itemsList={alertsList} />
+      </ErrorHandler>
+    </div>
+  );
 };
 
-const mapStateToProps = createStructuredSelector({
-  filtersWithAlert: makeSelectGlobalFilters(true),
-  filterParams: makeSelectFilterParams(),
-});
-
-const mapDispatchToProps = {
-  addFilter,
-};
-
-const withConnect = connect(mapStateToProps, mapDispatchToProps);
-export default compose(withConnect, withStore)(EventsPage);
+export default observer(EventsPage);

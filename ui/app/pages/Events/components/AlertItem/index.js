@@ -14,7 +14,6 @@ import SMBAlertCard from 'ui/components/SMBAlertCard';
 import PCAPFile from 'ui/components/PCAPFile';
 import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
 import { dashboard } from 'config/Dashboard';
-import { buildFilterParams } from 'ui/buildFilterParams';
 import { withStore } from 'ui/mobx/RootStoreProvider';
 import AlertRelatedData from '../../../../components/AlertRelatedData';
 import { DlHorizontal, Warning, Numbers, Pre, TabPaneResponsive } from './styles';
@@ -103,8 +102,7 @@ class AlertItem extends React.Component {
     if (!this.state.showTabs) {
       // reset the files state for each event
       this.setState({ files: {}, fileInfo: false, fileInfoLoading: false });
-      const filterParams = buildFilterParams(this.props.filterParams);
-      const url = `${config.API_URL + config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId}&${filterParams}`;
+      const url = `${config.API_URL + config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId}&${this.props.filterParams}`;
       axios.get(url).then(res => {
         if (res.data !== null) {
           if ('Alert' in res.data) {
@@ -131,7 +129,7 @@ class AlertItem extends React.Component {
         }
       });
 
-      const fileUrl = `${config.API_URL}${config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId} AND fileinfo.stored:true&${filterParams}`;
+      const fileUrl = `${config.API_URL}${config.ES_BASE_PATH}events_from_flow_id/?qfilter=flow_id:${flowId} AND fileinfo.stored:true&${this.props.filterParams}`;
       axios.get(fileUrl).then(res => {
         if (res.data !== null) {
           if ('Fileinfo' in res.data) {
@@ -891,7 +889,7 @@ class AlertItem extends React.Component {
 }
 AlertItem.propTypes = {
   data: PropTypes.any,
-  filterParams: PropTypes.object.isRequired,
+  filterParams: PropTypes.string.isRequired,
   eventTypes: PropTypes.object,
 };
 
