@@ -34,7 +34,7 @@ class CommonStore {
 
   _systemSettings = null;
 
-  sources = null;
+  _sources = [];
 
   user = null;
 
@@ -68,7 +68,7 @@ class CommonStore {
     try {
       this._systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
       this.ids = JSON.parse(localStorage.getItem('ids_filters') || '[]');
-      this.sources = JSON.parse(localStorage.getItem('str-sources') || '[]');
+      this._sources = JSON.parse(localStorage.getItem('str-sources') || '[]');
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log('Error while parsing local storage data');
@@ -156,7 +156,7 @@ class CommonStore {
         const object2 = response.data?.results;
 
         if (!localSources || !isEqual(object1, object2)) {
-          this.sources = response.data?.results || [];
+          this._sources = response.data?.results || [];
           localStorage.setItem('str-sources', JSON.stringify(response.data?.results || []));
           localStorage.setItem('str-refresh', 'true');
         }
@@ -251,8 +251,12 @@ class CommonStore {
     return { alert: toJS(this.alert.value.alerts), stamus: toJS(this.alert.value.stamus), discovery: !!toJS(this.alert.value.sightings) };
   }
 
+  get sources() {
+    return toJS(this._sources);
+  }
+
   getSources() {
-    return toJS(this.sources);
+    return toJS(this._sources);
   }
 
   getUser() {
