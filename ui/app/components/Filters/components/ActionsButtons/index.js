@@ -13,6 +13,8 @@ import { ActionButton } from '../styles';
 
 const ActionsButtons = ({ supportedActions, filterParams, rulesets }) => {
   const { commonStore } = useStore();
+  const filters = commonStore.getFilters();
+  const stamusMethodFilterApplied = filters.some(filter => filter.id.startsWith('stamus.'));
   const [visible, setVisible] = useState(false);
   const [type, setType] = useState(false);
   const rulesList = {
@@ -29,6 +31,9 @@ const ActionsButtons = ({ supportedActions, filterParams, rulesets }) => {
     const result = [];
     for (let i = 0; i < supportedActions.length; i += 1) {
       const action = supportedActions[i];
+  
+      if(stamusMethodFilterApplied && action[1] === 'Create DoC events') continue;
+
       if (action[0] === '-') {
         result.push(<Menu.Divider key={`divider-${i}`} />);
       } else {
@@ -72,7 +77,7 @@ const ActionsButtons = ({ supportedActions, filterParams, rulesets }) => {
           show={visible}
           action={type}
           config={rulesList}
-          filters={commonStore.getFilters()}
+          filters={filters}
           close={() => setVisible(false)}
           rulesets={rulesets}
           systemSettings={commonStore.systemSettings}
