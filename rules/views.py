@@ -40,7 +40,7 @@ from scirius.utils import scirius_render, scirius_listing, RequestsWrapper
 
 from rules.es_data import ESData
 from rules.models import RuleAtVersion, Ruleset, Source, SourceUpdate, Category, Rule, SuppressedRuleAtVersion, dependencies_check, get_system_settings
-from rules.models import Threshold, Transformation, RulesetTransformation, UserAction, SourceAtVersion
+from rules.models import Threshold, Transformation, RulesetTransformation, UserAction
 from rules.tables import UpdateRuleTable, DeletedRuleTable, ThresholdTable, SourceUpdateTable
 
 from rules.es_graphs import ESError, ESRulesStats, ESFieldStatsAsTable, ESSidByHosts, ESIndices, ESDeleteAlertsBySid
@@ -48,7 +48,7 @@ from rules.es_graphs import get_es_major_version
 
 from .tables import RuleTable, CategoryTable, RulesetTable, CategoryRulesetTable, RuleHostTable, ESIndexessTable
 from .tables import RuleThresholdTable, RuleSuppressTable, RulesetThresholdTable, RulesetSuppressTable
-from .tables import EditCategoryTable, EditRuleTable, EditSourceAtVersionTable
+from .tables import EditCategoryTable, EditRuleTable, EditSourceTable
 from .forms import RuleCommentForm, RuleTransformForm, CategoryTransformForm, RulesetSuppressForm, CommentForm
 from .forms import AddRuleThresholdForm, AddRuleSuppressForm, AddSourceForm, AddPublicSourceForm, SourceForm
 from .forms import RulesetForm, RulesetEditForm, RulesetCopyForm, SystemSettingsForm, KibanaDataForm, EditThresholdForm, PoliciesForm
@@ -1089,11 +1089,7 @@ def activate_source(request, source_id, ruleset_id):
     src = get_object_or_404(Source, pk=source_id)
     ruleset = get_object_or_404(Ruleset, pk=ruleset_id)
 
-    sversions = SourceAtVersion.objects.filter(source=src, version='HEAD')
-    if not sversions:
-        return JsonResponse(False, safe=False)
-
-    ruleset.sources.add(sversions[0])
+    ruleset.sources.add(src)
     for cat in Category.objects.filter(source=src):
         cat.enable(ruleset, request=request)
 
@@ -1105,8 +1101,7 @@ def activate_source(request, source_id, ruleset_id):
 @permission_required('rules.source_view', raise_exception=True)
 def test_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
-    sourceatversion = get_object_or_404(SourceAtVersion, source=source, version='HEAD')
-    return JsonResponse(sourceatversion.test())
+    return JsonResponse(source.test())
 
 
 def build_source_diff(request, diff):
@@ -1131,13 +1126,6 @@ def changelog_source(request, source_id):
     diff = supdate[0].diff()
     build_source_diff(request, diff)
     return scirius_render(request, 'rules/source.html', {'source': source, 'diff': diff, 'changelogs': changelogs, 'src_update': supdate[0]})
-
-
-@permission_required('rules.source_view', raise_exception=True)
-def diff_source(request, source_id):
-    source = get_object_or_404(Source, pk=source_id)
-    diff = source.diff()
-    return scirius_render(request, 'rules/source.html', {'source': source, 'diff': diff})
 
 
 @permission_required('rules.source_edit', raise_exception=True)
@@ -1460,10 +1448,10 @@ def ruleset(request, ruleset_id, mode='struct', error=None):
     if mode == 'struct':
         categories_list = {}
         sources = ruleset.sources.all()
-        for sourceatversion in sources:
-            cats = CategoryTable(ruleset.categories.filter(source=sourceatversion.source).order_by('name'))
+        for source in sources:
+            cats = CategoryTable(ruleset.categories.filter(source=source).order_by('name'))
             tables.RequestConfig(request, paginate={"per_page": 15}).configure(cats)
-            categories_list[sourceatversion.source.name] = cats
+            categories_list[source.name] = cats
 
         context = {'ruleset': ruleset, 'categories_list': categories_list, 'sources': sources, 'mode': mode}
 
@@ -1545,7 +1533,7 @@ def ruleset_export(request, ruleset_id):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 
-    if rule_versions == [0] and ruleset.sources.filter(source__datatype__in=PROBE.common.custom_source_datatype()).count() == 0:
+    if rule_versions == [0] and ruleset.sources.filter(datatype__in=PROBE.common.custom_source_datatype()).count() == 0:
         file_tar_io = PROBE.common.ruleset_export(ruleset, 0)
         response = HttpResponse(file_tar_io.getvalue(), content_type='application/gzip')
         response['Content-Disposition'] = 'attachment; filename="rules-%s.tgz"' % str(date.today())
@@ -1735,8 +1723,8 @@ def edit_ruleset(request, ruleset_id):
                     source_.disable(ruleset, request=request, comment=form.cleaned_data['comment'])
 
             # add new entries
-            for src in source_selection:
-                source = get_object_or_404(SourceAtVersion, pk=src)
+            for src_pk in source_selection:
+                source = get_object_or_404(Source, pk=src_pk)
                 if source not in ruleset.sources.all():
                     source.enable(ruleset, request=request, comment=form.cleaned_data['comment'])
         else:
@@ -1797,15 +1785,15 @@ def edit_ruleset(request, ruleset_id):
         categories_list = {}
         sources = ruleset.sources.all()
         ruleset_cats = ruleset.categories.all()
-        for sourceatversion in sources:
-            src_cats = Category.objects.filter(source=sourceatversion.source)
+        for source in sources:
+            src_cats = Category.objects.filter(source=source)
             for pcats in src_cats:
                 if pcats in ruleset_cats:
                     cats_selection.append(str(pcats.id))
 
             cats = EditCategoryTable(src_cats)
             tables.RequestConfig(request, paginate=False).configure(cats)
-            categories_list[sourceatversion.source.name] = cats
+            categories_list[source.name] = cats
 
         rules_pk = SuppressedRuleAtVersion.objects.filter(
             ruleset=ruleset
@@ -1828,13 +1816,13 @@ def edit_ruleset(request, ruleset_id):
                 if not user.has_perm('rules.source_edit'):
                     raise PermissionDenied()
 
-                all_sources = SourceAtVersion.objects.all()
+                all_sources = Source.objects.all()
 
                 sources_selection = []
                 for source_ in sources:
                     sources_selection.append(source_.pk)
 
-                sources_list = EditSourceAtVersionTable(all_sources)
+                sources_list = EditSourceTable(all_sources)
                 tables.RequestConfig(request, paginate=False).configure(sources_list)
                 context['sources_list'] = sources_list
                 context['sources_selection'] = sources_selection

@@ -151,12 +151,12 @@ function tables2_checking() {
               action="{% url 'edit_ruleset' ruleset.id %}"
               method="post">
             {% csrf_token %}
-            {% for sourceatversion in sources %}
-                {% if not sourceatversion.source.datatype == 'other' %}
-                    <h2 class="title">Source: {{ sourceatversion }}</h2>
+            {% for source in sources %}
+                {% if not source.datatype == 'other' %}
+                    <h2 class="title">Source: {{ source }}</h2>
                     <h4>Check categories to enable/disable them and validate form at bottom</h4>
                     {% for key, value in categories_list.items  %}
-                        {% if key == sourceatversion.source.name %}
+                        {% if key == source.name %}
                             {% render_table value %}
                         {% endif %}
                     {% endfor %}

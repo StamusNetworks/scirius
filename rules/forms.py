@@ -28,7 +28,7 @@ from django.db.models import F, fields
 from django.db import transaction
 from django.conf import settings
 from rules.models import (
-    Ruleset, Source, Category, SourceAtVersion, SystemSettings, Threshold, Transformation,
+    Ruleset, Source, Category, SystemSettings, Threshold, Transformation,
     RuleProcessingFilter, RuleProcessingFilterDef, FilterSet, validate_source_datatype
 )
 
@@ -316,7 +316,7 @@ class AddPublicSourceForm(forms.ModelForm, RulesetChoiceForm):
             self.fields['rulesets'].required = False
 
 
-# Display choices of SourceAtVersion
+# Display choices of Source
 class RulesetForm(CommentForm):
     name = forms.CharField(max_length=100)
     sources = forms.ModelMultipleChoiceField(None, widget=forms.CheckboxSelectMultiple())
@@ -331,8 +331,8 @@ class RulesetForm(CommentForm):
         super(RulesetForm, self).__init__(*args, **kwargs)
 
         from scirius.utils import get_middleware_module
-        sourceatversion = SourceAtVersion.objects.exclude(source__datatype__in=get_middleware_module('common').custom_source_datatype())
-        self.fields['sources'].queryset = sourceatversion
+        sources = Source.objects.exclude(datatype__in=get_middleware_module('common').custom_source_datatype())
+        self.fields['sources'].queryset = sources
         self.fields['action'].choices = Ruleset.get_transformation_choices(key=Transformation.ACTION)
         self.fields['lateral'].choices = Ruleset.get_transformation_choices(key=Transformation.LATERAL)
         self.fields['target'].choices = Ruleset.get_transformation_choices(key=Transformation.TARGET)

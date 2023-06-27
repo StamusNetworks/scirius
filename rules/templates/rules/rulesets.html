@@ -154,7 +154,7 @@
                                         {% for source in ruleset.sources.all %}
                                             {% if perms.rules.ruleset_policy_view %}
                                                 <li class="list-group-item">
-                                                    <a href="{% url 'source' source.source.pk %}">{{ source.name }}</a>
+                                                    <a href="{% url 'source' source.pk %}">{{ source.name }}</a>
                                                 </li>
                                             {% else %}
                                                 <li class="list-group-item">

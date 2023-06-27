@@ -143,17 +143,17 @@ $("#update_ruleset").click(function() {
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-6">
-                    {% for sourceatversion in sources %}
-                        <h2 class="title">Source: {{ sourceatversion }}</h2>
-                        {% if not sourceatversion.source.datatype == 'other' %}
+                    {% for source in sources %}
+                        <h2 class="title">Source: {{ source }}</h2>
+                        {% if not source.datatype == 'other' %}
                             <h4>Categories</h4>
                             {% for key, value in categories_list.items  %}
-                                {% if key == sourceatversion.source.name %}
+                                {% if key == source.name %}
                                     {% render_table value %}
                                 {% endif %}
                             {% endfor %}
                         {% else %}
-                            Source fetched from {{ sourceatversion.source.uri }}
+                            Source fetched from {{ source.uri }}
                         {% endif %}
                     {% endfor %}
                 </div>
