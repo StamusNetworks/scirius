@@ -1,19 +1,5 @@
 import constants from 'ui/containers/App/constants';
 
-const getContextRequest = () => ({
-  type: constants.GET_CONTEXT_REQUEST,
-});
-
-const getContextSuccess = data => ({
-  type: constants.GET_CONTEXT_SUCCESS,
-  payload: { data },
-});
-
-const getContextFailure = error => ({
-  type: constants.GET_CONTEXT_FAILURE,
-  error,
-});
-
 const setTimeSpan = (startDate, endDate) => ({
   type: constants.SET_TIME_SPAN,
   startDate,
@@ -98,9 +84,6 @@ const updatePushRulesetFailure = () => ({
 });
 
 export default {
-  getContextRequest,
-  getContextSuccess,
-  getContextFailure,
   setTimeSpan,
   setDuration,
   setReload,

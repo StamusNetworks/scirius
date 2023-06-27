@@ -20,8 +20,6 @@ const selectCurrentUser = () => getCurrentUser();
 
 const makeSelectLocation = () => createSelector(selectRouter, routerState => routerState.location);
 
-const makeSelectContext = () => createSelector(selectGlobal, subState => subState.context);
-
 const makeSelectUpdatePushRuleset = () => createSelector(selectGlobal, subState => subState.updatePushRuleset);
 
 const makeSelectStartDate = () =>
@@ -120,7 +118,6 @@ export default {
   makeSelectFilters,
   makeSelectFilterSetsState,
   makeSelectFiltersParam,
-  makeSelectContext,
   makeSelectUpdatePushRuleset,
   makeSelectCurrentUser,
   // Network parameters selectors

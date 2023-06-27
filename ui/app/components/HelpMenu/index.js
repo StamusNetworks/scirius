@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { Button, Modal } from 'antd';
 import { QuestionOutlined, ReadOutlined } from '@ant-design/icons';
 import { observer } from 'mobx-react-lite';
@@ -7,8 +6,6 @@ import styled from 'styled-components';
 import moment from 'moment';
 import constants from 'ui/constants';
 import LoadingIndicator from 'ui/components/LoadingIndicator';
-import actions from 'ui/containers/App/actions';
-import selectors from 'ui/containers/App/selectors';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import useEnterprise from 'ui/hooks/useEnterprise';
 const { DATE_FORMAT } = constants;
