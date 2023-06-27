@@ -148,7 +148,6 @@ App.propTypes = {
 };
 
 const mapStateToProps = createStructuredSelector({
-  source: selectors.makeSelectSource(),
   timeSpan: selectors.makeSelectTimespan(),
 });
 

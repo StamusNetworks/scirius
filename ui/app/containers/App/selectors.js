@@ -71,8 +71,6 @@ const makeSelectFiltersParam = () =>
     return urlParams.length > 0 ? urlParams : '';
   });
 
-const makeSelectSource = () => createSelector(selectGlobal, subState => subState.source);
-
 const makeSelectCurrentUser = (param, fallback) =>
   createSelector(selectCurrentUser, currentUser => {
     if (param) {
@@ -122,7 +120,6 @@ export default {
   makeSelectFilters,
   makeSelectFilterSetsState,
   makeSelectFiltersParam,
-  makeSelectSource,
   makeSelectContext,
   makeSelectUpdatePushRuleset,
   makeSelectCurrentUser,

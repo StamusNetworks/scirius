@@ -25,8 +25,6 @@ const initialTimeSpanStorage = {
 
 const initialSystemSettingsStorage = store.get(StorageEnum.SYSTEM_SETTINGS) || null;
 
-const initialSourceStorage = store.get(StorageEnum.SOURCE) || [];
-
 const initialFiltersStorage = parseUrl();
 
 const hasMultiTenancy = getCurrentUser('multi_tenancy', false);
@@ -63,13 +61,6 @@ export const initialState = {
   },
   filters: {
     ...initialFiltersStorage,
-  },
-  source: {
-    data: [...initialSourceStorage],
-    request: {
-      loading: false,
-      status: null,
-    },
   },
   filterSets: false,
   context: {
@@ -139,23 +130,6 @@ export const appReducer = (state = initialState, action) =>
       }
       case constants.GET_CONTEXT_FAILURE: {
         draft.context.request = { loading: false, status: false };
-        break;
-      }
-      case constants.GET_SOURCE_REQUEST:
-        draft.source.data = [];
-        draft.source.request.loading = true;
-        draft.source.request.status = null;
-        break;
-      case constants.GET_SOURCE_SUCCESS:
-        draft.source.data = action.payload.source;
-        draft.source.request.loading = false;
-        draft.source.request.status = true;
-        store.set(StorageEnum.SOURCE, [...action.payload.source]);
-        break;
-      case constants.GET_SOURCE_FAILURE: {
-        draft.source.data = [];
-        draft.source.request.loading = false;
-        draft.source.request.status = false;
         break;
       }
       case constants.SET_TIME_SPAN: {

@@ -14,16 +14,6 @@ function* retrieveContext() {
   }
 }
 
-function* getSources() {
-  try {
-    const data = yield call(NetworkService.fetchSources, { datatype: 'threat' });
-    const { results = [] } = data;
-    yield put(actions.getSourceSuccess(results));
-  } catch (err) {
-    yield put(actions.getSourceFailure());
-  }
-}
-
 function* getAllPeriod() {
   try {
     const timeRange = yield call(NetworkService.fetchAllPeriod, { event: false });
@@ -72,7 +62,6 @@ function* updatePushRuleset() {
 export default function* rootSage() {
   yield takeEvery(constants.GET_SYSTEM_SETTINGS_REQUEST, retrieveSystemSettings);
   yield takeEvery(constants.GET_CONTEXT_REQUEST, retrieveContext);
-  yield takeEvery(constants.GET_SOURCE_REQUEST, getSources);
   yield takeEvery(constants.GET_PERIOD_ALL_REQUEST, getAllPeriod);
   yield takeEvery(constants.SET_SESSION_ACTIVITY_REQUEST, setSessionActivity);
   yield takeEvery(constants.UPDATE_PUSH_RULESET_REQUEST, updatePushRuleset);

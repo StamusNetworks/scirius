@@ -14,21 +14,6 @@ const getContextFailure = error => ({
   error,
 });
 
-const getSource = () => ({
-  type: constants.GET_SOURCE_REQUEST,
-});
-
-const getSourceSuccess = source => ({
-  type: constants.GET_SOURCE_SUCCESS,
-  payload: {
-    source,
-  },
-});
-
-const getSourceFailure = () => ({
-  type: constants.GET_SOURCE_FAILURE,
-});
-
 const setTimeSpan = (startDate, endDate) => ({
   type: constants.SET_TIME_SPAN,
   startDate,
@@ -116,9 +101,6 @@ export default {
   getContextRequest,
   getContextSuccess,
   getContextFailure,
-  getSource,
-  getSourceSuccess,
-  getSourceFailure,
   setTimeSpan,
   setDuration,
   setReload,
