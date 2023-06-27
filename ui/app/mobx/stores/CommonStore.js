@@ -199,6 +199,11 @@ class CommonStore {
     return response;
   }
 
+  async fetchRuleset() {
+    const response = await api.get(endpoints.RULE_SETS.url);
+    return response;
+  }
+
   addFilter(filter) {
     const stack = (Array.isArray(filter) ? filter : [filter]).filter(f => CommonStore.#validateFilter(f));
     this.ids = [...this.ids, ...stack];
