@@ -31,16 +31,6 @@ function* setSessionActivity(action) {
   }
 }
 
-function* retrieveSystemSettings() {
-  try {
-    // Get system settings
-    const systemSettings = yield call(NetworkService.fetchSystemSettings);
-    yield put(actions.getSystemSettingsSuccess(systemSettings));
-  } catch (err) {
-    yield put(actions.getSystemSettingsFailure());
-  }
-}
-
 function* updatePushRuleset() {
   try {
     yield call(NetworkService.updatePushRuleset);
@@ -51,7 +41,6 @@ function* updatePushRuleset() {
 }
 
 export default function* rootSage() {
-  yield takeEvery(constants.GET_SYSTEM_SETTINGS_REQUEST, retrieveSystemSettings);
   yield takeEvery(constants.GET_PERIOD_ALL_REQUEST, getAllPeriod);
   yield takeEvery(constants.SET_SESSION_ACTIVITY_REQUEST, setSessionActivity);
   yield takeEvery(constants.UPDATE_PUSH_RULESET_REQUEST, updatePushRuleset);

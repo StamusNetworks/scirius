@@ -35,7 +35,7 @@ import { useStore } from 'ui/mobx/RootStoreProvider';
 const pagesList = Object.keys(pages);
 const SESSION_INTERVAL = 30000;
 
-const App = ({ getSystemSettings, getAllPeriodRequest, setSessionActivity, timeSpan }) => {
+const App = ({ getAllPeriodRequest, setSessionActivity, timeSpan }) => {
   const idle = useRef(0);
 
   const setIdle = useCallback(() => {
@@ -51,7 +51,6 @@ const App = ({ getSystemSettings, getAllPeriodRequest, setSessionActivity, timeS
   }, []);
 
   useEffect(() => {
-    getSystemSettings();
     getAllPeriodRequest();
 
     let interval = null;
@@ -141,7 +140,6 @@ const App = ({ getSystemSettings, getAllPeriodRequest, setSessionActivity, timeS
 };
 
 App.propTypes = {
-  getSystemSettings: PropTypes.func,
   getAllPeriodRequest: PropTypes.any,
   setSessionActivity: PropTypes.func,
   timeSpan: PropTypes.object,
@@ -154,7 +152,6 @@ const mapStateToProps = createStructuredSelector({
 export const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
-      getSystemSettings: actions.getSystemSettingsRequest,
       getAllPeriodRequest: actions.getAllPeriodRequest,
       setSessionActivity: actions.setSessionActivityRequest,
     },

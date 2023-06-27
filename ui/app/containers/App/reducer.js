@@ -23,8 +23,6 @@ const initialTimeSpanStorage = {
   ...store.get(StorageEnum.TIMESPAN),
 };
 
-const initialSystemSettingsStorage = store.get(StorageEnum.SYSTEM_SETTINGS) || null;
-
 const initialFiltersStorage = parseUrl();
 
 const hasMultiTenancy = getCurrentUser('multi_tenancy', false);
@@ -48,13 +46,6 @@ export const initialState = {
     now: new Date().getTime(),
     ...initialTimeSpanStorage,
   },
-  settings: {
-    data: initialSystemSettingsStorage,
-    request: {
-      loading: null,
-      status: null,
-    },
-  },
   reload: {
     period: ReloadPeriodEnum.NONE,
     now: 0,
@@ -72,25 +63,6 @@ export const initialState = {
 export const appReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
-      case constants.GET_SYSTEM_SETTINGS_REQUEST:
-        draft.settings.request.loading = true;
-        draft.settings.request.status = null;
-        break;
-      case constants.GET_SYSTEM_SETTINGS_SUCCESS: {
-        draft.settings.data = action.payload.data;
-        draft.settings.request.loading = false;
-        draft.settings.request.status = true;
-        store.set(StorageEnum.SYSTEM_SETTINGS, {
-          ...initialSystemSettingsStorage,
-          ...action.payload.data,
-        });
-        break;
-      }
-      case constants.GET_SYSTEM_SETTINGS_FAILURE: {
-        draft.settings.request.loading = false;
-        draft.settings.request.status = false;
-        break;
-      }
       case constants.GET_PERIOD_ALL_SUCCESS: {
         const { minTimestamp, maxTimestamp } = action.payload;
         const correct = !Number.isNaN(parseInt(minTimestamp, 10)) && !Number.isNaN(parseInt(maxTimestamp, 10));

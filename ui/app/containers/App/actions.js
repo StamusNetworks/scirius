@@ -54,19 +54,6 @@ const setSessionActivityFailure = () => ({
   type: constants.SET_SESSION_ACTIVITY_FAILURE,
 });
 
-const getSystemSettingsRequest = () => ({
-  type: constants.GET_SYSTEM_SETTINGS_REQUEST,
-});
-
-const getSystemSettingsSuccess = data => ({
-  type: constants.GET_SYSTEM_SETTINGS_SUCCESS,
-  payload: { data },
-});
-
-const getSystemSettingsFailure = () => ({
-  type: constants.GET_SYSTEM_SETTINGS_FAILURE,
-});
-
 const updatePushRulesetReset = () => ({
   type: constants.UPDATE_PUSH_RULESET_RESET,
 });
@@ -94,9 +81,6 @@ export default {
   getAllPeriodFailure,
   setSessionActivityRequest,
   setSessionActivityFailure,
-  getSystemSettingsRequest,
-  getSystemSettingsSuccess,
-  getSystemSettingsFailure,
   updatePushRulesetReset,
   updatePushRulesetRequest,
   updatePushRulesetSuccess,
