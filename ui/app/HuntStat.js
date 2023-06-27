@@ -96,7 +96,6 @@ HuntStat.propTypes = {
   title: PropTypes.any,
   filters: PropTypes.any,
   item: PropTypes.any,
-  systemSettings: PropTypes.any,
   loadMore: PropTypes.func,
   filterParams: PropTypes.object.isRequired,
   store: PropTypes.object,
