@@ -36,7 +36,7 @@ class CommonStore {
 
   _sources = [];
 
-  user = null;
+  _user = null;
 
   constructor(root) {
     this.root = root;
@@ -171,7 +171,7 @@ class CommonStore {
   async fetchUser() {
     const response = await api.get(endpoints.CURRENT_USER.url);
     if (response.ok) {
-      this.user = {
+      this._user = {
         allTenant: response.data.all_tenant,
         noTenant: response.data.no_tenant,
         tenants: response.data.tenants,
@@ -260,8 +260,8 @@ class CommonStore {
     return toJS(this._sources);
   }
 
-  getUser() {
-    return toJS(this.user);
+  get user() {
+    return toJS(this._user);
   }
 
   static #indexOfFilter(filter, allFilters) {
