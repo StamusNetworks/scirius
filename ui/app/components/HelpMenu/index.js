@@ -115,11 +115,20 @@ const loadingIndicator = <LoadingIndicator style={{ display: 'inline-block', mar
 const HelpMenu = () => {
   const { commonStore } = useStore();
   const isEnterpriseEdition = useEnterprise();
-  const dispatch = useDispatch();
   const [visible, setVisible] = useState(false);
+  const [context, setContext] = useState(null);
+  const [contextLoading, setContextLoading] = useState(false);
 
-  const { data: context, request: contextRequest } = useSelector(selectors.makeSelectContext());
-  const { loading: contextLoading } = contextRequest;
+  useEffect(() => {
+    (async () => {
+      setContextLoading(true);
+      const response = await commonStore.fetchContext();
+      if (response.ok) {
+        setContext(response.data);
+      }
+      setContextLoading(false);
+    })();
+  }, []);
 
   let labelSCS = '';
   let version = 0;
@@ -131,12 +140,6 @@ const HelpMenu = () => {
   }
 
   const [source] = commonStore.sources;
-
-  useEffect(() => {
-    if (visible) {
-      dispatch(actions.getContextRequest());
-    }
-  }, [visible]);
 
   return (
     <Wrapper>
@@ -151,7 +154,7 @@ const HelpMenu = () => {
           </div>
         }
       >
-        <H1>{isEnterpriseEdition ? context.title : 'Scirius Community Edition'}</H1>
+        {!contextLoading && <H1>{isEnterpriseEdition ? context?.title : 'Scirius Community Edition'}</H1>}
         <VersionTitle>
           {isEnterpriseEdition ? (
             'Versions'
