@@ -189,6 +189,11 @@ class CommonStore {
     return response;
   }
 
+  async fetchContext() {
+    const response = await api.get(endpoints.SCIRIUS_CONTEXT.url);
+    return response;
+  }
+
   addFilter(filter) {
     const stack = (Array.isArray(filter) ? filter : [filter]).filter(f => CommonStore.#validateFilter(f));
     this.ids = [...this.ids, ...stack];
