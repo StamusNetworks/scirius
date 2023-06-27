@@ -46,11 +46,6 @@
             <li>
                 <a href="{% url 'delete_source' source.id %}">Delete</a>
             </li>
-            <!-- </li>
-<li>
-<a href="{% url 'diff_source' source.id %}">Diff</a>
-</li>
--->
         {% endif %}
     </ul>
     {% if perms.rules.source_edit %}

@@ -21,7 +21,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
-from rules.models import Ruleset, SourceAtVersion, Category, Transformation
+from rules.models import Ruleset, Source, Category, Transformation
 
 
 class Command(BaseCommand):
@@ -33,9 +33,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         name = options['name']
         try:
-            sourceat = SourceAtVersion.objects.all()
+            sources = Source.objects.all()
         except:
-            raise CommandError("No SourceAtVersion is defined")
+            raise CommandError("No Source is defined")
         try:
             categories = Category.objects.all()
         except:
@@ -51,7 +51,7 @@ class Command(BaseCommand):
         ruleset.set_transformation(key=Transformation.LATERAL, value=Transformation.L_AUTO)
         ruleset.set_transformation(key=Transformation.TARGET, value=Transformation.T_AUTO)
 
-        for source in sourceat:
+        for source in sources:
             ruleset.sources.add(source)
         for cat in categories:
             ruleset.categories.add(cat)

@@ -30,7 +30,7 @@ from django_filters import rest_framework as filters
 from elasticsearch.exceptions import ConnectionError
 
 from rules.models import Rule, Category, RuleAtVersion, Ruleset, RuleTransformation, CategoryTransformation, RulesetTransformation, FilterSet
-from rules.models import Source, SourceAtVersion, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
+from rules.models import Source, SourceUpdate, UserAction, UserActionObject, Transformation, SystemSettings, get_system_settings
 from rules.views import get_public_sources, fetch_public_sources, extract_rule_references
 from rules.rest_processing import RuleProcessingFilterViewSet
 from rules.es_data import ESData
@@ -103,8 +103,7 @@ class RulesetSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super(RulesetSerializer, self).to_representation(instance)
-        sources_at_version = instance.sources
-        sources = Source.objects.filter(sourceatversion__in=sources_at_version.all())
+        sources = instance.sources.all()
         data['sources'] = [source.pk for source in sources]
 
         try:
@@ -112,16 +111,6 @@ class RulesetSerializer(serializers.ModelSerializer):
             data.update(get_middleware_module('common').get_rest_ruleset(instance))
         except AttributeError:
             pass
-        return data
-
-    def to_internal_value(self, data):
-        data = super(RulesetSerializer, self).to_internal_value(data)
-
-        if 'sources' not in data:
-            return data
-
-        sources = SourceAtVersion.objects.filter(source__in=data['sources'])
-        data['sources'] = list(sources)
         return data
 
 
@@ -204,12 +193,11 @@ class RulesetViewSet(viewsets.ModelViewSet):
     }
     no_tenant_check = True
 
-    def _validate_categories(self, sources_at_version, categories):
-        if len(sources_at_version) == 0 and len(categories) > 0:
+    def _validate_categories(self, sources, categories):
+        if len(sources) == 0 and len(categories) > 0:
             msg = 'No source selected or wrong selected source(s). Cannot add categories without their source.'
             raise serializers.ValidationError({'sources': [msg]})
-        elif len(sources_at_version) > 0 and len(categories) > 0:
-            sources = Source.objects.filter(sourceatversion__in=sources_at_version)
+        elif len(sources) > 0 and len(categories) > 0:
 
             for category in categories:
                 if category.source not in sources:
@@ -227,7 +215,6 @@ class RulesetViewSet(viewsets.ModelViewSet):
         serializer = RulesetSerializer(data=data)
         serializer.is_valid(raise_exception=True)
 
-        # /|\ this is sourceAtVersion because of to_internal_values/to_representation serializer methods
         sources = serializer.validated_data.get('sources', [])
         categories = serializer.validated_data.get('categories', [])
         self._validate_categories(sources, categories)
@@ -1497,7 +1484,6 @@ class BaseSourceSerializer(serializers.ModelSerializer):
         validated_data['updated_date'] = timezone.now()
         validated_data['cert_verif'] = True
         instance = super(BaseSourceSerializer, self).create(validated_data)
-        SourceAtVersion.objects.create(source=instance, version='HEAD')
         return instance
 
 
@@ -1640,8 +1626,7 @@ class BaseSourceViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def test(self, request, pk):
         source = self.get_object()
-        sources_at_version = SourceAtVersion.objects.filter(source=source, version='HEAD')
-        res = sources_at_version[0].test()
+        res = source.test()
 
         if ('status' not in res or res['status'] is False) or \
                 ('errors' not in res or len(res['errors']) > 0):
@@ -1979,7 +1964,7 @@ class UserActionViewSet(SciriusReadOnlyModelViewSet):
 class ChangelogSerializer(serializers.ModelSerializer):
     class Meta:
         model = SourceUpdate
-        fields = ('pk', 'source', 'created_date', 'data', 'version', 'changed',)
+        fields = ('pk', 'source', 'created_date', 'data', 'changed',)
 
     def to_representation(self, instance):
         data = super(ChangelogSerializer, self).to_representation(instance)
@@ -2000,28 +1985,24 @@ class ChangelogViewSet(viewsets.ReadOnlyModelViewSet):
         {"count":4,"next":null,"previous":null,"results":[{"pk":1,"source":1,"created_date":"2018-07-03T15:20:59.168931Z","data":{"deleted":[],"date":"2018-07-03T15:20:59.168931Z",
         "updated":[{"msg":"SURICATA TRAFFIC-ID: Debian APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000032,"pk":300000032},
         {"msg":"SURICATA TRAFFIC-ID: Ubuntu APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000033,"pk":300000033}],"added":[],"stats":{"deleted":0,"updated":2,"added":0}},
-        "version":"9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6","changed":2},{"pk":2,"source":2,"created_date":"2018-07-03T15:25:24.449902Z","data":{"deleted":[],
-        "date":"2018-07-03T15:25:24.449902Z","updated":[],"added":[],"stats":{"deleted":0,"updated":0,"added":0}},"version":"fbae31b8d3a12e1d603e8ce64e7ae0f4f0cff130","changed":0},
+        "changed":2},{"pk":2,"source":2,"created_date":"2018-07-03T15:25:24.449902Z","data":{"deleted":[],
+        "date":"2018-07-03T15:25:24.449902Z","updated":[],"added":[],"stats":{"deleted":0,"updated":0,"added":0}},"changed":0},
         {"pk":3,"source":1,"created_date":"2018-07-03T15:25:25.376499Z","data":{"deleted":[],"date":"2018-07-03T15:25:25.376499Z","updated":[{"msg":"SURICATA TRAFFIC-ID: Debian APT-GET",
         "category":"Suricata Traffic ID ruleset Sigs","sid":300000032,"pk":300000032},{"msg":"SURICATA TRAFFIC-ID: Ubuntu APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000033,
-        "pk":300000033}],"added":[],"stats":{"deleted":0,"updated":2,"added":0}},"version":"9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6","changed":2},{"pk":4,"source":1,"created_date":"2018-07-03T17:14:02.359963Z",
+        "pk":300000033}],"added":[],"stats":{"deleted":0,"updated":2,"added":0}},"changed":2},{"pk":4,"source":1,"created_date":"2018-07-03T17:14:02.359963Z",
         "data":{"deleted":[],"date":"2018-07-03T17:14:02.359963Z","updated":[{"msg":"SURICATA TRAFFIC-ID: Debian APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000032,"pk":300000032},
-        {"msg":"SURICATA TRAFFIC-ID: Ubuntu APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000033,"pk":300000033}],"added":[],"stats":{"deleted":0,"updated":2,"added":0}},
-        "version":"9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6","changed":2}]}
+        {"msg":"SURICATA TRAFFIC-ID: Ubuntu APT-GET","category":"Suricata Traffic ID ruleset Sigs","sid":300000033,"pk":300000033}],"added":[],"stats":{"deleted":0,"updated":2,"added":0}}, "changed":2}]}
 
     Show changelogs filter by source:\n
         curl -k https://x.x.x.x/rest/rules/changelog/source/?source=2 -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
-
-    Show changelogs filter by version:\n
-        curl -k https://x.x.x.x/rest/rules/changelog/source/?version=9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6 -H 'Authorization: Token <token>' -H 'Content-Type: application/json'  -X GET
 
     =============================================================================================================================================================
     """
     serializer_class = ChangelogSerializer
     queryset = SourceUpdate.objects.all()
-    filterset_fields = ('source', 'version')
+    filterset_fields = ('source',)
     ordering = ('-pk',)
-    ordering_fields = ('pk', 'source', 'version',)
+    ordering_fields = ('pk', 'source')
     REQUIRED_GROUPS = {
         'READ': ('rules.source_view',),
     }

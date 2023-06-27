@@ -33,7 +33,7 @@ from django.db import models
 from rest_framework import status, mixins
 from rest_framework.test import APITestCase
 
-from .models import Category, Rule, RuleAtVersion, Ruleset, Source, SourceAtVersion, SuppressedRuleAtVersion, Transformation, RuleTransformation, \
+from .models import Category, Rule, RuleAtVersion, Ruleset, Source, SuppressedRuleAtVersion, Transformation, RuleTransformation, \
     RulesetTransformation, SourceUpdate, SystemSettings, UserAction, RuleProcessingFilter, RuleProcessingFilterDef, InvalidCategoryException
 from .rest_api import router
 from accounts.models import SciriusUser
@@ -272,7 +272,6 @@ class SourceCreationTestCase(TestCase):
     def test_source_update(self):
         """Test source update"""
         self.source.update()
-        self.assertEqual(len(SourceAtVersion.objects.filter(source=self.source)), 1)
         self.assertNotEqual(len(Category.objects.filter(source=self.source)), 0)
 
     def test_unicode_rule(self):
@@ -422,8 +421,6 @@ class TransformationTestCase(TestCase):
     def setUp(self):
         self.source = Source.objects.create(name='test source', created_date=timezone.now(), method='local', datatype='sig')
         self.source.save()
-        self.source_at_version = SourceAtVersion.objects.create(source=self.source, version='42')
-        self.source_at_version.save()
         self.category = Category.objects.create(name='test category', filename='test', source=self.source)
         self.category.save()
 
@@ -632,13 +629,8 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         sources = Source.objects.filter(name='sonic test public source')
         self.assertEqual(len(sources) == 1, True)
 
-        sources_at_version = SourceAtVersion.objects.filter(source=sources[0])
-        self.assertEqual(len(sources_at_version) == 1, True)
-
-        self.assertEqual(sources_at_version[0].source == sources[0], True)
-
-        self.public_source = sources[0]
-        self.ruleset.sources.add(sources_at_version[0])
+        self.public_source = sources.first()
+        self.ruleset.sources.add(sources.first())
 
     def _create_custom_source(self, method, datatype, **kwargs):
         params = {
@@ -652,13 +644,8 @@ class RestAPISourceTestCase(RestAPITestBase, APITestCase):
         sources = Source.objects.filter(name='sonic test custom source')
         self.assertEqual(len(sources) == 1, True)
 
-        sources_at_version = SourceAtVersion.objects.filter(source=sources[0])
-        self.assertEqual(len(sources_at_version) == 1, True)
-
-        self.assertEqual(sources_at_version[0].source == sources[0], True)
-
-        self.source = sources[0]
-        self.ruleset.sources.add(sources_at_version[0])
+        self.source = sources.first()
+        self.ruleset.sources.add(sources.first())
 
     def _set_source_from_name(self, name):
         sources = Source.objects.filter(name=name)
@@ -803,8 +790,6 @@ class RestAPIRulesetTransformationTestCase(RestAPITestBase, APITestCase):
 
         self.source = Source.objects.create(name='test source', created_date=timezone.now(), method='local', datatype='sig')
         self.source.save()
-        self.source_at_version = SourceAtVersion.objects.create(source=self.source, version='42')
-        self.source_at_version.save()
 
         self.category = Category.objects.create(name='test category', filename='test', source=self.source)
         self.category.save()
@@ -814,7 +799,7 @@ class RestAPIRulesetTransformationTestCase(RestAPITestBase, APITestCase):
 
         self.ruleset = Ruleset.objects.create(name='test ruleset', descr='descr', created_date=timezone.now(), updated_date=timezone.now())
         self.ruleset.save()
-        self.ruleset.sources.add(self.source_at_version)
+        self.ruleset.sources.add(self.source)
         self.ruleset.categories.add(self.category)
 
     def test_001_ruleset_transformations(self):
@@ -909,13 +894,9 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
 
         self.source = Source.objects.create(name='test source', created_date=timezone.now(), method='local', datatype='sig')
         self.source.save()
-        self.source_at_version = SourceAtVersion.objects.create(source=self.source, version='42')
-        self.source_at_version.save()
 
         self.source2 = Source.objects.create(name='test source 2', created_date=timezone.now(), method='local', datatype='sig')
         self.source2.save()
-        self.source_at_version2 = SourceAtVersion.objects.create(source=self.source2, version='69')
-        self.source_at_version2.save()
 
         self.category = Category.objects.create(name='test category', filename='test', source=self.source)
         self.category.save()
@@ -932,15 +913,15 @@ class RestAPIRulesetTestCase(RestAPITestBase, APITestCase):
         # Create Ruleset
         self.http_post(reverse('ruleset-list'), params, status=status.HTTP_201_CREATED)
         rulesets = Ruleset.objects.all()
-        sources_at_version = rulesets[0].sources.all()
+        sources = rulesets[0].sources.all()
 
         self.assertEqual(len(rulesets), 1)
         self.assertEqual(rulesets[0].name, "MyCreatedRuleset")
         self.assertEqual(len(rulesets[0].categories.all()) > 0, True)
-        self.assertEqual(len(sources_at_version) == 2, True)
+        self.assertEqual(len(sources) == 2, True)
 
-        for src in sources_at_version:
-            self.assertEqual(src in [self.source_at_version, self.source_at_version2], True)
+        for src in sources:
+            self.assertEqual(src in [self.source, self.source2], True)
 
         # PUT/PATCH Ruleset
         for idx, request in enumerate((self.http_put, self.http_patch)):
@@ -1090,8 +1071,6 @@ class RestAPIRuleTestCase(RestAPITestBase, APITestCase):
             datatype='sig'
         )
         self.source.save()
-        self.source_at_version = SourceAtVersion.objects.create(source=self.source, version='42')
-        self.source_at_version.save()
         self.category = Category.objects.create(
             name='test category',
             filename='test',
@@ -1121,7 +1100,7 @@ flowbits:set,ET.BotccIP; classtype:trojan-activity; sid:2404000; rev:4933;)'
             updated_date=timezone.now()
         )
         self.ruleset.save()
-        self.ruleset.sources.add(self.source_at_version)
+        self.ruleset.sources.add(self.source)
         self.ruleset.categories.add(self.category)
 
     def test_001_rule_detail(self):
@@ -1373,8 +1352,6 @@ class RestAPIRuleProcessingFilterTestCase(RestAPITestBase, APITestCase):
             datatype='sig'
         )
         self.source.save()
-        self.source_at_version = SourceAtVersion.objects.create(source=self.source, version='42')
-        self.source_at_version.save()
         self.category = Category.objects.create(
             name='test category',
             filename='test',
@@ -1439,7 +1416,7 @@ rev:5; metadata:created_at 2010_09_23, updated_at 2010_09_23; target:src_ip;)'
             updated_date=timezone.now()
         )
         self.ruleset.save()
-        self.ruleset.sources.add(self.source_at_version)
+        self.ruleset.sources.add(self.source)
         self.ruleset.categories.add(self.category)
 
         self.DEFAULT_FILTER = {
@@ -1974,25 +1951,18 @@ class RestAPIChangelogTestCase(RestAPITestBase, APITestCase):
         sources = Source.objects.filter(name='sonic test public source')
         self.assertEqual(len(sources) == 1, True)
 
-        sources_at_version = SourceAtVersion.objects.filter(source=sources[0])
-        self.assertEqual(len(sources_at_version) == 1, True)
-
-        self.assertEqual(sources_at_version[0].source == sources[0], True)
-
-        self.public_source = sources[0]
-        self.ruleset.sources.add(sources_at_version[0])
+        self.public_source = sources.first()
+        self.ruleset.sources.add(sources.first())
 
     def test_001_all_changelog(self):
         self._create_public_source()
         data = {"deleted": [], "updated": [{"msg": "SURICATA TRAFFIC-ID: Debian APT-GET", "category": "Suricata Traffic ID ruleset Sigs", "pk": 300000032, "sid": 300000032},
                 {"msg": "SURICATA TRAFFIC-ID: Ubuntu APT-GET", "category": "Suricata Traffic ID ruleset Sigs", "pk": 300000033, "sid": 300000033}], "added": []}
-        sha = '9b73cdc0e25b36ce3a80fdcced631f3769a4f6f6'
 
         SourceUpdate.objects.create(
             source=self.public_source,
             created_date=timezone.now(),
             data=json.dumps(data),
-            version=sha,
             changed=len(data["deleted"]) + len(data["added"]) + len(data["updated"]),
         )
 

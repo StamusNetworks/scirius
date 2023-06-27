@@ -24,7 +24,7 @@ from django.utils.html import format_html
 from django.db.models import Max
 from django.urls import reverse
 from scirius.utils import SciriusTable
-from rules.models import Ruleset, Category, Rule, SourceAtVersion, SourceUpdate, Threshold, UserAction
+from rules.models import Ruleset, Category, Rule, Source, SourceUpdate, Threshold, UserAction
 import django_tables2 as tables
 
 
@@ -86,20 +86,20 @@ class DeletedRuleTable(SciriusTable):
         fields = ("sid", "msg", "category")
 
 
-class EditSourceAtVersionTable(SciriusTable):
+class EditSourceTable(SciriusTable):
     source_selection = tables.CheckBoxColumn(
         accessor="pk",
         attrs={"th__input": {"onclick": "tables2_toggle(this, 'source_selection')"}},
         orderable=False
     )
-    name = tables.LinkColumn('source', args=[tables.A('source__pk')])
+    name = tables.LinkColumn('source', args=[tables.A('pk')])
 
     class Meta(DefaultMeta):
-        model = SourceAtVersion
+        model = Source
         fields = ("source_selection", "name")
 
     def order_name(self, queryset, is_descending):
-        return (queryset.order_by('%s%s' % ('-' if is_descending else '', 'source__name')), True)
+        return (queryset.order_by('%s%s' % ('-' if is_descending else '', 'name')), True)
 
 
 class CategoryTable(SciriusTable):
