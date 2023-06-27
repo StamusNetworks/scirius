@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { connect, useDispatch, useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button, Modal } from 'antd';
 import { QuestionOutlined, ReadOutlined } from '@ant-design/icons';
+import { observer } from 'mobx-react-lite';
 import styled from 'styled-components';
 import moment from 'moment';
 import constants from 'ui/constants';
 import LoadingIndicator from 'ui/components/LoadingIndicator';
 import actions from 'ui/containers/App/actions';
 import selectors from 'ui/containers/App/selectors';
+import useEnterprise from 'ui/hooks/useEnterprise';
 const { DATE_FORMAT } = constants;
 
 const Wrapper = styled.div`
@@ -110,7 +111,8 @@ const VersionsList = styled.ul`
 `;
 const loadingIndicator = <LoadingIndicator style={{ display: 'inline-block', margin: '0', height: '20px' }} />;
 
-const HelpMenu = ({ isEnterpriseEdition }) => {
+const HelpMenu = () => {
+  const isEnterpriseEdition = useEnterprise();
   const dispatch = useDispatch();
   const [visible, setVisible] = useState(false);
 
@@ -191,11 +193,4 @@ const HelpMenu = ({ isEnterpriseEdition }) => {
     </Wrapper>
   );
 };
-
-HelpMenu.propTypes = {
-  isEnterpriseEdition: PropTypes.bool,
-};
-
-const mapStateToProps = ({ global }) => ({ isEnterpriseEdition: !!global.ee });
-
-export default connect(mapStateToProps)(HelpMenu);
+export default observer(HelpMenu);
