@@ -10,7 +10,6 @@ import { buildQFilter } from 'ui/buildQFilter';
 import endpoints from 'ui/config/endpoints';
 import dashboardSanitizer from 'ui/helpers/dashboardSanitizer';
 import DashboardBlockMore from 'ui/components/DashboardBlockMore';
-import { toJS } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { api } from '../../mobx/api';
 

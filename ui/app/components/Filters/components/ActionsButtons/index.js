@@ -31,8 +31,9 @@ const ActionsButtons = ({ supportedActions, filterParams, rulesets }) => {
     const result = [];
     for (let i = 0; i < supportedActions.length; i += 1) {
       const action = supportedActions[i];
-  
-      if(stamusMethodFilterApplied && action[1] === 'Create DoC events') continue;
+
+      // eslint-disable-next-line no-continue
+      if (stamusMethodFilterApplied && action[1] === 'Create DoC events') continue;
 
       if (action[0] === '-') {
         result.push(<Menu.Divider key={`divider-${i}`} />);
