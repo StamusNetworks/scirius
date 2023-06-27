@@ -152,7 +152,7 @@ class CommonStore {
     if (response.ok) {
       const localSources = localStorage.getItem('str-sources');
       try {
-        const object1 = this.getSources();
+        const object1 = this.sources;
         const object2 = response.data?.results;
 
         if (!localSources || !isEqual(object1, object2)) {
@@ -252,10 +252,6 @@ class CommonStore {
   }
 
   get sources() {
-    return toJS(this._sources);
-  }
-
-  getSources() {
     return toJS(this._sources);
   }
 
