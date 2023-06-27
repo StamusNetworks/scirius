@@ -35,7 +35,7 @@ import { useStore } from 'ui/mobx/RootStoreProvider';
 const pagesList = Object.keys(pages);
 const SESSION_INTERVAL = 30000;
 
-const App = ({ source, getSystemSettings, getSource, getAllPeriodRequest, setSessionActivity, timeSpan }) => {
+const App = ({ getSystemSettings, getAllPeriodRequest, setSessionActivity, timeSpan }) => {
   const idle = useRef(0);
 
   const setIdle = useCallback(() => {
@@ -51,9 +51,6 @@ const App = ({ source, getSystemSettings, getSource, getAllPeriodRequest, setSes
   }, []);
 
   useEffect(() => {
-    if (source.data.length === 0) {
-      getSource();
-    }
     getSystemSettings();
     getAllPeriodRequest();
 
@@ -144,9 +141,7 @@ const App = ({ source, getSystemSettings, getSource, getAllPeriodRequest, setSes
 };
 
 App.propTypes = {
-  source: PropTypes.object,
   getSystemSettings: PropTypes.func,
-  getSource: PropTypes.any,
   getAllPeriodRequest: PropTypes.any,
   setSessionActivity: PropTypes.func,
   timeSpan: PropTypes.object,
@@ -161,7 +156,6 @@ export const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
       getSystemSettings: actions.getSystemSettingsRequest,
-      getSource: actions.getSource,
       getAllPeriodRequest: actions.getAllPeriodRequest,
       setSessionActivity: actions.setSessionActivityRequest,
     },
