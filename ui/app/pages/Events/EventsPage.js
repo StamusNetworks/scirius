@@ -208,7 +208,6 @@ class EventsPage extends React.Component {
                 <AlertItem
                   data={alert.rule}
                   filterParams={this.props.filterParams}
-                  filters={this.props.filters}
                   addFilter={this.props.addFilter}
                   eventTypes={this.props.store.commonStore.eventTypes}
                 />
@@ -251,7 +250,6 @@ EventsPage.propTypes = {
 };
 
 const mapStateToProps = createStructuredSelector({
-  filters: makeSelectGlobalFilters(),
   filtersWithAlert: makeSelectGlobalFilters(true),
   filterParams: makeSelectFilterParams(),
 });
