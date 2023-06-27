@@ -30,7 +30,7 @@ import { sections, huntUrls } from 'ui/constants';
 import FilterSetItem from 'ui/components/FilterSetItem';
 import LoadingIndicator from 'ui/components/LoadingIndicator';
 import actions from 'ui/containers/App/actions';
-import { addFilter, clearFilters, setTag, makeSelectUserData } from 'ui/containers/HuntApp/stores/global';
+import { addFilter, clearFilters, setTag } from 'ui/containers/HuntApp/stores/global';
 import history from 'ui/utils/history';
 import FilterSetSearch from 'ui/components/FilterSetSearch';
 import selectors from 'ui/containers/App/selectors';
@@ -38,6 +38,7 @@ import filterSetActions from 'ui/stores/filterset/actions';
 import filterSetSelectors from 'ui/stores/filterset/selectors';
 import saga from 'ui/stores/filterset/saga';
 import reducer from 'ui/stores/filterset/reducer';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 
 const NoResults = styled.div`
   color: #6d6d6d;
@@ -56,6 +57,7 @@ const FilterSets = () => {
   useInjectReducer({ key: 'filterSets', reducer });
   useInjectSaga({ key: 'filterSets', saga });
   const dispatch = useDispatch();
+  const { commonStore } = useStore();
 
   const [expandedPanels, setExpandedPanels] = useState([]);
   const [searchValue, setSearchValue] = useState('');
@@ -67,7 +69,6 @@ const FilterSets = () => {
   const { loading: deleteLoading } = useSelector(filterSetSelectors.makeSelectFilterSetsRequest('delete'));
   const confirmDelete = useSelector(filterSetSelectors.makeSelectDeleteFilterSetId());
   const visible = useSelector(selectors.makeSelectFilterSetsState());
-  const user = useSelector(makeSelectUserData());
 
   useEffect(() => {
     if (visible) {
@@ -103,7 +104,7 @@ const FilterSets = () => {
   const rowsGlobal = globalSet?.filter(item => item.name.toLowerCase().includes(searchValue.toLowerCase())) || [];
   const rowsPrivate = privateSet?.filter(item => item.name.toLowerCase().includes(searchValue.toLowerCase())) || [];
   const rowsStatic = staticSet?.filter(item => item.name.toLowerCase().includes(searchValue.toLowerCase())) || [];
-  const hasRights = user.isActive && user.permissions.includes('rules.events_edit');
+  const hasRights = commonStore.user?.isActive && commonStore.user?.permissions.includes('rules.events_edit');
 
   const map = [
     {
