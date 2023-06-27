@@ -30,7 +30,7 @@ import ErrorHandler from 'ui/components/Error';
 import Filters from 'ui/components/Filters';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
-import { makeSelectGlobalFilters, makeSelectUserData } from 'ui/containers/HuntApp/stores/global';
+import { makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
 import HuntTimeline from 'ui/HuntTimeline';
 import HuntTrend from 'ui/HuntTrend';
 import 'react-resizable/css/styles.css';
@@ -41,9 +41,8 @@ const DashboardPage = () => {
   const { commonStore } = useStore();
   const filtersWithAlert = useSelector(makeSelectGlobalFilters(true));
   const filterParams = useSelector(makeSelectFilterParams());
-  const user = useSelector(makeSelectUserData());
   const [chartTarget, setChartTarget] = useState(store.get('chartTarget') === true);
-  const hasPermissions = user.permissions.includes('rules.configuration_view');
+  const hasPermissions = commonStore.user?.permissions.includes('rules.configuration_view');
 
   useEffect(() => {
     store.set('chartTarget', chartTarget);
