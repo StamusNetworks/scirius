@@ -9,6 +9,7 @@ import constants from 'ui/constants';
 import LoadingIndicator from 'ui/components/LoadingIndicator';
 import actions from 'ui/containers/App/actions';
 import selectors from 'ui/containers/App/selectors';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 import useEnterprise from 'ui/hooks/useEnterprise';
 const { DATE_FORMAT } = constants;
 
@@ -112,6 +113,7 @@ const VersionsList = styled.ul`
 const loadingIndicator = <LoadingIndicator style={{ display: 'inline-block', margin: '0', height: '20px' }} />;
 
 const HelpMenu = () => {
+  const { commonStore } = useStore();
   const isEnterpriseEdition = useEnterprise();
   const dispatch = useDispatch();
   const [visible, setVisible] = useState(false);
@@ -128,14 +130,11 @@ const HelpMenu = () => {
     version = /\d+\.\d+\.\d+/.exec(context.version);
   }
 
-  const { data, request: sourceRequest } = useSelector(selectors.makeSelectSource());
-  const [source] = data;
-  const { loading: sourceLoading } = sourceRequest;
+  const [source] = commonStore.sources;
 
   useEffect(() => {
     if (visible) {
       dispatch(actions.getContextRequest());
-      dispatch(actions.getSource());
     }
   }, [visible]);
 
@@ -171,8 +170,8 @@ const HelpMenu = () => {
             </Version>
             <Version>
               <strong>Stamus Threat Intelligence: </strong>
-              {sourceLoading ? loadingIndicator : source?.version ? `v${source.version}` : <i>rules update needed</i>}
-              {sourceLoading ? loadingIndicator : source?.updated_date && ` (updated at ${moment(source.updated_date).format(DATE_FORMAT)})`}
+              {source?.version ? `v${source.version}` : <i>rules update needed</i>}
+              {source?.updated_date && ` (updated at ${moment(source.updated_date).format(DATE_FORMAT)})`}
             </Version>
           </VersionsList>
         )}
