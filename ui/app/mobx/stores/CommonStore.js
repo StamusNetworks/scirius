@@ -130,6 +130,11 @@ class CommonStore {
     }
   }
 
+  async fetchSignatures(stringFilters, listParams) {
+    const response = await api.get(`${endpoints.SIGNATURES.url}?highlight=true&${listParams}${stringFilters}`);
+    return response;
+  }
+
   async fetchSystemSettings() {
     const response = await api.get(endpoints.SYSTEM_SETTINGS.url);
     if (response.ok) {

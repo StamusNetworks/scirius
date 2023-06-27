@@ -78,6 +78,10 @@ const ENDPOINT = {
     name: 'Fetch Elasticsearch alerts tail',
     url: '/rest/rules/es/alerts_tail/:datesEs:tenant:eventTypes',
   },
+  SIGNATURES: {
+    name: 'Fetching signature',
+    url: `/rest/rules/rule/:datesEs:filters`,
+  },
 };
 
 export default ENDPOINT;
