@@ -9,7 +9,6 @@ import { LeftNavMap } from 'ui/maps/LeftNavMap';
 import { Link } from 'ui/helpers/Link';
 import { LinkOutlined } from '@ant-design/icons';
 import { observer } from 'mobx-react-lite';
-import { toJS } from 'mobx';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import { LeftNavStyled, LeftNavLink } from './styles';
 
@@ -33,12 +32,12 @@ function LeftNav() {
 
   const renderMenuItems = useCallback(
     groupId =>
-      getGroupPages(groupId, permissions, toJS(commonStore.systemSettings)).map(page => {
+      getGroupPages(groupId, permissions, commonStore.systemSettings).map(page => {
         const title = pages[page].metadata.title || CamelCaseToNormal(page);
         return (
           <Menu.Item key={`${APP_URL}/${pages[page].metadata.url}`} data-test="left-nav-menu-link-item">
             {typeof pages[page].metadata.url === 'function' ? (
-              <LeftNavLink href={pages[page].metadata.url(toJS(commonStore.systemSettings))} target="_blank" className="left-nav-link">
+              <LeftNavLink href={pages[page].metadata.url(commonStore.systemSettings)} target="_blank" className="left-nav-link">
                 <div>{title}</div>
                 <LinkOutlined />
               </LeftNavLink>
@@ -48,7 +47,7 @@ function LeftNav() {
           </Menu.Item>
         );
       }),
-    [toJS(commonStore.systemSettings), permissions],
+    [commonStore.systemSettings, permissions],
   );
 
   const renderSubMenus = useMemo(
@@ -69,7 +68,7 @@ function LeftNav() {
           </SubMenu>
         );
       }).filter(submenu => submenu),
-    [toJS(commonStore.systemSettings), permissions],
+    [commonStore.systemSettings, permissions],
   );
 
   return (

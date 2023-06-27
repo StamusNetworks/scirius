@@ -65,7 +65,8 @@ module.exports = {
     'react/static-property-placement': 0,
     'react/jsx-props-no-spreading': 0,
     'prefer-object-spread': 0,
-    'no-trailing-spaces': 2
+    'no-trailing-spaces': 2,
+    'no-underscore-dangle': 0,
   },
   settings: {
     'import/resolver': {

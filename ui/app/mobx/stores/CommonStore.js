@@ -32,7 +32,7 @@ class CommonStore {
 
   alert = {};
 
-  systemSettings = null;
+  _systemSettings = null;
 
   sources = null;
 
@@ -66,7 +66,7 @@ class CommonStore {
       this.endDate = localStorage.getItem('endDate');
     }
     try {
-      this.systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
+      this._systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
       this.ids = JSON.parse(localStorage.getItem('ids_filters') || '[]');
       this.sources = JSON.parse(localStorage.getItem('str-sources') || '[]');
     } catch (e) {
@@ -135,8 +135,8 @@ class CommonStore {
     if (response.ok) {
       const localSystemSettings = localStorage.getItem('str-system-settings');
       try {
-        if (!localSystemSettings || !isEqual(toJS(this.systemSettings), response.data)) {
-          this.systemSettings = response.data;
+        if (!localSystemSettings || !isEqual(toJS(this._systemSettings), response.data)) {
+          this._systemSettings = response.data;
           localStorage.setItem('str-system-settings', JSON.stringify(response.data));
         }
       } catch (e) {
@@ -228,6 +228,18 @@ class CommonStore {
       return [...toJS(this.ids), toJS(this.alert)].filter(Boolean);
     }
     return toJS(this.ids);
+  }
+
+  get filters() {
+    return [...toJS(this.ids)].filter(Boolean);
+  }
+
+  get filtersWithAlertTag() {
+    return [...toJS(this.ids), toJS(this.alert)].filter(Boolean);
+  }
+
+  get systemSettings() {
+    return toJS(this._systemSettings);
   }
 
   toggleAlertTag(key) {
