@@ -33,7 +33,6 @@ import moment from 'moment';
 import buildListParams from 'ui/helpers/buildListParams';
 import { addFilter, makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
-import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
 import { withStore } from 'ui/mobx/RootStoreProvider';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
@@ -74,7 +73,7 @@ class EventsPage extends React.Component {
 
   componentDidMount() {
     this.fetchData();
-    if (this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
+    if (this.props.store.commonStore.user?.permissions.includes('rules.ruleset_policy_edit')) {
       this.loadActions();
     }
   }
@@ -83,7 +82,7 @@ class EventsPage extends React.Component {
     const filtersChanged = JSON.stringify(prevProps.filtersWithAlert) !== JSON.stringify(this.props.filtersWithAlert);
     if (JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams) || filtersChanged) {
       this.fetchData();
-      if (filtersChanged && this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
+      if (filtersChanged && this.props.store.commonStore.user?.permissions.includes('rules.ruleset_policy_edit')) {
         this.loadActions();
       }
     }
@@ -262,4 +261,4 @@ const mapDispatchToProps = {
 };
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
-export default compose(withConnect, withPermissions, withStore)(EventsPage);
+export default compose(withConnect, withStore)(EventsPage);

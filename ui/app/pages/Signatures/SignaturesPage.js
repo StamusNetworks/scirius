@@ -37,7 +37,6 @@ import { compose } from 'redux';
 import rulesSelectors from 'ui/stores/filters/selectors';
 import { makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
-import { withPermissions } from 'ui/containers/HuntApp/stores/withPermissions';
 import { withStore } from 'ui/mobx/RootStoreProvider';
 import { updateHitsStats } from '../../helpers/updateHitsStats';
 import { buildListUrlParams, loadActions, buildFilter } from '../../helpers/common';
@@ -131,7 +130,7 @@ export class SignaturesPage extends React.Component {
       } else {
         this.fetchData();
       }
-      if (filtersChanged && this.props.user.permissions.includes('rules.ruleset_policy_edit')) {
+      if (filtersChanged && this.props.store.commonStore.user?.permissions.includes('rules.ruleset_policy_edit')) {
         this.loadActions(this.props.filtersWithAlert);
       }
     }
@@ -328,17 +327,6 @@ SignaturesPage.propTypes = {
   filters: PropTypes.any,
   filtersWithAlert: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
-  user: PropTypes.shape({
-    pk: PropTypes.any,
-    timezone: PropTypes.any,
-    username: PropTypes.any,
-    firstName: PropTypes.any,
-    lastName: PropTypes.any,
-    isActive: PropTypes.any,
-    email: PropTypes.any,
-    dateJoined: PropTypes.any,
-    permissions: PropTypes.any,
-  }),
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -349,4 +337,4 @@ const mapStateToProps = createStructuredSelector({
 });
 
 const withConnect = connect(mapStateToProps);
-export default compose(withConnect, withPermissions, withStore)(SignaturesPage);
+export default compose(withConnect, withStore)(SignaturesPage);
