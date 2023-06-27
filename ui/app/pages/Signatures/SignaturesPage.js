@@ -99,7 +99,7 @@ const SignaturesPage = () => {
         if (response.data.results.length > 0) {
           if (!response.data.results[0].timeline_data) {
             const qFilter = buildQFilter(commonStore.filtersWithAlert, commonStore.systemSettings);
-            await updateHitsStats(response.data.results, filterParams, rules => setSignatures(rules), qFilter);
+            await updateHitsStats(response.data?.results || [], filterParams, rules => setSignatures(rules), qFilter);
           } else {
             setSignatures(
               response.data.results.map(rule => ({
@@ -113,6 +113,7 @@ const SignaturesPage = () => {
         }
       }
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error('Error retrieving signatures', e);
     }
     setLoading(false);
@@ -140,9 +141,9 @@ const SignaturesPage = () => {
     return timeline;
   };
 
-  const updateSignatureListState = ({ pagination, sort, view_type }) => {
-    setListParams({ pagination, sort, view_type });
-    localStorage.setItem('rules_list', JSON.stringify({ pagination, sort, view_type }));
+  const updateSignatureListState = ({ pagination, sort, view_type: viewType }) => {
+    setListParams({ pagination, sort, view_type: viewType });
+    localStorage.setItem('rules_list', JSON.stringify({ pagination, sort, view_type: viewType }));
   };
 
   const sources = useMemo(() => {
@@ -185,8 +186,8 @@ const SignaturesPage = () => {
         )}
         {SID && (
           <RulePage
-            systemSettings={commonStore.systemSettings}
-            rule={SID}
+            rule={signatures?.find(s => s.sid === SID.value)}
+            sid={SID.value}
             config={listParams}
             filters={commonStore.filters}
             filterParams={filterParams}

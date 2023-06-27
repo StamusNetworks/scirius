@@ -4,7 +4,6 @@ import axios from 'axios';
 import * as config from 'config/Api';
 import { store } from 'ui/mobx/stores/RootStore';
 
-const statsCache = {};
 function buildProbesSet(data) {
   const probes = [];
   for (let probe = 0; probe < data.length; probe += 1) {
@@ -49,13 +48,7 @@ export async function updateHitsStats(rules, filterParams, updateCallback, qfilt
   const { stamus, alert, discovery } = store?.commonStore?.eventTypes || {};
 
   const sids = Array.from(rules, x => x.sid).join();
-  const url = `${config.API_URL + config.ES_SIGS_LIST_PATH + sids}&${filterParams + qfilter}&alert=${alert}&stamus=${stamus}$discovery=${discovery}`;
-  if (typeof statsCache[encodeURI(url)] !== 'undefined') {
-    processHitsStats(statsCache[encodeURI(url)], rules, updateCallback);
-    return;
-  }
+  const url = `${config.API_URL + config.ES_SIGS_LIST_PATH + sids}&${filterParams + qfilter}&alert=${alert}&stamus=${stamus}&discovery=${discovery}`;
   const res = await axios.get(url);
-  /* we are going O(n2), we should fix that */
-  statsCache[encodeURI(url)] = res;
   processHitsStats(res, rules, updateCallback);
 }

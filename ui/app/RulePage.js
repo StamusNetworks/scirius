@@ -8,7 +8,6 @@ import styled from 'styled-components';
 
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
-import { buildFilterParams } from 'ui/buildFilterParams';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
 import SciriusChart from 'ui/components/SciriusChart';
 import EventValue from 'ui/components/EventValue';
@@ -44,29 +43,15 @@ const RuleHits = styled.div`
 class RulePage extends React.Component {
   constructor(props) {
     super(props);
-    const rule = cloneDeep(this.props.rule);
-    if (typeof rule === 'number') {
-      this.state = {
-        rule: undefined,
-        rule_status: undefined,
-        sid: rule,
-        toggle: { show: false, action: 'Disable' },
-        extinfo: { http: false, dns: false, tls: false },
-        moreResults: [],
-        moreModal: null,
-      };
-    } else {
-      rule.timeline = undefined;
-      this.state = {
-        rule,
-        rule_status: undefined,
-        sid: rule.sid,
-        toggle: { show: false, action: 'Disable' },
-        extinfo: { http: false, dns: false, tls: false },
-        moreResults: [],
-        moreModal: null,
-      };
-    }
+    this.state = {
+      rule: cloneDeep(this.props.rule),
+      sid: this.props.sid,
+      rule_status: undefined,
+      toggle: { show: false, action: 'Disable' },
+      extinfo: { http: false, dns: false, tls: false },
+      moreResults: [],
+      moreModal: null,
+    };
     this.updateRuleState = this.updateRuleState.bind(this);
     this.fetchRuleStatus = this.fetchRuleStatus.bind(this);
     this.updateRuleStatus = this.updateRuleStatus.bind(this);
@@ -75,8 +60,8 @@ class RulePage extends React.Component {
 
   componentDidMount() {
     const { rule, sid } = this.state;
-    const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
-    const filterParams = buildFilterParams(this.props.filterParams);
+    const qfilter = buildQFilter(this.props.filters, this.props.store.commonStore.systemSettings);
+    const { filterParams } = this.props;
     if (typeof rule !== 'undefined') {
       updateHitsStats([rule], filterParams, this.updateRuleState, qfilter);
       axios
@@ -112,15 +97,14 @@ class RulePage extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const qfilter = buildQFilter(this.props.filters, this.props.systemSettings);
+    const qfilter = buildQFilter(this.props.filters, this.props.store.commonStore.systemSettings);
     if (
       JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams) ||
       JSON.stringify(prevProps.filters) !== JSON.stringify(this.props.filters)
     ) {
       if (this.state.rule) {
         const rule = cloneDeep(this.state.rule);
-        const filterParams = buildFilterParams(this.props.filterParams);
-        updateHitsStats([rule], filterParams, this.updateRuleState, qfilter);
+        updateHitsStats([rule], this.props.filterParams, this.updateRuleState, qfilter);
       }
     }
   }
@@ -240,7 +224,6 @@ class RulePage extends React.Component {
                 )}
                 <Row>
                   <HuntStat
-                    systemSettings={this.state.systemSettings}
                     title="Sources"
                     rule={this.state.rule}
                     config={this.props.config}
@@ -277,7 +260,6 @@ class RulePage extends React.Component {
                 {this.state.extinfo.http && (
                   <Row>
                     <HuntStat
-                      systemSettings={this.state.systemSettings}
                       title="Hostname"
                       rule={this.state.rule}
                       config={this.props.config}
@@ -289,7 +271,6 @@ class RulePage extends React.Component {
                       eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
-                      systemSettings={this.state.systemSettings}
                       title="URL"
                       rule={this.state.rule}
                       config={this.props.config}
@@ -301,7 +282,6 @@ class RulePage extends React.Component {
                       eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
-                      systemSettings={this.state.systemSettings}
                       title="User agent"
                       rule={this.state.rule}
                       config={this.props.config}
@@ -317,7 +297,6 @@ class RulePage extends React.Component {
                 {this.state.extinfo.dns && (
                   <Row>
                     <HuntStat
-                      systemSettings={this.state.systemSettings}
                       title="Name"
                       rule={this.state.rule}
                       config={this.props.config}
@@ -329,7 +308,6 @@ class RulePage extends React.Component {
                       eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
-                      systemSettings={this.state.systemSettings}
                       title="Type"
                       rule={this.state.rule}
                       config={this.props.config}
@@ -345,7 +323,6 @@ class RulePage extends React.Component {
                 {this.state.extinfo.tls && (
                   <Row>
                     <HuntStat
-                      systemSettings={this.state.systemSettings}
                       title="Subject DN"
                       rule={this.state.rule}
                       config={this.props.config}
@@ -357,7 +334,6 @@ class RulePage extends React.Component {
                       eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
-                      systemSettings={this.state.systemSettings}
                       title="SNI"
                       rule={this.state.rule}
                       config={this.props.config}
@@ -369,7 +345,6 @@ class RulePage extends React.Component {
                       eventTypes={this.props.store.commonStore.eventTypes}
                     />
                     <HuntStat
-                      systemSettings={this.state.systemSettings}
                       title="Fingerprint"
                       rule={this.state.rule}
                       config={this.props.config}
@@ -414,8 +389,8 @@ class RulePage extends React.Component {
   }
 }
 RulePage.propTypes = {
+  sid: PropTypes.any,
   rule: PropTypes.any,
-  systemSettings: PropTypes.any,
   filters: PropTypes.any,
   config: PropTypes.any,
   addFilter: PropTypes.any,
