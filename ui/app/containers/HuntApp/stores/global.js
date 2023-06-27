@@ -206,37 +206,4 @@ export const makeSelectGlobalFilters = (includeAlertTag = false) =>
 export const makeSelectHistoryFilters = () => createSelector(selectGlobal, globalState => globalState.filters[sections.HISTORY]);
 export const makeSelectAlertTag = () => createSelector(selectGlobal, globalState => globalState.filters[sections.ALERT]);
 
-export const makeSelectUserData = () =>
-  createSelector(
-    state => state.global.ce.user.data,
-    user => {
-      const {
-        pk = '',
-        timezone = '',
-        username = '',
-        firstName = '',
-        lastName = '',
-        isActive = false,
-        email = '',
-        dateJoined = '',
-        permissions = [],
-        noTenant = false,
-        allTenant = false,
-      } = user;
-      return {
-        pk,
-        timezone,
-        username,
-        firstName,
-        lastName,
-        isActive,
-        email,
-        dateJoined,
-        permissions,
-        noTenant,
-        allTenant,
-      };
-    },
-  );
-
 export const makeSelectUserRequest = () => createSelector(selectGlobal, globalState => globalState.user.request);
