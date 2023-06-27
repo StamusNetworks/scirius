@@ -35,7 +35,6 @@ import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import rulesSelectors from 'ui/stores/filters/selectors';
-import { makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import { withStore } from 'ui/mobx/RootStoreProvider';
 import { updateHitsStats } from '../../helpers/updateHitsStats';
@@ -110,7 +109,7 @@ export class SignaturesPage extends React.Component {
   }
 
   componentDidMount() {
-    const sid = this.findSID(this.props.filters);
+    const sid = this.findSID(this.props.store.commonStore.filters);
     if (sid !== undefined) {
       this.setState({ loading: false });
     } else {
@@ -119,9 +118,10 @@ export class SignaturesPage extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const filtersChanged = JSON.stringify(prevProps.filtersWithAlert) !== JSON.stringify(this.props.filtersWithAlert);
+    const filtersChanged =
+      JSON.stringify(prevProps.store.commonStore.filtersWithAlert) !== JSON.stringify(this.props.store.commonStore.filtersWithAlert);
     if (JSON.stringify(prevProps.filterParams) !== JSON.stringify(this.props.filterParams) || filtersChanged) {
-      const sid = this.findSID(this.props.filtersWithAlert);
+      const sid = this.findSID(this.props.store.commonStore.filtersWithAlert);
       if (sid !== undefined) {
         // eslint-disable-next-line react/no-did-update-set-state
         this.setState({
@@ -131,7 +131,7 @@ export class SignaturesPage extends React.Component {
         this.fetchData();
       }
       if (filtersChanged && this.props.store.commonStore.user?.permissions.includes('rules.ruleset_policy_edit')) {
-        this.loadActions(this.props.filtersWithAlert);
+        this.loadActions(this.props.store.commonStore.filtersWithAlert);
       }
     }
   }
@@ -162,7 +162,7 @@ export class SignaturesPage extends React.Component {
   };
 
   fetchData() {
-    const stringFilters = this.buildFilter(this.props.filtersWithAlert);
+    const stringFilters = this.buildFilter(this.props.store.commonStore.filtersWithAlert);
     const rulesStat = this.state.rulesList;
     const hash = md5(
       `${rulesStat.pagination.page}|${rulesStat.pagination.perPage}|${JSON.stringify(this.props.filterParams)}|${rulesStat.sort.id}|${
@@ -237,7 +237,7 @@ export class SignaturesPage extends React.Component {
   }
 
   fetchHitsStats(rules) {
-    const qfilter = buildQFilter(this.props.filtersWithAlert, this.props.store.commonStore.systemSettings);
+    const qfilter = buildQFilter(this.props.store.commonStore.filtersWithAlert, this.props.store.commonStore.systemSettings);
     const filterParams = buildFilterParams(this.props.filterParams);
     updateHitsStats(rules, filterParams, this.updateRulesState, qfilter);
   }
@@ -260,7 +260,7 @@ export class SignaturesPage extends React.Component {
   }
 
   render() {
-    const displayRule = this.findSID(this.props.filters);
+    const displayRule = this.findSID(this.props.store.commonStore.filters);
     const view = displayRule ? 'rule' : 'rules_list';
     return (
       <div>
@@ -310,7 +310,7 @@ export class SignaturesPage extends React.Component {
               systemSettings={this.props.store.commonStore.systemSettings}
               rule={displayRule}
               config={this.state.rulesList}
-              filters={this.props.filters}
+              filters={this.props.store.commonStore.filters}
               filterParams={this.props.filterParams}
               rulesets={this.props.rulesets}
             />
@@ -324,14 +324,10 @@ export class SignaturesPage extends React.Component {
 SignaturesPage.propTypes = {
   rulesets: PropTypes.array,
   store: PropTypes.object,
-  filters: PropTypes.any,
-  filtersWithAlert: PropTypes.any,
   filterParams: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = createStructuredSelector({
-  filters: makeSelectGlobalFilters(),
-  filtersWithAlert: makeSelectGlobalFilters(true),
   filterParams: makeSelectFilterParams(),
   rulesets: rulesSelectors.makeSelectRuleSets(),
 });

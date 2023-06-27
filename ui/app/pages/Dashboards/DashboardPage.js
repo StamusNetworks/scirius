@@ -30,7 +30,6 @@ import ErrorHandler from 'ui/components/Error';
 import Filters from 'ui/components/Filters';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
-import { makeSelectGlobalFilters } from 'ui/containers/HuntApp/stores/global';
 import HuntTimeline from 'ui/HuntTimeline';
 import HuntTrend from 'ui/HuntTrend';
 import 'react-resizable/css/styles.css';
@@ -39,7 +38,6 @@ import DashboardMosaic from '../../components/DashboardMosaic';
 
 const DashboardPage = () => {
   const { commonStore } = useStore();
-  const filtersWithAlert = useSelector(makeSelectGlobalFilters(true));
   const filterParams = useSelector(makeSelectFilterParams());
   const [chartTarget, setChartTarget] = useState(store.get('chartTarget') === true);
   const hasPermissions = commonStore.user?.permissions.includes('rules.configuration_view');
@@ -70,13 +68,13 @@ const DashboardPage = () => {
             style={{ marginTop: '15px' }}
             filterParams={filterParams}
             chartTarget={chartTarget}
-            filters={filtersWithAlert}
+            filters={commonStore.filtersWithAlert}
             systemSettings={commonStore.systemSettings}
             eventTypes={commonStore.eventTypes}
           />
         </Col>
         <Col lg={4} md={6} sm={24} xs={24} style={{ paddingLeft: '0px' }}>
-          <HuntTrend filterParams={filterParams} filters={filtersWithAlert} systemSettings={commonStore.systemSettings} />
+          <HuntTrend filterParams={filterParams} filters={commonStore.filtersWithAlert} systemSettings={commonStore.systemSettings} />
           {hasPermissions && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
             <div style={{ position: 'absolute', zIndex: 1, top: 0, right: '30px' }}>
               <Dropdown id="more-actions" overlay={menu} trigger={['click']}>

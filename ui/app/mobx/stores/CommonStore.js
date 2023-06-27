@@ -239,7 +239,7 @@ class CommonStore {
     return [...toJS(this.ids)].filter(Boolean);
   }
 
-  get filtersWithAlertTag() {
+  get filtersWithAlert() {
     return [...toJS(this.ids), toJS(this.alert)].filter(Boolean);
   }
 
