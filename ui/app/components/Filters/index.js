@@ -92,8 +92,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
   const { commonStore } = useStore();
 
   // Selectors handlers
-  const { user } = commonStore;
-  const filters = commonStore.getFilters();
+  const { user, filters } = commonStore;
   const historyFilters = useSelector(huntGlobalStore.makeSelectHistoryFilters());
   const filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(filterTypes));
   const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());

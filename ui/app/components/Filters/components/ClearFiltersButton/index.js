@@ -7,9 +7,9 @@ import { ActionButton } from '../styles';
 const ClearFiltersButton = ({ onClick }) => {
   const { commonStore } = useStore();
   return (
-    <ActionButton active={commonStore.getFilters().length > 0}>
+    <ActionButton active={commonStore.filters.length > 0}>
       <CloseOutlined style={{ width: 24 }} />
-      {commonStore.getFilters().length > 0 && (
+      {commonStore.filters.length > 0 && (
         <a
           onClick={e => {
             e.preventDefault();
@@ -20,7 +20,7 @@ const ClearFiltersButton = ({ onClick }) => {
           Clear Filters
         </a>
       )}
-      {commonStore.getFilters().length === 0 && <>Clear Filters</>}
+      {commonStore.filters.length === 0 && <>Clear Filters</>}
     </ActionButton>
   );
 };

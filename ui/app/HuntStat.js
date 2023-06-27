@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, List, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
-import { toJS } from 'mobx';
 
 import EventValue from 'ui/components/EventValue';
 import UICard from 'ui/components/UIElements/UICard';
@@ -33,7 +32,7 @@ class HuntStat extends React.Component {
   }
 
   async updateData() {
-    this.qfilter = buildQFilter(this.props.store.commonStore.getFilters(), toJS(this.props.store.commonStore.systemSettings)) || '';
+    this.qfilter = buildQFilter(this.props.store.commonStore.filters, this.props.store.commonStore.systemSettings) || '';
     const data = await this.props.store.esStore.fetchFieldStats(this.props.item, 5, this.qfilter);
     this.setState({ data });
   }

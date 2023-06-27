@@ -13,7 +13,7 @@ import { ActionButton } from '../styles';
 
 const ActionsButtons = ({ supportedActions, filterParams, rulesets }) => {
   const { commonStore } = useStore();
-  const filters = commonStore.getFilters();
+  const { filters } = commonStore;
   const stamusMethodFilterApplied = filters.some(filter => filter.id.startsWith('stamus.'));
   const [visible, setVisible] = useState(false);
   const [type, setType] = useState(false);
