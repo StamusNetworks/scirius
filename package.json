@@ -41,7 +41,7 @@
     "eonasdan-bootstrap-datetimepicker": "^4.15.35",
     "jquery": "^3.5.1",
     "jquery-knob": "^1.2.11",
-    "jquery-ui": "^1.12.1",
+    "jquery-ui": "^1.13.2",
     "nvd3": "^1.8.6",
     "patternfly": "^3.45.0",
     "patternfly-bootstrap-treeview": "^2.1.10",
