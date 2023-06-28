@@ -1,11 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators, compose } from 'redux';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Menu, Popover, Tooltip } from 'antd';
 import { ClockCircleOutlined, QuestionCircleOutlined, UserOutlined } from '@ant-design/icons';
-import selectors from 'ui/containers/App/selectors';
-import { createStructuredSelector } from 'reselect';
 import { observer } from 'mobx-react-lite';
 // icon select: https://fonts.google.com/icons?selected=Material+Icons
 // React name for icon: select checkbox, click the icon and see the name for the import: https://mui.com/components/material-icons
@@ -14,53 +10,19 @@ import StamusLogo from 'ui/images/stamus.png';
 import TimeRangePickersContainer from 'ui/components/TimeRangePickersContainer';
 import HelpMenu from 'ui/components/HelpMenu';
 import UserMenu from 'ui/components/UserMenu';
-import { TimePickerEnum } from 'ui/maps/TimePickersEnum';
 import constants from 'ui/constants';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
-import actions from 'ui/containers/App/actions';
 import { useStore } from 'ui/mobx/RootStoreProvider';
+import moment from 'moment';
 import { HeaderStyled, Logo, RangePreview } from './styles';
 
 const { DATE_TIME_FORMAT } = constants;
-let reloadTimeout = null;
-let animateTimeout = null;
 
-const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePicker, doReload, reloadData, menuItems = [] }) => {
+const Header = ({ menuItems = [] }) => {
   const [helpPopOver, setHelpPopOver] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [userPopOver, setUserPopOver] = useState(false);
-  const [progress, setProgress] = useState(0);
   const { commonStore } = useStore();
-
-  const timePreview =
-    timePicker === TimePickerEnum.ABSOLUTE
-      ? `${startDate.format(DATE_TIME_FORMAT)} - ${endDate.format(DATE_TIME_FORMAT)}`
-      : PeriodEnum[duration].title;
-
-  const decrease = useCallback(
-    seconds => {
-      animateTimeout = setTimeout(() => {
-        const v = seconds - 1000;
-        setProgress(v);
-        if (v > 0) {
-          decrease(v);
-        }
-      }, 1000);
-    },
-    [progress],
-  );
-
-  useEffect(() => {
-    clearInterval(reloadTimeout);
-    clearInterval(animateTimeout);
-    if (reloadData.period.seconds > 0) {
-      decrease(reloadData.period.seconds);
-      reloadTimeout = setInterval(() => {
-        doReload();
-        decrease(reloadData.period.seconds);
-      }, reloadData.period.seconds);
-    }
-  }, [reloadData.period.seconds]);
 
   return (
     <HeaderStyled>
@@ -75,35 +37,30 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
           </Menu.Item>
         ))}
         <Menu.Item key="timerange-dropdown" className="timerange-dropdown" data-test="timerange-dropdown">
-          <Popover
-            placement="bottomRight"
-            content={<TimeRangePickersContainer setDuration={setDuration} setTimeSpan={setTimeSpan} />}
-            trigger="click"
-            visible={hidden}
-            onVisibleChange={setHidden}
-          >
-            {timePicker === TimePickerEnum.ABSOLUTE && (
+          <Popover placement="bottomRight" content={<TimeRangePickersContainer />} trigger="click" visible={hidden} onVisibleChange={setHidden}>
+            {commonStore.timeRangeType === 'relative' && (
               <React.Fragment>
-                <ClockCircleOutlined /> {timePreview}
+                <ClockCircleOutlined /> {PeriodEnum[commonStore.relativeType].title}
               </React.Fragment>
             )}
-            {timePicker === TimePickerEnum.QUICK && (
+            {commonStore.timeRangeType === 'absolute' && (
               <Tooltip
                 placement="bottom"
                 title={
                   <RangePreview>
                     <tr>
                       <td className="col">From</td>
-                      <td>{startDate.format(DATE_TIME_FORMAT)}</td>
+                      <td>{moment(commonStore.startDate).format(DATE_TIME_FORMAT)}</td>
                     </tr>
                     <tr>
                       <td className="col">To</td>
-                      <td>{endDate.format(DATE_TIME_FORMAT)}</td>
+                      <td>{moment(commonStore.endDate).format(DATE_TIME_FORMAT)}</td>
                     </tr>
                   </RangePreview>
                 }
               >
-                <ClockCircleOutlined /> {timePreview}
+                <ClockCircleOutlined /> {moment(commonStore.startDate * 1000).format(DATE_TIME_FORMAT)} -{' '}
+                {moment(commonStore.endDate * 1000).format(DATE_TIME_FORMAT)}
               </Tooltip>
             )}
           </Popover>
@@ -128,35 +85,7 @@ const Header = ({ duration, endDate, setDuration, setTimeSpan, startDate, timePi
 };
 
 Header.propTypes = {
-  duration: PropTypes.oneOf(Object.keys(PeriodEnum)).isRequired,
-  endDate: PropTypes.object,
-  setTimeSpan: PropTypes.func.isRequired,
-  setDuration: PropTypes.func.isRequired,
-  startDate: PropTypes.object,
-  timePicker: PropTypes.oneOf([0, 1]).isRequired,
-  reloadData: PropTypes.object,
-  doReload: PropTypes.func,
   menuItems: PropTypes.array, // not required! only used by EE
 };
 
-const mapStateToProps = createStructuredSelector({
-  timePicker: selectors.makeSelectTimePicker(),
-  duration: selectors.makeSelectDuration(),
-  startDate: selectors.makeSelectStartDate(),
-  endDate: selectors.makeSelectEndDate(),
-  reloadData: selectors.makeSelectReload(),
-});
-
-export const mapDispatchToProps = dispatch =>
-  bindActionCreators(
-    {
-      setDuration: actions.setDuration,
-      setTimeSpan: actions.setTimeSpan,
-      doReload: actions.doReload,
-    },
-    dispatch,
-  );
-
-const withConnect = connect(mapStateToProps, mapDispatchToProps);
-
-export default compose(withConnect)(observer(Header));
+export default observer(Header);
