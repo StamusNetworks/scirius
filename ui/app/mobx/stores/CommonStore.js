@@ -45,6 +45,18 @@ class CommonStore {
    */
   _maxTimestamp = null;
 
+  /**
+   * Automatic reload
+   * @type {boolean | null}
+   */
+  _refresh = null;
+
+  /**
+   * Automatic reload time
+   * @type {boolean | null}
+   */
+  _refreshTime = null;
+
   ids = [];
 
   alert = {};
@@ -307,6 +319,14 @@ class CommonStore {
     return this._endDate;
   }
 
+  get refresh() {
+    return this._refresh;
+  }
+
+  get refreshTime() {
+    return this._refresh;
+  }
+
   get filters() {
     return [...toJS(this.ids)].filter(Boolean);
   }
@@ -346,6 +366,14 @@ class CommonStore {
 
   get relativeType() {
     return this._relativeType;
+  }
+
+  reload() {
+    this._refresh = moment().unix();
+  }
+
+  setRefreshTime(value) {
+    this._refreshTime = value;
   }
 
   setTimePickerStorage() {
