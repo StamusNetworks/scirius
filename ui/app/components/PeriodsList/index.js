@@ -1,12 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Radio } from 'antd';
-import { createStructuredSelector } from 'reselect';
-import { connect } from 'react-redux';
-import { compose } from 'redux';
 import PropTypes from 'prop-types';
-import selectors from 'ui/containers/App/selectors';
+import { observer } from 'mobx-react-lite';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
 
@@ -36,34 +34,30 @@ const RadioButtonStyled = styled(RadioButton)`
   }
 `;
 
-const PeriodsList = ({ options, value, timeSpan, onChange }) => (
-  <RadioGroupStyled size="default" value={value}>
-    {Object.keys(options).map(p => (
-      <RadioButtonStyled
-        disabled={timeSpan.disableAll && PeriodEnum[p].name === 'All'}
-        value={p}
-        key={p}
-        name={PeriodEnum[p].title}
-        className={p === value ? 'selected' : ''}
-        onClick={() => onChange(p)}
-      >
-        {PeriodEnum[p].name}
-      </RadioButtonStyled>
-    ))}
-  </RadioGroupStyled>
-);
+const PeriodsList = ({ options, value, onChange }) => {
+  const { commonStore } = useStore();
+  return (
+    <RadioGroupStyled size="default" value={value}>
+      {Object.keys(options).map(p => (
+        <RadioButtonStyled
+          disabled={commonStore.disableAll && PeriodEnum[p].name === 'All'}
+          value={p}
+          key={p}
+          name={PeriodEnum[p].title}
+          className={p === value ? 'selected' : ''}
+          onClick={() => onChange(p)}
+        >
+          {PeriodEnum[p].name}
+        </RadioButtonStyled>
+      ))}
+    </RadioGroupStyled>
+  );
+};
 
 PeriodsList.propTypes = {
   options: PropTypes.object,
   value: PropTypes.any,
-  timeSpan: PropTypes.any,
   onChange: PropTypes.func,
 };
 
-const mapStateToProps = createStructuredSelector({
-  timeSpan: selectors.makeSelectTimespan(),
-});
-
-const withConnect = connect(mapStateToProps);
-
-export default compose(withConnect)(PeriodsList);
+export default observer(PeriodsList);
