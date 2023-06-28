@@ -28,6 +28,18 @@ class CommonStore {
    */
   endDate = null;
 
+  /**
+   * Minimum available timestamp for 'All' type
+   * @type {number | null}
+   */
+  _minTimestamp = null;
+
+  /**
+   * Maximum available timestamp for 'All' type
+   * @type {number | null}
+   */
+  _maxTimestamp = null;
+
   ids = [];
 
   alert = {};
@@ -202,6 +214,26 @@ class CommonStore {
   async fetchRuleset() {
     const response = await api.get(endpoints.RULE_SETS.url);
     return response;
+  }
+
+  async fetchAllPeriod() {
+    const response = await api.get(endpoints.ALL_PERIOD.url, { event_view: false });
+    if (response.ok) {
+      const { max_timestamp: maxTimestamp = 0, min_timestamp: minTimestamp = 0 } = response.data;
+
+      const correct = !Number.isNaN(parseInt(response.data.max_timestamp, 10)) && !Number.isNaN(parseInt(response.data.min_timestamp, 10));
+      if (!correct) {
+        this._minTimestamp = null;
+        this._maxTimestamp = null;
+        if (this._relativeType === 'All') {
+          this._relativeType = 'D7';
+        }
+      } else {
+        this._minTimestamp = minTimestamp;
+        this._maxTimestamp = maxTimestamp;
+      }
+      this.setTimePickerStorage();
+    }
   }
 
   // @TODO: Should be handled better (skipCheck)

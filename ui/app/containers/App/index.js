@@ -48,6 +48,7 @@ const App = ({ getAllPeriodRequest, setSessionActivity, timeSpan }) => {
     await commonStore.fetchSystemSettings();
     await commonStore.fetchSources();
     await commonStore.fetchUser();
+    await commonStore.fetchAllPeriod();
   }, []);
 
   useEffect(() => {
