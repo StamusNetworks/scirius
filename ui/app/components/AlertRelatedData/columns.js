@@ -19,7 +19,7 @@ const showMitreInfo = (mtn, mti) => {
 const columns = {
   Alert: [
     { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
-    { title: 'Signature', dataIndex: ['rawJson', 'alert', 'signature'] },
+    { title: 'Method', dataIndex: ['rawJson', 'alert', 'signature'] },
     { title: 'SignatureID', dataIndex: ['rawJson', 'alert', 'signature_id'] },
     { title: 'Category', dataIndex: ['rawJson', 'alert', 'category'] },
     {
