@@ -89,6 +89,7 @@ const FilterSets = () => {
 
     const filters = row.content.filter(f => f.id !== 'alert.tag');
     dispatch(addFilter(sections.GLOBAL, filters));
+    commonStore.addFilter(filters);
 
     if (process.env.REACT_APP_HAS_TAG) {
       const alertTag = row.content.filter(f => f.id === 'alert.tag')[0];
