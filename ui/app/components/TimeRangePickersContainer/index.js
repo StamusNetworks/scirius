@@ -1,13 +1,7 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Row, notification, Col } from 'antd';
+import { Row, Col } from 'antd';
 import styled from 'styled-components';
-import { createStructuredSelector } from 'reselect';
-import { connect } from 'react-redux';
-import { bindActionCreators, compose } from 'redux';
 import DateRangePicker from 'ui/components/DateRangePicker';
-import selectors from 'ui/containers/App/selectors';
-import actions from 'ui/containers/App/actions';
 import { PeriodEnum } from 'ui/maps/PeriodEnum';
 import UITabs from 'ui/components/UIElements/UITabs';
 import PeriodsList from 'ui/components/PeriodsList';
@@ -25,30 +19,8 @@ const Label = styled.div`
   color: #979797;
 `;
 
-const TimeRangePickersContainer = ({ startDate, endDate, duration, setDuration, setTimeSpan, timePicker, setReload, doReload, reloadPeriod }) => {
+const TimeRangePickersContainer = () => {
   const { commonStore } = useStore();
-  const validateTimeSpan = (startDateIn, endDateIn) => {
-    let error = '';
-    if (startDateIn.unix() === endDateIn.unix()) {
-      error = 'Selecting the same start and end date is not allowed.';
-    } else if (startDateIn.unix() > endDateIn.unix()) {
-      error = 'Start date could not be greater than end date.';
-    } else {
-      setTimeSpan(startDateIn, endDateIn);
-    }
-
-    if (error.length > 0) {
-      notification.error({
-        message: 'Invalid time span',
-        description: <React.Fragment>{error}</React.Fragment>,
-        duration: 4.5,
-        style: {
-          marginTop: 500,
-        },
-        placement: 'topRight',
-      });
-    }
-  };
 
   const hours = {
     H1: PeriodEnum.H1,
@@ -70,12 +42,12 @@ const TimeRangePickersContainer = ({ startDate, endDate, duration, setDuration, 
   return (
     <PickersWrapper>
       <UITabs
-        defaultActiveKey={timePicker.toString()}
+        defaultActiveKey={commonStore.timeRangeType}
         size="small"
         className="tabs-time-frames"
         tabs={[
           {
-            key: '0',
+            key: 'relative',
             tab: 'Presets',
             children: (
               <Row type="flex" justify="center">
@@ -83,10 +55,9 @@ const TimeRangePickersContainer = ({ startDate, endDate, duration, setDuration, 
                   <Label>Hours</Label>
                   <PeriodsList
                     options={hours}
-                    value={duration}
+                    value={commonStore.relativeType}
                     onChange={p => {
                       commonStore.setRelativeTimeRange(p);
-                      setDuration(p);
                     }}
                   />
                 </Col>
@@ -94,10 +65,9 @@ const TimeRangePickersContainer = ({ startDate, endDate, duration, setDuration, 
                   <Label>Days</Label>
                   <PeriodsList
                     options={days}
-                    value={duration}
+                    value={commonStore.relativeType}
                     onChange={p => {
                       commonStore.setRelativeTimeRange(p);
-                      setDuration(p);
                     }}
                   />
                 </Col>
@@ -105,24 +75,31 @@ const TimeRangePickersContainer = ({ startDate, endDate, duration, setDuration, 
                   <Label>More</Label>
                   <PeriodsList
                     options={more}
-                    value={duration}
+                    value={commonStore.relativeType}
                     onChange={p => {
                       commonStore.setRelativeTimeRange(p);
-                      setDuration(p);
                     }}
                   />
                 </Col>
                 <Col md={9}>
                   <Label>Refresh Interval</Label>
-                  <Refresh onChange={value => setReload(value)} onRefresh={() => doReload()} value={reloadPeriod.period.seconds} />
+                  <Refresh />
                 </Col>
               </Row>
             ),
           },
           {
-            key: '1',
+            key: 'absolute',
             tab: 'Date & Time Range',
-            children: <DateRangePicker selectedFromDate={startDate} selectedToDate={endDate} onOk={validateTimeSpan} />,
+            children: (
+              <DateRangePicker
+                selectedFromDate={commonStore.startDate}
+                selectedToDate={commonStore.endDate}
+                onOk={(startDate, endDate) => {
+                  commonStore.setAbsoluteTimeRange(startDate, endDate);
+                }}
+              />
+            ),
           },
         ]}
       />
@@ -130,37 +107,4 @@ const TimeRangePickersContainer = ({ startDate, endDate, duration, setDuration, 
   );
 };
 
-TimeRangePickersContainer.propTypes = {
-  startDate: PropTypes.any,
-  endDate: PropTypes.any,
-  duration: PropTypes.any,
-  setDuration: PropTypes.any,
-  setTimeSpan: PropTypes.any,
-  setReload: PropTypes.any,
-  doReload: PropTypes.any,
-  timePicker: PropTypes.any,
-  reloadPeriod: PropTypes.any,
-};
-
-const mapStateToProps = createStructuredSelector({
-  startDate: selectors.makeSelectStartDate(),
-  endDate: selectors.makeSelectEndDate(),
-  duration: selectors.makeSelectDuration(),
-  timePicker: selectors.makeSelectTimePicker(),
-  reloadPeriod: selectors.makeSelectReload(),
-});
-
-export const mapDispatchToProps = dispatch =>
-  bindActionCreators(
-    {
-      setTimeSpan: actions.setTimeSpan,
-      setDuration: actions.setDuration,
-      setReload: actions.setReload,
-      doReload: actions.doReload,
-    },
-    dispatch,
-  );
-
-const withConnect = connect(mapStateToProps, mapDispatchToProps);
-
-export default compose(withConnect)(observer(TimeRangePickersContainer));
+export default observer(TimeRangePickersContainer);
