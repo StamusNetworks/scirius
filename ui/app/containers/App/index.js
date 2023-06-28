@@ -35,7 +35,7 @@ import { useStore } from 'ui/mobx/RootStoreProvider';
 const pagesList = Object.keys(pages);
 const SESSION_INTERVAL = 30000;
 
-const App = ({ getAllPeriodRequest, setSessionActivity, timeSpan }) => {
+const App = ({ setSessionActivity }) => {
   const idle = useRef(0);
 
   const setIdle = useCallback(() => {
@@ -52,8 +52,6 @@ const App = ({ getAllPeriodRequest, setSessionActivity, timeSpan }) => {
   }, []);
 
   useEffect(() => {
-    getAllPeriodRequest();
-
     let interval = null;
     if (process.env.NODE_ENV === 'production') {
       interval = setInterval(() => {
@@ -71,10 +69,6 @@ const App = ({ getAllPeriodRequest, setSessionActivity, timeSpan }) => {
       }
     };
   }, []);
-
-  useEffect(() => {
-    getAllPeriodRequest();
-  }, [timeSpan.now]);
 
   const [errorMsg, setErrorMsg] = useState(null);
 
@@ -141,9 +135,7 @@ const App = ({ getAllPeriodRequest, setSessionActivity, timeSpan }) => {
 };
 
 App.propTypes = {
-  getAllPeriodRequest: PropTypes.any,
   setSessionActivity: PropTypes.func,
-  timeSpan: PropTypes.object,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -153,7 +145,6 @@ const mapStateToProps = createStructuredSelector({
 export const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
-      getAllPeriodRequest: actions.getAllPeriodRequest,
       setSessionActivity: actions.setSessionActivityRequest,
     },
     dispatch,
