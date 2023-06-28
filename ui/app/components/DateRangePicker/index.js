@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import moment from 'moment';
 import styled from 'styled-components';
 import { Calendar, Button } from 'antd';
 import { CalendarHeader } from 'ui/components/CalendarHeader';
 import { useStore } from 'ui/mobx/RootStoreProvider';
+import { observer } from 'mobx-react-lite';
 
 const SubmitDate = styled(Button)`
   width: 100%;
@@ -32,10 +32,10 @@ const CalendarStyled = styled(Calendar)`
   }
 `;
 
-const Index = props => {
+const DateRangePicker = () => {
   const { commonStore } = useStore();
-  const [startDate, setStartDate] = useState(props.selectedFromDate === null ? moment() : moment(props.selectedFromDate));
-  const [endDate, setEndDate] = useState(props.selectedToDate === null ? moment() : moment(props.selectedToDate));
+  const [startDate, setStartDate] = useState(moment());
+  const [endDate, setEndDate] = useState(moment());
 
   const disabledDate = (type, current) => {
     if (!current) {
@@ -61,16 +61,15 @@ const Index = props => {
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <div style={{ marginRight: '10px' }}>
           <CalendarStyled
-            defaultValue={moment(startDate)}
-            selectedValue={moment(startDate)}
+            defaultValue={startDate}
+            selectedValue={startDate}
             disabledDate={value => disabledDate('startDate', value)}
-            onSelect={a => setStartDate(startDate.date(a.date()))}
+            onSelect={value => setStartDate(value)}
             headerRender={({ onChange }) => (
               <CalendarHeader
                 value={startDate}
                 onChange={a => {
                   onChange(a);
-                  commonStore.setStartDate(a.timstamp());
                   setStartDate(startDate.year(a.year()).month(a.month()).hours(a.hours()).minute(a.minute()).seconds(a.seconds()));
                 }}
               />
@@ -80,10 +79,10 @@ const Index = props => {
         </div>
         <div style={{ marginLeft: '10px' }}>
           <CalendarStyled
-            defaultValue={moment(endDate)}
-            selectedValue={moment(endDate)}
+            defaultValue={endDate}
+            selectedValue={endDate}
             disabledDate={value => disabledDate('endDate', value)}
-            onSelect={a => setEndDate(endDate.date(a.date()))}
+            onSelect={value => setEndDate(value)}
             headerRender={({ onChange }) => (
               <CalendarHeader
                 value={endDate}
@@ -97,22 +96,16 @@ const Index = props => {
           />
         </div>
       </div>
-      <SubmitDate type="primary" onClick={() => props.onOk(startDate, endDate)}>
+      <SubmitDate
+        type="primary"
+        onClick={() => {
+          commonStore.setAbsoluteTimeRange(startDate.unix(), endDate.unix());
+        }}
+      >
         Submit
       </SubmitDate>
     </div>
   );
 };
 
-Index.propTypes = {
-  onOk: PropTypes.any,
-  selectedFromDate: PropTypes.any,
-  selectedToDate: PropTypes.any,
-};
-
-Index.defaultProps = {
-  selectedFromDate: null,
-  selectedToDate: null,
-};
-
-export default Index;
+export default observer(DateRangePicker);
