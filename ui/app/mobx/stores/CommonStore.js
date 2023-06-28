@@ -204,8 +204,9 @@ class CommonStore {
     return response;
   }
 
-  addFilter(filter) {
-    const stack = (Array.isArray(filter) ? filter : [filter]).filter(f => CommonStore.#validateFilter(f));
+  // @TODO: Should be handled better (skipCheck)
+  addFilter(filter, skipCheck = false) {
+    const stack = (Array.isArray(filter) ? filter : [filter]).filter(f => (skipCheck ? f : CommonStore.#validateFilter(f)));
     this.ids = [...this.ids, ...stack];
     localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids)));
   }
