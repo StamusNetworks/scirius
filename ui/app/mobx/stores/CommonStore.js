@@ -3,30 +3,35 @@ import moment from 'moment';
 import endpoints from 'ui/config/endpoints';
 import { isEqual } from 'lodash';
 import { api } from '../api';
+import { PeriodEnum } from '../../maps/PeriodEnum';
 
 class CommonStore {
   root = null;
 
-  /* Time range type absolute | relative */
-  #timeRangeType = 'relative';
+  // @TODO: Expose the time management stuff to a separate store
+  /**
+   * Time range type absolute | relative
+   * @type {string}
+   */
+  _timeRangeType = 'relative';
 
   /**
    * Value when timeRangeType is set to relative
    * @type {string}
    */
-  #relative = '1H';
+  _relativeType = 'H1';
 
   /**
    * Start time value when timeRangeType is set to absolute
    * @type {number | null}
    */
-  startDate = null;
+  _startDate = null;
 
   /**
    * End time value when timeRangeType is set to absolute
    * @type {number | null}
    */
-  endDate = null;
+  _endDate = null;
 
   /**
    * Minimum available timestamp for 'All' type
@@ -65,17 +70,17 @@ class CommonStore {
     }
     if (!localStorage.getItem('startDate')) {
       const startDate = moment().subtract(1, 'hours').unix();
-      this.startDate = startDate;
+      this._startDate = startDate;
       localStorage.setItem('startDate', startDate);
     } else {
-      this.startDate = localStorage.getItem('startDate');
+      this._startDate = localStorage.getItem('startDate');
     }
     if (!localStorage.getItem('endDate')) {
       const endDate = moment().unix();
-      this.endDate = endDate;
+      this._endDate = endDate;
       localStorage.setItem('endDate', endDate);
     } else {
-      this.endDate = localStorage.getItem('endDate');
+      this._endDate = localStorage.getItem('endDate');
     }
     try {
       this._systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
@@ -98,36 +103,37 @@ class CommonStore {
   setRelativeTimeRange(type) {
     switch (type) {
       case 'H1':
-        this.startDate = moment().subtract(1, 'hours').unix();
+        this._startDate = moment().subtract(1, 'hour').unix();
         break;
       case 'H6':
-        this.startDate = moment().subtract(6, 'hours').unix();
+        this._startDate = moment().subtract(6, 'hours').unix();
         break;
       case 'H24':
-        this.startDate = moment().subtract(24, 'hours').unix();
+        this._startDate = moment().subtract(24, 'hours').unix();
         break;
       case 'D2':
-        this.startDate = moment().subtract(2, 'days').unix();
+        this._startDate = moment().subtract(2, 'days').unix();
         break;
       case 'D7':
-        this.startDate = moment().subtract(7, 'days').unix();
+        this._startDate = moment().subtract(7, 'days').unix();
         break;
       case 'D30':
-        this.startDate = moment().subtract(30, 'days').unix();
+        this._startDate = moment().subtract(30, 'days').unix();
         break;
       case 'Y1':
-        this.startDate = moment().subtract(1, 'years').unix();
+        this._startDate = moment().subtract(1, 'year').unix();
         break;
       case 'All':
         break;
       default:
         break;
     }
-    this.endDate = moment().unix();
-    this.timeRangeType = 'relative';
-    localStorage.setItem('startDate', this.startDate);
-    localStorage.setItem('endDate', this.endDate);
-    this.relative = type;
+    this._endDate = moment().unix();
+    this._timeRangeType = 'relative';
+    localStorage.setItem('startDate', this._startDate);
+    localStorage.setItem('endDate', this._endDate);
+    this._relativeType = type;
+    this.setTimePickerStorage();
   }
 
   /**
@@ -137,8 +143,12 @@ class CommonStore {
    */
   setAbsoluteTimeRange(startDate, endDate) {
     if (startDate < endDate) {
-      this.startDate = startDate;
-      this.endDate = endDate;
+      this._startDate = startDate;
+      this._endDate = endDate;
+      this._timeRangeType = 'absolute';
+      localStorage.setItem('startDate', startDate);
+      localStorage.setItem('endDate', endDate);
+      this.setTimePickerStorage();
     }
   }
 
@@ -278,6 +288,25 @@ class CommonStore {
     return toJS(this.ids);
   }
 
+  get startDate() {
+    if (this._timeRangeType === 'absolute') {
+      return this._startDate;
+    }
+    if (this._relativeType === 'All') {
+      // D7 period is the default one if min/max timestamp boundaries are incorrect
+      return !Number.isNaN(parseInt(this._minTimestamp, 10)) ? moment(this._minTimestamp).unix() : moment().subtract(7, 'days');
+    }
+    return moment().subtract(PeriodEnum[this._relativeType].seconds, 'milliseconds').unix();
+  }
+
+  get endDate() {
+    if (this._relativeType === 'All') {
+      // D7 period is the default one if min/max timestamp boundaries are incorrect
+      return !Number.isNaN(parseInt(this._maxTimestamp, 10)) ? moment(this._maxTimestamp).unix() : moment();
+    }
+    return this._endDate;
+  }
+
   get filters() {
     return [...toJS(this.ids)].filter(Boolean);
   }
@@ -305,6 +334,33 @@ class CommonStore {
 
   get user() {
     return toJS(this._user);
+  }
+
+  get disableAll() {
+    return !this._minTimestamp || !this._maxTimestamp;
+  }
+
+  get timeRangeType() {
+    return this._timeRangeType;
+  }
+
+  get relativeType() {
+    return this._relativeType;
+  }
+
+  setTimePickerStorage() {
+    localStorage.setItem(
+      'str-timespan',
+      JSON.stringify({
+        disableAll: this.disableAll,
+        duration: this.relativeType,
+        endDate: this.endDate,
+        maxTimestamp: this._maxTimestamp,
+        minTimestamp: this._minTimestamp,
+        startDate: this.startDate,
+        timePicker: this._timeRangeType,
+      }),
+    );
   }
 
   static #indexOfFilter(filter, allFilters) {
