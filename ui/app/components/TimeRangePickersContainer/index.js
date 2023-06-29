@@ -8,6 +8,8 @@ import PeriodsList from 'ui/components/PeriodsList';
 import Refresh from 'ui/components/Refresh';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import { observer } from 'mobx-react-lite';
+import { useDispatch } from 'react-redux';
+import actions from 'ui/containers/App/actions';
 
 const PickersWrapper = styled.div`
   width: 600px;
@@ -21,6 +23,7 @@ const Label = styled.div`
 
 const TimeRangePickersContainer = () => {
   const { commonStore } = useStore();
+  const dispatch = useDispatch();
 
   const hours = {
     H1: PeriodEnum.H1,
@@ -58,6 +61,7 @@ const TimeRangePickersContainer = () => {
                     value={commonStore.relativeType}
                     onChange={p => {
                       commonStore.setRelativeTimeRange(p);
+                      dispatch(actions.setDuration(p));
                     }}
                   />
                 </Col>
@@ -68,6 +72,7 @@ const TimeRangePickersContainer = () => {
                     value={commonStore.relativeType}
                     onChange={p => {
                       commonStore.setRelativeTimeRange(p);
+                      dispatch(actions.setDuration(p));
                     }}
                   />
                 </Col>
@@ -78,6 +83,7 @@ const TimeRangePickersContainer = () => {
                     value={commonStore.relativeType}
                     onChange={p => {
                       commonStore.setRelativeTimeRange(p);
+                      dispatch(actions.setDuration(p));
                     }}
                   />
                 </Col>

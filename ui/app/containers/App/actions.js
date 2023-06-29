@@ -6,6 +6,11 @@ const setTimeSpan = (startDate, endDate) => ({
   endDate,
 });
 
+const setDuration = duration => ({
+  type: constants.SET_DURATION,
+  duration,
+});
+
 const setReload = reloadPeriod => ({
   type: constants.SET_RELOAD,
   payload: {
@@ -67,6 +72,7 @@ const updatePushRulesetFailure = () => ({
 
 export default {
   setTimeSpan,
+  setDuration,
   setReload,
   setFilterSets,
   doReload,
