@@ -88,7 +88,7 @@ const EventsPage = () => {
 
   useEffect(fetchData, [qfilter, paginationParams]);
 
-  useAutorun(fetchData, ['ids', 'date', 'tenant']);
+  useAutorun(fetchData);
 
   const getIconColor = key => {
     if (key === 'informational') return '#7b1244';
