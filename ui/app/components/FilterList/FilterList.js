@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Row } from 'antd';
-import FilterItem from 'ui/components/FilterItem/index';
+import FilterItem from 'ui/components/FilterItem';
 import { editFilter, removeFilter } from 'ui/containers/HuntApp/stores/global';
 import styled from 'styled-components';
 import { withStore } from 'ui/mobx/RootStoreProvider';
@@ -194,7 +194,10 @@ class FilterList extends React.Component {
                 this.props.store.commonStore.removeFilter(filter);
               }}
               onEdit={() => this.editHandler(filter, filter.value, filter.negated, !filter.fullString)}
-              editFilter={this.props.editFilter}
+              editFilter={(section, oldFilter, newFilter) => {
+                this.props.store.commonStore.replaceFilter(oldFilter, newFilter);
+                this.props.editFilter(section, oldFilter, newFilter);
+              }}
               filters={this.props.filters}
               filterType={this.props.filterType}
               filter={filter}
