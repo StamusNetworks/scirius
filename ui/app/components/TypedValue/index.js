@@ -1,5 +1,4 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { Dropdown, message } from 'antd';
@@ -8,11 +7,9 @@ import _ from 'lodash';
 import styled from 'styled-components';
 import { Link } from 'ui/helpers/Link';
 import history from 'ui/utils/history';
-import { addFilter, clearFilters } from 'ui/containers/HuntApp/stores/global';
-import { sections } from 'ui/constants';
 import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 import isIP from 'ui/helpers/isIP';
-import selectors from 'ui/containers/App/selectors';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 
 const Value = styled.a`
   display: block;
@@ -40,9 +37,7 @@ const rolesMap = {
 };
 
 const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) => {
-  const tenantParam = useSelector(selectors.makeSelectTenantParam());
-  const dispatch = useDispatch();
-
+  const { commonStore } = useStore();
   const virusTotalLink = (
     <a href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(value)) ? 'ip-address' : 'domain'}/${value}`} target="_blank">
       <InfoCircleFilled /> <span>External info</span>
@@ -73,18 +68,16 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
     <div
       onClick={e => {
         e.stopPropagation();
-        if (removeFilters) dispatch(clearFilters(sections.GLOBAL));
-        dispatch(
-          addFilter(sections.GLOBAL, {
-            id: 'host_id.roles.name',
-            value: rolesMap[value.props.name].value || '',
-            label: `Hosts: Roles: ${rolesMap[value.props.name].label}`,
-            fullString: false,
-            negated: false,
-            query: 'filter_host_id',
-          }),
-        );
-        if (redirect) history.push(`/stamus/hunting/${location}?${tenantParam}`);
+        if (removeFilters) commonStore.clearFilters();
+        commonStore.addFilter({
+          id: 'host_id.roles.name',
+          value: rolesMap[value.props.name].value || '',
+          label: `Hosts: Roles: ${rolesMap[value.props.name].label}`,
+          fullString: false,
+          negated: false,
+          query: 'filter_host_id',
+        });
+        if (redirect) history.push(`/stamus/hunting/${location}${window.location.search}`);
       }}
     >
       <RobotOutlined /> <span>Filter on Role, go to {location}</span>
@@ -128,16 +121,14 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
           <div
             onClick={e => {
               e.stopPropagation();
-              dispatch(
-                addFilter(sections.GLOBAL, {
-                  id: 'ip',
-                  value: value || '',
-                  label: `IP: ${value}`,
-                  fullString: false,
-                  negated: false,
-                  query: 'filter',
-                }),
-              );
+              commonStore.addFilter({
+                id: 'ip',
+                value: value || '',
+                label: `IP: ${value}`,
+                fullString: false,
+                negated: false,
+                query: 'filter',
+              });
               if (redirect) history.push('/stamus/hunting/dashboards');
             }}
           >
@@ -151,16 +142,14 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
           <div
             onClick={e => {
               e.stopPropagation();
-              dispatch(
-                addFilter(sections.GLOBAL, {
-                  id: 'ip',
-                  value: value || '',
-                  label: `IP: ${value}`,
-                  fullString: false,
-                  negated: true,
-                  query: 'filter',
-                }),
-              );
+              commonStore.addFilter({
+                id: 'ip',
+                value: value || '',
+                label: `IP: ${value}`,
+                fullString: false,
+                negated: true,
+                query: 'filter',
+              });
               if (redirect) history.push('/stamus/hunting/dashboards');
             }}
           >
@@ -213,15 +202,13 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
           <div
             onClick={e => {
               e.stopPropagation();
-              dispatch(
-                addFilter(sections.GLOBAL, {
-                  id: 'host_id.username.user',
-                  value: value || '',
-                  label: `host_id.username.user: ${value}`,
-                  fullString: false,
-                  negated: false,
-                }),
-              );
+              commonStore.addFilter({
+                id: 'host_id.username.user',
+                value: value || '',
+                label: `host_id.username.user: ${value}`,
+                fullString: false,
+                negated: false,
+              });
             }}
           >
             <UserOutlined /> <span>Filter on username</span>
