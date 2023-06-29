@@ -61,7 +61,7 @@ class EsStore {
 
   async fetchAlertsTail(paginationParams, qfilter) {
     const response = await api.get(`${endpoints.ALERTS_TAIL.url}`, {
-      ...qs.parse(decodeURIComponent(qfilter)),
+      ...qs.parse(qfilter),
       ...qs.parse(paginationParams),
     });
 

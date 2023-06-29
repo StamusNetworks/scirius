@@ -62,7 +62,7 @@ const EventsPage = () => {
     localStorage.setItem('alerts_list', JSON.stringify(rulesListState));
   };
 
-  const qfilter = buildQFilter(commonStore.filters, commonStore.systemSettings);
+  const qfilter = buildQFilter(commonStore.filtersWithAlert, commonStore.systemSettings);
   const paginationParams = buildListUrlParams(alertsList);
 
   const fetchData = async () => {
