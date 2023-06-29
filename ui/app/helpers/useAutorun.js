@@ -19,7 +19,7 @@ function useAutorun(callback, dependencies = ['ids', 'date', 'tenant']) {
           let trigger = false;
           const params = {};
           if (dependencies.includes('ids')) {
-            params.ids = commonStore.ids;
+            params.ids = commonStore.filtersWithAlert;
             trigger = true;
           }
           if (dependencies.includes('date')) {

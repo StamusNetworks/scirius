@@ -33,7 +33,7 @@ const DashboardPanel = ({ panelId }) => {
 
   const fetchData = useCallback(
     async (fields, pageSize) => {
-      const qfilter = (buildQFilter(commonStore.getFilters(true), commonStore.systemSettings) || '').replace('&qfilter=', '');
+      const qfilter = (buildQFilter(commonStore.filtersWithAlert, commonStore.systemSettings) || '').replace('&qfilter=', '');
       const response = await api.get(endpoints.DASHBOARD_PANEL.url, {
         fields,
         qfilter: decodeURIComponent(qfilter),
@@ -41,7 +41,7 @@ const DashboardPanel = ({ panelId }) => {
       });
       return response.data;
     },
-    [commonStore.getFilters(true), commonStore.systemSettings],
+    [commonStore.filtersWithAlert, commonStore.systemSettings],
   );
 
   useAutorun(async () => {
