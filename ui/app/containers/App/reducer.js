@@ -72,18 +72,6 @@ export const appReducer = (state = initialState, action) =>
         draft.timespan.maxTimestamp = maxTimestamp;
         draft.timespan.duration = !correct && draft.timespan.duration === 'All' ? 'D7' : draft.timespan.duration;
         draft.timespan.disableAll = !correct;
-
-        store.set(StorageEnum.TIMESPAN, {
-          ...{
-            ...initialTimeSpanStorage,
-            ...store.get(StorageEnum.TIMESPAN),
-          },
-          duration: draft.timespan.duration,
-          minTimestamp,
-          maxTimestamp,
-          disableAll: !correct,
-        });
-
         break;
       }
       case constants.SET_TIME_SPAN: {
@@ -92,12 +80,6 @@ export const appReducer = (state = initialState, action) =>
         draft.timespan.startDate = startDate;
         draft.timespan.endDate = endDate;
         draft.timespan.timePicker = TimePickerEnum.ABSOLUTE;
-        store.set(StorageEnum.TIMESPAN, {
-          ...(store.get(StorageEnum.TIMESPAN) || initialTimeSpanStorage),
-          timePicker: TimePickerEnum.ABSOLUTE,
-          startDate,
-          endDate,
-        });
         break;
       }
       case constants.SET_DURATION: {
@@ -106,11 +88,6 @@ export const appReducer = (state = initialState, action) =>
         draft.timespan.now = new Date().getTime();
         draft.timespan.duration = duration;
         draft.timespan.timePicker = TimePickerEnum.QUICK;
-        store.set(StorageEnum.TIMESPAN, {
-          ...(store.get(StorageEnum.TIMESPAN) || initialTimeSpanStorage),
-          timePicker: TimePickerEnum.QUICK,
-          duration,
-        });
         break;
       }
       case constants.SET_RELOAD: {

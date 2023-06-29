@@ -98,6 +98,8 @@ class CommonStore {
       this._systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
       this.ids = JSON.parse(localStorage.getItem('ids_filters') || '[]');
       this._sources = JSON.parse(localStorage.getItem('str-sources') || '[]');
+      this._timeRangeType = JSON.parse(localStorage.getItem('str-timespan') || '{}')?.timePicker || 'relative';
+      this._relativeType = JSON.parse(localStorage.getItem('str-timespan') || '{}')?.duration || 'H1';
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log('Error while parsing local storage data');
