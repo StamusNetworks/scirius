@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Table } from 'antd';
 import { BellFilled } from '@ant-design/icons';
 import { Helmet } from 'react-helmet';
