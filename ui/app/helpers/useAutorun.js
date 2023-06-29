@@ -2,14 +2,14 @@ import { useEffect, useCallback } from 'react';
 import { autorun } from 'mobx';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 
-function useAutorun(callback, dependencies = ['ids', 'date', 'tenant']) {
+function useAutorun(callback, dependencies = ['ids', 'date', 'tenant'], others = []) {
   const { commonStore, tenantStore } = useStore();
 
   const cb = useCallback(
     ({ ...globalDeps }) => {
       callback(globalDeps);
     },
-    [callback],
+    [callback, ...others],
   );
 
   return useEffect(
@@ -37,7 +37,7 @@ function useAutorun(callback, dependencies = ['ids', 'date', 'tenant']) {
           // eslint-disable-next-line no-empty
         } catch (e) {}
       }),
-    [],
+    [...others],
   );
 }
 
