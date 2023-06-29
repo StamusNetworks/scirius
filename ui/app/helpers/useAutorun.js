@@ -23,13 +23,12 @@ function useAutorun(callback, dependencies = ['ids', 'date', 'tenant']) {
             trigger = true;
           }
           if (dependencies.includes('date')) {
-            // console.log('GLOBALS', dependencies);
             params.startDate = commonStore.startDate;
             params.endDate = commonStore.endDate;
             trigger = true;
           }
           if (dependencies.includes('tenant')) {
-            params.endDate = tenantStore?.tenant;
+            params.tenant = tenantStore?.tenant;
             trigger = true;
           }
           if (trigger || dependencies.length === 0) {
