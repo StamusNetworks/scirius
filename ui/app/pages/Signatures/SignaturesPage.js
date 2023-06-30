@@ -110,6 +110,9 @@ const SignaturesPage = () => {
             );
           }
           setSignaturesCount(response.data.count || 0);
+        } else {
+          setSignatures([]);
+          setSignaturesCount(0);
         }
       }
     } catch (e) {
@@ -119,9 +122,7 @@ const SignaturesPage = () => {
     setLoading(false);
   };
 
-  useEffect(fetchData, [stringFilters, listUrlParams, filterParams]);
-
-  useAutorun(fetchData, ['ids', 'date', 'tenant']);
+  useAutorun(fetchData, [], [stringFilters, listUrlParams, filterParams]);
 
   useEffect(() => {
     (async () => {
