@@ -1,8 +1,30 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
 import { BugOutlined } from '@ant-design/icons';
-import { Typography } from 'antd';
-const { Title } = Typography;
+
+const ErrorMessage = styled.h3`
+  width: 100%;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  grid-row-gap: 10px;
+
+  span {
+    font-size: 27px;
+    color: #005792;
+  }
+
+  div:first-of-type {
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #005792;
+  }
+
+  div:last-of-type {
+    font-weight: normal;
+  }
+`;
 
 class ErrorHandler extends React.Component {
   constructor(props) {
@@ -26,12 +48,11 @@ class ErrorHandler extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <React.Fragment>
-          <Title level={4}>
-            <BugOutlined /> Oops! Something went wrong.
-          </Title>
-          Please reload the page, it may fix the issue.
-        </React.Fragment>
+        <ErrorMessage>
+          <BugOutlined />
+          <div>Something went wrong. </div>
+          <div>Please reload the page, it may fix the issue.</div>
+        </ErrorMessage>
       );
     }
     return this.props.children;
