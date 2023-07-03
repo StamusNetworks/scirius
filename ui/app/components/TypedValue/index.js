@@ -84,7 +84,7 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
         if (redirect) history.push(`/stamus/hunting/${location}${window.location.search}`);
       }}
     >
-      <RobotOutlined /> <span>Filter on Role, go to {location}</span>
+      <RobotOutlined /> <span>Filter on Role, go to {_.capitalize(location)}</span>
     </div>
   );
 
