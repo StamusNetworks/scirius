@@ -77,10 +77,6 @@ DashboardBlock.propTypes = {
     i: PropTypes.string,
     title: PropTypes.string,
     format: PropTypes.func,
-    dimensions: PropTypes.shape({
-      xxl: PropTypes.number,
-      xl: PropTypes.number,
-    }),
   }),
   title: PropTypes.string,
   data: PropTypes.array,

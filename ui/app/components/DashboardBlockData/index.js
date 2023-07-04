@@ -30,10 +30,6 @@ DashboardBlockData.propTypes = {
     i: PropTypes.string,
     title: PropTypes.string,
     format: PropTypes.func,
-    dimensions: PropTypes.shape({
-      xxl: PropTypes.number,
-      xl: PropTypes.number,
-    }),
   }),
   data: PropTypes.array.isRequired,
   copyMode: PropTypes.bool.isRequired,

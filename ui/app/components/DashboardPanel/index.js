@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { Col, Row } from 'antd';
 import { dashboard } from 'ui/config/Dashboard';
 import DashboardBlock from 'ui/components/DashboardBlock';
 import useAutorun from 'ui/helpers/useAutorun';
@@ -14,6 +13,13 @@ import { api } from 'ui/mobx/api';
 const Title = styled.h2`
   margin-top: 10px;
   cursor: default;
+`;
+
+const Row = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-gap: 5px;
+  padding-bottom: 10px;
 `;
 
 const DashboardPanel = ({ panelId }) => {
@@ -58,22 +64,17 @@ const DashboardPanel = ({ panelId }) => {
   return (
     <div data-test={`dashboard-panel-${title}`}>
       <Title>{title}</Title>
-      <Row gutter={[5, 5]}>
+      <Row>
         {items.map(item => {
           const { [item.i]: data = [] } = blockData || {};
-          const {
-            dimensions: { xxl, xl },
-          } = item;
           return (
-            <Col xxl={xxl} xl={xl} lg={12} md={24} xs={24} style={{ display: 'flex' }}>
-              <DashboardBlock
-                block={item}
-                data={data}
-                loading={loading}
-                emptyPanel={emptyPanel}
-                onLoadMore={() => setLoadMoreField({ block: item, field: item.i })}
-              />
-            </Col>
+            <DashboardBlock
+              block={item}
+              data={data}
+              loading={loading}
+              emptyPanel={emptyPanel}
+              onLoadMore={() => setLoadMoreField({ block: item, field: item.i })}
+            />
           );
         })}
       </Row>
