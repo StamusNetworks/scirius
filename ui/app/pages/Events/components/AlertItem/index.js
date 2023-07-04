@@ -749,7 +749,7 @@ class AlertItem extends React.Component {
             </UICard>
 
             {/* Signature metadata should always be displayed */}
-            {!this.props.eventTypes.stamus && (
+            {data.event_type !== 'stamus' && data.event_type === 'alert' && (
               <UICard data-test="alert-card-Signature metadata" title="Signature metadata" fullHeight>
                 <DlHorizontal>
                   {_.isEmpty(data.alert.metadata) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
@@ -768,7 +768,7 @@ class AlertItem extends React.Component {
               </UICard>
             )}
 
-            {this.props.eventTypes.stamus && (
+            {data.event_type === 'stamus' && data.event_type !== 'alert' && (
               <UICard title="Stamus Method" fullHeight>
                 <DlHorizontal>
                   {_.isEmpty(data.stamus) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
@@ -890,7 +890,6 @@ class AlertItem extends React.Component {
 AlertItem.propTypes = {
   data: PropTypes.any,
   filterParams: PropTypes.string.isRequired,
-  eventTypes: PropTypes.object,
 };
 
 export default withStore(AlertItem);

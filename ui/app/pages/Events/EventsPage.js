@@ -166,7 +166,7 @@ const EventsPage = () => {
         expandable={{
           columnWidth: 5,
           expandRowByClick: true,
-          expandedRowRender: alert => <AlertItem data={alert.rule} filterParams={filterParams} eventTypes={commonStore.eventTypes} />,
+          expandedRowRender: alert => <AlertItem data={alert.rule} filterParams={filterParams} />,
           rowExpandable: () => true,
         }}
         pagination={false}
