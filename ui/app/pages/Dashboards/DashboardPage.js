@@ -21,24 +21,24 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 import React, { useEffect, useState } from 'react';
 import { Dropdown, Menu, Row, Col } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
+import { observer } from 'mobx-react-lite';
 import store from 'store';
 import { Helmet } from 'react-helmet';
 import { STAMUS } from 'ui/config';
-import { useSelector } from 'react-redux';
 import { sections } from 'ui/constants';
 import ErrorHandler from 'ui/components/Error';
 import Filters from 'ui/components/Filters';
 import { useStore } from 'ui/mobx/RootStoreProvider';
-import { makeSelectFilterParams } from 'ui/containers/HuntApp/stores/filterParams';
 import HuntTimeline from 'ui/HuntTimeline';
 import HuntTrend from 'ui/HuntTrend';
+import useFilterParams from 'ui/hooks/useFilterParams';
 import 'react-resizable/css/styles.css';
 import '../../../../rules/static/rules/c3.min.css';
 import DashboardMosaic from '../../components/DashboardMosaic';
 
 const DashboardPage = () => {
   const { commonStore } = useStore();
-  const filterParams = useSelector(makeSelectFilterParams());
+  const filterParams = useFilterParams();
   const [chartTarget, setChartTarget] = useState(store.get('chartTarget') === true);
   const hasPermissions = commonStore.user?.permissions.includes('rules.configuration_view');
 
@@ -94,4 +94,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default observer(DashboardPage);
