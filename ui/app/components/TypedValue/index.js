@@ -34,6 +34,10 @@ const rolesMap = {
     label: 'Printer',
     value: 'printer',
   },
+  Unclassified: {
+    label: 'Unclassified',
+    value: 'unclassified',
+  },
 };
 
 const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) => {
