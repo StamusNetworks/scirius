@@ -337,6 +337,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
               <FiltersSelector id="filters" data-test="filters-dropdown">
                 <Tooltip title={page === 'HOST_INSIGHT' ? 'Filters are not applicable' : null}>
                   <CascaderStyled
+                    data-test="filters-cascader-menu"
                     disabled={page === 'HOST_INSIGHT'}
                     value={selectedIds}
                     options={treeOptions}
@@ -349,6 +350,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
               {field && filterType !== 'complex-select' && filterType !== 'select' && (
                 <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
                   <Input
+                    data-test="filter-input-field"
                     type={filterType === 'number' ? 'number' : 'text'}
                     value={searchString}
                     onChange={e => {
