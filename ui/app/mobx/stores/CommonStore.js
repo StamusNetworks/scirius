@@ -318,7 +318,7 @@ class CommonStore {
       // D7 period is the default one if min/max timestamp boundaries are incorrect
       return !Number.isNaN(parseInt(this._maxTimestamp, 10)) ? moment(this._maxTimestamp).unix() : moment();
     }
-    return this._endDate;
+    return parseInt(this._endDate, 10);
   }
 
   get refresh() {
