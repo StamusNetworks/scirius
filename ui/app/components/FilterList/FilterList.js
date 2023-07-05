@@ -295,7 +295,7 @@ class FilterList extends React.Component {
 }
 
 FilterList.propTypes = {
-  page: PropTypes.oneOf(['RULES_LIST', 'DASHBOARDS', 'ALERTS_LIST', 'HISTORY', 'HOSTS_LIST']),
+  page: PropTypes.oneOf(['RULES_LIST', 'DASHBOARDS', 'ALERTS_LIST', 'HISTORY', 'HOSTS_LIST', 'HOST_INSIGHT', 'INVENTORY']),
   filters: PropTypes.array,
   editFilter: PropTypes.func,
   removeFilter: PropTypes.func,

@@ -16,7 +16,7 @@ const getIcons = item => {
   if (item.page === 'ALERTS_LIST') {
     icons.push(<BellOutlined key="2" />);
   }
-  if (item.page === 'HOSTS_LIST') {
+  if (item.page === 'HOSTS_LIST' || item.page === 'INVENTORY' || item.page === 'HOST_INSIGHT') {
     icons.push(<IdcardOutlined key="3" />);
   }
 
