@@ -1,4 +1,5 @@
 import { create } from 'apisauce';
+import { cloneDeep } from 'lodash';
 import map from 'ui/mobx/map';
 
 const apiInstance = create({
@@ -7,6 +8,12 @@ const apiInstance = create({
 
 apiInstance.addRequestTransform(request => {
   // Handle path parameters /foo/4/bar
+  if (request.method === 'patch') {
+    request.params = request.data;
+    request.data = cloneDeep(request.data.body);
+    delete request.params.body;
+  }
+
   let result = request.url.slice(); // Copy string by value
   const parameters = Object.entries(request.params);
   for (let i = 0; i < parameters.length; i += 1) {
