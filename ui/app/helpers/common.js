@@ -1,7 +1,6 @@
 import axios from 'axios';
 import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
-import { store } from 'ui/mobx/stores/RootStore';
 
 export function buildListUrlParams(pageParams) {
   const { page, perPage } = pageParams.pagination;
@@ -29,7 +28,7 @@ export function loadActions(filtersIn) {
   });
 }
 
-export function buildFilter(filters) {
+export function buildFilter(filters, systemSettings) {
   const lFilters = {};
   for (let i = 0; i < filters.length; i += 1) {
     if (filters[i].id !== 'probe' && filters[i].id !== 'alert.tag') {
@@ -45,7 +44,7 @@ export function buildFilter(filters) {
   for (let k = 0; k < objKeys.length; k += 1) {
     stringFilters += `&${objKeys[k]}=${lFilters[objKeys[k]]}`;
   }
-  const qfilter = buildQFilter(filters, store.commonStore.systemSettings);
+  const qfilter = buildQFilter(filters, systemSettings);
   if (qfilter) {
     stringFilters += qfilter;
   }
