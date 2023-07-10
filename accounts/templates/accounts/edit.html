@@ -4,7 +4,7 @@
     <div class="panel-heading">
         <h2 class="panel-title">{{ action }}</h2>
     </div>
-    <ul>
+    <ul class="action panel-body">
         {% if user.sciriususer.method == 'local' %}
             <li>
                 <a href="{% url 'accounts_edit' 'password' %}">Change password</a>
