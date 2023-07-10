@@ -5,7 +5,7 @@ from re import compile
 
 # login not required on 'static/.*' to allow png and css on the login page
 # (js access is prohibited until login is done in the view)
-EXEMPT_URLS = [compile(settings.LOGIN_URL.lstrip('/')), compile('rest/.*'), compile('static/.*'), compile('saml2/.*')]
+EXEMPT_URLS = [compile(settings.LOGIN_URL.lstrip('/')), compile('rest/.*'), compile('static/(?!doc).*'), compile('saml2/.*')]
 if hasattr(settings, 'LOGIN_EXEMPT_URLS'):
     EXEMPT_URLS += [compile(expr) for expr in settings.LOGIN_EXEMPT_URLS]
 
