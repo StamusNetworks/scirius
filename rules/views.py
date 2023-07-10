@@ -624,7 +624,8 @@ def edit_rule(request, rule_id):
         'form': form,
         'category_transforms': category_transforms,
         'ruleset_transforms': ruleset_transforms,
-        'rule_state': True in rule_object.ruleatversion_set.values_list('state', flat=True)
+        'rule_state': True in rule_object.ruleatversion_set.values_list('state', flat=True),
+        'object_path': [rule_object]
     }
     return scirius_render(request, 'rules/edit_rule.html', context)
 
@@ -790,7 +791,7 @@ def switch_rule(request, rule_id, operation='disable'):
     else:
         form = RulesetSuppressForm()
 
-    context = {'rule': rule_object, 'form': form}
+    context = {'rule': rule_object, 'form': form, 'object_path': [rule_object]}
     rulesets = Ruleset.objects.all()
     for ruleset in rulesets:
         ruleset.deps_ravs = rule_object.get_dependant_rules_at_version(ruleset)
@@ -1406,7 +1407,7 @@ def edit_source(request, source_id):
     return scirius_render(
         request,
         'rules/add_source.html',
-        {'form': form, 'source': source}
+        {'form': form, 'source': source, 'object_path': [source]}
     )
 
 
@@ -1825,7 +1826,8 @@ def edit_ruleset(request, ruleset_id):
             'sources': sources,
             'rules': rules,
             'cats_selection': ", ".join(cats_selection),
-            'extra_links': get_middleware_module('common').get_edit_ruleset_links(ruleset_id)
+            'extra_links': get_middleware_module('common').get_edit_ruleset_links(ruleset_id),
+            'object_path': [ruleset]
         }
 
         if 'mode' in request.GET:
