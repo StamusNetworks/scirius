@@ -2587,6 +2587,10 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
                 nb += 1
         return nb == max
 
+    @property
+    def name(self):
+        return str(self)
+
     @staticmethod
     def get_icon():
         return 'pficon-security'
