@@ -4,7 +4,7 @@
     <div class="panel-heading">
         <h2 class="panel-title">Manage users</h2>
     </div>
-    <ul>
+    <ul class="action panel-body">
         <li>
             <a href="{% url 'list_accounts' %}">Accounts list</a>
         </li>
@@ -28,7 +28,7 @@
         <div class="panel-heading">
             <h2 class="panel-title">Actions</h2>
         </div>
-        <ul>
+        <ul class="action panel-body">
             {% if 'Edit password' not in current_action and not is_from_ldap and user.sciriususer.method == 'local' %}
                 <li>
                     <a href="{% url 'edit_password' user.pk %}">Change user password</a>
