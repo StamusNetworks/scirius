@@ -29,6 +29,8 @@ export function buildQFilter(filters, systemSettings, returnType = 'legacy') {
         qfilter.push(`${fPrefix}host.raw:${filters[i].value}`);
       } else if (filters[i].id === 'sprobe') {
         qfilter.push(`${fPrefix}host.raw:${filters[i].value.id}`);
+      } else if (filters[i].id === 'stamus.kill_chain') {
+        qfilter.push(`${fPrefix}stamus.kill_chain.raw:"${filters[i].value.toLowerCase().replaceAll(' ', '_')}"`);
       } else if (filters[i].id === 'alert.signature_id') {
         qfilter.push(`${fPrefix}alert.signature_id:${filters[i].value}`);
       } else if (filters[i].id === 'ip') {
