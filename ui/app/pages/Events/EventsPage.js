@@ -67,14 +67,11 @@ const EventsPage = () => {
 
   const fetchData = async () => {
     try {
+      setLoading(true);
       const data = await esStore.fetchAlertsTail(paginationParams, qfilter);
-      if (data !== null && data.results && typeof data.results !== 'string') {
-        setAlerts(data.results);
-        setCount(data.count);
-        setLoading(false);
-      } else {
-        setLoading(false);
-      }
+      setAlerts(data?.results || []);
+      setCount(data?.count || 0);
+      setLoading(false);
     } catch (error) {
       if (error.response.status === 500) {
         setErrors([`${error.response.data[0].slice(0, 160)}...`]);
