@@ -102,34 +102,58 @@ const EventsPage = () => {
     {
       title: 'Timestamp',
       dataIndex: 'timestamp',
+      onHeaderCell: () => ({
+        'data-test': 'timestamp',
+      }),
     },
     {
       title: 'Method',
       dataIndex: 'method',
+      onHeaderCell: () => ({
+        'data-test': 'method',
+      }),
     },
     {
       title: 'Source IP',
       dataIndex: 'source_ip',
+      onHeaderCell: () => ({
+        'data-test': 'source-ip',
+      }),
     },
     {
       title: 'Destination IP',
       dataIndex: 'destination_ip',
+      onHeaderCell: () => ({
+        'data-test': 'destination-ip',
+      }),
     },
     {
       title: 'Proto',
       dataIndex: 'proto',
+      onHeaderCell: () => ({
+        'data-test': 'proto',
+      }),
     },
     {
       title: 'Probe',
       dataIndex: 'probe',
+      onHeaderCell: () => ({
+        'data-test': 'probe',
+      }),
     },
     {
       title: 'Category',
       dataIndex: 'category',
+      onHeaderCell: () => ({
+        'data-test': 'category',
+      }),
     },
     {
       title: 'Tag',
       dataIndex: 'tag',
+      onHeaderCell: () => ({
+        'data-test': 'tag',
+      }),
     },
   ];
 
@@ -170,6 +194,9 @@ const EventsPage = () => {
           rowExpandable: () => true,
         }}
         pagination={false}
+        onRow={(r, index) => ({
+          'data-test': `table-row-${index}`,
+        })}
       />
 
       <ErrorHandler>
