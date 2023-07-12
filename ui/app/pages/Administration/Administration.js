@@ -1,6 +1,7 @@
 export const Appliances = () => null;
 export const Users = () => null;
 export const Sources = () => null;
+export const Rulesets = () => null;
 export const Other = () => null;
 
 Appliances.metadata = {
@@ -19,6 +20,12 @@ Users.metadata = {
 Sources.metadata = {
   category: 'ADMINISTRATION',
   url: () => '/rules/source',
+  access: permissions => !!permissions.includes('rules.source_view'),
+};
+
+Rulesets.metadata = {
+  category: 'ADMINISTRATION',
+  url: () => '/rules/ruleset',
   access: permissions => !!permissions.includes('rules.source_view'),
 };
 
