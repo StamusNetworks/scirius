@@ -83,7 +83,7 @@ const EventsPage = () => {
     }
   };
 
-  useAutorun(fetchData, [], [qfilter, paginationParams]);
+  useAutorun(fetchData, [qfilter, paginationParams]);
 
   const getIconColor = key => {
     if (key === 'informational') return '#7b1244';

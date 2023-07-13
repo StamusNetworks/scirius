@@ -122,7 +122,7 @@ const SignaturesPage = () => {
     setLoading(false);
   };
 
-  useAutorun(fetchData, [], [stringFilters, listUrlParams, filterParams]);
+  useAutorun(fetchData, [stringFilters, listUrlParams, filterParams]);
 
   useEffect(() => {
     (async () => {
