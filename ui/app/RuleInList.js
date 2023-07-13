@@ -49,30 +49,51 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
     {
       title: 'SID',
       dataIndex: 'sid',
+      onHeaderCell: () => ({
+        'data-test': 'sid',
+      }),
     },
     {
       title: 'Message',
       dataIndex: 'message',
+      onHeaderCell: () => ({
+        'data-test': 'message',
+      }),
     },
     {
       title: 'Created',
       dataIndex: 'created',
+      onHeaderCell: () => ({
+        'data-test': 'created',
+      }),
     },
     {
       title: 'Updated',
       dataIndex: 'updated',
+      onHeaderCell: () => ({
+        'data-test': 'updated',
+      }),
     },
     {
       title: 'Category',
       dataIndex: 'category',
+      onHeaderCell: () => ({
+        'data-test': 'category',
+      }),
     },
     {
       title: 'Alerts',
       dataIndex: 'alerts',
+      onHeaderCell: () => ({
+        'data-test': 'alerts',
+      }),
     },
     {
       title: 'Filter',
       dataIndex: 'filter',
+      onHeaderCell: () => ({
+        'data-test': 'filter',
+      }),
       render: (text, rule) => (
         <React.Fragment>
           <ZoomInOutlined
@@ -97,6 +118,9 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
     {
       title: 'Ctrl',
       dataIndex: 'ctrl',
+      onHeaderCell: () => ({
+        'data-test': 'ctrl',
+      }),
       render: (text, row) => <RuleEditKebab key={`kebab-${row.sid}`} config={{ rule: row.rule }} rulesets={rulesets} />,
     },
   ];
@@ -151,6 +175,9 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
         rowExpandable: () => true,
       }}
       pagination={false}
+      onRow={(r, index) => ({
+        'data-test': `table-row-${index}`,
+      })}
     />
   );
 };
