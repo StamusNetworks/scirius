@@ -1359,7 +1359,7 @@ class Source(models.Model):
             hdrs['Authorization'] = self.authkey
 
         version_uri = None
-        if self.is_etpro_url() or (self.datatype not in ('sigs', 'sig', 'other') and not self.is_ti_dev_url()):
+        if self.is_etpro_url() or (self.datatype not in ('sigs', 'sig', 'other', 'b64dataset') and not self.is_ti_dev_url()):
             version_uri = os.path.join(os.path.dirname(self.uri), 'version.txt')
 
         version_server = 1
