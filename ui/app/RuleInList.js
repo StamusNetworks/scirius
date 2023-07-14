@@ -103,6 +103,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
               commonStore.addFilter({ id: 'alert.signature_id', value: rule.sid, negated: false });
               addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: rule.sid, negated: false });
             }}
+            data-test={`add-filter-${rule.sid}`}
           />
           <ZoomOutOutlined
             data-test="zoom-out-magnifier"
@@ -111,6 +112,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
               commonStore.addFilter({ id: 'alert.signature_id', value: rule.sid, negated: true });
               addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: rule.sid, negated: true });
             }}
+            data-test={`add-negated-filter-${rule.sid}`}
           />
         </React.Fragment>
       ),
