@@ -100,7 +100,7 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
       },
       {
         key: 'typedValueRole3',
-        label: getRoleLabel('alerts'),
+        label: getRoleLabel('events'),
       },
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
   }
