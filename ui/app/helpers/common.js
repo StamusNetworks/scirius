@@ -28,6 +28,14 @@ export function loadActions(filtersIn) {
   });
 }
 
+/**
+ * [DEPRECATED] The building filter parameters.
+ * Use buildFilterNew instead
+ *
+ * @param filters
+ * @param systemSettings
+ * @returns {string}
+ */
 export function buildFilter(filters, systemSettings) {
   const lFilters = {};
   for (let i = 0; i < filters.length; i += 1) {
