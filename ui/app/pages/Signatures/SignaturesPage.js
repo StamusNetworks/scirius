@@ -32,7 +32,7 @@ import useFilterParams from 'ui/hooks/useFilterParams';
 import useAutorun from 'ui/helpers/useAutorun';
 import { observer } from 'mobx-react-lite';
 import { updateHitsStats } from '../../helpers/updateHitsStats';
-import { buildFilter, buildListUrlParams } from '../../helpers/common';
+import { buildListUrlParams } from '../../helpers/common';
 import RuleInList from '../../RuleInList';
 import RulePage from '../../RulePage';
 import HuntPaginationRow from '../../HuntPaginationRow';
@@ -89,11 +89,10 @@ const SignaturesPage = () => {
   const listUrlParams = buildListUrlParams(listParams);
 
   const SID = commonStore.filters.find(f => f.id === 'alert.signature_id' && f.negated === false);
-  const stringFilters = buildFilter(commonStore.filtersWithAlert, commonStore.systemSettings);
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await commonStore.fetchSignatures(stringFilters, listUrlParams);
+      const response = await commonStore.fetchSignatures(listUrlParams);
       if (response.ok) {
         if (response.data.results.length > 0) {
           if (!response.data.results[0].timeline_data) {
@@ -121,7 +120,7 @@ const SignaturesPage = () => {
     setLoading(false);
   };
 
-  useAutorun(fetchData, [stringFilters, listUrlParams, filterParams]);
+  useAutorun(fetchData, [listUrlParams, filterParams]);
 
   useEffect(() => {
     (async () => {

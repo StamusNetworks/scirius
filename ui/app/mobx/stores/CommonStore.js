@@ -166,8 +166,8 @@ class CommonStore {
     }
   }
 
-  async fetchSignatures(stringFilters, listParams) {
-    const response = await api.get(`${endpoints.SIGNATURES.url}?highlight=true&${listParams}${stringFilters}`);
+  async fetchSignatures(listParams) {
+    const response = await api.get(`${endpoints.SIGNATURES.url}?highlight=true&${listParams}`);
     return response;
   }
 
