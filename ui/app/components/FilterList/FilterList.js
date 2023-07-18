@@ -6,6 +6,7 @@ import FilterItem from 'ui/components/FilterItem';
 import { editFilter, removeFilter } from 'ui/containers/HuntApp/stores/global';
 import styled from 'styled-components';
 import { withStore } from 'ui/mobx/RootStoreProvider';
+import IP_FIELDS from 'ui/config/ipFields';
 import isNumeric from '../../helpers/isNumeric';
 
 const ListInline = styled.span`
@@ -39,21 +40,6 @@ const ModalHuntFilter = styled(Modal)`
     margin-top: 0;
   }
 `;
-
-export const IP_FIELDS = [
-  'src_ip',
-  'dest_ip',
-  'alert.source.ip',
-  'alert.target.ip',
-  'host_id.ip',
-  'ip',
-  'dns.rdata',
-  'dns.answers.rdata',
-  'dns.grouped.A',
-  'dns.grouped.AAAA',
-  'tunnel.src_ip',
-  'tunnel.dest_ip',
-];
 
 export const INTERGER_FIELDS_ENDS_WITH = ['.min', '.max', '_min', '_max', '.port', '_port', '.length'];
 export const INTERGER_FIELDS_EXACT = [

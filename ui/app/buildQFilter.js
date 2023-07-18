@@ -1,4 +1,4 @@
-import { IP_FIELDS } from 'ui/components/FilterList';
+import IP_FIELDS from 'ui/config/ipFields';
 
 export function esEscape(str) {
   // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#_reserved_characters

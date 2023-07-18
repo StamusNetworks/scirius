@@ -4,7 +4,7 @@ import { InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/i
 import TypedValue from 'components/TypedValue';
 import styled from 'styled-components';
 import { COLOR_BOX_HEADER } from 'ui/constants/colors';
-import { IP_FIELDS } from 'components/FilterList/FilterList';
+import IP_FIELDS from 'ui/config/ipFields';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 
 const mitreLinks = [
