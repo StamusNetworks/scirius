@@ -17,10 +17,6 @@ const buildListParams = (params, def) => {
     params.pagination.perPageOptions = def?.pagination?.perPageOptions || [10, 20, 50, 100];
   }
   /* eslint-disable camelcase */
-  if (!params?.view_type) {
-    /* eslint-disable camelcase */
-    params.view_type = def?.view_type || 'list';
-  }
   if (!params?.sort) {
     params.sort = def?.sort || {};
   }

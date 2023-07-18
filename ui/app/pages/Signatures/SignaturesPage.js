@@ -73,7 +73,6 @@ const defaultListingParams = {
     perPage: 10,
     perPageOptions: [10, 20, 50, 100],
   },
-  view_type: 'list',
   sort: { id: 'hits', asc: false },
 };
 
@@ -142,9 +141,9 @@ const SignaturesPage = () => {
     return timeline;
   };
 
-  const updateSignatureListState = ({ pagination, sort, view_type: viewType }) => {
-    setListParams({ pagination, sort, view_type: viewType });
-    localStorage.setItem('rules_list', JSON.stringify({ pagination, sort, view_type: viewType }));
+  const updateSignatureListState = ({ pagination, sort }) => {
+    setListParams({ pagination, sort });
+    localStorage.setItem('rules_list', JSON.stringify({ pagination, sort }));
   };
 
   const sources = useMemo(() => {

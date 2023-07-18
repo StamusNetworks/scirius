@@ -53,7 +53,6 @@ const EventsPage = () => {
         perPageOptions: [10, 20, 50, 100],
       },
       sort: { id: 'timestamp', asc: false },
-      view_type: 'list',
     }),
   );
 

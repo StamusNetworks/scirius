@@ -58,7 +58,6 @@ export class PoliciesPage extends React.Component {
         perPageOptions: [10, 20, 50, 100],
       },
       sort: { id: 'timestamp', asc: false },
-      view_type: 'list',
     });
 
     this.state = { data: [], count: 0, rulesets: {}, filtersList: filtersListConf, expand: true };

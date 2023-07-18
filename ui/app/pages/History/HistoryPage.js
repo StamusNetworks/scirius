@@ -55,7 +55,6 @@ const HistoryPage = () => {
         perPageOptions: [10, 20, 50, 100],
       },
       sort: { id: 'date', asc: false },
-      view_type: 'list',
     }),
   );
 
@@ -159,7 +158,6 @@ const HistoryPage = () => {
       )}
       <ErrorHandler>
         <HuntPaginationRow
-          viewType="list"
           onPaginationChange={updateHistoryListState}
           itemsCount={historyStore.historyItemsCount}
           itemsList={historyState}
