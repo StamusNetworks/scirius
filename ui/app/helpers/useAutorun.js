@@ -21,22 +21,20 @@ function useAutorun(callback, dependencies) {
         try {
           let trigger = false;
           const params = {};
-          if (hasAny) {
-            if (dependencies.includes('ids')) {
-              params.ids = commonStore.filtersWithAlert;
-              trigger = true;
-            }
-            if (dependencies.includes('date')) {
-              params.startDate = commonStore.startDate;
-              params.endDate = commonStore.endDate;
-              trigger = true;
-            }
-            if (dependencies.includes('tenant')) {
-              params.tenant = tenantStore?.tenant;
-              trigger = true;
-            }
+          if (!hasAny || (hasAny && dependencies.includes('ids'))) {
+            params.ids = commonStore.filtersWithAlert;
+            trigger = true;
           }
-          if (trigger || !hasAny || dependencies.length === 0) {
+          if (!hasAny || (hasAny && dependencies.includes('date'))) {
+            params.startDate = commonStore.startDate;
+            params.endDate = commonStore.endDate;
+            trigger = true;
+          }
+          if (!hasAny || (hasAny && dependencies.includes('tenant'))) {
+            params.tenant = tenantStore?.tenant;
+            trigger = true;
+          }
+          if (trigger) {
             cb(params);
           }
           // eslint-disable-next-line no-empty
