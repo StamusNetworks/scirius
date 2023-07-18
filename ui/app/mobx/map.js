@@ -1,3 +1,5 @@
+import buildFilterNew from 'ui/helpers/buildFilterNew';
+
 const map = type => {
   switch (type) {
     case ':dates': {
@@ -19,6 +21,11 @@ const map = type => {
         discovery: !!JSON.parse(localStorage.getItem('alert_tag'))?.value?.sightings,
         stamus: JSON.parse(localStorage.getItem('alert_tag'))?.value?.stamus,
       };
+    }
+    case ':qFilter': {
+      const idsFilters = JSON.parse(localStorage.getItem('ids_filters') || '[]');
+      const alertTag = JSON.parse(localStorage.getItem('alert_tag'));
+      return buildFilterNew([alertTag, ...idsFilters], JSON.parse(localStorage.getItem('str-system-settings')));
     }
     default:
       return {};
