@@ -9,7 +9,7 @@ export function esEscape(str) {
   return result.replace(/[=+\-&|!(){}[\]^"~:\\/]/g, c => `\\${c}`);
 }
 
-export function buildQFilter(filters, systemSettings) {
+export function buildQFilter(filters, systemSettings, returnType = 'legacy') {
   const qfilter = [];
   let fSuffix = '.raw';
 
@@ -76,6 +76,9 @@ export function buildQFilter(filters, systemSettings) {
         qfilter.push(`${fPrefix}${filters[i].id}:${filters[i].value}`);
       }
     }
+  }
+  if (returnType === 'object') {
+    return qfilter.length ? { qfilter: qfilter.join(' AND ') } : {};
   }
   return qfilter.length ? `&qfilter=${encodeURIComponent(qfilter.join(' AND '))}` : '';
 }
