@@ -157,11 +157,7 @@ const HistoryPage = () => {
         />
       )}
       <ErrorHandler>
-        <HuntPaginationRow
-          onPaginationChange={updateHistoryListState}
-          itemsCount={historyStore.historyItemsCount}
-          itemsList={historyState}
-        />
+        <HuntPaginationRow onPaginationChange={updateHistoryListState} itemsCount={historyStore.historyItemsCount} itemsList={historyState} />
       </ErrorHandler>
     </div>
   );
