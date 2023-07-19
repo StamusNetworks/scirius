@@ -1,6 +1,11 @@
 import React from 'react';
-import constants from 'ui/constants';
 import moment from 'moment';
+import axios from 'axios';
+import { Dropdown } from 'antd';
+import { LinkOutlined } from '@ant-design/icons';
+
+import constants from 'ui/constants';
+import * as config from 'config/Api';
 const { DATE_TIME_FORMAT } = constants;
 
 const showMitreInfo = (mtn, mti) => {
@@ -160,6 +165,31 @@ const columns = {
   Fileinfo: [
     { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
     {
+      title: 'Sha256',
+      dataIndex: ['rawJson', 'fileinfo', 'sha256'],
+      render: val => (
+        <Dropdown
+          menu={{
+            items: [
+              {
+                key: 'virustotal',
+                label: (
+                  <a href={`https://www.virustotal.com/gui/file/${encodeURIComponent(val)}`} target="_blank">
+                    <LinkOutlined /> Open link to VirusTotal
+                  </a>
+                ),
+              },
+            ],
+          }}
+          trigger={['click']}
+          destroyPopupOnHide // necessary for the tests! makes sure only one +/- magnifier exists at any time
+          onClick={e => e.stopPropagation()}
+        >
+          <a>{val}</a>
+        </Dropdown>
+      ),
+    },
+    {
       title: 'Mimetype',
       render: ({ rawJson }) => {
         if (rawJson.fileinfo && rawJson.fileinfo.mimetype) {
@@ -175,12 +205,34 @@ const columns = {
     { title: 'Filename', dataIndex: ['rawJson', 'fileinfo', 'filename'] },
     {
       title: 'Stored',
-      render: ({ rawJson }) => {
-        if (rawJson.fileinfo && !rawJson.fileinfo.stored) {
+      render: data => {
+        if (data.rawJson.fileinfo && !data.rawJson.fileinfo.stored) {
           return 'no';
         }
-        if (rawJson.fileinfo && rawJson.fileinfo.stored) {
-          return 'yes';
+        if (data.rawJson.fileinfo && data.rawJson.fileinfo.stored) {
+          return (
+            <a
+              onClick={async e => {
+                e.preventDefault();
+                e.stopPropagation();
+                // the request downloads the file from the host
+                const {
+                  data: { retrieve },
+                } = await axios.get(`${config.API_URL + config.FILESTORE_PATH}${data.rawJson.fileinfo.sha256}/retrieve/?host=${data.rawJson.host}`);
+
+                if (retrieve === 'done') {
+                  // trigger the download dialog
+                  const element = document.createElement('a');
+                  element.setAttribute('href', `${config.API_URL + config.FILESTORE_PATH}${data.rawJson.fileinfo.sha256}/download/`);
+                  document.body.appendChild(element);
+                  element.click();
+                  document.body.removeChild(element);
+                }
+              }}
+            >
+              yes
+            </a>
+          );
         }
         return null;
       },
