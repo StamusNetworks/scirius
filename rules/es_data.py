@@ -1937,17 +1937,6 @@ class ESData(ESQuery):
 
         self._kibana_set_default_index('logstash-*')
 
-    def get_indexes(self):
-        res = self.es.indices.stats()
-        indexes = list(res['indices'].keys())
-        idxs = list(indexes)
-
-        for idx in idxs:
-            if idx.startswith('.kibana'):
-                indexes.pop(indexes.index(idx))
-
-        return indexes
-
     def es_clear(self):
         indexes = self.get_indexes()
         errors = []
