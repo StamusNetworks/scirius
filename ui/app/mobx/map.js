@@ -1,4 +1,4 @@
-import buildFilterNew from 'ui/helpers/buildFilterNew';
+import { buildQFilter } from 'ui/buildQFilter';
 
 const map = type => {
   switch (type) {
@@ -15,6 +15,15 @@ const map = type => {
         to_date: localStorage.getItem('endDate') * 1000,
       };
     }
+    case ':filters': {
+      const idsFilters = JSON.parse(localStorage.getItem('ids_filters') || '[]');
+      return idsFilters
+        .filter(f => f.id !== 'probe')
+        .reduce((acc, cur) => {
+          acc[cur.id] = acc[cur.id] ? `${acc[cur.id]},${cur.value}` : cur.value;
+          return acc;
+        }, {});
+    }
     case ':eventTypes': {
       return {
         alert: JSON.parse(localStorage.getItem('alert_tag'))?.value?.alerts,
@@ -23,9 +32,10 @@ const map = type => {
       };
     }
     case ':qFilter': {
-      const idsFilters = JSON.parse(localStorage.getItem('ids_filters') || '[]');
       const alertTag = JSON.parse(localStorage.getItem('alert_tag'));
-      return buildFilterNew([alertTag, ...idsFilters], JSON.parse(localStorage.getItem('str-system-settings')));
+      const idsFilters = JSON.parse(localStorage.getItem('ids_filters') || '[]');
+      const systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
+      return buildQFilter([alertTag, ...idsFilters], systemSettings, 'object');
     }
     default:
       return {};
