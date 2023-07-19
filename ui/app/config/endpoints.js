@@ -60,7 +60,7 @@ const ENDPOINT = {
   },
   DASHBOARD_PANEL: {
     name: 'Fetch dashboard panel',
-    url: '/rest/rules/es/fields_stats/:datesEs:tenant:eventTypes',
+    url: '/rest/rules/es/fields_stats/:datesEs:tenant:eventTypes:qFilter',
   },
   FIELD_STATS: {
     name: 'Fetch Elasticsearch field stats',

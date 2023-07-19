@@ -1,17 +1,15 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Col, Row } from 'antd';
 import { dashboard } from 'ui/config/Dashboard';
 import DashboardBlock from 'ui/components/DashboardBlock';
-import { useStore } from 'ui/mobx/RootStoreProvider';
 import useAutorun from 'ui/helpers/useAutorun';
-import { buildQFilter } from 'ui/buildQFilter';
 import endpoints from 'ui/config/endpoints';
 import dashboardSanitizer from 'ui/helpers/dashboardSanitizer';
 import DashboardBlockMore from 'ui/components/DashboardBlockMore';
 import { observer } from 'mobx-react-lite';
-import { api } from '../../mobx/api';
+import { api } from 'ui/mobx/api';
 
 const Title = styled.h2`
   margin-top: 10px;
@@ -29,28 +27,23 @@ const DashboardPanel = ({ panelId }) => {
   const [blockData, setBlockData] = useState({});
   const { title, items } = dashboard[panelId];
   const emptyPanel = Object.values(blockData).every(block => block?.length === 0);
-  const { commonStore } = useStore();
 
-  const fetchData = useCallback(
-    async (fields, pageSize) => {
-      const qfilter = (buildQFilter(commonStore.filtersWithAlert, commonStore.systemSettings) || '').replace('&qfilter=', '');
-      const response = await api.get(endpoints.DASHBOARD_PANEL.url, {
-        fields,
-        qfilter: decodeURIComponent(qfilter),
-        page_size: pageSize,
-      });
-      return response.data;
-    },
-    [commonStore.filtersWithAlert, commonStore.systemSettings],
-  );
+  const fetchData = async (fields, pageSize) => {
+    const response = await api.get(endpoints.DASHBOARD_PANEL.url, {
+      fields,
+      page_size: pageSize,
+    });
+    return response.data;
+  };
+
+  const fields = dashboard[panelId].items.map(item => item.i).join(',');
 
   useAutorun(async () => {
     setLoading(true);
-    const fields = dashboard[panelId].items.map(item => item.i).join(',');
     const data = await fetchData(fields, 5);
     setBlockData(dashboardSanitizer(data));
     setLoading(false);
-  });
+  }, [fields]);
 
   useEffect(() => {
     if (loadMoreField.field) {
