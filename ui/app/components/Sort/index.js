@@ -71,8 +71,8 @@ const Sort = ({ page, onChange, value }) => {
   }, [option?.id, direction, mount]);
 
   return (
-    <Container>
-      <OptionContainer>
+    <Container data-test="sort">
+      <OptionContainer data-test="sort-by">
         <Dropdown
           overlay={
             <Menu>
@@ -80,7 +80,7 @@ const Sort = ({ page, onChange, value }) => {
                 .filter(o => o.page === page)
                 .map((o, i) => (
                   // eslint-disable-next-line react/no-array-index-key
-                  <Menu.Item icon={o.icon} key={i} onClick={() => setOption(o)}>
+                  <Menu.Item icon={o.icon} key={i} onClick={() => setOption(o)} data-test={`sort-by-${o.title}`}>
                     {o.title}
                   </Menu.Item>
                 ))}
@@ -90,18 +90,19 @@ const Sort = ({ page, onChange, value }) => {
           <OptionHandler onClick={e => e.preventDefault()}>
             {option && (
               <HandlerContainer>
-                {React.cloneElement(option.icon, iconSelectedProps)} <Value>{option.title}</Value>
+                {React.cloneElement(option.icon, iconSelectedProps)} <Value data-test="sort-selected">{option.title}</Value>
               </HandlerContainer>
             )}
             {!option && <Placeholder>Sort</Placeholder>}
           </OptionHandler>
         </Dropdown>
       </OptionContainer>
-      <DirectionContainer>
+      <DirectionContainer data-test="sort-direction">
         <Dropdown
           overlay={
             <Menu>
               <Menu.Item
+                data-test="sort-direction-Ascending"
                 key="asc"
                 icon={<ArrowUpOutlined />}
                 onClick={() => {
@@ -111,6 +112,7 @@ const Sort = ({ page, onChange, value }) => {
                 Ascending
               </Menu.Item>
               <Menu.Item
+                data-test="sort-direction-Descending"
                 key="desc"
                 icon={<ArrowDownOutlined />}
                 onClick={() => {
@@ -122,7 +124,11 @@ const Sort = ({ page, onChange, value }) => {
             </Menu>
           }
         >
-          {direction === 'asc' ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+          {direction === 'asc' ? (
+            <ArrowUpOutlined data-test="sort-selected-direction-asc" />
+          ) : (
+            <ArrowDownOutlined data-test="sort-selected-direction-desc" />
+          )}
         </Dropdown>
       </DirectionContainer>
     </Container>
