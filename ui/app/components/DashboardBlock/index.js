@@ -31,11 +31,11 @@ const DashboardBlock = ({ block, data, loading, onLoadMore, emptyPanel }) => {
   const menu = (
     <Menu>
       {onLoadMore && (
-        <Menu.Item key="load-more" onClick={onLoadMore} data-toggle="modal">
+        <Menu.Item key="load-more" data-test="load-more-results" onClick={onLoadMore} data-toggle="modal">
           Load more results
         </Menu.Item>
       )}
-      <Menu.Item key="download-data" onClick={onDownload} data-toggle="modal">
+      <Menu.Item key="download-data" data-test="download-data" onClick={onDownload} data-toggle="modal">
         Download
       </Menu.Item>
     </Menu>
@@ -51,7 +51,7 @@ const DashboardBlock = ({ block, data, loading, onLoadMore, emptyPanel }) => {
           {loadingVisible && <LoadingOutlined data-test="loading" />}
           {!loadingVisible && data?.length > 0 && (
             <Dropdown overlay={menu} trigger={['click']}>
-              <a className="ant-dropdown-link" style={{ color: COLOR_BRAND_BLUE }} onClick={e => e.preventDefault()}>
+              <a className="ant-dropdown-link" data-test="menu" style={{ color: COLOR_BRAND_BLUE }} onClick={e => e.preventDefault()}>
                 <MenuOutlined />
               </a>
             </Dropdown>
