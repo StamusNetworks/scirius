@@ -90,14 +90,23 @@ const SignaturesPage = () => {
 
   const SID = commonStore.filters.find(f => f.id === 'alert.signature_id' && f.negated === false);
   const fetchData = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const response = await commonStore.fetchSignatures(listUrlParams);
       if (response.ok) {
         if (response.data.results.length > 0) {
           if (!response.data.results[0].timeline_data) {
             const qFilter = buildQFilter(commonStore.filtersWithAlert, commonStore.systemSettings);
-            await updateHitsStats(response.data?.results || [], filterParams, rules => setSignatures(rules), qFilter);
+            await updateHitsStats(
+              response.data?.results || [],
+              filterParams,
+              rules => {
+                setSignatures(rules);
+                setLoading(false);
+              },
+              qFilter,
+            );
+            setSignaturesCount(response.data.count || 0);
           } else {
             setSignatures(
               response.data.results.map(rule => ({
@@ -108,19 +117,21 @@ const SignaturesPage = () => {
             );
           }
           setSignaturesCount(response.data.count || 0);
+          setLoading(false);
         } else {
           setSignatures([]);
           setSignaturesCount(0);
+          setLoading(false);
         }
       }
     } catch (e) {
+      setLoading(false);
       // eslint-disable-next-line no-console
       console.error('Error retrieving signatures', e);
     }
-    setLoading(false);
   };
 
-  useAutorun(fetchData, [listUrlParams, filterParams]);
+  useAutorun(fetchData, [listUrlParams]);
 
   useEffect(() => {
     (async () => {
