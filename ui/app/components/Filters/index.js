@@ -366,7 +366,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
                       }
                     }}
                   />
-                  <FilterError>{valid}</FilterError>
+                  <FilterError data-test="filter-error">{valid}</FilterError>
                 </div>
               )}
               {filterType === 'complex-select' && filterCategory && (
