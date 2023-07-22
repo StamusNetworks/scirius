@@ -182,7 +182,6 @@ class FilterList extends React.Component {
               onEdit={() => this.editHandler(filter, filter.value, filter.negated, !filter.fullString)}
               editFilter={(section, oldFilter, newFilter) => {
                 this.props.store.commonStore.replaceFilter(oldFilter, newFilter);
-                this.props.editFilter(section, oldFilter, newFilter);
               }}
               filters={this.props.filters}
               filterType={this.props.filterType}
