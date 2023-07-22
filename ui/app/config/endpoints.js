@@ -76,7 +76,7 @@ const ENDPOINT = {
   },
   ALERTS_TAIL: {
     name: 'Fetch Elasticsearch alerts tail',
-    url: '/rest/rules/es/alerts_tail/:datesEs:tenant:eventTypes',
+    url: '/rest/rules/es/alerts_tail/:qFilter:datesEs:tenant:eventTypes',
   },
   SIGNATURES: {
     name: 'Fetching signature',

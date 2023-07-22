@@ -24,7 +24,6 @@ import { BellFilled } from '@ant-design/icons';
 import { Helmet } from 'react-helmet';
 import { observer } from 'mobx-react-lite';
 import { STAMUS } from 'ui/config';
-import { buildQFilter } from 'ui/buildQFilter';
 import ErrorHandler from 'ui/components/Error';
 import HuntRestError from 'ui/components/HuntRestError';
 import { sections } from 'ui/constants';
@@ -61,13 +60,12 @@ const EventsPage = () => {
     localStorage.setItem('alerts_list', JSON.stringify(rulesListState));
   };
 
-  const qfilter = buildQFilter(commonStore.filtersWithAlert, commonStore.systemSettings);
   const paginationParams = buildListUrlParams(alertsList);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const data = await esStore.fetchAlertsTail(paginationParams, qfilter);
+      const data = await esStore.fetchAlertsTail(paginationParams);
       setAlerts(data?.results || []);
       setCount(data?.count || 0);
       setLoading(false);
@@ -82,7 +80,7 @@ const EventsPage = () => {
     }
   };
 
-  useAutorun(fetchData, [qfilter, paginationParams, JSON.stringify(commonStore.eventTypes)]);
+  useAutorun(fetchData, [paginationParams, JSON.stringify(commonStore.eventTypes)]);
 
   const getIconColor = key => {
     if (key === 'informational') return '#7b1244';
