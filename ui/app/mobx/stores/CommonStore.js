@@ -287,7 +287,7 @@ class CommonStore {
           : filter,
       );
       this.ids = filtersUpdated;
-      localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids)));
+      localStorage.setItem('ids_filters', JSON.stringify(toJS(filtersUpdated)));
     }
   }
 
