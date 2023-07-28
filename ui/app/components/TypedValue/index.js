@@ -222,6 +222,51 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
     ].filter(obj => !_.isEmpty(obj.label));
   }
 
+  if (type === 'networkInfo') {
+    listOfLinks = [
+      ...additionalLinks,
+      ...listOfLinks,
+      {
+        key: 'typedValueNetInfo',
+        label: (
+          <div
+            onClick={e => {
+              e.stopPropagation();
+              commonStore.addFilter({
+                id: 'host_id.net_info.agg',
+                value: value || '',
+                label: `host_id.net_info.agg: ${value}`,
+                fullString: false,
+                negated: false,
+              });
+            }}
+          >
+            <UserOutlined /> <span>Filter on Net Info</span>
+          </div>
+        ),
+      },
+      {
+        key: 'typedValueNetInfoNegated',
+        label: (
+          <div
+            onClick={e => {
+              e.stopPropagation();
+              commonStore.addFilter({
+                id: 'host_id.net_info.agg',
+                value: value || '',
+                label: `host_id.net_info.agg: ${value}`,
+                fullString: false,
+                negated: true,
+              });
+            }}
+          >
+            <UserOutlined /> <span>Negated filter on Net Info</span>
+          </div>
+        ),
+      },
+    ].filter(obj => !_.isEmpty(obj.label));
+  }
+
   if (type !== 'ip' && type !== 'port' && type !== 'username' && type !== 'hostname') {
     listOfLinks = [...additionalLinks, ...listOfLinks].filter(obj => !_.isEmpty(obj.label));
   }
