@@ -240,6 +240,7 @@ export class PoliciesPage extends React.Component {
         </Helmet>
 
         <Table
+          data-test="policies-table"
           rowKey={item => this.state.data?.findIndex(d => d.pk === item.pk)}
           style={{ marginTop: '10px', marginBottom: '10px' }}
           size="small"
