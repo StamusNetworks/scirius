@@ -176,8 +176,11 @@ export default class RuleToggleModal extends React.Component {
         filter_defs: filters,
         action: this.props.action,
         rulesets: this.state.rulesets,
-        comment: this.state.comment,
       };
+      // Attach comment post param only if there is value otherwise gitlab fails
+      if (this.state.comment && this.state.comment.length > 0) {
+        data.comment = this.state.comment;
+      }
       if (supportedActions.indexOf(this.props.action) !== -1) {
         data.options = this.state.options;
       }
