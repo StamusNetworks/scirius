@@ -274,7 +274,13 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
   return (
     <Dropdown
       menu={{
-        items: listOfLinks,
+        items: [
+          {
+            type: 'group', // Must have
+            label: printedValue || value,
+            children: listOfLinks,
+          },
+        ],
       }}
       trigger={['click']}
       destroyPopupOnHide // necessary for the tests! makes sure only one +/- magnifier exists at any time
