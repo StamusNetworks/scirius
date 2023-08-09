@@ -171,6 +171,11 @@ class CommonStore {
     return response;
   }
 
+  async fetchSignature(sid) {
+    const response = await api.get(`${endpoints.SIGNATURE.url}/?highlight=true`, { sid });
+    return response;
+  }
+
   async fetchSystemSettings() {
     const response = await api.get(endpoints.SYSTEM_SETTINGS.url);
     if (response.ok) {
