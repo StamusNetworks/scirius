@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Empty, Spin, Table } from 'antd';
+import { Empty, Spin, Table, Tabs } from 'antd';
 import { SafetyOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import { sections } from 'ui/constants';
@@ -137,30 +137,42 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
     rule, // we need this to access the rule data in the `expandedRowRender` below
   }));
 
-  const renderContents = rule => (
-    <div style={{ height: '100%', width: 'calc(100vw - 260px)' }}>
-      {/* eslint-disable-next-line react/no-danger */}
-      <SigContent dangerouslySetInnerHTML={{ __html: rule.content }} />
-      <SciriusChart
-        data={rule.timeline}
-        axis={{ x: { min: filterParams.fromDate, max: filterParams.toDate } }}
-        legend={{ show: false }}
-        padding={{ bottom: 10 }}
-      />
-      <UICard
-        title={<div>Probes</div>}
-        style={{ width: '300px' }}
-        headStyle={{ color: COLOR_BRAND_BLUE, textAlign: 'center' }}
-        bodyStyle={{ padding: '8px 10px' }}
-        noPadding
-      >
-        {rule.probes.map(probe => (
-          <EventValue field="host" value={probe.probe} right_info={probe.hits} />
-        ))}
-        {rule.probes.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-      </UICard>
-    </div>
-  );
+  const renderContents = rule => {
+    const items = [];
+    if (rule.versions.length > 1) {
+      rule.versions.forEach((version, i) => {
+        items.push({
+          key: i,
+          label: `Version ${version.version === 0 ? '< 39' : version.version}`,
+          children: <SigContent dangerouslySetInnerHTML={{ __html: version.content }} key={version.id} />,
+        });
+      });
+    }
+    return (
+      <div style={{ height: '100%', width: 'calc(100vw - 260px)' }}>
+        {rule.versions.length === 1 && <SigContent dangerouslySetInnerHTML={{ __html: rule.versions[0].content }} key={rule.versions[0].id} />}
+        {rule.versions.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
+        <SciriusChart
+          data={rule.timeline}
+          axis={{ x: { min: filterParams.fromDate, max: filterParams.toDate } }}
+          legend={{ show: false }}
+          padding={{ bottom: 10 }}
+        />
+        <UICard
+          title={<div>Probes</div>}
+          style={{ width: '300px' }}
+          headStyle={{ color: COLOR_BRAND_BLUE, textAlign: 'center' }}
+          bodyStyle={{ padding: '8px 10px' }}
+          noPadding
+        >
+          {rule.probes.map(probe => (
+            <EventValue field="host" value={probe.probe} right_info={probe.hits} />
+          ))}
+          {rule.probes.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+        </UICard>
+      </div>
+    );
+  };
 
   return (
     <Table
