@@ -21,6 +21,7 @@ function useAutorun(callback, dependencies) {
         try {
           let trigger = false;
           const params = {};
+          params.refresh = commonStore.refresh;
           if (!hasAny || (hasAny && dependencies.includes('ids'))) {
             params.ids = commonStore.filtersWithAlert;
             trigger = true;
