@@ -85,7 +85,7 @@ export default class RuleStatus extends React.Component {
         Active
       </div>
     );
-    if (!this.props.rule_status.active) {
+    if (!this.props.rule_status['0']?.active) {
       active = (
         <div>
           <MinusCircleOutlined style={{ transform: 'rotateZ(90deg)', color: COLOR_BRAND_BLUE, marginRight: '3px' }} />
@@ -117,17 +117,11 @@ export default class RuleStatus extends React.Component {
           </UICardBody>
         </UICard>
 
-        <RuleContentModal
-          display={this.state.display_content}
-          rule={this.props.rule}
-          close={this.hideRuleContent}
-          rule_status={this.props.rule_status}
-        />
+        <RuleContentModal display={this.state.display_content} close={this.hideRuleContent} rule_status={this.props.rule_status} />
       </React.Fragment>
     );
   }
 }
 RuleStatus.propTypes = {
   rule_status: PropTypes.any,
-  rule: PropTypes.any,
 };

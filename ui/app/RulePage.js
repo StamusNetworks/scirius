@@ -2,7 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { List, Modal, Spin } from 'antd';
+import { List, Modal, Spin, Tabs } from 'antd';
 import { cloneDeep } from 'lodash';
 import styled from 'styled-components';
 
@@ -165,6 +165,16 @@ class RulePage extends React.Component {
   }
 
   render() {
+    const items = [];
+    if (this.state.rule?.versions.length > 1) {
+      this.state.rule.versions.forEach((version, i) => {
+        items.push({
+          key: i,
+          label: `Version ${version.version === 0 ? '< 39' : version.version}`,
+          children: <SigContent dangerouslySetInnerHTML={{ __html: version.content }} key={version.id} />,
+        });
+      });
+    }
     return (
       <div>
         <Spin spinning={this.state.rule === undefined}>
@@ -182,8 +192,10 @@ class RulePage extends React.Component {
 
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr max-content', gridGap: '10px', marginBottom: '10px' }}>
-                  {/* eslint-disable-next-line react/no-danger */}
-                  <SigContent dangerouslySetInnerHTML={{ __html: this.state.rule.content }} />
+                  {this.state.rule.versions.length === 1 && (
+                    <SigContent dangerouslySetInnerHTML={{ __html: this.state.rule.versions[0].content }} key={this.state.rule.versions[0].id} />
+                  )}
+                  {this.state.rule.versions.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
 
                   {this.state.rule_references && this.state.rule_references.length > 0 && (
                     <UICard
@@ -218,14 +230,13 @@ class RulePage extends React.Component {
                 {this.state.rule_status !== undefined && (
                   <Row>
                     {this.state.rule_status.map(rstatus => (
-                      <RuleStatus rule={this.state.rule} key={rstatus.pk} rule_status={rstatus} />
+                      <RuleStatus key={rstatus.pk} rule_status={rstatus} />
                     ))}
                   </Row>
                 )}
                 <Row>
                   <HuntStat
                     title="Sources"
-                    rule={this.state.rule}
                     config={this.props.config}
                     filters={this.props.filters}
                     item="src_ip"
@@ -236,7 +247,6 @@ class RulePage extends React.Component {
                   />
                   <HuntStat
                     title="Destinations"
-                    rule={this.state.rule}
                     config={this.props.config}
                     filters={this.props.filters}
                     item="dest_ip"
@@ -247,7 +257,6 @@ class RulePage extends React.Component {
                   />
                   <HuntStat
                     title="Probes"
-                    rule={this.state.rule}
                     config={this.props.config}
                     filters={this.props.filters}
                     item="host"
@@ -261,7 +270,6 @@ class RulePage extends React.Component {
                   <Row>
                     <HuntStat
                       title="Hostname"
-                      rule={this.state.rule}
                       config={this.props.config}
                       filters={this.props.filters}
                       item="http.hostname"
@@ -272,7 +280,6 @@ class RulePage extends React.Component {
                     />
                     <HuntStat
                       title="URL"
-                      rule={this.state.rule}
                       config={this.props.config}
                       filters={this.props.filters}
                       item="http.url"
@@ -283,7 +290,6 @@ class RulePage extends React.Component {
                     />
                     <HuntStat
                       title="User agent"
-                      rule={this.state.rule}
                       config={this.props.config}
                       filters={this.props.filters}
                       item="http.http_user_agent"
@@ -298,7 +304,6 @@ class RulePage extends React.Component {
                   <Row>
                     <HuntStat
                       title="Name"
-                      rule={this.state.rule}
                       config={this.props.config}
                       filters={this.props.filters}
                       item="dns.query.rrname"
@@ -309,7 +314,6 @@ class RulePage extends React.Component {
                     />
                     <HuntStat
                       title="Type"
-                      rule={this.state.rule}
                       config={this.props.config}
                       filters={this.props.filters}
                       item="dns.query.rrtype"
@@ -324,7 +328,6 @@ class RulePage extends React.Component {
                   <Row>
                     <HuntStat
                       title="Subject DN"
-                      rule={this.state.rule}
                       config={this.props.config}
                       filters={this.props.filters}
                       item="tls.subject"
@@ -335,7 +338,6 @@ class RulePage extends React.Component {
                     />
                     <HuntStat
                       title="SNI"
-                      rule={this.state.rule}
                       config={this.props.config}
                       filters={this.props.filters}
                       item="tls.sni"
@@ -346,7 +348,6 @@ class RulePage extends React.Component {
                     />
                     <HuntStat
                       title="Fingerprint"
-                      rule={this.state.rule}
                       config={this.props.config}
                       filters={this.props.filters}
                       item="tls.fingerprint"
