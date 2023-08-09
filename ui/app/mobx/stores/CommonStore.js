@@ -326,7 +326,7 @@ class CommonStore {
   }
 
   get refreshTime() {
-    return this._refresh;
+    return this._refreshTime;
   }
 
   get filters() {
@@ -371,6 +371,9 @@ class CommonStore {
   }
 
   reload() {
+    if (this._timeRangeType === 'relative') {
+      this.setRelativeTimeRange(this._relativeType);
+    }
     this._refresh = moment().unix();
   }
 
