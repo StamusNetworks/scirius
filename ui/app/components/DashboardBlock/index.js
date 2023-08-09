@@ -8,6 +8,7 @@ import DashboardBlockData from 'ui/components/DashboardBlockData';
 import downloadData from 'ui/helpers/downloadData';
 import styled from 'styled-components';
 import DashboardContext from 'ui/context/DashboardContext';
+import { isEqual } from 'lodash';
 
 const Title = styled.div`
   text-align: center;
@@ -68,8 +69,7 @@ const DashboardBlock = ({ block, data, loading, onLoadMore, emptyPanel }) => {
 
 export default React.memo(
   DashboardBlock,
-  (prevProps, nextProps) =>
-    !(prevProps.block.i !== nextProps.block.i || prevProps.block.title !== nextProps.block.title || prevProps.loading !== nextProps.loading),
+  (prevProps, nextProps) => isEqual(prevProps.data, nextProps.data) && prevProps.loading === nextProps.loading,
 );
 
 DashboardBlock.propTypes = {

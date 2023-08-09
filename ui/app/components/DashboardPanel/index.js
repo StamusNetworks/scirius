@@ -7,7 +7,6 @@ import useAutorun from 'ui/helpers/useAutorun';
 import endpoints from 'ui/config/endpoints';
 import dashboardSanitizer from 'ui/helpers/dashboardSanitizer';
 import DashboardBlockMore from 'ui/components/DashboardBlockMore';
-import { observer } from 'mobx-react-lite';
 import { api } from 'ui/mobx/api';
 
 const Title = styled.h2`
@@ -29,7 +28,7 @@ const DashboardPanel = ({ panelId }) => {
   const [loadMoreData, setLoadMoreData] = useState({});
 
   /* Dashboard blocks stuff */
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [blockData, setBlockData] = useState({});
   const { title, items } = dashboard[panelId];
   const emptyPanel = Object.values(blockData).every(block => block?.length === 0);
@@ -92,7 +91,7 @@ const DashboardPanel = ({ panelId }) => {
   );
 };
 
-export default observer(DashboardPanel);
+export default DashboardPanel;
 
 DashboardPanel.propTypes = {
   panelId: PropTypes.string,
