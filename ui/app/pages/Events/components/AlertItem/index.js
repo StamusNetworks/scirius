@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import ReactJson from 'react-json-view';
 import _ from 'lodash';
-import { Badge, Empty, Spin, Table, Tabs } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
+import { Badge, Dropdown, Empty, Spin, Table, Tabs } from 'antd';
+import { DownloadOutlined, LinkOutlined } from '@ant-design/icons';
 
 import * as config from 'config/Api';
 import UICard from 'ui/components/UIElements/UICard';
@@ -231,6 +231,27 @@ class AlertItem extends React.Component {
         dataIndex: 'sha256',
         key: 'sha256',
         width: 488,
+        render: val => (
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: 'virustotal',
+                  label: (
+                    <a href={`https://www.virustotal.com/gui/file/${encodeURIComponent(val)}`} target="_blank">
+                      <LinkOutlined /> Open link to VirusTotal
+                    </a>
+                  ),
+                },
+              ],
+            }}
+            trigger={['click']}
+            destroyPopupOnHide // necessary for the tests! makes sure only one +/- magnifier exists at any time
+            onClick={e => e.stopPropagation()}
+          >
+            <a>{val}</a>
+          </Dropdown>
+        ),
       },
       {
         title: 'Filename',
