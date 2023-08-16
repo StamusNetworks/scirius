@@ -52,7 +52,7 @@
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-md-6">
-                            <h2 class="title">Rules</h2>
+                            <h2 class="title">Rules ({{ rule.active.rows|length }})</h2>
                             {% load render_table from django_tables2 %}
                             {% render_table rule.active %}
                         </div>
@@ -63,7 +63,7 @@
                                     {% load render_table from django_tables2 %}
                                     {% render_table rule.rulesets %}
                                 </div>
-                                <h2 class="title">Commented rules</h2>
+                                <h2 class="title">Commented rules ({{ rule.commented_rules.rows|length }})</h2>
                                 <div class="row">{% render_table rule.commented_rules %}</div>
                             </div>
                         </div>

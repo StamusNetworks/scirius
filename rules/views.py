@@ -141,7 +141,8 @@ def source(request, source_id, error=None, update=False, activate=False, ruleset
         'source': source,
         'update': update,
         'activate': activate,
-        'rulesets': rulesets
+        'rulesets': rulesets,
+        'rules_count': source.category_set.values('rule').count()
     }
 
     cats = CategoryTable(Category.objects.filter(source=source).order_by('name'))
@@ -1506,9 +1507,16 @@ def ruleset(request, ruleset_id, mode='struct', error=None):
         context['disabled_rules'] = suppr_rules_t
 
     elif mode == 'display':
-        rules = RuleTable(ruleset.generate(rules=True))
-        tables.RequestConfig(request).configure(rules)
-        context = {'ruleset': ruleset, 'rules': rules, 'mode': mode}
+        from scirius.utils import get_middleware_module
+        vers_ravs = get_middleware_module('common').rules_at_version_from_ruleset(ruleset)
+
+        all_rules = {}
+        for version, ravs in vers_ravs.items():
+            rules = Rule.objects.filter(ruleatversion__pk__in=ravs.values_list('pk', flat=True))
+            rules_table = RuleTable(rules)
+            tables.RequestConfig(request).configure(rules_table)
+            all_rules[version] = rules_table
+        context = {'ruleset': ruleset, 'all_rules': all_rules, 'mode': mode}
         if error:
             context['error'] = error
 

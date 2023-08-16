@@ -294,3 +294,7 @@ def rules_version():
 
 def ruleset_export(ruleset, _):
     return ruleset.export()
+
+
+def rules_at_version_from_ruleset(ruleset):
+    return {0: ruleset.generate(version=0)}
