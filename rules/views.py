@@ -85,7 +85,7 @@ def search(request):
         if 'search' in request.GET:
             search = request.GET['search']
     if search:
-        rules = Rule.objects.filter(ruleatversion__content__icontains=search)
+        rules = Rule.objects.filter(ruleatversion__content__icontains=search).distinct()
         if len(rules) > 0:
             length += len(rules)
             rules = RuleTable(rules)
