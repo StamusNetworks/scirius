@@ -58,10 +58,10 @@
                 {% if rules_at_version.0.rulesets|length %}
                     <li>
                         <li>
-                            <a href="{% url 'disable_rule' rule.sid %}">Disable rule</a>
+                            <a href="{% url 'disable_rule' rule.sid %}">Disable rule in ruleset(s)</a>
                         </li>
                         <li>
-                            <a href="{% url 'enable_rule' rule.sid %}">Enable rule</a>
+                            <a href="{% url 'enable_rule' rule.sid %}">Enable rule in ruleset(s)</a>
                         </li>
                         {% if rule.get_transformation_choices|length %}
                             <a href="{% url 'edit_rule' rule.sid %}">Edit rule</a>
@@ -498,17 +498,7 @@ $(document).ready(function(){
                                                                     </div>
                                                                     <div class="col-md-1">
                                                                         <div class="label space-add {% if ruleset.status == "Enabled" %} label-info{% else %} label-default{% endif %}" style="margin:auto;">
-                                                                            <div class="custom-control custom-switch">
-                                                                                    <a href={% if ruleset.status == "Enabled" %}"{% url 'disable_rule' rule.sid %}"{% else %}{%  url 'enable_rule' rule.sid %}{% endif %} >
-                                                                                        <input type="checkbox"
-                                                                                               class="custom-control-input"
-                                                                                               id="customSwitch2"  {% if ruleset.status != "Disabled" %}checked{% endif %} />
-                                                                                        <p class="custom-control-label"
-                                                                                               for="customSwitch2" style="padding-top: 3px;">
-                                                                                            {{ ruleset.status }}
-                                                                                        </p>
-                                                                                    </a>
-                                                                            </div>
+                                                                            {{ ruleset.status }}
                                                                         </div>
                                                                     </div>
                                                                 </div>

@@ -127,7 +127,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-6">
-                        <h2 class="title">Categories</h2>
+                        <h2 class="title">Categories ({{ categories.rows|length }} categories, {{ rules_count }} rules)</h2>
                         {% load render_table from django_tables2 %}
                         {% render_table categories %}
                     </div>
