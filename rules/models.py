@@ -3319,18 +3319,26 @@ class Ruleset(models.Model, Transformable):
         if len(update_errors):
             raise IOError(len(update_errors), '\n'.join(update_errors))
 
-    def generate(self, rules=False):
+    def generate(self, rules=False, version=None):
+
+        filters = {
+            'rule__category__source__in': self.sources.all(),
+            'rule__category__in': self.categories.all(),
+            'state': True
+        }
+        if version is not None:
+            filters.update({'version': version})
+
         ravs = RuleAtVersion.objects. \
             select_related('rule'). \
             select_related('rule__category'). \
             select_related('rule__category__source'). \
-            filter(
-                rule__category__source__in=self.sources.all(),
-                rule__category__in=self.categories.all(),
-                version=0,
-                state=True
+            filter(**filters). \
+            exclude(
+                pk__in=SuppressedRuleAtVersion.objects.filter(
+                    ruleset=self
+                ).values_list('rule_at_version__pk', flat=True).distinct()
             ). \
-            exclude(pk__in=SuppressedRuleAtVersion.objects.filter(ruleset=self).values_list('rule_at_version__pk', flat=True).distinct()). \
             order_by('rule__sid')
         if rules is False:
             return ravs
@@ -3444,7 +3452,7 @@ class Ruleset(models.Model, Transformable):
     def to_buffer(self):
         from scirius.utils import get_middleware_module
 
-        ravs = self.generate()
+        ravs = self.generate(version=0)
         self.number_of_rules(ravs)
 
         # test is not done on stamus source
@@ -3471,7 +3479,7 @@ class Ruleset(models.Model, Transformable):
 
     def number_of_rules(self, rules=None):
         if rules is None:
-            rules = self.generate()
+            rules = self.generate(version=0)
 
         self.rules_count = len(rules)
         self.save()
