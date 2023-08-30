@@ -14,7 +14,8 @@ import { useStore } from 'ui/mobx/RootStoreProvider';
 const Value = styled.a`
   display: block;
   overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: break-all;
+  max-height: 20px;
 `;
 
 const rolesMap = {
