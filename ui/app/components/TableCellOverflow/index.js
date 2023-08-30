@@ -1,38 +1,92 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { Popover } from 'antd';
 
-const Cell = styled.div`
-  overflow: hidden;
-  max-width: ${p => p.width || 170}px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+const LimitedCell = styled.div`
   display: flex;
-  gap: 5px;
-  flex-direction: ${p => (p.direction === 'column' ? 'column' : 'row')};
+  flex: 1;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
 `;
 
-const Content = styled.div``;
+const More = styled.div`
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+  border-radius: 5px;
+  &:hover {
+    background: #005792;
+    color: #fff;
+  }
+`;
 
-const TableCellOverflow = ({ title, content, width, direction, children }) => {
-  const ref = useRef();
+const OrderedList = styled.ol`
+  margin-bottom: 0;
+  & > li {
+    padding-left: 10px;
+  }
+`;
+
+const TableCellOverflow = ({ value, title, component }) => {
+  const Component = component;
+  const containerRef = useRef(null);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const children = container.childNodes;
+    let visible = 0;
+    const containerRect = container.getBoundingClientRect();
+
+    Array.from(children).forEach(child => {
+      const itemRect = child.getBoundingClientRect();
+      if (itemRect.top >= containerRect.top && itemRect.bottom <= containerRect.bottom) {
+        visible += 1;
+      }
+    });
+
+    setCount(visible);
+  }, []);
+
   return (
-    <div onClick={e => e.stopPropagation()}>
-      <Popover {...(title ? { title } : null)} content={<Content>{content || children}</Content>} trigger="hover">
-        <Cell ref={ref} $width={width} $direction={direction}>
-          {children}
-        </Cell>
-      </Popover>
-    </div>
+    <LimitedCell
+      onClick={e => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
+      <div ref={containerRef} style={{ display: 'flex', flex: 1, flexDirection: 'row', gap: 8, flexWrap: 'wrap', height: 24, overflow: 'hidden' }}>
+        {value.map(v => (
+          <Component key={v} value={v} />
+        ))}
+      </div>
+      {value.length - count > 0 && (
+        <Popover
+          title={title}
+          content={
+            <div style={{ flex: 1 }}>
+              <OrderedList>
+                {value.slice(count).map(v => (
+                  <li>
+                    <Component key={v} value={v} />
+                  </li>
+                ))}
+              </OrderedList>
+            </div>
+          }
+        >
+          <More>({value.length - count} more)</More>
+        </Popover>
+      )}
+    </LimitedCell>
   );
 };
 export default TableCellOverflow;
 
 TableCellOverflow.propTypes = {
+  value: PropTypes.array,
   title: PropTypes.string,
-  width: PropTypes.number,
-  direction: PropTypes.oneOf(['row', 'column']),
-  content: PropTypes.any,
-  children: PropTypes.any.isRequired,
+  component: PropTypes.object,
 };
