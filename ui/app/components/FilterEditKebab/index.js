@@ -63,7 +63,7 @@ class FilterEditKebab extends React.Component {
       const val = Number(this.props.data.filter_defs[idx].value)
         ? Number(this.props.data.filter_defs[idx].value)
         : this.props.data.filter_defs[idx].value;
-      const { format } = dashboard.basic.items.find(o => o.i === this.props.data.filter_defs[idx].key) || {};
+      const { format } = dashboard.find(d => d.panelId === 'basic').items.find(o => o.i === this.props.data.filter_defs[idx].key) || {};
       const label = `${this.props.data.filter_defs[idx].key}: ${
         format ? format(this.props.data.filter_defs[idx].value) : this.props.data.filter_defs[idx].value
       }`;

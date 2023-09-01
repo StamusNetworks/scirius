@@ -361,7 +361,7 @@ class AlertItem extends React.Component {
                     field_name="Severity"
                     field="alert.severity"
                     value={data.alert.severity}
-                    format={(dashboard.basic.items.find(o => o.i === 'alert.severity') || {}).format}
+                    format={(dashboard.find(d => d.panelId === 'basic').items.find(o => o.i === 'alert.severity') || {}).format}
                   />
                 </ErrorHandler>
                 <ErrorHandler>

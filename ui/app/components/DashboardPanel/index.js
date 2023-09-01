@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { dashboard } from 'ui/config/Dashboard';
 import DashboardBlock from 'ui/components/DashboardBlock';
 import useAutorun from 'ui/helpers/useAutorun';
 import endpoints from 'ui/config/endpoints';
@@ -21,7 +20,7 @@ const Row = styled.div`
   padding-bottom: 10px;
 `;
 
-const DashboardPanel = ({ panelId }) => {
+const DashboardPanel = ({ panel }) => {
   /* Load more stuff */
   const [loadMoreField, setLoadMoreField] = useState({ block: null, field: null });
   const [loadMoreVisible, setLoadMoreVisible] = useState(false);
@@ -30,7 +29,7 @@ const DashboardPanel = ({ panelId }) => {
   /* Dashboard blocks stuff */
   const [loading, setLoading] = useState(false);
   const [blockData, setBlockData] = useState({});
-  const { title, items } = dashboard[panelId];
+  const { title, items } = panel;
   const emptyPanel = Object.values(blockData).every(block => block?.length === 0);
 
   const fetchData = async (fields, pageSize) => {
@@ -41,7 +40,7 @@ const DashboardPanel = ({ panelId }) => {
     return response.data;
   };
 
-  const fields = dashboard[panelId].items.map(item => item.i).join(',');
+  const fields = panel.items.map(item => item.i).join(',');
 
   useAutorun(async () => {
     setLoading(true);
@@ -94,5 +93,5 @@ const DashboardPanel = ({ panelId }) => {
 export default DashboardPanel;
 
 DashboardPanel.propTypes = {
-  panelId: PropTypes.string,
+  panel: PropTypes.string,
 };
