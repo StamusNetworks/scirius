@@ -35,6 +35,7 @@ const DashboardMosaic = () => {
   const isVisible = ({ panelId }) => {
     const callbacks = {
       discovery: () => commonStore.eventTypes.discovery,
+      stamus: () => commonStore.eventTypes.stamus,
     };
     return callbacks[panelId] ? callbacks[panelId]() : true;
   };
