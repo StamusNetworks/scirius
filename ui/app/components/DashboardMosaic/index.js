@@ -32,7 +32,7 @@ const DashboardMosaic = () => {
   const { commonStore } = useStore();
   const ctrl = useKeyPress('Control');
 
-  const isVisible = panelId => {
+  const isVisible = ({ panelId }) => {
     const callbacks = {
       discovery: () => commonStore.eventTypes.discovery,
     };
@@ -43,11 +43,9 @@ const DashboardMosaic = () => {
     <div data-test="dashboard-mosaic">
       <GlobalStyle />
       <DashboardContext.Provider value={ctrl}>
-        {Object.keys(dashboard)
-          .filter(isVisible)
-          .map(panelId => (
-            <DashboardPanel panelId={panelId} />
-          ))}
+        {dashboard.filter(isVisible).map(panel => (
+          <DashboardPanel panel={panel} />
+        ))}
       </DashboardContext.Provider>
     </div>
   );

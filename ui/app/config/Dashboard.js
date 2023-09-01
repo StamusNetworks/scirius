@@ -1,6 +1,8 @@
-export const dashboard = {
-  basic: {
+export const dashboard = [
+  {
+    panelId: 'basic',
     title: 'Basic Information',
+    position: 1,
     items: [
       {
         i: 'alert.signature',
@@ -32,8 +34,10 @@ export const dashboard = {
       },
     ],
   },
-  metadata: {
+  {
+    panelId: 'metadata',
     title: 'Metadata',
+    position: 2,
     items: [
       {
         i: 'alert.metadata.signature_severity',
@@ -53,8 +57,10 @@ export const dashboard = {
       },
     ],
   },
-  mitre: {
+  {
+    panelId: 'mitre',
     title: 'MITRE ATT&CK Information',
+    position: 3,
     items: [
       {
         i: 'alert.metadata.mitre_tactic_id',
@@ -74,9 +80,10 @@ export const dashboard = {
       },
     ],
   },
-  organizational: {
-    id: 'organizational',
+  {
+    panelId: 'organizational',
     title: 'Organizational Information',
+    position: 7,
     items: [
       {
         i: 'alert.source.ip',
@@ -96,9 +103,10 @@ export const dashboard = {
       },
     ],
   },
-  ip: {
-    id: 'ip',
+  {
+    panelId: 'ip',
     title: 'IP Information',
+    position: 8,
     items: [
       {
         i: 'src_ip',
@@ -142,9 +150,11 @@ export const dashboard = {
       },
     ],
   },
-  http: {
+  {
+    panelId: 'http',
     id: 'http',
     title: 'HTTP Information',
+    position: 9,
     items: [
       {
         i: 'http.hostname',
@@ -168,9 +178,10 @@ export const dashboard = {
       },
     ],
   },
-  dns: {
-    id: 'dns',
+  {
+    panelId: 'dns',
     title: 'DNS Information',
+    position: 10,
     items: [
       {
         i: 'dns.query.rrname',
@@ -182,9 +193,10 @@ export const dashboard = {
       },
     ],
   },
-  tls: {
-    id: 'tls',
+  {
+    panelId: 'tls',
     title: 'TLS Information',
+    position: 11,
     items: [
       {
         i: 'tls.sni',
@@ -216,9 +228,10 @@ export const dashboard = {
       },
     ],
   },
-  smtp: {
-    id: 'smtp',
+  {
+    panelId: 'smtp',
     title: 'SMTP Information',
+    position: 12,
     items: [
       {
         i: 'smtp.mail_from',
@@ -234,9 +247,10 @@ export const dashboard = {
       },
     ],
   },
-  smb: {
-    id: 'smb',
+  {
+    panelId: 'smb',
     title: 'SMB Information',
+    position: 13,
     items: [
       {
         i: 'smb.command',
@@ -256,9 +270,10 @@ export const dashboard = {
       },
     ],
   },
-  ssh: {
-    id: 'ssh',
+  {
+    panelId: 'ssh',
     title: 'SSH Information',
+    position: 14,
     items: [
       {
         i: 'ssh.client.software_version',
@@ -270,4 +285,4 @@ export const dashboard = {
       },
     ],
   },
-};
+];
