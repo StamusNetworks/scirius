@@ -298,3 +298,7 @@ def ruleset_export(ruleset, _):
 
 def rules_at_version_from_ruleset(ruleset):
     return {0: ruleset.generate(version=0)}
+
+
+def filter_event_types(request, queryset, view):
+    return queryset
