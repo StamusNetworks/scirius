@@ -150,7 +150,6 @@
     "css-loader": "5.2.6",
     "cypress": "^12.7.0",
     "cypress-real-events": "^1.7.6",
-    "cypress-wait-for-stable-dom": "^0.1.0",
     "dotenv-webpack": "^8.0.1",
     "eslint": "7.29.0",
     "eslint-config-airbnb": "18.2.1",
