@@ -545,6 +545,7 @@ class RuleHitsOrderingFilter(OrderingFilter, ESManageMultipleESIndexesViewSet):
 
     def filter_queryset(self, request, queryset, view):
         ordering = self.get_ordering(request, queryset, view)
+        queryset = get_middleware_module('common').filter_event_types(request, queryset, view)
 
         if 'hits' in ordering or '-hits' in ordering:
             if ordering[0] not in ('hits', '-hits'):
@@ -589,7 +590,7 @@ class RuleHitsOrderingFilter(OrderingFilter, ESManageMultipleESIndexesViewSet):
         return sids
 
 
-class RuleViewSet(SciriusReadOnlyModelViewSet):
+class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet):
     """
     =============================================================================================================================================================
     ==== GET ====\n
