@@ -21,6 +21,9 @@ const RulesetMsg = styled.div`
 
 const { Option } = Select;
 
+axios.defaults.xsrfCookieName = 'csrftoken';
+axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+
 export default class RuleToggleModal extends React.Component {
   constructor(props) {
     super(props);
