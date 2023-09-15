@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { InfoCircleFilled, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
-import TypedValue from 'components/TypedValue';
+import TypedValue from 'ui/components/TypedValue';
 import styled from 'styled-components';
 import { COLOR_BOX_HEADER } from 'ui/constants/colors';
 import IP_FIELDS from 'ui/config/ipFields';
