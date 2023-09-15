@@ -6,12 +6,21 @@ const apiInstance = create({
   baseURL: '/',
 });
 
+const getCookie = name => {
+  const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+  if (match) return match[2];
+  return null;
+};
+
 apiInstance.addRequestTransform(request => {
   // Handle path parameters /foo/4/bar
   if (request.method === 'patch') {
     request.params = request.data;
     request.data = cloneDeep(request.data.body);
     delete request.params.body;
+  }
+  if (['patch', 'delete'].includes(request.method)) {
+    request.headers['X-Csrftoken'] = getCookie('csrftoken');
   }
 
   let result = request.url.slice(); // Copy string by value
