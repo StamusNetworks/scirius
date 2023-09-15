@@ -16,6 +16,7 @@ const CardStyled = styled(Card).withConfig({
   height: ${p => (p.fullHeight === 'true' ? '100%' : 'auto')};
   .ant-card-body {
     padding: ${p => (p.noPadding === 'true' ? '0' : '10px')};
+    ${p => (p.flex ? 'display: flex; flex: 1; flex-direction: column;' : '')}
   }
   .ant-card-head {
     padding: 0 10px;
@@ -28,7 +29,7 @@ const CardStyled = styled(Card).withConfig({
   .ant-card-head-title {
     color: ${p => p.color};
   }
-  ${p => (p.flex ? "display: 'flex'; flex: 1; flex-direction: 'column';" : '')}
+  ${p => (p.flex ? 'display: flex; flex: 1; flex-direction: column;' : '')}
 `;
 const UICard = ({ children, noPadding, fullHeight, ...props }) => (
   <CardStyled {...props} noPadding={noPadding.toString()} fullHeight={fullHeight.toString()}>
