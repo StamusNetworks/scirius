@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 import React from 'react';
 import { Breadcrumb } from 'antd';
 import { PropTypes } from 'prop-types';
@@ -12,18 +13,38 @@ const StyledBreadcrumb = styled(Breadcrumb)`
   border-bottom: 0 !important;
 `;
 
-const UIBreadcrumb = ({ items, children }) => (
-  <StyledBreadcrumb separator=">">
-    {!items && children}
-    {/* eslint-disable-next-line react/no-array-index-key */}
-    {!children && items.map((item, i) => <Breadcrumb.Item key={i}>{item}</Breadcrumb.Item>)}
-    {items && children && <Breadcrumb.Item>items and children props can&quot;t be used together</Breadcrumb.Item>}
-  </StyledBreadcrumb>
+const Container = styled.div`
+  display: flex;
+`;
+
+const BreadcrumbWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+`;
+
+const AddonWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+`;
+
+const UIBreadcrumb = ({ items, addon }) => (
+  <Container>
+    <BreadcrumbWrapper>
+      <StyledBreadcrumb separator=">">
+        {items.map((item, i) => (
+          <Breadcrumb.Item key={i}>{item}</Breadcrumb.Item>
+        ))}
+      </StyledBreadcrumb>
+    </BreadcrumbWrapper>
+    {addon && <AddonWrapper>{addon}</AddonWrapper>}
+  </Container>
 );
 
 UIBreadcrumb.propTypes = {
   items: PropTypes.array,
-  children: PropTypes.object,
+  addon: PropTypes.object,
 };
 
 export default UIBreadcrumb;
