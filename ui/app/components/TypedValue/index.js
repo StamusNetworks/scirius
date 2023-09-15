@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import { Dropdown, message } from 'antd';
 import {
   CopyOutlined,
-  IdcardOutlined,
   InfoCircleFilled,
   RobotOutlined,
   UserOutlined,
@@ -14,7 +13,6 @@ import {
 } from '@ant-design/icons';
 import _ from 'lodash';
 import styled from 'styled-components';
-import { Link } from 'ui/helpers/Link';
 import history from 'ui/utils/history';
 import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 import isIP from 'ui/helpers/isIP';
@@ -123,16 +121,6 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
     listOfLinks = [
       ...additionalLinks,
       ...listOfLinks,
-      {
-        key: 'typedValueIP1',
-        label: (
-          <Link to={`/stamus/hunting/hosts/host-insight/${value}`}>
-            <div>
-              <IdcardOutlined /> <span>Open Host Insight page for IP</span>
-            </div>
-          </Link>
-        ),
-      },
       {
         key: 'typedValueIP2',
         label: (
