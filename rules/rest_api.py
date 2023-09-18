@@ -986,7 +986,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
         sids = ','.join([str(rule['sid']) for rule in data])
 
         try:
-            result = ESSigsListHits(request).get(sids)
+            result = ESSigsListHits(request, view=self).get(sids)
         except ESError:
             return data
 
