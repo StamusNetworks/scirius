@@ -225,8 +225,6 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
 
   if (type === 'networkInfo') {
     listOfLinks = [
-      ...additionalLinks,
-      ...listOfLinks,
       {
         key: 'typedValueNetInfo',
         label: (
@@ -265,6 +263,8 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
           </div>
         ),
       },
+      ...additionalLinks,
+      ...listOfLinks,
     ].filter(obj => !_.isEmpty(obj.label));
   }
 
