@@ -12,6 +12,7 @@ import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import { useStore } from 'ui/mobx/RootStoreProvider';
+import 'ui/pygments.css';
 
 export const SigContent = styled.div`
   & pre {
