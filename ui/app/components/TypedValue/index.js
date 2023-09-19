@@ -91,15 +91,19 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
           negated: false,
           query: 'filter_host_id',
         });
-        if (redirect) history.push(`/stamus/hunting/${location}${window.location.search}`);
+        if (redirect && location) history.push(`/stamus/hunting/${location}${window.location.search}`);
       }}
     >
-      <RobotOutlined /> <span>Filter on Role, go to {_.capitalize(location)}</span>
+      <RobotOutlined /> <span>Filter on Role{location && `, go to ${_.capitalize(location)}`}</span>
     </div>
   );
 
   if (type === 'role') {
     listOfLinks = [
+      {
+        key: 'typedValueRole0',
+        label: getRoleLabel(),
+      },
       {
         key: 'typedValueRole1',
         label: getRoleLabel('hosts'),
