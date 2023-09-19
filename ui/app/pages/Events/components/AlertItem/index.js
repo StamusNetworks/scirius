@@ -518,22 +518,28 @@ class AlertItem extends React.Component {
                 {data.flow && (
                   <React.Fragment>
                     <ErrorHandler>
-                      <EventField field_name="Flow ID" field="flow_id" value={data.flow_id} />
-                    </ErrorHandler>
-                    <ErrorHandler>
                       <EventField field_name="Flow start" field="flow.start" value={data.flow?.start} magnifiers={false} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField field_name="Pkts to server" field="flow.pkts_toserver" value={data.flow.pkts_toserver} />
+                      <EventField field_name="Client IP" field="flow.src_ip" value={data.flow?.src_ip} />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField field_name="Server IP" field="flow.dest_ip" value={data.flow?.dest_ip} />
                     </ErrorHandler>
                     <ErrorHandler>
                       <EventField field_name="Bytes to server" field="flow.bytes_toserver" value={data.flow.bytes_toserver} />
                     </ErrorHandler>
                     <ErrorHandler>
+                      <EventField field_name="Bytes to client" field="flow.bytes_toclient" value={data.flow.bytes_toclient} />
+                    </ErrorHandler>
+                    <ErrorHandler>
+                      <EventField field_name="Pkts to server" field="flow.pkts_toserver" value={data.flow.pkts_toserver} />
+                    </ErrorHandler>
+                    <ErrorHandler>
                       <EventField field_name="Pkts to client" field="flow.pkts_toclient" value={data.flow.pkts_toclient} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField field_name="Bytes to client" field="flow.bytes_toclient" value={data.flow.bytes_toclient} />
+                      <EventField field_name="Flow ID" field="flow_id" value={data.flow_id} />
                     </ErrorHandler>
                   </React.Fragment>
                 )}
