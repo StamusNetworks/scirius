@@ -85,6 +85,7 @@ const FilterSets = () => {
   );
 
   const loadFilterSets = row => {
+    commonStore.clearFilters();
     dispatch(clearFilters(sections.GLOBAL));
 
     const filters = row.content.filter(f => f.id !== 'alert.tag');
