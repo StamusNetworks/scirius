@@ -2,7 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Dropdown, message } from 'antd';
-import { CopyOutlined, IdcardOutlined, InfoCircleFilled, RobotOutlined, UserOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
+import {
+  CopyOutlined,
+  IdcardOutlined,
+  InfoCircleFilled,
+  RobotOutlined,
+  UserOutlined,
+  ZoomInOutlined,
+  ZoomOutOutlined,
+  DesktopOutlined,
+} from '@ant-design/icons';
 import _ from 'lodash';
 import styled from 'styled-components';
 import { Link } from 'ui/helpers/Link';
@@ -188,10 +197,48 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
 
   if (type === 'hostname') {
     listOfLinks = [
+      {
+        key: 'typedValueHostname',
+        label: (
+          <div
+            onClick={e => {
+              e.stopPropagation();
+              commonStore.addFilter({
+                id: 'host_id.hostname.host',
+                value: value || '',
+                label: `host_id.hostname.host: ${value}`,
+                fullString: false,
+                negated: false,
+              });
+            }}
+          >
+            <DesktopOutlined /> <span>Filter on Hostname</span>
+          </div>
+        ),
+      },
+      {
+        key: 'typedValueHostnameNegated',
+        label: (
+          <div
+            onClick={e => {
+              e.stopPropagation();
+              commonStore.addFilter({
+                id: 'host_id.hostname.host',
+                value: value || '',
+                label: `host_id.hostname.host: ${value}`,
+                fullString: false,
+                negated: true,
+              });
+            }}
+          >
+            <DesktopOutlined /> <span>Negated filter on Hostname</span>
+          </div>
+        ),
+      },
       ...additionalLinks,
       ...listOfLinks,
       {
-        key: 'typedValueHostname',
+        key: 'typedValueHostnameVirus',
         label: virusTotalLink,
       },
     ].filter(obj => !_.isEmpty(obj.label));
