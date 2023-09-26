@@ -251,7 +251,6 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
   if (type === 'username') {
     listOfLinks = [
       ...additionalLinks,
-      ...listOfLinks,
       {
         key: 'typedValueUsername',
         label: (
@@ -271,6 +270,7 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
           </div>
         ),
       },
+      ...listOfLinks,
     ].filter(obj => !_.isEmpty(obj.label));
   }
 
