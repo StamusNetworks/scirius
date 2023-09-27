@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal } from 'antd';
-import { QuestionOutlined, ReadOutlined } from '@ant-design/icons';
+import { QuestionOutlined, ReadOutlined, ExportOutlined } from '@ant-design/icons';
 import { observer } from 'mobx-react-lite';
 import styled from 'styled-components';
 import moment from 'moment';
@@ -177,7 +177,9 @@ const HelpMenu = () => {
         )}
         <CopyRight>Copyright 2014-2023, Stamus Networks</CopyRight>
       </AboutModal>
-
+      <Item block type="link" icon={<ExportOutlined />} onClick={() => window.open(`https://docs.stamus-networks.com`)}>
+        docs.stamus-networks.com
+      </Item>
       <Item
         block
         type="link"
