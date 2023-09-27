@@ -60,8 +60,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
       key: 'copyTextToClipboard',
       label: (
         <div
-          onClick={e => {
-            e.stopPropagation();
+          onClick={() => {
             copyTextToClipboard(filter.displayValue);
             message.success({
               duration: 1,
@@ -77,8 +76,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
 
   const getRoleLabel = (location, removeFilters = false) => (
     <div
-      onClick={e => {
-        e.stopPropagation();
+      onClick={() => {
         if (removeFilters) commonStore.clearFilters();
         commonStore.addFilter(filter);
         if (redirect && location) history.push(`/stamus/hunting/${location}${window.location.search}`);
