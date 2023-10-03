@@ -4,6 +4,23 @@ from django.db import migrations, models
 import django.utils.timezone
 import django.db.models.deletion
 
+from django.core.management.color import no_style
+from django.db import connection
+
+
+def _reset_cursor_flowbit(apps):
+    '''
+    Flowbit ID were set manually => cursor ID is not correct
+    So we need to reset this cursor
+
+    https://stackoverflow.com/questions/43663588/executing-djangos-sqlsequencereset-code-from-within-python/50275895#50275895
+    '''
+    Flowbit = apps.get_model('rules', 'Flowbit')
+    sequence_sql = connection.ops.sequence_reset_sql(no_style(), [Flowbit])
+    with connection.cursor() as cursor:
+        for sql in sequence_sql:
+            cursor.execute(sql)
+
 
 flowbits_set = []
 flowbits_isset = []
@@ -41,6 +58,7 @@ def _rule_at_version(apps):
 
 def _flowbits(apps):
     Flowbit = apps.get_model('rules', 'Flowbit')
+    Source = apps.get_model('rules', 'Source')
 
     # Many to many fields / Flowbits <-> RuleAtVersion
     for flowbit in Flowbit.objects.all():
@@ -49,6 +67,8 @@ def _flowbits(apps):
 
         for rule in flowbit.isset.all():
             flowbits_isset.append((rule.ruleatversion_set.first(), flowbit))
+
+    Source.objects.update(version=0)
 
 
 def _suppressed(apps):
@@ -102,6 +122,8 @@ def migrate_2(apps, _):
 
         if len(bulk):
             FlowbitISSetRuleAtVersion.objects.bulk_create(bulk)
+
+    _reset_cursor_flowbit(apps)
 
 
 class Migration(migrations.Migration):
