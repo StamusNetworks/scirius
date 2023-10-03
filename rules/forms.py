@@ -330,9 +330,7 @@ class RulesetForm(CommentForm):
     def __init__(self, *args, **kwargs):
         super(RulesetForm, self).__init__(*args, **kwargs)
 
-        from scirius.utils import get_middleware_module
-        sources = Source.objects.exclude(datatype__in=get_middleware_module('common').custom_source_datatype())
-        self.fields['sources'].queryset = sources
+        self.fields['sources'].queryset = Source.objects.all()
         self.fields['action'].choices = Ruleset.get_transformation_choices(key=Transformation.ACTION)
         self.fields['lateral'].choices = Ruleset.get_transformation_choices(key=Transformation.LATERAL)
         self.fields['target'].choices = Ruleset.get_transformation_choices(key=Transformation.TARGET)
