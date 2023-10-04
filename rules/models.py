@@ -2483,7 +2483,7 @@ class RangeCheckIntegerFields(models.Model):
 
 class Rule(RangeCheckIntegerFields, Transformable, Cache):
     GROUP_BY_CHOICES = (('by_src', 'by_src'), ('by_dst', 'by_dst'))
-    sid = models.IntegerField(primary_key=True)
+    sid = models.BigIntegerField(primary_key=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     msg = models.CharField(max_length=1000)
     group = models.BooleanField(default=False)
