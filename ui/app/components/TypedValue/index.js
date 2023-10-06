@@ -2,15 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Dropdown, message } from 'antd';
-import {
-  CopyOutlined,
-  InfoCircleFilled,
-  RobotOutlined,
-  UserOutlined,
-  ZoomInOutlined,
-  ZoomOutOutlined,
-  DesktopOutlined,
-} from '@ant-design/icons';
+import { CopyOutlined, InfoCircleFilled, RobotOutlined, UserOutlined, ZoomInOutlined, ZoomOutOutlined, DesktopOutlined } from '@ant-design/icons';
 import _ from 'lodash';
 import styled from 'styled-components';
 import history from 'ui/utils/history';
