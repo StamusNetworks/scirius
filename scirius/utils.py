@@ -65,6 +65,22 @@ class TimezoneMiddleware(object):
         return self.get_response(request)
 
 
+class CustomCSPMiddleware(object):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        splitted_path = request.path.split('/')
+        if len(splitted_path) > 1:
+            if splitted_path[1] in ['rules', 'appliances', 'volumetry', 'viz', 'suricata']:
+                response._csp_update = {'style-src': "'unsafe-inline'", 'script-src': "'unsafe-inline'"}
+            elif splitted_path[1] == 'accounts':
+                if splitted_path[2] != 'login':
+                    response._csp_update = {'style-src': "'unsafe-inline'", 'script-src': "'unsafe-inline'"}
+        return response
+
+
 def complete_context(request, context):
     if get_system_settings().use_elasticsearch:
         if request.GET.__contains__('duration'):
