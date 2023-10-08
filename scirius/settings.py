@@ -195,6 +195,11 @@ USE_X_FORWARDED_HOST = True
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'",)
 CSP_STYLE_SRC = ("'self'", "'unsafe-inline'",)
+CSP_OBJECT_SRC = ("'none'",)
+CSP_FRAME_ANCESTORS = ("'self'",)
+CSP_FORM_ACTION = ("'self'",)
+CSP_REPORT_URI = ("'none'",)
+CSP_REPORT_TO = ("'none'",)
 CSP_INCLUDE_NONCE_IN = ['script-src']
 CSP_EXCLUDE_URL_PREFIXES = ('/evebox',)
 
