@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Calendar, Button } from 'antd';
+import { Calendar, Button, notification } from 'antd';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import styled from 'styled-components';
@@ -101,7 +101,16 @@ const DateRangePicker = () => {
       <SubmitDate
         type="primary"
         onClick={() => {
-          commonStore.setAbsoluteTimeRange(startDate.unix(), endDate.unix());
+          if (endDate.unix() < startDate.unix()) {
+            notification.error({
+              message: 'Invalid data',
+              duration: 2,
+              description: 'End date must not be greater than start date',
+              placement: 'topLeft',
+            });
+          } else {
+            commonStore.setAbsoluteTimeRange(startDate.unix(), endDate.unix());
+          }
         }}
       >
         Submit
