@@ -168,11 +168,15 @@ class CommonStore {
         this._startDate = moment().subtract(1, 'year').unix();
         break;
       case 'All':
+        this._startDate = this._minTimestamp;
+        this._endDate = this._maxTimestamp;
         break;
       default:
         break;
     }
-    this._endDate = moment().unix();
+    if (type !== 'All') {
+      this._endDate = moment().unix();
+    }
     this._timeRangeType = 'relative';
     localStorage.setItem('startDate', this._startDate);
     localStorage.setItem('endDate', this._endDate);
@@ -288,8 +292,8 @@ class CommonStore {
           this._relativeType = 'D7';
         }
       } else {
-        this._minTimestamp = minTimestamp;
-        this._maxTimestamp = maxTimestamp;
+        this._minTimestamp = Math.round(minTimestamp / 1000);
+        this._maxTimestamp = Math.round(maxTimestamp / 1000);
       }
       this.setTimePickerStorage();
     }
