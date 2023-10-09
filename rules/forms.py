@@ -131,7 +131,7 @@ class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelFor
     custom_cookie_age = forms.FloatField(
         label='Automatic logout after inactivity timeout (in hours)',
         required=True,
-        min_value=0.5,
+        min_value=0.25,
     )
     elasticsearch_user = forms.CharField(required=False, help_text='Elasticsearch username for %s' % settings.APP_SHORT_NAME)
     elasticsearch_pass = forms.CharField(required=False,
