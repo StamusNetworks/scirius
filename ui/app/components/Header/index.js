@@ -69,11 +69,11 @@ const Header = ({ menuItems = [] }) => {
                   <RangePreview>
                     <tr>
                       <td className="col">From</td>
-                      <td>{moment(commonStore.startDate).format(DATE_TIME_FORMAT)}</td>
+                      <td>{moment(commonStore.startDate * 1000).format(DATE_TIME_FORMAT)}</td>
                     </tr>
                     <tr>
                       <td className="col">To</td>
-                      <td>{moment(commonStore.endDate).format(DATE_TIME_FORMAT)}</td>
+                      <td>{moment(commonStore.endDate * 1000).format(DATE_TIME_FORMAT)}</td>
                     </tr>
                   </RangePreview>
                 }
