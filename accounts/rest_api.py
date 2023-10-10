@@ -3,6 +3,7 @@ from django.core import exceptions
 from django.contrib.auth.models import User
 from django.contrib.auth import password_validation, logout
 from django.conf import settings
+from django.utils import timezone
 
 from rest_framework import serializers, viewsets
 from rest_framework.routers import DefaultRouter
@@ -21,6 +22,7 @@ from rules.rest_permissions import has_group_permission
 from scirius.utils import get_middleware_module
 
 import pytz
+from datetime import timedelta
 
 TIMEZONES = [(x, x) for x in pytz.all_timezones]
 
@@ -483,7 +485,12 @@ class AccountViewSet(viewsets.ModelViewSet):
     def session_activity(self, request, *args, **kwargs):
         timeout = int(request.data.get('timeout', '0'))
         cookie_age = get_system_settings().custom_cookie_age
+        session_cookie_age = get_system_settings().session_cookie_age
+
         disconnect = timeout >= cookie_age * 3600
+        if session_cookie_age > 0 and 'session_start' in request.session:
+            disconnect |= request.session['session_start'] + timedelta(hours=session_cookie_age) < timezone.now()
+
         if disconnect:
             logout(request)
         else:
