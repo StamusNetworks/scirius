@@ -66,6 +66,7 @@ class UserTable(SciriusTable):
                     get_middleware_module('common').update_scirius_user_class(row, {})
 
                 rows[row.pk]['active'] = '✔' if row.is_active else '✘'  # ignore_utf8_check: 10008 10004
+
                 if get_middleware_module('common').has_multitenant():
                     rows[row.pk]['tenants'] = ''
                     if row.sciriususer.has_no_tenant():
@@ -76,6 +77,10 @@ class UserTable(SciriusTable):
                     else:
                         rows[row.pk]['tenants'] += '\n'.join(row.sciriususer.get_tenants().values_list('name', flat=True))
                     extra_columns['tenants'] = tables.Column(verbose_name='Tenants', attrs={'td': {'style': 'white-space:pre-wrap;'}})
+
+                if get_middleware_module('common').has_ldap_auth() or get_middleware_module('common').has_saml_auth():
+                    rows[row.pk]['method'] = get_middleware_module('common').auth_choices().get(row.sciriususer.method())
+                    extra_columns['method'] = tables.Column(verbose_name='Authentification')
 
         super().__init__(data=rows.values(), extra_columns=extra_columns.items(), *args, **kwargs)
 
@@ -102,7 +107,7 @@ class GroupTable(SciriusTable):
                     'pk': row.pk
                 }
 
-                if get_middleware_module('common').has_extra_auth():
+                if get_middleware_module('common').has_ldap_auth():
                     rows[row.pk]['priority'] = str(row.group.priority)
                     extra_columns['priority'] = tables.Column(verbose_name='Priority')
 

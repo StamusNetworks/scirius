@@ -74,12 +74,12 @@ def update_groups(sender, user, ldap_user, **kwargs):
     try:
         sciriususer = SciriusUser.objects.get(user=user)
         sciriususerapp = sciriususer.sciriususerapp
-        if sciriususerapp.is_from_ldap is False:
-            sciriususerapp.is_from_ldap = True
+        if sciriususerapp.method not in ('ldap', 'saml'):
+            sciriususerapp.method = 'ldap'
             sciriususerapp.save()
     except (SciriusUser.DoesNotExist, AttributeError):
         SciriusUser.objects.get_or_create(user=user, defaults={'timezone': 'UTC'})
-        get_middleware_module('common').update_scirius_user_class(user, {'is_from_ldap': True})
+        get_middleware_module('common').update_scirius_user_class(user, {'method': 'ldap'})
 
     if group is not None:
         user.groups.add(group.group)
@@ -150,10 +150,11 @@ class SciriusUser(models.Model):
             "role": self.user.groups.first().name,
             "no_tenant": self.has_no_tenant(),
             "all_tenant": self.has_all_tenants(),
-            "tenants": tenants
+            "tenants": tenants,
+            "method": self.method()
         }
 
-        if get_middleware_module('common').has_extra_auth():
+        if get_middleware_module('common').has_ldap_auth():
             res.update({
                 'group': Group.objects.filter(group__user=self.user).first().ldap_group
             })
@@ -186,4 +187,19 @@ class SciriusUser(models.Model):
     def is_from_ldap(self):
         if not hasattr(self, 'sciriususerapp'):
             return False
-        return self.sciriususerapp.is_from_ldap
+        return self.sciriususerapp.method == 'ldap'
+
+    def is_from_saml(self):
+        if not hasattr(self, 'sciriususerapp'):
+            return False
+        return self.sciriususerapp.method == 'saml'
+
+    def method(self):
+        if not hasattr(self, 'sciriususerapp'):
+            return 'local'
+        return self.sciriususerapp.method
+
+    def set_method(self, method):
+        if hasattr(self, 'sciriususerapp'):
+            self.sciriususerapp.method = method
+            self.sciriususerapp.save()
