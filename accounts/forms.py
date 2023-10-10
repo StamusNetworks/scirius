@@ -66,7 +66,7 @@ class GroupEditForm(forms.ModelForm, CommentForm):
         self.fields['permissions'].choices = DjangoGroup.objects.filter(name='Superuser').first().permissions.order_by('pk').values_list('pk', 'name')
         self.mapping = dict(DjangoGroup.objects.filter(name='Superuser').first().permissions.values_list('pk', 'codename'))
 
-        if not get_middleware_module('common').has_extra_auth():
+        if not get_middleware_module('common').has_ldap_auth():
             self.fields.pop('ldap_group')
             self.fields.pop('priority')
 
@@ -76,7 +76,7 @@ class GroupEditForm(forms.ModelForm, CommentForm):
             self.initial['name'] = instance.name
             self.initial['ldap_group'] = instance.group.ldap_group
 
-        if get_middleware_module('common').has_extra_auth():
+        if get_middleware_module('common').has_ldap_auth():
             priority = Group.objects.aggregate(Max('priority'))['priority__max']
             if not instance:
                 priority += 1
@@ -144,11 +144,22 @@ class PasswordCreationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields.pop('username')
+        self.fields['password1'].required = False
+        self.fields['password2'].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data and self.data.get('method', 'stamus') == 'stamus':
+            for password in ('password1', 'password2'):
+                if not cleaned_data.get(password):
+                    self.add_error(password, 'This field is required')
+        return cleaned_data
 
 
 class UserSettingsForm(forms.ModelForm, CommentForm):
     TIMEZONES = ((x, x) for x in pytz.all_timezones)
 
+    saml = forms.BooleanField(label='SAML2 User', required=False)
     timezone = forms.ChoiceField(choices=TIMEZONES)
     groups = forms.ModelChoiceField(None, label='Role')
     tenants = forms.ModelMultipleChoiceField(None, widget=forms.CheckboxSelectMultiple(), label='', required=False)
@@ -157,7 +168,7 @@ class UserSettingsForm(forms.ModelForm, CommentForm):
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'timezone', 'groups', 'is_active', 'no_tenant', 'all_tenants', 'tenants']
+        fields = ['saml', 'username', 'first_name', 'last_name', 'email', 'timezone', 'groups', 'is_active', 'no_tenant', 'all_tenants', 'tenants']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -174,6 +185,9 @@ class UserSettingsForm(forms.ModelForm, CommentForm):
                 self.fields['all_tenants'].initial = instance.sciriususer.has_all_tenants()
                 self.fields['no_tenant'].initial = instance.sciriususer.has_no_tenant()
 
+        if len(get_middleware_module('common').auth_choices()) == 0 or instance:
+            self.fields.pop('saml')
+
         self.fields['groups'].queryset = DjangoGroup.objects.order_by('name')
         if instance:
             # self.fields['groups'].initial does not work
@@ -182,8 +196,7 @@ class UserSettingsForm(forms.ModelForm, CommentForm):
 
             if instance.sciriususer.is_from_ldap():
                 self.fields['groups'].required = False
-                # AUTH_LDAP_USER_ATTR_MAP => ldap user set first/last name and email
-                for field in ('groups', 'first_name', 'last_name', 'email'):
+                for field in ('username', 'groups', 'first_name', 'last_name', 'email'):
                     self.fields[field].widget.attrs['readonly'] = True
                     self.fields[field].widget.attrs['disabled'] = True
                 self.fields['groups'].help_text = 'Mapping ldap group to a Role is done on Role page for LDAP/AD users'
@@ -199,6 +212,12 @@ class UserSettingsForm(forms.ModelForm, CommentForm):
                 cleaned_data['groups'] = [cleaned_data['groups']]
             else:
                 cleaned_data['groups'] = []
+
+        if 'saml' in cleaned_data:
+            if cleaned_data['saml']:
+                cleaned_data['method'] = 'saml'
+            else:
+                cleaned_data['method'] = 'local'
         return cleaned_data
 
     def save(self, commit=True):
@@ -227,6 +246,15 @@ class NormalUserSettingsForm(forms.ModelForm, CommentForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'timezone']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        instance = kwargs.get('instance', None)
+
+        if instance and instance.sciriususer.is_from_ldap() or instance.sciriususer.is_from_saml():
+            for field in ('first_name', 'last_name', 'email'):
+                self.fields[field].widget.attrs['readonly'] = True
+                self.fields[field].widget.attrs['disabled'] = True
 
 
 class PasswordForm(CommentForm):

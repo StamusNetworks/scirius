@@ -76,8 +76,20 @@ def get_es_template():
     return 'rules/elasticsearch.html'
 
 
-def has_extra_auth():
+def has_ldap_auth():
     return False
+
+
+def has_saml_auth():
+    return False
+
+
+def saml_idp_hostname():
+    return ''
+
+
+def auth_choices():
+    return {}
 
 
 def has_multitenant():

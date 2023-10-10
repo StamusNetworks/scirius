@@ -95,7 +95,7 @@ def loginview(request, target):
             return scirius_render(request, 'accounts/login.html', context)
     else:
         form = LoginForm()
-        context = {'form': form, 'banner': banner}
+        context = {'form': form, 'banner': banner, 'saml': get_middleware_module('common').has_saml_auth()}
         return scirius_render(request, 'accounts/login.html', context)
 
 
@@ -222,7 +222,7 @@ def list_accounts(request):
         data[klass_name]['content'] = conf.configure(mapping[klass_name](objects))
         data[klass_name]['size'] = objects.count()
 
-    context = {'objects': data, 'extra_auth': get_middleware_module('common').has_extra_auth()}
+    context = {'objects': data, 'extra_auth': get_middleware_module('common').has_ldap_auth()}
     return scirius_render(request, template, context)
 
 
@@ -271,19 +271,28 @@ def add_user(request):
         form = UserSettingsForm(request.POST)
         password_form = PasswordCreationForm(request.POST)
 
-        if form.is_valid() and password_form.is_valid():
+        error = False
+        if form.is_valid():
             ruser = form.save()
-            ruser.set_password(password_form.cleaned_data['password1'])
-            ruser.save()
+            if form.cleaned_data.get('saml', False) is False:
+                if password_form.is_valid():
+                    ruser.set_password(password_form.cleaned_data['password1'])
+                else:
+                    error = True
+            else:
+                ruser.set_password(User.objects.make_random_password(length=20))
 
-            UserAction.create(
-                action_type='create_user',
-                comment=form.cleaned_data['comment'],
-                request=request,
-                new_user=ruser
-            )
+            if error is False:
+                ruser.save()
 
-            return redirect('list_accounts')
+                UserAction.create(
+                    action_type='create_user',
+                    comment=form.cleaned_data['comment'],
+                    request=request,
+                    new_user=ruser
+                )
+
+                return redirect('list_accounts')
 
         context = {
             'error': 'Username and/or password are not valid',
@@ -302,11 +311,17 @@ def add_user(request):
 @permission_required('rules.configuration_auth', raise_exception=True)
 def edit_user(request, user_id):
     user = get_object_or_404(User, pk=user_id)
+
+    method = 'Local'
+    try:
+        method = get_middleware_module('common').auth_choices().get(user.sciriususer.method())
+    except AttributeError:
+        pass
+
     context = {
         'user': user,
         'username': json.dumps(user.username),
-        'current_action': f"Edit{' LDAP ' if user.sciriususer.is_from_ldap() else ' '}user {user.username}",
-        'is_from_ldap': user.sciriususer.is_from_ldap()
+        'current_action': f"Edit {method} user {user.username}"
     }
 
     if request.method == 'POST':

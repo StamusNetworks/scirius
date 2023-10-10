@@ -455,6 +455,10 @@ div#highlight_info {
     color: #fff;
 }
 
+.login a {
+  color: white;
+}
+
 .login__logo-box {
     grid-row: 1/2;
 }

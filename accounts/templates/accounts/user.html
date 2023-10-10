@@ -29,7 +29,7 @@
             <h2 class="panel-title">Actions</h2>
         </div>
         <ul>
-            {% if 'Edit password' not in current_action and not is_from_ldap %}
+            {% if 'Edit password' not in current_action and not is_from_ldap and user.sciriususer.method == 'local' %}
                 <li>
                     <a href="{% url 'edit_password' user.pk %}">Change user password</a>
                 </li>
@@ -79,6 +79,9 @@ function del_user() {
                     {% if 'Edit password' in current_action %}
                         {% bootstrap_form form %}
                     {% else %}
+                        {% if form.saml %}
+                            {% bootstrap_field form.saml %}
+                        {% endif %}
                         {% bootstrap_field form.username %}
                         {% if current_action == 'Add user' %}
                             {% bootstrap_form password_form %}
@@ -112,8 +115,21 @@ function del_user() {
             </div>
         </div>
     </div>
-    {% if form.no_tenant or form.all_tenants or form.tenants %}
     <script language="JavaScript">
+
+$('document').ready(function() {
+     $("#id_saml").change(function () {
+        if (this.checked) {
+            $("#id_password1").parent().hide(duration=200);
+            $("#id_password2").parent().hide(duration=200);
+        } else {
+            $("#id_password1").parent().show(duration=200);
+            $("#id_password2").parent().show(duration=200);
+        }
+    });
+});
+
+    {% if form.no_tenant or form.all_tenants or form.tenants %}
 function click_all_tenants() {
     if ($("#id_all_tenants").is(":checked")) {
         $('#id_tenants').parents('.form-group').hide(duration=200);
@@ -122,10 +138,11 @@ function click_all_tenants() {
         $('#id_tenants').parents('.form-group').show(duration=200);
     }
 }
+
 $('document').ready(function() {
     $("#id_all_tenants").change(click_all_tenants);
     click_all_tenants();
 });
-    </script>
     {% endif %}
+    </script>
 {% endblock %}

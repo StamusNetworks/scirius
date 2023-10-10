@@ -5,7 +5,7 @@
         <h2 class="panel-title">{{ action }}</h2>
     </div>
     <ul>
-        {% if not is_from_ldap %}
+        {% if user.sciriususer.method == 'local' %}
             <li>
                 <a href="{% url 'accounts_edit' 'password' %}">Change password</a>
             </li>

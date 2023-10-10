@@ -168,7 +168,7 @@ def scirius_listing(request, objectname, assocfn, template='rules/object_list.ht
     # FIXME could be improved by generating function name
 
     name = list(assocfn.keys())[0]
-    if name == 'Roles' and get_middleware_module('common').has_extra_auth():
+    if name == 'Roles' and get_middleware_module('common').has_ldap_auth():
         assocfn['Roles']['action_links']['edit_priorities'] = 'Edit priorities'
 
     action = name

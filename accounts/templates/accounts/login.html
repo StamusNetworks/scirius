@@ -41,6 +41,17 @@
                         <button type="submit" class="login__button">Sign In</button>
                         {% endbuttons %}
                     </div>
+                    {% if saml %}
+                    <div class="login__button-box" id="saml_login">
+                        <label for="id_persistent" class="login__checkbox">
+                        </label>
+                        <a href="/saml2/login/">
+                            {% buttons %}
+                            <button type="button" class="login__button">SAML Auth</button>
+                            {% endbuttons %}
+                        </a>
+                    </div>
+                    {% endif %}
                 </form>
                 <div class="row">
                     <div class="col-md-12 login__error">
