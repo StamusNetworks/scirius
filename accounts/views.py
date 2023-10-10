@@ -28,6 +28,7 @@ from django.contrib.auth.decorators import permission_required
 from rest_framework.authtoken.models import Token
 from django.db.models import F
 from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponse
+from django.utils import timezone
 
 import django_tables2 as tables
 
@@ -58,6 +59,7 @@ def loginview(request, target):
         if user is not None:
             if user.is_active:
                 login(request, user)
+                request.session['session_start'] = timezone.now()
                 try:
                     sciriususer = SciriusUser.objects.get(user=user)
                     sciriususer.sciriususerapp
