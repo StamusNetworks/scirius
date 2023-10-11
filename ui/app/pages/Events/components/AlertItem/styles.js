@@ -41,7 +41,7 @@ export const Warning = styled.div`
 
 export const TabPaneResponsive = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(4, minmax(320px, 1fr));
   grid-gap: 10px;
   padding-bottom: 10px;
 `;
