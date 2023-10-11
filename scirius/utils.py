@@ -138,7 +138,10 @@ def scirius_render(request, template, context):
     }]
     context['monitoring_url'] = 'suricata_index'
 
-    context.update(get_middleware_module('common').update_context(request))
+    extra_context = get_middleware_module('common').update_context(request)
+    if 'license' in context:
+        extra_context.pop('license', None)
+    context.update(extra_context)
     context['messages'] = messages.get_messages(request)
     context['settings'] = settings
     complete_context(request, context)
