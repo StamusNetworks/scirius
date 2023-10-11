@@ -119,7 +119,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
           <div
             onClick={e => {
               onClickHandler(e, filter.instance);
-              if (redirect) history.push('/stamus/hunting/dashboards');
+              if (redirect) history.push(`/stamus/hunting/dashboards${window.location.search}`);
             }}
           >
             <ZoomInOutlined /> <span>Filter on IP: {filter.displayValue}</span>
@@ -132,7 +132,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
           <div
             onClick={e => {
               onClickHandler(e, filter.negate().instance);
-              if (redirect) history.push('/stamus/hunting/dashboards');
+              if (redirect) history.push(`/stamus/hunting/dashboards${window.location.search}`);
             }}
           >
             <ZoomOutOutlined /> <span>Negated filter on IP: {filter.displayValue}</span>
