@@ -82,7 +82,7 @@ class HuntStat extends React.Component {
             dataSource={this.state.data}
             renderItem={item => (
               <List.Item key={item.key} style={{ padding: '8px 10px' }}>
-                <EventValue field={this.props.item} value={item.key} addFilter={this.addFilter} right_info={item.doc_count} />
+                <EventValue field={this.props.item} value={item.key} right_info={item.doc_count} />
               </List.Item>
             )}
           />

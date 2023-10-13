@@ -378,9 +378,7 @@ class RulePage extends React.Component {
             dataSource={this.state.moreResults}
             renderItem={item => (
               <List.Item key={item.key}>
-                {this.state.moreModal && (
-                  <EventValue field={this.state.moreModal} value={item.key} addFilter={this.props.addFilter} right_info={item.doc_count} />
-                )}
+                {this.state.moreModal && <EventValue field={this.state.moreModal} value={item.key} right_info={item.doc_count} />}
               </List.Item>
             )}
           />
