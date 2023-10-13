@@ -15,7 +15,6 @@ const DashboardBlockData = ({ block, data, copyMode }) => (
           value={(KillChainStepsEnum[item.key] && KillChainStepsEnum[item.key]) || item.key}
           right_info={<span className="badge">{item.doc_count}</span>}
           copyMode={copyMode}
-          hasCopyShortcut
           format={block.format}
         />
       </CSSTransition>
