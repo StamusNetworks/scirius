@@ -9,6 +9,7 @@ import history from 'ui/utils/history';
 import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 import isIP from 'ui/helpers/isIP';
 import { useStore } from 'ui/mobx/RootStoreProvider';
+import Filter from 'ui/utils/Filter';
 
 const Value = styled.a`
   display: block;
@@ -17,45 +18,48 @@ const Value = styled.a`
   max-height: 20px;
 `;
 
-const rolesMap = {
-  'Domain Controller': {
-    label: 'Domain controller',
-    value: 'domain controller',
-  },
-  'DHCP Server': {
-    label: 'DHCP',
-    value: 'dhcp',
-  },
-  'HTTP(s) Proxy': {
-    label: 'HTTP(S) proxy',
-    value: 'http proxy',
-  },
-  Printer: {
-    label: 'Printer',
-    value: 'printer',
-  },
-  Unclassified: {
-    label: 'Unclassified',
-    value: 'unclassified',
-  },
-};
+const mitreLinks = ['alert.metadata.mitre_tactic_id', 'alert.metadata.mitre_technique_id'];
 
-const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) => {
+const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
   const { commonStore } = useStore();
+
+  const onClickHandler = (e, filter) => {
+    commonStore.addFilter(filter);
+  };
+
   const virusTotalLink = (
-    <a href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(value)) ? 'ip-address' : 'domain'}/${value}`} target="_blank">
+    <a
+      href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(filter.instance.value)) ? 'ip-address' : 'domain'}/${filter.instance.value}`}
+      target="_blank"
+    >
       <InfoCircleFilled /> <span>External info</span>
     </a>
   );
 
   let listOfLinks = [
     {
+      key: 'eventValue1',
+      label: (
+        <div data-test="filter-on-value" onClick={e => onClickHandler(e, filter.instance)}>
+          <ZoomInOutlined /> <span>Filter on value</span>
+        </div>
+      ),
+    },
+    {
+      key: 'eventValue2',
+      label: (
+        <div data-test="negated-filter-on-value" onClick={e => onClickHandler(e, filter.negate().instance)}>
+          <ZoomOutOutlined /> <span>Negated filter on value</span>
+        </div>
+      ),
+    },
+    {
       key: 'copyTextToClipboard',
       label: (
         <div
           onClick={e => {
             e.stopPropagation();
-            copyTextToClipboard(printedValue || value);
+            copyTextToClipboard(filter.displayValue);
             message.success({
               duration: 1,
               content: 'Copied!',
@@ -73,14 +77,7 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
       onClick={e => {
         e.stopPropagation();
         if (removeFilters) commonStore.clearFilters();
-        commonStore.addFilter({
-          id: 'host_id.roles.name',
-          value: rolesMap[value.props.name].value || '',
-          label: `Hosts: Roles: ${rolesMap[value.props.name].label}`,
-          fullString: false,
-          negated: false,
-          query: 'filter_host_id',
-        });
+        commonStore.addFilter(filter);
         if (redirect && location) history.push(`/stamus/hunting/${location}${window.location.search}`);
       }}
     >
@@ -88,7 +85,7 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
     </div>
   );
 
-  if (type === 'role') {
+  if (filter.instance.type === 'ROLE') {
     listOfLinks = [
       {
         key: 'typedValueRole0',
@@ -109,7 +106,7 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
   }
 
-  if (type === 'ip') {
+  if (filter.instance.type === 'IP') {
     listOfLinks = [
       ...additionalLinks,
       ...listOfLinks,
@@ -118,19 +115,11 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
         label: (
           <div
             onClick={e => {
-              e.stopPropagation();
-              commonStore.addFilter({
-                id: 'ip',
-                value: value || '',
-                label: `IP: ${value}`,
-                fullString: false,
-                negated: false,
-                query: 'filter',
-              });
+              onClickHandler(e, filter.instance);
               if (redirect) history.push('/stamus/hunting/dashboards');
             }}
           >
-            <ZoomInOutlined /> <span>Filter on IP: {value}</span>
+            <ZoomInOutlined /> <span>Filter on IP: {filter.displayValue}</span>
           </div>
         ),
       },
@@ -139,19 +128,11 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
         label: (
           <div
             onClick={e => {
-              e.stopPropagation();
-              commonStore.addFilter({
-                id: 'ip',
-                value: value || '',
-                label: `IP: ${value}`,
-                fullString: false,
-                negated: true,
-                query: 'filter',
-              });
+              onClickHandler(e, filter.negate().instance);
               if (redirect) history.push('/stamus/hunting/dashboards');
             }}
           >
-            <ZoomOutOutlined /> <span>Negated filter on IP: {value}</span>
+            <ZoomOutOutlined /> <span>Negated filter on IP: {filter.displayValue}</span>
           </div>
         ),
       },
@@ -162,14 +143,14 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
   }
 
-  if (type === 'port') {
+  if (filter.instance.type === 'PORT') {
     listOfLinks = [
       ...additionalLinks,
       ...listOfLinks,
       {
         key: 'typedValuePort',
         label: (
-          <a href={`https://www.dshield.org/port.html?port=${value}`} target="_blank">
+          <a href={`https://www.dshield.org/port.html?port=${filter.displayValue}`} target="_blank">
             <div>
               <InfoCircleFilled /> <span>External info</span>
             </div>
@@ -179,23 +160,12 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
   }
 
-  if (type === 'hostname') {
+  if (filter.instance.type === 'HOSTNAME') {
     listOfLinks = [
       {
         key: 'typedValueHostname',
         label: (
-          <div
-            onClick={e => {
-              e.stopPropagation();
-              commonStore.addFilter({
-                id: 'host_id.hostname.host',
-                value: value || '',
-                label: `host_id.hostname.host: ${value}`,
-                fullString: false,
-                negated: false,
-              });
-            }}
-          >
+          <div onClick={e => onClickHandler(e, filter.instance)}>
             <DesktopOutlined /> <span>Filter on Hostname</span>
           </div>
         ),
@@ -203,18 +173,7 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
       {
         key: 'typedValueHostnameNegated',
         label: (
-          <div
-            onClick={e => {
-              e.stopPropagation();
-              commonStore.addFilter({
-                id: 'host_id.hostname.host',
-                value: value || '',
-                label: `host_id.hostname.host: ${value}`,
-                fullString: false,
-                negated: true,
-              });
-            }}
-          >
+          <div onClick={e => onClickHandler(e, filter.negate().instance)}>
             <DesktopOutlined /> <span>Negated filter on Hostname</span>
           </div>
         ),
@@ -228,24 +187,13 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
     ].filter(obj => !_.isEmpty(obj.label));
   }
 
-  if (type === 'username') {
+  if (filter.instance.type === 'USERNAME') {
     listOfLinks = [
       ...additionalLinks,
       {
         key: 'typedValueUsername',
         label: (
-          <div
-            onClick={e => {
-              e.stopPropagation();
-              commonStore.addFilter({
-                id: 'host_id.username.user',
-                value: value || '',
-                label: `host_id.username.user: ${value}`,
-                fullString: false,
-                negated: false,
-              });
-            }}
-          >
+          <div onClick={e => onClickHandler(e, filter.instance)}>
             <UserOutlined /> <span>Filter on username</span>
           </div>
         ),
@@ -254,23 +202,12 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
     ].filter(obj => !_.isEmpty(obj.label));
   }
 
-  if (type === 'networkInfo') {
+  if (filter.instance.type === 'NETWORK_INFO') {
     listOfLinks = [
       {
         key: 'typedValueNetInfo',
         label: (
-          <div
-            onClick={e => {
-              e.stopPropagation();
-              commonStore.addFilter({
-                id: 'host_id.net_info.agg',
-                value: value || '',
-                label: `host_id.net_info.agg: ${value}`,
-                fullString: false,
-                negated: false,
-              });
-            }}
-          >
+          <div onClick={e => onClickHandler(e, filter.instance)}>
             <UserOutlined /> <span>Filter on Net Info</span>
           </div>
         ),
@@ -278,18 +215,7 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
       {
         key: 'typedValueNetInfoNegated',
         label: (
-          <div
-            onClick={e => {
-              e.stopPropagation();
-              commonStore.addFilter({
-                id: 'host_id.net_info.agg',
-                value: value || '',
-                label: `host_id.net_info.agg: ${value}`,
-                fullString: false,
-                negated: true,
-              });
-            }}
-          >
+          <div onClick={e => onClickHandler(e, filter.negate().instance)}>
             <UserOutlined /> <span>Negated filter on Net Info</span>
           </div>
         ),
@@ -299,8 +225,31 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
     ].filter(obj => !_.isEmpty(obj.label));
   }
 
-  if (type !== 'ip' && type !== 'port' && type !== 'username' && type !== 'hostname') {
-    listOfLinks = [...additionalLinks, ...listOfLinks].filter(obj => !_.isEmpty(obj.label));
+  // additionalLinks apply to all fields - ip, port, hostname, username
+  if (filter.instance.id === mitreLinks[0] || filter.instance.id === mitreLinks[1]) {
+    listOfLinks = [
+      ...additionalLinks,
+      ...listOfLinks,
+      {
+        key: 'eventValue3',
+        label: (
+          <a
+            href={(function () {
+              if (filter.instance.id === mitreLinks[0]) {
+                return `https://attack.mitre.org/tactics/${filter.instance.value}`;
+              }
+              if (!filter.instance.value.includes('.')) {
+                return `https://attack.mitre.org/techniques/${filter.instance.value}`;
+              }
+              return `https://attack.mitre.org/techniques/${filter.instance.value.split('.')[0]}/${filter.instance.value.split('.')[1]}`;
+            })()}
+            target="_blank"
+          >
+            <InfoCircleFilled /> <span>External info</span>
+          </a>
+        ),
+      },
+    ];
   }
 
   return (
@@ -309,7 +258,7 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
         items: [
           {
             type: 'group', // Must have
-            label: printedValue || value,
+            label: filter.instance.label,
             children: listOfLinks,
           },
         ],
@@ -318,21 +267,18 @@ const TypedValue = ({ additionalLinks, printedValue, redirect, value, type }) =>
       destroyPopupOnHide // necessary for the tests! makes sure only one +/- magnifier exists at any time
       onClick={e => e.stopPropagation()}
     >
-      <Value data-test={printedValue || value}>{printedValue || value}</Value>
+      {children || <Value data-test={filter.displayValue}>{filter.displayValue}</Value>}
     </Dropdown>
   );
 };
 
-TypedValue.defaultProps = {
-  additionalLinks: [],
-};
+TypedValue.defaultProps = {};
 
 TypedValue.propTypes = {
-  type: PropTypes.string.isRequired, // 'ip|hostname|username|port'
-  value: PropTypes.any.isRequired,
+  filter: PropTypes.instanceOf(Filter),
   redirect: PropTypes.bool,
   additionalLinks: PropTypes.arrayOf(PropTypes.object),
-  printedValue: PropTypes.any,
+  children: PropTypes.node,
 };
 
 export default TypedValue;
