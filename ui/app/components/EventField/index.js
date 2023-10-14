@@ -1,26 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import EventValue from 'ui/components/EventValue';
+import Filter from 'ui/utils/Filter';
 
-const EventField = ({ value, field_name: fieldName, format, field }) => {
-  if (value?.toString().length > 0) {
-    return (
-      <div data-test={`event-item-${fieldName}`} className="dl-item">
-        <dt>{fieldName}</dt>
-        <dd>
-          <EventValue format={format} field={field} value={value} />
-        </dd>
-      </div>
-    );
-  }
-  return null;
+const EventField = ({ filter }) => {
+  if (!filter.value) return null;
+  return (
+    <div data-test={`event-item-${filter.instance.title}`} className="dl-item">
+      <dt>{filter.instance.title}</dt>
+      <dd>
+        <EventValue filter={filter} />
+      </dd>
+    </div>
+  );
 };
 
 EventField.propTypes = {
-  field_name: PropTypes.any,
-  field: PropTypes.any,
-  value: PropTypes.any,
-  format: PropTypes.func,
+  filter: PropTypes.instanceOf(Filter),
 };
 
 export default EventField;
