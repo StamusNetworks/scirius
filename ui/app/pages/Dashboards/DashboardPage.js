@@ -60,7 +60,7 @@ const DashboardPage = () => {
         <title>{`${STAMUS} - Dashboards`}</title>
       </Helmet>
       <ErrorHandler>
-        <Filters page="DASHBOARDS" section={sections.GLOBAL} queryTypes={['filter', 'filter_host_id']} filterTypes={['filter']} />
+        <Filters page="DASHBOARDS" section={sections.GLOBAL} filterTypes={['filter']} />
       </ErrorHandler>
       <Row style={{ marginTop: 10 }}>
         <Col lg={20} md={18} sm={24} xs={24} style={{ paddingRight: '0px' }}>

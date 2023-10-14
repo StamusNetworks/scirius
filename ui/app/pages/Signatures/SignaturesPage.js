@@ -174,7 +174,6 @@ const SignaturesPage = () => {
         <Filters
           page="RULES_LIST"
           section={sections.GLOBAL}
-          queryTypes={['filter', 'rest', 'filter_host_id']}
           filterTypes={['filter', 'rest']}
           sortValues={{ option: listParams.sort.id, direction: listParams.sort.asc ? 'asc' : 'desc' }}
           onSortChange={(option, direction) => {
