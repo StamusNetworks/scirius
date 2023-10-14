@@ -13,9 +13,9 @@ import ErrorHandler from 'ui/components/Error';
 import SMBAlertCard from 'ui/components/SMBAlertCard';
 import PCAPFile from 'ui/components/PCAPFile';
 import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
-import { dashboard } from 'config/Dashboard';
 import { withStore } from 'ui/mobx/RootStoreProvider';
-import AlertRelatedData from '../../../../components/AlertRelatedData';
+import Filter from 'ui/utils/Filter';
+import AlertRelatedData from 'ui/components/AlertRelatedData';
 import { DlHorizontal, Warning, Numbers, Pre, TabPaneResponsive } from './styles';
 
 // mapping between what comes from backend(here key) and what we want to show on the frontend(the value)
@@ -308,7 +308,7 @@ class AlertItem extends React.Component {
       if (data.alert.source.net_info_agg) {
         sourceNetwork = (
           <ErrorHandler>
-            <EventField field_name="Source Network" field="alert.source.net_info_agg" value={data.alert.source.net_info_agg} />
+            <EventField filter={new Filter('alert.source.net_info_agg', data.alert.source.net_info_agg)} />
           </ErrorHandler>
         );
       } else if (data.alert.source.net_info) {
@@ -324,7 +324,7 @@ class AlertItem extends React.Component {
       if (data.alert.target.net_info_agg) {
         targetNetwork = (
           <ErrorHandler>
-            <EventField field_name="Target Network" field="alert.target.net_info_agg" value={data.alert.target.net_info_agg} />
+            <EventField filter={new Filter('alert.target.net_info_agg', data.alert.target.net_info_agg)} />
           </ErrorHandler>
         );
       } else if (data.alert.target.net_info) {
@@ -348,28 +348,23 @@ class AlertItem extends React.Component {
             <UICard data-test="alert-card-Signature" title="Signature" fullHeight>
               <DlHorizontal>
                 <ErrorHandler>
-                  <EventField field_name="Signature" field="alert.signature" value={data.alert.signature} />
+                  <EventField filter={new Filter('alert.signature', data.alert.signature)} />
                 </ErrorHandler>
                 <ErrorHandler>
-                  <EventField field_name="SID" field="alert.signature_id" value={data.alert.signature_id} />
+                  <EventField filter={new Filter('alert.signature_id', data.alert.signature_id)} />
                 </ErrorHandler>
                 <ErrorHandler>
-                  <EventField field_name="Category" field="alert.category" value={data.alert.category} />
+                  <EventField filter={new Filter('alert.category', data.alert.category)} />
                 </ErrorHandler>
                 <ErrorHandler>
-                  <EventField
-                    field_name="Severity"
-                    field="alert.severity"
-                    value={data.alert.severity}
-                    format={(dashboard.find(d => d.panelId === 'basic').items.find(o => o.i === 'alert.severity') || {}).format}
-                  />
+                  <EventField filter={new Filter('alert.severity', data.alert.severity)} />
                 </ErrorHandler>
                 <ErrorHandler>
-                  <EventField field_name="Revision" field="alert.rev" value={data.alert.rev} />
+                  <EventField filter={new Filter('alert.rev', data.alert.rev)} />
                 </ErrorHandler>
                 {data.alert.tag && (
                   <ErrorHandler>
-                    <EventField field_name="Tagged" field="alert.tag" value={data.alert.tag} />
+                    <EventField filter={new Filter('alert.tag', data.alert.tag)} />
                   </ErrorHandler>
                 )}
               </DlHorizontal>
@@ -380,68 +375,69 @@ class AlertItem extends React.Component {
               <DlHorizontal>
                 {data.net_info && data.net_info.src_agg && (
                   <ErrorHandler>
-                    <EventField field_name="Source Network" field="net_info.src_agg" value={data.net_info.src_agg} />
+                    <EventField filter={new Filter('net_info.src_agg', data.net_info.src_agg)} />
                   </ErrorHandler>
                 )}
                 <ErrorHandler>
-                  <EventField field_name="Source IP" field="src_ip" value={data.src_ip} />
+                  {/* filter{new Filter(src_ip,data.src_ip} />) */}
+                  <EventField filter={new Filter('src_ip', data.src_ip)} />
                 </ErrorHandler>
                 <ErrorHandler>
-                  <EventField field_name="Source port" field="src_port" value={data.src_port} />
+                  <EventField filter={new Filter('src_port', data.src_port)} />
                 </ErrorHandler>
                 {data.net_info && data.net_info.dest_agg && (
                   <ErrorHandler>
-                    <EventField field_name="Destination Network" field="net_info.dest_agg" value={data.net_info.dest_agg} />
+                    <EventField filter={new Filter('net_info.dest_agg', data.net_info.dest_agg)} />
                   </ErrorHandler>
                 )}
                 <ErrorHandler>
-                  <EventField field_name="Destination IP" field="dest_ip" value={data.dest_ip} />
+                  <EventField filter={new Filter('dest_ip', data.dest_ip)} />
                 </ErrorHandler>
                 <ErrorHandler>
-                  <EventField field_name="Destination port" field="dest_port" value={data.dest_port} />
+                  <EventField filter={new Filter('dest_port', data.dest_port)} />
                 </ErrorHandler>
                 <ErrorHandler>
-                  <EventField field_name="IP protocol" field="proto" value={data.proto} />
+                  <EventField filter={new Filter('proto', data.proto)} />
                 </ErrorHandler>
                 {data.app_proto && (
                   <ErrorHandler>
-                    <EventField field_name="Application protocol" field="app_proto" value={data.app_proto} />
+                    <EventField filter={new Filter('app_proto', data.app_proto)} />
                   </ErrorHandler>
                 )}
                 {data.app_proto_orig && (
                   <ErrorHandler>
-                    <EventField field_name="Original application protocol" field="app_proto_orig" value={data.app_proto_orig} />
+                    <EventField filter={new Filter('app_proto_orig', data.app_proto_orig)} />
                   </ErrorHandler>
                 )}
                 <ErrorHandler>
-                  <EventField field_name="Probe" field="host" value={data.host} />
+                  <EventField filter={new Filter('host', data.host)} />
                 </ErrorHandler>
                 <ErrorHandler>
-                  <EventField field_name="Network interface" field="in_iface" value={data.in_iface} />
+                  <EventField filter={new Filter('in_iface', data.in_iface)} />
                 </ErrorHandler>
                 {data.vlan && (
                   <ErrorHandler>
-                    <EventField field_name="Vlan" field="vlan" value={data.vlan} />
+                    <EventField filter={new Filter('vlan', data.vlan)} />
                   </ErrorHandler>
                 )}
                 {data.tunnel && data.tunnel.src_ip && (
                   <ErrorHandler>
-                    <EventField field_name="Tunnel Source IP" field="tunnel.src_ip" value={data.tunnel.src_ip} />
+                    <EventField filter={new Filter('tunnel.src_ip', data.tunnel.src_ip)} />
                   </ErrorHandler>
                 )}
                 {data.tunnel && data.tunnel.dest_ip && (
                   <ErrorHandler>
-                    <EventField field_name="Tunnel Destination IP" field="tunnel.dest_ip" value={data.tunnel.dest_ip} />
+                    <EventField filter={new Filter('tunnel.dest_ip', data.tunnel.dest_ip)} />
                   </ErrorHandler>
                 )}
                 {data.tunnel && data.tunnel.proto && (
                   <ErrorHandler>
-                    <EventField field_name="Tunnel Protocol" field="tunnel.proto" value={data.tunnel.proto} />
+                    <EventField filter={new Filter('tunnel.proto', data.tunnel.proto)} />
                   </ErrorHandler>
                 )}
                 {data.tunnel && data.tunnel.depth && (
                   <ErrorHandler>
-                    <EventField field_name="Tunnel Depth" field="tunnel.depth" value={data.tunnel.depth} />
+                    <EventField filter={new Filter('tunnel.depth', data.tunnel.depth)} />
                   </ErrorHandler>
                 )}
               </DlHorizontal>
@@ -457,33 +453,33 @@ class AlertItem extends React.Component {
                   <React.Fragment>
                     {sourceNetwork}
                     <ErrorHandler>
-                      <EventField field_name="Source IP" field="alert.source.ip" value={data.alert.source.ip} />
+                      <EventField filter={new Filter('alert.source.ip', data.alert.source.ip)} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField field_name="Source port" field="alert.source.port" value={data.alert.source.port} />
+                      <EventField filter={new Filter('alert.source.port', data.alert.source.port)} />
                     </ErrorHandler>
                     {targetNetwork}
                     <ErrorHandler>
-                      <EventField field_name="Target IP" field="alert.target.ip" value={data.alert.target.ip} />
+                      <EventField filter={new Filter('alert.target.ip', data.alert.target.ip)} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField field_name="Target port" field="alert.target.port" value={data.alert.target.port} />
+                      <EventField filter={new Filter('alert.target.port', data.alert.target.port)} />
                     </ErrorHandler>
                   </React.Fragment>
                 )}
                 {hasLateral && (
                   <ErrorHandler>
-                    <EventField field_name="Lateral movement" field="alert.lateral" value={data.alert.lateral} />
+                    <EventField filter={new Filter('alert.lateral', data.alert.lateral)} />
                   </ErrorHandler>
                 )}
                 {data.fqdn && data.fqdn.src && (
                   <ErrorHandler>
-                    <EventField field_name="FQDN Source" field="fqdn.src" value={data.fqdn.src} />
+                    <EventField filter={new Filter('fqdn.src', data.fqdn.src)} />
                   </ErrorHandler>
                 )}
                 {data.fqdn && data.fqdn.dest && (
                   <ErrorHandler>
-                    <EventField field_name="FQDN Destination" field="fqdn.dest" value={data.fqdn.dest} />
+                    <EventField filter={new Filter('fqdn.dest', data.fqdn.dest)} />
                   </ErrorHandler>
                 )}
               </DlHorizontal>
@@ -497,12 +493,12 @@ class AlertItem extends React.Component {
                     <>
                       {query.rrname && (
                         <ErrorHandler>
-                          <EventField field_name="Queried Name" field="dns.query.rrname" value={query.rrname} />
+                          <EventField filter={new Filter('dns.query.rrname', query.rrname)} />
                         </ErrorHandler>
                       )}
                       {query.rrtype && (
                         <ErrorHandler>
-                          <EventField field_name="Queried Type" field="dns.query.rrtype" value={query.rrtype} />
+                          <EventField filter={new Filter('dns.query.rrtype', query.rrtype)} />
                         </ErrorHandler>
                       )}
                     </>
@@ -518,28 +514,28 @@ class AlertItem extends React.Component {
                 {data.flow && (
                   <React.Fragment>
                     <ErrorHandler>
-                      <EventField field_name="Flow start" field="flow.start" value={data.flow?.start} magnifiers={false} />
+                      <EventField filter={new Filter('flow.start', data.flow?.start)} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField field_name="Client IP" field="flow.src_ip" value={data.flow?.src_ip} />
+                      <EventField filter={new Filter('flow.src_ip', data.flow?.src_ip)} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField field_name="Server IP" field="flow.dest_ip" value={data.flow?.dest_ip} />
+                      <EventField filter={new Filter('flow.dest_ip', data.flow?.dest_ip)} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField field_name="Bytes to server" field="flow.bytes_toserver" value={data.flow.bytes_toserver} />
+                      <EventField filter={new Filter('flow.bytes_toserver', data.flow.bytes_toserver)} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField field_name="Bytes to client" field="flow.bytes_toclient" value={data.flow.bytes_toclient} />
+                      <EventField filter={new Filter('flow.bytes_toclient', data.flow.bytes_toclient)} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField field_name="Pkts to server" field="flow.pkts_toserver" value={data.flow.pkts_toserver} />
+                      <EventField filter={new Filter('flow.pkts_toserver', data.flow.pkts_toserver)} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField field_name="Pkts to client" field="flow.pkts_toclient" value={data.flow.pkts_toclient} />
+                      <EventField filter={new Filter('flow.pkts_toclient', data.flow.pkts_toclient)} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField field_name="Flow ID" field="flow_id" value={data.flow_id} />
+                      <EventField filter={new Filter('flow_id', data.flow_id)} />
                     </ErrorHandler>
                   </React.Fragment>
                 )}
@@ -552,29 +548,23 @@ class AlertItem extends React.Component {
                 {_.isEmpty(data.geoip) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                 {data.geoip?.country_name && (
                   <ErrorHandler>
-                    <EventField field_name="Country" field="geoip.country_name" value={data.geoip.country_name} />
+                    <EventField filter={new Filter('geoip.country_name', data.geoip.country_name)} />
                   </ErrorHandler>
                 )}
                 {data.geoip?.country && (
                   <ErrorHandler>
-                    <EventField field_name="Country Code" field="geoip.country.iso_code" value={data.geoip.country.iso_code} />
+                    <EventField filter={new Filter('geoip.country.iso_code', data.geoip.country.iso_code)} />
                   </ErrorHandler>
                 )}
                 {data.geoip?.provider && data.geoip?.provider.autonomous_system_number && (
                   <ErrorHandler>
-                    <EventField
-                      field_name="AS Number"
-                      field="geoip.provider.autonomous_system_number"
-                      value={data.geoip.provider.autonomous_system_number}
-                    />
+                    <EventField filter={new Filter('geoip.provider.autonomous_system_number', data.geoip.provider.autonomous_system_number)} />
                   </ErrorHandler>
                 )}
                 {data.geoip?.provider && data.geoip?.provider.autonomous_system_organization && (
                   <ErrorHandler>
                     <EventField
-                      field_name="AS Organization"
-                      field="geoip.provider.autonomous_system_organization"
-                      value={data.geoip.provider.autonomous_system_organization}
+                      filter={new Filter('geoip.provider.autonomous_system_organization', data.geoip.provider.autonomous_system_organization)}
                     />
                   </ErrorHandler>
                 )}
@@ -588,55 +578,55 @@ class AlertItem extends React.Component {
                   {data.http && (
                     <React.Fragment>
                       <ErrorHandler>
-                        <EventField field_name="Host" field="http.hostname" value={data.http.hostname} />
+                        <EventField filter={new Filter('http.hostname', data.http.hostname)} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="URL" field="http.url" value={data.http.url} />
+                        <EventField filter={new Filter('http.url', data.http.url)} />
                       </ErrorHandler>
                       {data.http.status !== undefined && (
                         <ErrorHandler>
-                          <EventField field_name="Status" field="http.status" value={data.http.status} />
+                          <EventField filter={new Filter('http.status', data.http.status)} />
                         </ErrorHandler>
                       )}
                       <ErrorHandler>
-                        <EventField field_name="Method" field="http.http_method" value={data.http.http_method} />
+                        <EventField filter={new Filter('http.http_method', data.http.http_method)} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="User Agent" field="http.http_user_agent" value={data.http.http_user_agent} />
+                        <EventField filter={new Filter('http.http_user_agent', data.http.http_user_agent)} />
                       </ErrorHandler>
                       {data.http.http_refer !== undefined && (
                         <ErrorHandler>
-                          <EventField field_name="Referrer" field="http.http_refer" value={data.http.http_refer} />
+                          <EventField filter={new Filter('http.http_refer', data.http.http_refer)} />
                         </ErrorHandler>
                       )}
                       {data.http.http_port !== undefined && (
                         <ErrorHandler>
-                          <EventField field_name="Port" field="http.http_port" value={data.http.http_port} />
+                          <EventField filter={new Filter('http.http_port', data.http.http_port)} />
                         </ErrorHandler>
                       )}
                       {data.http.http_content_type !== undefined && (
                         <ErrorHandler>
-                          <EventField field_name="Content Type" field="http.http_content_type" value={data.http.http_content_type} />
+                          <EventField filter={new Filter('http.http_content_type', data.http.http_content_type)} />
                         </ErrorHandler>
                       )}
                       {data.http.length !== undefined && (
                         <ErrorHandler>
-                          <EventField field_name="Length" field="http.length" value={data.http.length} />
+                          <EventField filter={new Filter('http.length', data.http.length)} />
                         </ErrorHandler>
                       )}
                       {data.http.server !== undefined && (
                         <ErrorHandler>
-                          <EventField field_name="Server" field="http.server" value={data.http.server} />
+                          <EventField filter={new Filter('http.server', data.http.server)} />
                         </ErrorHandler>
                       )}
                       {data.http.accept_language !== undefined && (
                         <ErrorHandler>
-                          <EventField field_name="Accept Language" field="http.accept_language" value={data.http.accept_language} />
+                          <EventField filter={new Filter('http.accept_language', data.http.accept_language)} />
                         </ErrorHandler>
                       )}
                       {data.http.protocol !== undefined && (
                         <ErrorHandler>
-                          <EventField field_name="Protocol" field="http.protocol" value={data.http.protocol} />
+                          <EventField filter={new Filter('http.protocol', data.http.protocol)} />
                         </ErrorHandler>
                       )}
                     </React.Fragment>
@@ -652,23 +642,23 @@ class AlertItem extends React.Component {
                   {data.tls && (
                     <React.Fragment>
                       <ErrorHandler>
-                        <EventField field_name="Subject" field="tls.subject" value={data.tls.subject} />
+                        <EventField filter={new Filter('tls.subject', data.tls.subject)} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="Issuer" field="tls.issuerdn" value={data.tls.issuerdn} />
+                        <EventField filter={new Filter('tls.issuerdn', data.tls.issuerdn)} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="Server Name Indication" field="tls.sni" value={data.tls.sni} />
+                        <EventField filter={new Filter('tls.sni', data.tls.sni)} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="Not Before" field="tls.notbefore" value={data.tls.notbefore} />
+                        <EventField filter={new Filter('tls.notbefore', data.tls.notbefore)} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="Not After" field="tls.notafter" value={data.tls.notafter} />
+                        <EventField filter={new Filter('tls.notafter', data.tls.notafter)} />
                       </ErrorHandler>
                       {data.tls.ja3 && data.tls.ja3.hash !== undefined && (
                         <ErrorHandler>
-                          <EventField field_name="JA3" field="tls.ja3.hash" value={data.tls.ja3.hash} />
+                          <EventField filter={new Filter('tls.ja3.hash', data.tls.ja3.hash)} />
                         </ErrorHandler>
                       )}
                       {data.tls.ja3 &&
@@ -676,27 +666,27 @@ class AlertItem extends React.Component {
                         data.tls.ja3.agent.map(agent => (
                           <ErrorHandler key={Math.random()}>
                             {/* eslint-disable-next-line react/no-array-index-key */}
-                            <EventField field_name="User-Agent" field="tls.ja3.agent" value={agent} key={`to-${agent}`} />
+                            <EventField filter={new Filter('tls.ja3.agent', agent)} key={`to-${agent}`} />
                           </ErrorHandler>
                         ))}
                       {data.tls.ja3s && data.tls.ja3s.hash !== undefined && (
                         <ErrorHandler>
-                          <EventField field_name="JA3S" field="tls.ja3s.hash" value={data.tls.ja3s.hash} />
+                          <EventField filter={new Filter('tls.ja3s.hash', data.tls.ja3s.hash)} />
                         </ErrorHandler>
                       )}
                       {data.tls.version !== undefined && (
                         <ErrorHandler>
-                          <EventField field_name="Version" field="tls.version" value={data.tls.version} />
+                          <EventField filter={new Filter('tls.version', data.tls.version)} />
                         </ErrorHandler>
                       )}
                       {data.tls.cipher_suite !== undefined && (
                         <ErrorHandler>
-                          <EventField field_name="Cipher Suite" field="tls.cipher_suite" value={data.tls.cipher_suite} />
+                          <EventField filter={new Filter('tls.cipher_suite', data.tls.cipher_suite)} />
                         </ErrorHandler>
                       )}
                       {data.tls.cipher_security !== undefined && (
                         <ErrorHandler>
-                          <EventField field_name="Cipher Security" field="tls.cipher_security" value={data.tls.cipher_security} />
+                          <EventField filter={new Filter('tls.cipher_security', data.tls.cipher_security)} />
                         </ErrorHandler>
                       )}
                     </React.Fragment>
@@ -711,19 +701,19 @@ class AlertItem extends React.Component {
                   {_.isEmpty(data.smtp) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                   {data.smtp?.mail_from !== undefined && (
                     <ErrorHandler>
-                      <EventField field_name="From" field="smtp.mail_from" value={data.smtp.mail_from} />
+                      <EventField filter={new Filter('smtp.mail_from', data.smtp.mail_from)} />
                     </ErrorHandler>
                   )}
                   {data.smtp?.rcpt_to !== undefined &&
                     data.smtp?.rcpt_to.map((mail, idx) => (
                       <ErrorHandler key={Math.random()}>
                         {/* eslint-disable-next-line react/no-array-index-key */}
-                        <EventField field_name="To" field="smtp.rcpt_to" value={mail} key={`to-${idx}`} />
+                        <EventField filter={new Filter('smtp.rcpt_to', mail)} key={`to-${idx}`} />
                       </ErrorHandler>
                     ))}
                   {data.smtp?.helo !== undefined && (
                     <ErrorHandler>
-                      <EventField field_name="Helo" field="smtp.helo" value={data.smtp.helo} />
+                      <EventField filter={new Filter('smtp.helo', data.smtp.helo)} />
                     </ErrorHandler>
                   )}
                 </DlHorizontal>
@@ -737,20 +727,20 @@ class AlertItem extends React.Component {
                   {data.ssh?.client && (
                     <React.Fragment>
                       <ErrorHandler>
-                        <EventField field_name="Client Software" field="ssh.client.software_version" value={data.ssh.client.software_version} />
+                        <EventField filter={new Filter('ssh.client.software_version', data.ssh.client.software_version)} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="Client Version" field="ssh.client.proto_version" value={data.ssh.client.proto_version} />
+                        <EventField filter={new Filter('ssh.client.proto_version', data.ssh.client.proto_version)} />
                       </ErrorHandler>
                     </React.Fragment>
                   )}
                   {data.ssh?.server && (
                     <React.Fragment>
                       <ErrorHandler>
-                        <EventField field_name="Server Software" field="ssh.server.software_version" value={data.ssh.server.software_version} />
+                        <EventField filter={new Filter('ssh.server.software_version', data.ssh.server.software_version)} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="Server Version" field="ssh.server.proto_version" value={data.ssh.server.proto_version} />
+                        <EventField filter={new Filter('ssh.server.proto_version', data.ssh.server.proto_version)} />
                       </ErrorHandler>
                     </React.Fragment>
                   )}
@@ -765,10 +755,10 @@ class AlertItem extends React.Component {
                 {data.ether && (
                   <React.Fragment>
                     <ErrorHandler>
-                      <EventField field_name="Source MAC" field="ether.src_mac" value={data.ether.src_mac} />
+                      <EventField filter={new Filter('ether.src_mac', data.ether.src_mac)} />
                     </ErrorHandler>
                     <ErrorHandler>
-                      <EventField field_name="Destination MAC" field="ether.dest_mac" value={data.ether.dest_mac} />
+                      <EventField filter={new Filter('ether.dest_mac', data.ether.dest_mac)} />
                     </ErrorHandler>
                   </React.Fragment>
                 )}
@@ -787,7 +777,7 @@ class AlertItem extends React.Component {
                       const fieldName = key.length > 0 ? key[0].toUpperCase() + key.slice(1).replace('_', ' ') : '';
                       return (
                         <ErrorHandler key={key}>
-                          <EventField field_name={fieldName} field={`alert.metadata.${key}`} value={value} />
+                          <EventField filter={new Filter(`alert.metadata.${key}`, value, { title: fieldName })} />
                         </ErrorHandler>
                       );
                     })}
@@ -802,22 +792,22 @@ class AlertItem extends React.Component {
                   {data.stamus && (
                     <React.Fragment>
                       <ErrorHandler>
-                        <EventField field_name="Asset" field="stamus.asset" value={data.stamus.asset} />
+                        <EventField filter={new Filter('stamus.asset', data.stamus.asset)} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="Offender" field="stamus.source" value={data.stamus.source} />
+                        <EventField filter={new Filter('stamus.source', data.stamus.source)} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="Threat" field="stamus.threat_name" value={data.stamus.threat_name} />
+                        <EventField filter={new Filter('stamus.threat_name', data.stamus.threat_name)} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="Family" field="stamus.family_name" value={data.stamus.family_name} />
+                        <EventField filter={new Filter('stamus.family_name', data.stamus.family_name)} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="Kill Chain Phase" field="stamus.kill_chain" value={KillChainStepsEnum[data.stamus.kill_chain]} />
+                        <EventField filter={new Filter('stamus.kill_chain', KillChainStepsEnum[data.stamus.kill_chain])} />
                       </ErrorHandler>
                       <ErrorHandler>
-                        <EventField field_name="Method ID" field="stamus.threat_id" value={data.stamus.threat_id} />
+                        <EventField filter={new Filter('stamus.threat_id', data.stamus.threat_id)} />
                       </ErrorHandler>
                     </React.Fragment>
                   )}
