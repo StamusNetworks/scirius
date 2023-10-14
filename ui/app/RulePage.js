@@ -14,6 +14,7 @@ import EventValue from 'ui/components/EventValue';
 import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import { withStore } from 'ui/mobx/RootStoreProvider';
+import Filter from 'ui/utils/Filter';
 import RuleStatus from './RuleStatus';
 import HuntStat from './HuntStat';
 import { updateHitsStats } from './helpers/updateHitsStats';
@@ -378,7 +379,7 @@ class RulePage extends React.Component {
             dataSource={this.state.moreResults}
             renderItem={item => (
               <List.Item key={item.key}>
-                {this.state.moreModal && <EventValue field={this.state.moreModal} value={item.key} right_info={item.doc_count} />}
+                {this.state.moreModal && <EventValue filter={new Filter(this.state.moreModal, item.key)} count={item.doc_count} />}
               </List.Item>
             )}
           />

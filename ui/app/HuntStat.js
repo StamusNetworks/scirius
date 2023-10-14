@@ -8,6 +8,7 @@ import UICard from 'ui/components/UIElements/UICard';
 import { buildQFilter } from 'ui/buildQFilter';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import { withStore } from 'ui/mobx/RootStoreProvider';
+import Filter from 'ui/utils/Filter';
 
 class HuntStat extends React.Component {
   constructor(props) {
@@ -82,7 +83,7 @@ class HuntStat extends React.Component {
             dataSource={this.state.data}
             renderItem={item => (
               <List.Item key={item.key} style={{ padding: '8px 10px' }}>
-                <EventValue field={this.props.item} value={item.key} right_info={item.doc_count} />
+                <EventValue filter={new Filter(this.props.item, item.key)} count={item.doc_count} />
               </List.Item>
             )}
           />
