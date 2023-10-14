@@ -84,7 +84,7 @@ const FiltersSelector = styled.div`
 
 const Static = styled.div``;
 
-const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValues }) => {
+const Filter = ({ page, section, filterTypes, onSortChange, sortValues }) => {
   // Component setup
   useInjectReducer({ key: 'ruleSet', reducer: ruleSetReducer });
   useInjectSaga({ key: 'ruleSet', saga: ruleSetSaga });
@@ -203,16 +203,7 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
     }
   }, [selectedItems]);
 
-  const activeFilters = useMemo(() => {
-    const stack = section === sections.HISTORY ? historyFilters : filters;
-    const result = [];
-    stack.forEach(item => {
-      if (!item.query || queryTypes.indexOf('all') > -1 || queryTypes.indexOf(item.query) !== -1) {
-        result.push(item);
-      }
-    });
-    return result;
-  }, [filters, historyFilters, section]);
+  const activeFilters = section === sections.HISTORY ? historyFilters : filters;
 
   const displayRender = (labels, selectedOptions) =>
     labels.map((label, i) => {
@@ -473,7 +464,6 @@ const Filter = ({ page, section, queryTypes, filterTypes, onSortChange, sortValu
 Filter.propTypes = {
   page: PropTypes.oneOf(['RULES_LIST', 'DASHBOARDS', 'ALERTS_LIST', 'HISTORY', 'HOSTS_LIST', 'INVENTORY']),
   section: PropTypes.string.isRequired,
-  queryTypes: PropTypes.array.isRequired,
   filterTypes: PropTypes.array.isRequired,
   onSortChange: PropTypes.func.isRequired,
   sortValues: PropTypes.shape({

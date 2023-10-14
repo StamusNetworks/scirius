@@ -176,7 +176,7 @@ const EventsPage = () => {
 
       {errors && <HuntRestError errors={errors} />}
       <ErrorHandler>
-        <Filters page="ALERTS_LIST" section={sections.GLOBAL} queryTypes={['filter', 'filter_host_id']} filterTypes={['filter']} />
+        <Filters page="ALERTS_LIST" section={sections.GLOBAL} filterTypes={['filter']} />
       </ErrorHandler>
 
       <Table

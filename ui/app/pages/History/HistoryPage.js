@@ -126,7 +126,6 @@ const HistoryPage = () => {
         <Filters
           page="HISTORY"
           section={sections.HISTORY}
-          queryTypes={['all']}
           filterTypes={['all']}
           sortValues={{ option: historyState.sort.id, direction: historyState.sort.asc ? 'asc' : 'desc' }}
           onSortChange={(option, direction) => {
