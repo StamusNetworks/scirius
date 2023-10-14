@@ -13,6 +13,7 @@ import UICard from 'ui/components/UIElements/UICard';
 import { COLOR_BRAND_BLUE } from 'ui/constants/colors';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import 'ui/pygments.css';
+import Filter from 'ui/utils/Filter';
 
 export const SigContent = styled.div`
   & pre {
@@ -166,7 +167,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
           noPadding
         >
           {rule.probes.map(probe => (
-            <EventValue field="host" value={probe.probe} right_info={probe.hits} />
+            <EventValue filter={new Filter('host', probe.probe)} count={probe.hits} />
           ))}
           {rule.probes.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
         </UICard>
