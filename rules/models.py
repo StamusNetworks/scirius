@@ -922,7 +922,7 @@ class Source(models.Model):
         file_content += "\n".join(rules_content)
         return file_content
 
-    def test_rule_buffer(self, rule_buffer, single=False):
+    def test_rule_buffer(self, rule_buffer):
         testor = TestRules()
         tmpdir = tempfile.mkdtemp()
         cats_content, iprep_content = self.export_files(tmpdir)
@@ -939,7 +939,6 @@ class Source(models.Model):
         return testor.check_rule_buffer(
             rule_buffer,
             related_files=related_files,
-            single=single,
             cats_content=cats_content,
             iprep_content=iprep_content
         )
@@ -2624,7 +2623,7 @@ class Rule(RangeCheckIntegerFields, Transformable, Cache):
     def test(self, ruleset):
         try:
             self.enable_cache()
-            test = ruleset.test_rule_buffer(self.generate_content(ruleset), single=True)
+            test = ruleset.test_rule_buffer(self.generate_content(ruleset))
         except:
             return False
         finally:
@@ -3488,7 +3487,7 @@ class Ruleset(models.Model, Transformable):
         result = {'rules_count': self.rules_count}
         return result
 
-    def test_rule_buffer(self, rule_buffer, single=False):
+    def test_rule_buffer(self, rule_buffer):
         testor = TestRules()
         tmpdir = tempfile.mkdtemp()
         cats_content, iprep_content = self.export_files(tmpdir)
@@ -3503,7 +3502,6 @@ class Ruleset(models.Model, Transformable):
         return testor.check_rule_buffer(
             rule_buffer,
             related_files=related_files,
-            single=single,
             cats_content=cats_content,
             iprep_content=iprep_content
         )
