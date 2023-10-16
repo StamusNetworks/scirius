@@ -475,6 +475,20 @@ $(document).ready(function(){
                                     </div>
                                 </div>
                                 <div class="row">
+                                    <div id="validity_warning_{{ rav.instance.version }}" class="col-md-12" style="display:none;">
+                                        <h2 class="title">
+                                            Rulesets Warning
+                                        </h2>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div id="validity_info_{{ rav.instance.version }}" class="col-md-12" style="display:none;">
+                                        <h2 class="title">
+                                            Rulesets Info
+                                        </h2>
+                                    </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-6">
                                         <h2 class="title">
                                             State in rulesets
@@ -802,22 +816,37 @@ function rule_validity_check() {
                             vlabel.text('Valid');
                             vlabel.addClass('label-success');
                             vlabel.removeClass('label-default');
+
+                            warning_content = "";
+                            if (data['warnings'].length) {
+                                for (i = 0; i < data['warnings'].length; i++) {
+                                    warning_content += '<li><span class="text-warning"><strong>' + data['warnings'][i]['source'] + '</strong></span>: <span>' + data['warnings'][i]['message'] + '</span></li>';
+                                }
+                                $("#validity_warning_{{ rav.instance.version }}").append('<h4 class="title">' + ruleset_name + '</h4><div id="warnings"><ul>' + warning_content + '</ul></div>');
+                                $("#validity_warning_{{ rav.instance.version }}").show(duration=200);
+                            }
+
+                            info_content = "";
+                            if (data['info'].length) {
+                                for (i = 0; i < data['info'].length; i++) {
+                                    info_content += '<li><span class="text-info"><strong>' + data['info'][i]['source'] + '</strong></span>: <span>' + data['info'][i]['message'] + '</span></li>';
+                                }
+                                $("#validity_info_{{ rav.instance.version }}").append('<h4 class="title">' + ruleset_name + '</h4><div id="info"><ul>' + info_content + '</ul></div>');
+                                $("#validity_info_{{ rav.instance.version }}").show(duration=200);
+                            }
                         } else {
                             vlabel = $(this).find("#validity_{{ rav.instance.version }}")
                             vlabel.addClass('label-danger');
                             vlabel.text('Invalid');
                             vlabel.removeClass('label-default');
                             error_content = "";
-                            if (data['errors'][0] != undefined) {
+                            if (data['errors'].length) {
                                 for (i = 0; i < data['errors'].length; i++) {
-                                    error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['error'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
+                                    error_content += '<li><span class="text-danger"><strong>' + data['errors'][i]['source'] + '</strong></span>: <span>' + data['errors'][i]['message'] + '</span></li>';
                                 }
-                            } else {
-                                if (data['errors']['message'] != undefined) {
-                                    error_content = data['errors']['message'];
-                                } else {
-                                    error_content = "Unknown error";
-                                }
+                            }
+                            else {
+                                error_content = "Unknown error";
                             }
                             $("#validity_error_{{ rav.instance.version }}").append('<h4 class="title">' + ruleset_name + '</h4><div id="errors"><ul>' + error_content + '</ul></div>');
                             $("#validity_error_{{ rav.instance.version }}").show(duration=200);
