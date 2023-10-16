@@ -18,320 +18,104 @@ You should have received a copy of the GNU General Public License
 along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
-import subprocess
+from suricatals import LangServer
+from suricatals.lsp_helpers import Diagnosis
 import tempfile
-import shutil
-import os
-import json
-import io
-import re
-
-from django.utils.html import escape
-from django.conf import settings
 
 
 class TestRules():
-    VARIABLE_ERROR = 101
-    OPENING_RULE_FILE = 41  # Error when opening a file referenced in the source
-    OPENING_DATASET_FILE = 322  # Error when opening a dataset referenced in the source
-    RULEFILE_ERRNO = [39, 42]
-    USELESS_ERRNO = [40, 43, 44]
-    CONFIG_FILE = """
-%YAML 1.1
----
-logging:
-  default-log-level: error
-  outputs:
-  - console:
-      enabled: yes
-      type: json
-app-layer:
-  protocols:
-    tls:
-      ja3-fingerprints: yes
-vars:
-  address-groups:
-    HOME_NET: "[192.168.0.0/16,10.0.0.0/8,172.16.0.0/12]"
-    EXTERNAL_NET: "!$HOME_NET"
-    HTTP_SERVERS: "$HOME_NET"
-    SMTP_SERVERS: "$HOME_NET"
-    SQL_SERVERS: "$HOME_NET"
-    DNS_SERVERS: "$HOME_NET"
-    TELNET_SERVERS: "$HOME_NET"
-    AIM_SERVERS: "$EXTERNAL_NET"
-    DNP3_SERVER: "$HOME_NET"
-    DNP3_CLIENT: "$HOME_NET"
-    MODBUS_CLIENT: "$HOME_NET"
-    MODBUS_SERVER: "$HOME_NET"
-    ENIP_CLIENT: "$HOME_NET"
-    ENIP_SERVER: "$HOME_NET"
-  port-groups:
-    HTTP_PORTS: "80"
-    SHELLCODE_PORTS: "!80"
-    ORACLE_PORTS: 1521
-    SSH_PORTS: 22
-    DNP3_PORTS: 20000
-    MODBUS_PORTS: 502
-    FILE_DATA_PORTS: "[$HTTP_PORTS,110,143]"
-    FTP_PORTS: 21
-    VXLAN_PORTS: 4789
-    TEREDO_PORTS: 3544
-"""
+    def build_iprep_buffers(self, cats_content, iprep_content):
+        from rules.models import Rule
 
-    REFERENCE_CONFIG = """
-# config reference: system URL
+        group_rules = Rule.objects.filter(group=True)
+        cat_map = {}
+        buffers = {'scirius-categories.txt': '', 'scirius-iprep.list': ''}
 
-config reference: bugtraq   http://www.securityfocus.com/bid/
-config reference: bid	    http://www.securityfocus.com/bid/
-config reference: cve       http://cve.mitre.org/cgi-bin/cvename.cgi?name=
-#config reference: cve       http://cvedetails.com/cve/
-config reference: secunia   http://www.secunia.com/advisories/
+        for index, rule in enumerate(group_rules, 1):
+            buffers['scirius-categories.txt'] += f'{index},{rule.sid},{rule.msg}\n'
+            cat_map[index] = rule
+        if cats_content:
+            buffers['scirius-categories.txt'] += cats_content
 
-#whitehats is unfortunately gone
-config reference: arachNIDS http://www.whitehats.com/info/IDS
+        for cate in cat_map:
+            for IP in cat_map[cate].group_ips_list.split(','):
+                buffers['scirius-iprep.list'] += f'{IP},{cate},100\n'
+        if iprep_content:
+            buffers['scirius-iprep.list'] += iprep_content
 
-config reference: McAfee    http://vil.nai.com/vil/content/v_
-config reference: nessus    http://cgi.nessus.org/plugins/dump.php3?id=
-config reference: url       http://
-config reference: et        http://doc.emergingthreats.net/
-config reference: etpro     http://doc.emergingthreatspro.com/
-config reference: telus     http://
-config reference: osvdb     http://osvdb.org/show/osvdb/
-config reference: threatexpert http://www.threatexpert.com/report.aspx?md5=
-config reference: md5	    http://www.threatexpert.com/report.aspx?md5=
-config reference: exploitdb http://www.exploit-db.com/exploits/
-config reference: openpacket https://www.openpacket.org/capture/grab/
-config reference: securitytracker http://securitytracker.com/id?
-config reference: secunia   http://secunia.com/advisories/
-config reference: xforce    http://xforce.iss.net/xforce/xfdb/
-config reference: msft      http://technet.microsoft.com/security/bulletin/
-"""
+        return buffers
 
-    CLASSIFICATION_CONFIG = """
-config classification: not-suspicious,Not Suspicious Traffic,3
-config classification: unknown,Unknown Traffic,3
-config classification: bad-unknown,Potentially Bad Traffic, 2
-config classification: attempted-recon,Attempted Information Leak,2
-config classification: successful-recon-limited,Information Leak,2
-config classification: successful-recon-largescale,Large Scale Information Leak,2
-config classification: attempted-dos,Attempted Denial of Service,2
-config classification: successful-dos,Denial of Service,2
-config classification: attempted-user,Attempted User Privilege Gain,1
-config classification: unsuccessful-user,Unsuccessful User Privilege Gain,1
-config classification: successful-user,Successful User Privilege Gain,1
-config classification: attempted-admin,Attempted Administrator Privilege Gain,1
-config classification: successful-admin,Successful Administrator Privilege Gain,1
+    def check_rule_buffer(self, rule_buffer, config_buffer=None, related_files=None, cats_content='', iprep_content=''):
+        extra_buffers = self.build_iprep_buffers(cats_content, iprep_content)
+        testor = LangServer(conn=None)
 
+        result = testor.rules_tester.check_rule_buffer(
+            rule_buffer,
+            engine_analysis=False,
+            **{
+                'config_buffer': config_buffer,
+                'related_files': related_files,
+                'extra_buffers': extra_buffers
+            }
+        )
 
-# NEW CLASSIFICATIONS
-config classification: rpc-portmap-decode,Decode of an RPC Query,2
-config classification: shellcode-detect,Executable code was detected,1
-config classification: string-detect,A suspicious string was detected,3
-config classification: suspicious-filename-detect,A suspicious filename was detected,2
-config classification: suspicious-login,An attempted login using a suspicious username was detected,2
-config classification: system-call-detect,A system call was detected,2
-config classification: tcp-connection,A TCP connection was detected,4
-config classification: trojan-activity,A Network Trojan was detected, 1
-config classification: unusual-client-port-connection,A client was using an unusual port,2
-config classification: network-scan,Detection of a Network Scan,3
-config classification: denial-of-service,Detection of a Denial of Service Attack,2
-config classification: non-standard-protocol,Detection of a non-standard protocol or event,2
-config classification: protocol-command-decode,Generic Protocol Command Decode,3
-config classification: web-application-activity,access to a potentially vulnerable web application,2
-config classification: web-application-attack,Web Application Attack,1
-config classification: misc-activity,Misc activity,3
-config classification: misc-attack,Misc Attack,2
-config classification: icmp-event,Generic ICMP event,3
-config classification: kickass-porn,SCORE! Get the lotion!,1
-config classification: policy-violation,Potential Corporate Privacy Violation,1
-config classification: default-login-attempt,Attempt to login by a default username and password,2
-
-config classification: targeted-activity,Targeted Malicious Activity was Detected,1
-config classification: exploit-kit,Exploit Kit Activity Detected,1
-config classification: external-ip-check,Device Retrieving External IP Address Detected,2
-config classification: domain-c2,Domain Observed Used for C2 Detected,1
-config classification: pup-activity,Possibly Unwanted Program Detected,2
-config classification: credential-theft,Successful Credential Theft Detected,1
-config classification: social-engineering,Possible Social Engineering Attempted,2
-config classification: coin-mining,Crypto Currency Mining Activity Detected,2
-config classification: command-and-control,Malware Command and Control Activity Detected,1
-"""
-
-    def parse_suricata_error(self, error, single=False):
-        ret = {
-            'errors': [],
-            'warnings': [],
-        }
-        variable_list = []
-        files_list = []
-        ignore_next = False
-        error_stream = io.StringIO(error)
-        for line in error_stream:
-            try:
-                s_err = json.loads(line)
-            except Exception:
-                ret['errors'].append({'message': error, 'format': 'raw'})
-                return ret
-            errno = s_err['engine']['error_code']
-            if not single or errno not in self.RULEFILE_ERRNO:
-                if errno == self.VARIABLE_ERROR:
-                    variable = s_err['engine']['message'].split("\"")[1]
-                    if not "$" + variable in variable_list:
-                        variable_list.append("$" + variable)
-                        s_err['engine']['message'] = "Custom address variable \"$%s\" is used and need to be defined in probes configuration" % (variable)
-                        ret['warnings'].append(s_err['engine'])
-                    continue
-                if errno == self.OPENING_DATASET_FILE:
-                    m = re.match('fopen \'([^:]*)\' failed: No such file or directory', s_err['engine']['message'])
-                    if m is not None:
-                        datasource = m.group(1)
-                        s_err['engine']['message'] = 'Dataset source "%s" is a dependancy and needs to be added to rulesets' % datasource
-                        ret['warnings'].append(s_err['engine'])
-                        ignore_next = True
-                        continue
-                if errno == self.OPENING_RULE_FILE:
-                    m = re.match('opening hash file ([^:]*): No such file or directory', s_err['engine']['message'])
-                    if m is not None:
-                        filename = m.group(1)
-                        filename = filename.rsplit('/', 1)[1]
-                        files_list.append(filename)
-                        s_err['engine']['message'] = 'External file "%s" is a dependancy and needs to be added to rulesets' % filename
-                        ret['warnings'].append(s_err['engine'])
-                        continue
-                if errno not in self.USELESS_ERRNO:
-                    # clean error message
-                    if errno == 39:
-                        if 'failed to set up dataset' in s_err['engine']['message']:
-                            if ignore_next:
-                                continue
-                        if ignore_next:
-                            ignore_next = False
-                            continue
-                        # exclude error on variable
-                        found = False
-                        for variable in variable_list:
-                            if variable in s_err['engine']['message']:
-                                found = True
-                                break
-                        else:
-                            # exclude error on external file
-                            for filename in files_list:
-                                if re.search(': *%s *;' % filename, s_err['engine']['message']):
-                                    found = True
-                                    break
-                        if found:
-                            continue
-                        s_err['engine']['message'] = s_err['engine']['message'].split(' from file')[0]
-                        getsid = re.compile(r"sid *:(\d+)")
-                        match = getsid.search(line)
-                        if match:
-                            s_err['engine']['sid'] = int(match.groups()[0])
-                    if errno == 42:
-                        s_err['engine']['message'] = s_err['engine']['message'].split(' from')[0]
-                    ret['errors'].append(s_err['engine'])
-        return ret
-
-    def rule_buffer(self, rule_buffer, config_buffer=None, related_files=None, reference_config=None, classification_config=None, cats_content='', iprep_content=''):
-        # create temp directory
-        tmpdir = tempfile.mkdtemp()
-        # write the rule file in temp dir
-        rule_file = os.path.join(tmpdir, "file.rules")
-        rf = open(rule_file, 'w')
-        rf.write(rule_buffer)
-        rf.close()
-
-        if not reference_config:
-            refence_config = self.REFERENCE_CONFIG
-        reference_file = os.path.join(tmpdir, "reference.config")
-        rf = open(reference_file, 'w')
-        rf.write(refence_config)
-        rf.close()
-
-        if not classification_config:
-            classification_config = self.CLASSIFICATION_CONFIG
-        classification_file = os.path.join(tmpdir, "classification.config")
-        cf = open(classification_file, 'w')
-        cf.write(classification_config)
-        cf.close()
-
-        if not config_buffer:
-            config_buffer = self.CONFIG_FILE
-        config_file = os.path.join(tmpdir, "suricata.yaml")
-        cf = open(config_file, 'w')
-        # write the config file in temp dir
-        cf.write(config_buffer)
-        cf.write("mpm-algo: ac-bs\n")
-        cf.write("default-rule-path: " + tmpdir + "\n")
-        cf.write("reference-config-file: " + tmpdir + "/reference.config\n")
-        cf.write("classification-file: " + tmpdir + "/classification.config\n")
-        cf.write("reputation-categories-file: " + tmpdir + "/scirius-categories.txt\n")
-        cf.write("default-reputation-path: " + tmpdir + "\n")
-        cf.write("""reputation-files:
-  - scirius-iprep.list
-""")
-
-        cf.close()
-        related_files = related_files or {}
-        for rfile in related_files:
-            related_file = os.path.join(tmpdir, rfile)
-            rf = open(related_file, 'w')
-            rf.write(related_files[rfile])
-            rf.close()
-
-        from rules.models import export_iprep_files
-        export_iprep_files(tmpdir, cats_content, iprep_content)
-
-        suri_cmd = [settings.SURICATA_BINARY, '-T', '-l', tmpdir, '-S', rule_file, '-c', config_file]
-        # start suricata in test mode
-        suriprocess = subprocess.Popen(suri_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (outdata, errdata) = suriprocess.communicate()
-        shutil.rmtree(tmpdir)
-        # if success ok
-        if suriprocess.returncode == 0:
-            return {'status': True, 'errors': ''}
-        # if not return error
-        return {'status': False, 'errors': errdata.decode('utf-8')}
-
-    def _escape_result(self, res):
-        for key in ('warnings', 'errors'):
-            lst = res.get(key, [])
-            for msg in lst:
-                msg['message'] = escape(msg['message'])
-        return res
-
-    def check_rule_buffer(self, rule_buffer, config_buffer=None, related_files=None, single=False, cats_content='', iprep_content=''):
-        related_files = related_files or {}
-        prov_result = self.rule_buffer(rule_buffer, config_buffer=config_buffer, related_files=related_files, cats_content=cats_content, iprep_content=iprep_content)
-        if prov_result['status'] and 'warnings' not in prov_result:
-            return self._escape_result(prov_result)
-        res = self.parse_suricata_error(prov_result['errors'], single=single)
-        prov_result['errors'] = res['errors']
-        prov_result['warnings'] = res['warnings']
-        i = 6  # support only 6 unknown variables per rule
-        prov_result['iter'] = 0
-        while len(res['warnings']) and i > 0:
+        idx = 6  # support only 6 unknown variables per rule
+        r_buffer = None
+        while len(result['warnings']) and idx > 0:
             modified = False
-            for warning in res['warnings']:
-                if warning['error_code'] == self.VARIABLE_ERROR:
+            for warning in result['warnings']:
+                if warning.get('variable_error', False):
                     var = warning['message'].split("\"")[1]
-                    # transform rule_buffer to remove the faulty variable
                     if not var.endswith('_PORTS') and not var.endswith('_PORT'):
-                        rule_buffer = rule_buffer.replace("!" + var, "192.0.2.0/24")
-                        rule_buffer = rule_buffer.replace(var, "192.0.2.0/24")
+                        r_buffer = rule_buffer.replace("!" + var, "192.0.2.0/24")
+                        r_buffer = rule_buffer.replace(var, "192.0.2.0/24")
                     else:
-                        rule_buffer = rule_buffer.replace("!" + var, "21")
-                        rule_buffer = rule_buffer.replace(var, "21")
-                    modified = True
+                        r_buffer = rule_buffer.replace("!" + var, "21")
+                        r_buffer = rule_buffer.replace(var, "21")
+
             if modified is False:
                 break
-            result = self.rule_buffer(rule_buffer, config_buffer=config_buffer, related_files=related_files, cats_content=cats_content, iprep_content=iprep_content)
-            res = self.parse_suricata_error(result['errors'], single=single)
-            prov_result['errors'] = res['errors']
-            if len(res['warnings']):
-                prov_result['warnings'] = prov_result['warnings'] + res['warnings']
-            i = i - 1
-            prov_result['iter'] = prov_result['iter'] + 1
-        if len(prov_result['errors']) == 0:
-            prov_result['status'] = True
-        return self._escape_result(prov_result)
+
+            result = testor.rules_tester.check_rule_buffer(
+                r_buffer if r_buffer else rule_buffer,
+                engine_analysis=False,
+                **{
+                    'config_buffer': config_buffer,
+                    'related_files': related_files,
+                    'extra_buffers': extra_buffers
+                }
+            )
+
+            idx -= 1
+
+        with tempfile.NamedTemporaryFile(mode='r+') as f_tmp:
+            f_tmp.write(rule_buffer)
+            f_tmp.flush()
+            status, diags = testor.analyse_file(
+                f_tmp.name,
+                engine_analysis=False,
+                **{
+                    'config_buffer': config_buffer,
+                    'related_files': related_files,
+                    'extra_buffers': extra_buffers
+                }
+            )
+
+        res = {'status': status, 'info': [], 'warnings': [], 'errors': []}
+        for diag in diags:
+            content = diag.to_message()
+            if content['severity'] == Diagnosis.INFO_LEVEL:
+                res['info'].append(content)
+            elif content['severity'] == Diagnosis.WARNING_LEVEL:
+                res['warnings'].append(content)
+            elif content['severity'] == Diagnosis.ERROR_LEVEL:
+                res['errors'].append(content)
+
+        # Work around: sls set error as a warning when we have a variable error.
+        # but status is kept as False.
+        # If suricata config is set when we should have all variables defined
+        # then is becomes warning instead of error.
+        # we need to change status to True instead of False if there is no other errors.
+        res['status'] = status if len(res['errors']) else True
+
+        return res
