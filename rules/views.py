@@ -1102,7 +1102,7 @@ def activate_source(request, source_id, ruleset_id):
 @permission_required('rules.source_view', raise_exception=True)
 def test_source(request, source_id):
     source = get_object_or_404(Source, pk=source_id)
-    return JsonResponse(source.test())
+    return JsonResponse(source.test(), safe=True)
 
 
 def build_source_diff(request, diff):
@@ -1330,7 +1330,13 @@ def add_public_source(request):
             return scirius_render(
                 request,
                 'rules/add_public_source.html',
-                {'source': src, 'update': True, 'rulesets': rulesets, 'ruleset_list': ruleset_list}
+                {
+                    'source': src,
+                    'update': True,
+                    'rulesets': rulesets,
+                    'ruleset_list': ruleset_list,
+                    'test_source': True
+                }
             )
         else:
             return scirius_render(
