@@ -22,6 +22,7 @@ import { COLOR_ERROR } from 'ui/constants/colors';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import isIP from 'ui/helpers/isIP';
 import Sort from 'ui/components/Sort';
+import Filter from 'ui/utils/Filter';
 
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -84,7 +85,7 @@ const FiltersSelector = styled.div`
 
 const Static = styled.div``;
 
-const Filter = ({ page, section, filterTypes, onSortChange, sortValues }) => {
+const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
   // Component setup
   useInjectReducer({ key: 'ruleSet', reducer: ruleSetReducer });
   useInjectSaga({ key: 'ruleSet', saga: ruleSetSaga });
@@ -274,14 +275,7 @@ const Filter = ({ page, section, filterTypes, onSortChange, sortValues }) => {
         fullString,
       }),
     );
-    commonStore.addFilter({
-      label: filterText,
-      id: fieldId,
-      value: fvalue,
-      negated: false,
-      query: field.queryType,
-      fullString,
-    });
+    commonStore.addFilter(new Filter(fieldId, fvalue, { fullString }).instance);
     setSelectedItems([]);
     setSelectedIds([]);
     setSearchString('');
@@ -461,7 +455,7 @@ const Filter = ({ page, section, filterTypes, onSortChange, sortValues }) => {
   );
 };
 
-Filter.propTypes = {
+Filters.propTypes = {
   page: PropTypes.oneOf(['RULES_LIST', 'DASHBOARDS', 'ALERTS_LIST', 'HISTORY', 'HOSTS_LIST', 'INVENTORY']),
   section: PropTypes.string.isRequired,
   filterTypes: PropTypes.array.isRequired,
@@ -472,4 +466,4 @@ Filter.propTypes = {
   }),
 };
 
-export default observer(Filter);
+export default observer(Filters);
