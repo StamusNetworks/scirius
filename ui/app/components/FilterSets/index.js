@@ -39,6 +39,7 @@ import filterSetSelectors from 'ui/stores/filterset/selectors';
 import saga from 'ui/stores/filterset/saga';
 import reducer from 'ui/stores/filterset/reducer';
 import { useStore } from 'ui/mobx/RootStoreProvider';
+import Filter from 'ui/utils/Filter';
 
 const NoResults = styled.div`
   color: #6d6d6d;
@@ -90,7 +91,7 @@ const FilterSets = () => {
 
     const filters = row.content.filter(f => f.id !== 'alert.tag');
     dispatch(addFilter(sections.GLOBAL, filters));
-    commonStore.addFilter(filters);
+    commonStore.addFilter(filters.map(f => new Filter(f.id, f.value, { negated: f.negated || false }).instance));
 
     if (process.env.REACT_APP_HAS_TAG) {
       const alertTag = row.content.filter(f => f.id === 'alert.tag')[0];
