@@ -275,14 +275,14 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
         fullString,
       }),
     );
-    commonStore.addFilter(new Filter(fieldId, fvalue, { fullString }).instance);
+    commonStore.addFilter(new Filter(fieldId, fvalue, { fullString }));
     setSelectedItems([]);
     setSelectedIds([]);
     setSearchString('');
   };
 
   const getFiltersCopy = () => {
-    const filtersCopy = [...filters];
+    const filtersCopy = [...filters.map(({ instance }) => instance)];
 
     if (process.env.REACT_APP_HAS_TAG === '1') {
       filtersCopy.push(commonStore.alert);
