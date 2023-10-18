@@ -29,11 +29,11 @@ const ErrorMessage = styled.h3`
 class ErrorHandler extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, error: '', errorInfo: '' };
   }
 
-  componentDidCatch() {
-    this.setState({ hasError: true });
+  componentDidCatch(error, errorInfo) {
+    this.setState({ hasError: true, error, errorInfo });
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -52,6 +52,12 @@ class ErrorHandler extends React.Component {
           <BugOutlined />
           <div>Something went wrong. </div>
           <div>Please reload the page, it may fix the issue.</div>
+          {process.env.NODE_ENV === 'development' && (
+            <div>
+              <div>{this.state.error}</div>
+              <div>{this.state.errorInfo}</div>
+            </div>
+          )}
         </ErrorMessage>
       );
     }
