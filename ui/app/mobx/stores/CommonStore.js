@@ -4,6 +4,7 @@ import endpoints from 'ui/config/endpoints';
 import { isEqual } from 'lodash';
 import { api } from '../api';
 import { PeriodEnum } from '../../maps/PeriodEnum';
+import Filter from '../../utils/Filter';
 
 class CommonStore {
   root = null;
@@ -59,7 +60,7 @@ class CommonStore {
 
   ids = [];
 
-  alert = {};
+  _alert = {};
 
   _systemSettings = null;
 
@@ -70,11 +71,11 @@ class CommonStore {
   constructor(root) {
     this.root = root;
     if (!localStorage.getItem('alert_tag')) {
-      this.alert = CommonStore.generateAlert();
-      localStorage.setItem('alert_tag', JSON.stringify(toJS(this.alert)));
+      this._alert = CommonStore.generateAlert();
+      localStorage.setItem('alert_tag', JSON.stringify(toJS(this._alert)));
     } else {
       try {
-        this.alert = JSON.parse(localStorage.getItem('alert_tag'));
+        this._alert = JSON.parse(localStorage.getItem('alert_tag'));
       } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Error while parsing local storage data');
@@ -96,10 +97,12 @@ class CommonStore {
     }
     try {
       this._systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
-      this.ids = JSON.parse(localStorage.getItem('ids_filters') || '[]');
       this._sources = JSON.parse(localStorage.getItem('str-sources') || '[]');
       this._timeRangeType = JSON.parse(localStorage.getItem('str-timespan') || '{}')?.timePicker || 'relative';
       this._relativeType = JSON.parse(localStorage.getItem('str-timespan') || '{}')?.duration || 'H1';
+      this.ids = JSON.parse(localStorage.getItem('ids_filters') || '[]').map(
+        ({ id, value, negated, fullString }) => new Filter(id, value, { negated, fullString }),
+      );
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log('Error while parsing local storage data');
@@ -266,10 +269,11 @@ class CommonStore {
   }
 
   // @TODO: Should be handled better (skipCheck)
-  addFilter(filter) {
-    const stack = Array.isArray(filter) ? filter : [filter];
-    this.ids = [...this.ids, ...stack];
-    localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids)));
+  addFilter(stack) {
+    const toClass = f => (f instanceof Filter ? f : new Filter(f.id, f.value, { negated: f.negated, fullString: f.fullString }));
+    const filters = Array.isArray(stack) ? stack.map(toClass) : [toClass(stack)];
+    this.ids = [...this.ids, ...filters];
+    localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.instance))));
   }
 
   removeFilter(filter) {
@@ -277,7 +281,7 @@ class CommonStore {
     const before = this.ids.slice(0, filterIndex);
     const after = this.ids.slice(filterIndex + 1);
     this.ids = [...before, ...after];
-    localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids)));
+    localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.instance))));
   }
 
   replaceFilter(oldFilter, newFilter) {
@@ -285,14 +289,9 @@ class CommonStore {
       const idx = CommonStore.#indexOfFilter(oldFilter, this.ids);
 
       /* eslint-disable-next-line */
-      const filtersUpdated = this.ids.map((filter, i) => (i === idx) ? {
-              ...filter,
-              ...newFilter,
-            }
-          : filter,
-      );
+      const filtersUpdated = this.ids.map((filter, i) => (i === idx) ? newFilter : filter);
       this.ids = filtersUpdated;
-      localStorage.setItem('ids_filters', JSON.stringify(toJS(filtersUpdated)));
+      localStorage.setItem('ids_filters', JSON.stringify(toJS(filtersUpdated.map(({ instance }) => instance))));
     }
   }
 
@@ -302,7 +301,7 @@ class CommonStore {
 
   getFilters(includeAlertTAg = false) {
     if (includeAlertTAg) {
-      return [...toJS(this.ids), toJS(this.alert)].filter(Boolean);
+      return [...toJS(this.ids), toJS(this._alert)].filter(Boolean);
     }
     return toJS(this.ids);
   }
@@ -339,7 +338,7 @@ class CommonStore {
   }
 
   get filtersWithAlert() {
-    return [...toJS(this.ids), toJS(this.alert)].filter(Boolean);
+    return [...toJS(this.ids), toJS(this._alert)].filter(Boolean);
   }
 
   get systemSettings() {
@@ -347,12 +346,16 @@ class CommonStore {
   }
 
   toggleAlertTag(key) {
-    this.alert = { ...this.alert, value: { ...this.alert.value, [key]: !this.alert.value[key] } };
-    localStorage.setItem('alert_tag', JSON.stringify(toJS(this.alert)));
+    this._alert = { ...this._alert, value: { ...this._alert.value, [key]: !this._alert.value[key] } };
+    localStorage.setItem('alert_tag', JSON.stringify(toJS(this._alert)));
+  }
+
+  get alert() {
+    return toJS(this._alert);
   }
 
   get eventTypes() {
-    return { alert: toJS(this.alert.value.alerts), stamus: toJS(this.alert.value.stamus), discovery: !!toJS(this.alert.value.sightings) };
+    return { alert: toJS(this._alert.value.alerts), stamus: toJS(this._alert.value.stamus), discovery: !!toJS(this._alert.value.sightings) };
   }
 
   get sources() {
@@ -408,7 +411,6 @@ class CommonStore {
         allFilters[idx].id === filter.id &&
         allFilters[idx].value === filter.value &&
         allFilters[idx].negated === filter.negated &&
-        allFilters[idx].query === filter.query &&
         allFilters[idx].fullString === filter.fullString
       ) {
         return idx;
@@ -431,11 +433,9 @@ class CommonStore {
       return false;
     }
 
-    const filterProps = ['id', 'value', 'negated', 'label', 'fullString', 'query'];
-
-    const filterKeys = Object.keys(filter);
-    for (let i = 0; i < filterKeys.length; i += 1) {
-      if (!filterProps.includes(filterKeys[i])) {
+    const filterProps = ['id', 'value', 'negated', 'label', 'fullString'];
+    for (let i = 0; i < filterProps.length; i += 1) {
+      if (!(filterProps[i] in filter)) {
         return false;
       }
     }
