@@ -60,6 +60,8 @@ class CommonStore {
 
   ids = [];
 
+  history = [];
+
   _alert = {};
 
   _systemSettings = null;
@@ -101,6 +103,9 @@ class CommonStore {
       this._timeRangeType = JSON.parse(localStorage.getItem('str-timespan') || '{}')?.timePicker || 'relative';
       this._relativeType = JSON.parse(localStorage.getItem('str-timespan') || '{}')?.duration || 'H1';
       this.ids = JSON.parse(localStorage.getItem('ids_filters') || '[]').map(
+        ({ id, value, negated, fullString }) => new Filter(id, value, { negated, fullString }),
+      );
+      this.history = JSON.parse(localStorage.getItem('history_filters') || '[]').map(
         ({ id, value, negated, fullString }) => new Filter(id, value, { negated, fullString }),
       );
     } catch (e) {
@@ -276,12 +281,27 @@ class CommonStore {
     localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.instance))));
   }
 
+  addHistoryFilter(filter) {
+    if (filter instanceof Filter) {
+      this.history = [...this.history, filter];
+      localStorage.setItem('history_filters', JSON.stringify(toJS(this.history.map(f => f.instance))));
+    }
+  }
+
   removeFilter(filter) {
     const filterIndex = CommonStore.#indexOfFilter(filter, this.ids);
     const before = this.ids.slice(0, filterIndex);
     const after = this.ids.slice(filterIndex + 1);
     this.ids = [...before, ...after];
     localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.instance))));
+  }
+
+  removeHistoryFilter(filter) {
+    const filterIndex = CommonStore.#indexOfFilter(filter, this.history);
+    const before = this.history.slice(0, filterIndex);
+    const after = this.history.slice(filterIndex + 1);
+    this.history = [...before, ...after];
+    localStorage.setItem('history_filters', JSON.stringify(toJS(this.history.map(f => f.instance))));
   }
 
   replaceFilter(oldFilter, newFilter) {
