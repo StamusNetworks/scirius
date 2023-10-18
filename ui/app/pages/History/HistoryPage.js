@@ -27,13 +27,13 @@ import HistoryItem from 'ui/components/HistoryItem';
 import ErrorHandler from 'ui/components/Error';
 import moment from 'moment';
 import buildListParams from 'ui/helpers/buildListParams';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useInjectSaga } from 'ui/utils/injectSaga';
 import { useInjectReducer } from 'ui/utils/injectReducer';
 import filtersActions from 'ui/stores/filters/actions';
 import reducer from 'ui/stores/filters/reducer';
 import saga from 'ui/stores/filters/saga';
-import { addFilter, makeSelectHistoryFilters } from 'ui/containers/HuntApp/stores/global';
+import { addFilter } from 'ui/containers/HuntApp/stores/global';
 import history from 'ui/utils/history';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import { buildFilter, buildListUrlParams } from '../../helpers/common';
@@ -62,9 +62,7 @@ const HistoryPage = () => {
     dispatch(filtersActions.historyFiltersRequest());
   }, []);
 
-  const filters = useSelector(makeSelectHistoryFilters());
-
-  const stringFilters = buildFilter(filters, commonStore.systemSettings);
+  const stringFilters = buildFilter(commonStore.history, commonStore.systemSettings);
   const listParams = buildListUrlParams(historyState);
 
   useEffect(async () => {

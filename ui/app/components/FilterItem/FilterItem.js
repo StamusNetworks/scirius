@@ -165,7 +165,11 @@ const FilterItem = props => {
               href="#"
               onClick={e => {
                 e.preventDefault();
-                commonStore.removeFilter(props.filter);
+                if (props.filterType === sections.HISTORY) {
+                  commonStore.removeHistoryFilter(props.filter);
+                } else {
+                  commonStore.removeFilter(props.filter);
+                }
               }}
             >
               <CloseOutlined />
@@ -215,7 +219,7 @@ const FilterItem = props => {
                         id="input-value-filter"
                         value={filterCopy.value}
                         onKeyDown={keyListener}
-                        onChange={v => filterCopy.setValue(v || '')}
+                        onChange={value => setFilterCopy({ ...filterCopy, value })}
                         style={{ width: '100%' }}
                       />
                     )}

@@ -11,7 +11,6 @@ import ruleSetReducer from 'ui/stores/filters/reducer';
 import ruleSetSaga from 'ui/stores/filters/saga';
 import ruleSetsActions from 'ui/stores/filters/actions';
 import ruleSetsSelectors from 'ui/stores/filters/selectors';
-import * as huntGlobalStore from 'ui/containers/HuntApp/stores/global';
 import FilterList from 'ui/components/FilterList/index';
 import { sections } from 'ui/constants';
 import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
@@ -93,8 +92,7 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
   const { commonStore } = useStore();
 
   // Selectors handlers
-  const { user, filters } = commonStore;
-  const historyFilters = useSelector(huntGlobalStore.makeSelectHistoryFilters());
+  const { user, filters, history } = commonStore;
   const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());
   const supportedActionsPermissions = user && user.permissions && user.permissions.includes('rules.ruleset_policy_edit');
   const filtersAreSticky = useSelector(({ ruleSet }) => ruleSet?.filtersAreSticky);
@@ -204,7 +202,7 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
     }
   }, [selectedItems]);
 
-  const activeFilters = section === sections.HISTORY ? historyFilters : filters;
+  const activeFilters = section === sections.HISTORY ? history : filters;
 
   const displayRender = (labels, selectedOptions) =>
     labels.map((label, i) => {
@@ -265,17 +263,11 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
       fvalue = value;
     }
 
-    dispatch(
-      huntGlobalStore.addFilter(section, {
-        label: filterText,
-        id: fieldId,
-        value: fvalue,
-        negated: false,
-        query: field.queryType,
-        fullString,
-      }),
-    );
-    commonStore.addFilter(new Filter(fieldId, fvalue, { fullString }));
+    if (section === sections.HISTORY) {
+      commonStore.addHistoryFilter(new Filter(fieldId, fvalue, { fullString }));
+    } else {
+      commonStore.addFilter(new Filter(fieldId, fvalue, { fullString }));
+    }
     setSelectedItems([]);
     setSelectedIds([]);
     setSearchString('');
