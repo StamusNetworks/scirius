@@ -158,7 +158,6 @@ export const reducer = (state = initialState, action) =>
             : filter,
         );
 
-        updateStorage(action.filterType, updatedGlobalFilters);
         draft.filters[action.filterType] = updatedGlobalFilters;
         break;
       }
