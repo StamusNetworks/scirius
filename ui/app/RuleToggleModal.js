@@ -88,7 +88,7 @@ export default class RuleToggleModal extends React.Component {
             }
 
             if (res.data.fields.indexOf(this.props.filters[i].id) !== -1) {
-              const filter = cloneDeep(this.props.filters[i]);
+              const filter = cloneDeep(this.props.filters[i].instance);
 
               if (this.props.filters[i].negated === false) {
                 filter.operator = 'equal';
