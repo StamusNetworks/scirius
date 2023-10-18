@@ -9,6 +9,7 @@ import filtersSelectors from 'ui/stores/filters/selectors';
 import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
 import ErrorHandler from 'ui/components/Error';
+import { observer } from 'mobx-react-lite';
 import { ActionButton } from '../styles';
 
 const ActionsButtons = ({ supportedActions, filterParams, rulesets }) => {
@@ -101,4 +102,10 @@ const mapStateToProps = createStructuredSelector({
   rulesets: filtersSelectors.makeSelectRuleSets(),
 });
 
-export default connect(mapStateToProps)(ActionsButtons);
+// export default connect(mapStateToProps)(ActionsButtons);
+
+const ActionsButtonsObserver = observer(ActionsButtons);
+
+const Wrapper = props => <ActionsButtonsObserver {...props} />;
+
+export default connect(mapStateToProps)(Wrapper);

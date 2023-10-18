@@ -91,7 +91,9 @@ const FilterSets = () => {
 
     const filters = row.content.filter(f => f.id !== 'alert.tag');
     dispatch(addFilter(sections.GLOBAL, filters));
-    commonStore.addFilter(filters.map(f => new Filter(f.id, f.value, { negated: f.negated || false }).instance));
+    commonStore.addFilter(
+      filters.map(f => new Filter(f.id, f.value, { negated: f.negated || false, fullString: f.fullString !== undefined ? f.fullString : true })),
+    );
 
     if (process.env.REACT_APP_HAS_TAG) {
       const alertTag = row.content.filter(f => f.id === 'alert.tag')[0];
