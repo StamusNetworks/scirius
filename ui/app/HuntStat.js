@@ -39,7 +39,7 @@ class HuntStat extends React.Component {
   }
 
   addFilter = (id, value, negated) => {
-    this.props.store.commonStore.addFilter({ id, value, negated });
+    this.props.store.commonStore.addFilter(new Filter(id, value, { negated }));
   };
 
   menu = (

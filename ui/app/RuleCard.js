@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Card, Row, Col, Spin, Tooltip, Space } from 'antd';
 import { ZoomInOutlined } from '@ant-design/icons';
-import { sections } from 'ui/constants';
 import RuleEditKebab from 'ui/components/RuleEditKebab';
 import SciriusChart from 'ui/components/SciriusChart';
 import ErrorHandler from 'ui/components/Error';
 import { addFilter } from 'ui/containers/HuntApp/stores/global';
+import Filter from 'ui/utils/Filter';
 
 const RuleCard = props => {
   const { category } = props.data;
@@ -70,10 +70,7 @@ const RuleCard = props => {
         <span>
           SID: <strong>{props.data.sid}</strong>
         </span>
-        <a
-          onClick={() => props.addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: props.data.sid, negated: false })}
-          style={{ cursor: 'pointer' }}
-        >
+        <a onClick={() => props.addFilter(new Filter(alert.signature_id, props.data.sid, { negated: false }))} style={{ cursor: 'pointer' }}>
           <ZoomInOutlined />
         </a>
       </Space>
