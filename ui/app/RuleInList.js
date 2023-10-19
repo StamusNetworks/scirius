@@ -102,7 +102,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
             data-test="zoom-in-magnifier"
             style={{ marginRight: '10px' }}
             onClick={() => {
-              commonStore.addFilter({ id: 'alert.signature_id', value: rule.sid, negated: false });
+              commonStore.addFilter(new Filter('alert.signature_id', rule.sid, { negated: false }));
               addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: rule.sid, negated: false });
             }}
           />
@@ -110,7 +110,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
             data-test="zoom-out-magnifier"
             onClick={e => {
               e.stopPropagation();
-              commonStore.addFilter({ id: 'alert.signature_id', value: rule.sid, negated: true });
+              commonStore.addFilter(new Filter('alert.signature_id', rule.sid, { negated: true }));
               addFilter(sections.GLOBAL, { id: 'alert.signature_id', value: rule.sid, negated: true });
             }}
           />

@@ -8,13 +8,13 @@ import { MenuOutlined } from '@ant-design/icons';
 import { createStructuredSelector } from 'reselect';
 import { withStore } from 'ui/mobx/RootStoreProvider';
 import { sections } from 'ui/constants';
-import { dashboard } from 'config/Dashboard';
 import { compose } from 'redux';
 import FilterToggleModal from 'ui/FilterToggleModal';
 import ErrorHandler from 'ui/components/Error';
 import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
 import filterSetActions from 'ui/stores/filterset/actions';
 import { addFilter, generateAlert, setTag, clearFilters, makeSelectAlertTag } from 'ui/containers/HuntApp/stores/global';
+import Filter from 'ui/utils/Filter';
 
 class FilterEditKebab extends React.Component {
   constructor(props) {
@@ -63,20 +63,11 @@ class FilterEditKebab extends React.Component {
       const val = Number(this.props.data.filter_defs[idx].value)
         ? Number(this.props.data.filter_defs[idx].value)
         : this.props.data.filter_defs[idx].value;
-      const { format } = dashboard.find(d => d.panelId === 'basic').items.find(o => o.i === this.props.data.filter_defs[idx].key) || {};
-      const label = `${this.props.data.filter_defs[idx].key}: ${
-        format ? format(this.props.data.filter_defs[idx].value) : this.props.data.filter_defs[idx].value
-      }`;
-      const filter = {
-        id: this.props.data.filter_defs[idx].key,
-        key: this.props.data.filter_defs[idx].key,
-        label,
-        value: val,
+      const filter = new Filter(this.props.data.filter_defs[idx].key, val, {
         negated: this.props.data.filter_defs[idx].operator !== 'equal',
         fullString: this.props.data.filter_defs[idx].full_string,
-      };
-
-      filters.push(filter);
+      });
+      filters.push(filter.instance);
     }
     return filters;
   };
@@ -103,7 +94,7 @@ class FilterEditKebab extends React.Component {
 
   convertActionToFilters() {
     this.props.clearFilters(sections.GLOBAL);
-    this.props.addFilter(sections.GLOBAL, this.generateFilterSet());
+    this.props.store.commonStore.addFilter(this.generateFilterSet());
     if (process.env.REACT_APP_HAS_TAG === '1') {
       this.props.setTag(this.generateAlertTag());
     }
