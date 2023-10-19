@@ -6,10 +6,10 @@ import styled from 'styled-components';
 import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Row, Tooltip } from 'antd';
 import IP_FIELDS from 'ui/config/ipFields';
 import { useStore } from 'ui/mobx/RootStoreProvider';
+import { INTERGER_FIELDS_ENDS_WITH, INTERGER_FIELDS_EXACT } from 'ui/maps/FiltersFieldTypes';
+import isNumeric from 'ui/helpers/isNumeric';
+import Filter from 'ui/utils/Filter';
 import FilterActionButton from './FilterActionButton.styled';
-import { INTERGER_FIELDS_ENDS_WITH, INTERGER_FIELDS_EXACT } from '../FilterList/FilterList';
-import isNumeric from '../../helpers/isNumeric';
-import Filter from '../../utils/Filter';
 
 const ModalHuntFilter = styled(Modal)`
   & .modal-body {
