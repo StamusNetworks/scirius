@@ -20,6 +20,7 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import tarfile
 import json
+from urllib.parse import urlparse
 from io import BytesIO
 from django import forms
 from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied, ValidationError
@@ -126,7 +127,7 @@ class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelFor
     use_http_proxy = forms.BooleanField(label='Use a proxy', required=False)
     custom_elasticsearch = forms.BooleanField(label='Use an external Elasticsearch server', required=False)
     http_proxy = forms.CharField(max_length=200, required=False, help_text='Proxy address of the form "http://username:password@hostname:port/"')
-    elasticsearch_url = forms.CharField(max_length=200, empty_value='http://elasticsearch:9200/', required=False)
+    elasticsearch_url = forms.CharField(max_length=200, empty_value='http://elasticsearch:9200/', required=False, help_text='"http(s)://ip:port" or "http(s)://domain:port"')
     use_proxy_for_es = forms.BooleanField(label='Use elasticsearch with system proxy', required=False)
     custom_cookie_age = forms.FloatField(
         label='Automatic logout after inactivity timeout (in hours)',
@@ -160,8 +161,13 @@ class SystemSettingsForm(ConfigurationEditPermForm, BaseEditForm, forms.ModelFor
         exclude = []
 
     def clean_elasticsearch_url(self):
-        if self.cleaned_data['custom_elasticsearch'] and '@' in self.cleaned_data['elasticsearch_url']:
-            raise forms.ValidationError('Credentials must be set in the dedicated fields')
+        if self.cleaned_data['custom_elasticsearch']:
+            if '@' in self.cleaned_data['elasticsearch_url']:
+                raise forms.ValidationError('Credentials must be set in the dedicated fields')
+            if self.cleaned_data['elasticsearch_url']:
+                parser = urlparse(self.cleaned_data['elasticsearch_url'])
+                if parser.port is None:
+                    raise forms.ValidationError('Invalid syntax: port is missing')
         return self.cleaned_data['elasticsearch_url']
 
 
