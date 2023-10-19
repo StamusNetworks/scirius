@@ -140,7 +140,7 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
 
   const renderContents = rule => {
     const items = [];
-    if (rule.versions.length > 1) {
+    if (rule.versions?.length > 1) {
       rule.versions.forEach((version, i) => {
         items.push({
           key: i,
@@ -151,8 +151,8 @@ const RuleInList = ({ addFilter, rulesets, rules, filterParams, loading }) => {
     }
     return (
       <div style={{ height: '100%', width: 'calc(100vw - 260px)' }}>
-        {rule.versions.length === 1 && <SigContent dangerouslySetInnerHTML={{ __html: rule.versions[0].content }} key={rule.versions[0].id} />}
-        {rule.versions.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
+        {rule.versions?.length === 1 && <SigContent dangerouslySetInnerHTML={{ __html: rule.versions[0].content }} key={rule.versions[0].id} />}
+        {rule.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
         <SciriusChart
           data={rule.timeline}
           axis={{ x: { min: filterParams.fromDate, max: filterParams.toDate } }}
