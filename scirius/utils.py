@@ -78,6 +78,10 @@ class CustomCSPMiddleware(object):
             elif splitted_path[1] == 'accounts':
                 if splitted_path[2] != 'login':
                     response._csp_update = {'style-src': "'unsafe-inline'", 'script-src': "'unsafe-inline'"}
+            elif splitted_path[1] == 'saml2' and splitted_path[2] == 'login':
+                if get_middleware_module('common').has_saml_auth():
+                    response._csp_update = {'form-action': get_middleware_module('common').saml_idp_hostname(), 'script-src': "'unsafe-inline'"}
+
         return response
 
 
