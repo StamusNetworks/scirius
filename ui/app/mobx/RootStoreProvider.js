@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
 import PropTypes from 'prop-types';
-import { store } from 'ui/mobx/stores/RootStore';
+import RootStore from 'ui/mobx/stores/RootStore';
 // import { store } from './store';
 
 // create the context
@@ -8,11 +8,13 @@ const StoreContext = createContext(null);
 
 // create the provider component
 // eslint-disable-next-line arrow-body-style
+
+export const store = new RootStore();
 export const RootStoreProvider = ({ children }) => {
   // only create the store once ( store is a singleton)
-  // const root = store ?? new RootStore();
+  const root = store ?? new RootStore();
 
-  return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
+  return <StoreContext.Provider value={root}>{children}</StoreContext.Provider>;
 };
 RootStoreProvider.propTypes = {
   children: PropTypes.string,
