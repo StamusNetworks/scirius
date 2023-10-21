@@ -1,5 +1,5 @@
 import { getMap } from 'ui/helpers/translateMap';
-import { store as mobxStore } from 'ui/mobx/stores/RootStore';
+import { store as mobxStore } from 'ui/mobx/RootStoreProvider';
 import { store } from '../store';
 
 const translateUrl = (path, parameters = {}) => {

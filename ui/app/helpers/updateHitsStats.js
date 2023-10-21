@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 import * as config from 'config/Api';
-import { store } from 'ui/mobx/stores/RootStore';
+import { store } from 'ui/mobx/RootStoreProvider';
 
 function buildProbesSet(data) {
   const probes = [];

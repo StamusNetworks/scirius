@@ -17,5 +17,3 @@ class RootStore {
 }
 
 export default RootStore;
-
-export const store = new RootStore();
