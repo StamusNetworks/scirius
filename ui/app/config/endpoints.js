@@ -80,7 +80,7 @@ const ENDPOINT = {
   },
   SIGNATURES: {
     name: 'Fetching signature',
-    url: `/rest/rules/rule/:datesEs:filters:qFilter:eventTypes`,
+    url: `/rest/rules/rule/:datesEs:filters:qFilter:eventTypes:withAlerts`,
   },
 };
 

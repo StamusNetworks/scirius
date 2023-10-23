@@ -70,6 +70,8 @@ class CommonStore {
 
   _user = null;
 
+  _withAlerts = null;
+
   constructor(root) {
     this.root = root;
     if (!localStorage.getItem('alert_tag')) {
@@ -96,6 +98,20 @@ class CommonStore {
       localStorage.setItem('endDate', endDate);
     } else {
       this._endDate = localStorage.getItem('endDate');
+    }
+    if (!localStorage.getItem('withAlerts')) {
+      localStorage.setItem('withAlerts', 'true');
+      this._withAlerts = true;
+    } else {
+      try {
+        this._withAlerts = !!JSON.parse(localStorage.getItem('withAlerts'));
+        localStorage.setItem('withAlerts', JSON.stringify(this._withAlerts));
+      } catch (e) {
+        this._withAlerts = true;
+        localStorage.setItem('withAlerts', 'true');
+        // eslint-disable-next-line no-console
+        console.log('Error while parsing local storage data');
+      }
     }
     try {
       this._systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
@@ -324,6 +340,42 @@ class CommonStore {
       return [...toJS(this.ids), toJS(this._alert)].filter(Boolean);
     }
     return toJS(this.ids);
+  }
+
+  set withAlerts(value) {
+    if (value) {
+      const hitsMin = this.ids.find(f => f.id === 'hits_min');
+      if (hitsMin) {
+        if (hitsMin.value > 1) {
+          localStorage.setItem('hitsMinBackup', JSON.stringify(hitsMin.instance));
+        }
+        this.ids = this.ids.filter(f => f.id !== 'hits_min');
+        localStorage.setItem('ids_filters', JSON.stringify(this.ids.map(({ instance }) => instance)));
+      }
+    } else {
+      let backup;
+      try {
+        const jsBackup = JSON.parse(localStorage.getItem('hitsMinBackup'));
+        if (jsBackup) {
+          backup = new Filter(jsBackup.id, jsBackup.value, { negated: jsBackup.negated });
+        }
+        localStorage.removeItem('hitsMinBackup');
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('Error parsing backed up hits_min filter');
+      }
+
+      if (backup) {
+        this.addFilter(backup);
+      }
+    }
+
+    localStorage.setItem('withAlerts', value);
+    this._withAlerts = value;
+  }
+
+  get withAlerts() {
+    return this._withAlerts;
   }
 
   get startDate() {

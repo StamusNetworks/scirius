@@ -267,6 +267,9 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
       commonStore.addHistoryFilter(new Filter(fieldId, fvalue, { fullString }));
     } else {
       commonStore.addFilter(new Filter(fieldId, fvalue, { fullString }));
+      if (page === 'RULES_LIST' && !commonStore.withAlerts && fieldId === 'hits_min') {
+        commonStore.withAlerts = true;
+      }
     }
     setSelectedItems([]);
     setSelectedIds([]);

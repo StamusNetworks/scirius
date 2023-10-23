@@ -41,7 +41,7 @@ apiInstance.addRequestTransform(request => {
   urlParams
     .filter(m => Boolean(map(m)))
     .forEach(match => {
-      request.params = { ...request.params, ...map(match) };
+      request.params = { ...request.params, ...map(match, urlParams) };
     });
 });
 

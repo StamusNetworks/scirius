@@ -1,6 +1,7 @@
 import { buildQFilter } from 'ui/buildQFilter';
+import withAlerts from 'ui/helpers/withAlerts';
 
-const map = type => {
+const map = (type, allTypes = []) => {
   switch (type) {
     case ':dates': {
       return {
@@ -16,7 +17,8 @@ const map = type => {
       };
     }
     case ':filters': {
-      const idsFilters = JSON.parse(localStorage.getItem('ids_filters') || '[]');
+      let idsFilters = JSON.parse(localStorage.getItem('ids_filters') || '[]');
+      idsFilters = allTypes.includes(':withAlerts') ? withAlerts(idsFilters) : idsFilters;
       return idsFilters
         .filter(f => f.id !== 'probe')
         .reduce((acc, cur) => {
@@ -33,8 +35,10 @@ const map = type => {
     }
     case ':qFilter': {
       const alertTag = JSON.parse(localStorage.getItem('alert_tag'));
-      const idsFilters = JSON.parse(localStorage.getItem('ids_filters') || '[]');
+      let idsFilters = JSON.parse(localStorage.getItem('ids_filters') || '[]');
+      idsFilters = allTypes.includes(':withAlerts') ? withAlerts(idsFilters) : idsFilters;
       const systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
+
       return buildQFilter([alertTag, ...idsFilters], systemSettings, 'object');
     }
     default:
