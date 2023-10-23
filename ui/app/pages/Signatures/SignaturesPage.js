@@ -20,25 +20,37 @@ along with Scirius.  If not, see <http://www.gnu.org/licenses/>.
 
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
+import styled from 'styled-components';
+import { Switch } from 'antd';
 import { Helmet } from 'react-helmet';
-import { STAMUS } from 'ui/config';
-import { buildQFilter } from 'ui/buildQFilter';
+import { observer } from 'mobx-react-lite';
+
 import ErrorHandler from 'ui/components/Error';
-import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
 import buildListParams from 'ui/helpers/buildListParams';
-import { useStore } from 'ui/mobx/RootStoreProvider';
 import useFilterParams from 'ui/hooks/useFilterParams';
 import useAutorun from 'ui/helpers/useAutorun';
-import { observer } from 'mobx-react-lite';
+import { STAMUS } from 'ui/config';
+import { buildQFilter } from 'ui/buildQFilter';
+import { sections } from 'ui/constants';
+import { useStore } from 'ui/mobx/RootStoreProvider';
+import HuntPaginationRow from '../../HuntPaginationRow';
+import RulePage from '../../RulePage';
+import RuleInList from '../../RuleInList';
 import { updateHitsStats } from '../../helpers/updateHitsStats';
 import { buildListUrlParams } from '../../helpers/common';
-import RuleInList from '../../RuleInList';
-import RulePage from '../../RulePage';
-import HuntPaginationRow from '../../HuntPaginationRow';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+
+const AlertsMinOneToggle = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  grid-gap: 10px;
+  align-items: center;
+  justify-content: end;
+  margin: 10px;
+`;
 
 export const RuleSortFields = [
   {
@@ -89,6 +101,12 @@ const SignaturesPage = () => {
   const listUrlParams = buildListUrlParams(listParams);
 
   const SID = commonStore.filters.find(f => f.id === 'alert.signature_id' && f.negated === false);
+
+  const updateSignatureListState = ({ pagination, sort }) => {
+    setListParams({ pagination, sort });
+    localStorage.setItem('rules_list', JSON.stringify({ pagination, sort }));
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -131,7 +149,11 @@ const SignaturesPage = () => {
     }
   };
 
-  useAutorun(fetchData, [listUrlParams]);
+  useAutorun(fetchData, [listUrlParams, commonStore.withAlerts]);
+
+  useEffect(() => {
+    updateSignatureListState({ pagination: { ...listParams.pagination, page: 1 }, sort: listParams.sort });
+  }, [commonStore.withAlerts]);
 
   useEffect(() => {
     (async () => {
@@ -149,11 +171,6 @@ const SignaturesPage = () => {
       timeline.columns[1].push(tdata[key].hits);
     }
     return timeline;
-  };
-
-  const updateSignatureListState = ({ pagination, sort }) => {
-    setListParams({ pagination, sort });
-    localStorage.setItem('rules_list', JSON.stringify({ pagination, sort }));
   };
 
   const sources = useMemo(() => {
@@ -187,6 +204,20 @@ const SignaturesPage = () => {
           }}
         />
       </ErrorHandler>
+
+      <AlertsMinOneToggle>
+        <Switch
+          data-test="alertsMinOne-switch"
+          size="small"
+          checkedChildren="ON"
+          unCheckedChildren="OFF"
+          checked={commonStore.withAlerts}
+          onChange={value => {
+            commonStore.withAlerts = value;
+          }}
+        />
+        <span>Show only with alerts</span>
+      </AlertsMinOneToggle>
 
       {!SID && <RuleInList loading={loading} rules={signatures} sources={sources} filterParams={filterParams} rulesets={ruleSets} />}
       <ErrorHandler>

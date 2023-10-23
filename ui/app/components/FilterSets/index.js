@@ -94,6 +94,9 @@ const FilterSets = () => {
     commonStore.addFilter(
       filters.map(f => new Filter(f.id, f.value, { negated: f.negated || false, fullString: f.fullString !== undefined ? f.fullString : true })),
     );
+    if (row.page === 'RULES_LIST' && filters.find(f => f.id === 'hits_min')) {
+      commonStore.withAlerts = true;
+    }
 
     if (process.env.REACT_APP_HAS_TAG) {
       const alertTag = row.content.filter(f => f.id === 'alert.tag')[0];
