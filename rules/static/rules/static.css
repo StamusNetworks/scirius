@@ -221,7 +221,6 @@ div.highlight span.na {
     font-style: italic;
 }
 
-
 input[type="text"]#id_search {
     width: 10em;
     margin-right: 1em;
@@ -298,7 +297,6 @@ div.label a {
 
 tr.overed {
    background-color: rgb(113, 159, 202) !important;
-   font-color: black !important;
 }
 
 /* Added for d3js */
@@ -577,3 +575,31 @@ div#highlight_info {
     font-size: 15px;
 }
 /* Log In page end */
+
+/* ========================================================================================= */
+/* =============================== appliance branch ======================================== */
+table.paleblue > tbody > tr > td > span.true, table.paleblue > tbody > tr > td > span.false {
+    background-image: none;
+    min-width: 10em;
+    height: 1.7em;
+    text-indent: 0px;
+    font-size: 90%;
+    padding-top: 4px;
+}
+
+td.warning {
+    color: #7A1243;
+}
+
+table.paleblue thead th.status {
+    width: 10em;
+}
+
+.output-panel {
+  padding: 1%;
+}
+
+.dropdown-item.active {
+  color: #005792;
+  background-color: inherit;
+}
