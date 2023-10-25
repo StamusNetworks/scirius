@@ -129,7 +129,7 @@ def migrate_2(apps, _):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('rules', '0099_alter_source_datatype'),
+        ('rules', '0100_systemsettings_session_cookie_age'),
     ]
 
     operations = [

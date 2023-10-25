@@ -37,7 +37,7 @@ def migration_2(apps, _):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('rules', '0100_rule_content'),
+        ('rules', '0101_rule_content'),
     ]
 
     operations = [
