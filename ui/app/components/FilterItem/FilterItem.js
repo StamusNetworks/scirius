@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { EditOutlined, CloseOutlined } from '@ant-design/icons';
+import { EditOutlined, CloseOutlined, StopOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { sections } from 'ui/constants';
 import styled from 'styled-components';
-import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Row, Tooltip } from 'antd';
+import { Button, Checkbox, Col, Form, Input, InputNumber, message, Modal, Row, Tooltip } from 'antd';
 import IP_FIELDS from 'ui/config/ipFields';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import { INTERGER_FIELDS_ENDS_WITH, INTERGER_FIELDS_EXACT } from 'ui/maps/FiltersFieldTypes';
@@ -24,10 +24,11 @@ const HuntFilter = styled.span`
   display: flex !important;
   padding: 0px !important;
   align-items: center;
+  text-decoration: ${p => (p.suspended ? 'line-through' : '')};
   background-color: ${p => (p.disabled ? '#c2c2c2' : '#005792')};
   border-radius: 0px;
   box-sizing: border-box;
-  color: rgb(255, 255, 255);
+  color: #ffffff;
   font-family: 'Open Sans', Helvetica, Arial, sans-serif;
   font-size: 11px;
   height: 21.5px;
@@ -55,7 +56,6 @@ const HuntFilter = styled.span`
 
 const LabelContent = styled.div`
   box-sizing: border-box;
-  color: rgb(255, 255, 255);
   display: block;
   font-family: 'Open Sans', Helvetica, Arial, sans-serif;
   font-size: 11px;
@@ -84,6 +84,7 @@ const DeleteFilterButton = styled(FilterActionButton)`
 const FilterItem = props => {
   const { commonStore } = useStore();
   const filterItemDataTest = props.filter.negated ? 'filter-item-not' : 'filter-item';
+  const [messageApi, contextHolder] = message.useMessage();
 
   const [filterCopy, setFilterCopy] = useState(props.filter.instance);
   const [editForm, setEditForm] = useState(false);
@@ -108,6 +109,7 @@ const FilterItem = props => {
       new Filter(filterCopy.id, newFilterValue, {
         negated: filterCopy.negated,
         fullString: filterCopy.fullString,
+        suspended: filterCopy.suspended,
       }),
     );
     setEditForm(false);
@@ -144,8 +146,14 @@ const FilterItem = props => {
 
   return (
     <li>
+      {contextHolder}
       <Tooltip title={props.disabled ? 'Filters are not applicable' : null}>
-        <HuntFilter className={props.filter.negated ? 'label-not' : ''} disabled={props.disabled} data-test={`${filterItemDataTest}`}>
+        <HuntFilter
+          className={props.filter.negated ? 'label-not' : ''}
+          disabled={props.disabled}
+          suspended={props.filter.suspended}
+          data-test={`${filterItemDataTest}`}
+        >
           <LabelContent data-test="hunt-filter__filtered">{props.filter.label}</LabelContent>
           <div style={{ display: 'flex' }}>
             {props.filterType !== sections.HISTORY && (
@@ -161,6 +169,21 @@ const FilterItem = props => {
               </EditFilterButton>
             )}
             {props.children}
+            {props.filterType !== sections.HISTORY && (
+              <EditFilterButton
+                href="#"
+                onClick={e => {
+                  e.preventDefault();
+                  commonStore.replaceFilter(props.filter, props.filter.suspend());
+                  messageApi.open({
+                    type: 'success',
+                    content: `Filter is ${props.filter.suspended ? 'disabled' : 'enabled'}`,
+                  });
+                }}
+              >
+                {props.filter.suspended ? <CheckCircleOutlined /> : <StopOutlined />}
+              </EditFilterButton>
+            )}
             <DeleteFilterButton
               href="#"
               onClick={e => {

@@ -9,7 +9,7 @@ export function esEscape(str) {
   return result.replace(/[=+\-&|!(){}[\]^"~:\\/]/g, c => `\\${c}`);
 }
 
-export function buildQFilter(filters, systemSettings, returnType = 'legacy') {
+export function buildQFilter(activeFilters, systemSettings, returnType = 'legacy') {
   const qfilter = [];
   let fSuffix = '.raw';
 
@@ -17,6 +17,7 @@ export function buildQFilter(filters, systemSettings, returnType = 'legacy') {
     fSuffix = `.${systemSettings.es_keyword}`;
   }
 
+  const filters = activeFilters.filter(f => f.suspended !== true);
   for (let i = 0; i < filters.length; i += 1) {
     if (filters[i].id.substring(0, 8) !== 'host_id.' && filters[i].id !== 'hits_min' && filters[i].id !== 'hits_max') {
       let fPrefix = '';
