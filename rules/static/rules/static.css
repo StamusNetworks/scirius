@@ -499,6 +499,7 @@ div#highlight_info {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     align-items: center;
+    margin-bottom: 10px;
 }
 
 .login__button-box  .form-group {
