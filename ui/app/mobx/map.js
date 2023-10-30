@@ -20,6 +20,7 @@ const map = (type, allTypes = []) => {
       let idsFilters = JSON.parse(localStorage.getItem('ids_filters') || '[]');
       idsFilters = allTypes.includes(':withAlerts') ? withAlerts(idsFilters) : idsFilters;
       return idsFilters
+        .filter(f => f.suspended === false)
         .filter(f => f.id !== 'probe')
         .reduce((acc, cur) => {
           acc[cur.id] = acc[cur.id] ? `${acc[cur.id]},${cur.value}` : cur.value;
@@ -36,6 +37,7 @@ const map = (type, allTypes = []) => {
     case ':qFilter': {
       const alertTag = JSON.parse(localStorage.getItem('alert_tag'));
       let idsFilters = JSON.parse(localStorage.getItem('ids_filters') || '[]');
+      idsFilters = idsFilters.filter(f => f.suspended === false);
       idsFilters = allTypes.includes(':withAlerts') ? withAlerts(idsFilters) : idsFilters;
       const systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
 

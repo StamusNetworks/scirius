@@ -100,7 +100,7 @@ const SignaturesPage = () => {
   const [listParams, setListParams] = useState(rulesListConf);
   const listUrlParams = buildListUrlParams(listParams);
 
-  const SID = commonStore.filters.find(f => f.id === 'alert.signature_id' && f.negated === false);
+  const SID = commonStore.filters.find(f => f.id === 'alert.signature_id' && f.negated === false && !f.suspended);
 
   const updateSignatureListState = ({ pagination, sort }) => {
     setListParams({ pagination, sort });

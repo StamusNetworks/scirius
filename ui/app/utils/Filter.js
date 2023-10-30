@@ -24,6 +24,8 @@ export default class Filter {
     negated: false,
     /* Filter mode: exact match. Example: true | false */
     fullString: false,
+    /* Filter temporarily suspended */
+    suspended: false,
   };
 
   constructor(filter, value, props) {
@@ -49,7 +51,8 @@ export default class Filter {
         value,
         negated: props?.negated || false,
         fullString: props?.fullString !== undefined ? props.fullString : true,
-        convertible: filterSchema.convertible || false,
+        convertible: filterSchema?.convertible !== undefined ? filterSchema?.convertible : false,
+        suspended: props?.suspended !== undefined ? props.suspended : false,
       };
     }
     return {
@@ -62,7 +65,9 @@ export default class Filter {
       value,
       label: `${filterKey}: ${value}`,
       negated: props?.negated || false,
-      fullString: props?.fullString || true,
+      fullString: props?.fullString !== undefined ? props?.fullString : false,
+      convertible: filterSchema?.convertible !== undefined ? filterSchema?.convertible : false,
+      suspended: props?.suspended !== undefined ? props?.suspended : false,
     };
   }
 
@@ -98,8 +103,17 @@ export default class Filter {
     return !!this.#_filter.fullString;
   }
 
+  get suspended() {
+    return !!this.#_filter.suspended;
+  }
+
   negate(value) {
     this.#_filter.negated = value || true;
+    return this;
+  }
+
+  suspend(value) {
+    this.#_filter.suspended = value === undefined ? !this.#_filter.suspended : value;
     return this;
   }
 
