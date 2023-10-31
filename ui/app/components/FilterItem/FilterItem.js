@@ -9,7 +9,7 @@ import { useStore } from 'ui/mobx/RootStoreProvider';
 import { INTERGER_FIELDS_ENDS_WITH, INTERGER_FIELDS_EXACT } from 'ui/maps/FiltersFieldTypes';
 import isNumeric from 'ui/helpers/isNumeric';
 import Filter from 'ui/utils/Filter';
-import FilterActionButton from './FilterActionButton.styled';
+import FilterButton from 'ui/components/FilterButton';
 
 const ModalHuntFilter = styled(Modal)`
   & .modal-body {
@@ -20,18 +20,20 @@ const ModalHuntFilter = styled(Modal)`
   }
 `;
 
-const HuntFilter = styled.span`
+const FilterContainer = styled.li`
   display: flex !important;
-  padding: 0px !important;
+  padding: 0 !important;
+  gap: 10px;
+  justify-content: space-between;
   align-items: center;
   text-decoration: ${p => (p.suspended ? 'line-through' : '')};
   background-color: ${p => (p.disabled ? '#c2c2c2' : '#005792')};
-  border-radius: 0px;
+  border-radius: 0;
   box-sizing: border-box;
   color: #ffffff;
   font-family: 'Open Sans', Helvetica, Arial, sans-serif;
   font-size: 11px;
-  height: 21.5px;
+  height: 22px;
   line-height: 11px;
   list-style: none outside none;
   margin: 1px;
@@ -48,37 +50,24 @@ const HuntFilter = styled.span`
     margin: 1px 0 1px 1px;
     font-weight: bold;
   }
-
-  & .label-content {
-    padding: 4px 8px;
-  }
 `;
 
-const LabelContent = styled.div`
+const FilterLabel = styled.span`
   box-sizing: border-box;
-  display: block;
   font-family: 'Open Sans', Helvetica, Arial, sans-serif;
   font-size: 11px;
-  height: 19px;
-  line-height: 11px;
   list-style: none outside none;
-  padding: 4px 8px;
-  text-align: center;
-  text-size-adjust: 100%;
-  white-space: normal;
   cursor: default;
+  padding-left: ${p => (!p?.hasIcon ? '5px' : '0')};
 `;
 
-const EditFilterButton = styled(FilterActionButton)`
-  &:hover {
-    background: ${p => (p.disabled ? 'none' : '#8a8382')};
-  }
+const FilterText = styled.div`
+  display: flex;
+  align-items: center;
 `;
 
-const DeleteFilterButton = styled(FilterActionButton)`
-  &:hover {
-    background: ${p => (p.disabled ? 'none' : '#b70505')};
-  }
+const FilterControls = styled.div`
+  display: flex;
 `;
 
 const FilterItem = props => {
@@ -145,61 +134,71 @@ const FilterItem = props => {
   }
 
   return (
-    <li>
+    <React.Fragment>
       {contextHolder}
-      <Tooltip title={props.disabled ? 'Filters are not applicable' : null}>
-        <HuntFilter
-          className={props.filter.negated ? 'label-not' : ''}
-          disabled={props.disabled}
-          suspended={props.filter.suspended}
-          data-test={`${filterItemDataTest}`}
-        >
-          <LabelContent data-test="hunt-filter__filtered">{props.filter.label}</LabelContent>
-          <div style={{ display: 'flex' }}>
-            {props.filterType !== sections.HISTORY && (
-              <EditFilterButton
-                data-test="filter-edit-button"
-                href="#"
-                onClick={e => {
-                  e.preventDefault();
-                  setEditForm(true);
-                }}
-              >
-                <EditOutlined />
-              </EditFilterButton>
-            )}
-            {props.children}
-            {props.filterType !== sections.HISTORY && (
-              <EditFilterButton
-                href="#"
-                onClick={e => {
-                  e.preventDefault();
-                  commonStore.replaceFilter(props.filter, props.filter.suspend());
-                  messageApi.open({
-                    type: 'success',
-                    content: `Filter is ${props.filter.suspended ? 'disabled' : 'enabled'}`,
-                  });
-                }}
-              >
-                {props.filter.suspended ? <CheckCircleOutlined /> : <StopOutlined />}
-              </EditFilterButton>
-            )}
-            <DeleteFilterButton
-              href="#"
+      <FilterContainer
+        className={props.filter.negated ? 'label-not' : ''}
+        disabled={props.disabled}
+        suspended={props.filter.suspended}
+        data-test={`${filterItemDataTest}`}
+      >
+        {/* Filter Value */}
+        <FilterText>
+          {/* Filter Icon */}
+          {props.filter?.icon && (
+            <Tooltip title="Host ID Filter">
+              <FilterButton icon={props.filter.icon} />
+            </Tooltip>
+          )}
+          {/* Filter Label */}
+          <Tooltip title={props.disabled ? 'Filters are not applicable' : null}>
+            <FilterLabel data-test="hunt-filter__filtered" hasIcon={!!props.filter?.icon}>
+              {props.filter.label}
+            </FilterLabel>
+          </Tooltip>
+        </FilterText>
+        {/* Filter Buttons */}
+        <FilterControls>
+          {props.filterType !== sections.HISTORY && (
+            <FilterButton
+              color="#8a8382"
+              icon={<EditOutlined />}
+              data-test="filter-edit-button"
               onClick={e => {
                 e.preventDefault();
-                if (props.filterType === sections.HISTORY) {
-                  commonStore.removeHistoryFilter(props.filter);
-                } else {
-                  commonStore.removeFilter(props.filter);
-                }
+                setEditForm(true);
               }}
-            >
-              <CloseOutlined />
-            </DeleteFilterButton>
-          </div>
-        </HuntFilter>
-      </Tooltip>
+            />
+          )}
+          {props.children}
+          {props.filterType !== sections.HISTORY && (
+            <FilterButton
+              color="#8a8382"
+              icon={props.filter.suspended ? <CheckCircleOutlined /> : <StopOutlined />}
+              onClick={e => {
+                e.preventDefault();
+                commonStore.replaceFilter(props.filter, props.filter.suspend());
+                messageApi.open({
+                  type: 'success',
+                  content: `Filter is ${props.filter.suspended ? 'disabled' : 'enabled'}`,
+                });
+              }}
+            />
+          )}
+          <FilterButton
+            color="#b70505"
+            icon={<CloseOutlined />}
+            onClick={e => {
+              e.preventDefault();
+              if (props.filterType === sections.HISTORY) {
+                commonStore.removeHistoryFilter(props.filter);
+              } else {
+                commonStore.removeFilter(props.filter);
+              }
+            }}
+          />
+        </FilterControls>
+      </FilterContainer>
       {editForm && (
         <ModalHuntFilter
           title="Edit filter"
@@ -288,7 +287,7 @@ const FilterItem = props => {
           </Form>
         </ModalHuntFilter>
       )}
-    </li>
+    </React.Fragment>
   );
 };
 
