@@ -366,11 +366,7 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
               )}
             </div>
             <Divider style={{ margin: '15px 0' }} />
-            <Row>
-              <Col md={24}>
-                {activeFilters && activeFilters.length > 0 && <FilterList page={page} filters={activeFilters} filterType={section} />}
-              </Col>
-            </Row>
+            {activeFilters && activeFilters.length > 0 && <FilterList page={page} filters={activeFilters} filterType={section} />}
           </div>
           <Space direction="vertical">
             {page !== 'HISTORY' && <AdditionalFilters page={page} />}
