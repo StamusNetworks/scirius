@@ -107,6 +107,10 @@ export default class Filter {
     return !!this.#_filter.suspended;
   }
 
+  get icon() {
+    return this.#_filter.icon;
+  }
+
   negate(value) {
     this.#_filter.negated = value || true;
     return this;
