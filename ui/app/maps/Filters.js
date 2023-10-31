@@ -3,6 +3,7 @@ import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
 export const FilterCategory = {
   EVENT: 'EVENT',
   HISTORY: 'HISTORY',
+  SIGNATURE: 'SIGNATURE',
 };
 
 export const FilterType = {
@@ -17,6 +18,44 @@ export const FilterType = {
 };
 
 export const FiltersList = [
+  /* Signature filters */
+  {
+    title: 'Alerts min',
+    id: 'hits_min',
+    category: FilterCategory.SIGNATURE,
+    wildcardable: false,
+  },
+  {
+    title: 'Alerts max',
+    id: 'hits_max',
+    category: FilterCategory.SIGNATURE,
+    wildcardable: false,
+  },
+  {
+    title: 'Message',
+    id: 'msg',
+    category: FilterCategory.SIGNATURE,
+    wildcardable: false,
+  },
+  {
+    title: 'Not in Message',
+    id: 'not_in_msg',
+    category: FilterCategory.SIGNATURE,
+    wildcardable: false,
+  },
+  {
+    title: 'Content',
+    id: 'content',
+    category: FilterCategory.SIGNATURE,
+    wildcardable: false,
+  },
+  {
+    title: 'Not in Content',
+    id: 'not_in_content',
+    category: FilterCategory.SIGNATURE,
+    wildcardable: false,
+  },
+  /* Event filters */
   {
     title: 'Command',
     id: 'smb.command',
@@ -640,44 +679,8 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
   },
   {
-    title: 'Alerts min',
-    id: 'hits_min',
-    category: FilterCategory.EVENT,
-    wildcardable: false,
-  },
-  {
-    title: 'Alerts max',
-    id: 'hits_max',
-    category: FilterCategory.EVENT,
-    wildcardable: false,
-  },
-  {
-    title: 'Message',
-    id: 'msg',
-    category: FilterCategory.EVENT,
-    wildcardable: false,
-  },
-  {
-    title: 'Not in Message',
-    id: 'not_in_msg',
-    category: FilterCategory.EVENT,
-    wildcardable: false,
-  },
-  {
     title: 'ES Filter',
     id: 'es_filter',
-    category: FilterCategory.EVENT,
-    wildcardable: false,
-  },
-  {
-    title: 'Not in Content',
-    id: 'not_in_content',
-    category: FilterCategory.EVENT,
-    wildcardable: false,
-  },
-  {
-    title: 'Content',
-    id: 'content',
     category: FilterCategory.EVENT,
     wildcardable: false,
   },
