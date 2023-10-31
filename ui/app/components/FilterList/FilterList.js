@@ -3,27 +3,16 @@ import PropTypes from 'prop-types';
 import FilterItem from 'ui/components/FilterItem';
 import styled from 'styled-components';
 
-const ListInline = styled.span`
+const ListInline = styled.ul`
   list-style: none;
-  display: inline-block;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
   margin: 0;
   margin-block-start: 0;
   margin-block-end: 0;
   padding-inline-start: 0;
-
-  & li {
-    box-sizing: border-box;
-    color: rgb(65, 64, 66);
-    display: inline-block;
-    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
-    font-size: 12px;
-    height: 23.5px;
-    line-height: 40px;
-    list-style: none outside none;
-    padding-left: 5px;
-    padding-right: 5px;
-    text-align: left;
-  }
 `;
 
 const FilterList = props => (
