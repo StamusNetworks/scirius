@@ -80,6 +80,12 @@ export default class Filter {
         suspended: this.#prop(props?.suspended, false),
       };
     }
+
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.warn(`Filter > ${filterKey} schema not found`);
+    }
+
     return {
       /* default schema */
       title: props?.title || filterKey,
