@@ -105,6 +105,10 @@ export default class Filter {
     return !!this.#_filter.convertible;
   }
 
+  get wildcardable() {
+    return !!this.#_filter.wildcardable;
+  }
+
   get negatable() {
     return !!this.#_filter.negatable;
   }
