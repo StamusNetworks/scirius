@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { EditOutlined, CloseOutlined, StopOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { EditOutlined, CloseOutlined, StopOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
-import { Button, Checkbox, Col, Form, Input, InputNumber, message, Modal, Row, Tooltip } from 'antd';
+import { Alert, Button, Checkbox, Col, Form, Input, InputNumber, message, Modal, Row, Space, Tooltip } from 'antd';
 import IP_FIELDS from 'ui/config/ipFields';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import { INTERGER_FIELDS_ENDS_WITH, INTERGER_FIELDS_EXACT } from 'ui/maps/FiltersFieldTypes';
@@ -267,9 +267,19 @@ const FilterItem = props => {
                 </Col>
               </Row>
             </Form.Item>
-
-            {!['msg', 'not_in_msg', 'content', 'not_in_content', 'hits_min', 'hits_max'].includes(props.filter.id) && (
-              <Form.Item name="checkbox-negated">
+            <Form.Item name="checkbox-negated">
+              {!props.filter.negatable && (
+                <Alert
+                  message={
+                    <Space>
+                      <InfoCircleOutlined />
+                      <span>Filter {props.filter.id} cannot be negated</span>
+                    </Space>
+                  }
+                  type="info"
+                />
+              )}
+              {props.filter.negatable && (
                 <Row>
                   <Col span={6}>
                     <label>Negated</label>
@@ -283,8 +293,8 @@ const FilterItem = props => {
                     />
                   </Col>
                 </Row>
-              </Form.Item>
-            )}
+              )}
+            </Form.Item>
           </Form>
         </ModalHuntFilter>
       )}

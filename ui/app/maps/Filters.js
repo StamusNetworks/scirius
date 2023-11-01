@@ -25,36 +25,42 @@ export const FiltersList = [
     id: 'hits_min',
     category: FilterCategory.SIGNATURE,
     wildcardable: false,
+    negatable: false,
   },
   {
     title: 'Alerts max',
     id: 'hits_max',
     category: FilterCategory.SIGNATURE,
     wildcardable: false,
+    negatable: false,
   },
   {
     title: 'Message',
     id: 'msg',
     category: FilterCategory.SIGNATURE,
     wildcardable: false,
+    negatable: false,
   },
   {
     title: 'Not in Message',
     id: 'not_in_msg',
     category: FilterCategory.SIGNATURE,
     wildcardable: false,
+    negatable: false,
   },
   {
     title: 'Content',
     id: 'content',
     category: FilterCategory.SIGNATURE,
     wildcardable: false,
+    negatable: false,
   },
   {
     title: 'Not in Content',
     id: 'not_in_content',
     category: FilterCategory.SIGNATURE,
     wildcardable: false,
+    negatable: false,
   },
   /* Event filters */
   {

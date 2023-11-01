@@ -52,6 +52,7 @@ export default class Filter {
         negated: props?.negated || false,
         fullString: props?.fullString !== undefined ? props.fullString : true,
         convertible: filterSchema?.convertible !== undefined ? filterSchema?.convertible : false,
+        negatable: filterSchema?.negatable !== undefined ? filterSchema?.negatable : true,
         suspended: props?.suspended !== undefined ? props.suspended : false,
       };
     }
@@ -67,6 +68,7 @@ export default class Filter {
       negated: props?.negated || false,
       fullString: props?.fullString !== undefined ? props?.fullString : false,
       convertible: filterSchema?.convertible !== undefined ? filterSchema?.convertible : false,
+      negatable: filterSchema?.negatable !== undefined ? filterSchema?.negatable : true,
       suspended: props?.suspended !== undefined ? props?.suspended : false,
     };
   }
@@ -101,6 +103,10 @@ export default class Filter {
 
   get convertible() {
     return !!this.#_filter.convertible;
+  }
+
+  get negatable() {
+    return !!this.#_filter.negatable;
   }
 
   get negated() {
