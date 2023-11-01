@@ -1,13 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { Cascader, Input, message, Switch, Tooltip } from 'antd';
-import FiltersDropdownItems, { FilterDropdownType } from 'ui/maps/FiltersDropdownItems';
+import FilterValueType from 'ui/maps/FilterValueType';
 import Filter from 'ui/utils/Filter';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import capitalize from 'ui/helpers/capitalize';
 import PropTypes from 'prop-types';
 import isIP from 'ui/helpers/isIP';
-import { FilterCategory } from '../../maps/Filters';
+import FilterValidationType from 'ui/maps/FilterValidationType';
+import { FilterCategory } from 'ui/maps/Filters';
+import FiltersDropdownItems from 'ui/maps/FiltersDropdownItems';
 
 const CascaderStyled = styled(Cascader)`
   width: max-content;
@@ -45,16 +47,37 @@ const FiltersSelector = styled.div`
   }
 `;
 
+const getSelectedItem = items => {
+  // The element before the last one
+  const beforeLast = items.length > 1 ? items[items.length - 2] : null;
+
+  // The last element
+  const last = items[items.length > 0 ? items.length - 1 : 0];
+
+  if (beforeLast?.valueType === FilterValueType.SELECT) {
+    return {
+      // SELECT types don't have validation types
+      selectedValueType: FilterValueType.SELECT,
+      selectedCategory: beforeLast.category,
+    };
+  }
+  return {
+    selectedValidationType: last.validationType,
+    selectedValueType: last.valueType || FilterValueType.TEXT,
+    selectedCategory: last.category || FilterCategory.EVENT,
+  };
+};
+
 const FiltersDropdown = ({ disabled, filterTypes }) => {
   const { commonStore } = useStore();
 
   const [negated, setNegated] = useState(false);
   const [value, setValue] = useState();
-  const [inputType, setInputType] = useState();
+  const [valueType, setValueType] = useState();
   const [validationType, setValidationType] = useState();
 
   const onClear = () => {
-    setInputType();
+    setValueType();
     setValue();
     setNegated(false);
   };
@@ -64,13 +87,14 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
       onClear();
       return;
     }
-    const { input, category, validationType } = items.length > 1 ? items[items.length - 1] : items[0];
-    if (input === FilterDropdownType.SELECT) {
+
+    const { selectedValueType, selectedCategory, selectedValidationType } = getSelectedItem(items);
+    if (selectedValueType === FilterValueType.SELECT) {
       // Filter value is always the last selected option
       const filterValue = path[path.length - 1];
       // Filter ID is always the one right before the last one
       const filterId = path.length > 1 ? path[path.length - 2] : path[0];
-      if (category === FilterCategory.HISTORY) {
+      if (selectedCategory === FilterCategory.HISTORY) {
         commonStore.addHistoryFilter(new Filter(filterId, filterValue, { fullString: true }));
       } else {
         commonStore.addFilter(new Filter(filterId, filterValue, { negated: false }));
@@ -79,8 +103,8 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
       return;
     }
 
-    setValidationType(validationType);
-    setInputType(input);
+    setValidationType(selectedValidationType);
+    setValueType(selectedValueType);
     setValue(path);
   };
 
@@ -89,11 +113,11 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
     let inputValue = e.target.value;
 
     // Value sanitization
-    switch (inputType) {
-      case FilterDropdownType.NUMBER:
+    switch (valueType) {
+      case FilterValueType.NUMBER:
         inputValue = parseInt(e.target.value, 10);
         break;
-      case FilterDropdownType.TEXT:
+      case FilterValueType.TEXT:
         inputValue = e.target.value.trim();
         break;
       default:
@@ -101,23 +125,23 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
     }
 
     /* Validation */
-    if (inputType === FilterDropdownType.TEXT && inputValue.length === 0) {
+    if (valueType === FilterValueType.TEXT && inputValue.length === 0) {
       message.error({ content: "The filter value can't be empty" });
       return;
     }
     if (validationType) {
-      if (validationType === 'int' && (inputValue < 0 || Number.isNaN(inputValue))) {
+      if (validationType === FilterValidationType.POSITIVE_INT && (inputValue < 0 || Number.isNaN(inputValue))) {
         message.error({ content: 'The filter value must be a positive integer' });
         return;
       }
-      if (validationType === 'ip' && !isIP(inputValue)) {
+      if (validationType === FilterValidationType.IP && !isIP(inputValue)) {
         message.error({ content: 'The filter value must be a valid IP address' });
         return;
       }
     }
 
     /* Is Regex ? */
-    const exactMatch = inputType !== FilterDropdownType.NUMBER ? !/[\\*?]/.test(inputValue) : true;
+    const exactMatch = valueType !== FilterValueType.NUMBER ? !/[\\*?]/.test(inputValue) : true;
     commonStore.addFilter(new Filter(filterId, inputValue, { negated, fullString: exactMatch }));
     onClear();
   };
@@ -141,21 +165,21 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
     let result = 'Enter ';
     if (validationType) {
       switch (validationType) {
-        case 'ip':
+        case FilterValidationType.IP:
           result += 'IP address';
           break;
-        case 'int':
+        case FilterValidationType.POSITIVE_INT:
           result += 'a number';
           break;
         default:
           break;
       }
     } else {
-      switch (inputType) {
-        case FilterDropdownType.TEXT:
+      switch (valueType) {
+        case FilterValueType.TEXT:
           result += 'filter text';
           break;
-        case FilterDropdownType.NUMBER:
+        case FilterValueType.NUMBER:
           result += 'a number';
           break;
         default:
@@ -163,7 +187,7 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
       }
     }
     return result;
-  }, [validationType, inputType]);
+  }, [validationType, valueType]);
 
   const filter = (inputValue, path) => path.some(option => option.title?.toLowerCase().indexOf(inputValue.toLowerCase()) > -1);
 
@@ -182,7 +206,7 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
           />
         </Tooltip>
       </FiltersSelector>
-      {inputType === FilterDropdownType.TEXT && (
+      {valueType === FilterValueType.TEXT && (
         <div>
           <Switch
             checkedChildren={<span>IS</span>}
@@ -194,8 +218,8 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
           />
         </div>
       )}
-      {inputType === FilterDropdownType.TEXT && <Input type="text" onPressEnter={onSubmit} placeholder={placeholder} />}
-      {inputType === FilterDropdownType.NUMBER && <Input type="number" onPressEnter={onSubmit} placeholder={placeholder} />}
+      {valueType === FilterValueType.TEXT && <Input type="text" onPressEnter={onSubmit} placeholder={placeholder} />}
+      {valueType === FilterValueType.NUMBER && <Input type="number" onPressEnter={onSubmit} placeholder={placeholder} />}
     </div>
   );
 };
