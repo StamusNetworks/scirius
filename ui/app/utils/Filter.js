@@ -42,6 +42,29 @@ export default class Filter {
     return JSON.stringify(this.#_filter);
   }
 
+  /**
+   * Returns first non undefined argument or the last one which is the default fallback value
+   *
+   * @param params
+   * @returns {*|null}
+   */
+  #prop(...params) {
+    if (params.length <= 1) {
+      // eslint-disable-next-line no-console
+      console.log('Filter > prop method expects at least two arguments');
+      return null;
+    }
+
+    if (params[params.length - 1] === undefined) {
+      // eslint-disable-next-line no-console
+      console.log('Filter > prop method expects the last argument not to be undefined');
+      return null;
+    }
+
+    const result = params.find(o => o !== undefined);
+    return result !== undefined ? result : null;
+  }
+
   #makeFilter(filterKey, value, props) {
     const filterSchema = FiltersList.find(f => f.id === filterKey);
     if (filterSchema) {
@@ -49,27 +72,29 @@ export default class Filter {
         ...filterSchema,
         label: `${props?.title || filterSchema.title || filterKey}: ${filterSchema.format?.(value) || value}`,
         value,
-        negated: props?.negated || false,
-        fullString: props?.fullString !== undefined ? props.fullString : true,
-        convertible: filterSchema?.convertible !== undefined ? filterSchema?.convertible : false,
-        negatable: filterSchema?.negatable !== undefined ? filterSchema?.negatable : true,
-        suspended: props?.suspended !== undefined ? props.suspended : false,
+        fullString: this.#prop(props?.fullString, true),
+        wildcardable: this.#prop(filterSchema?.wildcardable, true),
+        negated: this.#prop(props?.negated, false),
+        negatable: this.#prop(filterSchema?.negatable, true),
+        convertible: this.#prop(filterSchema?.convertible, false),
+        suspended: this.#prop(props?.suspended, false),
       };
     }
     return {
       /* default schema */
       title: props?.title || filterKey,
       id: filterKey,
-      category: FilterCategory.event,
+      category: FilterCategory.EVENT,
       type: FilterType.GENERIC,
       /* default filter props */
       value,
       label: `${filterKey}: ${value}`,
-      negated: props?.negated || false,
-      fullString: props?.fullString !== undefined ? props?.fullString : false,
-      convertible: filterSchema?.convertible !== undefined ? filterSchema?.convertible : false,
-      negatable: filterSchema?.negatable !== undefined ? filterSchema?.negatable : true,
-      suspended: props?.suspended !== undefined ? props?.suspended : false,
+      fullString: this.#prop(props?.fullString, true),
+      wildcardable: this.#prop(props?.wildcardable, true),
+      negated: this.#prop(props?.negated, false),
+      negatable: this.#prop(props?.negatable, true),
+      convertible: this.#prop(props?.convertible, false),
+      suspended: this.#prop(props?.suspended, false),
     };
   }
 
