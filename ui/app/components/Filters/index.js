@@ -115,7 +115,7 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
             </Title>
             <FiltersDropdown filterTypes={filterTypes} disabled={page === 'HOST_INSIGHT'} />
             <Divider style={{ margin: '15px 0' }} />
-            {activeFilters && activeFilters.length > 0 && <FilterList page={page} filters={activeFilters} />}
+            {activeFilters && activeFilters.length > 0 && <FilterList filterTypes={filterTypes} filters={activeFilters} />}
           </div>
           <Space direction="vertical">
             {page !== 'HISTORY' && <AdditionalFilters page={page} />}
