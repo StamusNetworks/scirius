@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { EditOutlined, CloseOutlined, StopOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { sections } from 'ui/constants';
 import styled from 'styled-components';
 import { Button, Checkbox, Col, Form, Input, InputNumber, message, Modal, Row, Tooltip } from 'antd';
 import IP_FIELDS from 'ui/config/ipFields';
@@ -159,7 +158,7 @@ const FilterItem = props => {
         </FilterText>
         {/* Filter Buttons */}
         <FilterControls>
-          {props.filterType !== sections.HISTORY && (
+          {props.filter.category !== 'HISTORY' && (
             <FilterButton
               color="#8a8382"
               icon={<EditOutlined />}
@@ -171,7 +170,7 @@ const FilterItem = props => {
             />
           )}
           {props.children}
-          {props.filterType !== sections.HISTORY && (
+          {props.filter.category !== 'HISTORY' && (
             <FilterButton
               color="#8a8382"
               icon={props.filter.suspended ? <CheckCircleOutlined /> : <StopOutlined />}
@@ -190,7 +189,7 @@ const FilterItem = props => {
             icon={<CloseOutlined />}
             onClick={e => {
               e.preventDefault();
-              if (props.filterType === sections.HISTORY) {
+              if (props.filter.category === 'HISTORY') {
                 commonStore.removeHistoryFilter(props.filter);
               } else {
                 commonStore.removeFilter(props.filter);
@@ -291,13 +290,8 @@ const FilterItem = props => {
   );
 };
 
-FilterItem.defaultProps = {
-  filterType: sections.GLOBAL,
-};
-
 FilterItem.propTypes = {
   children: PropTypes.any,
-  filterType: PropTypes.string,
   filter: PropTypes.object.isRequired,
   disabled: PropTypes.bool,
 };

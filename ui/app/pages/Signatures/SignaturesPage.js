@@ -32,7 +32,6 @@ import useFilterParams from 'ui/hooks/useFilterParams';
 import useAutorun from 'ui/helpers/useAutorun';
 import { STAMUS } from 'ui/config';
 import { buildQFilter } from 'ui/buildQFilter';
-import { sections } from 'ui/constants';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import RulePage from '../../RulePage';
@@ -190,8 +189,7 @@ const SignaturesPage = () => {
       <ErrorHandler>
         <Filters
           page="RULES_LIST"
-          section={sections.GLOBAL}
-          filterTypes={['filter', 'rest']}
+          filterTypes={['SIGNATURE', 'EVENT']}
           sortValues={{ option: listParams.sort.id, direction: listParams.sort.asc ? 'asc' : 'desc' }}
           onSortChange={(option, direction) => {
             updateSignatureListState({
