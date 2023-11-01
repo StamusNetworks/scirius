@@ -1,5 +1,6 @@
 import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
-import HistoryActions from 'ui/maps//HistoryActions';
+import FilterValidationType from 'ui/maps/FilterValidationType';
+import FilterValueType from 'ui/maps/FilterValueType';
 
 export const FilterCategory = {
   EVENT: 'EVENT',
@@ -26,6 +27,8 @@ export const FiltersList = [
     category: FilterCategory.SIGNATURE,
     wildcardable: false,
     negatable: false,
+    valueType: FilterValueType.NUMBER,
+    validationType: FilterValidationType.POSITIVE_INT,
   },
   {
     title: 'Alerts max',
@@ -33,6 +36,8 @@ export const FiltersList = [
     category: FilterCategory.SIGNATURE,
     wildcardable: false,
     negatable: false,
+    valueType: FilterValueType.NUMBER,
+    validationType: FilterValidationType.POSITIVE_INT,
   },
   {
     title: 'Message',
@@ -72,6 +77,7 @@ export const FiltersList = [
     title: 'Severity',
     id: 'alert.severity',
     category: FilterCategory.EVENT,
+    wildcardable: false,
     format: value => {
       switch (value?.toString()) {
         case '1':
@@ -124,6 +130,9 @@ export const FiltersList = [
     title: 'Signature ID',
     id: 'alert.signature_id',
     category: FilterCategory.EVENT,
+    wildcardable: false,
+    valueType: FilterValueType.NUMBER,
+    validationType: FilterValidationType.POSITIVE_INT,
   },
   {
     title: 'Category',
@@ -134,6 +143,7 @@ export const FiltersList = [
     title: 'Revision',
     id: 'alert.rev',
     category: FilterCategory.EVENT,
+    wildcardable: false,
   },
   {
     title: 'Tagged',
@@ -149,6 +159,7 @@ export const FiltersList = [
     title: 'Source IP',
     id: 'src_ip',
     category: FilterCategory.EVENT,
+    wildcardable: false,
     type: FilterType.IP,
     convertible: 'host_id.ip',
   },
@@ -158,13 +169,17 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
     type: FilterType.PORT,
     convertible: 'host_id.services.port',
+    wildcardable: false,
   },
   {
     title: 'Port',
     id: 'port',
     category: FilterCategory.EVENT,
     type: FilterType.PORT,
+    wildcardable: false,
     convertible: 'host_id.services.port',
+    valueType: FilterValueType.NUMBER,
+    validationType: FilterValidationType.POSITIVE_INT,
   },
   {
     title: 'Destination Network',
@@ -174,6 +189,7 @@ export const FiltersList = [
   {
     title: 'Destination IP',
     id: 'dest_ip',
+    wildcardable: false,
     category: FilterCategory.EVENT,
     type: FilterType.IP,
     convertible: 'host_id.ip',
@@ -184,6 +200,7 @@ export const FiltersList = [
     category: FilterCategory.EVENT,
     type: FilterType.PORT,
     convertible: 'host_id.services.port',
+    wildcardable: false,
   },
   {
     title: 'IP protocol',
@@ -215,17 +232,20 @@ export const FiltersList = [
   {
     title: 'Vlan',
     id: 'vlan',
+    wildcardable: false,
     category: FilterCategory.EVENT,
   },
   {
     title: 'Tunnel Source IP',
     id: 'tunnel.src_ip',
+    wildcardable: false,
     category: FilterCategory.EVENT,
     type: FilterType.IP,
   },
   {
     title: 'Tunnel Destination IP',
     id: 'tunnel.dest_ip',
+    wildcardable: false,
     category: FilterCategory.EVENT,
     type: FilterType.IP,
   },
@@ -242,6 +262,7 @@ export const FiltersList = [
   {
     title: 'Source IP',
     id: 'alert.source.ip',
+    wildcardable: false,
     category: FilterCategory.EVENT,
     type: FilterType.IP,
   },
@@ -249,10 +270,12 @@ export const FiltersList = [
     title: 'Source port',
     id: 'alert.source.port',
     category: FilterCategory.EVENT,
+    wildcardable: false,
   },
   {
     title: 'Target IP',
     id: 'alert.target.ip',
+    wildcardable: false,
     category: FilterCategory.EVENT,
     type: FilterType.IP,
   },
@@ -260,6 +283,7 @@ export const FiltersList = [
     title: 'Target port',
     id: 'alert.target.port',
     category: FilterCategory.EVENT,
+    wildcardable: false,
   },
   {
     title: 'Lateral movement',
@@ -305,31 +329,41 @@ export const FiltersList = [
   {
     title: 'Bytes to server',
     id: 'flow.bytes_toserver',
+    wildcardable: false,
     category: FilterCategory.EVENT,
   },
   {
     title: 'Bytes to client',
     id: 'flow.bytes_toclient',
+    wildcardable: false,
     category: FilterCategory.EVENT,
   },
   {
     title: 'Pkts to server',
     id: 'flow.pkts_toserver',
+    wildcardable: false,
     category: FilterCategory.EVENT,
   },
   {
     title: 'Pkts to client',
     id: 'flow.pkts_toclient',
+    wildcardable: false,
     category: FilterCategory.EVENT,
   },
   {
     title: 'Flow ID',
     id: 'flow_id',
+    wildcardable: false,
     category: FilterCategory.EVENT,
   },
   {
     title: 'Country',
     id: 'geoip.country_name',
+    category: FilterCategory.EVENT,
+  },
+  {
+    title: 'City',
+    id: 'geoip.city_name',
     category: FilterCategory.EVENT,
   },
   {
@@ -340,6 +374,7 @@ export const FiltersList = [
   {
     title: 'AS Number',
     id: 'geoip.provider.autonomous_system_number',
+    wildcardable: false,
     category: FilterCategory.EVENT,
   },
   {
@@ -361,7 +396,10 @@ export const FiltersList = [
   {
     title: 'Status',
     id: 'http.status',
+    wildcardable: false,
     category: FilterCategory.EVENT,
+    valueType: FilterValueType.NUMBER,
+    validationType: FilterValidationType.POSITIVE_INT,
   },
   {
     title: 'Method',
@@ -383,6 +421,7 @@ export const FiltersList = [
     title: 'Port',
     id: 'http.http_port',
     category: FilterCategory.EVENT,
+    wildcardable: false,
   },
   {
     title: 'Content Type',
@@ -393,6 +432,9 @@ export const FiltersList = [
     title: 'Length',
     id: 'http.length',
     category: FilterCategory.EVENT,
+    wildcardable: false,
+    valueType: FilterValueType.NUMBER,
+    validationType: FilterValidationType.POSITIVE_INT,
   },
   {
     title: 'Server',
@@ -563,30 +605,36 @@ export const FiltersList = [
     title: 'IP',
     id: 'ip',
     category: FilterCategory.EVENT,
+    wildcardable: false,
     type: FilterType.IP,
+    validationType: FilterValidationType.IP,
     convertible: 'host_id.ip',
   },
   {
     title: 'DNS rdata',
     id: 'dns.rdata',
+    wildcardable: false,
     category: FilterCategory.EVENT,
     type: FilterType.IP,
   },
   {
     title: 'DNS answers rdata',
     id: 'dns.answers.rdata',
+    wildcardable: false,
     category: FilterCategory.EVENT,
     type: FilterType.IP,
   },
   {
     title: 'DNS grouped A',
     id: 'dns.grouped.A',
+    wildcardable: false,
     category: FilterCategory.EVENT,
     type: FilterType.IP,
   },
   {
     title: 'DNS grouped AAAA',
     id: 'dns.grouped.AAAA',
+    wildcardable: false,
     category: FilterCategory.EVENT,
     type: FilterType.IP,
   },
@@ -619,6 +667,26 @@ export const FiltersList = [
     format: value => value?.replaceAll('_', '') || null,
   },
   {
+    title: 'Signature Severity',
+    id: 'alert.metadata.signature_severity',
+    category: FilterCategory.EVENT,
+  },
+  {
+    title: 'Attack Target',
+    id: 'alert.metadata.attack_target',
+    category: FilterCategory.EVENT,
+  },
+  {
+    title: 'Affected Product',
+    id: 'alert.metadata.affected_product',
+    category: FilterCategory.EVENT,
+  },
+  {
+    title: 'Malware Family',
+    id: 'alert.metadata.malware_family',
+    category: FilterCategory.EVENT,
+  },
+  {
     title: 'Host Domain',
     id: 'hostname_info.domain',
     category: FilterCategory.EVENT,
@@ -645,6 +713,32 @@ export const FiltersList = [
     id: 'http.http_refer_info.domain',
     category: FilterCategory.EVENT,
     type: FilterType.HOSTNAME,
+  },
+  {
+    title: 'HTTP Refer Subdomain',
+    id: 'http.http_refer_info.subdomain',
+    category: FilterCategory.EVENT,
+    type: FilterType.HOSTNAME,
+  },
+  {
+    title: 'Referrer TLD',
+    id: 'http.http_refer_info.tld',
+    category: FilterCategory.EVENT,
+  },
+  {
+    title: 'Referrer Resource Path',
+    id: 'http.http_refer_info.resource_path',
+    category: FilterCategory.EVENT,
+  },
+  {
+    title: 'Referrer Schema',
+    id: 'http.http_refer_info.scheme',
+    category: FilterCategory.EVENT,
+  },
+  {
+    title: 'HTTP Refer Domain Without TLD',
+    id: 'http.http_refer_info.domain_without_tld',
+    category: FilterCategory.EVENT,
   },
   {
     title: 'TLS SNI',
@@ -711,11 +805,11 @@ export const FiltersList = [
     title: 'Client IP',
     id: 'client_ip',
     category: FilterCategory.HISTORY,
+    validationType: FilterValidationType.IP,
   },
   {
     title: 'Action Type',
     id: 'action_type',
     category: FilterCategory.HISTORY,
-    format: value => HistoryActions[value],
   },
 ];
