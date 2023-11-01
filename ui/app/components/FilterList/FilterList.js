@@ -20,15 +20,15 @@ const FilterList = props => (
     {/* eslint-disable react/no-array-index-key */}
     <ListInline>
       {props.filters.map((filter, idx) => (
-        <FilterItem key={idx} filter={filter} disabled={props.page === 'HOST_INSIGHT'} />
+        <FilterItem key={idx} filter={filter} disabled={!props.filterTypes.includes(filter.category)} />
       ))}
     </ListInline>
   </React.Fragment>
 );
 
 FilterList.propTypes = {
-  page: PropTypes.oneOf(['RULES_LIST', 'DASHBOARDS', 'ALERTS_LIST', 'HISTORY', 'HOSTS_LIST', 'HOST_INSIGHT', 'INVENTORY']),
   filters: PropTypes.array,
+  filterTypes: PropTypes.array,
 };
 
 export default FilterList;
