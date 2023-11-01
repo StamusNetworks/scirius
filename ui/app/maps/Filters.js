@@ -1,4 +1,5 @@
 import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
+import HistoryActions from 'ui/maps//HistoryActions';
 
 export const FilterCategory = {
   EVENT: 'EVENT',
@@ -436,6 +437,11 @@ export const FiltersList = [
     convertible: 'host_id.tls.ja3.hash',
   },
   {
+    title: 'Serial',
+    id: 'tls.serial',
+    category: FilterCategory.EVENT,
+  },
+  {
     title: 'User-Agent',
     id: 'tls.ja3.agent',
     category: FilterCategory.EVENT,
@@ -683,5 +689,27 @@ export const FiltersList = [
     id: 'es_filter',
     category: FilterCategory.EVENT,
     wildcardable: false,
+  },
+  /* HISTORY */
+  {
+    title: 'User',
+    id: 'user',
+    category: FilterCategory.HISTORY,
+  },
+  {
+    title: 'Comment',
+    id: 'comment',
+    category: FilterCategory.HISTORY,
+  },
+  {
+    title: 'Client IP',
+    id: 'client_ip',
+    category: FilterCategory.HISTORY,
+  },
+  {
+    title: 'Action Type',
+    id: 'action_type',
+    category: FilterCategory.HISTORY,
+    format: value => HistoryActions[value],
   },
 ];
