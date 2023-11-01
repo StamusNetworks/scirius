@@ -67,7 +67,14 @@ class FilterEditKebab extends React.Component {
         negated: this.props.data.filter_defs[idx].operator !== 'equal',
         fullString: this.props.data.filter_defs[idx].full_string,
       });
-      filters.push(filter.instance);
+      filters.push({
+        id: filter.id,
+        key: filter.id,
+        label: filter.label,
+        value: filter.value,
+        negated: filter.negated,
+        fullString: filter.fullString,
+      });
     }
     return filters;
   };
