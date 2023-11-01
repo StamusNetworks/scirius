@@ -95,6 +95,10 @@ export default class Filter {
     return this.#_filter.category;
   }
 
+  get convertTo() {
+    return this.#_filter.convertible || null;
+  }
+
   get convertible() {
     return !!this.#_filter.convertible;
   }
