@@ -171,18 +171,20 @@ const FilterItem = props => {
           )}
           {props.children}
           {props.filter.category !== 'HISTORY' && (
-            <FilterButton
-              color="#8a8382"
-              icon={props.filter.suspended ? <CheckCircleOutlined /> : <StopOutlined />}
-              onClick={e => {
-                e.preventDefault();
-                commonStore.replaceFilter(props.filter, props.filter.suspend());
-                messageApi.open({
-                  type: 'success',
-                  content: `Filter is ${props.filter.suspended ? 'disabled' : 'enabled'}`,
-                });
-              }}
-            />
+            <Tooltip title="Suspend filter">
+              <FilterButton
+                color="#8a8382"
+                icon={props.filter.suspended ? <CheckCircleOutlined /> : <StopOutlined />}
+                onClick={e => {
+                  e.preventDefault();
+                  commonStore.replaceFilter(props.filter, props.filter.suspend());
+                  messageApi.open({
+                    type: 'success',
+                    content: `Filter is ${props.filter.suspended ? 'disabled' : 'enabled'}`,
+                  });
+                }}
+              />
+            </Tooltip>
           )}
           <FilterButton
             color="#b70505"
