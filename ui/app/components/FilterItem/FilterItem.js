@@ -2,10 +2,8 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { EditOutlined, CloseOutlined, StopOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
-import { Alert, Button, Checkbox, Col, Form, Input, InputNumber, message, Modal, Row, Space, Tooltip } from 'antd';
-import IP_FIELDS from 'ui/config/ipFields';
+import { Alert, Button, Checkbox, Col, Form, Input, message, Modal, Row, Space, Tooltip } from 'antd';
 import { useStore } from 'ui/mobx/RootStoreProvider';
-import { INTERGER_FIELDS_ENDS_WITH, INTERGER_FIELDS_EXACT } from 'ui/maps/FiltersFieldTypes';
 import isNumeric from 'ui/helpers/isNumeric';
 import Filter from 'ui/utils/Filter';
 import FilterButton from 'ui/components/FilterButton';
@@ -77,11 +75,7 @@ const FilterItem = props => {
   const [filterCopy, setFilterCopy] = useState(props.filter.instance);
   const [editForm, setEditForm] = useState(false);
 
-  const isInteger =
-    INTERGER_FIELDS_ENDS_WITH.findIndex(item => props.filter.id.endsWith(item)) !== -1 || INTERGER_FIELDS_EXACT.includes(props.filter.id);
-  let enableWildcard = !['msg', 'not_in_msg', 'content', 'not_in_content', 'hits_min', 'hits_max', 'es_filter'].includes(props.filter.id);
-  enableWildcard = enableWildcard && !IP_FIELDS.includes(props.filter.id) && !isInteger;
-  const valid = !filterCopy.fullString && enableWildcard && filterCopy.value.match(/[\s]+/g) ? 'error' : 'success';
+  const valid = !filterCopy.fullString && filterCopy.value.match(/[\s]+/g) ? 'error' : 'success';
 
   useEffect(() => {
     if (editForm === true) {
@@ -110,8 +104,6 @@ const FilterItem = props => {
     }
   };
 
-  const controlType = !isInteger ? 'text' : 'number';
-
   let helperText = '';
   if (['msg', 'not_in_msg', 'content', 'not_in_content'].includes(props.filter.id)) {
     helperText = 'Case insensitive substring match.';
@@ -119,7 +111,7 @@ const FilterItem = props => {
     helperText = '';
   } else if (['es_filter'].includes(props.filter.id)) {
     helperText = 'Free ES filter with Lucene syntax';
-  } else if (!filterCopy.fullString && enableWildcard) {
+  } else if (!filterCopy.fullString && filterCopy.wildcardable) {
     helperText = (
       <React.Fragment>
         Wildcard characters (<i style={{ padding: '0px 5px', background: '#e0e0e0', margin: '0 2px' }}>*</i> and{' '}
@@ -226,46 +218,48 @@ const FilterItem = props => {
                 <Col span={20}>
                   <Form.Item validateStatus={valid}>
                     <span>{props.filter.id}</span>
-                    {controlType === 'text' ? (
-                      <Input
-                        data-test="edit-filter-input-field"
-                        id="input-value-filter"
-                        value={filterCopy.value}
-                        onKeyDown={keyListener}
-                        onChange={e => {
-                          setFilterCopy({ ...filterCopy, value: filterCopy.id === 'host_id.roles.name' ? e.target.value : e.target.value.trim() });
-                        }}
-                        style={{ width: '100%' }}
-                      />
-                    ) : (
-                      <InputNumber
-                        id="input-value-filter"
-                        value={filterCopy.value}
-                        onKeyDown={keyListener}
-                        onChange={value => setFilterCopy({ ...filterCopy, value })}
-                        style={{ width: '100%' }}
-                      />
-                    )}
+                    <Input
+                      data-test="edit-filter-input-field"
+                      id="input-value-filter"
+                      value={filterCopy.value}
+                      onKeyDown={keyListener}
+                      onChange={e => {
+                        setFilterCopy({ ...filterCopy, value: e.target.value });
+                      }}
+                      style={{ width: '100%' }}
+                    />
                   </Form.Item>
                   <span style={{ color: '#b4b3b5' }}>{helperText}</span>
                 </Col>
               </Row>
             </Form.Item>
             <Form.Item name="checkbox-wildcard_view">
-              <Row>
-                <Col span={6}>
-                  <label>Wildcard view</label>
-                </Col>
-                <Col span={18}>
-                  <Checkbox
-                    data-test="wildcard-checkbox"
-                    onChange={({ target: { checked } }) => setFilterCopy({ ...filterCopy, fullString: !checked })}
-                    onKeyDown={keyListener}
-                    checked={!filterCopy.fullString && enableWildcard}
-                    disabled={!enableWildcard}
-                  />
-                </Col>
-              </Row>
+              {!props.filter.wildcardable && (
+                <Alert
+                  message={
+                    <Space>
+                      <InfoCircleOutlined />
+                      <span>Filter {props.filter.id} cannot use wildcards</span>
+                    </Space>
+                  }
+                  type="info"
+                />
+              )}
+              {props.filter.wildcardable && (
+                <Row>
+                  <Col span={6}>
+                    <label>Wildcard view</label>
+                  </Col>
+                  <Col span={18}>
+                    <Checkbox
+                      data-test="wildcard-checkbox"
+                      onChange={({ target: { checked } }) => setFilterCopy({ ...filterCopy, fullString: !checked })}
+                      onKeyDown={keyListener}
+                      checked={!filterCopy.fullString}
+                    />
+                  </Col>
+                </Row>
+              )}
             </Form.Item>
             <Form.Item name="checkbox-negated">
               {!props.filter.negatable && (
