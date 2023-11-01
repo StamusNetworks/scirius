@@ -40,8 +40,8 @@ const CascaderStyled = styled(Cascader)`
 const FiltersSelector = styled.div`
   .ant-cascader-menu {
     height: fit-content;
-    max-height: 520px;
-    width: 200px;
+    max-height: 560px;
+    min-width: 200px;
   }
 `;
 
@@ -127,6 +127,7 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
       filterTypes
         ?.map(f => [
           {
+            value: f,
             label: `${capitalize(f.toLowerCase())} filters`,
             disabled: true,
           },
@@ -164,6 +165,8 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
     return result;
   }, [validationType, inputType]);
 
+  const filter = (inputValue, path) => path.some(option => option.title?.toLowerCase().indexOf(inputValue.toLowerCase()) > -1);
+
   return (
     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
       <FiltersSelector id="filters" data-test="filters-dropdown">
@@ -175,6 +178,7 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
             onChange={onChangeHandler}
             options={options}
             getPopupContainer={() => document.getElementById('filters')}
+            showSearch={{ filter, matchInputWidth: false }}
           />
         </Tooltip>
       </FiltersSelector>
