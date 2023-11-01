@@ -123,8 +123,7 @@ const HistoryPage = () => {
       <ErrorHandler>
         <Filters
           page="HISTORY"
-          section={sections.HISTORY}
-          filterTypes={['all']}
+          filterTypes={['HISTORY']}
           sortValues={{ option: historyState.sort.id, direction: historyState.sort.asc ? 'asc' : 'desc' }}
           onSortChange={(option, direction) => {
             updateHistoryListState({

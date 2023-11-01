@@ -26,7 +26,6 @@ import { observer } from 'mobx-react-lite';
 import { STAMUS } from 'ui/config';
 import ErrorHandler from 'ui/components/Error';
 import HuntRestError from 'ui/components/HuntRestError';
-import { sections } from 'ui/constants';
 import Filters from 'ui/components/Filters';
 import moment from 'moment';
 import buildListParams from 'ui/helpers/buildListParams';
@@ -176,7 +175,7 @@ const EventsPage = () => {
 
       {errors && <HuntRestError errors={errors} />}
       <ErrorHandler>
-        <Filters page="ALERTS_LIST" section={sections.GLOBAL} filterTypes={['filter']} />
+        <Filters page="ALERTS_LIST" filterTypes={['HOST', 'EVENT']} />
       </ErrorHandler>
 
       <Table

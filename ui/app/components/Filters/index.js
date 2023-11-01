@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Cascader, Col, Divider, Input, Row, Space, Switch, Select, Affix, Tooltip } from 'antd';
+import React, { useEffect } from 'react';
+import { Divider, Space, Switch, Affix } from 'antd';
 import { PushpinOutlined, PushpinFilled } from '@ant-design/icons';
 import { observer } from 'mobx-react-lite';
 import UICard from 'ui/components/UIElements/UICard';
@@ -12,27 +12,18 @@ import ruleSetSaga from 'ui/stores/filters/saga';
 import ruleSetsActions from 'ui/stores/filters/actions';
 import ruleSetsSelectors from 'ui/stores/filters/selectors';
 import FilterList from 'ui/components/FilterList/index';
-import { sections } from 'ui/constants';
 import FilterSetSaveModal from 'ui/components/FilterSetSaveModal';
 import UISwitch from 'ui/components/UIElements/UISwitch';
 import UISwitchLabel from 'ui/components/UIElements/UISwitchLabel';
 import AdditionalFilters from 'ui/components/AdditionalFilters';
-import { COLOR_ERROR } from 'ui/constants/colors';
 import { useStore } from 'ui/mobx/RootStoreProvider';
-import isIP from 'ui/helpers/isIP';
 import Sort from 'ui/components/Sort';
-import Filter from 'ui/utils/Filter';
+import FiltersDropdown from 'ui/components/FiltersDropdown';
 
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import Title from './Title.styled';
 import Actions from './components/Actions';
-const { Option } = Select;
-
-const FilterError = styled.span`
-  color: ${COLOR_ERROR};
-  font-size: 10px;
-`;
 
 const FilterContainer = styled.div`
   display: grid;
@@ -44,42 +35,6 @@ const Separator = styled.div`
   background: #f0f2f5;
   width: 4px;
   margin: -10px 0px -10px -5px;
-`;
-
-const CascaderStyled = styled(Cascader)`
-  width: max-content;
-  position: relative;
-  line-height: 2.2715;
-  min-width: 150px;
-
-  .ant-cascader-picker-label {
-    width: max-content;
-    position: relative;
-    padding-right: 30px;
-
-    top: initial;
-    left: initial;
-    height: initial;
-    margin-top: initial;
-    overflow: initial;
-    line-height: initial;
-    white-space: initial;
-    text-overflow: initial;
-  }
-
-  .ant-cascader-input {
-    width: 100%;
-    position: absolute;
-    left: 0;
-  }
-`;
-
-const FiltersSelector = styled.div`
-  .ant-cascader-menu {
-    height: fit-content;
-    max-height: 500px;
-    width: 150px;
-  }
 `;
 
 const Static = styled.div``;
@@ -96,16 +51,6 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
   const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());
   const supportedActionsPermissions = user && user.permissions && user.permissions.includes('rules.ruleset_policy_edit');
   const filtersAreSticky = useSelector(({ ruleSet }) => ruleSet?.filtersAreSticky);
-  let filterFields = useSelector(ruleSetsSelectors.makeSelectFilterOptions(filterTypes));
-
-  // we dont want all filters in inventory
-  if (page === 'INVENTORY') filterFields = filterFields.filter(obj => obj.title.includes('Hosts:') || obj.title.includes('Network Def'));
-
-  // State handlers
-  const [valid, setValid] = useState('');
-  const [searchString, setSearchString] = useState('');
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [selectedItems, setSelectedItems] = useState([]);
 
   // Effects handlers
   useEffect(() => {
@@ -142,139 +87,7 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
     [commonStore.alert.value.untagged],
   );
 
-  const getTreeOptions = useCallback(
-    (data, parentType, level = 0) =>
-      data.map(o => ({
-        label: `${o.title || o.label}`,
-        value: o.id,
-        children: parentType !== 'complex-select' ? getTreeOptions(o.filterCategories || o.filterValues || [], o.filterType, level + 1) : [],
-      })),
-    [filterFields],
-  );
-
-  const getFlatOptions = useCallback(
-    data => data.reduce((prev, cur) => [...prev, cur, ...getFlatOptions(cur.filterCategories || cur.filterValues || [])], []),
-    [filterFields],
-  );
-
-  const treeOptions = useMemo(() => getTreeOptions(filterFields), [filterFields]);
-  const flatOptions = useMemo(() => getFlatOptions(filterFields), [filterFields]);
-
-  const onChange = useCallback(
-    value => {
-      const item = flatOptions.filter(d => value.indexOf(d.id) > -1);
-      setSelectedItems(item);
-      setSelectedIds(value);
-      setValid('');
-    },
-    [filterFields, flatOptions],
-  );
-
-  const field = useMemo(() => selectedItems.find(s => flatOptions.find(f => f.id === s.id)), [selectedItems]);
-
-  // Always extracted from first level
-  const {
-    // id, // <string>
-    // title, // <string>
-    placeholder, // <string>
-    filterType, // <hunt | select | text | complex-select-text | complex-select | complex-select-text | number>
-    // filterValues, // undefined || if filterType IS select/complex-select-text/complex-select => FilterValue[{id,label]
-    valueType, // undefined || if filterType NOT select/complex-select-text/complex-select => text || positiveint || ip
-    // queryType, // undefined || filter_host_id || rest || filter ||
-    filterCategories, // undefined || if filterType IS complex-select-text =>
-    /*
-      id	title	filterType	valueType	placeholder
-      id	title	filterType	valueType	placeholder	filterValues
-      id	title	filterValues
-      id	title	filterValues
-     */
-    // sub_placeholder,
-    // filterCategoriesPlaceholder
-  } = field || {};
-
-  // Second level category
-  const filterCategory = (filterCategories || []).find(fc => selectedItems.find(si => fc.id === si.id));
-  const filterSubCategory = ((filterCategory && filterCategory.filterValues) || []).find(fv => selectedItems.find(si => fv.id === si.id));
-
-  useEffect(() => {
-    if ((filterType === 'select' || (filterType === 'complex-select' && !filterCategories)) && selectedItems.length > 0) {
-      filterAdded(field, selectedItems[1], false);
-    }
-  }, [selectedItems]);
-
-  const activeFilters = section === sections.HISTORY ? history : filters;
-
-  const displayRender = (labels, selectedOptions) =>
-    labels.map((label, i) => {
-      const option = selectedOptions[i];
-      if (i === labels.length - 1) {
-        return <span key={option.value}>{label}</span>;
-      }
-      return <span key={option.value}>{label} / </span>;
-    });
-
-  const filterAdded = (field, value, fullString) => {
-    let filterText = '';
-    let fieldId = field.id;
-    if (['msg', 'not_in_msg', 'content', 'not_in_content'].indexOf(field.id) !== -1) {
-      // eslint-disable-next-line no-param-reassign
-      value = value.trim();
-    }
-    if (field.filterType !== 'complex-select-text') {
-      if (field.filterType === 'select' || field.filterType === 'complex-select') {
-        filterText = field.title;
-        fieldId = field.id;
-      } else if (field.title && field.queryType !== 'filter_host_id') {
-        filterText = field.title;
-      } else {
-        filterText = field.id;
-      }
-    } else {
-      if (filterCategory) {
-        filterText = `${filterCategory.id}`;
-        if (filterSubCategory && filterSubCategory.id) {
-          filterText += `.${filterSubCategory.id}`;
-        }
-      } else {
-        filterText = `${filterCategory.id}`;
-      }
-      fieldId = filterText;
-    }
-    filterText += ': ';
-
-    if (value.filterCategory) {
-      filterText += `${value.filterCategory.title || value.filterCategory}-${value.filterValue.title || value.filterValue}`;
-    } else if (value.title) {
-      filterText += value.title;
-    } else if (value.label) {
-      filterText += value.label;
-    } else {
-      filterText += value;
-    }
-
-    let fvalue;
-    if (typeof value === 'object') {
-      if (field.id !== 'alert.tag') {
-        fvalue = value.id;
-      } else {
-        fvalue = value;
-      }
-    } else {
-      fvalue = value;
-    }
-
-    if (section === sections.HISTORY) {
-      commonStore.addHistoryFilter(new Filter(fieldId, fvalue, { fullString }));
-    } else {
-      commonStore.addFilter(new Filter(fieldId, fvalue, { fullString }));
-      if (page === 'RULES_LIST' && !commonStore.withAlerts && fieldId === 'hits_min') {
-        commonStore.withAlerts = true;
-      }
-    }
-    setSelectedItems([]);
-    setSelectedIds([]);
-    setSearchString('');
-  };
+  const activeFilters = page === 'HISTORY' ? history : filters;
 
   const getFiltersCopy = () => {
     const filtersCopy = [...filters.map(({ instance }) => instance)];
@@ -283,19 +96,6 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
       filtersCopy.push(commonStore.alert);
     }
     return filtersCopy;
-  };
-
-  const validate = (type, value) => {
-    if (value.length > 0) {
-      if (type === 'ip') {
-        setValid(isIP(value) ? '' : 'Enter a valid IP address');
-      }
-      if (type === 'positiveint') {
-        setValid(parseInt(value, 10) >= 0 ? '' : 'Enter a positive integer');
-      }
-    } else {
-      setValid('');
-    }
   };
 
   const Component = filtersAreSticky ? Affix : Static;
@@ -313,60 +113,9 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
                 <PushpinOutlined onClick={() => dispatch(ruleSetsActions.toggleStickyFilters())} />
               )}
             </Title>
-            <div style={{ display: 'flex', flex: 1, gap: 8 }}>
-              <FiltersSelector id="filters" data-test="filters-dropdown">
-                <Tooltip title={page === 'HOST_INSIGHT' ? 'Filters are not applicable' : null}>
-                  <CascaderStyled
-                    data-test="filters-cascader-menu"
-                    disabled={page === 'HOST_INSIGHT'}
-                    value={selectedIds}
-                    options={treeOptions}
-                    displayRender={displayRender}
-                    onChange={value => onChange(value)}
-                    getPopupContainer={() => document.getElementById('filters')}
-                  />
-                </Tooltip>
-              </FiltersSelector>
-              {field && filterType !== 'complex-select' && filterType !== 'select' && (
-                <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
-                  <Input
-                    data-test="filter-input-field"
-                    type={filterType === 'number' ? 'number' : 'text'}
-                    value={searchString}
-                    onChange={e => {
-                      validate(valueType, e.target.value);
-                      setSearchString(e.target.value);
-                    }}
-                    placeholder={placeholder}
-                    onPressEnter={event => {
-                      const { value: raw = '' } = event.target;
-                      const value = filterType === 'number' && raw.length > 0 ? parseInt(raw, 10) : raw;
-                      if (valid.length === 0 && ((value && typeof value === 'string' && value.length > 0) || typeof value === 'number')) {
-                        filterAdded(field, value, false);
-                      }
-                    }}
-                  />
-                  <FilterError data-test="filter-error">{valid}</FilterError>
-                </div>
-              )}
-              {filterType === 'complex-select' && filterCategory && (
-                <Select
-                  style={{ width: 200 }}
-                  showSearch
-                  placeholder={field && field.placeholder}
-                  optionFilterProp="children"
-                  onChange={value => {
-                    filterAdded(field, value, true);
-                  }}
-                  filterOption={(input, option) => option.children.toLowerCase().includes(input.toLowerCase())}
-                  data-test="filters-dropdown-two"
-                >
-                  {filterCategory && filterCategory.filterValues.map(v => <Option value={v.id}>{v.label}</Option>)}
-                </Select>
-              )}
-            </div>
+            <FiltersDropdown filterTypes={filterTypes} disabled={page === 'HOST_INSIGHT'} />
             <Divider style={{ margin: '15px 0' }} />
-            {activeFilters && activeFilters.length > 0 && <FilterList page={page} filters={activeFilters} filterType={section} />}
+            {activeFilters && activeFilters.length > 0 && <FilterList page={page} filters={activeFilters} />}
           </div>
           <Space direction="vertical">
             {page !== 'HISTORY' && <AdditionalFilters page={page} />}

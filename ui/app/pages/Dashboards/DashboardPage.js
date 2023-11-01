@@ -25,7 +25,6 @@ import { observer } from 'mobx-react-lite';
 import store from 'store';
 import { Helmet } from 'react-helmet';
 import { STAMUS } from 'ui/config';
-import { sections } from 'ui/constants';
 import ErrorHandler from 'ui/components/Error';
 import Filters from 'ui/components/Filters';
 import { useStore } from 'ui/mobx/RootStoreProvider';
@@ -60,7 +59,7 @@ const DashboardPage = () => {
         <title>{`${STAMUS} - Dashboards`}</title>
       </Helmet>
       <ErrorHandler>
-        <Filters page="DASHBOARDS" section={sections.GLOBAL} filterTypes={['filter']} />
+        <Filters page="DASHBOARDS" filterTypes={['HOST', 'EVENT']} />
       </ErrorHandler>
       <Row style={{ marginTop: 10 }}>
         <Col lg={20} md={18} sm={24} xs={24} style={{ paddingRight: '0px' }}>
