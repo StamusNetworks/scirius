@@ -37,7 +37,7 @@ const protoMap = {
   Fileinfo: 'File Info',
   Flow: 'Flow',
   Ftp: 'FTP',
-  Ftpdata: 'FTP data',
+  Ftp_Data: 'FTP Data',
   Geneve: 'Geneve',
   Http: 'HTTP',
   Http2: 'HTTP2',

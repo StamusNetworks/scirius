@@ -71,6 +71,10 @@ const columns = {
     { title: 'Reply', dataIndex: ['rawJson', 'ftp', 'reply'], render: val => val && val.map(str => <div>{str}</div>) },
     { title: 'Completion code', dataIndex: ['rawJson', 'ftp', 'completion_code'], render: val => val && val.map(str => <div>{str}</div>) },
   ],
+  Ftp_Data: [
+    { title: 'Filename', dataIndex: ['rawJson', 'ftp_data', 'filename'] },
+    { title: 'Command', dataIndex: ['rawJson', 'ftp_data', 'command'] },
+  ],
   Smtp: [
     { title: 'Timestamp', dataIndex: ['rawJson', '@timestamp'], render: val => moment(val).format(DATE_TIME_FORMAT) },
     { title: 'Helo', dataIndex: ['rawJson', 'smtp', 'helo'] },
