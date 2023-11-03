@@ -36,6 +36,17 @@ class Command(BaseCommand):
             help='Backup with all git history'
         )
 
+        parser.add_argument(
+            '-n', '--no-compress',
+            default=False,
+            action='store_true',
+            dest='no_compress',
+            help='Backup with no compression'
+        )
+
     def handle(self, *_, **options):
-        backup = SCBackup(all_history=options['all_history'])
+        backup = SCBackup(
+            all_history=options['all_history'],
+            no_compress=options['no_compress']
+        )
         backup.run()
