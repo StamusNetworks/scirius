@@ -86,8 +86,9 @@ class SCOperation(object):
 
 
 class SCBackup(SCOperation):
-    def __init__(self, all_history=False):
+    def __init__(self, all_history=False, no_compress=False):
         self.no_history = not all_history
+        self.no_compress = no_compress
         self.dbcommands = DBBackupCommands()
         self.database = settings.DATABASES['default']
 
@@ -141,9 +142,17 @@ class SCBackup(SCOperation):
         # create tar archive of dir
         call_dir = os.getcwd()
         os.chdir(self.directory)
-        filename = filename_generate('tar.bz2', self.dbcommands.database, self.dbcommands.servername)
+        filename = filename_generate(
+            'tar.bz2' if not self.no_compress else 'tar',
+            self.dbcommands.database,
+            self.dbcommands.servername
+        )
         outputfile = tempfile.SpooledTemporaryFile()
-        ts = tarfile.open(filename, 'w:bz2', fileobj=outputfile)
+        ts = tarfile.open(
+            filename,
+            'w:bz2' if not self.no_compress else 'w',
+            fileobj=outputfile
+        )
 
         for dfile in os.listdir('.'):
             ts.add(dfile)
