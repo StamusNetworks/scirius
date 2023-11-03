@@ -18,6 +18,7 @@ import Filter from 'ui/utils/Filter';
 import AlertRelatedData from 'ui/components/AlertRelatedData';
 import styled from 'styled-components';
 import { DlHorizontal, Warning, Numbers, Pre, TabPaneResponsive } from './styles';
+import { getTitle } from './helper';
 
 const BadgeStyled = styled(Badge)`
   .ant-badge-count {
@@ -889,7 +890,7 @@ class AlertItem extends React.Component {
                   key={`events-${key}`}
                   tab={
                     <Numbers>
-                      <span>{`Related ${protoMap[key]}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''}`}</span>
+                      <span>{getTitle(protoMap, key, events)}</span>
                       <BadgeStyled count={Object.keys(events[key]).length || <span className="ant-badge-count">0</span>} overflowCount={99999} />
                     </Numbers>
                   }
