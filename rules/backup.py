@@ -26,7 +26,6 @@ import shutil
 import os
 import sys
 import json
-import git
 
 from dbbackup.db.base import get_connector
 from dbbackup.storage import get_storage
@@ -97,26 +96,12 @@ class SCBackup(SCOperation):
         sys.stdout.write("%s in %s\n" % (settings.GIT_SOURCES_BASE_DIRECTORY, self.directory))
         sources_path = settings.GIT_SOURCES_BASE_DIRECTORY
 
-        # clone with depth=1 each source directory
-        if self.no_history:
-            sources_path = tempfile.mkdtemp()
-            for directory in os.listdir(settings.GIT_SOURCES_BASE_DIRECTORY):
-                dir_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, directory)
-
-                if not os.path.isdir(dir_path) or not directory.isdigit():
-                    continue
-
-                git.Repo.clone_from('file://%s' % dir_path, os.path.join(sources_path, directory), depth=1)
-
         ts = tarfile.open(os.path.join(self.directory, 'sources.tar'), 'w')
         call_dir = os.getcwd()
         os.chdir(sources_path)
         ts.add('.')
         ts.close()
         os.chdir(call_dir)
-
-        if self.no_history:
-            shutil.rmtree(sources_path)
 
     def backup_db(self):
         self.dbcommands.servername = DB_SERVERNAME
