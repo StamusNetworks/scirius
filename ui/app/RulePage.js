@@ -152,7 +152,7 @@ class RulePage extends React.Component {
 
         Object.keys(res.data).forEach(key => {
           res.data[key].pk = key;
-          res.data[key].content = key in rescontent.data ? rescontent.data[key] : 'Rule not included in Ruleset';
+          res.data[key].content = key in rescontent.data ? rescontent.data[key] : { 0: 'Rule not included in Ruleset' };
           rstatus.push(res.data[key]);
         });
 
