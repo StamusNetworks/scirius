@@ -51,7 +51,6 @@ const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) 
   const { user, filters } = commonStore;
   const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());
   const supportedActionsPermissions = user && user.permissions && user.permissions.includes('rules.ruleset_policy_edit');
-  const filtersAreSticky = useSelector(({ ruleSet }) => ruleSet?.filtersAreSticky);
 
   // Effects handlers
   useEffect(() => {
@@ -106,7 +105,7 @@ const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) 
     return filtersCopy;
   };
 
-  const Component = filtersAreSticky ? Affix : Static;
+  const Component = commonStore.stickyFilters ? Affix : Static;
 
   return (
     <Component offsetTop={10}>
@@ -115,10 +114,18 @@ const Filters = ({ page, section, filterTypes = [], onSortChange, sortValues }) 
           <div>
             <Title>
               Filters{' '}
-              {filtersAreSticky ? (
-                <PushpinFilled onClick={() => dispatch(ruleSetsActions.toggleStickyFilters())} />
+              {commonStore.stickyFilters ? (
+                <PushpinFilled
+                  onClick={() => {
+                    commonStore.stickyFilters = false;
+                  }}
+                />
               ) : (
-                <PushpinOutlined onClick={() => dispatch(ruleSetsActions.toggleStickyFilters())} />
+                <PushpinOutlined
+                  onClick={() => {
+                    commonStore.stickyFilters = true;
+                  }}
+                />
               )}
             </Title>
             <FiltersDropdown filterTypes={filterTypes} disabled={page === 'HOST_INSIGHT'} />
