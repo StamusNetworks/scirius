@@ -62,10 +62,6 @@ const saveFiltersModal = value => ({
   payload: { value },
 });
 
-const toggleStickyFilters = () => ({
-  type: constants.TOGGLE_STICKY_FILTERS,
-});
-
 export default {
   ruleSetsRequest,
   ruleSetsSuccess,
@@ -80,5 +76,4 @@ export default {
   historyFiltersSuccess,
   historyFiltersFailure,
   saveFiltersModal,
-  toggleStickyFilters,
 };
