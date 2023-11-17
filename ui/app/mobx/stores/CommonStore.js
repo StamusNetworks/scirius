@@ -72,6 +72,8 @@ class CommonStore {
 
   _withAlerts = null;
 
+  _stickyFilters = true;
+
   constructor(root) {
     this.root = root;
     if (!localStorage.getItem('alert_tag')) {
@@ -405,6 +407,14 @@ class CommonStore {
   toggleAlertTag(key) {
     this._alert = { ...this._alert, value: { ...this._alert.value, [key]: !this._alert.value[key] } };
     localStorage.setItem('alert_tag', JSON.stringify(toJS(this._alert)));
+  }
+
+  set stickyFilters(value) {
+    this._stickyFilters = value;
+  }
+
+  get stickyFilters() {
+    return toJS(this._stickyFilters);
   }
 
   get alert() {
