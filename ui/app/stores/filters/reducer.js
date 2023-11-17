@@ -7,7 +7,6 @@ export const initialState = {
   supportedActions: [],
   historyFilters: [],
   saveFiltersModal: false,
-  filtersAreSticky: false,
 };
 
 /* eslint-disable default-case */
@@ -85,10 +84,6 @@ const appReducer = (state = initialState, action) =>
       }
       case constants.MODAL_SAVE_FILTERS: {
         draft.saveFiltersModal = action.payload.value;
-        break;
-      }
-      case constants.TOGGLE_STICKY_FILTERS: {
-        draft.filtersAreSticky = !draft.filtersAreSticky;
         break;
       }
     }
