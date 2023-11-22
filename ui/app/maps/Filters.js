@@ -42,27 +42,13 @@ export const FiltersList = [
   {
     title: 'Message',
     id: 'msg',
-    category: FilterCategory.SIGNATURE,
-    wildcardable: false,
-    negatable: false,
-  },
-  {
-    title: 'Not in Message',
-    id: 'not_in_msg',
-    category: FilterCategory.SIGNATURE,
+    category: [FilterCategory.SIGNATURE, FilterCategory.EVENT],
     wildcardable: false,
     negatable: false,
   },
   {
     title: 'Content',
     id: 'content',
-    category: FilterCategory.SIGNATURE,
-    wildcardable: false,
-    negatable: false,
-  },
-  {
-    title: 'Not in Content',
-    id: 'not_in_content',
     category: FilterCategory.SIGNATURE,
     wildcardable: false,
     negatable: false,
