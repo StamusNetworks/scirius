@@ -41,7 +41,7 @@ const map = (type, allTypes = []) => {
       idsFilters = allTypes.includes(':withAlerts') ? withAlerts(idsFilters) : idsFilters;
       const systemSettings = JSON.parse(localStorage.getItem('str-system-settings'));
 
-      return buildQFilter([alertTag, ...idsFilters], systemSettings, 'object');
+      return buildQFilter(alertTag ? [alertTag, ...idsFilters] : idsFilters, systemSettings, 'object');
     }
     default:
       return {};
