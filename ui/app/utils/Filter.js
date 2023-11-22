@@ -28,9 +28,19 @@ export default class Filter {
     suspended: false,
   };
 
-  constructor(filter, value, props) {
-    this.#_defaults = Object.assign(this.#_defaults, props);
-    this.#_filter = this.#makeFilter(filter, value, props);
+  /**
+   * Initialize filter object by given parameters
+   *
+   * @example new Filter('signature', "ETPRO*", FilterCategory.EVENT, { fullString: false }
+   * @example new Filter('signature', "ETPRO*", { fullString: false }
+   * @param {string} filter -The ID of the filter
+   * @param {string|number} value - The value of the filter
+   * @param {object|string} a - filter parameters or filter category
+   * @param {object} b - filter parameters if filter category is set on 3rd param
+   * @returns {Filter}
+   */
+  constructor(filter, value, a = '', b = {}) {
+    this.#_filter = this.#makeFilter(filter, value, a, b);
     return this;
   }
 
@@ -65,8 +75,10 @@ export default class Filter {
     return result !== undefined ? result : null;
   }
 
-  #makeFilter(filterKey, value, props) {
-    const filterSchema = FiltersList.find(f => f.id === filterKey);
+  #makeFilter(filterKey, value, a, b) {
+    const props = typeof a === 'string' ? b : a || {};
+    const category = typeof a === 'string' ? a : null;
+    const filterSchema = FiltersList.find(f => f.id === filterKey && ((category && f.category === category) || true));
     if (filterSchema) {
       return {
         ...filterSchema,
