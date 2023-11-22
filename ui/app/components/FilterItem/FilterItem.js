@@ -239,7 +239,7 @@ const FilterItem = props => {
                   message={
                     <Space>
                       <InfoCircleOutlined />
-                      <span>Filter {props.filter.id} cannot use wildcards</span>
+                      <span data-test="wildcard-disabled">Filter {props.filter.id} cannot use wildcards</span>
                     </Space>
                   }
                   type="info"
@@ -267,7 +267,7 @@ const FilterItem = props => {
                   message={
                     <Space>
                       <InfoCircleOutlined />
-                      <span>Filter {props.filter.id} cannot be negated</span>
+                      <span data-test="negated-disabled">Filter {props.filter.id} cannot be negated</span>
                     </Space>
                   }
                   type="info"

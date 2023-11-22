@@ -20,7 +20,7 @@ const FilterList = props => (
     {/* eslint-disable react/no-array-index-key */}
     <ListInline>
       {props.filters.map((filter, idx) => (
-        <FilterItem key={idx} filter={filter} disabled={!props.filterTypes.includes(filter.category)} />
+        <FilterItem key={idx} filter={filter} disabled={!props.filterTypes.some(f => f === filter.category || filter.category.includes(f))} />
       ))}
     </ListInline>
   </React.Fragment>

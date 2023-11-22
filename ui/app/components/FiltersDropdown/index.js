@@ -73,12 +73,14 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
 
   const [negated, setNegated] = useState(false);
   const [value, setValue] = useState();
+  const [category, setCategory] = useState();
   const [valueType, setValueType] = useState();
   const [validationType, setValidationType] = useState();
 
   const onClear = () => {
     setValueType();
     setValue();
+    setCategory();
     setNegated(false);
   };
 
@@ -97,13 +99,14 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
       if (selectedCategory === FilterCategory.HISTORY) {
         commonStore.addHistoryFilter(new Filter(filterId, filterValue, { fullString: true }));
       } else {
-        commonStore.addFilter(new Filter(filterId, filterValue, { negated: false }));
+        commonStore.addFilter(new Filter(filterId, filterValue, selectedCategory, { negated: false }));
       }
       onClear();
       return;
     }
 
     setValidationType(selectedValidationType);
+    setCategory(selectedCategory);
     setValueType(selectedValueType);
     setValue(path);
   };
@@ -142,7 +145,7 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
 
     /* Is Regex ? */
     const exactMatch = valueType !== FilterValueType.NUMBER ? !/[\\*?]/.test(inputValue) : true;
-    commonStore.addFilter(new Filter(filterId, inputValue, { negated, fullString: exactMatch }));
+    commonStore.addFilter(new Filter(filterId, inputValue, category, { negated, fullString: exactMatch }));
     onClear();
   };
 
@@ -218,8 +221,10 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
           />
         </div>
       )}
-      {valueType === FilterValueType.TEXT && <Input type="text" onPressEnter={onSubmit} placeholder={placeholder} />}
-      {valueType === FilterValueType.NUMBER && <Input type="number" onPressEnter={onSubmit} placeholder={placeholder} />}
+      {valueType === FilterValueType.TEXT && <Input type="text" onPressEnter={onSubmit} placeholder={placeholder} data-test="filter-input-field" />}
+      {valueType === FilterValueType.NUMBER && (
+        <Input type="number" onPressEnter={onSubmit} placeholder={placeholder} data-test="filter-input-field" />
+      )}
     </div>
   );
 };
