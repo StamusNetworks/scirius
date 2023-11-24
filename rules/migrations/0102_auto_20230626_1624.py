@@ -31,7 +31,8 @@ def migration_2(apps, _):
         full_path = os.path.join(settings.GIT_SOURCES_BASE_DIRECTORY, item)
         if os.path.isdir(full_path) and item.isdigit():
             git_path = os.path.join(full_path, '.git')
-            shutil.rmtree(git_path)
+            if os.path.exists(git_path):
+                shutil.rmtree(git_path)
 
 
 class Migration(migrations.Migration):
