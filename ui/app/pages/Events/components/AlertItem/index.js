@@ -16,7 +16,14 @@ import { KillChainStepsEnum } from 'ui/maps/KillChainStepsEnum';
 import { withStore } from 'ui/mobx/RootStoreProvider';
 import Filter from 'ui/utils/Filter';
 import AlertRelatedData from 'ui/components/AlertRelatedData';
+import styled from 'styled-components';
 import { DlHorizontal, Warning, Numbers, Pre, TabPaneResponsive } from './styles';
+
+const BadgeStyled = styled(Badge)`
+  .ant-badge-count {
+    background-color: #5b595c !important;
+  }
+`;
 
 // mapping between what comes from backend(here key) and what we want to show on the frontend(the value)
 const protoMap = {
@@ -883,11 +890,7 @@ class AlertItem extends React.Component {
                   tab={
                     <Numbers>
                       <span>{`Related ${protoMap[key]}${key === 'Alert' && Object.keys(events[key]).length > 1 ? 's' : ''}`}</span>
-                      <Badge
-                        count={Object.keys(events[key]).length || <span className="ant-badge-count">0</span>}
-                        overflowCount={99999}
-                        style={{ background: '#5b595c' }}
-                      />
+                      <BadgeStyled count={Object.keys(events[key]).length || <span className="ant-badge-count">0</span>} overflowCount={99999} />
                     </Numbers>
                   }
                 >
@@ -914,11 +917,7 @@ class AlertItem extends React.Component {
             tab={
               <Numbers>
                 <span>Files</span>
-                <Badge
-                  count={Object.values(this.state.files).length || <span className="ant-badge-count">0</span>}
-                  overflowCount={99999}
-                  style={{ background: '#5b595c' }}
-                />
+                <BadgeStyled count={Object.values(this.state.files).length || <span className="ant-badge-count">0</span>} overflowCount={99999} />
               </Numbers>
             }
           >
