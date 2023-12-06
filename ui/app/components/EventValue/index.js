@@ -11,10 +11,6 @@ const Container = styled.div`
   align-items: center;
   width: 100%;
   background: ${p => (p.hover ? '#f0f2f5' : 'none')};
-  cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 `;
 
 export const Count = styled.span`
@@ -22,6 +18,7 @@ export const Count = styled.span`
   color: #fff;
   padding: 0 5px;
   font-size: 12px;
+  cursor: default;
 `;
 
 const EventValue = ({ filter, count, copyMode }) => {
