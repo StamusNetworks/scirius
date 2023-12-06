@@ -16,6 +16,9 @@ const Value = styled.a`
   overflow: hidden;
   word-break: break-all;
   max-height: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 `;
 
 const mitreLinks = ['alert.metadata.mitre_tactic_id', 'alert.metadata.mitre_technique_id'];
