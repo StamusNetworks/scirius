@@ -523,6 +523,10 @@ def current_user(request):
 
 
 def session_activity(request):
+    '''
+    This is not accessible via URLs.
+    This is used only on login view to set expiry
+    '''
     timeout = int(request.POST.get('timeout', '0'))
     cookie_age = get_system_settings().custom_cookie_age
     disconnect = timeout >= cookie_age * 3600
@@ -531,4 +535,3 @@ def session_activity(request):
     else:
         expiry = cookie_age * 3600 - timeout
         request.session.set_expiry(expiry)
-    return JsonResponse({'disconnect': disconnect})
