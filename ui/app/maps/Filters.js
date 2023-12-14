@@ -44,14 +44,44 @@ export const FiltersList = [
     id: 'msg',
     category: [FilterCategory.SIGNATURE, FilterCategory.EVENT],
     wildcardable: false,
-    negatable: false,
+    negatable: true,
+    onNegate: () => ({
+      id: 'not_in_msg',
+    }),
+    defaults: {
+      wildcard: true,
+    },
+  },
+  {
+    title: 'Message',
+    id: 'not_in_msg',
+    category: [FilterCategory.SIGNATURE, FilterCategory.EVENT],
+    wildcardable: false,
+    negatable: true,
+    onNegate: () => ({
+      id: 'msg',
+    }),
   },
   {
     title: 'Content',
     id: 'content',
-    category: FilterCategory.SIGNATURE,
+    category: [FilterCategory.SIGNATURE, FilterCategory.EVENT],
     wildcardable: false,
-    negatable: false,
+    onNegate: () => ({
+      id: 'not_in_content',
+    }),
+    defaults: {
+      wildcard: true,
+    },
+  },
+  {
+    title: 'Content',
+    id: 'not_in_content',
+    category: [FilterCategory.SIGNATURE, FilterCategory.EVENT],
+    wildcardable: false,
+    onNegate: () => ({
+      id: 'content',
+    }),
   },
   /* Event filters */
   {
@@ -154,6 +184,7 @@ export const FiltersList = [
     id: 'src_port',
     category: FilterCategory.EVENT,
     type: FilterType.PORT,
+    valueType: FilterValueType.NUMBER,
     convertible: 'host_id.services.port',
     wildcardable: false,
   },
@@ -444,7 +475,7 @@ export const FiltersList = [
     convertible: 'host_id.services.values.tls.subject',
   },
   {
-    title: 'Issuer',
+    title: 'Issuer DN',
     id: 'tls.issuerdn',
     category: FilterCategory.EVENT,
     convertible: 'host_id.services.values.tls.issuerdn',
@@ -779,7 +810,7 @@ export const FiltersList = [
   /* HISTORY */
   {
     title: 'User',
-    id: 'user',
+    id: 'username',
     category: FilterCategory.HISTORY,
   },
   {
