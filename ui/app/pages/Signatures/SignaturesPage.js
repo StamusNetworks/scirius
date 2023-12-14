@@ -33,6 +33,7 @@ import useAutorun from 'ui/helpers/useAutorun';
 import { STAMUS } from 'ui/config';
 import { buildQFilter } from 'ui/buildQFilter';
 import { useStore } from 'ui/mobx/RootStoreProvider';
+import { toJS } from 'mobx';
 import HuntPaginationRow from '../../HuntPaginationRow';
 import RulePage from '../../RulePage';
 import RuleInList from '../../RuleInList';
@@ -113,7 +114,7 @@ const SignaturesPage = () => {
       if (response.ok) {
         if (response.data.results.length > 0) {
           if (!response.data.results[0].timeline_data) {
-            const qFilter = buildQFilter(commonStore.filtersWithAlert, commonStore.systemSettings);
+            const qFilter = buildQFilter([...toJS(commonStore.filters), toJS(commonStore.alert)], commonStore.systemSettings);
             await updateHitsStats(
               response.data?.results || [],
               filterParams,
