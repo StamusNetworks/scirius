@@ -9,11 +9,10 @@ import '@babel/polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { ConnectedRouter } from 'connected-react-router';
 import FontFaceObserver from 'fontfaceobserver';
 import { SingletonHooksContainer } from 'react-singleton-hook';
+import { BrowserRouter } from 'react-router-dom';
 
-import history from 'utils/history';
 import './fonts/fonts.css';
 
 // Import root app
@@ -49,10 +48,10 @@ const render = () => {
   ReactDOM.render(
     <RootStoreProvider>
       <Provider store={store}>
-        <ConnectedRouter history={history}>
+        <BrowserRouter>
           <App />
           <SingletonHooksContainer />
-        </ConnectedRouter>
+        </BrowserRouter>
       </Provider>
     </RootStoreProvider>,
     MOUNT_NODE,

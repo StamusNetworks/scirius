@@ -2,7 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'react-router-dom';
 import { Dropdown, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import { createStructuredSelector } from 'reselect';
@@ -271,4 +271,4 @@ const mapDispatchToProps = {
 };
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);
-export default compose(withConnect)(withRouter(withStore(FilterEditKebab)));
+export default compose(withRouter, withConnect)(withStore(FilterEditKebab));
