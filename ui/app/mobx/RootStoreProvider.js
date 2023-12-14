@@ -17,7 +17,7 @@ export const RootStoreProvider = ({ children }) => {
   return <StoreContext.Provider value={root}>{children}</StoreContext.Provider>;
 };
 RootStoreProvider.propTypes = {
-  children: PropTypes.string,
+  children: PropTypes.object,
 };
 
 /* Hook to use store in any functional component */
