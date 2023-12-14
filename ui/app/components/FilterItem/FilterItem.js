@@ -1,21 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { EditOutlined, CloseOutlined, StopOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { EditOutlined, CloseOutlined, StopOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
-import { Alert, Button, Checkbox, Col, Form, Input, message, Modal, Row, Space, Tooltip } from 'antd';
+import { message, Tooltip } from 'antd';
 import { useStore } from 'ui/mobx/RootStoreProvider';
-import isNumeric from 'ui/helpers/isNumeric';
-import Filter from 'ui/utils/Filter';
 import FilterButton from 'ui/components/FilterButton';
-
-const ModalHuntFilter = styled(Modal)`
-  & .modal-body {
-    padding-bottom: 0;
-  }
-  & .modal-footer {
-    margin-top: 0;
-  }
-`;
+import FilterEditModal from 'ui/components/FilterEditModal';
 
 const FilterContainer = styled.li`
   display: flex !important;
@@ -72,10 +62,7 @@ const FilterItem = props => {
   const filterItemDataTest = props.filter.negated ? 'filter-item-not' : 'filter-item';
   const [messageApi, contextHolder] = message.useMessage();
 
-  const [filterCopy, setFilterCopy] = useState(props.filter.instance);
   const [editForm, setEditForm] = useState(false);
-
-  const valid = !filterCopy.fullString && filterCopy.value.match(/[\s]+/g) ? 'error' : 'success';
 
   useEffect(() => {
     if (editForm === true) {
@@ -84,45 +71,6 @@ const FilterItem = props => {
       }, 100);
     }
   }, [editForm]);
-  const onSave = () => {
-    const newFilterValue = isNumeric(filterCopy.value) ? parseInt(filterCopy.value, 10) : filterCopy.value;
-    commonStore.replaceFilter(
-      props.filter,
-      new Filter(filterCopy.id, newFilterValue, {
-        negated: filterCopy.negated,
-        fullString: filterCopy.fullString,
-        suspended: filterCopy.suspended,
-      }),
-    );
-    setEditForm(false);
-  };
-
-  const keyListener = ({ keyCode }) => {
-    // Enter key handler
-    if (keyCode === 13 && valid) {
-      onSave();
-    }
-  };
-
-  let helperText = '';
-  if (['msg', 'not_in_msg', 'content', 'not_in_content'].includes(props.filter.id)) {
-    helperText = 'Case insensitive substring match.';
-  } else if (['hits_min', 'hits_max'].includes(props.filter.id)) {
-    helperText = '';
-  } else if (['es_filter'].includes(props.filter.id)) {
-    helperText = 'Free ES filter with Lucene syntax';
-  } else if (!filterCopy.fullString && filterCopy.wildcardable) {
-    helperText = (
-      <React.Fragment>
-        Wildcard characters (<i style={{ padding: '0px 5px', background: '#e0e0e0', margin: '0 2px' }}>*</i> and{' '}
-        <i style={{ padding: '0px 5px', background: '#e0e0e0', margin: '0 2px' }}>?</i>) can match on word boundaries.
-        <br />
-        No spaces allowed.
-      </React.Fragment>
-    );
-  } else {
-    helperText = 'Exact match';
-  }
 
   return (
     <React.Fragment>
@@ -169,7 +117,7 @@ const FilterItem = props => {
                 icon={props.filter.suspended ? <CheckCircleOutlined /> : <StopOutlined />}
                 onClick={e => {
                   e.preventDefault();
-                  commonStore.replaceFilter(props.filter, props.filter.suspend());
+                  props.filter.suspended = !props.filter.suspended;
                   messageApi.open({
                     type: 'success',
                     content: `Filter is ${props.filter.suspended ? 'disabled' : 'enabled'}`,
@@ -184,114 +132,15 @@ const FilterItem = props => {
             onClick={e => {
               e.preventDefault();
               if (props.filter.category === 'HISTORY') {
-                commonStore.removeHistoryFilter(props.filter);
+                commonStore.removeHistoryFilter(props.filter.uuid);
               } else {
-                commonStore.removeFilter(props.filter);
+                commonStore.removeFilter(props.filter.uuid);
               }
             }}
           />
         </FilterControls>
       </FilterContainer>
-      {editForm && (
-        <ModalHuntFilter
-          title="Edit filter"
-          visible={editForm}
-          onCancel={() => setEditForm(false)}
-          className="modal-hunt-filter"
-          footer={
-            <React.Fragment>
-              <Button data-test="cancel-edit-filter-button" onClick={() => setEditForm(false)}>
-                Cancel
-              </Button>
-              <Button data-test="save-edit-filter-button" type="primary" disabled={valid === 'error'} onClick={onSave}>
-                Save
-              </Button>
-            </React.Fragment>
-          }
-        >
-          <Form>
-            <Form.Item name="name">
-              <Row>
-                <Col span={4}>
-                  <label>Filter</label>
-                </Col>
-                <Col span={20}>
-                  <Form.Item validateStatus={valid}>
-                    <span>{props.filter.id}</span>
-                    <Input
-                      data-test="edit-filter-input-field"
-                      id="input-value-filter"
-                      value={filterCopy.value}
-                      onKeyDown={keyListener}
-                      onChange={e => {
-                        setFilterCopy({ ...filterCopy, value: e.target.value });
-                      }}
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                  <span style={{ color: '#b4b3b5' }}>{helperText}</span>
-                </Col>
-              </Row>
-            </Form.Item>
-            <Form.Item name="checkbox-wildcard_view">
-              {!props.filter.wildcardable && (
-                <Alert
-                  message={
-                    <Space>
-                      <InfoCircleOutlined />
-                      <span data-test="wildcard-disabled">Filter {props.filter.id} cannot use wildcards</span>
-                    </Space>
-                  }
-                  type="info"
-                />
-              )}
-              {props.filter.wildcardable && (
-                <Row>
-                  <Col span={6}>
-                    <label>Wildcard view</label>
-                  </Col>
-                  <Col span={18}>
-                    <Checkbox
-                      data-test="wildcard-checkbox"
-                      onChange={({ target: { checked } }) => setFilterCopy({ ...filterCopy, fullString: !checked })}
-                      onKeyDown={keyListener}
-                      checked={!filterCopy.fullString}
-                    />
-                  </Col>
-                </Row>
-              )}
-            </Form.Item>
-            <Form.Item name="checkbox-negated">
-              {!props.filter.negatable && (
-                <Alert
-                  message={
-                    <Space>
-                      <InfoCircleOutlined />
-                      <span data-test="negated-disabled">Filter {props.filter.id} cannot be negated</span>
-                    </Space>
-                  }
-                  type="info"
-                />
-              )}
-              {props.filter.negatable && (
-                <Row>
-                  <Col span={6}>
-                    <label>Negated</label>
-                  </Col>
-                  <Col span={18}>
-                    <Checkbox
-                      data-test="negated-filter-checkbox"
-                      onChange={({ target: { checked } }) => setFilterCopy({ ...filterCopy, negated: checked })}
-                      onKeyDown={keyListener}
-                      checked={filterCopy.negated}
-                    />
-                  </Col>
-                </Row>
-              )}
-            </Form.Item>
-          </Form>
-        </ModalHuntFilter>
-      )}
+      {editForm && <FilterEditModal filter={props.filter} onClose={() => setEditForm(false)} />}
     </React.Fragment>
   );
 };
