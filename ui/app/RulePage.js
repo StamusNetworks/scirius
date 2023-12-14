@@ -167,7 +167,7 @@ class RulePage extends React.Component {
 
   render() {
     const items = [];
-    if (this.state.rule?.versions.length > 1) {
+    if (this.state.rule?.versions?.length > 1) {
       this.state.rule.versions.forEach((version, i) => {
         items.push({
           key: i,
@@ -193,10 +193,10 @@ class RulePage extends React.Component {
 
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr max-content', gridGap: '10px', marginBottom: '10px' }}>
-                  {this.state.rule.versions.length === 1 && (
+                  {this.state.rule?.versions?.length === 1 && (
                     <SigContent dangerouslySetInnerHTML={{ __html: this.state.rule.versions[0].content }} key={this.state.rule.versions[0].id} />
                   )}
-                  {this.state.rule.versions.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
+                  {this.state.rule?.versions?.length > 1 && <Tabs defaultActiveKey="1" items={items} />}
 
                   {this.state.rule_references && this.state.rule_references.length > 0 && (
                     <UICard
