@@ -22,6 +22,7 @@ import FiltersDropdown from 'ui/components/FiltersDropdown';
 
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
+import { toJS } from 'mobx';
 import Title from './Title.styled';
 import Actions from './components/Actions';
 
@@ -47,7 +48,7 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
   const { commonStore } = useStore();
 
   // Selectors handlers
-  const { user, filters, history } = commonStore;
+  const { user, filters } = commonStore;
   const saveFiltersModal = useSelector(ruleSetsSelectors.makeSelectSaveFiltersModal());
   const supportedActionsPermissions = user && user.permissions && user.permissions.includes('rules.ruleset_policy_edit');
   const filtersAreSticky = useSelector(({ ruleSet }) => ruleSet?.filtersAreSticky);
@@ -87,13 +88,20 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
     [commonStore.alert.value.untagged],
   );
 
-  const activeFilters = page === 'HISTORY' ? history : filters;
-
   const getFiltersCopy = () => {
-    const filtersCopy = [...filters.map(({ instance }) => instance)];
+    const filtersCopy = [
+      ...filters.map(f => ({
+        fullString: f.fullString,
+        id: f.id,
+        label: f.label,
+        negated: f.negated,
+        query: null,
+        value: f.value,
+      })),
+    ];
 
     if (process.env.REACT_APP_HAS_TAG === '1') {
-      filtersCopy.push(commonStore.alert);
+      filtersCopy.push(toJS(commonStore.alert));
     }
     return filtersCopy;
   };
@@ -115,7 +123,7 @@ const Filters = ({ page, section, filterTypes, onSortChange, sortValues }) => {
             </Title>
             <FiltersDropdown filterTypes={filterTypes} disabled={page === 'HOST_INSIGHT'} />
             <Divider style={{ margin: '15px 0' }} />
-            {activeFilters && activeFilters.length > 0 && <FilterList filterTypes={filterTypes} filters={activeFilters} />}
+            <FilterList filterTypes={filterTypes} />
           </div>
           <Space direction="vertical">
             {page !== 'HISTORY' && <AdditionalFilters page={page} />}
