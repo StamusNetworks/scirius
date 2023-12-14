@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { Cascader, Input, message, Switch, Tooltip } from 'antd';
 import FilterValueType from 'ui/maps/FilterValueType';
@@ -10,6 +10,9 @@ import isIP from 'ui/helpers/isIP';
 import FilterValidationType from 'ui/maps/FilterValidationType';
 import { FilterCategory } from 'ui/maps/Filters';
 import FiltersDropdownItems from 'ui/maps/FiltersDropdownItems';
+import useNetworkDefs from 'ui/hooks/useNetworkDefs';
+import useHistoryFilters from 'ui/hooks/useHistoryFilters';
+import formatDropdownItem from 'ui/helpers/formatDropdownItem';
 
 const CascaderStyled = styled(Cascader)`
   width: max-content;
@@ -42,8 +45,15 @@ const CascaderStyled = styled(Cascader)`
 const FiltersSelector = styled.div`
   .ant-cascader-menu {
     height: fit-content;
-    max-height: 560px;
+    max-height: 580px;
     min-width: 200px;
+  }
+  & .ant-cascader-menu-item-disabled {
+    cursor: default;
+    background-color: #e2e2e2 !important;
+    color: #5a5a5a;
+    text-shadow: 0 1px #fff;
+    font-weight: bold;
   }
 `;
 
@@ -68,19 +78,20 @@ const getSelectedItem = items => {
   };
 };
 
-const FiltersDropdown = ({ disabled, filterTypes }) => {
+function FiltersDropdown({ disabled, filterTypes }) {
   const { commonStore } = useStore();
+  const networkDefs = useNetworkDefs();
+  const historyFilters = useHistoryFilters();
 
+  const [pathItems, setPathItems] = useState({ path: null, items: [] });
   const [negated, setNegated] = useState(false);
   const [value, setValue] = useState();
-  const [category, setCategory] = useState();
   const [valueType, setValueType] = useState();
   const [validationType, setValidationType] = useState();
 
   const onClear = () => {
     setValueType();
     setValue();
-    setCategory();
     setNegated(false);
   };
 
@@ -89,29 +100,35 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
       onClear();
       return;
     }
-
-    const { selectedValueType, selectedCategory, selectedValidationType } = getSelectedItem(items);
-    if (selectedValueType === FilterValueType.SELECT) {
-      // Filter value is always the last selected option
-      const filterValue = path[path.length - 1];
-      // Filter ID is always the one right before the last one
-      const filterId = path.length > 1 ? path[path.length - 2] : path[0];
-      if (selectedCategory === FilterCategory.HISTORY) {
-        commonStore.addHistoryFilter(new Filter(filterId, filterValue, { fullString: true }));
-      } else {
-        commonStore.addFilter(new Filter(filterId, filterValue, selectedCategory, { negated: false }));
-      }
-      onClear();
-      return;
-    }
-
-    setValidationType(selectedValidationType);
-    setCategory(selectedCategory);
-    setValueType(selectedValueType);
-    setValue(path);
+    setPathItems({ path, items });
   };
 
+  useEffect(() => {
+    const { path, items } = pathItems;
+    if (path) {
+      const { selectedValueType, selectedCategory, selectedValidationType } = getSelectedItem(items);
+      if (selectedValueType === FilterValueType.SELECT) {
+        // Filter value is always the last selected option
+        const filterValue = path[path.length - 1];
+        // Filter ID is always the one right before the last one
+        const filterId = (path.length > 1 ? path[path.length - 2] : path[0]).replace(/:value-id-\d+/, '');
+        if (selectedCategory === FilterCategory.HISTORY) {
+          commonStore.addHistoryFilter(new Filter(filterId, filterValue, { fullString: true }));
+        } else {
+          commonStore.addFilter(new Filter(filterId, filterValue, selectedCategory, { negated: false }));
+        }
+        onClear();
+        return;
+      }
+
+      setValidationType(selectedValidationType);
+      setValueType(selectedValueType);
+      setValue(path);
+    }
+  }, [pathItems]);
+
   const onSubmit = e => {
+    const { selectedCategory } = getSelectedItem(pathItems.items);
     const filterId = value.length > 1 ? value[value.length - 1] : value[0];
     let inputValue = e.target.value;
 
@@ -144,25 +161,45 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
     }
 
     /* Is Regex ? */
-    const exactMatch = valueType !== FilterValueType.NUMBER ? !/[\\*?]/.test(inputValue) : true;
-    commonStore.addFilter(new Filter(filterId, inputValue, category, { negated, fullString: exactMatch }));
+    if (selectedCategory === FilterCategory.HISTORY) {
+      commonStore.addHistoryFilter(new Filter(filterId, inputValue, { fullString: false }));
+    } else {
+      /* alert.signature edge case */
+      const alertSignature = filterId === 'alert.signature' ? { fullString: false } : {};
+      commonStore.addFilter(new Filter(filterId, inputValue, selectedCategory, { negated, ...alertSignature }));
+    }
     onClear();
   };
 
-  const options = useMemo(
-    () =>
-      filterTypes
-        ?.map(f => [
-          {
-            value: f,
-            label: `${capitalize(f.toLowerCase())} filters`,
-            disabled: true,
-          },
-          ...FiltersDropdownItems[f],
-        ])
-        .flat(),
-    [...(filterTypes || [])],
+  const makeFilterCategory = useCallback(
+    name => ({
+      value: name,
+      label: `${capitalize(name.toLowerCase())} filters`,
+      disabled: true,
+    }),
+    [FiltersDropdownItems],
   );
+
+  const options = useMemo(() => {
+    let result = [];
+    const categories = Object.keys(FiltersDropdownItems).filter(c => filterTypes.includes(c));
+    categories.forEach(category => {
+      const items = FiltersDropdownItems[category].map(c => formatDropdownItem({ ...c, category }));
+      result = [
+        /* Inherit */
+        ...result,
+        /* Create category item */
+        makeFilterCategory(category),
+        /* Append Network Defs filters in case there are any */
+        ...(category === 'EVENT' ? networkDefs : []),
+        /* Append History filters  */
+        ...(category === 'HISTORY' ? historyFilters : []),
+        /* Append filters */
+        ...items,
+      ];
+    });
+    return result;
+  }, [FiltersDropdownItems, filterTypes, networkDefs]);
 
   const placeholder = useMemo(() => {
     let result = 'Enter ';
@@ -212,6 +249,7 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
       {valueType === FilterValueType.TEXT && (
         <div>
           <Switch
+            data-test="initialy-negated"
             checkedChildren={<span>IS</span>}
             unCheckedChildren={<span>NOT</span>}
             size="default"
@@ -227,7 +265,7 @@ const FiltersDropdown = ({ disabled, filterTypes }) => {
       )}
     </div>
   );
-};
+}
 
 export default FiltersDropdown;
 
