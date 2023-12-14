@@ -33,6 +33,7 @@ import HuntTrend from 'ui/HuntTrend';
 import useFilterParams from 'ui/hooks/useFilterParams';
 import 'react-resizable/css/styles.css';
 import '../../../../rules/static/rules/c3.min.css';
+import { toJS } from 'mobx';
 import DashboardMosaic from '../../components/DashboardMosaic';
 
 const DashboardPage = () => {
@@ -67,13 +68,17 @@ const DashboardPage = () => {
             style={{ marginTop: '15px' }}
             filterParams={filterParams}
             chartTarget={chartTarget}
-            filters={commonStore.filtersWithAlert}
+            filters={[...commonStore.filters.map(f => f.toJSON()), toJS(commonStore.alert)]}
             systemSettings={commonStore.systemSettings}
             eventTypes={commonStore.eventTypes}
           />
         </Col>
         <Col lg={4} md={6} sm={24} xs={24} style={{ paddingLeft: '0px' }}>
-          <HuntTrend filterParams={filterParams} filters={commonStore.filtersWithAlert} systemSettings={commonStore.systemSettings} />
+          <HuntTrend
+            filterParams={filterParams}
+            filters={[...commonStore.filters.map(f => f.toJSON()), toJS(commonStore.alert)]}
+            systemSettings={commonStore.systemSettings}
+          />
           {hasPermissions && (process.env.REACT_APP_HAS_TAG === '1' || process.env.NODE_ENV === 'development') && (
             <div style={{ position: 'absolute', zIndex: 1, top: 0, right: '30px' }}>
               <Dropdown id="more-actions" overlay={menu} trigger={['click']}>
