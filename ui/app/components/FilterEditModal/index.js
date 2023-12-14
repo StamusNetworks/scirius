@@ -30,7 +30,8 @@ const FilterEditModal = ({ onClose, filter }) => {
     form.setFieldsValue({
       value: filter.value,
       negated: filter.negated,
-      wildcard: !filter.fullString,
+      // Prevents checking the wildcard checkbox when filter schema has { defaults: { wildcard: true } }
+      wildcard: filter.wildcardable && !filter.fullString,
     });
     setHelperText(getHelperText());
   }, [form, filter]);
@@ -87,6 +88,11 @@ const FilterEditModal = ({ onClose, filter }) => {
           rules={[
             ({ getFieldValue }) => ({
               validator: () => {
+                // validation by length
+                if (getFieldValue('value').length === 0) {
+                  setDisabled(true);
+                  return Promise.reject(new Error('Filter value must not be empty'));
+                }
                 // validation by type
                 if (filter.schema?.valueType) {
                   switch (filter.schema?.valueType) {
