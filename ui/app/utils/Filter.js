@@ -1,32 +1,51 @@
 import { FilterCategory, FiltersList, FilterType } from 'ui/maps/Filters';
+import { makeAutoObservable } from 'mobx';
+import uuid from 'ui/helpers/uuid';
 
 export default class Filter {
-  #_filter = null;
+  /* Filter uuid */
+  _uuid = null;
 
-  /**
-   * Filter default properties
-   * @type {{negated: boolean, fullString: boolean, label: null, title: null, category: string, type: string, value: null, id: null}}
-   */
-  #_defaults = {
-    /* Filter id. Example: alert.severity */
-    id: null,
-    /* Filter raw value. Example: 1 */
-    value: null,
-    /* Filter title. Example: Severity */
-    title: null,
-    /* Filter label in filter bar. Example: Severity: Critical */
-    label: null,
-    /* Filter category. Example: event | host */
-    category: FilterCategory.event,
-    /* Filter type: IP | PORT | MITRE | USERNAME | HOSTNAME | ROLE | GENERIC */
-    type: FilterType.GENERIC,
-    /* Filter mode: including or excluding. Example: true | false */
-    negated: false,
-    /* Filter mode: exact match. Example: true | false */
-    fullString: false,
-    /* Filter temporarily suspended */
-    suspended: false,
-  };
+  /* Filter id. Example: alert.severity */
+  _id = null;
+
+  /* Filter raw value. Example: 1 */
+  _value = null;
+
+  /* Filter title. Example: Severity */
+  _title = null;
+
+  /* Filter label in filter bar. Example: Severity: Critical */
+  _label = null;
+
+  /* Filter category. Example: event | host */
+  _category = FilterCategory.event;
+
+  /* Filter type: IP | PORT | MITRE | USERNAME | HOSTNAME | ROLE | GENERIC */
+  _type = FilterType.GENERIC;
+
+  /* Filter icon. ReactNode */
+  _icon = null;
+
+  /* Filter mode: including or excluding. Example: true | false */
+  _negated = false;
+
+  /* Filter mode: does it have a negated state. Example: true | false */
+  _negatable = false;
+
+  /* Filter mode: exact match. Example: true | false */
+  _fullString = false;
+
+  /* Filter mode: full string match. Example: true | false */
+  _wildcardable = true;
+
+  /* Filter is convertible to another one. Example: src_ip to host_id.ip */
+  _convertible = false;
+
+  /* Filter temporarily suspended */
+  _suspended = false;
+
+  _schema = null;
 
   /**
    * Initialize filter object by given parameters
@@ -40,25 +59,52 @@ export default class Filter {
    * @returns {Filter}
    */
   constructor(filter, value, a = '', b = {}) {
-    this.#_filter = this.#makeFilter(filter, value, a, b);
-    return this;
+    const props = typeof a === 'string' || Array.isArray(a) ? b : a || {};
+    const filterSchema = this.findSchema(filter, a);
+
+    if (!filterSchema && process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.warn(`Filter > ${filter} schema not found`);
+    }
+
+    // Read-only properties
+    this._uuid = props?.uuid || uuid();
+    this._id = filterSchema?.id || filter;
+    this._value = value;
+    this._title = filterSchema?.title || props?.title || filter;
+    this._label = `${props?.title || filterSchema?.title || filter}: ${filterSchema?.format?.(value) || value}`;
+    this._category = filterSchema?.category;
+    this._type = filterSchema?.type;
+    this._negatable = this.prop(filterSchema?.negatable, true);
+    this._wildcardable = this.prop(filterSchema?.wildcardable, true);
+    this._convertible = this.prop(filterSchema?.convertible, false);
+    this._schema = filterSchema;
+    this._icon = filterSchema?.icon;
+
+    const smartWildcard = this._wildcardable ? !/[\\*?]/.test(value) : null;
+    // Overridable properties
+    this._fullString = this.prop(props?.fullString, !this._schema?.defaults?.wildcard, smartWildcard, true);
+    this._suspended = this.prop(props?.suspended, false);
+    this._negated = this.prop(props?.negated, false);
+    if (this._negated) {
+      this.hookOnNegate();
+    }
+
+    makeAutoObservable(this);
   }
 
-  valueOf() {
-    return this.#_filter;
-  }
-
-  toString() {
-    return JSON.stringify(this.#_filter);
+  findSchema(filter, a) {
+    const category = typeof a === 'string' ? a : null;
+    return FiltersList.find(f => f.id === filter && ((category && f.category === category) || true));
   }
 
   /**
-   * Returns first non undefined argument or the last one which is the default fallback value
+   * Returns first non-undefined argument or the last one which is the default fallback value
    *
    * @param params
    * @returns {*|null}
    */
-  #prop(...params) {
+  prop(...params) {
     if (params.length <= 1) {
       // eslint-disable-next-line no-console
       console.log('Filter > prop method expects at least two arguments');
@@ -75,120 +121,160 @@ export default class Filter {
     return result !== undefined ? result : null;
   }
 
-  #makeFilter(filterKey, value, a, b) {
-    const props = typeof a === 'string' ? b : a || {};
-    const category = typeof a === 'string' ? a : null;
-    const filterSchema = FiltersList.find(f => f.id === filterKey && ((category && f.category === category) || true));
-    if (filterSchema) {
-      return {
-        ...filterSchema,
-        label: `${props?.title || filterSchema.title || filterKey}: ${filterSchema.format?.(value) || value}`,
-        value,
-        fullString: this.#prop(props?.fullString, true),
-        wildcardable: this.#prop(filterSchema?.wildcardable, true),
-        negated: this.#prop(props?.negated, false),
-        negatable: this.#prop(filterSchema?.negatable, true),
-        convertible: this.#prop(filterSchema?.convertible, false),
-        suspended: this.#prop(props?.suspended, false),
-      };
-    }
-
-    if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
-      console.warn(`Filter > ${filterKey} schema not found`);
-    }
-
+  toJSON() {
     return {
-      /* default schema */
-      title: props?.title || filterKey,
-      id: filterKey,
-      category: FilterCategory.EVENT,
-      type: FilterType.GENERIC,
-      /* default filter props */
-      value,
-      label: `${filterKey}: ${value}`,
-      fullString: this.#prop(props?.fullString, true),
-      wildcardable: this.#prop(props?.wildcardable, true),
-      negated: this.#prop(props?.negated, false),
-      negatable: this.#prop(props?.negatable, true),
-      convertible: this.#prop(props?.convertible, false),
-      suspended: this.#prop(props?.suspended, false),
+      uuid: this._uuid,
+      id: this._id,
+      value: this._value,
+      title: this._title,
+      label: this._label,
+      category: this._category,
+      type: this._type,
+      wildcardable: this._wildcardable,
+      convertible: this._convertible,
+      negated: this._negated,
+      fullString: this._fullString,
+      suspended: this._suspended,
     };
   }
 
-  get instance() {
-    return this.#_filter;
+  toString() {
+    return JSON.stringify(this.toJSON());
+  }
+
+  valueOf() {
+    this.toJSON();
+  }
+
+  /* Prop Getters */
+  get id() {
+    return this._id;
+  }
+
+  get uuid() {
+    return this._uuid;
   }
 
   get value() {
-    return this.#_filter.value;
+    return this._value;
   }
 
-  get displayValue() {
-    return this.#_filter.format ? this.#_filter.format(this.#_filter.value) : this.#_filter.value;
-  }
-
-  get id() {
-    return this.#_filter.id;
+  get title() {
+    return this._title;
   }
 
   get label() {
-    return this.#_filter.label;
+    return `${this._title || this.id}: ${this._schema?.format?.(this._value) || this._value}`;
   }
 
   get category() {
-    return this.#_filter.category;
+    return this._category;
   }
 
-  get convertTo() {
-    return this.#_filter.convertible || null;
-  }
-
-  get convertible() {
-    return !!this.#_filter.convertible;
-  }
-
-  get wildcardable() {
-    return !!this.#_filter.wildcardable;
-  }
-
-  get negatable() {
-    return !!this.#_filter.negatable;
-  }
-
-  get negated() {
-    return !!this.#_filter.negated;
-  }
-
-  get fullString() {
-    return !!this.#_filter.fullString;
-  }
-
-  get suspended() {
-    return !!this.#_filter.suspended;
+  get type() {
+    return this._type;
   }
 
   get icon() {
-    return this.#_filter.icon;
+    return this._icon;
+  }
+
+  get negated() {
+    return this._negated;
+  }
+
+  get negatable() {
+    return !!this._negatable;
+  }
+
+  get fullString() {
+    return !!this._fullString;
+  }
+
+  get wildcardable() {
+    return !!this._wildcardable;
+  }
+
+  get convertible() {
+    return !!this._convertible;
+  }
+
+  get suspended() {
+    return !!this._suspended;
+  }
+
+  get schema() {
+    return this._schema;
+  }
+
+  /* Custom Getters */
+  get displayValue() {
+    return this._schema?.format ? this._schema?.format?.(this.value) : this.value;
+  }
+
+  get convertTo() {
+    return this._convertible || null;
+  }
+
+  /* Prop Setters */
+  set value(value) {
+    this._value = value;
+    this.store();
+  }
+
+  set negated(value) {
+    this.hookOnNegate();
+    this._negated = !!value;
+    this.store();
+  }
+
+  set fullString(value) {
+    this._fullString = !!value;
+    this.store();
+  }
+
+  set suspended(value) {
+    this._suspended = !!value;
+    this.store();
+  }
+
+  /* Actions */
+  hookOnNegate() {
+    if (this._schema?.onNegate) {
+      const { id } = this._schema.onNegate();
+      this._schema = this.findSchema(id);
+      this._id = id;
+    }
   }
 
   negate(value) {
-    this.#_filter.negated = value || true;
-    return this;
-  }
-
-  suspend(value) {
-    this.#_filter.suspended = value === undefined ? !this.#_filter.suspended : value;
-    return this;
-  }
-
-  setValue(v) {
-    this.value = v;
-    return this;
+    this.hookOnNegate();
+    this._negated = value;
   }
 
   convert() {
-    this.#_filter = this.#makeFilter(this.#_filter.convertible, this.value, { negated: this.#_filter.negated, fullString: this.#_filter.fullString });
-    return this;
+    if (this.convertible) {
+      const filterSchema = FiltersList.find(f => f.id === this.convertTo);
+      this._id = this.convertTo;
+      this._title = filterSchema?.title;
+      this._label = `${filterSchema?.title}: ${filterSchema?.format?.(this._value) || this._value}`;
+      this._category = filterSchema?.category;
+      this._type = filterSchema?.type;
+
+      this._convertible = this.prop(filterSchema?.convertible, false);
+      this._icon = filterSchema?.icon;
+      this._schema = filterSchema;
+    }
+    this.store();
+  }
+
+  store() {
+    try {
+      const storedFilters = JSON.parse(localStorage.getItem('ids_filters'));
+      localStorage.setItem('ids_filters', JSON.stringify(storedFilters.map(f => (f.uuid === this._uuid ? this.toJSON() : f))));
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Error trying to update the local stored filters');
+    }
   }
 }
