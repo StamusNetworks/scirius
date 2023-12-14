@@ -5,10 +5,6 @@ import { api } from '../api';
 class HistoryStore {
   root = null;
 
-  historyItemsList = [];
-
-  historyItemsCount = 0;
-
   constructor(root) {
     this.root = root;
     makeAutoObservable(this, {
@@ -19,8 +15,7 @@ class HistoryStore {
   async fetchData(stringFilters, listParams) {
     const response = await api.get(`rest/${config.HISTORY_PATH}?${listParams}${stringFilters}`);
     if (response.ok) {
-      this.historyItemsList = response.data.results;
-      this.historyItemsCount = response.data.count;
+      return response.data;
     }
     return response;
   }

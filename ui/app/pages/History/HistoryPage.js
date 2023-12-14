@@ -47,6 +47,8 @@ const HistoryPage = () => {
   const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(false);
+  const [data, setData] = useState([]);
+  const [count, setCount] = useState(0);
   const [historyState, setHistoryState] = useState(
     buildListParams(JSON.parse(localStorage.getItem('history')), {
       pagination: {
@@ -65,10 +67,14 @@ const HistoryPage = () => {
   const stringFilters = buildFilter(commonStore.history, commonStore.systemSettings);
   const listParams = buildListUrlParams(historyState);
 
-  useEffect(async () => {
-    setLoading(true);
-    await historyStore.fetchData(stringFilters, listParams);
-    setLoading(false);
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const response = await historyStore.fetchData(stringFilters, listParams);
+      setData(response?.results || []);
+      setCount(response?.count || 0);
+      setLoading(false);
+    })();
   }, [stringFilters, listParams]);
 
   const updateHistoryListState = historyState => {
@@ -136,12 +142,12 @@ const HistoryPage = () => {
           }}
         />
       </ErrorHandler>
-      {historyStore.historyItemsList && (
+      {data && (
         <Table
           rowKey={item => item.pk}
           size="small"
           loading={loading}
-          dataSource={historyStore.historyItemsList}
+          dataSource={data}
           columns={columns}
           expandable={{
             columnWidth: 5,
@@ -153,7 +159,7 @@ const HistoryPage = () => {
         />
       )}
       <ErrorHandler>
-        <HuntPaginationRow onPaginationChange={updateHistoryListState} itemsCount={historyStore.historyItemsCount} itemsList={historyState} />
+        <HuntPaginationRow onPaginationChange={updateHistoryListState} itemsCount={count} itemsList={historyState} />
       </ErrorHandler>
     </div>
   );
