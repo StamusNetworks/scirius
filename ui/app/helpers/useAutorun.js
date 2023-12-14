@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useMemo } from 'react';
-import { autorun } from 'mobx';
+import { autorun, toJS } from 'mobx';
 import { useStore } from 'ui/mobx/RootStoreProvider';
 
 function useAutorun(callback, dependencies) {
@@ -23,7 +23,8 @@ function useAutorun(callback, dependencies) {
           const params = {};
           params.refresh = commonStore.refresh;
           if (!hasAny || (hasAny && dependencies.includes('ids'))) {
-            params.ids = commonStore.filtersWithAlert;
+            params.ids = toJS(commonStore.filters);
+            params.alert = toJS(commonStore.alert);
             trigger = true;
           }
           if (!hasAny || (hasAny && dependencies.includes('date'))) {

@@ -14,7 +14,7 @@ const withAlerts = idsFilters => {
     const i = filters.findIndex(f => f.id === 'hits_min');
     if (i === -1) {
       const hitsMin = new Filter('hits_min', 1);
-      filters.push(hitsMin.instance);
+      filters.push(hitsMin.toJSON());
     }
   }
   return filters;
