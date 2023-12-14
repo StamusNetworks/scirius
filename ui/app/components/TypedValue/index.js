@@ -5,7 +5,7 @@ import { Dropdown, message } from 'antd';
 import { CopyOutlined, InfoCircleFilled, RobotOutlined, UserOutlined, ZoomInOutlined, ZoomOutOutlined, DesktopOutlined } from '@ant-design/icons';
 import _ from 'lodash';
 import styled from 'styled-components';
-import history from 'ui/utils/history';
+import { useHistory } from 'react-router-dom';
 import copyTextToClipboard from 'ui/helpers/copyTextToClipboard';
 import isIP from 'ui/helpers/isIP';
 import { useStore } from 'ui/mobx/RootStoreProvider';
@@ -25,16 +25,9 @@ const mitreLinks = ['alert.metadata.mitre_tactic_id', 'alert.metadata.mitre_tech
 
 const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
   const { commonStore } = useStore();
-
-  const onClickHandler = (e, filter) => {
-    commonStore.addFilter(filter);
-  };
-
+  const history = useHistory();
   const virusTotalLink = (
-    <a
-      href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(filter.instance.value)) ? 'ip-address' : 'domain'}/${filter.instance.value}`}
-      target="_blank"
-    >
+    <a href={`https://www.virustotal.com/gui/${isIP(encodeURIComponent(filter.value)) ? 'ip-address' : 'domain'}/${filter.value}`} target="_blank">
       <InfoCircleFilled /> <span>External info</span>
     </a>
   );
@@ -43,7 +36,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
     {
       key: 'eventValue1',
       label: (
-        <div data-test="filter-on-value" onClick={e => onClickHandler(e, filter.instance)}>
+        <div data-test="filter-on-value" onClick={() => commonStore.addFilter(filter)}>
           <ZoomInOutlined /> <span>Filter on value</span>
         </div>
       ),
@@ -51,7 +44,13 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
     {
       key: 'eventValue2',
       label: (
-        <div data-test="negated-filter-on-value" onClick={e => onClickHandler(e, filter.negate().instance)}>
+        <div
+          data-test="negated-filter-on-value"
+          onClick={() => {
+            filter.negated = true;
+            commonStore.addFilter(filter);
+          }}
+        >
           <ZoomOutOutlined /> <span>Negated filter on value</span>
         </div>
       ),
@@ -86,7 +85,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
     </div>
   );
 
-  if (filter.instance.type === 'ROLE') {
+  if (filter.type === 'ROLE') {
     listOfLinks = [
       {
         key: 'typedValueRole0',
@@ -107,7 +106,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
   }
 
-  if (filter.instance.type === 'IP') {
+  if (filter.type === 'IP') {
     listOfLinks = [
       ...additionalLinks,
       ...listOfLinks,
@@ -115,8 +114,8 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
         key: 'typedValueIP2',
         label: (
           <div
-            onClick={e => {
-              onClickHandler(e, filter.instance);
+            onClick={() => {
+              commonStore.addFilter(filter);
               if (redirect) history.push(`/stamus/hunting/dashboards${window.location.search}`);
             }}
           >
@@ -128,8 +127,9 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
         key: 'typedValueIP3',
         label: (
           <div
-            onClick={e => {
-              onClickHandler(e, filter.negate().instance);
+            onClick={() => {
+              filter.negated = true;
+              commonStore.addFilter(filter);
               if (redirect) history.push(`/stamus/hunting/dashboards${window.location.search}`);
             }}
           >
@@ -144,7 +144,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
   }
 
-  if (filter.instance.type === 'PORT') {
+  if (filter.type === 'PORT') {
     listOfLinks = [
       ...additionalLinks,
       ...listOfLinks,
@@ -161,12 +161,12 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
     ].filter(obj => !_.isEmpty(obj.label)); // removes the ones that dont have data;
   }
 
-  if (filter.instance.type === 'HOSTNAME') {
+  if (filter.type === 'HOSTNAME') {
     listOfLinks = [
       {
         key: 'typedValueHostname',
         label: (
-          <div onClick={e => onClickHandler(e, filter.instance)}>
+          <div onClick={() => commonStore.addFilter(filter)}>
             <DesktopOutlined /> <span>Filter on Hostname</span>
           </div>
         ),
@@ -174,7 +174,12 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
       {
         key: 'typedValueHostnameNegated',
         label: (
-          <div onClick={e => onClickHandler(e, filter.negate().instance)}>
+          <div
+            onClick={() => {
+              filter.negated = true;
+              commonStore.addFilter(filter);
+            }}
+          >
             <DesktopOutlined /> <span>Negated filter on Hostname</span>
           </div>
         ),
@@ -188,13 +193,13 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
     ].filter(obj => !_.isEmpty(obj.label));
   }
 
-  if (filter.instance.type === 'USERNAME') {
+  if (filter.type === 'USERNAME') {
     listOfLinks = [
       ...additionalLinks,
       {
         key: 'typedValueUsername',
         label: (
-          <div onClick={e => onClickHandler(e, filter.instance)}>
+          <div onClick={() => commonStore.addFilter(filter)}>
             <UserOutlined /> <span>Filter on username</span>
           </div>
         ),
@@ -203,12 +208,12 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
     ].filter(obj => !_.isEmpty(obj.label));
   }
 
-  if (filter.instance.type === 'NETWORK_INFO') {
+  if (filter.type === 'NETWORK_INFO') {
     listOfLinks = [
       {
         key: 'typedValueNetInfo',
         label: (
-          <div onClick={e => onClickHandler(e, filter.instance)}>
+          <div onClick={() => commonStore.addFilter(filter)}>
             <UserOutlined /> <span>Filter on Net Info</span>
           </div>
         ),
@@ -216,7 +221,12 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
       {
         key: 'typedValueNetInfoNegated',
         label: (
-          <div onClick={e => onClickHandler(e, filter.negate().instance)}>
+          <div
+            onClick={() => {
+              filter.negated = true;
+              commonStore.addFilter(filter);
+            }}
+          >
             <UserOutlined /> <span>Negated filter on Net Info</span>
           </div>
         ),
@@ -227,7 +237,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
   }
 
   // additionalLinks apply to all fields - ip, port, hostname, username
-  if (filter.instance.id === mitreLinks[0] || filter.instance.id === mitreLinks[1]) {
+  if (filter.id === mitreLinks[0] || filter.id === mitreLinks[1]) {
     listOfLinks = [
       ...additionalLinks,
       ...listOfLinks,
@@ -236,13 +246,13 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
         label: (
           <a
             href={(function () {
-              if (filter.instance.id === mitreLinks[0]) {
-                return `https://attack.mitre.org/tactics/${filter.instance.value}`;
+              if (filter.id === mitreLinks[0]) {
+                return `https://attack.mitre.org/tactics/${filter.value}`;
               }
-              if (!filter.instance.value.includes('.')) {
-                return `https://attack.mitre.org/techniques/${filter.instance.value}`;
+              if (!filter.value.includes('.')) {
+                return `https://attack.mitre.org/techniques/${filter.value}`;
               }
-              return `https://attack.mitre.org/techniques/${filter.instance.value.split('.')[0]}/${filter.instance.value.split('.')[1]}`;
+              return `https://attack.mitre.org/techniques/${filter.value.split('.')[0]}/${filter.value.split('.')[1]}`;
             })()}
             target="_blank"
           >
@@ -259,7 +269,7 @@ const TypedValue = ({ filter, additionalLinks, redirect, children }) => {
         items: [
           {
             type: 'group', // Must have
-            label: filter.instance.label,
+            label: filter.label,
             children: listOfLinks,
           },
         ],
