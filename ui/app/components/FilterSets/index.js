@@ -31,7 +31,7 @@ import FilterSetItem from 'ui/components/FilterSetItem';
 import LoadingIndicator from 'ui/components/LoadingIndicator';
 import actions from 'ui/containers/App/actions';
 import { addFilter, clearFilters, setTag } from 'ui/containers/HuntApp/stores/global';
-import history from 'ui/utils/history';
+import { useHistory } from 'react-router-dom';
 import FilterSetSearch from 'ui/components/FilterSetSearch';
 import selectors from 'ui/containers/App/selectors';
 import filterSetActions from 'ui/stores/filterset/actions';
@@ -59,6 +59,7 @@ const FilterSets = () => {
   useInjectSaga({ key: 'filterSets', saga });
   const dispatch = useDispatch();
   const { commonStore } = useStore();
+  const history = useHistory();
 
   const [expandedPanels, setExpandedPanels] = useState([]);
   const [searchValue, setSearchValue] = useState('');

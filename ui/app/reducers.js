@@ -3,9 +3,7 @@
  */
 
 import { combineReducers } from 'redux';
-import { connectRouter } from 'connected-react-router';
 
-import history from 'utils/history';
 import globalReducer from 'ui/containers/App/reducer';
 import { reducer as huntReducer } from 'ui/containers/HuntApp/stores/global';
 
@@ -16,7 +14,6 @@ export default function createReducer(injectedReducers = {}) {
   const rootReducer = combineReducers({
     global: globalReducer,
     hunt: huntReducer,
-    router: connectRouter(history),
     ...injectedReducers,
   });
 

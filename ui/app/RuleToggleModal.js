@@ -8,7 +8,7 @@ import * as config from 'config/Api';
 import { buildQFilter } from 'ui/buildQFilter';
 import { buildFilterParams } from 'ui/buildFilterParams';
 import { supportedActions, setDefaultOptions } from 'ui/supportedActions';
-import history from 'ui/utils/history';
+import { withRouter } from 'react-router-dom';
 import { cloneDeep } from 'lodash';
 
 const RulesetMsg = styled.div`
@@ -24,7 +24,7 @@ const { Option } = Select;
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 
-export default class RuleToggleModal extends React.Component {
+class RuleToggleModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -197,7 +197,7 @@ export default class RuleToggleModal extends React.Component {
         .then(() => {
           this.setState({ submitting: false });
           this.close();
-          this.props.policiesRedirect();
+          this.props.history.push('/stamus/hunting/policies');
         })
         .catch(error => {
           this.setState({ errors: error.response.data, submitting: false });
@@ -375,10 +375,6 @@ export default class RuleToggleModal extends React.Component {
   }
 }
 
-RuleToggleModal.defaultProps = {
-  policiesRedirect: () => history.push('/stamus/hunting/policies'),
-};
-
 RuleToggleModal.propTypes = {
   filters: PropTypes.any,
   action: PropTypes.any,
@@ -390,5 +386,7 @@ RuleToggleModal.propTypes = {
   children: PropTypes.any,
   systemSettings: PropTypes.any,
   filterParams: PropTypes.any,
-  policiesRedirect: PropTypes.func,
+  history: PropTypes.any,
 };
+
+export default withRouter(RuleToggleModal);
