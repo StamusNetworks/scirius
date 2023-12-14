@@ -66,7 +66,7 @@ export function buildQFilter(activeFilters, systemSettings, returnType = 'legacy
       } else if (filters[i].id === 'alert.category' && filters[i].value === 'Unknown') {
         qfilter.push(`${fPrefix}alert.category${fSuffix}:""`);
       } else if (filters[i].id === 'not_in_msg') {
-        qfilter.push(`${fPrefix}NOT alert.signature:"${filters[i].value}"`);
+        qfilter.push(`${fPrefix}alert.signature:"${filters[i].value}"`);
       } else if (typeof filters[i].value === 'string') {
         if (filters[i].fullString) {
           const value = filters[i].value.toString().replace(/\\/g, '\\\\').replace(/"/g, '\\"');
