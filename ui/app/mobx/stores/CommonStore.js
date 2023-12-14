@@ -2,9 +2,9 @@ import { makeAutoObservable, toJS } from 'mobx';
 import moment from 'moment';
 import endpoints from 'ui/config/endpoints';
 import { isEqual } from 'lodash';
+import Filter from 'ui/utils/Filter';
 import { api } from '../api';
 import { PeriodEnum } from '../../maps/PeriodEnum';
-import Filter from '../../utils/Filter';
 
 class CommonStore {
   root = null;
@@ -119,10 +119,10 @@ class CommonStore {
       this._timeRangeType = JSON.parse(localStorage.getItem('str-timespan') || '{}')?.timePicker || 'relative';
       this._relativeType = JSON.parse(localStorage.getItem('str-timespan') || '{}')?.duration || 'H1';
       this.ids = JSON.parse(localStorage.getItem('ids_filters') || '[]').map(
-        ({ id, value, negated, fullString }) => new Filter(id, value, { negated, fullString }),
+        ({ id, value, negated, fullString, uuid }) => new Filter(id, value, { uuid, negated, fullString }),
       );
       this.history = JSON.parse(localStorage.getItem('history_filters') || '[]').map(
-        ({ id, value, negated, fullString }) => new Filter(id, value, { negated, fullString }),
+        ({ id, value, negated, fullString, uuid }) => new Filter(id, value, { uuid, negated, fullString }),
       );
     } catch (e) {
       // eslint-disable-next-line no-console
@@ -293,46 +293,30 @@ class CommonStore {
   addFilter(stack) {
     const toClass = f => (f instanceof Filter ? f : new Filter(f.id, f.value, { negated: f.negated, fullString: f.fullString }));
     const filters = Array.isArray(stack) ? stack.map(toClass) : [toClass(stack)];
-    this.ids = [...this.ids, ...filters];
-    localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.instance))));
+    this.ids.push(...filters);
+    localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.toJSON()))));
   }
 
   addHistoryFilter(filter) {
     if (filter instanceof Filter) {
       this.history = [...this.history, filter];
-      localStorage.setItem('history_filters', JSON.stringify(toJS(this.history.map(f => f.instance))));
+      localStorage.setItem('history_filters', JSON.stringify(toJS(this.history.map(f => f.toJSON()))));
     }
   }
 
-  removeFilter(filter) {
-    const filterIndex = CommonStore.#indexOfFilter(filter, this.ids);
-    const before = this.ids.slice(0, filterIndex);
-    const after = this.ids.slice(filterIndex + 1);
-    this.ids = [...before, ...after];
-    localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.instance))));
+  removeFilter(uuid) {
+    this.ids = this.ids.filter(f => f._uuid !== uuid);
+    localStorage.setItem('ids_filters', JSON.stringify(toJS(this.ids.map(f => f.toJSON()))));
   }
 
-  removeHistoryFilter(filter) {
-    const filterIndex = CommonStore.#indexOfFilter(filter, this.history);
-    const before = this.history.slice(0, filterIndex);
-    const after = this.history.slice(filterIndex + 1);
-    this.history = [...before, ...after];
-    localStorage.setItem('history_filters', JSON.stringify(toJS(this.history.map(f => f.instance))));
-  }
-
-  replaceFilter(oldFilter, newFilter) {
-    if (CommonStore.#validateFilter(newFilter)) {
-      const idx = CommonStore.#indexOfFilter(oldFilter, this.ids);
-
-      /* eslint-disable-next-line */
-      const filtersUpdated = this.ids.map((filter, i) => (i === idx) ? newFilter : filter);
-      this.ids = filtersUpdated;
-      localStorage.setItem('ids_filters', JSON.stringify(toJS(filtersUpdated.map(({ instance }) => instance))));
-    }
+  removeHistoryFilter(uuid) {
+    this.history = this.history.filter(f => f._uuid !== uuid);
+    localStorage.setItem('history_filters', JSON.stringify(toJS(this.history.map(f => f.toJSON()))));
   }
 
   clearFilters() {
     this.ids = [];
+    localStorage.setItem('ids_filters', '[]');
   }
 
   getFilters(includeAlertTAg = false) {
@@ -347,10 +331,10 @@ class CommonStore {
       const hitsMin = this.ids.find(f => f.id === 'hits_min');
       if (hitsMin) {
         if (hitsMin.value > 1) {
-          localStorage.setItem('hitsMinBackup', JSON.stringify(hitsMin.instance));
+          localStorage.setItem('hitsMinBackup', JSON.stringify(hitsMin.toJSON()));
         }
         this.ids = this.ids.filter(f => f.id !== 'hits_min');
-        localStorage.setItem('ids_filters', JSON.stringify(this.ids.map(({ instance }) => instance)));
+        // localStorage.setItem('ids_filters', JSON.stringify(this.ids.map(({ instance }) => instance)));
       }
     } else {
       let backup;
@@ -406,11 +390,7 @@ class CommonStore {
   }
 
   get filters() {
-    return [...toJS(this.ids)].filter(Boolean);
-  }
-
-  get filtersWithAlert() {
-    return [...toJS(this.ids), toJS(this._alert)].filter(Boolean);
+    return this.ids;
   }
 
   get systemSettings() {
@@ -423,7 +403,7 @@ class CommonStore {
   }
 
   get alert() {
-    return toJS(this._alert);
+    return this._alert;
   }
 
   get eventTypes() {
@@ -476,7 +456,7 @@ class CommonStore {
     );
   }
 
-  static #indexOfFilter(filter, allFilters) {
+  static indexOfFilter(filter, allFilters) {
     for (let idx = 0; idx < allFilters.length; idx += 1) {
       if (
         allFilters[idx].label === filter.label &&
@@ -498,7 +478,7 @@ class CommonStore {
     };
   }
 
-  static #validateFilter(filter) {
+  static validateFilter(filter) {
     if (filter.id === 'alert.tag') {
       // eslint-disable-next-line no-console
       console.error('Tags must go in a separate store');
