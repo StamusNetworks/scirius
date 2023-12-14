@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import FilterItem from 'ui/components/FilterItem';
 import styled from 'styled-components';
+import { useStore } from 'ui/mobx/RootStoreProvider';
 
 const ListInline = styled.ul`
   list-style: none;
@@ -15,19 +16,22 @@ const ListInline = styled.ul`
   padding-inline-start: 0;
 `;
 
-const FilterList = props => (
-  <React.Fragment>
-    {/* eslint-disable react/no-array-index-key */}
-    <ListInline>
-      {props.filters.map((filter, idx) => (
-        <FilterItem key={idx} filter={filter} disabled={!props.filterTypes.some(f => f === filter.category || filter.category.includes(f))} />
-      ))}
-    </ListInline>
-  </React.Fragment>
-);
+const FilterList = props => {
+  const { commonStore } = useStore();
+  const filters = props.filterTypes.length === 1 && props.filterTypes[0] === 'HISTORY' ? commonStore.history : commonStore.filters;
+  return (
+    <React.Fragment>
+      {/* eslint-disable react/no-array-index-key */}
+      <ListInline>
+        {filters.map((filter, idx) => (
+          <FilterItem key={idx} filter={filter} disabled={!props.filterTypes.some(f => filter.category?.includes(f))} />
+        ))}
+      </ListInline>
+    </React.Fragment>
+  );
+};
 
 FilterList.propTypes = {
-  filters: PropTypes.array,
   filterTypes: PropTypes.array,
 };
 
