@@ -1830,9 +1830,6 @@ def edit_ruleset(request, ruleset_id):
             context['mode'] = mode
             context['form'] = CommentForm()
             if context['mode'] == 'sources':
-                if not user.has_perm('rules.source_edit'):
-                    raise PermissionDenied()
-
                 all_sources = Source.objects.all()
 
                 sources_selection = []
