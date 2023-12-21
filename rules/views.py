@@ -1909,9 +1909,15 @@ def ruleset_add_supprule(request, ruleset_id):
             ruleset.save()
         return redirect(ruleset)
 
+    from scirius.utils import get_middleware_module
     rules = EditRuleTable(Rule.objects.all())
     tables.RequestConfig(request).configure(rules)
-    context = {'ruleset': ruleset, 'rules': rules, 'form': CommentForm()}
+    context = {
+        'ruleset': ruleset,
+        'rules': rules,
+        'extra_links': get_middleware_module('common').get_edit_ruleset_links(ruleset_id),
+        'form': CommentForm()
+    }
     return scirius_render(request, 'rules/search_rule.html', context)
 
 
