@@ -125,7 +125,7 @@ def editview(request, action):
         elif action == 'token':
             initial = {}
             token = Token.objects.filter(user=request.user)
-            if len(token):
+            if token.count():
                 initial['token'] = token[0]
             form = TokenForm(request_data, initial=initial)
             context = {'form': form, 'action': 'User token', 'edition': True}
