@@ -819,7 +819,7 @@ class RuleViewSet(SciriusReadOnlyModelViewSet, ESManageMultipleESIndexesViewSet)
                     for category in ruleset.categories.all():
                         trans_cat = CategoryTransformation.objects.filter(ruleset=ruleset, category_transformation=category)
 
-                        if len(trans_cat) == 0:
+                        if trans_cat.count() == 0:
                             for rule in category.rule_set.all():
                                 rule_trans_value = rule.get_transformation(ruleset, key=key)
                                 if rule_trans_value is None or rule_trans_value == value:
@@ -1864,7 +1864,7 @@ class UserActionSerializer(serializers.ModelSerializer):
 
                 # Check existance of content_object
                 sub_instances = klass.objects.filter(pk=ua_obj.object_id)
-                if len(sub_instances) > 0:
+                if sub_instances.count() > 0:
                     if klass.__name__ != 'Rule':
                         content['pk'] = ua_obj.object_id
                     else:
